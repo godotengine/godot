@@ -37,6 +37,7 @@
 #include "core/os/file_access.h"
 #include "core/templates/hash_map.h"
 #include "gdscript.h"
+#include "gdscript_utility_functions.h"
 
 // TODO: Move this to a central location (maybe core?).
 static HashMap<StringName, StringName> underscore_map;
@@ -70,6 +71,39 @@ static StringName get_real_class_name(const StringName &p_source) {
 		return underscore_map[p_source];
 	}
 	return p_source;
+}
+
+static MethodInfo info_from_utility_func(const StringName &p_function) {
+	ERR_FAIL_COND_V(!Variant::has_utility_function(p_function), MethodInfo());
+
+	MethodInfo info(p_function);
+
+	if (Variant::has_utility_function_return_value(p_function)) {
+		info.return_val.type = Variant::get_utility_function_return_type(p_function);
+		if (info.return_val.type == Variant::NIL) {
+			info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		}
+	}
+
+	if (Variant::is_utility_function_vararg(p_function)) {
+		info.flags |= METHOD_FLAG_VARARG;
+	} else {
+		for (int i = 0; i < Variant::get_utility_function_argument_count(p_function); i++) {
+			PropertyInfo pi;
+#ifdef DEBUG_METHODS_ENABLED
+			pi.name = Variant::get_utility_function_argument_name(p_function, i);
+#else
+			pi.name = "arg" + itos(i + 1);
+#endif
+			pi.type = Variant::get_utility_function_argument_type(p_function, i);
+			if (pi.type == Variant::NIL) {
+				pi.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			}
+			info.arguments.push_back(pi);
+		}
+	}
+
+	return info;
 }
 
 void GDScriptAnalyzer::cleanup() {
@@ -1701,7 +1735,6 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 		// Call to name directly.
 		StringName function_name = p_call->function_name;
 		Variant::Type builtin_type = GDScriptParser::get_builtin_type(function_name);
-		GDScriptFunctions::Function builtin_function = GDScriptParser::get_builtin_function(function_name);
 
 		if (builtin_type < Variant::VARIANT_MAX) {
 			// Is a builtin constructor.
@@ -1843,10 +1876,10 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 			}
 			p_call->set_datatype(call_type);
 			return;
-		} else if (builtin_function < GDScriptFunctions::FUNC_MAX) {
-			MethodInfo function_info = GDScriptFunctions::get_info(builtin_function);
+		} else if (GDScriptUtilityFunctions::function_exists(function_name)) {
+			MethodInfo function_info = GDScriptUtilityFunctions::get_function_info(function_name);
 
-			if (all_is_constant && GDScriptFunctions::is_deterministic(builtin_function)) {
+			if (all_is_constant && GDScriptUtilityFunctions::is_function_constant(function_name)) {
 				// Can call on compilation.
 				Vector<const Variant *> args;
 				for (int i = 0; i < p_call->arguments.size(); i++) {
@@ -1855,23 +1888,65 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 
 				Variant value;
 				Callable::CallError err;
-				GDScriptFunctions::call(builtin_function, (const Variant **)args.ptr(), args.size(), value, err);
+				GDScriptUtilityFunctions::get_function(function_name)(&value, (const Variant **)args.ptr(), args.size(), err);
 
 				switch (err.error) {
 					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
 						PropertyInfo wrong_arg = function_info.arguments[err.argument];
-						push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be %s but is %s.)*", GDScriptFunctions::get_func_name(builtin_function), err.argument + 1,
+						push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be %s but is %s.)*", function_name, err.argument + 1,
 										   type_from_property(wrong_arg).to_string(), p_call->arguments[err.argument]->get_datatype().to_string()),
 								p_call->arguments[err.argument]);
 					} break;
 					case Callable::CallError::CALL_ERROR_INVALID_METHOD:
-						push_error(vformat(R"(Invalid call for function "%s".)", GDScriptFunctions::get_func_name(builtin_function)), p_call);
+						push_error(vformat(R"(Invalid call for function "%s".)", function_name), p_call);
 						break;
 					case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
-						push_error(vformat(R"*(Too many arguments for "%s()" call. Expected at most %d but received %d.)*", GDScriptFunctions::get_func_name(builtin_function), err.expected, p_call->arguments.size()), p_call);
+						push_error(vformat(R"*(Too many arguments for "%s()" call. Expected at most %d but received %d.)*", function_name, err.expected, p_call->arguments.size()), p_call);
 						break;
 					case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
-						push_error(vformat(R"*(Too few arguments for "%s()" call. Expected at least %d but received %d.)*", GDScriptFunctions::get_func_name(builtin_function), err.expected, p_call->arguments.size()), p_call);
+						push_error(vformat(R"*(Too few arguments for "%s()" call. Expected at least %d but received %d.)*", function_name, err.expected, p_call->arguments.size()), p_call);
+						break;
+					case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
+						break; // Can't happen in a builtin constructor.
+					case Callable::CallError::CALL_OK:
+						p_call->is_constant = true;
+						p_call->reduced_value = value;
+						break;
+				}
+			} else {
+				validate_call_arg(function_info, p_call);
+			}
+			p_call->set_datatype(type_from_property(function_info.return_val));
+			return;
+		} else if (Variant::has_utility_function(function_name)) {
+			MethodInfo function_info = info_from_utility_func(function_name);
+
+			if (all_is_constant && Variant::get_utility_function_type(function_name) == Variant::UTILITY_FUNC_TYPE_MATH) {
+				// Can call on compilation.
+				Vector<const Variant *> args;
+				for (int i = 0; i < p_call->arguments.size(); i++) {
+					args.push_back(&(p_call->arguments[i]->reduced_value));
+				}
+
+				Variant value;
+				Callable::CallError err;
+				Variant::call_utility_function(function_name, &value, (const Variant **)args.ptr(), args.size(), err);
+
+				switch (err.error) {
+					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
+						PropertyInfo wrong_arg = function_info.arguments[err.argument];
+						push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be %s but is %s.)*", function_name, err.argument + 1,
+										   type_from_property(wrong_arg).to_string(), p_call->arguments[err.argument]->get_datatype().to_string()),
+								p_call->arguments[err.argument]);
+					} break;
+					case Callable::CallError::CALL_ERROR_INVALID_METHOD:
+						push_error(vformat(R"(Invalid call for function "%s".)", function_name), p_call);
+						break;
+					case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
+						push_error(vformat(R"*(Too many arguments for "%s()" call. Expected at most %d but received %d.)*", function_name, err.expected, p_call->arguments.size()), p_call);
+						break;
+					case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
+						push_error(vformat(R"*(Too few arguments for "%s()" call. Expected at least %d but received %d.)*", function_name, err.expected, p_call->arguments.size()), p_call);
 						break;
 					case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
 						break; // Can't happen in a builtin constructor.
@@ -2385,7 +2460,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 
 	// Not found.
 	// Check if it's a builtin function.
-	if (parser->get_builtin_function(name) < GDScriptFunctions::FUNC_MAX) {
+	if (GDScriptUtilityFunctions::function_exists(name)) {
 		push_error(vformat(R"(Built-in function "%s" cannot be used as an identifier.)", name), p_identifier);
 	} else {
 		push_error(vformat(R"(Identifier "%s" not declared in the current scope.)", name), p_identifier);

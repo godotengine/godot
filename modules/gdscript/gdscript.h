@@ -72,8 +72,8 @@ class GDScript : public Script {
 	friend class GDScriptFunction;
 	friend class GDScriptAnalyzer;
 	friend class GDScriptCompiler;
-	friend class GDScriptFunctions;
 	friend class GDScriptLanguage;
+	friend struct GDScriptUtilityFunctionsDefinitions;
 
 	Ref<GDScriptNativeClass> native;
 	Ref<GDScript> base;
@@ -270,8 +270,8 @@ public:
 class GDScriptInstance : public ScriptInstance {
 	friend class GDScript;
 	friend class GDScriptFunction;
-	friend class GDScriptFunctions;
 	friend class GDScriptCompiler;
+	friend struct GDScriptUtilityFunctionsDefinitions;
 
 	ObjectID owner_id;
 	Object *owner;

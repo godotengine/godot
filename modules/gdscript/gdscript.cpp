@@ -2122,8 +2122,11 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		w++;
 	}
 
-	for (int i = 0; i < GDScriptFunctions::FUNC_MAX; i++) {
-		p_words->push_back(GDScriptFunctions::get_func_name(GDScriptFunctions::Function(i)));
+	List<StringName> functions;
+	GDScriptUtilityFunctions::get_function_list(&functions);
+
+	for (const List<StringName>::Element *E = functions.front(); E; E = E->next()) {
+		p_words->push_back(String(E->get()));
 	}
 }
 

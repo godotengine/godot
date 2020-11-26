@@ -38,6 +38,7 @@
 #include "core/templates/pair.h"
 #include "core/templates/self_list.h"
 #include "core/variant/variant.h"
+#include "gdscript_utility_functions.h"
 
 class GDScriptInstance;
 class GDScript;
@@ -190,7 +191,9 @@ public:
 		OPCODE_CALL,
 		OPCODE_CALL_RETURN,
 		OPCODE_CALL_ASYNC,
-		OPCODE_CALL_BUILT_IN,
+		OPCODE_CALL_UTILITY,
+		OPCODE_CALL_UTILITY_VALIDATED,
+		OPCODE_CALL_GDSCRIPT_UTILITY,
 		OPCODE_CALL_BUILTIN_TYPE_VALIDATED,
 		OPCODE_CALL_SELF_BASE,
 		OPCODE_CALL_METHOD_BIND,
@@ -344,6 +347,10 @@ private:
 	const Variant::ValidatedBuiltInMethod *_builtin_methods_ptr = nullptr;
 	int _constructors_count = 0;
 	const Variant::ValidatedConstructor *_constructors_ptr = nullptr;
+	int _utilities_count = 0;
+	const Variant::ValidatedUtilityFunction *_utilities_ptr = nullptr;
+	int _gds_utilities_count = 0;
+	const GDScriptUtilityFunctions::FunctionPtr *_gds_utilities_ptr = nullptr;
 	int _methods_count = 0;
 	MethodBind **_methods_ptr = nullptr;
 	const int *_code_ptr = nullptr;
@@ -372,6 +379,8 @@ private:
 	Vector<Variant::ValidatedIndexedGetter> indexed_getters;
 	Vector<Variant::ValidatedBuiltInMethod> builtin_methods;
 	Vector<Variant::ValidatedConstructor> constructors;
+	Vector<Variant::ValidatedUtilityFunction> utilities;
+	Vector<GDScriptUtilityFunctions::FunctionPtr> gds_utilities;
 	Vector<MethodBind *> methods;
 	Vector<int> code;
 	Vector<GDScriptDataType> argument_types;
