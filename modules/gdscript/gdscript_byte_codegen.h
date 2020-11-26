@@ -34,6 +34,7 @@
 #include "gdscript_codegen.h"
 
 #include "gdscript_function.h"
+#include "gdscript_utility_functions.h"
 
 class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	bool ended = false;
@@ -76,6 +77,8 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	Map<Variant::ValidatedIndexedGetter, int> indexed_getters_map;
 	Map<Variant::ValidatedBuiltInMethod, int> builtin_method_map;
 	Map<Variant::ValidatedConstructor, int> constructors_map;
+	Map<Variant::ValidatedUtilityFunction, int> utilities_map;
+	Map<GDScriptUtilityFunctions::FunctionPtr, int> gds_utilities_map;
 	Map<MethodBind *, int> method_bind_map;
 
 	// Lists since these can be nested.
@@ -241,6 +244,24 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return pos;
 	}
 
+	int get_utility_pos(const Variant::ValidatedUtilityFunction p_utility) {
+		if (utilities_map.has(p_utility)) {
+			return utilities_map[p_utility];
+		}
+		int pos = utilities_map.size();
+		utilities_map[p_utility] = pos;
+		return pos;
+	}
+
+	int get_gds_utility_pos(const GDScriptUtilityFunctions::FunctionPtr p_gds_utility) {
+		if (gds_utilities_map.has(p_gds_utility)) {
+			return gds_utilities_map[p_gds_utility];
+		}
+		int pos = gds_utilities_map.size();
+		gds_utilities_map[p_gds_utility] = pos;
+		return pos;
+	}
+
 	int get_method_bind_pos(MethodBind *p_method) {
 		if (method_bind_map.has(p_method)) {
 			return method_bind_map[p_method];
@@ -346,6 +367,14 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		opcodes.push_back(get_constructor_pos(p_constructor));
 	}
 
+	void append(const Variant::ValidatedUtilityFunction p_utility) {
+		opcodes.push_back(get_utility_pos(p_utility));
+	}
+
+	void append(const GDScriptUtilityFunctions::FunctionPtr p_gds_utility) {
+		opcodes.push_back(get_gds_utility_pos(p_gds_utility));
+	}
+
 	void append(MethodBind *p_method) {
 		opcodes.push_back(get_method_bind_pos(p_method));
 	}
@@ -404,7 +433,8 @@ public:
 	virtual void write_call(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_super_call(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_async(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
-	virtual void write_call_builtin(const Address &p_target, GDScriptFunctions::Function p_function, const Vector<Address> &p_arguments) override;
+	virtual void write_call_utility(const Address &p_target, const StringName &p_function, const Vector<Address> &p_arguments) override;
+	virtual void write_call_gdscript_utility(const Address &p_target, GDScriptUtilityFunctions::FunctionPtr p_function, const Vector<Address> &p_arguments) override;
 	virtual void write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_ptrcall(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;

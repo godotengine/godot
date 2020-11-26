@@ -43,7 +43,6 @@
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 #include "gdscript_cache.h"
-#include "gdscript_functions.h"
 #include "gdscript_tokenizer.h"
 
 #ifdef DEBUG_ENABLED
@@ -1276,7 +1275,6 @@ public:
 	ClassNode *get_tree() const { return head; }
 	bool is_tool() const { return _is_tool; }
 	static Variant::Type get_builtin_type(const StringName &p_type);
-	static GDScriptFunctions::Function get_builtin_function(const StringName &p_name);
 
 	CompletionContext get_completion_context() const { return completion_context; }
 	CompletionCall get_completion_call() const { return completion_call; }

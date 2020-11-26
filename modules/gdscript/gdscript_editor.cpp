@@ -37,6 +37,7 @@
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
 #include "gdscript_tokenizer.h"
+#include "gdscript_utility_functions.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/config/project_settings.h"
@@ -407,11 +408,14 @@ void GDScriptLanguage::get_recognized_extensions(List<String> *p_extensions) con
 }
 
 void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const {
-	for (int i = 0; i < GDScriptFunctions::FUNC_MAX; i++) {
-		p_functions->push_back(GDScriptFunctions::get_info(GDScriptFunctions::Function(i)));
+	List<StringName> functions;
+	GDScriptUtilityFunctions::get_function_list(&functions);
+
+	for (const List<StringName>::Element *E = functions.front(); E; E = E->next()) {
+		p_functions->push_back(GDScriptUtilityFunctions::get_function_info(E->get()));
 	}
 
-	//not really "functions", but..
+	// Not really "functions", but show in documentation.
 	{
 		MethodInfo mi;
 		mi.name = "preload";
@@ -1026,9 +1030,12 @@ static void _find_identifiers(GDScriptParser::CompletionContext &p_context, bool
 		_find_identifiers_in_class(p_context.current_class, p_only_functions, (!p_context.current_function || p_context.current_function->is_static), false, r_result, p_recursion_depth + 1);
 	}
 
-	for (int i = 0; i < GDScriptFunctions::FUNC_MAX; i++) {
-		MethodInfo function = GDScriptFunctions::get_info(GDScriptFunctions::Function(i));
-		ScriptCodeCompletionOption option(String(GDScriptFunctions::get_func_name(GDScriptFunctions::Function(i))), ScriptCodeCompletionOption::KIND_FUNCTION);
+	List<StringName> functions;
+	GDScriptUtilityFunctions::get_function_list(&functions);
+
+	for (const List<StringName>::Element *E = functions.front(); E; E = E->next()) {
+		MethodInfo function = GDScriptUtilityFunctions::get_function_info(E->get());
+		ScriptCodeCompletionOption option(String(E->get()), ScriptCodeCompletionOption::KIND_FUNCTION);
 		if (function.arguments.size() || (function.flags & METHOD_FLAG_VARARG)) {
 			option.insert_text += "(";
 		} else {
@@ -1259,8 +1266,8 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 					r_type.type.builtin_type = GDScriptParser::get_builtin_type(call->function_name);
 					found = true;
 					break;
-				} else if (GDScriptParser::get_builtin_function(call->function_name) < GDScriptFunctions::FUNC_MAX) {
-					MethodInfo mi = GDScriptFunctions::get_info(GDScriptParser::get_builtin_function(call->function_name));
+				} else if (GDScriptUtilityFunctions::function_exists(call->function_name)) {
+					MethodInfo mi = GDScriptUtilityFunctions::get_function_info(call->function_name);
 					r_type = _type_from_property(mi.return_val);
 					found = true;
 					break;
@@ -2313,8 +2320,8 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 	GDScriptCompletionIdentifier connect_base;
 
-	if (GDScriptParser::get_builtin_function(call->function_name) < GDScriptFunctions::FUNC_MAX) {
-		MethodInfo info = GDScriptFunctions::get_info(GDScriptParser::get_builtin_function(call->function_name));
+	if (GDScriptUtilityFunctions::function_exists(call->function_name)) {
+		MethodInfo info = GDScriptUtilityFunctions::get_function_info(call->function_name);
 		r_arghint = _make_arguments_hint(info, p_argidx);
 		return;
 	} else if (GDScriptParser::get_builtin_type(call->function_name) < Variant::VARIANT_MAX) {
@@ -2942,13 +2949,11 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		}
 	}
 
-	for (int i = 0; i < GDScriptFunctions::FUNC_MAX; i++) {
-		if (GDScriptFunctions::get_func_name(GDScriptFunctions::Function(i)) == p_symbol) {
-			r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
-			r_result.class_name = "@GDScript";
-			r_result.class_member = p_symbol;
-			return OK;
-		}
+	if (GDScriptUtilityFunctions::function_exists(p_symbol)) {
+		r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+		r_result.class_name = "@GDScript";
+		r_result.class_member = p_symbol;
+		return OK;
 	}
 
 	if ("PI" == p_symbol || "TAU" == p_symbol || "INF" == p_symbol || "NAN" == p_symbol) {
