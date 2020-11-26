@@ -157,8 +157,6 @@ private:
 		Vector2 scale;
 		Vector2 pivot_offset;
 
-		bool pending_resize;
-
 		int h_size_flags;
 		int v_size_flags;
 		float expand;
