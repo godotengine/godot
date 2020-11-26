@@ -498,10 +498,20 @@ void SpaceBullet::add_rigid_body(RigidBodyBullet *p_body) {
 }
 
 void SpaceBullet::remove_rigid_body(RigidBodyBullet *p_body) {
+	btRigidBody *btBody = p_body->get_bt_rigid_body();
+
+	int constraints = btBody->getNumConstraintRefs();
+	if (constraints > 0) {
+		WARN_PRINT("A body connected to joints was removed. Ensure bodies are disconnected from joints before removing them.");
+		for (int i = 0; i < constraints; i++) {
+			dynamicsWorld->removeConstraint(btBody->getConstraintRef(i));
+		}
+	}
+
 	if (p_body->is_static()) {
-		dynamicsWorld->removeCollisionObject(p_body->get_bt_rigid_body());
+		dynamicsWorld->removeCollisionObject(btBody);
 	} else {
-		dynamicsWorld->removeRigidBody(p_body->get_bt_rigid_body());
+		dynamicsWorld->removeRigidBody(btBody);
 	}
 }
 
