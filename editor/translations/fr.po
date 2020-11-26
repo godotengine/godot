@@ -76,12 +76,13 @@
 # Nathan <bonnemainsnathan@gmail.com>, 2020.
 # Léo Vincent <l009.vincent@gmail.com>, 2020.
 # Joseph Boudou <joseph.boudou@matabio.net>, 2020.
+# Vincent Foulon <vincent.foulon80@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-15 12:43+0000\n"
-"Last-Translator: Joseph Boudou <joseph.boudou@matabio.net>\n"
+"PO-Revision-Date: 2020-11-26 08:43+0000\n"
+"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -1108,15 +1109,15 @@ msgid "Owners Of:"
 msgstr "Propriétaires de :"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
 msgstr ""
-"Supprimer les fichiers sélectionnés du projet ? (restauration impossible)"
+"Supprimer les fichiers sélectionnés du projet ? (annulation impossible)\n"
+"Vous pouvez retrouver les fichiers supprimés dans la corbeille du système "
+"pour les restaurer."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1125,7 +1126,9 @@ msgid ""
 msgstr ""
 "Les fichiers qui vont être supprimés sont utilisés par d'autres ressources "
 "pour leur fonctionnement.\n"
-"Les supprimer tout de même ? (annulation impossible)"
+"Les supprimer tout de même ? (annulation impossible)\n"
+"Vous pouvez retrouver les fichiers supprimés dans la corbeille du système "
+"pour les restaurer."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -2391,6 +2394,10 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"Une erreur s'est produite lors de l'enregistrement de la disposition de "
+"l'éditeur.\n"
+"Assurez-vous que le chemin de données utilisateur de l'éditeur est "
+"accessible en écriture."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2398,15 +2405,18 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"Mise en page par défaut de l'éditeur modifiée.\n"
+"Pour rétablir la mise en page par défaut dans ses paramètres de base, "
+"utilisez l'option Supprimer la mise en page et supprimez la mise en page par "
+"défaut."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Nom de la disposition non trouvé !"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
-msgstr "Disposition par défaut remise à zéro."
+msgstr "Disposition par défaut remise à ses paramètres de base."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3865,9 +3875,8 @@ msgid "Move To..."
 msgstr "Déplacer vers…"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Move to Trash"
-msgstr "Déplacer l'AutoLoad"
+msgstr "Déplacer vers la corbeille"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -5341,53 +5350,44 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "Créer de nouveaux guides horizontaux et verticaux"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
 msgstr "Décalage pivot du CanvasItem « %s » défini à (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate %d CanvasItems"
-msgstr "Pivoter l'élément de canevas"
+msgstr "Pivoter %d CanvasItems"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotate CanvasItem \"%s\" to %d degrees"
 msgstr "Pivoter le CanvasItem \"%s\" de %d degrés"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" Anchor"
-msgstr "Déplacer l'ancre \"%s\" du CanvasItem"
+msgstr "Déplacer l'ancre du CanvasItem « %s »"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr "Mettre à l'échelle Node2D \"%s\" vers (%s, %s)"
+msgstr "Mettre à l'échelle le Node2D « %s » vers (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr "Redimensionner le Contrôle \"%s\" vers (%d, %d)"
+msgstr "Redimensionner le Contrôle « %s » vers (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale %d CanvasItems"
-msgstr "Mise à l'échelle de CanvasItem"
+msgstr "Mettre à l'échelle le CanvasItem %d"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "Mise à l'échelle de CanvasItem"
+msgstr "Mettre à l'échelle le CanvasItem « %s » vers (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move %d CanvasItems"
-msgstr "Déplacer l'élément de canevas"
+msgstr "Déplacer %d CanvasItems"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "Déplacer l'élément de canevas"
+msgstr "Déplacer le CanvasItem « %s » vers (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -6740,14 +6740,12 @@ msgid "Radius:"
 msgstr "Rayon :"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Polygon to UV"
-msgstr "Copier le polygone dans UV"
+msgstr "Copier le polygone dans l'UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy UV to Polygon"
-msgstr "Copier UV dans le polygone"
+msgstr "Copier l'UV dans le polygone"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -8299,13 +8297,12 @@ msgid "Paint Tile"
 msgstr "Peindre la tuile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Shift+LMB: Line Draw\n"
 "Shift+Command+LMB: Rectangle Paint"
 msgstr ""
-"Shift+LMB : Dessiner une ligne\n"
-"Shift+Commande+LMB : Dessiner un rectangle"
+"Maj + Clic droit : Dessiner une ligne\n"
+"Maj + Commande + Clic droit : Dessiner un rectangle"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8460,12 +8457,24 @@ msgid "Create a new rectangle."
 msgstr "Créer un nouveau rectangle."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Rectangle"
+msgstr "Nouveau rectangle"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Créer un nouveau polygone."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Polygon"
+msgstr "Nouveau polygone"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Delete Selected Shape"
+msgstr "Supprimer la forme sélectionée"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
-msgstr "Circonscrire le polygone dans le Rect de région."
+msgstr "Circonscrire le polygone dans le rectangle de région."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Enable snap and show grid (configurable via the Inspector)."
@@ -8856,7 +8865,6 @@ msgid "Visual Shader Input Type Changed"
 msgstr "Type d’entrée Visual Shader changée"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "UniformRef Name Changed"
 msgstr "Nom UniformRef modifié"
 
@@ -9579,7 +9587,6 @@ msgstr ""
 "constantes."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "A reference to an existing uniform."
 msgstr "Une référence à un uniform existant."
 
@@ -12242,11 +12249,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Missing 'build-tools' directory!"
-msgstr ""
+msgstr "Dossier « platform-tools » manquant !"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12299,27 +12302,10 @@ msgstr ""
 "Xr » est « Oculus Mobile VR »."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
-"« Exportation AAB » est valide uniquement lorsque l'option « Utiliser une "
-"build personnalisée » est activée."
-
-#: platform/android/export/export.cpp
-msgid "Unable to find the zipalign tool."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Aligning APK..."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to complete APK alignment."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to delete unaligned APK."
-msgstr ""
+"« Export AAB » est valide uniquement lorsque l'option « Use Custom Build » "
+"est activée."
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
@@ -12375,9 +12361,8 @@ msgstr ""
 "Android."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Moving output"
-msgstr "Sortie de déplacement"
+msgstr "Déplacement du résultat"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -13170,6 +13155,21 @@ msgstr "Les variations ne peuvent être affectées que dans la fonction vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constantes ne peuvent être modifiées."
+
+#~ msgid "Missing 'build-tools' directory!"
+#~ msgstr "Dossier « build-tools » manquant !"
+
+#~ msgid "Unable to find the zipalign tool."
+#~ msgstr "Impossible de trouver l'outil zipalign."
+
+#~ msgid "Aligning APK..."
+#~ msgstr "Alignement de l'APK…"
+
+#~ msgid "Unable to complete APK alignment."
+#~ msgstr "Impossible d'effectuer l'alignement de l'APK."
+
+#~ msgid "Unable to delete unaligned APK."
+#~ msgstr "Impossible de supprimer l'APK non aligné."
 
 #~ msgid "Error trying to save layout!"
 #~ msgstr "Erreur d'enregistrement de la disposition !"

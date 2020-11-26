@@ -36,7 +36,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-04 02:39+0000\n"
+"PO-Revision-Date: 2020-11-24 16:44+0000\n"
 "Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.3.2-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -54,7 +54,7 @@ msgstr "convert() の引数の型が無効です。TYPE_* 定数を使ってく�
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "長さ1の文字列(文字)が必要です。"
+msgstr "長さが 1 の文字列 (文字) が必要です。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -68,15 +68,15 @@ msgstr "式中の無効な入力 %i (渡されていません)"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "インスタンスがnull(渡されない)であるため、selfは使用できません"
+msgstr "インスタンスが null (渡されない) であるため、self は使用できません"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "演算子 %s に対する無効なオペランドです、%s 及び %s。"
+msgstr "演算子 %s に対する無効なオペランドです: %s と %s。"
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "タイプ %s のインデックスが無効、これは基底型 %s 用です"
+msgstr "型 %s のインデックスが無効、これは基底型 %s 用です"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
@@ -120,7 +120,7 @@ msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "解放"
+msgstr "自由"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -1056,14 +1056,14 @@ msgid "Owners Of:"
 msgstr "次のオーナー:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
-msgstr "選択したファイルをプロジェクトから削除しますか？(元に戻せません)"
+msgstr ""
+"選択したファイルをプロジェクトから削除しますか？(取り消しはできません)\n"
+"削除されたファイルは、システムのゴミ箱にあるので復元できます。"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1071,7 +1071,8 @@ msgid ""
 "You can find the removed files in the system trash to restore them."
 msgstr ""
 "除去しようとしているファイルは他のリソースの動作に必要です。\n"
-"無視して除去しますか？(元に戻せません)"
+"無視して除去しますか？(取り消しはできません)\n"
+"削除されたファイルは、システムのゴミ箱にあるので復元できます。"
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1703,7 +1704,7 @@ msgstr "インポートドック"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
-msgstr "プロファイル '%s'を消去しますか? (元に戻せません)"
+msgstr "プロファイル '%s' を消去しますか？(元に戻せません)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
@@ -1985,7 +1986,7 @@ msgid ""
 "There are multiple importers for different types pointing to file %s, import "
 "aborted"
 msgstr ""
-"ファイル%sをポイントしている異なるタイプの複数のインポータがあります。イン"
+"ファイル %s をポイントしている異なるタイプの複数のインポータがあります。イン"
 "ポートは中断されました"
 
 #: editor/editor_file_system.cpp
@@ -2337,6 +2338,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"エディタのレイアウトを保存しようとした際にエラーが発生しました。\n"
+"エディタのユーザーデータ用パスが書き込み可能であることを確認してください。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2344,15 +2347,17 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"既定のエディタレイアウトが上書きされました。\n"
+"既定のレイアウトを基本設定に戻すには、[レイアウトの削除] オプションを使用し"
+"て、既定のレイアウトを削除します。"
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "レイアウト名が見つかりません！"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
-msgstr "デフォルトのレイアウトを基本設定に戻しました。"
+msgstr "既定のレイアウトを基本設定に戻しました。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3783,9 +3788,8 @@ msgid "Move To..."
 msgstr "移動..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Move to Trash"
-msgstr "自動読込みを移動"
+msgstr "ごみ箱へ移動"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -5246,7 +5250,7 @@ msgstr "水平垂直ガイドを作成"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr ""
+msgstr "CanvasItem \"%s\" の Pivot Offset を (%d, %d) に設定します"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotate %d CanvasItems"
@@ -5257,37 +5261,32 @@ msgid "Rotate CanvasItem \"%s\" to %d degrees"
 msgstr "CanvasItem \"%s\" を %d 度回転"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" Anchor"
-msgstr "CanvasItemを移動"
+msgstr "CanvasItem \"%s\" のアンカーを移動"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr ""
+msgstr "Node2D \"%s\" を (%s, %s) にスケールします"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr ""
+msgstr "Control \"%s\" を (%d, %d) にリサイズします"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale %d CanvasItems"
-msgstr "キャンバスアイテムの拡大/縮小"
+msgstr "%d 個の CanvasItem を拡大 / 縮小"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "キャンバスアイテムの拡大/縮小"
+msgstr "CanvasItem \"%s\" を (%s, %s) に拡大 / 縮小"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move %d CanvasItems"
-msgstr "CanvasItemを移動"
+msgstr "%d 個の CanvasItem を移動"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "CanvasItemを移動"
+msgstr "CanvasItem \"%s\" を (%d, %d) に移動"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -6564,18 +6563,16 @@ msgid "Move Points"
 msgstr "ポイントを移動"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Command: Rotate"
-msgstr "ドラッグ: 回転"
+msgstr "Command: 回転"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: すべて移動"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Shift+Command: Scale"
-msgstr "Shift+Ctrl: スケール"
+msgstr "Shift+Command: スケール"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Ctrl: Rotate"
@@ -6622,14 +6619,12 @@ msgid "Radius:"
 msgstr "半径:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Polygon to UV"
-msgstr "ポリゴンとUVを生成"
+msgstr "PolygonをUVにコピー"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy UV to Polygon"
-msgstr "Polygon2Dに変換する"
+msgstr "UVをPolygon2Dにコピー"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -8178,13 +8173,12 @@ msgid "Paint Tile"
 msgstr "タイルをペイント"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Shift+LMB: Line Draw\n"
 "Shift+Command+LMB: Rectangle Paint"
 msgstr ""
 "Shift+左マウスボタン: 直線に描く\n"
-"Shift+Ctrl+左マウスボタン: 長方形ペイント"
+"Shift+Command+左マウスボタン: 長方形ペイント"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8339,8 +8333,23 @@ msgid "Create a new rectangle."
 msgstr "新しく長方形を作成。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Rectangle"
+msgstr "長方形ペイント"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "新規ポリゴンを生成。"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Polygon"
+msgstr "ポリゴンを移動"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "選択対象を削除"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -8712,9 +8721,8 @@ msgid "Add Node to Visual Shader"
 msgstr "ビジュアルシェーダにノードを追加"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Node(s) Moved"
-msgstr "ノードを移動"
+msgstr "ノードの移動"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
@@ -8734,9 +8742,8 @@ msgid "Visual Shader Input Type Changed"
 msgstr "ビジュアルシェーダの入力タイプが変更されました"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "UniformRef Name Changed"
-msgstr "統一名を設定"
+msgstr "UniformRef の名称変更"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9443,7 +9450,7 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "A reference to an existing uniform."
-msgstr ""
+msgstr "既存の uniform への参照です。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
@@ -12076,11 +12083,7 @@ msgstr "エディタ設定のカスタムビルドのAndroid SDKパスが無効�
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Missing 'build-tools' directory!"
-msgstr ""
+msgstr "'platform-tools' ディレクトリがありません！"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12137,22 +12140,7 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to find the zipalign tool."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Aligning APK..."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to complete APK alignment."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to delete unaligned APK."
-msgstr ""
+"\"Export AAB\" は \"Use Custom Build\" が有効である場合にのみ有効になります。"
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
@@ -12203,7 +12191,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Moving output"
-msgstr ""
+msgstr "出力結果の移動中"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12969,6 +12957,21 @@ msgstr "Varying変数は頂点関数にのみ割り当てることができま�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#~ msgid "Missing 'build-tools' directory!"
+#~ msgstr "'build-tools' ディレクトリがありません！"
+
+#~ msgid "Unable to find the zipalign tool."
+#~ msgstr "zipalign ツールが見つかりません。"
+
+#~ msgid "Aligning APK..."
+#~ msgstr "APKを最適化..."
+
+#~ msgid "Unable to complete APK alignment."
+#~ msgstr "APKの最適化を完了できません。"
+
+#~ msgid "Unable to delete unaligned APK."
+#~ msgstr "未最適化のAPKを削除できません。"
 
 #~ msgid "Error trying to save layout!"
 #~ msgstr "レイアウトの保存エラー！"

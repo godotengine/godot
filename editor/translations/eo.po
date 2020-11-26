@@ -9,18 +9,19 @@
 # Alejandro Sánchez Medina <alejandrosanchzmedina@gmail.com>, 2019.
 # Sr Half <flavio05@outlook.com>, 2020.
 # Cristian Yepez <cristianyepez@gmail.com>, 2020.
+# BinotaLIU <me@binota.org>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2020-05-22 21:01+0000\n"
-"Last-Translator: Cristian Yepez <cristianyepez@gmail.com>\n"
+"PO-Revision-Date: 2020-11-20 23:08+0000\n"
+"Last-Translator: BinotaLIU <me@binota.org>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -135,56 +136,51 @@ msgstr "Movi Bezier-punktojn"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Animado Duplikati Ŝlosilojn"
+msgstr "Duplikati Ŝlosilojn de Animado"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Animado Forigi Ŝlosilojn"
+msgstr "Forigi Ŝlosilojn de Animado"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "Animado Aliigi Kernakadron Fojon"
+msgstr "Aliigi Kernakadron Fojon de Animado"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Animado Aliigi Transiron"
+msgstr "Aliigi Transiron de Animado"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
-msgstr "Animado Aliigi Transformon"
+msgstr "Aliigi Transformon de Animado"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "Animado Aliigi Kernakadron Valoron"
+msgstr "Aliigi Kernakadron Valoron de Animado"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr "Animado Aliigi Alvokon"
+msgstr "Aliigi Alvokon de Animado"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Animado Aliigi Kernakadron Fojon"
+msgstr "Aliigi Kernakadron Fojon de Animadoj"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Animado Aliigi Transiron"
+msgstr "Aliigi Transiron de Animadoj"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Animado Aliigi Transformon"
+msgstr "Aliigi Transformon de Animadoj"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Animado Aliigi Kernakadron Valoron"
+msgstr "Aliigi Kernakadron Valoron de Animadoj"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Animado Aliigi Alvokon"
+msgstr "Aliigi Alvokon de Animadoj"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -8169,8 +8165,22 @@ msgid "Create a new rectangle."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Rectangle"
+msgstr "Nova sceno"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Polygon"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "Forigi Elektita(j)n Ŝlosilo(j)n"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -11749,10 +11759,6 @@ msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "Missing 'build-tools' directory!"
-msgstr ""
-
-#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -11794,22 +11800,6 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to find the zipalign tool."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Aligning APK..."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to complete APK alignment."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to delete unaligned APK."
 msgstr ""
 
 #: platform/android/export/export.cpp

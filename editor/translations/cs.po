@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-17 11:07+0000\n"
+"PO-Revision-Date: 2020-11-20 23:08+0000\n"
 "Last-Translator: Václav Blažej <vaclavblazej@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
@@ -1047,14 +1047,14 @@ msgid "Owners Of:"
 msgstr "Vlastníci:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
-msgstr "Odebrat vybrané soubory z projektu? (Nelze vrátit zpět)"
+msgstr ""
+"Odebrat vybrané soubory z projektu? (Nelze vrátit zpět)\n"
+"Odebrané soubory budou v systémovém koši a obnovit je."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1062,7 +1062,8 @@ msgid ""
 "You can find the removed files in the system trash to restore them."
 msgstr ""
 "Soubory ke smazání potřebují jiné zdroje ke své činnosti.\n"
-"Přesto je chcete smazat? (nelze vrátit zpět)"
+"Přesto je chcete smazat? (nelze vrátit zpět)\n"
+"Odebrané soubory budou v systémovém koši a obnovit je."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -2322,6 +2323,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"Při pokusu o uložení rozložení editoru došlo k chybě.\n"
+"Ujistěte se, že cesta k uživatelským datům editoru je zapisovatelná."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2329,13 +2332,15 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"Výchozí rozložení editoru bylo přepsáno.\n"
+"Chcete-li obnovit výchozí rozložení do výchozího nastavení, použijte možnost "
+"Odstranit rozložení a odstraňte výchozí rozložení."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Jméno rozložení nenalezeno!"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
 msgstr "Obnoveno výchozí rozložení na základní nastavení."
 
@@ -3764,9 +3769,8 @@ msgid "Move To..."
 msgstr "Přesunout do..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Move to Trash"
-msgstr "Přemístit Autoload"
+msgstr "Přesunout do koše"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -7054,7 +7058,7 @@ msgstr "Breakpointy"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Go To"
-msgstr "Jít do"
+msgstr "Přejít na"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -8301,8 +8305,23 @@ msgid "Create a new rectangle."
 msgstr "Vytvořit nový obdélník."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Rectangle"
+msgstr "Nakreslit obdélník"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Vytvořit nový polygon."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Polygon"
+msgstr "Přesunout polygon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "Smazat vybraný"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -12025,11 +12044,7 @@ msgstr "Nesprávná cesta Android SDK pro vlastní sestavení v Nastavení edito
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Missing 'build-tools' directory!"
-msgstr ""
+msgstr "Chybí složka \"platform-tools\"!"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12087,22 +12102,6 @@ msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 "\"Export AAB\" je validní pouze v případě, že je povolena možnost \"Použít "
 "vlastní sestavu\"."
-
-#: platform/android/export/export.cpp
-msgid "Unable to find the zipalign tool."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Aligning APK..."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to complete APK alignment."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to delete unaligned APK."
-msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
@@ -12903,6 +12902,21 @@ msgstr "Odlišnosti mohou být přiřazeny pouze ve vertex funkci."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanty není možné upravovat."
+
+#~ msgid "Missing 'build-tools' directory!"
+#~ msgstr "Chybí složka \"build-tools\"!"
+
+#~ msgid "Unable to find the zipalign tool."
+#~ msgstr "Nelze najít nástroj zipalign."
+
+#~ msgid "Aligning APK..."
+#~ msgstr "Zarovnávání APK..."
+
+#~ msgid "Unable to complete APK alignment."
+#~ msgstr "Nelze dokončit zarovnání APK."
+
+#~ msgid "Unable to delete unaligned APK."
+#~ msgstr "Nelze odstranit nezarovnané APK."
 
 #~ msgid "Error trying to save layout!"
 #~ msgstr "Chyba při pokusu uložit rozložení!"

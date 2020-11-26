@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-10-31 23:15+0000\n"
+"PO-Revision-Date: 2020-11-20 23:08+0000\n"
 "Last-Translator: Thanachart Monpassorn <nunf_2539@hotmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.3.2-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1020,22 +1020,23 @@ msgid "Owners Of:"
 msgstr "เจ้าของของ:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
-msgstr "ลบไฟล์ที่เลือกออกจากโปรเจกต์? (กู้คืนไม่ได้)"
+msgstr ""
+"ลบไฟล์ที่เลือกออกจากโปรเจกต์? (ย้อนกลับไม่ได้)\n"
+"คุณสามารถหาไฟล์ที่ลบได้จากถังขยะเพื่อที่จะกู้คืน"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
 "Remove them anyway? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
 msgstr ""
-"ไฟล์ที่กำลังจะลบ จำเป็นสำหรับใช้งานโดยทรัพยากรอันอื่น\n"
-"จะทำการลบหรือไม่? (คืนกลับไม่ได้)"
+"ไฟล์ที่กำลังจะลบ ถูกใช้งานโดยทรัพยากรอันอื่น\n"
+"จะทำการลบหรือไม่? (ย้อนกลับไม่ได้)\n"
+"คุณสามารถหาไฟล์ที่ลบแล้วในถังขยะเพื่อที่จะกู้คืน"
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -2280,6 +2281,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"เกิดข้อผิดพลาดขณะกำลังบันทึกเลเอาต์ของเอดิเตอร์\n"
+"ตรวจสอบให้แน่ใจว่าที่อยู่ข้อมูลผู้ใช้เอดิเตอร์สามารถแก้ไขได้"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2287,15 +2290,16 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"เลเอาต์เอดิเตอร์ดั้งเดิมถูกเขียนทับ\n"
+"เพื่อที่จะกู้คืนเลเอาต์ดั้งเดิมไปยังการตั้งค่าพื้นฐาน ใช้การตั้งค่า Delete Layout และลบเลเอาต์ตั้งเดิม"
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "ไม่พบชื่อเลย์เอาต์!"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
-msgstr "คืนเลย์เอาต์เป็นค่าเริ่มต้น"
+msgstr "คืนเลย์เอาต์ดั้งเดิมไปยังการตั้งค่าพื้นฐาน"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3690,9 +3694,8 @@ msgid "Move To..."
 msgstr "ย้ายไป..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Move to Trash"
-msgstr "เลื่อนออโต้โหลด"
+msgstr "ย้ายไปถังขยะ"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -8198,8 +8201,23 @@ msgid "Create a new rectangle."
 msgstr "สร้างสี่เหลี่ยมใหม่"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Rectangle"
+msgstr "วาดสี่เหลี่ยม"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "สร้างรูปหลายเหลี่ยมใหม่"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Polygon"
+msgstr "ย้ายรูปหลายเหลี่ยม"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "ลบสิ่งที่เลือก"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -11859,11 +11877,7 @@ msgstr "ที่อยู่ Android SDK ผิดพลาดสำหรั�
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Missing 'build-tools' directory!"
-msgstr ""
+msgstr "ไดเร็กทอรี 'platform-tools' หายไป!"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11912,22 +11926,6 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr "\"Export AAB\" จะใช้ได้เฉพาะเมื่อเปิดใช้งาน \"Use Custom Build\""
-
-#: platform/android/export/export.cpp
-msgid "Unable to find the zipalign tool."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Aligning APK..."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to complete APK alignment."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to delete unaligned APK."
-msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
@@ -12682,6 +12680,21 @@ msgstr "Varyings สามารถกำหนดในังก์ชันเ
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "ค่าคงที่ไม่สามารถแก้ไขได้"
+
+#~ msgid "Missing 'build-tools' directory!"
+#~ msgstr "ไดเร็กทอรี 'build-tools' หายไป!"
+
+#~ msgid "Unable to find the zipalign tool."
+#~ msgstr "ไม่สามารถหา zipalign tool"
+
+#~ msgid "Aligning APK..."
+#~ msgstr "จัดเรียง APK..."
+
+#~ msgid "Unable to complete APK alignment."
+#~ msgstr "ไม่สามารถจัดเรียง APK ได้สำเร็จ"
+
+#~ msgid "Unable to delete unaligned APK."
+#~ msgstr "ไม่สามารถลบ APK ที่ยังไม่จัดเรียง"
 
 #~ msgid "Error trying to save layout!"
 #~ msgstr "ผิดพลาดขณะบันทึกเลย์เอาต์!"

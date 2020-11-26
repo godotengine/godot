@@ -92,7 +92,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-08 10:26+0000\n"
+"PO-Revision-Date: 2020-11-20 23:08+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -102,7 +102,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.3.2\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1112,22 +1112,23 @@ msgid "Owners Of:"
 msgstr "Владельцы:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
-msgstr "Удалить выбранные файлы из проекта? (Нельзя восстановить)"
+msgstr ""
+"Удалить выбранные файлы из проекта? (Нельзя восстановить)\n"
+"Вы можете найти удалённые файлы в Корзине, чтобы восстановить их."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
 "Remove them anyway? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
 msgstr ""
-"Удаляемый файл требуется для правильной работы других ресурсов.\n"
-"Всё равно удалить его? (Нельзя отменить!)"
+"Удаляемые файлы требуются для правильной работы других ресурсов.\n"
+"Всё равно удалить их? (Нельзя отменить!)\n"
+"Вы можете найти удалённые файлы в Корзине, чтобы восстановить их."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -2391,6 +2392,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"Произошла ошибка при попытке сохранить макет редактора.\n"
+"Убедитесь, что путь к пользовательским данным редактора доступен для записи."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2398,15 +2401,17 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"Макет редактора по умолчанию перезаписан.\n"
+"Чтобы восстановить базовые настройки макета по умолчанию, воспользуйтесь "
+"опцией «Удалить макет» и удалите макет по умолчанию."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Название макета не найдено!"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
-msgstr "Вернуть макет по умолчанию к стандартному."
+msgstr "Макет по умолчанию восстановлен к его базовым настройкам."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3841,9 +3846,8 @@ msgid "Move To..."
 msgstr "Переместить в..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Move to Trash"
-msgstr "Переместить автозагрузку"
+msgstr "Удалить в Корзину"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -8391,8 +8395,23 @@ msgid "Create a new rectangle."
 msgstr "Создать новый прямоугольник."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Rectangle"
+msgstr "Прямоугольная покраска"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Создать новый полигон."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Polygon"
+msgstr "Передвинуть полигон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "Удалить выделенное"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -12140,11 +12159,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Missing 'build-tools' directory!"
-msgstr ""
+msgstr "Директория «platform-tools» отсутствует!"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12200,22 +12215,6 @@ msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 "«Export AAB» действителен только при включённой опции «Использовать "
 "пользовательскую сборку»."
-
-#: platform/android/export/export.cpp
-msgid "Unable to find the zipalign tool."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Aligning APK..."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to complete APK alignment."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to delete unaligned APK."
-msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
@@ -13027,6 +13026,21 @@ msgstr "Изменения могут быть назначены только �
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
+
+#~ msgid "Missing 'build-tools' directory!"
+#~ msgstr "Директория «build-tools» отсутствует!"
+
+#~ msgid "Unable to find the zipalign tool."
+#~ msgstr "Не удалось найти инструмент zipalign."
+
+#~ msgid "Aligning APK..."
+#~ msgstr "Выравнивание APK..."
+
+#~ msgid "Unable to complete APK alignment."
+#~ msgstr "Невозможно завершить выравнивание APK."
+
+#~ msgid "Unable to delete unaligned APK."
+#~ msgstr "Не удалось удалить невыровненный APK."
 
 #~ msgid "Error trying to save layout!"
 #~ msgstr "Ошибка при попытке сохранить макет!"

@@ -66,8 +66,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-17 11:07+0000\n"
-"Last-Translator: Artur Schönfeld <schoenfeld.artur@ymail.com>\n"
+"PO-Revision-Date: 2020-11-20 23:08+0000\n"
+"Last-Translator: Günther Bohn <ciscouser@gmx.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -1089,16 +1089,16 @@ msgid "Owners Of:"
 msgstr "Besitzer von:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
 msgstr ""
 "Ausgewählte Dateien aus dem Projekt entfernen? (Kann nicht rückgängig "
-"gemacht werden)"
+"gemacht werden.)\n"
+"Die Dateien können möglicherweise aus dem Papierkorb des Betriebssystems "
+"wiederhergestellt werden."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1107,7 +1107,9 @@ msgid ""
 msgstr ""
 "Andere Ressourcen benötigen die zu entfernenden Dateien, um richtig zu "
 "funktionieren.\n"
-"Trotzdem entfernen? (Kann nicht rückgängig gemacht werden)"
+"Trotzdem entfernen? (Kann nicht rückgängig gemacht werden.)\n"
+"Die Dateien können möglicherweise aus dem Papierkorb des Betriebssystems "
+"wiederhergestellt werden."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -2377,6 +2379,9 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"Ein Fehler ist beim Speichern des Editorlayouts aufgetreten.\n"
+"Möglicherweise ist der Ordner für persönliche Einstellungen des Editors "
+"nicht schreibbar."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2384,15 +2389,17 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"Standardlayout wurde überschrieben.\n"
+"Um das Standardlayout auf Werkseinstellungen zurückzusetzen, sollte das "
+"Standardlayout über die Option „Layout löschen“ gelöscht werden."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Layout-Name nicht gefunden!"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
-msgstr "Layout wurde auf die Standardeinstellungen zurückgesetzt."
+msgstr "Standardlayout wurde auf Werkseinstellungen zurückgesetzt."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3840,9 +3847,8 @@ msgid "Move To..."
 msgstr "Verschiebe zu..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Move to Trash"
-msgstr "Autoload verschieben"
+msgstr "In Papierkorb werfen"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -5766,7 +5772,7 @@ msgstr ""
 "oder skaliert werden (basierend auf Maske).\n"
 "Schlüsselbilder werden nur in existierende Spuren eingefügt, es werden keine "
 "neuen Spuren angelegt.\n"
-"Beim ersten Mal müssen Schlüsselbilder manuell eingefügt werden."
+"Das erste Mal müssen Schlüsselbilder manuell eingefügt werden."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Auto Insert Key"
@@ -6309,7 +6315,7 @@ msgstr "Aufwärts-Achse des Meshs:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Random Rotation:"
-msgstr "Zufällige Drehung:"
+msgstr "Zufälliges Drehen:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Random Tilt:"
@@ -8415,8 +8421,23 @@ msgid "Create a new rectangle."
 msgstr "Neues Rechteck erstellen."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Rectangle"
+msgstr "Rechteck zeichnen"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Neues Polygon erstellen."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Polygon"
+msgstr "Polygon verschieben"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "Auswahl löschen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -9513,9 +9534,8 @@ msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
 msgstr ""
-"Gibt den Abfall basierend auf dem Punktprodukt der Oberflächennormalen und "
-"der Blickrichtung der Kamera zurück (übergeben Sie die zugehörigen Eingaben "
-"an diese)."
+"Gibt den Abfall abgeleitet aus dem Skalarprodukt zwischen Flächennormale und "
+"Kamerablickrichtung zurück (zugeordnete Eingänge müssen übergeben werden)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -12182,11 +12202,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Missing 'build-tools' directory!"
-msgstr ""
+msgstr "‚platform-tools‘-Verzeichnis fehlt!"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12242,22 +12258,6 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr "„Export AAB“ ist nur gültig wenn „Use Custom Build“ aktiviert ist."
-
-#: platform/android/export/export.cpp
-msgid "Unable to find the zipalign tool."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Aligning APK..."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to complete APK alignment."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to delete unaligned APK."
-msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
@@ -13104,6 +13104,21 @@ msgstr "Varyings können nur in Vertex-Funktion zugewiesen werden."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanten können nicht verändert werden."
+
+#~ msgid "Missing 'build-tools' directory!"
+#~ msgstr "‚build-tools‘-Verzeichnis fehlt!"
+
+#~ msgid "Unable to find the zipalign tool."
+#~ msgstr "Das zipalign Hilfswerkzeug konnte nicht gefunden werden."
+
+#~ msgid "Aligning APK..."
+#~ msgstr "Richte APK aus..."
+
+#~ msgid "Unable to complete APK alignment."
+#~ msgstr "APK konnte nicht ausgerichtet werden."
+
+#~ msgid "Unable to delete unaligned APK."
+#~ msgstr "Nicht ausgerichtetes APK konnte nicht gelöscht werden."
 
 #~ msgid "Error trying to save layout!"
 #~ msgstr "Fehler beim Speichern des Layouts!"
