@@ -15,12 +15,13 @@
 # Tymofij Lytvynenko <till.svit@gmail.com>, 2020.
 # Vladislav Glinsky <cl0ne@mithril.org.ua>, 2020.
 # Микола Тимошенко <9081@ukr.net>, 2020.
+# Miroslav <zinmirx@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-10-30 10:21+0000\n"
-"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
+"PO-Revision-Date: 2020-11-23 21:42+0000\n"
+"Last-Translator: Miroslav <zinmirx@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -29,7 +30,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.3.2-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1047,24 +1048,24 @@ msgid "Owners Of:"
 msgstr "Власники:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
 msgstr ""
-"Вилучити позначені файли з проєкту? (Вилучені файли не вдасться відновити)"
+"Вилучити позначені файли з проєкту? (без можливості скасувати)\n"
+"Вилучені файли можна буде знайти і відновити у теці смітника системи."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
 "Remove them anyway? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
 msgstr ""
-"Файли, що видаляються, вимагаються іншими ресурсами, щоб вони могли "
-"працювати.\n"
-"Видалити їх у будь-якому разі? (скасування неможливе)"
+"Файли, які ви вилучаєте, потрібні для забезпечення працездатності інших "
+"ресурсів.\n"
+"Вилучити їх попри це? (без скасування)\n"
+"Вилучені файли можна знайти і відновити у теці смітника системи."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1775,7 +1776,7 @@ msgstr "Новий"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr "Імпортувати"
+msgstr "Імпорт"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -2328,6 +2329,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"Під час спроби зберегти компонування редактора сталася помилка.\n"
+"Переконайтеся, що каталог даних користувача є придатним до запису."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2335,15 +2338,17 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"Параметри типового компонування редактора перевизначено.\n"
+"Щоб відновити початкові параметри типово компонування, скористайтеся пунктом "
+"«Вилучити компонування» для вилучення типового компонування."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Назву компонування не знайдено!"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
-msgstr "Відновлено типове компонування за базовими параметрами."
+msgstr "Відновлено початкові параметри типового компонування."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3785,9 +3790,8 @@ msgid "Move To..."
 msgstr "Перемістити до..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Move to Trash"
-msgstr "Перемістити автозавантаження"
+msgstr "Пересунути до смітника"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -8345,8 +8349,23 @@ msgid "Create a new rectangle."
 msgstr "Створити прямокутник."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Rectangle"
+msgstr "Намалювати прямокутник"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Створити новий полігон."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Polygon"
+msgstr "Перемістити полігон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "Вилучити вибране"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -12104,11 +12123,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Missing 'build-tools' directory!"
-msgstr ""
+msgstr "Не знайдено каталогу «platform-tools»!"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12167,22 +12182,6 @@ msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 "Пункт «Експортувати AAB» є чинним, лише якщо увімкнено «Використовувати "
 "нетипове збирання»."
-
-#: platform/android/export/export.cpp
-msgid "Unable to find the zipalign tool."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Aligning APK..."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to complete APK alignment."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to delete unaligned APK."
-msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
@@ -13018,6 +13017,21 @@ msgstr "Змінні величини можна пов'язувати лише 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
+
+#~ msgid "Missing 'build-tools' directory!"
+#~ msgstr "Не знайдено каталогу «build-tools»!"
+
+#~ msgid "Unable to find the zipalign tool."
+#~ msgstr "Не вдалося знайти програму zipalign."
+
+#~ msgid "Aligning APK..."
+#~ msgstr "Вирівнюємо APK..."
+
+#~ msgid "Unable to complete APK alignment."
+#~ msgstr "Не вдалося завершити вирівнювання APK."
+
+#~ msgid "Unable to delete unaligned APK."
+#~ msgstr "Не вдалося вилучити невирівняний APK."
 
 #~ msgid "Error trying to save layout!"
 #~ msgstr "Помилка при спробі зберегти компонування!"
