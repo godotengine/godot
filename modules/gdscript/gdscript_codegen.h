@@ -98,7 +98,8 @@ public:
 	// virtual void alloc_stack(int p_level) = 0; // Is this needed?
 	// virtual void alloc_call(int p_arg_count) = 0; // This might be automatic from other functions.
 
-	virtual void write_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand, const Address &p_right_operand) = 0;
+	virtual void write_unary_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand) = 0;
+	virtual void write_binary_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand, const Address &p_right_operand) = 0;
 	virtual void write_type_test(const Address &p_target, const Address &p_source, const Address &p_type) = 0;
 	virtual void write_type_test_builtin(const Address &p_target, const Address &p_source, Variant::Type p_type) = 0;
 	virtual void write_and_left_operand(const Address &p_left_operand) = 0;
