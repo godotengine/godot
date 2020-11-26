@@ -217,7 +217,8 @@ public:
 	enum {
 		GIZMO_BASE_LAYER = 27,
 		GIZMO_EDIT_LAYER = 26,
-		GIZMO_GRID_LAYER = 25
+		GIZMO_GRID_LAYER = 25,
+		MISC_TOOL_LAYER = 24
 	};
 
 	enum NavigationScheme {
