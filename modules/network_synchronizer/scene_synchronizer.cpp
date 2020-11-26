@@ -1473,32 +1473,31 @@ void ServerSynchronizer::generate_snapshot_node_data(
 
 	if (node_has_changes) {
 		// Insert the node variables.
-		const int size = p_node_data->vars.size();
-		const NetUtility::VarData *vars = &p_node_data->vars[0];
-		for (int i = 0; i < size; i += 1) {
-			if (vars[i].enabled == false) {
+		for (uint32_t i = 0; i < p_node_data->vars.size(); i += 1) {
+			const NetUtility::VarData &var = p_node_data->vars[i];
+			if (var.enabled == false) {
 				continue;
 			}
 
-			if (p_force_full_snapshot == false && change->vars.has(vars[i].var.name) == false) {
+			if (p_force_full_snapshot == false && change->vars.has(var.var.name) == false) {
 				// This is a delta snapshot and this variable is the same as
 				// before. Skip it.
 				continue;
 			}
 
 			Variant var_info;
-			if (p_force_full_snapshot || change->uknown_vars.has(vars[i].var.name)) {
+			if (p_force_full_snapshot || change->uknown_vars.has(var.var.name)) {
 				Vector<Variant> _var_info;
 				_var_info.resize(2);
-				_var_info.write[0] = vars[i].id;
-				_var_info.write[1] = vars[i].var.name;
+				_var_info.write[0] = var.id;
+				_var_info.write[1] = var.var.name;
 				var_info = _var_info;
 			} else {
-				var_info = vars[i].id;
+				var_info = var.id;
 			}
 
 			r_snapshot_data.push_back(var_info);
-			r_snapshot_data.push_back(vars[i].var.value);
+			r_snapshot_data.push_back(var.var.value);
 		}
 	}
 
