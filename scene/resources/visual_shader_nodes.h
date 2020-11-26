@@ -448,6 +448,7 @@ public:
 	TextureType get_texture_type() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
 
 	VisualShaderNodeCubemap();
 };
