@@ -730,6 +730,23 @@ public:
 	virtual void viewport_set_global_canvas_transform(RID p_viewport, const Transform2D &p_transform) = 0;
 	virtual void viewport_set_canvas_stacking(RID p_viewport, RID p_canvas, int p_layer, int p_sublayer) = 0;
 
+	enum ViewportSDFOversize {
+		VIEWPORT_SDF_OVERSIZE_100_PERCENT,
+		VIEWPORT_SDF_OVERSIZE_120_PERCENT,
+		VIEWPORT_SDF_OVERSIZE_150_PERCENT,
+		VIEWPORT_SDF_OVERSIZE_200_PERCENT,
+		VIEWPORT_SDF_OVERSIZE_MAX
+	};
+
+	enum ViewportSDFScale {
+		VIEWPORT_SDF_SCALE_100_PERCENT,
+		VIEWPORT_SDF_SCALE_50_PERCENT,
+		VIEWPORT_SDF_SCALE_25_PERCENT,
+		VIEWPORT_SDF_SCALE_MAX
+	};
+
+	virtual void viewport_set_sdf_oversize_and_scale(RID p_viewport, ViewportSDFOversize p_oversize, ViewportSDFScale p_scale) = 0;
+
 	virtual void viewport_set_shadow_atlas_size(RID p_viewport, int p_size) = 0;
 	virtual void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) = 0;
 
@@ -1245,12 +1262,12 @@ public:
 	virtual void canvas_light_occluder_attach_to_canvas(RID p_occluder, RID p_canvas) = 0;
 	virtual void canvas_light_occluder_set_enabled(RID p_occluder, bool p_enabled) = 0;
 	virtual void canvas_light_occluder_set_polygon(RID p_occluder, RID p_polygon) = 0;
+	virtual void canvas_light_occluder_set_as_sdf_collision(RID p_occluder, bool p_enable) = 0;
 	virtual void canvas_light_occluder_set_transform(RID p_occluder, const Transform2D &p_xform) = 0;
 	virtual void canvas_light_occluder_set_light_mask(RID p_occluder, int p_mask) = 0;
 
 	virtual RID canvas_occluder_polygon_create() = 0;
 	virtual void canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const Vector<Vector2> &p_shape, bool p_closed) = 0;
-	virtual void canvas_occluder_polygon_set_shape_as_lines(RID p_occluder_polygon, const Vector<Vector2> &p_shape) = 0;
 
 	enum CanvasOccluderPolygonCullMode {
 		CANVAS_OCCLUDER_POLYGON_CULL_DISABLED,

@@ -3383,6 +3383,24 @@ void Viewport::pass_mouse_focus_to(Viewport *p_viewport, Control *p_control) {
 	}
 }
 
+void Viewport::set_sdf_oversize(SDFOversize p_sdf_oversize) {
+	ERR_FAIL_INDEX(p_sdf_oversize, SDF_OVERSIZE_MAX);
+	sdf_oversize = p_sdf_oversize;
+	RS::get_singleton()->viewport_set_sdf_oversize_and_scale(viewport, RS::ViewportSDFOversize(sdf_oversize), RS::ViewportSDFScale(sdf_scale));
+}
+Viewport::SDFOversize Viewport::get_sdf_oversize() const {
+	return sdf_oversize;
+}
+
+void Viewport::set_sdf_scale(SDFScale p_sdf_scale) {
+	ERR_FAIL_INDEX(p_sdf_scale, SDF_SCALE_MAX);
+	sdf_scale = p_sdf_scale;
+	RS::get_singleton()->viewport_set_sdf_oversize_and_scale(viewport, RS::ViewportSDFOversize(sdf_oversize), RS::ViewportSDFScale(sdf_scale));
+}
+Viewport::SDFScale Viewport::get_sdf_scale() const {
+	return sdf_scale;
+}
+
 void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_world_2d", "world_2d"), &Viewport::set_world_2d);
 	ClassDB::bind_method(D_METHOD("get_world_2d"), &Viewport::get_world_2d);
@@ -3482,6 +3500,12 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_canvas_item_texture_repeat", "mode"), &Viewport::set_default_canvas_item_texture_repeat);
 	ClassDB::bind_method(D_METHOD("get_default_canvas_item_texture_repeat"), &Viewport::get_default_canvas_item_texture_repeat);
 
+	ClassDB::bind_method(D_METHOD("set_sdf_oversize", "oversize"), &Viewport::set_sdf_oversize);
+	ClassDB::bind_method(D_METHOD("get_sdf_oversize"), &Viewport::get_sdf_oversize);
+
+	ClassDB::bind_method(D_METHOD("set_sdf_scale", "scale"), &Viewport::set_sdf_scale);
+	ClassDB::bind_method(D_METHOD("get_sdf_scale"), &Viewport::get_sdf_scale);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world_3d"), "set_use_own_world_3d", "is_using_own_world_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_3d", PROPERTY_HINT_RESOURCE_TYPE, "World3D"), "set_world_3d", "get_world_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_2d", PROPERTY_HINT_RESOURCE_TYPE, "World2D", 0), "set_world_2d", "get_world_2d");
@@ -3506,6 +3530,9 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_disable_input"), "set_disable_input", "is_input_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_embed_subwindows"), "set_embed_subwindows_hint", "get_embed_subwindows_hint");
+	ADD_GROUP("SDF", "sdf_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"), "set_sdf_oversize", "get_sdf_oversize");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_scale", PROPERTY_HINT_ENUM, "100%,50%,25%"), "set_sdf_scale", "get_sdf_scale");
 	ADD_GROUP("Shadow Atlas", "shadow_atlas_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_atlas_size"), "set_shadow_atlas_size", "get_shadow_atlas_size");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "shadow_atlas_quad_0", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv", 0);
@@ -3575,6 +3602,17 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX);
+
+	BIND_ENUM_CONSTANT(SDF_OVERSIZE_100_PERCENT);
+	BIND_ENUM_CONSTANT(SDF_OVERSIZE_120_PERCENT);
+	BIND_ENUM_CONSTANT(SDF_OVERSIZE_150_PERCENT);
+	BIND_ENUM_CONSTANT(SDF_OVERSIZE_200_PERCENT);
+	BIND_ENUM_CONSTANT(SDF_OVERSIZE_MAX);
+
+	BIND_ENUM_CONSTANT(SDF_SCALE_100_PERCENT);
+	BIND_ENUM_CONSTANT(SDF_SCALE_50_PERCENT);
+	BIND_ENUM_CONSTANT(SDF_SCALE_25_PERCENT);
+	BIND_ENUM_CONSTANT(SDF_SCALE_MAX);
 }
 
 Viewport::Viewport() {
@@ -3661,6 +3699,10 @@ Viewport::Viewport() {
 
 	default_canvas_item_texture_filter = DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	default_canvas_item_texture_repeat = DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+
+	sdf_oversize = SDF_OVERSIZE_120_PERCENT;
+	sdf_scale = SDF_SCALE_50_PERCENT;
+	set_sdf_oversize(SDF_OVERSIZE_120_PERCENT); //set to server
 }
 
 Viewport::~Viewport() {

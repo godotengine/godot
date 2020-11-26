@@ -68,7 +68,11 @@ void RenderingServerCanvas::_render_canvas_item_tree(RID p_to_render_target, Can
 
 	RENDER_TIMESTAMP("Render Canvas Items");
 
-	RSG::canvas_render->canvas_render_items(p_to_render_target, list, p_modulate, p_lights, p_directional_lights, p_transform, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
+	bool sdf_flag;
+	RSG::canvas_render->canvas_render_items(p_to_render_target, list, p_modulate, p_lights, p_directional_lights, p_transform, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, sdf_flag);
+	if (sdf_flag) {
+		sdf_used = true;
+	}
 }
 
 void _collect_ysort_children(RenderingServerCanvas::Item *p_canvas_item, Transform2D p_transform, RenderingServerCanvas::Item *p_material_owner, RenderingServerCanvas::Item **r_items, int &r_index) {
@@ -301,6 +305,7 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 void RenderingServerCanvas::render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_directional_lights, const Rect2 &p_clip_rect, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel) {
 	RENDER_TIMESTAMP(">Render Canvas");
 
+	sdf_used = false;
 	snapping_2d_transforms_to_pixel = p_snap_2d_transforms_to_pixel;
 
 	if (p_canvas->children_order_dirty) {
@@ -345,6 +350,10 @@ void RenderingServerCanvas::render_canvas(RID p_render_target, Canvas *p_canvas,
 	}
 
 	RENDER_TIMESTAMP("<End Render Canvas");
+}
+
+bool RenderingServerCanvas::was_sdf_used() {
+	return sdf_used;
 }
 
 RID RenderingServerCanvas::canvas_create() {
@@ -1266,6 +1275,11 @@ void RenderingServerCanvas::canvas_light_occluder_set_polygon(RID p_occluder, RI
 	}
 }
 
+void RenderingServerCanvas::canvas_light_occluder_set_as_sdf_collision(RID p_occluder, bool p_enable) {
+	RasterizerCanvas::LightOccluderInstance *occluder = canvas_light_occluder_owner.getornull(p_occluder);
+	ERR_FAIL_COND(!occluder);
+}
+
 void RenderingServerCanvas::canvas_light_occluder_set_transform(RID p_occluder, const Transform2D &p_xform) {
 	RasterizerCanvas::LightOccluderInstance *occluder = canvas_light_occluder_owner.getornull(p_occluder);
 	ERR_FAIL_COND(!occluder);
@@ -1287,53 +1301,24 @@ RID RenderingServerCanvas::canvas_occluder_polygon_create() {
 }
 
 void RenderingServerCanvas::canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const Vector<Vector2> &p_shape, bool p_closed) {
-	if (p_shape.size() < 3) {
-		canvas_occluder_polygon_set_shape_as_lines(p_occluder_polygon, p_shape);
-		return;
-	}
-
-	Vector<Vector2> lines;
-	int lc = p_shape.size() * 2;
-
-	lines.resize(lc - (p_closed ? 0 : 2));
-	{
-		Vector2 *w = lines.ptrw();
-		const Vector2 *r = p_shape.ptr();
-
-		int max = lc / 2;
-		if (!p_closed) {
-			max--;
-		}
-		for (int i = 0; i < max; i++) {
-			Vector2 a = r[i];
-			Vector2 b = r[(i + 1) % (lc / 2)];
-			w[i * 2 + 0] = a;
-			w[i * 2 + 1] = b;
-		}
-	}
-
-	canvas_occluder_polygon_set_shape_as_lines(p_occluder_polygon, lines);
-}
-
-void RenderingServerCanvas::canvas_occluder_polygon_set_shape_as_lines(RID p_occluder_polygon, const Vector<Vector2> &p_shape) {
 	LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.getornull(p_occluder_polygon);
 	ERR_FAIL_COND(!occluder_poly);
-	ERR_FAIL_COND(p_shape.size() & 1);
 
-	int lc = p_shape.size();
+	uint32_t pc = p_shape.size();
+	ERR_FAIL_COND(pc < 2);
+
 	occluder_poly->aabb = Rect2();
-	{
-		const Vector2 *r = p_shape.ptr();
-		for (int i = 0; i < lc; i++) {
-			if (i == 0) {
-				occluder_poly->aabb.position = r[i];
-			} else {
-				occluder_poly->aabb.expand_to(r[i]);
-			}
+	const Vector2 *r = p_shape.ptr();
+	for (uint32_t i = 0; i < pc; i++) {
+		if (i == 0) {
+			occluder_poly->aabb.position = r[i];
+		} else {
+			occluder_poly->aabb.expand_to(r[i]);
 		}
 	}
 
-	RSG::canvas_render->occluder_polygon_set_shape_as_lines(occluder_poly->occluder, p_shape);
+	RSG::canvas_render->occluder_polygon_set_shape(occluder_poly->occluder, p_shape, p_closed);
+
 	for (Set<RasterizerCanvas::LightOccluderInstance *>::Element *E = occluder_poly->owners.front(); E; E = E->next()) {
 		E->get()->aabb_cache = occluder_poly->aabb;
 	}

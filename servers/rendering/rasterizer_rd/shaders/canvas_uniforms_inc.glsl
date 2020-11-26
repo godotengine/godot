@@ -3,6 +3,8 @@
 
 #define M_PI 3.14159265359
 
+#define SDF_MAX_LENGTH 16384.0
+
 #define FLAGS_INSTANCING_STRIDE_MASK 0xF
 #define FLAGS_INSTANCING_ENABLED (1 << 4)
 #define FLAGS_INSTANCING_HAS_COLORS (1 << 5)
@@ -23,6 +25,19 @@
 
 #define FLAGS_DEFAULT_NORMAL_MAP_USED (1 << 26)
 #define FLAGS_DEFAULT_SPECULAR_MAP_USED (1 << 27)
+
+#define SAMPLER_NEAREST_CLAMP 0
+#define SAMPLER_LINEAR_CLAMP 1
+#define SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP 2
+#define SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP 3
+#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP 4
+#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP 5
+#define SAMPLER_NEAREST_REPEAT 6
+#define SAMPLER_LINEAR_REPEAT 7
+#define SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT 8
+#define SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT 9
+#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT 10
+#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT 11
 
 // Push Constant
 
@@ -68,8 +83,12 @@ layout(set = 0, binding = 1, std140) uniform CanvasData {
 	float time;
 	bool use_pixel_snap;
 
+	vec4 sdf_to_tex;
+	vec2 screen_to_sdf;
+	vec2 sdf_to_screen;
+
 	uint directional_light_count;
-	uint pad0;
+	float tex_to_sdf;
 	uint pad1;
 	uint pad2;
 }
@@ -115,10 +134,11 @@ layout(set = 0, binding = 4) uniform texture2D shadow_atlas_texture;
 layout(set = 0, binding = 5) uniform sampler shadow_sampler;
 
 layout(set = 0, binding = 6) uniform texture2D screen_texture;
+layout(set = 0, binding = 7) uniform texture2D sdf_texture;
 
-layout(set = 0, binding = 7) uniform sampler material_samplers[12];
+layout(set = 0, binding = 8) uniform sampler material_samplers[12];
 
-layout(set = 0, binding = 8, std430) restrict readonly buffer GlobalVariableData {
+layout(set = 0, binding = 9, std430) restrict readonly buffer GlobalVariableData {
 	vec4 data[];
 }
 global_variables;

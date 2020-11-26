@@ -5,6 +5,7 @@ Import("env")
 if "RD_GLSL" in env["BUILDERS"]:
     env.RD_GLSL("canvas.glsl")
     env.RD_GLSL("canvas_occlusion.glsl")
+    env.RD_GLSL("canvas_sdf.glsl")
     env.RD_GLSL("copy.glsl")
     env.RD_GLSL("copy_to_fb.glsl")
     env.RD_GLSL("cubemap_roughness.glsl")
