@@ -61,8 +61,8 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Disables Nagle's algorithm to improve latency for small packets.
-				[b]Note:[/b] For applications that send large packets or need to transfer a lot of data, this can decrease the total available bandwidth.
+				If [code]enabled[/code] is [code]true[/code], packets will be sent immediately. If [code]enabled[/code] is [code]false[/code] (the default), packet transfers will be delayed and combined using [url=https://en.wikipedia.org/wiki/Nagle%27s_algorithm]Nagle's algorithm[/url].
+				[b]Note:[/b] It's recommended to leave this disabled for applications that send large packets or need to transfer a lot of data, as enabling this can decrease the total available bandwidth.
 			</description>
 		</method>
 	</methods>
