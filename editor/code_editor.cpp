@@ -536,7 +536,7 @@ void FindReplaceBar::_search_text_changed(const String &p_text) {
 }
 
 void FindReplaceBar::_search_text_entered(const String &p_text) {
-	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (Input::get_singleton()->is_modifier_pressed(KEY_MASK_SHIFT)) {
 		search_prev();
 	} else {
 		search_next();
@@ -547,7 +547,7 @@ void FindReplaceBar::_replace_text_entered(const String &p_text) {
 	if (selection_only->is_pressed() && text_editor->is_selection_active()) {
 		_replace_all();
 		_hide_bar();
-	} else if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	} else if (Input::get_singleton()->is_modifier_pressed(KEY_MASK_SHIFT)) {
 		_replace();
 		search_prev();
 	} else {

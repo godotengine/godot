@@ -45,12 +45,6 @@ static _WinTranslatePair _vk_to_keycode[] = {
 
 	{ KEY_ENTER, VK_RETURN }, //(0x0D)
 
-	{ KEY_SHIFT, VK_SHIFT }, //(0x10)
-
-	{ KEY_CONTROL, VK_CONTROL }, //(0x11)
-
-	{ KEY_ALT, VK_MENU }, //(0x12)
-
 	{ KEY_PAUSE, VK_PAUSE }, //(0x13)
 
 	{ KEY_CAPSLOCK, VK_CAPITAL }, //(0x14)
@@ -126,8 +120,8 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ KEY_Y, (0x59) }, ////Y key
 	{ KEY_Z, (0x5A) }, ////Z key
 
-	{ KEY_MASK_META, VK_LWIN }, //(0x5B)
-	{ KEY_MASK_META, VK_RWIN }, //(0x5C)
+	{ KEY_LEFT_META, VK_LWIN }, //(0x5B)
+	{ KEY_RIGHT_META, VK_RWIN }, //(0x5C)
 	{ KEY_MENU, VK_APPS }, //(0x5D)
 	{ KEY_STANDBY, VK_SLEEP }, //(0x5F)
 	{ KEY_KP_0, VK_NUMPAD0 }, //(0x60)
@@ -164,12 +158,12 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ KEY_F16, VK_F16 }, // (0x7F)
 	{ KEY_NUMLOCK, VK_NUMLOCK }, // (0x90)
 	{ KEY_SCROLLLOCK, VK_SCROLL }, // (0x91)
-	{ KEY_SHIFT, VK_LSHIFT }, // (0xA0)
-	{ KEY_SHIFT, VK_RSHIFT }, // (0xA1)
-	{ KEY_CONTROL, VK_LCONTROL }, // (0xA2)
-	{ KEY_CONTROL, VK_RCONTROL }, // (0xA3)
-	{ KEY_MENU, VK_LMENU }, // (0xA4)
-	{ KEY_MENU, VK_RMENU }, // (0xA5)
+	{ KEY_LEFT_SHIFT, VK_LSHIFT }, // (0xA0)
+	{ KEY_RIGHT_SHIFT, VK_RSHIFT }, // (0xA1)
+	{ KEY_LEFT_CONTROL, VK_LCONTROL }, // (0xA2)
+	{ KEY_RIGHT_CONTROL, VK_RCONTROL }, // (0xA3)
+	{ KEY_LEFT_ALT, VK_LMENU }, // (0xA4)
+	{ KEY_RIGHT_ALT, VK_RMENU }, // (0xA5)
 
 	{ KEY_BACK, VK_BROWSER_BACK }, // (0xA6)
 
@@ -265,7 +259,7 @@ static _WinTranslatePair _scancode_to_keycode[] = {
 	{ KEY_BRACELEFT, 0x1A },
 	{ KEY_BRACERIGHT, 0x1B },
 	{ KEY_ENTER, 0x1C },
-	{ KEY_CONTROL, 0x1D },
+	{ KEY_LEFT_CONTROL, 0x1D },
 	{ KEY_A, 0x1E },
 	{ KEY_S, 0x1F },
 	{ KEY_D, 0x20 },
@@ -278,7 +272,7 @@ static _WinTranslatePair _scancode_to_keycode[] = {
 	{ KEY_SEMICOLON, 0x27 },
 	{ KEY_APOSTROPHE, 0x28 },
 	{ KEY_QUOTELEFT, 0x29 },
-	{ KEY_SHIFT, 0x2A },
+	{ KEY_LEFT_SHIFT, 0x2A },
 	{ KEY_BACKSLASH, 0x2B },
 	{ KEY_Z, 0x2C },
 	{ KEY_X, 0x2D },
@@ -290,9 +284,9 @@ static _WinTranslatePair _scancode_to_keycode[] = {
 	{ KEY_COMMA, 0x33 },
 	{ KEY_PERIOD, 0x34 },
 	{ KEY_SLASH, 0x35 },
-	{ KEY_SHIFT, 0x36 },
+	{ KEY_RIGHT_SHIFT, 0x36 },
 	{ KEY_PRINT, 0x37 },
-	{ KEY_ALT, 0x38 },
+	{ KEY_LEFT_ALT, 0x38 },
 	{ KEY_SPACE, 0x39 },
 	{ KEY_CAPSLOCK, 0x3A },
 	{ KEY_F1, 0x3B },
@@ -323,8 +317,8 @@ static _WinTranslatePair _scancode_to_keycode[] = {
 	//{ KEY_???, 0x56 }, //NON US BACKSLASH
 	{ KEY_F11, 0x57 },
 	{ KEY_F12, 0x58 },
-	{ KEY_META, 0x5B },
-	{ KEY_META, 0x5C },
+	{ KEY_LEFT_META, 0x5B },
+	{ KEY_RIGHT_META, 0x5C },
 	{ KEY_MENU, 0x5D },
 	{ KEY_F13, 0x64 },
 	{ KEY_F14, 0x65 },
@@ -336,8 +330,6 @@ static _WinTranslatePair _scancode_to_keycode[] = {
 unsigned int KeyMappingWindows::get_keysym(unsigned int p_code) {
 	for (int i = 0; _vk_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
 		if (_vk_to_keycode[i].keycode == p_code) {
-			//printf("outcode: %x\n",_vk_to_keycode[i].keysym);
-
 			return _vk_to_keycode[i].keysym;
 		}
 	}
@@ -365,6 +357,12 @@ unsigned int KeyMappingWindows::get_scansym(unsigned int p_code, bool p_extended
 			case KEY_CAPSLOCK: {
 				keycode = KEY_KP_ADD;
 			} break;
+			case KEY_LEFT_ALT: {
+				keycode = KEY_RIGHT_ALT;
+			}
+			case KEY_LEFT_CONTROL: {
+				keycode = KEY_RIGHT_CONTROL;
+			}
 		}
 	} else {
 		switch (keycode) {

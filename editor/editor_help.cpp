@@ -1973,7 +1973,7 @@ void FindBar::_search_text_changed(const String &p_text) {
 }
 
 void FindBar::_search_text_entered(const String &p_text) {
-	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (Input::get_singleton()->is_modifier_pressed(KEY_MASK_SHIFT)) {
 		search_prev();
 	} else {
 		search_next();

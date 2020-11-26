@@ -1599,7 +1599,7 @@ real_t CustomPropertyEditor::_parse_real_expression(String text) {
 }
 
 void CustomPropertyEditor::_emit_changed_whole_or_field() {
-	if (!Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (!Input::get_singleton()->is_modifier_pressed(KEY_MASK_SHIFT)) {
 		emit_signal("variant_changed");
 	} else {
 		emit_signal("variant_field_changed", field_names[focused_value_editor]);

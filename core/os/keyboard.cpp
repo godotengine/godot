@@ -68,14 +68,13 @@ static const _KeyCodeText _keycodes[] = {
 		{KEY_DOWN                          ,"Down"},
 		{KEY_PAGEUP                        ,"PageUp"},
 		{KEY_PAGEDOWN                      ,"PageDown"},
-		{KEY_SHIFT                         ,"Shift"},
-		{KEY_CONTROL                       ,"Control"},
-#ifdef OSX_ENABLED
-		{KEY_META                          ,"Command"},
+#ifdef APPLE_STYLE_KEYS
+		{KEY_LEFT_META                     ,"Left Command"},
+		{KEY_RIGHT_META					   ,"Right Command"},
 #else
-		{KEY_META                          ,"Meta"},
+		{KEY_LEFT_META                     ,"Left Meta"},
+		{KEY_RIGHT_META					   ,"Right Meta"},
 #endif
-		{KEY_ALT                           ,"Alt"},
 		{KEY_CAPSLOCK                      ,"CapsLock"},
 		{KEY_NUMLOCK                       ,"NumLock"},
 		{KEY_SCROLLLOCK                    ,"ScrollLock"},
@@ -157,6 +156,13 @@ static const _KeyCodeText _keycodes[] = {
 		{KEY_LAUNCHD                       ,"LaunchD"},
 		{KEY_LAUNCHE                       ,"LaunchE"},
 		{KEY_LAUNCHF                       ,"LaunchF"},
+
+		{KEY_LEFT_SHIFT                    ,"Left Shift"},
+		{KEY_RIGHT_SHIFT                   ,"Right Shift"},
+		{KEY_LEFT_CONTROL                  ,"Left Control"},
+		{KEY_RIGHT_CONTROL	               ,"Right Control"},
+		{KEY_LEFT_ALT                      ,"Left Alt"},
+		{KEY_RIGHT_ALT                     ,"Right Alt"},
 
 		{KEY_UNKNOWN                       ,"Unknown"},
 
@@ -322,10 +328,6 @@ bool keycode_has_unicode(uint32_t p_keycode) {
 		case KEY_DOWN:
 		case KEY_PAGEUP:
 		case KEY_PAGEDOWN:
-		case KEY_SHIFT:
-		case KEY_CONTROL:
-		case KEY_META:
-		case KEY_ALT:
 		case KEY_CAPSLOCK:
 		case KEY_NUMLOCK:
 		case KEY_SCROLLLOCK:
@@ -393,6 +395,14 @@ bool keycode_has_unicode(uint32_t p_keycode) {
 		case KEY_LAUNCHD:
 		case KEY_LAUNCHE:
 		case KEY_LAUNCHF:
+		case KEY_LEFT_SHIFT:
+		case KEY_RIGHT_SHIFT:
+		case KEY_LEFT_CONTROL:
+		case KEY_RIGHT_CONTROL:
+		case KEY_LEFT_ALT:
+		case KEY_RIGHT_ALT:
+		case KEY_LEFT_META:
+		case KEY_RIGHT_META:
 			return false;
 	}
 
@@ -402,11 +412,11 @@ bool keycode_has_unicode(uint32_t p_keycode) {
 String keycode_get_string(uint32_t p_code) {
 	String codestr;
 	if (p_code & KEY_MASK_SHIFT) {
-		codestr += find_keycode_name(KEY_SHIFT);
+		codestr += find_keycode_name(KEY_MASK_SHIFT);
 		codestr += "+";
 	}
 	if (p_code & KEY_MASK_ALT) {
-		codestr += find_keycode_name(KEY_ALT);
+		codestr += find_keycode_name(KEY_MASK_ALT);
 		codestr += "+";
 	}
 	if (p_code & KEY_MASK_CONTROL) {
@@ -414,7 +424,7 @@ String keycode_get_string(uint32_t p_code) {
 		codestr += "+";
 	}
 	if (p_code & KEY_MASK_META) {
-		codestr += find_keycode_name(KEY_META);
+		codestr += find_keycode_name(KEY_MASK_META);
 		codestr += "+";
 	}
 

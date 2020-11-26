@@ -1193,11 +1193,7 @@ void VisualScriptEditor::_member_selected() {
 	selected = ti->get_metadata(0);
 
 	if (ti->get_parent() == members->get_root()->get_children()) {
-#ifdef OSX_ENABLED
-		bool held_ctrl = Input::get_singleton()->is_key_pressed(KEY_META);
-#else
-		bool held_ctrl = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
-#endif
+		bool held_ctrl = Input::get_singleton()->is_modifier_pressed(KEY_MASK_COMMAND);
 		if (held_ctrl) {
 			ERR_FAIL_COND(!script->has_function(selected));
 			_center_on_node(selected, script->get_function_node_id(selected));
@@ -2027,27 +2023,15 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 						String(d["type"]) == "files" ||
 						String(d["type"]) == "nodes")) {
 			if (String(d["type"]) == "obj_property") {
-#ifdef OSX_ENABLED
-				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Getter. Hold Shift to drop a generic signature."), find_keycode_name(KEY_META)));
-#else
-				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."));
-#endif
+				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Getter. Hold Shift to drop a generic signature."), find_keycode_name(KEY_MASK_COMMAND)));
 			}
 
 			if (String(d["type"]) == "nodes") {
-#ifdef OSX_ENABLED
-				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a simple reference to the node."), find_keycode_name(KEY_META)));
-#else
-				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a simple reference to the node."));
-#endif
+				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a simple reference to the node."), find_keycode_name(KEY_MASK_COMMAND)));
 			}
 
 			if (String(d["type"]) == "visual_script_variable_drag") {
-#ifdef OSX_ENABLED
-				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Variable Setter."), find_keycode_name(KEY_META)));
-#else
-				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a Variable Setter."));
-#endif
+				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Variable Setter."), find_keycode_name(KEY_MASK_COMMAND)));
 			}
 
 			return true;
@@ -2113,11 +2097,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (String(d["type"]) == "visual_script_variable_drag") {
-#ifdef OSX_ENABLED
-		bool use_set = Input::get_singleton()->is_key_pressed(KEY_META);
-#else
-		bool use_set = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
-#endif
+		bool use_set = Input::get_singleton()->is_modifier_pressed(KEY_MASK_COMMAND);
 		Vector2 ofs = graph->get_scroll_ofs() + p_point;
 		if (graph->is_using_snap()) {
 			int snap = graph->get_snap();
@@ -2301,11 +2281,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 			return;
 		}
 
-#ifdef OSX_ENABLED
-		bool use_node = Input::get_singleton()->is_key_pressed(KEY_META);
-#else
-		bool use_node = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
-#endif
+		bool use_node = Input::get_singleton()->is_modifier_pressed(KEY_MASK_COMMAND);
 
 		Array nodes = d["nodes"];
 
@@ -2364,7 +2340,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	if (String(d["type"]) == "obj_property") {
 		Node *sn = _find_script_node(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root(), script);
 
-		if (!sn && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		if (!sn && !Input::get_singleton()->is_modifier_pressed(KEY_MASK_SHIFT)) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("Can't drop properties because script '%s' is not used in this scene.\nDrop holding 'Shift' to just copy the signature."), get_name()));
 			return;
 		}
@@ -2384,13 +2360,10 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		}
 
 		ofs /= EDSCALE;
-#ifdef OSX_ENABLED
-		bool use_get = Input::get_singleton()->is_key_pressed(KEY_META);
-#else
-		bool use_get = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
-#endif
 
-		if (!node || Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		bool use_get = Input::get_singleton()->is_modifier_pressed(KEY_MASK_COMMAND);
+
+		if (!node || Input::get_singleton()->is_modifier_pressed(KEY_MASK_SHIFT)) {
 			if (use_get) {
 				undo_redo->create_action(TTR("Add Getter Property"));
 			} else {

@@ -3966,7 +3966,7 @@ bool AnimationTrackEditor::is_selection_active() const {
 }
 
 bool AnimationTrackEditor::is_snap_enabled() const {
-	return snap->is_pressed() ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+	return snap->is_pressed() ^ Input::get_singleton()->is_modifier_pressed(KEY_MASK_COMMAND);
 }
 
 void AnimationTrackEditor::_update_tracks() {

@@ -2555,7 +2555,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 			return;
 		} else {
-			if (k->get_keycode() != KEY_SHIFT) {
+			if (!k->is_keycode_modifier(KEY_MASK_SHIFT)) {
 				last_keypress = 0;
 			}
 		}

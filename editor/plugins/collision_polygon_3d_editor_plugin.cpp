@@ -317,7 +317,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 
 			Vector2 cpoint(spoint.x, spoint.y);
 
-			if (snap_ignore && !Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+			if (snap_ignore && !Input::get_singleton()->is_modifier_pressed(KEY_MASK_COMMAND)) {
 				snap_ignore = false;
 			}
 

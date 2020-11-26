@@ -2454,13 +2454,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	if (k.is_valid()) {
 		k = k->duplicate(); // It will be modified later on.
-
-#ifdef OSX_ENABLED
-		if (k->get_keycode() == KEY_META) {
-#else
-		if (k->get_keycode() == KEY_CONTROL) {
-
-#endif
+		if (k->is_keycode_modifier(KEY_MASK_COMMAND)) {
 			if (select_identifiers_enabled) {
 				if (k->is_pressed() && !dragging_minimap && !dragging_selection) {
 					Point2 mp = _get_local_mouse_pos();
@@ -2566,7 +2560,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						return;
 					}
 
-					if (k->get_keycode() == KEY_SHIFT) {
+					if (k->is_keycode_modifier(KEY_MASK_SHIFT)) {
 						accept_event();
 						return;
 					}

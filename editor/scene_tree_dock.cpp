@@ -1056,7 +1056,7 @@ void SceneTreeDock::_node_collapsed(Object *p_obj) {
 		return;
 	}
 
-	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (Input::get_singleton()->is_modifier_pressed(KEY_MASK_SHIFT)) {
 		_set_collapsed_recursive(ti, ti->is_collapsed());
 	}
 }
@@ -2383,7 +2383,7 @@ void SceneTreeDock::_nodes_dragged(Array p_nodes, NodePath p_to, int p_type) {
 	int to_pos = -1;
 
 	_normalize_drop(to_node, to_pos, p_type);
-	_do_reparent(to_node, to_pos, nodes, !Input::get_singleton()->is_key_pressed(KEY_SHIFT));
+	_do_reparent(to_node, to_pos, nodes, !Input::get_singleton()->is_modifier_pressed(KEY_MASK_SHIFT));
 }
 
 void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {

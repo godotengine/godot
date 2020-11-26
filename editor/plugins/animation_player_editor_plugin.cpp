@@ -463,7 +463,7 @@ double AnimationPlayerEditor::_get_editor_step() const {
 		ERR_FAIL_COND_V(!anim.is_valid(), 0.0);
 
 		// Use more precise snapping when holding Shift
-		return Input::get_singleton()->is_key_pressed(KEY_SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
+		return Input::get_singleton()->is_modifier_pressed(KEY_MASK_SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
 	}
 
 	return 0.0;

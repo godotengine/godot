@@ -2185,7 +2185,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				}
 			}
 			if (!to_move.empty()) {
-				if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+				if (Input::get_singleton()->is_modifier_pressed(KEY_MASK_COMMAND)) {
 					for (int i = 0; i < to_move.size(); i++) {
 						String new_path;
 						String new_path_base;

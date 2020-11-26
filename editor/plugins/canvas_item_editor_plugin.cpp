@@ -332,7 +332,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 	snap_target[0] = SNAP_TARGET_NONE;
 	snap_target[1] = SNAP_TARGET_NONE;
 
-	bool is_snap_active = smart_snap_active ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+	bool is_snap_active = smart_snap_active ^ Input::get_singleton()->is_modifier_pressed(KEY_MASK_COMMAND);
 
 	// Smart snap using the canvas position
 	Vector2 output = p_target;
@@ -460,7 +460,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 }
 
 float CanvasItemEditor::snap_angle(float p_target, float p_start) const {
-	if (((smart_snap_active || snap_rotation) ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL)) && snap_rotation_step != 0) {
+	if (((smart_snap_active || snap_rotation) ^ Input::get_singleton()->is_modifier_pressed(KEY_MASK_COMMAND)) && snap_rotation_step != 0) {
 		if (snap_relative) {
 			return Math::stepify(p_target - snap_rotation_offset, snap_rotation_step) + snap_rotation_offset + (p_start - (int)(p_start / snap_rotation_step) * snap_rotation_step);
 		} else {
@@ -479,7 +479,9 @@ void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	if (k.is_valid()) {
-		if (k->get_keycode() == KEY_CONTROL || k->get_keycode() == KEY_ALT || k->get_keycode() == KEY_SHIFT) {
+		if (k->is_keycode_modifier(KEY_MASK_COMMAND) ||
+				k->is_keycode_modifier(KEY_MASK_ALT) ||
+				k->is_keycode_modifier(KEY_MASK_SHIFT)) {
 			viewport->update();
 		}
 
@@ -2023,7 +2025,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 			Transform2D simple_xform = (viewport->get_transform() * unscaled_transform).affine_inverse() * transform;
 
 			bool uniform = m->get_shift();
-			bool is_ctrl = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+			bool is_ctrl = Input::get_singleton()->is_modifier_pressed(KEY_MASK_COMMAND);
 
 			Point2 drag_from_local = simple_xform.xform(drag_from);
 			Point2 drag_to_local = simple_xform.xform(drag_to);
@@ -3502,8 +3504,8 @@ void CanvasItemEditor::_draw_selection() {
 			}
 
 			// Draw the move handles
-			bool is_ctrl = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
-			bool is_alt = Input::get_singleton()->is_key_pressed(KEY_ALT);
+			bool is_ctrl = Input::get_singleton()->is_modifier_pressed(KEY_MASK_COMMAND);
+			bool is_alt = Input::get_singleton()->is_modifier_pressed(KEY_MASK_ALT);
 			if (tool == TOOL_MOVE && show_transformation_gizmos) {
 				if (_is_node_movable(canvas_item)) {
 					Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
@@ -3539,7 +3541,7 @@ void CanvasItemEditor::_draw_selection() {
 					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 
 					Size2 scale_factor = Size2(SCALE_HANDLE_DISTANCE, SCALE_HANDLE_DISTANCE);
-					bool uniform = Input::get_singleton()->is_key_pressed(KEY_SHIFT);
+					bool uniform = Input::get_singleton()->is_modifier_pressed(KEY_MASK_SHIFT);
 					Point2 offset = (simple_xform.affine_inverse().xform(drag_to) - simple_xform.affine_inverse().xform(drag_from)) * zoom;
 
 					if (drag_type == DRAG_SCALE_X) {
@@ -6491,8 +6493,8 @@ bool CanvasItemEditorViewport::_only_packed_scenes_selected() const {
 }
 
 void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p_data) {
-	bool is_shift = Input::get_singleton()->is_key_pressed(KEY_SHIFT);
-	bool is_alt = Input::get_singleton()->is_key_pressed(KEY_ALT);
+	bool is_shift = Input::get_singleton()->is_modifier_pressed(KEY_MASK_SHIFT);
+	bool is_alt = Input::get_singleton()->is_modifier_pressed(KEY_MASK_ALT);
 
 	selected_files.clear();
 	Dictionary d = p_data;

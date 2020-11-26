@@ -1466,7 +1466,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid() && k->is_pressed()) {
-		if (last_tool == TOOL_NONE && tool == TOOL_PICKING && k->get_keycode() == KEY_SHIFT && k->get_command()) {
+		if (last_tool == TOOL_NONE && tool == TOOL_PICKING && k->is_keycode_modifier(KEY_MASK_SHIFT) && k->get_command()) {
 			// trying to draw a rectangle with the painting tool, so change to the correct tool
 			tool = last_tool;
 
@@ -1608,16 +1608,12 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	} else if (k.is_valid()) { // Release event.
 
 		if (tool == TOOL_NONE) {
-			if (k->get_keycode() == KEY_SHIFT && k->get_command()) {
+			if (k->is_keycode_modifier(KEY_MASK_SHIFT) && k->get_command()) {
 				tool = TOOL_PICKING;
 				_update_button_tool();
 			}
 		} else if (tool == TOOL_PICKING) {
-#ifdef APPLE_STYLE_KEYS
-			if (k->get_keycode() == KEY_META) {
-#else
-			if (k->get_keycode() == KEY_CONTROL) {
-#endif
+			if (k->is_keycode_modifier(KEY_MASK_COMMAND)) {
 				// Go back to that last tool if KEY_CONTROL was released.
 				tool = last_tool;
 

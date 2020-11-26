@@ -2404,13 +2404,13 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	//don't set mod state if modifier keys are released by themselves
 	//else event.is_action() will not work correctly here
 	if (!k->is_pressed()) {
-		if (k->get_keycode() == KEY_SHIFT) {
+		if (k->get_keycode() == KEY_LEFT_SHIFT || k->get_keycode() == KEY_RIGHT_SHIFT) {
 			k->set_shift(false);
-		} else if (k->get_keycode() == KEY_CONTROL) {
+		} else if (k->get_keycode() == KEY_LEFT_CONTROL || k->get_keycode() == KEY_RIGHT_CONTROL) {
 			k->set_control(false);
-		} else if (k->get_keycode() == KEY_ALT) {
+		} else if (k->get_keycode() == KEY_LEFT_ALT || k->get_keycode() == KEY_RIGHT_ALT) {
 			k->set_alt(false);
-		} else if (k->get_keycode() == KEY_META) {
+		} else if (k->get_keycode() == KEY_LEFT_META || k->get_keycode() == KEY_RIGHT_META) {
 			k->set_metakey(false);
 		}
 	}

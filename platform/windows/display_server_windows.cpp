@@ -2785,6 +2785,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
+WPARAM DisplayServerWindows::_map_left_right_keys(WPARAM wParam, LPARAM lParam) {
+	UINT scancode = (lParam >> 16) & 0xFF; // Scancode in the 8 bits 16 - 23.
+	int extended = lParam & (1 << 24); // Extended key flag in bit 24
+
+	// Need to use MapVirtualKey for shift, and the extended key flag for Control and Alt
+	switch (wParam) {
+		case VK_SHIFT:
+			return MapVirtualKey(scancode, MAPVK_VSC_TO_VK_EX);
+		case VK_CONTROL:
+			return extended ? VK_RCONTROL : VK_LCONTROL;
+		case VK_MENU:
+			return extended ? VK_RMENU : VK_LMENU;
+		default:
+			return wParam;
+	}
+}
+
 void DisplayServerWindows::_process_key_events() {
 	for (int i = 0; i < key_event_pos; i++) {
 		KeyEvent &ke = key_event_buffer[i];
@@ -2852,7 +2869,7 @@ void DisplayServerWindows::_process_key_events() {
 					// Special case for Numpad Enter key
 					k->set_keycode(KEY_KP_ENTER);
 				} else {
-					k->set_keycode(KeyMappingWindows::get_keysym(ke.wParam));
+					k->set_keycode(KeyMappingWindows::get_keysym(_map_left_right_keys(ke.wParam, ke.lParam)));
 				}
 
 				k->set_physical_keycode(KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24)));

@@ -523,16 +523,16 @@ void DisplayServerAndroid::process_key_event(int p_keycode, int p_scancode, int 
 	int keycode = android_get_keysym(p_keycode);
 	int phy_keycode = android_get_keysym(p_scancode);
 
-	if (keycode == KEY_SHIFT) {
+	if (keycode == KEY_LEFT_SHIFT || keycode == KEY_RIGHT_SHIFT) {
 		shift_mem = p_pressed;
 	}
-	if (keycode == KEY_ALT) {
+	if (keycode == KEY_LEFT_ALT || keycode == KEY_RIGHT_ALT) {
 		alt_mem = p_pressed;
 	}
-	if (keycode == KEY_CONTROL) {
+	if (keycode == KEY_LEFT_CONTROL || keycode == KEY_RIGHT_CONTROL) {
 		control_mem = p_pressed;
 	}
-	if (keycode == KEY_META) {
+	if (keycode == KEY_LEFT_META || keycode == KEY_RIGHT_META) {
 		meta_mem = p_pressed;
 	}
 

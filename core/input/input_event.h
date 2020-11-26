@@ -243,6 +243,8 @@ public:
 	void set_echo(bool p_enable);
 	virtual bool is_echo() const override;
 
+	bool is_keycode_modifier(int p_modifier_mask) const;
+
 	uint32_t get_keycode_with_modifiers() const;
 	uint32_t get_physical_keycode_with_modifiers() const;
 
