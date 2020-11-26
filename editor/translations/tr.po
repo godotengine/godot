@@ -59,8 +59,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-10-12 09:28+0000\n"
-"Last-Translator: Suleyman Poyraz <zaryob.dev@gmail.com>\n"
+"PO-Revision-Date: 2020-11-25 14:10+0000\n"
+"Last-Translator: Zsosu Ktosu <zktosu@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -68,7 +68,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1078,22 +1078,25 @@ msgid "Owners Of:"
 msgstr "Şunların sahipleri:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
-msgstr "Seçili dosyaları projeden kaldır? (Geri alınamaz)"
+msgstr ""
+"Seçilen dosyalar kaldırılsın mı? (geri alınamaz)\n"
+"Kaldırılan dosyaları sistemin geri dönüşüm kutusunda bulabilir ve geri "
+"yükleyebilirsiniz."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
 "Remove them anyway? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
 msgstr ""
-"Kaldırılmakta olan dosyalar başka kaynakların çalışması için gerekli.\n"
-"Yine de kaldırmak istiyor musunuz? (geri alınamaz)"
+"Diğer kimi dosyaların çalışması için kaldırdığınız dosyalar gerekli "
+"görülmekte.\n"
+"Yine de kaldırılsın mı? (geri alınamaz)\n"
+"Kaldırılan dosyaların sistemin geri dönüşüm kutusunda bulabilirsiniz."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1647,16 +1650,14 @@ msgstr ""
 "Fallback Enabled' seçeneğini devre dışı bırakın."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for GLES2. Enable "
 "'Import Pvrtc' in Project Settings."
 msgstr ""
-"Hedef platform GLES2 için 'ETC' doku sıkıştırma gerekiyor. Proje "
-"Ayarları'nda 'Import Etc' etkinleştirin."
+"Hedef platform GLES2 için 'PVRTC' sıkıştırma biçimini gerektirmekte.. Proje "
+"Ayarlarındaki 'Pvrtc içe aktar' seçeneğini etkinleştirin."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
@@ -1665,7 +1666,6 @@ msgstr ""
 "Ayarları'nda 'Import Etc 2' etkinleştirin."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for the driver fallback "
 "to GLES2.\n"
@@ -2358,6 +2358,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"Düzenleyici arayüzünü kaydederken hata meydana geldi.\n"
+"Düzenleyici için kullanıcı veri yolunun yazma izninin olduğundan emin olunuz."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2365,13 +2367,15 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"Varsayılan arayüz değiştirildi.\n"
+"Varsayılan arayüz temel ayarlarını geri yüklemek için, Arayüz silme "
+"seçeneğini kullanarak Varsayılan Arayüz'ü silin."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Yerleşim Düzeni adı bulunamadı!"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
 msgstr "Varsayılan yerleşim düzeni temel ayarlarına geri döndürüldü."
 
@@ -3809,9 +3813,8 @@ msgid "Move To..."
 msgstr "Şuraya Taşı..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Move to Trash"
-msgstr "KendindenYüklenme'yi Taşı"
+msgstr "Çöpe At"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -4580,7 +4583,7 @@ msgstr "Sonraki Değişeni Karıştır"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Blend Time"
-msgstr "Oluşturma Süresini Değiştir"
+msgstr "Harmanlama Süresini Değiştir"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
@@ -5277,50 +5280,43 @@ msgstr "Yeni yatay ve dikey kılavuzlar oluştur"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr ""
+msgstr "CanvasItem \"%s\" Pivot Ofset'i (%d, %d) olarak ayarlayın"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate %d CanvasItems"
-msgstr "CanvasItem Döndür"
+msgstr "CanvasItems'i %d döndür"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate CanvasItem \"%s\" to %d degrees"
-msgstr "CanvasItem Döndür"
+msgstr "CanvasItem \"% s\"'i %d dereceye döndürün"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" Anchor"
-msgstr "CanvasItem Taşı"
+msgstr "CanvasItem \"%s\" Bağlayıcısını Taşı"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr ""
+msgstr "Node2D \"%s\"'i (%s, %s)'a boyutlandır"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr ""
+msgstr "\"%s\" denetimini (%d, %d)'a boyutlandır"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale %d CanvasItems"
-msgstr "CanvasItem Esnet"
+msgstr "CanvasItems'i %d boyutlandır"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "CanvasItem Esnet"
+msgstr "CanvasItem \"%s\" öğesini (%s,%s) olarak boyutlandır"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move %d CanvasItems"
-msgstr "CanvasItem Taşı"
+msgstr "CanvasItems'i %d kadar taşı"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "CanvasItem Taşı"
+msgstr "CanvasItem \"%s\" öğesini (%d,%d) konumuna taşı"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -6597,18 +6593,16 @@ msgid "Move Points"
 msgstr "Noktaları Taşı"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Command: Rotate"
-msgstr "Sürükle: Döndürür"
+msgstr "Ctrl: Döndür"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "ÜstKrkt: Tümünü Taşı"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Shift+Command: Scale"
-msgstr "ÜstKrkt+Ctrl: Ölçek"
+msgstr "ÜstKrkt+Ctrl: Ölçeklendir"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Ctrl: Rotate"
@@ -6655,14 +6649,12 @@ msgid "Radius:"
 msgstr "Yarıçap:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Polygon to UV"
-msgstr "Çokgen & UV Oluştur"
+msgstr "Çokgeni UV'ye kopyala"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy UV to Polygon"
-msgstr "Çokgen2D'ye dönüştür"
+msgstr "UV'yi çokgene kopyala"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -8209,13 +8201,12 @@ msgid "Paint Tile"
 msgstr "Karo Boya"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Shift+LMB: Line Draw\n"
 "Shift+Command+LMB: Rectangle Paint"
 msgstr ""
 "Shift+SFT: Çizgi Çiz\n"
-"Shift+Ctrl+SFT: Dkidörtgen Boya"
+"Shift+Ctrl+SFT: Dolu Dkidörtgen"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8370,8 +8361,23 @@ msgid "Create a new rectangle."
 msgstr "Yeni dikdörtgen oluştur."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Rectangle"
+msgstr "Dikdörtgen Boya"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Yeni bir çokgen oluşturun."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Polygon"
+msgstr "Çokgeni Taşı"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "Seçilenleri Sil"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -8744,9 +8750,8 @@ msgid "Add Node to Visual Shader"
 msgstr "Visual Shader'a düğüm ekle"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Node(s) Moved"
-msgstr "Düğüm Taşındı"
+msgstr "Düğüm(ler) Taşındı"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
@@ -8766,9 +8771,8 @@ msgid "Visual Shader Input Type Changed"
 msgstr "Visual Shader giriş Türü Değişti"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "UniformRef Name Changed"
-msgstr "Uniform ismi ayarla"
+msgstr "UniformRef Adı Değiştirildi"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9478,7 +9482,7 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "A reference to an existing uniform."
-msgstr ""
+msgstr "Varolan bir üniformaya bir referans."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
@@ -12108,11 +12112,7 @@ msgstr "Editör Ayarlarında özel derleme için geçersiz Android SDK yolu."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Missing 'build-tools' directory!"
-msgstr ""
+msgstr "Eksik 'platform araçları' dizini!"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12167,34 +12167,20 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to find the zipalign tool."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Aligning APK..."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to complete APK alignment."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to delete unaligned APK."
-msgstr ""
+"\"AAB Dışa Aktar\" yalnızca \"Özel Yapı Kullan\" etkinleştirildiğinde "
+"geçerlidir."
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
-msgstr ""
+msgstr "Geçersiz dosya adı! Android Uygulama Paketi *.aab uzantısı gerektirir."
 
 #: platform/android/export/export.cpp
 msgid "APK Expansion not compatible with Android App Bundle."
-msgstr ""
+msgstr "APK Genişletme, Android Uygulama Paketi ile uyumlu değildir."
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android APK requires the *.apk extension."
-msgstr ""
+msgstr "Geçersiz dosya adı! Android APK, * .apk uzantısını gerektirir."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12232,13 +12218,15 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Moving output"
-msgstr ""
+msgstr "Çıktı taşınıyor"
 
 #: platform/android/export/export.cpp
 msgid ""
 "Unable to copy and rename export file, check gradle project directory for "
 "outputs."
 msgstr ""
+"Dışa aktarma dosyası kopyalanamıyor ve yeniden adlandırılamıyor, çıktılar "
+"için gradle proje dizinini kontrol edin."
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -12999,6 +12987,21 @@ msgstr "varyings yalnızca vertex işlevinde atanabilir."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Sabit değerler değiştirilemez."
+
+#~ msgid "Missing 'build-tools' directory!"
+#~ msgstr "Eksik 'inşa-araçları' dizini!"
+
+#~ msgid "Unable to find the zipalign tool."
+#~ msgstr "Zipalign aracı bulunamıyor."
+
+#~ msgid "Aligning APK..."
+#~ msgstr "APK hizalanıyor ..."
+
+#~ msgid "Unable to complete APK alignment."
+#~ msgstr "APK hizalaması tamamlanamıyor."
+
+#~ msgid "Unable to delete unaligned APK."
+#~ msgstr "Hizalanmamış APK silinemiyor."
 
 #~ msgid "Error trying to save layout!"
 #~ msgstr "Yerleşim Düzeni kaydedilmeye çalışılırken hata!"

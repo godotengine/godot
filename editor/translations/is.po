@@ -2,15 +2,15 @@
 # Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
-# Jóhannes G. Þorsteinsson <johannesg@johannesg.com>, 2017, 2018.
+# Jóhannes G. Þorsteinsson <johannesg@johannesg.com>, 2017, 2018, 2020.
 # Kaan Gül <qaantum@hotmail.com>, 2018.
 # Einar Magnús Einarsson <einar.m.einarsson@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-16 11:03+0000\n"
-"Last-Translator: Einar Magnús Einarsson <einar.m.einarsson@gmail.com>\n"
+"PO-Revision-Date: 2020-11-20 23:08+0000\n"
+"Last-Translator: Jóhannes G. Þorsteinsson <johannesg@johannesg.com>\n"
 "Language-Team: Icelandic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/is/>\n"
 "Language: is\n"
@@ -18,12 +18,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0.1-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Ógild breyta send til convert(), notaðu TYPE_ * fasti."
+msgstr "Ógild breytutegund send til convert(), notaðu TYPE_ * fasta."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
@@ -8141,8 +8141,22 @@ msgid "Create a new rectangle."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Rectangle"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Polygon"
+msgstr "Breyta Viðbót"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "Afrita val"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -11721,10 +11735,6 @@ msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "Missing 'build-tools' directory!"
-msgstr ""
-
-#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -11766,22 +11776,6 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to find the zipalign tool."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Aligning APK..."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to complete APK alignment."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to delete unaligned APK."
 msgstr ""
 
 #: platform/android/export/export.cpp

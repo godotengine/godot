@@ -16,7 +16,7 @@
 # Rached Noureddine <rached.noureddine@gmail.com>, 2018.
 # Rex_sa <asd1234567890m@gmail.com>, 2017, 2018, 2019.
 # Wajdi Feki <wajdi.feki@gmail.com>, 2017.
-# Omar Aglan <omar.aglan91@yahoo.com>, 2018, 2019.
+# Omar Aglan <omar.aglan91@yahoo.com>, 2018, 2019, 2020.
 # Codes Otaku <ilyas.gamerz@gmail.com>, 2018, 2019.
 # Takai Eddine Kennouche <takai.kenn@gmail.com>, 2018.
 # Mohamed El-Baz <albaz2000eg@gmail.com>, 2018.
@@ -50,8 +50,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-08 10:26+0000\n"
-"Last-Translator: bruvzg <bruvzg13@gmail.com>\n"
+"PO-Revision-Date: 2020-11-25 14:09+0000\n"
+"Last-Translator: Omar Aglan <omar.aglan91@yahoo.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -60,12 +60,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.3.2\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "معامل خاطئ لدالة ()Convert, استخدم احدى الثوابت من مجموعة TYPE_*."
+msgstr "معامل خاطئ لدالة ()Convert، استخدم احدى الثوابت من مجموعة TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
@@ -934,9 +934,8 @@ msgid "Signals"
 msgstr "الإشارات"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "تنقية البلاطات"
+msgstr "تنقية الإشارات"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -1064,11 +1063,12 @@ msgid "Owners Of:"
 msgstr "ملاك:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
-msgstr "إمسح الملفات المختارة من المشروع؟ (لا يمكن استعادتها)"
+msgstr ""
+"حذف الملفات المختارة من المشروع؟ (لا يمكن استعادتها)\n"
+"يمكنك إيجاد الملفات المحذوفة في سلة مهملات النظام حيث يمكنك إسترجاعها."
 
 #: editor/dependency_editor.cpp
 #, fuzzy
@@ -3021,7 +3021,7 @@ msgstr "المجتمع"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr "عن هذا التطبيق"
+msgstr "حول"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -8332,8 +8332,23 @@ msgid "Create a new rectangle."
 msgstr "إنشاء مستطيل جديد."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Rectangle"
+msgstr "مستطيل الطلاء"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "إنشاء مُضلع جديد."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Polygon"
+msgstr "تحريك المُضلع"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "حذف المُختار"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -12077,10 +12092,6 @@ msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "Missing 'build-tools' directory!"
-msgstr ""
-
-#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -12131,22 +12142,6 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to find the zipalign tool."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Aligning APK..."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to complete APK alignment."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to delete unaligned APK."
 msgstr ""
 
 #: platform/android/export/export.cpp

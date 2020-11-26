@@ -52,12 +52,14 @@
 # Jonatan <arandajonatan94@tuta.io>, 2020.
 # ACM <albertocm@tuta.io>, 2020.
 # José Manuel Jurado Bujalance <darkbird@vivaldi.net>, 2020.
+# Skarline <lihue-molina@hotmail.com>, 2020.
+# Oxixes <oxixes@protonmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-15 12:43+0000\n"
-"Last-Translator: Victor S. <victorstancioiu@gmail.com>\n"
+"PO-Revision-Date: 2020-11-24 16:44+0000\n"
+"Last-Translator: Skarline <lihue-molina@hotmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -630,7 +632,7 @@ msgstr "Ir al Siguiente Paso"
 
 #: editor/animation_track_editor.cpp
 msgid "Go to Previous Step"
-msgstr "Ir al Anterior Paso"
+msgstr "Ir al Paso Anterior"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -650,7 +652,7 @@ msgstr "Usar Curvas Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Optimizar Animación"
+msgstr "Optimizador de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
@@ -1085,15 +1087,15 @@ msgid "Owners Of:"
 msgstr "Propietarios De:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
 msgstr ""
-"¿Eliminar los archivos seleccionados del proyecto? (No puede ser restaurado)"
+"¿Eliminar los archivos seleccionados del proyecto? (irreversible)\n"
+"Puedes encontrar los archivos eliminados en la papelera de reciclaje del "
+"sistema para restaurarlos."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1102,7 +1104,9 @@ msgid ""
 msgstr ""
 "Otros recursos necesitan los archivos que estás intentando quitar para "
 "funcionar.\n"
-"¿Eliminarlos de todos modos? (irreversible)"
+"¿Eliminarlos de todos modos? (irreversible)\n"
+"Puedes encontrar los archivos eliminados en la papelera de reciclaje del "
+"sistema para restaurarlos."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -2370,6 +2374,9 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"Un error ha ocurrido mientras se intentaba guardar el diseño del editor.\n"
+"Asegurate de que se puede escribir en la ubicación de datos del editor del "
+"usuario."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2383,9 +2390,8 @@ msgid "Layout name not found!"
 msgstr "¡Nombre de layout no encontrado!"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
-msgstr "Se restauró el layout por defecto a su configuración básica."
+msgstr "Se restauró el diseño por defecto a su configuración básica."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3838,9 +3844,8 @@ msgid "Move To..."
 msgstr "Mover a..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Move to Trash"
-msgstr "Mover Autoload"
+msgstr "Mover a la papelera"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -5365,8 +5370,8 @@ msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
 msgstr ""
-"Cuando está activo, el movimiento de los nodos de Control cambian sus "
-"anclajes en lugar de sus márgenes."
+"Cuando está activo, al mover los nodos de Control se cambian sus anclajes en "
+"lugar de sus márgenes."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Left"
@@ -8405,8 +8410,23 @@ msgid "Create a new rectangle."
 msgstr "Cree un nuevo rectángulo."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Rectangle"
+msgstr "Dibujar Rectángulo"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Crear un nuevo polígono."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Polygon"
+msgstr "Mover Polígono"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "Eliminar Seleccionados"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -12174,11 +12194,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Missing 'build-tools' directory!"
-msgstr ""
+msgstr "¡No se encontró el directorio 'platform-tools'!"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12233,22 +12249,6 @@ msgstr ""
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 "\"Export AAB\" sólo es válido cuando \"Use Custom Build\" está activado."
-
-#: platform/android/export/export.cpp
-msgid "Unable to find the zipalign tool."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Aligning APK..."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to complete APK alignment."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to delete unaligned APK."
-msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
@@ -13088,6 +13088,18 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "Missing 'build-tools' directory!"
+#~ msgstr "¡No se encontró el directorio 'build-tools'!"
+
+#~ msgid "Unable to find the zipalign tool."
+#~ msgstr "No se pudo encontrar la herramienta zipalign."
+
+#~ msgid "Aligning APK..."
+#~ msgstr "Alineando APK..."
+
+#~ msgid "Unable to complete APK alignment."
+#~ msgstr "No se pudo completar el alineamiento del APK."
 
 #~ msgid "Error trying to save layout!"
 #~ msgstr "¡Error al guardar el layout!"
