@@ -157,20 +157,26 @@ class OS_X11 : public OS_Unix {
 	Point2i center;
 
 	void _handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo = false);
-	void _handle_selection_request_event(XSelectionRequestEvent *p_event);
+
+	Atom _process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const;
+	void _handle_selection_request_event(XSelectionRequestEvent *p_event) const;
 
 	String _get_clipboard_impl(Atom p_source, Window x11_window, Atom target) const;
 	String _get_clipboard(Atom p_source, Window x11_window) const;
+	void _clipboard_transfer_ownership(Atom p_source, Window x11_window) const;
 
 	mutable Mutex *events_mutex;
 	Thread *events_thread = nullptr;
 	bool events_thread_done = false;
 	LocalVector<XEvent> polled_events;
 	static void _poll_events_thread(void *ud);
+	bool _wait_for_events() const;
 	void _poll_events();
 
 	static Bool _predicate_all_events(Display *display, XEvent *event, XPointer arg);
 	static Bool _predicate_clipboard_selection(Display *display, XEvent *event, XPointer arg);
+	static Bool _predicate_clipboard_incr(Display *display, XEvent *event, XPointer arg);
+	static Bool _predicate_clipboard_save_targets(Display *display, XEvent *event, XPointer arg);
 
 	void process_xevents();
 	virtual void delete_main_loop();
