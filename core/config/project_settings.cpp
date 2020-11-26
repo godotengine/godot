@@ -524,10 +524,6 @@ bool ProjectSettings::has_setting(String p_var) const {
 	return props.has(p_var);
 }
 
-void ProjectSettings::set_registering_order(bool p_enable) {
-	registering_order = p_enable;
-}
-
 Error ProjectSettings::_load_settings_binary(const String &p_path) {
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
