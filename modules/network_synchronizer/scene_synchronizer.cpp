@@ -1579,10 +1579,17 @@ void ClientSynchronizer::process() {
 	for (const Set<EndSyncEvent>::Element *e = sync_end_events.front();
 			e != nullptr;
 			e = e->next()) {
-		scene_synchronizer->change_event_add(
-				e->get().node_data,
-				e->get().var_id,
-				e->get().old_value);
+		// Check if the values between the variables before the sync and the
+		// current one are different.
+		if (scene_synchronizer->synchronizer_variant_evaluation(
+					e->get().node_data->vars[e->get().var_id].var.value,
+					e->get().old_value) == false) {
+			// Are different so we need to emit the `END_SYNC`.
+			scene_synchronizer->change_event_add(
+					e->get().node_data,
+					e->get().var_id,
+					e->get().old_value);
+		}
 	}
 	sync_end_events.clear();
 
