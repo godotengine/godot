@@ -76,7 +76,6 @@ protected:
 		}
 	};
 
-	bool registering_order = true;
 	int last_order = NO_BUILTIN_ORDER_BASE;
 	int last_builtin_order = 0;
 	Map<StringName, VariantContainer> props;
@@ -159,8 +158,6 @@ public:
 	void set_disable_feature_overrides(bool p_disable);
 
 	bool is_using_datapack() const;
-
-	void set_registering_order(bool p_enable);
 
 	bool has_custom_feature(const String &p_feature) const;
 
