@@ -2728,7 +2728,7 @@ void GDScriptAnalyzer::reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op) 
 		mark_node_unsafe(p_unary_op);
 	} else {
 		bool valid = false;
-		result = get_operation_type(p_unary_op->variant_op, p_unary_op->operand->get_datatype(), p_unary_op->operand->get_datatype(), valid, p_unary_op);
+		result = get_operation_type(p_unary_op->variant_op, p_unary_op->operand->get_datatype(), valid, p_unary_op);
 
 		if (!valid) {
 			push_error(vformat(R"(Invalid operand of type "%s" for unary operator "%s".)", p_unary_op->operand->get_datatype().to_string(), Variant::get_operator_name(p_unary_op->variant_op)), p_unary_op->operand);
@@ -3094,81 +3094,31 @@ bool GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_local, con
 }
 #endif
 
-GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator p_operation, const GDScriptParser::DataType &p_a, const GDScriptParser::DataType &p_b, bool &r_valid, const GDScriptParser::Node *p_source) {
-	// This function creates dummy variant values and apply the operation to those. Less error-prone than keeping a table of valid operations.
+GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator p_operation, const GDScriptParser::DataType &p_a, bool &r_valid, const GDScriptParser::Node *p_source) {
+	// Unary version.
+	GDScriptParser::DataType nil_type;
+	nil_type.builtin_type = Variant::NIL;
+	return get_operation_type(p_operation, p_a, nil_type, r_valid, p_source);
+}
 
+GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator p_operation, const GDScriptParser::DataType &p_a, const GDScriptParser::DataType &p_b, bool &r_valid, const GDScriptParser::Node *p_source) {
 	GDScriptParser::DataType result;
 	result.kind = GDScriptParser::DataType::VARIANT;
 
 	Variant::Type a_type = p_a.builtin_type;
 	Variant::Type b_type = p_b.builtin_type;
 
-	Variant a;
-	REF a_ref;
-	if (a_type == Variant::OBJECT) {
-		a_ref.instance();
-		a = a_ref;
-	} else {
-		Callable::CallError err;
-		Variant::construct(a_type, a, nullptr, 0, err);
-		if (err.error != Callable::CallError::CALL_OK) {
-			r_valid = false;
-			ERR_FAIL_V_MSG(result, vformat("Could not construct value of type %s", Variant::get_type_name(a_type)));
-		}
-	}
-	Variant b;
-	REF b_ref;
-	if (b_type == Variant::OBJECT) {
-		b_ref.instance();
-		b = b_ref;
-	} else {
-		Callable::CallError err;
-		Variant::construct(b_type, b, nullptr, 0, err);
-		if (err.error != Callable::CallError::CALL_OK) {
-			r_valid = false;
-			ERR_FAIL_V_MSG(result, vformat("Could not construct value of type %s", Variant::get_type_name(b_type)));
-		}
+	Variant::ValidatedOperatorEvaluator op_eval = Variant::get_validated_operator_evaluator(p_operation, a_type, b_type);
+
+	if (op_eval == nullptr) {
+		r_valid = false;
+		return result;
 	}
 
-	// Avoid division by zero.
-	switch (b_type) {
-		case Variant::INT:
-			b = 1;
-			break;
-		case Variant::FLOAT:
-			b = 1.0;
-			break;
-		case Variant::VECTOR2:
-			b = Vector2(1.0, 1.0);
-			break;
-		case Variant::VECTOR2I:
-			b = Vector2i(1, 1);
-			break;
-		case Variant::VECTOR3:
-			b = Vector3(1.0, 1.0, 1.0);
-			break;
-		case Variant::VECTOR3I:
-			b = Vector3i(1, 1, 1);
-			break;
-		case Variant::COLOR:
-			b = Color(1.0, 1.0, 1.0, 1.0);
-			break;
-		default:
-			// No change needed.
-			break;
-	}
+	r_valid = true;
 
-	// Avoid error in formatting operator (%) where it doesn't find a placeholder.
-	if (a_type == Variant::STRING && b_type != Variant::ARRAY) {
-		a = String("%s");
-	}
-
-	Variant ret;
-	Variant::evaluate(p_operation, a, b, ret, r_valid);
-
-	if (r_valid) {
-		return type_from_variant(ret, p_source);
-	}
+	result.kind = GDScriptParser::DataType::BUILTIN;
+	result.builtin_type = Variant::get_operator_return_type(p_operation, a_type, b_type);
 
 	return result;
 }

@@ -321,7 +321,28 @@ void GDScriptByteCodeGenerator::set_initial_line(int p_line) {
 #define IS_BUILTIN_TYPE(m_var, m_type) \
 	(m_var.type.has_type && m_var.type.kind == GDScriptDataType::BUILTIN && m_var.type.builtin_type == m_type)
 
-void GDScriptByteCodeGenerator::write_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand, const Address &p_right_operand) {
+void GDScriptByteCodeGenerator::write_unary_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand) {
+	if (HAS_BUILTIN_TYPE(p_left_operand)) {
+		// Gather specific operator.
+		Variant::ValidatedOperatorEvaluator op_func = Variant::get_validated_operator_evaluator(p_operator, p_left_operand.type.builtin_type, Variant::NIL);
+
+		append(GDScriptFunction::OPCODE_OPERATOR_VALIDATED, 3);
+		append(p_left_operand);
+		append(Address());
+		append(p_target);
+		append(op_func);
+		return;
+	}
+
+	// No specific types, perform variant evaluation.
+	append(GDScriptFunction::OPCODE_OPERATOR, 3);
+	append(p_left_operand);
+	append(Address());
+	append(p_target);
+	append(p_operator);
+}
+
+void GDScriptByteCodeGenerator::write_binary_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand, const Address &p_right_operand) {
 	if (HAS_BUILTIN_TYPE(p_left_operand) && HAS_BUILTIN_TYPE(p_right_operand)) {
 		// Gather specific operator.
 		Variant::ValidatedOperatorEvaluator op_func = Variant::get_validated_operator_evaluator(p_operator, p_left_operand.type.builtin_type, p_right_operand.type.builtin_type);

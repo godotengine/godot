@@ -677,7 +677,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				return GDScriptCodeGenerator::Address();
 			}
 
-			gen->write_operator(result, unary->variant_op, operand, GDScriptCodeGenerator::Address());
+			gen->write_unary_operator(result, unary->variant_op, operand);
 
 			if (operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 				gen->pop_temporary();
@@ -745,7 +745,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					GDScriptCodeGenerator::Address left_operand = _parse_expression(codegen, r_error, binary->left_operand);
 					GDScriptCodeGenerator::Address right_operand = _parse_expression(codegen, r_error, binary->right_operand);
 
-					gen->write_operator(result, binary->variant_op, left_operand, right_operand);
+					gen->write_binary_operator(result, binary->variant_op, left_operand, right_operand);
 
 					if (right_operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						gen->pop_temporary();
@@ -908,7 +908,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					} else {
 						gen->write_get(value, key, prev_base);
 					}
-					gen->write_operator(value, assignment->variant_op, value, assigned);
+					gen->write_binary_operator(value, assignment->variant_op, value, assigned);
 					if (assigned.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						gen->pop_temporary();
 					}
@@ -966,7 +966,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				if (assignment->operation != GDScriptParser::AssignmentNode::OP_NONE) {
 					GDScriptCodeGenerator::Address member = codegen.add_temporary();
 					gen->write_get_member(member, name);
-					gen->write_operator(assigned, assignment->variant_op, member, assigned);
+					gen->write_binary_operator(assigned, assignment->variant_op, member, assigned);
 					gen->pop_temporary();
 				}
 
@@ -1016,7 +1016,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				if (assignment->operation != GDScriptParser::AssignmentNode::OP_NONE) {
 					// Perform operation.
 					op_result = codegen.add_temporary();
-					gen->write_operator(op_result, assignment->variant_op, target, assigned);
+					gen->write_binary_operator(op_result, assignment->variant_op, target, assigned);
 				} else {
 					op_result = assigned;
 					assigned = GDScriptCodeGenerator::Address();
@@ -1072,7 +1072,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 
 			// Check type equality.
 			GDScriptCodeGenerator::Address type_equality_addr = codegen.add_temporary(equality_type);
-			codegen.generator->write_operator(type_equality_addr, Variant::OP_EQUAL, p_type_addr, literal_type_addr);
+			codegen.generator->write_binary_operator(type_equality_addr, Variant::OP_EQUAL, p_type_addr, literal_type_addr);
 			codegen.generator->write_and_left_operand(type_equality_addr);
 
 			// Get literal.
@@ -1083,7 +1083,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 
 			// Check value equality.
 			GDScriptCodeGenerator::Address equality_addr = codegen.add_temporary(equality_type);
-			codegen.generator->write_operator(equality_addr, Variant::OP_EQUAL, p_value_addr, literal_addr);
+			codegen.generator->write_binary_operator(equality_addr, Variant::OP_EQUAL, p_value_addr, literal_addr);
 			codegen.generator->write_and_right_operand(equality_addr);
 
 			// AND both together (reuse temporary location).
@@ -1135,11 +1135,11 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			codegen.generator->write_call_builtin(result_addr, GDScriptFunctions::TYPE_OF, typeof_args);
 
 			// Check type equality.
-			codegen.generator->write_operator(result_addr, Variant::OP_EQUAL, p_type_addr, result_addr);
+			codegen.generator->write_binary_operator(result_addr, Variant::OP_EQUAL, p_type_addr, result_addr);
 			codegen.generator->write_and_left_operand(result_addr);
 
 			// Check value equality.
-			codegen.generator->write_operator(result_addr, Variant::OP_EQUAL, p_value_addr, expr_addr);
+			codegen.generator->write_binary_operator(result_addr, Variant::OP_EQUAL, p_value_addr, expr_addr);
 			codegen.generator->write_and_right_operand(equality_test_addr);
 
 			// AND both type and value equality.
@@ -1185,7 +1185,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 
 			// Check type equality.
 			GDScriptCodeGenerator::Address result_addr = codegen.add_temporary(temp_type);
-			codegen.generator->write_operator(result_addr, Variant::OP_EQUAL, p_type_addr, array_type_addr);
+			codegen.generator->write_binary_operator(result_addr, Variant::OP_EQUAL, p_type_addr, array_type_addr);
 			codegen.generator->write_and_left_operand(result_addr);
 
 			// Store pattern length in constant map.
@@ -1201,7 +1201,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			// Test length compatibility.
 			temp_type.builtin_type = Variant::BOOL;
 			GDScriptCodeGenerator::Address length_compat_addr = codegen.add_temporary(temp_type);
-			codegen.generator->write_operator(length_compat_addr, p_pattern->rest_used ? Variant::OP_GREATER_EQUAL : Variant::OP_EQUAL, value_length_addr, array_length_addr);
+			codegen.generator->write_binary_operator(length_compat_addr, p_pattern->rest_used ? Variant::OP_GREATER_EQUAL : Variant::OP_EQUAL, value_length_addr, array_length_addr);
 			codegen.generator->write_and_right_operand(length_compat_addr);
 
 			// AND type and length check.
@@ -1284,7 +1284,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 
 			// Check type equality.
 			GDScriptCodeGenerator::Address result_addr = codegen.add_temporary(temp_type);
-			codegen.generator->write_operator(result_addr, Variant::OP_EQUAL, p_type_addr, dict_type_addr);
+			codegen.generator->write_binary_operator(result_addr, Variant::OP_EQUAL, p_type_addr, dict_type_addr);
 			codegen.generator->write_and_left_operand(result_addr);
 
 			// Store pattern length in constant map.
@@ -1300,7 +1300,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			// Test length compatibility.
 			temp_type.builtin_type = Variant::BOOL;
 			GDScriptCodeGenerator::Address length_compat_addr = codegen.add_temporary(temp_type);
-			codegen.generator->write_operator(length_compat_addr, p_pattern->rest_used ? Variant::OP_GREATER_EQUAL : Variant::OP_EQUAL, value_length_addr, dict_length_addr);
+			codegen.generator->write_binary_operator(length_compat_addr, p_pattern->rest_used ? Variant::OP_GREATER_EQUAL : Variant::OP_EQUAL, value_length_addr, dict_length_addr);
 			codegen.generator->write_and_right_operand(length_compat_addr);
 
 			// AND type and length check.
