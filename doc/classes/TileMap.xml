@@ -172,12 +172,22 @@
 				[b]Note:[/b] Data such as navigation polygons and collision shapes are not immediately updated for performance reasons.
 				If you need these to be immediately updated, you can call [method update_dirty_quadrants].
 				Overriding this method also overrides it internally, allowing custom logic to be implemented when tiles are placed/removed:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func set_cell(x, y, tile, flip_x=false, flip_y=false, transpose=false, autotile_coord=Vector2())
 				    # Write your custom logic here.
 				    # To call the default method:
 				    .set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord)
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public void SetCell(int x, int y, int tile, bool flipX = false, bool flipY = false, bool transpose = false, Vector2 autotileCoord = new Vector2())
+				{
+				    // Write your custom logic here.
+				    // To call the default method:
+				    base.SetCell(x, y, tile, flipX, flipY, transpose, autotileCoord);
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="set_cellv">

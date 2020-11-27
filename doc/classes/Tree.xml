@@ -6,16 +6,30 @@
 	<description>
 		This shows a tree of items that can be selected, expanded and collapsed. The tree can have multiple columns with custom controls like text editing, buttons and popups. It can be useful for structured displays and interactions.
 		Trees are built via code, using [TreeItem] objects to create the structure. They have a single root but multiple roots can be simulated if a dummy hidden root is added.
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		func _ready():
 		    var tree = Tree.new()
 		    var root = tree.create_item()
-		    tree.set_hide_root(true)
+		    tree.hide_root = true
 		    var child1 = tree.create_item(root)
 		    var child2 = tree.create_item(root)
 		    var subchild1 = tree.create_item(child1)
 		    subchild1.set_text(0, "Subchild1")
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		public override void _Ready()
+		{
+		    var tree = new Tree();
+		    TreeItem root = tree.CreateItem();
+		    tree.HideRoot = true;
+		    TreeItem child1 = tree.CreateItem(root);
+		    TreeItem child2 = tree.CreateItem(root);
+		    TreeItem subchild1 = tree.CreateItem(child1);
+		    subchild1.SetText(0, "Subchild1");
+		}
+		[/csharp]
+		[/codeblocks]
 		To iterate over all the [TreeItem] objects in a [Tree] object, use [method TreeItem.get_next] and [method TreeItem.get_children] after getting the root through [method get_root]. You can use [method Object.free] on a [TreeItem] to remove it from the [Tree].
 	</description>
 	<tutorials>
@@ -152,13 +166,26 @@
 			</return>
 			<description>
 				Returns the currently edited item. Can be used with [signal item_edited] to get the item that was modified.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _ready():
 				    $Tree.item_edited.connect(on_Tree_item_edited)
 
 				func on_Tree_item_edited():
 				    print($Tree.get_edited()) # This item just got edited (e.g. checked).
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    GetNode&lt;Tree&gt;("Tree").ItemEdited += OnTreeItemEdited;
+				}
+
+				public void OnTreeItemEdited()
+				{
+				    GD.Print(GetNode&lt;Tree&gt;("Tree").GetEdited()); // This item just got edited (e.g. checked).
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_edited_column" qualifiers="const">
