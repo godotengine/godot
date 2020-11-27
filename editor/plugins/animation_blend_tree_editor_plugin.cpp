@@ -164,7 +164,8 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			if (prop) {
 				prop->set_object_and_property(AnimationTreeEditor::get_singleton()->get_tree(), base_path);
 				prop->update_property();
-				prop->set_name_split_ratio(0);
+				prop->set_label_target_width(0);
+				prop->set_force_label_target_width(true);
 				prop->connect("property_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_property_changed));
 				node->add_child(prop);
 				visible_properties.push_back(prop);

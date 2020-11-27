@@ -106,8 +106,20 @@ void EditorProperty::_notification(int p_what) {
 		bottom_child_rect = Rect2();
 
 		{
-			int child_room = size.width * (1.0 - split_ratio);
 			Ref<Font> font = get_theme_font("font", "Tree");
+			// Add a small 15% buffer onto the end to give the label some space
+			float label_width = label_target_width * 1.15;
+			int child_room = size.width - label_width;
+
+			if (!force_target_width) {
+				// Minimum editor width is 50%, max is 70%.
+				child_room = CLAMP(child_room, size.width * 0.5, size.width * 0.70);
+				// Make it 50% of width if max label size is smaller than 35% of inspetor width.
+				if (label_width / size.width <= 0.3) {
+					child_room = size.width * 0.5;
+				}
+			}
+
 			int height = font->get_height();
 			bool no_children = true;
 
@@ -799,12 +811,20 @@ bool EditorProperty::is_selectable() const {
 	return selectable;
 }
 
-void EditorProperty::set_name_split_ratio(float p_ratio) {
-	split_ratio = p_ratio;
+void EditorProperty::set_label_target_width(float p_width) {
+	label_target_width = p_width;
 }
 
-float EditorProperty::get_name_split_ratio() const {
-	return split_ratio;
+float EditorProperty::get_label_target_width() const {
+	return label_target_width;
+}
+
+void EditorProperty::set_force_label_target_width(bool p_force) {
+	force_target_width = p_force;
+}
+
+bool EditorProperty::is_force_label_target_width() const {
+	return force_target_width;
 }
 
 void EditorProperty::set_object_and_property(Object *p_object, const StringName &p_property) {
@@ -899,7 +919,7 @@ void EditorProperty::_bind_methods() {
 EditorProperty::EditorProperty() {
 	draw_top_bg = true;
 	object = nullptr;
-	split_ratio = 0.5;
+	label_target_width = 0;
 	selectable = true;
 	text_size = 0;
 	read_only = false;
@@ -1930,6 +1950,26 @@ void EditorInspector::update_tree() {
 			if (exclusive) {
 				break;
 			}
+		}
+	}
+
+	real_t max_label_width = 0;
+	Ref<Font> label_font = get_theme_font("font", "Tree");
+
+	// Loop through all properties to find which has the largest length
+	for (Map<StringName, List<EditorProperty *>>::Element *F = editor_property_map.front(); F; F = F->next()) {
+		for (List<EditorProperty *>::Element *E = F->get().front(); E; E = E->next()) {
+			real_t ep_label_width = label_font->get_string_size(E->get()->get_label()).width;
+			max_label_width = MAX(max_label_width, ep_label_width);
+		}
+	}
+
+	// Loop through all properties and set the largest length as the label width.
+	// This keeps the property editors aligned.
+	for (Map<StringName, List<EditorProperty *>>::Element *F = editor_property_map.front(); F; F = F->next()) {
+		for (List<EditorProperty *>::Element *E = F->get().front(); E; E = E->next()) {
+			EditorProperty *ep = E->get();
+			ep->set_label_target_width(max_label_width);
 		}
 	}
 
