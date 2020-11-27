@@ -175,6 +175,7 @@
 #include "scene/resources/video_stream.h"
 #include "scene/resources/visual_shader.h"
 #include "scene/resources/visual_shader_nodes.h"
+#include "scene/resources/visual_shader_sdf_nodes.h"
 #include "scene/resources/world_2d.h"
 #include "scene/resources/world_3d.h"
 #include "scene/resources/world_margin_shape_3d.h"
@@ -601,6 +602,12 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeIs>();
 	ClassDB::register_class<VisualShaderNodeCompare>();
 	ClassDB::register_class<VisualShaderNodeMultiplyAdd>();
+
+	ClassDB::register_class<VisualShaderNodeSDFToScreenUV>();
+	ClassDB::register_class<VisualShaderNodeScreenUVToSDF>();
+	ClassDB::register_class<VisualShaderNodeTextureSDF>();
+	ClassDB::register_class<VisualShaderNodeTextureSDFNormal>();
+	ClassDB::register_class<VisualShaderNodeSDFRaymarch>();
 
 	ClassDB::register_class<ShaderMaterial>();
 	ClassDB::register_virtual_class<CanvasItem>();

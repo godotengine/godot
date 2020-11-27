@@ -33,6 +33,7 @@
 #include "core/templates/vmap.h"
 #include "servers/rendering/shader_types.h"
 #include "visual_shader_nodes.h"
+#include "visual_shader_sdf_nodes.h"
 
 bool VisualShaderNode::is_simple_decl() const {
 	return simple_decl;
