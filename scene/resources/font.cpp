@@ -472,6 +472,32 @@ void Font::_data_changed() {
 
 bool Font::_set(const StringName &p_name, const Variant &p_value) {
 	String str = p_name;
+#ifndef DISABLE_DEPRECATED
+	if (str == "font_data") { // Compatibility, DynamicFont main data
+		Ref<FontData> fd = p_value;
+		if (fd.is_valid()) {
+			add_data(fd);
+			return true;
+		}
+		return false;
+	} else if (str.begins_with("fallback/")) { // Compatibility, DynamicFont fallback data
+		Ref<FontData> fd = p_value;
+		if (fd.is_valid()) {
+			add_data(fd);
+			return true;
+		}
+		return false;
+	} else if (str == "fallback") { // Compatibility, BitmapFont fallback
+		Ref<Font> f = p_value;
+		if (f.is_valid()) {
+			for (int i = 0; i < f->get_data_count(); i++) {
+				add_data(f->get_data(i));
+			}
+			return true;
+		}
+		return false;
+	}
+#endif /* DISABLE_DEPRECATED */
 	if (str.begins_with("data/")) {
 		int idx = str.get_slicec('/', 1).to_int();
 		Ref<FontData> fd = p_value;
@@ -899,6 +925,23 @@ RES ResourceFormatLoaderFont::load(const String &p_path, const String &p_origina
 	return dfont;
 }
 
+void ResourceFormatLoaderFont::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
+#ifndef DISABLE_DEPRECATED
+	if (p_type == "DynacmicFontData") {
+		p_extensions->push_back("ttf");
+		p_extensions->push_back("otf");
+		p_extensions->push_back("woff");
+		return;
+	}
+	if (p_type == "BitmapFont") { // BitmapFont (*.font, *fnt) is handled by ResourceFormatLoaderCompatFont
+		return;
+	}
+#endif /* DISABLE_DEPRECATED */
+	if (p_type == "" || handles_type(p_type)) {
+		get_recognized_extensions(p_extensions);
+	}
+}
+
 void ResourceFormatLoaderFont::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("ttf");
 	p_extensions->push_back("otf");
@@ -918,3 +961,45 @@ String ResourceFormatLoaderFont::get_resource_type(const String &p_path) const {
 	}
 	return "";
 }
+
+#ifndef DISABLE_DEPRECATED
+
+RES ResourceFormatLoaderCompatFont::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+	if (r_error) {
+		*r_error = ERR_FILE_CANT_OPEN;
+	}
+
+	Ref<FontData> dfont;
+	dfont.instance();
+	dfont->load_resource(p_path);
+
+	Ref<Font> font;
+	font.instance();
+	font->add_data(dfont);
+
+	if (r_error) {
+		*r_error = OK;
+	}
+
+	return font;
+}
+
+void ResourceFormatLoaderCompatFont::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
+	if (p_type == "BitmapFont") {
+		p_extensions->push_back("font");
+		p_extensions->push_back("fnt");
+	}
+}
+
+void ResourceFormatLoaderCompatFont::get_recognized_extensions(List<String> *p_extensions) const {
+}
+
+bool ResourceFormatLoaderCompatFont::handles_type(const String &p_type) const {
+	return (p_type == "Font");
+}
+
+String ResourceFormatLoaderCompatFont::get_resource_type(const String &p_path) const {
+	return "";
+}
+
+#endif /* DISABLE_DEPRECATED */

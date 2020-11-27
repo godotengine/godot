@@ -243,8 +243,11 @@ HashMap<StringName, StringName> ClassDB::resource_base_extensions;
 HashMap<StringName, StringName> ClassDB::compat_classes;
 
 bool ClassDB::_is_parent_class(const StringName &p_class, const StringName &p_inherits) {
-	StringName inherits = p_class;
+	if (!classes.has(p_class)) {
+		return false;
+	}
 
+	StringName inherits = p_class;
 	while (inherits.operator String().length()) {
 		if (inherits == p_inherits) {
 			return true;
