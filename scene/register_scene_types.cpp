@@ -234,6 +234,10 @@ static Ref<ResourceFormatLoaderText> resource_loader_text;
 
 static Ref<ResourceFormatLoaderFont> resource_loader_font;
 
+#ifndef DISABLE_DEPRECATED
+static Ref<ResourceFormatLoaderCompatFont> resource_loader_compat_font;
+#endif /* DISABLE_DEPRECATED */
+
 static Ref<ResourceFormatLoaderStreamTexture2D> resource_loader_stream_texture;
 static Ref<ResourceFormatLoaderStreamTextureLayered> resource_loader_texture_layered;
 static Ref<ResourceFormatLoaderStreamTexture3D> resource_loader_texture_3d;
@@ -250,6 +254,11 @@ void register_scene_types() {
 
 	resource_loader_font.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_font);
+
+#ifndef DISABLE_DEPRECATED
+	resource_loader_compat_font.instance();
+	ResourceLoader::add_resource_format_loader(resource_loader_compat_font);
+#endif /* DISABLE_DEPRECATED */
 
 	resource_loader_stream_texture.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
@@ -799,6 +808,9 @@ void register_scene_types() {
 #ifndef DISABLE_DEPRECATED
 	// Dropped in 4.0, near approximation.
 	ClassDB::add_compatibility_class("AnimationTreePlayer", "AnimationTree");
+	ClassDB::add_compatibility_class("BitmapFont", "Font");
+	ClassDB::add_compatibility_class("DynamicFont", "Font");
+	ClassDB::add_compatibility_class("DynamicFontData", "FontData");
 	ClassDB::add_compatibility_class("ToolButton", "Button");
 
 	// Renamed in 4.0.
@@ -917,7 +929,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
 	ClassDB::add_compatibility_class("Light2D", "PointLight2D");
 
-#endif
+#endif /* DISABLE_DEPRECATED */
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -968,6 +980,11 @@ void unregister_scene_types() {
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_font);
 	resource_loader_font.unref();
+
+#ifndef DISABLE_DEPRECATED
+	ResourceLoader::remove_resource_format_loader(resource_loader_compat_font);
+	resource_loader_compat_font.unref();
+#endif /* DISABLE_DEPRECATED */
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_texture_layered);
 	resource_loader_texture_layered.unref();
