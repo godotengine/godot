@@ -177,8 +177,10 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	bt_xform_to.getOrigin() += bt_motion;
 
 	if ((bt_xform_to.getOrigin() - bt_xform_from.getOrigin()).fuzzyZero()) {
+		r_closest_safe = 1.0f;
+		r_closest_unsafe = 1.0f;
 		bulletdelete(btShape);
-		return false;
+		return true;
 	}
 
 	GodotClosestConvexResultCallback btResult(bt_xform_from.getOrigin(), bt_xform_to.getOrigin(), &p_exclude, p_collide_with_bodies, p_collide_with_areas);
