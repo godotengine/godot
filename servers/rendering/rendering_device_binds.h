@@ -64,7 +64,7 @@ public:
 	RD_SETGET(uint32_t, depth)
 	RD_SETGET(uint32_t, array_layers)
 	RD_SETGET(uint32_t, mipmaps)
-	RD_SETGET(RD::TextureType, type)
+	RD_SETGET(RD::TextureType, texture_type)
 	RD_SETGET(RD::TextureSamples, samples)
 	RD_SETGET(uint32_t, usage_bits)
 
@@ -79,7 +79,7 @@ protected:
 		RD_BIND(Variant::INT, RDTextureFormat, depth);
 		RD_BIND(Variant::INT, RDTextureFormat, array_layers);
 		RD_BIND(Variant::INT, RDTextureFormat, mipmaps);
-		RD_BIND(Variant::INT, RDTextureFormat, type);
+		RD_BIND(Variant::INT, RDTextureFormat, texture_type);
 		RD_BIND(Variant::INT, RDTextureFormat, samples);
 		RD_BIND(Variant::INT, RDTextureFormat, usage_bits);
 		ClassDB::bind_method(D_METHOD("add_shareable_format", "format"), &RDTextureFormat::add_shareable_format);

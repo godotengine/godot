@@ -392,7 +392,7 @@ public:
 		uint32_t depth;
 		uint32_t array_layers;
 		uint32_t mipmaps;
-		TextureType type;
+		TextureType texture_type;
 		TextureSamples samples;
 		uint32_t usage_bits;
 		Vector<DataFormat> shareable_formats;
@@ -404,7 +404,7 @@ public:
 			depth = 1;
 			array_layers = 1;
 			mipmaps = 1;
-			type = TEXTURE_TYPE_2D;
+			texture_type = TEXTURE_TYPE_2D;
 			samples = TEXTURE_SAMPLES_1;
 			usage_bits = 0;
 		}

@@ -717,7 +717,7 @@ void RendererSceneRenderForward::RenderBufferDataHighEnd::configure(RID p_color_
 		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 		tf.width = p_width;
 		tf.height = p_height;
-		tf.type = RD::TEXTURE_TYPE_2D;
+		tf.texture_type = RD::TEXTURE_TYPE_2D;
 		tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 
 		RD::TextureSamples ts[RS::VIEWPORT_MSAA_MAX] = {

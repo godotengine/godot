@@ -37,7 +37,7 @@
 		</member>
 		<member name="samples" type="int" setter="set_samples" getter="get_samples" enum="RenderingDevice.TextureSamples" default="0">
 		</member>
-		<member name="type" type="int" setter="set_type" getter="get_type" enum="RenderingDevice.TextureType" default="1">
+		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="RenderingDevice.TextureType" default="1">
 		</member>
 		<member name="usage_bits" type="int" setter="set_usage_bits" getter="get_usage_bits" default="0">
 		</member>

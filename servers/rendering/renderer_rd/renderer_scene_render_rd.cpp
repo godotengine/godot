@@ -129,7 +129,7 @@ void RendererSceneRenderRD::_update_reflection_data(ReflectionData &rd, int p_si
 	tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 	tf.width = 64; // Always 64x64
 	tf.height = 64;
-	tf.type = RD::TEXTURE_TYPE_CUBE;
+	tf.texture_type = RD::TEXTURE_TYPE_CUBE;
 	tf.array_layers = 6;
 	tf.mipmaps = 7;
 	tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -284,7 +284,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 		tf_sdf.width = sdfgi->cascade_size; // Always 64x64
 		tf_sdf.height = sdfgi->cascade_size;
 		tf_sdf.depth = sdfgi->cascade_size;
-		tf_sdf.type = RD::TEXTURE_TYPE_3D;
+		tf_sdf.texture_type = RD::TEXTURE_TYPE_3D;
 		tf_sdf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
 		{
@@ -341,7 +341,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 		tf_probes.width = sdfgi->probe_axis_count * sdfgi->probe_axis_count;
 		tf_probes.height = sdfgi->probe_axis_count * SDFGI::SH_SIZE;
 		tf_probes.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-		tf_probes.type = RD::TEXTURE_TYPE_2D_ARRAY;
+		tf_probes.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 
 		sdfgi->history_size = requested_history_size;
 
@@ -351,7 +351,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 
 		RD::TextureFormat tf_probe_average = tf_probes;
 		tf_probe_average.format = RD::DATA_FORMAT_R32G32B32A32_SINT; //signed integer because SH are signed
-		tf_probe_average.type = RD::TEXTURE_TYPE_2D;
+		tf_probe_average.texture_type = RD::TEXTURE_TYPE_2D;
 
 		sdfgi->lightprobe_history_scroll = RD::get_singleton()->texture_create(tf_probe_history, RD::TextureView());
 		sdfgi->lightprobe_average_scroll = RD::get_singleton()->texture_create(tf_probe_average, RD::TextureView());
@@ -378,7 +378,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			tf_ambient.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT; //pack well with RGBE
 			tf_ambient.width = sdfgi->probe_axis_count * sdfgi->probe_axis_count;
 			tf_ambient.height = sdfgi->probe_axis_count;
-			tf_ambient.type = RD::TEXTURE_TYPE_2D_ARRAY;
+			tf_ambient.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 			//lightprobe texture is an octahedral texture
 			sdfgi->ambient_texture = RD::get_singleton()->texture_create(tf_ambient, RD::TextureView());
 		}
@@ -1897,7 +1897,7 @@ void RendererSceneRenderRD::_update_dirty_skys() {
 				RD::TextureFormat tf;
 				tf.array_layers = layers * 6;
 				tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-				tf.type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+				tf.texture_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
 				tf.mipmaps = mipmaps;
 				tf.width = w;
 				tf.height = h;
@@ -1912,7 +1912,7 @@ void RendererSceneRenderRD::_update_dirty_skys() {
 				RD::TextureFormat tf;
 				tf.array_layers = 6;
 				tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-				tf.type = RD::TEXTURE_TYPE_CUBE;
+				tf.texture_type = RD::TEXTURE_TYPE_CUBE;
 				tf.mipmaps = MIN(mipmaps, layers);
 				tf.width = w;
 				tf.height = h;
@@ -1932,7 +1932,7 @@ void RendererSceneRenderRD::_update_dirty_skys() {
 			tformat.width = sky->screen_size.x / 2;
 			tformat.height = sky->screen_size.y / 2;
 			tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-			tformat.type = RD::TEXTURE_TYPE_2D;
+			tformat.texture_type = RD::TEXTURE_TYPE_2D;
 
 			sky->half_res_pass = RD::get_singleton()->texture_create(tformat, RD::TextureView());
 			Vector<RID> texs;
@@ -1947,7 +1947,7 @@ void RendererSceneRenderRD::_update_dirty_skys() {
 			tformat.width = sky->screen_size.x / 4;
 			tformat.height = sky->screen_size.y / 4;
 			tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-			tformat.type = RD::TEXTURE_TYPE_2D;
+			tformat.texture_type = RD::TEXTURE_TYPE_2D;
 
 			sky->quarter_res_pass = RD::get_singleton()->texture_create(tformat, RD::TextureView());
 			Vector<RID> texs;
@@ -3331,7 +3331,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 			RD::TextureFormat tf;
 			tf.array_layers = 6 * atlas->count;
 			tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-			tf.type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+			tf.texture_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
 			tf.mipmaps = mipmaps;
 			tf.width = atlas->size;
 			tf.height = atlas->size;
@@ -3948,7 +3948,7 @@ RendererSceneRenderRD::ShadowCubemap *RendererSceneRenderRD::_get_shadow_cubemap
 			tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D32_SFLOAT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D32_SFLOAT : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
 			tf.width = p_size;
 			tf.height = p_size;
-			tf.type = RD::TEXTURE_TYPE_CUBE;
+			tf.texture_type = RD::TEXTURE_TYPE_CUBE;
 			tf.array_layers = 6;
 			tf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 			sc.cubemap = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -4062,7 +4062,7 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 			tf.width = octree_size.x;
 			tf.height = octree_size.y;
 			tf.depth = octree_size.z;
-			tf.type = RD::TEXTURE_TYPE_3D;
+			tf.texture_type = RD::TEXTURE_TYPE_3D;
 			tf.mipmaps = levels.size();
 
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
@@ -4950,7 +4950,7 @@ void RendererSceneRenderRD::_allocate_blur_textures(RenderBuffers *rb) {
 	tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 	tf.width = rb->width;
 	tf.height = rb->height;
-	tf.type = RD::TEXTURE_TYPE_2D;
+	tf.texture_type = RD::TEXTURE_TYPE_2D;
 	tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	tf.mipmaps = mipmaps_required;
 
@@ -5123,7 +5123,7 @@ void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_frameb
 		tf.format = RD::DATA_FORMAT_R32_SFLOAT;
 		tf.width = rb->width / 2;
 		tf.height = rb->height / 2;
-		tf.type = RD::TEXTURE_TYPE_2D;
+		tf.texture_type = RD::TEXTURE_TYPE_2D;
 		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
 
 		rb->ssr.depth_scaled = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -5138,7 +5138,7 @@ void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_frameb
 		tf.format = RD::DATA_FORMAT_R8_UNORM;
 		tf.width = rb->width / 2;
 		tf.height = rb->height / 2;
-		tf.type = RD::TEXTURE_TYPE_2D;
+		tf.texture_type = RD::TEXTURE_TYPE_2D;
 		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 
 		rb->ssr.blur_radius[0] = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -6543,7 +6543,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		tf.width = target_width;
 		tf.height = target_height;
 		tf.depth = volumetric_fog_depth;
-		tf.type = RD::TEXTURE_TYPE_3D;
+		tf.texture_type = RD::TEXTURE_TYPE_3D;
 		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
 
 		rb->volumetric_fog->light_density_map = RD::get_singleton()->texture_create(tf, RD::TextureView());

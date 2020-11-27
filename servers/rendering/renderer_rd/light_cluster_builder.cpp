@@ -190,7 +190,7 @@ void LightClusterBuilder::setup(uint32_t p_width, uint32_t p_height, uint32_t p_
 	{
 		RD::TextureFormat tf;
 		tf.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
-		tf.type = RD::TEXTURE_TYPE_3D;
+		tf.texture_type = RD::TEXTURE_TYPE_3D;
 		tf.width = width;
 		tf.height = height;
 		tf.depth = depth;

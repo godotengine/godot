@@ -1564,7 +1564,7 @@ void RendererCanvasRenderRD::_update_shadow_atlas() {
 
 		{ //texture
 			RD::TextureFormat tf;
-			tf.type = RD::TEXTURE_TYPE_2D;
+			tf.texture_type = RD::TEXTURE_TYPE_2D;
 			tf.width = state.shadow_texture_size;
 			tf.height = state.max_lights_per_render * 2;
 			tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
@@ -1575,7 +1575,7 @@ void RendererCanvasRenderRD::_update_shadow_atlas() {
 		}
 		{
 			RD::TextureFormat tf;
-			tf.type = RD::TEXTURE_TYPE_2D;
+			tf.texture_type = RD::TEXTURE_TYPE_2D;
 			tf.width = state.shadow_texture_size;
 			tf.height = state.max_lights_per_render * 2;
 			tf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -2667,7 +2667,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 	{
 		//default shadow texture to keep uniform set happy
 		RD::TextureFormat tf;
-		tf.type = RD::TEXTURE_TYPE_2D;
+		tf.texture_type = RD::TEXTURE_TYPE_2D;
 		tf.width = 4;
 		tf.height = 4;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
@@ -2740,7 +2740,7 @@ void RendererCanvasRenderRD::set_shadow_texture_size(int p_size) {
 		{
 			//create a default shadow texture to keep uniform set happy (and that it gets erased when a new one is created)
 			RD::TextureFormat tf;
-			tf.type = RD::TEXTURE_TYPE_2D;
+			tf.texture_type = RD::TEXTURE_TYPE_2D;
 			tf.width = 4;
 			tf.height = 4;
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
