@@ -255,6 +255,7 @@ struct ScriptCodeCompletionOption {
 	Color font_color;
 	RES icon;
 	Variant default_value;
+	Vector<std::pair<int, int>> matches;
 
 	ScriptCodeCompletionOption() {}
 
