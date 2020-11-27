@@ -6,10 +6,16 @@
 	<description>
 		A custom effect for use with [RichTextLabel].
 		[b]Note:[/b] For a [RichTextEffect] to be usable, a BBCode tag must be defined as a member variable called [code]bbcode[/code] in the script.
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		# The RichTextEffect will be usable like this: `[example]Some text[/example]`
 		var bbcode = "example"
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		// The RichTextEffect will be usable like this: `[example]Some text[/example]`
+		public string bbcode = "example";
+		[/csharp]
+		[/codeblocks]
 		[b]Note:[/b] As soon as a [RichTextLabel] contains at least one [RichTextEffect], it will continuously process the effect unless the project is paused. This may impact battery life negatively.
 	</description>
 	<tutorials>

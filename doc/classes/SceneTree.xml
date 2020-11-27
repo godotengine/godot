@@ -69,12 +69,22 @@
 			<description>
 				Returns a [SceneTreeTimer] which will [signal SceneTreeTimer.timeout] after the given time in seconds elapsed in this [SceneTree]. If [code]process_always[/code] is set to [code]false[/code], pausing the [SceneTree] will also pause the timer.
 				Commonly used to create a one-shot delay timer as in the following example:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func some_function():
 				    print("start")
 				    yield(get_tree().create_timer(1.0), "timeout")
 				    print("end")
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public async void SomeFunction()
+				{
+				    GD.Print("start");
+				    await ToSignal(GetTree().CreateTimer(1.0f), "timeout");
+				    GD.Print("end");
+				}
+				[/csharp]
+				[/codeblocks]
 				The timer will be automatically freed after its time elapses.
 			</description>
 		</method>

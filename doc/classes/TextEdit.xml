@@ -402,13 +402,24 @@
 			<description>
 				Perform a search inside the text. Search flags can be specified in the [enum SearchFlags] enum.
 				Returns an empty [code]Dictionary[/code] if no result was found. Otherwise, returns a [code]Dictionary[/code] containing [code]line[/code] and [code]column[/code] entries, e.g:
-				[codeblock]
-				var result = search(key, flags, line, column)
-				if !result.is_empty():
+				[codeblocks]
+				[gdscript]
+				var result = search("print", SEARCH_WHOLE_WORDS, 0, 0)
+				if !result.empty():
 				    # Result found.
 				    var line_number = result.line
 				    var column_number = result.column
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				int[] result = Search("print", (uint)TextEdit.SearchFlags.WholeWords, 0, 0);
+				if (result.Length > 0)
+				{
+				    // Result found.
+				    int lineNumber = result[(int)TextEdit.SearchResult.Line];
+				    int columnNumber = result[(int)TextEdit.SearchResult.Column];
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="select">

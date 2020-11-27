@@ -163,11 +163,15 @@
 			<description>
 				Returns the index of the [b]first[/b] case-sensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the end of the string.
 				[b]Note:[/b] If you just want to know whether a string contains a substring, use the [code]in[/code] operator as follows:
-				[codeblock]
-				# Will evaluate to `false`.
-				if "i" in "team":
-				    pass
-				[/codeblock]
+				[codeblocks]
+				[gdscript]
+				print("i" in "team") # Will print `false`.
+				[/gdscript]
+				[csharp]
+				// C# has no in operator, but we can use `Contains()`.
+				GD.Print("team".Contains("i")); // Will print `false`.
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="findn">
@@ -354,9 +358,14 @@
 			<description>
 				Return a [String] which is the concatenation of the [code]parts[/code]. The separator between elements is the string providing this method.
 				Example:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				print(", ".join(["One", "Two", "Three", "Four"]))
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.Print(String.Join(",", new string[] {"One", "Two", "Three", "Four"}));
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="json_escape">
@@ -654,13 +663,18 @@
 				The splits in the returned array are sorted in the same order as the original string, from left to right.
 				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the right up to [code]maxsplit[/code]. The default value of 0 means that all items are split, thus giving the same result as [method split].
 				Example:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var some_string = "One,Two,Three,Four"
 				var some_array = some_string.rsplit(",", true, 1)
 				print(some_array.size()) # Prints 2
 				print(some_array[0]) # Prints "Four"
 				print(some_array[1]) # Prints "Three,Two,One"
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				// There is no Rsplit.
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="rstrip">
@@ -723,13 +737,21 @@
 				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings. The [code]delimiter[/code] can be of any length.
 				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the left up to [code]maxsplit[/code]. The default value of [code]0[/code] means that all items are split.
 				Example:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var some_string = "One,Two,Three,Four"
 				var some_array = some_string.split(",", true, 1)
 				print(some_array.size()) # Prints 2
-				print(some_array[0]) # Prints "One"
-				print(some_array[1]) # Prints "Two,Three,Four"
-				[/codeblock]
+				print(some_array[0]) # Prints "Four"
+				print(some_array[1]) # Prints "Three,Two,One"
+				[/gdscript]
+				[csharp]
+				var someString = "One,Two,Three,Four";
+				var someArray = someString.Split(",", true); // This is as close as it gets to Godots API.
+				GD.Print(someArray[0]); // Prints "Four"
+				GD.Print(someArray[1]); // Prints "Three,Two,One"
+				[/csharp]
+				[/codeblocks]
 				If you need to split strings with more complex rules, use the [RegEx] class instead.
 			</description>
 		</method>
