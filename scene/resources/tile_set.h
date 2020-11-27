@@ -159,6 +159,15 @@ public:
 	void tile_set_tile_mode(int p_id, TileMode p_tile_mode);
 	TileMode tile_get_tile_mode(int p_id) const;
 
+	void tile_set_flip_h(int p_source, Vector2i p_tile_set_coords, int p_alternative_tile, bool p_flip_x);
+	bool tile_get_flip_h(int p_source, Vector2i p_tile_set_coords, int p_alternative_tile);
+
+	void tile_set_flip_v(int p_source, Vector2i p_tile_set_coords, int p_alternative_tile, bool p_flip_y);
+	bool tile_get_flip_v(int p_source, Vector2i p_tile_set_coords, int p_alternative_tile);
+
+	void tile_set_transpose(int p_source, Vector2i p_tile_set_coords, int p_alternative_tile, bool p_transpose);
+	bool tile_get_transpose(int p_source, Vector2i p_tile_set_coords, int p_alternative_tile);
+
 	void autotile_set_icon_coordinate(int p_id, Vector2 coord);
 	Vector2 autotile_get_icon_coordinate(int p_id) const;
 
@@ -236,7 +245,7 @@ public:
 
 	void remove_tile(int p_id);
 
-	bool has_tile(int p_id) const;
+	bool has_tile(int p_source_id, const Vector2i p_tilset_coords, int p_alternative_tile) const;
 
 	bool is_tile_bound(int p_drawn_id, int p_neighbor_id);
 

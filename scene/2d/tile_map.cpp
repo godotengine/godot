@@ -173,20 +173,20 @@ void TileMap::_fix_cell_transform(Transform2D &xform, const Cell &p_cell, const 
 	Vector2 offset = p_offset;
 
 	// Flip/transpose: update the tile transform.
-	if (p_cell.transpose) {
+	if (tile_set->tile_get_transpose(p_cell.source_id, p_cell.get_tileset_coords(), p_cell.alternative_tile)) {
 		SWAP(xform.elements[0].x, xform.elements[0].y);
 		SWAP(xform.elements[1].x, xform.elements[1].y);
 		SWAP(offset.x, offset.y);
 		SWAP(s.x, s.y);
 	}
 
-	if (p_cell.flip_h) {
+	if (tile_set->tile_get_flip_h(p_cell.source_id, p_cell.get_tileset_coords(), p_cell.alternative_tile)) {
 		xform.elements[0].x = -xform.elements[0].x;
 		xform.elements[1].x = -xform.elements[1].x;
 		offset.x = s.x - offset.x;
 	}
 
-	if (p_cell.flip_v) {
+	if (tile_set->tile_get_flip_v(p_cell.source_id, p_cell.get_tileset_coords(), p_cell.alternative_tile)) {
 		xform.elements[0].y = -xform.elements[0].y;
 		xform.elements[1].y = -xform.elements[1].y;
 		offset.y = s.y - offset.y;
@@ -275,30 +275,30 @@ void TileMap::update_dirty_quadrants() {
 			Cell &c = E->get();
 
 			// Check if the tilset has a tile with the given ID, otherwise, ignore it.
-			if (!tile_set->has_tile(c.id)) {
+			if (!tile_set->has_tile(c.source_id, c.get_tileset_coords(), c.alternative_tile)) {
 				continue;
 			}
 
 			// Get the texture.
-			Ref<Texture2D> tex = tile_set->tile_get_texture(c.id);
+			Ref<Texture2D> tex = tile_set->tile_get_texture(c.source_id);
 			if (!tex.is_valid()) {
 				continue;
 			}
 
 			// Get the texture offset.
-			Vector2 tile_ofs = tile_set->tile_get_texture_offset(c.id);
+			Vector2 tile_ofs = tile_set->tile_get_texture_offset(c.source_id);
 
 			// Compute the offset ?
 			Vector2 wofs = _map_to_world(E->key().x, E->key().y);
 			Vector2 offset = wofs - q.pos + tofs;
 
 			// Get the material.
-			Ref<ShaderMaterial> mat = tile_set->tile_get_material(c.id);
+			Ref<ShaderMaterial> mat = tile_set->tile_get_material(c.source_id);
 
 			// Get the Z-index.
-			int z_index = tile_set->tile_get_z_index(c.id);
-			if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.id) == TileSet::ATLAS_TILE) {
-				z_index += tile_set->autotile_get_z_index(c.id, Vector2(c.autotile_coord_x, c.autotile_coord_y));
+			int z_index = tile_set->tile_get_z_index(c.source_id);
+			if (tile_set->tile_get_tile_mode(c.source_id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.source_id) == TileSet::ATLAS_TILE) {
+				z_index += tile_set->autotile_get_z_index(c.source_id, c.get_tileset_coords());
 			}
 
 			// Create two canvas items, for rendering and debug.
@@ -347,11 +347,11 @@ void TileMap::update_dirty_quadrants() {
 			}
 
 			// Get the tile region in the tileset, if it is defined.
-			Rect2 r = tile_set->tile_get_region(c.id);
-			if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.id) == TileSet::ATLAS_TILE) {
-				int spacing = tile_set->autotile_get_spacing(c.id);
-				r.size = tile_set->autotile_get_size(c.id);
-				r.position += (r.size + Vector2(spacing, spacing)) * Vector2(c.autotile_coord_x, c.autotile_coord_y);
+			Rect2 r = tile_set->tile_get_region(c.source_id);
+			if (tile_set->tile_get_tile_mode(c.source_id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.source_id) == TileSet::ATLAS_TILE) {
+				int spacing = tile_set->autotile_get_spacing(c.source_id);
+				r.size = tile_set->autotile_get_size(c.source_id);
+				r.position += (r.size + Vector2(spacing, spacing)) * c.get_tileset_coords();
 			}
 
 			// Get the texture size.
@@ -362,23 +362,24 @@ void TileMap::update_dirty_quadrants() {
 				s = r.size; // Region, use the region size.
 			}
 
-			// Compute the rectangle in the texture, considering the flipping bits.
+			bool transpose = tile_set->tile_get_transpose(c.source_id, c.get_tileset_coords(), c.alternative_tile);
+
+			// Compute the rectangle in the texture.
 			Rect2 rect;
 			rect.position = offset.floor();
 			rect.size = s;
 			rect.size.x += fp_adjust;
 			rect.size.y += fp_adjust;
-
-			if (c.transpose) {
+			if (transpose) {
 				SWAP(tile_ofs.x, tile_ofs.y);
 			}
 
-			if (c.flip_h) {
+			if (tile_set->tile_get_flip_h(c.source_id, c.get_tileset_coords(), c.alternative_tile)) {
 				rect.size.x = -rect.size.x;
 				tile_ofs.x = -tile_ofs.x;
 			}
 
-			if (c.flip_v) {
+			if (tile_set->tile_get_flip_v(c.source_id, c.get_tileset_coords(), c.alternative_tile)) {
 				rect.size.y = -rect.size.y;
 				tile_ofs.y = -tile_ofs.y;
 			}
@@ -386,23 +387,23 @@ void TileMap::update_dirty_quadrants() {
 			rect.position += tile_ofs;
 
 			// Get the tile modulation.
-			Color modulate = tile_set->tile_get_modulate(c.id);
+			Color modulate = tile_set->tile_get_modulate(c.source_id);
 			Color self_modulate = get_self_modulate();
 			modulate = Color(modulate.r * self_modulate.r, modulate.g * self_modulate.g, modulate.b * self_modulate.b, modulate.a * self_modulate.a);
 
 			// Draw the tile.
 			if (r == Rect2()) {
-				tex->draw_rect(canvas_item, rect, false, modulate, c.transpose);
+				tex->draw_rect(canvas_item, rect, false, modulate, transpose);
 			} else {
-				tex->draw_rect_region(canvas_item, rect, r, modulate, c.transpose, clip_uv);
+				tex->draw_rect_region(canvas_item, rect, r, modulate, transpose, clip_uv);
 			}
 
 			// Collisions: get the tilset collision shapes, and add the shape.
-			Vector<TileSet::ShapeData> shapes = tile_set->tile_get_shapes(c.id);
+			Vector<TileSet::ShapeData> shapes = tile_set->tile_get_shapes(c.source_id);
 			for (int j = 0; j < shapes.size(); j++) {
 				Ref<Shape2D> shape = shapes[j].shape;
 				if (shape.is_valid()) {
-					if (tile_set->tile_get_tile_mode(c.id) == TileSet::SINGLE_TILE || (shapes[j].autotile_coord.x == c.autotile_coord_x && shapes[j].autotile_coord.y == c.autotile_coord_y)) {
+					if (tile_set->tile_get_tile_mode(c.source_id) == TileSet::SINGLE_TILE || (shapes[j].autotile_coord.x == c.coord_x && shapes[j].autotile_coord.y == c.coord_y)) {
 						Transform2D xform;
 						xform.set_origin(offset.floor());
 
@@ -448,12 +449,12 @@ void TileMap::update_dirty_quadrants() {
 				// Get the navigation polygon.
 				Ref<NavigationPolygon> navpoly;
 				Vector2 npoly_ofs;
-				if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.id) == TileSet::ATLAS_TILE) {
-					navpoly = tile_set->autotile_get_navigation_polygon(c.id, Vector2(c.autotile_coord_x, c.autotile_coord_y));
+				if (tile_set->tile_get_tile_mode(c.source_id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.source_id) == TileSet::ATLAS_TILE) {
+					navpoly = tile_set->autotile_get_navigation_polygon(c.source_id, c.get_tileset_coords());
 					npoly_ofs = Vector2();
 				} else {
-					navpoly = tile_set->tile_get_navigation_polygon(c.id);
-					npoly_ofs = tile_set->tile_get_navigation_polygon_offset(c.id);
+					navpoly = tile_set->tile_get_navigation_polygon(c.source_id);
+					npoly_ofs = tile_set->tile_get_navigation_polygon_offset(c.source_id);
 				}
 
 				if (navpoly.is_valid()) {
@@ -523,13 +524,13 @@ void TileMap::update_dirty_quadrants() {
 
 			// Occlusion: handle occluder shape.
 			Ref<OccluderPolygon2D> occluder;
-			if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.id) == TileSet::ATLAS_TILE) {
-				occluder = tile_set->autotile_get_light_occluder(c.id, Vector2(c.autotile_coord_x, c.autotile_coord_y));
+			if (tile_set->tile_get_tile_mode(c.source_id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.source_id) == TileSet::ATLAS_TILE) {
+				occluder = tile_set->autotile_get_light_occluder(c.source_id, c.get_tileset_coords());
 			} else {
-				occluder = tile_set->tile_get_light_occluder(c.id);
+				occluder = tile_set->tile_get_light_occluder(c.source_id);
 			}
 			if (occluder.is_valid()) {
-				Vector2 occluder_ofs = tile_set->tile_get_occluder_offset(c.id);
+				Vector2 occluder_ofs = tile_set->tile_get_occluder_offset(c.source_id);
 				Transform2D xform;
 				xform.set_origin(offset.floor() + q.pos);
 				_fix_cell_transform(xform, c, occluder_ofs, s);
@@ -688,25 +689,12 @@ void TileMap::_make_quadrant_dirty(Map<PosKey, Quadrant>::Element *Q, bool updat
 	}
 }
 
-void TileMap::set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x, bool p_flip_y, bool p_transpose) {
-	// Set the current cell tile (using vector position).
-	set_cell(p_pos.x, p_pos.y, p_tile, p_flip_x, p_flip_y, p_transpose);
-}
-
-void TileMap::_set_celld(const Vector2 &p_pos, const Dictionary &p_data) {
-	// Set the current cell tile data.
-	Variant v_pos_x = p_pos.x, v_pos_y = p_pos.y, v_tile = p_data["id"], v_flip_h = p_data["flip_h"], v_flip_v = p_data["flip_y"], v_transpose = p_data["transpose"], v_autotile_coord = p_data["auto_coord"];
-	const Variant *args[7] = { &v_pos_x, &v_pos_y, &v_tile, &v_flip_h, &v_flip_v, &v_transpose, &v_autotile_coord };
-	Callable::CallError ce;
-	call("set_cell", args, 7, ce);
-}
-
-void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_y, bool p_transpose, Vector2 p_autotile_coord) {
+void TileMap::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_tileset_coords, int p_alternative_tile) {
 	// Set the current cell tile (using integer position)
-	PosKey pk(p_x, p_y);
+	PosKey pk(p_coords);
 	Map<PosKey, Cell>::Element *E = tile_map.find(pk);
 
-	if (!E && p_tile == INVALID_CELL) {
+	if (!E && p_source_id == INVALID_CELL) {
 		return; // Nothing to do, the tile is already empty.
 	}
 
@@ -714,7 +702,7 @@ void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_
 	PosKey qk = pk.to_quadrant(_get_quadrant_size());
 	Map<PosKey, Quadrant>::Element *Q = quadrant_map.find(qk);
 
-	if (p_tile == INVALID_CELL) {
+	if (p_source_id == INVALID_CELL) {
 		// Erase existing cell in the tile map.
 		tile_map.erase(pk);
 
@@ -745,28 +733,64 @@ void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_
 		} else {
 			ERR_FAIL_COND(!Q); // Quadrant should exist...
 
-			if (E->get().id == p_tile && E->get().flip_h == p_flip_x && E->get().flip_v == p_flip_y && E->get().transpose == p_transpose && E->get().autotile_coord_x == (uint16_t)p_autotile_coord.x && E->get().autotile_coord_y == (uint16_t)p_autotile_coord.y) {
+			if (E->get().source_id == p_source_id && E->get().get_tileset_coords() == p_tileset_coords && E->get().alternative_tile == p_alternative_tile) {
 				return; //nothing changed
 			}
 		}
 
 		Cell &c = E->get();
 
-		c.id = p_tile;
-		c.flip_h = p_flip_x;
-		c.flip_v = p_flip_y;
-		c.transpose = p_transpose;
-		c.autotile_coord_x = (uint16_t)p_autotile_coord.x;
-		c.autotile_coord_y = (uint16_t)p_autotile_coord.y;
+		c.source_id = p_source_id;
+		c.set_tileset_coords(p_tileset_coords);
+		c.alternative_tile = p_alternative_tile;
 
 		_make_quadrant_dirty(Q);
 		used_size_cache_dirty = true;
 	}
 }
 
-int TileMap::get_cellv(const Vector2 &p_pos) const {
-	// Get the cell using a vector2.
-	return get_cell(p_pos.x, p_pos.y);
+void TileMap::_set_celld(const Vector2i &p_coords, const Dictionary &p_data) {
+	// Set the current cell tile data.
+	set_cell(p_coords, p_data["source_id"], p_data["tileset_coords"], p_data["p_alternative_tile"]);
+}
+
+int TileMap::get_cell_source_id(const Vector2i &p_coords) const {
+	// Get a cell source id from position
+	PosKey pk(p_coords);
+
+	const Map<PosKey, Cell>::Element *E = tile_map.find(pk);
+
+	if (!E) {
+		return INVALID_CELL;
+	}
+
+	return E->get().source_id;
+}
+
+Vector2i TileMap::get_cell_tileset_coords(const Vector2i &p_coords) const {
+	// Get a cell tileset coords from position
+	PosKey pk(p_coords);
+
+	const Map<PosKey, Cell>::Element *E = tile_map.find(pk);
+
+	if (!E) {
+		return Vector2i();
+	}
+
+	return E->get().get_tileset_coords();
+}
+
+int TileMap::get_cell_alternative_tile(const Vector2i &p_coords) const {
+	// Get a cell id from positions
+	PosKey pk(p_coords);
+
+	const Map<PosKey, Cell>::Element *E = tile_map.find(pk);
+
+	if (!E) {
+		return 0;
+	}
+
+	return E->get().alternative_tile;
 }
 
 void TileMap::make_bitmask_area_dirty(const Vector2 &p_pos) {
@@ -815,81 +839,90 @@ void TileMap::update_cell_bitmask(int p_x, int p_y) {
 	PosKey p(p_x, p_y);
 	Map<PosKey, Cell>::Element *E = tile_map.find(p);
 	if (E != nullptr) {
-		int id = get_cell(p_x, p_y);
+		int id = get_cell_source_id(Vector2i(p_x, p_y));
 		if (tile_set->tile_get_tile_mode(id) == TileSet::AUTO_TILE) {
 			uint16_t mask = 0;
+			int top_left = get_cell_source_id(Vector2i(p_x - 1, p_y - 1));
+			int top = get_cell_source_id(Vector2i(p_x, p_y - 1));
+			int top_right = get_cell_source_id(Vector2i(p_x + 1, p_y - 1));
+			int right = get_cell_source_id(Vector2i(p_x + 1, p_y));
+			int bottom_right = get_cell_source_id(Vector2i(p_x + 1, p_y + 1));
+			int bottom = get_cell_source_id(Vector2i(p_x, p_y + 1));
+			int bottom_left = get_cell_source_id(Vector2i(p_x - 1, p_y + 1));
+			int left = get_cell_source_id(Vector2i(p_x - 1, p_y));
+
 			if (tile_set->autotile_get_bitmask_mode(id) == TileSet::BITMASK_2X2) {
-				if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y))) {
+				if (tile_set->is_tile_bound(id, top_left) && tile_set->is_tile_bound(id, top) && tile_set->is_tile_bound(id, left)) {
 					mask |= TileSet::BIND_TOPLEFT;
 				}
-				if (tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y))) {
+				if (tile_set->is_tile_bound(id, top_right) && tile_set->is_tile_bound(id, top) && tile_set->is_tile_bound(id, right)) {
 					mask |= TileSet::BIND_TOPRIGHT;
 				}
-				if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y))) {
+				if (tile_set->is_tile_bound(id, bottom_left) && tile_set->is_tile_bound(id, bottom) && tile_set->is_tile_bound(id, left)) {
 					mask |= TileSet::BIND_BOTTOMLEFT;
 				}
-				if (tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y))) {
+				if (tile_set->is_tile_bound(id, bottom_right) && tile_set->is_tile_bound(id, bottom) && tile_set->is_tile_bound(id, right)) {
 					mask |= TileSet::BIND_BOTTOMRIGHT;
 				}
 			} else {
 				if (tile_set->autotile_get_bitmask_mode(id) == TileSet::BITMASK_3X3_MINIMAL) {
-					if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y))) {
+					if (tile_set->is_tile_bound(id, top_left) && tile_set->is_tile_bound(id, top) && tile_set->is_tile_bound(id, left)) {
 						mask |= TileSet::BIND_TOPLEFT;
 					}
-					if (tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y))) {
+					if (tile_set->is_tile_bound(id, top_right) && tile_set->is_tile_bound(id, top) && tile_set->is_tile_bound(id, right)) {
 						mask |= TileSet::BIND_TOPRIGHT;
 					}
-					if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y))) {
+					if (tile_set->is_tile_bound(id, bottom_left) && tile_set->is_tile_bound(id, bottom) && tile_set->is_tile_bound(id, left)) {
 						mask |= TileSet::BIND_BOTTOMLEFT;
 					}
-					if (tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y))) {
+					if (tile_set->is_tile_bound(id, bottom_right) && tile_set->is_tile_bound(id, bottom) && tile_set->is_tile_bound(id, right)) {
 						mask |= TileSet::BIND_BOTTOMRIGHT;
 					}
 				} else {
-					if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y - 1))) {
+					if (tile_set->is_tile_bound(id, top_left)) {
 						mask |= TileSet::BIND_TOPLEFT;
 					}
-					if (tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y - 1))) {
+					if (tile_set->is_tile_bound(id, top_right)) {
 						mask |= TileSet::BIND_TOPRIGHT;
 					}
-					if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y + 1))) {
+					if (tile_set->is_tile_bound(id, bottom_left)) {
 						mask |= TileSet::BIND_BOTTOMLEFT;
 					}
-					if (tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y + 1))) {
+					if (tile_set->is_tile_bound(id, bottom_right)) {
 						mask |= TileSet::BIND_BOTTOMRIGHT;
 					}
 				}
-				if (tile_set->is_tile_bound(id, get_cell(p_x, p_y - 1))) {
+				if (tile_set->is_tile_bound(id, top)) {
 					mask |= TileSet::BIND_TOP;
 				}
-				if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y))) {
+				if (tile_set->is_tile_bound(id, left)) {
 					mask |= TileSet::BIND_LEFT;
 				}
 				mask |= TileSet::BIND_CENTER;
-				if (tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y))) {
+				if (tile_set->is_tile_bound(id, right)) {
 					mask |= TileSet::BIND_RIGHT;
 				}
-				if (tile_set->is_tile_bound(id, get_cell(p_x, p_y + 1))) {
+				if (tile_set->is_tile_bound(id, bottom)) {
 					mask |= TileSet::BIND_BOTTOM;
 				}
 			}
 			Vector2 coord = tile_set->autotile_get_subtile_for_bitmask(id, mask, this, Vector2(p_x, p_y));
-			E->get().autotile_coord_x = (int)coord.x;
-			E->get().autotile_coord_y = (int)coord.y;
+			E->get().coord_x = (int)coord.x;
+			E->get().coord_y = (int)coord.y;
 
 			PosKey qk = p.to_quadrant(_get_quadrant_size());
 			Map<PosKey, Quadrant>::Element *Q = quadrant_map.find(qk);
 			_make_quadrant_dirty(Q);
 
 		} else if (tile_set->tile_get_tile_mode(id) == TileSet::SINGLE_TILE) {
-			E->get().autotile_coord_x = 0;
-			E->get().autotile_coord_y = 0;
+			E->get().coord_x = 0;
+			E->get().coord_y = 0;
 		} else if (tile_set->tile_get_tile_mode(id) == TileSet::ATLAS_TILE) {
 			if (tile_set->autotile_get_bitmask(id, Vector2(p_x, p_y)) == TileSet::BIND_CENTER) {
 				Vector2 coord = tile_set->atlastile_get_subtile_by_priority(id, this, Vector2(p_x, p_y));
 
-				E->get().autotile_coord_x = (int)coord.x;
-				E->get().autotile_coord_y = (int)coord.y;
+				E->get().coord_x = (int)coord.x;
+				E->get().coord_y = (int)coord.y;
 			}
 		}
 	}
@@ -906,103 +939,15 @@ void TileMap::update_dirty_bitmask() {
 void TileMap::fix_invalid_tiles() {
 	// Autotiles: Fix invalid tiles in the tilemap if it has any.
 	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot fix invalid tiles if Tileset is not open.");
-
-	Map<PosKey, Cell> temp_tile_map = tile_map;
-	for (Map<PosKey, Cell>::Element *E = temp_tile_map.front(); E; E = E->next()) {
-		if (!tile_set->has_tile(get_cell(E->key().x, E->key().y))) {
-			set_cell(E->key().x, E->key().y, INVALID_CELL);
+	for (Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
+		Vector2i v = Vector2i(E->key().x, E->key().y);
+		int source_id = get_cell_source_id(v);
+		Vector2i tileset_coords = get_cell_tileset_coords(v);
+		int alternative_tile = get_cell_alternative_tile(v);
+		if (!tile_set->has_tile(source_id, tileset_coords, alternative_tile)) {
+			set_cell(v, INVALID_CELL, Vector2i(), 0);
 		}
 	}
-}
-
-int TileMap::get_cell(int p_x, int p_y) const {
-	// Get a cell id from positions
-	PosKey pk(p_x, p_y);
-
-	const Map<PosKey, Cell>::Element *E = tile_map.find(pk);
-
-	if (!E) {
-		return INVALID_CELL;
-	}
-
-	return E->get().id;
-}
-
-bool TileMap::is_cell_x_flipped(int p_x, int p_y) const {
-	// Return if a cell is x flipped.
-	PosKey pk(p_x, p_y);
-
-	const Map<PosKey, Cell>::Element *E = tile_map.find(pk);
-
-	if (!E) {
-		return false;
-	}
-
-	return E->get().flip_h;
-}
-
-bool TileMap::is_cell_y_flipped(int p_x, int p_y) const {
-	// Return if a cell is y flipped.
-	PosKey pk(p_x, p_y);
-
-	const Map<PosKey, Cell>::Element *E = tile_map.find(pk);
-
-	if (!E) {
-		return false;
-	}
-
-	return E->get().flip_v;
-}
-
-bool TileMap::is_cell_transposed(int p_x, int p_y) const {
-	// Return if a cell is transposed.
-	PosKey pk(p_x, p_y);
-
-	const Map<PosKey, Cell>::Element *E = tile_map.find(pk);
-
-	if (!E) {
-		return false;
-	}
-
-	return E->get().transpose;
-}
-
-void TileMap::set_cell_autotile_coord(int p_x, int p_y, const Vector2 &p_coord) {
-	// Autotiles: set autotile coords.
-	PosKey pk(p_x, p_y);
-
-	const Map<PosKey, Cell>::Element *E = tile_map.find(pk);
-
-	if (!E) {
-		return;
-	}
-
-	Cell c = E->get();
-	c.autotile_coord_x = p_coord.x;
-	c.autotile_coord_y = p_coord.y;
-	tile_map[pk] = c;
-
-	PosKey qk = pk.to_quadrant(_get_quadrant_size());
-	Map<PosKey, Quadrant>::Element *Q = quadrant_map.find(qk);
-
-	if (!Q) {
-		return;
-	}
-
-	_make_quadrant_dirty(Q);
-}
-
-Vector2 TileMap::get_cell_autotile_coord(int p_x, int p_y) const {
-	// Autotiles: get autotile coords.
-	PosKey pk(p_x, p_y);
-
-	const Map<PosKey, Cell>::Element *E = tile_map.find(pk);
-
-	if (!E) {
-		return Vector2();
-	}
-
-	return Vector2(E->get().autotile_coord_x, E->get().autotile_coord_y);
 }
 
 void TileMap::_recreate_quadrants() {
@@ -1067,18 +1012,18 @@ void TileMap::clear() {
 
 void TileMap::_set_tile_data(const Vector<int> &p_data) {
 	// Set data for a given tile from raw data.
-	ERR_FAIL_COND(format > FORMAT_2);
+	ERR_FAIL_COND(format > FORMAT_3);
 
 	int c = p_data.size();
 	const int *r = p_data.ptr();
 
-	int offset = (format == FORMAT_2) ? 3 : 2;
+	int offset = (format >= FORMAT_2) ? 3 : 2;
 
 	clear();
 	for (int i = 0; i < c; i += offset) {
 		const uint8_t *ptr = (const uint8_t *)&r[i];
 		uint8_t local[12];
-		for (int j = 0; j < ((format == FORMAT_2) ? 12 : 8); j++) {
+		for (int j = 0; j < ((format >= FORMAT_2) ? 12 : 8); j++) {
 			local[j] = ptr[j];
 		}
 
@@ -1089,27 +1034,40 @@ void TileMap::_set_tile_data(const Vector<int> &p_data) {
 		SWAP(local[4], local[7]);
 		SWAP(local[5], local[6]);
 		//TODO: ask someone to check this...
-		if (FORMAT == FORMAT_2) {
+		if (FORMAT >= FORMAT_2) {
 			SWAP(local[8], local[11]);
 			SWAP(local[9], local[10]);
 		}
 #endif
-
 		uint16_t x = decode_uint16(&local[0]);
 		uint16_t y = decode_uint16(&local[2]);
-		uint32_t v = decode_uint32(&local[4]);
-		bool flip_h = v & (1 << 29);
-		bool flip_v = v & (1 << 30);
-		bool transpose = v & (1 << 31);
-		v &= (1 << 29) - 1;
-		int16_t coord_x = 0;
-		int16_t coord_y = 0;
-		if (format == FORMAT_2) {
-			coord_x = decode_uint16(&local[8]);
-			coord_y = decode_uint16(&local[10]);
-		}
 
-		set_cell(x, y, v, flip_h, flip_v, transpose, Vector2(coord_x, coord_y));
+		if (format == FORMAT_3) {
+			uint16_t source_id = decode_uint16(&local[4]);
+			uint16_t tileset_coords_x = decode_uint16(&local[6]);
+			uint16_t tileset_coords_y = decode_uint32(&local[8]);
+			uint16_t alternative_tile = decode_uint16(&local[10]);
+			set_cell(Vector2i(x, y), source_id, Vector2i(tileset_coords_x, tileset_coords_y), alternative_tile);
+		} else {
+			uint32_t v = decode_uint32(&local[4]);
+			v &= (1 << 29) - 1;
+
+			// We generate an alternative tile number out of the the flags
+			// An option should create the alternative in the tilset for compatibility
+			bool flip_h = v & (1 << 29);
+			bool flip_v = v & (1 << 30);
+			bool transpose = v & (1 << 31);
+			int16_t coord_x = 0;
+			int16_t coord_y = 0;
+			if (format == FORMAT_2) {
+				coord_x = decode_uint16(&local[8]);
+				coord_y = decode_uint16(&local[10]);
+			}
+
+			int compatibility_alternative_tile = ((int)flip_h) + ((int)flip_v << 1) + ((int)transpose << 2);
+
+			set_cell(Vector2i(x, y), v, Vector2i(coord_x, coord_y), compatibility_alternative_tile);
+		}
 	}
 }
 
@@ -1126,19 +1084,10 @@ Vector<int> TileMap::_get_tile_data() const {
 		uint8_t *ptr = (uint8_t *)&w[idx];
 		encode_uint16(E->key().x, &ptr[0]);
 		encode_uint16(E->key().y, &ptr[2]);
-		uint32_t val = E->get().id;
-		if (E->get().flip_h) {
-			val |= (1 << 29);
-		}
-		if (E->get().flip_v) {
-			val |= (1 << 30);
-		}
-		if (E->get().transpose) {
-			val |= (1 << 31);
-		}
-		encode_uint32(val, &ptr[4]);
-		encode_uint16(E->get().autotile_coord_x, &ptr[8]);
-		encode_uint16(E->get().autotile_coord_y, &ptr[10]);
+		encode_uint16(E->get().source_id, &ptr[4]);
+		encode_uint16(E->get().coord_x, &ptr[6]);
+		encode_uint16(E->get().coord_y, &ptr[8]);
+		encode_uint16(E->get().alternative_tile, &ptr[10]);
 		idx += 3;
 	}
 
@@ -1415,7 +1364,7 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 
 bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name == "format") {
-		r_ret = FORMAT_2; // When saving, always save highest format
+		r_ret = FORMAT_3; // When saving, always save highest format
 		return true;
 	} else if (p_name == "tile_data") {
 		r_ret = _get_tile_data();
@@ -1502,11 +1451,11 @@ TypedArray<Vector2i> TileMap::get_used_cells() const {
 	return a;
 }
 
-TypedArray<Vector2i> TileMap::get_used_cells_by_index(int p_id) const {
+TypedArray<Vector2i> TileMap::get_used_cells_by_index(int p_source_id, const Vector2i p_tileset_coords, int p_alternative_tile) const {
 	// Return all cells matching a given ID.
 	TypedArray<Vector2i> a;
 	for (Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
-		if (E->value().id == p_id) {
+		if (E->value().source_id == p_source_id && E->value().get_tileset_coords() == p_tileset_coords && E->value().alternative_tile == p_alternative_tile) {
 			Vector2i p(E->key().x, E->key().y);
 			a.push_back(p);
 		}
@@ -1659,16 +1608,11 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_occluder_light_mask", "mask"), &TileMap::set_occluder_light_mask);
 	ClassDB::bind_method(D_METHOD("get_occluder_light_mask"), &TileMap::get_occluder_light_mask);
 
-	ClassDB::bind_method(D_METHOD("set_cell", "x", "y", "tile", "flip_x", "flip_y", "transpose", "autotile_coord"), &TileMap::set_cell, DEFVAL(false), DEFVAL(false), DEFVAL(false), DEFVAL(Vector2()));
-	ClassDB::bind_method(D_METHOD("set_cellv", "position", "tile", "flip_x", "flip_y", "transpose"), &TileMap::set_cellv, DEFVAL(false), DEFVAL(false), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("_set_celld", "position", "data"), &TileMap::_set_celld);
-	ClassDB::bind_method(D_METHOD("get_cell", "x", "y"), &TileMap::get_cell);
-	ClassDB::bind_method(D_METHOD("get_cellv", "position"), &TileMap::get_cellv);
-	ClassDB::bind_method(D_METHOD("is_cell_x_flipped", "x", "y"), &TileMap::is_cell_x_flipped);
-	ClassDB::bind_method(D_METHOD("is_cell_y_flipped", "x", "y"), &TileMap::is_cell_y_flipped);
-	ClassDB::bind_method(D_METHOD("is_cell_transposed", "x", "y"), &TileMap::is_cell_transposed);
-
-	ClassDB::bind_method(D_METHOD("get_cell_autotile_coord", "x", "y"), &TileMap::get_cell_autotile_coord);
+	ClassDB::bind_method(D_METHOD("set_cell", "coords", "source_id", "tileset_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(0), DEFVAL(Vector2i()), DEFVAL(INVALID_CELL));
+	ClassDB::bind_method(D_METHOD("_set_celld", "coords", "data"), &TileMap::_set_celld);
+	ClassDB::bind_method(D_METHOD("get_cell_source_id", "coords"), &TileMap::get_cell_source_id);
+	ClassDB::bind_method(D_METHOD("get_cell_tileset_coords", "coords"), &TileMap::get_cell_tileset_coords);
+	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "coords"), &TileMap::get_cell_alternative_tile);
 
 	ClassDB::bind_method(D_METHOD("fix_invalid_tiles"), &TileMap::fix_invalid_tiles);
 	ClassDB::bind_method(D_METHOD("clear"), &TileMap::clear);

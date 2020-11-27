@@ -440,6 +440,27 @@ Rect2 TileSet::tile_get_region(int p_id) const {
 	return tile_map[p_id].region;
 }
 
+void TileSet::tile_set_flip_h(int p_source, Vector2i p_tile_set_coords, int p_alternative_tile, bool p_flip_x) {
+}
+
+bool TileSet::tile_get_flip_h(int p_source, Vector2i p_tile_set_coords, int p_alternative_tile) {
+	return false;
+}
+
+void TileSet::tile_set_flip_v(int p_source, Vector2i p_tile_set_coords, int p_alternative_tile, bool p_flip_y) {
+}
+
+bool TileSet::tile_get_flip_v(int p_source, Vector2i p_tile_set_coords, int p_alternative_tile) {
+	return false;
+}
+
+void TileSet::tile_set_transpose(int p_source, Vector2i p_tile_set_coords, int p_alternative_tile, bool p_transpose) {
+}
+
+bool TileSet::tile_get_transpose(int p_source, Vector2i p_tile_set_coords, int p_alternative_tile) {
+	return false;
+}
+
 void TileSet::tile_set_tile_mode(int p_id, TileMode p_tile_mode) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].tile_mode = p_tile_mode;
@@ -1034,7 +1055,7 @@ void TileSet::get_tile_list(List<int> *p_tiles) const {
 	}
 }
 
-bool TileSet::has_tile(int p_id) const {
+bool TileSet::has_tile(int p_id, const Vector2i p_tilset_coords, int p_alternative_tile) const {
 	return tile_map.has(p_id);
 }
 

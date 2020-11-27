@@ -65,7 +65,8 @@ public:
 private:
 	enum DataFormat {
 		FORMAT_1 = 0,
-		FORMAT_2
+		FORMAT_2,
+		FORMAT_3
 	};
 
 	Ref<TileSet> tile_set;
@@ -100,6 +101,10 @@ private:
 			x = p_x;
 			y = p_y;
 		}
+		PosKey(const Vector2i p_coords) {
+			x = p_coords.x;
+			y = p_coords.y;
+		}
 		PosKey() {
 			x = 0;
 			y = 0;
@@ -108,15 +113,22 @@ private:
 
 	union Cell {
 		struct {
-			int32_t id : 24;
-			bool flip_h : 1;
-			bool flip_v : 1;
-			bool transpose : 1;
-			int16_t autotile_coord_x : 16;
-			int16_t autotile_coord_y : 16;
+			int32_t source_id : 16;
+			int16_t coord_x : 16;
+			int16_t coord_y : 16;
+			int32_t alternative_tile : 16;
 		};
 
 		uint64_t _u64t = 0;
+
+		Vector2i get_tileset_coords() const {
+			return Vector2i(coord_x, coord_y);
+		}
+
+		void set_tileset_coords(const Vector2i &r_coords) {
+			coord_x = r_coords.x;
+			coord_y = r_coords.y;
+		}
 	};
 
 	Map<PosKey, Cell> tile_map;
@@ -244,17 +256,11 @@ public:
 	void set_quadrant_size(int p_size);
 	int get_quadrant_size() const;
 
-	void set_cell(int p_x, int p_y, int p_tile, bool p_flip_x = false, bool p_flip_y = false, bool p_transpose = false, Vector2 p_autotile_coord = Vector2());
-	int get_cell(int p_x, int p_y) const;
-	bool is_cell_x_flipped(int p_x, int p_y) const;
-	bool is_cell_y_flipped(int p_x, int p_y) const;
-	bool is_cell_transposed(int p_x, int p_y) const;
-	void set_cell_autotile_coord(int p_x, int p_y, const Vector2 &p_coord);
-	Vector2 get_cell_autotile_coord(int p_x, int p_y) const;
-
-	void _set_celld(const Vector2 &p_pos, const Dictionary &p_data);
-	void set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x = false, bool p_flip_y = false, bool p_transpose = false);
-	int get_cellv(const Vector2 &p_pos) const;
+	void set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_tileset_coords, int p_alternative_tile = 0);
+	void _set_celld(const Vector2i &p_coords, const Dictionary &p_data);
+	int get_cell_source_id(const Vector2i &p_coords) const;
+	Vector2i get_cell_tileset_coords(const Vector2i &p_coords) const;
+	int get_cell_alternative_tile(const Vector2i &p_coords) const;
 
 	void make_bitmask_area_dirty(const Vector2 &p_pos);
 	void update_bitmask_area(const Vector2 &p_pos);
@@ -310,7 +316,7 @@ public:
 	bool is_y_sort_enabled() const;
 
 	TypedArray<Vector2i> get_used_cells() const;
-	TypedArray<Vector2i> get_used_cells_by_index(int p_index) const;
+	TypedArray<Vector2i> get_used_cells_by_index(int p_source_id, const Vector2i p_tileset_coords = Vector2i(), int p_alternative_tile = 0) const;
 	Rect2 get_used_rect(); // Not const because of cache
 
 	void set_occluder_light_mask(int p_mask);
