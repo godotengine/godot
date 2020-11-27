@@ -315,9 +315,6 @@
 		<member name="collision_use_kinematic" type="bool" setter="set_collision_use_kinematic" getter="get_collision_use_kinematic" default="false">
 			If [code]true[/code], TileMap collisions will be handled as a kinematic body. If [code]false[/code], collisions will be handled as static body.
 		</member>
-		<member name="collision_use_parent" type="bool" setter="set_collision_use_parent" getter="get_collision_use_parent" default="false">
-			If [code]true[/code], this tilemap's collision shape will be added to the collision shape of the parent. The parent has to be a [CollisionObject2D].
-		</member>
 		<member name="compatibility_mode" type="bool" setter="set_compatibility_mode" getter="is_compatibility_mode_enabled" default="false">
 			If [code]true[/code], the compatibility with the tilemaps made in Godot 3.1 or earlier is maintained (textures move when the tile origin changes and rotate if the texture size is not homogeneous). This mode presents problems when doing [code]flip_h[/code], [code]flip_v[/code] and [code]transpose[/code] tile operations on non-homogeneous isometric tiles (e.g. 2:1), in which the texture could not coincide with the collision, thus it is not recommended for isometric or non-square tiles.
 			If [code]false[/code], the textures do not move when doing [code]flip_h[/code], [code]flip_v[/code] operations if no offset is used, nor when changing the tile origin.

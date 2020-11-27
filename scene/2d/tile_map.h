@@ -74,8 +74,6 @@ private:
 	Mode mode = MODE_SQUARE;
 	Transform2D custom_transform = Transform2D(64, 0, 0, 64, 0, 0);
 	HalfOffset half_offset = HALF_OFFSET_DISABLED;
-	bool use_parent = false;
-	CollisionObject2D *collision_parent = nullptr;
 	bool use_kinematic = false;
 	bool bake_navigation = false;
 
@@ -230,8 +228,6 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	virtual void _validate_property(PropertyInfo &property) const override;
-
 public:
 	enum {
 		INVALID_CELL = -1
@@ -285,9 +281,6 @@ public:
 	void set_collision_use_kinematic(bool p_use_kinematic);
 	bool get_collision_use_kinematic() const;
 
-	void set_collision_use_parent(bool p_use_parent);
-	bool get_collision_use_parent() const;
-
 	void set_collision_friction(float p_friction);
 	float get_collision_friction() const;
 
@@ -339,8 +332,6 @@ public:
 
 	void set_clip_uv(bool p_enable);
 	bool get_clip_uv() const;
-
-	TypedArray<String> get_configuration_warnings() const override;
 
 	virtual void set_texture_filter(CanvasItem::TextureFilter p_texture_filter) override;
 
