@@ -182,6 +182,7 @@ public class GodotInputHandler implements InputDeviceListener {
 				arr[i * 3 + 2] = event.getY(i);
 			}
 			final int action = event.getActionMasked();
+			final int pointer_idx = event.getPointerId(event.getActionIndex());
 
 			godotView.queueEvent(new Runnable() {
 				@Override
@@ -190,12 +191,9 @@ public class GodotInputHandler implements InputDeviceListener {
 						case MotionEvent.ACTION_DOWN:
 						case MotionEvent.ACTION_CANCEL:
 						case MotionEvent.ACTION_UP:
-						case MotionEvent.ACTION_MOVE: {
-							GodotLib.touch(event.getSource(), action, 0, evcount, arr);
-						} break;
+						case MotionEvent.ACTION_MOVE:
 						case MotionEvent.ACTION_POINTER_UP:
 						case MotionEvent.ACTION_POINTER_DOWN: {
-							int pointer_idx = event.getPointerId(event.getActionIndex());
 							GodotLib.touch(event.getSource(), action, pointer_idx, evcount, arr);
 						} break;
 					}
