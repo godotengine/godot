@@ -2288,7 +2288,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 	}
 
-	const Ref<InputEventPanGesture> pan_gesture = p_gui_input;
+	const Ref<InputEventGesturePan> pan_gesture = p_gui_input;
 	if (pan_gesture.is_valid()) {
 		const real_t delta = pan_gesture->get_delta().y;
 		if (delta < 0) {

@@ -26374,8 +26374,8 @@ msgid ""
 "Returns a copy of the given input event which has been offset by "
 "[code]local_ofs[/code] and transformed by [code]xform[/code]. Relevant for "
 "events of type [InputEventMouseButton], [InputEventMouseMotion], "
-"[InputEventScreenTouch], [InputEventScreenDrag], [InputEventMagnifyGesture] "
-"and [InputEventPanGesture]."
+"[InputEventScreenTouch], [InputEventScreenDrag], [InputEventGesturePan], "
+"[InputEventGesturePinth] and [InputEventGestureTwist]."
 msgstr ""
 
 #: doc/classes/InputEvent.xml:113

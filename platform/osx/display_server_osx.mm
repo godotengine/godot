@@ -992,17 +992,6 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 }
 
 - (void)magnifyWithEvent:(NSEvent *)event {
-	ERR_FAIL_COND(!DS_OSX->windows.has(window_id));
-	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
-
-	Ref<InputEventMagnifyGesture> ev;
-	ev.instance();
-	ev->set_window_id(window_id);
-	_get_key_modifier_state([event modifierFlags], ev);
-	ev->set_position(_get_mouse_pos(wd, [event locationInWindow]));
-	ev->set_factor([event magnification] + 1.0);
-
-	Input::get_singleton()->accumulate_input_event(ev);
 }
 
 - (void)viewDidChangeBackingProperties {
@@ -1483,18 +1472,6 @@ inline void sendScrollEvent(DisplayServer::WindowID window_id, int button, doubl
 }
 
 inline void sendPanEvent(DisplayServer::WindowID window_id, double dx, double dy, int modifierFlags) {
-	ERR_FAIL_COND(!DS_OSX->windows.has(window_id));
-	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
-
-	Ref<InputEventPanGesture> pg;
-	pg.instance();
-
-	pg->set_window_id(window_id);
-	_get_key_modifier_state(modifierFlags, pg);
-	pg->set_position(wd.mouse_pos);
-	pg->set_delta(Vector2(-dx, -dy));
-
-	Input::get_singleton()->accumulate_input_event(pg);
 }
 
 - (void)scrollWheel:(NSEvent *)event {
