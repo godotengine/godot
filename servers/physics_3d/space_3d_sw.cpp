@@ -274,11 +274,11 @@ bool PhysicsDirectSpaceState3DSW::cast_motion(const RID &p_shape, const Transfor
 			continue;
 		}
 
-		//test initial overlap
+		//test initial overlap, ignore objects it's inside of.
 		sep_axis = p_motion.normalized();
 
 		if (!CollisionSolver3DSW::solve_distance(shape, p_xform, col_obj->get_shape(shape_idx), col_obj_xform, point_A, point_B, aabb, &sep_axis)) {
-			return false;
+			continue;
 		}
 
 		//just do kinematic solving
