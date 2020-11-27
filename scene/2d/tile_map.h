@@ -180,8 +180,6 @@ private:
 	bool used_size_cache_dirty = true;
 	bool quadrant_order_dirty = false;
 	bool use_y_sort = false;
-	bool compatibility_mode = false;
-	bool centered_textures = false;
 	bool clip_uv = false;
 	float fp_adjust = 0.00001;
 	float friction = 1.0;
@@ -310,12 +308,6 @@ public:
 
 	void set_y_sort_enabled(bool p_enable);
 	bool is_y_sort_enabled() const;
-
-	void set_compatibility_mode(bool p_enable);
-	bool is_compatibility_mode_enabled() const;
-
-	void set_centered_textures(bool p_enable);
-	bool is_centered_textures_enabled() const;
 
 	TypedArray<Vector2i> get_used_cells() const;
 	TypedArray<Vector2i> get_used_cells_by_index(int p_index) const;

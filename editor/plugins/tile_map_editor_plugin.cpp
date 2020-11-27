@@ -841,9 +841,6 @@ void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p
 		r.size = node->get_tileset()->autotile_get_size(p_cell);
 		r.position += (r.size + Vector2(spacing, spacing)) * offset;
 	}
-	Size2 cell_size = node->get_cell_size();
-	bool centered_texture = node->is_centered_textures_enabled();
-	bool compatibility_mode_enabled = node->is_compatibility_mode_enabled();
 	Rect2 rect = Rect2();
 	rect.position = node->map_to_world(p_point) + node->get_cell_draw_offset();
 
@@ -853,26 +850,8 @@ void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p
 		rect.size = r.size;
 	}
 
-	if (compatibility_mode_enabled && !centered_texture) {
-		if (rect.size.y > rect.size.x) {
-			if ((p_flip_h && (p_flip_v || p_transpose)) || (p_flip_v && !p_transpose)) {
-				tile_ofs.y += rect.size.y - rect.size.x;
-			}
-		} else if (rect.size.y < rect.size.x) {
-			if ((p_flip_v && (p_flip_h || p_transpose)) || (p_flip_h && !p_transpose)) {
-				tile_ofs.x += rect.size.x - rect.size.y;
-			}
-		}
-	}
-
 	if (p_transpose) {
 		SWAP(tile_ofs.x, tile_ofs.y);
-		if (centered_texture) {
-			rect.position.x += cell_size.x / 2 - rect.size.y / 2;
-			rect.position.y += cell_size.y / 2 - rect.size.x / 2;
-		}
-	} else if (centered_texture) {
-		rect.position += cell_size / 2 - rect.size / 2;
 	}
 
 	if (p_flip_h) {
@@ -885,44 +864,7 @@ void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p
 		tile_ofs.y *= -1.0;
 	}
 
-	if (compatibility_mode_enabled && !centered_texture) {
-		if (node->get_tile_origin() == TileMap::TILE_ORIGIN_TOP_LEFT) {
-			rect.position += tile_ofs;
-		} else if (node->get_tile_origin() == TileMap::TILE_ORIGIN_BOTTOM_LEFT) {
-			rect.position += tile_ofs;
-
-			if (p_transpose) {
-				if (p_flip_h) {
-					rect.position.x -= cell_size.x;
-				} else {
-					rect.position.x += cell_size.x;
-				}
-			} else {
-				if (p_flip_v) {
-					rect.position.y -= cell_size.y;
-				} else {
-					rect.position.y += cell_size.y;
-				}
-			}
-
-		} else if (node->get_tile_origin() == TileMap::TILE_ORIGIN_CENTER) {
-			rect.position += tile_ofs;
-
-			if (p_flip_h) {
-				rect.position.x -= cell_size.x / 2;
-			} else {
-				rect.position.x += cell_size.x / 2;
-			}
-
-			if (p_flip_v) {
-				rect.position.y -= cell_size.y / 2;
-			} else {
-				rect.position.y += cell_size.y / 2;
-			}
-		}
-	} else {
-		rect.position += tile_ofs;
-	}
+	rect.position += tile_ofs;
 
 	Color modulate = node->get_tileset()->tile_get_modulate(p_cell);
 	modulate.a = 0.5;
