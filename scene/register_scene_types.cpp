@@ -170,7 +170,7 @@
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"
 #include "scene/resources/texture.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/tile_set/tile_set.h"
 #include "scene/resources/video_stream.h"
 #include "scene/resources/visual_shader.h"
 #include "scene/resources/visual_shader_nodes.h"
@@ -655,6 +655,7 @@ void register_scene_types() {
 	ClassDB::register_class<GrooveJoint2D>();
 	ClassDB::register_class<DampedSpringJoint2D>();
 	ClassDB::register_class<TileSet>();
+	ClassDB::register_class<TileAtlasSource>();
 	ClassDB::register_class<TileMap>();
 	ClassDB::register_class<ParallaxBackground>();
 	ClassDB::register_class<ParallaxLayer>();

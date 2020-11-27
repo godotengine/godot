@@ -24,3 +24,4 @@ env.scene_sources += scene_obj
 env.Depends(scene_obj, thirdparty_obj)
 
 SConscript("default_theme/SCsub")
+SConscript("tile_set/SCsub")
