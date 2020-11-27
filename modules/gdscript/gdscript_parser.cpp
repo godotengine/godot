@@ -184,6 +184,7 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 
 #ifdef DEBUG_ENABLED
 void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const String &p_symbol1, const String &p_symbol2, const String &p_symbol3, const String &p_symbol4) {
+	ERR_FAIL_COND(p_source == nullptr);
 	Vector<String> symbols;
 	if (!p_symbol1.empty()) {
 		symbols.push_back(p_symbol1);
@@ -201,6 +202,7 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 }
 
 void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
+	ERR_FAIL_COND(p_source == nullptr);
 	if (is_ignoring_warnings) {
 		return;
 	}
@@ -1419,7 +1421,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 	}
 
 #ifdef DEBUG_ENABLED
-	if (unreachable) {
+	if (unreachable && result != nullptr) {
 		current_suite->has_unreachable_code = true;
 		if (current_function) {
 			push_warning(result, GDScriptWarning::UNREACHABLE_CODE, current_function->identifier->name);
