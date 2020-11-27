@@ -983,12 +983,14 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 						}
 
 						GDScriptParser::DataType arg_type = call->arguments[i]->get_datatype();
-						if (arg_type.kind != GDScriptParser::DataType::BUILTIN) {
-							all_is_constant = false;
-							push_error(vformat(R"*(Invalid argument for "range()" call. Argument %d should be int or float but "%s" was given.)*", i + 1, arg_type.to_string()), call->arguments[i]);
-						} else if (arg_type.builtin_type != Variant::INT && arg_type.builtin_type != Variant::FLOAT) {
-							all_is_constant = false;
-							push_error(vformat(R"*(Invalid argument for "range()" call. Argument %d should be int or float but "%s" was given.)*", i + 1, arg_type.to_string()), call->arguments[i]);
+						if (!arg_type.is_variant()) {
+							if (arg_type.kind != GDScriptParser::DataType::BUILTIN) {
+								all_is_constant = false;
+								push_error(vformat(R"*(Invalid argument for "range()" call. Argument %d should be int or float but "%s" was given.)*", i + 1, arg_type.to_string()), call->arguments[i]);
+							} else if (arg_type.builtin_type != Variant::INT && arg_type.builtin_type != Variant::FLOAT) {
+								all_is_constant = false;
+								push_error(vformat(R"*(Invalid argument for "range()" call. Argument %d should be int or float but "%s" was given.)*", i + 1, arg_type.to_string()), call->arguments[i]);
+							}
 						}
 					}
 
