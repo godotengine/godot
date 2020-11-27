@@ -543,7 +543,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		tf.width = grid_size;
 		tf.height = grid_size;
 		tf.depth = grid_size;
-		tf.type = RD::TEXTURE_TYPE_3D;
+		tf.texture_type = RD::TEXTURE_TYPE_3D;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
 
 		Vector<Vector<uint8_t>> texdata;
@@ -695,7 +695,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		tf.width = atlas_size.width;
 		tf.height = atlas_size.height;
 		tf.array_layers = atlas_slices;
-		tf.type = RD::TEXTURE_TYPE_2D_ARRAY;
+		tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
 		tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 
@@ -917,7 +917,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		tf.width = atlas_size.width;
 		tf.height = atlas_size.height;
 		tf.depth = 1;
-		tf.type = RD::TEXTURE_TYPE_2D;
+		tf.texture_type = RD::TEXTURE_TYPE_2D;
 		tf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 		tf.format = RD::DATA_FORMAT_D32_SFLOAT;
 

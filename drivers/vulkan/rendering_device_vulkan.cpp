@@ -1692,16 +1692,16 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 #endif
 	}
 
-	if (p_format.type == TEXTURE_TYPE_CUBE || p_format.type == TEXTURE_TYPE_CUBE_ARRAY) {
+	if (p_format.texture_type == TEXTURE_TYPE_CUBE || p_format.texture_type == TEXTURE_TYPE_CUBE_ARRAY) {
 		image_create_info.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 	}
 	/*if (p_format.type == TEXTURE_TYPE_2D || p_format.type == TEXTURE_TYPE_2D_ARRAY) {
 		image_create_info.flags |= VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
 	}*/
 
-	ERR_FAIL_INDEX_V(p_format.type, TEXTURE_TYPE_MAX, RID());
+	ERR_FAIL_INDEX_V(p_format.texture_type, TEXTURE_TYPE_MAX, RID());
 
-	image_create_info.imageType = vulkan_image_type[p_format.type];
+	image_create_info.imageType = vulkan_image_type[p_format.texture_type];
 
 	ERR_FAIL_COND_V_MSG(p_format.width < 1, RID(), "Width must be equal or greater than 1 for all textures");
 
@@ -1726,10 +1726,10 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 
 	image_create_info.mipLevels = p_format.mipmaps;
 
-	if (p_format.type == TEXTURE_TYPE_1D_ARRAY || p_format.type == TEXTURE_TYPE_2D_ARRAY || p_format.type == TEXTURE_TYPE_CUBE_ARRAY || p_format.type == TEXTURE_TYPE_CUBE) {
+	if (p_format.texture_type == TEXTURE_TYPE_1D_ARRAY || p_format.texture_type == TEXTURE_TYPE_2D_ARRAY || p_format.texture_type == TEXTURE_TYPE_CUBE_ARRAY || p_format.texture_type == TEXTURE_TYPE_CUBE) {
 		ERR_FAIL_COND_V_MSG(p_format.array_layers < 1, RID(),
 				"Amount of layers must be equal or greater than 1 for arrays and cubemaps.");
-		ERR_FAIL_COND_V_MSG((p_format.type == TEXTURE_TYPE_CUBE_ARRAY || p_format.type == TEXTURE_TYPE_CUBE) && (p_format.array_layers % 6) != 0, RID(),
+		ERR_FAIL_COND_V_MSG((p_format.texture_type == TEXTURE_TYPE_CUBE_ARRAY || p_format.texture_type == TEXTURE_TYPE_CUBE) && (p_format.array_layers % 6) != 0, RID(),
 				"Cubemap and cubemap array textures must provide a layer number that is multiple of 6");
 		image_create_info.arrayLayers = p_format.array_layers;
 	} else {
@@ -1859,7 +1859,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	VkResult err = vmaCreateImage(allocator, &image_create_info, &allocInfo, &texture.image, &texture.allocation, &texture.allocation_info);
 	ERR_FAIL_COND_V_MSG(err, RID(), "vmaCreateImage failed with error " + itos(err) + ".");
 
-	texture.type = p_format.type;
+	texture.type = p_format.texture_type;
 	texture.format = p_format.format;
 	texture.width = image_create_info.extent.width;
 	texture.height = image_create_info.extent.height;
@@ -1927,7 +1927,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		VK_IMAGE_VIEW_TYPE_CUBE_ARRAY,
 	};
 
-	image_view_create_info.viewType = view_types[p_format.type];
+	image_view_create_info.viewType = view_types[p_format.texture_type];
 	if (p_view.format_override == DATA_FORMAT_MAX) {
 		image_view_create_info.format = image_create_info.format;
 	} else {
