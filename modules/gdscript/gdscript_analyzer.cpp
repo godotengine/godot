@@ -1499,7 +1499,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 		switch (identifier->source) {
 			case GDScriptParser::IdentifierNode::MEMBER_VARIABLE: {
 				GDScriptParser::DataType id_type = identifier->variable_source->get_datatype();
-				if (!id_type.is_hard_type()) {
+				if (!id_type.is_hard_type() && !id_type.is_kind_same(p_assignment->assigned_value->get_datatype())) {
 					id_type.kind = GDScriptParser::DataType::VARIANT;
 					id_type.type_source = GDScriptParser::DataType::UNDETECTED;
 					identifier->variable_source->set_datatype(id_type);

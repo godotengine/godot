@@ -137,15 +137,7 @@ public:
 		_FORCE_INLINE_ bool is_hard_type() const { return type_source > INFERRED; }
 		String to_string() const;
 
-		bool operator==(const DataType &p_other) const {
-			if (type_source == UNDETECTED || p_other.type_source == UNDETECTED) {
-				return true; // Can be consireded equal for parsing purposes.
-			}
-
-			if (type_source == INFERRED || p_other.type_source == INFERRED) {
-				return true; // Can be consireded equal for parsing purposes.
-			}
-
+		bool is_kind_same(const DataType &p_other) const {
 			if (kind != p_other.kind) {
 				return false;
 			}
@@ -169,6 +161,18 @@ public:
 			}
 
 			return false;
+		}
+
+		bool operator==(const DataType &p_other) const {
+			if (type_source == UNDETECTED || p_other.type_source == UNDETECTED) {
+				return true; // Can be consireded equal for parsing purposes.
+			}
+
+			if (type_source == INFERRED || p_other.type_source == INFERRED) {
+				return true; // Can be consireded equal for parsing purposes.
+			}
+
+			return is_kind_same(p_other);
 		}
 
 		bool operator!=(const DataType &p_other) const {
