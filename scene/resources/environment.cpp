@@ -31,6 +31,7 @@
 #include "environment.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "servers/rendering_server.h"
 #include "texture.h"
 
@@ -891,23 +892,38 @@ float Environment::get_adjustment_saturation() const {
 	return adjustment_saturation;
 }
 
-void Environment::set_adjustment_color_correction(const Ref<Texture2D> &p_ramp) {
-	adjustment_color_correction = p_ramp;
+void Environment::set_adjustment_color_correction(Ref<Texture> p_color_correction) {
+	adjustment_color_correction = p_color_correction;
+	Ref<GradientTexture> grad_tex = p_color_correction;
+	if (grad_tex.is_valid()) {
+		if (!grad_tex->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &Environment::_update_adjustment))) {
+			grad_tex->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Environment::_update_adjustment));
+		}
+	}
+	Ref<Texture2D> adjustment_texture_2d = adjustment_color_correction;
+	if (adjustment_texture_2d.is_valid()) {
+		use_1d_color_correction = true;
+	} else {
+		use_1d_color_correction = false;
+	}
 	_update_adjustment();
 }
 
-Ref<Texture2D> Environment::get_adjustment_color_correction() const {
+Ref<Texture> Environment::get_adjustment_color_correction() const {
 	return adjustment_color_correction;
 }
 
 void Environment::_update_adjustment() {
+	RID color_correction = adjustment_color_correction.is_valid() ? adjustment_color_correction->get_rid() : RID();
+
 	RS::get_singleton()->environment_set_adjustment(
 			environment,
 			adjustment_enabled,
 			adjustment_brightness,
 			adjustment_contrast,
 			adjustment_saturation,
-			adjustment_color_correction.is_valid() ? adjustment_color_correction->get_rid() : RID());
+			use_1d_color_correction,
+			color_correction);
 }
 
 // Private methods, constructor and destructor
@@ -1319,7 +1335,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_brightness", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_brightness", "get_adjustment_brightness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_contrast", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_contrast", "get_adjustment_contrast");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_saturation", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_saturation", "get_adjustment_saturation");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "adjustment_color_correction", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_adjustment_color_correction", "get_adjustment_color_correction");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "adjustment_color_correction", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D,Texture3D"), "set_adjustment_color_correction", "get_adjustment_color_correction");
 
 	// Constants
 

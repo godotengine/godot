@@ -608,7 +608,9 @@
 			</argument>
 			<argument index="4" name="saturation" type="float">
 			</argument>
-			<argument index="5" name="ramp" type="RID">
+			<argument index="5" name="use_1d_color_correction" type="bool">
+			</argument>
+			<argument index="6" name="color_correction" type="RID">
 			</argument>
 			<description>
 				Sets the values to be used with the "Adjustment" post-process effect. See [Environment] for more details.
