@@ -718,7 +718,7 @@ public:
 	BIND2(canvas_item_set_draw_behind_parent, RID, bool)
 
 	BIND5(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float)
-	BIND4(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float)
+	BIND5(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
 	BIND4(canvas_item_add_multiline, RID, const Vector<Point2> &, const Vector<Color> &, float)
 	BIND3(canvas_item_add_rect, RID, const Rect2 &, const Color &)
 	BIND4(canvas_item_add_circle, RID, const Point2 &, float, const Color &)
