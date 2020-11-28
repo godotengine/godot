@@ -523,6 +523,18 @@ Size2 Font::get_wordwrap_string_size(const String &p_string, float p_width) cons
 	return Size2(p_width, h);
 }
 
+Size2 Font::total_size_of_lines(Vector<String> p_lines) {
+	int num_lines = p_lines.size();
+
+	Size2 size;
+	size.height = get_height() * num_lines;
+	for (int i = 0; i < num_lines; i++) {
+		Size2 line_size = get_string_size(p_lines[i]);
+		size.width = MAX(line_size.width, size.width);
+	}
+	return size;
+}
+
 void BitmapFont::set_fallback(const Ref<BitmapFont> &p_fallback) {
 	for (Ref<BitmapFont> fallback_child = p_fallback; fallback_child != nullptr; fallback_child = fallback_child->get_fallback()) {
 		ERR_FAIL_COND_MSG(fallback_child == this, "Can't set as fallback one of its parents to prevent crashes due to recursive loop.");
