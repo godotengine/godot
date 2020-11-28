@@ -628,8 +628,12 @@ Error GDScript::reload(bool p_keep_state) {
 		if (EngineDebugger::is_active()) {
 			GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
 		}
-		// TODO: Show all error messages.
-		_err_print_error("GDScript::reload", path.empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), ERR_HANDLER_SCRIPT);
+
+		const List<GDScriptParser::ParserError>::Element *e = parser.get_errors().front();
+		while (e != nullptr) {
+			_err_print_error("GDScript::reload", path.empty() ? "built-in" : (const char *)path.utf8().get_data(), e->get().line, ("Parse Error: " + e->get().message).utf8().get_data(), ERR_HANDLER_SCRIPT);
+			e = e->next();
+		}
 		ERR_FAIL_V(ERR_PARSE_ERROR);
 	}
 
