@@ -31,6 +31,7 @@
 #ifndef MATH_FUNCS_H
 #define MATH_FUNCS_H
 
+#include "core/error/error_macros.h"
 #include "core/math/math_defs.h"
 #include "core/math/random_pcg.h"
 #include "core/typedefs.h"
@@ -38,6 +39,7 @@
 #include "thirdparty/misc/pcg.h"
 
 #include <float.h>
+#include <limits.h>
 #include <math.h>
 
 class Math {
@@ -199,6 +201,7 @@ public:
 		return value;
 	}
 	static _ALWAYS_INLINE_ int posmod(int p_x, int p_y) {
+		ERR_FAIL_COND_V_MSG(p_y == 0, INT_MIN, "Cannot divide by zero");
 		int value = p_x % p_y;
 		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
 			value += p_y;

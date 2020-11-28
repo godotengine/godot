@@ -3418,6 +3418,9 @@ Variant Variant::call(const StringName &p_method, VARIANT_ARG_DECLARE) {
 			String err = "Too many arguments for method '" + p_method + "'";
 			ERR_PRINT(err.utf8().get_data());
 		} break;
+		case Callable::CallError::CALL_ERROR_ARGUMENT_IS_ZERO: {
+			String err = "Argument #" + itos(error.argument) + " is zero.";
+		} break;
 		default: {
 		}
 	}

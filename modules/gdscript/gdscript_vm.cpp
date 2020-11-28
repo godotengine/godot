@@ -178,6 +178,8 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		err_text = "Invalid call. Nonexistent " + p_where + ".";
 	} else if (p_err.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
 		err_text = "Attempt to call " + p_where + " on a null instance.";
+	} else if (p_err.error == Callable::CallError::CALL_ERROR_ARGUMENT_IS_ZERO) {
+		err_text = "Attempt to call " + p_where + " with a zero argument.";
 	} else {
 		err_text = "Bug, call error: #" + itos(p_err.error);
 	}

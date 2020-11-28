@@ -772,6 +772,7 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
 			case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
 			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
+			case Callable::CallError::CALL_ERROR_ARGUMENT_IS_ZERO:
 				return ret;
 			case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL: {
 			}

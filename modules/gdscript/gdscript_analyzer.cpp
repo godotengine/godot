@@ -1745,6 +1745,9 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 						break;
 					case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
 						break; // Can't happen in a builtin constructor.
+					case Callable::CallError::CALL_ERROR_ARGUMENT_IS_ZERO:
+						push_error(vformat("Argument %d for %s construction is zero.", err.argument + 1, Variant::get_type_name(builtin_type)), p_call);
+						break;
 					case Callable::CallError::CALL_OK:
 						p_call->is_constant = true;
 						p_call->reduced_value = value;
@@ -1850,6 +1853,9 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 						break;
 					case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
 						break; // Can't happen in a builtin constructor.
+					case Callable::CallError::CALL_ERROR_ARGUMENT_IS_ZERO:
+						push_error(vformat(R"*(Argument %d for "%s()" call is zero.)*", err.argument + 1, GDScriptFunctions::get_func_name(builtin_function)), p_call);
+						break;
 					case Callable::CallError::CALL_OK:
 						p_call->is_constant = true;
 						p_call->reduced_value = value;

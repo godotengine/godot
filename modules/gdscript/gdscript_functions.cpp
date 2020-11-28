@@ -247,7 +247,14 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_COUNT(2);
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			r_ret = Math::posmod((int)*p_args[0], (int)*p_args[1]);
+			int result = Math::posmod((int)*p_args[0], (int)*p_args[1]);
+			if (result == INT_MIN) {
+				r_error.error = Callable::CallError::CALL_ERROR_ARGUMENT_IS_ZERO;
+				r_error.argument = 1;
+				r_ret = Variant();
+			} else {
+				r_ret = result;
+			}
 		} break;
 		case MATH_FLOOR: {
 			VALIDATE_ARG_COUNT(1);
