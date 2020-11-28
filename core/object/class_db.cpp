@@ -978,6 +978,7 @@ void ClassDB::add_property_subgroup(StringName p_class, const String &p_name, co
 	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, p_prefix, PROPERTY_USAGE_SUBGROUP));
 }
 
+// NOTE: For implementation simplicity reasons, this method doesn't allow setters to have optional arguments at the end.
 void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index) {
 	lock->read_lock();
 	ClassInfo *type = classes.getptr(p_class);
