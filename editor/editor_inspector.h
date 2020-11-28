@@ -69,13 +69,13 @@ private:
 	Rect2 bottom_child_rect;
 
 	Rect2 keying_rect;
-	bool keying_hover;
+	bool keying_hover = false;
 	Rect2 revert_rect;
-	bool revert_hover;
+	bool revert_hover = false;
 	Rect2 check_rect;
-	bool check_hover;
+	bool check_hover = false;
 	Rect2 delete_rect;
-	bool delete_hover;
+	bool delete_hover = false;
 
 	bool can_revert;
 

@@ -483,5 +483,8 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 }
 
 ShaderGlobalsEditor::~ShaderGlobalsEditor() {
+	if (is_visible_in_tree()) {
+		inspector->edit(nullptr);
+	}
 	memdelete(interface);
 }

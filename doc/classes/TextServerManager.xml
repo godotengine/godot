@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextServerManager" inherits="Object" version="4.0">
+	<brief_description>
+		Manager for the font and complex text layout servers.
+	</brief_description>
+	<description>
+		[TextServerManager] is the API backend for loading, enumeration and switching [TextServer]s.
+		Note: Switching text server at runtime is possible, but will invalidate all fonts and text buffers. Make sure to unload all controls, fonts, and themes before doing so.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="find_interface" qualifiers="const">
+			<return type="TextServer">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Finds an interface by its name.
+			</description>
+		</method>
+		<method name="get_interface" qualifiers="const">
+			<return type="TextServer">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns the interface registered at a given index.
+			</description>
+		</method>
+		<method name="get_interface_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of interfaces currently registered.
+			</description>
+		</method>
+		<method name="get_interface_features" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns text server supported features (binary OR).
+			</description>
+		</method>
+		<method name="get_interface_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns the interface name registered at a given index.
+			</description>
+		</method>
+		<method name="get_interfaces" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns a list of available interfaces the index and name of each interface.
+			</description>
+		</method>
+		<method name="get_primary_interface" qualifiers="const">
+			<return type="TextServer">
+			</return>
+			<description>
+				Returns the primary [TextServer] interface.
+			</description>
+		</method>
+		<method name="set_primary_interface">
+			<return type="bool">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Sets (and initializes it if required) interface registered at a given index as the primary. Invalidates all references to the fonts and text buffers.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

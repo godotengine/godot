@@ -37,6 +37,24 @@
 #include "scene/gui/control.h"
 
 void LocalizationEditor::_notification(int p_what) {
+	if (p_what == NOTIFICATION_TEXT_SERVER_CHANGED) {
+		ts_name->set_text(TTR("Text server: ") + TS->get_name());
+
+		FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+		if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+			if (file_check->file_exists("res://" + TS->get_support_data_filename())) {
+				ts_data_status->set_text(TTR("Support data: ") + TTR("Installed"));
+				ts_install->set_disabled(true);
+			} else {
+				ts_data_status->set_text(TTR("Support data: ") + TTR("Not installed"));
+				ts_install->set_disabled(false);
+			}
+		} else {
+			ts_data_status->set_text(TTR("Support data: ") + TTR("Not supported"));
+			ts_install->set_disabled(false);
+		}
+		ts_data_info->set_text(TTR("Info: ") + TS->get_support_data_info());
+	}
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		translation_list->connect("button_pressed", callable_mp(this, &LocalizationEditor::_translation_delete));
 		translation_pot_list->connect("button_pressed", callable_mp(this, &LocalizationEditor::_pot_delete));
@@ -622,6 +640,26 @@ void LocalizationEditor::update_translations() {
 	updating_translations = false;
 }
 
+void LocalizationEditor::_install_ts_data() {
+	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+		TS->save_support_data("res://" + TS->get_support_data_filename());
+	}
+
+	FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+		if (file_check->file_exists("res://" + TS->get_support_data_filename())) {
+			ts_data_status->set_text(TTR("Support data: ") + TTR("Installed"));
+			ts_install->set_disabled(true);
+		} else {
+			ts_data_status->set_text(TTR("Support data: ") + TTR("Not installed"));
+			ts_install->set_disabled(false);
+		}
+	} else {
+		ts_data_status->set_text(TTR("Support data: ") + TTR("Not supported"));
+		ts_install->set_disabled(false);
+	}
+}
+
 void LocalizationEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_translations"), &LocalizationEditor::update_translations);
 
@@ -790,5 +828,38 @@ LocalizationEditor::LocalizationEditor() {
 		pot_file_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 		pot_file_open_dialog->connect("file_selected", callable_mp(this, &LocalizationEditor::_pot_add));
 		add_child(pot_file_open_dialog);
+	}
+
+	{
+		VBoxContainer *tvb = memnew(VBoxContainer);
+		tvb->set_name(TTR("Text Server Data"));
+		translations->add_child(tvb);
+
+		ts_name = memnew(Label(TTR("Text server: ") + TS->get_name()));
+		tvb->add_child(ts_name);
+
+		ts_data_status = memnew(Label(TTR("Support data: ")));
+		tvb->add_child(ts_data_status);
+
+		ts_data_info = memnew(Label(TTR("Info: ") + TS->get_support_data_info()));
+		tvb->add_child(ts_data_info);
+
+		ts_install = memnew(Button(TTR("Install support data...")));
+		ts_install->connect("pressed", callable_mp(this, &LocalizationEditor::_install_ts_data));
+		tvb->add_child(ts_install);
+
+		FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+		if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+			if (file_check->file_exists("res://" + TS->get_support_data_filename())) {
+				ts_data_status->set_text(TTR("Support data: ") + TTR("Installed"));
+				ts_install->set_disabled(true);
+			} else {
+				ts_data_status->set_text(TTR("Support data: ") + TTR("Not installed"));
+				ts_install->set_disabled(false);
+			}
+		} else {
+			ts_data_status->set_text(TTR("Support data: ") + TTR("Not supported"));
+			ts_install->set_disabled(false);
+		}
 	}
 }

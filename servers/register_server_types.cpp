@@ -65,9 +65,9 @@
 #include "rendering/rasterizer.h"
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
-
 #include "rendering_server.h"
 #include "servers/rendering/shader_types.h"
+#include "text_server.h"
 #include "xr/xr_interface.h"
 #include "xr/xr_positional_tracker.h"
 #include "xr_server.h"
@@ -102,6 +102,11 @@ void register_server_types() {
 	ClassDB::register_virtual_class<DisplayServer>();
 	ClassDB::register_virtual_class<RenderingServer>();
 	ClassDB::register_class<AudioServer>();
+
+	ClassDB::register_class<TextServerManager>();
+	ClassDB::register_virtual_class<TextServer>();
+	TextServer::initialize_hex_code_box_fonts();
+
 	ClassDB::register_virtual_class<PhysicsServer2D>();
 	ClassDB::register_virtual_class<PhysicsServer3D>();
 	ClassDB::register_virtual_class<NavigationServer2D>();
@@ -209,6 +214,7 @@ void register_server_types() {
 
 void unregister_server_types() {
 	memdelete(shader_types);
+	TextServer::finish_hex_code_box_fonts();
 }
 
 void register_server_singletons() {
@@ -219,6 +225,7 @@ void register_server_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer3D", PhysicsServer3D::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer2D", NavigationServer2D::get_singleton_mut()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer3D", NavigationServer3D::get_singleton_mut()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("XRServer", XRServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton()));
 }

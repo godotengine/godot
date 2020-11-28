@@ -110,7 +110,9 @@ public:
 	static String standardize_locale(const String &p_locale);
 	static String get_language_code(const String &p_locale);
 
+	String get_tool_locale();
 	void set_tool_translation(const Ref<Translation> &p_translation);
+	Ref<Translation> get_tool_translation() const;
 	StringName tool_translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 	void set_doc_translation(const Ref<Translation> &p_translation);

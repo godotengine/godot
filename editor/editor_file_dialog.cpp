@@ -59,12 +59,17 @@ VBoxContainer *EditorFileDialog::get_vbox() {
 }
 
 void EditorFileDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_THEME_CHANGED) {
+	if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_THEME_CHANGED || p_what == Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 		// Update icons.
 		mode_thumbnails->set_icon(item_list->get_theme_icon("FileThumbnail", "EditorIcons"));
 		mode_list->set_icon(item_list->get_theme_icon("FileList", "EditorIcons"));
-		dir_prev->set_icon(item_list->get_theme_icon("Back", "EditorIcons"));
-		dir_next->set_icon(item_list->get_theme_icon("Forward", "EditorIcons"));
+		if (is_layout_rtl()) {
+			dir_prev->set_icon(item_list->get_theme_icon("Forward", "EditorIcons"));
+			dir_next->set_icon(item_list->get_theme_icon("Back", "EditorIcons"));
+		} else {
+			dir_prev->set_icon(item_list->get_theme_icon("Back", "EditorIcons"));
+			dir_next->set_icon(item_list->get_theme_icon("Forward", "EditorIcons"));
+		}
 		dir_up->set_icon(item_list->get_theme_icon("ArrowUp", "EditorIcons"));
 		refresh->set_icon(item_list->get_theme_icon("Reload", "EditorIcons"));
 		favorite->set_icon(item_list->get_theme_icon("Favorites", "EditorIcons"));
@@ -97,8 +102,13 @@ void EditorFileDialog::_notification(int p_what) {
 		// Update icons.
 		mode_thumbnails->set_icon(item_list->get_theme_icon("FileThumbnail", "EditorIcons"));
 		mode_list->set_icon(item_list->get_theme_icon("FileList", "EditorIcons"));
-		dir_prev->set_icon(item_list->get_theme_icon("Back", "EditorIcons"));
-		dir_next->set_icon(item_list->get_theme_icon("Forward", "EditorIcons"));
+		if (is_layout_rtl()) {
+			dir_prev->set_icon(item_list->get_theme_icon("Forward", "EditorIcons"));
+			dir_next->set_icon(item_list->get_theme_icon("Back", "EditorIcons"));
+		} else {
+			dir_prev->set_icon(item_list->get_theme_icon("Back", "EditorIcons"));
+			dir_next->set_icon(item_list->get_theme_icon("Forward", "EditorIcons"));
+		}
 		dir_up->set_icon(item_list->get_theme_icon("ArrowUp", "EditorIcons"));
 		refresh->set_icon(item_list->get_theme_icon("Reload", "EditorIcons"));
 		favorite->set_icon(item_list->get_theme_icon("Favorites", "EditorIcons"));
@@ -1486,6 +1496,7 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(drives_container);
 
 	dir = memnew(LineEdit);
+	dir->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 	pathhb->add_child(dir);
 	dir->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -1624,6 +1635,7 @@ EditorFileDialog::EditorFileDialog() {
 	file_box = memnew(HBoxContainer);
 	file_box->add_child(memnew(Label(TTR("File:"))));
 	file = memnew(LineEdit);
+	file->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 	file->set_stretch_ratio(4);
 	file->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	file_box->add_child(file);
@@ -1662,6 +1674,7 @@ EditorFileDialog::EditorFileDialog() {
 	makedialog->add_child(makevb);
 
 	makedirname = memnew(LineEdit);
+	makedirname->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 	makevb->add_margin_child(TTR("Name:"), makedirname);
 	add_child(makedialog);
 	makedialog->register_text_enter(makedirname);

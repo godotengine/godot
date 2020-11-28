@@ -45,6 +45,9 @@
 		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
 			The [CheckButton] text's font color when it's pressed.
 		</theme_item>
+		<theme_item name="font_size" type="int">
+			Font size of the [CheckButton]'s text.
+		</theme_item>
 		<theme_item name="hover" type="StyleBox">
 			The [StyleBox] to display as a background when the [CheckButton] is hovered.
 		</theme_item>
@@ -58,16 +61,28 @@
 			The [StyleBox] to display as a background.
 		</theme_item>
 		<theme_item name="off" type="Texture2D">
-			The icon to display when the [CheckButton] is unchecked.
+			The icon to display when the [CheckButton] is unchecked (for left-to-right layouts).
 		</theme_item>
 		<theme_item name="off_disabled" type="Texture2D">
-			The icon to display when the [CheckButton] is unchecked and disabled.
+			The icon to display when the [CheckButton] is unchecked and disabled (for left-to-right layouts).
+		</theme_item>
+		<theme_item name="off_disabled_mirrored" type="Texture2D">
+			The icon to display when the [CheckButton] is unchecked and disabled (for right-to-left layouts).
+		</theme_item>
+		<theme_item name="off_mirrored" type="Texture2D">
+			The icon to display when the [CheckButton] is unchecked (for right-to-left layouts).
 		</theme_item>
 		<theme_item name="on" type="Texture2D">
-			The icon to display when the [CheckButton] is checked.
+			The icon to display when the [CheckButton] is checked (for left-to-right layouts).
 		</theme_item>
 		<theme_item name="on_disabled" type="Texture2D">
-			The icon to display when the [CheckButton] is checked and disabled.
+			The icon to display when the [CheckButton] is checked and disabled (for left-to-right layouts).
+		</theme_item>
+		<theme_item name="on_disabled_mirrored" type="Texture2D">
+			The icon to display when the [CheckButton] is checked and disabled (for right-to-left layouts).
+		</theme_item>
+		<theme_item name="on_mirrored" type="Texture2D">
+			The icon to display when the [CheckButton] is checked (for right-to-left layouts).
 		</theme_item>
 		<theme_item name="pressed" type="StyleBox">
 			The [StyleBox] to display as a background when the [CheckButton] is pressed.

@@ -96,6 +96,21 @@ Vector<String> Theme::_get_font_list(const String &p_node_type) const {
 	return ilret;
 }
 
+Vector<String> Theme::_get_font_size_list(const String &p_node_type) const {
+	Vector<String> ilret;
+	List<StringName> il;
+
+	get_font_size_list(p_node_type, &il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
 Vector<String> Theme::_get_color_list(const String &p_node_type) const {
 	Vector<String> ilret;
 	List<StringName> il;
@@ -291,11 +306,27 @@ Ref<Font> Theme::get_default_theme_font() const {
 	return default_theme_font;
 }
 
+void Theme::set_default_theme_font_size(int p_font_size) {
+	if (default_theme_font_size == p_font_size) {
+		return;
+	}
+
+	default_theme_font_size = p_font_size;
+
+	_change_notify();
+	emit_changed();
+}
+
+int Theme::get_default_theme_font_size() const {
+	return default_theme_font_size;
+}
+
 Ref<Theme> Theme::project_default_theme;
 Ref<Theme> Theme::default_theme;
 Ref<Texture2D> Theme::default_icon;
 Ref<StyleBox> Theme::default_style;
 Ref<Font> Theme::default_font;
+int Theme::default_font_size = 16;
 
 Ref<Theme> Theme::get_default() {
 	return default_theme;
@@ -323,6 +354,10 @@ void Theme::set_default_style(const Ref<StyleBox> &p_style) {
 
 void Theme::set_default_font(const Ref<Font> &p_font) {
 	default_font = p_font;
+}
+
+void Theme::set_default_font_size(int p_font_size) {
+	default_font_size = p_font_size;
 }
 
 void Theme::set_icon(const StringName &p_name, const StringName &p_node_type, const Ref<Texture2D> &p_icon) {
@@ -534,7 +569,7 @@ Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_node_typ
 }
 
 bool Theme::has_font(const StringName &p_name, const StringName &p_node_type) const {
-	return (font_map.has(p_node_type) && font_map[p_node_type].has(p_name) && font_map[p_node_type][p_name].is_valid());
+	return ((font_map.has(p_node_type) && font_map[p_node_type].has(p_name) && font_map[p_node_type][p_name].is_valid()) || default_theme_font.is_valid());
 }
 
 void Theme::clear_font(const StringName &p_name, const StringName &p_node_type) {
@@ -560,6 +595,54 @@ void Theme::get_font_list(StringName p_node_type, List<StringName> *p_list) cons
 	const StringName *key = nullptr;
 
 	while ((key = font_map[p_node_type].next(key))) {
+		p_list->push_back(*key);
+	}
+}
+
+void Theme::set_font_size(const StringName &p_name, const StringName &p_node_type, int p_font_size) {
+	bool new_value = !font_size_map.has(p_node_type) || !font_size_map[p_node_type].has(p_name);
+
+	font_size_map[p_node_type][p_name] = p_font_size;
+
+	if (new_value) {
+		_change_notify();
+		emit_changed();
+	}
+}
+
+int Theme::get_font_size(const StringName &p_name, const StringName &p_node_type) const {
+	if (font_size_map.has(p_node_type) && font_size_map[p_node_type].has(p_name) && (font_size_map[p_node_type][p_name] > 0)) {
+		return font_size_map[p_node_type][p_name];
+	} else if (default_theme_font_size > 0) {
+		return default_theme_font_size;
+	} else {
+		return default_font_size;
+	}
+}
+
+bool Theme::has_font_size(const StringName &p_name, const StringName &p_node_type) const {
+	return ((font_size_map.has(p_node_type) && font_size_map[p_node_type].has(p_name) && (font_size_map[p_node_type][p_name] > 0)) || (default_theme_font_size > 0));
+}
+
+void Theme::clear_font_size(const StringName &p_name, const StringName &p_node_type) {
+	ERR_FAIL_COND(!font_size_map.has(p_node_type));
+	ERR_FAIL_COND(!font_size_map[p_node_type].has(p_name));
+
+	font_size_map[p_node_type].erase(p_name);
+	_change_notify();
+	emit_changed();
+}
+
+void Theme::get_font_size_list(StringName p_node_type, List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
+
+	if (!font_size_map.has(p_node_type)) {
+		return;
+	}
+
+	const StringName *key = nullptr;
+
+	while ((key = font_size_map[p_node_type].next(key))) {
 		p_list->push_back(*key);
 	}
 }
@@ -819,6 +902,12 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_font", "name", "node_type"), &Theme::clear_font);
 	ClassDB::bind_method(D_METHOD("get_font_list", "node_type"), &Theme::_get_font_list);
 
+	ClassDB::bind_method(D_METHOD("set_font_size", "name", "node_type", "font_size"), &Theme::set_font_size);
+	ClassDB::bind_method(D_METHOD("get_font_size", "name", "node_type"), &Theme::get_font_size);
+	ClassDB::bind_method(D_METHOD("has_font_size", "name", "node_type"), &Theme::has_font_size);
+	ClassDB::bind_method(D_METHOD("clear_font_size", "name", "node_type"), &Theme::clear_font_size);
+	ClassDB::bind_method(D_METHOD("get_font_size_list", "node_type"), &Theme::_get_font_size_list);
+
 	ClassDB::bind_method(D_METHOD("set_color", "name", "node_type", "color"), &Theme::set_color);
 	ClassDB::bind_method(D_METHOD("get_color", "name", "node_type"), &Theme::get_color);
 	ClassDB::bind_method(D_METHOD("has_color", "name", "node_type"), &Theme::has_color);
@@ -836,12 +925,16 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_font", "font"), &Theme::set_default_theme_font);
 	ClassDB::bind_method(D_METHOD("get_default_font"), &Theme::get_default_theme_font);
 
+	ClassDB::bind_method(D_METHOD("set_default_font_size", "font_size"), &Theme::set_default_theme_font_size);
+	ClassDB::bind_method(D_METHOD("get_default_font_size"), &Theme::get_default_theme_font_size);
+
 	ClassDB::bind_method(D_METHOD("get_type_list", "node_type"), &Theme::_get_type_list);
 
 	ClassDB::bind_method("copy_default_theme", &Theme::copy_default_theme);
 	ClassDB::bind_method(D_METHOD("copy_theme", "other"), &Theme::copy_theme);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_font_size"), "set_default_font_size", "get_default_font_size");
 }
 
 Theme::Theme() {

@@ -398,7 +398,11 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_pat
 Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	ERR_FAIL_COND_V(theme.is_null(), Ref<ImageTexture>());
-	return theme->get_icon("Play", "EditorIcons");
+	if (EditorNode::get_singleton()->get_viewport()->is_layout_rtl()) {
+		return theme->get_icon("PlayBackwards", "EditorIcons");
+	} else {
+		return theme->get_icon("Play", "EditorIcons");
+	}
 }
 
 String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
@@ -970,6 +974,15 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	if (splash != String() && FileAccess::exists(splash) && icon != splash) {
 		Vector<uint8_t> array = FileAccess::get_file_as_array(splash);
 		p_func(p_udata, splash, array, idx, total, enc_in_filters, enc_ex_filters, key);
+	}
+
+	// Store text server data if exists.
+	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+		String ts_data = "res://" + TS->get_support_data_filename();
+		if (FileAccess::exists(ts_data)) {
+			Vector<uint8_t> array = FileAccess::get_file_as_array(ts_data);
+			p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
+		}
 	}
 
 	String config_file = "project.binary";

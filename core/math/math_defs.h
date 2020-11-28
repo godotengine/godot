@@ -73,7 +73,8 @@ enum Orientation {
 enum HAlign {
 	HALIGN_LEFT,
 	HALIGN_CENTER,
-	HALIGN_RIGHT
+	HALIGN_RIGHT,
+	HALIGN_FILL,
 };
 
 enum VAlign {

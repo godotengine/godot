@@ -53,8 +53,8 @@ class ScrollBar : public Range {
 
 	struct Drag {
 		bool active = false;
-		float pos_at_click;
-		float value_at_click;
+		float pos_at_click = 0;
+		float value_at_click = 0;
 	} drag;
 
 	double get_grabber_size() const;

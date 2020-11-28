@@ -33,6 +33,8 @@
 
 #include "scene/gui/container.h"
 #include "scene/gui/popup.h"
+#include "scene/resources/text_line.h"
+
 class TabContainer : public Container {
 	GDCLASS(TabContainer, Container);
 
@@ -61,8 +63,10 @@ private:
 	bool use_hidden_tabs_for_min_size;
 	int tabs_rearrange_group;
 
+	Vector<Ref<TextLine>> text_buf;
 	Vector<Control *> _get_tabs() const;
 	int _get_tab_width(int p_index) const;
+	bool _theme_changing = false;
 	void _on_theme_changed();
 	void _repaint();
 	void _on_mouse_exited();

@@ -215,7 +215,7 @@ def configure(env):
     env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++abi/include"])
 
     # Disable exceptions and rtti on non-tools (template) builds
-    if env["tools"]:
+    if env["tools"] or env["builtin_icu"]:
         env.Append(CXXFLAGS=["-frtti"])
     else:
         env.Append(CXXFLAGS=["-fno-rtti", "-fno-exceptions"])

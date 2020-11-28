@@ -912,6 +912,7 @@ void ScriptTextEditor::update_toggle_scripts_button() {
 
 void ScriptTextEditor::_update_connected_methods() {
 	CodeEdit *text_edit = code_editor->get_text_editor();
+	text_edit->set_gutter_width(connection_gutter, text_edit->get_row_height());
 	for (int i = 0; i < text_edit->get_line_count(); i++) {
 		if (text_edit->get_line_gutter_metadata(i, connection_gutter) == "") {
 			continue;
@@ -1352,7 +1353,8 @@ void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
 
 void ScriptTextEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
 			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_row_height());
 		} break;
 		default:
@@ -1697,6 +1699,8 @@ void ScriptTextEditor::_enable_code_editor() {
 	editor_box->add_child(warnings_panel);
 	warnings_panel->add_theme_font_override(
 			"normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("main", "EditorFonts"));
+	warnings_panel->add_theme_font_size_override(
+			"normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("main_size", "EditorFonts"));
 	warnings_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_warning_clicked));
 
 	add_child(context_menu);

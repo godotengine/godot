@@ -126,5 +126,8 @@
 			Notification received from the OS when the application is defocused, i.e. when changing the focus from any open window of the Godot instance to the OS desktop or a thirdparty application.
 			Implemented on desktop platforms.
 		</constant>
+		<constant name="NOTIFICATION_TEXT_SERVER_CHANGED" value="2018">
+			Notification received when text server is changed.
+		</constant>
 	</constants>
 </class>

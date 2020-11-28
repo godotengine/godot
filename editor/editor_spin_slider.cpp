@@ -37,13 +37,13 @@
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (grabber->is_visible()) {
-		return rtos(get_value()) + "\n\n" + TTR("Hold Ctrl to round to integers. Hold Shift for more precise changes.");
+		return TS->format_number(rtos(get_value())) + "\n\n" + TTR("Hold Ctrl to round to integers. Hold Shift for more precise changes.");
 	}
-	return rtos(get_value());
+	return TS->format_number(rtos(get_value()));
 }
 
 String EditorSpinSlider::get_text_value() const {
-	return String::num(get_value(), Math::range_step_decimals(get_step()));
+	return TS->format_number(String::num(get_value(), Math::range_step_decimals(get_step())));
 }
 
 void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
@@ -214,10 +214,11 @@ void EditorSpinSlider::_notification(int p_what) {
 			draw_style_box(sb, Rect2(Vector2(), get_size()));
 		}
 		Ref<Font> font = get_theme_font("font", "LineEdit");
+		int font_size = get_theme_font_size("font_size", "LineEdit");
 		int sep_base = 4 * EDSCALE;
 		int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
 
-		int string_width = font->get_string_size(label).width;
+		int string_width = font->get_string_size(label, font_size).width;
 		int number_width = get_size().width - sb->get_minimum_size().width - string_width - sep;
 
 		Ref<Texture2D> updown = get_theme_icon("updown", "SpinBox");
@@ -228,7 +229,7 @@ void EditorSpinSlider::_notification(int p_what) {
 
 		String numstr = get_text_value();
 
-		int vofs = (get_size().height - font->get_height()) / 2 + font->get_ascent();
+		int vofs = (get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
 
 		Color fc = get_theme_color("font_color", "LineEdit");
 		Color lc;
@@ -248,9 +249,9 @@ void EditorSpinSlider::_notification(int p_what) {
 			draw_style_box(focus, Rect2(Vector2(), get_size()));
 		}
 
-		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, lc * Color(1, 1, 1, 0.5));
+		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HALIGN_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
 
-		draw_string(font, Vector2(Math::round(sb->get_offset().x + string_width + sep), vofs), numstr, fc, number_width);
+		draw_string(font, Vector2(Math::round(sb->get_offset().x + string_width + sep), vofs), numstr, HALIGN_LEFT, number_width, font_size, fc);
 
 		if (get_step() == 1) {
 			Ref<Texture2D> updown2 = get_theme_icon("updown", "SpinBox");
@@ -330,9 +331,10 @@ void EditorSpinSlider::_notification(int p_what) {
 Size2 EditorSpinSlider::get_minimum_size() const {
 	Ref<StyleBox> sb = get_theme_stylebox("normal", "LineEdit");
 	Ref<Font> font = get_theme_font("font", "LineEdit");
+	int font_size = get_theme_font_size("font_size", "LineEdit");
 
 	Size2 ms = sb->get_minimum_size();
-	ms.height += font->get_height();
+	ms.height += font->get_height(font_size);
 
 	return ms;
 }
@@ -360,7 +362,7 @@ void EditorSpinSlider::_evaluate_input_text() {
 	// This prevents using functions like `pow()`, but using functions
 	// in EditorSpinSlider is a barely known (and barely used) feature.
 	// Instead, we'd rather support German/French keyboard layouts out of the box.
-	const String text = value_input->get_text().replace(",", ".");
+	const String text = TS->parse_number(value_input->get_text().replace(",", "."));
 
 	Ref<Expression> expr;
 	expr.instance();

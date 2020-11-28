@@ -157,6 +157,11 @@ Copyright: 2018, Source Foundry Authors
   2003, Bitstream Inc.
 License: Expat and Bitstream Vera Fonts Copyright
 
+Files: ./thirdparty/fonts/Tamsyn*.png
+Comment: Tamsyn font
+Copyright: 2015, Scott Fial
+License: Tamsyn
+
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
 Copyright: 1996-2020, David Turner, Robert Wilhelm, and Werner Lemberg.
@@ -168,6 +173,33 @@ Copyright: 2015-2020 Google, Inc.
   2014-2020, The Khronos Group Inc
   2002, NVIDIA Corporation.
 License: glslang
+
+Files: ./thirdparty/graphite/
+Comment: Graphite engine
+Copyright: 2010, SIL International
+License: MPL-2.0
+
+Files: ./thirdparty/harfbuzz/
+Comment: HarfBuzz text shaping library
+Copyright: 2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020 Google, Inc.
+ 2018,2019,2020 Ebrahim Byagowi
+ 2019,2020 Facebook, Inc.
+ 2012 Mozilla Foundation
+ 2011 Codethink Limited
+ 2008,2010 Nokia Corporation and/or its subsidiary(-ies)
+ 2009 Keith Stribley
+ 2009 Martin Hosken and SIL International
+ 2007 Chris Wilson
+ 2006 Behdad Esfahbod
+ 2005 David Turner
+ 2004,2007,2008,2009,2010 Red Hat, Inc.
+ 1998-2004 David Turner and Werner Lemberg
+License: HarfBuzz
+
+Files: ./thirdparty/icu4c/
+Comment: International Components for Unicode
+Copyright: 1991-2020, Unicode
+License: Unicode
 
 Files: ./thirdparty/jpeg_compressor/
 Comment: jpeg-compressor
@@ -1175,6 +1207,46 @@ License: FTL
    Robert Wilhelm    <robert.wilhelm@freetype.org>
    Werner Lemberg    <werner.lemberg@freetype.org>
 
+License: HarfBuzz
+ HarfBuzz is licensed under the so-called "Old MIT" license.  Details follow.
+ For parts of HarfBuzz that are licensed under different licenses see individual
+ files names COPYING in subdirectories where applicable.
+ .
+ Copyright (C) 2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020  Google, Inc.
+ Copyright (C) 2018,2019,2020  Ebrahim Byagowi
+ Copyright (C) 2019,2020  Facebook, Inc.
+ Copyright (C) 2012  Mozilla Foundation
+ Copyright (C) 2011  Codethink Limited
+ Copyright (C) 2008,2010  Nokia Corporation and/or its subsidiary(-ies)
+ Copyright (C) 2009  Keith Stribley
+ Copyright (C) 2009  Martin Hosken and SIL International
+ Copyright (C) 2007  Chris Wilson
+ Copyright (C) 2006  Behdad Esfahbod
+ Copyright (C) 2005  David Turner
+ Copyright (C) 2004,2007,2008,2009,2010  Red Hat, Inc.
+ Copyright (C) 1998-2004  David Turner and Werner Lemberg
+ .
+ For full copyright notices consult the individual files in the package.
+ .
+ .
+ Permission is hereby granted, without written agreement and without
+ license or royalty fees, to use, copy, modify, and distribute this
+ software and its documentation for any purpose, provided that the
+ above copyright notice and the following two paragraphs appear in
+ all copies of this software.
+ .
+ IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE TO ANY PARTY FOR
+ DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
+ ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN
+ IF THE COPYRIGHT HOLDER HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ DAMAGE.
+ .
+ THE COPYRIGHT HOLDER SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING,
+ BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
+ ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
+ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
 License: MPL-2.0
  Mozilla Public License Version 2.0
  ==================================
@@ -1632,6 +1704,53 @@ License: OFL-1.1
  INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
  DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE.
+
+License: Tamsyn
+ Tamsyn font is free.  You are hereby granted permission to use, copy, modify,
+ and distribute it as you see fit.
+ .
+ Tamsyn font is provided "as is" without any express or implied warranty.
+ .
+ The author makes no representations about the suitability of this font for
+ a particular purpose.
+ .
+ In no event will the author be held liable for damages arising from the use
+ of this font.
+
+License: Unicode
+ COPYRIGHT AND PERMISSION NOTICE (ICU 58 and later)
+ .
+ Copyright (C) 1991-2020 Unicode, Inc. All rights reserved.
+ Distributed under the Terms of Use in https://www.unicode.org/copyright.html.
+ .
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of the Unicode data files and any associated documentation
+ (the "Data Files") or Unicode software and any associated documentation
+ (the "Software") to deal in the Data Files or Software
+ without restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, and/or sell copies of
+ the Data Files or Software, and to permit persons to whom the Data Files
+ or Software are furnished to do so, provided that either
+ (a) this copyright and permission notice appear with all copies
+ of the Data Files or Software, or
+ (b) this copyright and permission notice appear in associated
+ Documentation.
+ .
+ THE DATA FILES AND SOFTWARE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF
+ ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT OF THIRD PARTY RIGHTS.
+ IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS
+ NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL
+ DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ PERFORMANCE OF THE DATA FILES OR SOFTWARE.
+ .
+ Except as contained in this notice, the name of a copyright holder
+ shall not be used in advertising or otherwise to promote the sale,
+ use or other dealings in these Data Files or Software without prior
+ written authorization of the copyright holder.
 
 License: Zlib
  This software is provided 'as-is', without any express or implied

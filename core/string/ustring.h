@@ -28,8 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef USTRING_H
-#define USTRING_H
+#ifndef USTRING_GODOT_H
+#define USTRING_GODOT_H
+// Note: Renamed to avoid conflict with ICU header with the same name.
 
 #include "core/templates/cowdata.h"
 #include "core/templates/vector.h"
@@ -555,4 +556,4 @@ _FORCE_INLINE_ Vector<String> sarray(P... p_args) {
 	return arr;
 }
 
-#endif // USTRING_H
+#endif // USTRING_GODOT_H

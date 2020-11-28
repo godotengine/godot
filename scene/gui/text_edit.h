@@ -36,6 +36,7 @@
 #include "scene/gui/scroll_bar.h"
 #include "scene/main/timer.h"
 #include "scene/resources/syntax_highlighter.h"
+#include "scene/resources/text_paragraph.h"
 
 class TextEdit : public Control {
 	GDCLASS(TextEdit, Control);
@@ -87,47 +88,68 @@ private:
 		struct Line {
 			Vector<Gutter> gutters;
 
-			int32_t width_cache;
+			String data;
+			Vector<Vector2i> bidi_override;
+			Ref<TextParagraph> data_buf;
+
 			bool marked;
 			bool hidden;
-			int32_t wrap_amount_cache;
-			String data;
+
 			Line() {
-				width_cache = 0;
+				data_buf.instance();
+
 				marked = false;
 				hidden = false;
-				wrap_amount_cache = 0;
 			}
 		};
 
 	private:
 		mutable Vector<Line> text;
 		Ref<Font> font;
+		int font_size = -1;
+
+		Dictionary opentype_features;
+		String language;
+		TextServer::Direction direction = TextServer::DIRECTION_AUTO;
+		bool draw_control_chars = false;
+
+		int width = -1;
+
 		int indent_size = 4;
 		int gutter_count = 0;
-
-		void _update_line_cache(int p_line) const;
 
 	public:
 		void set_indent_size(int p_indent_size);
 		void set_font(const Ref<Font> &p_font);
+		void set_font_size(int p_font_size);
+		void set_font_features(const Dictionary &p_features);
+		void set_direction_and_language(TextServer::Direction p_direction, String p_language);
+		void set_draw_control_chars(bool p_draw_control_chars);
+
+		int get_line_height(int p_line, int p_wrap_index) const;
 		int get_line_width(int p_line) const;
 		int get_max_width(bool p_exclude_hidden = false) const;
-		int get_char_width(char32_t c, char32_t next_c, int px) const;
-		void set_line_wrap_amount(int p_line, int p_wrap_amount) const;
+
+		void set_width(float p_width);
 		int get_line_wrap_amount(int p_line) const;
-		void set(int p_line, const String &p_text);
+		Vector<Vector2i> get_line_wrap_ranges(int p_line) const;
+		const Ref<TextParagraph> get_line_data(int p_line) const;
+
+		void set(int p_line, const String &p_text, const Vector<Vector2i> &p_bidi_override);
 		void set_marked(int p_line, bool p_marked) { text.write[p_line].marked = p_marked; }
 		bool is_marked(int p_line) const { return text[p_line].marked; }
 		void set_hidden(int p_line, bool p_hidden) { text.write[p_line].hidden = p_hidden; }
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
-		void insert(int p_at, const String &p_text);
+		void insert(int p_at, const String &p_text, const Vector<Vector2i> &p_bidi_override);
 		void remove(int p_at);
 		int size() const { return text.size(); }
 		void clear();
-		void clear_width_cache();
-		void clear_wrap_cache();
-		_FORCE_INLINE_ const String &operator[](int p_line) const { return text[p_line].data; }
+
+		void invalidate_cache(int p_line, int p_column = -1, const String &p_ime_text = String(), const Vector<Vector2i> &p_bidi_override = Vector<Vector2i>());
+		void invalidate_all();
+		void invalidate_all_lines();
+
+		_FORCE_INLINE_ const String &operator[](int p_line) const;
 
 		/* Gutters. */
 		void add_gutter(int p_at);
@@ -260,6 +282,14 @@ private:
 	// data
 	Text text;
 
+	Dictionary opentype_features;
+	String language;
+	TextDirection text_direction = TEXT_DIRECTION_AUTO;
+	TextDirection input_direction = TEXT_DIRECTION_LTR;
+	Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
+	Array st_args;
+	bool draw_control_chars = false;
+
 	uint32_t version;
 	uint32_t saved_version;
 
@@ -275,6 +305,7 @@ private:
 	bool window_has_focus;
 	bool block_caret;
 	bool right_click_moves_caret;
+	bool mid_grapheme_caret_enabled = false;
 
 	bool wrap_enabled;
 	int wrap_at;
@@ -356,7 +387,7 @@ private:
 	int _get_minimap_visible_rows() const;
 
 	void update_cursor_wrap_offset();
-	void _update_wrap_at();
+	void _update_wrap_at(bool p_force = false);
 	bool line_wraps(int line) const;
 	int times_line_wraps(int line) const;
 	Vector<String> get_wrap_rows_text(int p_line) const;
@@ -376,8 +407,6 @@ private:
 
 	int get_char_pos_for_line(int p_px, int p_line, int p_wrap_index = 0) const;
 	int get_column_x_offset_for_line(int p_char, int p_line) const;
-	int get_char_pos_for(int p_px, String p_str) const;
-	int get_column_x_offset(int p_char, String p_str) const;
 
 	void adjust_viewport_to_cursor();
 	double get_scroll_line_diff() const;
@@ -405,6 +434,8 @@ private:
 	Size2 get_minimum_size() const override;
 	int _get_control_height() const;
 
+	Point2 _get_local_mouse_pos() const;
+
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
 
@@ -425,6 +456,8 @@ private:
 	Dictionary _search_bind(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column) const;
 
 	PopupMenu *menu;
+	PopupMenu *menu_dir;
+	PopupMenu *menu_ctl;
 
 	void _clear();
 	void _cancel_completion();
@@ -444,6 +477,7 @@ protected:
 		Ref<StyleBox> style_focus;
 		Ref<StyleBox> style_readonly;
 		Ref<Font> font;
+		int font_size;
 		Color completion_background_color;
 		Color completion_selected_color;
 		Color completion_existing_color;
@@ -464,11 +498,9 @@ protected:
 		Color search_result_border_color;
 		Color background_color;
 
-		int row_height;
 		int line_spacing;
 		int minimap_width;
 		Cache() {
-			row_height = 0;
 			line_spacing = 0;
 			minimap_width = 0;
 		}
@@ -486,6 +518,10 @@ protected:
 	void _consume_backspace_for_pair_symbol(int prev_line, int prev_column);
 
 	static void _bind_methods();
+
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
 	/* Syntax Highlighting. */
@@ -541,6 +577,27 @@ public:
 		MENU_SELECT_ALL,
 		MENU_UNDO,
 		MENU_REDO,
+		MENU_DIR_INHERITED,
+		MENU_DIR_AUTO,
+		MENU_DIR_LTR,
+		MENU_DIR_RTL,
+		MENU_DISPLAY_UCC,
+		MENU_INSERT_LRM,
+		MENU_INSERT_RLM,
+		MENU_INSERT_LRE,
+		MENU_INSERT_RLE,
+		MENU_INSERT_LRO,
+		MENU_INSERT_RLO,
+		MENU_INSERT_PDF,
+		MENU_INSERT_ALM,
+		MENU_INSERT_LRI,
+		MENU_INSERT_RLI,
+		MENU_INSERT_FSI,
+		MENU_INSERT_PDI,
+		MENU_INSERT_ZWJ,
+		MENU_INSERT_ZWNJ,
+		MENU_INSERT_WJ,
+		MENU_INSERT_SHY,
 		MENU_MAX
 
 	};
@@ -563,6 +620,25 @@ public:
 	void end_complex_operation();
 
 	bool is_insert_text_operation();
+
+	void set_text_direction(TextDirection p_text_direction);
+	TextDirection get_text_direction() const;
+
+	void set_opentype_feature(const String &p_name, int p_value);
+	int get_opentype_feature(const String &p_name) const;
+	void clear_opentype_features();
+
+	void set_language(const String &p_language);
+	String get_language() const;
+
+	void set_draw_control_chars(bool p_draw_control_chars);
+	bool get_draw_control_chars() const;
+
+	void set_structured_text_bidi_override(Control::StructuredTextParser p_parser);
+	Control::StructuredTextParser get_structured_text_bidi_override() const;
+
+	void set_structured_text_bidi_override_options(Array p_args);
+	Array get_structured_text_bidi_override_options() const;
 
 	void set_highlighted_word(const String &new_word);
 	void set_text(String p_text);
@@ -615,6 +691,9 @@ public:
 	void set_auto_indent(bool p_auto_indent);
 
 	void center_viewport_to_cursor();
+
+	void set_mid_grapheme_caret_enabled(const bool p_enabled);
+	bool get_mid_grapheme_caret_enabled() const;
 
 	void cursor_set_column(int p_col, bool p_adjust_viewport = true);
 	void cursor_set_line(int p_row, bool p_adjust_viewport = true, bool p_can_be_hidden = true, int p_wrap_index = 0);

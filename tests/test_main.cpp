@@ -45,6 +45,7 @@
 #include "test_gui.h"
 #include "test_json.h"
 #include "test_list.h"
+#include "test_lru.h"
 #include "test_math.h"
 #include "test_method_bind.h"
 #include "test_node_path.h"
@@ -58,6 +59,7 @@
 #include "test_render.h"
 #include "test_shader_lang.h"
 #include "test_string.h"
+#include "test_text_server.h"
 #include "test_validate_testing.h"
 #include "test_variant.h"
 

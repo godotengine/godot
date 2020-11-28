@@ -1013,6 +1013,9 @@
 			Notification received from the OS when the application is defocused, i.e. when changing the focus from any open window of the Godot instance to the OS desktop or a thirdparty application.
 			Implemented on desktop platforms.
 		</constant>
+		<constant name="NOTIFICATION_TEXT_SERVER_CHANGED" value="2018">
+			Notification received when text server is changed.
+		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0" enum="PauseMode">
 			Inherits pause mode from the node's parent. For the root node, it is equivalent to [constant PAUSE_MODE_STOP]. Default.
 		</constant>

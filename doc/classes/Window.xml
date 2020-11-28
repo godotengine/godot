@@ -27,6 +27,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_layout_direction" qualifiers="const">
+			<return type="int" enum="Window.LayoutDirection">
+			</return>
+			<description>
+				Returns layout direction and text writing direction.
+			</description>
+		</method>
 		<method name="get_real_size" qualifiers="const">
 			<return type="Vector2i">
 			</return>
@@ -61,6 +68,18 @@
 			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
+				Returns the [Font] at [code]name[/code] if the theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="get_theme_font_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+				Returns the font size at [code]name[/code] if the theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_theme_icon" qualifiers="const">
@@ -123,6 +142,20 @@
 			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
+				Returns [code]true[/code] if [Font] with [code]name[/code] is in [code]type[/code].
+				Returns [code]false[/code] if the theme does not have [code]type[/code].
+			</description>
+		</method>
+		<method name="has_theme_font_size" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+				Returns [code]true[/code] if font size with [code]name[/code] is in [code]type[/code].
+				Returns [code]false[/code] if the theme does not have [code]type[/code].
 			</description>
 		</method>
 		<method name="has_theme_icon" qualifiers="const">
@@ -155,6 +188,13 @@
 			<return type="bool">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="is_layout_rtl" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if layout is right-to-left.
 			</description>
 		</method>
 		<method name="is_maximize_allowed" qualifiers="const">
@@ -247,6 +287,15 @@
 			<argument index="0" name="arg0" type="Vector2i">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="set_layout_direction">
+			<return type="void">
+			</return>
+			<argument index="0" name="direction" type="int" enum="Window.LayoutDirection">
+			</argument>
+			<description>
+				Sets layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
 			</description>
 		</method>
 		<method name="set_use_font_oversampling">
@@ -392,6 +441,18 @@
 		<constant name="CONTENT_SCALE_ASPECT_KEEP_HEIGHT" value="3" enum="ContentScaleAspect">
 		</constant>
 		<constant name="CONTENT_SCALE_ASPECT_EXPAND" value="4" enum="ContentScaleAspect">
+		</constant>
+		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
+			Automatic layout direction, determined from the parent control layout direction.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_LOCALE" value="1" enum="LayoutDirection">
+			Automatic layout direction, determined from the current locale.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_LTR" value="2" enum="LayoutDirection">
+			Left-to-right layout direction.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_RTL" value="3" enum="LayoutDirection">
+			Right-to-left layout direction.
 		</constant>
 	</constants>
 	<theme_items>

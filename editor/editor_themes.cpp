@@ -600,11 +600,17 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_color_pressed", "Button", icon_color_pressed);
 
 	// OptionButton
+	theme->set_stylebox("focus", "OptionButton", style_widget_focus);
+
 	theme->set_stylebox("normal", "OptionButton", style_widget);
 	theme->set_stylebox("hover", "OptionButton", style_widget_hover);
 	theme->set_stylebox("pressed", "OptionButton", style_widget_pressed);
-	theme->set_stylebox("focus", "OptionButton", style_widget_focus);
 	theme->set_stylebox("disabled", "OptionButton", style_widget_disabled);
+
+	theme->set_stylebox("normal_mirrored", "OptionButton", style_widget);
+	theme->set_stylebox("hover_mirrored", "OptionButton", style_widget_hover);
+	theme->set_stylebox("pressed_mirrored", "OptionButton", style_widget_pressed);
+	theme->set_stylebox("disabled_mirrored", "OptionButton", style_widget_disabled);
 
 	theme->set_color("font_color", "OptionButton", font_color);
 	theme->set_color("font_color_hover", "OptionButton", font_color_hl);
@@ -626,6 +632,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("on_disabled", "CheckButton", theme->get_icon("GuiToggleOnDisabled", "EditorIcons"));
 	theme->set_icon("off", "CheckButton", theme->get_icon("GuiToggleOff", "EditorIcons"));
 	theme->set_icon("off_disabled", "CheckButton", theme->get_icon("GuiToggleOffDisabled", "EditorIcons"));
+
+	theme->set_icon("on_mirrored", "CheckButton", theme->get_icon("GuiToggleOnMirrored", "EditorIcons"));
+	theme->set_icon("on_disabled_mirrored", "CheckButton", theme->get_icon("GuiToggleOnDisabledMirrored", "EditorIcons"));
+	theme->set_icon("off_mirrored", "CheckButton", theme->get_icon("GuiToggleOffMirrored", "EditorIcons"));
+	theme->set_icon("off_disabled_mirrored", "CheckButton", theme->get_icon("GuiToggleOffDisabledMirrored", "EditorIcons"));
 
 	theme->set_color("font_color", "CheckButton", font_color);
 	theme->set_color("font_color_hover", "CheckButton", font_color_hl);
@@ -679,6 +690,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("radio_checked", "PopupMenu", theme->get_icon("GuiRadioChecked", "EditorIcons"));
 	theme->set_icon("radio_unchecked", "PopupMenu", theme->get_icon("GuiRadioUnchecked", "EditorIcons"));
 	theme->set_icon("submenu", "PopupMenu", theme->get_icon("ArrowRight", "EditorIcons"));
+	theme->set_icon("submenu_mirrored", "PopupMenu", theme->get_icon("ArrowLeft", "EditorIcons"));
 	theme->set_icon("visibility_hidden", "PopupMenu", theme->get_icon("GuiVisibilityHidden", "EditorIcons"));
 	theme->set_icon("visibility_visible", "PopupMenu", theme->get_icon("GuiVisibilityVisible", "EditorIcons"));
 	theme->set_icon("visibility_xray", "PopupMenu", theme->get_icon("GuiVisibilityXray", "EditorIcons"));
@@ -707,6 +719,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("unchecked", "Tree", theme->get_icon("GuiUnchecked", "EditorIcons"));
 	theme->set_icon("arrow", "Tree", theme->get_icon("GuiTreeArrowDown", "EditorIcons"));
 	theme->set_icon("arrow_collapsed", "Tree", theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
+	theme->set_icon("arrow_collapsed_mirrored", "Tree", theme->get_icon("GuiTreeArrowLeft", "EditorIcons"));
 	theme->set_icon("updown", "Tree", theme->get_icon("GuiTreeUpdown", "EditorIcons"));
 	theme->set_icon("select_arrow", "Tree", theme->get_icon("GuiDropdown", "EditorIcons"));
 	theme->set_stylebox("bg_focus", "Tree", style_focus);
@@ -851,7 +864,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("DebuggerPanel", "EditorStyles", style_panel_debugger);
 
 	Ref<StyleBoxFlat> style_panel_invisible_top = style_content_panel->duplicate();
-	int stylebox_offset = theme->get_font("tab_fg", "TabContainer")->get_height() + theme->get_stylebox("tab_fg", "TabContainer")->get_minimum_size().height + theme->get_stylebox("panel", "TabContainer")->get_default_margin(MARGIN_TOP);
+	int stylebox_offset = theme->get_font("tab_fg", "TabContainer")->get_height(theme->get_font_size("tab_fg", "TabContainer")) + theme->get_stylebox("tab_fg", "TabContainer")->get_minimum_size().height + theme->get_stylebox("panel", "TabContainer")->get_default_margin(MARGIN_TOP);
 	style_panel_invisible_top->set_expand_margin_size(MARGIN_TOP, -stylebox_offset);
 	style_panel_invisible_top->set_default_margin(MARGIN_TOP, 0);
 	theme->set_stylebox("BottomPanelDebuggerOverride", "EditorStyles", style_panel_invisible_top);
@@ -931,6 +944,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("title_height", "Window", 24 * EDSCALE);
 	theme->set_constant("resize_margin", "Window", 4 * EDSCALE);
 	theme->set_font("title_font", "Window", theme->get_font("title", "EditorFonts"));
+	theme->set_font_size("title_font_size", "Window", theme->get_font_size("title_size", "EditorFonts"));
 
 	// complex window, for now only Editor settings and Project settings
 	Ref<StyleBoxFlat> style_complex_window = style_window->duplicate();

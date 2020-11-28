@@ -138,13 +138,30 @@ def configure(env):
 
     # freetype depends on libpng and zlib, so bundling one of them while keeping others
     # as shared libraries leads to weird issues
-    if env["builtin_freetype"] or env["builtin_libpng"] or env["builtin_zlib"]:
+    if (
+        env["builtin_freetype"]
+        or env["builtin_libpng"]
+        or env["builtin_zlib"]
+        or env["builtin_graphite"]
+        or env["builtin_harfbuzz"]
+    ):
         env["builtin_freetype"] = True
         env["builtin_libpng"] = True
         env["builtin_zlib"] = True
+        env["builtin_graphite"] = True
+        env["builtin_harfbuzz"] = True
 
     if not env["builtin_freetype"]:
         env.ParseConfig("pkg-config freetype2 --cflags --libs")
+
+    if not env["builtin_graphite"]:
+        env.ParseConfig("pkg-config graphite2 --cflags --libs")
+
+    if not env["builtin_icu"]:
+        env.ParseConfig("pkg-config icu-uc --cflags --libs")
+
+    if not env["builtin_harfbuzz"]:
+        env.ParseConfig("pkg-config harfbuzz harfbuzz-icu --cflags --libs")
 
     if not env["builtin_libpng"]:
         env.ParseConfig("pkg-config libpng16 --cflags --libs")
@@ -233,7 +250,17 @@ def configure(env):
     env.Append(CPPDEFINES=["SERVER_ENABLED", "UNIX_ENABLED"])
 
     if platform.system() == "Darwin":
-        env.Append(LINKFLAGS=["-framework", "Cocoa", "-framework", "Carbon", "-lz", "-framework", "IOKit"])
+        env.Append(
+            LINKFLAGS=[
+                "-framework",
+                "Cocoa",
+                "-framework",
+                "Carbon",
+                "-lz",
+                "-framework",
+                "IOKit",
+            ]
+        )
 
     env.Append(LIBS=["pthread"])
 

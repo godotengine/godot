@@ -36,12 +36,15 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+#include "core/string/translation.h"
+
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
+#include "servers/text_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -241,6 +244,10 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 			}
 			data.font_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
+		} else if (name.begins_with("custom_font_sizes/")) {
+			String dname = name.get_slicec('/', 1);
+			data.font_size_override.erase(dname);
+			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_colors/")) {
 			String dname = name.get_slicec('/', 1);
 			data.color_override.erase(dname);
@@ -266,6 +273,9 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (name.begins_with("custom_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_font_override(dname, p_value);
+		} else if (name.begins_with("custom_font_sizes/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_font_size_override(dname, p_value);
 		} else if (name.begins_with("custom_colors/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_color_override(dname, p_value);
@@ -307,20 +317,19 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (sname.begins_with("custom_icons/")) {
 		String name = sname.get_slicec('/', 1);
-
 		r_ret = data.icon_override.has(name) ? Variant(data.icon_override[name]) : Variant();
 	} else if (sname.begins_with("custom_shaders/")) {
 		String name = sname.get_slicec('/', 1);
-
 		r_ret = data.shader_override.has(name) ? Variant(data.shader_override[name]) : Variant();
 	} else if (sname.begins_with("custom_styles/")) {
 		String name = sname.get_slicec('/', 1);
-
 		r_ret = data.style_override.has(name) ? Variant(data.style_override[name]) : Variant();
 	} else if (sname.begins_with("custom_fonts/")) {
 		String name = sname.get_slicec('/', 1);
-
 		r_ret = data.font_override.has(name) ? Variant(data.font_override[name]) : Variant();
+	} else if (sname.begins_with("custom_font_sizes/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = data.font_size_override.has(name) ? Variant(data.font_size_override[name]) : Variant();
 	} else if (sname.begins_with("custom_colors/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = data.color_override.has(name) ? Variant(data.color_override[name]) : Variant();
@@ -395,6 +404,18 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 	{
 		List<StringName> names;
+		theme->get_font_size_list(get_class_name(), &names);
+		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
+			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (data.font_size_override.has(E->get())) {
+				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::INT, "custom_font_sizes/" + E->get(), PROPERTY_HINT_NONE, "", hint));
+		}
+	}
+	{
+		List<StringName> names;
 		theme->get_color_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
@@ -421,6 +442,43 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 
 Control *Control::get_parent_control() const {
 	return data.parent;
+}
+
+void Control::set_layout_direction(Control::LayoutDirection p_direction) {
+	ERR_FAIL_INDEX((int)p_direction, 4);
+
+	data.layout_dir = p_direction;
+	propagate_notification(NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
+}
+
+Control::LayoutDirection Control::get_layout_direction() const {
+	return data.layout_dir;
+}
+
+bool Control::is_layout_rtl() const {
+	if (data.layout_dir == LAYOUT_DIRECTION_INHERITED) {
+		Window *parent_window = Object::cast_to<Window>(get_parent());
+		Control *parent_control = get_parent_control();
+		if (parent_control) {
+			return parent_control->is_layout_rtl();
+		} else if (parent_window) {
+			return parent_window->is_layout_rtl();
+		} else {
+			if (GLOBAL_GET("display/window/force_right_to_left_layout_direction")) {
+				return true;
+			}
+			String locale = TranslationServer::get_singleton()->get_tool_locale();
+			return TS->is_locale_right_to_left(locale);
+		}
+	} else if (data.layout_dir == LAYOUT_DIRECTION_LOCALE) {
+		if (GLOBAL_GET("display/window/force_right_to_left_layout_direction")) {
+			return true;
+		}
+		String locale = TranslationServer::get_singleton()->get_tool_locale();
+		return TS->is_locale_right_to_left(locale);
+	} else {
+		return (data.layout_dir == LAYOUT_DIRECTION_RTL);
+	}
 }
 
 void Control::_resize(const Size2 &p_size) {
@@ -581,7 +639,6 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_FOCUS_EXIT: {
 			emit_signal(SceneStringNames::get_singleton()->focus_exited);
 			update();
-
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			minimum_size_changed();
@@ -600,6 +657,10 @@ void Control::_notification(int p_notification) {
 				_size_changed();
 			}
 
+		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			_size_changed();
 		} break;
 	}
 }
@@ -911,6 +972,19 @@ Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_
 	return get_fonts(data.theme_owner, data.theme_owner_window, p_name, type);
 }
 
+int Control::get_theme_font_size(const StringName &p_name, const StringName &p_node_type) const {
+	if (p_node_type == StringName() || p_node_type == get_class_name()) {
+		const int *font_size = data.font_size_override.getptr(p_name);
+		if (font_size) {
+			return *font_size;
+		}
+	}
+
+	StringName type = p_node_type ? p_node_type : get_class_name();
+
+	return get_font_sizes(data.theme_owner, data.theme_owner_window, p_name, type);
+}
+
 Ref<Font> Control::get_fonts(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type) {
 	Ref<Font> font;
 
@@ -925,6 +999,22 @@ Ref<Font> Control::get_fonts(Control *p_theme_owner, Window *p_theme_owner_windo
 	}
 
 	return Theme::get_default()->get_font(p_name, p_node_type);
+}
+
+int Control::get_font_sizes(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type) {
+	int font_size;
+
+	if (_find_theme_item(p_theme_owner, p_theme_owner_window, font_size, &Theme::get_font_size, &Theme::has_font_size, p_name, p_node_type)) {
+		return font_size;
+	}
+
+	if (Theme::get_project_default().is_valid()) {
+		if (Theme::get_project_default()->has_font_size(p_name, p_node_type)) {
+			return Theme::get_project_default()->get_font_size(p_name, p_node_type);
+		}
+	}
+
+	return Theme::get_default()->get_font_size(p_name, p_node_type);
 }
 
 Color Control::get_theme_color(const StringName &p_name, const StringName &p_node_type) const {
@@ -1001,6 +1091,11 @@ bool Control::has_theme_stylebox_override(const StringName &p_name) const {
 bool Control::has_theme_font_override(const StringName &p_name) const {
 	const Ref<Font> *font = data.font_override.getptr(p_name);
 	return font != nullptr;
+}
+
+bool Control::has_theme_font_size_override(const StringName &p_name) const {
+	const int *font_size = data.font_size_override.getptr(p_name);
+	return font_size != nullptr;
 }
 
 bool Control::has_theme_color_override(const StringName &p_name) const {
@@ -1113,6 +1208,31 @@ bool Control::has_fonts(Control *p_theme_owner, Window *p_theme_owner_window, co
 	return Theme::get_default()->has_font(p_name, p_node_type);
 }
 
+bool Control::has_theme_font_size(const StringName &p_name, const StringName &p_node_type) const {
+	if (p_node_type == StringName() || p_node_type == get_class_name()) {
+		if (has_theme_font_size_override(p_name)) {
+			return true;
+		}
+	}
+
+	StringName type = p_node_type ? p_node_type : get_class_name();
+
+	return has_font_sizes(data.theme_owner, data.theme_owner_window, p_name, type);
+}
+
+bool Control::has_font_sizes(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type) {
+	if (_has_theme_item(p_theme_owner, p_theme_owner_window, &Theme::has_font_size, p_name, p_node_type)) {
+		return true;
+	}
+
+	if (Theme::get_project_default().is_valid()) {
+		if (Theme::get_project_default()->has_font_size(p_name, p_node_type)) {
+			return true;
+		}
+	}
+	return Theme::get_default()->has_font_size(p_name, p_node_type);
+}
+
 bool Control::has_theme_color(const StringName &p_name, const StringName &p_node_type) const {
 	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		if (has_theme_color_override(p_name)) {
@@ -1215,6 +1335,10 @@ void Control::_size_changed() {
 		}
 
 		new_size_cache.width = minimum_size.width;
+	}
+
+	if (is_layout_rtl()) {
+		new_pos_cache.x = parent_rect.size.x - new_pos_cache.x - new_size_cache.x;
 	}
 
 	if (minimum_size.height > new_size_cache.height) {
@@ -1426,6 +1550,10 @@ void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 
 	Rect2 parent_rect = get_parent_anchorable_rect();
 
+	float x = parent_rect.size.x;
+	if (is_layout_rtl()) {
+		x = parent_rect.size.x - x - new_size.x;
+	}
 	//Left
 	switch (p_preset) {
 		case PRESET_TOP_LEFT:
@@ -1436,21 +1564,21 @@ void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_LEFT_WIDE:
 		case PRESET_HCENTER_WIDE:
 		case PRESET_WIDE:
-			data.margin[0] = parent_rect.size.x * (0.0 - data.anchor[0]) + p_margin + parent_rect.position.x;
+			data.margin[0] = x * (0.0 - data.anchor[0]) + p_margin + parent_rect.position.x;
 			break;
 
 		case PRESET_CENTER_TOP:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_CENTER:
 		case PRESET_VCENTER_WIDE:
-			data.margin[0] = parent_rect.size.x * (0.5 - data.anchor[0]) - new_size.x / 2 + parent_rect.position.x;
+			data.margin[0] = x * (0.5 - data.anchor[0]) - new_size.x / 2 + parent_rect.position.x;
 			break;
 
 		case PRESET_TOP_RIGHT:
 		case PRESET_BOTTOM_RIGHT:
 		case PRESET_CENTER_RIGHT:
 		case PRESET_RIGHT_WIDE:
-			data.margin[0] = parent_rect.size.x * (1.0 - data.anchor[0]) - new_size.x - p_margin + parent_rect.position.x;
+			data.margin[0] = x * (1.0 - data.anchor[0]) - new_size.x - p_margin + parent_rect.position.x;
 			break;
 	}
 
@@ -1488,14 +1616,14 @@ void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_BOTTOM_LEFT:
 		case PRESET_CENTER_LEFT:
 		case PRESET_LEFT_WIDE:
-			data.margin[2] = parent_rect.size.x * (0.0 - data.anchor[2]) + new_size.x + p_margin + parent_rect.position.x;
+			data.margin[2] = x * (0.0 - data.anchor[2]) + new_size.x + p_margin + parent_rect.position.x;
 			break;
 
 		case PRESET_CENTER_TOP:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_CENTER:
 		case PRESET_VCENTER_WIDE:
-			data.margin[2] = parent_rect.size.x * (0.5 - data.anchor[2]) + new_size.x / 2 + parent_rect.position.x;
+			data.margin[2] = x * (0.5 - data.anchor[2]) + new_size.x / 2 + parent_rect.position.x;
 			break;
 
 		case PRESET_TOP_RIGHT:
@@ -1506,7 +1634,7 @@ void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_HCENTER_WIDE:
 		case PRESET_WIDE:
-			data.margin[2] = parent_rect.size.x * (1.0 - data.anchor[2]) - p_margin + parent_rect.position.x;
+			data.margin[2] = x * (1.0 - data.anchor[2]) - p_margin + parent_rect.position.x;
 			break;
 	}
 
@@ -1629,17 +1757,26 @@ void Control::_compute_anchors(Rect2 p_rect, const float p_margins[4], float (&r
 	ERR_FAIL_COND(parent_rect_size.x == 0.0);
 	ERR_FAIL_COND(parent_rect_size.y == 0.0);
 
-	r_anchors[0] = (p_rect.position.x - p_margins[0]) / parent_rect_size.x;
+	float x = p_rect.position.x;
+	if (is_layout_rtl()) {
+		x = parent_rect_size.x - x - p_rect.size.x;
+	}
+	r_anchors[0] = (x - p_margins[0]) / parent_rect_size.x;
 	r_anchors[1] = (p_rect.position.y - p_margins[1]) / parent_rect_size.y;
-	r_anchors[2] = (p_rect.position.x + p_rect.size.x - p_margins[2]) / parent_rect_size.x;
+	r_anchors[2] = (x + p_rect.size.x - p_margins[2]) / parent_rect_size.x;
 	r_anchors[3] = (p_rect.position.y + p_rect.size.y - p_margins[3]) / parent_rect_size.y;
 }
 
 void Control::_compute_margins(Rect2 p_rect, const float p_anchors[4], float (&r_margins)[4]) {
 	Size2 parent_rect_size = get_parent_anchorable_rect().size;
-	r_margins[0] = p_rect.position.x - (p_anchors[0] * parent_rect_size.x);
+
+	float x = p_rect.position.x;
+	if (is_layout_rtl()) {
+		x = parent_rect_size.x - x - p_rect.size.x;
+	}
+	r_margins[0] = x - (p_anchors[0] * parent_rect_size.x);
 	r_margins[1] = p_rect.position.y - (p_anchors[1] * parent_rect_size.y);
-	r_margins[2] = p_rect.position.x + p_rect.size.x - (p_anchors[2] * parent_rect_size.x);
+	r_margins[2] = x + p_rect.size.x - (p_anchors[2] * parent_rect_size.x);
 	r_margins[3] = p_rect.position.y + p_rect.size.y - (p_anchors[3] * parent_rect_size.y);
 }
 
@@ -1658,6 +1795,17 @@ void Control::set_position(const Size2 &p_point, bool p_keep_margins) {
 		_compute_margins(Rect2(p_point, data.size_cache), data.anchor, data.margin);
 	}
 	_size_changed();
+}
+
+void Control::set_rect(const Rect2 &p_rect) {
+	for (int i = 0; i < 4; i++) {
+		data.anchor[i] = ANCHOR_BEGIN;
+	}
+
+	_compute_margins(p_rect, data.anchor, data.margin);
+	if (is_inside_tree()) {
+		_size_changed();
+	}
 }
 
 void Control::_set_size(const Size2 &p_size) {
@@ -1791,6 +1939,11 @@ void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> 
 			data.font_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 		}
 	}
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::add_theme_font_size_override(const StringName &p_name, int p_font_size) {
+	data.font_size_override[p_name] = p_font_size;
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
@@ -2436,6 +2589,95 @@ bool Control::is_text_field() const {
 	return false;
 }
 
+Vector<Vector2i> Control::structured_text_parser(StructuredTextParser p_node_type, const Array &p_args, const String p_text) const {
+	Vector<Vector2i> ret;
+	switch (p_node_type) {
+		case STRUCTURED_TEXT_URI: {
+			int prev = 0;
+			for (int i = 0; i < p_text.length(); i++) {
+				if ((p_text[i] == '\\') || (p_text[i] == '/') || (p_text[i] == '.') || (p_text[i] == ':') || (p_text[i] == '&') || (p_text[i] == '=') || (p_text[i] == '@') || (p_text[i] == '?') || (p_text[i] == '#')) {
+					if (prev != i) {
+						ret.push_back(Vector2i(prev, i));
+					}
+					ret.push_back(Vector2i(i, i + 1));
+					prev = i + 1;
+				}
+			}
+			if (prev != p_text.length()) {
+				ret.push_back(Vector2i(prev, p_text.length()));
+			}
+		} break;
+		case STRUCTURED_TEXT_FILE: {
+			int prev = 0;
+			for (int i = 0; i < p_text.length(); i++) {
+				if ((p_text[i] == '\\') || (p_text[i] == '/') || (p_text[i] == ':')) {
+					if (prev != i) {
+						ret.push_back(Vector2i(prev, i));
+					}
+					ret.push_back(Vector2i(i, i + 1));
+					prev = i + 1;
+				}
+			}
+			if (prev != p_text.length()) {
+				ret.push_back(Vector2i(prev, p_text.length()));
+			}
+		} break;
+		case STRUCTURED_TEXT_EMAIL: {
+			bool local = true;
+			int prev = 0;
+			for (int i = 0; i < p_text.length(); i++) {
+				if ((p_text[i] == '@') && local) { // Add full "local" as single context.
+					local = false;
+					ret.push_back(Vector2i(prev, i));
+					ret.push_back(Vector2i(i, i + 1));
+					prev = i + 1;
+				} else if (!local & (p_text[i] == '.')) { // Add each dot separated "domain" part as context.
+					if (prev != i) {
+						ret.push_back(Vector2i(prev, i));
+					}
+					ret.push_back(Vector2i(i, i + 1));
+					prev = i + 1;
+				}
+			}
+			if (prev != p_text.length()) {
+				ret.push_back(Vector2i(prev, p_text.length()));
+			}
+		} break;
+		case STRUCTURED_TEXT_LIST: {
+			if (p_args.size() == 1 && p_args[0].get_type() == Variant::STRING) {
+				Vector<String> tags = p_text.split(String(p_args[0]));
+				int prev = 0;
+				for (int i = 0; i < tags.size(); i++) {
+					if (prev != i) {
+						ret.push_back(Vector2i(prev, prev + tags[i].length()));
+					}
+					ret.push_back(Vector2i(prev + tags[i].length(), prev + tags[i].length() + 1));
+					prev = prev + tags[i].length() + 1;
+				}
+			}
+		} break;
+		case STRUCTURED_TEXT_CUSTOM: {
+			if (get_script_instance()) {
+				Variant data = get_script_instance()->call(SceneStringNames::get_singleton()->_structured_text_parser, p_args, p_text);
+				if (data.get_type() == Variant::ARRAY) {
+					Array _data = data;
+					for (int i = 0; i < _data.size(); i++) {
+						if (_data[i].get_type() == Variant::VECTOR2I) {
+							ret.push_back(Vector2i(_data[i]));
+						}
+					}
+				}
+			}
+		} break;
+		case STRUCTURED_TEXT_NONE:
+		case STRUCTURED_TEXT_DEFAULT:
+		default: {
+			ret.push_back(Vector2i(0, p_text.length()));
+		}
+	}
+	return ret;
+}
+
 void Control::set_rotation(float p_radians) {
 	data.rotation = p_radians;
 	update();
@@ -2544,6 +2786,8 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 			Theme::get_default()->get_stylebox_list(get_class(), &sn);
 		} else if (pf == "add_font_override" || pf == "has_font" || pf == "has_font_override" || pf == "get_font") {
 			Theme::get_default()->get_font_list(get_class(), &sn);
+		} else if (pf == "add_font_size_override" || pf == "has_font_size" || pf == "has_font_size_override" || pf == "get_font_size") {
+			Theme::get_default()->get_font_size_list(get_class(), &sn);
 		} else if (pf == "add_constant_override" || pf == "has_constant" || pf == "has_constant_override" || pf == "get_constant") {
 			Theme::get_default()->get_constant_list(get_class(), &sn);
 		}
@@ -2664,27 +2908,31 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_theme_shader_override", "name", "shader"), &Control::add_theme_shader_override);
 	ClassDB::bind_method(D_METHOD("add_theme_stylebox_override", "name", "stylebox"), &Control::add_theme_style_override);
 	ClassDB::bind_method(D_METHOD("add_theme_font_override", "name", "font"), &Control::add_theme_font_override);
+	ClassDB::bind_method(D_METHOD("add_theme_font_size_override", "name", "font_size"), &Control::add_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("add_theme_color_override", "name", "color"), &Control::add_theme_color_override);
 	ClassDB::bind_method(D_METHOD("add_theme_constant_override", "name", "constant"), &Control::add_theme_constant_override);
 
-	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "type"), &Control::get_theme_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "type"), &Control::get_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "type"), &Control::get_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "type"), &Control::get_theme_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "type"), &Control::get_theme_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "node_type"), &Control::get_theme_icon, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "node_type"), &Control::get_theme_stylebox, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "node_type"), &Control::get_theme_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "node_type"), &Control::get_theme_font_size, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "node_type"), &Control::get_theme_color, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "node_type"), &Control::get_theme_constant, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon_override", "name"), &Control::has_theme_icon_override);
 	ClassDB::bind_method(D_METHOD("has_theme_shader_override", "name"), &Control::has_theme_shader_override);
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox_override", "name"), &Control::has_theme_stylebox_override);
 	ClassDB::bind_method(D_METHOD("has_theme_font_override", "name"), &Control::has_theme_font_override);
+	ClassDB::bind_method(D_METHOD("has_theme_font_size_override", "name"), &Control::has_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("has_theme_color_override", "name"), &Control::has_theme_color_override);
 	ClassDB::bind_method(D_METHOD("has_theme_constant_override", "name"), &Control::has_theme_constant_override);
 
-	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "type"), &Control::has_theme_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "type"), &Control::has_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "type"), &Control::has_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "type"), &Control::has_theme_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "type"), &Control::has_theme_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "node_type"), &Control::has_theme_icon, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "node_type"), &Control::has_theme_stylebox, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "node_type"), &Control::has_theme_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "node_type"), &Control::has_theme_font_size, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "node_type"), &Control::has_theme_color, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "node_type"), &Control::has_theme_constant, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("get_parent_control"), &Control::get_parent_control);
 
@@ -2728,6 +2976,12 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("minimum_size_changed"), &Control::minimum_size_changed);
 
+	ClassDB::bind_method(D_METHOD("set_layout_direction", "direction"), &Control::set_layout_direction);
+	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Control::get_layout_direction);
+	ClassDB::bind_method(D_METHOD("is_layout_rtl"), &Control::is_layout_rtl);
+
+	BIND_VMETHOD(MethodInfo("_structured_text_parser", PropertyInfo(Variant::ARRAY, "args"), PropertyInfo(Variant::STRING, "text")));
+
 	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_get_minimum_size"));
 
@@ -2757,6 +3011,9 @@ void Control::_bind_methods() {
 	ADD_GROUP("Grow Direction", "grow_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "grow_horizontal", PROPERTY_HINT_ENUM, "Begin,End,Both"), "set_h_grow_direction", "get_h_grow_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "grow_vertical", PROPERTY_HINT_ENUM, "Begin,End,Both"), "set_v_grow_direction", "get_v_grow_direction");
+
+	ADD_GROUP("Layout Direction", "layout_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Locale,Left-to-right,Right-to-left"), "set_layout_direction", "get_layout_direction");
 
 	ADD_GROUP("Rect", "rect_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_position", "get_position");
@@ -2804,6 +3061,7 @@ void Control::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_THEME_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_SCROLL_BEGIN);
 	BIND_CONSTANT(NOTIFICATION_SCROLL_END);
+	BIND_CONSTANT(NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
 
 	BIND_ENUM_CONSTANT(CURSOR_ARROW);
 	BIND_ENUM_CONSTANT(CURSOR_IBEAM);
@@ -2862,6 +3120,24 @@ void Control::_bind_methods() {
 	BIND_ENUM_CONSTANT(ANCHOR_BEGIN);
 	BIND_ENUM_CONSTANT(ANCHOR_END);
 
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_INHERITED);
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LOCALE);
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LTR);
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_RTL);
+
+	BIND_ENUM_CONSTANT(TEXT_DIRECTION_INHERITED);
+	BIND_ENUM_CONSTANT(TEXT_DIRECTION_AUTO);
+	BIND_ENUM_CONSTANT(TEXT_DIRECTION_LTR);
+	BIND_ENUM_CONSTANT(TEXT_DIRECTION_RTL);
+
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_DEFAULT);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_URI);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_FILE);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_EMAIL);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_LIST);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_NONE);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_CUSTOM);
+
 	ADD_SIGNAL(MethodInfo("resized"));
 	ADD_SIGNAL(MethodInfo("gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
@@ -2884,6 +3160,7 @@ Control::Control() {
 	data.theme_owner = nullptr;
 	data.theme_owner_window = nullptr;
 	data.default_cursor = CURSOR_ARROW;
+	data.layout_dir = LAYOUT_DIRECTION_INHERITED;
 	data.h_size_flags = SIZE_FILL;
 	data.v_size_flags = SIZE_FILL;
 	data.expand = 1;

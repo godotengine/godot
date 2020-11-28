@@ -68,8 +68,14 @@ Size2 CheckBox::get_minimum_size() const {
 }
 
 void CheckBox::_notification(int p_what) {
-	if (p_what == NOTIFICATION_THEME_CHANGED) {
-		_set_internal_margin(MARGIN_LEFT, get_icon_size().width);
+	if ((p_what == NOTIFICATION_THEME_CHANGED) || (p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || (p_what == NOTIFICATION_TRANSLATION_CHANGED))) {
+		if (is_layout_rtl()) {
+			_set_internal_margin(MARGIN_LEFT, 0.f);
+			_set_internal_margin(MARGIN_RIGHT, get_icon_size().width);
+		} else {
+			_set_internal_margin(MARGIN_LEFT, get_icon_size().width);
+			_set_internal_margin(MARGIN_RIGHT, 0.f);
+		}
 	} else if (p_what == NOTIFICATION_DRAW) {
 		RID ci = get_canvas_item();
 
@@ -78,7 +84,11 @@ void CheckBox::_notification(int p_what) {
 		Ref<StyleBox> sb = get_theme_stylebox("normal");
 
 		Vector2 ofs;
-		ofs.x = sb->get_margin(MARGIN_LEFT);
+		if (is_layout_rtl()) {
+			ofs.x = get_size().x - sb->get_margin(MARGIN_RIGHT) - get_icon_size().width;
+		} else {
+			ofs.x = sb->get_margin(MARGIN_LEFT);
+		}
 		ofs.y = int((get_size().height - get_icon_size().height) / 2) + get_theme_constant("check_vadjust");
 
 		if (is_pressed()) {
@@ -96,8 +106,14 @@ bool CheckBox::is_radio() {
 CheckBox::CheckBox(const String &p_text) :
 		Button(p_text) {
 	set_toggle_mode(true);
+
 	set_text_align(ALIGN_LEFT);
-	_set_internal_margin(MARGIN_LEFT, get_icon_size().width);
+
+	if (is_layout_rtl()) {
+		_set_internal_margin(MARGIN_RIGHT, get_icon_size().width);
+	} else {
+		_set_internal_margin(MARGIN_LEFT, get_icon_size().width);
+	}
 }
 
 CheckBox::~CheckBox() {
