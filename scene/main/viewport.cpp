@@ -1809,15 +1809,7 @@ bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_che
 void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	//?
-	/*
-	if (!is_visible()) {
-		return; //simple and plain
-	}
-	*/
-
 	Ref<InputEventMouseButton> mb = p_event;
-
 	if (mb.is_valid()) {
 		gui.key_event_accepted = false;
 
@@ -2005,7 +1997,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
-
 	if (mm.is_valid()) {
 		gui.key_event_accepted = false;
 		Point2 mpos = mm->get_position();
@@ -3048,7 +3039,10 @@ void Viewport::unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coor
 		ev = p_event;
 	}
 
+	// Unhandled Input
 	get_tree()->_call_input_pause(unhandled_input_group, "_unhandled_input", ev, this);
+
+	// Unhandled key Input - used for performance reasons - This is called a lot less then _unhandled_input since it ignores MouseMotion, etc
 	if (!is_input_handled() && Object::cast_to<InputEventKey>(*ev) != nullptr) {
 		get_tree()->_call_input_pause(unhandled_key_input_group, "_unhandled_key_input", ev, this);
 	}

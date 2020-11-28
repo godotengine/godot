@@ -317,16 +317,21 @@ bool BaseButton::is_keep_pressed_outside() const {
 
 void BaseButton::set_shortcut(const Ref<Shortcut> &p_shortcut) {
 	shortcut = p_shortcut;
-	set_process_unhandled_input(shortcut.is_valid());
+	set_process_unhandled_key_input(shortcut.is_valid());
 }
 
 Ref<Shortcut> BaseButton::get_shortcut() const {
 	return shortcut;
 }
 
-void BaseButton::_unhandled_input(Ref<InputEvent> p_event) {
+void BaseButton::_unhandled_key_input(Ref<InputEvent> p_event) {
+	if (!_is_focus_owner_in_shorcut_context()) {
+		return;
+	}
+
 	if (!is_disabled() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->is_shortcut(p_event)) {
 		on_action_event(p_event);
+		accept_event();
 	}
 }
 
@@ -360,9 +365,34 @@ Ref<ButtonGroup> BaseButton::get_button_group() const {
 	return button_group;
 }
 
+void BaseButton::set_shortcut_context(Node *p_node) {
+	ERR_FAIL_NULL_MSG(p_node, "Shortcut context node can't be null.");
+	shortcut_context = p_node->get_instance_id();
+}
+
+Node *BaseButton::get_shortcut_context() const {
+	Object *ctx_obj = ObjectDB::get_instance(shortcut_context);
+	Node *ctx_node = Object::cast_to<Node>(ctx_obj);
+
+	return ctx_node;
+}
+
+bool BaseButton::_is_focus_owner_in_shorcut_context() const {
+	if (shortcut_context == ObjectID()) {
+		// No context, therefore global - always "in" context.
+		return true;
+	}
+
+	Node *ctx_node = get_shortcut_context();
+	Control *vp_focus = get_focus_owner();
+
+	// If the context is valid and the viewport focus is valid, check if the context is the focus or is a parent of it.
+	return ctx_node && vp_focus && (ctx_node == vp_focus || ctx_node->is_a_parent_of(vp_focus));
+}
+
 void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &BaseButton::_gui_input);
-	ClassDB::bind_method(D_METHOD("_unhandled_input"), &BaseButton::_unhandled_input);
+	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &BaseButton::_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &BaseButton::set_pressed);
 	ClassDB::bind_method(D_METHOD("is_pressed"), &BaseButton::is_pressed);
 	ClassDB::bind_method(D_METHOD("is_hovered"), &BaseButton::is_hovered);
@@ -385,6 +415,9 @@ void BaseButton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_button_group", "button_group"), &BaseButton::set_button_group);
 	ClassDB::bind_method(D_METHOD("get_button_group"), &BaseButton::get_button_group);
+
+	ClassDB::bind_method(D_METHOD("set_shortcut_context", "node"), &BaseButton::set_shortcut_context);
+	ClassDB::bind_method(D_METHOD("get_shortcut_context"), &BaseButton::get_shortcut_context);
 
 	BIND_VMETHOD(MethodInfo("_pressed"));
 	BIND_VMETHOD(MethodInfo("_toggled", PropertyInfo(Variant::BOOL, "button_pressed")));
@@ -425,6 +458,7 @@ BaseButton::BaseButton() {
 	set_focus_mode(FOCUS_ALL);
 	action_mode = ACTION_MODE_BUTTON_RELEASE;
 	button_mask = BUTTON_MASK_LEFT;
+	shortcut_context = ObjectID();
 }
 
 BaseButton::~BaseButton() {

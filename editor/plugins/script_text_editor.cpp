@@ -1849,6 +1849,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->set_switch_on_hover(true);
+	edit_menu->set_shortcut_context(this);
 
 	convert_case = memnew(PopupMenu);
 	convert_case->set_name("convert_case");
@@ -1868,10 +1869,12 @@ ScriptTextEditor::ScriptTextEditor() {
 	search_menu = memnew(MenuButton);
 	search_menu->set_text(TTR("Search"));
 	search_menu->set_switch_on_hover(true);
+	search_menu->set_shortcut_context(this);
 
 	goto_menu = memnew(MenuButton);
 	goto_menu->set_text(TTR("Go To"));
 	goto_menu->set_switch_on_hover(true);
+	goto_menu->set_shortcut_context(this);
 
 	bookmarks_menu = memnew(PopupMenu);
 	bookmarks_menu->set_name("Bookmarks");

@@ -414,6 +414,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tool_hb->move_child(tools[SELECT_NEXT], WORKSPACE_CREATE_SINGLE);
 	tools[SELECT_NEXT]->set_flat(true);
 	tools[SELECT_NEXT]->set_shortcut(ED_SHORTCUT("tileset_editor/next_shape", TTR("Next Coordinate"), KEY_PAGEDOWN));
+	tools[SELECT_NEXT]->set_shortcut_context(this);
 	tools[SELECT_NEXT]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tool_clicked), varray(SELECT_NEXT));
 	tools[SELECT_NEXT]->set_tooltip(TTR("Select the next shape, subtile, or Tile."));
 	tools[SELECT_PREVIOUS] = memnew(Button);
@@ -421,6 +422,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tool_hb->move_child(tools[SELECT_PREVIOUS], WORKSPACE_CREATE_SINGLE);
 	tools[SELECT_PREVIOUS]->set_flat(true);
 	tools[SELECT_PREVIOUS]->set_shortcut(ED_SHORTCUT("tileset_editor/previous_shape", TTR("Previous Coordinate"), KEY_PAGEUP));
+	tools[SELECT_PREVIOUS]->set_shortcut_context(this);
 	tools[SELECT_PREVIOUS]->set_tooltip(TTR("Select the previous shape, subtile, or Tile."));
 	tools[SELECT_PREVIOUS]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tool_clicked), varray(SELECT_PREVIOUS));
 
@@ -466,6 +468,16 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tool_editmode[EDITMODE_PRIORITY]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_priority", TTR("Priority Mode"), KEY_6));
 	tool_editmode[EDITMODE_ICON]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_icon", TTR("Icon Mode"), KEY_7));
 	tool_editmode[EDITMODE_Z_INDEX]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_z_index", TTR("Z Index Mode"), KEY_8));
+
+	tool_editmode[EDITMODE_REGION]->set_shortcut_context(this);
+	tool_editmode[EDITMODE_REGION]->set_shortcut_context(this);
+	tool_editmode[EDITMODE_COLLISION]->set_shortcut_context(this);
+	tool_editmode[EDITMODE_OCCLUSION]->set_shortcut_context(this);
+	tool_editmode[EDITMODE_NAVIGATION]->set_shortcut_context(this);
+	tool_editmode[EDITMODE_BITMASK]->set_shortcut_context(this);
+	tool_editmode[EDITMODE_PRIORITY]->set_shortcut_context(this);
+	tool_editmode[EDITMODE_ICON]->set_shortcut_context(this);
+	tool_editmode[EDITMODE_Z_INDEX]->set_shortcut_context(this);
 
 	main_vb->add_child(tool_hb);
 	separator_editmode = memnew(HSeparator);

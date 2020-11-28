@@ -34,6 +34,10 @@
 #include "scene/main/window.h"
 
 void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
+	if (!_is_focus_owner_in_shorcut_context()) {
+		return;
+	}
+
 	if (disable_shortcuts) {
 		return;
 	}
@@ -43,9 +47,6 @@ void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 			return;
 		}
 
-		//bool global_only = (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this));
-		//if (popup->activate_item_by_event(p_event, global_only))
-		//	accept_event();
 		if (popup->activate_item_by_event(p_event, false)) {
 			accept_event();
 		}
@@ -100,7 +101,6 @@ void MenuButton::_notification(int p_what) {
 
 void MenuButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_popup"), &MenuButton::get_popup);
-	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &MenuButton::_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("_set_items"), &MenuButton::_set_items);
 	ClassDB::bind_method(D_METHOD("_get_items"), &MenuButton::_get_items);
 	ClassDB::bind_method(D_METHOD("set_switch_on_hover", "enable"), &MenuButton::set_switch_on_hover);
@@ -123,6 +123,7 @@ MenuButton::MenuButton() {
 	set_toggle_mode(true);
 	set_disable_shortcuts(false);
 	set_process_unhandled_key_input(true);
+	set_focus_mode(FOCUS_NONE);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
 	popup = memnew(PopupMenu);
