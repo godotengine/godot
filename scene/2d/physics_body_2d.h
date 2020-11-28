@@ -192,9 +192,6 @@ public:
 	void set_inertia(real_t p_inertia);
 	real_t get_inertia() const;
 
-	void set_weight(real_t p_weight);
-	real_t get_weight() const;
-
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
 	Ref<PhysicsMaterial> get_physics_material_override() const;
 

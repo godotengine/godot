@@ -198,9 +198,6 @@
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping" default="false">
 			If [code]true[/code], the body will not move and will not calculate forces until woken up by another body through, for example, a collision, or by using the [method apply_impulse] or [method add_force] methods.
 		</member>
-		<member name="weight" type="float" setter="set_weight" getter="get_weight" default="9.8">
-			The body's weight based on its mass and the global 3D gravity. Global values are set in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b].
-		</member>
 	</members>
 	<signals>
 		<signal name="body_entered">
