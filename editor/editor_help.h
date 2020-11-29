@@ -32,7 +32,7 @@
 #define EDITOR_HELP_H
 
 #include "editor/code_editor.h"
-#include "editor/doc_data.h"
+#include "editor/doc_tools.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
@@ -118,7 +118,7 @@ class EditorHelp : public VBoxContainer {
 
 	RichTextLabel *class_desc;
 	HSplitContainer *h_split;
-	static DocData *doc;
+	static DocTools *doc;
 
 	ConfirmationDialog *search_dialog;
 	LineEdit *search;
@@ -166,7 +166,7 @@ protected:
 
 public:
 	static void generate_doc();
-	static DocData *get_doc_data() { return doc; }
+	static DocTools *get_doc_data() { return doc; }
 
 	void go_to_help(const String &p_help);
 	void go_to_class(const String &p_class, int p_scroll = 0);

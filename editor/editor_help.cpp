@@ -40,7 +40,7 @@
 
 #define CONTRIBUTE_URL "https://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html"
 
-DocData *EditorHelp::doc = nullptr;
+DocTools *EditorHelp::doc = nullptr;
 
 void EditorHelp::_init_colors() {
 	title_color = get_theme_color("accent_color", "Editor");
@@ -1323,7 +1323,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 }
 
 static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
-	DocData *doc = EditorHelp::get_doc_data();
+	DocTools *doc = EditorHelp::get_doc_data();
 	String base_path;
 
 	Ref<Font> doc_font = p_rt->get_theme_font("doc", "EditorFonts");
@@ -1618,9 +1618,9 @@ void EditorHelp::_add_text(const String &p_bbcode) {
 }
 
 void EditorHelp::generate_doc() {
-	doc = memnew(DocData);
+	doc = memnew(DocTools);
 	doc->generate(true);
-	DocData compdoc;
+	DocTools compdoc;
 	compdoc.load_compressed(_doc_data_compressed, _doc_data_compressed_size, _doc_data_uncompressed_size);
 	doc->merge_from(compdoc); //ensure all is up to date
 }

@@ -31,6 +31,7 @@
 #include "connections_dialog.h"
 
 #include "core/string/print_string.h"
+#include "editor/doc_tools.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
@@ -997,7 +998,7 @@ void ConnectionsDock::update_tree() {
 				}
 
 				if (!found) {
-					DocData *dd = EditorHelp::get_doc_data();
+					DocTools *dd = EditorHelp::get_doc_data();
 					Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(base);
 					while (F && descr == String()) {
 						for (int i = 0; i < F->get().signals.size(); i++) {

@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/json.h"
 #include "core/os/copymem.h"
+#include "editor/doc_tools.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 
@@ -212,7 +213,7 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
 	lsp::GodotCapabilities capabilities;
 
-	DocData *doc = EditorHelp::get_doc_data();
+	DocTools *doc = EditorHelp::get_doc_data();
 	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
 		lsp::GodotNativeClassInfo gdclass;
 		gdclass.name = E->get().name;

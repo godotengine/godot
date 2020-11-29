@@ -2009,7 +2009,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 		}
 	}
 
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 	p_script->doc_functions.clear();
 	p_script->doc_variables.clear();
 	p_script->doc_constants.clear();
@@ -2142,7 +2142,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 				} else {
 					prop_info.usage = PROPERTY_USAGE_SCRIPT_VARIABLE;
 				}
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 				p_script->doc_variables[name] = variable->doc_description;
 #endif
 
@@ -2224,7 +2224,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 					parameters_names.write[j] = signal->parameters[j]->identifier->name;
 				}
 				p_script->_signals[name] = parameters_names;
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 				if (!signal->doc_description.empty()) {
 					p_script->doc_signals[name] = signal->doc_description;
 				}

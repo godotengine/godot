@@ -39,8 +39,6 @@
 #include "core/io/file_access_encrypted.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "editor/editor_help.h"
-#include "editor/plugins/script_editor_plugin.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_compiler.h"
@@ -242,7 +240,7 @@ void GDScript::_get_script_method_list(List<MethodInfo> *r_list, bool p_include_
 			mi.name = E->key();
 			for (int i = 0; i < func->get_argument_count(); i++) {
 				PropertyInfo arginfo = func->get_argument_type(i);
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 				arginfo.name = func->get_argument_name(i);
 #endif
 				mi.arguments.push_back(arginfo);
@@ -419,11 +417,8 @@ void GDScript::_add_doc(const DocData::ClassDoc &p_inner_class) {
 }
 
 void GDScript::_clear_doc() {
-	if (EditorHelp::get_doc_data() && EditorHelp::get_doc_data()->has_doc(doc.name)) {
-		EditorHelp::get_doc_data()->remove_doc(doc.name);
-		doc = DocData::ClassDoc();
-	}
 	docs.clear();
+	doc = DocData::ClassDoc();
 }
 
 void GDScript::_update_doc() {
@@ -579,13 +574,6 @@ void GDScript::_update_doc() {
 
 	for (Map<StringName, Ref<GDScript>>::Element *E = subclasses.front(); E; E = E->next()) {
 		E->get()->_update_doc();
-	}
-
-	if (EditorHelp::get_doc_data()) {
-		EditorHelp::get_doc_data()->add_doc(doc);
-	}
-	if (ScriptEditor::get_singleton()) {
-		ScriptEditor::get_singleton()->update_doc(doc.name);
 	}
 
 	_add_doc(doc);
@@ -845,8 +833,8 @@ Error GDScript::reload(bool p_keep_state) {
 	GDScriptCompiler compiler;
 	err = compiler.compile(&parser, this, p_keep_state);
 
-#if TOOLS_ENABLED
-	this->_update_doc();
+#ifdef TOOLS_ENABLED
+	_update_doc();
 #endif
 
 	if (err) {
