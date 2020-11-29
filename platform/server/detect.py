@@ -38,6 +38,7 @@ def get_opts():
         BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN))", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN))", False),
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
+        BoolVariable("use_msan", "Use LLVM/GCC compiler memory sanitizer (MSAN))", False),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
     ]
@@ -94,7 +95,7 @@ def configure(env):
         env.extra_suffix = ".llvm" + env.extra_suffix
         env.Append(LIBS=["atomic"])
 
-    if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"]:
+    if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
         env.extra_suffix += "s"
 
         if env["use_ubsan"]:
@@ -112,6 +113,10 @@ def configure(env):
         if env["use_tsan"]:
             env.Append(CCFLAGS=["-fsanitize=thread"])
             env.Append(LINKFLAGS=["-fsanitize=thread"])
+
+        if env["use_msan"]:
+            env.Append(CCFLAGS=["-fsanitize=memory"])
+            env.Append(LINKFLAGS=["-fsanitize=memory"])
 
     if env["use_lto"]:
         env.Append(CCFLAGS=["-flto"])
