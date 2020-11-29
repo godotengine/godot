@@ -65,6 +65,9 @@
 		<member name="shortcut" type="Shortcut" setter="set_shortcut" getter="get_shortcut">
 			[Shortcut] associated to the button.
 		</member>
+		<member name="shortcut_context" type="Node" setter="set_shortcut_context" getter="get_shortcut_context">
+			The [Node] which must be a parent of the focused GUI [Control] for the shortcut to be activated. If [code]null[/code], the shortcut can be activated when any control is focused (a global shortcut). This allows shortcuts to be accepted only when the user has a certain area of the GUI focused.
+		</member>
 		<member name="shortcut_in_tooltip" type="bool" setter="set_shortcut_in_tooltip" getter="is_shortcut_in_tooltip_enabled" default="true">
 			If [code]true[/code], the button will add information about its shortcut in the tooltip.
 		</member>
