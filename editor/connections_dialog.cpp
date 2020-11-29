@@ -410,6 +410,7 @@ ConnectDialog::ConnectDialog() {
 
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_connecting_signal(true);
+	tree->set_show_enabled_subscene(true);
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ConnectDialog::_item_activated));
 	tree->connect("node_selected", callable_mp(this, &ConnectDialog::_tree_node_selected));
 	tree->set_connect_to_script_mode(true);
