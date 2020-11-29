@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "mesh_instance_2d.h"
+#include "scene/scene_string_names.h"
 
 void MeshInstance2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
@@ -89,6 +90,9 @@ Ref<Texture2D> MeshInstance2D::get_texture() const {
 
 #ifdef TOOLS_ENABLED
 Rect2 MeshInstance2D::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
 	if (mesh.is_valid()) {
 		AABB aabb = mesh->get_aabb();
 		return Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);

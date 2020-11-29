@@ -323,11 +323,28 @@ CanvasItemMaterial::~CanvasItemMaterial() {
 ///////////////////////////////////////////////////////////////////
 #ifdef TOOLS_ENABLED
 bool CanvasItem::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_is_selected_on_click))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_is_selected_on_click, p_point, p_tolerance);
+
 	if (_edit_use_rect()) {
 		return _edit_get_rect().has_point(p_point);
 	} else {
 		return p_point.length() < p_tolerance;
 	}
+}
+
+bool CanvasItem::_edit_use_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_use_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_use_rect);
+
+	return false;
+}
+
+Rect2 CanvasItem::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
+	return Rect2(0, 0, 0, 0);
 }
 
 Transform2D CanvasItem::_edit_get_transform() const {
@@ -1114,6 +1131,10 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_edit_get_pivot"), &CanvasItem::_edit_get_pivot);
 	ClassDB::bind_method(D_METHOD("_edit_use_pivot"), &CanvasItem::_edit_use_pivot);
 	ClassDB::bind_method(D_METHOD("_edit_get_transform"), &CanvasItem::_edit_get_transform);
+
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::RECT2, "_edit_get_rect"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_edit_is_selected_on_click", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::FLOAT, "tolerance")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_edit_use_rect"));
 #endif
 
 	ClassDB::bind_method(D_METHOD("get_canvas_item"), &CanvasItem::get_canvas_item);

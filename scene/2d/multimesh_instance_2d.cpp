@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "multimesh_instance_2d.h"
+#include "scene/scene_string_names.h"
 
 void MultiMeshInstance2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
@@ -89,6 +90,9 @@ Ref<Texture2D> MultiMeshInstance2D::get_normal_map() const {
 
 #ifdef TOOLS_ENABLED
 Rect2 MultiMeshInstance2D::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
 	if (multimesh.is_valid()) {
 		AABB aabb = multimesh->get_aabb();
 		return Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);

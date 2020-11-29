@@ -39,6 +39,7 @@
 #include "scene/resources/line_shape_2d.h"
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/segment_shape_2d.h"
+#include "scene/scene_string_names.h"
 
 void CollisionShape2D::_shape_changed() {
 	update();
@@ -165,6 +166,9 @@ Ref<Shape2D> CollisionShape2D::get_shape() const {
 }
 
 bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_is_selected_on_click))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_is_selected_on_click, p_point, p_tolerance);
+
 	if (!shape.is_valid()) {
 		return false;
 	}

@@ -35,6 +35,7 @@
 #include "core/math/geometry_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
+#include "scene/scene_string_names.h"
 
 #include "thirdparty/misc/triangulator.h"
 
@@ -217,14 +218,23 @@ CollisionPolygon2D::BuildMode CollisionPolygon2D::get_build_mode() const {
 
 #ifdef TOOLS_ENABLED
 Rect2 CollisionPolygon2D::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
 	return aabb;
 }
 
 bool CollisionPolygon2D::_edit_use_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_use_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_use_rect);
+
 	return true;
 }
 
 bool CollisionPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_is_selected_on_click))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_is_selected_on_click, p_point, p_tolerance);
+
 	return Geometry2D::is_point_in_polygon(p_point, Variant(polygon));
 }
 #endif

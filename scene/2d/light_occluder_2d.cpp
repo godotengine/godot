@@ -30,6 +30,7 @@
 
 #include "light_occluder_2d.h"
 #include "core/math/geometry_2d.h"
+#include "scene/scene_string_names.h"
 
 #include "core/config/engine.h"
 
@@ -37,6 +38,9 @@
 
 #ifdef TOOLS_ENABLED
 Rect2 OccluderPolygon2D::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
 	if (rect_cache_dirty) {
 		if (closed) {
 			const Vector2 *r = polygon.ptr();
@@ -68,6 +72,9 @@ Rect2 OccluderPolygon2D::_edit_get_rect() const {
 }
 
 bool OccluderPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_is_selected_on_click))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_is_selected_on_click, p_point, p_tolerance);
+
 	if (closed) {
 		return Geometry2D::is_point_in_polygon(p_point, Variant(polygon));
 	} else {
@@ -202,10 +209,16 @@ void LightOccluder2D::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 Rect2 LightOccluder2D::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
 	return occluder_polygon.is_valid() ? occluder_polygon->_edit_get_rect() : Rect2();
 }
 
 bool LightOccluder2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_is_selected_on_click))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_is_selected_on_click, p_point, p_tolerance);
+
 	return occluder_polygon.is_valid() ? occluder_polygon->_edit_is_selected_on_click(p_point, p_tolerance) : false;
 }
 #endif

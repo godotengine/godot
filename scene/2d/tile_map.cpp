@@ -34,6 +34,7 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "scene/2d/area_2d.h"
+#include "scene/scene_string_names.h"
 #include "servers/navigation_server_2d.h"
 #include "servers/physics_server_2d.h"
 
@@ -1248,6 +1249,9 @@ Vector<int> TileMap::_get_tile_data() const {
 
 #ifdef TOOLS_ENABLED
 Rect2 TileMap::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
 	if (pending_update) {
 		const_cast<TileMap *>(this)->update_dirty_quadrants();
 	} else {

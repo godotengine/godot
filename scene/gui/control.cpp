@@ -124,10 +124,16 @@ void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
 }
 
 Rect2 Control::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
 	return Rect2(Point2(), get_size());
 }
 
 bool Control::_edit_use_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_use_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_use_rect);
+
 	return true;
 }
 

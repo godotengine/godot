@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "back_buffer_copy.h"
+#include "scene/scene_string_names.h"
 
 void BackBufferCopy::_update_copy_mode() {
 	switch (copy_mode) {
@@ -47,10 +48,16 @@ void BackBufferCopy::_update_copy_mode() {
 
 #ifdef TOOLS_ENABLED
 Rect2 BackBufferCopy::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
 	return rect;
 }
 
 bool BackBufferCopy::_edit_use_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_use_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_use_rect);
+
 	return true;
 }
 #endif

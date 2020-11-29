@@ -100,6 +100,10 @@ SceneStringNames::SceneStringNames() {
 	_exit_world = StaticCString::create("_exit_world");
 	_ready = StaticCString::create("_ready");
 
+	_edit_get_rect = StaticCString::create("_edit_get_rect");
+	_edit_use_rect = StaticCString::create("_edit_use_rect");
+	_edit_is_selected_on_click = StaticCString::create("_edit_is_selected_on_click");
+
 	_update_scroll = StaticCString::create("_update_scroll");
 	_update_xform = StaticCString::create("_update_xform");
 

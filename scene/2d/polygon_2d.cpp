@@ -33,6 +33,8 @@
 #include "core/math/geometry_2d.h"
 #include "skeleton_2d.h"
 
+#include "scene/scene_string_names.h"
+
 #ifdef TOOLS_ENABLED
 Dictionary Polygon2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
@@ -59,6 +61,9 @@ bool Polygon2D::_edit_use_pivot() const {
 }
 
 Rect2 Polygon2D::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
 	if (rect_cache_dirty) {
 		int l = polygon.size();
 		const Vector2 *r = polygon.ptr();
@@ -78,10 +83,16 @@ Rect2 Polygon2D::_edit_get_rect() const {
 }
 
 bool Polygon2D::_edit_use_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_use_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_use_rect);
+
 	return polygon.size() > 0;
 }
 
 bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_is_selected_on_click))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_is_selected_on_click, p_point, p_tolerance);
+
 	Vector<Vector2> polygon2d = Variant(polygon);
 	if (internal_vertices > 0) {
 		polygon2d.resize(polygon2d.size() - internal_vertices);

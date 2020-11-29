@@ -33,6 +33,8 @@
 #include "core/config/engine.h"
 #include "servers/rendering_server.h"
 
+#include "scene/scene_string_names.h"
+
 void Light2D::_update_light_visibility() {
 	if (!is_inside_tree()) {
 		return;
@@ -352,6 +354,9 @@ bool PointLight2D::_edit_use_pivot() const {
 }
 
 Rect2 PointLight2D::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
 	if (texture.is_null()) {
 		return Rect2();
 	}
@@ -361,6 +366,9 @@ Rect2 PointLight2D::_edit_get_rect() const {
 }
 
 bool PointLight2D::_edit_use_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_use_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_use_rect);
+
 	return !texture.is_null();
 }
 #endif

@@ -34,7 +34,8 @@
 #include "core/input/input_map.h"
 #include "core/os/os.h"
 #include "scene/main/window.h"
-#
+#include "scene/scene_string_names.h"
+
 void TouchScreenButton::set_texture(const Ref<Texture2D> &p_texture) {
 	texture = p_texture;
 	update();
@@ -312,6 +313,9 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 
 #ifdef TOOLS_ENABLED
 Rect2 TouchScreenButton::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
 	if (texture.is_null()) {
 		return CanvasItem::_edit_get_rect();
 	}
@@ -320,6 +324,9 @@ Rect2 TouchScreenButton::_edit_get_rect() const {
 }
 
 bool TouchScreenButton::_edit_use_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_use_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_use_rect);
+
 	return !texture.is_null();
 }
 #endif

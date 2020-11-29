@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "navigation_region_2d.h"
+#include "scene/scene_string_names.h"
 
 #include "core/config/engine.h"
 #include "core/core_string_names.h"
@@ -41,6 +42,9 @@
 
 #ifdef TOOLS_ENABLED
 Rect2 NavigationPolygon::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
 	if (rect_cache_dirty) {
 		item_rect = Rect2();
 		bool first = true;
@@ -68,6 +72,9 @@ Rect2 NavigationPolygon::_edit_get_rect() const {
 }
 
 bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_is_selected_on_click))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_is_selected_on_click, p_point, p_tolerance);
+
 	for (int i = 0; i < outlines.size(); i++) {
 		const Vector<Vector2> &outline = outlines[i];
 		const int outline_size = outline.size();
@@ -383,10 +390,16 @@ bool NavigationRegion2D::is_enabled() const {
 /////////////////////////////
 #ifdef TOOLS_ENABLED
 Rect2 NavigationRegion2D::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
 	return navpoly.is_valid() ? navpoly->_edit_get_rect() : Rect2();
 }
 
 bool NavigationRegion2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_is_selected_on_click))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_is_selected_on_click, p_point, p_tolerance);
+
 	return navpoly.is_valid() ? navpoly->_edit_is_selected_on_click(p_point, p_tolerance) : false;
 }
 #endif

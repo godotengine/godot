@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "line_2d.h"
+#include "scene/scene_string_names.h"
 
 #include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
@@ -53,6 +54,9 @@ Line2D::Line2D() {
 
 #ifdef TOOLS_ENABLED
 Rect2 Line2D::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
 	if (_points.size() == 0) {
 		return Rect2(0, 0, 0, 0);
 	}
@@ -66,10 +70,16 @@ Rect2 Line2D::_edit_get_rect() const {
 }
 
 bool Line2D::_edit_use_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_use_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_use_rect);
+
 	return true;
 }
 
 bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_is_selected_on_click))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_is_selected_on_click, p_point, p_tolerance);
+
 	const real_t d = _width / 2 + p_tolerance;
 	const Vector2 *points = _points.ptr();
 	for (int i = 0; i < _points.size() - 1; i++) {
