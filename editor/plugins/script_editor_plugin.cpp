@@ -1249,12 +1249,34 @@ void ScriptEditor::_menu_option(int p_option) {
 
 				RES resource = current->get_edited_resource();
 				Ref<TextFile> text_file = resource;
+				Ref<Script> script = resource;
+
 				if (text_file != nullptr) {
 					current->apply_code();
 					_save_text_file(text_file, text_file->get_path());
 					break;
 				}
+
+				if (script != nullptr) {
+					const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+					for (int j = 0; j < documentations.size(); j++) {
+						const DocData::ClassDoc &doc = documentations.get(j);
+						if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
+							EditorHelp::get_doc_data()->remove_doc(doc.name);
+						}
+					}
+				}
+
 				editor->save_resource(resource);
+
+				if (script != nullptr) {
+					const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+					for (int j = 0; j < documentations.size(); j++) {
+						const DocData::ClassDoc &doc = documentations.get(j);
+						EditorHelp::get_doc_data()->add_doc(doc);
+						update_doc(doc.name);
+					}
+				}
 
 			} break;
 			case FILE_SAVE_AS: {
@@ -1274,6 +1296,8 @@ void ScriptEditor::_menu_option(int p_option) {
 
 				RES resource = current->get_edited_resource();
 				Ref<TextFile> text_file = resource;
+				Ref<Script> script = resource;
+
 				if (text_file != nullptr) {
 					file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 					file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
@@ -1289,9 +1313,27 @@ void ScriptEditor::_menu_option(int p_option) {
 					break;
 				}
 
+				if (script != nullptr) {
+					const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+					for (int j = 0; j < documentations.size(); j++) {
+						const DocData::ClassDoc &doc = documentations.get(j);
+						if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
+							EditorHelp::get_doc_data()->remove_doc(doc.name);
+						}
+					}
+				}
+
 				editor->push_item(resource.ptr());
 				editor->save_resource_as(resource);
 
+				if (script != nullptr) {
+					const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+					for (int j = 0; j < documentations.size(); j++) {
+						const DocData::ClassDoc &doc = documentations.get(j);
+						EditorHelp::get_doc_data()->add_doc(doc);
+						update_doc(doc.name);
+					}
+				}
 			} break;
 
 			case FILE_TOOL_RELOAD:
@@ -2318,11 +2360,33 @@ void ScriptEditor::save_all_scripts() {
 
 		if (edited_res->get_path() != "" && edited_res->get_path().find("local://") == -1 && edited_res->get_path().find("::") == -1) {
 			Ref<TextFile> text_file = edited_res;
+			Ref<Script> script = edited_res;
+
 			if (text_file != nullptr) {
 				_save_text_file(text_file, text_file->get_path());
 				continue;
 			}
+
+			if (script != nullptr) {
+				const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+				for (int j = 0; j < documentations.size(); j++) {
+					const DocData::ClassDoc &doc = documentations.get(j);
+					if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
+						EditorHelp::get_doc_data()->remove_doc(doc.name);
+					}
+				}
+			}
+
 			editor->save_resource(edited_res); //external script, save it
+
+			if (script != nullptr) {
+				const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+				for (int j = 0; j < documentations.size(); j++) {
+					const DocData::ClassDoc &doc = documentations.get(j);
+					EditorHelp::get_doc_data()->add_doc(doc);
+					update_doc(doc.name);
+				}
+			}
 		}
 	}
 

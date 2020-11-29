@@ -33,6 +33,7 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/doc_data.h"
 #include "core/object/script_language.h"
 #include "core/os/thread.h"
 

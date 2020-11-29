@@ -33,10 +33,10 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/doc_data.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
-#include "editor/doc_data.h"
 #include "gdscript_function.h"
 
 class GDScriptNativeClass : public Reference {
@@ -470,6 +470,7 @@ public:
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;
+	virtual bool supports_documentation() const;
 	virtual bool can_inherit_from_file() { return true; }
 	virtual int find_function(const String &p_function, const String &p_code) const;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const;

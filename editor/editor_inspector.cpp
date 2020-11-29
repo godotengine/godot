@@ -32,6 +32,7 @@
 
 #include "array_property_edit.h"
 #include "dictionary_property_edit.h"
+#include "editor/doc_tools.h"
 #include "editor_feature_profile.h"
 #include "editor_node.h"
 #include "editor_scale.h"
@@ -1708,7 +1709,7 @@ void EditorInspector::update_tree() {
 				StringName type2 = p.name;
 				if (!class_descr_cache.has(type2)) {
 					String descr;
-					DocData *dd = EditorHelp::get_doc_data();
+					DocTools *dd = EditorHelp::get_doc_data();
 					Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(type2);
 					if (E) {
 						descr = DTR(E->get().brief_description);
@@ -1878,7 +1879,7 @@ void EditorInspector::update_tree() {
 			}
 
 			if (!found) {
-				DocData *dd = EditorHelp::get_doc_data();
+				DocTools *dd = EditorHelp::get_doc_data();
 				Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(classname);
 				while (F && descr == String()) {
 					for (int i = 0; i < F->get().properties.size(); i++) {

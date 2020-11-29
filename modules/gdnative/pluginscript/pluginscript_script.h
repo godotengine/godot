@@ -32,6 +32,8 @@
 #define PLUGINSCRIPT_SCRIPT_H
 
 // Godot imports
+
+#include "core/doc_data.h"
 #include "core/object/script_language.h"
 // PluginScript imports
 #include "pluginscript_language.h"

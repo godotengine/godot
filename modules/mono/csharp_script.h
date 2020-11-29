@@ -31,6 +31,7 @@
 #ifndef CSHARP_SCRIPT_H
 #define CSHARP_SCRIPT_H
 
+#include "core/doc_data.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"

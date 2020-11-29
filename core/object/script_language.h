@@ -31,11 +31,11 @@
 #ifndef SCRIPT_LANGUAGE_H
 #define SCRIPT_LANGUAGE_H
 
+#include "core/doc_data.h"
 #include "core/io/multiplayer_api.h"
 #include "core/io/resource.h"
 #include "core/templates/map.h"
 #include "core/templates/pair.h"
-#include "editor/doc_data.h"
 
 class ScriptLanguage;
 
@@ -310,12 +310,12 @@ public:
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const = 0;
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {}
 	virtual bool is_using_templates() { return false; }
-	virtual bool has_documentation() { return false; }
 	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = nullptr, List<Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
 	virtual Script *create_script() const = 0;
 	virtual bool has_named_classes() const = 0;
 	virtual bool supports_builtin_mode() const = 0;
+	virtual bool supports_documentation() const { return false; }
 	virtual bool can_inherit_from_file() { return false; }
 	virtual int find_function(const String &p_function, const String &p_code) const = 0;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const = 0;

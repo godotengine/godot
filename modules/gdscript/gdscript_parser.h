@@ -1303,7 +1303,7 @@ private:
 	TypeNode *parse_type(bool p_allow_void = false);
 #ifdef TOOLS_ENABLED
 	// Doc comments.
-	int class_doc_line = -1;
+	int class_doc_line = 0x7FFFFFFF;
 	bool has_comment(int p_line);
 	String get_doc_comment(int p_line, bool p_single_line = false);
 	void get_class_doc_comment(int p_line, String &p_brief, String &p_desc, Vector<Pair<String, String>> &p_tutorials, bool p_inner_class);

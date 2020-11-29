@@ -561,11 +561,7 @@ void GDScriptParser::parse_program() {
 #ifdef TOOLS_ENABLED
 	for (Map<int, GDScriptTokenizer::CommentData>::Element *E = tokenizer.get_comments().front(); E; E = E->next()) {
 		if (E->get().new_line && E->get().comment.begins_with("##")) {
-			if (class_doc_line == -1) {
-				class_doc_line = E->key();
-			} else {
-				class_doc_line = MIN(class_doc_line, E->key());
-			}
+			class_doc_line = MIN(class_doc_line, E->key());
 		}
 	}
 	if (has_comment(class_doc_line)) {
@@ -708,6 +704,7 @@ void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)()
 
 #ifdef TOOLS_ENABLED
 	// Consume doc comments.
+	class_doc_line = MIN(class_doc_line, doc_comment_line - 1);
 	if (has_comment(doc_comment_line)) {
 		if constexpr (std::is_same_v<T, ClassNode>) {
 			get_class_doc_comment(doc_comment_line, member->doc_brief_description, member->doc_description, member->doc_tutorials, true);
@@ -2741,12 +2738,6 @@ String GDScriptParser::get_doc_comment(int p_line, bool p_single_line) {
 		line--;
 	}
 
-	if (class_doc_line == -1) {
-		class_doc_line = line - 1;
-	} else {
-		class_doc_line = MIN(class_doc_line, line) - 1;
-	}
-
 	int codeblock_begins = 0;
 	while (comments.has(line)) {
 		if (!comments[line].new_line || !comments[line].comment.begins_with("##")) {
@@ -2799,11 +2790,6 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 				break;
 			}
 			line--;
-		}
-		if (class_doc_line == -1) {
-			class_doc_line = line - 1;
-		} else {
-			class_doc_line = MIN(class_doc_line, line) - 1;
 		}
 	}
 

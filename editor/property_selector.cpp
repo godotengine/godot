@@ -31,6 +31,7 @@
 #include "property_selector.h"
 
 #include "core/os/keyboard.h"
+#include "editor/doc_tools.h"
 #include "editor/editor_node.h"
 #include "editor_scale.h"
 
@@ -349,7 +350,7 @@ void PropertySelector::_item_selected() {
 		class_type = base_type;
 	}
 
-	DocData *dd = EditorHelp::get_doc_data();
+	DocTools *dd = EditorHelp::get_doc_data();
 	String text;
 
 	if (properties) {
