@@ -185,7 +185,24 @@ void DocData::remove_from(const DocData &p_data) {
 	}
 }
 
-static void return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo) {
+void DocData::add_doc(const ClassDoc &p_class_doc) {
+	ERR_FAIL_COND(p_class_doc.name == "");
+	class_list[p_class_doc.name] = p_class_doc;
+}
+
+void DocData::remove_doc(const String &p_class_name) {
+	ERR_FAIL_COND(p_class_name == "" || !class_list.has(p_class_name));
+	class_list.erase(p_class_name);
+}
+
+bool DocData::has_doc(const String &p_class_name) {
+	if (p_class_name == "") {
+		return false;
+	}
+	return class_list.has(p_class_name);
+}
+
+void DocData::return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo) {
 	if (p_retinfo.type == Variant::INT && p_retinfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 		p_method.return_enum = p_retinfo.class_name;
 		if (p_method.return_enum.begins_with("_")) { //proxy class
@@ -207,7 +224,7 @@ static void return_doc_from_retinfo(DocData::MethodDoc &p_method, const Property
 	}
 }
 
-static void argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const PropertyInfo &p_arginfo) {
+void DocData::argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const PropertyInfo &p_arginfo) {
 	p_argument.name = p_arginfo.name;
 
 	if (p_arginfo.type == Variant::INT && p_arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
@@ -228,6 +245,56 @@ static void argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const Pr
 	} else {
 		p_argument.type = Variant::get_type_name(p_arginfo.type);
 	}
+}
+
+void DocData::property_doc_from_scriptmemberinfo(DocData::PropertyDoc &p_property, const ScriptMemberInfo &p_memberinfo) {
+	p_property.name = p_memberinfo.propinfo.name;
+	p_property.description = p_memberinfo.doc_string;
+
+	if (p_memberinfo.propinfo.type == Variant::OBJECT) {
+		p_property.type = p_memberinfo.propinfo.class_name;
+	} else if (p_memberinfo.propinfo.type == Variant::NIL && p_memberinfo.propinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
+		p_property.type = "Variant";
+	} else {
+		p_property.type = Variant::get_type_name(p_memberinfo.propinfo.type);
+	}
+
+	p_property.setter = p_memberinfo.setter;
+	p_property.getter = p_memberinfo.getter;
+
+	if (p_memberinfo.has_default_value && p_memberinfo.default_value.get_type() != Variant::OBJECT) {
+		p_property.default_value = p_memberinfo.default_value.get_construct_string().replace("\n", "");
+	}
+
+	p_property.overridden = false;
+}
+
+void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const MethodInfo &p_methodinfo, const String &p_desc) {
+	p_method.name = p_methodinfo.name;
+	p_method.description = p_desc;
+
+	return_doc_from_retinfo(p_method, p_methodinfo.return_val);
+
+	for (int i = 0; i < p_methodinfo.arguments.size(); i++) {
+		ArgumentDoc argument;
+		argument_doc_from_arginfo(argument, p_methodinfo.arguments[i]);
+		int default_arg_index = i - (p_methodinfo.arguments.size() - p_methodinfo.default_arguments.size());
+		if (default_arg_index >= 0) {
+			Variant default_arg = p_methodinfo.default_arguments[default_arg_index];
+			argument.default_value = default_arg.get_construct_string();
+		}
+		p_method.arguments.push_back(argument);
+	}
+}
+
+void DocData::constant_doc_from_variant(DocData::ConstantDoc &p_const, const StringName &p_name, const Variant &p_value, const String &p_desc) {
+	p_const.name = p_name;
+	p_const.value = p_value;
+	p_const.description = p_desc;
+}
+
+void DocData::signal_doc_from_methodinfo(DocData::MethodDoc &p_signal, const MethodInfo &p_methodinfo, const String &p_desc) {
+	return method_doc_from_methodinfo(p_signal, p_methodinfo, p_desc);
 }
 
 static Variant get_documentation_default_value(const StringName &p_class_name, const StringName &p_property_name, bool &r_default_value_valid) {

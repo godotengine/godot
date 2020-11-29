@@ -379,6 +379,7 @@ private:
 
 #ifdef TOOLS_ENABLED
 	Vector<StringName> arg_names;
+	Vector<Variant> default_arg_values;
 #endif
 
 	List<StackDebug> stack_debug;
@@ -458,6 +459,11 @@ public:
 		ERR_FAIL_INDEX_V(p_idx, default_arguments.size(), Variant());
 		return default_arguments[p_idx];
 	}
+#ifdef TOOLS_ENABLED
+	const Vector<Variant> &get_default_arg_values() const {
+		return default_arg_values;
+	}
+#endif // TOOLS_ENABLED
 
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = nullptr);
 

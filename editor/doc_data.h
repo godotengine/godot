@@ -35,6 +35,16 @@
 #include "core/templates/map.h"
 #include "core/variant/variant.h"
 
+struct ScriptMemberInfo {
+	PropertyInfo propinfo;
+	String doc_string;
+	StringName setter;
+	StringName getter;
+
+	bool has_default_value = false;
+	Variant default_value;
+};
+
 class DocData {
 public:
 	struct ArgumentDoc {
@@ -87,6 +97,12 @@ public:
 		}
 	};
 
+	struct EnumDoc {
+		String name = "@unnamed_enum";
+		String description;
+		Vector<DocData::ConstantDoc> values;
+	};
+
 	struct PropertyDoc {
 		String name;
 		String type;
@@ -115,8 +131,11 @@ public:
 		Vector<MethodDoc> methods;
 		Vector<MethodDoc> signals;
 		Vector<ConstantDoc> constants;
+		Map<String, String> enums;
 		Vector<PropertyDoc> properties;
 		Vector<PropertyDoc> theme_properties;
+		bool is_script_doc = false;
+		String script_path;
 		bool operator<(const ClassDoc &p_class) const {
 			return name < p_class.name;
 		}
@@ -128,8 +147,18 @@ public:
 	Error _load(Ref<XMLParser> parser);
 
 public:
+	static void return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo);
+	static void argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const PropertyInfo &p_arginfo);
+	static void property_doc_from_scriptmemberinfo(DocData::PropertyDoc &p_property, const ScriptMemberInfo &p_memberinfo);
+	static void method_doc_from_methodinfo(DocData::MethodDoc &p_method, const MethodInfo &p_methodinfo, const String &p_desc);
+	static void constant_doc_from_variant(DocData::ConstantDoc &p_const, const StringName &p_name, const Variant &p_value, const String &p_desc);
+	static void signal_doc_from_methodinfo(DocData::MethodDoc &p_signal, const MethodInfo &p_methodinfo, const String &p_desc);
+
 	void merge_from(const DocData &p_data);
 	void remove_from(const DocData &p_data);
+	void add_doc(const ClassDoc &p_class_doc);
+	void remove_doc(const String &p_class_name);
+	bool has_doc(const String &p_class_name);
 	void generate(bool p_basic_types = false);
 	Error load_classes(const String &p_dir);
 	static Error erase_classes(const String &p_dir);

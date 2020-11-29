@@ -2900,6 +2900,18 @@ void ScriptEditor::_help_class_goto(const String &p_desc) {
 	_save_layout();
 }
 
+void ScriptEditor::update_doc(const String &p_name) {
+	ERR_FAIL_COND(!EditorHelp::get_doc_data()->has_doc(p_name));
+
+	for (int i = 0; i < tab_container->get_child_count(); i++) {
+		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_child(i));
+		if (eh && eh->get_class() == p_name) {
+			eh->update_doc();
+			return;
+		}
+	}
+}
+
 void ScriptEditor::_update_selected_editor_menu() {
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
 		bool current = tab_container->get_current_tab() == i;

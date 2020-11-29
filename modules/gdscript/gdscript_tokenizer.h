@@ -32,6 +32,7 @@
 #define GDSCRIPT_TOKENIZER_H
 
 #include "core/templates/list.h"
+#include "core/templates/map.h"
 #include "core/templates/set.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
@@ -181,6 +182,21 @@ public:
 		}
 	};
 
+#ifdef TOOLS_ENABLED
+	struct CommentData {
+		String comment;
+		bool new_line = false;
+		CommentData() {}
+		CommentData(const String &p_comment, bool p_new_line) {
+			comment = p_comment;
+			new_line = p_new_line;
+		}
+	};
+	const Map<int, CommentData> &get_comments() const {
+		return comments;
+	}
+#endif // TOOLS_ENABLED
+
 private:
 	String source;
 	const char32_t *_source = nullptr;
@@ -206,6 +222,10 @@ private:
 	char32_t indent_char = '\0';
 	int position = 0;
 	int length = 0;
+
+#ifdef TOOLS_ENABLED
+	Map<int, CommentData> comments;
+#endif // TOOLS_ENABLED
 
 	_FORCE_INLINE_ bool _is_at_end() { return position >= length; }
 	_FORCE_INLINE_ char32_t _peek(int p_offset = 0) { return position + p_offset >= 0 && position + p_offset < length ? _current[p_offset] : '\0'; }
