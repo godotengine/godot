@@ -740,7 +740,7 @@ private:
 		float ssao_intensity = 1;
 		float ssao_bias = 0.01;
 		float ssao_direct_light_affect = 0.0;
-		float ssao_ao_channel_affect = 0.0;
+		float ssao_ao_channel_affect = 1.0;
 		float ssao_blur_edge_sharpness = 4.0;
 		RS::EnvironmentSSAOBlur ssao_blur = RS::ENV_SSAO_BLUR_3x3;
 

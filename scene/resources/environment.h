@@ -151,7 +151,7 @@ private:
 	float ssao_intensity = 1.0;
 	float ssao_bias = 0.01;
 	float ssao_direct_light_affect = 0.0;
-	float ssao_ao_channel_affect = 0.0;
+	float ssao_ao_channel_affect = 1.0;
 	SSAOBlur ssao_blur = SSAO_BLUR_3x3;
 	float ssao_edge_sharpness = 4.0;
 	void _update_ssao();
