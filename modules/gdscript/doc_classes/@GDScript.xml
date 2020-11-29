@@ -55,8 +55,7 @@
 			<description>
 				Returns the absolute value of parameter [code]s[/code] (i.e. positive value).
 				[codeblock]
-				# a is 1
-				a = abs(-1)
+				a = abs(-1) # a is 1
 				[/codeblock]
 			</description>
 		</method>
@@ -166,10 +165,10 @@
 			<description>
 				Rounds [code]s[/code] upward (towards positive infinity), returning the smallest whole number that is not less than [code]s[/code].
 				[codeblock]
-				i = ceil(1.45)  # i is 2
-				i = ceil(1.001) # i is 2
+				a = ceil(1.45)  # a is 2.0
+				a = ceil(1.001) # a is 2.0
 				[/codeblock]
-				See also [method floor], [method round], and [method stepify].
+				See also [method floor], [method round], [method stepify], and [int].
 			</description>
 		</method>
 		<method name="char">
@@ -199,13 +198,9 @@
 			<description>
 				Clamps [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
 				[codeblock]
-				speed = 1000
-				# a is 20
-				a = clamp(speed, 1, 20)
-
-				speed = -10
-				# a is 1
-				a = clamp(speed, 1, 20)
+				a = clamp(1000, 1, 20) # a is 20
+				a = clamp(-10, 1, 20)  # a is 1
+				a = clamp(15, 1, 20)   # a is 15
 				[/codeblock]
 			</description>
 		</method>
@@ -236,9 +231,8 @@
 			<description>
 				Returns the cosine of angle [code]s[/code] in radians.
 				[codeblock]
-				# Prints 1 then -1
-				print(cos(PI * 2))
-				print(cos(PI))
+				a = cos(TAU) # a is 1.0
+				a = cos(PI)  # a is -1.0
 				[/codeblock]
 			</description>
 		</method>
@@ -250,8 +244,7 @@
 			<description>
 				Returns the hyperbolic cosine of [code]s[/code] in radians.
 				[codeblock]
-				# Prints 1.543081
-				print(cosh(1))
+				print(cosh(1)) # Prints 1.543081
 				[/codeblock]
 			</description>
 		</method>
@@ -285,8 +278,7 @@
 			<description>
 				Returns the result of [code]value[/code] decreased by [code]step[/code] * [code]amount[/code].
 				[codeblock]
-				# a = 59
-				a = dectime(60, 10, 0.1))
+				a = dectime(60, 10, 0.1)) # a is 59.0
 				[/codeblock]
 			</description>
 		</method>
@@ -298,8 +290,7 @@
 			<description>
 				Converts an angle expressed in degrees to radians.
 				[codeblock]
-				# r is 3.141593
-				r = deg2rad(180)
+				r = deg2rad(180) # r is 3.141593
 				[/codeblock]
 			</description>
 		</method>
@@ -309,7 +300,7 @@
 			<argument index="0" name="dict" type="Dictionary">
 			</argument>
 			<description>
-				Converts a previously converted instance to a dictionary, back into an instance. Useful for deserializing.
+				Converts a dictionary (previously created with [method inst2dict]) back to an instance. Useful for deserializing.
 			</description>
 		</method>
 		<method name="ease">
@@ -345,13 +336,12 @@
 			<description>
 				Rounds [code]s[/code] downward (towards negative infinity), returning the largest whole number that is not more than [code]s[/code].
 				[codeblock]
-				# a is 2.0
-				a = floor(2.99)
-				# a is -3.0
-				a = floor(-2.99)
+				a = floor(2.45)  # a is 2.0
+				a = floor(2.99)  # a is 2.0
+				a = floor(-2.99) # a is -3.0
 				[/codeblock]
-				See also [method ceil], [method round], and [method stepify].
-				[b]Note:[/b] This method returns a float. If you need an integer, you can use [code]int(s)[/code] directly.
+				See also [method ceil], [method round], [method stepify], and [int].
+				[b]Note:[/b] This method returns a float. If you need an integer and [code]s[/code] is a non-negative number, you can use [code]int(s)[/code] directly.
 			</description>
 		</method>
 		<method name="fmod">
@@ -364,8 +354,7 @@
 			<description>
 				Returns the floating-point remainder of [code]a/b[/code], keeping the sign of [code]a[/code].
 				[codeblock]
-				# Remainder is 1.5
-				var remainder = fmod(7, 5.5)
+				r = fmod(7, 5.5) # r is 1.5
 				[/codeblock]
 				For the integer remainder operation, use the % operator.
 			</description>
@@ -793,7 +782,7 @@
 			<description>
 				Returns the result of [code]x[/code] raised to the power of [code]y[/code].
 				[codeblock]
-				pow(2, 5) # Returns 32
+				pow(2, 5) # Returns 32.0
 				[/codeblock]
 			</description>
 		</method>
@@ -818,7 +807,7 @@
 				Converts one or more arguments to strings in the best way possible and prints them to the console.
 				[codeblock]
 				a = [1, 2, 3]
-				print("a", "b", a) # Prints ab[1, 2, 3]
+				print("a", "=", a) # Prints a=[1, 2, 3]
 				[/codeblock]
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
 			</description>
@@ -917,7 +906,7 @@
 			<description>
 				Converts an angle expressed in radians to degrees.
 				[codeblock]
-				rad2deg(0.523599) # Returns 30
+				rad2deg(0.523599) # Returns 30.0
 				[/codeblock]
 			</description>
 		</method>
@@ -1024,9 +1013,11 @@
 			<description>
 				Rounds [code]s[/code] to the nearest whole number, with halfway cases rounded away from zero.
 				[codeblock]
-				round(2.6) # Returns 3
+				a = round(2.49) # a is 2.0
+				a = round(2.5)  # a is 3.0
+				a = round(2.51) # a is 3.0
 				[/codeblock]
-				See also [method floor], [method ceil], and [method stepify].
+				See also [method floor], [method ceil], [method stepify], and [int].
 			</description>
 		</method>
 		<method name="seed">
@@ -1093,9 +1084,10 @@
 			<description>
 				Returns a number smoothly interpolated between the [code]from[/code] and [code]to[/code], based on the [code]weight[/code]. Similar to [method lerp], but interpolates faster at the beginning and slower at the end.
 				[codeblock]
-				smoothstep(0, 2, 0.5) # Returns 0.15
-				smoothstep(0, 2, 1.0) # Returns 0.5
-				smoothstep(0, 2, 2.0) # Returns 1.0
+				smoothstep(0, 2, -5.0) # Returns 0.0
+				smoothstep(0, 2, 0.5)  # Returns 0.15625
+				smoothstep(0, 2, 1.0)  # Returns 0.5
+				smoothstep(0, 2, 2.0)  # Returns 1.0
 				[/codeblock]
 			</description>
 		</method>
@@ -1120,12 +1112,9 @@
 			<description>
 				Returns the position of the first non-zero digit, after the decimal point. Note that the maximum return value is 10, which is a design decision in the implementation.
 				[codeblock]
-				# n is 0
-				n = step_decimals(5)
-				# n is 4
-				n = step_decimals(1.0005)
-				# n is 9
-				n = step_decimals(0.000000005)
+				n = step_decimals(5)           # n is 0
+				n = step_decimals(1.0005)      # n is 4
+				n = step_decimals(0.000000005) # n is 9
 				[/codeblock]
 			</description>
 		</method>
@@ -1139,10 +1128,10 @@
 			<description>
 				Snaps float value [code]s[/code] to a given [code]step[/code]. This can also be used to round a floating point number to an arbitrary number of decimals.
 				[codeblock]
-				stepify(100, 32) # Returns 96
+				stepify(100, 32) # Returns 96.0
 				stepify(3.14159, 0.01) # Returns 3.14
 				[/codeblock]
-				See also [method ceil], [method floor], and [method round].
+				See also [method ceil], [method floor], [method round], and [int].
 			</description>
 		</method>
 		<method name="str" qualifiers="vararg">
@@ -1192,8 +1181,8 @@
 			<description>
 				Returns the hyperbolic tangent of [code]s[/code].
 				[codeblock]
-				a = log(2.0) # Returns 0.693147
-				tanh(a)      # Returns 0.6
+				a = log(2.0) # a is 0.693147
+				b = tanh(a)  # b is 0.6
 				[/codeblock]
 			</description>
 		</method>
