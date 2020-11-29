@@ -482,6 +482,7 @@ public:
 	void close_builtin_scripts_from_scene(const String &p_scene);
 
 	void goto_help(const String &p_desc) { _help_class_goto(p_desc); }
+	void update_doc(const String &p_name);
 
 	bool can_take_away_focus() const;
 

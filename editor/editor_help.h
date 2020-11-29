@@ -170,6 +170,7 @@ public:
 
 	void go_to_help(const String &p_help);
 	void go_to_class(const String &p_class, int p_scroll = 0);
+	void update_doc();
 
 	Vector<Pair<String, int>> get_sections();
 	void scroll_to_section(int p_section_index);

@@ -799,6 +799,15 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 			}
 		}
 
+		if (fc) {
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				ScriptLanguage *lang = ScriptServer::get_language(i);
+				if (lang->has_documentation() && fc->type == lang->get_type()) {
+					ResourceLoader::load(path);
+				}
+			}
+		}
+
 		p_dir->files.push_back(fi);
 		p_progress.update(idx, total);
 	}

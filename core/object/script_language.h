@@ -35,6 +35,7 @@
 #include "core/io/resource.h"
 #include "core/templates/map.h"
 #include "core/templates/pair.h"
+#include "editor/doc_data.h"
 
 class ScriptLanguage;
 
@@ -144,6 +145,10 @@ public:
 	virtual String get_source_code() const = 0;
 	virtual void set_source_code(const String &p_code) = 0;
 	virtual Error reload(bool p_keep_state = false) = 0;
+
+#ifdef TOOLS_ENABLED
+	virtual const Vector<DocData::ClassDoc> &get_documentation() const = 0;
+#endif // TOOLS_ENABLED
 
 	virtual bool has_method(const StringName &p_method) const = 0;
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
@@ -305,6 +310,7 @@ public:
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const = 0;
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {}
 	virtual bool is_using_templates() { return false; }
+	virtual bool has_documentation() { return false; }
 	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = nullptr, List<Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
 	virtual Script *create_script() const = 0;

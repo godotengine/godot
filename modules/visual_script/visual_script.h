@@ -342,6 +342,13 @@ public:
 	virtual void set_source_code(const String &p_code) override;
 	virtual Error reload(bool p_keep_state = false) override;
 
+#ifdef TOOLS_ENABLED
+	virtual const Vector<DocData::ClassDoc> &get_documentation() const override {
+		static Vector<DocData::ClassDoc> docs;
+		return docs;
+	}
+#endif // TOOLS_ENABLED
+
 	virtual bool is_tool() const override;
 	virtual bool is_valid() const override;
 

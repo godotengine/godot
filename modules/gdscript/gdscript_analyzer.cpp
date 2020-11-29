@@ -860,7 +860,12 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, p_function->identifier->name, p_function->parameters[i]->identifier->name);
 		}
 		is_shadowing(p_function->parameters[i]->identifier, "function parameter");
-#endif
+#endif // DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
+		if (p_function->parameters[i]->default_value && p_function->parameters[i]->default_value->is_constant) {
+			p_function->default_arg_values.push_back(p_function->parameters[i]->default_value->reduced_value);
+		}
+#endif // TOOLS_ENABLED
 	}
 
 	if (p_function->identifier->name == "_init") {
