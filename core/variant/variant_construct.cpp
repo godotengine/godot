@@ -777,18 +777,23 @@ String Variant::get_constructor_argument_name(Variant::Type p_type, int p_constr
 	return construct_data[p_type][p_constructor].arg_names[p_argument];
 }
 
-void VariantInternal::object_assign(Variant *v, const Variant *o) {
-	if (o->_get_obj().obj && o->_get_obj().id.is_reference()) {
-		Reference *reference = static_cast<Reference *>(o->_get_obj().obj);
-		if (!reference->reference()) {
-			v->_get_obj().obj = nullptr;
-			v->_get_obj().id = ObjectID();
-			return;
+void VariantInternal::object_assign(Variant *v, const Object *o) {
+	if (o) {
+		if (o->is_reference()) {
+			Reference *reference = const_cast<Reference *>(static_cast<const Reference *>(o));
+			if (!reference->init_ref()) {
+				v->_get_obj().obj = nullptr;
+				v->_get_obj().id = ObjectID();
+				return;
+			}
 		}
-	}
 
-	v->_get_obj().obj = const_cast<Object *>(o->_get_obj().obj);
-	v->_get_obj().id = o->_get_obj().id;
+		v->_get_obj().obj = const_cast<Object *>(o);
+		v->_get_obj().id = o->get_instance_id();
+	} else {
+		v->_get_obj().obj = nullptr;
+		v->_get_obj().id = ObjectID();
+	}
 }
 
 void Variant::get_constructor_list(Type p_type, List<MethodInfo> *r_list) {
