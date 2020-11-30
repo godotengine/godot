@@ -948,8 +948,8 @@ void DisplayServerJavaScript::window_set_size(const Size2i p_size, WindowID p_wi
 	last_width = p_size.x;
 	last_height = p_size.y;
 	double scale = godot_js_display_pixel_ratio_get();
-	emscripten_set_canvas_element_size(canvas_id, p_size.x * scale, p_size.y * scale);
-	emscripten_set_element_css_size(canvas_id, p_size.x, p_size.y);
+	emscripten_set_canvas_element_size(canvas_id, p_size.x, p_size.y);
+	emscripten_set_element_css_size(canvas_id, p_size.x / scale, p_size.y / scale);
 }
 
 Size2i DisplayServerJavaScript::window_get_size(WindowID p_window) const {
