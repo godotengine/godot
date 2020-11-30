@@ -140,6 +140,6 @@ void LinkButton::_bind_methods() {
 
 LinkButton::LinkButton() {
 	underline_mode = UNDERLINE_MODE_ALWAYS;
-	set_enabled_focus_mode(FOCUS_NONE);
+	set_focus_mode(FOCUS_NONE);
 	set_default_cursor_shape(CURSOR_POINTING_HAND);
 }
