@@ -420,7 +420,7 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 	Vector<Control *> tabs = _get_tabs();
 	RID canvas = get_canvas_item();
 	Ref<Font> font = get_font("font");
-	int icon_text_distance = get_constant("icon_separation");
+	int icon_text_distance = get_constant("hseparation");
 	int tab_width = _get_tab_width(p_index);
 	int header_height = _get_top_margin();
 
