@@ -792,6 +792,8 @@ PREAMBLE(void)::_prefill_default_batch(FillState &r_fill_state, int p_command_nu
 		if (!r_fill_state.transform_extra_command_number_p1) {
 			// another default command, just add to the existing batch
 			r_fill_state.curr_batch->num_commands++;
+
+			RAST_DEV_DEBUG_ASSERT(r_fill_state.curr_batch->num_commands <= p_command_num);
 		} else {
 #if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
 			if (r_fill_state.transform_extra_command_number_p1 != p_command_num) {
@@ -1354,6 +1356,17 @@ T_PREAMBLE
 template <bool SEND_LIGHT_ANGLES>
 bool C_PREAMBLE::_prefill_ninepatch(RasterizerCanvas::Item::CommandNinePatch *p_np, FillState &r_fill_state, int &r_command_start, int command_num, int command_count, RasterizerCanvas::Item *p_item, bool multiply_final_modulate) {
 	typename T_STORAGE::Texture *tex = get_storage()->texture_owner.getornull(p_np->texture);
+
+	// conditions for creating a new batch
+	if (r_fill_state.curr_batch->type != RasterizerStorageCommon::BT_RECT) {
+
+		// don't allow joining to a different sequence type
+		if (r_fill_state.sequence_batch_type_flags & (~RasterizerStorageCommon::BTF_RECT)) {
+			// don't allow joining to a different sequence type
+			r_command_start = command_num;
+			return true;
+		}
+	}
 
 	if (!tex) {
 		// FIXME: Handle textureless ninepatch gracefully
