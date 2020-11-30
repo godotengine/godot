@@ -1696,9 +1696,9 @@ void CodeTextEditor::update_toggle_scripts_button() {
 
 CodeTextEditor::CodeTextEditor() {
 	code_complete_func = nullptr;
-	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KEY_MASK_CMD | KEY_EQUAL);
-	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KEY_MASK_CMD | KEY_MINUS);
-	ED_SHORTCUT("script_editor/reset_zoom", TTR("Reset Zoom"), KEY_MASK_CMD | KEY_0);
+	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KEY_MASK_COMMAND | KEY_EQUAL);
+	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KEY_MASK_COMMAND | KEY_MINUS);
+	ED_SHORTCUT("script_editor/reset_zoom", TTR("Reset Zoom"), KEY_MASK_COMMAND | KEY_0);
 
 	text_editor = memnew(CodeEdit);
 	add_child(text_editor);

@@ -602,7 +602,7 @@ void EditorFileDialog::_item_list_rmb_clicked(const Vector2 &p_pos) {
 	item_menu->set_size(Size2(1, 1));
 
 	if (can_create_dir) {
-		item_menu->add_icon_item(item_list->get_theme_icon("folder", "FileDialog"), TTR("New Folder..."), ITEM_MENU_NEW_FOLDER, KEY_MASK_CMD | KEY_N);
+		item_menu->add_icon_item(item_list->get_theme_icon("folder", "FileDialog"), TTR("New Folder..."), ITEM_MENU_NEW_FOLDER, KEY_MASK_COMMAND | KEY_N);
 	}
 	item_menu->add_icon_item(item_list->get_theme_icon("Reload", "EditorIcons"), TTR("Refresh"), ITEM_MENU_REFRESH, KEY_F5);
 	item_menu->add_separator();
@@ -1461,14 +1461,14 @@ EditorFileDialog::EditorFileDialog() {
 	ED_SHORTCUT("file_dialog/go_forward", TTR("Go Forward"), KEY_MASK_ALT | KEY_RIGHT);
 	ED_SHORTCUT("file_dialog/go_up", TTR("Go Up"), KEY_MASK_ALT | KEY_UP);
 	ED_SHORTCUT("file_dialog/refresh", TTR("Refresh"), KEY_F5);
-	ED_SHORTCUT("file_dialog/toggle_hidden_files", TTR("Toggle Hidden Files"), KEY_MASK_CMD | KEY_H);
+	ED_SHORTCUT("file_dialog/toggle_hidden_files", TTR("Toggle Hidden Files"), KEY_MASK_COMMAND | KEY_H);
 	ED_SHORTCUT("file_dialog/toggle_favorite", TTR("Toggle Favorite"), KEY_MASK_ALT | KEY_F);
 	ED_SHORTCUT("file_dialog/toggle_mode", TTR("Toggle Mode"), KEY_MASK_ALT | KEY_V);
-	ED_SHORTCUT("file_dialog/create_folder", TTR("Create Folder"), KEY_MASK_CMD | KEY_N);
+	ED_SHORTCUT("file_dialog/create_folder", TTR("Create Folder"), KEY_MASK_COMMAND | KEY_N);
 	ED_SHORTCUT("file_dialog/delete", TTR("Delete"), KEY_DELETE);
-	ED_SHORTCUT("file_dialog/focus_path", TTR("Focus Path"), KEY_MASK_CMD | KEY_D);
-	ED_SHORTCUT("file_dialog/move_favorite_up", TTR("Move Favorite Up"), KEY_MASK_CMD | KEY_UP);
-	ED_SHORTCUT("file_dialog/move_favorite_down", TTR("Move Favorite Down"), KEY_MASK_CMD | KEY_DOWN);
+	ED_SHORTCUT("file_dialog/focus_path", TTR("Focus Path"), KEY_MASK_COMMAND | KEY_D);
+	ED_SHORTCUT("file_dialog/move_favorite_up", TTR("Move Favorite Up"), KEY_MASK_COMMAND | KEY_UP);
+	ED_SHORTCUT("file_dialog/move_favorite_down", TTR("Move Favorite Down"), KEY_MASK_COMMAND | KEY_DOWN);
 
 	HBoxContainer *pathhb = memnew(HBoxContainer);
 

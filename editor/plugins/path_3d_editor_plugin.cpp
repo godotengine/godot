@@ -564,7 +564,7 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	curve_edit->set_toggle_mode(true);
 	curve_edit->hide();
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
-	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string(KEY_MASK_CMD) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
+	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string(KEY_MASK_COMMAND) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_edit);
 	curve_create = memnew(Button);
 	curve_create->set_flat(true);

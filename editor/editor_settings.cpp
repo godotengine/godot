@@ -1548,7 +1548,7 @@ Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 #ifdef OSX_ENABLED
 	// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 	if (p_keycode == KEY_DELETE) {
-		p_keycode = KEY_MASK_CMD | KEY_BACKSPACE;
+		p_keycode = KEY_MASK_COMMAND | KEY_BACKSPACE;
 	}
 #endif
 
@@ -1560,7 +1560,7 @@ Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 		ie->set_keycode(p_keycode & KEY_CODE_MASK);
 		ie->set_shift(bool(p_keycode & KEY_MASK_SHIFT));
 		ie->set_alt(bool(p_keycode & KEY_MASK_ALT));
-		ie->set_control(bool(p_keycode & KEY_MASK_CTRL));
+		ie->set_control(bool(p_keycode & KEY_MASK_CONTROL));
 		ie->set_metakey(bool(p_keycode & KEY_MASK_META));
 	}
 

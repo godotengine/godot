@@ -39,6 +39,15 @@ struct _KeyCodeText {
 
 static const _KeyCodeText _keycodes[] = {
 	/* clang-format off */
+		// Masks
+		{KEY_MASK_SHIFT					   ,"Shift"},
+		{KEY_MASK_ALT					   ,"Alt"},
+		{KEY_MASK_CONTROL					   ,"Control"},
+#ifdef APPLE_STYLE_KEYS
+		{KEY_MASK_META					   ,"Command"},
+#else
+		{KEY_MASK_META					   ,"Meta"},
+#endif
 		{KEY_ESCAPE                        ,"Escape"},
 		{KEY_TAB                           ,"Tab"},
 		{KEY_BACKTAB                       ,"BackTab"},
@@ -400,8 +409,8 @@ String keycode_get_string(uint32_t p_code) {
 		codestr += find_keycode_name(KEY_ALT);
 		codestr += "+";
 	}
-	if (p_code & KEY_MASK_CTRL) {
-		codestr += find_keycode_name(KEY_CONTROL);
+	if (p_code & KEY_MASK_CONTROL) {
+		codestr += find_keycode_name(KEY_MASK_CONTROL);
 		codestr += "+";
 	}
 	if (p_code & KEY_MASK_META) {

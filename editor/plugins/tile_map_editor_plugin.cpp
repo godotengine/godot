@@ -2024,7 +2024,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	invalid_cell.write[0] = TileMap::INVALID_CELL;
 
 	ED_SHORTCUT("tile_map_editor/erase_selection", TTR("Erase Selection"), KEY_DELETE);
-	ED_SHORTCUT("tile_map_editor/find_tile", TTR("Find Tile"), KEY_MASK_CMD + KEY_F);
+	ED_SHORTCUT("tile_map_editor/find_tile", TTR("Find Tile"), KEY_MASK_COMMAND + KEY_F);
 	ED_SHORTCUT("tile_map_editor/transpose", TTR("Transpose"), KEY_T);
 
 	HBoxContainer *tool_hb = memnew(HBoxContainer);
@@ -2184,8 +2184,8 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	toolbar_right->add_child(options);
 
 	PopupMenu *p = options->get_popup();
-	p->add_shortcut(ED_SHORTCUT("tile_map_editor/cut_selection", TTR("Cut Selection"), KEY_MASK_CMD + KEY_X), OPTION_CUT);
-	p->add_shortcut(ED_SHORTCUT("tile_map_editor/copy_selection", TTR("Copy Selection"), KEY_MASK_CMD + KEY_C), OPTION_COPY);
+	p->add_shortcut(ED_SHORTCUT("tile_map_editor/cut_selection", TTR("Cut Selection"), KEY_MASK_COMMAND + KEY_X), OPTION_CUT);
+	p->add_shortcut(ED_SHORTCUT("tile_map_editor/copy_selection", TTR("Copy Selection"), KEY_MASK_COMMAND + KEY_C), OPTION_COPY);
 	p->add_shortcut(ED_GET_SHORTCUT("tile_map_editor/erase_selection"), OPTION_ERASE_SELECTION);
 	p->add_separator();
 	p->add_item(TTR("Fix Invalid Tiles"), OPTION_FIX_INVALID);

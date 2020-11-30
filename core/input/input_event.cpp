@@ -315,7 +315,7 @@ bool InputEventKey::is_echo() const {
 uint32_t InputEventKey::get_keycode_with_modifiers() const {
 	uint32_t sc = keycode;
 	if (get_control()) {
-		sc |= KEY_MASK_CTRL;
+		sc |= KEY_MASK_CONTROL;
 	}
 	if (get_alt()) {
 		sc |= KEY_MASK_ALT;
@@ -333,7 +333,7 @@ uint32_t InputEventKey::get_keycode_with_modifiers() const {
 uint32_t InputEventKey::get_physical_keycode_with_modifiers() const {
 	uint32_t sc = physical_keycode;
 	if (get_control()) {
-		sc |= KEY_MASK_CTRL;
+		sc |= KEY_MASK_CONTROL;
 	}
 	if (get_alt()) {
 		sc |= KEY_MASK_ALT;

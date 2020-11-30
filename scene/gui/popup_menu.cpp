@@ -1203,7 +1203,7 @@ bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_fo
 			code = k->get_unicode();
 		}
 		if (k->get_control()) {
-			code |= KEY_MASK_CTRL;
+			code |= KEY_MASK_CONTROL;
 		}
 		if (k->get_alt()) {
 			code |= KEY_MASK_ALT;
