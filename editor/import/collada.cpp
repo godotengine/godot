@@ -289,7 +289,7 @@ void Collada::_parse_image(XMLParser &parser) {
 		String path = parser.get_attribute_value("source").strip_edges();
 		if (path.find("://") == -1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path.percent_decode()));
+			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path.uri_decode()));
 		}
 	} else {
 		while (parser.read() == OK) {
@@ -298,7 +298,7 @@ void Collada::_parse_image(XMLParser &parser) {
 
 				if (name == "init_from") {
 					parser.read();
-					String path = parser.get_node_data().strip_edges().percent_decode();
+					String path = parser.get_node_data().strip_edges().uri_decode();
 
 					if (path.find("://") == -1 && path.is_rel_path()) {
 						// path is relative to file being loaded, so convert to a resource path

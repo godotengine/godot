@@ -479,7 +479,7 @@ namespace Godot
         /// <summary>
         /// Returns a hexadecimal representation of this byte as a string.
         /// </summary>
-        /// <param name="bytes">The byte to encode.</param>
+        /// <param name="b">The byte to encode.</param>
         /// <returns>The hexadecimal representation of this byte.</returns>
         internal static string HexEncode(this byte b)
         {
@@ -933,22 +933,6 @@ namespace Godot
         }
 
         // <summary>
-        // Decode a percent-encoded string. See [method percent_encode].
-        // </summary>
-        public static string PercentDecode(this string instance)
-        {
-            return Uri.UnescapeDataString(instance);
-        }
-
-        // <summary>
-        // Percent-encode a string. This is meant to encode parameters in a URL when sending a HTTP GET request and bodies of form-urlencoded POST request.
-        // </summary>
-        public static string PercentEncode(this string instance)
-        {
-            return Uri.EscapeDataString(instance);
-        }
-
-        // <summary>
         // If the string is a path, this concatenates [code]file[/code] at the end of the string as a subpath. E.g. [code]"this/is".plus_file("path") == "this/is/path"[/code].
         // </summary>
         public static string PlusFile(this string instance, string file)
@@ -1208,6 +1192,33 @@ namespace Godot
         public static byte[] ToUTF8(this string instance)
         {
             return Encoding.UTF8.GetBytes(instance);
+        }
+
+        /// <summary>
+        /// Decodes a string in URL encoded format. This is meant to
+        /// decode parameters in a URL when receiving an HTTP request.
+        /// This mostly wraps around `System.Uri.UnescapeDataString()`,
+        /// but also handles `+`.
+        /// See <see cref="URIEncode"/> for encoding.
+        /// </summary>
+        /// <param name="instance">The string to decode.</param>
+        /// <returns>The unescaped string.</returns>
+        public static string URIDecode(this string instance)
+        {
+            return Uri.UnescapeDataString(instance.Replace("+", "%20"));
+        }
+
+        /// <summary>
+        /// Encodes a string to URL friendly format. This is meant to
+        /// encode parameters in a URL when sending an HTTP request.
+        /// This wraps around `System.Uri.EscapeDataString()`.
+        /// See <see cref="URIDecode"/> for decoding.
+        /// </summary>
+        /// <param name="instance">The string to encode.</param>
+        /// <returns>The escaped string.</returns>
+        public static string URIEncode(this string instance)
+        {
+            return Uri.EscapeDataString(instance);
         }
 
         // <summary>

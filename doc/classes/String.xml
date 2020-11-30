@@ -244,26 +244,6 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="http_escape">
-			<return type="String">
-			</return>
-			<description>
-				Escapes (encodes) a string to URL friendly format. Also referred to as 'URL encode'.
-				[codeblock]
-				print("https://example.org/?escaped=" + "Godot Engine:'docs'".http_escape())
-				[/codeblock]
-			</description>
-		</method>
-		<method name="http_unescape">
-			<return type="String">
-			</return>
-			<description>
-				Unescapes (decodes) a string in URL encoded format. Also referred to as 'URL decode'.
-				[codeblock]
-				print("https://example.org/?escaped=" + "Godot%20Engine%3A%27docs%27".http_unescape())
-				[/codeblock]
-			</description>
-		</method>
 		<method name="insert">
 			<return type="String">
 			</return>
@@ -578,20 +558,6 @@
 				Formats a number to have an exact number of [code]digits[/code] before the decimal point.
 			</description>
 		</method>
-		<method name="percent_decode">
-			<return type="String">
-			</return>
-			<description>
-				Decode a percent-encoded string. See [method percent_encode].
-			</description>
-		</method>
-		<method name="percent_encode">
-			<return type="String">
-			</return>
-			<description>
-				Percent-encodes a string. Encodes parameters in a URL when sending a HTTP GET request (and bodies of form-urlencoded POST requests).
-			</description>
-		</method>
 		<method name="plus_file">
 			<return type="String">
 			</return>
@@ -889,6 +855,36 @@
 			</argument>
 			<description>
 				Returns the character code at position [code]at[/code].
+			</description>
+		</method>
+		<method name="uri_decode">
+			<return type="String">
+			</return>
+			<description>
+				Decodes a string in URL encoded format. This is meant to decode parameters in a URL when receiving an HTTP request.
+				[codeblocks]
+				[gdscript]
+				print("https://example.org/?escaped=" + "Godot%20Engine%3A%27docs%27".uri_decode())
+				[/gdscript]
+				[csharp]
+				GD.Print("https://example.org/?escaped=" + "Godot%20Engine%3a%27Docs%27".URIDecode());
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="uri_encode">
+			<return type="String">
+			</return>
+			<description>
+				Encodes a string to URL friendly format. This is meant to encode parameters in a URL when sending an HTTP request.
+				[codeblocks]
+				[gdscript]
+				print("https://example.org/?escaped=" + "Godot Engine:'docs'".uri_encode())
+				[/gdscript]
+				[csharp]
+				GD.Print("https://example.org/?escaped=" + "Godot Engine:'docs'".URIEncode());
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="xml_escape">

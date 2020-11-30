@@ -1152,20 +1152,12 @@ TEST_CASE("[String] hash") {
 	CHECK(a.hash64() != c.hash64());
 }
 
-TEST_CASE("[String] http_escape/unescape") {
+TEST_CASE("[String] uri_encode/unescape") {
 	String s = "Godot Engine:'docs'";
 	String t = "Godot%20Engine%3A%27docs%27";
 
-	CHECK(s.http_escape() == t);
-	CHECK(t.http_unescape() == s);
-}
-
-TEST_CASE("[String] percent_encode/decode") { // Note: is it redundant? Seems to be same as http_escape/unescape but in lower case.
-	String s = "Godot Engine:'docs'";
-	String t = "Godot%20Engine%3a%27docs%27";
-
-	CHECK(s.percent_encode() == t);
-	CHECK(t.percent_decode() == s);
+	CHECK(s.uri_encode() == t);
+	CHECK(t.uri_decode() == s);
 }
 
 TEST_CASE("[String] xml_escape/unescape") {
