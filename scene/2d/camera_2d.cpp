@@ -221,15 +221,8 @@ void Camera2D::_notification(int p_what) {
 
 	switch (p_what) {
 
-		case NOTIFICATION_INTERNAL_PROCESS:
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-
-			_update_scroll();
-
-		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			if (!is_processing_internal() && !is_physics_processing_internal())
 				_update_scroll();
 
 		} break;
