@@ -676,7 +676,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("panel", "PopupDialog", style_popup);
 
 	// PopupMenu
-	theme->set_stylebox("panel", "PopupMenu", style_popup);
+	const int popup_menu_margin_size = default_margin_size * 1.5 * EDSCALE;
+	Ref<StyleBoxFlat> style_popup_menu = style_popup->duplicate();
+	style_popup_menu->set_default_margin(MARGIN_LEFT, popup_menu_margin_size);
+	style_popup_menu->set_default_margin(MARGIN_TOP, popup_menu_margin_size);
+	style_popup_menu->set_default_margin(MARGIN_RIGHT, popup_menu_margin_size);
+	style_popup_menu->set_default_margin(MARGIN_BOTTOM, popup_menu_margin_size);
+
+	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
 	theme->set_stylebox("separator", "PopupMenu", style_popup_separator);
 	theme->set_stylebox("labeled_separator_left", "PopupMenu", style_popup_labeled_separator_left);
 	theme->set_stylebox("labeled_separator_right", "PopupMenu", style_popup_labeled_separator_right);
