@@ -113,6 +113,8 @@ RID TextLine::get_rid() const {
 
 void TextLine::clear() {
 	TS->shaped_text_clear(rid);
+	spacing_top = 0;
+	spacing_bottom = 0;
 }
 
 void TextLine::set_preserve_invalid(bool p_enabled) {
@@ -166,6 +168,8 @@ void TextLine::set_bidi_override(const Vector<Vector2i> &p_override) {
 
 bool TextLine::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language) {
 	bool res = TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
+	spacing_top = p_fonts->get_spacing(Font::SPACING_TOP);
+	spacing_bottom = p_fonts->get_spacing(Font::SPACING_BOTTOM);
 	dirty = true;
 	return res;
 }
@@ -233,17 +237,21 @@ float TextLine::get_width() const {
 
 Size2 TextLine::get_size() const {
 	const_cast<TextLine *>(this)->_shape();
-	return TS->shaped_text_get_size(rid);
+	if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+		return Size2(TS->shaped_text_get_size(rid).x, TS->shaped_text_get_size(rid).y + spacing_top + spacing_bottom);
+	} else {
+		return Size2(TS->shaped_text_get_size(rid).x + spacing_top + spacing_bottom, TS->shaped_text_get_size(rid).y);
+	}
 }
 
 float TextLine::get_line_ascent() const {
 	const_cast<TextLine *>(this)->_shape();
-	return TS->shaped_text_get_ascent(rid);
+	return TS->shaped_text_get_ascent(rid) + spacing_top;
 }
 
 float TextLine::get_line_descent() const {
 	const_cast<TextLine *>(this)->_shape();
-	return TS->shaped_text_get_descent(rid);
+	return TS->shaped_text_get_descent(rid) + spacing_bottom;
 }
 
 float TextLine::get_line_width() const {
@@ -291,10 +299,10 @@ void TextLine::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color) co
 
 	float clip_l;
 	if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
-		ofs.y += TS->shaped_text_get_ascent(rid);
+		ofs.y += TS->shaped_text_get_ascent(rid) + spacing_top;
 		clip_l = MAX(0, p_pos.x - ofs.x);
 	} else {
-		ofs.x += TS->shaped_text_get_ascent(rid);
+		ofs.x += TS->shaped_text_get_ascent(rid) + spacing_top;
 		clip_l = MAX(0, p_pos.y - ofs.y);
 	}
 	return TS->shaped_text_draw(rid, p_canvas, ofs, clip_l, clip_l + width, p_color);
@@ -330,10 +338,10 @@ void TextLine::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_si
 
 	float clip_l;
 	if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
-		ofs.y += TS->shaped_text_get_ascent(rid);
+		ofs.y += TS->shaped_text_get_ascent(rid) + spacing_top;
 		clip_l = MAX(0, p_pos.x - ofs.x);
 	} else {
-		ofs.x += TS->shaped_text_get_ascent(rid);
+		ofs.x += TS->shaped_text_get_ascent(rid) + spacing_top;
 		clip_l = MAX(0, p_pos.y - ofs.y);
 	}
 	return TS->shaped_text_draw_outline(rid, p_canvas, ofs, clip_l, clip_l + width, p_outline_size, p_color);
@@ -347,6 +355,8 @@ int TextLine::hit_test(float p_coords) const {
 
 TextLine::TextLine(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	rid = TS->create_shaped_text(p_direction, p_orientation);
+	spacing_top = p_fonts->get_spacing(Font::SPACING_TOP);
+	spacing_bottom = p_fonts->get_spacing(Font::SPACING_BOTTOM);
 	TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
 }
 

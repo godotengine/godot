@@ -595,41 +595,41 @@ Dictionary Font::get_feature_list() const {
 float Font::get_height(int p_size) const {
 	float ret = 0.f;
 	for (int i = 0; i < data.size(); i++) {
-		ret += data[i]->get_height(p_size);
+		ret = MAX(ret, data[i]->get_height(p_size));
 	}
-	return (ret / data.size()) + spacing_top + spacing_bottom;
+	return ret + spacing_top + spacing_bottom;
 }
 
 float Font::get_ascent(int p_size) const {
 	float ret = 0.f;
 	for (int i = 0; i < data.size(); i++) {
-		ret += data[i]->get_ascent(p_size);
+		ret = MAX(ret, data[i]->get_ascent(p_size));
 	}
-	return (ret / data.size()) + spacing_top;
+	return ret + spacing_top;
 }
 
 float Font::get_descent(int p_size) const {
 	float ret = 0.f;
 	for (int i = 0; i < data.size(); i++) {
-		ret += data[i]->get_descent(p_size);
+		ret = MAX(ret, data[i]->get_descent(p_size));
 	}
-	return (ret / data.size()) + spacing_bottom;
+	return ret + spacing_bottom;
 }
 
 float Font::get_underline_position(int p_size) const {
 	float ret = 0.f;
 	for (int i = 0; i < data.size(); i++) {
-		ret += data[i]->get_underline_position(p_size);
+		ret = MAX(ret, data[i]->get_underline_position(p_size));
 	}
-	return (ret / data.size());
+	return ret;
 }
 
 float Font::get_underline_thickness(int p_size) const {
 	float ret = 0.f;
 	for (int i = 0; i < data.size(); i++) {
-		ret += data[i]->get_underline_thickness(p_size);
+		ret = MAX(ret, data[i]->get_underline_thickness(p_size));
 	}
-	return (ret / data.size());
+	return ret;
 }
 
 int Font::get_spacing(int p_type) const {
