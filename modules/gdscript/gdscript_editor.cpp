@@ -688,7 +688,20 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 	}
 }
 
+static void _find_built_in_variants(Map<String, ScriptCodeCompletionOption> &r_result, bool only_types = false) {
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		if (only_types && Variant::Type(i) == Variant::Type::NIL) {
+			continue;
+		}
+		ScriptCodeCompletionOption option(Variant::get_type_name(Variant::Type(i)), ScriptCodeCompletionOption::KIND_CLASS);
+		r_result.insert(option.display, option);
+	}
+}
+
 static void _list_available_types(bool p_inherit_only, GDScriptParser::CompletionContext &p_context, Map<String, ScriptCodeCompletionOption> &r_result) {
+	// Built-in Variant Types
+	_find_built_in_variants(r_result, true);
+
 	List<StringName> native_types;
 	ClassDB::get_class_list(&native_types);
 	for (const List<StringName>::Element *E = native_types.front(); E != nullptr; E = E->next()) {
@@ -1041,17 +1054,7 @@ static void _find_identifiers(GDScriptParser::CompletionContext &p_context, bool
 		return;
 	}
 
-	static const char *_type_names[Variant::VARIANT_MAX] = {
-		"null", "bool", "int", "float", "String", "StringName", "Vector2", "Vector2i", "Rect2", "Rect2i", "Vector3", "Vector3i", "Transform2D", "Plane", "Quat", "AABB", "Basis", "Transform",
-		"Color", "NodePath", "RID", "Signal", "Callable", "Object", "Dictionary", "Array", "PackedByteArray", "PackedInt32Array", "PackedInt64Array", "PackedFloat32Array", "PackedFloat64Array", "PackedStringArray",
-		"PackedVector2Array", "PackedVector3Array", "PackedColorArray"
-	};
-	static_assert((sizeof(_type_names) / sizeof(*_type_names)) == Variant::VARIANT_MAX, "Completion for builtin types is incomplete");
-
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		ScriptCodeCompletionOption option(_type_names[i], ScriptCodeCompletionOption::KIND_CLASS);
-		r_result.insert(option.display, option);
-	}
+	_find_built_in_variants(r_result);
 
 	static const char *_keywords[] = {
 		"and", "in", "not", "or", "false", "PI", "TAU", "INF", "NAN", "self", "true", "as", "assert",
