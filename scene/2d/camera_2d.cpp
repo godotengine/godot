@@ -217,11 +217,8 @@ Transform2D Camera2D::get_camera_transform() {
 
 void Camera2D::_notification(int p_what) {
 	switch (p_what) {
-
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-
 				_update_scroll();
-
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
