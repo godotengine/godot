@@ -40,6 +40,8 @@ class TextLine : public Reference {
 	GDCLASS(TextLine, Reference);
 
 	RID rid;
+	int spacing_top = 0;
+	int spacing_bottom = 0;
 
 	bool dirty = true;
 

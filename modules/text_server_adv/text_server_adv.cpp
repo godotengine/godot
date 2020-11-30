@@ -1874,7 +1874,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 	}
 
 	if (fd == nullptr) {
-		// Add fallback glyohs
+		// Add fallback glyphs
 		for (int i = p_start; i < p_end; i++) {
 			if (p_sd->preserve_invalid || (p_sd->preserve_control && is_control(p_sd->text[i]))) {
 				TextServer::Glyph gl;
@@ -2026,7 +2026,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 				}
 				for (int j = 0; j < w[i].count; j++) {
 					if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
-						p_sd->ascent = MAX(p_sd->ascent, MAX(fd->get_ascent(w[i + j].font_size), w[i + j].y_off));
+						p_sd->ascent = MAX(p_sd->ascent, MAX(fd->get_ascent(w[i + j].font_size), -w[i + j].y_off));
 						p_sd->descent = MAX(p_sd->descent, MAX(fd->get_descent(w[i + j].font_size), w[i + j].y_off));
 					} else {
 						p_sd->ascent = MAX(p_sd->ascent, fd->get_advance(w[i + j].index, w[i + j].font_size).x * 0.5);

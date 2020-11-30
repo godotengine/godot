@@ -732,6 +732,7 @@ void LineEdit::_notification(int p_what) {
 				style = get_theme_stylebox("read_only");
 				draw_caret = false;
 			}
+			Ref<Font> font = get_theme_font("font");
 
 			style->draw(ci, Rect2(Point2(), size));
 
@@ -742,7 +743,7 @@ void LineEdit::_notification(int p_what) {
 			int x_ofs = 0;
 			bool using_placeholder = text.empty() && ime_text.empty();
 			float text_width = TS->shaped_text_get_size(text_rid).x;
-			float text_height = TS->shaped_text_get_size(text_rid).y;
+			float text_height = TS->shaped_text_get_size(text_rid).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM);
 
 			switch (align) {
 				case ALIGN_FILL:
@@ -1570,7 +1571,7 @@ Size2 LineEdit::get_minimum_size() const {
 		min_size.width = MAX(min_size.width, full_width + space_size);
 	}
 
-	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y, font->get_height(font_size));
+	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM), font->get_height(font_size));
 
 	// Take icons into account.
 	bool using_placeholder = text.empty() && ime_text.empty();
