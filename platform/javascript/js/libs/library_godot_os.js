@@ -200,7 +200,7 @@ const GodotFS = {
 				}
 				FS.mkdirTree(dir);
 			}
-			FS.writeFile(path, new Uint8Array(buffer), { 'flags': 'wx+' });
+			FS.writeFile(path, new Uint8Array(buffer));
 		},
 	},
 };
