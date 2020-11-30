@@ -223,7 +223,7 @@ void Camera2D::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-				_update_scroll();
+			_update_scroll();
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
