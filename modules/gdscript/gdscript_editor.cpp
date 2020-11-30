@@ -2309,7 +2309,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	GDScriptParser::DataType base_type;
 	bool _static = false;
 	const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(p_call);
-	GDScriptParser::Node::Type callee_type = GDScriptParser::Node::NONE;
+	GDScriptParser::Node::Type callee_type = call->get_callee_type();
 
 	GDScriptCompletionIdentifier connect_base;
 
