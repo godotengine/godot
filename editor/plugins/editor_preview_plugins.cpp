@@ -834,7 +834,9 @@ bool EditorFontPreviewPlugin::handles(const String &p_type) const {
 
 Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path, const Size2 &p_size) const {
 
-	RES res = ResourceLoader::load(p_path);
+	Ref<ResourceInteractiveLoader> ril = ResourceLoader::load_interactive(p_path);
+	ril.ptr()->wait();
+	RES res = ril.ptr()->get_resource();
 	Ref<DynamicFont> sampled_font;
 	if (res->is_class("DynamicFont")) {
 		sampled_font = res->duplicate();
