@@ -100,11 +100,18 @@ public:
 			case Variant::PACKED_COLOR_ARRAY:
 				init_color_array(v);
 				break;
-			case Variant::OBJECT:
-				object_assign_null(v);
-				break;
 			default:
 				break;
+		}
+	}
+
+	_FORCE_INLINE_ static void set_object(Variant *v, Object *obj) {
+		if (obj) {
+			v->_get_obj().obj = obj;
+			v->_get_obj().id = obj->get_instance_id();
+		} else {
+			v->_get_obj().obj = nullptr;
+			v->_get_obj().id = ObjectID();
 		}
 	}
 
@@ -278,11 +285,7 @@ public:
 		v->clear();
 	}
 
-	static void object_assign(Variant *v, const Object *o); // Needs Reference, so it's implemented elsewhere.
-
-	_FORCE_INLINE_ static void object_assign(Variant *v, const Variant *o) {
-		object_assign(v, o->_get_obj().obj);
-	}
+	static void object_assign(Variant *v, const Variant *o); //needs to use reference, do away
 
 	_FORCE_INLINE_ static void object_assign_null(Variant *v) {
 		v->_get_obj().obj = nullptr;
