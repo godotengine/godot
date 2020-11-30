@@ -418,37 +418,39 @@ void TabContainer::_notification(int p_what) {
 			// Draw unselected tabs in back
 			int x = 0;
 			int x_current = 0;
+			int index = 0;
 			for (int i = 0; i < tab_widths.size(); i++) {
-				if (get_tab_hidden(i)) {
+				index = i + first_tab_cache;
+				if (get_tab_hidden(index)) {
 					continue;
 				}
 
 				int tab_width = tab_widths[i];
-				if (get_tab_disabled(i + first_tab_cache)) {
+				if (get_tab_disabled(index)) {
 					if (rtl) {
-						_draw_tab(tab_disabled, font_color_disabled, i, size.width - (tabs_ofs_cache + x) - tab_width);
+						_draw_tab(tab_disabled, font_color_disabled, index, size.width - (tabs_ofs_cache + x) - tab_width);
 					} else {
-						_draw_tab(tab_disabled, font_color_disabled, i, tabs_ofs_cache + x);
+						_draw_tab(tab_disabled, font_color_disabled, index, tabs_ofs_cache + x);
 					}
-				} else if (i + first_tab_cache == current) {
+				} else if (index == current) {
 					x_current = x;
 				} else {
 					if (rtl) {
-						_draw_tab(tab_bg, font_color_bg, i, size.width - (tabs_ofs_cache + x) - tab_width);
+						_draw_tab(tab_bg, font_color_bg, index, size.width - (tabs_ofs_cache + x) - tab_width);
 					} else {
-						_draw_tab(tab_bg, font_color_bg, i, tabs_ofs_cache + x);
+						_draw_tab(tab_bg, font_color_bg, index, tabs_ofs_cache + x);
 					}
 				}
 
 				x += tab_width;
-				last_tab_cache = i + first_tab_cache;
+				last_tab_cache = index;
 			}
 
 			// Draw the tab area.
 			panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
 
-			// Draw selected tab in front
-			if (tabs.size() > 0) {
+			// Draw selected tab in front. only draw selected tab when it's in visible range.
+			if (tabs.size() > 0 && current - first_tab_cache < tab_widths.size() && current >= first_tab_cache) {
 				if (rtl) {
 					_draw_tab(tab_fg, font_color_fg, current, size.width - (tabs_ofs_cache + x_current) - tab_widths[current]);
 				} else {
@@ -535,7 +537,7 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 	p_tab_style->draw(canvas, tab_rect);
 
 	// Draw the tab contents.
-	Control *control = Object::cast_to<Control>(tabs[p_index + first_tab_cache]);
+	Control *control = Object::cast_to<Control>(tabs[p_index]);
 	String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(tr(control->get_name()));
 
 	int x_content = tab_rect.position.x + p_tab_style->get_margin(MARGIN_LEFT);
@@ -555,8 +557,8 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 	}
 
 	// Draw the tab text.
-	Point2i text_pos(x_content, y_center - text_buf[p_index + first_tab_cache]->get_size().y / 2);
-	text_buf[p_index + first_tab_cache]->draw(canvas, text_pos, p_font_color);
+	Point2i text_pos(x_content, y_center - text_buf[p_index]->get_size().y / 2);
+	text_buf[p_index]->draw(canvas, text_pos, p_font_color);
 }
 
 void TabContainer::_on_theme_changed() {
