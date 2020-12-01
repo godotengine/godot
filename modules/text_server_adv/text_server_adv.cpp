@@ -1128,8 +1128,8 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 							sd->ascent = MAX(sd->ascent, sd->objects[key].rect.size.y);
 						} break;
 						case VALIGN_CENTER: {
-							sd->ascent = MAX(sd->ascent, sd->objects[key].rect.size.y / 2);
-							sd->descent = MAX(sd->descent, sd->objects[key].rect.size.y / 2);
+							sd->ascent = MAX(sd->ascent, Math::round(sd->objects[key].rect.size.y / 2));
+							sd->descent = MAX(sd->descent, Math::round(sd->objects[key].rect.size.y / 2));
 						} break;
 						case VALIGN_BOTTOM: {
 							sd->descent = MAX(sd->descent, sd->objects[key].rect.size.y);
@@ -1144,8 +1144,8 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 							sd->ascent = MAX(sd->ascent, sd->objects[key].rect.size.x);
 						} break;
 						case VALIGN_CENTER: {
-							sd->ascent = MAX(sd->ascent, sd->objects[key].rect.size.x / 2);
-							sd->descent = MAX(sd->descent, sd->objects[key].rect.size.x / 2);
+							sd->ascent = MAX(sd->ascent, Math::round(sd->objects[key].rect.size.x / 2));
+							sd->descent = MAX(sd->descent, Math::round(sd->objects[key].rect.size.x / 2));
 						} break;
 						case VALIGN_BOTTOM: {
 							sd->descent = MAX(sd->descent, sd->objects[key].rect.size.x);
@@ -1160,19 +1160,19 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 						sd->ascent = MAX(sd->ascent, MAX(fd->get_ascent(gl.font_size), -gl.y_off));
 						sd->descent = MAX(sd->descent, MAX(fd->get_descent(gl.font_size), gl.y_off));
 					} else {
-						sd->ascent = MAX(sd->ascent, fd->get_advance(gl.index, gl.font_size).x * 0.5);
-						sd->descent = MAX(sd->descent, fd->get_advance(gl.index, gl.font_size).x * 0.5);
+						sd->ascent = MAX(sd->ascent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
+						sd->descent = MAX(sd->descent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
 					}
 					sd->upos = MAX(sd->upos, font_get_underline_position(gl.font_rid, gl.font_size));
 					sd->uthk = MAX(sd->uthk, font_get_underline_thickness(gl.font_rid, gl.font_size));
 				} else if (sd->preserve_invalid || (sd->preserve_control && is_control(gl.index))) {
 					// Glyph not found, replace with hex code box.
 					if (sd->orientation == ORIENTATION_HORIZONTAL) {
-						sd->ascent = MAX(sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.75f);
-						sd->descent = MAX(sd->descent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.25f);
+						sd->ascent = MAX(sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).y * 0.75f));
+						sd->descent = MAX(sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).y * 0.25f));
 					} else {
-						sd->ascent = MAX(sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f);
-						sd->descent = MAX(sd->descent, get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f);
+						sd->ascent = MAX(sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f));
+						sd->descent = MAX(sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f));
 					}
 				}
 				sd->width += gl.advance * gl.repeat;
@@ -1303,8 +1303,8 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 										new_sd->ascent = MAX(new_sd->ascent, new_sd->objects[key].rect.size.y);
 									} break;
 									case VALIGN_CENTER: {
-										new_sd->ascent = MAX(new_sd->ascent, new_sd->objects[key].rect.size.y / 2);
-										new_sd->descent = MAX(new_sd->descent, new_sd->objects[key].rect.size.y / 2);
+										new_sd->ascent = MAX(new_sd->ascent, Math::round(new_sd->objects[key].rect.size.y / 2));
+										new_sd->descent = MAX(new_sd->descent, Math::round(new_sd->objects[key].rect.size.y / 2));
 									} break;
 									case VALIGN_BOTTOM: {
 										new_sd->descent = MAX(new_sd->descent, new_sd->objects[key].rect.size.y);
@@ -1318,8 +1318,8 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 										new_sd->ascent = MAX(new_sd->ascent, new_sd->objects[key].rect.size.x);
 									} break;
 									case VALIGN_CENTER: {
-										new_sd->ascent = MAX(new_sd->ascent, new_sd->objects[key].rect.size.x / 2);
-										new_sd->descent = MAX(new_sd->descent, new_sd->objects[key].rect.size.x / 2);
+										new_sd->ascent = MAX(new_sd->ascent, Math::round(new_sd->objects[key].rect.size.x / 2));
+										new_sd->descent = MAX(new_sd->descent, Math::round(new_sd->objects[key].rect.size.x / 2));
 									} break;
 									case VALIGN_BOTTOM: {
 										new_sd->descent = MAX(new_sd->descent, new_sd->objects[key].rect.size.x);
@@ -1333,17 +1333,17 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 									new_sd->ascent = MAX(new_sd->ascent, MAX(fd->get_ascent(gl.font_size), -gl.y_off));
 									new_sd->descent = MAX(new_sd->descent, MAX(fd->get_descent(gl.font_size), gl.y_off));
 								} else {
-									new_sd->ascent = MAX(new_sd->ascent, fd->get_advance(gl.index, gl.font_size).x * 0.5);
-									new_sd->descent = MAX(new_sd->descent, fd->get_advance(gl.index, gl.font_size).x * 0.5);
+									new_sd->ascent = MAX(new_sd->ascent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
+									new_sd->descent = MAX(new_sd->descent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
 								}
 							} else if (new_sd->preserve_invalid || (new_sd->preserve_control && is_control(gl.index))) {
 								// Glyph not found, replace with hex code box.
 								if (new_sd->orientation == ORIENTATION_HORIZONTAL) {
-									new_sd->ascent = MAX(new_sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.75f);
-									new_sd->descent = MAX(new_sd->descent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.25f);
+									new_sd->ascent = MAX(new_sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).y * 0.75f));
+									new_sd->descent = MAX(new_sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).y * 0.25f));
 								} else {
-									new_sd->ascent = MAX(new_sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f);
-									new_sd->descent = MAX(new_sd->descent, get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f);
+									new_sd->ascent = MAX(new_sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f));
+									new_sd->descent = MAX(new_sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f));
 								}
 							}
 							new_sd->width += gl.advance * gl.repeat;
@@ -1491,9 +1491,9 @@ float TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 				if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
 					float old_adv = gl.advance;
 					if ((gl.flags & GRAPHEME_IS_VIRTUAL) == GRAPHEME_IS_VIRTUAL) {
-						gl.advance = MAX(gl.advance + delta_width_per_space, 0.f);
+						gl.advance = Math::round(MAX(gl.advance + delta_width_per_space, 0.f));
 					} else {
-						gl.advance = MAX(gl.advance + delta_width_per_space, 0.05 * gl.font_size);
+						gl.advance = Math::round(MAX(gl.advance + delta_width_per_space, 0.05 * gl.font_size));
 					}
 					sd->width += (gl.advance - old_adv);
 				}
@@ -1540,7 +1540,7 @@ float TextServerAdvanced::shaped_text_tab_align(RID p_shaped, const Vector<float
 				}
 			}
 			float old_adv = sd->glyphs.write[i].advance;
-			sd->glyphs.write[i].advance = (tab_off - off);
+			sd->glyphs.write[i].advance = tab_off - off;
 			sd->width += sd->glyphs.write[i].advance - old_adv;
 			off = 0;
 			continue;
@@ -1850,15 +1850,15 @@ TextServer::Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced
 
 	if (glyph_count > 0) {
 		if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
-			gl.advance = glyph_pos[0].x_advance / (64.0 / fd->get_font_scale(p_font_size));
+			gl.advance = Math::round(glyph_pos[0].x_advance / (64.0 / fd->get_font_scale(p_font_size)));
 		} else {
-			gl.advance = -glyph_pos[0].y_advance / (64.0 / fd->get_font_scale(p_font_size));
+			gl.advance = -Math::round(glyph_pos[0].y_advance / (64.0 / fd->get_font_scale(p_font_size)));
 		}
 		gl.count = 1;
 
 		gl.index = glyph_info[0].codepoint;
-		gl.x_off = glyph_pos[0].x_offset / (64.0 / fd->get_font_scale(p_font_size));
-		gl.y_off = -glyph_pos[0].y_offset / (64.0 / fd->get_font_scale(p_font_size));
+		gl.x_off = Math::round(glyph_pos[0].x_offset / (64.0 / fd->get_font_scale(p_font_size)));
+		gl.y_off = -Math::round(glyph_pos[0].y_offset / (64.0 / fd->get_font_scale(p_font_size)));
 
 		if ((glyph_info[0].codepoint != 0) || !u_isgraph(p_char)) {
 			gl.flags |= GRAPHEME_IS_VALID;
@@ -1890,12 +1890,12 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 				}
 				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 					gl.advance = get_hex_code_box_size(gl.font_size, gl.index).x;
-					p_sd->ascent = MAX(p_sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.75f);
-					p_sd->descent = MAX(p_sd->descent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.25f);
+					p_sd->ascent = MAX(p_sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).y * 0.75f));
+					p_sd->descent = MAX(p_sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).y * 0.25f));
 				} else {
 					gl.advance = get_hex_code_box_size(gl.font_size, gl.index).y;
-					p_sd->ascent = MAX(p_sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f);
-					p_sd->descent = MAX(p_sd->descent, get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f);
+					p_sd->ascent = MAX(p_sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f));
+					p_sd->descent = MAX(p_sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f));
 				}
 				p_sd->width += gl.advance;
 
@@ -1986,12 +1986,12 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 			gl.index = glyph_info[i].codepoint;
 			if (gl.index != 0) {
 				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
-					gl.advance = glyph_pos[i].x_advance / (64.0 / fd->get_font_scale(gl.font_size));
+					gl.advance = Math::round(glyph_pos[i].x_advance / (64.0 / fd->get_font_scale(gl.font_size)));
 				} else {
-					gl.advance = -glyph_pos[i].y_advance / (64.0 / fd->get_font_scale(gl.font_size));
+					gl.advance = -Math::round(glyph_pos[i].y_advance / (64.0 / fd->get_font_scale(gl.font_size)));
 				}
-				gl.x_off = glyph_pos[i].x_offset / (64.0 / fd->get_font_scale(gl.font_size));
-				gl.y_off = -glyph_pos[i].y_offset / (64.0 / fd->get_font_scale(gl.font_size));
+				gl.x_off = Math::round(glyph_pos[i].x_offset / (64.0 / fd->get_font_scale(gl.font_size)));
+				gl.y_off = -Math::round(glyph_pos[i].y_offset / (64.0 / fd->get_font_scale(gl.font_size)));
 			}
 
 			if (p_sd->preserve_control) {
@@ -2029,8 +2029,8 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 						p_sd->ascent = MAX(p_sd->ascent, MAX(fd->get_ascent(w[i + j].font_size), -w[i + j].y_off));
 						p_sd->descent = MAX(p_sd->descent, MAX(fd->get_descent(w[i + j].font_size), w[i + j].y_off));
 					} else {
-						p_sd->ascent = MAX(p_sd->ascent, fd->get_advance(w[i + j].index, w[i + j].font_size).x * 0.5);
-						p_sd->descent = MAX(p_sd->descent, fd->get_advance(w[i + j].index, w[i + j].font_size).x * 0.5);
+						p_sd->ascent = MAX(p_sd->ascent, Math::round(fd->get_advance(w[i + j].index, w[i + j].font_size).x * 0.5));
+						p_sd->descent = MAX(p_sd->descent, Math::round(fd->get_advance(w[i + j].index, w[i + j].font_size).x * 0.5));
 					}
 					p_sd->upos = MAX(p_sd->upos, font_get_underline_position(w[i + j].font_rid, w[i + j].font_size));
 					p_sd->uthk = MAX(p_sd->uthk, font_get_underline_thickness(w[i + j].font_rid, w[i + j].font_size));
@@ -2180,8 +2180,8 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 										sd->ascent = MAX(sd->ascent, sd->objects[span.embedded_key].rect.size.y);
 									} break;
 									case VALIGN_CENTER: {
-										sd->ascent = MAX(sd->ascent, sd->objects[span.embedded_key].rect.size.y / 2);
-										sd->descent = MAX(sd->descent, sd->objects[span.embedded_key].rect.size.y / 2);
+										sd->ascent = MAX(sd->ascent, Math::round(sd->objects[span.embedded_key].rect.size.y / 2));
+										sd->descent = MAX(sd->descent, Math::round(sd->objects[span.embedded_key].rect.size.y / 2));
 									} break;
 									case VALIGN_BOTTOM: {
 										sd->descent = MAX(sd->descent, sd->objects[span.embedded_key].rect.size.y);
@@ -2195,8 +2195,8 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 										sd->ascent = MAX(sd->ascent, sd->objects[span.embedded_key].rect.size.x);
 									} break;
 									case VALIGN_CENTER: {
-										sd->ascent = MAX(sd->ascent, sd->objects[span.embedded_key].rect.size.x / 2);
-										sd->descent = MAX(sd->descent, sd->objects[span.embedded_key].rect.size.x / 2);
+										sd->ascent = MAX(sd->ascent, Math::round(sd->objects[span.embedded_key].rect.size.x / 2));
+										sd->descent = MAX(sd->descent, Math::round(sd->objects[span.embedded_key].rect.size.x / 2));
 									} break;
 									case VALIGN_BOTTOM: {
 										sd->descent = MAX(sd->descent, sd->objects[span.embedded_key].rect.size.x);
