@@ -1399,6 +1399,8 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorSub<Vector2i, Vector2i, Vector2i>>(Variant::OP_SUBTRACT, Variant::VECTOR2I, Variant::VECTOR2I);
 	register_op<OperatorEvaluatorSub<Vector3, Vector3, Vector3>>(Variant::OP_SUBTRACT, Variant::VECTOR3, Variant::VECTOR3);
 	register_op<OperatorEvaluatorSub<Vector3i, Vector3i, Vector3i>>(Variant::OP_SUBTRACT, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorSub<Quat, Quat, Quat>>(Variant::OP_SUBTRACT, Variant::QUAT, Variant::QUAT);
+	register_op<OperatorEvaluatorSub<Color, Color, Color>>(Variant::OP_SUBTRACT, Variant::COLOR, Variant::COLOR);
 
 	register_op<OperatorEvaluatorMul<int64_t, int64_t, int64_t>>(Variant::OP_MULTIPLY, Variant::INT, Variant::INT);
 	register_op<OperatorEvaluatorMul<double, int64_t, double>>(Variant::OP_MULTIPLY, Variant::INT, Variant::FLOAT);
