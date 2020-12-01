@@ -33,6 +33,9 @@
 
 #include "font_adv.h"
 
+void hb_bmp_create_font_funcs();
+void hb_bmp_free_font_funcs();
+
 struct BitmapFontDataAdvanced : public FontDataAdvanced {
 	_THREAD_SAFE_CLASS_
 

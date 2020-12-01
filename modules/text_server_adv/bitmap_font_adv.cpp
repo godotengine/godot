@@ -175,8 +175,9 @@ static hb_bool_t hb_bmp_get_font_h_extents(hb_font_t *font, void *font_data, hb_
 	return true;
 }
 
-static hb_font_funcs_t *_hb_bmp_get_font_funcs() {
-	hb_font_funcs_t *funcs = hb_font_funcs_create();
+static hb_font_funcs_t *funcs = nullptr;
+void hb_bmp_create_font_funcs() {
+	funcs = hb_font_funcs_create();
 
 	hb_font_funcs_set_font_h_extents_func(funcs, hb_bmp_get_font_h_extents, nullptr, nullptr);
 	//hb_font_funcs_set_font_v_extents_func (funcs, hb_bmp_get_font_v_extents, nullptr, nullptr);
@@ -194,12 +195,17 @@ static hb_font_funcs_t *_hb_bmp_get_font_funcs() {
 	//hb_font_funcs_set_glyph_from_name_func (funcs, hb_bmp_get_glyph_from_name, nullptr, nullptr);
 
 	hb_font_funcs_make_immutable(funcs);
+}
 
-	return funcs;
+void hb_bmp_free_font_funcs() {
+	if (funcs != nullptr) {
+		hb_font_funcs_destroy(funcs);
+		funcs = nullptr;
+	}
 }
 
 static void _hb_bmp_font_set_funcs(hb_font_t *p_font, BitmapFontDataAdvanced *p_face, int p_size, bool p_unref) {
-	hb_font_set_funcs(p_font, _hb_bmp_get_font_funcs(), _hb_bmp_font_create(p_face, p_size, p_unref), _hb_bmp_font_destroy);
+	hb_font_set_funcs(p_font, funcs, _hb_bmp_font_create(p_face, p_size, p_unref), _hb_bmp_font_destroy);
 }
 
 hb_font_t *hb_bmp_font_create(BitmapFontDataAdvanced *p_face, int p_size, hb_destroy_func_t p_destroy) {

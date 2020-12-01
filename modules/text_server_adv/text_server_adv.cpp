@@ -2507,9 +2507,11 @@ void TextServerAdvanced::register_server() {
 }
 
 TextServerAdvanced::TextServerAdvanced() {
+	hb_bmp_create_font_funcs();
 }
 
 TextServerAdvanced::~TextServerAdvanced() {
+	hb_bmp_free_font_funcs();
 	u_cleanup();
 #ifndef ICU_STATIC_DATA
 	if (icu_data != nullptr) {
