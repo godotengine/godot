@@ -1454,6 +1454,17 @@ void VisualShaderEditor::_remove_output_port(int p_node, int p_port) {
 		}
 	}
 
+	int preview_port = node->get_output_port_for_preview();
+	if (preview_port != -1) {
+		if (preview_port == p_port) {
+			undo_redo->add_do_method(node.ptr(), "set_output_port_for_preview", -1);
+			undo_redo->add_undo_method(node.ptr(), "set_output_port_for_preview", preview_port);
+		} else if (preview_port > p_port) {
+			undo_redo->add_do_method(node.ptr(), "set_output_port_for_preview", preview_port - 1);
+			undo_redo->add_undo_method(node.ptr(), "set_output_port_for_preview", preview_port);
+		}
+	}
+
 	undo_redo->add_do_method(node.ptr(), "remove_output_port", p_port);
 	undo_redo->add_undo_method(node.ptr(), "add_output_port", p_port, (int)node->get_output_port_type(p_port), node->get_output_port_name(p_port));
 
