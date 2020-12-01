@@ -6615,7 +6615,7 @@ static bool findApproximateDiameterVertices(Mesh *mesh, uint32_t *a, uint32_t *b
 static void projectTriangle(Vector3 p0, Vector3 p1, Vector3 p2, Vector2 *z0, Vector2 *z1, Vector2 *z2, float epsilon)
 {
 	Vector3 X = normalize(p1 - p0, epsilon);
-	Vector3 Z = normalize(cross(X, p2 - p0), epsilon);
+	Vector3 Z = normalizeSafe(cross(X, p2 - p0), Vector3(0, 0, 1), epsilon);
 	Vector3 Y = cross(Z, X);
 	Vector3 &O = p0;
 	*z0 = Vector2(0, 0);
