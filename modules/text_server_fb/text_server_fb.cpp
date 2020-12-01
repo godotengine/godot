@@ -625,7 +625,11 @@ bool TextServerFallback::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 		sd->width = 0;
 		sd->upos = 0;
 		sd->uthk = 0;
-		for (int i = 0; i < sd->glyphs.size(); i++) {
+		int sd_size = sd->glyphs.size();
+		const FontDataFallback *fd = nullptr;
+		RID prev_rid = RID();
+
+		for (int i = 0; i < sd_size; i++) {
 			Glyph gl = sd->glyphs[i];
 			Variant key;
 			if (gl.count == 1) {
@@ -671,7 +675,10 @@ bool TextServerFallback::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 					sd->glyphs.write[i].advance = sd->objects[key].rect.size.y;
 				}
 			} else {
-				const FontDataFallback *fd = font_owner.getornull(gl.font_rid);
+				if (prev_rid != gl.font_rid) {
+					fd = font_owner.getornull(gl.font_rid);
+					prev_rid = gl.font_rid;
+				}
 				if (fd != nullptr) {
 					if (sd->orientation == ORIENTATION_HORIZONTAL) {
 						sd->ascent = MAX(sd->ascent, fd->get_ascent(gl.font_size));
@@ -760,21 +767,25 @@ RID TextServerFallback::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 
 	if (p_length > 0) {
 		new_sd->text = sd->text.substr(p_start, p_length);
+		int sd_size = sd->glyphs.size();
+		const Glyph *sd_glyphs = sd->glyphs.ptr();
 
-		for (int i = 0; i < sd->glyphs.size(); i++) {
-			if ((sd->glyphs[i].start >= new_sd->start) && (sd->glyphs[i].end <= new_sd->end)) {
-				Glyph gl = sd->glyphs[i];
+		for (int i = 0; i < sd_size; i++) {
+			if ((sd_glyphs[i].start >= new_sd->start) && (sd_glyphs[i].end <= new_sd->end)) {
+				Glyph gl = sd_glyphs[i];
 				Variant key;
+				bool find_embedded = false;
 				if (gl.count == 1) {
 					for (Map<Variant, ShapedTextData::EmbeddedObject>::Element *E = sd->objects.front(); E; E = E->next()) {
 						if (E->get().pos == gl.start) {
+							find_embedded = true;
 							key = E->key();
 							new_sd->objects[key] = E->get();
 							break;
 						}
 					}
 				}
-				if (key != Variant()) {
+				if (find_embedded) {
 					if (new_sd->orientation == ORIENTATION_HORIZONTAL) {
 						new_sd->objects[key].rect.position.x = new_sd->width;
 						new_sd->width += new_sd->objects[key].rect.size.x;
@@ -978,8 +989,10 @@ float TextServerFallback::shaped_text_tab_align(RID p_shaped, const Vector<float
 		delta = -1;
 	}
 
+	Glyph *gl = sd->glyphs.ptrw();
+
 	for (int i = start; i != end; i += delta) {
-		if ((sd->glyphs[i].flags & GRAPHEME_IS_TAB) == GRAPHEME_IS_TAB) {
+		if ((gl[i].flags & GRAPHEME_IS_TAB) == GRAPHEME_IS_TAB) {
 			float tab_off = 0.f;
 			while (tab_off <= off) {
 				tab_off += p_tab_stops[tab_index];
@@ -988,13 +1001,13 @@ float TextServerFallback::shaped_text_tab_align(RID p_shaped, const Vector<float
 					tab_index = 0;
 				}
 			}
-			float old_adv = sd->glyphs.write[i].advance;
-			sd->glyphs.write[i].advance = tab_off - off;
-			sd->width += sd->glyphs.write[i].advance - old_adv;
+			float old_adv = gl[i].advance;
+			gl[i].advance = tab_off - off;
+			sd->width += gl[i].advance - old_adv;
 			off = 0;
 			continue;
 		}
-		off += sd->glyphs[i].advance * sd->glyphs[i].repeat;
+		off += gl[i].advance * gl[i].repeat;
 	}
 
 	return 0.f;
@@ -1012,7 +1025,8 @@ bool TextServerFallback::shaped_text_update_breaks(RID p_shaped) {
 		return true; // Noting to do.
 	}
 
-	for (int i = 0; i < sd->glyphs.size(); i++) {
+	int sd_size = sd->glyphs.size();
+	for (int i = 0; i < sd_size; i++) {
 		if (sd->glyphs[i].count > 0) {
 			char32_t c = sd->text[sd->glyphs[i].start];
 			if (is_whitespace(c) && !is_linebreak(c)) {
@@ -1163,8 +1177,8 @@ bool TextServerFallback::shaped_text_shape(RID p_shaped) {
 							sd->descent = MAX(sd->descent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
 						}
 					}
-					sd->upos = MAX(sd->upos, font_get_underline_position(gl.font_rid, gl.font_size));
-					sd->uthk = MAX(sd->uthk, font_get_underline_thickness(gl.font_rid, gl.font_size));
+					sd->upos = MAX(sd->upos, fd->get_underline_position(gl.font_size));
+					sd->uthk = MAX(sd->uthk, fd->get_underline_thickness(gl.font_size));
 
 					// Add kerning to previous glyph.
 					if (sd->glyphs.size() > 0) {

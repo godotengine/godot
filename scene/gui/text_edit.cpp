@@ -1240,10 +1240,13 @@ void TextEdit::_notification(int p_what) {
 
 					ofs_y += (row_height - text_height) / 2;
 
-					const Vector<TextServer::Glyph> glyphs = TS->shaped_text_get_glyphs(rid);
+					const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(rid);
+					const TextServer::Glyph *glyphs = visual.ptr();
+					int gl_size = visual.size();
+
 					ofs_y += ldata->get_line_ascent(line_wrap_index);
 					float char_ofs = 0.f;
-					for (int j = 0; j < glyphs.size(); j++) {
+					for (int j = 0; j < gl_size; j++) {
 						if (color_map.has(glyphs[j].start)) {
 							current_color = color_map[glyphs[j].start].get("color");
 							if (readonly && current_color.a > cache.font_color_readonly.a) {

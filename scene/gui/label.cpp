@@ -251,8 +251,10 @@ void Label::_notification(int p_what) {
 		if (percent_visible < 1) {
 			int total_glyphs = 0;
 			for (int i = lines_skipped; i < last_line; i++) {
-				const Vector<TextServer::Glyph> glyphs = TS->shaped_text_get_glyphs(lines_rid[i]);
-				for (int j = 0; j < glyphs.size(); j++) {
+				const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(lines_rid[i]);
+				const TextServer::Glyph *glyphs = visual.ptr();
+				int gl_size = visual.size();
+				for (int j = 0; j < gl_size; j++) {
 					if ((glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
 						total_glyphs++;
 					}
@@ -287,11 +289,13 @@ void Label::_notification(int p_what) {
 				} break;
 			}
 
-			const Vector<TextServer::Glyph> glyphs = TS->shaped_text_get_glyphs(lines_rid[i]);
+			const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(lines_rid[i]);
+			const TextServer::Glyph *glyphs = visual.ptr();
+			int gl_size = visual.size();
 
 			float x = ofs.x;
 			int outlines_drawn = glyhps_drawn;
-			for (int j = 0; j < glyphs.size(); j++) {
+			for (int j = 0; j < gl_size; j++) {
 				for (int k = 0; k < glyphs[j].repeat; k++) {
 					if (glyphs[j].font_rid != RID()) {
 						if (font_color_shadow.a > 0) {
@@ -320,7 +324,7 @@ void Label::_notification(int p_what) {
 			}
 			ofs.x = x;
 
-			for (int j = 0; j < glyphs.size(); j++) {
+			for (int j = 0; j < gl_size; j++) {
 				for (int k = 0; k < glyphs[j].repeat; k++) {
 					if (glyphs[j].font_rid != RID()) {
 						TS->font_draw_glyph(glyphs[j].font_rid, ci, glyphs[j].font_size, ofs + Vector2(glyphs[j].x_off, glyphs[j].y_off), glyphs[j].index, font_color);

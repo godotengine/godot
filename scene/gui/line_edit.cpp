@@ -834,11 +834,13 @@ void LineEdit::_notification(int p_what) {
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, selection_color);
 				}
 			}
-			const Vector<TextServer::Glyph> glyphs = TS->shaped_text_get_glyphs(text_rid);
+			const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(text_rid);
+			const TextServer::Glyph *glyphs = visual.ptr();
+			int gl_size = visual.size();
 
 			// Draw text.
 			ofs.y += TS->shaped_text_get_ascent(text_rid);
-			for (int i = 0; i < glyphs.size(); i++) {
+			for (int i = 0; i < gl_size; i++) {
 				bool selected = selection.enabled && glyphs[i].start >= selection.begin && glyphs[i].end <= selection.end;
 				for (int j = 0; j < glyphs[i].repeat; j++) {
 					if (ceil(ofs.x) >= x_ofs && (ofs.x + glyphs[i].advance) <= ofs_max) {
