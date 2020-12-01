@@ -120,9 +120,11 @@ void VisualShaderGraphPlugin::set_connections(List<VisualShader::Connection> &p_
 }
 
 void VisualShaderGraphPlugin::show_port_preview(VisualShader::Type p_type, int p_node_id, int p_port_id) {
-	if (visual_shader->get_shader_type() == p_type && links.has(p_node_id)) {
+	if (visual_shader->get_shader_type() == p_type && links.has(p_node_id) && links[p_node_id].output_ports.has(p_port_id)) {
 		for (Map<int, Port>::Element *E = links[p_node_id].output_ports.front(); E; E = E->next()) {
-			E->value().preview_button->set_pressed(false);
+			if (E->value().preview_button != nullptr) {
+				E->value().preview_button->set_pressed(false);
+			}
 		}
 
 		if (links[p_node_id].preview_visible && !is_dirty() && links[p_node_id].preview_box != nullptr) {
@@ -132,7 +134,7 @@ void VisualShaderGraphPlugin::show_port_preview(VisualShader::Type p_type, int p
 			links[p_node_id].preview_visible = false;
 		}
 
-		if (p_port_id != -1) {
+		if (p_port_id != -1 && links[p_node_id].output_ports[p_port_id].preview_button != nullptr) {
 			if (is_dirty()) {
 				links[p_node_id].preview_pos = links[p_node_id].graph_node->get_child_count();
 			}
