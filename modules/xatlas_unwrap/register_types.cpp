@@ -64,11 +64,11 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 
 	xatlas::Atlas *atlas = xatlas::Create();
 	printf("Adding mesh..\n");
-	xatlas::AddMeshError::Enum err = xatlas::AddMesh(atlas, input_mesh, 1);
-	ERR_FAIL_COND_V_MSG(err != xatlas::AddMeshError::Enum::Success, false, xatlas::StringForEnum(err));
+	xatlas::AddMeshError err = xatlas::AddMesh(atlas, input_mesh, 1);
+	ERR_FAIL_COND_V_MSG(err != xatlas::AddMeshError::Success, false, xatlas::StringForEnum(err));
 
 	printf("Generate..\n");
-	xatlas::Generate(atlas, chart_options, xatlas::ParameterizeOptions(), pack_options);
+	xatlas::Generate(atlas, chart_options, xatlas::PackOptions());
 
 	*r_size_hint_x = atlas->width;
 	*r_size_hint_y = atlas->height;
