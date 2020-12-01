@@ -76,6 +76,7 @@
 		<signal name="changed">
 			<description>
 				Emitted whenever the resource changes.
+				[b]Note:[/b] This signal is not emitted automatically for custom resources, which means that you need to create a setter and emit the signal yourself.
 			</description>
 		</signal>
 	</signals>
