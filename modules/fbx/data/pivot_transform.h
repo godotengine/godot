@@ -31,6 +31,7 @@
 #ifndef PIVOT_TRANSFORM_H
 #define PIVOT_TRANSFORM_H
 
+#include "core/math/transform.h"
 #include "core/reference.h"
 
 #include "model_abstraction.h"
@@ -84,6 +85,9 @@ struct PivotTransform : Reference, ModelAbstraction {
 		print_verbose("raw pre_rotation " + raw_pre_rotation * (180 / Math_PI));
 		print_verbose("raw post_rotation " + raw_post_rotation * (180 / Math_PI));
 	}
+
+	Transform ComputeGlobalTransform(Transform t) const;
+	Transform ComputeLocalTransform(Transform t) const;
 	Transform ComputeGlobalTransform(Vector3 p_translation, Quat p_rotation, Vector3 p_scaling) const;
 	Transform ComputeLocalTransform(Vector3 p_translation, Quat p_rotation, Vector3 p_scaling) const;
 

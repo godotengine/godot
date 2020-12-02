@@ -80,14 +80,37 @@ void PivotTransform::ReadTransformChain() {
 	const Vector3 &GeometricScaling = ImportUtils::safe_import_vector3(FBXDocParser::PropertyGet<Vector3>(props, "GeometricScaling", ok));
 	if (ok) {
 		geometric_scaling = GeometricScaling;
+	} else {
+		geometric_scaling = Vector3(0, 0, 0);
 	}
+
 	const Vector3 &GeometricRotation = ImportUtils::safe_import_vector3(FBXDocParser::PropertyGet<Vector3>(props, "GeometricRotation", ok));
 	if (ok) {
 		geometric_rotation = ImportUtils::EulerToQuaternion(rot, ImportUtils::deg2rad(GeometricRotation));
+	} else {
+		geometric_rotation = Quat();
 	}
+
 	const Vector3 &GeometricTranslation = ImportUtils::safe_import_vector3(FBXDocParser::PropertyGet<Vector3>(props, "GeometricTranslation", ok));
 	if (ok) {
 		geometric_translation = ImportUtils::FixAxisConversions(GeometricTranslation);
+	} else {
+		geometric_translation = Vector3(0, 0, 0);
+	}
+
+	if (geometric_rotation != Quat()) {
+		print_error("geometric rotation is unsupported!");
+		//CRASH_COND(true);
+	}
+
+	if (!geometric_scaling.is_equal_approx(Vector3(1, 1, 1))) {
+		print_error("geometric scaling is unsupported!");
+		//CRASH_COND(true);
+	}
+
+	if (!geometric_translation.is_equal_approx(Vector3(0, 0, 0))) {
+		print_error("geometric translation is unsupported.");
+		//CRASH_COND(true);
 	}
 }
 
@@ -112,6 +135,20 @@ Transform PivotTransform::ComputeLocalTransform(Vector3 p_translation, Quat p_ro
 	Transform Rpost = Transform(post_rotation);
 
 	return T * Roff * Rp * Rpre * R * Rpost.affine_inverse() * Rp.affine_inverse() * Soff * Sp * S * Sp.affine_inverse();
+}
+
+Transform PivotTransform::ComputeGlobalTransform(Transform t) const {
+	Vector3 pos = t.origin;
+	Vector3 scale = t.basis.get_scale();
+	Quat rot = t.basis.get_rotation_quat();
+	return ComputeGlobalTransform(pos, rot, scale);
+}
+
+Transform PivotTransform::ComputeLocalTransform(Transform t) const {
+	Vector3 pos = t.origin;
+	Vector3 scale = t.basis.get_scale();
+	Quat rot = t.basis.get_rotation_quat();
+	return ComputeLocalTransform(pos, rot, scale);
 }
 
 Transform PivotTransform::ComputeGlobalTransform(Vector3 p_translation, Quat p_rotation, Vector3 p_scaling) const {

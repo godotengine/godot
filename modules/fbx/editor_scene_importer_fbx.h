@@ -37,7 +37,10 @@
 #include "tools/import_utils.h"
 
 #include "core/bind/core_bind.h"
+#include "core/dictionary.h"
 #include "core/io/resource_importer.h"
+#include "core/local_vector.h"
+#include "core/ustring.h"
 #include "core/vector.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/project_settings_editor.h"

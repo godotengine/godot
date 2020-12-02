@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  fbx_skeleton.h                                                       */
+/*  validation_tools.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,26 +28,66 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FBX_SKELETON_H
-#define FBX_SKELETON_H
+#ifndef FBX_VALIDATION_TOOLS_H
+#define FBX_VALIDATION_TOOLS_H
 
-#include "fbx_bone.h"
-#include "fbx_node.h"
-#include "model_abstraction.h"
+#ifdef TOOLS_ENABLED
 
-#include "core/reference.h"
-#include "scene/3d/skeleton.h"
+#include "core/local_vector.h"
+#include "core/map.h"
+#include "core/ustring.h"
+#include <core/io/json.h>
+#include <core/os/file_access.h>
+#include <scene/3d/path.h>
 
-struct FBXNode;
-struct ImportState;
-struct FBXBone;
+class ValidationTracker {
+protected:
+	struct Entries {
+		Map<String, LocalVector<String> > validation_entries = Map<String, LocalVector<String> >();
 
-struct FBXSkeleton : Reference {
-	Ref<FBXNode> fbx_node = Ref<FBXNode>();
-	Vector<Ref<FBXBone> > skeleton_bones = Vector<Ref<FBXBone> >();
-	Skeleton *skeleton = nullptr;
+		// for printing our CSV to dump validation problems of files
+		// later we can make some agnostic tooling for this but this is fine for the time being.
+		void add_validation_error(String asset_path, String message);
+		void print_to_csv() {
+			print_verbose("Exporting assset validation log please wait");
+			String massive_log_file;
 
-	void init_skeleton(const ImportState &state);
+			String csv_header = "file_path, error message, extra data\n";
+			massive_log_file += csv_header;
+
+			for (Map<String, LocalVector<String> >::Element *element = validation_entries.front(); element; element = element->next()) {
+				for (unsigned int x = 0; x < element->value().size(); x++) {
+					const String &line_entry = element->key() + ", " + element->value()[x].c_escape() + "\n";
+					massive_log_file += line_entry;
+				}
+			}
+
+			String path = "asset_validation_errors.csv";
+			Error err;
+			FileAccess *file = FileAccess::open(path, FileAccess::WRITE, &err);
+			if (!file || err) {
+				if (file)
+					memdelete(file);
+				print_error("ValidationTracker Error - failed to create file - path: %s\n" + path);
+				return;
+			}
+
+			file->store_string(massive_log_file);
+			if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
+				print_error("ValidationTracker Error - failed to write to file - path: %s\n" + path);
+			}
+			file->close();
+			memdelete(file);
+		}
+	};
+	// asset path, error messages
+	static Entries *entries_singleton;
+
+public:
+	static Entries *get_singleton() {
+		return entries_singleton;
+	}
 };
 
-#endif // FBX_SKELETON_H
+#endif // TOOLS_ENABLED
+#endif // FBX_VALIDATION_TOOLS_H

@@ -32,7 +32,9 @@
 #define IMPORT_STATE_H
 
 #include "fbx_mesh_data.h"
-#include "modules/fbx/tools/import_utils.h"
+#include "tools/import_utils.h"
+#include "tools/validation_tools.h"
+
 #include "pivot_transform.h"
 
 #include "core/bind/core_bind.h"

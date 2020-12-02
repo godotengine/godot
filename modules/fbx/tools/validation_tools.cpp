@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  fbx_skeleton.h                                                       */
+/*  validation_tools.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,26 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FBX_SKELETON_H
-#define FBX_SKELETON_H
+#include "validation_tools.h"
 
-#include "fbx_bone.h"
-#include "fbx_node.h"
-#include "model_abstraction.h"
+#ifdef TOOLS_ENABLED
 
-#include "core/reference.h"
-#include "scene/3d/skeleton.h"
+#include "core/print_string.h"
+#include "core/ustring.h"
 
-struct FBXNode;
-struct ImportState;
-struct FBXBone;
+ValidationTracker::Entries *ValidationTracker::entries_singleton = memnew(ValidationTracker::Entries);
 
-struct FBXSkeleton : Reference {
-	Ref<FBXNode> fbx_node = Ref<FBXNode>();
-	Vector<Ref<FBXBone> > skeleton_bones = Vector<Ref<FBXBone> >();
-	Skeleton *skeleton = nullptr;
+// for printing our CSV to dump validation problems of files
+// later we can make some agnostic tooling for this but this is fine for the time being.
+void ValidationTracker::Entries::add_validation_error(String asset_path, String message) {
+	print_error(message);
+	// note: implementation is static
+	validation_entries[asset_path].push_back(message);
+}
 
-	void init_skeleton(const ImportState &state);
-};
-
-#endif // FBX_SKELETON_H
+#endif // TOOLS_ENABLED
