@@ -354,12 +354,12 @@ class VisualShaderEditor : public VBoxContainer {
 	void _add_input_port(int p_node, int p_port, int p_port_type, const String &p_name);
 	void _remove_input_port(int p_node, int p_port);
 	void _change_input_port_type(int p_type, int p_node, int p_port);
-	void _change_input_port_name(const String &p_text, Object *line_edit, int p_node, int p_port);
+	void _change_input_port_name(const String &p_text, Object *p_line_edit, int p_node, int p_port);
 
 	void _add_output_port(int p_node, int p_port, int p_port_type, const String &p_name);
 	void _remove_output_port(int p_node, int p_port);
 	void _change_output_port_type(int p_type, int p_node, int p_port);
-	void _change_output_port_name(const String &p_text, Object *line_edit, int p_node, int p_port);
+	void _change_output_port_name(const String &p_text, Object *p_line_edit, int p_node, int p_port);
 
 	void _expression_focus_out(Object *code_edit, int p_node);
 
