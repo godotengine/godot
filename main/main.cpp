@@ -81,8 +81,8 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "editor/doc_data.h"
 #include "editor/doc_data_class_path.gen.h"
+#include "editor/doc_tools.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/progress_dialog.h"
@@ -1914,10 +1914,10 @@ bool Main::start() {
 		GLOBAL_DEF("mono/project/auto_update_project", true);
 #endif
 
-		DocData doc;
+		DocTools doc;
 		doc.generate(doc_base);
 
-		DocData docsrc;
+		DocTools docsrc;
 		Map<String, String> doc_data_classes;
 		Set<String> checked_paths;
 		print_line("Loading docs...");
@@ -1957,7 +1957,7 @@ bool Main::start() {
 		doc.merge_from(docsrc);
 		for (Set<String>::Element *E = checked_paths.front(); E; E = E->next()) {
 			print_line("Erasing old docs at: " + E->get());
-			DocData::erase_classes(E->get());
+			DocTools::erase_classes(E->get());
 		}
 
 		print_line("Generating new docs...");

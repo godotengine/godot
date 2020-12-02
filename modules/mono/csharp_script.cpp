@@ -2984,7 +2984,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 		p_script->tool = nesting_class && nesting_class->has_attribute(CACHED_CLASS(ToolAttribute));
 	}
 
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 	if (!p_script->tool) {
 		p_script->tool = p_script->script_class->get_assembly() == GDMono::get_singleton()->get_tools_assembly();
 	}

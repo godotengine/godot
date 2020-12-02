@@ -32,6 +32,8 @@
 #define PLUGINSCRIPT_SCRIPT_H
 
 // Godot imports
+
+#include "core/doc_data.h"
 #include "core/object/script_language.h"
 // PluginScript imports
 #include "pluginscript_language.h"
@@ -96,6 +98,13 @@ public:
 	virtual Error reload(bool p_keep_state = false) override;
 	// TODO: load_source_code only allow utf-8 file, should handle bytecode as well ?
 	virtual Error load_source_code(const String &p_path);
+
+#ifdef TOOLS_ENABLED
+	virtual const Vector<DocData::ClassDoc> &get_documentation() const override {
+		static Vector<DocData::ClassDoc> docs;
+		return docs;
+	}
+#endif // TOOLS_ENABLED
 
 	virtual bool has_method(const StringName &p_method) const override;
 	virtual MethodInfo get_method_info(const StringName &p_method) const override;

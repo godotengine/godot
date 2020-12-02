@@ -1883,6 +1883,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		codegen.generator->set_initial_line(p_func->start_line);
 #ifdef TOOLS_ENABLED
 		p_script->member_lines[func_name] = p_func->start_line;
+		p_script->doc_functions[func_name] = p_func->doc_description;
 #endif
 	} else {
 		codegen.generator->set_initial_line(0);
@@ -1894,6 +1895,21 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		p_script->initializer = gd_function;
 	} else if (is_implicit_initializer) {
 		p_script->implicit_initializer = gd_function;
+	}
+
+	if (p_func) {
+		// if no return statement -> return type is void not unresolved Variant
+		if (p_func->body->has_return) {
+			gd_function->return_type = _gdtype_from_datatype(p_func->get_datatype());
+		} else {
+			gd_function->return_type = GDScriptDataType();
+			gd_function->return_type.has_type = true;
+			gd_function->return_type.kind = GDScriptDataType::BUILTIN;
+			gd_function->return_type.builtin_type = Variant::NIL;
+		}
+#ifdef TOOLS_ENABLED
+		gd_function->default_arg_values = p_func->default_arg_values;
+#endif
 	}
 
 	p_script->member_functions[func_name] = gd_function;
@@ -1992,6 +2008,24 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 			}
 		}
 	}
+
+#ifdef TOOLS_ENABLED
+	p_script->doc_functions.clear();
+	p_script->doc_variables.clear();
+	p_script->doc_constants.clear();
+	p_script->doc_enums.clear();
+	p_script->doc_signals.clear();
+	p_script->doc_tutorials.clear();
+
+	p_script->doc_brief_description = p_class->doc_brief_description;
+	p_script->doc_description = p_class->doc_description;
+	for (int i = 0; i < p_class->doc_tutorials.size(); i++) {
+		DocData::TutorialDoc td;
+		td.title = p_class->doc_tutorials[i].first;
+		td.link = p_class->doc_tutorials[i].second;
+		p_script->doc_tutorials.append(td);
+	}
+#endif
 
 	p_script->native = Ref<GDScriptNativeClass>();
 	p_script->base = Ref<GDScript>();
@@ -2105,20 +2139,23 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 					prop_info.hint = export_info.hint;
 					prop_info.hint_string = export_info.hint_string;
 					prop_info.usage = export_info.usage;
-#ifdef TOOLS_ENABLED
-					if (variable->initializer != nullptr && variable->initializer->type == GDScriptParser::Node::LITERAL) {
-						p_script->member_default_values[name] = static_cast<const GDScriptParser::LiteralNode *>(variable->initializer)->value;
-					}
-#endif
 				} else {
 					prop_info.usage = PROPERTY_USAGE_SCRIPT_VARIABLE;
 				}
+#ifdef TOOLS_ENABLED
+				p_script->doc_variables[name] = variable->doc_description;
+#endif
 
 				p_script->member_info[name] = prop_info;
 				p_script->member_indices[name] = minfo;
 				p_script->members.insert(name);
 
 #ifdef TOOLS_ENABLED
+				if (variable->initializer != nullptr && variable->initializer->is_constant) {
+					p_script->member_default_values[name] = variable->initializer->reduced_value;
+				} else {
+					p_script->member_default_values.erase(name);
+				}
 				p_script->member_lines[name] = variable->start_line;
 #endif
 			} break;
@@ -2129,8 +2166,10 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 
 				p_script->constants.insert(name, constant->initializer->reduced_value);
 #ifdef TOOLS_ENABLED
-
 				p_script->member_lines[name] = constant->start_line;
+				if (constant->doc_description != String()) {
+					p_script->doc_constants[name] = constant->doc_description;
+				}
 #endif
 			} break;
 
@@ -2141,6 +2180,15 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 				p_script->constants.insert(name, enum_value.value);
 #ifdef TOOLS_ENABLED
 				p_script->member_lines[name] = enum_value.identifier->start_line;
+				if (!p_script->doc_enums.has("@unnamed_enums")) {
+					p_script->doc_enums["@unnamed_enums"] = DocData::EnumDoc();
+					p_script->doc_enums["@unnamed_enums"].name = "@unnamed_enums";
+				}
+				DocData::ConstantDoc const_doc;
+				const_doc.name = enum_value.identifier->name;
+				const_doc.value = Variant(enum_value.value).operator String(); // TODO-DOC: enum value currently is int.
+				const_doc.description = enum_value.doc_description;
+				p_script->doc_enums["@unnamed_enums"].values.push_back(const_doc);
 #endif
 			} break;
 
@@ -2176,6 +2224,11 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 					parameters_names.write[j] = signal->parameters[j]->identifier->name;
 				}
 				p_script->_signals[name] = parameters_names;
+#ifdef TOOLS_ENABLED
+				if (!signal->doc_description.empty()) {
+					p_script->doc_signals[name] = signal->doc_description;
+				}
+#endif
 			} break;
 
 			case GDScriptParser::ClassNode::Member::ENUM: {
@@ -2192,6 +2245,16 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 				p_script->constants.insert(enum_n->identifier->name, new_enum);
 #ifdef TOOLS_ENABLED
 				p_script->member_lines[enum_n->identifier->name] = enum_n->start_line;
+				p_script->doc_enums[enum_n->identifier->name] = DocData::EnumDoc();
+				p_script->doc_enums[enum_n->identifier->name].name = enum_n->identifier->name;
+				p_script->doc_enums[enum_n->identifier->name].description = enum_n->doc_description;
+				for (int j = 0; j < enum_n->values.size(); j++) {
+					DocData::ConstantDoc const_doc;
+					const_doc.name = enum_n->values[j].identifier->name;
+					const_doc.value = Variant(enum_n->values[j].value).operator String();
+					const_doc.description = enum_n->values[j].doc_description;
+					p_script->doc_enums[enum_n->identifier->name].values.push_back(const_doc);
+				}
 #endif
 			} break;
 			default:

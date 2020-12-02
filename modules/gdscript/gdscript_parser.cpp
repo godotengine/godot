@@ -558,6 +558,17 @@ void GDScriptParser::parse_program() {
 
 	parse_class_body();
 
+#ifdef TOOLS_ENABLED
+	for (Map<int, GDScriptTokenizer::CommentData>::Element *E = tokenizer.get_comments().front(); E; E = E->next()) {
+		if (E->get().new_line && E->get().comment.begins_with("##")) {
+			class_doc_line = MIN(class_doc_line, E->key());
+		}
+	}
+	if (has_comment(class_doc_line)) {
+		get_class_doc_comment(class_doc_line, head->doc_brief_description, head->doc_description, head->doc_tutorials, false);
+	}
+#endif // TOOLS_ENABLED
+
 	if (!check(GDScriptTokenizer::Token::TK_EOF)) {
 		push_error("Expected end of file.");
 	}
@@ -668,6 +679,10 @@ void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)()
 	if (member == nullptr) {
 		return;
 	}
+#ifdef TOOLS_ENABLED
+	int doc_comment_line = member->start_line - 1;
+#endif // TOOLS_ENABLED
+
 	// Consume annotations.
 	while (!annotation_stack.empty()) {
 		AnnotationNode *last_annotation = annotation_stack.back()->get();
@@ -680,7 +695,25 @@ void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)()
 			clear_unused_annotations();
 			return;
 		}
+#ifdef TOOLS_ENABLED
+		if (last_annotation->start_line == doc_comment_line) {
+			doc_comment_line--;
+		}
+#endif // TOOLS_ENABLED
 	}
+
+#ifdef TOOLS_ENABLED
+	// Consume doc comments.
+	class_doc_line = MIN(class_doc_line, doc_comment_line - 1);
+	if (has_comment(doc_comment_line)) {
+		if constexpr (std::is_same_v<T, ClassNode>) {
+			get_class_doc_comment(doc_comment_line, member->doc_brief_description, member->doc_description, member->doc_tutorials, true);
+		} else {
+			member->doc_description = get_doc_comment(doc_comment_line);
+		}
+	}
+#endif // TOOLS_ENABLED
+
 	if (member->identifier != nullptr) {
 		// Enums may be unnamed.
 		// TODO: Consider names in outer scope too, for constants and classes (and static functions?)
@@ -1050,6 +1083,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 			item.parent_enum = enum_node;
 			item.line = previous.start_line;
 			item.leftmost_column = previous.leftmost_column;
+			item.rightmost_column = previous.rightmost_column;
 
 			if (elements.has(item.identifier->name)) {
 				push_error(vformat(R"(Name "%s" was already in this enum (at line %d).)", item.identifier->name, elements[item.identifier->name]), item.identifier);
@@ -1087,6 +1121,31 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected closing "}" for enum.)");
+
+#ifdef TOOLS_ENABLED
+	// Enum values documentaion.
+	for (int i = 0; i < enum_node->values.size(); i++) {
+		if (i == enum_node->values.size() - 1) {
+			// If close bracket is same line as last value.
+			if (enum_node->values[i].line != previous.start_line && has_comment(enum_node->values[i].line)) {
+				if (named) {
+					enum_node->values.write[i].doc_description = get_doc_comment(enum_node->values[i].line, true);
+				} else {
+					current_class->set_enum_value_doc(enum_node->values[i].identifier->name, get_doc_comment(enum_node->values[i].line, true));
+				}
+			}
+		} else {
+			// If two values are same line.
+			if (enum_node->values[i].line != enum_node->values[i + 1].line && has_comment(enum_node->values[i].line)) {
+				if (named) {
+					enum_node->values.write[i].doc_description = get_doc_comment(enum_node->values[i].line, true);
+				} else {
+					current_class->set_enum_value_doc(enum_node->values[i].identifier->name, get_doc_comment(enum_node->values[i].line, true));
+				}
+			}
+		}
+	}
+#endif // TOOLS_ENABLED
 
 	end_statement("enum");
 
@@ -2623,6 +2682,218 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 
 	return type;
 }
+
+#ifdef TOOLS_ENABLED
+static bool _in_codeblock(String p_line, bool p_already_in, int *r_block_begins = nullptr) {
+	int start_block = p_line.rfind("[codeblock]");
+	int end_block = p_line.rfind("[/codeblock]");
+
+	if (start_block != -1 && r_block_begins) {
+		*r_block_begins = start_block;
+	}
+
+	if (p_already_in) {
+		if (end_block == -1) {
+			return true;
+		} else if (start_block == -1) {
+			return false;
+		} else {
+			return start_block > end_block;
+		}
+	} else {
+		if (start_block == -1) {
+			return false;
+		} else if (end_block == -1) {
+			return true;
+		} else {
+			return start_block > end_block;
+		}
+	}
+}
+
+bool GDScriptParser::has_comment(int p_line) {
+	return tokenizer.get_comments().has(p_line);
+}
+
+String GDScriptParser::get_doc_comment(int p_line, bool p_single_line) {
+	const Map<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
+	ERR_FAIL_COND_V(!comments.has(p_line), String());
+
+	if (p_single_line) {
+		if (comments[p_line].comment.begins_with("##")) {
+			return comments[p_line].comment.trim_prefix("##").strip_edges();
+		}
+		return "";
+	}
+
+	String doc;
+
+	int line = p_line;
+	bool in_codeblock = false;
+
+	while (comments.has(line - 1)) {
+		if (!comments[line - 1].new_line || !comments[line - 1].comment.begins_with("##")) {
+			break;
+		}
+		line--;
+	}
+
+	int codeblock_begins = 0;
+	while (comments.has(line)) {
+		if (!comments[line].new_line || !comments[line].comment.begins_with("##")) {
+			break;
+		}
+		String doc_line = comments[line].comment.trim_prefix("##");
+
+		in_codeblock = _in_codeblock(doc_line, in_codeblock, &codeblock_begins);
+
+		if (in_codeblock) {
+			int i = 0;
+			for (; i < codeblock_begins; i++) {
+				if (doc_line[i] != ' ') {
+					break;
+				}
+			}
+			doc_line = doc_line.substr(i);
+		} else {
+			doc_line = doc_line.strip_edges();
+		}
+		String line_join = (in_codeblock) ? "\n" : " ";
+
+		doc = (doc.empty()) ? doc_line : doc + line_join + doc_line;
+		line++;
+	}
+
+	return doc;
+}
+
+void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &p_desc, Vector<Pair<String, String>> &p_tutorials, bool p_inner_class) {
+	const Map<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
+	if (!comments.has(p_line)) {
+		return;
+	}
+	ERR_FAIL_COND(p_brief != "" || p_desc != "" || p_tutorials.size() != 0);
+
+	int line = p_line;
+	bool in_codeblock = false;
+	enum Mode {
+		BRIEF,
+		DESC,
+		TUTORIALS,
+		DONE,
+	};
+	Mode mode = BRIEF;
+
+	if (p_inner_class) {
+		while (comments.has(line - 1)) {
+			if (!comments[line - 1].new_line || !comments[line - 1].comment.begins_with("##")) {
+				break;
+			}
+			line--;
+		}
+	}
+
+	int codeblock_begins = 0;
+	while (comments.has(line)) {
+		if (!comments[line].new_line || !comments[line].comment.begins_with("##")) {
+			break;
+		}
+
+		String title, link; // For tutorials.
+		String doc_line = comments[line++].comment.trim_prefix("##");
+		String striped_line = doc_line.strip_edges();
+
+		// Set the read mode.
+		if (striped_line.begins_with("@desc:") && p_desc == "") {
+			mode = DESC;
+			striped_line = striped_line.trim_prefix("@desc:");
+			in_codeblock = _in_codeblock(doc_line, in_codeblock);
+
+		} else if (striped_line.begins_with("@tutorial")) {
+			int begin_scan = String("@tutorial").length();
+			if (begin_scan >= striped_line.length()) {
+				continue; // invalid syntax.
+			}
+
+			if (striped_line[begin_scan] == ':') { // No title.
+				// Syntax: ## @tutorial: https://godotengine.org/ // The title argument is optional.
+				title = "";
+				link = striped_line.trim_prefix("@tutorial:").strip_edges();
+
+			} else {
+				/* Syntax:
+				   @tutorial ( The Title Here )         :         http://the.url/
+				             ^ open           ^ close   ^ colon   ^ url
+				*/
+				int open_bracket_pos = begin_scan, close_bracket_pos = 0;
+				while (open_bracket_pos < striped_line.length() && (striped_line[open_bracket_pos] == ' ' || striped_line[open_bracket_pos] == '\t')) {
+					open_bracket_pos++;
+				}
+				if (open_bracket_pos == striped_line.length() || striped_line[open_bracket_pos++] != '(') {
+					continue; // invalid syntax.
+				}
+				close_bracket_pos = open_bracket_pos;
+				while (close_bracket_pos < striped_line.length() && striped_line[close_bracket_pos] != ')') {
+					close_bracket_pos++;
+				}
+				if (close_bracket_pos == striped_line.length()) {
+					continue; // invalid syntax.
+				}
+
+				int colon_pos = close_bracket_pos + 1;
+				while (colon_pos < striped_line.length() && (striped_line[colon_pos] == ' ' || striped_line[colon_pos] == '\t')) {
+					colon_pos++;
+				}
+				if (colon_pos == striped_line.length() || striped_line[colon_pos++] != ':') {
+					continue; // invalid syntax.
+				}
+
+				title = striped_line.substr(open_bracket_pos, close_bracket_pos - open_bracket_pos).strip_edges();
+				link = striped_line.substr(colon_pos).strip_edges();
+			}
+
+			mode = TUTORIALS;
+			in_codeblock = false;
+		} else if (striped_line.empty()) {
+			continue;
+		} else {
+			// Tutorial docs are single line, we need a @tag after it.
+			if (mode == TUTORIALS) {
+				mode = DONE;
+			}
+
+			in_codeblock = _in_codeblock(doc_line, in_codeblock, &codeblock_begins);
+		}
+
+		if (in_codeblock) {
+			int i = 0;
+			for (; i < codeblock_begins; i++) {
+				if (doc_line[i] != ' ') {
+					break;
+				}
+			}
+			doc_line = doc_line.substr(i);
+		} else {
+			doc_line = striped_line;
+		}
+		String line_join = (in_codeblock) ? "\n" : " ";
+
+		switch (mode) {
+			case BRIEF:
+				p_brief = (p_brief.length() == 0) ? doc_line : p_brief + line_join + doc_line;
+				break;
+			case DESC:
+				p_desc = (p_desc.length() == 0) ? doc_line : p_desc + line_join + doc_line;
+				break;
+			case TUTORIALS:
+				p_tutorials.append(Pair<String, String>(title, link));
+				break;
+			case DONE:
+				return;
+		}
+	}
+}
+#endif // TOOLS_ENABLED
 
 GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Type p_token_type) {
 	// Function table for expression parsing.

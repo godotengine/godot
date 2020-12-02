@@ -413,9 +413,16 @@ public:
 			int line = 0;
 			int leftmost_column = 0;
 			int rightmost_column = 0;
+#ifdef TOOLS_ENABLED
+			String doc_description;
+#endif // TOOLS_ENABLED
 		};
+
 		IdentifierNode *identifier = nullptr;
 		Vector<Value> values;
+#ifdef TOOLS_ENABLED
+		String doc_description;
+#endif // TOOLS_ENABLED
 
 		EnumNode() {
 			type = ENUM;
@@ -568,6 +575,17 @@ public:
 		Vector<StringName> extends; // List for indexing: extends A.B.C
 		DataType base_type;
 		String fqcn; // Fully-qualified class name. Identifies uniquely any class in the project.
+#ifdef TOOLS_ENABLED
+		String doc_description;
+		String doc_brief_description;
+		Vector<Pair<String, String>> doc_tutorials;
+
+		// EnumValue docs are parsed after itself, so we need a method to add/modify the doc property later.
+		void set_enum_value_doc(const StringName &p_name, const String &p_doc_description) {
+			ERR_FAIL_INDEX(members_indices[p_name], members.size());
+			members.write[members_indices[p_name]].enum_value.doc_description = p_doc_description;
+		}
+#endif // TOOLS_ENABLED
 
 		bool resolved_interface = false;
 		bool resolved_body = false;
@@ -602,6 +620,9 @@ public:
 		TypeNode *datatype_specifier = nullptr;
 		bool infer_datatype = false;
 		int usages = 0;
+#ifdef TOOLS_ENABLED
+		String doc_description;
+#endif // TOOLS_ENABLED
 
 		ConstantNode() {
 			type = CONSTANT;
@@ -653,6 +674,10 @@ public:
 		bool is_coroutine = false;
 		MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 		MethodInfo info;
+#ifdef TOOLS_ENABLED
+		Vector<Variant> default_arg_values;
+		String doc_description;
+#endif // TOOLS_ENABLED
 
 		bool resolved_signature = false;
 		bool resolved_body = false;
@@ -820,6 +845,9 @@ public:
 		IdentifierNode *identifier = nullptr;
 		Vector<ParameterNode *> parameters;
 		HashMap<StringName, int> parameters_indices;
+#ifdef TOOLS_ENABLED
+		String doc_description;
+#endif // TOOLS_ENABLED
 
 		SignalNode() {
 			type = SIGNAL;
@@ -1012,6 +1040,9 @@ public:
 		MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 		int assignments = 0;
 		int usages = 0;
+#ifdef TOOLS_ENABLED
+		String doc_description;
+#endif // TOOLS_ENABLED
 
 		VariableNode() {
 			type = VARIABLE;
@@ -1270,6 +1301,13 @@ private:
 	ExpressionNode *parse_subscript(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_invalid_token(ExpressionNode *p_previous_operand, bool p_can_assign);
 	TypeNode *parse_type(bool p_allow_void = false);
+#ifdef TOOLS_ENABLED
+	// Doc comments.
+	int class_doc_line = 0x7FFFFFFF;
+	bool has_comment(int p_line);
+	String get_doc_comment(int p_line, bool p_single_line = false);
+	void get_class_doc_comment(int p_line, String &p_brief, String &p_desc, Vector<Pair<String, String>> &p_tutorials, bool p_inner_class);
+#endif // TOOLS_ENABLED
 
 public:
 	Error parse(const String &p_source_code, const String &p_script_path, bool p_for_completion);

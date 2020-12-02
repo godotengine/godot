@@ -31,9 +31,9 @@
 #ifndef GODOT_LSP_H
 #define GODOT_LSP_H
 
+#include "core/doc_data.h"
 #include "core/object/class_db.h"
 #include "core/templates/list.h"
-#include "editor/doc_data.h"
 
 namespace lsp {
 

@@ -31,6 +31,7 @@
 #ifndef SCRIPT_LANGUAGE_H
 #define SCRIPT_LANGUAGE_H
 
+#include "core/doc_data.h"
 #include "core/io/multiplayer_api.h"
 #include "core/io/resource.h"
 #include "core/templates/map.h"
@@ -144,6 +145,10 @@ public:
 	virtual String get_source_code() const = 0;
 	virtual void set_source_code(const String &p_code) = 0;
 	virtual Error reload(bool p_keep_state = false) = 0;
+
+#ifdef TOOLS_ENABLED
+	virtual const Vector<DocData::ClassDoc> &get_documentation() const = 0;
+#endif // TOOLS_ENABLED
 
 	virtual bool has_method(const StringName &p_method) const = 0;
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
@@ -310,6 +315,7 @@ public:
 	virtual Script *create_script() const = 0;
 	virtual bool has_named_classes() const = 0;
 	virtual bool supports_builtin_mode() const = 0;
+	virtual bool supports_documentation() const { return false; }
 	virtual bool can_inherit_from_file() { return false; }
 	virtual int find_function(const String &p_function, const String &p_code) const = 0;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const = 0;

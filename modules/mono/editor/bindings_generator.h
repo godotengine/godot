@@ -31,9 +31,10 @@
 #ifndef BINDINGS_GENERATOR_H
 #define BINDINGS_GENERATOR_H
 
+#include "core/doc_data.h"
 #include "core/object/class_db.h"
 #include "core/string/string_builder.h"
-#include "editor/doc_data.h"
+#include "editor/doc_tools.h"
 #include "editor/editor_help.h"
 
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)

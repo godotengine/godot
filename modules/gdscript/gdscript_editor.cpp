@@ -193,6 +193,10 @@ bool GDScriptLanguage::supports_builtin_mode() const {
 	return true;
 }
 
+bool GDScriptLanguage::supports_documentation() const {
+	return true;
+}
+
 int GDScriptLanguage::find_function(const String &p_function, const String &p_code) const {
 	GDScriptTokenizer tokenizer;
 	tokenizer.set_source_code(p_code);

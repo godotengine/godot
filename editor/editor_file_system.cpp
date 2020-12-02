@@ -799,6 +799,20 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 			}
 		}
 
+		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+			ScriptLanguage *lang = ScriptServer::get_language(i);
+			if (lang->supports_documentation() && fi->type == lang->get_type()) {
+				Ref<Script> script = ResourceLoader::load(path);
+				if (script == nullptr) {
+					continue;
+				}
+				const Vector<DocData::ClassDoc> &docs = script->get_documentation();
+				for (int j = 0; j < docs.size(); j++) {
+					EditorHelp::get_doc_data()->add_doc(docs[j]);
+				}
+			}
+		}
+
 		p_dir->files.push_back(fi);
 		p_progress.update(idx, total);
 	}

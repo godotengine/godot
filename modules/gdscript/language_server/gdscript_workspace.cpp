@@ -34,6 +34,7 @@
 #include "../gdscript_parser.h"
 #include "core/config/project_settings.h"
 #include "core/object/script_language.h"
+#include "editor/doc_tools.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
@@ -189,7 +190,7 @@ Error GDScriptWorkspace::initialize() {
 		return OK;
 	}
 
-	DocData *doc = EditorHelp::get_doc_data();
+	DocTools *doc = EditorHelp::get_doc_data();
 	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
 		const DocData::ClassDoc &class_data = E->value();
 		lsp::DocumentSymbol class_symbol;
