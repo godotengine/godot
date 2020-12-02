@@ -187,7 +187,7 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 		int total = 0;
 
 		while (todo && !ad->exit_thread) {
-			uint8_t *src = (uint8_t *)ad->samples_out.ptr();
+			int16_t *src = (int16_t *)ad->samples_out.ptr();
 			int wrote = snd_pcm_writei(ad->pcm_handle, (void *)(src + (total * ad->channels)), todo);
 
 			if (wrote > 0) {

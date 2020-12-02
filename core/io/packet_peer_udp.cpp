@@ -178,7 +178,6 @@ Error PacketPeerUDP::listen(int p_port, const IP_Address &p_bind_address, int p_
 		return ERR_CANT_CREATE;
 
 	_sock->set_blocking_enabled(false);
-	_sock->set_reuse_address_enabled(true);
 	_sock->set_broadcasting_enabled(broadcast);
 	err = _sock->bind(p_bind_address, p_port);
 

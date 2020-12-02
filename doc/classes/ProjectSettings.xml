@@ -76,7 +76,21 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Converts a localized path ([code]res://[/code]) to a full native OS path.
+				Returns the absolute, native OS path corresponding to the localized [code]path[/code] (starting with [code]res://[/code] or [code]user://[/code]). The returned path will vary depending on the operating system and user preferences. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] to see what those paths convert to. See also [method localize_path].
+				[b]Note:[/b] [method globalize_path] with [code]res://[/code] will not work in an exported project. Instead, prepend the executable's base directory to the path when running from an exported project:
+				[codeblock]
+				var path = ""
+				if OS.has_feature("editor"):
+				    # Running from an editor binary.
+				    # `path` will contain the absolute path to `hello.txt` located in the project root.
+				    path = ProjectSettings.globalize_path("res://hello.txt")
+				else:
+				    # Running from an exported project.
+				    # `path` will contain the absolute path to `hello.txt` next to the executable.
+				    # This is *not* identical to using `ProjectSettings.globalize_path()` with a `res://` path,
+				    # but is close enough in spirit.
+				    path = OS.get_executable_path().get_base_dir().plus_file("hello.txt")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="has_setting" qualifiers="const">
@@ -109,7 +123,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Convert a path to a localized path ([code]res://[/code] path).
+				Returns the localized path (starting with [code]res://[/code]) corresponding to the absolute, native OS [code]path[/code]. See also [method globalize_path].
 			</description>
 		</method>
 		<method name="property_can_revert">
