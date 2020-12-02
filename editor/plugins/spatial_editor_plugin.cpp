@@ -63,12 +63,11 @@
 #define GIZMO_SCALE_OFFSET (GIZMO_CIRCLE_SIZE + 0.3)
 #define GIZMO_ARROW_OFFSET (GIZMO_CIRCLE_SIZE + 0.3)
 
-#define ZOOM_MIN_DISTANCE 0.001
-#define ZOOM_MULTIPLIER 1.08
-#define ZOOM_INDICATOR_DELAY_S 1.5
+#define ZOOM_FREELOOK_MIN 0.01
+#define ZOOM_FREELOOK_MULTIPLIER 1.08
+#define ZOOM_FREELOOK_INDICATOR_DELAY_S 1.5
 
-#define FREELOOK_MIN_SPEED 0.01
-#define FREELOOK_SPEED_MULTIPLIER 1.08
+#define ZOOM_FREELOOK_MAX 10'000
 
 #define MIN_Z 0.01
 #define MAX_Z 1000000.0
@@ -1099,9 +1098,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	if (b.is_valid()) {
 		emit_signal("clicked", this);
 
-		float zoom_factor = 1 + (ZOOM_MULTIPLIER - 1) * b->get_factor();
+		float zoom_factor = 1 + (ZOOM_FREELOOK_MULTIPLIER - 1) * b->get_factor();
 		switch (b->get_button_index()) {
-
 			case BUTTON_WHEEL_UP: {
 				if (is_freelook_active())
 					scale_freelook_speed(zoom_factor);
@@ -2216,32 +2214,28 @@ void SpatialEditorViewport::set_freelook_active(bool active_now) {
 }
 
 void SpatialEditorViewport::scale_cursor_distance(real_t scale) {
+	real_t min_distance = MAX(camera->get_znear() * 4, ZOOM_FREELOOK_MIN);
+	real_t max_distance = MIN(camera->get_zfar() / 4, ZOOM_FREELOOK_MAX);
+	if (unlikely(min_distance > max_distance)) {
+		cursor.distance = (min_distance + max_distance) / 2;
+	} else {
+		cursor.distance = CLAMP(cursor.distance * scale, min_distance, max_distance);
+	}
 
-	// Prevents zero distance which would short-circuit any scaling
-	if (cursor.distance < ZOOM_MIN_DISTANCE)
-		cursor.distance = ZOOM_MIN_DISTANCE;
-
-	cursor.distance *= scale;
-
-	if (cursor.distance < ZOOM_MIN_DISTANCE)
-		cursor.distance = ZOOM_MIN_DISTANCE;
-
-	zoom_indicator_delay = ZOOM_INDICATOR_DELAY_S;
+	zoom_indicator_delay = ZOOM_FREELOOK_INDICATOR_DELAY_S;
 	surface->update();
 }
 
 void SpatialEditorViewport::scale_freelook_speed(real_t scale) {
+	real_t min_speed = MAX(camera->get_znear() * 4, ZOOM_FREELOOK_MIN);
+	real_t max_speed = MIN(camera->get_zfar() / 4, ZOOM_FREELOOK_MAX);
+	if (unlikely(min_speed > max_speed)) {
+		freelook_speed = (min_speed + max_speed) / 2;
+	} else {
+		freelook_speed = CLAMP(freelook_speed * scale, min_speed, max_speed);
+	}
 
-	// Prevents zero distance which would short-circuit any scaling
-	if (freelook_speed < FREELOOK_MIN_SPEED)
-		freelook_speed = FREELOOK_MIN_SPEED;
-
-	freelook_speed *= scale;
-
-	if (freelook_speed < FREELOOK_MIN_SPEED)
-		freelook_speed = FREELOOK_MIN_SPEED;
-
-	zoom_indicator_delay = ZOOM_INDICATOR_DELAY_S;
+	zoom_indicator_delay = ZOOM_FREELOOK_INDICATOR_DELAY_S;
 	surface->update();
 }
 
@@ -2694,17 +2688,12 @@ void SpatialEditorViewport::_draw() {
 			if (is_freelook_active()) {
 				// Show speed
 
-				real_t min_speed = FREELOOK_MIN_SPEED;
-				real_t max_speed = camera->get_zfar();
+				real_t min_speed = MAX(camera->get_znear() * 4, ZOOM_FREELOOK_MIN);
+				real_t max_speed = MIN(camera->get_zfar() / 4, ZOOM_FREELOOK_MAX);
 				real_t scale_length = (max_speed - min_speed);
 
 				if (!Math::is_zero_approx(scale_length)) {
 					real_t logscale_t = 1.0 - Math::log(1 + freelook_speed - min_speed) / Math::log(1 + scale_length);
-
-					// There is no real maximum speed so that factor can become negative,
-					// Let's make it look asymptotic instead (will decrease slower and slower).
-					if (logscale_t < 0.25)
-						logscale_t = 0.25 * Math::exp(4.0 * logscale_t - 1.0);
 
 					// Display the freelook speed to help the user get a better sense of scale.
 					const int precision = freelook_speed < 1.0 ? 2 : 1;
@@ -2719,17 +2708,12 @@ void SpatialEditorViewport::_draw() {
 			} else {
 				// Show zoom
 
-				real_t min_distance = ZOOM_MIN_DISTANCE; // TODO Why not pick znear to limit zoom?
-				real_t max_distance = camera->get_zfar();
+				real_t min_distance = MAX(camera->get_znear() * 4, ZOOM_FREELOOK_MIN);
+				real_t max_distance = MIN(camera->get_zfar() / 4, ZOOM_FREELOOK_MAX);
 				real_t scale_length = (max_distance - min_distance);
 
 				if (!Math::is_zero_approx(scale_length)) {
 					real_t logscale_t = 1.0 - Math::log(1 + cursor.distance - min_distance) / Math::log(1 + scale_length);
-
-					// There is no real maximum distance so that factor can become negative,
-					// Let's make it look asymptotic instead (will decrease slower and slower).
-					if (logscale_t < 0.25)
-						logscale_t = 0.25 * Math::exp(4.0 * logscale_t - 1.0);
 
 					// Display the zoom center distance to help the user get a better sense of scale.
 					const int precision = cursor.distance < 1.0 ? 2 : 1;

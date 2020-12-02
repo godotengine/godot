@@ -145,7 +145,7 @@
 			<argument index="1" name="cubic" type="bool" default="false">
 			</argument>
 			<description>
-				Returns a point within the curve at position [code]offset[/code], where [code]offset[/code] is measured as a pixel distance along the curve.
+				Returns a point within the curve at position [code]offset[/code], where [code]offset[/code] is measured as a distance in 3D units along the curve.
 				To do that, it finds the two cached points where the [code]offset[/code] lies between, then interpolates the values. This interpolation is cubic if [code]cubic[/code] is set to [code]true[/code], or linear if set to [code]false[/code].
 				Cubic interpolation tends to follow the curves better, but linear is faster (and often, precise enough).
 			</description>
