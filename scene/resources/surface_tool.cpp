@@ -74,6 +74,12 @@ bool SurfaceTool::Vertex::operator==(const Vertex &p_vertex) const {
 		}
 	}
 
+	for (int i = 0; i < RS::ARRAY_CUSTOM_MAX; i++) {
+		if (custom[i] != p_vertex.custom[i]) {
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -87,6 +93,7 @@ uint32_t SurfaceTool::VertexHasher::hash(const Vertex &p_vtx) {
 	h = hash_djb2_buffer((const uint8_t *)&p_vtx.color, sizeof(real_t) * 4, h);
 	h = hash_djb2_buffer((const uint8_t *)p_vtx.bones.ptr(), p_vtx.bones.size() * sizeof(int), h);
 	h = hash_djb2_buffer((const uint8_t *)p_vtx.weights.ptr(), p_vtx.weights.size() * sizeof(float), h);
+	h = hash_djb2_buffer((const uint8_t *)&p_vtx.custom[0], sizeof(Color) * RS::ARRAY_CUSTOM_COUNT, h);
 	return h;
 }
 
@@ -111,8 +118,11 @@ void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 	vtx.bones = last_bones;
 	vtx.tangent = last_tangent.normal;
 	vtx.binormal = last_normal.cross(last_tangent.normal).normalized() * last_tangent.d;
+	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
+		vtx.custom[i] = last_custom[i];
+	}
 
-	const int expected_vertices = 4;
+	const int expected_vertices = skin_weights == SKIN_8_WEIGHTS ? 8 : 4;
 
 	if ((format & Mesh::ARRAY_FORMAT_WEIGHTS || format & Mesh::ARRAY_FORMAT_BONES) && (vtx.weights.size() != expected_vertices || vtx.bones.size() != expected_vertices)) {
 		//ensure vertices are the expected amount
@@ -163,7 +173,7 @@ void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 	format |= Mesh::ARRAY_FORMAT_VERTEX;
 }
 
-void SurfaceTool::add_color(Color p_color) {
+void SurfaceTool::set_color(Color p_color) {
 	ERR_FAIL_COND(!begun);
 
 	ERR_FAIL_COND(!first && !(format & Mesh::ARRAY_FORMAT_COLOR));
@@ -172,7 +182,7 @@ void SurfaceTool::add_color(Color p_color) {
 	last_color = p_color;
 }
 
-void SurfaceTool::add_normal(const Vector3 &p_normal) {
+void SurfaceTool::set_normal(const Vector3 &p_normal) {
 	ERR_FAIL_COND(!begun);
 
 	ERR_FAIL_COND(!first && !(format & Mesh::ARRAY_FORMAT_NORMAL));
@@ -181,7 +191,7 @@ void SurfaceTool::add_normal(const Vector3 &p_normal) {
 	last_normal = p_normal;
 }
 
-void SurfaceTool::add_tangent(const Plane &p_tangent) {
+void SurfaceTool::set_tangent(const Plane &p_tangent) {
 	ERR_FAIL_COND(!begun);
 	ERR_FAIL_COND(!first && !(format & Mesh::ARRAY_FORMAT_TANGENT));
 
@@ -189,7 +199,7 @@ void SurfaceTool::add_tangent(const Plane &p_tangent) {
 	last_tangent = p_tangent;
 }
 
-void SurfaceTool::add_uv(const Vector2 &p_uv) {
+void SurfaceTool::set_uv(const Vector2 &p_uv) {
 	ERR_FAIL_COND(!begun);
 	ERR_FAIL_COND(!first && !(format & Mesh::ARRAY_FORMAT_TEX_UV));
 
@@ -197,7 +207,7 @@ void SurfaceTool::add_uv(const Vector2 &p_uv) {
 	last_uv = p_uv;
 }
 
-void SurfaceTool::add_uv2(const Vector2 &p_uv2) {
+void SurfaceTool::set_uv2(const Vector2 &p_uv2) {
 	ERR_FAIL_COND(!begun);
 	ERR_FAIL_COND(!first && !(format & Mesh::ARRAY_FORMAT_TEX_UV2));
 
@@ -205,19 +215,40 @@ void SurfaceTool::add_uv2(const Vector2 &p_uv2) {
 	last_uv2 = p_uv2;
 }
 
-void SurfaceTool::add_bones(const Vector<int> &p_bones) {
+void SurfaceTool::set_custom(int p_index, const Color &p_custom) {
+	ERR_FAIL_INDEX(p_index, RS::ARRAY_CUSTOM_COUNT);
+	ERR_FAIL_COND(!begun);
+	ERR_FAIL_COND(last_custom_format[p_index] == CUSTOM_MAX);
+	static const uint32_t mask[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0, Mesh::ARRAY_FORMAT_CUSTOM1, Mesh::ARRAY_FORMAT_CUSTOM2, Mesh::ARRAY_FORMAT_CUSTOM3 };
+	static const uint32_t shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
+	ERR_FAIL_COND(!first && !(format & mask[p_index]));
+
+	if (first) {
+		format |= mask[p_index];
+		format |= last_custom_format[p_index] << shift[p_index];
+	}
+	last_custom[p_index] = p_custom;
+}
+
+void SurfaceTool::set_bones(const Vector<int> &p_bones) {
 	ERR_FAIL_COND(!begun);
 	ERR_FAIL_COND(!first && !(format & Mesh::ARRAY_FORMAT_BONES));
 
 	format |= Mesh::ARRAY_FORMAT_BONES;
+	if (skin_weights == SKIN_8_WEIGHTS) {
+		format |= Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+	}
 	last_bones = p_bones;
 }
 
-void SurfaceTool::add_weights(const Vector<float> &p_weights) {
+void SurfaceTool::set_weights(const Vector<float> &p_weights) {
 	ERR_FAIL_COND(!begun);
 	ERR_FAIL_COND(!first && !(format & Mesh::ARRAY_FORMAT_WEIGHTS));
 
 	format |= Mesh::ARRAY_FORMAT_WEIGHTS;
+	if (skin_weights == SKIN_8_WEIGHTS) {
+		format |= Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+	}
 	last_weights = p_weights;
 }
 
@@ -238,15 +269,15 @@ void SurfaceTool::add_triangle_fan(const Vector<Vector3> &p_vertices, const Vect
 #define ADD_POINT(n)                    \
 	{                                   \
 		if (p_colors.size() > n)        \
-			add_color(p_colors[n]);     \
+			set_color(p_colors[n]);     \
 		if (p_uvs.size() > n)           \
-			add_uv(p_uvs[n]);           \
+			set_uv(p_uvs[n]);           \
 		if (p_uv2s.size() > n)          \
-			add_uv2(p_uv2s[n]);         \
+			set_uv2(p_uv2s[n]);         \
 		if (p_normals.size() > n)       \
-			add_normal(p_normals[n]);   \
+			set_normal(p_normals[n]);   \
 		if (p_tangents.size() > n)      \
-			add_tangent(p_tangents[n]); \
+			set_tangent(p_tangents[n]); \
 		add_vertex(p_vertices[n]);      \
 	}
 
@@ -358,18 +389,157 @@ Array SurfaceTool::commit_to_arrays() {
 
 				a[i] = array;
 			} break;
+			case Mesh::ARRAY_CUSTOM0:
+			case Mesh::ARRAY_CUSTOM1:
+			case Mesh::ARRAY_CUSTOM2:
+			case Mesh::ARRAY_CUSTOM3: {
+				int fmt = i - Mesh::ARRAY_CUSTOM0;
+				switch (last_custom_format[fmt]) {
+					case CUSTOM_RGBA8_UNORM: {
+						Vector<uint8_t> array;
+						array.resize(varr_len * 4);
+						uint8_t *w = array.ptrw();
+
+						int idx = 0;
+						for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx++) {
+							const Vertex &v = E->get();
+							const Color &c = v.custom[idx];
+							w[idx * 4 + 0] = CLAMP(int32_t(c.r * 255.0), 0, 255);
+							w[idx * 4 + 1] = CLAMP(int32_t(c.g * 255.0), 0, 255);
+							w[idx * 4 + 2] = CLAMP(int32_t(c.b * 255.0), 0, 255);
+							w[idx * 4 + 3] = CLAMP(int32_t(c.a * 255.0), 0, 255);
+						}
+
+						a[i] = array;
+					} break;
+					case CUSTOM_RGBA8_SNORM: {
+						Vector<uint8_t> array;
+						array.resize(varr_len * 4);
+						uint8_t *w = array.ptrw();
+
+						int idx = 0;
+						for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx++) {
+							const Vertex &v = E->get();
+							const Color &c = v.custom[idx];
+							w[idx * 4 + 0] = uint8_t(int8_t(CLAMP(int32_t(c.r * 127.0), -128, 127)));
+							w[idx * 4 + 1] = uint8_t(int8_t(CLAMP(int32_t(c.g * 127.0), -128, 127)));
+							w[idx * 4 + 2] = uint8_t(int8_t(CLAMP(int32_t(c.b * 127.0), -128, 127)));
+							w[idx * 4 + 3] = uint8_t(int8_t(CLAMP(int32_t(c.a * 127.0), -128, 127)));
+						}
+
+						a[i] = array;
+					} break;
+					case CUSTOM_RG_HALF: {
+						Vector<uint8_t> array;
+						array.resize(varr_len * 4);
+						uint16_t *w = (uint16_t *)array.ptrw();
+
+						int idx = 0;
+						for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx++) {
+							const Vertex &v = E->get();
+							const Color &c = v.custom[idx];
+							w[idx * 2 + 0] = Math::make_half_float(c.r);
+							w[idx * 2 + 1] = Math::make_half_float(c.g);
+						}
+
+						a[i] = array;
+					} break;
+					case CUSTOM_RGBA_HALF: {
+						Vector<uint8_t> array;
+						array.resize(varr_len * 8);
+						uint16_t *w = (uint16_t *)array.ptrw();
+
+						int idx = 0;
+						for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx++) {
+							const Vertex &v = E->get();
+							const Color &c = v.custom[idx];
+							w[idx * 4 + 0] = Math::make_half_float(c.r);
+							w[idx * 4 + 1] = Math::make_half_float(c.g);
+							w[idx * 4 + 2] = Math::make_half_float(c.b);
+							w[idx * 4 + 3] = Math::make_half_float(c.a);
+						}
+
+						a[i] = array;
+					} break;
+					case CUSTOM_R_FLOAT: {
+						Vector<float> array;
+						array.resize(varr_len);
+						float *w = (float *)array.ptrw();
+
+						int idx = 0;
+						for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx++) {
+							const Vertex &v = E->get();
+							const Color &c = v.custom[idx];
+							w[idx] = c.r;
+						}
+
+						a[i] = array;
+					} break;
+					case CUSTOM_RG_FLOAT: {
+						Vector<float> array;
+						array.resize(varr_len * 2);
+						float *w = (float *)array.ptrw();
+
+						int idx = 0;
+						for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx++) {
+							const Vertex &v = E->get();
+							const Color &c = v.custom[idx];
+							w[idx * 2 + 0] = c.r;
+							w[idx * 2 + 1] = c.g;
+						}
+
+						a[i] = array;
+					} break;
+					case CUSTOM_RGB_FLOAT: {
+						Vector<float> array;
+						array.resize(varr_len * 3);
+						float *w = (float *)array.ptrw();
+
+						int idx = 0;
+						for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx++) {
+							const Vertex &v = E->get();
+							const Color &c = v.custom[idx];
+							w[idx * 3 + 0] = c.r;
+							w[idx * 3 + 1] = c.g;
+							w[idx * 3 + 2] = c.b;
+						}
+
+						a[i] = array;
+					} break;
+					case CUSTOM_RGBA_FLOAT: {
+						Vector<float> array;
+						array.resize(varr_len * 4);
+						float *w = (float *)array.ptrw();
+
+						int idx = 0;
+						for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx++) {
+							const Vertex &v = E->get();
+							const Color &c = v.custom[idx];
+							w[idx * 4 + 0] = c.r;
+							w[idx * 4 + 1] = c.g;
+							w[idx * 4 + 2] = c.b;
+							w[idx * 4 + 3] = c.a;
+						}
+
+						a[i] = array;
+					} break;
+					default: {
+					} //unreachable but compiler warning anyway
+				}
+			} break;
 			case Mesh::ARRAY_BONES: {
+				int count = skin_weights == SKIN_8_WEIGHTS ? 8 : 4;
 				Vector<int> array;
-				array.resize(varr_len * 4);
+				array.resize(varr_len * count);
 				int *w = array.ptrw();
 
 				int idx = 0;
-				for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx += 4) {
+				for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx += count) {
 					const Vertex &v = E->get();
 
-					ERR_CONTINUE(v.bones.size() != 4);
+					ERR_CONTINUE(v.bones.size() != count);
 
-					for (int j = 0; j < 4; j++) {
+					for (int j = 0; j < count; j++) {
 						w[idx + j] = v.bones[j];
 					}
 				}
@@ -379,15 +549,17 @@ Array SurfaceTool::commit_to_arrays() {
 			} break;
 			case Mesh::ARRAY_WEIGHTS: {
 				Vector<float> array;
-				array.resize(varr_len * 4);
+				int count = skin_weights == SKIN_8_WEIGHTS ? 8 : 4;
+
+				array.resize(varr_len * count);
 				float *w = array.ptrw();
 
 				int idx = 0;
-				for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx += 4) {
+				for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx += count) {
 					const Vertex &v = E->get();
-					ERR_CONTINUE(v.weights.size() != 4);
+					ERR_CONTINUE(v.weights.size() != count);
 
-					for (int j = 0; j < 4; j++) {
+					for (int j = 0; j < count; j++) {
 						w[idx + j] = v.weights[j];
 					}
 				}
@@ -492,13 +664,13 @@ void SurfaceTool::deindex() {
 	index_array.clear();
 }
 
-void SurfaceTool::_create_list(const Ref<Mesh> &p_existing, int p_surface, List<Vertex> *r_vertex, List<int> *r_index, int &lformat) {
+void SurfaceTool::_create_list(const Ref<Mesh> &p_existing, int p_surface, List<Vertex> *r_vertex, List<int> *r_index, uint32_t &lformat) {
 	Array arr = p_existing->surface_get_arrays(p_surface);
 	ERR_FAIL_COND(arr.size() != RS::ARRAY_MAX);
 	_create_list_from_arrays(arr, r_vertex, r_index, lformat);
 }
 
-Vector<SurfaceTool::Vertex> SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays) {
+Vector<SurfaceTool::Vertex> SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays, uint32_t *r_format) {
 	Vector<SurfaceTool::Vertex> ret;
 
 	Vector<Vector3> varr = p_arrays[RS::ARRAY_VERTEX];
@@ -509,9 +681,13 @@ Vector<SurfaceTool::Vertex> SurfaceTool::create_vertex_array_from_triangle_array
 	Vector<Vector2> uv2arr = p_arrays[RS::ARRAY_TEX_UV2];
 	Vector<int> barr = p_arrays[RS::ARRAY_BONES];
 	Vector<float> warr = p_arrays[RS::ARRAY_WEIGHTS];
+	Vector<float> custom_float[RS::ARRAY_CUSTOM_COUNT];
 
 	int vc = varr.size();
 	if (vc == 0) {
+		if (r_format) {
+			*r_format = 0;
+		}
 		return ret;
 	}
 
@@ -534,11 +710,39 @@ Vector<SurfaceTool::Vertex> SurfaceTool::create_vertex_array_from_triangle_array
 	if (uv2arr.size()) {
 		lformat |= RS::ARRAY_FORMAT_TEX_UV2;
 	}
-	if (barr.size()) {
+	int wcount = 0;
+	if (barr.size() && warr.size()) {
 		lformat |= RS::ARRAY_FORMAT_BONES;
+		lformat |= RS::ARRAY_FORMAT_WEIGHTS;
+
+		wcount = barr.size() / varr.size();
+		if (wcount == 8) {
+			lformat |= RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+		}
 	}
+
 	if (warr.size()) {
 		lformat |= RS::ARRAY_FORMAT_WEIGHTS;
+	}
+	static const uint32_t custom_mask[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0, Mesh::ARRAY_FORMAT_CUSTOM1, Mesh::ARRAY_FORMAT_CUSTOM2, Mesh::ARRAY_FORMAT_CUSTOM3 };
+	static const uint32_t custom_shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
+
+	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
+		ERR_CONTINUE_MSG(p_arrays[RS::ARRAY_CUSTOM0 + i].get_type() == Variant::PACKED_BYTE_ARRAY, "Extracting Byte/Half formats is not supported");
+		if (p_arrays[RS::ARRAY_CUSTOM0 + i].get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+			lformat |= custom_mask[i];
+			custom_float[i] = p_arrays[RS::ARRAY_CUSTOM0 + i];
+			int fmt = custom_float[i].size() / varr.size();
+			if (fmt == 1) {
+				lformat |= CUSTOM_R_FLOAT << custom_shift[i];
+			} else if (fmt == 2) {
+				lformat |= CUSTOM_RG_FLOAT << custom_shift[i];
+			} else if (fmt == 3) {
+				lformat |= CUSTOM_RGB_FLOAT << custom_shift[i];
+			} else if (fmt == 4) {
+				lformat |= CUSTOM_RGBA_FLOAT << custom_shift[i];
+			}
+		}
 	}
 
 	for (int i = 0; i < vc; i++) {
@@ -565,112 +769,46 @@ Vector<SurfaceTool::Vertex> SurfaceTool::create_vertex_array_from_triangle_array
 		}
 		if (lformat & RS::ARRAY_FORMAT_BONES) {
 			Vector<int> b;
-			b.resize(4);
-			b.write[0] = barr[i * 4 + 0];
-			b.write[1] = barr[i * 4 + 1];
-			b.write[2] = barr[i * 4 + 2];
-			b.write[3] = barr[i * 4 + 3];
+			b.resize(wcount);
+			for (int j = 0; j < wcount; j++) {
+				b.write[j] = barr[i * wcount + j];
+			}
 			v.bones = b;
 		}
 		if (lformat & RS::ARRAY_FORMAT_WEIGHTS) {
 			Vector<float> w;
-			w.resize(4);
-			w.write[0] = warr[i * 4 + 0];
-			w.write[1] = warr[i * 4 + 1];
-			w.write[2] = warr[i * 4 + 2];
-			w.write[3] = warr[i * 4 + 3];
+			w.resize(wcount);
+			for (int j = 0; j < wcount; j++) {
+				w.write[j] = warr[i * wcount + j];
+			}
 			v.weights = w;
+		}
+
+		for (int j = 0; j < RS::ARRAY_CUSTOM_COUNT; j++) {
+			if (lformat & custom_mask[j]) {
+				int cc = custom_float[j].size() / varr.size();
+				for (int k = 0; k < cc; k++) {
+					v.custom[j][k] = custom_float[j][i * cc + k];
+				}
+			}
 		}
 
 		ret.push_back(v);
 	}
 
+	if (r_format) {
+		*r_format = lformat;
+	}
+
 	return ret;
 }
 
-void SurfaceTool::_create_list_from_arrays(Array arr, List<Vertex> *r_vertex, List<int> *r_index, int &lformat) {
-	Vector<Vector3> varr = arr[RS::ARRAY_VERTEX];
-	Vector<Vector3> narr = arr[RS::ARRAY_NORMAL];
-	Vector<float> tarr = arr[RS::ARRAY_TANGENT];
-	Vector<Color> carr = arr[RS::ARRAY_COLOR];
-	Vector<Vector2> uvarr = arr[RS::ARRAY_TEX_UV];
-	Vector<Vector2> uv2arr = arr[RS::ARRAY_TEX_UV2];
-	Vector<int> barr = arr[RS::ARRAY_BONES];
-	Vector<float> warr = arr[RS::ARRAY_WEIGHTS];
+void SurfaceTool::_create_list_from_arrays(Array arr, List<Vertex> *r_vertex, List<int> *r_index, uint32_t &lformat) {
+	Vector<Vertex> arrays = create_vertex_array_from_triangle_arrays(arr, &lformat);
+	ERR_FAIL_COND(arrays.size() == 0);
 
-	int vc = varr.size();
-	if (vc == 0) {
-		return;
-	}
-
-	lformat = 0;
-	if (varr.size()) {
-		lformat |= RS::ARRAY_FORMAT_VERTEX;
-	}
-	if (narr.size()) {
-		lformat |= RS::ARRAY_FORMAT_NORMAL;
-	}
-	if (tarr.size()) {
-		lformat |= RS::ARRAY_FORMAT_TANGENT;
-	}
-	if (carr.size()) {
-		lformat |= RS::ARRAY_FORMAT_COLOR;
-	}
-	if (uvarr.size()) {
-		lformat |= RS::ARRAY_FORMAT_TEX_UV;
-	}
-	if (uv2arr.size()) {
-		lformat |= RS::ARRAY_FORMAT_TEX_UV2;
-	}
-	if (barr.size()) {
-		lformat |= RS::ARRAY_FORMAT_BONES;
-	}
-	if (warr.size()) {
-		lformat |= RS::ARRAY_FORMAT_WEIGHTS;
-	}
-
-	for (int i = 0; i < vc; i++) {
-		Vertex v;
-		if (lformat & RS::ARRAY_FORMAT_VERTEX) {
-			v.vertex = varr[i];
-		}
-		if (lformat & RS::ARRAY_FORMAT_NORMAL) {
-			v.normal = narr[i];
-		}
-		if (lformat & RS::ARRAY_FORMAT_TANGENT) {
-			Plane p(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2], tarr[i * 4 + 3]);
-			v.tangent = p.normal;
-			v.binormal = p.normal.cross(v.tangent).normalized() * p.d;
-		}
-		if (lformat & RS::ARRAY_FORMAT_COLOR) {
-			v.color = carr[i];
-		}
-		if (lformat & RS::ARRAY_FORMAT_TEX_UV) {
-			v.uv = uvarr[i];
-		}
-		if (lformat & RS::ARRAY_FORMAT_TEX_UV2) {
-			v.uv2 = uv2arr[i];
-		}
-		if (lformat & RS::ARRAY_FORMAT_BONES) {
-			Vector<int> b;
-			b.resize(4);
-			b.write[0] = barr[i * 4 + 0];
-			b.write[1] = barr[i * 4 + 1];
-			b.write[2] = barr[i * 4 + 2];
-			b.write[3] = barr[i * 4 + 3];
-			v.bones = b;
-		}
-		if (lformat & RS::ARRAY_FORMAT_WEIGHTS) {
-			Vector<float> w;
-			w.resize(4);
-			w.write[0] = warr[i * 4 + 0];
-			w.write[1] = warr[i * 4 + 1];
-			w.write[2] = warr[i * 4 + 2];
-			w.write[3] = warr[i * 4 + 3];
-			v.weights = w;
-		}
-
-		r_vertex->push_back(v);
+	for (int i = 0; i < arrays.size(); i++) {
+		r_vertex->push_back(arrays[i]);
 	}
 
 	//indices
@@ -725,7 +863,7 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 		format = 0;
 	}
 
-	int nformat;
+	uint32_t nformat;
 	List<Vertex> nvertices;
 	List<int> nindices;
 	_create_list(p_existing, p_surface, &nvertices, &nindices, nformat);
@@ -975,19 +1113,48 @@ void SurfaceTool::clear() {
 	vertex_array.clear();
 	smooth_groups.clear();
 	material.unref();
+	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
+		last_custom_format[i] = CUSTOM_MAX;
+	}
+	skin_weights = SKIN_4_WEIGHTS;
+}
+
+void SurfaceTool::set_skin_weight_count(SkinWeightCount p_weights) {
+	ERR_FAIL_COND(begun);
+	skin_weights = p_weights;
+}
+SurfaceTool::SkinWeightCount SurfaceTool::get_skin_weight_count() const {
+	return skin_weights;
+}
+
+void SurfaceTool::set_custom_format(int p_index, CustomFormat p_format) {
+	ERR_FAIL_INDEX(p_index, RS::ARRAY_CUSTOM_COUNT);
+	ERR_FAIL_COND(begun);
+	last_custom_format[p_index] = p_format;
+}
+SurfaceTool::CustomFormat SurfaceTool::get_custom_format(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, RS::ARRAY_CUSTOM_COUNT, CUSTOM_MAX);
+	return last_custom_format[p_index];
 }
 
 void SurfaceTool::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_skin_weight_count", "count"), &SurfaceTool::set_skin_weight_count);
+	ClassDB::bind_method(D_METHOD("get_skin_weight_count"), &SurfaceTool::get_skin_weight_count);
+
+	ClassDB::bind_method(D_METHOD("set_custom_format", "index", "format"), &SurfaceTool::set_custom_format);
+	ClassDB::bind_method(D_METHOD("get_custom_format", "index"), &SurfaceTool::get_custom_format);
+
 	ClassDB::bind_method(D_METHOD("begin", "primitive"), &SurfaceTool::begin);
 
 	ClassDB::bind_method(D_METHOD("add_vertex", "vertex"), &SurfaceTool::add_vertex);
-	ClassDB::bind_method(D_METHOD("add_color", "color"), &SurfaceTool::add_color);
-	ClassDB::bind_method(D_METHOD("add_normal", "normal"), &SurfaceTool::add_normal);
-	ClassDB::bind_method(D_METHOD("add_tangent", "tangent"), &SurfaceTool::add_tangent);
-	ClassDB::bind_method(D_METHOD("add_uv", "uv"), &SurfaceTool::add_uv);
-	ClassDB::bind_method(D_METHOD("add_uv2", "uv2"), &SurfaceTool::add_uv2);
-	ClassDB::bind_method(D_METHOD("add_bones", "bones"), &SurfaceTool::add_bones);
-	ClassDB::bind_method(D_METHOD("add_weights", "weights"), &SurfaceTool::add_weights);
+	ClassDB::bind_method(D_METHOD("set_color", "color"), &SurfaceTool::set_color);
+	ClassDB::bind_method(D_METHOD("set_normal", "normal"), &SurfaceTool::set_normal);
+	ClassDB::bind_method(D_METHOD("set_tangent", "tangent"), &SurfaceTool::set_tangent);
+	ClassDB::bind_method(D_METHOD("set_uv", "uv"), &SurfaceTool::set_uv);
+	ClassDB::bind_method(D_METHOD("set_uv2", "uv2"), &SurfaceTool::set_uv2);
+	ClassDB::bind_method(D_METHOD("set_bones", "bones"), &SurfaceTool::set_bones);
+	ClassDB::bind_method(D_METHOD("set_weights", "weights"), &SurfaceTool::set_weights);
+	ClassDB::bind_method(D_METHOD("set_custom", "index", "custom"), &SurfaceTool::set_custom);
 	ClassDB::bind_method(D_METHOD("add_smooth_group", "smooth"), &SurfaceTool::add_smooth_group);
 
 	ClassDB::bind_method(D_METHOD("add_triangle_fan", "vertices", "uvs", "colors", "uv2s", "normals", "tangents"), &SurfaceTool::add_triangle_fan, DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector3>()), DEFVAL(Vector<Plane>()));
@@ -1006,13 +1173,29 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_from", "existing", "surface"), &SurfaceTool::create_from);
 	ClassDB::bind_method(D_METHOD("create_from_blend_shape", "existing", "surface", "blend_shape"), &SurfaceTool::create_from_blend_shape);
 	ClassDB::bind_method(D_METHOD("append_from", "existing", "surface", "transform"), &SurfaceTool::append_from);
-	ClassDB::bind_method(D_METHOD("commit", "existing", "flags"), &SurfaceTool::commit, DEFVAL(Variant()), DEFVAL(Mesh::ARRAY_COMPRESS_DEFAULT));
+	ClassDB::bind_method(D_METHOD("commit", "existing", "flags"), &SurfaceTool::commit, DEFVAL(Variant()), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("commit_to_arrays"), &SurfaceTool::commit_to_arrays);
+
+	BIND_ENUM_CONSTANT(CUSTOM_RGBA8_UNORM);
+	BIND_ENUM_CONSTANT(CUSTOM_RGBA8_SNORM);
+	BIND_ENUM_CONSTANT(CUSTOM_RG_HALF);
+	BIND_ENUM_CONSTANT(CUSTOM_RGBA_HALF);
+	BIND_ENUM_CONSTANT(CUSTOM_R_FLOAT);
+	BIND_ENUM_CONSTANT(CUSTOM_RG_FLOAT);
+	BIND_ENUM_CONSTANT(CUSTOM_RGB_FLOAT);
+	BIND_ENUM_CONSTANT(CUSTOM_RGBA_FLOAT);
+	BIND_ENUM_CONSTANT(CUSTOM_MAX);
+	BIND_ENUM_CONSTANT(SKIN_4_WEIGHTS);
+	BIND_ENUM_CONSTANT(SKIN_8_WEIGHTS);
 }
 
 SurfaceTool::SurfaceTool() {
 	first = false;
 	begun = false;
+	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
+		last_custom_format[i] = CUSTOM_MAX;
+	}
 	primitive = Mesh::PRIMITIVE_LINES;
+	skin_weights = SKIN_4_WEIGHTS;
 	format = 0;
 }

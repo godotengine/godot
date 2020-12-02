@@ -357,10 +357,12 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	List<String> to_check;
 
+	String importer_name;
 	String source_file = "";
 	String source_md5 = "";
 	Vector<String> dest_files;
 	String dest_md5 = "";
+	int version = 0;
 
 	while (true) {
 		assign = Variant();
@@ -384,6 +386,10 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 				for (int i = 0; i < fa.size(); i++) {
 					to_check.push_back(fa[i]);
 				}
+			} else if (assign == "importer_version") {
+				version = value;
+			} else if (assign == "importer") {
+				importer_name = value;
 			} else if (!p_only_imported_files) {
 				if (assign == "source_file") {
 					source_file = value;
@@ -398,6 +404,12 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	}
 
 	memdelete(f);
+
+	Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
+
+	if (importer->get_format_version() > version) {
+		return true; // version changed, reimport
+	}
 
 	// Read the md5's from a separate file (so the import parameters aren't dependent on the file version
 	String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_path);
@@ -1576,6 +1588,10 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		f->store_line("[remap]");
 		f->store_line("");
 		f->store_line("importer=\"" + importer->get_importer_name() + "\"");
+		int version = importer->get_format_version();
+		if (version > 0) {
+			f->store_line("importer_version=" + itos(importer->get_format_version()));
+		}
 		if (importer->get_resource_type() != "") {
 			f->store_line("type=\"" + importer->get_resource_type() + "\"");
 		}

@@ -61,6 +61,10 @@ public:
 		ARRAY_COLOR = RenderingServer::ARRAY_COLOR,
 		ARRAY_TEX_UV = RenderingServer::ARRAY_TEX_UV,
 		ARRAY_TEX_UV2 = RenderingServer::ARRAY_TEX_UV2,
+		ARRAY_CUSTOM0 = RenderingServer::ARRAY_CUSTOM0,
+		ARRAY_CUSTOM1 = RenderingServer::ARRAY_CUSTOM1,
+		ARRAY_CUSTOM2 = RenderingServer::ARRAY_CUSTOM2,
+		ARRAY_CUSTOM3 = RenderingServer::ARRAY_CUSTOM3,
 		ARRAY_BONES = RenderingServer::ARRAY_BONES,
 		ARRAY_WEIGHTS = RenderingServer::ARRAY_WEIGHTS,
 		ARRAY_INDEX = RenderingServer::ARRAY_INDEX,
@@ -68,30 +72,47 @@ public:
 
 	};
 
+	enum ArrayCustomFormat {
+		ARRAY_CUSTOM_RGBA8_UNORM,
+		ARRAY_CUSTOM_RGBA8_SNORM,
+		ARRAY_CUSTOM_RG_HALF,
+		ARRAY_CUSTOM_RGBA_HALF,
+		ARRAY_CUSTOM_R_FLOAT,
+		ARRAY_CUSTOM_RG_FLOAT,
+		ARRAY_CUSTOM_RGB_FLOAT,
+		ARRAY_CUSTOM_RGBA_FLOAT,
+		ARRAY_CUSTOM_MAX
+	};
+
 	enum ArrayFormat {
-		/* ARRAY FORMAT FLAGS */
-		ARRAY_FORMAT_VERTEX = 1 << ARRAY_VERTEX, // mandatory
-		ARRAY_FORMAT_NORMAL = 1 << ARRAY_NORMAL,
-		ARRAY_FORMAT_TANGENT = 1 << ARRAY_TANGENT,
-		ARRAY_FORMAT_COLOR = 1 << ARRAY_COLOR,
-		ARRAY_FORMAT_TEX_UV = 1 << ARRAY_TEX_UV,
-		ARRAY_FORMAT_TEX_UV2 = 1 << ARRAY_TEX_UV2,
-		ARRAY_FORMAT_BONES = 1 << ARRAY_BONES,
-		ARRAY_FORMAT_WEIGHTS = 1 << ARRAY_WEIGHTS,
-		ARRAY_FORMAT_INDEX = 1 << ARRAY_INDEX,
+		ARRAY_FORMAT_VERTEX = RS::ARRAY_FORMAT_VERTEX,
+		ARRAY_FORMAT_NORMAL = RS::ARRAY_FORMAT_NORMAL,
+		ARRAY_FORMAT_TANGENT = RS::ARRAY_FORMAT_TANGENT,
+		ARRAY_FORMAT_COLOR = RS::ARRAY_FORMAT_COLOR,
+		ARRAY_FORMAT_TEX_UV = RS::ARRAY_FORMAT_TEX_UV,
+		ARRAY_FORMAT_TEX_UV2 = RS::ARRAY_FORMAT_TEX_UV2,
+		ARRAY_FORMAT_CUSTOM0 = RS::ARRAY_FORMAT_CUSTOM0,
+		ARRAY_FORMAT_CUSTOM1 = RS::ARRAY_FORMAT_CUSTOM1,
+		ARRAY_FORMAT_CUSTOM2 = RS::ARRAY_FORMAT_CUSTOM2,
+		ARRAY_FORMAT_CUSTOM3 = RS::ARRAY_FORMAT_CUSTOM3,
+		ARRAY_FORMAT_BONES = RS::ARRAY_FORMAT_BONES,
+		ARRAY_FORMAT_WEIGHTS = RS::ARRAY_FORMAT_WEIGHTS,
+		ARRAY_FORMAT_INDEX = RS::ARRAY_FORMAT_INDEX,
 
-		ARRAY_COMPRESS_BASE = (ARRAY_INDEX + 1),
-		ARRAY_COMPRESS_NORMAL = 1 << (ARRAY_NORMAL + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_TANGENT = 1 << (ARRAY_TANGENT + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_COLOR = 1 << (ARRAY_COLOR + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_TEX_UV = 1 << (ARRAY_TEX_UV + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_TEX_UV2 = 1 << (ARRAY_TEX_UV2 + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_INDEX = 1 << (ARRAY_INDEX + ARRAY_COMPRESS_BASE),
+		ARRAY_FORMAT_BLEND_SHAPE_MASK = RS::ARRAY_FORMAT_BLEND_SHAPE_MASK,
 
-		ARRAY_FLAG_USE_2D_VERTICES = ARRAY_COMPRESS_INDEX << 1,
-		ARRAY_FLAG_USE_DYNAMIC_UPDATE = ARRAY_COMPRESS_INDEX << 3,
+		ARRAY_FORMAT_CUSTOM_BASE = RS::ARRAY_FORMAT_CUSTOM_BASE,
+		ARRAY_FORMAT_CUSTOM0_SHIFT = RS::ARRAY_FORMAT_CUSTOM0_SHIFT,
+		ARRAY_FORMAT_CUSTOM1_SHIFT = RS::ARRAY_FORMAT_CUSTOM1_SHIFT,
+		ARRAY_FORMAT_CUSTOM2_SHIFT = RS::ARRAY_FORMAT_CUSTOM2_SHIFT,
+		ARRAY_FORMAT_CUSTOM3_SHIFT = RS::ARRAY_FORMAT_CUSTOM3_SHIFT,
 
-		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2
+		ARRAY_FORMAT_CUSTOM_MASK = RS::ARRAY_FORMAT_CUSTOM_MASK,
+		ARRAY_COMPRESS_FLAGS_BASE = RS::ARRAY_COMPRESS_FLAGS_BASE,
+
+		ARRAY_FLAG_USE_2D_VERTICES = RS::ARRAY_FLAG_USE_2D_VERTICES,
+		ARRAY_FLAG_USE_DYNAMIC_UPDATE = RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE,
+		ARRAY_FLAG_USE_8_BONE_WEIGHTS = RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS,
 
 	};
 
@@ -187,9 +208,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_flags = ARRAY_COMPRESS_DEFAULT);
+	void add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_flags = 0);
 
-	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<Vector<uint8_t>> &p_blend_shapes = Vector<Vector<uint8_t>>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<RS::SurfaceData::LOD> &p_lods = Vector<RS::SurfaceData::LOD>());
+	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data = Vector<uint8_t>(), uint32_t p_blend_shape_count = 0, const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<RS::SurfaceData::LOD> &p_lods = Vector<RS::SurfaceData::LOD>());
 
 	Array surface_get_arrays(int p_surface) const override;
 	Array surface_get_blend_shape_arrays(int p_surface) const override;
@@ -244,6 +265,7 @@ public:
 
 VARIANT_ENUM_CAST(Mesh::ArrayType);
 VARIANT_ENUM_CAST(Mesh::ArrayFormat);
+VARIANT_ENUM_CAST(Mesh::ArrayCustomFormat);
 VARIANT_ENUM_CAST(Mesh::PrimitiveType);
 VARIANT_ENUM_CAST(Mesh::BlendShapeMode);
 

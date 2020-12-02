@@ -844,19 +844,19 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 
 			for (int k = 0; k < vertex_array.size(); k++) {
 				if (normal_src) {
-					surftool->add_normal(vertex_array[k].normal);
+					surftool->set_normal(vertex_array[k].normal);
 					if (binormal_src && tangent_src) {
-						surftool->add_tangent(vertex_array[k].tangent);
+						surftool->set_tangent(vertex_array[k].tangent);
 					}
 				}
 				if (uv_src) {
-					surftool->add_uv(Vector2(vertex_array[k].uv.x, vertex_array[k].uv.y));
+					surftool->set_uv(Vector2(vertex_array[k].uv.x, vertex_array[k].uv.y));
 				}
 				if (uv2_src) {
-					surftool->add_uv2(Vector2(vertex_array[k].uv2.x, vertex_array[k].uv2.y));
+					surftool->set_uv2(Vector2(vertex_array[k].uv2.x, vertex_array[k].uv2.y));
 				}
 				if (color_src) {
-					surftool->add_color(vertex_array[k].color);
+					surftool->set_color(vertex_array[k].color);
 				}
 
 				if (has_weights) {
@@ -876,8 +876,8 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 						}
 					}
 
-					surftool->add_bones(bones);
-					surftool->add_weights(weights);
+					surftool->set_bones(bones);
+					surftool->set_weights(weights);
 				}
 
 				surftool->add_vertex(vertex_array[k].vertex);
@@ -923,7 +923,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 				mr.push_back(a);
 			}
 
-			p_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, d, mr, Dictionary(), p_use_compression ? Mesh::ARRAY_COMPRESS_DEFAULT : 0);
+			p_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, d, mr, Dictionary(), 0);
 
 			if (material.is_valid()) {
 				if (p_use_mesh_material) {

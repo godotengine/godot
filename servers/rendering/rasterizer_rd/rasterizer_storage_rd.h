@@ -170,6 +170,10 @@ public:
 		DEFAULT_RD_BUFFER_COLOR,
 		DEFAULT_RD_BUFFER_TEX_UV,
 		DEFAULT_RD_BUFFER_TEX_UV2,
+		DEFAULT_RD_BUFFER_CUSTOM0,
+		DEFAULT_RD_BUFFER_CUSTOM1,
+		DEFAULT_RD_BUFFER_CUSTOM2,
+		DEFAULT_RD_BUFFER_CUSTOM3,
 		DEFAULT_RD_BUFFER_BONES,
 		DEFAULT_RD_BUFFER_WEIGHTS,
 		DEFAULT_RD_BUFFER_MAX,
@@ -378,6 +382,8 @@ private:
 			uint32_t format = 0;
 
 			RID vertex_buffer;
+			RID attribute_buffer;
+			RID skin_buffer;
 			uint32_t vertex_count = 0;
 
 			// A different pipeline needs to be allocated
@@ -414,8 +420,7 @@ private:
 
 			Vector<AABB> bone_aabbs;
 
-			Vector<RID> blend_shapes;
-			RID blend_shape_base_buffer; //source buffer goes here when using blend shapes, and main one is uncompressed
+			RID blend_shape_buffer;
 
 			RID material;
 

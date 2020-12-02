@@ -2795,6 +2795,12 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 		actions.renames["FOG"] = "custom_fog";
 		actions.renames["RADIANCE"] = "custom_radiance";
 		actions.renames["IRRADIANCE"] = "custom_irradiance";
+		actions.renames["BONE_INDICES"] = "bone_attrib";
+		actions.renames["BONE_WEIGHTS"] = "weight_attrib";
+		actions.renames["CUSTOM0"] = "custom0_attrib";
+		actions.renames["CUSTOM1"] = "custom1_attrib";
+		actions.renames["CUSTOM2"] = "custom2_attrib";
+		actions.renames["CUSTOM3"] = "custom3_attrib";
 
 		//for light
 		actions.renames["VIEW"] = "view";
@@ -2817,6 +2823,12 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 		actions.usage_defines["AO_LIGHT_AFFECT"] = "#define AO_USED\n";
 		actions.usage_defines["UV"] = "#define UV_USED\n";
 		actions.usage_defines["UV2"] = "#define UV2_USED\n";
+		actions.usage_defines["BONE_INDICES"] = "#define BONES_USED\n";
+		actions.usage_defines["BONE_WEIGHTS"] = "#define WEIGHTS_USED\n";
+		actions.usage_defines["CUSTOM0"] = "#define CUSTOM0\n";
+		actions.usage_defines["CUSTOM1"] = "#define CUSTOM1\n";
+		actions.usage_defines["CUSTOM2"] = "#define CUSTOM2\n";
+		actions.usage_defines["CUSTOM3"] = "#define CUSTOM3\n";
 		actions.usage_defines["NORMALMAP"] = "#define NORMALMAP_USED\n";
 		actions.usage_defines["NORMALMAP_DEPTH"] = "@NORMALMAP";
 		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";

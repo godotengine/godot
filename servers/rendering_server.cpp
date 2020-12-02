@@ -315,8 +315,10 @@ RID RenderingServer::get_white_texture() {
 #define SMALL_VEC2 Vector2(0.00001, 0.00001)
 #define SMALL_VEC3 Vector3(0.00001, 0.00001, 0.00001)
 
-Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_stride, Vector<uint8_t> &r_vertex_array, int p_vertex_array_len, Vector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb) {
+Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_vertex_stride, uint32_t p_attrib_stride, uint32_t p_skin_stride, Vector<uint8_t> &r_vertex_array, Vector<uint8_t> &r_attrib_array, Vector<uint8_t> &r_skin_array, int p_vertex_array_len, Vector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb) {
 	uint8_t *vw = r_vertex_array.ptrw();
+	uint8_t *aw = r_attrib_array.ptrw();
+	uint8_t *sw = r_skin_array.ptrw();
 
 	uint8_t *iw = nullptr;
 	if (r_index_array.size()) {
@@ -345,7 +347,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 						for (int i = 0; i < p_vertex_array_len; i++) {
 							float vector[2] = { src[i].x, src[i].y };
 
-							copymem(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(float) * 2);
+							copymem(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(float) * 2);
 
 							if (i == 0) {
 								aabb = Rect2(src[i], SMALL_VEC2); //must have a bit of size
@@ -370,7 +372,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 						for (int i = 0; i < p_vertex_array_len; i++) {
 							float vector[3] = { src[i].x, src[i].y, src[i].z };
 
-							copymem(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(float) * 3);
+							copymem(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(float) * 3);
 
 							if (i == 0) {
 								aabb = AABB(src[i], SMALL_VEC3);
@@ -391,26 +393,15 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				ERR_FAIL_COND_V(array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
 
 				const Vector3 *src = array.ptr();
+				for (int i = 0; i < p_vertex_array_len; i++) {
+					Vector3 n = src[i] * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
 
-				// setting vertices means regenerating the AABB
+					uint32_t value = 0;
+					value |= CLAMP(int(n.x * 1023.0), 0, 1023);
+					value |= CLAMP(int(n.y * 1023.0), 0, 1023) << 10;
+					value |= CLAMP(int(n.z * 1023.0), 0, 1023) << 20;
 
-				if (p_format & ARRAY_COMPRESS_NORMAL) {
-					for (int i = 0; i < p_vertex_array_len; i++) {
-						int8_t vector[4] = {
-							(int8_t)CLAMP(src[i].x * 127, -128, 127),
-							(int8_t)CLAMP(src[i].y * 127, -128, 127),
-							(int8_t)CLAMP(src[i].z * 127, -128, 127),
-							0,
-						};
-
-						copymem(&vw[p_offsets[ai] + i * p_stride], vector, 4);
-					}
-
-				} else {
-					for (int i = 0; i < p_vertex_array_len; i++) {
-						float vector[3] = { src[i].x, src[i].y, src[i].z };
-						copymem(&vw[p_offsets[ai] + i * p_stride], vector, 3 * 4);
-					}
+					copymem(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
 				}
 
 			} break;
@@ -424,29 +415,14 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 				const real_t *src = array.ptr();
 
-				if (p_format & ARRAY_COMPRESS_TANGENT) {
-					for (int i = 0; i < p_vertex_array_len; i++) {
-						int8_t xyzw[4] = {
-							(int8_t)CLAMP(src[i * 4 + 0] * 127, -128, 127),
-							(int8_t)CLAMP(src[i * 4 + 1] * 127, -128, 127),
-							(int8_t)CLAMP(src[i * 4 + 2] * 127, -128, 127),
-							(int8_t)CLAMP(src[i * 4 + 3] * 127, -128, 127)
-						};
+				for (int i = 0; i < p_vertex_array_len; i++) {
+					uint32_t value = 0;
+					value |= CLAMP(int((src[i * 4 + 0] * 0.5 + 0.5) * 1023.0), 0, 1023);
+					value |= CLAMP(int((src[i * 4 + 1] * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
+					value |= CLAMP(int((src[i * 4 + 2] * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
+					value |= CLAMP(int((src[i * 4 + 3] * 0.5 + 0.5) * 3.0), 0, 3) << 30;
 
-						copymem(&vw[p_offsets[ai] + i * p_stride], xyzw, 4);
-					}
-
-				} else {
-					for (int i = 0; i < p_vertex_array_len; i++) {
-						float xyzw[4] = {
-							src[i * 4 + 0],
-							src[i * 4 + 1],
-							src[i * 4 + 2],
-							src[i * 4 + 3]
-						};
-
-						copymem(&vw[p_offsets[ai] + i * p_stride], xyzw, 4 * 4);
-					}
+					copymem(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
 				}
 
 			} break;
@@ -458,23 +434,14 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				ERR_FAIL_COND_V(array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
 
 				const Color *src = array.ptr();
-
-				if (p_format & ARRAY_COMPRESS_COLOR) {
-					for (int i = 0; i < p_vertex_array_len; i++) {
-						uint8_t colors[4];
-
-						for (int j = 0; j < 4; j++) {
-							colors[j] = CLAMP(int((src[i][j]) * 255.0), 0, 255);
-						}
-
-						copymem(&vw[p_offsets[ai] + i * p_stride], colors, 4);
-					}
-				} else {
-					for (int i = 0; i < p_vertex_array_len; i++) {
-						copymem(&vw[p_offsets[ai] + i * p_stride], &src[i], 4 * 4);
-					}
+				uint16_t color16[4];
+				for (int i = 0; i < p_vertex_array_len; i++) {
+					color16[0] = Math::make_half_float(src[i].r);
+					color16[1] = Math::make_half_float(src[i].g);
+					color16[2] = Math::make_half_float(src[i].b);
+					color16[3] = Math::make_half_float(src[i].a);
+					copymem(&aw[p_offsets[ai] + i * p_attrib_stride], color16, 8);
 				}
-
 			} break;
 			case RS::ARRAY_TEX_UV: {
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_VECTOR3_ARRAY && p_arrays[ai].get_type() != Variant::PACKED_VECTOR2_ARRAY, ERR_INVALID_PARAMETER);
@@ -485,18 +452,10 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 				const Vector2 *src = array.ptr();
 
-				if (p_format & ARRAY_COMPRESS_TEX_UV) {
-					for (int i = 0; i < p_vertex_array_len; i++) {
-						uint16_t uv[2] = { Math::make_half_float(src[i].x), Math::make_half_float(src[i].y) };
-						copymem(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 2);
-					}
+				for (int i = 0; i < p_vertex_array_len; i++) {
+					float uv[2] = { src[i].x, src[i].y };
 
-				} else {
-					for (int i = 0; i < p_vertex_array_len; i++) {
-						float uv[2] = { src[i].x, src[i].y };
-
-						copymem(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 4);
-					}
+					copymem(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 2 * 4);
 				}
 
 			} break;
@@ -510,37 +469,90 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 				const Vector2 *src = array.ptr();
 
-				if (p_format & ARRAY_COMPRESS_TEX_UV2) {
-					for (int i = 0; i < p_vertex_array_len; i++) {
-						uint16_t uv[2] = { Math::make_half_float(src[i].x), Math::make_half_float(src[i].y) };
-						copymem(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 2);
-					}
+				for (int i = 0; i < p_vertex_array_len; i++) {
+					uint16_t uv[2] = { Math::make_half_float(src[i].x), Math::make_half_float(src[i].y) };
+					copymem(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 2 * 2);
+				}
+			} break;
+			case RS::ARRAY_CUSTOM0:
+			case RS::ARRAY_CUSTOM1:
+			case RS::ARRAY_CUSTOM2:
+			case RS::ARRAY_CUSTOM3: {
+				uint32_t type = (p_format >> (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS * (RS::ARRAY_CUSTOM0 - ai))) & ARRAY_FORMAT_CUSTOM_MASK;
+				switch (type) {
+					case ARRAY_CUSTOM_RGBA8_UNORM:
+					case ARRAY_CUSTOM_RGBA8_SNORM:
+					case ARRAY_CUSTOM_RG_HALF: {
+						//size 4
+						ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_BYTE_ARRAY, ERR_INVALID_PARAMETER);
 
-				} else {
-					for (int i = 0; i < p_vertex_array_len; i++) {
-						float uv[2] = { src[i].x, src[i].y };
+						Vector<uint8_t> array = p_arrays[ai];
 
-						copymem(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 4);
+						ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
+
+						const uint8_t *src = array.ptr();
+
+						for (int i = 0; i < p_vertex_array_len; i++) {
+							copymem(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * 4], 4);
+						}
+
+					} break;
+					case ARRAY_CUSTOM_RGBA_HALF: {
+						//size 8
+						ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_BYTE_ARRAY, ERR_INVALID_PARAMETER);
+
+						Vector<uint8_t> array = p_arrays[ai];
+
+						ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 8, ERR_INVALID_PARAMETER);
+
+						const uint8_t *src = array.ptr();
+
+						for (int i = 0; i < p_vertex_array_len; i++) {
+							copymem(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * 8], 8);
+						}
+					} break;
+					case ARRAY_CUSTOM_R_FLOAT:
+					case ARRAY_CUSTOM_RG_FLOAT:
+					case ARRAY_CUSTOM_RGB_FLOAT:
+					case ARRAY_CUSTOM_RGBA_FLOAT: {
+						//RF
+						ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
+
+						Vector<float> array = p_arrays[ai];
+						int32_t s = ARRAY_CUSTOM_R_FLOAT - ai + 1;
+
+						ERR_FAIL_COND_V(array.size() != p_vertex_array_len * s, ERR_INVALID_PARAMETER);
+
+						const float *src = array.ptr();
+
+						for (int i = 0; i < p_vertex_array_len; i++) {
+							copymem(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * s], 4 * s);
+						}
+					} break;
+					default: {
 					}
 				}
+
 			} break;
 			case RS::ARRAY_WEIGHTS: {
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
 
+				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+
 				Vector<real_t> array = p_arrays[ai];
 
-				ERR_FAIL_COND_V(array.size() != p_vertex_array_len * RS::ARRAY_WEIGHTS_SIZE, ERR_INVALID_PARAMETER);
+				ERR_FAIL_COND_V(array.size() != (int32_t)(p_vertex_array_len * bone_count), ERR_INVALID_PARAMETER);
 
 				const real_t *src = array.ptr();
 
 				{
+					uint16_t data[8];
 					for (int i = 0; i < p_vertex_array_len; i++) {
-						uint16_t data[RS::ARRAY_WEIGHTS_SIZE];
-						for (int j = 0; j < RS::ARRAY_WEIGHTS_SIZE; j++) {
-							data[j] = CLAMP(src[i * RS::ARRAY_WEIGHTS_SIZE + j] * 65535, 0, 65535);
+						for (uint32_t j = 0; j < bone_count; j++) {
+							data[j] = CLAMP(src[i * bone_count + j] * 65535, 0, 65535);
 						}
 
-						copymem(&vw[p_offsets[ai] + i * p_stride], data, 2 * 4);
+						copymem(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
 					}
 				}
 
@@ -550,21 +562,25 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 				Vector<int> array = p_arrays[ai];
 
-				ERR_FAIL_COND_V(array.size() != p_vertex_array_len * RS::ARRAY_WEIGHTS_SIZE, ERR_INVALID_PARAMETER);
+				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+
+				ERR_FAIL_COND_V(array.size() != (int32_t)(p_vertex_array_len * bone_count), ERR_INVALID_PARAMETER);
 
 				const int *src = array.ptr();
 
+				uint16_t data[8];
+
 				for (int i = 0; i < p_vertex_array_len; i++) {
-					uint16_t data[RS::ARRAY_WEIGHTS_SIZE];
-					for (int j = 0; j < RS::ARRAY_WEIGHTS_SIZE; j++) {
-						data[j] = src[i * RS::ARRAY_WEIGHTS_SIZE + j];
+					for (uint32_t j = 0; j < bone_count; j++) {
+						data[j] = src[i * bone_count + j];
 						max_bone = MAX(data[j], max_bone);
 					}
 
-					copymem(&vw[p_offsets[ai] + i * p_stride], data, 2 * 4);
+					copymem(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
 				}
 
 			} break;
+
 			case RS::ARRAY_INDEX: {
 				ERR_FAIL_NULL_V(iw, ERR_INVALID_DATA);
 				ERR_FAIL_COND_V(p_index_array_len <= 0, ERR_INVALID_DATA);
@@ -652,22 +668,61 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 	return OK;
 }
 
-uint32_t RenderingServer::mesh_surface_get_format_offset(uint32_t p_format, int p_vertex_len, int p_index_len, int p_array_index) const {
+uint32_t RenderingServer::mesh_surface_get_format_offset(uint32_t p_format, int p_vertex_len, int p_array_index) const {
+	p_format &= ~ARRAY_FORMAT_INDEX;
 	uint32_t offsets[ARRAY_MAX];
-	mesh_surface_make_offsets_from_format(p_format, p_vertex_len, p_index_len, offsets);
+	uint32_t vstr;
+	uint32_t astr;
+	uint32_t sstr;
+	mesh_surface_make_offsets_from_format(p_format, p_vertex_len, 0, offsets, vstr, astr, sstr);
 	return offsets[p_array_index];
 }
 
-uint32_t RenderingServer::mesh_surface_get_format_stride(uint32_t p_format, int p_vertex_len, int p_index_len) const {
+uint32_t RenderingServer::mesh_surface_get_format_vertex_stride(uint32_t p_format, int p_vertex_len) const {
+	p_format &= ~ARRAY_FORMAT_INDEX;
 	uint32_t offsets[ARRAY_MAX];
-	return mesh_surface_make_offsets_from_format(p_format, p_vertex_len, p_index_len, offsets);
+	uint32_t vstr;
+	uint32_t astr;
+	uint32_t sstr;
+	mesh_surface_make_offsets_from_format(p_format, p_vertex_len, 0, offsets, vstr, astr, sstr);
+	return vstr;
+}
+uint32_t RenderingServer::mesh_surface_get_format_attribute_stride(uint32_t p_format, int p_vertex_len) const {
+	p_format &= ~ARRAY_FORMAT_INDEX;
+	uint32_t offsets[ARRAY_MAX];
+	uint32_t vstr;
+	uint32_t astr;
+	uint32_t sstr;
+	mesh_surface_make_offsets_from_format(p_format, p_vertex_len, 0, offsets, vstr, astr, sstr);
+	return astr;
+}
+uint32_t RenderingServer::mesh_surface_get_format_skin_stride(uint32_t p_format, int p_vertex_len) const {
+	p_format &= ~ARRAY_FORMAT_INDEX;
+	uint32_t offsets[ARRAY_MAX];
+	uint32_t vstr;
+	uint32_t astr;
+	uint32_t sstr;
+	mesh_surface_make_offsets_from_format(p_format, p_vertex_len, 0, offsets, vstr, astr, sstr);
+	return sstr;
 }
 
-uint32_t RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets) const {
-	int total_elem_size = 0;
+void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets, uint32_t &r_vertex_element_size, uint32_t &r_attrib_element_size, uint32_t &r_skin_element_size) const {
+	r_vertex_element_size = 0;
+	r_attrib_element_size = 0;
+	r_skin_element_size = 0;
+
+	uint32_t *size_accum;
 
 	for (int i = 0; i < RS::ARRAY_MAX; i++) {
 		r_offsets[i] = 0; //reset
+
+		if (i == RS::ARRAY_VERTEX) {
+			size_accum = &r_vertex_element_size;
+		} else if (i == RS::ARRAY_COLOR) {
+			size_accum = &r_attrib_element_size;
+		} else if (i == RS::ARRAY_BONES) {
+			size_accum = &r_skin_element_size;
+		}
 
 		if (!(p_format & (1 << i))) { // no array
 			continue;
@@ -693,53 +748,64 @@ uint32_t RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_forma
 
 			} break;
 			case RS::ARRAY_NORMAL: {
-				if (p_format & ARRAY_COMPRESS_NORMAL) {
-					elem_size = sizeof(uint32_t);
-				} else {
-					elem_size = sizeof(float) * 3;
-				}
-
+				elem_size = 4;
 			} break;
 
 			case RS::ARRAY_TANGENT: {
-				if (p_format & ARRAY_COMPRESS_TANGENT) {
-					elem_size = sizeof(uint32_t);
-				} else {
-					elem_size = sizeof(float) * 4;
-				}
-
+				elem_size = 4;
 			} break;
 			case RS::ARRAY_COLOR: {
-				if (p_format & ARRAY_COMPRESS_COLOR) {
-					elem_size = sizeof(uint32_t);
-				} else {
-					elem_size = sizeof(float) * 4;
-				}
+				elem_size = 8;
 			} break;
 			case RS::ARRAY_TEX_UV: {
-				if (p_format & ARRAY_COMPRESS_TEX_UV) {
-					elem_size = sizeof(uint32_t);
-				} else {
-					elem_size = sizeof(float) * 2;
-				}
+				elem_size = 8;
 
 			} break;
 
 			case RS::ARRAY_TEX_UV2: {
-				if (p_format & ARRAY_COMPRESS_TEX_UV2) {
-					elem_size = sizeof(uint32_t);
-				} else {
-					elem_size = sizeof(float) * 2;
-				}
+				elem_size = 8;
 
 			} break;
+			case RS::ARRAY_CUSTOM0:
+			case RS::ARRAY_CUSTOM1:
+			case RS::ARRAY_CUSTOM2:
+			case RS::ARRAY_CUSTOM3: {
+				uint32_t format = (p_format >> (ARRAY_FORMAT_CUSTOM_BASE + (ARRAY_FORMAT_CUSTOM_BITS * (i - ARRAY_CUSTOM0)))) & ARRAY_FORMAT_CUSTOM_MASK;
+				switch (format) {
+					case ARRAY_CUSTOM_RGBA8_UNORM: {
+						elem_size = 4;
+					} break;
+					case ARRAY_CUSTOM_RGBA8_SNORM: {
+						elem_size = 4;
+					} break;
+					case ARRAY_CUSTOM_RG_HALF: {
+						elem_size = 4;
+					} break;
+					case ARRAY_CUSTOM_RGBA_HALF: {
+						elem_size = 8;
+					} break;
+					case ARRAY_CUSTOM_R_FLOAT: {
+						elem_size = 4;
+					} break;
+					case ARRAY_CUSTOM_RG_FLOAT: {
+						elem_size = 8;
+					} break;
+					case ARRAY_CUSTOM_RGB_FLOAT: {
+						elem_size = 12;
+					} break;
+					case ARRAY_CUSTOM_RGBA_FLOAT: {
+						elem_size = 16;
+					} break;
+				}
+			} break;
 			case RS::ARRAY_WEIGHTS: {
-				elem_size = sizeof(uint16_t) * 4;
+				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+				elem_size = sizeof(uint16_t) * bone_count;
 
 			} break;
 			case RS::ARRAY_BONES: {
-				elem_size = sizeof(uint16_t) * 4;
-
+				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+				elem_size = sizeof(uint16_t) * bone_count;
 			} break;
 			case RS::ARRAY_INDEX: {
 				if (p_index_len <= 0) {
@@ -757,14 +823,13 @@ uint32_t RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_forma
 				continue;
 			}
 			default: {
-				ERR_FAIL_V(0);
+				ERR_FAIL();
 			}
 		}
 
-		r_offsets[i] = total_elem_size;
-		total_elem_size += elem_size;
+		r_offsets[i] = (*size_accum);
+		(*size_accum) += elem_size;
 	}
-	return total_elem_size;
 }
 
 Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surface_data, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, uint32_t p_compress_format) {
@@ -785,20 +850,20 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 		format |= (1 << i);
 
 		if (i == RS::ARRAY_VERTEX) {
-			Variant var = p_arrays[i];
-			switch (var.get_type()) {
+			switch (p_arrays[i].get_type()) {
 				case Variant::PACKED_VECTOR2_ARRAY: {
-					Vector<Vector2> v2 = var;
+					Vector<Vector2> v2 = p_arrays[i];
+					array_len = v2.size();
 				} break;
 				case Variant::PACKED_VECTOR3_ARRAY: {
-					Vector<Vector3> v3 = var;
+					Vector<Vector3> v3 = p_arrays[i];
+					array_len = v3.size();
 				} break;
 				default: {
-					Array v = var;
+					ERR_FAIL_V(ERR_INVALID_DATA);
 				} break;
 			}
 
-			array_len = PackedVector3Array(p_arrays[i]).size();
 			ERR_FAIL_COND_V(array_len == 0, ERR_INVALID_DATA);
 		} else if (i == RS::ARRAY_INDEX) {
 			index_array_len = PackedInt32Array(p_arrays[i]).size();
@@ -824,117 +889,28 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 
 	uint32_t offsets[RS::ARRAY_MAX];
 
-	int total_elem_size = 0;
+	uint32_t vertex_element_size;
+	uint32_t attrib_element_size;
+	uint32_t skin_element_size;
 
-	for (int i = 0; i < RS::ARRAY_MAX; i++) {
-		offsets[i] = 0; //reset
-
-		if (!(format & (1 << i))) { // no array
-			continue;
-		}
-
-		int elem_size = 0;
-
-		switch (i) {
-			case RS::ARRAY_VERTEX: {
-				Variant arr = p_arrays[0];
-				if (arr.get_type() == Variant::PACKED_VECTOR2_ARRAY) {
-					elem_size = 2;
-					p_compress_format |= ARRAY_FLAG_USE_2D_VERTICES;
-				} else if (arr.get_type() == Variant::PACKED_VECTOR3_ARRAY) {
-					p_compress_format &= ~ARRAY_FLAG_USE_2D_VERTICES;
-					elem_size = 3;
-				} else {
-					elem_size = (p_compress_format & ARRAY_FLAG_USE_2D_VERTICES) ? 2 : 3;
-				}
-
-				{
-					elem_size *= sizeof(float);
-				}
-
-			} break;
-			case RS::ARRAY_NORMAL: {
-				if (p_compress_format & ARRAY_COMPRESS_NORMAL) {
-					elem_size = sizeof(uint32_t);
-				} else {
-					elem_size = sizeof(float) * 3;
-				}
-
-			} break;
-
-			case RS::ARRAY_TANGENT: {
-				if (p_compress_format & ARRAY_COMPRESS_TANGENT) {
-					elem_size = sizeof(uint32_t);
-				} else {
-					elem_size = sizeof(float) * 4;
-				}
-
-			} break;
-			case RS::ARRAY_COLOR: {
-				if (p_compress_format & ARRAY_COMPRESS_COLOR) {
-					elem_size = sizeof(uint32_t);
-				} else {
-					elem_size = sizeof(float) * 4;
-				}
-			} break;
-			case RS::ARRAY_TEX_UV: {
-				if (p_compress_format & ARRAY_COMPRESS_TEX_UV) {
-					elem_size = sizeof(uint32_t);
-				} else {
-					elem_size = sizeof(float) * 2;
-				}
-
-			} break;
-
-			case RS::ARRAY_TEX_UV2: {
-				if (p_compress_format & ARRAY_COMPRESS_TEX_UV2) {
-					elem_size = sizeof(uint32_t);
-				} else {
-					elem_size = sizeof(float) * 2;
-				}
-
-			} break;
-			case RS::ARRAY_WEIGHTS: {
-				elem_size = sizeof(uint16_t) * 4;
-
-			} break;
-			case RS::ARRAY_BONES: {
-				elem_size = sizeof(uint16_t) * 4;
-
-			} break;
-			case RS::ARRAY_INDEX: {
-				if (index_array_len <= 0) {
-					ERR_PRINT("index_array_len==NO_INDEX_ARRAY");
-					break;
-				}
-				/* determine whether using 16 or 32 bits indices */
-				if (array_len >= (1 << 16)) {
-					elem_size = 4;
-
-				} else {
-					elem_size = 2;
-				}
-				offsets[i] = elem_size;
-				continue;
-			}
-			default: {
-				ERR_FAIL_V(ERR_BUG);
-			}
-		}
-
-		offsets[i] = total_elem_size;
-		total_elem_size += elem_size;
-	}
+	mesh_surface_make_offsets_from_format(format, array_len, index_array_len, offsets, vertex_element_size, attrib_element_size, skin_element_size);
 
 	uint32_t mask = (1 << ARRAY_MAX) - 1;
 	format |= (~mask) & p_compress_format; //make the full format
 
-	int array_size = total_elem_size * array_len;
+	int vertex_array_size = vertex_element_size * array_len;
+	int attrib_array_size = attrib_element_size * array_len;
+	int skin_array_size = skin_element_size * array_len;
+	int index_array_size = offsets[RS::ARRAY_INDEX] * index_array_len;
 
 	Vector<uint8_t> vertex_array;
-	vertex_array.resize(array_size);
+	vertex_array.resize(vertex_array_size);
 
-	int index_array_size = offsets[RS::ARRAY_INDEX] * index_array_len;
+	Vector<uint8_t> attrib_array;
+	attrib_array.resize(attrib_array_size);
+
+	Vector<uint8_t> skin_array;
+	skin_array.resize(skin_array_size);
 
 	Vector<uint8_t> index_array;
 	index_array.resize(index_array_size);
@@ -942,22 +918,29 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	AABB aabb;
 	Vector<AABB> bone_aabb;
 
-	Error err = _surface_set_data(p_arrays, format, offsets, total_elem_size, vertex_array, array_len, index_array, index_array_len, aabb, bone_aabb);
+	Error err = _surface_set_data(p_arrays, format, offsets, vertex_element_size, attrib_element_size, skin_element_size, vertex_array, attrib_array, skin_array, array_len, index_array, index_array_len, aabb, bone_aabb);
 	ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Invalid array format for surface.");
 
-	Vector<Vector<uint8_t>> blend_shape_data;
+	Vector<uint8_t> blend_shape_data;
+	uint32_t blend_shape_count = 0;
 
-	for (int i = 0; i < p_blend_shapes.size(); i++) {
-		Vector<uint8_t> vertex_array_shape;
-		vertex_array_shape.resize(array_size);
-		Vector<uint8_t> noindex;
+	if (p_blend_shapes.size()) {
+		uint32_t bs_format = format & RS::ARRAY_FORMAT_BLEND_SHAPE_MASK;
+		for (int i = 0; i < p_blend_shapes.size(); i++) {
+			Vector<uint8_t> vertex_array_shape;
+			vertex_array_shape.resize(vertex_array_size);
+			Vector<uint8_t> noindex;
+			Vector<uint8_t> noattrib;
+			Vector<uint8_t> noskin;
 
-		AABB laabb;
-		Error err2 = _surface_set_data(p_blend_shapes[i], format & ~ARRAY_FORMAT_INDEX, offsets, total_elem_size, vertex_array_shape, array_len, noindex, 0, laabb, bone_aabb);
-		aabb.merge_with(laabb);
-		ERR_FAIL_COND_V_MSG(err2 != OK, ERR_INVALID_DATA, "Invalid blend shape array format for surface.");
+			AABB laabb;
+			Error err2 = _surface_set_data(p_blend_shapes[i], bs_format, offsets, vertex_element_size, 0, 0, vertex_array_shape, noattrib, noskin, array_len, noindex, 0, laabb, bone_aabb);
+			aabb.merge_with(laabb);
+			ERR_FAIL_COND_V_MSG(err2 != OK, ERR_INVALID_DATA, "Invalid blend shape array format for surface.");
 
-		blend_shape_data.push_back(vertex_array_shape);
+			blend_shape_data.append_array(vertex_array_shape);
+			blend_shape_count++;
+		}
 	}
 	Vector<SurfaceData::LOD> lods;
 	if (index_array_len) {
@@ -1004,10 +987,13 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	surface_data.primitive = p_primitive;
 	surface_data.aabb = aabb;
 	surface_data.vertex_data = vertex_array;
+	surface_data.attribute_data = attrib_array;
+	surface_data.skin_data = skin_array;
 	surface_data.vertex_count = array_len;
 	surface_data.index_data = index_array;
 	surface_data.index_count = index_array_len;
-	surface_data.blend_shapes = blend_shape_data;
+	surface_data.blend_shape_count = blend_shape_count;
+	surface_data.blend_shape_data = blend_shape_data;
 	surface_data.bone_aabbs = bone_aabb;
 	surface_data.lods = lods;
 
@@ -1023,110 +1009,20 @@ void RenderingServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_p
 	mesh_add_surface(p_mesh, sd);
 }
 
-Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t> p_vertex_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len) const {
-	uint32_t offsets[ARRAY_MAX];
+Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len) const {
+	uint32_t offsets[RS::ARRAY_MAX];
 
-	int total_elem_size = 0;
-
-	for (int i = 0; i < RS::ARRAY_MAX; i++) {
-		offsets[i] = 0; //reset
-
-		if (!(p_format & (1 << i))) { // no array
-			continue;
-		}
-
-		int elem_size = 0;
-
-		switch (i) {
-			case RS::ARRAY_VERTEX: {
-				if (p_format & ARRAY_FLAG_USE_2D_VERTICES) {
-					elem_size = 2;
-				} else {
-					elem_size = 3;
-				}
-
-				{
-					elem_size *= sizeof(float);
-				}
-
-			} break;
-			case RS::ARRAY_NORMAL: {
-				if (p_format & ARRAY_COMPRESS_NORMAL) {
-					elem_size = sizeof(uint32_t);
-				} else {
-					elem_size = sizeof(float) * 3;
-				}
-
-			} break;
-
-			case RS::ARRAY_TANGENT: {
-				if (p_format & ARRAY_COMPRESS_TANGENT) {
-					elem_size = sizeof(uint32_t);
-				} else {
-					elem_size = sizeof(float) * 4;
-				}
-
-			} break;
-			case RS::ARRAY_COLOR: {
-				if (p_format & ARRAY_COMPRESS_COLOR) {
-					elem_size = sizeof(uint32_t);
-				} else {
-					elem_size = sizeof(float) * 4;
-				}
-			} break;
-			case RS::ARRAY_TEX_UV: {
-				if (p_format & ARRAY_COMPRESS_TEX_UV) {
-					elem_size = sizeof(uint32_t);
-				} else {
-					elem_size = sizeof(float) * 2;
-				}
-
-			} break;
-
-			case RS::ARRAY_TEX_UV2: {
-				if (p_format & ARRAY_COMPRESS_TEX_UV2) {
-					elem_size = sizeof(uint32_t);
-				} else {
-					elem_size = sizeof(float) * 2;
-				}
-
-			} break;
-			case RS::ARRAY_WEIGHTS: {
-				elem_size = sizeof(uint16_t) * 4;
-
-			} break;
-			case RS::ARRAY_BONES: {
-				elem_size = sizeof(uint16_t) * 4;
-
-			} break;
-			case RS::ARRAY_INDEX: {
-				if (p_index_len <= 0) {
-					ERR_PRINT("index_array_len==NO_INDEX_ARRAY");
-					break;
-				}
-				/* determine whether using 16 or 32 bits indices */
-				if (p_vertex_len >= (1 << 16)) {
-					elem_size = 4;
-
-				} else {
-					elem_size = 2;
-				}
-				offsets[i] = elem_size;
-				continue;
-			}
-			default: {
-				ERR_FAIL_V(Array());
-			}
-		}
-
-		offsets[i] = total_elem_size;
-		total_elem_size += elem_size;
-	}
+	uint32_t vertex_elem_size;
+	uint32_t attrib_elem_size;
+	uint32_t skin_elem_size;
+	mesh_surface_make_offsets_from_format(p_format, p_vertex_len, p_index_len, offsets, vertex_elem_size, attrib_elem_size, skin_elem_size);
 
 	Array ret;
 	ret.resize(RS::ARRAY_MAX);
 
 	const uint8_t *r = p_vertex_data.ptr();
+	const uint8_t *ar = p_attrib_data.ptr();
+	const uint8_t *sr = p_skin_data.ptr();
 
 	for (int i = 0; i < RS::ARRAY_MAX; i++) {
 		if (!(p_format & (1 << i))) {
@@ -1143,7 +1039,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 						Vector2 *w = arr_2d.ptrw();
 
 						for (int j = 0; j < p_vertex_len; j++) {
-							const float *v = (const float *)&r[j * total_elem_size + offsets[i]];
+							const float *v = (const float *)&r[j * vertex_elem_size + offsets[i]];
 							w[j] = Vector2(v[0], v[1]);
 						}
 					}
@@ -1157,7 +1053,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 						Vector3 *w = arr_3d.ptrw();
 
 						for (int j = 0; j < p_vertex_len; j++) {
-							const float *v = (const float *)&r[j * total_elem_size + offsets[i]];
+							const float *v = (const float *)&r[j * vertex_elem_size + offsets[i]];
 							w[j] = Vector3(v[0], v[1], v[2]);
 						}
 					}
@@ -1170,21 +1066,11 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 				Vector<Vector3> arr;
 				arr.resize(p_vertex_len);
 
-				if (p_format & ARRAY_COMPRESS_NORMAL) {
-					Vector3 *w = arr.ptrw();
-					const float multiplier = 1.f / 127.f;
+				Vector3 *w = arr.ptrw();
 
-					for (int j = 0; j < p_vertex_len; j++) {
-						const int8_t *v = (const int8_t *)&r[j * total_elem_size + offsets[i]];
-						w[j] = Vector3(float(v[0]) * multiplier, float(v[1]) * multiplier, float(v[2]) * multiplier);
-					}
-				} else {
-					Vector3 *w = arr.ptrw();
-
-					for (int j = 0; j < p_vertex_len; j++) {
-						const float *v = (const float *)&r[j * total_elem_size + offsets[i]];
-						w[j] = Vector3(v[0], v[1], v[2]);
-					}
+				for (int j = 0; j < p_vertex_len; j++) {
+					const uint32_t v = *(const uint32_t *)&r[j * vertex_elem_size + offsets[i]];
+					w[j] = Vector3((v & 0x3FF) / 1023.0, ((v >> 10) & 0x3FF) / 1023.0, ((v >> 20) & 0x3FF) / 1023.0) * Vector3(2, 2, 2) - Vector3(1, 1, 1);
 				}
 
 				ret[i] = arr;
@@ -1194,24 +1080,16 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 			case RS::ARRAY_TANGENT: {
 				Vector<float> arr;
 				arr.resize(p_vertex_len * 4);
-				if (p_format & ARRAY_COMPRESS_TANGENT) {
-					float *w = arr.ptrw();
 
-					for (int j = 0; j < p_vertex_len; j++) {
-						const int8_t *v = (const int8_t *)&r[j * total_elem_size + offsets[i]];
-						for (int k = 0; k < 4; k++) {
-							w[j * 4 + k] = float(v[k] / 127.0);
-						}
-					}
-				} else {
-					float *w = arr.ptrw();
+				float *w = arr.ptrw();
 
-					for (int j = 0; j < p_vertex_len; j++) {
-						const float *v = (const float *)&r[j * total_elem_size + offsets[i]];
-						for (int k = 0; k < 4; k++) {
-							w[j * 4 + k] = v[k];
-						}
-					}
+				for (int j = 0; j < p_vertex_len; j++) {
+					const uint32_t v = *(const uint32_t *)&r[j * vertex_elem_size + offsets[i]];
+
+					w[j * 4 + 0] = ((v & 0x3FF) / 1023.0) * 2.0 - 1.0;
+					w[j * 4 + 1] = (((v >> 10) & 0x3FF) / 1023.0) * 2.0 - 1.0;
+					w[j * 4 + 2] = (((v >> 20) & 0x3FF) / 1023.0) * 2.0 - 1.0;
+					w[j * 4 + 3] = ((v >> 30) / 3.0) * 2.0 - 1.0;
 				}
 
 				ret[i] = arr;
@@ -1221,20 +1099,11 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 				Vector<Color> arr;
 				arr.resize(p_vertex_len);
 
-				if (p_format & ARRAY_COMPRESS_COLOR) {
-					Color *w = arr.ptrw();
+				Color *w = arr.ptrw();
 
-					for (int j = 0; j < p_vertex_len; j++) {
-						const uint8_t *v = (const uint8_t *)&r[j * total_elem_size + offsets[i]];
-						w[j] = Color(float(v[0] / 255.0), float(v[1] / 255.0), float(v[2] / 255.0), float(v[3] / 255.0));
-					}
-				} else {
-					Color *w = arr.ptrw();
-
-					for (int j = 0; j < p_vertex_len; j++) {
-						const float *v = (const float *)&r[j * total_elem_size + offsets[i]];
-						w[j] = Color(v[0], v[1], v[2], v[3]);
-					}
+				for (int32_t j = 0; j < p_vertex_len; j++) {
+					const uint16_t *v = (const uint16_t *)&ar[j * attrib_elem_size + offsets[i]];
+					w[j] = Color(Math::half_to_float(v[0]), Math::half_to_float(v[1]), Math::half_to_float(v[2]), Math::half_to_float(v[3]));
 				}
 
 				ret[i] = arr;
@@ -1243,20 +1112,11 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 				Vector<Vector2> arr;
 				arr.resize(p_vertex_len);
 
-				if (p_format & ARRAY_COMPRESS_TEX_UV) {
-					Vector2 *w = arr.ptrw();
+				Vector2 *w = arr.ptrw();
 
-					for (int j = 0; j < p_vertex_len; j++) {
-						const uint16_t *v = (const uint16_t *)&r[j * total_elem_size + offsets[i]];
-						w[j] = Vector2(Math::halfptr_to_float(&v[0]), Math::halfptr_to_float(&v[1]));
-					}
-				} else {
-					Vector2 *w = arr.ptrw();
-
-					for (int j = 0; j < p_vertex_len; j++) {
-						const float *v = (const float *)&r[j * total_elem_size + offsets[i]];
-						w[j] = Vector2(v[0], v[1]);
-					}
+				for (int j = 0; j < p_vertex_len; j++) {
+					const float *v = (const float *)&ar[j * attrib_elem_size + offsets[i]];
+					w[j] = Vector2(v[0], v[1]);
 				}
 
 				ret[i] = arr;
@@ -1266,35 +1126,74 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 				Vector<Vector2> arr;
 				arr.resize(p_vertex_len);
 
-				if (p_format & ARRAY_COMPRESS_TEX_UV2) {
-					Vector2 *w = arr.ptrw();
+				Vector2 *w = arr.ptrw();
 
-					for (int j = 0; j < p_vertex_len; j++) {
-						const uint16_t *v = (const uint16_t *)&r[j * total_elem_size + offsets[i]];
-						w[j] = Vector2(Math::halfptr_to_float(&v[0]), Math::halfptr_to_float(&v[1]));
-					}
-				} else {
-					Vector2 *w = arr.ptrw();
-
-					for (int j = 0; j < p_vertex_len; j++) {
-						const float *v = (const float *)&r[j * total_elem_size + offsets[i]];
-						w[j] = Vector2(v[0], v[1]);
-					}
+				for (int j = 0; j < p_vertex_len; j++) {
+					const float *v = (const float *)&ar[j * attrib_elem_size + offsets[i]];
+					w[j] = Vector2(v[0], v[1]);
 				}
 
 				ret[i] = arr;
 
 			} break;
+			case RS::ARRAY_CUSTOM0:
+			case RS::ARRAY_CUSTOM1:
+			case RS::ARRAY_CUSTOM2:
+			case RS::ARRAY_CUSTOM3: {
+				uint32_t type = (p_format >> (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS * (RS::ARRAY_CUSTOM0 - i))) & ARRAY_FORMAT_CUSTOM_MASK;
+				switch (type) {
+					case ARRAY_CUSTOM_RGBA8_UNORM:
+					case ARRAY_CUSTOM_RGBA8_SNORM:
+					case ARRAY_CUSTOM_RG_HALF:
+					case ARRAY_CUSTOM_RGBA_HALF: {
+						//size 4
+						int s = type == ARRAY_CUSTOM_RGBA_HALF ? 8 : 4;
+						Vector<uint8_t> arr;
+						arr.resize(p_vertex_len * s);
+
+						uint8_t *w = arr.ptrw();
+
+						for (int j = 0; j < p_vertex_len; j++) {
+							const uint8_t *v = (const uint8_t *)&ar[j * attrib_elem_size + offsets[i]];
+							copymem(&w[j * s], v, s);
+						}
+
+						ret[i] = arr;
+
+					} break;
+					case ARRAY_CUSTOM_R_FLOAT:
+					case ARRAY_CUSTOM_RG_FLOAT:
+					case ARRAY_CUSTOM_RGB_FLOAT:
+					case ARRAY_CUSTOM_RGBA_FLOAT: {
+						uint32_t s = type - ARRAY_CUSTOM_R_FLOAT + 1;
+
+						Vector<float> arr;
+						float *w = arr.ptrw();
+
+						for (int j = 0; j < p_vertex_len; j++) {
+							const float *v = (const float *)&ar[j * attrib_elem_size + offsets[i]];
+							copymem(&w[j * s], v, s * sizeof(float));
+						}
+						ret[i] = arr;
+
+					} break;
+					default: {
+					}
+				}
+
+			} break;
 			case RS::ARRAY_WEIGHTS: {
+				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+
 				Vector<float> arr;
-				arr.resize(p_vertex_len * 4);
+				arr.resize(p_vertex_len * bone_count);
 				{
 					float *w = arr.ptrw();
 
 					for (int j = 0; j < p_vertex_len; j++) {
-						const uint16_t *v = (const uint16_t *)&r[j * total_elem_size + offsets[i]];
-						for (int k = 0; k < 4; k++) {
-							w[j * 4 + k] = float(v[k] / 65535.0);
+						const uint16_t *v = (const uint16_t *)&sr[j * skin_elem_size + offsets[i]];
+						for (uint32_t k = 0; k < bone_count; k++) {
+							w[j * bone_count + k] = float(v[k] / 65535.0);
 						}
 					}
 				}
@@ -1303,15 +1202,17 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 
 			} break;
 			case RS::ARRAY_BONES: {
+				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+
 				Vector<int> arr;
-				arr.resize(p_vertex_len * 4);
+				arr.resize(p_vertex_len * bone_count);
 
 				int *w = arr.ptrw();
 
 				for (int j = 0; j < p_vertex_len; j++) {
-					const uint16_t *v = (const uint16_t *)&r[j * total_elem_size + offsets[i]];
-					for (int k = 0; k < 4; k++) {
-						w[j * 4 + k] = v[k];
+					const uint16_t *v = (const uint16_t *)&sr[j * skin_elem_size + offsets[i]];
+					for (uint32_t k = 0; k < bone_count; k++) {
+						w[j * bone_count + k] = v[k];
 					}
 				}
 
@@ -1394,20 +1295,30 @@ Array RenderingServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_sur
 	SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
 	ERR_FAIL_COND_V(sd.vertex_count == 0, Array());
 
-	Vector<Vector<uint8_t>> blend_shape_data = sd.blend_shapes;
+	Vector<uint8_t> blend_shape_data = sd.blend_shape_data;
 
 	if (blend_shape_data.size() > 0) {
-		int vertex_len = sd.vertex_count;
+		uint32_t bs_offsets[RS::ARRAY_MAX];
+		uint32_t bs_format = (sd.format & RS::ARRAY_FORMAT_BLEND_SHAPE_MASK);
+		uint32_t vertex_elem_size;
+		uint32_t attrib_elem_size;
+		uint32_t skin_elem_size;
 
-		Vector<uint8_t> index_data = sd.index_data;
-		int index_len = sd.index_count;
+		mesh_surface_make_offsets_from_format(bs_format, sd.vertex_count, 0, bs_offsets, vertex_elem_size, attrib_elem_size, skin_elem_size);
 
-		uint32_t format = sd.format;
+		int divisor = vertex_elem_size * sd.vertex_count;
+		ERR_FAIL_COND_V((blend_shape_data.size() % divisor) != 0, Array());
+
+		uint32_t blend_shape_count = blend_shape_data.size() / divisor;
+
+		ERR_FAIL_COND_V(blend_shape_count != sd.blend_shape_count, Array());
 
 		Array blend_shape_array;
-		blend_shape_array.resize(blend_shape_data.size());
-		for (int i = 0; i < blend_shape_data.size(); i++) {
-			blend_shape_array.set(i, _get_array_from_surface(format, blend_shape_data[i], vertex_len, index_data, index_len));
+		blend_shape_array.resize(blend_shape_count);
+		for (uint32_t i = 0; i < blend_shape_count; i++) {
+			Vector<uint8_t> bs_data = blend_shape_data.subarray(i * divisor, (i + 1) * divisor - 1);
+			Vector<uint8_t> unused;
+			blend_shape_array.set(i, _get_array_from_surface(bs_format, bs_data, unused, unused, sd.vertex_count, unused, 0));
 		}
 
 		return blend_shape_array;
@@ -1418,6 +1329,8 @@ Array RenderingServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_sur
 
 Array RenderingServer::mesh_create_arrays_from_surface_data(const SurfaceData &p_data) const {
 	Vector<uint8_t> vertex_data = p_data.vertex_data;
+	Vector<uint8_t> attrib_data = p_data.attribute_data;
+	Vector<uint8_t> skin_data = p_data.skin_data;
 
 	ERR_FAIL_COND_V(vertex_data.size() == 0, Array());
 	int vertex_len = p_data.vertex_count;
@@ -1427,7 +1340,7 @@ Array RenderingServer::mesh_create_arrays_from_surface_data(const SurfaceData &p
 
 	uint32_t format = p_data.format;
 
-	return _get_array_from_surface(format, vertex_data, vertex_len, index_data, index_len);
+	return _get_array_from_surface(format, vertex_data, attrib_data, skin_data, vertex_len, index_data, index_len);
 }
 #if 0
 Array RenderingServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_surface) const {
@@ -1540,9 +1453,11 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("material_set_next_pass", "material", "next_material"), &RenderingServer::material_set_next_pass);
 
 	ClassDB::bind_method(D_METHOD("mesh_create"), &RenderingServer::mesh_create);
-	ClassDB::bind_method(D_METHOD("mesh_surface_get_format_offset", "format", "vertex_len", "index_len", "array_index"), &RenderingServer::mesh_surface_get_format_offset);
-	ClassDB::bind_method(D_METHOD("mesh_surface_get_format_stride", "format", "vertex_len", "index_len"), &RenderingServer::mesh_surface_get_format_stride);
-	ClassDB::bind_method(D_METHOD("mesh_add_surface_from_arrays", "mesh", "primitive", "arrays", "blend_shapes", "lods", "compress_format"), &RenderingServer::mesh_add_surface_from_arrays, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(ARRAY_COMPRESS_DEFAULT));
+	ClassDB::bind_method(D_METHOD("mesh_surface_get_format_offset", "format", "vertex_count", "array_index"), &RenderingServer::mesh_surface_get_format_offset);
+	ClassDB::bind_method(D_METHOD("mesh_surface_get_format_vertex_stride", "format", "vertex_count"), &RenderingServer::mesh_surface_get_format_vertex_stride);
+	ClassDB::bind_method(D_METHOD("mesh_surface_get_format_attribute_stride", "format", "vertex_count"), &RenderingServer::mesh_surface_get_format_attribute_stride);
+	ClassDB::bind_method(D_METHOD("mesh_surface_get_format_skin_stride", "format", "vertex_count"), &RenderingServer::mesh_surface_get_format_skin_stride);
+	//ClassDB::bind_method(D_METHOD("mesh_add_surface_from_arrays", "mesh", "primitive", "arrays", "blend_shapes", "lods", "compress_format"), &RenderingServer::mesh_add_surface_from_arrays, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(ARRAY_COMPRESS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("mesh_get_blend_shape_count", "mesh"), &RenderingServer::mesh_get_blend_shape_count);
 	ClassDB::bind_method(D_METHOD("mesh_set_blend_shape_mode", "mesh", "mode"), &RenderingServer::mesh_set_blend_shape_mode);
 	ClassDB::bind_method(D_METHOD("mesh_get_blend_shape_mode", "mesh"), &RenderingServer::mesh_get_blend_shape_mode);
@@ -1946,14 +1861,6 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_BONES);
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_WEIGHTS);
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_INDEX);
-
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_NORMAL);
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_TANGENT);
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_COLOR);
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_TEX_UV);
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_TEX_UV2);
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_INDEX);
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_DEFAULT);
 
 	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_2D_VERTICES);
 	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_DYNAMIC_UPDATE);

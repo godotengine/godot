@@ -102,6 +102,7 @@ public:
 	virtual String get_resource_type() const = 0;
 	virtual float get_priority() const { return 1.0; }
 	virtual int get_import_order() const { return 0; }
+	virtual int get_format_version() const { return 0; }
 
 	struct ImportOption {
 		PropertyInfo option;

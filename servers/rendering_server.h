@@ -52,7 +52,7 @@ class RenderingServer : public Object {
 
 	void _camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
 	void _canvas_item_add_style_box(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector<float> &p_margins, const Color &p_modulate = Color(1, 1, 1));
-	Array _get_array_from_surface(uint32_t p_format, Vector<uint8_t> p_vertex_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len) const;
+	Array _get_array_from_surface(uint32_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len) const;
 
 protected:
 	RID _make_test_cube();
@@ -61,7 +61,7 @@ protected:
 	RID white_texture;
 	RID test_material;
 
-	Error _surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_stride, Vector<uint8_t> &r_vertex_array, int p_vertex_array_len, Vector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb);
+	Error _surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_vertex_stride, uint32_t p_attrib_stride, uint32_t p_skin_stride, Vector<uint8_t> &r_vertex_array, Vector<uint8_t> &r_attrib_array, Vector<uint8_t> &r_skin_array, int p_vertex_array_len, Vector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb);
 
 	static RenderingServer *(*create_func)();
 	static void _bind_methods();
@@ -199,16 +199,36 @@ public:
 	/* MESH API */
 
 	enum ArrayType {
-		ARRAY_VERTEX = 0,
-		ARRAY_NORMAL = 1,
-		ARRAY_TANGENT = 2,
-		ARRAY_COLOR = 3,
-		ARRAY_TEX_UV = 4,
-		ARRAY_TEX_UV2 = 5,
-		ARRAY_BONES = 6,
-		ARRAY_WEIGHTS = 7,
-		ARRAY_INDEX = 8,
-		ARRAY_MAX = 9
+		ARRAY_VERTEX = 0, // RG32F or RGB32F (depending on 2D bit)
+		ARRAY_NORMAL = 1, // A2B10G10R10
+		ARRAY_TANGENT = 2, // A2B10G10R10, A flips sign of binormal
+		ARRAY_COLOR = 3, // RGBA16F
+		ARRAY_TEX_UV = 4, // RG32F
+		ARRAY_TEX_UV2 = 5, // RG32F
+		ARRAY_CUSTOM0 = 6, // depends on ArrayCustomFormat
+		ARRAY_CUSTOM1 = 7,
+		ARRAY_CUSTOM2 = 8,
+		ARRAY_CUSTOM3 = 9,
+		ARRAY_BONES = 10, // RGBA16UI (x2 if 8 weights)
+		ARRAY_WEIGHTS = 11, // RGBA16UNORM (x2 if 8 weights)
+		ARRAY_INDEX = 12, // 16 or 32 bits depending on length > 0xFFFF
+		ARRAY_MAX = 13
+	};
+
+	enum {
+		ARRAY_CUSTOM_COUNT = ARRAY_BONES - ARRAY_CUSTOM0
+	};
+
+	enum ArrayCustomFormat {
+		ARRAY_CUSTOM_RGBA8_UNORM,
+		ARRAY_CUSTOM_RGBA8_SNORM,
+		ARRAY_CUSTOM_RG_HALF,
+		ARRAY_CUSTOM_RGBA_HALF,
+		ARRAY_CUSTOM_R_FLOAT,
+		ARRAY_CUSTOM_RG_FLOAT,
+		ARRAY_CUSTOM_RGB_FLOAT,
+		ARRAY_CUSTOM_RGBA_FLOAT,
+		ARRAY_CUSTOM_MAX
 	};
 
 	enum ArrayFormat {
@@ -219,21 +239,29 @@ public:
 		ARRAY_FORMAT_COLOR = 1 << ARRAY_COLOR,
 		ARRAY_FORMAT_TEX_UV = 1 << ARRAY_TEX_UV,
 		ARRAY_FORMAT_TEX_UV2 = 1 << ARRAY_TEX_UV2,
+		ARRAY_FORMAT_CUSTOM0 = 1 << ARRAY_CUSTOM0,
+		ARRAY_FORMAT_CUSTOM1 = 1 << ARRAY_CUSTOM1,
+		ARRAY_FORMAT_CUSTOM2 = 1 << ARRAY_CUSTOM2,
+		ARRAY_FORMAT_CUSTOM3 = 1 << ARRAY_CUSTOM3,
 		ARRAY_FORMAT_BONES = 1 << ARRAY_BONES,
 		ARRAY_FORMAT_WEIGHTS = 1 << ARRAY_WEIGHTS,
 		ARRAY_FORMAT_INDEX = 1 << ARRAY_INDEX,
 
-		ARRAY_COMPRESS_BASE = (ARRAY_INDEX + 1),
-		ARRAY_COMPRESS_NORMAL = 1 << (ARRAY_NORMAL + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_TANGENT = 1 << (ARRAY_TANGENT + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_COLOR = 1 << (ARRAY_COLOR + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_TEX_UV = 1 << (ARRAY_TEX_UV + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_TEX_UV2 = 1 << (ARRAY_TEX_UV2 + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_INDEX = 1 << (ARRAY_INDEX + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2,
+		ARRAY_FORMAT_BLEND_SHAPE_MASK = ~(ARRAY_FORMAT_COLOR | ARRAY_FORMAT_TEX_UV | ARRAY_FORMAT_TEX_UV2 | ARRAY_FORMAT_BONES | ARRAY_FORMAT_WEIGHTS | ARRAY_FORMAT_CUSTOM0 | ARRAY_FORMAT_CUSTOM1 | ARRAY_FORMAT_CUSTOM2 | ARRAY_FORMAT_CUSTOM3 | ARRAY_FORMAT_INDEX),
 
-		ARRAY_FLAG_USE_2D_VERTICES = ARRAY_COMPRESS_INDEX << 1,
-		ARRAY_FLAG_USE_DYNAMIC_UPDATE = ARRAY_COMPRESS_INDEX << 3,
+		ARRAY_FORMAT_CUSTOM_BASE = (ARRAY_INDEX + 1),
+		ARRAY_FORMAT_CUSTOM_BITS = 3,
+		ARRAY_FORMAT_CUSTOM0_SHIFT = (ARRAY_FORMAT_CUSTOM_BASE + 0),
+		ARRAY_FORMAT_CUSTOM1_SHIFT = (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS),
+		ARRAY_FORMAT_CUSTOM2_SHIFT = (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS * 2),
+		ARRAY_FORMAT_CUSTOM3_SHIFT = (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS * 3),
+
+		ARRAY_FORMAT_CUSTOM_MASK = 0x7,
+		ARRAY_COMPRESS_FLAGS_BASE = (ARRAY_INDEX + 1 + 12),
+
+		ARRAY_FLAG_USE_2D_VERTICES = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 0),
+		ARRAY_FLAG_USE_DYNAMIC_UPDATE = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 1),
+		ARRAY_FLAG_USE_8_BONE_WEIGHTS = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 2),
 	};
 
 	enum PrimitiveType {
@@ -249,10 +277,14 @@ public:
 		PrimitiveType primitive = PRIMITIVE_MAX;
 
 		uint32_t format = 0;
-		Vector<uint8_t> vertex_data;
+		Vector<uint8_t> vertex_data; // vertex, normal, tangent (change with skinning, blendshape)
+		Vector<uint8_t> attribute_data; // color,uv, uv2, custom0-3
+		Vector<uint8_t> skin_data; // bone index, bone weight
 		uint32_t vertex_count = 0;
 		Vector<uint8_t> index_data;
 		uint32_t index_count = 0;
+
+		uint32_t blend_shape_count = 0;
 
 		AABB aabb;
 		struct LOD {
@@ -262,7 +294,7 @@ public:
 		Vector<LOD> lods;
 		Vector<AABB> bone_aabbs;
 
-		Vector<Vector<uint8_t>> blend_shapes;
+		Vector<uint8_t> blend_shape_data;
 
 		RID material;
 	};
@@ -270,17 +302,20 @@ public:
 	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces) = 0;
 	virtual RID mesh_create() = 0;
 
-	virtual uint32_t mesh_surface_get_format_offset(uint32_t p_format, int p_vertex_len, int p_index_len, int p_array_index) const;
-	virtual uint32_t mesh_surface_get_format_stride(uint32_t p_format, int p_vertex_len, int p_index_len) const;
+	virtual uint32_t mesh_surface_get_format_offset(uint32_t p_format, int p_vertex_len, int p_array_index) const;
+	virtual uint32_t mesh_surface_get_format_vertex_stride(uint32_t p_format, int p_vertex_len) const;
+	virtual uint32_t mesh_surface_get_format_attribute_stride(uint32_t p_format, int p_vertex_len) const;
+	virtual uint32_t mesh_surface_get_format_skin_stride(uint32_t p_format, int p_vertex_len) const;
+
 	/// Returns stride
-	virtual uint32_t mesh_surface_make_offsets_from_format(uint32_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets) const;
-	virtual Error mesh_create_surface_data_from_arrays(SurfaceData *r_surface_data, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_compress_format = ARRAY_COMPRESS_DEFAULT);
+	virtual void mesh_surface_make_offsets_from_format(uint32_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets, uint32_t &r_vertex_element_size, uint32_t &r_attrib_element_size, uint32_t &r_skin_element_size) const;
+	virtual Error mesh_create_surface_data_from_arrays(SurfaceData *r_surface_data, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_compress_format = 0);
 	Array mesh_create_arrays_from_surface_data(const SurfaceData &p_data) const;
 	Array mesh_surface_get_arrays(RID p_mesh, int p_surface) const;
 	Array mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const;
 	Dictionary mesh_surface_get_lods(RID p_mesh, int p_surface) const;
 
-	virtual void mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_compress_format = ARRAY_COMPRESS_DEFAULT);
+	virtual void mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_compress_format = 0);
 	virtual void mesh_add_surface(RID p_mesh, const SurfaceData &p_surface) = 0;
 
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const = 0;

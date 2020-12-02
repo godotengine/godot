@@ -157,7 +157,7 @@ void Mesh::generate_debug_mesh_indices(Vector<Vector3> &r_points) {
 
 bool Mesh::surface_is_softbody_friendly(int p_idx) const {
 	const uint32_t surface_format = surface_get_format(p_idx);
-	return (surface_format & Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE && (!(surface_format & Mesh::ARRAY_COMPRESS_NORMAL)));
+	return (surface_format & Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE);
 }
 
 Vector<Face3> Mesh::get_faces() const {
@@ -483,37 +483,59 @@ void Mesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_NORMALIZED);
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_RELATIVE);
 
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_VERTEX);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_NORMAL);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TANGENT);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_COLOR);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TEX_UV);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TEX_UV2);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_BONES);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_WEIGHTS);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_INDEX);
-
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_NORMAL);
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_TANGENT);
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_COLOR);
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_TEX_UV);
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_TEX_UV2);
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_INDEX);
-
-	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_2D_VERTICES);
-
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_DEFAULT);
-
 	BIND_ENUM_CONSTANT(ARRAY_VERTEX);
 	BIND_ENUM_CONSTANT(ARRAY_NORMAL);
 	BIND_ENUM_CONSTANT(ARRAY_TANGENT);
 	BIND_ENUM_CONSTANT(ARRAY_COLOR);
 	BIND_ENUM_CONSTANT(ARRAY_TEX_UV);
 	BIND_ENUM_CONSTANT(ARRAY_TEX_UV2);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM0);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM1);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM2);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM3);
 	BIND_ENUM_CONSTANT(ARRAY_BONES);
 	BIND_ENUM_CONSTANT(ARRAY_WEIGHTS);
 	BIND_ENUM_CONSTANT(ARRAY_INDEX);
 	BIND_ENUM_CONSTANT(ARRAY_MAX);
+
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA8_UNORM);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA8_SNORM);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RG_HALF);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA_HALF);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_R_FLOAT);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RG_FLOAT);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGB_FLOAT);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA_FLOAT);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_MAX);
+
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_VERTEX);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_NORMAL);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TANGENT);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_COLOR);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TEX_UV);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TEX_UV2);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM0);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM1);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM2);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM3);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_BONES);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_WEIGHTS);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_INDEX);
+
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_BLEND_SHAPE_MASK);
+
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM_BASE);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM0_SHIFT);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM1_SHIFT);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM2_SHIFT);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM3_SHIFT);
+
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM_MASK);
+	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_FLAGS_BASE);
+
+	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_2D_VERTICES);
+	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_DYNAMIC_UPDATE);
+	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_8_BONE_WEIGHTS);
 }
 
 void Mesh::clear_cache() const {
@@ -559,12 +581,50 @@ Vector<Ref<Shape3D>> Mesh::convex_decompose() const {
 
 Mesh::Mesh() {
 }
-
+#if 0
 static Vector<uint8_t> _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_format, uint32_t p_elements) {
-	bool vertex_16bit = p_format & ((1 << (Mesh::ARRAY_VERTEX + Mesh::ARRAY_COMPRESS_BASE)));
-	bool has_bones = (p_format & Mesh::ARRAY_FORMAT_BONES);
-	bool bone_8 = has_bones && !(p_format & (Mesh::ARRAY_COMPRESS_INDEX << 2));
-	bool weight_32 = has_bones && !(p_format & (Mesh::ARRAY_COMPRESS_TEX_UV2 << 2));
+	enum ArrayType {
+		OLD_ARRAY_VERTEX = 0,
+		OLD_ARRAY_NORMAL = 1,
+		OLD_ARRAY_TANGENT = 2,
+		OLD_ARRAY_COLOR = 3,
+		OLD_ARRAY_TEX_UV = 4,
+		OLD_ARRAY_TEX_UV2 = 5,
+		OLD_ARRAY_BONES = 6,
+		OLD_ARRAY_WEIGHTS = 7,
+		OLD_ARRAY_INDEX = 8,
+		OLD_ARRAY_MAX = 9
+	};
+
+	enum ArrayFormat {
+		/* OLD_ARRAY FORMAT FLAGS */
+		OLD_ARRAY_FORMAT_VERTEX = 1 << OLD_ARRAY_VERTEX, // mandatory
+		OLD_ARRAY_FORMAT_NORMAL = 1 << OLD_ARRAY_NORMAL,
+		OLD_ARRAY_FORMAT_TANGENT = 1 << OLD_ARRAY_TANGENT,
+		OLD_ARRAY_FORMAT_COLOR = 1 << OLD_ARRAY_COLOR,
+		OLD_ARRAY_FORMAT_TEX_UV = 1 << OLD_ARRAY_TEX_UV,
+		OLD_ARRAY_FORMAT_TEX_UV2 = 1 << OLD_ARRAY_TEX_UV2,
+		OLD_ARRAY_FORMAT_BONES = 1 << OLD_ARRAY_BONES,
+		OLD_ARRAY_FORMAT_WEIGHTS = 1 << OLD_ARRAY_WEIGHTS,
+		OLD_ARRAY_FORMAT_INDEX = 1 << OLD_ARRAY_INDEX,
+
+		OLD_ARRAY_COMPRESS_BASE = (OLD_ARRAY_INDEX + 1),
+		OLD_ARRAY_COMPRESS_NORMAL = 1 << (OLD_ARRAY_NORMAL + OLD_ARRAY_COMPRESS_BASE),
+		OLD_ARRAY_COMPRESS_TANGENT = 1 << (OLD_ARRAY_TANGENT + OLD_ARRAY_COMPRESS_BASE),
+		OLD_ARRAY_COMPRESS_COLOR = 1 << (OLD_ARRAY_COLOR + OLD_ARRAY_COMPRESS_BASE),
+		OLD_ARRAY_COMPRESS_TEX_UV = 1 << (OLD_ARRAY_TEX_UV + OLD_ARRAY_COMPRESS_BASE),
+		OLD_ARRAY_COMPRESS_TEX_UV2 = 1 << (OLD_ARRAY_TEX_UV2 + OLD_ARRAY_COMPRESS_BASE),
+		OLD_ARRAY_COMPRESS_INDEX = 1 << (OLD_ARRAY_INDEX + OLD_ARRAY_COMPRESS_BASE),
+		OLD_ARRAY_COMPRESS_DEFAULT = OLD_ARRAY_COMPRESS_NORMAL | OLD_ARRAY_COMPRESS_TANGENT | OLD_ARRAY_COMPRESS_COLOR | OLD_ARRAY_COMPRESS_TEX_UV | OLD_ARRAY_COMPRESS_TEX_UV2,
+
+		OLD_ARRAY_FLAG_USE_2D_VERTICES = OLD_ARRAY_COMPRESS_INDEX << 1,
+		OLD_ARRAY_FLAG_USE_DYNAMIC_UPDATE = OLD_ARRAY_COMPRESS_INDEX << 3,
+	};
+
+	bool vertex_16bit = p_format & ((1 << (OLD_ARRAY_VERTEX + OLD_ARRAY_COMPRESS_BASE)));
+	bool has_bones = (p_format & OLD_ARRAY_FORMAT_BONES);
+	bool bone_8 = has_bones && !(p_format & (OLD_ARRAY_COMPRESS_INDEX << 2));
+	bool weight_32 = has_bones && !(p_format & (OLD_ARRAY_COMPRESS_TEX_UV2 << 2));
 
 	print_line("convert vertex16: " + itos(vertex_16bit) + " convert bone 8 " + itos(bone_8) + " convert weight 32 " + itos(weight_32));
 
@@ -572,7 +632,7 @@ static Vector<uint8_t> _fix_array_compatibility(const Vector<uint8_t> &p_src, ui
 		return p_src;
 	}
 
-	bool vertex_2d = (p_format & (Mesh::ARRAY_COMPRESS_INDEX << 1));
+	bool vertex_2d = (p_format & (OLD_ARRAY_COMPRESS_INDEX << 1));
 
 	uint32_t src_stride = p_src.size() / p_elements;
 	uint32_t dst_stride = src_stride + (vertex_16bit ? 4 : 0) + (bone_8 ? 4 : 0) - (weight_32 ? 8 : 0);
@@ -671,7 +731,7 @@ static Vector<uint8_t> _fix_array_compatibility(const Vector<uint8_t> &p_src, ui
 
 	return ret;
 }
-
+#endif
 bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 	String sname = p_name;
 
@@ -727,6 +787,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			add_surface_from_arrays(PrimitiveType(int(d["primitive"])), d["arrays"], d["morph_arrays"]);
 
 		} else if (d.has("array_data")) {
+#if 0
 			//print_line("array data (old style");
 			//older format (3.x)
 			Vector<uint8_t> array_data = d["array_data"];
@@ -793,6 +854,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			}
 
 			add_surface(format, PrimitiveType(primitive), array_data, vertex_count, array_index_data, index_count, aabb, blend_shapes, bone_aabb);
+#endif
 		} else {
 			ERR_FAIL_V(false);
 		}
@@ -824,6 +886,12 @@ Array ArrayMesh::_get_surfaces() const {
 		data["primitive"] = surface.primitive;
 		data["vertex_data"] = surface.vertex_data;
 		data["vertex_count"] = surface.vertex_count;
+		if (surface.skin_data.size()) {
+			data["skin_data"] = surface.skin_data;
+		}
+		if (surface.attribute_data.size()) {
+			data["attribute_data"] = surface.attribute_data;
+		}
 		data["aabb"] = surface.aabb;
 		if (surface.index_count) {
 			data["index_data"] = surface.index_data;
@@ -848,9 +916,9 @@ Array ArrayMesh::_get_surfaces() const {
 			data["bone_aabbs"] = bone_aabbs;
 		}
 
-		Array blend_shapes;
-		for (int j = 0; j < surface.blend_shapes.size(); j++) {
-			blend_shapes.push_back(surface.blend_shapes[j]);
+		if (surface.blend_shape_data.size()) {
+			data["blend_shapes"] = surface.blend_shape_data;
+			data["blend_shapes_count"] = surface.blend_shape_count;
 		}
 
 		if (surfaces[i].material.is_valid()) {
@@ -896,6 +964,12 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 		surface.primitive = RS::PrimitiveType(int(d["primitive"]));
 		surface.vertex_data = d["vertex_data"];
 		surface.vertex_count = d["vertex_count"];
+		if (d.has("attribute_data")) {
+			surface.attribute_data = d["attribute_data"];
+		}
+		if (d.has("skin_data")) {
+			surface.skin_data = d["skin_data"];
+		}
 		surface.aabb = d["aabb"];
 
 		if (d.has("index_data")) {
@@ -922,11 +996,9 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 			}
 		}
 
-		if (d.has("blend_shapes")) {
-			Array blend_shapes;
-			for (int j = 0; j < blend_shapes.size(); j++) {
-				surface.blend_shapes.push_back(blend_shapes[j]);
-			}
+		if (d.has("blend_shapes") && d.has("blend_shape_count")) {
+			surface.blend_shape_data = d["blend_shapes"];
+			surface.blend_shape_count = d["blend_shape_count"];
 		}
 
 		Ref<Material> material;
@@ -982,7 +1054,7 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 		s.aabb = surface_data[i].aabb;
 		if (i == 0) {
 			aabb = s.aabb;
-			blend_shapes.resize(surface_data[i].blend_shapes.size());
+			blend_shapes.resize(surface_data[i].blend_shape_count);
 		} else {
 			aabb.merge_with(s.aabb);
 		}
@@ -1070,7 +1142,7 @@ void ArrayMesh::_recompute_aabb() {
 #ifndef _MSC_VER
 #warning need to add binding to add_surface using future MeshSurfaceData object
 #endif
-void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<Vector<uint8_t>> &p_blend_shapes, const Vector<AABB> &p_bone_aabb, const Vector<RS::SurfaceData::LOD> &p_lods) {
+void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data, uint32_t p_blend_shape_count, const Vector<AABB> &p_bone_aabbs, const Vector<RS::SurfaceData::LOD> &p_lods) {
 	_create_if_empty();
 
 	Surface s;
@@ -1090,10 +1162,13 @@ void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const 
 	sd.aabb = p_aabb;
 	sd.vertex_count = p_vertex_count;
 	sd.vertex_data = p_array;
+	sd.attribute_data = p_attribute_array;
+	sd.skin_data = p_skin_array;
 	sd.index_count = p_index_count;
 	sd.index_data = p_index_array;
-	sd.blend_shapes = p_blend_shapes;
-	sd.bone_aabbs = p_bone_aabb;
+	sd.blend_shape_data = p_blend_shape_data;
+	sd.blend_shape_count = p_blend_shape_count;
+	sd.bone_aabbs = p_bone_aabbs;
 	sd.lods = p_lods;
 
 	RenderingServer::get_singleton()->mesh_add_surface(mesh, sd);
@@ -1119,7 +1194,7 @@ void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &
 	print_line("index count: " + itos(surface.index_count));
 	print_line("primitive: " + itos(surface.primitive));
 */
-	add_surface(surface.format, PrimitiveType(surface.primitive), surface.vertex_data, surface.vertex_count, surface.index_data, surface.index_count, surface.aabb, surface.blend_shapes, surface.bone_aabbs, surface.lods);
+	add_surface(surface.format, PrimitiveType(surface.primitive), surface.vertex_data, surface.attribute_data, surface.skin_data, surface.vertex_count, surface.index_data, surface.index_count, surface.aabb, surface.blend_shape_data, surface.blend_shape_count, surface.bone_aabbs, surface.lods);
 }
 
 Array ArrayMesh::surface_get_arrays(int p_surface) const {
@@ -1452,29 +1527,29 @@ Error ArrayMesh::lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cach
 			SurfaceTool::Vertex v = lightmap_surfaces[surface].vertices[uv_indices[gen_vertices[gen_indices[i + j]]].second];
 
 			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_COLOR) {
-				surfaces_tools.write[surface]->add_color(v.color);
+				surfaces_tools.write[surface]->set_color(v.color);
 			}
 			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_TEX_UV) {
-				surfaces_tools.write[surface]->add_uv(v.uv);
+				surfaces_tools.write[surface]->set_uv(v.uv);
 			}
 			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_NORMAL) {
-				surfaces_tools.write[surface]->add_normal(v.normal);
+				surfaces_tools.write[surface]->set_normal(v.normal);
 			}
 			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_TANGENT) {
 				Plane t;
 				t.normal = v.tangent;
 				t.d = v.binormal.dot(v.normal.cross(v.tangent)) < 0 ? -1 : 1;
-				surfaces_tools.write[surface]->add_tangent(t);
+				surfaces_tools.write[surface]->set_tangent(t);
 			}
 			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_BONES) {
-				surfaces_tools.write[surface]->add_bones(v.bones);
+				surfaces_tools.write[surface]->set_bones(v.bones);
 			}
 			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_WEIGHTS) {
-				surfaces_tools.write[surface]->add_weights(v.weights);
+				surfaces_tools.write[surface]->set_weights(v.weights);
 			}
 
 			Vector2 uv2(gen_uvs[gen_indices[i + j] * 2 + 0], gen_uvs[gen_indices[i + j] * 2 + 1]);
-			surfaces_tools.write[surface]->add_uv2(uv2);
+			surfaces_tools.write[surface]->set_uv2(uv2);
 
 			surfaces_tools.write[surface]->add_vertex(v.vertex);
 		}
@@ -1507,7 +1582,7 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_shape_mode", "mode"), &ArrayMesh::set_blend_shape_mode);
 	ClassDB::bind_method(D_METHOD("get_blend_shape_mode"), &ArrayMesh::get_blend_shape_mode);
 
-	ClassDB::bind_method(D_METHOD("add_surface_from_arrays", "primitive", "arrays", "blend_shapes", "lods", "compress_flags"), &ArrayMesh::add_surface_from_arrays, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(ARRAY_COMPRESS_DEFAULT));
+	ClassDB::bind_method(D_METHOD("add_surface_from_arrays", "primitive", "arrays", "blend_shapes", "lods", "compress_flags"), &ArrayMesh::add_surface_from_arrays, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("clear_surfaces"), &ArrayMesh::clear_surfaces);
 	ClassDB::bind_method(D_METHOD("surface_update_region", "surf_idx", "offset", "data"), &ArrayMesh::surface_update_region);
 	ClassDB::bind_method(D_METHOD("surface_get_array_len", "surf_idx"), &ArrayMesh::surface_get_array_len);
@@ -1546,10 +1621,24 @@ void ArrayMesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(ARRAY_COLOR);
 	BIND_ENUM_CONSTANT(ARRAY_TEX_UV);
 	BIND_ENUM_CONSTANT(ARRAY_TEX_UV2);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM0);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM1);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM2);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM3);
 	BIND_ENUM_CONSTANT(ARRAY_BONES);
 	BIND_ENUM_CONSTANT(ARRAY_WEIGHTS);
 	BIND_ENUM_CONSTANT(ARRAY_INDEX);
 	BIND_ENUM_CONSTANT(ARRAY_MAX);
+
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA8_UNORM);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA8_SNORM);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RG_HALF);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA_HALF);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_R_FLOAT);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RG_FLOAT);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGB_FLOAT);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA_FLOAT);
+	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_MAX);
 
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_VERTEX);
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_NORMAL);
@@ -1557,9 +1646,28 @@ void ArrayMesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_COLOR);
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TEX_UV);
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TEX_UV2);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM0);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM1);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM2);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM3);
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_BONES);
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_WEIGHTS);
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_INDEX);
+
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_BLEND_SHAPE_MASK);
+
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM_BASE);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM0_SHIFT);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM1_SHIFT);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM2_SHIFT);
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM3_SHIFT);
+
+	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM_MASK);
+	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_FLAGS_BASE);
+
+	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_2D_VERTICES);
+	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_DYNAMIC_UPDATE);
+	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_8_BONE_WEIGHTS);
 }
 
 void ArrayMesh::reload_from_file() {

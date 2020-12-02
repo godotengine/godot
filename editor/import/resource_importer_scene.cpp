@@ -172,6 +172,10 @@ String ResourceImporterScene::get_resource_type() const {
 	return "PackedScene";
 }
 
+int ResourceImporterScene::get_format_version() const {
+	return 1;
+}
+
 bool ResourceImporterScene::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
 	if (p_option.begins_with("animation/")) {
 		if (p_option != "animation/import" && !bool(p_options["animation/import"])) {

@@ -5336,18 +5336,19 @@ void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_bu
 			tonemap.exposure = env->exposure;
 		}
 
+		tonemap.use_color_correction = false;
+		tonemap.use_1d_color_correction = false;
+		tonemap.color_correction_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
+
 		if (can_use_effects && env) {
 			tonemap.use_bcs = env->adjustments_enabled;
 			tonemap.brightness = env->adjustments_brightness;
 			tonemap.contrast = env->adjustments_contrast;
 			tonemap.saturation = env->adjustments_saturation;
-			tonemap.use_1d_color_correction = env->use_1d_color_correction;
 			if (env->adjustments_enabled && env->color_correction.is_valid()) {
 				tonemap.use_color_correction = true;
+				tonemap.use_1d_color_correction = env->use_1d_color_correction;
 				tonemap.color_correction_texture = storage->texture_get_rd_texture(env->color_correction);
-			} else {
-				tonemap.use_color_correction = false;
-				tonemap.color_correction_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE);
 			}
 		}
 

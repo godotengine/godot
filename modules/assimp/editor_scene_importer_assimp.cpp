@@ -827,8 +827,7 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 	Ref<ArrayMesh> mesh;
 	mesh.instance();
 	bool has_uvs = false;
-	bool compress_vert_data = state.import_flags & IMPORT_USE_COMPRESSION;
-	uint32_t mesh_flags = compress_vert_data ? Mesh::ARRAY_COMPRESS_DEFAULT : 0;
+	uint32_t mesh_flags = 0;
 
 	Map<String, uint32_t> morph_mesh_string_lookup;
 
@@ -904,33 +903,33 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 			// Get the texture coordinates if they exist
 			if (ai_mesh->HasTextureCoords(0)) {
 				has_uvs = true;
-				st->add_uv(Vector2(ai_mesh->mTextureCoords[0][j].x, 1.0f - ai_mesh->mTextureCoords[0][j].y));
+				st->set_uv(Vector2(ai_mesh->mTextureCoords[0][j].x, 1.0f - ai_mesh->mTextureCoords[0][j].y));
 			}
 
 			if (ai_mesh->HasTextureCoords(1)) {
 				has_uvs = true;
-				st->add_uv2(Vector2(ai_mesh->mTextureCoords[1][j].x, 1.0f - ai_mesh->mTextureCoords[1][j].y));
+				st->set_uv2(Vector2(ai_mesh->mTextureCoords[1][j].x, 1.0f - ai_mesh->mTextureCoords[1][j].y));
 			}
 
 			// Assign vertex colors
 			if (ai_mesh->HasVertexColors(0)) {
 				Color color = Color(ai_mesh->mColors[0]->r, ai_mesh->mColors[0]->g, ai_mesh->mColors[0]->b,
 						ai_mesh->mColors[0]->a);
-				st->add_color(color);
+				st->set_color(color);
 			}
 
 			// Work out normal calculations? - this needs work it doesn't work properly on huestos
 			if (ai_mesh->mNormals != nullptr) {
 				const aiVector3D normals = ai_mesh->mNormals[j];
 				const Vector3 godot_normal = Vector3(normals.x, normals.y, normals.z);
-				st->add_normal(godot_normal);
+				st->set_normal(godot_normal);
 				if (ai_mesh->HasTangentsAndBitangents()) {
 					const aiVector3D tangents = ai_mesh->mTangents[j];
 					const Vector3 godot_tangent = Vector3(tangents.x, tangents.y, tangents.z);
 					const aiVector3D bitangent = ai_mesh->mBitangents[j];
 					const Vector3 godot_bitangent = Vector3(bitangent.x, bitangent.y, bitangent.z);
 					float d = godot_normal.cross(godot_tangent).dot(godot_bitangent) > 0.0f ? 1.0f : -1.0f;
-					st->add_tangent(Plane(tangents.x, tangents.y, tangents.z, d));
+					st->set_tangent(Plane(tangents.x, tangents.y, tangents.z, d));
 				}
 			}
 
@@ -948,8 +947,8 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 					weights.write[k] = bone_info[k].weight;
 				}
 
-				st->add_bones(bones);
-				st->add_weights(weights);
+				st->set_bones(bones);
+				st->set_weights(weights);
 			}
 
 			// Assign vertex
