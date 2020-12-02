@@ -2398,13 +2398,15 @@ void RasterizerStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_
 	ERR_FAIL_COND(!mesh);
 
 	//ensure blend shape consistency
-	ERR_FAIL_COND(mesh->blend_shape_count && p_surface.blend_shapes.size() != (int)mesh->blend_shape_count);
+	ERR_FAIL_COND(mesh->blend_shape_count && p_surface.blend_shape_count != mesh->blend_shape_count);
 	ERR_FAIL_COND(mesh->blend_shape_count && p_surface.bone_aabbs.size() != mesh->bone_aabbs.size());
 
 #ifdef DEBUG_ENABLED
 	//do a validation, to catch errors first
 	{
 		uint32_t stride = 0;
+		uint32_t attrib_stride = 0;
+		uint32_t skin_stride = 0;
 
 		for (int i = 0; i < RS::ARRAY_WEIGHTS; i++) {
 			if ((p_surface.format & (1 << i))) {
@@ -2418,59 +2420,54 @@ void RasterizerStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_
 
 					} break;
 					case RS::ARRAY_NORMAL: {
-						if (p_surface.format & RS::ARRAY_COMPRESS_NORMAL) {
-							stride += sizeof(int8_t) * 4;
-						} else {
-							stride += sizeof(float) * 4;
-						}
+						stride += sizeof(int32_t);
 
 					} break;
 					case RS::ARRAY_TANGENT: {
-						if (p_surface.format & RS::ARRAY_COMPRESS_TANGENT) {
-							stride += sizeof(int8_t) * 4;
-						} else {
-							stride += sizeof(float) * 4;
-						}
+						stride += sizeof(int32_t);
 
 					} break;
 					case RS::ARRAY_COLOR: {
-						if (p_surface.format & RS::ARRAY_COMPRESS_COLOR) {
-							stride += sizeof(int8_t) * 4;
-						} else {
-							stride += sizeof(float) * 4;
-						}
-
+						attrib_stride += sizeof(int16_t) * 4;
 					} break;
 					case RS::ARRAY_TEX_UV: {
-						if (p_surface.format & RS::ARRAY_COMPRESS_TEX_UV) {
-							stride += sizeof(int16_t) * 2;
-						} else {
-							stride += sizeof(float) * 2;
-						}
+						attrib_stride += sizeof(float) * 2;
 
 					} break;
 					case RS::ARRAY_TEX_UV2: {
-						if (p_surface.format & RS::ARRAY_COMPRESS_TEX_UV2) {
-							stride += sizeof(int16_t) * 2;
-						} else {
-							stride += sizeof(float) * 2;
-						}
+						attrib_stride += sizeof(float) * 2;
 
 					} break;
+					case RS::ARRAY_CUSTOM0:
+					case RS::ARRAY_CUSTOM1:
+					case RS::ARRAY_CUSTOM2:
+					case RS::ARRAY_CUSTOM3: {
+						int idx = i - RS::ARRAY_CUSTOM0;
+						uint32_t fmt_shift[RS::ARRAY_CUSTOM_COUNT] = { RS::ARRAY_FORMAT_CUSTOM0_SHIFT, RS::ARRAY_FORMAT_CUSTOM1_SHIFT, RS::ARRAY_FORMAT_CUSTOM2_SHIFT, RS::ARRAY_FORMAT_CUSTOM3_SHIFT };
+						uint32_t fmt = (p_surface.format >> fmt_shift[idx]) & RS::ARRAY_FORMAT_CUSTOM_MASK;
+						uint32_t fmtsize[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
+						attrib_stride += fmtsize[fmt];
+
+					} break;
+					case RS::ARRAY_WEIGHTS:
 					case RS::ARRAY_BONES: {
-						//assumed weights too
-
-						//unique format, internally 16 bits, exposed as single array for 32
-
-						stride += sizeof(int32_t) * 4;
-
+						//uses a separate array
+						bool use_8 = p_surface.format & RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+						skin_stride += sizeof(int16_t) * (use_8 ? 8 : 4);
 					} break;
 				}
 			}
 		}
 
 		int expected_size = stride * p_surface.vertex_count;
-		ERR_FAIL_COND_MSG(expected_size != p_surface.vertex_data.size(), "Size of data provided (" + itos(p_surface.vertex_data.size()) + ") does not match expected (" + itos(expected_size) + ")");
+		ERR_FAIL_COND_MSG(expected_size != p_surface.vertex_data.size(), "Size of vertex data provided (" + itos(p_surface.vertex_data.size()) + ") does not match expected (" + itos(expected_size) + ")");
+		int expected_attrib_size = attrib_stride * p_surface.vertex_count;
+		ERR_FAIL_COND_MSG(expected_attrib_size != p_surface.attribute_data.size(), "Size of attribute data provided (" + itos(p_surface.attribute_data.size()) + ") does not match expected (" + itos(expected_attrib_size) + ")");
+
+		if ((p_surface.format & RS::ARRAY_FORMAT_WEIGHTS) && (p_surface.format & RS::ARRAY_FORMAT_BONES)) {
+			expected_size = skin_stride * p_surface.vertex_count;
+			ERR_FAIL_COND_MSG(expected_size != p_surface.skin_data.size(), "Size of skin data provided (" + itos(p_surface.skin_data.size()) + ") does not match expected (" + itos(expected_size) + ")");
+		}
 	}
 
 #endif
@@ -2481,6 +2478,12 @@ void RasterizerStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_
 	s->primitive = p_surface.primitive;
 
 	s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_surface.vertex_data.size(), p_surface.vertex_data);
+	if (p_surface.attribute_data.size()) {
+		s->attribute_buffer = RD::get_singleton()->vertex_buffer_create(p_surface.attribute_data.size(), p_surface.attribute_data);
+	}
+	if (p_surface.skin_data.size()) {
+		s->skin_buffer = RD::get_singleton()->vertex_buffer_create(p_surface.skin_data.size(), p_surface.skin_data);
+	}
 	s->vertex_count = p_surface.vertex_count;
 
 	if (p_surface.index_count) {
@@ -2504,7 +2507,7 @@ void RasterizerStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_
 
 	s->aabb = p_surface.aabb;
 	s->bone_aabbs = p_surface.bone_aabbs; //only really useful for returning them.
-
+#if 0
 	for (int i = 0; i < p_surface.blend_shapes.size(); i++) {
 		if (p_surface.blend_shapes[i].size() != p_surface.vertex_data.size()) {
 			memdelete(s);
@@ -2513,8 +2516,8 @@ void RasterizerStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_
 		RID vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_surface.blend_shapes[i].size(), p_surface.blend_shapes[i]);
 		s->blend_shapes.push_back(vertex_buffer);
 	}
-
-	mesh->blend_shape_count = p_surface.blend_shapes.size();
+#endif
+	mesh->blend_shape_count = p_surface.blend_shape_count;
 
 	if (mesh->surface_count == 0) {
 		mesh->bone_aabbs = p_surface.bone_aabbs;
@@ -2596,6 +2599,12 @@ RS::SurfaceData RasterizerStorageRD::mesh_get_surface(RID p_mesh, int p_surface)
 	RS::SurfaceData sd;
 	sd.format = s.format;
 	sd.vertex_data = RD::get_singleton()->buffer_get_data(s.vertex_buffer);
+	if (s.attribute_buffer.is_valid()) {
+		sd.attribute_data = RD::get_singleton()->buffer_get_data(s.attribute_buffer);
+	}
+	if (s.skin_buffer.is_valid()) {
+		sd.skin_data = RD::get_singleton()->buffer_get_data(s.skin_buffer);
+	}
 	sd.vertex_count = s.vertex_count;
 	sd.index_count = s.index_count;
 	sd.primitive = s.primitive;
@@ -2613,9 +2622,8 @@ RS::SurfaceData RasterizerStorageRD::mesh_get_surface(RID p_mesh, int p_surface)
 
 	sd.bone_aabbs = s.bone_aabbs;
 
-	for (int i = 0; i < s.blend_shapes.size(); i++) {
-		Vector<uint8_t> bs = RD::get_singleton()->buffer_get_data(s.blend_shapes[i]);
-		sd.blend_shapes.push_back(bs);
+	if (s.blend_shape_buffer.is_valid()) {
+		sd.blend_shape_data = RD::get_singleton()->buffer_get_data(s.blend_shape_buffer);
 	}
 
 	return sd;
@@ -2750,6 +2758,12 @@ void RasterizerStorageRD::mesh_clear(RID p_mesh) {
 	for (uint32_t i = 0; i < mesh->surface_count; i++) {
 		Mesh::Surface &s = *mesh->surfaces[i];
 		RD::get_singleton()->free(s.vertex_buffer); //clears arrays as dependency automatically, including all versions
+		if (s.attribute_buffer.is_valid()) {
+			RD::get_singleton()->free(s.attribute_buffer);
+		}
+		if (s.skin_buffer.is_valid()) {
+			RD::get_singleton()->free(s.skin_buffer);
+		}
 		if (s.versions) {
 			memfree(s.versions); //reallocs, so free with memfree.
 		}
@@ -2765,12 +2779,8 @@ void RasterizerStorageRD::mesh_clear(RID p_mesh) {
 			memdelete_arr(s.lods);
 		}
 
-		for (int32_t j = 0; j < s.blend_shapes.size(); j++) {
-			RD::get_singleton()->free(s.blend_shapes[j]);
-		}
-
-		if (s.blend_shape_base_buffer.is_valid()) {
-			RD::get_singleton()->free(s.blend_shape_base_buffer);
+		if (s.blend_shape_buffer.is_valid()) {
+			RD::get_singleton()->free(s.blend_shape_buffer);
 		}
 
 		memdelete(mesh->surfaces[i]);
@@ -2796,8 +2806,10 @@ void RasterizerStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Su
 	Vector<RID> buffers;
 
 	uint32_t stride = 0;
+	uint32_t attribute_stride = 0;
+	uint32_t skin_stride = 0;
 
-	for (int i = 0; i < RS::ARRAY_WEIGHTS; i++) {
+	for (int i = 0; i < RS::ARRAY_INDEX; i++) {
 		RD::VertexAttribute vd;
 		RID buffer;
 		vd.location = i;
@@ -2805,6 +2817,7 @@ void RasterizerStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Su
 		if (!(s->format & (1 << i))) {
 			// Not supplied by surface, use default value
 			buffer = mesh_default_rd_buffers[i];
+			vd.stride = 0;
 			switch (i) {
 				case RS::ARRAY_VERTEX: {
 					vd.format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
@@ -2827,7 +2840,18 @@ void RasterizerStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Su
 				case RS::ARRAY_TEX_UV2: {
 					vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
 				} break;
+				case RS::ARRAY_CUSTOM0:
+				case RS::ARRAY_CUSTOM1:
+				case RS::ARRAY_CUSTOM2:
+				case RS::ARRAY_CUSTOM3: {
+					//assumed weights too
+					vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+				} break;
 				case RS::ARRAY_BONES: {
+					//assumed weights too
+					vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
+				} break;
+				case RS::ARRAY_WEIGHTS: {
 					//assumed weights too
 					vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
 				} break;
@@ -2835,12 +2859,12 @@ void RasterizerStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Su
 		} else {
 			//Supplied, use it
 
-			vd.offset = stride;
-			vd.stride = 1; //mark that it needs a stride set
-			buffer = s->vertex_buffer;
+			vd.stride = 1; //mark that it needs a stride set (default uses 0)
 
 			switch (i) {
 				case RS::ARRAY_VERTEX: {
+					vd.offset = stride;
+
 					if (s->format & RS::ARRAY_FLAG_USE_2D_VERTICES) {
 						vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
 						stride += sizeof(float) * 2;
@@ -2849,71 +2873,80 @@ void RasterizerStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Su
 						stride += sizeof(float) * 3;
 					}
 
+					buffer = s->vertex_buffer;
+
 				} break;
 				case RS::ARRAY_NORMAL: {
-					if (s->format & RS::ARRAY_COMPRESS_NORMAL) {
-						vd.format = RD::DATA_FORMAT_R8G8B8A8_SNORM;
-						stride += sizeof(int8_t) * 4;
-					} else {
-						vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
-						stride += sizeof(float) * 4;
-					}
+					vd.offset = stride;
 
+					vd.format = RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
+
+					stride += sizeof(uint32_t);
+					buffer = s->vertex_buffer;
 				} break;
 				case RS::ARRAY_TANGENT: {
-					if (s->format & RS::ARRAY_COMPRESS_TANGENT) {
-						vd.format = RD::DATA_FORMAT_R8G8B8A8_SNORM;
-						stride += sizeof(int8_t) * 4;
-					} else {
-						vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
-						stride += sizeof(float) * 4;
-					}
+					vd.offset = stride;
 
+					vd.format = RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
+					stride += sizeof(uint32_t);
+					buffer = s->vertex_buffer;
 				} break;
 				case RS::ARRAY_COLOR: {
-					if (s->format & RS::ARRAY_COMPRESS_COLOR) {
-						vd.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-						stride += sizeof(int8_t) * 4;
-					} else {
-						vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
-						stride += sizeof(float) * 4;
-					}
+					vd.offset = attribute_stride;
 
+					vd.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+					attribute_stride += sizeof(int16_t) * 4;
+					buffer = s->attribute_buffer;
 				} break;
 				case RS::ARRAY_TEX_UV: {
-					if (s->format & RS::ARRAY_COMPRESS_TEX_UV) {
-						vd.format = RD::DATA_FORMAT_R16G16_SFLOAT;
-						stride += sizeof(int16_t) * 2;
-					} else {
-						vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
-						stride += sizeof(float) * 2;
-					}
+					vd.offset = attribute_stride;
+
+					vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+					attribute_stride += sizeof(float) * 2;
+					buffer = s->attribute_buffer;
 
 				} break;
 				case RS::ARRAY_TEX_UV2: {
-					if (s->format & RS::ARRAY_COMPRESS_TEX_UV2) {
-						vd.format = RD::DATA_FORMAT_R16G16_SFLOAT;
-						stride += sizeof(int16_t) * 2;
-					} else {
-						vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
-						stride += sizeof(float) * 2;
-					}
+					vd.offset = attribute_stride;
 
+					vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+					attribute_stride += sizeof(float) * 2;
+					buffer = s->attribute_buffer;
+				} break;
+				case RS::ARRAY_CUSTOM0:
+				case RS::ARRAY_CUSTOM1:
+				case RS::ARRAY_CUSTOM2:
+				case RS::ARRAY_CUSTOM3: {
+					vd.offset = attribute_stride;
+
+					int idx = i - RS::ARRAY_CUSTOM0;
+					uint32_t fmt_shift[RS::ARRAY_CUSTOM_COUNT] = { RS::ARRAY_FORMAT_CUSTOM0_SHIFT, RS::ARRAY_FORMAT_CUSTOM1_SHIFT, RS::ARRAY_FORMAT_CUSTOM2_SHIFT, RS::ARRAY_FORMAT_CUSTOM3_SHIFT };
+					uint32_t fmt = (s->format >> fmt_shift[idx]) & RS::ARRAY_FORMAT_CUSTOM_MASK;
+					uint32_t fmtsize[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
+					RD::DataFormat fmtrd[RS::ARRAY_CUSTOM_MAX] = { RD::DATA_FORMAT_R8G8B8A8_UNORM, RD::DATA_FORMAT_R8G8B8A8_SNORM, RD::DATA_FORMAT_R16G16_SFLOAT, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::DATA_FORMAT_R32_SFLOAT, RD::DATA_FORMAT_R32G32_SFLOAT, RD::DATA_FORMAT_R32G32B32_SFLOAT, RD::DATA_FORMAT_R32G32B32A32_SFLOAT };
+					vd.format = fmtrd[fmt];
+					attribute_stride += fmtsize[fmt];
+					buffer = s->attribute_buffer;
 				} break;
 				case RS::ARRAY_BONES: {
-					//assumed weights too
+					vd.offset = skin_stride;
 
-					//unique format, internally 16 bits, exposed as single array for 32
+					vd.format = RD::DATA_FORMAT_R16G16B16A16_UINT;
+					skin_stride += sizeof(int16_t) * 4;
+					buffer = s->skin_buffer;
+				} break;
+				case RS::ARRAY_WEIGHTS: {
+					vd.offset = skin_stride;
 
-					vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
-					stride += sizeof(int32_t) * 4;
-
+					vd.format = RD::DATA_FORMAT_R16G16B16A16_UNORM;
+					skin_stride += sizeof(int16_t) * 4;
+					buffer = s->skin_buffer;
 				} break;
 			}
 		}
 
 		if (!(p_input_mask & (1 << i))) {
-			continue; // Shader does not need this, skip it
+			continue; // Shader does not need this, skip it (but computing stride was important anyway)
 		}
 
 		attributes.push_back(vd);
@@ -2922,8 +2955,17 @@ void RasterizerStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Su
 
 	//update final stride
 	for (int i = 0; i < attributes.size(); i++) {
-		if (attributes[i].stride == 1) {
+		if (attributes[i].stride == 0) {
+			continue; //default location
+		}
+		int loc = attributes[i].location;
+
+		if (loc < RS::ARRAY_COLOR) {
 			attributes.write[i].stride = stride;
+		} else if (loc < RS::ARRAY_BONES) {
+			attributes.write[i].stride = attribute_stride;
+		} else {
+			attributes.write[i].stride = skin_stride;
 		}
 	}
 
@@ -8261,6 +8303,19 @@ RasterizerStorageRD::RasterizerStorageRD() {
 				fptr[1] = 0.0;
 			}
 			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV2] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
+
+		for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
+			buffer.resize(sizeof(float) * 4);
+			{
+				uint8_t *w = buffer.ptrw();
+				float *fptr = (float *)w;
+				fptr[0] = 0.0;
+				fptr[1] = 0.0;
+				fptr[2] = 0.0;
+				fptr[3] = 0.0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_CUSTOM0 + i] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
 		}
 
 		{ //bones

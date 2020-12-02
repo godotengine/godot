@@ -9,7 +9,8 @@ layout(location = 0) in vec2 vertex_attrib;
 layout(location = 3) in vec4 color_attrib;
 layout(location = 4) in vec2 uv_attrib;
 
-layout(location = 6) in uvec4 bones_attrib;
+layout(location = 10) in uvec4 bone_attrib;
+layout(location = 11) in vec4 weight_attrib;
 
 #endif
 
@@ -61,6 +62,7 @@ void main() {
 		color = vec4(unpackHalf2x16(draw_data.colors[4]), unpackHalf2x16(draw_data.colors[5]));
 	}
 	uvec4 bones = uvec4(0, 0, 0, 0);
+	vec4 bone_weights = vec4(0.0);
 
 #elif defined(USE_ATTRIBUTES)
 
@@ -68,7 +70,8 @@ void main() {
 	vec4 color = color_attrib;
 	vec2 uv = uv_attrib;
 
-	uvec4 bones = bones_attrib;
+	uvec4 bones = bone_attrib;
+	vec4 bone_weights = weight_attrib;
 #else
 
 	vec2 vertex_base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
