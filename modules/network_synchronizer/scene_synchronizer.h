@@ -200,6 +200,13 @@ public:
 
 	void set_node_as_controlled_by(Node *p_node, Node *p_controller);
 
+	/// Add a dependency to a controller, so that the rewinding mechanism can
+	/// make sure to rewind that node when the controller is rewinded.
+	/// You can remove and add dependency at any time. This operation
+	/// don't need to be perfomed on server.
+	void controller_add_dependency(Node *p_controller, Node *p_node);
+	void controller_remove_dependency(Node *p_controller, Node *p_node);
+
 	void register_process(Node *p_node, StringName p_function);
 	void unregister_process(Node *p_node, StringName p_function);
 
@@ -251,6 +258,7 @@ private:
 	void process();
 
 	void validate_nodes();
+	void purge_node_dependencies();
 
 	real_t get_pretended_delta() const;
 
@@ -345,6 +353,7 @@ class ClientSynchronizer : public Synchronizer {
 	NetUtility::Snapshot last_received_snapshot;
 	std::deque<NetUtility::Snapshot> client_snapshots;
 	std::deque<NetUtility::Snapshot> server_snapshots;
+	uint32_t last_checked_input = 0;
 
 	bool need_full_snapshot_notified = false;
 

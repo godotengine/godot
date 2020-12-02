@@ -294,6 +294,8 @@ struct NodeData {
 
 	bool is_controller = false;
 	LocalVector<NodeData *> controlled_nodes;
+	LocalVector<NodeData *> dependency_nodes;
+	LocalVector<uint32_t> dependency_nodes_end;
 
 	/// The sync variables of this node. The order of this vector matters
 	/// because the index is the `NetVarId`.

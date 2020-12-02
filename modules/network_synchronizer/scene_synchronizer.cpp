@@ -72,6 +72,9 @@ void SceneSynchronizer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_node_as_controlled_by", "node", "controller"), &SceneSynchronizer::set_node_as_controlled_by);
 
+	ClassDB::bind_method(D_METHOD("controller_add_dependency", "controller", "node"), &SceneSynchronizer::controller_add_dependency);
+	ClassDB::bind_method(D_METHOD("controller_remove_dependency", "controller", "node"), &SceneSynchronizer::controller_remove_dependency);
+
 	ClassDB::bind_method(D_METHOD("register_process", "node", "function"), &SceneSynchronizer::register_process);
 	ClassDB::bind_method(D_METHOD("unregister_process", "node", "function"), &SceneSynchronizer::unregister_process);
 
@@ -444,6 +447,61 @@ void SceneSynchronizer::set_node_as_controlled_by(Node *p_node, Node *p_controll
 		}
 	}
 #endif
+}
+
+void SceneSynchronizer::controller_add_dependency(Node *p_controller, Node *p_node) {
+	if (is_client() == false) {
+		// Nothing to do.
+		return;
+	}
+
+	NetUtility::NodeData *controller_nd = find_node_data(p_controller);
+	ERR_FAIL_COND_MSG(controller_nd == nullptr, "The passed controller (" + p_controller->get_path() + ") is not registered.");
+	ERR_FAIL_COND_MSG(controller_nd->is_controller == false, "The node passed as controller (" + p_controller->get_path() + ") is not a controller.");
+
+	NetUtility::NodeData *node_nd = find_node_data(p_node);
+	ERR_FAIL_COND_MSG(node_nd == nullptr, "The passed node (" + p_node->get_path() + ") is not registered.");
+	ERR_FAIL_COND_MSG(node_nd->is_controller, "The node (" + p_node->get_path() + ") set as dependency is supposed to be just a node.");
+	ERR_FAIL_COND_MSG(node_nd->controlled_by != nullptr, "The node (" + p_node->get_path() + ") set as dependency is supposed to be just a node.");
+
+	const int64_t index = controller_nd->dependency_nodes.find(node_nd);
+	if (index == -1) {
+		controller_nd->dependency_nodes.push_back(node_nd);
+		controller_nd->dependency_nodes_end.push_back(UINT32_MAX);
+	} else {
+		// We already have this dependency, just make sure we don't delete it.
+		controller_nd->dependency_nodes_end[index] = UINT32_MAX;
+	}
+}
+
+void SceneSynchronizer::controller_remove_dependency(Node *p_controller, Node *p_node) {
+	if (is_client() == false) {
+		// Nothing to do.
+		return;
+	}
+
+	NetUtility::NodeData *controller_nd = find_node_data(p_controller);
+	ERR_FAIL_COND_MSG(controller_nd == nullptr, "The passed controller (" + p_controller->get_path() + ") is not registered.");
+	ERR_FAIL_COND_MSG(controller_nd->is_controller == false, "The node passed as controller (" + p_controller->get_path() + ") is not a controller.");
+
+	NetUtility::NodeData *node_nd = find_node_data(p_node);
+	ERR_FAIL_COND_MSG(node_nd == nullptr, "The passed node (" + p_node->get_path() + ") is not registered.");
+	ERR_FAIL_COND_MSG(node_nd->is_controller, "The node (" + p_node->get_path() + ") set as dependency is supposed to be just a node.");
+	ERR_FAIL_COND_MSG(node_nd->controlled_by != nullptr, "The node (" + p_node->get_path() + ") set as dependency is supposed to be just a node.");
+
+	const int64_t index = controller_nd->dependency_nodes.find(node_nd);
+	if (index == -1) {
+		// Nothing to do, this node is not a dependency.
+		return;
+	}
+
+	// Instead to remove the dependency immeditaly we have to postpone it till
+	// the server confirms the valitity via state.
+	// This operation is required otherwise the dependency is remvoved too early,
+	// and an eventual rewind may miss it.
+	// The actual removal is performed at the end of the sync.
+	controller_nd->dependency_nodes_end[index] =
+			static_cast<NetworkedController *>(controller_nd->node)->get_current_input_id();
 }
 
 void SceneSynchronizer::register_process(Node *p_node, StringName p_function) {
@@ -926,6 +984,12 @@ void SceneSynchronizer::drop_node_data(NetUtility::NodeData *p_node_data) {
 		organized_node_data[p_node_data->id] = nullptr;
 	}
 
+	for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
+		const uint32_t index = node_data_controllers[i]->dependency_nodes.find(p_node_data);
+		node_data_controllers[i]->dependency_nodes.remove(index);
+		node_data_controllers[i]->dependency_nodes_end.remove(index);
+	}
+
 	// Remove this `NodeData` from any event listener.
 	for (uint32_t i = 0; i < event_listener.size(); i += 1) {
 		for (int v = event_listener[i].watching_vars.size() - 1; v >= 0; v -= 1) {
@@ -1119,6 +1183,30 @@ void SceneSynchronizer::validate_nodes() {
 	}
 }
 
+void SceneSynchronizer::purge_node_dependencies() {
+	if (is_client() == false) {
+		return;
+	}
+
+	// Clear the controller dependencies.
+	ClientSynchronizer *client_sync = static_cast<ClientSynchronizer *>(synchronizer);
+
+	for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
+		for (
+				int d = 0;
+				d < int(node_data_controllers[i]->dependency_nodes_end.size());
+				d += 1) {
+			if (node_data_controllers[i]->dependency_nodes_end[d] < client_sync->last_checked_input) {
+				// This controller dependency can be cleared because the server
+				// snapshot check has
+				node_data_controllers[i]->dependency_nodes.remove(d); // TODO use remove_fast
+				node_data_controllers[i]->dependency_nodes_end.remove(d); // TODO use remove fast.
+				d -= 1;
+			}
+		}
+	}
+}
+
 void SceneSynchronizer::expand_organized_node_data_vector(uint32_t p_size) {
 	const uint32_t from = organized_node_data.size();
 	organized_node_data.resize(from + p_size);
@@ -1154,6 +1242,7 @@ NetNodeId SceneSynchronizer::get_biggest_node_id() const {
 void SceneSynchronizer::process() {
 	validate_nodes();
 	synchronizer->process();
+	purge_node_dependencies();
 }
 
 void SceneSynchronizer::pull_node_changes(NetUtility::NodeData *p_node_data) {
@@ -1846,7 +1935,8 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 		if (recover_this_node) {
 			need_recover = true;
 			if (rew_node_data->controlled_by != nullptr ||
-					rew_node_data->is_controller) {
+					rew_node_data->is_controller ||
+					player_controller_node_data->dependency_nodes.find(rew_node_data) != -1) {
 				// Controller node.
 				recover_controller = true;
 			} else {
@@ -1864,6 +1954,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 		NET_DEBUG_PRINT("Recover input: " + itos(checkable_input_id) + " - Last input: " + itos(player_controller->get_stored_input_id(-1)));
 
 		if (recover_controller) {
+
 			// Put the controlled and the controllers_node_data into the nodes to
 			// rewind.
 			// Note, the controller stuffs are added here to ensure that if the
@@ -1872,6 +1963,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 			nodes_to_recover.reserve(
 					nodes_to_recover.size() +
 					player_controller_node_data->controlled_nodes.size() +
+					player_controller_node_data->dependency_nodes.size() +
 					1);
 
 			nodes_to_recover.push_back(player_controller_node_data);
@@ -1881,6 +1973,13 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 					y < player_controller_node_data->controlled_nodes.size();
 					y += 1) {
 				nodes_to_recover.push_back(player_controller_node_data->controlled_nodes[y]);
+			}
+
+			for (
+					uint32_t y = 0;
+					y < player_controller_node_data->dependency_nodes.size();
+					y += 1) {
+				nodes_to_recover.push_back(player_controller_node_data->dependency_nodes[y]);
 			}
 		}
 
@@ -2035,6 +2134,8 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 
 	// Popout the server snapshot.
 	server_snapshots.pop_front();
+
+	last_checked_input = checkable_input_id;
 }
 
 void ClientSynchronizer::process_paused_controller_recovery(real_t p_delta) {
