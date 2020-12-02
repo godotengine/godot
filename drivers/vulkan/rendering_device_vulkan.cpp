@@ -615,6 +615,7 @@ int RenderingDeviceVulkan::get_format_vertex_size(DataFormat p_format) {
 		case DATA_FORMAT_B8G8R8A8_SNORM:
 		case DATA_FORMAT_B8G8R8A8_UINT:
 		case DATA_FORMAT_B8G8R8A8_SINT:
+		case DATA_FORMAT_A2B10G10R10_UNORM_PACK32:
 			return 4;
 		case DATA_FORMAT_R16_UNORM:
 		case DATA_FORMAT_R16_SNORM:
@@ -3528,7 +3529,7 @@ RenderingDevice::VertexFormatID RenderingDeviceVulkan::vertex_format_create(cons
 		ERR_FAIL_COND_V(used_locations.has(p_vertex_formats[i].location), INVALID_ID);
 
 		ERR_FAIL_COND_V_MSG(get_format_vertex_size(p_vertex_formats[i].format) == 0, INVALID_ID,
-				"Data format for attachment (" + itos(i) + ") is not valid for a vertex array.");
+				"Data format for attachment (" + itos(i) + "), '" + named_formats[p_vertex_formats[i].format] + "', is not valid for a vertex array.");
 
 		vdcache.bindings[i].binding = i;
 		vdcache.bindings[i].stride = p_vertex_formats[i].stride;

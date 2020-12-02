@@ -49,10 +49,28 @@ public:
 		Vector2 uv2;
 		Vector<int> bones;
 		Vector<float> weights;
+		Color custom[RS::ARRAY_CUSTOM_COUNT];
 
 		bool operator==(const Vertex &p_vertex) const;
 
 		Vertex() {}
+	};
+
+	enum CustomFormat {
+		CUSTOM_RGBA8_UNORM = RS::ARRAY_CUSTOM_RGBA8_UNORM,
+		CUSTOM_RGBA8_SNORM = RS::ARRAY_CUSTOM_RGBA8_SNORM,
+		CUSTOM_RG_HALF = RS::ARRAY_CUSTOM_RG_HALF,
+		CUSTOM_RGBA_HALF = RS::ARRAY_CUSTOM_RGBA_HALF,
+		CUSTOM_R_FLOAT = RS::ARRAY_CUSTOM_R_FLOAT,
+		CUSTOM_RG_FLOAT = RS::ARRAY_CUSTOM_RG_FLOAT,
+		CUSTOM_RGB_FLOAT = RS::ARRAY_CUSTOM_RGB_FLOAT,
+		CUSTOM_RGBA_FLOAT = RS::ARRAY_CUSTOM_RGBA_FLOAT,
+		CUSTOM_MAX = RS::ARRAY_CUSTOM_MAX
+	};
+
+	enum SkinWeightCount {
+		SKIN_4_WEIGHTS,
+		SKIN_8_WEIGHTS
 	};
 
 private:
@@ -71,7 +89,7 @@ private:
 	bool begun;
 	bool first;
 	Mesh::PrimitiveType primitive;
-	int format;
+	uint32_t format;
 	Ref<Material> material;
 	//arrays
 	List<Vertex> vertex_array;
@@ -87,8 +105,14 @@ private:
 	Vector<float> last_weights;
 	Plane last_tangent;
 
-	void _create_list_from_arrays(Array arr, List<Vertex> *r_vertex, List<int> *r_index, int &lformat);
-	void _create_list(const Ref<Mesh> &p_existing, int p_surface, List<Vertex> *r_vertex, List<int> *r_index, int &lformat);
+	SkinWeightCount skin_weights;
+
+	Color last_custom[RS::ARRAY_CUSTOM_COUNT];
+
+	CustomFormat last_custom_format[RS::ARRAY_CUSTOM_COUNT];
+
+	void _create_list_from_arrays(Array arr, List<Vertex> *r_vertex, List<int> *r_index, uint32_t &lformat);
+	void _create_list(const Ref<Mesh> &p_existing, int p_surface, List<Vertex> *r_vertex, List<int> *r_index, uint32_t &lformat);
 
 	//mikktspace callbacks
 	static int mikktGetNumFaces(const SMikkTSpaceContext *pContext);
@@ -103,18 +127,26 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_skin_weight_count(SkinWeightCount p_weights);
+	SkinWeightCount get_skin_weight_count() const;
+
+	void set_custom_format(int p_index, CustomFormat p_format);
+	CustomFormat get_custom_format(int p_index) const;
+
 	void begin(Mesh::PrimitiveType p_primitive);
 
-	void add_vertex(const Vector3 &p_vertex);
-	void add_color(Color p_color);
-	void add_normal(const Vector3 &p_normal);
-	void add_tangent(const Plane &p_tangent);
-	void add_uv(const Vector2 &p_uv);
-	void add_uv2(const Vector2 &p_uv2);
-	void add_bones(const Vector<int> &p_bones);
-	void add_weights(const Vector<float> &p_weights);
-	void add_smooth_group(bool p_smooth);
+	void set_color(Color p_color);
+	void set_normal(const Vector3 &p_normal);
+	void set_tangent(const Plane &p_tangent);
+	void set_uv(const Vector2 &p_uv);
+	void set_uv2(const Vector2 &p_uv2);
+	void set_custom(int p_index, const Color &p_custom);
+	void set_bones(const Vector<int> &p_bones);
+	void set_weights(const Vector<float> &p_weights);
 
+	void add_vertex(const Vector3 &p_vertex);
+
+	void add_smooth_group(bool p_smooth);
 	void add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs = Vector<Vector2>(), const Vector<Color> &p_colors = Vector<Color>(), const Vector<Vector2> &p_uv2s = Vector<Vector2>(), const Vector<Vector3> &p_normals = Vector<Vector3>(), const Vector<Plane> &p_tangents = Vector<Plane>());
 
 	void add_index(int p_index);
@@ -131,14 +163,17 @@ public:
 	List<Vertex> &get_vertex_array() { return vertex_array; }
 
 	void create_from_triangle_arrays(const Array &p_arrays);
-	static Vector<Vertex> create_vertex_array_from_triangle_arrays(const Array &p_arrays);
+	static Vector<Vertex> create_vertex_array_from_triangle_arrays(const Array &p_arrays, uint32_t *r_format = nullptr);
 	Array commit_to_arrays();
 	void create_from(const Ref<Mesh> &p_existing, int p_surface);
 	void create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name);
 	void append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform &p_xform);
-	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint32_t p_flags = Mesh::ARRAY_COMPRESS_DEFAULT);
+	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint32_t p_flags = 0);
 
 	SurfaceTool();
 };
+
+VARIANT_ENUM_CAST(SurfaceTool::CustomFormat)
+VARIANT_ENUM_CAST(SurfaceTool::SkinWeightCount)
 
 #endif

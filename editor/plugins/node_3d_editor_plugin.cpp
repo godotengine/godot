@@ -5345,7 +5345,7 @@ void Node3DEditor::_init_indicators() {
 						Vector2 ofs = Vector2(Math::cos((Math_PI * 2.0 * k) / m), Math::sin((Math_PI * 2.0 * k) / m));
 						Vector3 normal = ivec * ofs.x + ivec2 * ofs.y;
 
-						surftool->add_normal(basis.xform(normal));
+						surftool->set_normal(basis.xform(normal));
 						surftool->add_vertex(vertex);
 					}
 				}

@@ -24,7 +24,29 @@ layout(location = 4) in vec2 uv_attrib;
 layout(location = 5) in vec2 uv2_attrib;
 #endif
 
-layout(location = 6) in uvec4 bone_attrib; // always bound, even if unused
+#if defined(CUSTOM0_USED)
+layout(location = 6) in vec4 custom0_attrib;
+#endif
+
+#if defined(CUSTOM1_USED)
+layout(location = 7) in vec4 custom1_attrib;
+#endif
+
+#if defined(CUSTOM2_USED)
+layout(location = 8) in vec4 custom2_attrib;
+#endif
+
+#if defined(CUSTOM3_USED)
+layout(location = 9) in vec4 custom3_attrib;
+#endif
+
+#if defined(BONES_USED)
+layout(location = 10) in uvec4 bone_attrib;
+#endif
+
+#if defined(WEIGHTS_USED)
+layout(location = 11) in vec4 weight_attrib;
+#endif
 
 /* Varyings */
 
@@ -116,14 +138,15 @@ void main() {
 	}
 
 	vec3 vertex = vertex_attrib;
-	vec3 normal = normal_attrib;
+	vec3 normal = normal_attrib * 2.0 - 1.0;
 
 #if defined(TANGENT_USED) || defined(NORMALMAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	vec3 tangent = tangent_attrib.xyz;
-	float binormalf = tangent_attrib.a;
+	vec3 tangent = tangent_attrib.xyz * 2.0 - 1.0;
+	float binormalf = tangent_attrib.a * 2.0 - 1.0;
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
 #endif
 
+#if 0
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_SKELETON)) {
 		//multimesh, instances are for it
 
@@ -147,7 +170,7 @@ void main() {
 		binormal = (vec4(binormal, 0.0) * m).xyz;
 #endif
 	}
-
+#endif
 	uv_interp = uv_attrib;
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)

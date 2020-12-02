@@ -712,8 +712,8 @@ void ARKitInterface::_add_or_update_anchor(GodotARAnchor *p_anchor) {
 						int16_t index = planeAnchor.geometry.triangleIndices[j];
 						simd_float3 vrtx = planeAnchor.geometry.vertices[index];
 						simd_float2 textcoord = planeAnchor.geometry.textureCoordinates[index];
-						surftool->add_uv(Vector2(textcoord[0], textcoord[1]));
-						surftool->add_color(Color(0.8, 0.8, 0.8));
+						surftool->set_uv(Vector2(textcoord[0], textcoord[1]));
+						surftool->set_color(Color(0.8, 0.8, 0.8));
 						surftool->add_vertex(Vector3(vrtx[0], vrtx[1], vrtx[2]));
 					}
 

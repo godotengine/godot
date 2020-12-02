@@ -119,9 +119,9 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 	Vector<uint8_t> polygon_buffer;
 	polygon_buffer.resize(buffer_size * sizeof(float));
 	Vector<RD::VertexAttribute> descriptions;
-	descriptions.resize(4);
+	descriptions.resize(5);
 	Vector<RID> buffers;
-	buffers.resize(4);
+	buffers.resize(5);
 
 	{
 		const uint8_t *r = polygon_buffer.ptr();
@@ -218,7 +218,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 		//bones
 		if ((uint32_t)p_indices.size() == vertex_count * 4 && (uint32_t)p_weights.size() == vertex_count * 4) {
 			RD::VertexAttribute vd;
-			vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
+			vd.format = RD::DATA_FORMAT_R16G16B16A16_UINT;
 			vd.offset = base_offset * sizeof(float);
 			vd.location = RS::ARRAY_BONES;
 			vd.stride = stride * sizeof(float);
@@ -226,24 +226,17 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 			descriptions.write[3] = vd;
 
 			const int *bone_ptr = p_bones.ptr();
-			const float *weight_ptr = p_weights.ptr();
 
 			for (uint32_t i = 0; i < vertex_count; i++) {
 				uint16_t *bone16w = (uint16_t *)&uptr[base_offset + i * stride];
-				uint16_t *weight16w = (uint16_t *)&uptr[base_offset + i * stride + 2];
 
 				bone16w[0] = bone_ptr[i * 4 + 0];
 				bone16w[1] = bone_ptr[i * 4 + 1];
 				bone16w[2] = bone_ptr[i * 4 + 2];
 				bone16w[3] = bone_ptr[i * 4 + 3];
-
-				weight16w[0] = CLAMP(weight_ptr[i * 4 + 0] * 65535, 0, 65535);
-				weight16w[1] = CLAMP(weight_ptr[i * 4 + 1] * 65535, 0, 65535);
-				weight16w[2] = CLAMP(weight_ptr[i * 4 + 2] * 65535, 0, 65535);
-				weight16w[3] = CLAMP(weight_ptr[i * 4 + 3] * 65535, 0, 65535);
 			}
 
-			base_offset += 4;
+			base_offset += 2;
 		} else {
 			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
@@ -253,6 +246,39 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 
 			descriptions.write[3] = vd;
 			buffers.write[3] = storage->mesh_get_default_rd_buffer(RasterizerStorageRD::DEFAULT_RD_BUFFER_BONES);
+		}
+
+		//weights
+		if ((uint32_t)p_weights.size() == vertex_count * 4) {
+			RD::VertexAttribute vd;
+			vd.format = RD::DATA_FORMAT_R16G16B16A16_UNORM;
+			vd.offset = base_offset * sizeof(float);
+			vd.location = RS::ARRAY_WEIGHTS;
+			vd.stride = stride * sizeof(float);
+
+			descriptions.write[4] = vd;
+
+			const float *weight_ptr = p_weights.ptr();
+
+			for (uint32_t i = 0; i < vertex_count; i++) {
+				uint16_t *weight16w = (uint16_t *)&uptr[base_offset + i * stride];
+
+				weight16w[0] = CLAMP(weight_ptr[i * 4 + 0] * 65535, 0, 65535);
+				weight16w[1] = CLAMP(weight_ptr[i * 4 + 1] * 65535, 0, 65535);
+				weight16w[2] = CLAMP(weight_ptr[i * 4 + 2] * 65535, 0, 65535);
+				weight16w[3] = CLAMP(weight_ptr[i * 4 + 3] * 65535, 0, 65535);
+			}
+
+			base_offset += 2;
+		} else {
+			RD::VertexAttribute vd;
+			vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+			vd.offset = 0;
+			vd.location = RS::ARRAY_WEIGHTS;
+			vd.stride = 0;
+
+			descriptions.write[4] = vd;
+			buffers.write[4] = storage->mesh_get_default_rd_buffer(RasterizerStorageRD::DEFAULT_RD_BUFFER_BONES);
 		}
 
 		//check that everything is as it should be
@@ -1796,22 +1822,25 @@ void RasterizerCanvasRD::occluder_polygon_set_shape(RID p_occluder, const Vector
 	ERR_FAIL_COND(!oc);
 
 	Vector<Vector2> lines;
-	int lc = p_points.size() * 2;
 
-	lines.resize(lc - (p_closed ? 0 : 2));
-	{
-		Vector2 *w = lines.ptrw();
-		const Vector2 *r = p_points.ptr();
+	if (p_points.size()) {
+		int lc = p_points.size() * 2;
 
-		int max = lc / 2;
-		if (!p_closed) {
-			max--;
-		}
-		for (int i = 0; i < max; i++) {
-			Vector2 a = r[i];
-			Vector2 b = r[(i + 1) % (lc / 2)];
-			w[i * 2 + 0] = a;
-			w[i * 2 + 1] = b;
+		lines.resize(lc - (p_closed ? 0 : 2));
+		{
+			Vector2 *w = lines.ptrw();
+			const Vector2 *r = p_points.ptr();
+
+			int max = lc / 2;
+			if (!p_closed) {
+				max--;
+			}
+			for (int i = 0; i < max; i++) {
+				Vector2 a = r[i];
+				Vector2 b = r[(i + 1) % (lc / 2)];
+				w[i * 2 + 0] = a;
+				w[i * 2 + 1] = b;
+			}
 		}
 	}
 
@@ -1832,7 +1861,7 @@ void RasterizerCanvasRD::occluder_polygon_set_shape(RID p_occluder, const Vector
 	if (lines.size()) {
 		Vector<uint8_t> geometry;
 		Vector<uint8_t> indices;
-		lc = lines.size();
+		int lc = lines.size();
 
 		geometry.resize(lc * 6 * sizeof(float));
 		indices.resize(lc * 3 * sizeof(uint16_t));
@@ -1902,19 +1931,21 @@ void RasterizerCanvasRD::occluder_polygon_set_shape(RID p_occluder, const Vector
 
 	Vector<int> sdf_indices;
 
-	if (p_closed) {
-		sdf_indices = Geometry2D::triangulate_polygon(p_points);
-		oc->sdf_is_lines = false;
-	} else {
-		int max = p_points.size();
-		sdf_indices.resize(max * 2);
+	if (p_points.size()) {
+		if (p_closed) {
+			sdf_indices = Geometry2D::triangulate_polygon(p_points);
+			oc->sdf_is_lines = false;
+		} else {
+			int max = p_points.size();
+			sdf_indices.resize(max * 2);
 
-		int *iw = sdf_indices.ptrw();
-		for (int i = 0; i < max; i++) {
-			iw[i * 2 + 0] = i;
-			iw[i * 2 + 1] = (i + 1) % max;
+			int *iw = sdf_indices.ptrw();
+			for (int i = 0; i < max; i++) {
+				iw[i * 2 + 0] = i;
+				iw[i * 2 + 1] = (i + 1) % max;
+			}
+			oc->sdf_is_lines = true;
 		}
-		oc->sdf_is_lines = true;
 	}
 
 	if (oc->sdf_index_count != sdf_indices.size() && oc->sdf_point_count != p_points.size() && oc->sdf_vertex_array.is_valid()) {

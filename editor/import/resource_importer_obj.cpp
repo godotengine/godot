@@ -210,7 +210,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	bool generate_tangents = p_generate_tangents;
 	Vector3 scale_mesh = p_scale_mesh;
 	Vector3 offset_mesh = p_offset_mesh;
-	int mesh_flags = p_optimize ? Mesh::ARRAY_COMPRESS_DEFAULT : 0;
+	int mesh_flags = 0;
 
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
@@ -294,7 +294,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 							norm += normals.size() + 1;
 						}
 						ERR_FAIL_INDEX_V(norm, normals.size(), ERR_FILE_CORRUPT);
-						surf_tool->add_normal(normals[norm]);
+						surf_tool->set_normal(normals[norm]);
 					}
 
 					if (face[idx].size() >= 2 && face[idx][1] != String()) {
@@ -303,7 +303,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 							uv += uvs.size() + 1;
 						}
 						ERR_FAIL_INDEX_V(uv, uvs.size(), ERR_FILE_CORRUPT);
-						surf_tool->add_uv(uvs[uv]);
+						surf_tool->set_uv(uvs[uv]);
 					}
 
 					int vtx = face[idx][0].to_int() - 1;
@@ -471,6 +471,10 @@ String ResourceImporterOBJ::get_save_extension() const {
 
 String ResourceImporterOBJ::get_resource_type() const {
 	return "Mesh";
+}
+
+int ResourceImporterOBJ::get_format_version() const {
+	return 1;
 }
 
 int ResourceImporterOBJ::get_preset_count() const {
