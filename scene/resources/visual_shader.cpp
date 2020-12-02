@@ -811,8 +811,12 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 
 #define IS_SYMBOL_CHAR(m_d) (((m_d) >= 'a' && (m_d) <= 'z') || ((m_d) >= 'A' && (m_d) <= 'Z') || ((m_d) >= '0' && (m_d) <= '9') || (m_d) == '_')
 
-String VisualShader::validate_port_name(const String &p_name, const List<String> &p_input_ports, const List<String> &p_output_ports) const {
-	String name = p_name;
+String VisualShader::validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const {
+	String name = p_port_name;
+
+	if (name == String()) {
+		return String();
+	}
 
 	while (name.length() && !IS_INITIAL_CHAR(name[0])) {
 		name = name.substr(1, name.length() - 1);
@@ -830,29 +834,28 @@ String VisualShader::validate_port_name(const String &p_name, const List<String>
 		}
 
 		name = valid_name;
+	} else {
+		return String();
 	}
 
-	String valid_name = name;
-	bool is_equal = false;
+	List<String> input_names;
+	List<String> output_names;
 
-	for (int i = 0; i < p_input_ports.size(); i++) {
-		if (name == p_input_ports[i]) {
-			is_equal = true;
-			break;
+	for (int i = 0; i < p_node->get_input_port_count(); i++) {
+		if (!p_output && i == p_port_id) {
+			continue;
+		}
+		if (name == p_node->get_input_port_name(i)) {
+			return String();
 		}
 	}
-
-	if (!is_equal) {
-		for (int i = 0; i < p_output_ports.size(); i++) {
-			if (name == p_output_ports[i]) {
-				is_equal = true;
-				break;
-			}
+	for (int i = 0; i < p_node->get_output_port_count(); i++) {
+		if (p_output && i == p_port_id) {
+			continue;
 		}
-	}
-
-	if (is_equal) {
-		name = "";
+		if (name == p_node->get_output_port_name(i)) {
+			return String();
+		}
 	}
 
 	return name;

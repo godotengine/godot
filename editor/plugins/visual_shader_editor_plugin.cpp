@@ -499,16 +499,32 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		if (group_node->is_editable()) {
 			HBoxContainer *hb2 = memnew(HBoxContainer);
 
+			String input_port_name = "input" + itos(group_node->get_free_input_port_id());
+			String output_port_name = "output" + itos(group_node->get_free_output_port_id());
+
+			for (int i = 0; i < MAX(vsnode->get_input_port_count(), vsnode->get_output_port_count()); i++) {
+				if (i < vsnode->get_input_port_count()) {
+					if (input_port_name == vsnode->get_input_port_name(i)) {
+						input_port_name = "_" + input_port_name;
+					}
+				}
+				if (i < vsnode->get_output_port_count()) {
+					if (output_port_name == vsnode->get_output_port_name(i)) {
+						output_port_name = "_" + output_port_name;
+					}
+				}
+			}
+
 			Button *add_input_btn = memnew(Button);
 			add_input_btn->set_text(TTR("Add Input"));
-			add_input_btn->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_add_input_port), varray(p_id, group_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "input" + itos(group_node->get_free_input_port_id())), CONNECT_DEFERRED);
+			add_input_btn->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_add_input_port), varray(p_id, group_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, input_port_name), CONNECT_DEFERRED);
 			hb2->add_child(add_input_btn);
 
 			hb2->add_spacer();
 
 			Button *add_output_btn = memnew(Button);
 			add_output_btn->set_text(TTR("Add Output"));
-			add_output_btn->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_add_output_port), varray(p_id, group_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "output" + itos(group_node->get_free_output_port_id())), CONNECT_DEFERRED);
+			add_output_btn->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_add_output_port), varray(p_id, group_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, output_port_name), CONNECT_DEFERRED);
 			hb2->add_child(add_output_btn);
 
 			node->add_child(hb2);
@@ -585,8 +601,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					name_box->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 					name_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 					name_box->set_text(name_left);
-					name_box->connect("text_entered", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_change_input_port_name), varray(name_box, p_id, i));
-					name_box->connect("focus_exited", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_port_name_focus_out), varray(name_box, p_id, i, false));
+					name_box->connect("text_entered", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_change_input_port_name), varray(name_box, p_id, i), CONNECT_DEFERRED);
+					name_box->connect("focus_exited", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_port_name_focus_out), varray(name_box, p_id, i, false), CONNECT_DEFERRED);
 
 					Button *remove_btn = memnew(Button);
 					remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Remove", "EditorIcons"));
@@ -626,8 +642,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					name_box->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 					name_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 					name_box->set_text(name_right);
-					name_box->connect("text_entered", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_change_output_port_name), varray(name_box, p_id, i));
-					name_box->connect("focus_exited", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_port_name_focus_out), varray(name_box, p_id, i, true));
+					name_box->connect("text_entered", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_change_output_port_name), varray(name_box, p_id, i), CONNECT_DEFERRED);
+					name_box->connect("focus_exited", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_port_name_focus_out), varray(name_box, p_id, i, true), CONNECT_DEFERRED);
 
 					OptionButton *type_box = memnew(OptionButton);
 					hb->add_child(type_box);
@@ -1337,29 +1353,57 @@ void VisualShaderEditor::_change_output_port_type(int p_type, int p_node, int p_
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_change_input_port_name(const String &p_text, Object *line_edit, int p_node_id, int p_port_id) {
+void VisualShaderEditor::_change_input_port_name(const String &p_text, Object *p_line_edit, int p_node_id, int p_port_id) {
 	VisualShader::Type type = get_current_shader_type();
 
 	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(type, p_node_id);
 	ERR_FAIL_COND(!node.is_valid());
 
+	String prev_name = node->get_input_port_name(p_port_id);
+	if (prev_name == p_text) {
+		return;
+	}
+
+	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
+	ERR_FAIL_COND(!line_edit);
+
+	String validated_name = visual_shader->validate_port_name(p_text, node.ptr(), p_port_id, false);
+	if (validated_name == String() || prev_name == validated_name) {
+		line_edit->set_text(node->get_input_port_name(p_port_id));
+		return;
+	}
+
 	undo_redo->create_action(TTR("Change Input Port Name"));
-	undo_redo->add_do_method(node.ptr(), "set_input_port_name", p_port_id, p_text);
+	undo_redo->add_do_method(node.ptr(), "set_input_port_name", p_port_id, validated_name);
 	undo_redo->add_undo_method(node.ptr(), "set_input_port_name", p_port_id, node->get_input_port_name(p_port_id));
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, p_node_id);
 	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", type, p_node_id);
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_change_output_port_name(const String &p_text, Object *line_edit, int p_node_id, int p_port_id) {
+void VisualShaderEditor::_change_output_port_name(const String &p_text, Object *p_line_edit, int p_node_id, int p_port_id) {
 	VisualShader::Type type = get_current_shader_type();
 
 	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(type, p_node_id);
 	ERR_FAIL_COND(!node.is_valid());
 
+	String prev_name = node->get_output_port_name(p_port_id);
+	if (prev_name == p_text) {
+		return;
+	}
+
+	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
+	ERR_FAIL_COND(!line_edit);
+
+	String validated_name = visual_shader->validate_port_name(p_text, node.ptr(), p_port_id, true);
+	if (validated_name == String() || prev_name == validated_name) {
+		line_edit->set_text(node->get_output_port_name(p_port_id));
+		return;
+	}
+
 	undo_redo->create_action(TTR("Change Output Port Name"));
-	undo_redo->add_do_method(node.ptr(), "set_output_port_name", p_port_id, p_text);
-	undo_redo->add_undo_method(node.ptr(), "set_output_port_name", p_port_id, node->get_output_port_name(p_port_id));
+	undo_redo->add_do_method(node.ptr(), "set_output_port_name", p_port_id, validated_name);
+	undo_redo->add_undo_method(node.ptr(), "set_output_port_name", p_port_id, prev_name);
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, p_node_id);
 	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", type, p_node_id);
 	undo_redo->commit_action();
@@ -1609,53 +1653,10 @@ void VisualShaderEditor::_uniform_line_edit_focus_out(Object *line_edit, int p_n
 }
 
 void VisualShaderEditor::_port_name_focus_out(Object *line_edit, int p_node_id, int p_port_id, bool p_output) {
-	VisualShader::Type type = get_current_shader_type();
-
-	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(type, p_node_id);
-	ERR_FAIL_COND(!node.is_valid());
-
-	String text = Object::cast_to<LineEdit>(line_edit)->get_text();
-
 	if (!p_output) {
-		if (node->get_input_port_name(p_port_id) == text) {
-			return;
-		}
+		_change_input_port_name(Object::cast_to<LineEdit>(line_edit)->get_text(), line_edit, p_node_id, p_port_id);
 	} else {
-		if (node->get_output_port_name(p_port_id) == text) {
-			return;
-		}
-	}
-
-	List<String> input_names;
-	List<String> output_names;
-
-	for (int i = 0; i < node->get_input_port_count(); i++) {
-		if (!p_output && i == p_port_id) {
-			continue;
-		}
-		input_names.push_back(node->get_input_port_name(i));
-	}
-	for (int i = 0; i < node->get_output_port_count(); i++) {
-		if (p_output && i == p_port_id) {
-			continue;
-		}
-		output_names.push_back(node->get_output_port_name(i));
-	}
-
-	String validated_name = visual_shader->validate_port_name(text, input_names, output_names);
-	if (validated_name == "") {
-		if (!p_output) {
-			Object::cast_to<LineEdit>(line_edit)->set_text(node->get_input_port_name(p_port_id));
-		} else {
-			Object::cast_to<LineEdit>(line_edit)->set_text(node->get_output_port_name(p_port_id));
-		}
-		return;
-	}
-
-	if (!p_output) {
-		_change_input_port_name(validated_name, line_edit, p_node_id, p_port_id);
-	} else {
-		_change_output_port_name(validated_name, line_edit, p_node_id, p_port_id);
+		_change_output_port_name(Object::cast_to<LineEdit>(line_edit)->get_text(), line_edit, p_node_id, p_port_id);
 	}
 }
 
