@@ -40,10 +40,6 @@ uint32_t GDScriptByteCodeGenerator::add_parameter(const StringName &p_name, bool
 	function->_argument_count++;
 	function->argument_types.push_back(p_type);
 	if (p_is_optional) {
-		if (function->_default_arg_count == 0) {
-			append(GDScriptFunction::OPCODE_JUMP_TO_DEF_ARGUMENT);
-		}
-		function->default_arguments.push_back(opcodes.size());
 		function->_default_arg_count++;
 	}
 
@@ -96,7 +92,12 @@ void GDScriptByteCodeGenerator::pop_temporary() {
 	current_temporaries--;
 }
 
-void GDScriptByteCodeGenerator::start_parameters() {}
+void GDScriptByteCodeGenerator::start_parameters() {
+	if (function->_default_arg_count > 0) {
+		append(GDScriptFunction::OPCODE_JUMP_TO_DEF_ARGUMENT);
+		function->default_arguments.push_back(opcodes.size());
+	}
+}
 
 void GDScriptByteCodeGenerator::end_parameters() {
 	function->default_arguments.invert();
@@ -167,7 +168,7 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 	}
 
 	if (function->default_arguments.size()) {
-		function->_default_arg_count = function->default_arguments.size();
+		function->_default_arg_count = function->default_arguments.size() - 1;
 		function->_default_arg_ptr = &function->default_arguments[0];
 	} else {
 		function->_default_arg_count = 0;
@@ -631,6 +632,11 @@ void GDScriptByteCodeGenerator::write_assign_true(const Address &p_target) {
 void GDScriptByteCodeGenerator::write_assign_false(const Address &p_target) {
 	append(GDScriptFunction::OPCODE_ASSIGN_FALSE, 1);
 	append(p_target);
+}
+
+void GDScriptByteCodeGenerator::write_assign_default_parameter(const Address &p_dst, const Address &p_src) {
+	write_assign(p_dst, p_src);
+	function->default_arguments.push_back(opcodes.size());
 }
 
 void GDScriptByteCodeGenerator::write_cast(const Address &p_target, const Address &p_source, const GDScriptDataType &p_type) {
