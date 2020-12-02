@@ -62,17 +62,17 @@ static int __bsr_clz32(uint32_t x) {
 class RandomPCG {
 	pcg32_random_t pcg;
 	uint64_t current_seed; // seed with this to get the same state
-	uint64_t current_inc;
 
 public:
 	static const uint64_t DEFAULT_SEED = 12047754176567800795U;
 	static const uint64_t DEFAULT_INC = PCG_DEFAULT_INC_64;
 
-	RandomPCG(uint64_t p_seed = DEFAULT_SEED, uint64_t p_inc = DEFAULT_INC);
+	RandomPCG(uint64_t p_seed = DEFAULT_SEED, uint64_t p_inc = PCG_DEFAULT_INC_64);
 
 	_FORCE_INLINE_ void seed(uint64_t p_seed) {
 		current_seed = p_seed;
-		pcg32_srandom_r(&pcg, current_seed, current_inc);
+		pcg.state = p_seed;
+		pcg32_random_r(&pcg); // Force changing internal state to avoid initial 0
 	}
 	_FORCE_INLINE_ uint64_t get_seed() { return current_seed; }
 

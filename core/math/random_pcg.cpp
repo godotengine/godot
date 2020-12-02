@@ -34,7 +34,8 @@
 
 RandomPCG::RandomPCG(uint64_t p_seed, uint64_t p_inc) :
 		pcg(),
-		current_inc(p_inc) {
+		current_seed(DEFAULT_SEED) {
+	pcg.inc = p_inc;
 	seed(p_seed);
 }
 
