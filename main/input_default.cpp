@@ -1126,7 +1126,7 @@ void InputDefault::parse_mapping(String p_mapping) {
 		ERR_CONTINUE_MSG(output.length() < 1 || input.length() < 2,
 				String(entry[idx] + "\nInvalid device mapping entry: " + entry[idx]));
 
-		if (output == "platform")
+		if (output == "platform" || output == "hint")
 			continue;
 
 		JoyAxisRange output_range = FULL_AXIS;
