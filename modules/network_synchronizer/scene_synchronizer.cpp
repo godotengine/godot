@@ -74,6 +74,8 @@ void SceneSynchronizer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("controller_add_dependency", "controller", "node"), &SceneSynchronizer::controller_add_dependency);
 	ClassDB::bind_method(D_METHOD("controller_remove_dependency", "controller", "node"), &SceneSynchronizer::controller_remove_dependency);
+	ClassDB::bind_method(D_METHOD("controller_get_dependency_count", "controller"), &SceneSynchronizer::controller_get_dependency_count);
+	ClassDB::bind_method(D_METHOD("controller_get_dependency", "controller", "index"), &SceneSynchronizer::controller_get_dependency);
 
 	ClassDB::bind_method(D_METHOD("register_process", "node", "function"), &SceneSynchronizer::register_process);
 	ClassDB::bind_method(D_METHOD("unregister_process", "node", "function"), &SceneSynchronizer::unregister_process);
@@ -502,6 +504,32 @@ void SceneSynchronizer::controller_remove_dependency(Node *p_controller, Node *p
 	// The actual removal is performed at the end of the sync.
 	controller_nd->dependency_nodes_end[index] =
 			static_cast<NetworkedController *>(controller_nd->node)->get_current_input_id();
+}
+
+int SceneSynchronizer::controller_get_dependency_count(Node *p_controller) const {
+	if (is_client() == false) {
+		// Nothing to do.
+		return 0;
+	}
+
+	const NetUtility::NodeData *controller_nd = find_node_data(p_controller);
+	ERR_FAIL_COND_V_MSG(controller_nd == nullptr, 0, "The passed controller (" + p_controller->get_path() + ") is not registered.");
+	ERR_FAIL_COND_V_MSG(controller_nd->is_controller == false, 0, "The node passed as controller (" + p_controller->get_path() + ") is not a controller.");
+	return controller_nd->dependency_nodes.size();
+}
+
+Node *SceneSynchronizer::controller_get_dependency(Node *p_controller, int p_index) {
+	if (is_client() == false) {
+		// Nothing to do.
+		return nullptr;
+	}
+
+	NetUtility::NodeData *controller_nd = find_node_data(p_controller);
+	ERR_FAIL_COND_V_MSG(controller_nd == nullptr, nullptr, "The passed controller (" + p_controller->get_path() + ") is not registered.");
+	ERR_FAIL_COND_V_MSG(controller_nd->is_controller == false, nullptr, "The node passed as controller (" + p_controller->get_path() + ") is not a controller.");
+	ERR_FAIL_INDEX_V(p_index, controller_nd->dependency_nodes.size(), nullptr);
+
+	return controller_nd->dependency_nodes[p_index]->node;
 }
 
 void SceneSynchronizer::register_process(Node *p_node, StringName p_function) {
@@ -1214,6 +1242,18 @@ void SceneSynchronizer::expand_organized_node_data_vector(uint32_t p_size) {
 }
 
 NetUtility::NodeData *SceneSynchronizer::find_node_data(Node *p_node) {
+	for (uint32_t i = 0; i < node_data.size(); i += 1) {
+		if (node_data[i] == nullptr) {
+			continue;
+		}
+		if (node_data[i]->instance_id == p_node->get_instance_id()) {
+			return node_data[i];
+		}
+	}
+	return nullptr;
+}
+
+const NetUtility::NodeData *SceneSynchronizer::find_node_data(Node *p_node) const {
 	for (uint32_t i = 0; i < node_data.size(); i += 1) {
 		if (node_data[i] == nullptr) {
 			continue;
@@ -2474,6 +2514,13 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 			// Parse variable:
 			[](void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_var_id, const Variant &p_value) {
 				ParseData *pd = static_cast<ParseData *>(p_user_pointer);
+
+#ifdef DEBUG_ENABLED
+				// This can't be triggered because th `Parse Node` function
+				// above make sure to create room for this array.
+				CRASH_COND(pd->snapshot.node_vars.size() <= p_node_data->id);
+				CRASH_COND(pd->snapshot.node_vars[p_node_data->id].size() <= p_var_id);
+#endif // ~DEBUG_ENABLED
 
 				pd->snapshot.node_vars.write[p_node_data->id].write[p_var_id].name = p_node_data->vars[p_var_id].var.name;
 				pd->snapshot.node_vars.write[p_node_data->id].write[p_var_id].value = p_value.duplicate(true);

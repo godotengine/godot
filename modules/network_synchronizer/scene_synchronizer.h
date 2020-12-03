@@ -206,6 +206,8 @@ public:
 	/// don't need to be perfomed on server.
 	void controller_add_dependency(Node *p_controller, Node *p_node);
 	void controller_remove_dependency(Node *p_controller, Node *p_node);
+	int controller_get_dependency_count(Node *p_controller) const;
+	Node *controller_get_dependency(Node *p_controller, int p_index);
 
 	void register_process(Node *p_node, StringName p_function);
 	void unregister_process(Node *p_node, StringName p_function);
@@ -246,6 +248,7 @@ private:
 	/// This function is slow, but allow to take the node data even if the
 	/// `NetNodeId` is not yet assigned.
 	NetUtility::NodeData *find_node_data(Node *p_node);
+	const NetUtility::NodeData *find_node_data(Node *p_node) const;
 
 	/// This function is super fast, but only nodes with a `NetNodeId` assigned
 	/// can be returned.
