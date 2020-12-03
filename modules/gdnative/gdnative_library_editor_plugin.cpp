@@ -335,7 +335,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 
 		NativePlatformConfig platform_html5;
 		platform_html5.name = "HTML5";
-		platform_html5.entries.push_back("web");
+		platform_html5.entries.push_back("wasm32");
 		platform_html5.library_extension = "*.wasm";
 		platforms["HTML5"] = platform_html5;
 

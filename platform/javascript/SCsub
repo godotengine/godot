@@ -51,6 +51,7 @@ if env["gdnative_enabled"]:
 
     # The side library, containing all Godot code.
     wasm_env = env.Clone()
+    wasm_env.Append(CPPDEFINES=["WASM_GDNATIVE"])  # So that OS knows it can run GDNative libraries.
     wasm_env.Append(CCFLAGS=["-s", "SIDE_MODULE=2"])
     wasm_env.Append(LINKFLAGS=["-s", "SIDE_MODULE=2"])
     wasm = wasm_env.add_program("#bin/godot.side${PROGSUFFIX}.wasm", javascript_files)

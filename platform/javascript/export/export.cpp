@@ -328,6 +328,12 @@ void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportP
 			}
 		}
 	}
+	ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
+	if (mode == EXPORT_MODE_THREADS) {
+		r_features->push_back("threads");
+	} else if (mode == EXPORT_MODE_GDNATIVE) {
+		r_features->push_back("wasm32");
+	}
 }
 
 void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_options) {
