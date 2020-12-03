@@ -2136,7 +2136,6 @@ void TileSetEditor::_select_previous_tile() {
 				int spacing = tileset->autotile_get_spacing(get_current_tile());
 				Vector2 size = tileset->tile_get_region(get_current_tile()).size;
 				Vector2 cell_count = (size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing))).floor();
-				cell_count -= Vector2(1, 1);
 				edited_shape_coord = cell_count;
 				_select_edited_shape_coord();
 			} break;
@@ -2193,11 +2192,11 @@ void TileSetEditor::_select_next_subtile() {
 		int spacing = tileset->autotile_get_spacing(get_current_tile());
 		Vector2 size = tileset->tile_get_region(get_current_tile()).size;
 		Vector2 cell_count = (size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing))).floor();
-		if (edited_shape_coord.x >= cell_count.x - 1 && edited_shape_coord.y >= cell_count.y - 1) {
+		if (edited_shape_coord.x > cell_count.x - 1 && edited_shape_coord.y > cell_count.y - 1) {
 			_select_next_tile();
 		} else {
 			edited_shape_coord.x++;
-			if (edited_shape_coord.x >= cell_count.x) {
+			if (edited_shape_coord.x > cell_count.x) {
 				edited_shape_coord.x = 0;
 				edited_shape_coord.y++;
 			}
@@ -2224,7 +2223,7 @@ void TileSetEditor::_select_previous_subtile() {
 		} else {
 			edited_shape_coord.x--;
 			if (edited_shape_coord.x == -1) {
-				edited_shape_coord.x = cell_count.x - 1;
+				edited_shape_coord.x = cell_count.x;
 				edited_shape_coord.y--;
 			}
 			_select_edited_shape_coord();
