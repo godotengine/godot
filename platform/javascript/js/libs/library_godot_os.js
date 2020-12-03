@@ -75,14 +75,17 @@ const GodotConfig = {
 		},
 	},
 
+	godot_js_config_canvas_id_get__sig: 'vii',
 	godot_js_config_canvas_id_get: function (p_ptr, p_ptr_max) {
 		GodotRuntime.stringToHeap(`#${GodotConfig.canvas.id}`, p_ptr, p_ptr_max);
 	},
 
+	godot_js_config_locale_get__sig: 'vii',
 	godot_js_config_locale_get: function (p_ptr, p_ptr_max) {
 		GodotRuntime.stringToHeap(GodotConfig.locale, p_ptr, p_ptr_max);
 	},
 
+	godot_js_config_is_resize_on_start__sig: 'i',
 	godot_js_config_is_resize_on_start: function () {
 		return GodotConfig.resize_on_start ? 1 : 0;
 	},
@@ -239,19 +242,23 @@ const GodotOS = {
 		},
 	},
 
+	godot_js_os_finish_async__sig: 'vi',
 	godot_js_os_finish_async: function (p_callback) {
 		const func = GodotRuntime.get_func(p_callback);
 		GodotOS.finish_async(func);
 	},
 
+	godot_js_os_request_quit_cb__sig: 'vi',
 	godot_js_os_request_quit_cb: function (p_callback) {
 		GodotOS.request_quit = GodotRuntime.get_func(p_callback);
 	},
 
+	godot_js_os_fs_is_persistent__sig: 'i',
 	godot_js_os_fs_is_persistent: function () {
 		return GodotFS.is_persistent();
 	},
 
+	godot_js_os_fs_sync__sig: 'vi',
 	godot_js_os_fs_sync: function (callback) {
 		const func = GodotRuntime.get_func(callback);
 		GodotOS._fs_sync_promise = GodotFS.sync();
@@ -260,6 +267,7 @@ const GodotOS = {
 		});
 	},
 
+	godot_js_os_execute__sig: 'ii',
 	godot_js_os_execute: function (p_json) {
 		const json_args = GodotRuntime.parseString(p_json);
 		const args = JSON.parse(json_args);
@@ -270,6 +278,7 @@ const GodotOS = {
 		return 1;
 	},
 
+	godot_js_os_shell_open__sig: 'vi',
 	godot_js_os_shell_open: function (p_uri) {
 		window.open(GodotRuntime.parseString(p_uri), '_blank');
 	},

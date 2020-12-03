@@ -90,6 +90,7 @@ const GodotRTCDataChannel = {
 		},
 	},
 
+	godot_js_rtc_datachannel_ready_state_get__sig: 'ii',
 	godot_js_rtc_datachannel_ready_state_get: function (p_id) {
 		const ref = IDHandler.get(p_id);
 		if (!ref) {
@@ -109,6 +110,7 @@ const GodotRTCDataChannel = {
 		}
 	},
 
+	godot_js_rtc_datachannel_send__sig: 'iiiii',
 	godot_js_rtc_datachannel_send: function (p_id, p_buffer, p_length, p_raw) {
 		const ref = IDHandler.get(p_id);
 		if (!ref) {
@@ -129,14 +131,17 @@ const GodotRTCDataChannel = {
 		return 0;
 	},
 
+	godot_js_rtc_datachannel_is_ordered__sig: 'ii',
 	godot_js_rtc_datachannel_is_ordered: function (p_id) {
 		return IDHandler.get_prop(p_id, 'ordered', true);
 	},
 
+	godot_js_rtc_datachannel_id_get__sig: 'ii',
 	godot_js_rtc_datachannel_id_get: function (p_id) {
 		return IDHandler.get_prop(p_id, 'id', 65535);
 	},
 
+	godot_js_rtc_datachannel_max_packet_lifetime_get__sig: 'ii',
 	godot_js_rtc_datachannel_max_packet_lifetime_get: function (p_id) {
 		const ref = IDHandler.get(p_id);
 		if (!ref) {
@@ -151,14 +156,17 @@ const GodotRTCDataChannel = {
 		return 65535;
 	},
 
+	godot_js_rtc_datachannel_max_retransmits_get__sig: 'ii',
 	godot_js_rtc_datachannel_max_retransmits_get: function (p_id) {
 		return IDHandler.get_prop(p_id, 'maxRetransmits', 65535);
 	},
 
-	godot_js_rtc_datachannel_is_negotiated: function (p_id, p_def) {
+	godot_js_rtc_datachannel_is_negotiated__sig: 'ii',
+	godot_js_rtc_datachannel_is_negotiated: function (p_id) {
 		return IDHandler.get_prop(p_id, 'negotiated', 65535);
 	},
 
+	godot_js_rtc_datachannel_label_get__sig: 'ii',
 	godot_js_rtc_datachannel_label_get: function (p_id) {
 		const ref = IDHandler.get(p_id);
 		if (!ref || !ref.label) {
@@ -167,6 +175,7 @@ const GodotRTCDataChannel = {
 		return GodotRuntime.allocString(ref.label);
 	},
 
+	godot_js_rtc_datachannel_protocol_get__sig: 'ii',
 	godot_js_rtc_datachannel_protocol_get: function (p_id) {
 		const ref = IDHandler.get(p_id);
 		if (!ref || !ref.protocol) {
@@ -175,11 +184,13 @@ const GodotRTCDataChannel = {
 		return GodotRuntime.allocString(ref.protocol);
 	},
 
+	godot_js_rtc_datachannel_destroy__sig: 'vi',
 	godot_js_rtc_datachannel_destroy: function (p_id) {
 		GodotRTCDataChannel.close(p_id);
 		IDHandler.remove(p_id);
 	},
 
+	godot_js_rtc_datachannel_connect__sig: 'viiiiii',
 	godot_js_rtc_datachannel_connect: function (p_id, p_ref, p_on_open, p_on_message, p_on_error, p_on_close) {
 		const onopen = GodotRuntime.get_func(p_on_open).bind(null, p_ref);
 		const onmessage = GodotRuntime.get_func(p_on_message).bind(null, p_ref);
@@ -188,6 +199,7 @@ const GodotRTCDataChannel = {
 		GodotRTCDataChannel.connect(p_id, onopen, onmessage, onerror, onclose);
 	},
 
+	godot_js_rtc_datachannel_close__sig: 'vi',
 	godot_js_rtc_datachannel_close: function (p_id) {
 		const ref = IDHandler.get(p_id);
 		if (!ref) {
@@ -280,6 +292,7 @@ const GodotRTCPeerConnection = {
 		},
 	},
 
+	godot_js_rtc_pc_create__sig: 'iiiiii',
 	godot_js_rtc_pc_create: function (p_config, p_ref, p_on_state_change, p_on_candidate, p_on_datachannel) {
 		const onstatechange = GodotRuntime.get_func(p_on_state_change).bind(null, p_ref);
 		const oncandidate = GodotRuntime.get_func(p_on_candidate).bind(null, p_ref);
@@ -302,6 +315,7 @@ const GodotRTCPeerConnection = {
 		return id;
 	},
 
+	godot_js_rtc_pc_close__sig: 'vi',
 	godot_js_rtc_pc_close: function (p_id) {
 		const ref = IDHandler.get(p_id);
 		if (!ref) {
@@ -310,6 +324,7 @@ const GodotRTCPeerConnection = {
 		ref.close();
 	},
 
+	godot_js_rtc_pc_destroy__sig: 'vi',
 	godot_js_rtc_pc_destroy: function (p_id) {
 		const ref = IDHandler.get(p_id);
 		if (!ref) {
@@ -321,6 +336,7 @@ const GodotRTCPeerConnection = {
 		IDHandler.remove(p_id);
 	},
 
+	godot_js_rtc_pc_offer_create__sig: 'viiii',
 	godot_js_rtc_pc_offer_create: function (p_id, p_obj, p_on_session, p_on_error) {
 		const ref = IDHandler.get(p_id);
 		if (!ref) {
@@ -335,6 +351,7 @@ const GodotRTCPeerConnection = {
 		});
 	},
 
+	godot_js_rtc_pc_local_description_set__sig: 'viiiii',
 	godot_js_rtc_pc_local_description_set: function (p_id, p_type, p_sdp, p_obj, p_on_error) {
 		const ref = IDHandler.get(p_id);
 		if (!ref) {
@@ -351,6 +368,7 @@ const GodotRTCPeerConnection = {
 		});
 	},
 
+	godot_js_rtc_pc_remote_description_set__sig: 'viiiiii',
 	godot_js_rtc_pc_remote_description_set: function (p_id, p_type, p_sdp, p_obj, p_session_created, p_on_error) {
 		const ref = IDHandler.get(p_id);
 		if (!ref) {
@@ -375,6 +393,7 @@ const GodotRTCPeerConnection = {
 		});
 	},
 
+	godot_js_rtc_pc_ice_candidate_add__sig: 'viiii',
 	godot_js_rtc_pc_ice_candidate_add: function (p_id, p_mid_name, p_mline_idx, p_sdp) {
 		const ref = IDHandler.get(p_id);
 		if (!ref) {
@@ -390,6 +409,7 @@ const GodotRTCPeerConnection = {
 	},
 
 	godot_js_rtc_pc_datachannel_create__deps: ['$GodotRTCDataChannel'],
+	godot_js_rtc_pc_datachannel_create__sig: 'iiii',
 	godot_js_rtc_pc_datachannel_create: function (p_id, p_label, p_config) {
 		try {
 			const ref = IDHandler.get(p_id);

@@ -30,6 +30,7 @@
 
 const GodotEval = {
 	godot_js_eval__deps: ['$GodotRuntime'],
+	godot_js_eval__sig: 'iiiiiii',
 	godot_js_eval: function (p_js, p_use_global_ctx, p_union_ptr, p_byte_arr, p_byte_arr_write, p_callback) {
 		const js_code = GodotRuntime.parseString(p_js);
 		let eval_ret = null;

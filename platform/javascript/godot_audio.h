@@ -48,7 +48,7 @@ extern void godot_audio_capture_stop();
 typedef int32_t GodotAudioState[4];
 extern void godot_audio_worklet_create(int p_channels);
 extern void godot_audio_worklet_start(float *p_in_buf, int p_in_size, float *p_out_buf, int p_out_size, GodotAudioState p_state);
-extern void godot_audio_worklet_state_add(GodotAudioState p_state, int p_idx, int p_value);
+extern int godot_audio_worklet_state_add(GodotAudioState p_state, int p_idx, int p_value);
 extern int godot_audio_worklet_state_get(GodotAudioState p_state, int p_idx);
 extern int godot_audio_worklet_state_wait(int32_t *p_state, int p_idx, int32_t p_expected, int p_timeout);
 
