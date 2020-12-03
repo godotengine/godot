@@ -212,6 +212,32 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 	Ref<ImageTexture> stop_icon;
 	int menu_options;
 
+	enum ExportMode {
+		EXPORT_MODE_NORMAL = 0,
+		EXPORT_MODE_THREADS = 1,
+		EXPORT_MODE_GDNATIVE = 2,
+	};
+
+	String _get_template_name(ExportMode p_mode, bool p_debug) const {
+		String name = "webassembly";
+		switch (p_mode) {
+			case EXPORT_MODE_THREADS:
+				name += "_threads";
+				break;
+			case EXPORT_MODE_GDNATIVE:
+				name += "_gdnative";
+				break;
+			default:
+				break;
+		}
+		if (p_debug) {
+			name += "_debug.zip";
+		} else {
+			name += "_release.zip";
+		}
+		return name;
+	}
+
 	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, const Vector<SharedObject> p_shared_objects);
 
 private:
@@ -308,6 +334,7 @@ void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_op
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "variant/export_type", PROPERTY_HINT_ENUM, "Regular,Threads,GDNative"), 0)); // Export type.
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_desktop"), true)); // S3TC
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
@@ -334,11 +361,11 @@ bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p
 
 	String err;
 	bool valid = false;
+	ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
 
 	// Look for export templates (first official, and if defined custom templates).
-
-	bool dvalid = exists_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG, &err);
-	bool rvalid = exists_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE, &err);
+	bool dvalid = exists_export_template(_get_template_name(mode, true), &err);
+	bool rvalid = exists_export_template(_get_template_name(mode, false), &err);
 
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
@@ -392,10 +419,8 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 	if (template_path == String()) {
 
-		if (p_debug)
-			template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG);
-		else
-			template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE);
+		ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
+		template_path = find_export_template(_get_template_name(mode, p_debug));
 	}
 
 	if (!DirAccess::exists(p_path.get_base_dir())) {
