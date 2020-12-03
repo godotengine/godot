@@ -33,7 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "rasterizer_rd.h"
-#include "servers/rendering/rendering_server_raster.h"
+#include "servers/rendering/rendering_server_default.h"
 
 uint64_t RasterizerSceneRD::auto_exposure_counter = 2;
 
@@ -2242,7 +2242,7 @@ void RasterizerSceneRD::_setup_sky(RID p_environment, RID p_render_buffers, cons
 		if (shader_data->uses_time && time - sky->prev_time > 0.00001) {
 			sky->prev_time = time;
 			sky->reflection.dirty = true;
-			RenderingServerRaster::redraw_request();
+			RenderingServerDefault::redraw_request();
 		}
 
 		if (material != sky->prev_material) {
@@ -5257,7 +5257,7 @@ void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_bu
 
 		//swap final reduce with prev luminance
 		SWAP(rb->luminance.current, rb->luminance.reduce.write[rb->luminance.reduce.size() - 1]);
-		RenderingServerRaster::redraw_request(); //redraw all the time if auto exposure rendering is on
+		RenderingServerDefault::redraw_request(); //redraw all the time if auto exposure rendering is on
 	}
 
 	int max_glow_level = -1;

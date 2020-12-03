@@ -32,7 +32,6 @@
 
 RasterizerStorage *RenderingServerGlobals::storage = nullptr;
 RasterizerCanvas *RenderingServerGlobals::canvas_render = nullptr;
-RasterizerScene *RenderingServerGlobals::scene_render = nullptr;
 Rasterizer *RenderingServerGlobals::rasterizer = nullptr;
 
 RenderingServerCanvas *RenderingServerGlobals::canvas = nullptr;

@@ -31,8 +31,8 @@
 #include "rendering_server_canvas.h"
 
 #include "core/math/geometry_2d.h"
+#include "rendering_server_default.h"
 #include "rendering_server_globals.h"
-#include "rendering_server_raster.h"
 #include "rendering_server_viewport.h"
 
 static const int z_range = RS::CANVAS_ITEM_Z_MAX - RS::CANVAS_ITEM_Z_MIN + 1;
@@ -263,7 +263,7 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 	}
 
 	if (ci->update_when_visible) {
-		RenderingServerRaster::redraw_request();
+		RenderingServerDefault::redraw_request();
 	}
 
 	if ((ci->commands != nullptr && p_clip_rect.intersects(global_rect, true)) || ci->vp_render || ci->copy_back_buffer) {

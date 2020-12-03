@@ -31,7 +31,7 @@
 #include "rasterizer_scene_high_end_rd.h"
 #include "core/config/project_settings.h"
 #include "servers/rendering/rendering_device.h"
-#include "servers/rendering/rendering_server_raster.h"
+#include "servers/rendering/rendering_server_default.h"
 
 /* SCENE SHADER */
 void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
@@ -1512,7 +1512,7 @@ void RasterizerSceneHighEndRD::_add_geometry_with_material(InstanceBase *p_insta
 	e->priority = p_material->priority;
 
 	if (p_material->shader_data->uses_time) {
-		RenderingServerRaster::redraw_request();
+		RenderingServerDefault::redraw_request();
 	}
 }
 
