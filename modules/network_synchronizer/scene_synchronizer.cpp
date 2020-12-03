@@ -1454,7 +1454,7 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 			OAHashMap<int, NetUtility::PeerData>::Iterator peer_it = scene_synchronizer->peer_data.iter();
 			peer_it.valid;
 			peer_it = scene_synchronizer->peer_data.next_iter(peer_it)) {
-		if (peer_it.value->controller_id == UINT32_MAX) {
+		if (unlikely(peer_it.value->controller_id == UINT32_MAX)) {
 			// This peer still does not have a `NetworkedController`.
 			continue;
 		}
