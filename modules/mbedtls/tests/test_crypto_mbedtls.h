@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  test_crypto_mbedtls.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,27 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef TEST_CRYPTO_MBEDTLS_H
+#define TEST_CRYPTO_MBEDTLS_H
 
-#include "crypto_mbedtls.h"
-#include "dtls_server_mbedtls.h"
-#include "packet_peer_mbed_dtls.h"
-#include "stream_peer_mbedtls.h"
+#include "core/crypto/hashing_context.h"
 
-#ifdef TESTS_ENABLED
-#include "tests/test_crypto_mbedtls.h"
-#endif
+#include "tests/test_macros.h"
 
-void register_mbedtls_types() {
-	CryptoMbedTLS::initialize_crypto();
-	StreamPeerMbedTLS::initialize_ssl();
-	PacketPeerMbedDTLS::initialize_dtls();
-	DTLSServerMbedTLS::initialize();
+namespace TestCryptoMbedTLS {
+
+void hmac_digest_test(HashingContext::HashType ht, String expected_hex);
+
+TEST_CASE("[CryptoMbedTLS] HMAC digest") {
+	// SHA-256
+	hmac_digest_test(HashingContext::HashType::HASH_SHA256, "fe442023f8a7d36a810e1e7cd8a8e2816457f350a008fbf638296afa12085e59");
+
+	// SHA-1
+	hmac_digest_test(HashingContext::HashType::HASH_SHA1, "a0ac4cd68a2f4812c355983d94e8d025afe7dddf");
 }
 
-void unregister_mbedtls_types() {
-	DTLSServerMbedTLS::finalize();
-	PacketPeerMbedDTLS::finalize_dtls();
-	StreamPeerMbedTLS::finalize_ssl();
-	CryptoMbedTLS::finalize_crypto();
+void hmac_context_digest_test(HashingContext::HashType ht, String expected_hex);
+
+TEST_CASE("[HMACContext] HMAC digest") {
+	// SHA-256
+	hmac_context_digest_test(HashingContext::HashType::HASH_SHA256, "fe442023f8a7d36a810e1e7cd8a8e2816457f350a008fbf638296afa12085e59");
+
+	// SHA-1
+	hmac_context_digest_test(HashingContext::HashType::HASH_SHA1, "a0ac4cd68a2f4812c355983d94e8d025afe7dddf");
 }
+} // namespace TestCryptoMbedTLS
+
+#endif // TEST_CRYPTO_MBEDTLS_H
