@@ -95,6 +95,8 @@ void SceneSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_on_peer_connected"), &SceneSynchronizer::_on_peer_connected);
 	ClassDB::bind_method(D_METHOD("_on_peer_disconnected"), &SceneSynchronizer::_on_peer_disconnected);
 
+	ClassDB::bind_method(D_METHOD("_on_node_removed"), &SceneSynchronizer::_on_node_removed);
+
 	ClassDB::bind_method(D_METHOD("__clear"), &SceneSynchronizer::__clear);
 	ClassDB::bind_method(D_METHOD("_rpc_send_state"), &SceneSynchronizer::_rpc_send_state);
 	ClassDB::bind_method(D_METHOD("_rpc_notify_need_full_snapshot"), &SceneSynchronizer::_rpc_notify_need_full_snapshot);
@@ -129,6 +131,7 @@ void SceneSynchronizer::_notification(int p_what) {
 			get_multiplayer()->connect("network_peer_connected", Callable(this, "_on_peer_connected"));
 			get_multiplayer()->connect("network_peer_disconnected", Callable(this, "_on_peer_disconnected"));
 
+			get_tree()->connect("node_removed", Callable(this, "_on_node_removed"));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (Engine::get_singleton()->is_editor_hint())
@@ -136,6 +139,8 @@ void SceneSynchronizer::_notification(int p_what) {
 
 			get_multiplayer()->disconnect("network_peer_connected", Callable(this, "_on_peer_connected"));
 			get_multiplayer()->disconnect("network_peer_disconnected", Callable(this, "_on_peer_disconnected"));
+
+			get_tree()->disconnect("node_removed", Callable(this, "_on_node_removed"));
 
 			__clear();
 
@@ -698,6 +703,10 @@ void SceneSynchronizer::_on_peer_disconnected(int p_peer) {
 	peer_data.remove(p_peer);
 }
 
+void SceneSynchronizer::_on_node_removed(Node *p_node) {
+	unregister_node(p_node);
+}
+
 void SceneSynchronizer::reset_synchronizer_mode() {
 	set_physics_process_internal(false);
 	const bool was_generating_ids = generate_id;
@@ -1194,6 +1203,7 @@ bool SceneSynchronizer::is_client() const {
 	return synchronizer_type == SYNCHRONIZER_TYPE_CLIENT;
 }
 
+#ifdef DEBUG_ENABLED
 void SceneSynchronizer::validate_nodes() {
 	LocalVector<NetUtility::NodeData *> null_objects;
 	null_objects.reserve(node_data.size());
@@ -1206,8 +1216,11 @@ void SceneSynchronizer::validate_nodes() {
 	}
 
 	// Removes the invalidated `NodeData`.
-	for (uint32_t i = 0; i < null_objects.size(); i += 1) {
-		drop_node_data(null_objects[i]);
+	if (null_objects.size()) {
+		NET_DEBUG_ERR("At least one node has been removed from the tree without the SceneSynchronizer noticing. This shouldn't happen.");
+		for (uint32_t i = 0; i < null_objects.size(); i += 1) {
+			drop_node_data(null_objects[i]);
+		}
 	}
 }
 
@@ -1280,7 +1293,9 @@ NetNodeId SceneSynchronizer::get_biggest_node_id() const {
 }
 
 void SceneSynchronizer::process() {
+#ifdef DEBUG_ENABLED
 	validate_nodes();
+#endif
 	synchronizer->process();
 	purge_node_dependencies();
 }

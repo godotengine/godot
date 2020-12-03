@@ -228,6 +228,8 @@ public:
 	void _on_peer_connected(int p_peer);
 	void _on_peer_disconnected(int p_peer);
 
+	void _on_node_removed(Node *p_node);
+
 	void reset_synchronizer_mode();
 	/// Can only be called by the server
 	void clear();
@@ -259,8 +261,10 @@ private:
 	NetNodeId get_biggest_node_id() const;
 
 	void process();
-
+	
+#ifdef DEBUG_ENABLED
 	void validate_nodes();
+#endif
 	void purge_node_dependencies();
 
 	real_t get_pretended_delta() const;
