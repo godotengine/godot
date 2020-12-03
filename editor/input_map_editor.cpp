@@ -35,47 +35,6 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
-static const char *_button_descriptions[JOY_BUTTON_SDL_MAX] = {
-	TTRC("Bottom Action, Sony Cross, Xbox A, Nintendo B"),
-	TTRC("Right Action, Sony Circle, Xbox B, Nintendo A"),
-	TTRC("Left Action, Sony Square, Xbox X, Nintendo Y"),
-	TTRC("Top Action, Sony Triangle, Xbox Y, Nintendo X"),
-	TTRC("Back, Sony Select, Xbox Back, Nintendo -"),
-	TTRC("Guide, Sony PS, Xbox Home"),
-	TTRC("Start, Nintendo +"),
-	TTRC("Left Stick, Sony L3, Xbox L/LS"),
-	TTRC("Right Stick, Sony R3, Xbox R/RS"),
-	TTRC("Left Shoulder, Sony L1, Xbox LB"),
-	TTRC("Right Shoulder, Sony R1, Xbox RB"),
-	TTRC("D-pad Up"),
-	TTRC("D-pad Down"),
-	TTRC("D-pad Left"),
-	TTRC("D-pad Right"),
-};
-
-static const char *_axis_descriptions[JOY_AXIS_MAX * 2] = {
-	TTRC("Left Stick Left, Joystick 0 Left"),
-	TTRC("Left Stick Right, Joystick 0 Right"),
-	TTRC("Left Stick Up, Joystick 0 Up"),
-	TTRC("Left Stick Down, Joystick 0 Down"),
-	TTRC("Right Stick Left, Joystick 1 Left"),
-	TTRC("Right Stick Right, Joystick 1 Right"),
-	TTRC("Right Stick Up, Joystick 1 Up"),
-	TTRC("Right Stick Down, Joystick 1 Down"),
-	TTRC("Joystick 2 Left"),
-	TTRC("Left Trigger, L2, LT, Joystick 2 Right"),
-	TTRC("Joystick 2 Up"),
-	TTRC("Right Trigger, R2, RT, Joystick 2 Down"),
-	TTRC("Joystick 3 Left"),
-	TTRC("Joystick 3 Right"),
-	TTRC("Joystick 3 Up"),
-	TTRC("Joystick 3 Down"),
-	TTRC("Joystick 4 Left"),
-	TTRC("Joystick 4 Right"),
-	TTRC("Joystick 4 Up"),
-	TTRC("Joystick 4 Down"),
-};
-
 void InputMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -395,6 +354,42 @@ void InputMapEditor::_show_last_added(const Ref<InputEvent> &p_event, const Stri
 	}
 }
 
+// Maps to 2*axis if value is neg, or + 1 if value is pos.
+static const char *_joy_axis_descriptions[JOY_AXIS_MAX * 2] = {
+	TTRC("Left Stick Left, Joystick 0 Left"),
+	TTRC("Left Stick Right, Joystick 0 Right"),
+	TTRC("Left Stick Up, Joystick 0 Up"),
+	TTRC("Left Stick Down, Joystick 0 Down"),
+	TTRC("Right Stick Left, Joystick 1 Left"),
+	TTRC("Right Stick Right, Joystick 1 Right"),
+	TTRC("Right Stick Up, Joystick 1 Up"),
+	TTRC("Right Stick Down, Joystick 1 Down"),
+	TTRC("Joystick 2 Left"),
+	TTRC("Left Trigger, Sony L2, Xbox LT, Joystick 2 Right"),
+	TTRC("Joystick 2 Up"),
+	TTRC("Right Trigger, Sony R2, Xbox RT, Joystick 2 Down"),
+	TTRC("Joystick 3 Left"),
+	TTRC("Joystick 3 Right"),
+	TTRC("Joystick 3 Up"),
+	TTRC("Joystick 3 Down"),
+	TTRC("Joystick 4 Left"),
+	TTRC("Joystick 4 Right"),
+	TTRC("Joystick 4 Up"),
+	TTRC("Joystick 4 Down"),
+};
+
+// Separate from `InputEvent::as_text()` since the descriptions need to be different for the input map editor. See #43660.
+String InputMapEditor::_get_joypad_motion_event_text(const Ref<InputEventJoypadMotion> &p_event) {
+	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Provided event is not a valid instance of InputEventJoypadMotion");
+
+	String desc = TTR("Unknown Joypad Axis");
+	if (p_event->get_axis() < JOY_AXIS_MAX) {
+		desc = RTR(_joy_axis_descriptions[2 * p_event->get_axis() + (p_event->get_axis_value() < 0 ? 0 : 1)]);
+	}
+
+	return vformat("Joypad Axis %s %s (%s)", itos(p_event->get_axis()), p_event->get_axis_value() < 0 ? "-" : "+", desc);
+}
+
 void InputMapEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
@@ -481,9 +476,11 @@ void InputMapEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 			device_index_label->set_text(TTR("Joypad Axis Index:"));
 			device_index->clear();
 			for (int i = 0; i < JOY_AXIS_MAX * 2; i++) {
-				String desc = TTR("Axis") + " " + itos(i / 2) + " " + ((i & 1) ? "+" : "-") +
-							  " (" + TTR(_axis_descriptions[i]) + ")";
-				device_index->add_item(desc);
+				Ref<InputEventJoypadMotion> jm;
+				jm.instance();
+				jm->set_axis(i / 2);
+				jm->set_axis_value((i & 1) ? 1 : -1);
+				device_index->add_item(_get_joypad_motion_event_text(jm));
 			}
 			device_input->popup_centered(Size2(350, 95) * EDSCALE);
 
@@ -502,11 +499,10 @@ void InputMapEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 			device_index_label->set_text(TTR("Joypad Button Index:"));
 			device_index->clear();
 			for (int i = 0; i < JOY_BUTTON_MAX; i++) {
-				String desc = TTR("Button") + " " + itos(i);
-				if (i < JOY_BUTTON_SDL_MAX) {
-					desc += " (" + TTR(_button_descriptions[i]) + ")";
-				}
-				device_index->add_item(desc);
+				Ref<InputEventJoypadButton> jb;
+				jb.instance();
+				jb->set_button_index(i);
+				device_index->add_item(jb->as_text());
 			}
 			device_input->popup_centered(Size2(350, 95) * EDSCALE);
 
@@ -714,14 +710,7 @@ void InputMapEditor::_update_actions() {
 
 			Ref<InputEventJoypadButton> jb = event;
 			if (jb.is_valid()) {
-				const int idx = jb->get_button_index();
-				String str = _get_device_string(jb->get_device()) + ", " +
-							 TTR("Button") + " " + itos(idx);
-				if (idx >= 0 && idx < JOY_BUTTON_SDL_MAX) {
-					str += String() + " (" + TTR(_button_descriptions[jb->get_button_index()]) + ")";
-				}
-
-				action2->set_text(0, str);
+				action2->set_text(0, jb->as_text());
 				action2->set_icon(0, input_editor->get_theme_icon("JoyButton", "EditorIcons"));
 			}
 
@@ -754,12 +743,8 @@ void InputMapEditor::_update_actions() {
 
 			Ref<InputEventJoypadMotion> jm = event;
 			if (jm.is_valid()) {
-				int ax = jm->get_axis();
-				int n = 2 * ax + (jm->get_axis_value() < 0 ? 0 : 1);
-				String str = _get_device_string(jm->get_device()) + ", " +
-							 TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") +
-							 " (" + _axis_descriptions[n] + ")";
-				action2->set_text(0, str);
+				device_index->add_item(_get_joypad_motion_event_text(jm));
+				action2->set_text(0, jm->as_text());
 				action2->set_icon(0, input_editor->get_theme_icon("JoyAxis", "EditorIcons"));
 			}
 			action2->set_metadata(0, i);
