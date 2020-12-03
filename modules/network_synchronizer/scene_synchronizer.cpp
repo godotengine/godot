@@ -2524,8 +2524,13 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 				// This can't be triggered because th `Parse Node` function
 				// above make sure to create room for this array.
 				CRASH_COND(pd->snapshot.node_vars.size() <= p_node_data->id);
-				CRASH_COND(pd->snapshot.node_vars[p_node_data->id].size() <= p_var_id);
 #endif // ~DEBUG_ENABLED
+
+				if (unlikely(p_node_data->vars.size() != pd->snapshot.node_vars[p_node_data->id].size())) {
+					// This mean the parser just added a new variable.
+					// Already notified by the parser.
+					pd->snapshot.node_vars.write[p_node_data->id].resize(p_node_data->vars.size());
+				}
 
 				pd->snapshot.node_vars.write[p_node_data->id].write[p_var_id].name = p_node_data->vars[p_var_id].var.name;
 				pd->snapshot.node_vars.write[p_node_data->id].write[p_var_id].value = p_value.duplicate(true);
