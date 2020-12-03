@@ -1211,7 +1211,7 @@ void Input::parse_mapping(String p_mapping) {
 		ERR_CONTINUE_MSG(output.length() < 1 || input.length() < 2,
 				String(entry[idx] + "\nInvalid device mapping entry: " + entry[idx]));
 
-		if (output == "platform") {
+		if (output == "platform" || output == "hint") {
 			continue;
 		}
 
