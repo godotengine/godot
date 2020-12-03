@@ -482,6 +482,7 @@ void PopupMenu::_notification(int p_what) {
 			Color font_color_disabled = get_color("font_color_disabled");
 			Color font_color_accel = get_color("font_color_accel");
 			Color font_color_hover = get_color("font_color_hover");
+			Color font_color_separator = get_color("font_color_separator");
 			float font_h = font->get_height();
 
 			// Add the check and the wider icon to the offset of all items.
@@ -566,7 +567,7 @@ void PopupMenu::_notification(int p_what) {
 
 					if (text != String()) {
 						int center = (get_size().width - font->get_string_size(text).width) / 2;
-						font->draw(ci, Point2(center, item_ofs.y + Math::floor((h - font_h) / 2.0)), text, font_color_disabled);
+						font->draw(ci, Point2(center, item_ofs.y + Math::floor((h - font_h) / 2.0)), text, font_color_separator);
 					}
 				} else {
 
