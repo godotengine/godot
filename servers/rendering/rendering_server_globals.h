@@ -41,7 +41,6 @@ class RenderingServerGlobals {
 public:
 	static RasterizerStorage *storage;
 	static RasterizerCanvas *canvas_render;
-	static RasterizerScene *scene_render;
 	static Rasterizer *rasterizer;
 
 	static RenderingServerCanvas *canvas;

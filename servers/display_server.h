@@ -83,7 +83,7 @@ protected:
 	static DisplayServerCreate server_create_functions[MAX_SERVERS];
 	static int server_create_count;
 
-	friend class RenderingServerRaster;
+	friend class RenderingServerDefault;
 	virtual void _set_use_vsync(bool p_enable);
 
 public:

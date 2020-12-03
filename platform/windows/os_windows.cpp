@@ -46,7 +46,7 @@
 #include "main/main.h"
 #include "platform/windows/display_server_windows.h"
 #include "servers/audio_server.h"
-#include "servers/rendering/rendering_server_raster.h"
+#include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/rendering_server_wrap_mt.h"
 #include "windows_terminal_logger.h"
 

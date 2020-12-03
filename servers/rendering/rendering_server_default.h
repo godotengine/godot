@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_raster.h                                            */
+/*  rendering_server_default.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_RASTER_H
-#define RENDERING_SERVER_RASTER_H
+#ifndef RENDERING_SERVER_DEFAULT_H
+#define RENDERING_SERVER_DEFAULT_H
 
 #include "core/math/octree.h"
 #include "rendering_server_canvas.h"
 #include "rendering_server_globals.h"
-#include "rendering_server_scene.h"
+#include "rendering_server_scene_raster.h"
 #include "rendering_server_viewport.h"
 #include "servers/rendering/rasterizer.h"
 #include "servers/rendering_server.h"
 
-class RenderingServerRaster : public RenderingServer {
+class RenderingServerDefault : public RenderingServer {
 	enum {
 		MAX_INSTANCE_CULL = 8192,
 		MAX_INSTANCE_LIGHTS = 4,
@@ -554,7 +554,7 @@ public:
 
 #undef BINDBASE
 //from now on, calls forwarded to this singleton
-#define BINDBASE RSG::scene_render
+#define BINDBASE RSG::scene
 
 	BIND1(directional_shadow_atlas_set_size, int)
 	BIND1(gi_probe_set_quality, GIProbeQuality)
@@ -853,8 +853,8 @@ public:
 
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir);
 
-	RenderingServerRaster();
-	~RenderingServerRaster();
+	RenderingServerDefault();
+	~RenderingServerDefault();
 
 #undef DISPLAY_CHANGED
 

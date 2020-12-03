@@ -874,7 +874,7 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 
 				glVertexAttrib4f(RS::ARRAY_COLOR, 1, 1, 1, 1); //not used, so keep white
 
-				RenderingServerRaster::redraw_request();
+				RenderingServerDefault::redraw_request();
 
 				storage->particles_request_process(particles_cmd->particles);
 				//enable instancing

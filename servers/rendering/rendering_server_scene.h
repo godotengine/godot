@@ -28,450 +28,175 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUALSERVERSCENE_H
-#define VISUALSERVERSCENE_H
+#ifndef RENDERINGSERVERSCENE_H
+#define RENDERINGSERVERSCENE_H
 
 #include "servers/rendering/rasterizer.h"
-
-#include "core/math/geometry_3d.h"
-#include "core/math/octree.h"
-#include "core/os/semaphore.h"
-#include "core/os/thread.h"
-#include "core/templates/local_vector.h"
-#include "core/templates/rid_owner.h"
-#include "core/templates/self_list.h"
 #include "servers/xr/xr_interface.h"
 
 class RenderingServerScene {
 public:
-	enum {
-		MAX_INSTANCE_CULL = 65536,
-		MAX_LIGHTS_CULLED = 4096,
-		MAX_REFLECTION_PROBES_CULLED = 4096,
-		MAX_DECALS_CULLED = 4096,
-		MAX_GI_PROBES_CULLED = 4096,
-		MAX_ROOM_CULL = 32,
-		MAX_LIGHTMAPS_CULLED = 4096,
-		MAX_EXTERIOR_PORTALS = 128,
-	};
-
-	uint64_t render_pass;
-
-	static RenderingServerScene *singleton;
-
-	/* CAMERA API */
-
-	struct Camera {
-		enum Type {
-			PERSPECTIVE,
-			ORTHOGONAL,
-			FRUSTUM
-		};
-		Type type;
-		float fov;
-		float znear, zfar;
-		float size;
-		Vector2 offset;
-		uint32_t visible_layers;
-		bool vaspect;
-		RID env;
-		RID effects;
-
-		Transform transform;
-
-		Camera() {
-			visible_layers = 0xFFFFFFFF;
-			fov = 75;
-			type = PERSPECTIVE;
-			znear = 0.05;
-			zfar = 100;
-			size = 1.0;
-			offset = Vector2();
-			vaspect = false;
-		}
-	};
-
-	mutable RID_PtrOwner<Camera> camera_owner;
-
-	virtual RID camera_create();
-	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far);
-	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
-	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far);
-	virtual void camera_set_transform(RID p_camera, const Transform &p_transform);
-	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers);
-	virtual void camera_set_environment(RID p_camera, RID p_env);
-	virtual void camera_set_camera_effects(RID p_camera, RID p_fx);
-	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable);
-
-	/* SCENARIO API */
-
-	struct Instance;
-
-	struct Scenario {
-		RS::ScenarioDebugMode debug;
-		RID self;
-
-		Octree<Instance, true> octree;
-
-		List<Instance *> directional_lights;
-		RID environment;
-		RID fallback_environment;
-		RID camera_effects;
-		RID reflection_probe_shadow_atlas;
-		RID reflection_atlas;
-
-		SelfList<Instance>::List instances;
-
-		LocalVector<RID> dynamic_lights;
-
-		Scenario() { debug = RS::SCENARIO_DEBUG_DISABLED; }
-	};
-
-	mutable RID_PtrOwner<Scenario> scenario_owner;
-
-	static void *_instance_pair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int);
-	static void _instance_unpair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int, void *);
-
-	virtual RID scenario_create();
-
-	virtual void scenario_set_debug(RID p_scenario, RS::ScenarioDebugMode p_debug_mode);
-	virtual void scenario_set_environment(RID p_scenario, RID p_environment);
-	virtual void scenario_set_camera_effects(RID p_scenario, RID p_fx);
-	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment);
-	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_reflection_size, int p_reflection_count);
-
-	/* INSTANCING API */
-
-	struct InstanceBaseData {
-		virtual ~InstanceBaseData() {}
-	};
-
-	struct Instance : RasterizerScene::InstanceBase {
-		RID self;
-		//scenario stuff
-		OctreeElementID octree_id;
-		Scenario *scenario;
-		SelfList<Instance> scenario_item;
-
-		//aabb stuff
-		bool update_aabb;
-		bool update_dependencies;
-
-		SelfList<Instance> update_item;
-
-		AABB *custom_aabb; // <Zylann> would using aabb directly with a bool be better?
-		float extra_margin;
-		ObjectID object_id;
-
-		float lod_begin;
-		float lod_end;
-		float lod_begin_hysteresis;
-		float lod_end_hysteresis;
-		RID lod_instance;
-
-		Vector<Color> lightmap_target_sh; //target is used for incrementally changing the SH over time, this avoids pops in some corner cases and when going interior <-> exterior
-
-		uint64_t last_render_pass;
-		uint64_t last_frame_pass;
-
-		uint64_t version; // changes to this, and changes to base increase version
-
-		InstanceBaseData *base_data;
-
-		virtual void dependency_deleted(RID p_dependency) {
-			if (p_dependency == base) {
-				singleton->instance_set_base(self, RID());
-			} else if (p_dependency == skeleton) {
-				singleton->instance_attach_skeleton(self, RID());
-			} else {
-				singleton->_instance_queue_update(this, false, true);
-			}
-		}
-
-		virtual void dependency_changed(bool p_aabb, bool p_dependencies) {
-			singleton->_instance_queue_update(this, p_aabb, p_dependencies);
-		}
-
-		Instance() :
-				scenario_item(this),
-				update_item(this) {
-			octree_id = 0;
-			scenario = nullptr;
-
-			update_aabb = false;
-			update_dependencies = false;
-
-			extra_margin = 0;
-
-			visible = true;
-
-			lod_begin = 0;
-			lod_end = 0;
-			lod_begin_hysteresis = 0;
-			lod_end_hysteresis = 0;
-
-			last_render_pass = 0;
-			last_frame_pass = 0;
-			version = 1;
-			base_data = nullptr;
-
-			custom_aabb = nullptr;
-		}
-
-		~Instance() {
-			if (base_data) {
-				memdelete(base_data);
-			}
-			if (custom_aabb) {
-				memdelete(custom_aabb);
-			}
-		}
-	};
-
-	SelfList<Instance>::List _instance_update_list;
-	void _instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_dependencies = false);
-
-	struct InstanceGeometryData : public InstanceBaseData {
-		List<Instance *> lighting;
-		bool lighting_dirty;
-		bool can_cast_shadows;
-		bool material_is_animated;
-
-		List<Instance *> decals;
-		bool decal_dirty;
-
-		List<Instance *> reflection_probes;
-		bool reflection_dirty;
-
-		List<Instance *> gi_probes;
-		bool gi_probes_dirty;
-
-		List<Instance *> lightmap_captures;
-
-		InstanceGeometryData() {
-			lighting_dirty = false;
-			reflection_dirty = true;
-			can_cast_shadows = true;
-			material_is_animated = true;
-			gi_probes_dirty = true;
-			decal_dirty = true;
-		}
-	};
-
-	struct InstanceReflectionProbeData : public InstanceBaseData {
-		Instance *owner;
-
-		struct PairInfo {
-			List<Instance *>::Element *L; //reflection iterator in geometry
-			Instance *geometry;
-		};
-		List<PairInfo> geometries;
-
-		RID instance;
-		bool reflection_dirty;
-		SelfList<InstanceReflectionProbeData> update_list;
-
-		int render_step;
-
-		InstanceReflectionProbeData() :
-				update_list(this) {
-			reflection_dirty = true;
-			render_step = -1;
-		}
-	};
-
-	struct InstanceDecalData : public InstanceBaseData {
-		Instance *owner;
-		RID instance;
-
-		struct PairInfo {
-			List<Instance *>::Element *L; //reflection iterator in geometry
-			Instance *geometry;
-		};
-		List<PairInfo> geometries;
-
-		InstanceDecalData() {
-		}
-	};
-
-	SelfList<InstanceReflectionProbeData>::List reflection_probe_render_list;
-
-	struct InstanceLightData : public InstanceBaseData {
-		struct PairInfo {
-			List<Instance *>::Element *L; //light iterator in geometry
-			Instance *geometry;
-		};
-
-		RID instance;
-		uint64_t last_version;
-		List<Instance *>::Element *D; // directional light in scenario
-
-		bool shadow_dirty;
-
-		List<PairInfo> geometries;
-
-		Instance *baked_light;
-
-		RS::LightBakeMode bake_mode;
-		uint32_t max_sdfgi_cascade = 2;
-
-		uint64_t sdfgi_cascade_light_pass = 0;
-
-		InstanceLightData() {
-			bake_mode = RS::LIGHT_BAKE_DISABLED;
-			shadow_dirty = true;
-			D = nullptr;
-			last_version = 0;
-			baked_light = nullptr;
-		}
-	};
-
-	struct InstanceGIProbeData : public InstanceBaseData {
-		Instance *owner;
-
-		struct PairInfo {
-			List<Instance *>::Element *L; //gi probe iterator in geometry
-			Instance *geometry;
-		};
-
-		List<PairInfo> geometries;
-		List<PairInfo> dynamic_geometries;
-
-		Set<Instance *> lights;
-
-		struct LightCache {
-			RS::LightType type;
-			Transform transform;
-			Color color;
-			float energy;
-			float bake_energy;
-			float radius;
-			float attenuation;
-			float spot_angle;
-			float spot_attenuation;
-			bool has_shadow;
-			bool sky_only;
-		};
-
-		Vector<LightCache> light_cache;
-		Vector<RID> light_instances;
-
-		RID probe_instance;
-
-		bool invalid;
-		uint32_t base_version;
-
-		SelfList<InstanceGIProbeData> update_element;
-
-		InstanceGIProbeData() :
-				update_element(this) {
-			invalid = true;
-			base_version = 0;
-		}
-	};
-
-	SelfList<InstanceGIProbeData>::List gi_probe_update_list;
-
-	struct InstanceLightmapData : public InstanceBaseData {
-		struct PairInfo {
-			List<Instance *>::Element *L; //iterator in geometry
-			Instance *geometry;
-		};
-		List<PairInfo> geometries;
-
-		Set<Instance *> users;
-
-		InstanceLightmapData() {
-		}
-	};
-
-	Set<Instance *> heightfield_particle_colliders_update_list;
-
-	int instance_cull_count;
-	Instance *instance_cull_result[MAX_INSTANCE_CULL];
-	Instance *instance_shadow_cull_result[MAX_INSTANCE_CULL]; //used for generating shadowmaps
-	Instance *light_cull_result[MAX_LIGHTS_CULLED];
-	RID sdfgi_light_cull_result[MAX_LIGHTS_CULLED];
-	RID light_instance_cull_result[MAX_LIGHTS_CULLED];
-	uint64_t sdfgi_light_cull_pass = 0;
-	int light_cull_count;
-	int directional_light_count;
-	RID reflection_probe_instance_cull_result[MAX_REFLECTION_PROBES_CULLED];
-	RID decal_instance_cull_result[MAX_DECALS_CULLED];
-	int reflection_probe_cull_count;
-	int decal_cull_count;
-	RID gi_probe_instance_cull_result[MAX_GI_PROBES_CULLED];
-	int gi_probe_cull_count;
-	Instance *lightmap_cull_result[MAX_LIGHTS_CULLED];
-	int lightmap_cull_count;
-
-	RID_PtrOwner<Instance> instance_owner;
-
-	virtual RID instance_create();
-
-	virtual void instance_set_base(RID p_instance, RID p_base);
-	virtual void instance_set_scenario(RID p_instance, RID p_scenario);
-	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
-	virtual void instance_set_transform(RID p_instance, const Transform &p_transform);
-	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);
-	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
-	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material);
-	virtual void instance_set_visible(RID p_instance, bool p_visible);
-
-	virtual void instance_set_custom_aabb(RID p_instance, AABB p_aabb);
-
-	virtual void instance_attach_skeleton(RID p_instance, RID p_skeleton);
-	virtual void instance_set_exterior(RID p_instance, bool p_enabled);
-
-	virtual void instance_set_extra_visibility_margin(RID p_instance, real_t p_margin);
+	virtual RID camera_create() = 0;
+
+	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far) = 0;
+	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far) = 0;
+	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far) = 0;
+	virtual void camera_set_transform(RID p_camera, const Transform &p_transform) = 0;
+	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers) = 0;
+	virtual void camera_set_environment(RID p_camera, RID p_env) = 0;
+	virtual void camera_set_camera_effects(RID p_camera, RID p_fx) = 0;
+	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
+	virtual bool is_camera(RID p_camera) const = 0;
+
+	virtual RID scenario_create() = 0;
+
+	virtual void scenario_set_debug(RID p_scenario, RS::ScenarioDebugMode p_debug_mode) = 0;
+	virtual void scenario_set_environment(RID p_scenario, RID p_environment) = 0;
+	virtual void scenario_set_camera_effects(RID p_scenario, RID p_fx) = 0;
+	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment) = 0;
+	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_reflection_size, int p_reflection_count) = 0;
+	virtual bool is_scenario(RID p_scenario) const = 0;
+	virtual RID scenario_get_environment(RID p_scenario) = 0;
+
+	virtual RID instance_create() = 0;
+
+	virtual void instance_set_base(RID p_instance, RID p_base) = 0;
+	virtual void instance_set_scenario(RID p_instance, RID p_scenario) = 0;
+	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask) = 0;
+	virtual void instance_set_transform(RID p_instance, const Transform &p_transform) = 0;
+	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id) = 0;
+	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight) = 0;
+	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material) = 0;
+	virtual void instance_set_visible(RID p_instance, bool p_visible) = 0;
+
+	virtual void instance_set_custom_aabb(RID p_instance, AABB p_aabb) = 0;
+
+	virtual void instance_attach_skeleton(RID p_instance, RID p_skeleton) = 0;
+	virtual void instance_set_exterior(RID p_instance, bool p_enabled) = 0;
+
+	virtual void instance_set_extra_visibility_margin(RID p_instance, real_t p_margin) = 0;
 
 	// don't use these in a game!
-	virtual Vector<ObjectID> instances_cull_aabb(const AABB &p_aabb, RID p_scenario = RID()) const;
-	virtual Vector<ObjectID> instances_cull_ray(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const;
-	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane> &p_convex, RID p_scenario = RID()) const;
+	virtual Vector<ObjectID> instances_cull_aabb(const AABB &p_aabb, RID p_scenario = RID()) const = 0;
+	virtual Vector<ObjectID> instances_cull_ray(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const = 0;
+	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane> &p_convex, RID p_scenario = RID()) const = 0;
 
-	virtual void instance_geometry_set_flag(RID p_instance, RS::InstanceFlags p_flags, bool p_enabled);
-	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, RS::ShadowCastingSetting p_shadow_casting_setting);
-	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material);
+	virtual void instance_geometry_set_flag(RID p_instance, RS::InstanceFlags p_flags, bool p_enabled) = 0;
+	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, RS::ShadowCastingSetting p_shadow_casting_setting) = 0;
+	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material) = 0;
 
-	virtual void instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin);
-	virtual void instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance);
-	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
+	virtual void instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) = 0;
+	virtual void instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance) = 0;
+	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index) = 0;
 
-	void _update_instance_shader_parameters_from_material(Map<StringName, RasterizerScene::InstanceBase::InstanceShaderParameter> &isparams, const Map<StringName, RasterizerScene::InstanceBase::InstanceShaderParameter> &existing_isparams, RID p_material);
+	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value) = 0;
+	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
+	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const = 0;
+	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &p_parameter) const = 0;
 
-	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value);
-	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const;
-	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const;
-	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &p_parameter) const;
+	virtual void directional_shadow_atlas_set_size(int p_size) = 0;
 
-	_FORCE_INLINE_ void _update_instance(Instance *p_instance);
-	_FORCE_INLINE_ void _update_instance_aabb(Instance *p_instance);
-	_FORCE_INLINE_ void _update_dirty_instance(Instance *p_instance);
-	_FORCE_INLINE_ void _update_instance_lightmap_captures(Instance *p_instance);
+	/* SKY API */
 
-	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario);
+	virtual RID sky_create() = 0;
+	virtual void sky_set_radiance_size(RID p_sky, int p_radiance_size) = 0;
+	virtual void sky_set_mode(RID p_sky, RS::SkyMode p_samples) = 0;
+	virtual void sky_set_material(RID p_sky, RID p_material) = 0;
+	virtual Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) = 0;
 
-	RID _render_get_environment(RID p_camera, RID p_scenario);
+	/* ENVIRONMENT API */
 
-	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, bool p_using_shadows = true);
-	void _render_scene(RID p_render_buffers, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_environment, RID p_force_camera_effects, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
-	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
+	virtual RID environment_create() = 0;
 
-	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
-	void render_camera(RID p_render_buffers, Ref<XRInterface> &p_interface, XRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
-	void update_dirty_instances();
+	virtual void environment_set_background(RID p_env, RS::EnvironmentBG p_bg) = 0;
+	virtual void environment_set_sky(RID p_env, RID p_sky) = 0;
+	virtual void environment_set_sky_custom_fov(RID p_env, float p_scale) = 0;
+	virtual void environment_set_sky_orientation(RID p_env, const Basis &p_orientation) = 0;
+	virtual void environment_set_bg_color(RID p_env, const Color &p_color) = 0;
+	virtual void environment_set_bg_energy(RID p_env, float p_energy) = 0;
+	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
+	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG, const Color &p_ao_color = Color()) = 0;
 
-	void render_particle_colliders();
-	void render_probes();
+	virtual void environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) = 0;
+	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) = 0;
+	virtual void environment_glow_set_use_high_quality(bool p_enable) = 0;
 
-	TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size);
+	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, RS::EnvVolumetricFogShadowFilter p_shadow_filter) = 0;
 
-	bool free(RID p_rid);
+	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) = 0;
+	virtual void environment_set_volumetric_fog_filter_active(bool p_enable) = 0;
+	virtual void environment_set_volumetric_fog_directional_shadow_shrink_size(int p_shrink_size) = 0;
+	virtual void environment_set_volumetric_fog_positional_shadow_shrink_size(int p_shrink_size) = 0;
+
+	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) = 0;
+	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) = 0;
+
+	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_bias, float p_light_affect, float p_ao_channel_affect, RS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) = 0;
+
+	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size) = 0;
+
+	virtual void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
+
+	virtual void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) = 0;
+	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) = 0;
+
+	virtual void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) = 0;
+
+	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) = 0;
+
+	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective) = 0;
+
+	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) = 0;
+
+	virtual RS::EnvironmentBG environment_get_background(RID p_Env) const = 0;
+	virtual int environment_get_canvas_max_layer(RID p_env) const = 0;
+
+	virtual bool is_environment(RID p_environment) const = 0;
+
+	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_amount, float p_limit) = 0;
+	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) = 0;
+	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) = 0;
+
+	/* Camera Effects */
+
+	virtual RID camera_effects_create() = 0;
+
+	virtual void camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter) = 0;
+	virtual void camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape) = 0;
+
+	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
+	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) = 0;
+
+	virtual void shadows_quality_set(RS::ShadowQuality p_quality) = 0;
+	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality) = 0;
+
+	virtual RID shadow_atlas_create() = 0;
+	virtual void shadow_atlas_set_size(RID p_atlas, int p_size) = 0;
+	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) = 0;
+
+	/* Render Buffers */
+
+	virtual RID render_buffers_create() = 0;
+	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding) = 0;
+
+	virtual void set_debug_draw_mode(RS::ViewportDebugDraw p_debug_draw) = 0;
+
+	virtual TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size) = 0;
+	virtual void gi_probe_set_quality(RS::GIProbeQuality) = 0;
+
+	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) = 0;
+
+	virtual void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas) = 0;
+	virtual void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas) = 0;
+	virtual void render_camera(RID p_render_buffers, Ref<XRInterface> &p_interface, XRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas) = 0;
+
+	virtual void update() = 0;
+	virtual void render_probes() = 0;
+
+	virtual bool free(RID p_rid) = 0;
 
 	RenderingServerScene();
 	virtual ~RenderingServerScene();
 };
 
-#endif // VISUALSERVERSCENE_H
+#endif // RENDERINGSERVERSCENE_H
