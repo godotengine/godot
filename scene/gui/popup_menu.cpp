@@ -446,6 +446,7 @@ void PopupMenu::_draw_items() {
 	Color font_color_disabled = get_theme_color("font_color_disabled");
 	Color font_color_accel = get_theme_color("font_color_accel");
 	Color font_color_hover = get_theme_color("font_color_hover");
+	Color font_color_separator = get_theme_color("font_color_separator");
 
 	float scroll_width = scroll_container->get_v_scrollbar()->is_visible_in_tree() ? scroll_container->get_v_scrollbar()->get_size().width : 0;
 	float display_width = control->get_size().width - scroll_width;
@@ -548,7 +549,7 @@ void PopupMenu::_draw_items() {
 		if (items[i].separator) {
 			if (text != String()) {
 				int center = (display_width - items[i].text_buf->get_size().width) / 2;
-				items[i].text_buf->draw(ci, Point2(center, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0)), font_color_disabled);
+				items[i].text_buf->draw(ci, Point2(center, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0)), font_color_separator);
 			}
 		} else {
 			item_ofs.x += icon_ofs + check_ofs;
