@@ -2504,7 +2504,7 @@
 		<constant name="TYPE_INT" value="2" enum="Variant.Type">
 			Variable is of type [int].
 		</constant>
-		<constant name="TYPE_REAL" value="3" enum="Variant.Type">
+		<constant name="TYPE_FLOAT" value="3" enum="Variant.Type">
 			Variable is of type [float] (real).
 		</constant>
 		<constant name="TYPE_STRING" value="4" enum="Variant.Type">
