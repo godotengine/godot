@@ -494,9 +494,17 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						} else if ((codegen.function_node && codegen.function_node->is_static) || call->function_name == "new") {
 							GDScriptCodeGenerator::Address self;
 							self.mode = GDScriptCodeGenerator::Address::CLASS;
-							gen->write_call(result, self, call->function_name, arguments);
+							if (within_await) {
+								gen->write_call_async(result, self, call->function_name, arguments);
+							} else {
+								gen->write_call(result, self, call->function_name, arguments);
+							}
 						} else {
-							gen->write_call_self(result, call->function_name, arguments);
+							if (within_await) {
+								gen->write_call_self_async(result, call->function_name, arguments);
+							} else {
+								gen->write_call_self(result, call->function_name, arguments);
+							}
 						}
 					} else if (callee->type == GDScriptParser::Node::SUBSCRIPT) {
 						const GDScriptParser::SubscriptNode *subscript = static_cast<const GDScriptParser::SubscriptNode *>(call->callee);
