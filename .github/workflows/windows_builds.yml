@@ -7,7 +7,7 @@ env:
   GODOT_BASE_BRANCH: master
   SCONSFLAGS: platform=windows verbose=yes warnings=all werror=yes --jobs=2
   SCONS_CACHE_MSVC_CONFIG: true
-  SCONS_CACHE_LIMIT: 4096
+  SCONS_CACHE_LIMIT: 3072
 
 jobs:
   windows-editor:
