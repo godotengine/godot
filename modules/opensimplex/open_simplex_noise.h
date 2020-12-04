@@ -61,7 +61,7 @@ public:
 	void _init_seeds();
 
 	void set_seed(int seed);
-	int get_seed();
+	int get_seed() const;
 
 	void set_octaves(int p_octaves);
 	int get_octaves() const { return octaves; }
@@ -75,22 +75,22 @@ public:
 	void set_lacunarity(float p_lacunarity);
 	float get_lacunarity() const { return lacunarity; }
 
-	Ref<Image> get_image(int p_width, int p_height);
-	Ref<Image> get_seamless_image(int p_size);
+	Ref<Image> get_image(int p_width, int p_height) const;
+	Ref<Image> get_seamless_image(int p_size) const;
 
-	float get_noise_1d(float x);
-	float get_noise_2d(float x, float y);
-	float get_noise_3d(float x, float y, float z);
-	float get_noise_4d(float x, float y, float z, float w);
+	float get_noise_1d(float x) const;
+	float get_noise_2d(float x, float y) const;
+	float get_noise_3d(float x, float y, float z) const;
+	float get_noise_4d(float x, float y, float z, float w) const;
 
-	_FORCE_INLINE_ float _get_octave_noise_2d(int octave, float x, float y) { return open_simplex_noise2(&(contexts[octave]), x, y); }
-	_FORCE_INLINE_ float _get_octave_noise_3d(int octave, float x, float y, float z) { return open_simplex_noise3(&(contexts[octave]), x, y, z); }
-	_FORCE_INLINE_ float _get_octave_noise_4d(int octave, float x, float y, float z, float w) { return open_simplex_noise4(&(contexts[octave]), x, y, z, w); }
+	_FORCE_INLINE_ float _get_octave_noise_2d(int octave, float x, float y) const { return open_simplex_noise2(&(contexts[octave]), x, y); }
+	_FORCE_INLINE_ float _get_octave_noise_3d(int octave, float x, float y, float z) const { return open_simplex_noise3(&(contexts[octave]), x, y, z); }
+	_FORCE_INLINE_ float _get_octave_noise_4d(int octave, float x, float y, float z, float w) const { return open_simplex_noise4(&(contexts[octave]), x, y, z, w); }
 
 	// Convenience
 
-	_FORCE_INLINE_ float get_noise_2dv(Vector2 v) { return get_noise_2d(v.x, v.y); }
-	_FORCE_INLINE_ float get_noise_3dv(Vector3 v) { return get_noise_3d(v.x, v.y, v.z); }
+	_FORCE_INLINE_ float get_noise_2dv(const Vector2 &v) const { return get_noise_2d(v.x, v.y); }
+	_FORCE_INLINE_ float get_noise_3dv(const Vector3 &v) const { return get_noise_3d(v.x, v.y, v.z); }
 
 protected:
 	static void _bind_methods();
