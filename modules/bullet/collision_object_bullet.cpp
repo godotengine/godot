@@ -131,7 +131,7 @@ void CollisionObjectBullet::setupBulletCollisionObject(btCollisionObject *p_coll
 	bt_collision_object->setUserPointer(this);
 	bt_collision_object->setUserIndex(type);
 	// Force the enabling of collision and avoid problems
-	set_collision_enabled(collisionsEnabled);
+	enable_collisions(collisions_enabled);
 	p_collisionObject->setCollisionFlags(p_collisionObject->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
 }
 
@@ -161,20 +161,20 @@ bool CollisionObjectBullet::has_collision_exception(const CollisionObjectBullet 
 	return exceptions.has(p_otherCollisionObject->get_self());
 }
 
-void CollisionObjectBullet::set_collision_enabled(bool p_enabled) {
-	collisionsEnabled = p_enabled;
+void CollisionObjectBullet::enable_collisions(bool p_enable) {
+	collisions_enabled = p_enable;
 	if (!bt_collision_object) {
 		return;
 	}
-	if (collisionsEnabled) {
+	if (collisions_enabled) {
 		bt_collision_object->setCollisionFlags(bt_collision_object->getCollisionFlags() & (~btCollisionObject::CF_NO_CONTACT_RESPONSE));
 	} else {
 		bt_collision_object->setCollisionFlags(bt_collision_object->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 	}
 }
 
-bool CollisionObjectBullet::is_collisions_response_enabled() {
-	return collisionsEnabled;
+bool CollisionObjectBullet::is_collisions_enabled() {
+	return collisions_enabled;
 }
 
 void CollisionObjectBullet::notify_new_overlap(AreaBullet *p_area) {
@@ -230,8 +230,8 @@ RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {
 	}
 }
 
-void RigidCollisionObjectBullet::add_shape(ShapeBullet *p_shape, const Transform &p_transform, bool p_disabled) {
-	shapes.push_back(ShapeWrapper(p_shape, p_transform, !p_disabled));
+void RigidCollisionObjectBullet::add_shape(ShapeBullet *p_shape, const Transform &p_transform, bool p_enabled) {
+	shapes.push_back(ShapeWrapper(p_shape, p_transform, p_enabled));
 	p_shape->add_owner(this);
 	reload_shapes();
 }
@@ -313,16 +313,16 @@ Transform RigidCollisionObjectBullet::get_shape_transform(int p_index) const {
 	return trs;
 }
 
-void RigidCollisionObjectBullet::set_shape_disabled(int p_index, bool p_disabled) {
-	if (shapes[p_index].active != p_disabled) {
+void RigidCollisionObjectBullet::enable_shape(int p_index, bool p_enable) {
+	if (shapes[p_index].active == p_enable) {
 		return;
 	}
-	shapes.write[p_index].active = !p_disabled;
+	shapes.write[p_index].active = p_enable;
 	shape_changed(p_index);
 }
 
-bool RigidCollisionObjectBullet::is_shape_disabled(int p_index) {
-	return !shapes[p_index].active;
+bool RigidCollisionObjectBullet::is_shape_enabled(int p_index) {
+	return shapes[p_index].active;
 }
 
 void RigidCollisionObjectBullet::shape_changed(int p_shape_index) {

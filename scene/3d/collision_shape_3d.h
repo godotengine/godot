@@ -44,7 +44,7 @@ class CollisionShape3D : public Node3D {
 	CollisionObject3D *parent = nullptr;
 
 	void resource_changed(RES res);
-	bool disabled = false;
+	bool enabled = true;
 
 protected:
 	void _shape_changed();
@@ -61,8 +61,8 @@ public:
 	void set_shape(const Ref<Shape3D> &p_shape);
 	Ref<Shape3D> get_shape() const;
 
-	void set_disabled(bool p_disabled);
-	bool is_disabled() const;
+	void enable(bool p_enable = true);
+	bool is_enabled() const;
 
 	TypedArray<String> get_configuration_warnings() const override;
 

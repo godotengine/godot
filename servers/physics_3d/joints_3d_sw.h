@@ -42,7 +42,7 @@ public:
 	void copy_settings_from(Joint3DSW *p_joint) {
 		set_self(p_joint->get_self());
 		set_priority(p_joint->get_priority());
-		disable_collisions_between_bodies(p_joint->is_disabled_collisions_between_bodies());
+		enable_collisions_between_bodies(p_joint->is_collisions_between_bodies_enabled());
 	}
 
 	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_MAX; }

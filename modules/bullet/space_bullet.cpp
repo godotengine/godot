@@ -537,9 +537,9 @@ void SpaceBullet::reload_collision_filters(SoftBodyBullet *p_body) {
 	add_soft_body(p_body);
 }
 
-void SpaceBullet::add_constraint(ConstraintBullet *p_constraint, bool disableCollisionsBetweenLinkedBodies) {
+void SpaceBullet::add_constraint(ConstraintBullet *p_constraint, bool collisions_between_bodies_enabled) {
 	p_constraint->set_space(this);
-	dynamicsWorld->addConstraint(p_constraint->get_bt_constraint(), disableCollisionsBetweenLinkedBodies);
+	dynamicsWorld->addConstraint(p_constraint->get_bt_constraint(), !collisions_between_bodies_enabled);
 }
 
 void SpaceBullet::remove_constraint(ConstraintBullet *p_constraint) {
@@ -974,7 +974,7 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 #endif
 
 		for (int shIndex = 0; shIndex < shape_count; ++shIndex) {
-			if (p_body->is_shape_disabled(shIndex)) {
+			if (!p_body->is_shape_enabled(shIndex)) {
 				continue;
 			}
 

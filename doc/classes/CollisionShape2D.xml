@@ -15,14 +15,14 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
-			A disabled collision shape has no effect in the world. This property should be changed with [method Object.set_deferred].
+		<member name="enabled" type="bool" setter="enable" getter="is_enabled" default="true">
+			If [code]true[/code], other objects will collide with this [CollisionShape2D]. This property should be changed with [method Object.set_deferred].
 		</member>
-		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" default="false">
-			Sets whether this collision shape should only detect collision on one side (top or bottom).
+		<member name="one_way_collision" type="bool" setter="enable_one_way_collision" getter="is_one_way_collision_enabled" default="false">
+			If [code]true[/code], other objects will only collide with edges that face up, relative to this [CollisionShape2D]'s rotation.
 		</member>
 		<member name="one_way_collision_margin" type="float" setter="set_one_way_collision_margin" getter="get_one_way_collision_margin" default="1.0">
-			The margin used for one-way collision (in pixels). Higher values will make the shape thicker, and work better for colliders that enter the shape at a high velocity.
+			The margin used for one-way collisions (in pixels). Higher values will make the shape thicker, and work better for colliders that enter the shape at a high velocity.
 		</member>
 		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape">
 			The actual shape owned by this collision shape.

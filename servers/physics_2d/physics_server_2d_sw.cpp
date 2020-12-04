@@ -333,14 +333,14 @@ PhysicsServer2D::AreaSpaceOverrideMode PhysicsServer2DSW::area_get_space_overrid
 	return area->get_space_override_mode();
 }
 
-void PhysicsServer2DSW::area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform, bool p_disabled) {
+void PhysicsServer2DSW::area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform, bool p_enabled) {
 	Area2DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
 	Shape2DSW *shape = shape_owner.getornull(p_shape);
 	ERR_FAIL_COND(!shape);
 
-	area->add_shape(shape, p_transform, p_disabled);
+	area->add_shape(shape, p_transform, p_enabled);
 }
 
 void PhysicsServer2DSW::area_set_shape(RID p_area, int p_shape_idx, RID p_shape) {
@@ -361,13 +361,13 @@ void PhysicsServer2DSW::area_set_shape_transform(RID p_area, int p_shape_idx, co
 	area->set_shape_transform(p_shape_idx, p_transform);
 }
 
-void PhysicsServer2DSW::area_set_shape_disabled(RID p_area, int p_shape, bool p_disabled) {
+void PhysicsServer2DSW::area_enable_shape(RID p_area, int p_shape, bool p_enable) {
 	Area2DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 	ERR_FAIL_INDEX(p_shape, area->get_shape_count());
 	FLUSH_QUERY_CHECK(area);
 
-	area->set_shape_as_disabled(p_shape, p_disabled);
+	area->enable_shape(p_shape, p_enable);
 }
 
 int PhysicsServer2DSW::area_get_shape_count(RID p_area) const {
@@ -578,14 +578,14 @@ PhysicsServer2D::BodyMode PhysicsServer2DSW::body_get_mode(RID p_body) const {
 	return body->get_mode();
 };
 
-void PhysicsServer2DSW::body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform, bool p_disabled) {
+void PhysicsServer2DSW::body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform, bool p_enabled) {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
 	Shape2DSW *shape = shape_owner.getornull(p_shape);
 	ERR_FAIL_COND(!shape);
 
-	body->add_shape(shape, p_transform, p_disabled);
+	body->add_shape(shape, p_transform, p_enabled);
 }
 
 void PhysicsServer2DSW::body_set_shape(RID p_body, int p_shape_idx, RID p_shape) {
@@ -658,22 +658,22 @@ void PhysicsServer2DSW::body_clear_shapes(RID p_body) {
 	}
 }
 
-void PhysicsServer2DSW::body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
+void PhysicsServer2DSW::body_enable_shape(RID p_body, int p_shape_idx, bool p_enabled) {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 	FLUSH_QUERY_CHECK(body);
 
-	body->set_shape_as_disabled(p_shape_idx, p_disabled);
+	body->enable_shape(p_shape_idx, p_enabled);
 }
 
-void PhysicsServer2DSW::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, real_t p_margin) {
+void PhysicsServer2DSW::body_enable_shape_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, real_t p_margin) {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 	FLUSH_QUERY_CHECK(body);
 
-	body->set_shape_as_one_way_collision(p_shape_idx, p_enable, p_margin);
+	body->enable_shape_one_way_collision(p_shape_idx, p_enable, p_margin);
 }
 
 void PhysicsServer2DSW::body_set_continuous_collision_detection_mode(RID p_body, CCDMode p_mode) {
@@ -1039,31 +1039,31 @@ real_t PhysicsServer2DSW::joint_get_param(RID p_joint, JointParam p_param) const
 	return 0;
 }
 
-void PhysicsServer2DSW::joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) {
+void PhysicsServer2DSW::joint_enable_collisions_between_bodies(RID p_joint, const bool p_enable) {
 	Joint2DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
 
-	joint->disable_collisions_between_bodies(p_disable);
+	joint->enable_collisions_between_bodies(p_enable);
 
 	if (2 == joint->get_body_count()) {
 		Body2DSW *body_a = *joint->get_body_ptr();
 		Body2DSW *body_b = *(joint->get_body_ptr() + 1);
 
-		if (p_disable) {
-			body_add_collision_exception(body_a->get_self(), body_b->get_self());
-			body_add_collision_exception(body_b->get_self(), body_a->get_self());
-		} else {
+		if (p_enable) {
 			body_remove_collision_exception(body_a->get_self(), body_b->get_self());
 			body_remove_collision_exception(body_b->get_self(), body_a->get_self());
+		} else {
+			body_add_collision_exception(body_a->get_self(), body_b->get_self());
+			body_add_collision_exception(body_b->get_self(), body_a->get_self());
 		}
 	}
 }
 
-bool PhysicsServer2DSW::joint_is_disabled_collisions_between_bodies(RID p_joint) const {
+bool PhysicsServer2DSW::joint_is_collisions_between_bodies_enabled(RID p_joint) const {
 	const Joint2DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, true);
 
-	return joint->is_disabled_collisions_between_bodies();
+	return joint->is_collisions_between_bodies_enabled();
 }
 
 void PhysicsServer2DSW::joint_make_pin(RID p_joint, const Vector2 &p_pos, RID p_body_a, RID p_body_b) {

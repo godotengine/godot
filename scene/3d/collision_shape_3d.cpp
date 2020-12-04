@@ -81,7 +81,7 @@ void CollisionShape3D::_update_in_shape_owner(bool p_xform_only) {
 	if (p_xform_only) {
 		return;
 	}
-	parent->shape_owner_set_disabled(owner_id, disabled);
+	parent->enable_shape_owner(owner_id, enabled);
 }
 
 void CollisionShape3D::_notification(int p_what) {
@@ -146,13 +146,13 @@ void CollisionShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &CollisionShape3D::resource_changed);
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionShape3D::set_shape);
 	ClassDB::bind_method(D_METHOD("get_shape"), &CollisionShape3D::get_shape);
-	ClassDB::bind_method(D_METHOD("set_disabled", "enable"), &CollisionShape3D::set_disabled);
-	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionShape3D::is_disabled);
+	ClassDB::bind_method(D_METHOD("enable", "enable"), &CollisionShape3D::enable, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("is_enabled"), &CollisionShape3D::is_enabled);
 	ClassDB::bind_method(D_METHOD("make_convex_from_siblings"), &CollisionShape3D::make_convex_from_siblings);
 	ClassDB::set_method_flags("CollisionShape3D", "make_convex_from_siblings", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "enable", "is_enabled");
 }
 
 void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
@@ -186,16 +186,16 @@ Ref<Shape3D> CollisionShape3D::get_shape() const {
 	return shape;
 }
 
-void CollisionShape3D::set_disabled(bool p_disabled) {
-	disabled = p_disabled;
+void CollisionShape3D::enable(bool p_enable) {
+	enabled = p_enable;
 	update_gizmo();
 	if (parent) {
-		parent->shape_owner_set_disabled(owner_id, p_disabled);
+		parent->enable_shape_owner(owner_id, p_enable);
 	}
 }
 
-bool CollisionShape3D::is_disabled() const {
-	return disabled;
+bool CollisionShape3D::is_enabled() const {
+	return enabled;
 }
 
 CollisionShape3D::CollisionShape3D() {

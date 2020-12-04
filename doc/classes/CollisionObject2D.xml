@@ -19,7 +19,8 @@
 			<argument index="2" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Accepts unhandled [InputEvent]s. Requires [member input_pickable] to be [code]true[/code]. [code]shape_idx[/code] is the child index of the clicked [Shape2D]. Connect to the [code]input_event[/code] signal to easily pick up these events.
+				Accepts unhandled [InputEvent]s. Connect to the [signal input_event] signal to easily pick up these events. [code]shape_idx[/code] is the index of the [Shape2D].
+				[b]Note:[/b] Requires [member input_pickable] to be [code]true[/code].
 			</description>
 		</method>
 		<method name="create_shape_owner">
@@ -29,6 +30,17 @@
 			</argument>
 			<description>
 				Creates a new shape owner for the given object. Returns [code]owner_id[/code] of the new owner for future reference.
+			</description>
+		</method>
+		<method name="enable_shape_owner">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool" default="true">
+			</argument>
+			<description>
+				Enables the shape owner with the specified [code]owner_id[/code] and all its shapes.
 			</description>
 		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">
@@ -56,15 +68,6 @@
 				Returns the object's [RID].
 			</description>
 		</method>
-		<method name="get_shape_owner_one_way_collision_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
-			<description>
-				Returns the [code]one_way_collision_margin[/code] of the shape owner identified by given [code]owner_id[/code].
-			</description>
-		</method>
 		<method name="get_shape_owners">
 			<return type="Array">
 			</return>
@@ -72,22 +75,13 @@
 				Returns an [Array] of [code]owner_id[/code] identifiers. You can use these ids in other methods that take [code]owner_id[/code] as an argument.
 			</description>
 		</method>
-		<method name="is_shape_owner_disabled" qualifiers="const">
+		<method name="is_shape_owner_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="owner_id" type="int">
 			</argument>
 			<description>
-				If [code]true[/code], the shape owner and its shapes are disabled.
-			</description>
-		</method>
-		<method name="is_shape_owner_one_way_collision_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
-			<description>
-				Returns [code]true[/code] if collisions for the shape owner originating from this [CollisionObject2D] will not be reported to collided with [CollisionObject2D]s.
+				Returns whether or not the shape owner with the specified [code]owner_id[/code] and all its shapes are enabled.
 			</description>
 		</method>
 		<method name="remove_shape_owner">
@@ -152,6 +146,26 @@
 				Removes all shapes from the shape owner.
 			</description>
 		</method>
+		<method name="shape_owner_enable_one_way_collision">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool" default="true">
+			</argument>
+			<description>
+				Enables the one-way collision property of the specified shape owner and all its shapes.
+			</description>
+		</method>
+		<method name="shape_owner_get_one_way_collision_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+				Returns the [code]one_way_collision_margin[/code] of the shape owner with the specified [code]owner_id[/code].
+			</description>
+		</method>
 		<method name="shape_owner_get_owner" qualifiers="const">
 			<return type="Object">
 			</return>
@@ -201,6 +215,15 @@
 				Returns the shape owner's [Transform2D].
 			</description>
 		</method>
+		<method name="shape_owner_is_one_way_collision_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+				Returns wether or not one-way collision property of the shape owner with the specified [code]owner_id[/code] is enabled.
+			</description>
+		</method>
 		<method name="shape_owner_remove_shape">
 			<return type="void">
 			</return>
@@ -210,28 +233,6 @@
 			</argument>
 			<description>
 				Removes a shape from the given shape owner.
-			</description>
-		</method>
-		<method name="shape_owner_set_disabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
-			<argument index="1" name="disabled" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code], disables the given shape owner.
-			</description>
-		</method>
-		<method name="shape_owner_set_one_way_collision">
-			<return type="void">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<description>
-				If [code]enable[/code] is [code]true[/code], collisions for the shape owner originating from this [CollisionObject2D] will not be reported to collided with [CollisionObject2D]s.
 			</description>
 		</method>
 		<method name="shape_owner_set_one_way_collision_margin">
@@ -267,7 +268,8 @@
 			[b]Note:[/b] A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable" default="true">
-			If [code]true[/code], this object is pickable. A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events. Requires at least one [code]collision_layer[/code] bit to be set.
+			If [code]true[/code], this object can trigger input events. A pickable object will detect the mouse pointer entering and leaving, and, while the mouse is on it, generate [InputEventMouse] events.
+			[b]Note:[/b] Requires at least one [code]collision_layer[/code] bit to be set.
 		</member>
 	</members>
 	<signals>
@@ -279,17 +281,20 @@
 			<argument index="2" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Emitted when an input event occurs. Requires [member input_pickable] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set. See [method _input_event] for details.
+				Emitted when the mouse is over any of this object's shapes. See [InputEventMouse] for [code]event[/code] details.
+				[b]Note:[/b] Requires [member input_pickable] to be [code]true[/code].
 			</description>
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse pointer enters any of this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set.
+				Emitted when the mouse pointer enters any of this object's shapes.
+				[b]Note:[/b] Requires [member input_pickable] to be [code]true[/code].
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse pointer exits all this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set.
+				Emitted when the mouse pointer exits all this object's shapes.
+				[b]Note:[/b] Requires [member input_pickable] to be [code]true[/code].
 			</description>
 		</signal>
 	</signals>

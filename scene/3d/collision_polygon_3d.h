@@ -47,7 +47,7 @@ protected:
 	uint32_t owner_id = 0;
 	CollisionObject3D *parent = nullptr;
 
-	bool disabled = false;
+	bool enabled = true;
 
 	void _build_polygon();
 
@@ -66,8 +66,8 @@ public:
 	void set_polygon(const Vector<Point2> &p_polygon);
 	Vector<Point2> get_polygon() const;
 
-	void set_disabled(bool p_disabled);
-	bool is_disabled() const;
+	void enable(bool p_enable = true);
+	bool is_enabled() const;
 
 	virtual AABB get_item_rect() const;
 

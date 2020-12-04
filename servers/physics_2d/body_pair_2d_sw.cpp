@@ -236,7 +236,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		}
 	}
 
-	if (A->is_shape_set_as_disabled(shape_A) || B->is_shape_set_as_disabled(shape_B)) {
+	if (!A->is_shape_enabled(shape_A) || !B->is_shape_enabled(shape_B)) {
 		collided = false;
 		return false;
 	}
@@ -295,7 +295,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 	}
 
 	if (!prev_collided) {
-		if (A->is_shape_set_as_one_way_collision(shape_A)) {
+		if (A->is_shape_one_way_collision_enabled(shape_A)) {
 			Vector2 direction = xform_A.get_axis(1).normalized();
 			bool valid = false;
 			for (int i = 0; i < contact_count; i++) {
@@ -316,7 +316,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			}
 		}
 
-		if (B->is_shape_set_as_one_way_collision(shape_B)) {
+		if (B->is_shape_one_way_collision_enabled(shape_B)) {
 			Vector2 direction = xform_B.get_axis(1).normalized();
 			bool valid = false;
 			for (int i = 0; i < contact_count; i++) {

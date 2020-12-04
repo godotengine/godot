@@ -53,8 +53,7 @@ class CollisionObject2D : public Node2D {
 		};
 
 		Vector<Shape> shapes;
-
-		bool disabled = false;
+		bool enabled = true;
 		bool one_way_collision = false;
 		real_t one_way_collision_margin = 0.0;
 	};
@@ -76,7 +75,7 @@ protected:
 	void _mouse_enter();
 	void _mouse_exit();
 
-	void set_only_update_transform_changes(bool p_enable);
+	void enable_only_update_transform_changes(bool p_enable = true);
 
 public:
 	void set_collision_layer(uint32_t p_layer);
@@ -100,14 +99,14 @@ public:
 	Transform2D shape_owner_get_transform(uint32_t p_owner) const;
 	Object *shape_owner_get_owner(uint32_t p_owner) const;
 
-	void shape_owner_set_disabled(uint32_t p_owner, bool p_disabled);
-	bool is_shape_owner_disabled(uint32_t p_owner) const;
+	void enable_shape_owner(uint32_t p_owner, bool p_enable = true);
+	bool is_shape_owner_enabled(uint32_t p_owner) const;
 
-	void shape_owner_set_one_way_collision(uint32_t p_owner, bool p_enable);
-	bool is_shape_owner_one_way_collision_enabled(uint32_t p_owner) const;
+	void shape_owner_enable_one_way_collision(uint32_t p_owner, bool p_enable = true);
+	bool shape_owner_is_one_way_collision_enabled(uint32_t p_owner) const;
 
 	void shape_owner_set_one_way_collision_margin(uint32_t p_owner, real_t p_margin);
-	real_t get_shape_owner_one_way_collision_margin(uint32_t p_owner) const;
+	real_t shape_owner_get_one_way_collision_margin(uint32_t p_owner) const;
 
 	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape);
 	int shape_owner_get_shape_count(uint32_t p_owner) const;
@@ -119,7 +118,7 @@ public:
 
 	uint32_t shape_find_owner(int p_shape_index) const;
 
-	void set_pickable(bool p_enabled);
+	void set_pickable(bool p_pickable);
 	bool is_pickable() const;
 
 	TypedArray<String> get_configuration_warnings() const override;

@@ -359,7 +359,7 @@ public:
 	virtual void apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) override { body->apply_impulse(p_impulse, p_position); }
 	virtual void apply_torque_impulse(real_t p_torque) override { body->apply_torque_impulse(p_torque); }
 
-	virtual void set_sleep_state(bool p_enable) override { body->set_active(!p_enable); }
+	virtual void set_sleep_state(bool p_sleeping) override { body->set_active(!p_sleeping); }
 	virtual bool is_sleeping() const override { return !body->is_active(); }
 
 	virtual int get_contact_count() const override { return body->contact_count; }

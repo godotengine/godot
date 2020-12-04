@@ -167,11 +167,11 @@ void CollisionObject3D::_update_pickable() {
 		return;
 	}
 
-	bool pickable = ray_pickable && is_visible_in_tree();
+	bool pickable_and_visible = pickable && is_visible_in_tree();
 	if (area) {
-		PhysicsServer3D::get_singleton()->area_set_ray_pickable(rid, pickable);
+		PhysicsServer3D::get_singleton()->area_set_pickable(rid, pickable_and_visible);
 	} else {
-		PhysicsServer3D::get_singleton()->body_set_ray_pickable(rid, pickable);
+		PhysicsServer3D::get_singleton()->body_set_pickable(rid, pickable_and_visible);
 	}
 }
 
@@ -187,7 +187,7 @@ void CollisionObject3D::_update_debug_shapes() {
 					s.debug_shape = nullptr;
 					--debug_shape_count;
 				}
-				if (s.shape.is_null() || shapedata.disabled) {
+				if (s.shape.is_null() || !shapedata.enabled) {
 					continue;
 				}
 
@@ -231,13 +231,13 @@ void CollisionObject3D::_update_shape_data(uint32_t p_owner) {
 	}
 }
 
-void CollisionObject3D::set_ray_pickable(bool p_ray_pickable) {
-	ray_pickable = p_ray_pickable;
+void CollisionObject3D::set_pickable(bool p_pickable) {
+	pickable = p_pickable;
 	_update_pickable();
 }
 
-bool CollisionObject3D::is_ray_pickable() const {
-	return ray_pickable;
+bool CollisionObject3D::is_pickable() const {
+	return pickable;
 }
 
 void CollisionObject3D::_bind_methods() {
@@ -249,10 +249,10 @@ void CollisionObject3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &CollisionObject3D::get_collision_layer_bit);
 	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &CollisionObject3D::set_collision_mask_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &CollisionObject3D::get_collision_mask_bit);
-	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &CollisionObject3D::set_ray_pickable);
-	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &CollisionObject3D::is_ray_pickable);
-	ClassDB::bind_method(D_METHOD("set_capture_input_on_drag", "enable"), &CollisionObject3D::set_capture_input_on_drag);
-	ClassDB::bind_method(D_METHOD("get_capture_input_on_drag"), &CollisionObject3D::get_capture_input_on_drag);
+	ClassDB::bind_method(D_METHOD("set_pickable", "pickable"), &CollisionObject3D::set_pickable);
+	ClassDB::bind_method(D_METHOD("is_pickable"), &CollisionObject3D::is_pickable);
+	ClassDB::bind_method(D_METHOD("enable_capture_on_drag", "enable"), &CollisionObject3D::enable_capture_on_drag, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("is_capture_on_drag_enabled"), &CollisionObject3D::is_capture_on_drag_enabled);
 	ClassDB::bind_method(D_METHOD("get_rid"), &CollisionObject3D::get_rid);
 	ClassDB::bind_method(D_METHOD("create_shape_owner", "owner"), &CollisionObject3D::create_shape_owner);
 	ClassDB::bind_method(D_METHOD("remove_shape_owner", "owner_id"), &CollisionObject3D::remove_shape_owner);
@@ -260,8 +260,8 @@ void CollisionObject3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shape_owner_set_transform", "owner_id", "transform"), &CollisionObject3D::shape_owner_set_transform);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_transform", "owner_id"), &CollisionObject3D::shape_owner_get_transform);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_owner", "owner_id"), &CollisionObject3D::shape_owner_get_owner);
-	ClassDB::bind_method(D_METHOD("shape_owner_set_disabled", "owner_id", "disabled"), &CollisionObject3D::shape_owner_set_disabled);
-	ClassDB::bind_method(D_METHOD("is_shape_owner_disabled", "owner_id"), &CollisionObject3D::is_shape_owner_disabled);
+	ClassDB::bind_method(D_METHOD("enable_shape_owner", "owner_id", "enable"), &CollisionObject3D::enable_shape_owner, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("is_shape_owner_enabled", "owner_id"), &CollisionObject3D::is_shape_owner_enabled);
 	ClassDB::bind_method(D_METHOD("shape_owner_add_shape", "owner_id", "shape"), &CollisionObject3D::shape_owner_add_shape);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape_count", "owner_id"), &CollisionObject3D::shape_owner_get_shape_count);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape", "owner_id", "shape_id"), &CollisionObject3D::shape_owner_get_shape);
@@ -272,9 +272,9 @@ void CollisionObject3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update_debug_shapes"), &CollisionObject3D::_update_debug_shapes);
 
-	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_position"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
+	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "position"), PropertyInfo(Variant::VECTOR3, "normal"), PropertyInfo(Variant::INT, "shape_idx")));
 
-	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_position"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
+	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "position"), PropertyInfo(Variant::VECTOR3, "normal"), PropertyInfo(Variant::INT, "shape_idx")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 
@@ -283,8 +283,8 @@ void CollisionObject3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 
 	ADD_GROUP("Input", "input_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_ray_pickable"), "set_ray_pickable", "is_ray_pickable");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_capture_on_drag"), "set_capture_input_on_drag", "get_capture_input_on_drag");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_pickable"), "set_pickable", "is_pickable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_capture_on_drag"), "enable_capture_on_drag", "is_capture_on_drag_enabled");
 }
 
 uint32_t CollisionObject3D::create_shape_owner(Object *p_owner) {
@@ -312,25 +312,25 @@ void CollisionObject3D::remove_shape_owner(uint32_t owner) {
 	shapes.erase(owner);
 }
 
-void CollisionObject3D::shape_owner_set_disabled(uint32_t p_owner, bool p_disabled) {
+void CollisionObject3D::enable_shape_owner(uint32_t p_owner, bool p_enable) {
 	ERR_FAIL_COND(!shapes.has(p_owner));
 
 	ShapeData &sd = shapes[p_owner];
-	sd.disabled = p_disabled;
+	sd.enabled = p_enable;
 	for (int i = 0; i < sd.shapes.size(); i++) {
 		if (area) {
-			PhysicsServer3D::get_singleton()->area_set_shape_disabled(rid, sd.shapes[i].index, p_disabled);
+			PhysicsServer3D::get_singleton()->area_enable_shape(rid, sd.shapes[i].index, p_enable);
 		} else {
-			PhysicsServer3D::get_singleton()->body_set_shape_disabled(rid, sd.shapes[i].index, p_disabled);
+			PhysicsServer3D::get_singleton()->body_enable_shape(rid, sd.shapes[i].index, p_enable);
 		}
 	}
 	_update_shape_data(p_owner);
 }
 
-bool CollisionObject3D::is_shape_owner_disabled(uint32_t p_owner) const {
+bool CollisionObject3D::is_shape_owner_enabled(uint32_t p_owner) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), false);
 
-	return shapes[p_owner].disabled;
+	return shapes[p_owner].enabled;
 }
 
 void CollisionObject3D::get_shape_owners(List<uint32_t> *r_owners) {
@@ -386,9 +386,9 @@ void CollisionObject3D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape3
 	s.shape = p_shape;
 
 	if (area) {
-		PhysicsServer3D::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
+		PhysicsServer3D::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform, sd.enabled);
 	} else {
-		PhysicsServer3D::get_singleton()->body_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
+		PhysicsServer3D::get_singleton()->body_add_shape(rid, p_shape->get_rid(), sd.xform, sd.enabled);
 	}
 	sd.shapes.push_back(s);
 
@@ -483,12 +483,12 @@ CollisionObject3D::CollisionObject3D(RID p_rid, bool p_area) {
 	//set_transform_notify(true);
 }
 
-void CollisionObject3D::set_capture_input_on_drag(bool p_capture) {
-	capture_input_on_drag = p_capture;
+void CollisionObject3D::enable_capture_on_drag(bool p_enable) {
+	capture_on_drag = p_enable;
 }
 
-bool CollisionObject3D::get_capture_input_on_drag() const {
-	return capture_input_on_drag;
+bool CollisionObject3D::is_capture_on_drag_enabled() const {
+	return capture_on_drag;
 }
 
 TypedArray<String> CollisionObject3D::get_configuration_warnings() const {
@@ -503,8 +503,6 @@ TypedArray<String> CollisionObject3D::get_configuration_warnings() const {
 
 CollisionObject3D::CollisionObject3D() {
 	set_notify_transform(true);
-	//owner=
-
 	//set_transform_notify(true);
 }
 

@@ -89,8 +89,8 @@ void CollisionPolygon2D::_update_in_shape_owner(bool p_xform_only) {
 	if (p_xform_only) {
 		return;
 	}
-	parent->shape_owner_set_disabled(owner_id, disabled);
-	parent->shape_owner_set_one_way_collision(owner_id, one_way_collision);
+	parent->enable_shape_owner(owner_id, enabled);
+	parent->shape_owner_enable_one_way_collision(owner_id, one_way_collision);
 	parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
 }
 
@@ -264,23 +264,23 @@ TypedArray<String> CollisionPolygon2D::get_configuration_warnings() const {
 	return warnings;
 }
 
-void CollisionPolygon2D::set_disabled(bool p_disabled) {
-	disabled = p_disabled;
+void CollisionPolygon2D::enable(bool p_enable) {
+	enabled = p_enable;
 	update();
 	if (parent) {
-		parent->shape_owner_set_disabled(owner_id, p_disabled);
+		parent->enable_shape_owner(owner_id, p_enable);
 	}
 }
 
-bool CollisionPolygon2D::is_disabled() const {
-	return disabled;
+bool CollisionPolygon2D::is_enabled() const {
+	return enabled;
 }
 
-void CollisionPolygon2D::set_one_way_collision(bool p_enable) {
+void CollisionPolygon2D::enable_one_way_collision(bool p_enable) {
 	one_way_collision = p_enable;
 	update();
 	if (parent) {
-		parent->shape_owner_set_one_way_collision(owner_id, p_enable);
+		parent->shape_owner_enable_one_way_collision(owner_id, p_enable);
 	}
 }
 
@@ -305,17 +305,17 @@ void CollisionPolygon2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_build_mode", "build_mode"), &CollisionPolygon2D::set_build_mode);
 	ClassDB::bind_method(D_METHOD("get_build_mode"), &CollisionPolygon2D::get_build_mode);
-	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &CollisionPolygon2D::set_disabled);
-	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionPolygon2D::is_disabled);
-	ClassDB::bind_method(D_METHOD("set_one_way_collision", "enabled"), &CollisionPolygon2D::set_one_way_collision);
+	ClassDB::bind_method(D_METHOD("enable", "enable"), &CollisionPolygon2D::enable, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("is_enabled"), &CollisionPolygon2D::is_enabled);
+	ClassDB::bind_method(D_METHOD("enable_one_way_collision", "enable"), &CollisionPolygon2D::enable_one_way_collision, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionPolygon2D::is_one_way_collision_enabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision_margin", "margin"), &CollisionPolygon2D::set_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionPolygon2D::get_one_way_collision_margin);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "build_mode", PROPERTY_HINT_ENUM, "Solids,Segments"), "set_build_mode", "get_build_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "enable", "is_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "enable_one_way_collision", "is_one_way_collision_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1"), "set_one_way_collision_margin", "get_one_way_collision_margin");
 
 	BIND_ENUM_CONSTANT(BUILD_SOLIDS);

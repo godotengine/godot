@@ -67,7 +67,7 @@ public:
 	virtual void apply_torque_impulse(real_t p_torque) = 0;
 	virtual void apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) = 0;
 
-	virtual void set_sleep_state(bool p_enable) = 0;
+	virtual void set_sleep_state(bool p_enabled) = 0;
 	virtual bool is_sleeping() const = 0;
 
 	virtual int get_contact_count() const = 0;
@@ -131,10 +131,10 @@ public:
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
-	void set_collide_with_bodies(bool p_enable);
+	void enable_collide_with_bodies(bool p_enable = true);
 	bool is_collide_with_bodies_enabled() const;
 
-	void set_collide_with_areas(bool p_enable);
+	void enable_collide_with_areas(bool p_enable = true);
 	bool is_collide_with_areas_enabled() const;
 
 	void set_exclude(const Vector<RID> &p_exclude);
@@ -329,7 +329,7 @@ public:
 	virtual void area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode) = 0;
 	virtual AreaSpaceOverrideMode area_get_space_override_mode(RID p_area) const = 0;
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) = 0;
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_enabled = true) = 0;
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape) = 0;
 	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2D &p_transform) = 0;
 
@@ -340,7 +340,7 @@ public:
 	virtual void area_remove_shape(RID p_area, int p_shape_idx) = 0;
 	virtual void area_clear_shapes(RID p_area) = 0;
 
-	virtual void area_set_shape_disabled(RID p_area, int p_shape, bool p_disabled) = 0;
+	virtual void area_enable_shape(RID p_area, int p_shape, bool p_enable = true) = 0;
 
 	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_id) = 0;
 	virtual ObjectID area_get_object_instance_id(RID p_area) const = 0;
@@ -382,7 +382,7 @@ public:
 	virtual void body_set_mode(RID p_body, BodyMode p_mode) = 0;
 	virtual BodyMode body_get_mode(RID p_body) const = 0;
 
-	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) = 0;
+	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_enabled = true) = 0;
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape) = 0;
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform2D &p_transform) = 0;
 	virtual void body_set_shape_metadata(RID p_body, int p_shape_idx, const Variant &p_metadata) = 0;
@@ -392,8 +392,8 @@ public:
 	virtual Transform2D body_get_shape_transform(RID p_body, int p_shape_idx) const = 0;
 	virtual Variant body_get_shape_metadata(RID p_body, int p_shape_idx) const = 0;
 
-	virtual void body_set_shape_disabled(RID p_body, int p_shape, bool p_disabled) = 0;
-	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape, bool p_enabled, real_t p_margin = 0) = 0;
+	virtual void body_enable_shape(RID p_body, int p_shape, bool p_enable = true) = 0;
+	virtual void body_enable_shape_one_way_collision(RID p_body, int p_shape, bool p_enable = true, real_t p_margin = 1) = 0;
 
 	virtual void body_remove_shape(RID p_body, int p_shape_idx) = 0;
 	virtual void body_clear_shapes(RID p_body) = 0;
@@ -544,8 +544,8 @@ public:
 	virtual void joint_set_param(RID p_joint, JointParam p_param, real_t p_value) = 0;
 	virtual real_t joint_get_param(RID p_joint, JointParam p_param) const = 0;
 
-	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) = 0;
-	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const = 0;
+	virtual void joint_enable_collisions_between_bodies(RID p_joint, const bool p_enable = true) = 0;
+	virtual bool joint_is_collisions_between_bodies_enabled(RID p_joint) const = 0;
 
 	virtual void joint_make_pin(RID p_joint, const Vector2 &p_anchor, RID p_body_a, RID p_body_b = RID()) = 0;
 	virtual void joint_make_groove(RID p_joint, const Vector2 &p_a_groove1, const Vector2 &p_a_groove2, const Vector2 &p_b_anchor, RID p_body_a, RID p_body_b) = 0;

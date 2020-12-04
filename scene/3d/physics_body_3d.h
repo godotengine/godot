@@ -207,8 +207,8 @@ public:
 	void set_max_contacts_reported(int p_amount);
 	int get_max_contacts_reported() const;
 
-	void set_use_continuous_collision_detection(bool p_enable);
-	bool is_using_continuous_collision_detection() const;
+	void enable_continuous_collision_detection(bool p_enable = true);
+	bool is_continuous_collision_detection_enabled() const;
 
 	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock);
 	bool get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const;

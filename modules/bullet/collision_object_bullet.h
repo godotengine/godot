@@ -114,9 +114,9 @@ protected:
 	ObjectID instance_id;
 	uint32_t collisionLayer = 0;
 	uint32_t collisionMask = 0;
-	bool collisionsEnabled = true;
+	bool collisions_enabled = true;
 	bool m_isStatic = false;
-	bool ray_pickable = false;
+	bool pickable = false;
 	btCollisionObject *bt_collision_object = nullptr;
 	Vector3 body_scale = Vector3(1, 1, 1);
 	bool force_shape_reset = false;
@@ -148,8 +148,8 @@ public:
 
 	_FORCE_INLINE_ bool is_static() const { return m_isStatic; }
 
-	_FORCE_INLINE_ void set_ray_pickable(bool p_enable) { ray_pickable = p_enable; }
-	_FORCE_INLINE_ bool is_ray_pickable() const { return ray_pickable; }
+	_FORCE_INLINE_ void set_pickable(bool p_pickable) { pickable = p_pickable; }
+	_FORCE_INLINE_ bool is_pickable() const { return pickable; }
 
 	void set_body_scale(const Vector3 &p_new_scale);
 	const Vector3 &get_body_scale() const { return body_scale; }
@@ -192,8 +192,8 @@ public:
 
 	virtual void dispatch_callbacks() = 0;
 
-	void set_collision_enabled(bool p_enabled);
-	bool is_collisions_response_enabled();
+	void enable_collisions(bool p_enable = true);
+	bool is_collisions_enabled();
 
 	void notify_new_overlap(AreaBullet *p_area);
 	virtual void on_enter_area(AreaBullet *p_area) = 0;
@@ -225,7 +225,7 @@ public:
 
 	_FORCE_INLINE_ btCollisionShape *get_main_shape() const { return mainShape; }
 
-	void add_shape(ShapeBullet *p_shape, const Transform &p_transform = Transform(), bool p_disabled = false);
+	void add_shape(ShapeBullet *p_shape, const Transform &p_transform = Transform(), bool p_enabled = true);
 	void set_shape(int p_index, ShapeBullet *p_shape);
 
 	int get_shape_count() const;
@@ -243,8 +243,8 @@ public:
 	const btTransform &get_bt_shape_transform(int p_index) const;
 	Transform get_shape_transform(int p_index) const;
 
-	void set_shape_disabled(int p_index, bool p_disabled);
-	bool is_shape_disabled(int p_index);
+	void enable_shape(int p_index, bool p_enable = true);
+	bool is_shape_enabled(int p_index);
 
 	virtual void shape_changed(int p_shape_index);
 	virtual void reload_shapes();

@@ -50,7 +50,7 @@ AreaBullet::AreaBullet() :
 	setupBulletCollisionObject(btGhost);
 	/// Collision objects with a callback still have collision response with dynamic rigid bodies.
 	/// In order to use collision objects as trigger, you have to disable the collision response.
-	set_collision_enabled(false);
+	enable_collisions(false);
 
 	for (int i = 0; i < 5; ++i) {
 		call_event_res_ptr[i] = &call_event_res[i];

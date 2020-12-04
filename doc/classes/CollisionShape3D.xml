@@ -31,8 +31,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
-			A disabled collision shape has no effect in the world.
+		<member name="enabled" type="bool" setter="enable" getter="is_enabled" default="true">
+			If [code]true[/code], other objects will collide with this [CollisionShape3D].
 		</member>
 		<member name="shape" type="Shape3D" setter="set_shape" getter="get_shape">
 			The actual shape owned by this collision shape.

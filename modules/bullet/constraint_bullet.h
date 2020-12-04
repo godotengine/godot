@@ -48,7 +48,7 @@ class ConstraintBullet : public RIDBullet {
 protected:
 	SpaceBullet *space = nullptr;
 	btTypedConstraint *constraint = nullptr;
-	bool disabled_collisions_between_bodies = true;
+	bool collisions_between_bodies_enabled = false;
 
 public:
 	ConstraintBullet();
@@ -57,8 +57,8 @@ public:
 	virtual void set_space(SpaceBullet *p_space);
 	virtual void destroy_internal_constraint();
 
-	void disable_collisions_between_bodies(const bool p_disabled);
-	_FORCE_INLINE_ bool is_disabled_collisions_between_bodies() const { return disabled_collisions_between_bodies; }
+	void enable_collisions_between_bodies(const bool p_enabled);
+	_FORCE_INLINE_ bool is_collisions_between_bodies_enabled() const { return collisions_between_bodies_enabled; }
 
 public:
 	virtual ~ConstraintBullet() {

@@ -84,7 +84,7 @@ int PhysicsDirectSpaceState2DSW::_intersect_point_impl(const Vector2 &p_point, S
 
 		int shape_idx = space->intersection_query_subindex_results[i];
 
-		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
+		if (!col_obj->is_shape_enabled(shape_idx)) {
 			continue;
 		}
 
@@ -233,7 +233,7 @@ int PhysicsDirectSpaceState2DSW::intersect_shape(const RID &p_shape, const Trans
 		const CollisionObject2DSW *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
 
-		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
+		if (!col_obj->is_shape_enabled(shape_idx)) {
 			continue;
 		}
 
@@ -280,7 +280,7 @@ bool PhysicsDirectSpaceState2DSW::cast_motion(const RID &p_shape, const Transfor
 		const CollisionObject2DSW *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
 
-		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
+		if (!col_obj->is_shape_enabled(shape_idx)) {
 			continue;
 		}
 
@@ -365,7 +365,7 @@ bool PhysicsDirectSpaceState2DSW::collide_shape(RID p_shape, const Transform2D &
 
 		int shape_idx = space->intersection_query_subindex_results[i];
 
-		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
+		if (!col_obj->is_shape_enabled(shape_idx)) {
 			continue;
 		}
 
@@ -460,7 +460,7 @@ bool PhysicsDirectSpaceState2DSW::rest_info(RID p_shape, const Transform2D &p_sh
 
 		int shape_idx = space->intersection_query_subindex_results[i];
 
-		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
+		if (!col_obj->is_shape_enabled(shape_idx)) {
 			continue;
 		}
 
@@ -516,7 +516,7 @@ int Space2DSW::_cull_aabb_for_body(Body2DSW *p_body, const Rect2 &p_aabb) {
 			keep = false;
 		} else if (static_cast<Body2DSW *>(intersection_query_results[i])->has_exception(p_body->get_self()) || p_body->has_exception(intersection_query_results[i]->get_self())) {
 			keep = false;
-		} else if (static_cast<Body2DSW *>(intersection_query_results[i])->is_shape_set_as_disabled(intersection_query_subindex_results[i])) {
+		} else if (!static_cast<Body2DSW *>(intersection_query_results[i])->is_shape_enabled(intersection_query_subindex_results[i])) {
 			keep = false;
 		}
 
@@ -540,7 +540,7 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 	bool shapes_found = false;
 
 	for (int i = 0; i < p_body->get_shape_count(); i++) {
-		if (p_body->is_shape_set_as_disabled(i)) {
+		if (!p_body->is_shape_enabled(i)) {
 			continue;
 		}
 
@@ -592,7 +592,7 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 			int amount = _cull_aabb_for_body(p_body, body_aabb);
 
 			for (int j = 0; j < p_body->get_shape_count(); j++) {
-				if (p_body->is_shape_set_as_disabled(j)) {
+				if (!p_body->is_shape_enabled(j)) {
 					continue;
 				}
 
@@ -732,7 +732,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	bool shapes_found = false;
 
 	for (int i = 0; i < p_body->get_shape_count(); i++) {
-		if (p_body->is_shape_set_as_disabled(i)) {
+		if (!p_body->is_shape_enabled(i)) {
 			continue;
 		}
 
@@ -795,7 +795,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			int amount = _cull_aabb_for_body(p_body, body_aabb);
 
 			for (int j = 0; j < p_body->get_shape_count(); j++) {
-				if (p_body->is_shape_set_as_disabled(j)) {
+				if (!p_body->is_shape_enabled(j)) {
 					continue;
 				}
 
@@ -818,7 +818,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 					Transform2D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 
-					if (col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
+					if (col_obj->is_shape_one_way_collision_enabled(shape_idx)) {
 						cbk.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
 
 						real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
@@ -918,7 +918,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 		int amount = _cull_aabb_for_body(p_body, motion_aabb);
 
 		for (int body_shape_idx = 0; body_shape_idx < p_body->get_shape_count(); body_shape_idx++) {
-			if (p_body->is_shape_set_as_disabled(body_shape_idx)) {
+			if (!p_body->is_shape_enabled(body_shape_idx)) {
 				continue;
 			}
 
@@ -967,7 +967,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 				//test initial overlap
 				if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, nullptr, 0)) {
-					if (col_obj->is_shape_set_as_one_way_collision(col_shape_idx)) {
+					if (col_obj->is_shape_one_way_collision_enabled(col_shape_idx)) {
 						Vector2 direction = col_obj_shape_xform.get_axis(1).normalized();
 						if (motion_normal.dot(direction) < 0) {
 							continue;
@@ -996,7 +996,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					}
 				}
 
-				if (col_obj->is_shape_set_as_one_way_collision(col_shape_idx)) {
+				if (col_obj->is_shape_one_way_collision_enabled(col_shape_idx)) {
 					Vector2 cd[2];
 					PhysicsServer2DSW::CollCbkData cbk;
 					cbk.max = 1;
@@ -1060,7 +1060,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 		int to_shape = best_shape != -1 ? best_shape + 1 : p_body->get_shape_count();
 
 		for (int j = from_shape; j < to_shape; j++) {
-			if (p_body->is_shape_set_as_disabled(j)) {
+			if (!p_body->is_shape_enabled(j)) {
 				continue;
 			}
 
@@ -1101,7 +1101,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 				Transform2D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 
-				if (col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
+				if (col_obj->is_shape_one_way_collision_enabled(shape_idx)) {
 					rcd.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
 
 					real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);

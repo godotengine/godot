@@ -228,7 +228,7 @@ bool BodyPair3DSW::setup(real_t p_step) {
 		}
 	}
 
-	if (A->is_shape_set_as_disabled(shape_A) || B->is_shape_set_as_disabled(shape_B)) {
+	if (!A->is_shape_enabled(shape_A) || !B->is_shape_enabled(shape_B)) {
 		collided = false;
 		return false;
 	}
@@ -569,7 +569,7 @@ bool BodySoftBodyPair3DSW::setup(real_t p_step) {
 		return false;
 	}
 
-	if (body->is_shape_set_as_disabled(body_shape)) {
+	if (!body->is_shape_enabled(body_shape)) {
 		collided = false;
 		return false;
 	}

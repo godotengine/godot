@@ -792,7 +792,7 @@ void Viewport::_process_picking() {
 				if (ObjectDB::get_instance(last_id) && last_object) {
 					//good, exists
 					_collision_object_input_event(last_object, camera, ev, result.position, result.normal, result.shape);
-					if (last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
+					if (last_object->is_capture_on_drag_enabled() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
 						physics_object_capture = last_id;
 					}
 				}
@@ -813,7 +813,7 @@ void Viewport::_process_picking() {
 							last_object = co;
 							last_id = result.collider_id;
 							new_collider = last_id;
-							if (co->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
+							if (co->is_capture_on_drag_enabled() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
 								physics_object_capture = last_id;
 							}
 						}

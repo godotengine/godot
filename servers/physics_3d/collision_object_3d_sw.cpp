@@ -32,13 +32,13 @@
 #include "servers/physics_3d/physics_server_3d_sw.h"
 #include "space_3d_sw.h"
 
-void CollisionObject3DSW::add_shape(Shape3DSW *p_shape, const Transform &p_transform, bool p_disabled) {
+void CollisionObject3DSW::add_shape(Shape3DSW *p_shape, const Transform &p_transform, bool p_enabled) {
 	Shape s;
 	s.shape = p_shape;
 	s.xform = p_transform;
 	s.xform_inv = s.xform.affine_inverse();
 	s.bpid = 0; //needs update
-	s.disabled = p_disabled;
+	s.enabled = p_enabled;
 	shapes.push_back(s);
 	p_shape->add_owner(this);
 
@@ -74,8 +74,8 @@ void CollisionObject3DSW::set_shape_transform(int p_index, const Transform &p_tr
 	//_shapes_changed();
 }
 
-void CollisionObject3DSW::set_shape_as_disabled(int p_idx, bool p_enable) {
-	shapes.write[p_idx].disabled = p_enable;
+void CollisionObject3DSW::enable_shape(int p_idx, bool p_enable) {
+	shapes.write[p_idx].enabled = p_enable;
 	if (!pending_shape_update_list.in_list()) {
 		PhysicsServer3DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
@@ -222,5 +222,5 @@ CollisionObject3DSW::CollisionObject3DSW(Type p_type) :
 
 	collision_layer = 1;
 	collision_mask = 1;
-	ray_pickable = true;
+	pickable = true;
 }

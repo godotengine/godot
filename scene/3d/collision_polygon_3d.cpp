@@ -72,7 +72,7 @@ void CollisionPolygon3D::_build_polygon() {
 		convex->set_points(cp);
 		convex->set_margin(margin);
 		parent->shape_owner_add_shape(owner_id, convex);
-		parent->shape_owner_set_disabled(owner_id, disabled);
+		parent->enable_shape_owner(owner_id, enabled);
 	}
 }
 
@@ -81,7 +81,7 @@ void CollisionPolygon3D::_update_in_shape_owner(bool p_xform_only) {
 	if (p_xform_only) {
 		return;
 	}
-	parent->shape_owner_set_disabled(owner_id, disabled);
+	parent->enable_shape_owner(owner_id, enabled);
 }
 
 void CollisionPolygon3D::_notification(int p_what) {
@@ -143,17 +143,17 @@ real_t CollisionPolygon3D::get_depth() const {
 	return depth;
 }
 
-void CollisionPolygon3D::set_disabled(bool p_disabled) {
-	disabled = p_disabled;
+void CollisionPolygon3D::enable(bool p_enable) {
+	enabled = p_enable;
 	update_gizmo();
 
 	if (parent) {
-		parent->shape_owner_set_disabled(owner_id, p_disabled);
+		parent->enable_shape_owner(owner_id, p_enable);
 	}
 }
 
-bool CollisionPolygon3D::is_disabled() const {
-	return disabled;
+bool CollisionPolygon3D::is_enabled() const {
+	return enabled;
 }
 
 real_t CollisionPolygon3D::get_margin() const {
@@ -192,8 +192,8 @@ void CollisionPolygon3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_polygon", "polygon"), &CollisionPolygon3D::set_polygon);
 	ClassDB::bind_method(D_METHOD("get_polygon"), &CollisionPolygon3D::get_polygon);
 
-	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &CollisionPolygon3D::set_disabled);
-	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionPolygon3D::is_disabled);
+	ClassDB::bind_method(D_METHOD("enable", "enable"), &CollisionPolygon3D::enable, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("is_enabled"), &CollisionPolygon3D::is_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &CollisionPolygon3D::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &CollisionPolygon3D::get_margin);
@@ -201,7 +201,7 @@ void CollisionPolygon3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &CollisionPolygon3D::_is_editable_3d_polygon);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth"), "set_depth", "get_depth");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "enable", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0.001,10,0.001"), "set_margin", "get_margin");
 }
