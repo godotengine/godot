@@ -130,10 +130,10 @@ public:
 };
 
 /**
-	Similar to test cube but with subdivision support and different texture coordinates
+	A box
 */
-class CubeMesh : public PrimitiveMesh {
-	GDCLASS(CubeMesh, PrimitiveMesh);
+class BoxMesh : public PrimitiveMesh {
+	GDCLASS(BoxMesh, PrimitiveMesh);
 
 private:
 	Vector3 size;
@@ -158,7 +158,7 @@ public:
 	void set_subdivide_depth(const int p_divisions);
 	int get_subdivide_depth() const;
 
-	CubeMesh();
+	BoxMesh();
 };
 
 /**

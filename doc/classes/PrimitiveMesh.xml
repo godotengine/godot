@@ -4,7 +4,7 @@
 		Base class for all primitive meshes. Handles applying a [Material] to a primitive mesh.
 	</brief_description>
 	<description>
-		Base class for all primitive meshes. Handles applying a [Material] to a primitive mesh. Examples include [CapsuleMesh], [CubeMesh], [CylinderMesh], [PlaneMesh], [PrismMesh], [QuadMesh], and [SphereMesh].
+		Base class for all primitive meshes. Handles applying a [Material] to a primitive mesh. Examples include [BoxMesh], [CapsuleMesh], [CylinderMesh], [PlaneMesh], [PrismMesh], [QuadMesh], and [SphereMesh].
 	</description>
 	<tutorials>
 	</tutorials>

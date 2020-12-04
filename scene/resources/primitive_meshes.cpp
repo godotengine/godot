@@ -477,10 +477,10 @@ CapsuleMesh::CapsuleMesh() {
 }
 
 /**
-  CubeMesh
+  BoxMesh
 */
 
-void CubeMesh::_create_mesh_array(Array &p_arr) const {
+void BoxMesh::_create_mesh_array(Array &p_arr) const {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 	float onethird = 1.0 / 3.0;
@@ -672,16 +672,16 @@ void CubeMesh::_create_mesh_array(Array &p_arr) const {
 	p_arr[RS::ARRAY_INDEX] = indices;
 }
 
-void CubeMesh::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_size", "size"), &CubeMesh::set_size);
-	ClassDB::bind_method(D_METHOD("get_size"), &CubeMesh::get_size);
+void BoxMesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &BoxMesh::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &BoxMesh::get_size);
 
-	ClassDB::bind_method(D_METHOD("set_subdivide_width", "subdivide"), &CubeMesh::set_subdivide_width);
-	ClassDB::bind_method(D_METHOD("get_subdivide_width"), &CubeMesh::get_subdivide_width);
-	ClassDB::bind_method(D_METHOD("set_subdivide_height", "divisions"), &CubeMesh::set_subdivide_height);
-	ClassDB::bind_method(D_METHOD("get_subdivide_height"), &CubeMesh::get_subdivide_height);
-	ClassDB::bind_method(D_METHOD("set_subdivide_depth", "divisions"), &CubeMesh::set_subdivide_depth);
-	ClassDB::bind_method(D_METHOD("get_subdivide_depth"), &CubeMesh::get_subdivide_depth);
+	ClassDB::bind_method(D_METHOD("set_subdivide_width", "subdivide"), &BoxMesh::set_subdivide_width);
+	ClassDB::bind_method(D_METHOD("get_subdivide_width"), &BoxMesh::get_subdivide_width);
+	ClassDB::bind_method(D_METHOD("set_subdivide_height", "divisions"), &BoxMesh::set_subdivide_height);
+	ClassDB::bind_method(D_METHOD("get_subdivide_height"), &BoxMesh::get_subdivide_height);
+	ClassDB::bind_method(D_METHOD("set_subdivide_depth", "divisions"), &BoxMesh::set_subdivide_depth);
+	ClassDB::bind_method(D_METHOD("get_subdivide_depth"), &BoxMesh::get_subdivide_depth);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdivide_width", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_subdivide_width", "get_subdivide_width");
@@ -689,43 +689,43 @@ void CubeMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdivide_depth", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_subdivide_depth", "get_subdivide_depth");
 }
 
-void CubeMesh::set_size(const Vector3 &p_size) {
+void BoxMesh::set_size(const Vector3 &p_size) {
 	size = p_size;
 	_request_update();
 }
 
-Vector3 CubeMesh::get_size() const {
+Vector3 BoxMesh::get_size() const {
 	return size;
 }
 
-void CubeMesh::set_subdivide_width(const int p_divisions) {
+void BoxMesh::set_subdivide_width(const int p_divisions) {
 	subdivide_w = p_divisions > 0 ? p_divisions : 0;
 	_request_update();
 }
 
-int CubeMesh::get_subdivide_width() const {
+int BoxMesh::get_subdivide_width() const {
 	return subdivide_w;
 }
 
-void CubeMesh::set_subdivide_height(const int p_divisions) {
+void BoxMesh::set_subdivide_height(const int p_divisions) {
 	subdivide_h = p_divisions > 0 ? p_divisions : 0;
 	_request_update();
 }
 
-int CubeMesh::get_subdivide_height() const {
+int BoxMesh::get_subdivide_height() const {
 	return subdivide_h;
 }
 
-void CubeMesh::set_subdivide_depth(const int p_divisions) {
+void BoxMesh::set_subdivide_depth(const int p_divisions) {
 	subdivide_d = p_divisions > 0 ? p_divisions : 0;
 	_request_update();
 }
 
-int CubeMesh::get_subdivide_depth() const {
+int BoxMesh::get_subdivide_depth() const {
 	return subdivide_d;
 }
 
-CubeMesh::CubeMesh() {
+BoxMesh::BoxMesh() {
 	// defaults
 	size = Vector3(2.0, 2.0, 2.0);
 	subdivide_w = 0;

@@ -10,7 +10,7 @@
 		[codeblocks]
 		[gdscript]
 		var mesh = ArrayMesh.new()
-		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, CubeMesh.new().get_mesh_arrays())
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, BoxMesh.new().get_mesh_arrays())
 		var mdt = MeshDataTool.new()
 		mdt.create_from_surface(mesh, 0)
 		for i in range(mdt.get_vertex_count()):
@@ -27,7 +27,7 @@
 		[/gdscript]
 		[csharp]
 		var mesh = new ArrayMesh();
-		mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, new CubeMesh().GetMeshArrays());
+		mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, new BoxMesh().GetMeshArrays());
 		var mdt = new MeshDataTool();
 		mdt.CreateFromSurface(mesh, 0);
 		for (var i = 0; i &lt; mdt.GetVertexCount(); i++)
