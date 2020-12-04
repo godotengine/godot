@@ -278,7 +278,7 @@ bool GDMonoClass::has_public_parameterless_ctor() {
 	return ctor && ctor->get_visibility() == IMonoClassMember::PUBLIC;
 }
 
-GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, int p_params_count) {
+GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, uint16_t p_params_count) {
 	MethodKey key = MethodKey(p_name, p_params_count);
 
 	GDMonoMethod **match = methods.getptr(key);
@@ -316,7 +316,7 @@ GDMonoMethod *GDMonoClass::get_method(MonoMethod *p_raw_method, const StringName
 	return get_method(p_raw_method, p_name, params_count);
 }
 
-GDMonoMethod *GDMonoClass::get_method(MonoMethod *p_raw_method, const StringName &p_name, int p_params_count) {
+GDMonoMethod *GDMonoClass::get_method(MonoMethod *p_raw_method, const StringName &p_name, uint16_t p_params_count) {
 	ERR_FAIL_NULL_V(p_raw_method, NULL);
 
 	MethodKey key = MethodKey(p_name, p_params_count);

@@ -2479,7 +2479,7 @@ bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Ve
 
 		if (mono_type_get_type(raw_type) == MONO_TYPE_CLASS) {
 			// Arguments are accessibles as arguments of .Invoke method
-			GDMonoMethod *invoke = p_delegate->get_method("Invoke", -1);
+			GDMonoMethod *invoke = p_delegate->get_method(mono_get_delegate_invoke(p_delegate->get_mono_ptr()));
 
 			Vector<StringName> names;
 			Vector<ManagedType> types;

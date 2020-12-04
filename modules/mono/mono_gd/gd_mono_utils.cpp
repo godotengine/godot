@@ -460,13 +460,6 @@ MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, M
 	return ret;
 }
 
-MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **r_exc) {
-	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoObject *ret = mono_runtime_invoke_array(p_method, p_obj, p_params, (MonoObject **)r_exc);
-	GD_MONO_END_RUNTIME_INVOKE;
-	return ret;
-}
-
 MonoString *object_to_string(MonoObject *p_obj, MonoException **r_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
 	MonoString *ret = mono_object_to_string(p_obj, (MonoObject **)r_exc);

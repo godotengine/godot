@@ -88,11 +88,15 @@ Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argc
 	set_completed(true);
 
 	int signal_argc = p_argcount - 1;
-	MonoArray *signal_args = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), signal_argc);
+	MonoArray *signal_args = NULL;
 
-	for (int i = 0; i < signal_argc; i++) {
-		MonoObject *boxed = GDMonoMarshal::variant_to_mono_object(*p_args[i]);
-		mono_array_setref(signal_args, i, boxed);
+	if (signal_argc > 0) {
+		signal_args = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), signal_argc);
+
+		for (int i = 0; i < signal_argc; i++) {
+			MonoObject *boxed = GDMonoMarshal::variant_to_mono_object(*p_args[i]);
+			mono_array_setref(signal_args, i, boxed);
+		}
 	}
 
 	MonoException *exc = NULL;
