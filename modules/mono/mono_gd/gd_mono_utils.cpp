@@ -442,6 +442,7 @@ void set_pending_exception(MonoException *p_exc) {
 #else
 	if (get_runtime_invoke_count() == 0) {
 		debug_unhandled_exception(p_exc);
+		return;
 	}
 
 	if (!mono_runtime_set_pending_exception(p_exc, false)) {
