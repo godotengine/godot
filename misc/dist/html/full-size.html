@@ -145,6 +145,7 @@ $GODOT_HEAD_INCLUDE
 
 			const EXECUTABLE_NAME = '$GODOT_BASENAME';
 			const MAIN_PACK = '$GODOT_BASENAME.pck';
+			const GDNATIVE_LIBS = [$GODOT_GDNATIVE_LIBS];
 			const INDETERMINATE_STATUS_STEP_MS = 100;
 			const FULL_WINDOW = $GODOT_FULL_WINDOW;
 
@@ -267,6 +268,7 @@ $GODOT_HEAD_INCLUDE
 			} else {
 				setStatusMode('indeterminate');
 				engine.setCanvas(canvas);
+				engine.setGDNativeLibraries(GDNATIVE_LIBS);
 				engine.startGame(EXECUTABLE_NAME, MAIN_PACK).then(() => {
 					setStatusMode('hidden');
 					initializing = false;
