@@ -109,11 +109,15 @@ void SignalAwaiterCallable::call(const Variant **p_arguments, int p_argcount, Va
 			"Resumed after await, but class instance is gone.");
 #endif
 
-	MonoArray *signal_args = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), p_argcount);
+	MonoArray *signal_args = nullptr;
 
-	for (int i = 0; i < p_argcount; i++) {
-		MonoObject *boxed = GDMonoMarshal::variant_to_mono_object(*p_arguments[i]);
-		mono_array_setref(signal_args, i, boxed);
+	if (p_argcount > 0) {
+		signal_args = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), p_argcount);
+
+		for (int i = 0; i < p_argcount; i++) {
+			MonoObject *boxed = GDMonoMarshal::variant_to_mono_object(*p_arguments[i]);
+			mono_array_setref(signal_args, i, boxed);
+		}
 	}
 
 	MonoObject *awaiter = awaiter_handle.get_target();
