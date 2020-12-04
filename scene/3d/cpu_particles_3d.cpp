@@ -39,7 +39,7 @@ AABB CPUParticles3D::get_aabb() const {
 	return AABB();
 }
 
-Vector<Face3> CPUParticles3D::get_faces(uint32_t p_usage_flags) const {
+Vector<Face3> CPUParticles3D::get_faces(uint32_t p_usage_particle_flags) const {
 	return Vector<Face3>();
 }
 
@@ -368,17 +368,17 @@ Ref<Gradient> CPUParticles3D::get_color_ramp() const {
 	return color_ramp;
 }
 
-void CPUParticles3D::set_particle_flag(Flags p_flag, bool p_enable) {
-	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
-	flags[p_flag] = p_enable;
-	if (p_flag == FLAG_DISABLE_Z) {
+void CPUParticles3D::set_particle_flag(ParticleFlags p_particle_flag, bool p_enable) {
+	ERR_FAIL_INDEX(p_particle_flag, PARTICLE_FLAG_MAX);
+	particle_flags[p_particle_flag] = p_enable;
+	if (p_particle_flag == PARTICLE_FLAG_DISABLE_Z) {
 		_change_notify();
 	}
 }
 
-bool CPUParticles3D::get_particle_flag(Flags p_flag) const {
-	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
-	return flags[p_flag];
+bool CPUParticles3D::get_particle_flag(ParticleFlags p_particle_flag) const {
+	ERR_FAIL_INDEX_V(p_particle_flag, PARTICLE_FLAG_MAX, false);
+	return particle_flags[p_particle_flag];
 }
 
 void CPUParticles3D::set_emission_shape(EmissionShape p_shape) {
@@ -459,7 +459,7 @@ void CPUParticles3D::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
-	if (property.name.begins_with("orbit_") && !flags[FLAG_DISABLE_Z]) {
+	if (property.name.begins_with("orbit_") && !particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		property.usage = 0;
 	}
 }
@@ -675,7 +675,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 			p.hue_rot_rand = Math::randf();
 			p.anim_offset_rand = Math::randf();
 
-			if (flags[FLAG_DISABLE_Z]) {
+			if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 				float angle1_rad = Math::atan2(direction.y, direction.x) + (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
 				Vector3 rot = Vector3(Math::cos(angle1_rad), Math::sin(angle1_rad), 0.0);
 				p.velocity = rot * parameters[PARAM_INITIAL_LINEAR_VELOCITY] * Math::lerp(1.0f, float(Math::randf()), randomness[PARAM_INITIAL_LINEAR_VELOCITY]);
@@ -725,7 +725,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 					p.transform.origin = emission_points.get(random_idx);
 
 					if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS && emission_normals.size() == pc) {
-						if (flags[FLAG_DISABLE_Z]) {
+						if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 							Vector3 normal = emission_normals.get(random_idx);
 							Vector2 normal_2d(normal.x, normal.y);
 							Transform2D m2;
@@ -762,7 +762,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 				p.transform = emission_xform * p.transform;
 			}
 
-			if (flags[FLAG_DISABLE_Z]) {
+			if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 				p.velocity.z = 0.0;
 				p.transform.origin.z = 0.0;
 			}
@@ -783,7 +783,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 			}
 
 			float tex_orbit_velocity = 0.0;
-			if (flags[FLAG_DISABLE_Z]) {
+			if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 				if (curve_parameters[PARAM_ORBIT_VELOCITY].is_valid()) {
 					tex_orbit_velocity = curve_parameters[PARAM_ORBIT_VELOCITY]->interpolate(p.custom[1]);
 				}
@@ -830,7 +830,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 
 			Vector3 force = gravity;
 			Vector3 position = p.transform.origin;
-			if (flags[FLAG_DISABLE_Z]) {
+			if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 				position.z = 0.0;
 			}
 			//apply linear acceleration
@@ -840,7 +840,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 			Vector3 diff = position - org;
 			force += diff.length() > 0.0 ? diff.normalized() * (parameters[PARAM_RADIAL_ACCEL] + tex_radial_accel) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_RADIAL_ACCEL]) : Vector3();
 			//apply tangential acceleration;
-			if (flags[FLAG_DISABLE_Z]) {
+			if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 				Vector2 yx = Vector2(diff.y, diff.x);
 				Vector2 yx2 = (yx * Vector2(-1.0, 1.0)).normalized();
 				force += yx.length() > 0.0 ? Vector3(yx2.x, yx2.y, 0.0) * ((parameters[PARAM_TANGENTIAL_ACCEL] + tex_tangential_accel) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_TANGENTIAL_ACCEL])) : Vector3();
@@ -852,7 +852,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 			//apply attractor forces
 			p.velocity += force * local_delta;
 			//orbit velocity
-			if (flags[FLAG_DISABLE_Z]) {
+			if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 				float orbit_amount = (parameters[PARAM_ORBIT_VELOCITY] + tex_orbit_velocity) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_ORBIT_VELOCITY]);
 				if (orbit_amount != 0.0) {
 					float ang = orbit_amount * local_delta * Math_PI * 2.0;
@@ -923,8 +923,8 @@ void CPUParticles3D::_particles_process(float p_delta) {
 
 		p.color *= p.base_color;
 
-		if (flags[FLAG_DISABLE_Z]) {
-			if (flags[FLAG_ALIGN_Y_TO_VELOCITY]) {
+		if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+			if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
 				if (p.velocity.length() > 0.0) {
 					p.transform.basis.set_axis(1, p.velocity.normalized());
 				} else {
@@ -941,7 +941,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 
 		} else {
 			//orient particle Y towards velocity
-			if (flags[FLAG_ALIGN_Y_TO_VELOCITY]) {
+			if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
 				if (p.velocity.length() > 0.0) {
 					p.transform.basis.set_axis(1, p.velocity.normalized());
 				} else {
@@ -959,7 +959,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 			}
 
 			//turn particle by rotation in Y
-			if (flags[FLAG_ROTATE_Y]) {
+			if (particle_flags[PARTICLE_FLAG_ROTATE_Y]) {
 				Basis rot_y(Vector3(0, 1, 0), p.custom[0]);
 				p.transform.basis = p.transform.basis * rot_y;
 			}
@@ -973,7 +973,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 
 		p.transform.basis.scale(Vector3(1, 1, 1) * base_scale);
 
-		if (flags[FLAG_DISABLE_Z]) {
+		if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 			p.velocity.z = 0.0;
 			p.transform.origin.z = 0.0;
 		}
@@ -1199,9 +1199,9 @@ void CPUParticles3D::convert_from_particles(Node *p_particles) {
 		set_color_ramp(gt->get_gradient());
 	}
 
-	set_particle_flag(FLAG_ALIGN_Y_TO_VELOCITY, material->get_flag(ParticlesMaterial::FLAG_ALIGN_Y_TO_VELOCITY));
-	set_particle_flag(FLAG_ROTATE_Y, material->get_flag(ParticlesMaterial::FLAG_ROTATE_Y));
-	set_particle_flag(FLAG_DISABLE_Z, material->get_flag(ParticlesMaterial::FLAG_DISABLE_Z));
+	set_particle_flag(PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY, material->get_particle_flag(ParticlesMaterial::PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY));
+	set_particle_flag(PARTICLE_FLAG_ROTATE_Y, material->get_particle_flag(ParticlesMaterial::PARTICLE_FLAG_ROTATE_Y));
+	set_particle_flag(PARTICLE_FLAG_DISABLE_Z, material->get_particle_flag(ParticlesMaterial::PARTICLE_FLAG_DISABLE_Z));
 
 	set_emission_shape(EmissionShape(material->get_emission_shape()));
 	set_emission_sphere_radius(material->get_emission_sphere_radius());
@@ -1318,8 +1318,8 @@ void CPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color_ramp", "ramp"), &CPUParticles3D::set_color_ramp);
 	ClassDB::bind_method(D_METHOD("get_color_ramp"), &CPUParticles3D::get_color_ramp);
 
-	ClassDB::bind_method(D_METHOD("set_particle_flag", "flag", "enable"), &CPUParticles3D::set_particle_flag);
-	ClassDB::bind_method(D_METHOD("get_particle_flag", "flag"), &CPUParticles3D::get_particle_flag);
+	ClassDB::bind_method(D_METHOD("set_particle_flag", "particle_flag", "enable"), &CPUParticles3D::set_particle_flag);
+	ClassDB::bind_method(D_METHOD("get_particle_flag", "particle_flag"), &CPUParticles3D::get_particle_flag);
 
 	ClassDB::bind_method(D_METHOD("set_emission_shape", "shape"), &CPUParticles3D::set_emission_shape);
 	ClassDB::bind_method(D_METHOD("get_emission_shape"), &CPUParticles3D::get_emission_shape);
@@ -1351,10 +1351,10 @@ void CPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "emission_points"), "set_emission_points", "get_emission_points");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "emission_normals"), "set_emission_normals", "get_emission_normals");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "emission_colors"), "set_emission_colors", "get_emission_colors");
-	ADD_GROUP("Flags", "flag_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_align_y"), "set_particle_flag", "get_particle_flag", FLAG_ALIGN_Y_TO_VELOCITY);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_rotate_y"), "set_particle_flag", "get_particle_flag", FLAG_ROTATE_Y);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_disable_z"), "set_particle_flag", "get_particle_flag", FLAG_DISABLE_Z);
+	ADD_GROUP("Particle Flags", "particle_flag_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_align_y"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_rotate_y"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_ROTATE_Y);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_disable_z"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_DISABLE_Z);
 	ADD_GROUP("Direction", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "direction"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spread", PROPERTY_HINT_RANGE, "0,180,0.01"), "set_spread", "get_spread");
@@ -1426,10 +1426,10 @@ void CPUParticles3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_ANIM_OFFSET);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
-	BIND_ENUM_CONSTANT(FLAG_ALIGN_Y_TO_VELOCITY);
-	BIND_ENUM_CONSTANT(FLAG_ROTATE_Y);
-	BIND_ENUM_CONSTANT(FLAG_DISABLE_Z);
-	BIND_ENUM_CONSTANT(FLAG_MAX);
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY);
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_ROTATE_Y);
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_DISABLE_Z);
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINT);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_SPHERE);
@@ -1493,8 +1493,8 @@ CPUParticles3D::CPUParticles3D() {
 		set_param_randomness(Parameter(i), 0);
 	}
 
-	for (int i = 0; i < FLAG_MAX; i++) {
-		flags[i] = false;
+	for (int i = 0; i < PARTICLE_FLAG_MAX; i++) {
+		particle_flags[i] = false;
 	}
 
 	can_update = false;

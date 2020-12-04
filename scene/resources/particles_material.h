@@ -61,11 +61,11 @@ public:
 		PARAM_MAX
 	};
 
-	enum Flags {
-		FLAG_ALIGN_Y_TO_VELOCITY,
-		FLAG_ROTATE_Y,
-		FLAG_DISABLE_Z,
-		FLAG_MAX
+	enum ParticleFlags {
+		PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY,
+		PARTICLE_FLAG_ROTATE_Y,
+		PARTICLE_FLAG_DISABLE_Z,
+		PARTICLE_FLAG_MAX
 	};
 
 	enum EmissionShape {
@@ -90,7 +90,7 @@ private:
 		struct {
 			uint32_t texture_mask : 16;
 			uint32_t texture_color : 1;
-			uint32_t flags : 4;
+			uint32_t particle_flags : 4;
 			uint32_t emission_shape : 2;
 			uint32_t invalid_key : 1;
 			uint32_t has_emission_color : 1;
@@ -124,9 +124,9 @@ private:
 				mk.texture_mask |= (1 << i);
 			}
 		}
-		for (int i = 0; i < FLAG_MAX; i++) {
-			if (flags[i]) {
-				mk.flags |= (1 << i);
+		for (int i = 0; i < PARTICLE_FLAG_MAX; i++) {
+			if (particle_flags[i]) {
+				mk.particle_flags |= (1 << i);
 			}
 		}
 
@@ -227,7 +227,7 @@ private:
 	Color color;
 	Ref<Texture2D> color_ramp;
 
-	bool flags[FLAG_MAX];
+	bool particle_flags[PARTICLE_FLAG_MAX];
 
 	EmissionShape emission_shape;
 	float emission_sphere_radius;
@@ -284,8 +284,8 @@ public:
 	void set_color_ramp(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_color_ramp() const;
 
-	void set_flag(Flags p_flag, bool p_enable);
-	bool get_flag(Flags p_flag) const;
+	void set_particle_flag(ParticleFlags p_particle_flag, bool p_enable);
+	bool get_particle_flag(ParticleFlags p_particle_flag) const;
 
 	void set_emission_shape(EmissionShape p_shape);
 	void set_emission_sphere_radius(float p_radius);
@@ -349,7 +349,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(ParticlesMaterial::Parameter)
-VARIANT_ENUM_CAST(ParticlesMaterial::Flags)
+VARIANT_ENUM_CAST(ParticlesMaterial::ParticleFlags)
 VARIANT_ENUM_CAST(ParticlesMaterial::EmissionShape)
 VARIANT_ENUM_CAST(ParticlesMaterial::SubEmitterMode)
 
