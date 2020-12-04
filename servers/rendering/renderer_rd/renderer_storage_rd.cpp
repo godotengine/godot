@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_storage_rd.cpp                                            */
+/*  renderer_storage_rd.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rasterizer_storage_rd.h"
+#include "renderer_storage_rd.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
-#include "rasterizer_rd.h"
+#include "renderer_compositor_rd.h"
 #include "servers/rendering/shader_language.h"
 
-Ref<Image> RasterizerStorageRD::_validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format) {
+Ref<Image> RendererStorageRD::_validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format) {
 	Ref<Image> image = p_image->duplicate();
 
 	switch (p_image->get_format()) {
@@ -535,7 +535,7 @@ Ref<Image> RasterizerStorageRD::_validate_texture_format(const Ref<Image> &p_ima
 	return image;
 }
 
-RID RasterizerStorageRD::texture_2d_create(const Ref<Image> &p_image) {
+RID RendererStorageRD::texture_2d_create(const Ref<Image> &p_image) {
 	ERR_FAIL_COND_V(p_image.is_null(), RID());
 	ERR_FAIL_COND_V(p_image->empty(), RID());
 
@@ -605,7 +605,7 @@ RID RasterizerStorageRD::texture_2d_create(const Ref<Image> &p_image) {
 	return texture_owner.make_rid(texture);
 }
 
-RID RasterizerStorageRD::texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) {
+RID RendererStorageRD::texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) {
 	ERR_FAIL_COND_V(p_layers.size() == 0, RID());
 
 	ERR_FAIL_COND_V(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP && p_layers.size() != 6, RID());
@@ -715,7 +715,7 @@ RID RasterizerStorageRD::texture_2d_layered_create(const Vector<Ref<Image>> &p_l
 	return texture_owner.make_rid(texture);
 }
 
-RID RasterizerStorageRD::texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) {
+RID RendererStorageRD::texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) {
 	ERR_FAIL_COND_V(p_data.size() == 0, RID());
 	Image::Image3DValidateError verr = Image::validate_3d_image(p_format, p_width, p_height, p_depth, p_mipmaps, p_data);
 	if (verr != Image::VALIDATE_3D_OK) {
@@ -831,7 +831,7 @@ RID RasterizerStorageRD::texture_3d_create(Image::Format p_format, int p_width, 
 	return texture_owner.make_rid(texture);
 }
 
-RID RasterizerStorageRD::texture_proxy_create(RID p_base) {
+RID RendererStorageRD::texture_proxy_create(RID p_base) {
 	Texture *tex = texture_owner.getornull(p_base);
 	ERR_FAIL_COND_V(!tex, RID());
 	Texture proxy_tex = *tex;
@@ -854,7 +854,7 @@ RID RasterizerStorageRD::texture_proxy_create(RID p_base) {
 	return rid;
 }
 
-void RasterizerStorageRD::_texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer, bool p_immediate) {
+void RendererStorageRD::_texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer, bool p_immediate) {
 	ERR_FAIL_COND(p_image.is_null() || p_image->empty());
 
 	Texture *tex = texture_owner.getornull(p_texture);
@@ -876,15 +876,15 @@ void RasterizerStorageRD::_texture_2d_update(RID p_texture, const Ref<Image> &p_
 	RD::get_singleton()->texture_update(tex->rd_texture, p_layer, validated->get_data(), !p_immediate);
 }
 
-void RasterizerStorageRD::texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer) {
+void RendererStorageRD::texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer) {
 	_texture_2d_update(p_texture, p_image, p_layer, true);
 }
 
-void RasterizerStorageRD::texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer) {
+void RendererStorageRD::texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer) {
 	_texture_2d_update(p_texture, p_image, p_layer, false);
 }
 
-void RasterizerStorageRD::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) {
+void RendererStorageRD::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) {
 	Texture *tex = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND(!tex);
 	ERR_FAIL_COND(tex->type != Texture::TYPE_3D);
@@ -921,7 +921,7 @@ void RasterizerStorageRD::texture_3d_update(RID p_texture, const Vector<Ref<Imag
 	RD::get_singleton()->texture_update(tex->rd_texture, 0, all_data, true);
 }
 
-void RasterizerStorageRD::texture_proxy_update(RID p_texture, RID p_proxy_to) {
+void RendererStorageRD::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 	Texture *tex = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND(!tex);
 	ERR_FAIL_COND(!tex->is_proxy);
@@ -961,7 +961,7 @@ void RasterizerStorageRD::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 }
 
 //these two APIs can be used together or in combination with the others.
-RID RasterizerStorageRD::texture_2d_placeholder_create() {
+RID RendererStorageRD::texture_2d_placeholder_create() {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
 	Ref<Image> image;
@@ -977,7 +977,7 @@ RID RasterizerStorageRD::texture_2d_placeholder_create() {
 	return texture_2d_create(image);
 }
 
-RID RasterizerStorageRD::texture_2d_layered_placeholder_create(RS::TextureLayeredType p_layered_type) {
+RID RendererStorageRD::texture_2d_layered_placeholder_create(RS::TextureLayeredType p_layered_type) {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
 	Ref<Image> image;
@@ -1003,7 +1003,7 @@ RID RasterizerStorageRD::texture_2d_layered_placeholder_create(RS::TextureLayere
 	return texture_2d_layered_create(images, p_layered_type);
 }
 
-RID RasterizerStorageRD::texture_3d_placeholder_create() {
+RID RendererStorageRD::texture_3d_placeholder_create() {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
 	Ref<Image> image;
@@ -1025,7 +1025,7 @@ RID RasterizerStorageRD::texture_3d_placeholder_create() {
 	return texture_3d_create(Image::FORMAT_RGBA8, 4, 4, 4, false, images);
 }
 
-Ref<Image> RasterizerStorageRD::texture_2d_get(RID p_texture) const {
+Ref<Image> RendererStorageRD::texture_2d_get(RID p_texture) const {
 	Texture *tex = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND_V(!tex, Ref<Image>());
 
@@ -1053,7 +1053,7 @@ Ref<Image> RasterizerStorageRD::texture_2d_get(RID p_texture) const {
 	return image;
 }
 
-Ref<Image> RasterizerStorageRD::texture_2d_layer_get(RID p_texture, int p_layer) const {
+Ref<Image> RendererStorageRD::texture_2d_layer_get(RID p_texture, int p_layer) const {
 	Texture *tex = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND_V(!tex, Ref<Image>());
 
@@ -1070,7 +1070,7 @@ Ref<Image> RasterizerStorageRD::texture_2d_layer_get(RID p_texture, int p_layer)
 	return image;
 }
 
-Vector<Ref<Image>> RasterizerStorageRD::texture_3d_get(RID p_texture) const {
+Vector<Ref<Image>> RendererStorageRD::texture_3d_get(RID p_texture) const {
 	Texture *tex = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND_V(!tex, Vector<Ref<Image>>());
 	ERR_FAIL_COND_V(tex->type != Texture::TYPE_3D, Vector<Ref<Image>>());
@@ -1101,7 +1101,7 @@ Vector<Ref<Image>> RasterizerStorageRD::texture_3d_get(RID p_texture) const {
 	return ret;
 }
 
-void RasterizerStorageRD::texture_replace(RID p_texture, RID p_by_texture) {
+void RendererStorageRD::texture_replace(RID p_texture, RID p_by_texture) {
 	Texture *tex = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND(!tex);
 	ERR_FAIL_COND(tex->proxy_to.is_valid()); //can't replace proxy
@@ -1150,7 +1150,7 @@ void RasterizerStorageRD::texture_replace(RID p_texture, RID p_by_texture) {
 	}
 }
 
-void RasterizerStorageRD::texture_set_size_override(RID p_texture, int p_width, int p_height) {
+void RendererStorageRD::texture_set_size_override(RID p_texture, int p_width, int p_height) {
 	Texture *tex = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND(!tex);
 	ERR_FAIL_COND(tex->type != Texture::TYPE_2D);
@@ -1158,53 +1158,53 @@ void RasterizerStorageRD::texture_set_size_override(RID p_texture, int p_width, 
 	tex->height_2d = p_height;
 }
 
-void RasterizerStorageRD::texture_set_path(RID p_texture, const String &p_path) {
+void RendererStorageRD::texture_set_path(RID p_texture, const String &p_path) {
 	Texture *tex = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND(!tex);
 	tex->path = p_path;
 }
 
-String RasterizerStorageRD::texture_get_path(RID p_texture) const {
+String RendererStorageRD::texture_get_path(RID p_texture) const {
 	return String();
 }
 
-void RasterizerStorageRD::texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
+void RendererStorageRD::texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
 	Texture *tex = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND(!tex);
 	tex->detect_3d_callback_ud = p_userdata;
 	tex->detect_3d_callback = p_callback;
 }
 
-void RasterizerStorageRD::texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
+void RendererStorageRD::texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
 	Texture *tex = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND(!tex);
 	tex->detect_normal_callback_ud = p_userdata;
 	tex->detect_normal_callback = p_callback;
 }
 
-void RasterizerStorageRD::texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) {
+void RendererStorageRD::texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) {
 	Texture *tex = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND(!tex);
 	tex->detect_roughness_callback_ud = p_userdata;
 	tex->detect_roughness_callback = p_callback;
 }
 
-void RasterizerStorageRD::texture_debug_usage(List<RS::TextureInfo> *r_info) {
+void RendererStorageRD::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 }
 
-void RasterizerStorageRD::texture_set_proxy(RID p_proxy, RID p_base) {
+void RendererStorageRD::texture_set_proxy(RID p_proxy, RID p_base) {
 }
 
-void RasterizerStorageRD::texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {
+void RendererStorageRD::texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {
 }
 
-Size2 RasterizerStorageRD::texture_size_with_proxy(RID p_proxy) {
+Size2 RendererStorageRD::texture_size_with_proxy(RID p_proxy) {
 	return texture_2d_get_size(p_proxy);
 }
 
 /* CANVAS TEXTURE */
 
-void RasterizerStorageRD::CanvasTexture::clear_sets() {
+void RendererStorageRD::CanvasTexture::clear_sets() {
 	if (cleared_cache) {
 		return;
 	}
@@ -1219,15 +1219,15 @@ void RasterizerStorageRD::CanvasTexture::clear_sets() {
 	cleared_cache = true;
 }
 
-RasterizerStorageRD::CanvasTexture::~CanvasTexture() {
+RendererStorageRD::CanvasTexture::~CanvasTexture() {
 	clear_sets();
 }
 
-RID RasterizerStorageRD::canvas_texture_create() {
+RID RendererStorageRD::canvas_texture_create() {
 	return canvas_texture_owner.make_rid(memnew(CanvasTexture));
 }
 
-void RasterizerStorageRD::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {
+void RendererStorageRD::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {
 	CanvasTexture *ct = canvas_texture_owner.getornull(p_canvas_texture);
 	switch (p_channel) {
 		case RS::CANVAS_TEXTURE_CHANNEL_DIFFUSE: {
@@ -1244,7 +1244,7 @@ void RasterizerStorageRD::canvas_texture_set_channel(RID p_canvas_texture, RS::C
 	ct->clear_sets();
 }
 
-void RasterizerStorageRD::canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_specular_color, float p_shininess) {
+void RendererStorageRD::canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_specular_color, float p_shininess) {
 	CanvasTexture *ct = canvas_texture_owner.getornull(p_canvas_texture);
 	ct->specular_color.r = p_specular_color.r;
 	ct->specular_color.g = p_specular_color.g;
@@ -1253,19 +1253,19 @@ void RasterizerStorageRD::canvas_texture_set_shading_parameters(RID p_canvas_tex
 	ct->clear_sets();
 }
 
-void RasterizerStorageRD::canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter) {
+void RendererStorageRD::canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter) {
 	CanvasTexture *ct = canvas_texture_owner.getornull(p_canvas_texture);
 	ct->texture_filter = p_filter;
 	ct->clear_sets();
 }
 
-void RasterizerStorageRD::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
+void RendererStorageRD::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
 	CanvasTexture *ct = canvas_texture_owner.getornull(p_canvas_texture);
 	ct->texture_repeat = p_repeat;
 	ct->clear_sets();
 }
 
-bool RasterizerStorageRD::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID p_base_shader, int p_base_set, RID &r_uniform_set, Size2i &r_size, Color &r_specular_shininess, bool &r_use_normal, bool &r_use_specular) {
+bool RendererStorageRD::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID p_base_shader, int p_base_set, RID &r_uniform_set, Size2i &r_size, Color &r_specular_shininess, bool &r_use_normal, bool &r_use_specular) {
 	CanvasTexture *ct = nullptr;
 
 	Texture *t = texture_owner.getornull(p_texture);
@@ -1365,7 +1365,7 @@ bool RasterizerStorageRD::canvas_texture_get_uniform_set(RID p_texture, RS::Canv
 
 /* SHADER API */
 
-RID RasterizerStorageRD::shader_create() {
+RID RendererStorageRD::shader_create() {
 	Shader shader;
 	shader.data = nullptr;
 	shader.type = SHADER_TYPE_MAX;
@@ -1373,7 +1373,7 @@ RID RasterizerStorageRD::shader_create() {
 	return shader_owner.make_rid(shader);
 }
 
-void RasterizerStorageRD::shader_set_code(RID p_shader, const String &p_code) {
+void RendererStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 	Shader *shader = shader_owner.getornull(p_shader);
 	ERR_FAIL_COND(!shader);
 
@@ -1443,13 +1443,13 @@ void RasterizerStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 	}
 }
 
-String RasterizerStorageRD::shader_get_code(RID p_shader) const {
+String RendererStorageRD::shader_get_code(RID p_shader) const {
 	Shader *shader = shader_owner.getornull(p_shader);
 	ERR_FAIL_COND_V(!shader, String());
 	return shader->code;
 }
 
-void RasterizerStorageRD::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const {
+void RendererStorageRD::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const {
 	Shader *shader = shader_owner.getornull(p_shader);
 	ERR_FAIL_COND(!shader);
 	if (shader->data) {
@@ -1457,7 +1457,7 @@ void RasterizerStorageRD::shader_get_param_list(RID p_shader, List<PropertyInfo>
 	}
 }
 
-void RasterizerStorageRD::shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) {
+void RendererStorageRD::shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) {
 	Shader *shader = shader_owner.getornull(p_shader);
 	ERR_FAIL_COND(!shader);
 
@@ -1475,7 +1475,7 @@ void RasterizerStorageRD::shader_set_default_texture_param(RID p_shader, const S
 	}
 }
 
-RID RasterizerStorageRD::shader_get_default_texture_param(RID p_shader, const StringName &p_name) const {
+RID RendererStorageRD::shader_get_default_texture_param(RID p_shader, const StringName &p_name) const {
 	Shader *shader = shader_owner.getornull(p_shader);
 	ERR_FAIL_COND_V(!shader, RID());
 	if (shader->default_texture_parameter.has(p_name)) {
@@ -1485,7 +1485,7 @@ RID RasterizerStorageRD::shader_get_default_texture_param(RID p_shader, const St
 	return RID();
 }
 
-Variant RasterizerStorageRD::shader_get_param_default(RID p_shader, const StringName &p_param) const {
+Variant RendererStorageRD::shader_get_param_default(RID p_shader, const StringName &p_param) const {
 	Shader *shader = shader_owner.getornull(p_shader);
 	ERR_FAIL_COND_V(!shader, Variant());
 	if (shader->data) {
@@ -1494,14 +1494,14 @@ Variant RasterizerStorageRD::shader_get_param_default(RID p_shader, const String
 	return Variant();
 }
 
-void RasterizerStorageRD::shader_set_data_request_function(ShaderType p_shader_type, ShaderDataRequestFunction p_function) {
+void RendererStorageRD::shader_set_data_request_function(ShaderType p_shader_type, ShaderDataRequestFunction p_function) {
 	ERR_FAIL_INDEX(p_shader_type, SHADER_TYPE_MAX);
 	shader_data_request_func[p_shader_type] = p_function;
 }
 
 /* COMMON MATERIAL API */
 
-RID RasterizerStorageRD::material_create() {
+RID RendererStorageRD::material_create() {
 	Material material;
 	material.data = nullptr;
 	material.shader = nullptr;
@@ -1519,7 +1519,7 @@ RID RasterizerStorageRD::material_create() {
 	return id;
 }
 
-void RasterizerStorageRD::_material_queue_update(Material *material, bool p_uniform, bool p_texture) {
+void RendererStorageRD::_material_queue_update(Material *material, bool p_uniform, bool p_texture) {
 	if (material->update_requested) {
 		return;
 	}
@@ -1531,7 +1531,7 @@ void RasterizerStorageRD::_material_queue_update(Material *material, bool p_unif
 	material->texture_dirty = material->texture_dirty || p_texture;
 }
 
-void RasterizerStorageRD::material_set_shader(RID p_material, RID p_shader) {
+void RendererStorageRD::material_set_shader(RID p_material, RID p_shader) {
 	Material *material = material_owner.getornull(p_material);
 	ERR_FAIL_COND(!material);
 
@@ -1572,7 +1572,7 @@ void RasterizerStorageRD::material_set_shader(RID p_material, RID p_shader) {
 	_material_queue_update(material, true, true);
 }
 
-void RasterizerStorageRD::material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) {
+void RendererStorageRD::material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) {
 	Material *material = material_owner.getornull(p_material);
 	ERR_FAIL_COND(!material);
 
@@ -1590,7 +1590,7 @@ void RasterizerStorageRD::material_set_param(RID p_material, const StringName &p
 	}
 }
 
-Variant RasterizerStorageRD::material_get_param(RID p_material, const StringName &p_param) const {
+Variant RendererStorageRD::material_get_param(RID p_material, const StringName &p_param) const {
 	Material *material = material_owner.getornull(p_material);
 	ERR_FAIL_COND_V(!material, Variant());
 	if (material->params.has(p_param)) {
@@ -1600,7 +1600,7 @@ Variant RasterizerStorageRD::material_get_param(RID p_material, const StringName
 	}
 }
 
-void RasterizerStorageRD::material_set_next_pass(RID p_material, RID p_next_material) {
+void RendererStorageRD::material_set_next_pass(RID p_material, RID p_next_material) {
 	Material *material = material_owner.getornull(p_material);
 	ERR_FAIL_COND(!material);
 
@@ -1616,7 +1616,7 @@ void RasterizerStorageRD::material_set_next_pass(RID p_material, RID p_next_mate
 	material->instance_dependency.instance_notify_changed(false, true);
 }
 
-void RasterizerStorageRD::material_set_render_priority(RID p_material, int priority) {
+void RendererStorageRD::material_set_render_priority(RID p_material, int priority) {
 	Material *material = material_owner.getornull(p_material);
 	ERR_FAIL_COND(!material);
 	material->priority = priority;
@@ -1625,7 +1625,7 @@ void RasterizerStorageRD::material_set_render_priority(RID p_material, int prior
 	}
 }
 
-bool RasterizerStorageRD::material_is_animated(RID p_material) {
+bool RendererStorageRD::material_is_animated(RID p_material) {
 	Material *material = material_owner.getornull(p_material);
 	ERR_FAIL_COND_V(!material, false);
 	if (material->shader && material->shader->data) {
@@ -1638,7 +1638,7 @@ bool RasterizerStorageRD::material_is_animated(RID p_material) {
 	return false; //by default nothing is animated
 }
 
-bool RasterizerStorageRD::material_casts_shadows(RID p_material) {
+bool RendererStorageRD::material_casts_shadows(RID p_material) {
 	Material *material = material_owner.getornull(p_material);
 	ERR_FAIL_COND_V(!material, true);
 	if (material->shader && material->shader->data) {
@@ -1651,7 +1651,7 @@ bool RasterizerStorageRD::material_casts_shadows(RID p_material) {
 	return true; //by default everything casts shadows
 }
 
-void RasterizerStorageRD::material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) {
+void RendererStorageRD::material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) {
 	Material *material = material_owner.getornull(p_material);
 	ERR_FAIL_COND(!material);
 	if (material->shader && material->shader->data) {
@@ -1663,7 +1663,7 @@ void RasterizerStorageRD::material_get_instance_shader_parameters(RID p_material
 	}
 }
 
-void RasterizerStorageRD::material_update_dependency(RID p_material, RasterizerScene::InstanceBase *p_instance) {
+void RendererStorageRD::material_update_dependency(RID p_material, InstanceBaseDependency *p_instance) {
 	Material *material = material_owner.getornull(p_material);
 	ERR_FAIL_COND(!material);
 	p_instance->update_dependency(&material->instance_dependency);
@@ -1672,7 +1672,7 @@ void RasterizerStorageRD::material_update_dependency(RID p_material, RasterizerS
 	}
 }
 
-void RasterizerStorageRD::material_set_data_request_function(ShaderType p_shader_type, MaterialDataRequestFunction p_function) {
+void RendererStorageRD::material_set_data_request_function(ShaderType p_shader_type, MaterialDataRequestFunction p_function) {
 	ERR_FAIL_INDEX(p_shader_type, SHADER_TYPE_MAX);
 	material_data_request_func[p_shader_type] = p_function;
 }
@@ -2119,7 +2119,7 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 	}
 }
 
-void RasterizerStorageRD::MaterialData::update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color) {
+void RendererStorageRD::MaterialData::update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color) {
 	bool uses_global_buffer = false;
 
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = p_uniforms.front(); E; E = E->next()) {
@@ -2133,7 +2133,7 @@ void RasterizerStorageRD::MaterialData::update_uniform_buffer(const Map<StringNa
 
 		if (E->get().scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
 			//this is a global variable, get the index to it
-			RasterizerStorageRD *rs = base_singleton;
+			RendererStorageRD *rs = base_singleton;
 
 			GlobalVariables::Variable *gv = rs->global_variables.variables.getptr(E->key());
 			uint32_t index = 0;
@@ -2180,7 +2180,7 @@ void RasterizerStorageRD::MaterialData::update_uniform_buffer(const Map<StringNa
 	}
 
 	if (uses_global_buffer != (global_buffer_E != nullptr)) {
-		RasterizerStorageRD *rs = base_singleton;
+		RendererStorageRD *rs = base_singleton;
 		if (uses_global_buffer) {
 			global_buffer_E = rs->global_variables.materials_using_buffer.push_back(self);
 		} else {
@@ -2190,16 +2190,16 @@ void RasterizerStorageRD::MaterialData::update_uniform_buffer(const Map<StringNa
 	}
 }
 
-RasterizerStorageRD::MaterialData::~MaterialData() {
+RendererStorageRD::MaterialData::~MaterialData() {
 	if (global_buffer_E) {
 		//unregister global buffers
-		RasterizerStorageRD *rs = base_singleton;
+		RendererStorageRD *rs = base_singleton;
 		rs->global_variables.materials_using_buffer.erase(global_buffer_E);
 	}
 
 	if (global_texture_E) {
 		//unregister global textures
-		RasterizerStorageRD *rs = base_singleton;
+		RendererStorageRD *rs = base_singleton;
 
 		for (Map<StringName, uint64_t>::Element *E = used_global_textures.front(); E; E = E->next()) {
 			GlobalVariables::Variable *v = rs->global_variables.variables.getptr(E->key());
@@ -2212,8 +2212,8 @@ RasterizerStorageRD::MaterialData::~MaterialData() {
 	}
 }
 
-void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color) {
-	RasterizerStorageRD *singleton = (RasterizerStorageRD *)RasterizerStorage::base_singleton;
+void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color) {
+	RendererStorageRD *singleton = (RendererStorageRD *)RendererStorage::base_singleton;
 #ifdef TOOLS_ENABLED
 	Texture *roughness_detect_texture = nullptr;
 	RS::TextureDetectRoughnessChannel roughness_channel = RS::TEXTURE_DETECT_ROUGNHESS_R;
@@ -2229,7 +2229,7 @@ void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Va
 		RID texture;
 
 		if (p_texture_uniforms[i].global) {
-			RasterizerStorageRD *rs = base_singleton;
+			RendererStorageRD *rs = base_singleton;
 
 			uses_global_textures = true;
 
@@ -2330,7 +2330,7 @@ void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Va
 	{
 		//for textures no longer used, unregister them
 		List<Map<StringName, uint64_t>::Element *> to_delete;
-		RasterizerStorageRD *rs = base_singleton;
+		RendererStorageRD *rs = base_singleton;
 
 		for (Map<StringName, uint64_t>::Element *E = used_global_textures.front(); E; E = E->next()) {
 			if (E->get() != global_textures_pass) {
@@ -2359,7 +2359,7 @@ void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Va
 	}
 }
 
-void RasterizerStorageRD::material_force_update_textures(RID p_material, ShaderType p_shader_type) {
+void RendererStorageRD::material_force_update_textures(RID p_material, ShaderType p_shader_type) {
 	Material *material = material_owner.getornull(p_material);
 	if (material->shader_type != p_shader_type) {
 		return;
@@ -2369,7 +2369,7 @@ void RasterizerStorageRD::material_force_update_textures(RID p_material, ShaderT
 	}
 }
 
-void RasterizerStorageRD::_update_queued_materials() {
+void RendererStorageRD::_update_queued_materials() {
 	Material *material = material_update_list;
 	while (material) {
 		Material *next = material->update_next;
@@ -2388,12 +2388,12 @@ void RasterizerStorageRD::_update_queued_materials() {
 
 /* MESH API */
 
-RID RasterizerStorageRD::mesh_create() {
+RID RendererStorageRD::mesh_create() {
 	return mesh_owner.make_rid(Mesh());
 }
 
 /// Returns stride
-void RasterizerStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) {
+void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 
@@ -2540,13 +2540,13 @@ void RasterizerStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_
 	mesh->material_cache.clear();
 }
 
-int RasterizerStorageRD::mesh_get_blend_shape_count(RID p_mesh) const {
+int RendererStorageRD::mesh_get_blend_shape_count(RID p_mesh) const {
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, -1);
 	return mesh->blend_shape_count;
 }
 
-void RasterizerStorageRD::mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) {
+void RendererStorageRD::mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 	ERR_FAIL_INDEX((int)p_mode, 2);
@@ -2554,13 +2554,13 @@ void RasterizerStorageRD::mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMo
 	mesh->blend_shape_mode = p_mode;
 }
 
-RS::BlendShapeMode RasterizerStorageRD::mesh_get_blend_shape_mode(RID p_mesh) const {
+RS::BlendShapeMode RendererStorageRD::mesh_get_blend_shape_mode(RID p_mesh) const {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, RS::BLEND_SHAPE_MODE_NORMALIZED);
 	return mesh->blend_shape_mode;
 }
 
-void RasterizerStorageRD::mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+void RendererStorageRD::mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
@@ -2571,7 +2571,7 @@ void RasterizerStorageRD::mesh_surface_update_region(RID p_mesh, int p_surface, 
 	RD::get_singleton()->buffer_update(mesh->surfaces[p_surface]->vertex_buffer, p_offset, data_size, r);
 }
 
-void RasterizerStorageRD::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
+void RendererStorageRD::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
@@ -2581,7 +2581,7 @@ void RasterizerStorageRD::mesh_surface_set_material(RID p_mesh, int p_surface, R
 	mesh->material_cache.clear();
 }
 
-RID RasterizerStorageRD::mesh_surface_get_material(RID p_mesh, int p_surface) const {
+RID RendererStorageRD::mesh_surface_get_material(RID p_mesh, int p_surface) const {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, RID());
 	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_surface, mesh->surface_count, RID());
@@ -2589,7 +2589,7 @@ RID RasterizerStorageRD::mesh_surface_get_material(RID p_mesh, int p_surface) co
 	return mesh->surfaces[p_surface]->material;
 }
 
-RS::SurfaceData RasterizerStorageRD::mesh_get_surface(RID p_mesh, int p_surface) const {
+RS::SurfaceData RendererStorageRD::mesh_get_surface(RID p_mesh, int p_surface) const {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, RS::SurfaceData());
 	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_surface, mesh->surface_count, RS::SurfaceData());
@@ -2629,25 +2629,25 @@ RS::SurfaceData RasterizerStorageRD::mesh_get_surface(RID p_mesh, int p_surface)
 	return sd;
 }
 
-int RasterizerStorageRD::mesh_get_surface_count(RID p_mesh) const {
+int RendererStorageRD::mesh_get_surface_count(RID p_mesh) const {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, 0);
 	return mesh->surface_count;
 }
 
-void RasterizerStorageRD::mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) {
+void RendererStorageRD::mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 	mesh->custom_aabb = p_aabb;
 }
 
-AABB RasterizerStorageRD::mesh_get_custom_aabb(RID p_mesh) const {
+AABB RendererStorageRD::mesh_get_custom_aabb(RID p_mesh) const {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, AABB());
 	return mesh->custom_aabb;
 }
 
-AABB RasterizerStorageRD::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
+AABB RendererStorageRD::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, AABB());
 
@@ -2752,7 +2752,7 @@ AABB RasterizerStorageRD::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 	return aabb;
 }
 
-void RasterizerStorageRD::mesh_clear(RID p_mesh) {
+void RendererStorageRD::mesh_clear(RID p_mesh) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 	for (uint32_t i = 0; i < mesh->surface_count; i++) {
@@ -2795,7 +2795,7 @@ void RasterizerStorageRD::mesh_clear(RID p_mesh) {
 	mesh->instance_dependency.instance_notify_changed(true, true);
 }
 
-void RasterizerStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Surface *s, uint32_t p_input_mask) {
+void RendererStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Surface *s, uint32_t p_input_mask) {
 	uint32_t version = s->version_count;
 	s->version_count++;
 	s->versions = (Mesh::Surface::Version *)memrealloc(s->versions, sizeof(Mesh::Surface::Version) * s->version_count);
@@ -2976,11 +2976,11 @@ void RasterizerStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Su
 
 ////////////////// MULTIMESH
 
-RID RasterizerStorageRD::multimesh_create() {
+RID RendererStorageRD::multimesh_create() {
 	return multimesh_owner.make_rid(MultiMesh());
 }
 
-void RasterizerStorageRD::multimesh_allocate(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data) {
+void RendererStorageRD::multimesh_allocate(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 
@@ -3020,13 +3020,13 @@ void RasterizerStorageRD::multimesh_allocate(RID p_multimesh, int p_instances, R
 	}
 }
 
-int RasterizerStorageRD::multimesh_get_instance_count(RID p_multimesh) const {
+int RendererStorageRD::multimesh_get_instance_count(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, 0);
 	return multimesh->instances;
 }
 
-void RasterizerStorageRD::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
+void RendererStorageRD::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	if (multimesh->mesh == p_mesh) {
@@ -3056,7 +3056,7 @@ void RasterizerStorageRD::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 
 #define MULTIMESH_DIRTY_REGION_SIZE 512
 
-void RasterizerStorageRD::_multimesh_make_local(MultiMesh *multimesh) const {
+void RendererStorageRD::_multimesh_make_local(MultiMesh *multimesh) const {
 	if (multimesh->data_cache.size() > 0) {
 		return; //already local
 	}
@@ -3085,7 +3085,7 @@ void RasterizerStorageRD::_multimesh_make_local(MultiMesh *multimesh) const {
 	multimesh->data_cache_used_dirty_regions = 0;
 }
 
-void RasterizerStorageRD::_multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb) {
+void RendererStorageRD::_multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb) {
 	uint32_t region_index = p_index / MULTIMESH_DIRTY_REGION_SIZE;
 #ifdef DEBUG_ENABLED
 	uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
@@ -3107,7 +3107,7 @@ void RasterizerStorageRD::_multimesh_mark_dirty(MultiMesh *multimesh, int p_inde
 	}
 }
 
-void RasterizerStorageRD::_multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb) {
+void RendererStorageRD::_multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb) {
 	if (p_data) {
 		uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
 
@@ -3130,7 +3130,7 @@ void RasterizerStorageRD::_multimesh_mark_all_dirty(MultiMesh *multimesh, bool p
 	}
 }
 
-void RasterizerStorageRD::_multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances) {
+void RendererStorageRD::_multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances) {
 	ERR_FAIL_COND(multimesh->mesh.is_null());
 	AABB aabb;
 	AABB mesh_aabb = mesh_get_aabb(multimesh->mesh);
@@ -3172,7 +3172,7 @@ void RasterizerStorageRD::_multimesh_re_create_aabb(MultiMesh *multimesh, const 
 	multimesh->aabb = aabb;
 }
 
-void RasterizerStorageRD::multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) {
+void RendererStorageRD::multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->instances);
@@ -3202,7 +3202,7 @@ void RasterizerStorageRD::multimesh_instance_set_transform(RID p_multimesh, int 
 	_multimesh_mark_dirty(multimesh, p_index, true);
 }
 
-void RasterizerStorageRD::multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {
+void RendererStorageRD::multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->instances);
@@ -3228,7 +3228,7 @@ void RasterizerStorageRD::multimesh_instance_set_transform_2d(RID p_multimesh, i
 	_multimesh_mark_dirty(multimesh, p_index, true);
 }
 
-void RasterizerStorageRD::multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {
+void RendererStorageRD::multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->instances);
@@ -3250,7 +3250,7 @@ void RasterizerStorageRD::multimesh_instance_set_color(RID p_multimesh, int p_in
 	_multimesh_mark_dirty(multimesh, p_index, false);
 }
 
-void RasterizerStorageRD::multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) {
+void RendererStorageRD::multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->instances);
@@ -3272,14 +3272,14 @@ void RasterizerStorageRD::multimesh_instance_set_custom_data(RID p_multimesh, in
 	_multimesh_mark_dirty(multimesh, p_index, false);
 }
 
-RID RasterizerStorageRD::multimesh_get_mesh(RID p_multimesh) const {
+RID RendererStorageRD::multimesh_get_mesh(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, RID());
 
 	return multimesh->mesh;
 }
 
-Transform RasterizerStorageRD::multimesh_instance_get_transform(RID p_multimesh, int p_index) const {
+Transform RendererStorageRD::multimesh_instance_get_transform(RID p_multimesh, int p_index) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Transform());
 	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Transform());
@@ -3310,7 +3310,7 @@ Transform RasterizerStorageRD::multimesh_instance_get_transform(RID p_multimesh,
 	return t;
 }
 
-Transform2D RasterizerStorageRD::multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const {
+Transform2D RendererStorageRD::multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Transform2D());
 	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Transform2D());
@@ -3335,7 +3335,7 @@ Transform2D RasterizerStorageRD::multimesh_instance_get_transform_2d(RID p_multi
 	return t;
 }
 
-Color RasterizerStorageRD::multimesh_instance_get_color(RID p_multimesh, int p_index) const {
+Color RendererStorageRD::multimesh_instance_get_color(RID p_multimesh, int p_index) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Color());
@@ -3358,7 +3358,7 @@ Color RasterizerStorageRD::multimesh_instance_get_color(RID p_multimesh, int p_i
 	return c;
 }
 
-Color RasterizerStorageRD::multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const {
+Color RendererStorageRD::multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Color());
@@ -3381,7 +3381,7 @@ Color RasterizerStorageRD::multimesh_instance_get_custom_data(RID p_multimesh, i
 	return c;
 }
 
-void RasterizerStorageRD::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) {
+void RendererStorageRD::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_COND(p_buffer.size() != (multimesh->instances * (int)multimesh->stride_cache));
@@ -3414,7 +3414,7 @@ void RasterizerStorageRD::multimesh_set_buffer(RID p_multimesh, const Vector<flo
 	}
 }
 
-Vector<float> RasterizerStorageRD::multimesh_get_buffer(RID p_multimesh) const {
+Vector<float> RendererStorageRD::multimesh_get_buffer(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Vector<float>());
 	if (multimesh->buffer.is_null()) {
@@ -3437,7 +3437,7 @@ Vector<float> RasterizerStorageRD::multimesh_get_buffer(RID p_multimesh) const {
 	}
 }
 
-void RasterizerStorageRD::multimesh_set_visible_instances(RID p_multimesh, int p_visible) {
+void RendererStorageRD::multimesh_set_visible_instances(RID p_multimesh, int p_visible) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_COND(p_visible < -1 || p_visible > multimesh->instances);
@@ -3453,22 +3453,22 @@ void RasterizerStorageRD::multimesh_set_visible_instances(RID p_multimesh, int p
 	multimesh->visible_instances = p_visible;
 }
 
-int RasterizerStorageRD::multimesh_get_visible_instances(RID p_multimesh) const {
+int RendererStorageRD::multimesh_get_visible_instances(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, 0);
 	return multimesh->visible_instances;
 }
 
-AABB RasterizerStorageRD::multimesh_get_aabb(RID p_multimesh) const {
+AABB RendererStorageRD::multimesh_get_aabb(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, AABB());
 	if (multimesh->aabb_dirty) {
-		const_cast<RasterizerStorageRD *>(this)->_update_dirty_multimeshes();
+		const_cast<RendererStorageRD *>(this)->_update_dirty_multimeshes();
 	}
 	return multimesh->aabb;
 }
 
-void RasterizerStorageRD::_update_dirty_multimeshes() {
+void RendererStorageRD::_update_dirty_multimeshes() {
 	while (multimesh_dirty_list) {
 		MultiMesh *multimesh = multimesh_dirty_list;
 
@@ -3523,25 +3523,25 @@ void RasterizerStorageRD::_update_dirty_multimeshes() {
 
 /* PARTICLES */
 
-RID RasterizerStorageRD::particles_create() {
+RID RendererStorageRD::particles_create() {
 	return particles_owner.make_rid(Particles());
 }
 
-void RasterizerStorageRD::particles_set_emitting(RID p_particles, bool p_emitting) {
+void RendererStorageRD::particles_set_emitting(RID p_particles, bool p_emitting) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
 	particles->emitting = p_emitting;
 }
 
-bool RasterizerStorageRD::particles_get_emitting(RID p_particles) {
+bool RendererStorageRD::particles_get_emitting(RID p_particles) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND_V(!particles, false);
 
 	return particles->emitting;
 }
 
-void RasterizerStorageRD::_particles_free_data(Particles *particles) {
+void RendererStorageRD::_particles_free_data(Particles *particles) {
 	if (!particles->particle_buffer.is_valid()) {
 		return;
 	}
@@ -3568,7 +3568,7 @@ void RasterizerStorageRD::_particles_free_data(Particles *particles) {
 	}
 }
 
-void RasterizerStorageRD::particles_set_amount(RID p_particles, int p_amount) {
+void RendererStorageRD::particles_set_amount(RID p_particles, int p_amount) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
@@ -3614,111 +3614,111 @@ void RasterizerStorageRD::particles_set_amount(RID p_particles, int p_amount) {
 	particles->clear = true;
 }
 
-void RasterizerStorageRD::particles_set_lifetime(RID p_particles, float p_lifetime) {
+void RendererStorageRD::particles_set_lifetime(RID p_particles, float p_lifetime) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->lifetime = p_lifetime;
 }
 
-void RasterizerStorageRD::particles_set_one_shot(RID p_particles, bool p_one_shot) {
+void RendererStorageRD::particles_set_one_shot(RID p_particles, bool p_one_shot) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->one_shot = p_one_shot;
 }
 
-void RasterizerStorageRD::particles_set_pre_process_time(RID p_particles, float p_time) {
+void RendererStorageRD::particles_set_pre_process_time(RID p_particles, float p_time) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->pre_process_time = p_time;
 }
-void RasterizerStorageRD::particles_set_explosiveness_ratio(RID p_particles, float p_ratio) {
+void RendererStorageRD::particles_set_explosiveness_ratio(RID p_particles, float p_ratio) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->explosiveness = p_ratio;
 }
-void RasterizerStorageRD::particles_set_randomness_ratio(RID p_particles, float p_ratio) {
+void RendererStorageRD::particles_set_randomness_ratio(RID p_particles, float p_ratio) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->randomness = p_ratio;
 }
 
-void RasterizerStorageRD::particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) {
+void RendererStorageRD::particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->custom_aabb = p_aabb;
 	particles->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::particles_set_speed_scale(RID p_particles, float p_scale) {
+void RendererStorageRD::particles_set_speed_scale(RID p_particles, float p_scale) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
 	particles->speed_scale = p_scale;
 }
-void RasterizerStorageRD::particles_set_use_local_coordinates(RID p_particles, bool p_enable) {
+void RendererStorageRD::particles_set_use_local_coordinates(RID p_particles, bool p_enable) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
 	particles->use_local_coords = p_enable;
 }
 
-void RasterizerStorageRD::particles_set_fixed_fps(RID p_particles, int p_fps) {
+void RendererStorageRD::particles_set_fixed_fps(RID p_particles, int p_fps) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
 	particles->fixed_fps = p_fps;
 }
 
-void RasterizerStorageRD::particles_set_fractional_delta(RID p_particles, bool p_enable) {
+void RendererStorageRD::particles_set_fractional_delta(RID p_particles, bool p_enable) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
 	particles->fractional_delta = p_enable;
 }
 
-void RasterizerStorageRD::particles_set_collision_base_size(RID p_particles, float p_size) {
+void RendererStorageRD::particles_set_collision_base_size(RID p_particles, float p_size) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
 	particles->collision_base_size = p_size;
 }
 
-void RasterizerStorageRD::particles_set_process_material(RID p_particles, RID p_material) {
+void RendererStorageRD::particles_set_process_material(RID p_particles, RID p_material) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
 	particles->process_material = p_material;
 }
 
-void RasterizerStorageRD::particles_set_draw_order(RID p_particles, RS::ParticlesDrawOrder p_order) {
+void RendererStorageRD::particles_set_draw_order(RID p_particles, RS::ParticlesDrawOrder p_order) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
 	particles->draw_order = p_order;
 }
 
-void RasterizerStorageRD::particles_set_draw_passes(RID p_particles, int p_passes) {
+void RendererStorageRD::particles_set_draw_passes(RID p_particles, int p_passes) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
 	particles->draw_passes.resize(p_passes);
 }
 
-void RasterizerStorageRD::particles_set_draw_pass_mesh(RID p_particles, int p_pass, RID p_mesh) {
+void RendererStorageRD::particles_set_draw_pass_mesh(RID p_particles, int p_pass, RID p_mesh) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	ERR_FAIL_INDEX(p_pass, particles->draw_passes.size());
 	particles->draw_passes.write[p_pass] = p_mesh;
 }
 
-void RasterizerStorageRD::particles_restart(RID p_particles) {
+void RendererStorageRD::particles_restart(RID p_particles) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
 	particles->restart_request = true;
 }
 
-void RasterizerStorageRD::_particles_allocate_emission_buffer(Particles *particles) {
+void RendererStorageRD::_particles_allocate_emission_buffer(Particles *particles) {
 	ERR_FAIL_COND(particles->emission_buffer != nullptr);
 
 	particles->emission_buffer_data.resize(sizeof(ParticleEmissionBuffer::Data) * particles->amount + sizeof(uint32_t) * 4);
@@ -3735,7 +3735,7 @@ void RasterizerStorageRD::_particles_allocate_emission_buffer(Particles *particl
 	}
 }
 
-void RasterizerStorageRD::particles_set_subemitter(RID p_particles, RID p_subemitter_particles) {
+void RendererStorageRD::particles_set_subemitter(RID p_particles, RID p_subemitter_particles) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	ERR_FAIL_COND(p_particles == p_subemitter_particles);
@@ -3748,7 +3748,7 @@ void RasterizerStorageRD::particles_set_subemitter(RID p_particles, RID p_subemi
 	}
 }
 
-void RasterizerStorageRD::particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
+void RendererStorageRD::particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	ERR_FAIL_COND(particles->amount == 0);
@@ -3791,7 +3791,7 @@ void RasterizerStorageRD::particles_emit(RID p_particles, const Transform &p_tra
 	}
 }
 
-void RasterizerStorageRD::particles_request_process(RID p_particles) {
+void RendererStorageRD::particles_request_process(RID p_particles) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
@@ -3802,7 +3802,7 @@ void RasterizerStorageRD::particles_request_process(RID p_particles) {
 	}
 }
 
-AABB RasterizerStorageRD::particles_get_current_aabb(RID p_particles) {
+AABB RendererStorageRD::particles_get_current_aabb(RID p_particles) {
 	const Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND_V(!particles, AABB());
 
@@ -3846,28 +3846,28 @@ AABB RasterizerStorageRD::particles_get_current_aabb(RID p_particles) {
 	return aabb;
 }
 
-AABB RasterizerStorageRD::particles_get_aabb(RID p_particles) const {
+AABB RendererStorageRD::particles_get_aabb(RID p_particles) const {
 	const Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND_V(!particles, AABB());
 
 	return particles->custom_aabb;
 }
 
-void RasterizerStorageRD::particles_set_emission_transform(RID p_particles, const Transform &p_transform) {
+void RendererStorageRD::particles_set_emission_transform(RID p_particles, const Transform &p_transform) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
 	particles->emission_transform = p_transform;
 }
 
-int RasterizerStorageRD::particles_get_draw_passes(RID p_particles) const {
+int RendererStorageRD::particles_get_draw_passes(RID p_particles) const {
 	const Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND_V(!particles, 0);
 
 	return particles->draw_passes.size();
 }
 
-RID RasterizerStorageRD::particles_get_draw_pass_mesh(RID p_particles, int p_pass) const {
+RID RendererStorageRD::particles_get_draw_pass_mesh(RID p_particles, int p_pass) const {
 	const Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND_V(!particles, RID());
 	ERR_FAIL_INDEX_V(p_pass, particles->draw_passes.size(), RID());
@@ -3875,23 +3875,27 @@ RID RasterizerStorageRD::particles_get_draw_pass_mesh(RID p_particles, int p_pas
 	return particles->draw_passes[p_pass];
 }
 
-void RasterizerStorageRD::particles_add_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance) {
+void RendererStorageRD::particles_add_collision(RID p_particles, InstanceBaseDependency *p_instance) {
+	RendererSceneRender::InstanceBase *instance = static_cast<RendererSceneRender::InstanceBase *>(p_instance);
+
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
-	ERR_FAIL_COND(p_instance->base_type != RS::INSTANCE_PARTICLES_COLLISION);
+	ERR_FAIL_COND(instance->base_type != RS::INSTANCE_PARTICLES_COLLISION);
 
-	particles->collisions.insert(p_instance);
+	particles->collisions.insert(instance);
 }
 
-void RasterizerStorageRD::particles_remove_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance) {
+void RendererStorageRD::particles_remove_collision(RID p_particles, InstanceBaseDependency *p_instance) {
+	RendererSceneRender::InstanceBase *instance = static_cast<RendererSceneRender::InstanceBase *>(p_instance);
+
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
-	particles->collisions.erase(p_instance);
+	particles->collisions.erase(instance);
 }
 
-void RasterizerStorageRD::_particles_process(Particles *p_particles, float p_delta) {
+void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta) {
 	if (p_particles->particles_material_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(p_particles->particles_material_uniform_set)) {
 		Vector<RD::Uniform> uniforms;
 
@@ -3960,7 +3964,7 @@ void RasterizerStorageRD::_particles_process(Particles *p_particles, float p_del
 
 	p_particles->phase = new_phase;
 
-	frame_params.time = RasterizerRD::singleton->get_total_time();
+	frame_params.time = RendererCompositorRD::singleton->get_total_time();
 	frame_params.delta = p_delta * p_particles->speed_scale;
 	frame_params.random_seed = p_particles->random_seed;
 	frame_params.explosiveness = p_particles->explosiveness;
@@ -3988,7 +3992,7 @@ void RasterizerStorageRD::_particles_process(Particles *p_particles, float p_del
 			to_particles = p_particles->emission_transform.affine_inverse();
 		}
 		uint32_t collision_3d_textures_used = 0;
-		for (const Set<RasterizerScene::InstanceBase *>::Element *E = p_particles->collisions.front(); E; E = E->next()) {
+		for (const Set<RendererSceneRender::InstanceBase *>::Element *E = p_particles->collisions.front(); E; E = E->next()) {
 			ParticlesCollision *pc = particles_collision_owner.getornull(E->get()->base);
 			Transform to_collider = E->get()->transform;
 			if (p_particles->use_local_coords) {
@@ -4230,7 +4234,7 @@ void RasterizerStorageRD::_particles_process(Particles *p_particles, float p_del
 	RD::get_singleton()->compute_list_end();
 }
 
-void RasterizerStorageRD::particles_set_view_axis(RID p_particles, const Vector3 &p_axis) {
+void RendererStorageRD::particles_set_view_axis(RID p_particles, const Vector3 &p_axis) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
@@ -4296,7 +4300,7 @@ void RasterizerStorageRD::particles_set_view_axis(RID p_particles, const Vector3
 	RD::get_singleton()->compute_list_end();
 }
 
-void RasterizerStorageRD::update_particles() {
+void RendererStorageRD::update_particles() {
 	while (particle_update_list) {
 		//use transform feedback to process particles
 
@@ -4331,7 +4335,7 @@ void RasterizerStorageRD::update_particles() {
 			particles->inactive = false;
 			particles->inactive_time = 0;
 		} else {
-			particles->inactive_time += particles->speed_scale * RasterizerRD::singleton->get_frame_delta_time();
+			particles->inactive_time += particles->speed_scale * RendererCompositorRD::singleton->get_frame_delta_time();
 			if (particles->inactive_time > particles->lifetime * 1.2) {
 				particles->inactive = true;
 				continue;
@@ -4365,7 +4369,7 @@ void RasterizerStorageRD::update_particles() {
 				frame_time = 1.0 / particles->fixed_fps;
 				decr = frame_time;
 			}
-			float delta = RasterizerRD::singleton->get_frame_delta_time();
+			float delta = RendererCompositorRD::singleton->get_frame_delta_time();
 			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
 				delta = 0.1;
 			} else if (delta <= 0.0) { //unlikely but..
@@ -4384,7 +4388,7 @@ void RasterizerStorageRD::update_particles() {
 			if (zero_time_scale)
 				_particles_process(particles, 0.0);
 			else
-				_particles_process(particles, RasterizerRD::singleton->get_frame_delta_time());
+				_particles_process(particles, RendererCompositorRD::singleton->get_frame_delta_time());
 		}
 
 		//copy particles to instance buffer
@@ -4407,7 +4411,7 @@ void RasterizerStorageRD::update_particles() {
 	}
 }
 
-bool RasterizerStorageRD::particles_is_inactive(RID p_particles) const {
+bool RendererStorageRD::particles_is_inactive(RID p_particles) const {
 	const Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND_V(!particles, false);
 	return !particles->emitting && particles->inactive;
@@ -4415,7 +4419,7 @@ bool RasterizerStorageRD::particles_is_inactive(RID p_particles) const {
 
 /* SKY SHADER */
 
-void RasterizerStorageRD::ParticlesShaderData::set_code(const String &p_code) {
+void RendererStorageRD::ParticlesShaderData::set_code(const String &p_code) {
 	//compile
 
 	code = p_code;
@@ -4463,7 +4467,7 @@ void RasterizerStorageRD::ParticlesShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-void RasterizerStorageRD::ParticlesShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
+void RendererStorageRD::ParticlesShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
 	if (!p_texture.is_valid()) {
 		default_texture_params.erase(p_name);
 	} else {
@@ -4471,7 +4475,7 @@ void RasterizerStorageRD::ParticlesShaderData::set_default_texture_param(const S
 	}
 }
 
-void RasterizerStorageRD::ParticlesShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+void RendererStorageRD::ParticlesShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
 	Map<int, StringName> order;
 
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
@@ -4493,13 +4497,13 @@ void RasterizerStorageRD::ParticlesShaderData::get_param_list(List<PropertyInfo>
 	}
 }
 
-void RasterizerStorageRD::ParticlesShaderData::get_instance_param_list(List<RasterizerStorage::InstanceShaderParam> *p_param_list) const {
+void RendererStorageRD::ParticlesShaderData::get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const {
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
 		if (E->get().scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 			continue;
 		}
 
-		RasterizerStorage::InstanceShaderParam p;
+		RendererStorage::InstanceShaderParam p;
 		p.info = ShaderLanguage::uniform_to_property_info(E->get());
 		p.info.name = E->key(); //supply name
 		p.index = E->get().instance_index;
@@ -4508,7 +4512,7 @@ void RasterizerStorageRD::ParticlesShaderData::get_instance_param_list(List<Rast
 	}
 }
 
-bool RasterizerStorageRD::ParticlesShaderData::is_param_texture(const StringName &p_param) const {
+bool RendererStorageRD::ParticlesShaderData::is_param_texture(const StringName &p_param) const {
 	if (!uniforms.has(p_param)) {
 		return false;
 	}
@@ -4516,15 +4520,15 @@ bool RasterizerStorageRD::ParticlesShaderData::is_param_texture(const StringName
 	return uniforms[p_param].texture_order >= 0;
 }
 
-bool RasterizerStorageRD::ParticlesShaderData::is_animated() const {
+bool RendererStorageRD::ParticlesShaderData::is_animated() const {
 	return false;
 }
 
-bool RasterizerStorageRD::ParticlesShaderData::casts_shadows() const {
+bool RendererStorageRD::ParticlesShaderData::casts_shadows() const {
 	return false;
 }
 
-Variant RasterizerStorageRD::ParticlesShaderData::get_default_parameter(const StringName &p_parameter) const {
+Variant RendererStorageRD::ParticlesShaderData::get_default_parameter(const StringName &p_parameter) const {
 	if (uniforms.has(p_parameter)) {
 		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
 		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
@@ -4533,23 +4537,23 @@ Variant RasterizerStorageRD::ParticlesShaderData::get_default_parameter(const St
 	return Variant();
 }
 
-RasterizerStorageRD::ParticlesShaderData::ParticlesShaderData() {
+RendererStorageRD::ParticlesShaderData::ParticlesShaderData() {
 	valid = false;
 }
 
-RasterizerStorageRD::ParticlesShaderData::~ParticlesShaderData() {
+RendererStorageRD::ParticlesShaderData::~ParticlesShaderData() {
 	//pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {
 		base_singleton->particles_shader.shader.version_free(version);
 	}
 }
 
-RasterizerStorageRD::ShaderData *RasterizerStorageRD::_create_particles_shader_func() {
+RendererStorageRD::ShaderData *RendererStorageRD::_create_particles_shader_func() {
 	ParticlesShaderData *shader_data = memnew(ParticlesShaderData);
 	return shader_data;
 }
 
-void RasterizerStorageRD::ParticlesMaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+void RendererStorageRD::ParticlesMaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	uniform_set_updated = true;
 
 	if ((uint32_t)ubo_data.size() != shader_data->ubo_size) {
@@ -4629,7 +4633,7 @@ void RasterizerStorageRD::ParticlesMaterialData::update_parameters(const Map<Str
 	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, base_singleton->particles_shader.shader.version_get_shader(shader_data->version, 0), 3);
 }
 
-RasterizerStorageRD::ParticlesMaterialData::~ParticlesMaterialData() {
+RendererStorageRD::ParticlesMaterialData::~ParticlesMaterialData() {
 	if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
 		RD::get_singleton()->free(uniform_set);
 	}
@@ -4639,7 +4643,7 @@ RasterizerStorageRD::ParticlesMaterialData::~ParticlesMaterialData() {
 	}
 }
 
-RasterizerStorageRD::MaterialData *RasterizerStorageRD::_create_particles_material_func(ParticlesShaderData *p_shader) {
+RendererStorageRD::MaterialData *RendererStorageRD::_create_particles_material_func(ParticlesShaderData *p_shader) {
 	ParticlesMaterialData *material_data = memnew(ParticlesMaterialData);
 	material_data->shader_data = p_shader;
 	material_data->last_frame = false;
@@ -4650,11 +4654,11 @@ RasterizerStorageRD::MaterialData *RasterizerStorageRD::_create_particles_materi
 
 /* PARTICLES COLLISION API */
 
-RID RasterizerStorageRD::particles_collision_create() {
+RID RendererStorageRD::particles_collision_create() {
 	return particles_collision_owner.make_rid(ParticlesCollision());
 }
 
-RID RasterizerStorageRD::particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const {
+RID RendererStorageRD::particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND_V(!particles_collision, RID());
 	ERR_FAIL_COND_V(particles_collision->type != RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE, RID());
@@ -4689,7 +4693,7 @@ RID RasterizerStorageRD::particles_collision_get_heightfield_framebuffer(RID p_p
 	return particles_collision->heightfield_fb;
 }
 
-void RasterizerStorageRD::particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) {
+void RendererStorageRD::particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 
@@ -4705,13 +4709,13 @@ void RasterizerStorageRD::particles_collision_set_collision_type(RID p_particles
 	particles_collision->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) {
+void RendererStorageRD::particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 	particles_collision->cull_mask = p_cull_mask;
 }
 
-void RasterizerStorageRD::particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius) {
+void RendererStorageRD::particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 
@@ -4719,7 +4723,7 @@ void RasterizerStorageRD::particles_collision_set_sphere_radius(RID p_particles_
 	particles_collision->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) {
+void RendererStorageRD::particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 
@@ -4727,41 +4731,41 @@ void RasterizerStorageRD::particles_collision_set_box_extents(RID p_particles_co
 	particles_collision->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength) {
+void RendererStorageRD::particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 
 	particles_collision->attractor_strength = p_strength;
 }
 
-void RasterizerStorageRD::particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality) {
+void RendererStorageRD::particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 
 	particles_collision->attractor_directionality = p_directionality;
 }
 
-void RasterizerStorageRD::particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve) {
+void RendererStorageRD::particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 
 	particles_collision->attractor_attenuation = p_curve;
 }
 
-void RasterizerStorageRD::particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) {
+void RendererStorageRD::particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 
 	particles_collision->field_texture = p_texture;
 }
 
-void RasterizerStorageRD::particles_collision_height_field_update(RID p_particles_collision) {
+void RendererStorageRD::particles_collision_height_field_update(RID p_particles_collision) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 	particles_collision->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) {
+void RendererStorageRD::particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 
@@ -4777,7 +4781,7 @@ void RasterizerStorageRD::particles_collision_set_height_field_resolution(RID p_
 	}
 }
 
-AABB RasterizerStorageRD::particles_collision_get_aabb(RID p_particles_collision) const {
+AABB RendererStorageRD::particles_collision_get_aabb(RID p_particles_collision) const {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND_V(!particles_collision, AABB());
 
@@ -4800,13 +4804,13 @@ AABB RasterizerStorageRD::particles_collision_get_aabb(RID p_particles_collision
 	return AABB();
 }
 
-Vector3 RasterizerStorageRD::particles_collision_get_extents(RID p_particles_collision) const {
+Vector3 RendererStorageRD::particles_collision_get_extents(RID p_particles_collision) const {
 	const ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND_V(!particles_collision, Vector3());
 	return particles_collision->extents;
 }
 
-bool RasterizerStorageRD::particles_collision_is_heightfield(RID p_particles_collision) const {
+bool RendererStorageRD::particles_collision_is_heightfield(RID p_particles_collision) const {
 	const ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND_V(!particles_collision, false);
 	return particles_collision->type == RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE;
@@ -4814,11 +4818,11 @@ bool RasterizerStorageRD::particles_collision_is_heightfield(RID p_particles_col
 
 /* SKELETON API */
 
-RID RasterizerStorageRD::skeleton_create() {
+RID RendererStorageRD::skeleton_create() {
 	return skeleton_owner.make_rid(Skeleton());
 }
 
-void RasterizerStorageRD::_skeleton_make_dirty(Skeleton *skeleton) {
+void RendererStorageRD::_skeleton_make_dirty(Skeleton *skeleton) {
 	if (!skeleton->dirty) {
 		skeleton->dirty = true;
 		skeleton->dirty_list = skeleton_dirty_list;
@@ -4826,7 +4830,7 @@ void RasterizerStorageRD::_skeleton_make_dirty(Skeleton *skeleton) {
 	}
 }
 
-void RasterizerStorageRD::skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d_skeleton) {
+void RendererStorageRD::skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d_skeleton) {
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 	ERR_FAIL_COND(!skeleton);
 	ERR_FAIL_COND(p_bones < 0);
@@ -4854,14 +4858,14 @@ void RasterizerStorageRD::skeleton_allocate(RID p_skeleton, int p_bones, bool p_
 	}
 }
 
-int RasterizerStorageRD::skeleton_get_bone_count(RID p_skeleton) const {
+int RendererStorageRD::skeleton_get_bone_count(RID p_skeleton) const {
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 	ERR_FAIL_COND_V(!skeleton, 0);
 
 	return skeleton->size;
 }
 
-void RasterizerStorageRD::skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform) {
+void RendererStorageRD::skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform) {
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 
 	ERR_FAIL_COND(!skeleton);
@@ -4886,7 +4890,7 @@ void RasterizerStorageRD::skeleton_bone_set_transform(RID p_skeleton, int p_bone
 	_skeleton_make_dirty(skeleton);
 }
 
-Transform RasterizerStorageRD::skeleton_bone_get_transform(RID p_skeleton, int p_bone) const {
+Transform RendererStorageRD::skeleton_bone_get_transform(RID p_skeleton, int p_bone) const {
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 
 	ERR_FAIL_COND_V(!skeleton, Transform());
@@ -4913,7 +4917,7 @@ Transform RasterizerStorageRD::skeleton_bone_get_transform(RID p_skeleton, int p
 	return t;
 }
 
-void RasterizerStorageRD::skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) {
+void RendererStorageRD::skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) {
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 
 	ERR_FAIL_COND(!skeleton);
@@ -4934,7 +4938,7 @@ void RasterizerStorageRD::skeleton_bone_set_transform_2d(RID p_skeleton, int p_b
 	_skeleton_make_dirty(skeleton);
 }
 
-Transform2D RasterizerStorageRD::skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const {
+Transform2D RendererStorageRD::skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const {
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 
 	ERR_FAIL_COND_V(!skeleton, Transform2D());
@@ -4954,7 +4958,7 @@ Transform2D RasterizerStorageRD::skeleton_bone_get_transform_2d(RID p_skeleton, 
 	return t;
 }
 
-void RasterizerStorageRD::skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {
+void RendererStorageRD::skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 
 	ERR_FAIL_COND(!skeleton->use_2d);
@@ -4962,7 +4966,7 @@ void RasterizerStorageRD::skeleton_set_base_transform_2d(RID p_skeleton, const T
 	skeleton->base_transform_2d = p_base_transform;
 }
 
-void RasterizerStorageRD::_update_dirty_skeletons() {
+void RendererStorageRD::_update_dirty_skeletons() {
 	while (skeleton_dirty_list) {
 		Skeleton *skeleton = skeleton_dirty_list;
 
@@ -4983,7 +4987,7 @@ void RasterizerStorageRD::_update_dirty_skeletons() {
 
 /* LIGHT */
 
-RID RasterizerStorageRD::light_create(RS::LightType p_type) {
+RID RendererStorageRD::light_create(RS::LightType p_type) {
 	Light light;
 	light.type = p_type;
 
@@ -5007,14 +5011,14 @@ RID RasterizerStorageRD::light_create(RS::LightType p_type) {
 	return light_owner.make_rid(light);
 }
 
-void RasterizerStorageRD::light_set_color(RID p_light, const Color &p_color) {
+void RendererStorageRD::light_set_color(RID p_light, const Color &p_color) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
 	light->color = p_color;
 }
 
-void RasterizerStorageRD::light_set_param(RID p_light, RS::LightParam p_param, float p_value) {
+void RendererStorageRD::light_set_param(RID p_light, RS::LightParam p_param, float p_value) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 	ERR_FAIL_INDEX(p_param, RS::LIGHT_PARAM_MAX);
@@ -5039,7 +5043,7 @@ void RasterizerStorageRD::light_set_param(RID p_light, RS::LightParam p_param, f
 	light->param[p_param] = p_value;
 }
 
-void RasterizerStorageRD::light_set_shadow(RID p_light, bool p_enabled) {
+void RendererStorageRD::light_set_shadow(RID p_light, bool p_enabled) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 	light->shadow = p_enabled;
@@ -5048,13 +5052,13 @@ void RasterizerStorageRD::light_set_shadow(RID p_light, bool p_enabled) {
 	light->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::light_set_shadow_color(RID p_light, const Color &p_color) {
+void RendererStorageRD::light_set_shadow_color(RID p_light, const Color &p_color) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 	light->shadow_color = p_color;
 }
 
-void RasterizerStorageRD::light_set_projector(RID p_light, RID p_texture) {
+void RendererStorageRD::light_set_projector(RID p_light, RID p_texture) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
@@ -5073,14 +5077,14 @@ void RasterizerStorageRD::light_set_projector(RID p_light, RID p_texture) {
 	}
 }
 
-void RasterizerStorageRD::light_set_negative(RID p_light, bool p_enable) {
+void RendererStorageRD::light_set_negative(RID p_light, bool p_enable) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
 	light->negative = p_enable;
 }
 
-void RasterizerStorageRD::light_set_cull_mask(RID p_light, uint32_t p_mask) {
+void RendererStorageRD::light_set_cull_mask(RID p_light, uint32_t p_mask) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
@@ -5090,7 +5094,7 @@ void RasterizerStorageRD::light_set_cull_mask(RID p_light, uint32_t p_mask) {
 	light->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) {
+void RendererStorageRD::light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
@@ -5100,7 +5104,7 @@ void RasterizerStorageRD::light_set_reverse_cull_face_mode(RID p_light, bool p_e
 	light->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) {
+void RendererStorageRD::light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
@@ -5110,7 +5114,7 @@ void RasterizerStorageRD::light_set_bake_mode(RID p_light, RS::LightBakeMode p_b
 	light->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) {
+void RendererStorageRD::light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
@@ -5120,7 +5124,7 @@ void RasterizerStorageRD::light_set_max_sdfgi_cascade(RID p_light, uint32_t p_ca
 	light->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode) {
+void RendererStorageRD::light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
@@ -5130,14 +5134,14 @@ void RasterizerStorageRD::light_omni_set_shadow_mode(RID p_light, RS::LightOmniS
 	light->instance_dependency.instance_notify_changed(true, false);
 }
 
-RS::LightOmniShadowMode RasterizerStorageRD::light_omni_get_shadow_mode(RID p_light) {
+RS::LightOmniShadowMode RendererStorageRD::light_omni_get_shadow_mode(RID p_light) {
 	const Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND_V(!light, RS::LIGHT_OMNI_SHADOW_CUBE);
 
 	return light->omni_shadow_mode;
 }
 
-void RasterizerStorageRD::light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode) {
+void RendererStorageRD::light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
@@ -5146,7 +5150,7 @@ void RasterizerStorageRD::light_directional_set_shadow_mode(RID p_light, RS::Lig
 	light->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::light_directional_set_blend_splits(RID p_light, bool p_enable) {
+void RendererStorageRD::light_directional_set_blend_splits(RID p_light, bool p_enable) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
@@ -5155,70 +5159,70 @@ void RasterizerStorageRD::light_directional_set_blend_splits(RID p_light, bool p
 	light->instance_dependency.instance_notify_changed(true, false);
 }
 
-bool RasterizerStorageRD::light_directional_get_blend_splits(RID p_light) const {
+bool RendererStorageRD::light_directional_get_blend_splits(RID p_light) const {
 	const Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND_V(!light, false);
 
 	return light->directional_blend_splits;
 }
 
-void RasterizerStorageRD::light_directional_set_sky_only(RID p_light, bool p_sky_only) {
+void RendererStorageRD::light_directional_set_sky_only(RID p_light, bool p_sky_only) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
 	light->directional_sky_only = p_sky_only;
 }
 
-bool RasterizerStorageRD::light_directional_is_sky_only(RID p_light) const {
+bool RendererStorageRD::light_directional_is_sky_only(RID p_light) const {
 	const Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND_V(!light, false);
 
 	return light->directional_sky_only;
 }
 
-RS::LightDirectionalShadowMode RasterizerStorageRD::light_directional_get_shadow_mode(RID p_light) {
+RS::LightDirectionalShadowMode RendererStorageRD::light_directional_get_shadow_mode(RID p_light) {
 	const Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL);
 
 	return light->directional_shadow_mode;
 }
 
-void RasterizerStorageRD::light_directional_set_shadow_depth_range_mode(RID p_light, RS::LightDirectionalShadowDepthRangeMode p_range_mode) {
+void RendererStorageRD::light_directional_set_shadow_depth_range_mode(RID p_light, RS::LightDirectionalShadowDepthRangeMode p_range_mode) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
 	light->directional_range_mode = p_range_mode;
 }
 
-RS::LightDirectionalShadowDepthRangeMode RasterizerStorageRD::light_directional_get_shadow_depth_range_mode(RID p_light) const {
+RS::LightDirectionalShadowDepthRangeMode RendererStorageRD::light_directional_get_shadow_depth_range_mode(RID p_light) const {
 	const Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE);
 
 	return light->directional_range_mode;
 }
 
-uint32_t RasterizerStorageRD::light_get_max_sdfgi_cascade(RID p_light) {
+uint32_t RendererStorageRD::light_get_max_sdfgi_cascade(RID p_light) {
 	const Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND_V(!light, 0);
 
 	return light->max_sdfgi_cascade;
 }
 
-RS::LightBakeMode RasterizerStorageRD::light_get_bake_mode(RID p_light) {
+RS::LightBakeMode RendererStorageRD::light_get_bake_mode(RID p_light) {
 	const Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND_V(!light, RS::LIGHT_BAKE_DISABLED);
 
 	return light->bake_mode;
 }
 
-uint64_t RasterizerStorageRD::light_get_version(RID p_light) const {
+uint64_t RendererStorageRD::light_get_version(RID p_light) const {
 	const Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND_V(!light, 0);
 
 	return light->version;
 }
 
-AABB RasterizerStorageRD::light_get_aabb(RID p_light) const {
+AABB RendererStorageRD::light_get_aabb(RID p_light) const {
 	const Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND_V(!light, AABB());
 
@@ -5242,11 +5246,11 @@ AABB RasterizerStorageRD::light_get_aabb(RID p_light) const {
 
 /* REFLECTION PROBE */
 
-RID RasterizerStorageRD::reflection_probe_create() {
+RID RendererStorageRD::reflection_probe_create() {
 	return reflection_probe_owner.make_rid(ReflectionProbe());
 }
 
-void RasterizerStorageRD::reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) {
+void RendererStorageRD::reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -5254,35 +5258,35 @@ void RasterizerStorageRD::reflection_probe_set_update_mode(RID p_probe, RS::Refl
 	reflection_probe->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::reflection_probe_set_intensity(RID p_probe, float p_intensity) {
+void RendererStorageRD::reflection_probe_set_intensity(RID p_probe, float p_intensity) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
 	reflection_probe->intensity = p_intensity;
 }
 
-void RasterizerStorageRD::reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) {
+void RendererStorageRD::reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
 	reflection_probe->ambient_mode = p_mode;
 }
 
-void RasterizerStorageRD::reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) {
+void RendererStorageRD::reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
 	reflection_probe->ambient_color = p_color;
 }
 
-void RasterizerStorageRD::reflection_probe_set_ambient_energy(RID p_probe, float p_energy) {
+void RendererStorageRD::reflection_probe_set_ambient_energy(RID p_probe, float p_energy) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
 	reflection_probe->ambient_color_energy = p_energy;
 }
 
-void RasterizerStorageRD::reflection_probe_set_max_distance(RID p_probe, float p_distance) {
+void RendererStorageRD::reflection_probe_set_max_distance(RID p_probe, float p_distance) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -5291,7 +5295,7 @@ void RasterizerStorageRD::reflection_probe_set_max_distance(RID p_probe, float p
 	reflection_probe->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) {
+void RendererStorageRD::reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -5302,7 +5306,7 @@ void RasterizerStorageRD::reflection_probe_set_extents(RID p_probe, const Vector
 	reflection_probe->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) {
+void RendererStorageRD::reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -5310,7 +5314,7 @@ void RasterizerStorageRD::reflection_probe_set_origin_offset(RID p_probe, const 
 	reflection_probe->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::reflection_probe_set_as_interior(RID p_probe, bool p_enable) {
+void RendererStorageRD::reflection_probe_set_as_interior(RID p_probe, bool p_enable) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -5318,14 +5322,14 @@ void RasterizerStorageRD::reflection_probe_set_as_interior(RID p_probe, bool p_e
 	reflection_probe->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) {
+void RendererStorageRD::reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
 	reflection_probe->box_projection = p_enable;
 }
 
-void RasterizerStorageRD::reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) {
+void RendererStorageRD::reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -5333,7 +5337,7 @@ void RasterizerStorageRD::reflection_probe_set_enable_shadows(RID p_probe, bool 
 	reflection_probe->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {
+void RendererStorageRD::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -5341,7 +5345,7 @@ void RasterizerStorageRD::reflection_probe_set_cull_mask(RID p_probe, uint32_t p
 	reflection_probe->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
+void RendererStorageRD::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 	ERR_FAIL_COND(p_resolution < 32);
@@ -5349,7 +5353,7 @@ void RasterizerStorageRD::reflection_probe_set_resolution(RID p_probe, int p_res
 	reflection_probe->resolution = p_resolution;
 }
 
-AABB RasterizerStorageRD::reflection_probe_get_aabb(RID p_probe) const {
+AABB RendererStorageRD::reflection_probe_get_aabb(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, AABB());
 
@@ -5360,107 +5364,107 @@ AABB RasterizerStorageRD::reflection_probe_get_aabb(RID p_probe) const {
 	return aabb;
 }
 
-RS::ReflectionProbeUpdateMode RasterizerStorageRD::reflection_probe_get_update_mode(RID p_probe) const {
+RS::ReflectionProbeUpdateMode RendererStorageRD::reflection_probe_get_update_mode(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, RS::REFLECTION_PROBE_UPDATE_ALWAYS);
 
 	return reflection_probe->update_mode;
 }
 
-uint32_t RasterizerStorageRD::reflection_probe_get_cull_mask(RID p_probe) const {
+uint32_t RendererStorageRD::reflection_probe_get_cull_mask(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, 0);
 
 	return reflection_probe->cull_mask;
 }
 
-Vector3 RasterizerStorageRD::reflection_probe_get_extents(RID p_probe) const {
+Vector3 RendererStorageRD::reflection_probe_get_extents(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, Vector3());
 
 	return reflection_probe->extents;
 }
 
-Vector3 RasterizerStorageRD::reflection_probe_get_origin_offset(RID p_probe) const {
+Vector3 RendererStorageRD::reflection_probe_get_origin_offset(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, Vector3());
 
 	return reflection_probe->origin_offset;
 }
 
-bool RasterizerStorageRD::reflection_probe_renders_shadows(RID p_probe) const {
+bool RendererStorageRD::reflection_probe_renders_shadows(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, false);
 
 	return reflection_probe->enable_shadows;
 }
 
-float RasterizerStorageRD::reflection_probe_get_origin_max_distance(RID p_probe) const {
+float RendererStorageRD::reflection_probe_get_origin_max_distance(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, 0);
 
 	return reflection_probe->max_distance;
 }
 
-int RasterizerStorageRD::reflection_probe_get_resolution(RID p_probe) const {
+int RendererStorageRD::reflection_probe_get_resolution(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, 0);
 
 	return reflection_probe->resolution;
 }
 
-float RasterizerStorageRD::reflection_probe_get_intensity(RID p_probe) const {
+float RendererStorageRD::reflection_probe_get_intensity(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, 0);
 
 	return reflection_probe->intensity;
 }
 
-bool RasterizerStorageRD::reflection_probe_is_interior(RID p_probe) const {
+bool RendererStorageRD::reflection_probe_is_interior(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, false);
 
 	return reflection_probe->interior;
 }
 
-bool RasterizerStorageRD::reflection_probe_is_box_projection(RID p_probe) const {
+bool RendererStorageRD::reflection_probe_is_box_projection(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, false);
 
 	return reflection_probe->box_projection;
 }
 
-RS::ReflectionProbeAmbientMode RasterizerStorageRD::reflection_probe_get_ambient_mode(RID p_probe) const {
+RS::ReflectionProbeAmbientMode RendererStorageRD::reflection_probe_get_ambient_mode(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, RS::REFLECTION_PROBE_AMBIENT_DISABLED);
 	return reflection_probe->ambient_mode;
 }
 
-Color RasterizerStorageRD::reflection_probe_get_ambient_color(RID p_probe) const {
+Color RendererStorageRD::reflection_probe_get_ambient_color(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, Color());
 
 	return reflection_probe->ambient_color;
 }
-float RasterizerStorageRD::reflection_probe_get_ambient_color_energy(RID p_probe) const {
+float RendererStorageRD::reflection_probe_get_ambient_color_energy(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, 0);
 
 	return reflection_probe->ambient_color_energy;
 }
 
-RID RasterizerStorageRD::decal_create() {
+RID RendererStorageRD::decal_create() {
 	return decal_owner.make_rid(Decal());
 }
 
-void RasterizerStorageRD::decal_set_extents(RID p_decal, const Vector3 &p_extents) {
+void RendererStorageRD::decal_set_extents(RID p_decal, const Vector3 &p_extents) {
 	Decal *decal = decal_owner.getornull(p_decal);
 	ERR_FAIL_COND(!decal);
 	decal->extents = p_extents;
 	decal->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) {
+void RendererStorageRD::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) {
 	Decal *decal = decal_owner.getornull(p_decal);
 	ERR_FAIL_COND(!decal);
 	ERR_FAIL_INDEX(p_type, RS::DECAL_TEXTURE_MAX);
@@ -5484,32 +5488,32 @@ void RasterizerStorageRD::decal_set_texture(RID p_decal, RS::DecalTexture p_type
 	decal->instance_dependency.instance_notify_changed(false, true);
 }
 
-void RasterizerStorageRD::decal_set_emission_energy(RID p_decal, float p_energy) {
+void RendererStorageRD::decal_set_emission_energy(RID p_decal, float p_energy) {
 	Decal *decal = decal_owner.getornull(p_decal);
 	ERR_FAIL_COND(!decal);
 	decal->emission_energy = p_energy;
 }
 
-void RasterizerStorageRD::decal_set_albedo_mix(RID p_decal, float p_mix) {
+void RendererStorageRD::decal_set_albedo_mix(RID p_decal, float p_mix) {
 	Decal *decal = decal_owner.getornull(p_decal);
 	ERR_FAIL_COND(!decal);
 	decal->albedo_mix = p_mix;
 }
 
-void RasterizerStorageRD::decal_set_modulate(RID p_decal, const Color &p_modulate) {
+void RendererStorageRD::decal_set_modulate(RID p_decal, const Color &p_modulate) {
 	Decal *decal = decal_owner.getornull(p_decal);
 	ERR_FAIL_COND(!decal);
 	decal->modulate = p_modulate;
 }
 
-void RasterizerStorageRD::decal_set_cull_mask(RID p_decal, uint32_t p_layers) {
+void RendererStorageRD::decal_set_cull_mask(RID p_decal, uint32_t p_layers) {
 	Decal *decal = decal_owner.getornull(p_decal);
 	ERR_FAIL_COND(!decal);
 	decal->cull_mask = p_layers;
 	decal->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) {
+void RendererStorageRD::decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) {
 	Decal *decal = decal_owner.getornull(p_decal);
 	ERR_FAIL_COND(!decal);
 	decal->distance_fade = p_enabled;
@@ -5517,31 +5521,31 @@ void RasterizerStorageRD::decal_set_distance_fade(RID p_decal, bool p_enabled, f
 	decal->distance_fade_length = p_length;
 }
 
-void RasterizerStorageRD::decal_set_fade(RID p_decal, float p_above, float p_below) {
+void RendererStorageRD::decal_set_fade(RID p_decal, float p_above, float p_below) {
 	Decal *decal = decal_owner.getornull(p_decal);
 	ERR_FAIL_COND(!decal);
 	decal->upper_fade = p_above;
 	decal->lower_fade = p_below;
 }
 
-void RasterizerStorageRD::decal_set_normal_fade(RID p_decal, float p_fade) {
+void RendererStorageRD::decal_set_normal_fade(RID p_decal, float p_fade) {
 	Decal *decal = decal_owner.getornull(p_decal);
 	ERR_FAIL_COND(!decal);
 	decal->normal_fade = p_fade;
 }
 
-AABB RasterizerStorageRD::decal_get_aabb(RID p_decal) const {
+AABB RendererStorageRD::decal_get_aabb(RID p_decal) const {
 	Decal *decal = decal_owner.getornull(p_decal);
 	ERR_FAIL_COND_V(!decal, AABB());
 
 	return AABB(-decal->extents, decal->extents * 2.0);
 }
 
-RID RasterizerStorageRD::gi_probe_create() {
+RID RendererStorageRD::gi_probe_create() {
 	return gi_probe_owner.make_rid(GIProbe());
 }
 
-void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
+void RendererStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
@@ -5666,20 +5670,20 @@ void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_t
 	gi_probe->instance_dependency.instance_notify_changed(true, false);
 }
 
-AABB RasterizerStorageRD::gi_probe_get_bounds(RID p_gi_probe) const {
+AABB RendererStorageRD::gi_probe_get_bounds(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, AABB());
 
 	return gi_probe->bounds;
 }
 
-Vector3i RasterizerStorageRD::gi_probe_get_octree_size(RID p_gi_probe) const {
+Vector3i RendererStorageRD::gi_probe_get_octree_size(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, Vector3i());
 	return gi_probe->octree_size;
 }
 
-Vector<uint8_t> RasterizerStorageRD::gi_probe_get_octree_cells(RID p_gi_probe) const {
+Vector<uint8_t> RendererStorageRD::gi_probe_get_octree_cells(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, Vector<uint8_t>());
 
@@ -5689,7 +5693,7 @@ Vector<uint8_t> RasterizerStorageRD::gi_probe_get_octree_cells(RID p_gi_probe) c
 	return Vector<uint8_t>();
 }
 
-Vector<uint8_t> RasterizerStorageRD::gi_probe_get_data_cells(RID p_gi_probe) const {
+Vector<uint8_t> RendererStorageRD::gi_probe_get_data_cells(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, Vector<uint8_t>());
 
@@ -5699,7 +5703,7 @@ Vector<uint8_t> RasterizerStorageRD::gi_probe_get_data_cells(RID p_gi_probe) con
 	return Vector<uint8_t>();
 }
 
-Vector<uint8_t> RasterizerStorageRD::gi_probe_get_distance_field(RID p_gi_probe) const {
+Vector<uint8_t> RendererStorageRD::gi_probe_get_distance_field(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, Vector<uint8_t>());
 
@@ -5709,21 +5713,21 @@ Vector<uint8_t> RasterizerStorageRD::gi_probe_get_distance_field(RID p_gi_probe)
 	return Vector<uint8_t>();
 }
 
-Vector<int> RasterizerStorageRD::gi_probe_get_level_counts(RID p_gi_probe) const {
+Vector<int> RendererStorageRD::gi_probe_get_level_counts(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, Vector<int>());
 
 	return gi_probe->level_counts;
 }
 
-Transform RasterizerStorageRD::gi_probe_get_to_cell_xform(RID p_gi_probe) const {
+Transform RendererStorageRD::gi_probe_get_to_cell_xform(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, Transform());
 
 	return gi_probe->to_cell_xform;
 }
 
-void RasterizerStorageRD::gi_probe_set_dynamic_range(RID p_gi_probe, float p_range) {
+void RendererStorageRD::gi_probe_set_dynamic_range(RID p_gi_probe, float p_range) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
@@ -5731,14 +5735,14 @@ void RasterizerStorageRD::gi_probe_set_dynamic_range(RID p_gi_probe, float p_ran
 	gi_probe->version++;
 }
 
-float RasterizerStorageRD::gi_probe_get_dynamic_range(RID p_gi_probe) const {
+float RendererStorageRD::gi_probe_get_dynamic_range(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, 0);
 
 	return gi_probe->dynamic_range;
 }
 
-void RasterizerStorageRD::gi_probe_set_propagation(RID p_gi_probe, float p_range) {
+void RendererStorageRD::gi_probe_set_propagation(RID p_gi_probe, float p_range) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
@@ -5746,98 +5750,98 @@ void RasterizerStorageRD::gi_probe_set_propagation(RID p_gi_probe, float p_range
 	gi_probe->version++;
 }
 
-float RasterizerStorageRD::gi_probe_get_propagation(RID p_gi_probe) const {
+float RendererStorageRD::gi_probe_get_propagation(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, 0);
 	return gi_probe->propagation;
 }
 
-void RasterizerStorageRD::gi_probe_set_energy(RID p_gi_probe, float p_energy) {
+void RendererStorageRD::gi_probe_set_energy(RID p_gi_probe, float p_energy) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
 	gi_probe->energy = p_energy;
 }
 
-float RasterizerStorageRD::gi_probe_get_energy(RID p_gi_probe) const {
+float RendererStorageRD::gi_probe_get_energy(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, 0);
 	return gi_probe->energy;
 }
 
-void RasterizerStorageRD::gi_probe_set_ao(RID p_gi_probe, float p_ao) {
+void RendererStorageRD::gi_probe_set_ao(RID p_gi_probe, float p_ao) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
 	gi_probe->ao = p_ao;
 }
 
-float RasterizerStorageRD::gi_probe_get_ao(RID p_gi_probe) const {
+float RendererStorageRD::gi_probe_get_ao(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, 0);
 	return gi_probe->ao;
 }
 
-void RasterizerStorageRD::gi_probe_set_ao_size(RID p_gi_probe, float p_strength) {
+void RendererStorageRD::gi_probe_set_ao_size(RID p_gi_probe, float p_strength) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
 	gi_probe->ao_size = p_strength;
 }
 
-float RasterizerStorageRD::gi_probe_get_ao_size(RID p_gi_probe) const {
+float RendererStorageRD::gi_probe_get_ao_size(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, 0);
 	return gi_probe->ao_size;
 }
 
-void RasterizerStorageRD::gi_probe_set_bias(RID p_gi_probe, float p_bias) {
+void RendererStorageRD::gi_probe_set_bias(RID p_gi_probe, float p_bias) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
 	gi_probe->bias = p_bias;
 }
 
-float RasterizerStorageRD::gi_probe_get_bias(RID p_gi_probe) const {
+float RendererStorageRD::gi_probe_get_bias(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, 0);
 	return gi_probe->bias;
 }
 
-void RasterizerStorageRD::gi_probe_set_normal_bias(RID p_gi_probe, float p_normal_bias) {
+void RendererStorageRD::gi_probe_set_normal_bias(RID p_gi_probe, float p_normal_bias) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
 	gi_probe->normal_bias = p_normal_bias;
 }
 
-float RasterizerStorageRD::gi_probe_get_normal_bias(RID p_gi_probe) const {
+float RendererStorageRD::gi_probe_get_normal_bias(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, 0);
 	return gi_probe->normal_bias;
 }
 
-void RasterizerStorageRD::gi_probe_set_anisotropy_strength(RID p_gi_probe, float p_strength) {
+void RendererStorageRD::gi_probe_set_anisotropy_strength(RID p_gi_probe, float p_strength) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
 	gi_probe->anisotropy_strength = p_strength;
 }
 
-float RasterizerStorageRD::gi_probe_get_anisotropy_strength(RID p_gi_probe) const {
+float RendererStorageRD::gi_probe_get_anisotropy_strength(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, 0);
 	return gi_probe->anisotropy_strength;
 }
 
-void RasterizerStorageRD::gi_probe_set_interior(RID p_gi_probe, bool p_enable) {
+void RendererStorageRD::gi_probe_set_interior(RID p_gi_probe, bool p_enable) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
 	gi_probe->interior = p_enable;
 }
 
-void RasterizerStorageRD::gi_probe_set_use_two_bounces(RID p_gi_probe, bool p_enable) {
+void RendererStorageRD::gi_probe_set_use_two_bounces(RID p_gi_probe, bool p_enable) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
@@ -5845,43 +5849,43 @@ void RasterizerStorageRD::gi_probe_set_use_two_bounces(RID p_gi_probe, bool p_en
 	gi_probe->version++;
 }
 
-bool RasterizerStorageRD::gi_probe_is_using_two_bounces(RID p_gi_probe) const {
+bool RendererStorageRD::gi_probe_is_using_two_bounces(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, false);
 	return gi_probe->use_two_bounces;
 }
 
-bool RasterizerStorageRD::gi_probe_is_interior(RID p_gi_probe) const {
+bool RendererStorageRD::gi_probe_is_interior(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, 0);
 	return gi_probe->interior;
 }
 
-uint32_t RasterizerStorageRD::gi_probe_get_version(RID p_gi_probe) {
+uint32_t RendererStorageRD::gi_probe_get_version(RID p_gi_probe) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, 0);
 	return gi_probe->version;
 }
 
-uint32_t RasterizerStorageRD::gi_probe_get_data_version(RID p_gi_probe) {
+uint32_t RendererStorageRD::gi_probe_get_data_version(RID p_gi_probe) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, 0);
 	return gi_probe->data_version;
 }
 
-RID RasterizerStorageRD::gi_probe_get_octree_buffer(RID p_gi_probe) const {
+RID RendererStorageRD::gi_probe_get_octree_buffer(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, RID());
 	return gi_probe->octree_buffer;
 }
 
-RID RasterizerStorageRD::gi_probe_get_data_buffer(RID p_gi_probe) const {
+RID RendererStorageRD::gi_probe_get_data_buffer(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, RID());
 	return gi_probe->data_buffer;
 }
 
-RID RasterizerStorageRD::gi_probe_get_sdf_texture(RID p_gi_probe) {
+RID RendererStorageRD::gi_probe_get_sdf_texture(RID p_gi_probe) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, RID());
 
@@ -5890,11 +5894,11 @@ RID RasterizerStorageRD::gi_probe_get_sdf_texture(RID p_gi_probe) {
 
 /* LIGHTMAP API */
 
-RID RasterizerStorageRD::lightmap_create() {
+RID RendererStorageRD::lightmap_create() {
 	return lightmap_owner.make_rid(Lightmap());
 }
 
-void RasterizerStorageRD::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) {
+void RendererStorageRD::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) {
 	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
 	ERR_FAIL_COND(!lm);
 
@@ -5942,19 +5946,19 @@ void RasterizerStorageRD::lightmap_set_textures(RID p_lightmap, RID p_light, boo
 	}
 }
 
-void RasterizerStorageRD::lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) {
+void RendererStorageRD::lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) {
 	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
 	ERR_FAIL_COND(!lm);
 	lm->bounds = p_bounds;
 }
 
-void RasterizerStorageRD::lightmap_set_probe_interior(RID p_lightmap, bool p_interior) {
+void RendererStorageRD::lightmap_set_probe_interior(RID p_lightmap, bool p_interior) {
 	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
 	ERR_FAIL_COND(!lm);
 	lm->interior = p_interior;
 }
 
-void RasterizerStorageRD::lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) {
+void RendererStorageRD::lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) {
 	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
 	ERR_FAIL_COND(!lm);
 
@@ -5970,36 +5974,36 @@ void RasterizerStorageRD::lightmap_set_probe_capture_data(RID p_lightmap, const 
 	lm->tetrahedra = p_tetrahedra;
 }
 
-PackedVector3Array RasterizerStorageRD::lightmap_get_probe_capture_points(RID p_lightmap) const {
+PackedVector3Array RendererStorageRD::lightmap_get_probe_capture_points(RID p_lightmap) const {
 	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
 	ERR_FAIL_COND_V(!lm, PackedVector3Array());
 
 	return lm->points;
 }
 
-PackedColorArray RasterizerStorageRD::lightmap_get_probe_capture_sh(RID p_lightmap) const {
+PackedColorArray RendererStorageRD::lightmap_get_probe_capture_sh(RID p_lightmap) const {
 	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
 	ERR_FAIL_COND_V(!lm, PackedColorArray());
 	return lm->point_sh;
 }
 
-PackedInt32Array RasterizerStorageRD::lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const {
+PackedInt32Array RendererStorageRD::lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const {
 	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
 	ERR_FAIL_COND_V(!lm, PackedInt32Array());
 	return lm->tetrahedra;
 }
 
-PackedInt32Array RasterizerStorageRD::lightmap_get_probe_capture_bsp_tree(RID p_lightmap) const {
+PackedInt32Array RendererStorageRD::lightmap_get_probe_capture_bsp_tree(RID p_lightmap) const {
 	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
 	ERR_FAIL_COND_V(!lm, PackedInt32Array());
 	return lm->bsp_tree;
 }
 
-void RasterizerStorageRD::lightmap_set_probe_capture_update_speed(float p_speed) {
+void RendererStorageRD::lightmap_set_probe_capture_update_speed(float p_speed) {
 	lightmap_probe_capture_update_speed = p_speed;
 }
 
-void RasterizerStorageRD::lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point, Color *r_sh) {
+void RendererStorageRD::lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point, Color *r_sh) {
 	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
 	ERR_FAIL_COND(!lm);
 
@@ -6049,13 +6053,13 @@ void RasterizerStorageRD::lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p
 	}
 }
 
-bool RasterizerStorageRD::lightmap_is_interior(RID p_lightmap) const {
+bool RendererStorageRD::lightmap_is_interior(RID p_lightmap) const {
 	const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
 	ERR_FAIL_COND_V(!lm, false);
 	return lm->interior;
 }
 
-AABB RasterizerStorageRD::lightmap_get_aabb(RID p_lightmap) const {
+AABB RendererStorageRD::lightmap_get_aabb(RID p_lightmap) const {
 	const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
 	ERR_FAIL_COND_V(!lm, AABB());
 	return lm->bounds;
@@ -6063,7 +6067,7 @@ AABB RasterizerStorageRD::lightmap_get_aabb(RID p_lightmap) const {
 
 /* RENDER TARGET API */
 
-void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
+void RendererStorageRD::_clear_render_target(RenderTarget *rt) {
 	//free in reverse dependency order
 	if (rt->framebuffer.is_valid()) {
 		RD::get_singleton()->free(rt->framebuffer);
@@ -6091,7 +6095,7 @@ void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
 	rt->color = RID();
 }
 
-void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
+void RendererStorageRD::_update_render_target(RenderTarget *rt) {
 	if (rt->texture.is_null()) {
 		//create a placeholder until updated
 		rt->texture = texture_2d_placeholder_create();
@@ -6179,7 +6183,7 @@ void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
 	}
 }
 
-void RasterizerStorageRD::_create_render_target_backbuffer(RenderTarget *rt) {
+void RendererStorageRD::_create_render_target_backbuffer(RenderTarget *rt) {
 	ERR_FAIL_COND(rt->backbuffer.is_valid());
 
 	uint32_t mipmaps_required = Image::get_image_required_mipmaps(rt->size.width, rt->size.height, Image::FORMAT_RGBA8);
@@ -6227,7 +6231,7 @@ void RasterizerStorageRD::_create_render_target_backbuffer(RenderTarget *rt) {
 	}
 }
 
-RID RasterizerStorageRD::render_target_create() {
+RID RendererStorageRD::render_target_create() {
 	RenderTarget render_target;
 
 	render_target.was_used = false;
@@ -6240,11 +6244,11 @@ RID RasterizerStorageRD::render_target_create() {
 	return render_target_owner.make_rid(render_target);
 }
 
-void RasterizerStorageRD::render_target_set_position(RID p_render_target, int p_x, int p_y) {
+void RendererStorageRD::render_target_set_position(RID p_render_target, int p_x, int p_y) {
 	//unused for this render target
 }
 
-void RasterizerStorageRD::render_target_set_size(RID p_render_target, int p_width, int p_height) {
+void RendererStorageRD::render_target_set_size(RID p_render_target, int p_width, int p_height) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 	rt->size.x = p_width;
@@ -6252,63 +6256,63 @@ void RasterizerStorageRD::render_target_set_size(RID p_render_target, int p_widt
 	_update_render_target(rt);
 }
 
-RID RasterizerStorageRD::render_target_get_texture(RID p_render_target) {
+RID RendererStorageRD::render_target_get_texture(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 
 	return rt->texture;
 }
 
-void RasterizerStorageRD::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {
+void RendererStorageRD::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {
 }
 
-void RasterizerStorageRD::render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) {
+void RendererStorageRD::render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 	rt->flags[p_flag] = p_value;
 	_update_render_target(rt);
 }
 
-bool RasterizerStorageRD::render_target_was_used(RID p_render_target) {
+bool RendererStorageRD::render_target_was_used(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, false);
 	return rt->was_used;
 }
 
-void RasterizerStorageRD::render_target_set_as_unused(RID p_render_target) {
+void RendererStorageRD::render_target_set_as_unused(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 	rt->was_used = false;
 }
 
-Size2 RasterizerStorageRD::render_target_get_size(RID p_render_target) {
+Size2 RendererStorageRD::render_target_get_size(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, Size2());
 
 	return rt->size;
 }
 
-RID RasterizerStorageRD::render_target_get_rd_framebuffer(RID p_render_target) {
+RID RendererStorageRD::render_target_get_rd_framebuffer(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 
 	return rt->framebuffer;
 }
 
-RID RasterizerStorageRD::render_target_get_rd_texture(RID p_render_target) {
+RID RendererStorageRD::render_target_get_rd_texture(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 
 	return rt->color;
 }
 
-RID RasterizerStorageRD::render_target_get_rd_backbuffer(RID p_render_target) {
+RID RendererStorageRD::render_target_get_rd_backbuffer(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 	return rt->backbuffer;
 }
 
-RID RasterizerStorageRD::render_target_get_rd_backbuffer_framebuffer(RID p_render_target) {
+RID RendererStorageRD::render_target_get_rd_backbuffer_framebuffer(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 
@@ -6319,32 +6323,32 @@ RID RasterizerStorageRD::render_target_get_rd_backbuffer_framebuffer(RID p_rende
 	return rt->backbuffer_fb;
 }
 
-void RasterizerStorageRD::render_target_request_clear(RID p_render_target, const Color &p_clear_color) {
+void RendererStorageRD::render_target_request_clear(RID p_render_target, const Color &p_clear_color) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 	rt->clear_requested = true;
 	rt->clear_color = p_clear_color;
 }
 
-bool RasterizerStorageRD::render_target_is_clear_requested(RID p_render_target) {
+bool RendererStorageRD::render_target_is_clear_requested(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, false);
 	return rt->clear_requested;
 }
 
-Color RasterizerStorageRD::render_target_get_clear_request_color(RID p_render_target) {
+Color RendererStorageRD::render_target_get_clear_request_color(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, Color());
 	return rt->clear_color;
 }
 
-void RasterizerStorageRD::render_target_disable_clear_request(RID p_render_target) {
+void RendererStorageRD::render_target_disable_clear_request(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 	rt->clear_requested = false;
 }
 
-void RasterizerStorageRD::render_target_do_clear_request(RID p_render_target) {
+void RendererStorageRD::render_target_do_clear_request(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 	if (!rt->clear_requested) {
@@ -6357,7 +6361,7 @@ void RasterizerStorageRD::render_target_do_clear_request(RID p_render_target) {
 	rt->clear_requested = false;
 }
 
-void RasterizerStorageRD::render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) {
+void RendererStorageRD::render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 	if (rt->sdf_oversize == p_size && rt->sdf_scale == p_scale) {
@@ -6370,7 +6374,7 @@ void RasterizerStorageRD::render_target_set_sdf_size_and_scale(RID p_render_targ
 	_render_target_clear_sdf(rt);
 }
 
-Rect2i RasterizerStorageRD::_render_target_get_sdf_rect(const RenderTarget *rt) const {
+Rect2i RendererStorageRD::_render_target_get_sdf_rect(const RenderTarget *rt) const {
 	Size2i margin;
 	int scale;
 	switch (rt->sdf_oversize) {
@@ -6399,14 +6403,14 @@ Rect2i RasterizerStorageRD::_render_target_get_sdf_rect(const RenderTarget *rt) 
 	return r;
 }
 
-Rect2i RasterizerStorageRD::render_target_get_sdf_rect(RID p_render_target) const {
+Rect2i RendererStorageRD::render_target_get_sdf_rect(RID p_render_target) const {
 	const RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, Rect2i());
 
 	return _render_target_get_sdf_rect(rt);
 }
 
-RID RasterizerStorageRD::render_target_get_sdf_texture(RID p_render_target) {
+RID RendererStorageRD::render_target_get_sdf_texture(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 	if (rt->sdf_buffer_read.is_null()) {
@@ -6429,7 +6433,7 @@ RID RasterizerStorageRD::render_target_get_sdf_texture(RID p_render_target) {
 	return rt->sdf_buffer_read;
 }
 
-void RasterizerStorageRD::_render_target_allocate_sdf(RenderTarget *rt) {
+void RendererStorageRD::_render_target_allocate_sdf(RenderTarget *rt) {
 	ERR_FAIL_COND(rt->sdf_buffer_write_fb.is_valid());
 	if (rt->sdf_buffer_read.is_valid()) {
 		RD::get_singleton()->free(rt->sdf_buffer_read);
@@ -6523,7 +6527,7 @@ void RasterizerStorageRD::_render_target_allocate_sdf(RenderTarget *rt) {
 	}
 }
 
-void RasterizerStorageRD::_render_target_clear_sdf(RenderTarget *rt) {
+void RendererStorageRD::_render_target_clear_sdf(RenderTarget *rt) {
 	if (rt->sdf_buffer_read.is_valid()) {
 		RD::get_singleton()->free(rt->sdf_buffer_read);
 		rt->sdf_buffer_read = RID();
@@ -6541,7 +6545,7 @@ void RasterizerStorageRD::_render_target_clear_sdf(RenderTarget *rt) {
 	}
 }
 
-RID RasterizerStorageRD::render_target_get_sdf_framebuffer(RID p_render_target) {
+RID RendererStorageRD::render_target_get_sdf_framebuffer(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 
@@ -6551,7 +6555,7 @@ RID RasterizerStorageRD::render_target_get_sdf_framebuffer(RID p_render_target) 
 
 	return rt->sdf_buffer_write_fb;
 }
-void RasterizerStorageRD::render_target_sdf_process(RID p_render_target) {
+void RendererStorageRD::render_target_sdf_process(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 	ERR_FAIL_COND(rt->sdf_buffer_write_fb.is_null());
@@ -6626,7 +6630,7 @@ void RasterizerStorageRD::render_target_sdf_process(RID p_render_target) {
 	RD::get_singleton()->compute_list_end();
 }
 
-void RasterizerStorageRD::render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps) {
+void RendererStorageRD::render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 	if (!rt->backbuffer.is_valid()) {
@@ -6666,7 +6670,7 @@ void RasterizerStorageRD::render_target_copy_to_back_buffer(RID p_render_target,
 	}
 }
 
-void RasterizerStorageRD::render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color) {
+void RendererStorageRD::render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 	if (!rt->backbuffer.is_valid()) {
@@ -6687,7 +6691,7 @@ void RasterizerStorageRD::render_target_clear_back_buffer(RID p_render_target, c
 	effects.set_color(rt->backbuffer_mipmap0, p_color, region, true);
 }
 
-void RasterizerStorageRD::render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region) {
+void RendererStorageRD::render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 	if (!rt->backbuffer.is_valid()) {
@@ -6719,29 +6723,29 @@ void RasterizerStorageRD::render_target_gen_back_buffer_mipmaps(RID p_render_tar
 	}
 }
 
-RID RasterizerStorageRD::render_target_get_framebuffer_uniform_set(RID p_render_target) {
+RID RendererStorageRD::render_target_get_framebuffer_uniform_set(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 	return rt->framebuffer_uniform_set;
 }
-RID RasterizerStorageRD::render_target_get_backbuffer_uniform_set(RID p_render_target) {
+RID RendererStorageRD::render_target_get_backbuffer_uniform_set(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 	return rt->backbuffer_uniform_set;
 }
 
-void RasterizerStorageRD::render_target_set_framebuffer_uniform_set(RID p_render_target, RID p_uniform_set) {
+void RendererStorageRD::render_target_set_framebuffer_uniform_set(RID p_render_target, RID p_uniform_set) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 	rt->framebuffer_uniform_set = p_uniform_set;
 }
-void RasterizerStorageRD::render_target_set_backbuffer_uniform_set(RID p_render_target, RID p_uniform_set) {
+void RendererStorageRD::render_target_set_backbuffer_uniform_set(RID p_render_target, RID p_uniform_set) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 	rt->backbuffer_uniform_set = p_uniform_set;
 }
 
-void RasterizerStorageRD::base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {
+void RendererStorageRD::base_update_dependency(RID p_base, InstanceBaseDependency *p_instance) {
 	if (mesh_owner.owns(p_base)) {
 		Mesh *mesh = mesh_owner.getornull(p_base);
 		p_instance->update_dependency(&mesh->instance_dependency);
@@ -6775,14 +6779,14 @@ void RasterizerStorageRD::base_update_dependency(RID p_base, RasterizerScene::In
 	}
 }
 
-void RasterizerStorageRD::skeleton_update_dependency(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) {
+void RendererStorageRD::skeleton_update_dependency(RID p_skeleton, InstanceBaseDependency *p_instance) {
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 	ERR_FAIL_COND(!skeleton);
 
 	p_instance->update_dependency(&skeleton->instance_dependency);
 }
 
-RS::InstanceType RasterizerStorageRD::get_base_type(RID p_rid) const {
+RS::InstanceType RendererStorageRD::get_base_type(RID p_rid) const {
 	if (mesh_owner.owns(p_rid)) {
 		return RS::INSTANCE_MESH;
 	}
@@ -6814,7 +6818,7 @@ RS::InstanceType RasterizerStorageRD::get_base_type(RID p_rid) const {
 	return RS::INSTANCE_NONE;
 }
 
-void RasterizerStorageRD::texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
+void RendererStorageRD::texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
 	if (!decal_atlas.textures.has(p_texture)) {
 		DecalAtlas::Texture t;
 		t.users = 1;
@@ -6830,7 +6834,7 @@ void RasterizerStorageRD::texture_add_to_decal_atlas(RID p_texture, bool p_panor
 	}
 }
 
-void RasterizerStorageRD::texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
+void RendererStorageRD::texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
 	DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);
 	ERR_FAIL_COND(!t);
 	t->users--;
@@ -6844,15 +6848,15 @@ void RasterizerStorageRD::texture_remove_from_decal_atlas(RID p_texture, bool p_
 	}
 }
 
-RID RasterizerStorageRD::decal_atlas_get_texture() const {
+RID RendererStorageRD::decal_atlas_get_texture() const {
 	return decal_atlas.texture;
 }
 
-RID RasterizerStorageRD::decal_atlas_get_texture_srgb() const {
+RID RendererStorageRD::decal_atlas_get_texture_srgb() const {
 	return decal_atlas.texture_srgb;
 }
 
-void RasterizerStorageRD::_update_decal_atlas() {
+void RendererStorageRD::_update_decal_atlas() {
 	if (!decal_atlas.dirty) {
 		return; //nothing to do
 	}
@@ -7044,7 +7048,7 @@ void RasterizerStorageRD::_update_decal_atlas() {
 	}
 }
 
-int32_t RasterizerStorageRD::_global_variable_allocate(uint32_t p_elements) {
+int32_t RendererStorageRD::_global_variable_allocate(uint32_t p_elements) {
 	int32_t idx = 0;
 	while (idx + p_elements <= global_variables.buffer_size) {
 		if (global_variables.buffer_usage[idx].elements == 0) {
@@ -7070,7 +7074,7 @@ int32_t RasterizerStorageRD::_global_variable_allocate(uint32_t p_elements) {
 	return -1;
 }
 
-void RasterizerStorageRD::_global_variable_store_in_buffer(int32_t p_index, RS::GlobalVariableType p_type, const Variant &p_value) {
+void RendererStorageRD::_global_variable_store_in_buffer(int32_t p_index, RS::GlobalVariableType p_type, const Variant &p_value) {
 	switch (p_type) {
 		case RS::GLOBAL_VAR_TYPE_BOOL: {
 			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
@@ -7347,7 +7351,7 @@ void RasterizerStorageRD::_global_variable_store_in_buffer(int32_t p_index, RS::
 	}
 }
 
-void RasterizerStorageRD::_global_variable_mark_buffer_dirty(int32_t p_index, int32_t p_elements) {
+void RendererStorageRD::_global_variable_mark_buffer_dirty(int32_t p_index, int32_t p_elements) {
 	int32_t prev_chunk = -1;
 
 	for (int32_t i = 0; i < p_elements; i++) {
@@ -7363,7 +7367,7 @@ void RasterizerStorageRD::_global_variable_mark_buffer_dirty(int32_t p_index, in
 	}
 }
 
-void RasterizerStorageRD::global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) {
+void RendererStorageRD::global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) {
 	ERR_FAIL_COND(global_variables.variables.has(p_name));
 	GlobalVariables::Variable gv;
 	gv.type = p_type;
@@ -7401,7 +7405,7 @@ void RasterizerStorageRD::global_variable_add(const StringName &p_name, RS::Glob
 	global_variables.variables[p_name] = gv;
 }
 
-void RasterizerStorageRD::global_variable_remove(const StringName &p_name) {
+void RendererStorageRD::global_variable_remove(const StringName &p_name) {
 	if (!global_variables.variables.has(p_name)) {
 		return;
 	}
@@ -7417,7 +7421,7 @@ void RasterizerStorageRD::global_variable_remove(const StringName &p_name) {
 	global_variables.variables.erase(p_name);
 }
 
-Vector<StringName> RasterizerStorageRD::global_variable_get_list() const {
+Vector<StringName> RendererStorageRD::global_variable_get_list() const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		ERR_FAIL_V_MSG(Vector<StringName>(), "This function should never be used outside the editor, it can severely damage performance.");
 	}
@@ -7431,7 +7435,7 @@ Vector<StringName> RasterizerStorageRD::global_variable_get_list() const {
 	return names;
 }
 
-void RasterizerStorageRD::global_variable_set(const StringName &p_name, const Variant &p_value) {
+void RendererStorageRD::global_variable_set(const StringName &p_name, const Variant &p_value) {
 	ERR_FAIL_COND(!global_variables.variables.has(p_name));
 	GlobalVariables::Variable &gv = global_variables.variables[p_name];
 	gv.value = p_value;
@@ -7451,7 +7455,7 @@ void RasterizerStorageRD::global_variable_set(const StringName &p_name, const Va
 	}
 }
 
-void RasterizerStorageRD::global_variable_set_override(const StringName &p_name, const Variant &p_value) {
+void RendererStorageRD::global_variable_set_override(const StringName &p_name, const Variant &p_value) {
 	if (!global_variables.variables.has(p_name)) {
 		return; //variable may not exist
 	}
@@ -7479,7 +7483,7 @@ void RasterizerStorageRD::global_variable_set_override(const StringName &p_name,
 	}
 }
 
-Variant RasterizerStorageRD::global_variable_get(const StringName &p_name) const {
+Variant RendererStorageRD::global_variable_get(const StringName &p_name) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		ERR_FAIL_V_MSG(Variant(), "This function should never be used outside the editor, it can severely damage performance.");
 	}
@@ -7491,7 +7495,7 @@ Variant RasterizerStorageRD::global_variable_get(const StringName &p_name) const
 	return global_variables.variables[p_name].value;
 }
 
-RS::GlobalVariableType RasterizerStorageRD::global_variable_get_type_internal(const StringName &p_name) const {
+RS::GlobalVariableType RendererStorageRD::global_variable_get_type_internal(const StringName &p_name) const {
 	if (!global_variables.variables.has(p_name)) {
 		return RS::GLOBAL_VAR_TYPE_MAX;
 	}
@@ -7499,7 +7503,7 @@ RS::GlobalVariableType RasterizerStorageRD::global_variable_get_type_internal(co
 	return global_variables.variables[p_name].type;
 }
 
-RS::GlobalVariableType RasterizerStorageRD::global_variable_get_type(const StringName &p_name) const {
+RS::GlobalVariableType RendererStorageRD::global_variable_get_type(const StringName &p_name) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		ERR_FAIL_V_MSG(RS::GLOBAL_VAR_TYPE_MAX, "This function should never be used outside the editor, it can severely damage performance.");
 	}
@@ -7507,7 +7511,7 @@ RS::GlobalVariableType RasterizerStorageRD::global_variable_get_type(const Strin
 	return global_variable_get_type_internal(p_name);
 }
 
-void RasterizerStorageRD::global_variables_load_settings(bool p_load_textures) {
+void RendererStorageRD::global_variables_load_settings(bool p_load_textures) {
 	List<PropertyInfo> settings;
 	ProjectSettings::get_singleton()->get_property_list(&settings);
 
@@ -7588,15 +7592,15 @@ void RasterizerStorageRD::global_variables_load_settings(bool p_load_textures) {
 	}
 }
 
-void RasterizerStorageRD::global_variables_clear() {
+void RendererStorageRD::global_variables_clear() {
 	global_variables.variables.clear(); //not right but for now enough
 }
 
-RID RasterizerStorageRD::global_variables_get_storage_buffer() const {
+RID RendererStorageRD::global_variables_get_storage_buffer() const {
 	return global_variables.buffer;
 }
 
-int32_t RasterizerStorageRD::global_variables_instance_allocate(RID p_instance) {
+int32_t RendererStorageRD::global_variables_instance_allocate(RID p_instance) {
 	ERR_FAIL_COND_V(global_variables.instance_buffer_pos.has(p_instance), -1);
 	int32_t pos = _global_variable_allocate(ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES);
 	global_variables.instance_buffer_pos[p_instance] = pos; //save anyway
@@ -7605,7 +7609,7 @@ int32_t RasterizerStorageRD::global_variables_instance_allocate(RID p_instance) 
 	return pos;
 }
 
-void RasterizerStorageRD::global_variables_instance_free(RID p_instance) {
+void RendererStorageRD::global_variables_instance_free(RID p_instance) {
 	ERR_FAIL_COND(!global_variables.instance_buffer_pos.has(p_instance));
 	int32_t pos = global_variables.instance_buffer_pos[p_instance];
 	if (pos >= 0) {
@@ -7614,7 +7618,7 @@ void RasterizerStorageRD::global_variables_instance_free(RID p_instance) {
 	global_variables.instance_buffer_pos.erase(p_instance);
 }
 
-void RasterizerStorageRD::global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) {
+void RendererStorageRD::global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) {
 	if (!global_variables.instance_buffer_pos.has(p_instance)) {
 		return; //just not allocated, ignore
 	}
@@ -7657,7 +7661,7 @@ void RasterizerStorageRD::global_variables_instance_update(RID p_instance, int p
 	_global_variable_mark_buffer_dirty(pos, 1);
 }
 
-void RasterizerStorageRD::_update_global_variables() {
+void RendererStorageRD::_update_global_variables() {
 	if (global_variables.buffer_dirty_region_count > 0) {
 		uint32_t total_regions = global_variables.buffer_size / GlobalVariables::BUFFER_DIRTY_REGION_SIZE;
 		if (total_regions / global_variables.buffer_dirty_region_count <= 4) {
@@ -7707,7 +7711,7 @@ void RasterizerStorageRD::_update_global_variables() {
 	}
 }
 
-void RasterizerStorageRD::update_dirty_resources() {
+void RendererStorageRD::update_dirty_resources() {
 	_update_global_variables(); //must do before materials, so it can queue them for update
 	_update_queued_materials();
 	_update_dirty_multimeshes();
@@ -7715,7 +7719,7 @@ void RasterizerStorageRD::update_dirty_resources() {
 	_update_decal_atlas();
 }
 
-bool RasterizerStorageRD::has_os_feature(const String &p_feature) const {
+bool RendererStorageRD::has_os_feature(const String &p_feature) const {
 	if (p_feature == "rgtc" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC5_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
 		return true;
 	}
@@ -7739,7 +7743,7 @@ bool RasterizerStorageRD::has_os_feature(const String &p_feature) const {
 	return false;
 }
 
-bool RasterizerStorageRD::free(RID p_rid) {
+bool RendererStorageRD::free(RID p_rid) {
 	if (texture_owner.owns(p_rid)) {
 		Texture *t = texture_owner.getornull(p_rid);
 
@@ -7882,41 +7886,41 @@ bool RasterizerStorageRD::free(RID p_rid) {
 	return true;
 }
 
-RasterizerEffectsRD *RasterizerStorageRD::get_effects() {
+EffectsRD *RendererStorageRD::get_effects() {
 	return &effects;
 }
 
-void RasterizerStorageRD::capture_timestamps_begin() {
+void RendererStorageRD::capture_timestamps_begin() {
 	RD::get_singleton()->capture_timestamp("Frame Begin", false);
 }
 
-void RasterizerStorageRD::capture_timestamp(const String &p_name) {
+void RendererStorageRD::capture_timestamp(const String &p_name) {
 	RD::get_singleton()->capture_timestamp(p_name, true);
 }
 
-uint32_t RasterizerStorageRD::get_captured_timestamps_count() const {
+uint32_t RendererStorageRD::get_captured_timestamps_count() const {
 	return RD::get_singleton()->get_captured_timestamps_count();
 }
 
-uint64_t RasterizerStorageRD::get_captured_timestamps_frame() const {
+uint64_t RendererStorageRD::get_captured_timestamps_frame() const {
 	return RD::get_singleton()->get_captured_timestamps_frame();
 }
 
-uint64_t RasterizerStorageRD::get_captured_timestamp_gpu_time(uint32_t p_index) const {
+uint64_t RendererStorageRD::get_captured_timestamp_gpu_time(uint32_t p_index) const {
 	return RD::get_singleton()->get_captured_timestamp_gpu_time(p_index);
 }
 
-uint64_t RasterizerStorageRD::get_captured_timestamp_cpu_time(uint32_t p_index) const {
+uint64_t RendererStorageRD::get_captured_timestamp_cpu_time(uint32_t p_index) const {
 	return RD::get_singleton()->get_captured_timestamp_cpu_time(p_index);
 }
 
-String RasterizerStorageRD::get_captured_timestamp_name(uint32_t p_index) const {
+String RendererStorageRD::get_captured_timestamp_name(uint32_t p_index) const {
 	return RD::get_singleton()->get_captured_timestamp_name(p_index);
 }
 
-RasterizerStorageRD *RasterizerStorageRD::base_singleton = nullptr;
+RendererStorageRD *RendererStorageRD::base_singleton = nullptr;
 
-RasterizerStorageRD::RasterizerStorageRD() {
+RendererStorageRD::RendererStorageRD() {
 	base_singleton = this;
 
 	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
@@ -8380,8 +8384,8 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		particles_modes.push_back("");
 		particles_shader.shader.initialize(particles_modes, String());
 	}
-	shader_set_data_request_function(RasterizerStorageRD::SHADER_TYPE_PARTICLES, _create_particles_shader_funcs);
-	material_set_data_request_function(RasterizerStorageRD::SHADER_TYPE_PARTICLES, _create_particles_material_funcs);
+	shader_set_data_request_function(RendererStorageRD::SHADER_TYPE_PARTICLES, _create_particles_shader_funcs);
+	material_set_data_request_function(RendererStorageRD::SHADER_TYPE_PARTICLES, _create_particles_material_funcs);
 
 	{
 		ShaderCompilerRD::DefaultIdentifierActions actions;
@@ -8442,7 +8446,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		particles_shader.default_material = material_create();
 		material_set_shader(particles_shader.default_material, particles_shader.default_shader);
 
-		ParticlesMaterialData *md = (ParticlesMaterialData *)material_get_data(particles_shader.default_material, RasterizerStorageRD::SHADER_TYPE_PARTICLES);
+		ParticlesMaterialData *md = (ParticlesMaterialData *)material_get_data(particles_shader.default_material, RendererStorageRD::SHADER_TYPE_PARTICLES);
 		particles_shader.default_shader_rd = particles_shader.shader.version_get_shader(md->shader_data->version, 0);
 
 		Vector<RD::Uniform> uniforms;
@@ -8515,7 +8519,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 	}
 }
 
-RasterizerStorageRD::~RasterizerStorageRD() {
+RendererStorageRD::~RendererStorageRD() {
 	memdelete_arr(global_variables.buffer_values);
 	memdelete_arr(global_variables.buffer_usage);
 	memdelete_arr(global_variables.buffer_dirty_regions);

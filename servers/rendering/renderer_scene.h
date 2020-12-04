@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_scene.h                                             */
+/*  renderer_scene.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -31,10 +31,10 @@
 #ifndef RENDERINGSERVERSCENE_H
 #define RENDERINGSERVERSCENE_H
 
-#include "servers/rendering/rasterizer.h"
+#include "servers/rendering/renderer_compositor.h"
 #include "servers/xr/xr_interface.h"
 
-class RenderingServerScene {
+class RendererScene {
 public:
 	virtual RID camera_create() = 0;
 
@@ -195,8 +195,8 @@ public:
 
 	virtual bool free(RID p_rid) = 0;
 
-	RenderingServerScene();
-	virtual ~RenderingServerScene();
+	RendererScene();
+	virtual ~RendererScene();
 };
 
 #endif // RENDERINGSERVERSCENE_H

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  render_pipeline_vertex_format_cache_rd.h                             */
+/*  pipeline_cache_rd.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDER_PIPELINE_CACHE_RD_H
-#define RENDER_PIPELINE_CACHE_RD_H
+#ifndef PIPELINE_CACHE_RD_H
+#define PIPELINE_CACHE_RD_H
 
 #include "core/os/spin_lock.h"
 #include "servers/rendering/rendering_device.h"
 
-class RenderPipelineVertexFormatCacheRD {
+class PipelineCacheRD {
 	SpinLock spin_lock;
 
 	RID shader;
@@ -89,8 +89,8 @@ public:
 		return input_mask;
 	}
 	void clear();
-	RenderPipelineVertexFormatCacheRD();
-	~RenderPipelineVertexFormatCacheRD();
+	PipelineCacheRD();
+	~PipelineCacheRD();
 };
 
 #endif // RENDER_PIPELINE_CACHE_RD_H

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_scene_high_end_rd.h                                       */
+/*  renderer_scene_render_forward.h                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZER_SCENE_HIGHEND_RD_H
-#define RASTERIZER_SCENE_HIGHEND_RD_H
+#ifndef RENDERING_SERVER_SCENE_RENDER_FORWARD_H
+#define RENDERING_SERVER_SCENE_RENDER_FORWARD_H
 
-#include "servers/rendering/rasterizer_rd/rasterizer_scene_rd.h"
-#include "servers/rendering/rasterizer_rd/rasterizer_storage_rd.h"
-#include "servers/rendering/rasterizer_rd/render_pipeline_vertex_format_cache_rd.h"
-#include "servers/rendering/rasterizer_rd/shaders/scene_high_end.glsl.gen.h"
+#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
+#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
+#include "servers/rendering/renderer_rd/shaders/scene_high_end.glsl.gen.h"
 
-class RasterizerSceneHighEndRD : public RasterizerSceneRD {
+class RendererSceneRenderForward : public RendererSceneRenderRD {
 	enum {
 		SCENE_UNIFORM_SET = 0,
 		RADIANCE_UNIFORM_SET = 1,
@@ -73,11 +73,11 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		ShaderCompilerRD compiler;
 	} shader;
 
-	RasterizerStorageRD *storage;
+	RendererStorageRD *storage;
 
 	/* Material */
 
-	struct ShaderData : public RasterizerStorageRD::ShaderData {
+	struct ShaderData : public RendererStorageRD::ShaderData {
 		enum BlendMode { //used internally
 			BLEND_MODE_MIX,
 			BLEND_MODE_ADD,
@@ -120,7 +120,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		bool valid;
 		RID version;
 		uint32_t vertex_input_mask;
-		RenderPipelineVertexFormatCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][SHADER_VERSION_MAX];
+		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][SHADER_VERSION_MAX];
 
 		String path;
 
@@ -162,7 +162,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		void get_instance_param_list(List<RasterizerStorage::InstanceShaderParam> *p_param_list) const;
+		void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
 
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
@@ -172,12 +172,12 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		virtual ~ShaderData();
 	};
 
-	RasterizerStorageRD::ShaderData *_create_shader_func();
-	static RasterizerStorageRD::ShaderData *_create_shader_funcs() {
-		return static_cast<RasterizerSceneHighEndRD *>(singleton)->_create_shader_func();
+	RendererStorageRD::ShaderData *_create_shader_func();
+	static RendererStorageRD::ShaderData *_create_shader_funcs() {
+		return static_cast<RendererSceneRenderForward *>(singleton)->_create_shader_func();
 	}
 
-	struct MaterialData : public RasterizerStorageRD::MaterialData {
+	struct MaterialData : public RendererStorageRD::MaterialData {
 		uint64_t last_frame;
 		ShaderData *shader_data;
 		RID uniform_buffer;
@@ -194,9 +194,9 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		virtual ~MaterialData();
 	};
 
-	RasterizerStorageRD::MaterialData *_create_material_func(ShaderData *p_shader);
-	static RasterizerStorageRD::MaterialData *_create_material_funcs(RasterizerStorageRD::ShaderData *p_shader) {
-		return static_cast<RasterizerSceneHighEndRD *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
+	RendererStorageRD::MaterialData *_create_material_func(ShaderData *p_shader);
+	static RendererStorageRD::MaterialData *_create_material_funcs(RendererStorageRD::ShaderData *p_shader) {
+		return static_cast<RendererSceneRenderForward *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
 	}
 
 	/* Push Constant */
@@ -415,7 +415,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		int max_elements;
 
 		struct Element {
-			RasterizerScene::InstanceBase *instance;
+			RendererSceneRender::InstanceBase *instance;
 			MaterialData *material;
 			union {
 				struct {
@@ -541,7 +541,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 
 	RenderList render_list;
 
-	static RasterizerSceneHighEndRD *singleton;
+	static RendererSceneRenderForward *singleton;
 	uint64_t render_pass;
 	double time;
 	RID default_shader;
@@ -596,7 +596,7 @@ public:
 
 	virtual bool free(RID p_rid);
 
-	RasterizerSceneHighEndRD(RasterizerStorageRD *p_storage);
-	~RasterizerSceneHighEndRD();
+	RendererSceneRenderForward(RendererStorageRD *p_storage);
+	~RendererSceneRenderForward();
 };
 #endif // RASTERIZER_SCENE_HIGHEND_RD_H

@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "rasterizer_storage_rd.h"
+#include "renderer_storage_rd.h"
 #include "servers/rendering_server.h"
 
 #define SL ShaderLanguage
@@ -1238,7 +1238,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 }
 
 ShaderLanguage::DataType ShaderCompilerRD::_get_variable_type(const StringName &p_type) {
-	RS::GlobalVariableType gvt = ((RasterizerStorageRD *)(RasterizerStorage::base_singleton))->global_variable_get_type_internal(p_type);
+	RS::GlobalVariableType gvt = ((RendererStorageRD *)(RendererStorage::base_singleton))->global_variable_get_type_internal(p_type);
 	return RS::global_variable_type_get_shader_datatype(gvt);
 }
 

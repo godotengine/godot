@@ -34,9 +34,9 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/templates/sort_array.h"
-#include "rendering_server_canvas.h"
+#include "renderer_canvas_cull.h"
+#include "renderer_scene_cull.h"
 #include "rendering_server_globals.h"
-#include "rendering_server_scene_raster.h"
 
 // careful, these may run in different threads than the visual server
 
@@ -251,11 +251,11 @@ bool RenderingServerDefault::is_low_end() const {
 }
 
 RenderingServerDefault::RenderingServerDefault() {
-	RSG::canvas = memnew(RenderingServerCanvas);
-	RSG::viewport = memnew(RenderingServerViewport);
-	RenderingServerSceneRaster *sr = memnew(RenderingServerSceneRaster);
+	RSG::canvas = memnew(RendererCanvasCull);
+	RSG::viewport = memnew(RendererViewport);
+	RendererSceneCull *sr = memnew(RendererSceneCull);
 	RSG::scene = sr;
-	RSG::rasterizer = Rasterizer::create();
+	RSG::rasterizer = RendererCompositor::create();
 	RSG::storage = RSG::rasterizer->get_storage();
 	RSG::canvas_render = RSG::rasterizer->get_canvas();
 	sr->scene_render = RSG::rasterizer->get_scene();

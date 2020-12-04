@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_scene_raster.h                                      */
+/*  renderer_scene_cull.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_SCENE_RASTER_H
-#define RENDERING_SERVER_SCENE_RASTER_H
+#ifndef RENDERING_SERVER_SCENE_CULL_H
+#define RENDERING_SERVER_SCENE_CULL_H
 
 #include "core/templates/pass_func.h"
-#include "servers/rendering/rasterizer.h"
+#include "servers/rendering/renderer_compositor.h"
 
 #include "core/math/geometry_3d.h"
 #include "core/math/octree.h"
@@ -41,12 +41,13 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "servers/rendering/rendering_server_scene.h"
+#include "servers/rendering/renderer_scene.h"
+#include "servers/rendering/renderer_scene_render.h"
 #include "servers/xr/xr_interface.h"
 
-class RenderingServerSceneRaster : public RenderingServerScene {
+class RendererSceneCull : public RendererScene {
 public:
-	RasterizerScene *scene_render;
+	RendererSceneRender *scene_render;
 
 	enum {
 		MAX_INSTANCE_CULL = 65536,
@@ -61,7 +62,7 @@ public:
 
 	uint64_t render_pass;
 
-	static RenderingServerSceneRaster *singleton;
+	static RendererSceneCull *singleton;
 
 	/* CAMERA API */
 
@@ -153,7 +154,7 @@ public:
 		virtual ~InstanceBaseData() {}
 	};
 
-	struct Instance : RasterizerScene::InstanceBase {
+	struct Instance : RendererSceneRender::InstanceBase {
 		RID self;
 		//scenario stuff
 		OctreeElementID octree_id;
@@ -445,7 +446,7 @@ public:
 	virtual void instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance);
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
 
-	void _update_instance_shader_parameters_from_material(Map<StringName, RasterizerScene::InstanceBase::InstanceShaderParameter> &isparams, const Map<StringName, RasterizerScene::InstanceBase::InstanceShaderParameter> &existing_isparams, RID p_material);
+	void _update_instance_shader_parameters_from_material(Map<StringName, RendererSceneRender::InstanceBase::InstanceShaderParameter> &isparams, const Map<StringName, RendererSceneRender::InstanceBase::InstanceShaderParameter> &existing_isparams, RID p_material);
 
 	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value);
 	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const;
@@ -575,8 +576,8 @@ public:
 
 	bool free(RID p_rid);
 
-	RenderingServerSceneRaster();
-	virtual ~RenderingServerSceneRaster();
+	RendererSceneCull();
+	virtual ~RendererSceneCull();
 };
 
 #endif // VISUALSERVERSCENE_H

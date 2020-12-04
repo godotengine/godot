@@ -35,10 +35,10 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "scene/resources/mesh.h"
-#include "servers/rendering/rasterizer.h"
+#include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
-class RasterizerSceneDummy : public RasterizerScene {
+class RasterizerSceneDummy : public RendererSceneRender {
 public:
 	/* SHADOW ATLAS API */
 
@@ -179,7 +179,7 @@ public:
 	~RasterizerSceneDummy() {}
 };
 
-class RasterizerStorageDummy : public RasterizerStorage {
+class RasterizerStorageDummy : public RendererStorage {
 public:
 	/* TEXTURE API */
 	struct DummyTexture {
@@ -383,7 +383,7 @@ public:
 	bool material_is_animated(RID p_material) override { return false; }
 	bool material_casts_shadows(RID p_material) override { return false; }
 	void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override {}
-	void material_update_dependency(RID p_material, RasterizerScene::InstanceBase *p_instance) override {}
+	void material_update_dependency(RID p_material, RendererSceneRender::InstanceBase *p_instance) override {}
 
 	/* MESH API */
 
@@ -642,8 +642,8 @@ public:
 	float reflection_probe_get_origin_max_distance(RID p_probe) const override { return 0.0; }
 	bool reflection_probe_renders_shadows(RID p_probe) const override { return false; }
 
-	void base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) override {}
-	void skeleton_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) override {}
+	void base_update_dependency(RID p_base, RendererSceneRender::InstanceBase *p_instance) override {}
+	void skeleton_update_dependency(RID p_base, RendererSceneRender::InstanceBase *p_instance) override {}
 
 	/* DECAL API */
 
@@ -710,10 +710,10 @@ public:
 	/* LIGHTMAP CAPTURE */
 #if 0
 	struct Instantiable {
-		SelfList<RasterizerScene::InstanceBase>::List instance_list;
+		SelfList<RendererSceneRender::InstanceBase>::List instance_list;
 
 		_FORCE_INLINE_ void instance_change_notify(bool p_aabb = true, bool p_materials = true) override {
-			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
+			SelfList<RendererSceneRender::InstanceBase> *instances = instance_list.first();
 			while (instances) override {
 				//instances->self()->base_changed(p_aabb, p_materials);
 				instances = instances->next();
@@ -721,9 +721,9 @@ public:
 		}
 
 		_FORCE_INLINE_ void instance_remove_deps() override {
-			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
+			SelfList<RendererSceneRender::InstanceBase> *instances = instance_list.first();
 			while (instances) override {
-				SelfList<RasterizerScene::InstanceBase> *next = instances->next();
+				SelfList<RendererSceneRender::InstanceBase> *next = instances->next();
 				//instances->self()->base_removed();
 				instances = next;
 			}
@@ -826,8 +826,8 @@ public:
 	int particles_get_draw_passes(RID p_particles) const override { return 0; }
 	RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const override { return RID(); }
 
-	void particles_add_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance) override {}
-	void particles_remove_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance) override {}
+	void particles_add_collision(RID p_particles, RendererSceneRender::InstanceBase *p_instance) override {}
+	void particles_remove_collision(RID p_particles, RendererSceneRender::InstanceBase *p_instance) override {}
 
 	void update_particles() override {}
 
@@ -927,7 +927,7 @@ public:
 	String get_video_adapter_name() const override { return String(); }
 	String get_video_adapter_vendor() const override { return String(); }
 
-	static RasterizerStorage *base_singleton;
+	static RendererStorage *base_singleton;
 
 	void capture_timestamps_begin() override {}
 	void capture_timestamp(const String &p_name) override {}
@@ -941,7 +941,7 @@ public:
 	~RasterizerStorageDummy() {}
 };
 
-class RasterizerCanvasDummy : public RasterizerCanvas {
+class RasterizerCanvasDummy : public RendererCanvasRender {
 public:
 	PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) override { return 0; }
 	void free_polygon(PolygonID p_polygon) override {}
@@ -970,7 +970,7 @@ public:
 	~RasterizerCanvasDummy() {}
 };
 
-class RasterizerDummy : public Rasterizer {
+class RasterizerDummy : public RendererCompositor {
 private:
 	uint64_t frame = 1;
 	float delta = 0;
@@ -981,9 +981,9 @@ protected:
 	RasterizerSceneDummy scene;
 
 public:
-	RasterizerStorage *get_storage() override { return &storage; }
-	RasterizerCanvas *get_canvas() override { return &canvas; }
-	RasterizerScene *get_scene() override { return &scene; }
+	RendererStorage *get_storage() override { return &storage; }
+	RendererCanvasRender *get_canvas() override { return &canvas; }
+	RendererSceneRender *get_scene() override { return &scene; }
 
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) override {}
 
@@ -1004,7 +1004,7 @@ public:
 
 	void finalize() override {}
 
-	static Rasterizer *_create_current() {
+	static RendererCompositor *_create_current() {
 		return memnew(RasterizerDummy);
 	}
 
