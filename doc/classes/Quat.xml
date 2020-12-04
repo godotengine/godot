@@ -218,6 +218,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="operator -" qualifiers="operator">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="right" type="Quat">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="operator /" qualifiers="operator">
 			<return type="Quat">
 			</return>
