@@ -32,11 +32,11 @@
 #define RENDERING_SERVER_DEFAULT_H
 
 #include "core/math/octree.h"
-#include "rendering_server_canvas.h"
+#include "renderer_canvas_cull.h"
+#include "renderer_scene_cull.h"
+#include "renderer_viewport.h"
 #include "rendering_server_globals.h"
-#include "rendering_server_scene_raster.h"
-#include "rendering_server_viewport.h"
-#include "servers/rendering/rasterizer.h"
+#include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
 class RenderingServerDefault : public RenderingServer {

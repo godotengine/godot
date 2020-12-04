@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_canvas.h                                            */
+/*  renderer_canvas_cull.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUALSERVERCANVAS_H
-#define VISUALSERVERCANVAS_H
+#ifndef RENDERING_SERVER_CANVAS_CULL_H
+#define RENDERING_SERVER_CANVAS_CULL_H
 
-#include "rasterizer.h"
-#include "rendering_server_viewport.h"
+#include "renderer_compositor.h"
+#include "renderer_viewport.h"
 
-class RenderingServerCanvas {
+class RendererCanvasCull {
 public:
-	struct Item : public RasterizerCanvas::Item {
+	struct Item : public RendererCanvasRender::Item {
 		RID parent; // canvas it belongs to
 		List<Item *>::Element *E;
 		int z_index;
@@ -93,7 +93,7 @@ public:
 		Rect2 aabb;
 		RS::CanvasOccluderPolygonCullMode cull_mode;
 		RID occluder;
-		Set<RasterizerCanvas::LightOccluderInstance *> owners;
+		Set<RendererCanvasRender::LightOccluderInstance *> owners;
 
 		LightOccluderPolygon() {
 			active = false;
@@ -103,9 +103,9 @@ public:
 
 	RID_PtrOwner<LightOccluderPolygon> canvas_light_occluder_polygon_owner;
 
-	RID_PtrOwner<RasterizerCanvas::LightOccluderInstance> canvas_light_occluder_owner;
+	RID_PtrOwner<RendererCanvasRender::LightOccluderInstance> canvas_light_occluder_owner;
 
-	struct Canvas : public RenderingServerViewport::CanvasBase {
+	struct Canvas : public RendererViewport::CanvasBase {
 		Set<RID> viewports;
 		struct ChildItem {
 			Point2 mirror;
@@ -115,10 +115,10 @@ public:
 			}
 		};
 
-		Set<RasterizerCanvas::Light *> lights;
-		Set<RasterizerCanvas::Light *> directional_lights;
+		Set<RendererCanvasRender::Light *> lights;
+		Set<RendererCanvasRender::Light *> directional_lights;
 
-		Set<RasterizerCanvas::LightOccluderInstance *> occluders;
+		Set<RendererCanvasRender::LightOccluderInstance *> occluders;
 
 		bool children_order_dirty;
 		Vector<ChildItem> child_items;
@@ -150,21 +150,21 @@ public:
 
 	mutable RID_PtrOwner<Canvas> canvas_owner;
 	RID_PtrOwner<Item> canvas_item_owner;
-	RID_PtrOwner<RasterizerCanvas::Light> canvas_light_owner;
+	RID_PtrOwner<RendererCanvasRender::Light> canvas_light_owner;
 
 	bool disable_scale;
 	bool sdf_used = false;
 	bool snapping_2d_transforms_to_pixel = false;
 
 private:
-	void _render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_directional_lights, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel);
-	void _cull_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner);
+	void _render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel);
+	void _cull_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **z_list, RendererCanvasRender::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner);
 
-	RasterizerCanvas::Item **z_list;
-	RasterizerCanvas::Item **z_last_list;
+	RendererCanvasRender::Item **z_list;
+	RendererCanvasRender::Item **z_last_list;
 
 public:
-	void render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_directional_lights, const Rect2 &p_clip_rect, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel);
+	void render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, const Rect2 &p_clip_rect, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel);
 
 	bool was_sdf_used();
 
@@ -272,8 +272,8 @@ public:
 	void canvas_item_set_default_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat);
 
 	bool free(RID p_rid);
-	RenderingServerCanvas();
-	~RenderingServerCanvas();
+	RendererCanvasCull();
+	~RendererCanvasCull();
 };
 
 #endif // VISUALSERVERCANVAS_H

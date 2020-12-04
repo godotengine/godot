@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_canvas_rd.h                                               */
+/*  renderer_canvas_render_rd.h                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,19 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZER_CANVAS_RD_H
-#define RASTERIZER_CANVAS_RD_H
+#ifndef RENDERING_SERVER_CANVAS_RENDER_RD_H
+#define RENDERING_SERVER_CANVAS_RENDER_RD_H
 
-#include "servers/rendering/rasterizer.h"
-#include "servers/rendering/rasterizer_rd/rasterizer_storage_rd.h"
-#include "servers/rendering/rasterizer_rd/render_pipeline_vertex_format_cache_rd.h"
-#include "servers/rendering/rasterizer_rd/shader_compiler_rd.h"
-#include "servers/rendering/rasterizer_rd/shaders/canvas.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/canvas_occlusion.glsl.gen.h"
+#include "servers/rendering/renderer_canvas_render.h"
+#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
+#include "servers/rendering/renderer_rd/shader_compiler_rd.h"
+#include "servers/rendering/renderer_rd/shaders/canvas.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/canvas_occlusion.glsl.gen.h"
 #include "servers/rendering/rendering_device.h"
 
-class RasterizerCanvasRD : public RasterizerCanvas {
-	RasterizerStorageRD *storage;
+class RendererCanvasRenderRD : public RendererCanvasRender {
+	RendererStorageRD *storage;
 
 	enum {
 		BASE_UNIFORM_SET = 0,
@@ -133,7 +134,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	};
 
 	struct PipelineVariants {
-		RenderPipelineVertexFormatCacheRD variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX];
+		PipelineCacheRD variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX];
 	};
 
 	struct {
@@ -151,7 +152,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		ShaderCompilerRD compiler;
 	} shader;
 
-	struct ShaderData : public RasterizerStorageRD::ShaderData {
+	struct ShaderData : public RendererStorageRD::ShaderData {
 		enum BlendMode { //used internally
 			BLEND_MODE_MIX,
 			BLEND_MODE_ADD,
@@ -181,7 +182,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		virtual void get_instance_param_list(List<RasterizerStorage::InstanceShaderParam> *p_param_list) const;
+		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
 
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
@@ -191,12 +192,12 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		virtual ~ShaderData();
 	};
 
-	RasterizerStorageRD::ShaderData *_create_shader_func();
-	static RasterizerStorageRD::ShaderData *_create_shader_funcs() {
-		return static_cast<RasterizerCanvasRD *>(singleton)->_create_shader_func();
+	RendererStorageRD::ShaderData *_create_shader_func();
+	static RendererStorageRD::ShaderData *_create_shader_funcs() {
+		return static_cast<RendererCanvasRenderRD *>(singleton)->_create_shader_func();
 	}
 
-	struct MaterialData : public RasterizerStorageRD::MaterialData {
+	struct MaterialData : public RendererStorageRD::MaterialData {
 		uint64_t last_frame;
 		ShaderData *shader_data;
 		RID uniform_buffer;
@@ -210,9 +211,9 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		virtual ~MaterialData();
 	};
 
-	RasterizerStorageRD::MaterialData *_create_material_func(ShaderData *p_shader);
-	static RasterizerStorageRD::MaterialData *_create_material_funcs(RasterizerStorageRD::ShaderData *p_shader) {
-		return static_cast<RasterizerCanvasRD *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
+	RendererStorageRD::MaterialData *_create_material_func(ShaderData *p_shader);
+	static RendererStorageRD::MaterialData *_create_material_funcs(RendererStorageRD::ShaderData *p_shader) {
+		return static_cast<RendererCanvasRenderRD *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
 	}
 
 	/**************************/
@@ -462,8 +463,8 @@ public:
 	void set_time(double p_time);
 	void update();
 	bool free(RID p_rid);
-	RasterizerCanvasRD(RasterizerStorageRD *p_storage);
-	~RasterizerCanvasRD();
+	RendererCanvasRenderRD(RendererStorageRD *p_storage);
+	~RendererCanvasRenderRD();
 };
 
 #endif // RASTERIZER_CANVAS_RD_H

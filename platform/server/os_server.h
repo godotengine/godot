@@ -41,7 +41,7 @@
 #include "platform/x11/crash_handler_linuxbsd.h"
 #endif
 #include "servers/audio_server.h"
-#include "servers/rendering/rasterizer.h"
+#include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
 #undef CursorShape

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_globals.h                                           */
+/*  renderer_canvas_render.cpp                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,28 +28,4 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_GLOBALS_H
-#define RENDERING_SERVER_GLOBALS_H
-
-#include "servers/rendering/renderer_canvas_cull.h"
-#include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/renderer_scene.h"
-
-class RendererCanvasCull;
-class RendererViewport;
-class RendererScene;
-
-class RenderingServerGlobals {
-public:
-	static RendererStorage *storage;
-	static RendererCanvasRender *canvas_render;
-	static RendererCompositor *rasterizer;
-
-	static RendererCanvasCull *canvas;
-	static RendererViewport *viewport;
-	static RendererScene *scene;
-};
-
-#define RSG RenderingServerGlobals
-
-#endif // RENDERING_SERVER_GLOBALS_H
+#include "renderer_canvas_render.h"

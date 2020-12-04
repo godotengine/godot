@@ -31,7 +31,7 @@
 #include "shader_rd.h"
 
 #include "core/string/string_builder.h"
-#include "rasterizer_rd.h"
+#include "renderer_compositor_rd.h"
 #include "servers/rendering/rendering_device.h"
 
 void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_compute_code, const char *p_name) {
@@ -356,7 +356,7 @@ void ShaderRD::_compile_version(Version *p_version) {
 	p_version->variants = memnew_arr(RID, variant_defines.size());
 #if 1
 
-	RasterizerRD::thread_work_pool.do_work(variant_defines.size(), this, &ShaderRD::_compile_variant, p_version);
+	RendererCompositorRD::thread_work_pool.do_work(variant_defines.size(), this, &ShaderRD::_compile_variant, p_version);
 #else
 	for (int i = 0; i < variant_defines.size(); i++) {
 		_compile_variant(i, p_version);

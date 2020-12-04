@@ -336,7 +336,7 @@ uint64_t XRServer::get_last_frame_usec() {
 };
 
 void XRServer::_process() {
-	/* called from rendering_server_viewport.draw_viewports right before we start drawing our viewports */
+	/* called from renderer_viewport.draw_viewports right before we start drawing our viewports */
 
 	/* mark for our frame timing */
 	last_process_usec = OS::get_singleton()->get_ticks_usec();

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer.cpp                                                       */
+/*  renderer_storage.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,38 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rasterizer.h"
+#include "renderer_storage.h"
 
-#include "core/os/os.h"
-#include "core/string/print_string.h"
+RendererStorage *RendererStorage::base_singleton = nullptr;
 
-Rasterizer *(*Rasterizer::_create_func)() = nullptr;
-
-void RasterizerScene::InstanceDependency::instance_notify_changed(bool p_aabb, bool p_dependencies) {
-	for (Map<InstanceBase *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
+void RendererStorage::InstanceDependency::instance_notify_changed(bool p_aabb, bool p_dependencies) {
+	for (Map<InstanceBaseDependency *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
 		E->key()->dependency_changed(p_aabb, p_dependencies);
 	}
 }
 
-void RasterizerScene::InstanceDependency::instance_notify_deleted(RID p_deleted) {
-	for (Map<InstanceBase *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
+void RendererStorage::InstanceDependency::instance_notify_deleted(RID p_deleted) {
+	for (Map<InstanceBaseDependency *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
 		E->key()->dependency_deleted(p_deleted);
 	}
-	for (Map<InstanceBase *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
+	for (Map<InstanceBaseDependency *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
 		E->key()->dependencies.erase(this);
 	}
 
 	instances.clear();
 }
 
-RasterizerScene::InstanceDependency::~InstanceDependency() {
+RendererStorage::InstanceDependency::~InstanceDependency() {
 #ifdef DEBUG_ENABLED
 	if (instances.size()) {
 		WARN_PRINT("Leaked instance dependency: Bug - did not call instance_notify_deleted when freeing.");
-		for (Map<InstanceBase *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
+		for (Map<InstanceBaseDependency *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
 			E->key()->dependencies.erase(this);
 		}
 	}
 #endif
 }
 
-Rasterizer *Rasterizer::create() {
-	return _create_func();
-}
-
-RasterizerCanvas *RasterizerCanvas::singleton = nullptr;
-
-RasterizerStorage *RasterizerStorage::base_singleton = nullptr;
-
-RasterizerStorage::RasterizerStorage() {
+RendererStorage::RendererStorage() {
 	base_singleton = this;
 }

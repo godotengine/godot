@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_globals.h                                           */
+/*  renderer_compositor.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,28 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_GLOBALS_H
-#define RENDERING_SERVER_GLOBALS_H
+#include "renderer_compositor.h"
 
-#include "servers/rendering/renderer_canvas_cull.h"
-#include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/renderer_scene.h"
+#include "core/os/os.h"
+#include "core/string/print_string.h"
 
-class RendererCanvasCull;
-class RendererViewport;
-class RendererScene;
+RendererCompositor *(*RendererCompositor::_create_func)() = nullptr;
 
-class RenderingServerGlobals {
-public:
-	static RendererStorage *storage;
-	static RendererCanvasRender *canvas_render;
-	static RendererCompositor *rasterizer;
+RendererCompositor *RendererCompositor::create() {
+	return _create_func();
+}
 
-	static RendererCanvasCull *canvas;
-	static RendererViewport *viewport;
-	static RendererScene *scene;
-};
-
-#define RSG RenderingServerGlobals
-
-#endif // RENDERING_SERVER_GLOBALS_H
+RendererCanvasRender *RendererCanvasRender::singleton = nullptr;

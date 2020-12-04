@@ -107,7 +107,7 @@ def build_rd_header(filename):
 
     out_file_class = out_file_base.replace(".glsl.gen.h", "").title().replace("_", "").replace(".", "") + "ShaderRD"
     fd.write("\n")
-    fd.write('#include "servers/rendering/rasterizer_rd/shader_rd.h"\n\n')
+    fd.write('#include "servers/rendering/renderer_rd/shader_rd.h"\n\n')
     fd.write("class " + out_file_class + " : public ShaderRD {\n\n")
     fd.write("public:\n\n")
 

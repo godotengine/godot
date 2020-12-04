@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_globals.h                                           */
+/*  renderer_compositor.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,28 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_GLOBALS_H
-#define RENDERING_SERVER_GLOBALS_H
+#ifndef RENDERING_SERVER_COMPOSITOR_H
+#define RENDERING_SERVER_COMPOSITOR_H
 
-#include "servers/rendering/renderer_canvas_cull.h"
+#include "core/math/camera_matrix.h"
+#include "core/templates/pair.h"
+#include "core/templates/self_list.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_scene.h"
+#include "servers/rendering/renderer_scene_render.h"
+#include "servers/rendering/renderer_storage.h"
+#include "servers/rendering_server.h"
 
-class RendererCanvasCull;
-class RendererViewport;
-class RendererScene;
+class RendererCompositor {
+protected:
+	static RendererCompositor *(*_create_func)();
 
-class RenderingServerGlobals {
 public:
-	static RendererStorage *storage;
-	static RendererCanvasRender *canvas_render;
-	static RendererCompositor *rasterizer;
+	static RendererCompositor *create();
 
-	static RendererCanvasCull *canvas;
-	static RendererViewport *viewport;
-	static RendererScene *scene;
+	virtual RendererStorage *get_storage() = 0;
+	virtual RendererCanvasRender *get_canvas() = 0;
+	virtual RendererSceneRender *get_scene() = 0;
+
+	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) = 0;
+
+	virtual void initialize() = 0;
+	virtual void begin_frame(double frame_step) = 0;
+
+	struct BlitToScreen {
+		RID render_target;
+		Rect2i rect;
+		//lens distorted parameters for VR should go here
+	};
+
+	virtual void prepare_for_blitting_render_targets() = 0;
+	virtual void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) = 0;
+
+	virtual void end_frame(bool p_swap_buffers) = 0;
+	virtual void finalize() = 0;
+	virtual uint64_t get_frame_number() const = 0;
+	virtual float get_frame_delta_time() const = 0;
+
+	virtual bool is_low_end() const = 0;
+
+	virtual ~RendererCompositor() {}
 };
 
-#define RSG RenderingServerGlobals
-
-#endif // RENDERING_SERVER_GLOBALS_H
+#endif // RASTERIZER_H

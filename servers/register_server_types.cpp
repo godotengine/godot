@@ -62,7 +62,7 @@
 #include "physics_3d/physics_server_3d_sw.h"
 #include "physics_server_2d.h"
 #include "physics_server_3d.h"
-#include "rendering/rasterizer.h"
+#include "rendering/renderer_compositor.h"
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
 #include "rendering_server.h"

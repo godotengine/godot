@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_canvas_rd.cpp                                             */
+/*  renderer_canvas_render_rd.cpp                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rasterizer_canvas_rd.h"
+#include "renderer_canvas_render_rd.h"
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"
-#include "rasterizer_rd.h"
+#include "renderer_compositor_rd.h"
 
-void RasterizerCanvasRD::_update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4) {
+void RendererCanvasRenderRD::_update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4) {
 	p_mat4[0] = p_transform.elements[0][0];
 	p_mat4[1] = p_transform.elements[0][1];
 	p_mat4[2] = 0;
@@ -53,7 +53,7 @@ void RasterizerCanvasRD::_update_transform_2d_to_mat4(const Transform2D &p_trans
 	p_mat4[15] = 1;
 }
 
-void RasterizerCanvasRD::_update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4) {
+void RendererCanvasRenderRD::_update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4) {
 	p_mat2x4[0] = p_transform.elements[0][0];
 	p_mat2x4[1] = p_transform.elements[1][0];
 	p_mat2x4[2] = 0;
@@ -65,7 +65,7 @@ void RasterizerCanvasRD::_update_transform_2d_to_mat2x4(const Transform2D &p_tra
 	p_mat2x4[7] = p_transform.elements[2][1];
 }
 
-void RasterizerCanvasRD::_update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3) {
+void RendererCanvasRenderRD::_update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3) {
 	p_mat2x3[0] = p_transform.elements[0][0];
 	p_mat2x3[1] = p_transform.elements[0][1];
 	p_mat2x3[2] = p_transform.elements[1][0];
@@ -74,7 +74,7 @@ void RasterizerCanvasRD::_update_transform_2d_to_mat2x3(const Transform2D &p_tra
 	p_mat2x3[5] = p_transform.elements[2][1];
 }
 
-void RasterizerCanvasRD::_update_transform_to_mat4(const Transform &p_transform, float *p_mat4) {
+void RendererCanvasRenderRD::_update_transform_to_mat4(const Transform &p_transform, float *p_mat4) {
 	p_mat4[0] = p_transform.basis.elements[0][0];
 	p_mat4[1] = p_transform.basis.elements[1][0];
 	p_mat4[2] = p_transform.basis.elements[2][0];
@@ -93,7 +93,7 @@ void RasterizerCanvasRD::_update_transform_to_mat4(const Transform &p_transform,
 	p_mat4[15] = 1;
 }
 
-RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights) {
+RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights) {
 	// Care must be taken to generate array formats
 	// in ways where they could be reused, so we will
 	// put single-occuring elements first, and repeated
@@ -184,7 +184,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 			vd.stride = 0;
 
 			descriptions.write[1] = vd;
-			buffers.write[1] = storage->mesh_get_default_rd_buffer(RasterizerStorageRD::DEFAULT_RD_BUFFER_COLOR);
+			buffers.write[1] = storage->mesh_get_default_rd_buffer(RendererStorageRD::DEFAULT_RD_BUFFER_COLOR);
 		}
 
 		//uvs
@@ -212,7 +212,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 			vd.stride = 0;
 
 			descriptions.write[2] = vd;
-			buffers.write[2] = storage->mesh_get_default_rd_buffer(RasterizerStorageRD::DEFAULT_RD_BUFFER_TEX_UV);
+			buffers.write[2] = storage->mesh_get_default_rd_buffer(RendererStorageRD::DEFAULT_RD_BUFFER_TEX_UV);
 		}
 
 		//bones
@@ -245,7 +245,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 			vd.stride = 0;
 
 			descriptions.write[3] = vd;
-			buffers.write[3] = storage->mesh_get_default_rd_buffer(RasterizerStorageRD::DEFAULT_RD_BUFFER_BONES);
+			buffers.write[3] = storage->mesh_get_default_rd_buffer(RendererStorageRD::DEFAULT_RD_BUFFER_BONES);
 		}
 
 		//weights
@@ -278,7 +278,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 			vd.stride = 0;
 
 			descriptions.write[4] = vd;
-			buffers.write[4] = storage->mesh_get_default_rd_buffer(RasterizerStorageRD::DEFAULT_RD_BUFFER_BONES);
+			buffers.write[4] = storage->mesh_get_default_rd_buffer(RendererStorageRD::DEFAULT_RD_BUFFER_BONES);
 		}
 
 		//check that everything is as it should be
@@ -319,7 +319,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 	return id;
 }
 
-void RasterizerCanvasRD::free_polygon(PolygonID p_polygon) {
+void RendererCanvasRenderRD::free_polygon(PolygonID p_polygon) {
 	PolygonBuffers *pb_ptr = polygon_buffers.polygons.getptr(p_polygon);
 	ERR_FAIL_COND(!pb_ptr);
 
@@ -340,7 +340,7 @@ void RasterizerCanvasRD::free_polygon(PolygonID p_polygon) {
 
 ////////////////////
 
-void RasterizerCanvasRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PushConstant &push_constant, Size2 &r_texpixel_size) {
+void RendererCanvasRenderRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PushConstant &push_constant, Size2 &r_texpixel_size) {
 	if (p_texture == RID()) {
 		p_texture = default_canvas_texture;
 	}
@@ -390,7 +390,7 @@ void RasterizerCanvasRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RID p_
 	r_last_texture = p_texture;
 }
 
-void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_item, RD::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants) {
+void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, const Item *p_item, RD::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants) {
 	//create an empty push constant
 
 	RS::CanvasItemTextureFilter current_filter = default_filter;
@@ -1016,7 +1016,7 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 	}
 }
 
-RID RasterizerCanvasRD::_create_base_uniform_set(RID p_to_render_target, bool p_backbuffer) {
+RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, bool p_backbuffer) {
 	//re create canvas state
 	Vector<RD::Uniform> uniforms;
 
@@ -1070,7 +1070,7 @@ RID RasterizerCanvasRD::_create_base_uniform_set(RID p_to_render_target, bool p_
 		} else {
 			screen = storage->render_target_get_rd_backbuffer(p_to_render_target);
 			if (screen.is_null()) { //unallocated backbuffer
-				screen = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+				screen = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
 			}
 		}
 		u.ids.push_back(screen);
@@ -1126,7 +1126,7 @@ RID RasterizerCanvasRD::_create_base_uniform_set(RID p_to_render_target, bool p_
 	return uniform_set;
 }
 
-void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool p_to_backbuffer) {
+void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool p_to_backbuffer) {
 	Item *current_clip = nullptr;
 
 	Transform2D canvas_transform_inverse = p_canvas_transform_inverse;
@@ -1193,7 +1193,7 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count,
 		if (material != prev_material) {
 			MaterialData *material_data = nullptr;
 			if (material.is_valid()) {
-				material_data = (MaterialData *)storage->material_get_data(material, RasterizerStorageRD::SHADER_TYPE_2D);
+				material_data = (MaterialData *)storage->material_get_data(material, RendererStorageRD::SHADER_TYPE_2D);
 			}
 
 			if (material_data) {
@@ -1218,7 +1218,7 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count,
 	RD::get_singleton()->draw_list_end();
 }
 
-void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) {
+void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) {
 	r_sdf_used = false;
 	int item_count = 0;
 
@@ -1449,7 +1449,7 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 		}
 
 		if (ci->material.is_valid()) {
-			MaterialData *md = (MaterialData *)storage->material_get_data(ci->material, RasterizerStorageRD::SHADER_TYPE_2D);
+			MaterialData *md = (MaterialData *)storage->material_get_data(ci->material, RendererStorageRD::SHADER_TYPE_2D);
 			if (md && md->shader_data->valid) {
 				if (md->shader_data->uses_screen_texture && canvas_group_owner == nullptr) {
 					if (!material_screen_texture_found) {
@@ -1461,12 +1461,12 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 				if (md->shader_data->uses_sdf) {
 					r_sdf_used = true;
 				}
-				if (md->last_frame != RasterizerRD::singleton->get_frame_number()) {
-					md->last_frame = RasterizerRD::singleton->get_frame_number();
+				if (md->last_frame != RendererCompositorRD::singleton->get_frame_number()) {
+					md->last_frame = RendererCompositorRD::singleton->get_frame_number();
 					if (!RD::get_singleton()->uniform_set_is_valid(md->uniform_set)) {
 						// uniform set may be gone because a dependency was erased. In this case, it will happen
 						// if a texture is deleted, so just re-create it.
-						storage->material_force_update_textures(ci->material, RasterizerStorageRD::SHADER_TYPE_2D);
+						storage->material_force_update_textures(ci->material, RendererStorageRD::SHADER_TYPE_2D);
 					}
 				}
 			}
@@ -1527,12 +1527,12 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 	}
 }
 
-RID RasterizerCanvasRD::light_create() {
+RID RendererCanvasRenderRD::light_create() {
 	CanvasLight canvas_light;
 	return canvas_light_owner.make_rid(canvas_light);
 }
 
-void RasterizerCanvasRD::light_set_texture(RID p_rid, RID p_texture) {
+void RendererCanvasRenderRD::light_set_texture(RID p_rid, RID p_texture) {
 	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
 	ERR_FAIL_COND(!cl);
 	if (cl->texture == p_texture) {
@@ -1548,14 +1548,14 @@ void RasterizerCanvasRD::light_set_texture(RID p_rid, RID p_texture) {
 	}
 }
 
-void RasterizerCanvasRD::light_set_use_shadow(RID p_rid, bool p_enable) {
+void RendererCanvasRenderRD::light_set_use_shadow(RID p_rid, bool p_enable) {
 	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
 	ERR_FAIL_COND(!cl);
 
 	cl->shadow.enabled = p_enable;
 }
 
-void RasterizerCanvasRD::_update_shadow_atlas() {
+void RendererCanvasRenderRD::_update_shadow_atlas() {
 	if (state.shadow_fb == RID()) {
 		//ah, we lack the shadow texture..
 		RD::get_singleton()->free(state.shadow_texture); //erase placeholder
@@ -1588,7 +1588,7 @@ void RasterizerCanvasRD::_update_shadow_atlas() {
 		state.shadow_fb = RD::get_singleton()->framebuffer_create(fb_textures);
 	}
 }
-void RasterizerCanvasRD::light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) {
+void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) {
 	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
 	ERR_FAIL_COND(!cl->shadow.enabled);
 
@@ -1666,7 +1666,7 @@ void RasterizerCanvasRD::light_update_shadow(RID p_rid, int p_shadow_index, cons
 	}
 }
 
-void RasterizerCanvasRD::light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) {
+void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) {
 	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
 	ERR_FAIL_COND(!cl->shadow.enabled);
 
@@ -1746,7 +1746,7 @@ void RasterizerCanvasRD::light_update_directional_shadow(RID p_rid, int p_shadow
 	cl->shadow.directional_xform = to_shadow * to_light_xform;
 }
 
-void RasterizerCanvasRD::render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) {
+void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) {
 	RID fb = storage->render_target_get_sdf_framebuffer(p_render_target);
 	Rect2i rect = storage->render_target_get_sdf_rect(p_render_target);
 
@@ -1808,7 +1808,7 @@ void RasterizerCanvasRD::render_sdf(RID p_render_target, LightOccluderInstance *
 	storage->render_target_sdf_process(p_render_target); //done rendering, process it
 }
 
-RID RasterizerCanvasRD::occluder_polygon_create() {
+RID RendererCanvasRenderRD::occluder_polygon_create() {
 	OccluderPolygon occluder;
 	occluder.line_point_count = 0;
 	occluder.sdf_point_count = 0;
@@ -1817,7 +1817,7 @@ RID RasterizerCanvasRD::occluder_polygon_create() {
 	return occluder_polygon_owner.make_rid(occluder);
 }
 
-void RasterizerCanvasRD::occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) {
+void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) {
 	OccluderPolygon *oc = occluder_polygon_owner.getornull(p_occluder);
 	ERR_FAIL_COND(!oc);
 
@@ -1986,13 +1986,13 @@ void RasterizerCanvasRD::occluder_polygon_set_shape(RID p_occluder, const Vector
 	}
 }
 
-void RasterizerCanvasRD::occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) {
+void RendererCanvasRenderRD::occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) {
 	OccluderPolygon *oc = occluder_polygon_owner.getornull(p_occluder);
 	ERR_FAIL_COND(!oc);
 	oc->cull_mode = p_mode;
 }
 
-void RasterizerCanvasRD::ShaderData::set_code(const String &p_code) {
+void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	//compile
 
 	code = p_code;
@@ -2025,7 +2025,7 @@ void RasterizerCanvasRD::ShaderData::set_code(const String &p_code) {
 
 	actions.uniforms = &uniforms;
 
-	RasterizerCanvasRD *canvas_singleton = (RasterizerCanvasRD *)RasterizerCanvas::singleton;
+	RendererCanvasRenderRD *canvas_singleton = (RendererCanvasRenderRD *)RendererCanvasRender::singleton;
 
 	Error err = canvas_singleton->shader.compiler.compile(RS::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
 
@@ -2170,7 +2170,7 @@ void RasterizerCanvasRD::ShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-void RasterizerCanvasRD::ShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
+void RendererCanvasRenderRD::ShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
 	if (!p_texture.is_valid()) {
 		default_texture_params.erase(p_name);
 	} else {
@@ -2178,7 +2178,7 @@ void RasterizerCanvasRD::ShaderData::set_default_texture_param(const StringName 
 	}
 }
 
-void RasterizerCanvasRD::ShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+void RendererCanvasRenderRD::ShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
 	Map<int, StringName> order;
 
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
@@ -2199,13 +2199,13 @@ void RasterizerCanvasRD::ShaderData::get_param_list(List<PropertyInfo> *p_param_
 	}
 }
 
-void RasterizerCanvasRD::ShaderData::get_instance_param_list(List<RasterizerStorage::InstanceShaderParam> *p_param_list) const {
+void RendererCanvasRenderRD::ShaderData::get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const {
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
 		if (E->get().scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 			continue;
 		}
 
-		RasterizerStorage::InstanceShaderParam p;
+		RendererStorage::InstanceShaderParam p;
 		p.info = ShaderLanguage::uniform_to_property_info(E->get());
 		p.info.name = E->key(); //supply name
 		p.index = E->get().instance_index;
@@ -2214,7 +2214,7 @@ void RasterizerCanvasRD::ShaderData::get_instance_param_list(List<RasterizerStor
 	}
 }
 
-bool RasterizerCanvasRD::ShaderData::is_param_texture(const StringName &p_param) const {
+bool RendererCanvasRenderRD::ShaderData::is_param_texture(const StringName &p_param) const {
 	if (!uniforms.has(p_param)) {
 		return false;
 	}
@@ -2222,15 +2222,15 @@ bool RasterizerCanvasRD::ShaderData::is_param_texture(const StringName &p_param)
 	return uniforms[p_param].texture_order >= 0;
 }
 
-bool RasterizerCanvasRD::ShaderData::is_animated() const {
+bool RendererCanvasRenderRD::ShaderData::is_animated() const {
 	return false;
 }
 
-bool RasterizerCanvasRD::ShaderData::casts_shadows() const {
+bool RendererCanvasRenderRD::ShaderData::casts_shadows() const {
 	return false;
 }
 
-Variant RasterizerCanvasRD::ShaderData::get_default_parameter(const StringName &p_parameter) const {
+Variant RendererCanvasRenderRD::ShaderData::get_default_parameter(const StringName &p_parameter) const {
 	if (uniforms.has(p_parameter)) {
 		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
 		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
@@ -2239,14 +2239,14 @@ Variant RasterizerCanvasRD::ShaderData::get_default_parameter(const StringName &
 	return Variant();
 }
 
-RasterizerCanvasRD::ShaderData::ShaderData() {
+RendererCanvasRenderRD::ShaderData::ShaderData() {
 	valid = false;
 	uses_screen_texture = false;
 	uses_sdf = false;
 }
 
-RasterizerCanvasRD::ShaderData::~ShaderData() {
-	RasterizerCanvasRD *canvas_singleton = (RasterizerCanvasRD *)RasterizerCanvas::singleton;
+RendererCanvasRenderRD::ShaderData::~ShaderData() {
+	RendererCanvasRenderRD *canvas_singleton = (RendererCanvasRenderRD *)RendererCanvasRender::singleton;
 	ERR_FAIL_COND(!canvas_singleton);
 	//pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {
@@ -2254,13 +2254,13 @@ RasterizerCanvasRD::ShaderData::~ShaderData() {
 	}
 }
 
-RasterizerStorageRD::ShaderData *RasterizerCanvasRD::_create_shader_func() {
+RendererStorageRD::ShaderData *RendererCanvasRenderRD::_create_shader_func() {
 	ShaderData *shader_data = memnew(ShaderData);
 	return shader_data;
 }
 
-void RasterizerCanvasRD::MaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
-	RasterizerCanvasRD *canvas_singleton = (RasterizerCanvasRD *)RasterizerCanvas::singleton;
+void RendererCanvasRenderRD::MaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+	RendererCanvasRenderRD *canvas_singleton = (RendererCanvasRenderRD *)RendererCanvasRender::singleton;
 
 	if ((uint32_t)ubo_data.size() != shader_data->ubo_size) {
 		p_uniform_dirty = true;
@@ -2339,7 +2339,7 @@ void RasterizerCanvasRD::MaterialData::update_parameters(const Map<StringName, V
 	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET);
 }
 
-RasterizerCanvasRD::MaterialData::~MaterialData() {
+RendererCanvasRenderRD::MaterialData::~MaterialData() {
 	if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
 		RD::get_singleton()->free(uniform_set);
 	}
@@ -2349,7 +2349,7 @@ RasterizerCanvasRD::MaterialData::~MaterialData() {
 	}
 }
 
-RasterizerStorageRD::MaterialData *RasterizerCanvasRD::_create_material_func(ShaderData *p_shader) {
+RendererStorageRD::MaterialData *RendererCanvasRenderRD::_create_material_func(ShaderData *p_shader) {
 	MaterialData *material_data = memnew(MaterialData);
 	material_data->shader_data = p_shader;
 	material_data->last_frame = false;
@@ -2357,14 +2357,14 @@ RasterizerStorageRD::MaterialData *RasterizerCanvasRD::_create_material_func(Sha
 	return material_data;
 }
 
-void RasterizerCanvasRD::set_time(double p_time) {
+void RendererCanvasRenderRD::set_time(double p_time) {
 	state.time = p_time;
 }
 
-void RasterizerCanvasRD::update() {
+void RendererCanvasRenderRD::update() {
 }
 
-RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
+RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 	storage = p_storage;
 
 	{ //create default samplers
@@ -2695,8 +2695,8 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 	state.shadow_texture_size = GLOBAL_GET("rendering/quality/2d_shadow_atlas/size");
 
 	//create functions for shader and material
-	storage->shader_set_data_request_function(RasterizerStorageRD::SHADER_TYPE_2D, _create_shader_funcs);
-	storage->material_set_data_request_function(RasterizerStorageRD::SHADER_TYPE_2D, _create_material_funcs);
+	storage->shader_set_data_request_function(RendererStorageRD::SHADER_TYPE_2D, _create_shader_funcs);
+	storage->material_set_data_request_function(RendererStorageRD::SHADER_TYPE_2D, _create_material_funcs);
 
 	state.time = 0;
 
@@ -2710,7 +2710,7 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 	static_assert(sizeof(PushConstant) == 128);
 }
 
-bool RasterizerCanvasRD::free(RID p_rid) {
+bool RendererCanvasRenderRD::free(RID p_rid) {
 	if (canvas_light_owner.owns(p_rid)) {
 		CanvasLight *cl = canvas_light_owner.getornull(p_rid);
 		ERR_FAIL_COND_V(!cl, false);
@@ -2726,7 +2726,7 @@ bool RasterizerCanvasRD::free(RID p_rid) {
 	return true;
 }
 
-void RasterizerCanvasRD::set_shadow_texture_size(int p_size) {
+void RendererCanvasRenderRD::set_shadow_texture_size(int p_size) {
 	p_size = nearest_power_of_2_templated(p_size);
 	if (p_size == state.shadow_texture_size) {
 		return;
@@ -2751,7 +2751,7 @@ void RasterizerCanvasRD::set_shadow_texture_size(int p_size) {
 	}
 }
 
-RasterizerCanvasRD::~RasterizerCanvasRD() {
+RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 	//canvas state
 
 	storage->free(default_canvas_group_material);

@@ -43,8 +43,8 @@
 #include "joypad_windows.h"
 #include "key_mapping_windows.h"
 #include "servers/audio_server.h"
-#include "servers/rendering/rasterizer.h"
-#include "servers/rendering/rasterizer_rd/rasterizer_rd.h"
+#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering_server.h"
 
 #ifdef XAUDIO2_ENABLED

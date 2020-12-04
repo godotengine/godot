@@ -3205,7 +3205,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
 		rendering_device_vulkan->initialize(context_vulkan);
 
-		RasterizerRD::make_current();
+		RendererCompositorRD::make_current();
 	}
 #endif
 
