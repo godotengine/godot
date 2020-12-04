@@ -873,7 +873,7 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptCodeCompletionOp
 			tex = get_theme_icon("MemberMethod", "EditorIcons");
 			break;
 		case ScriptCodeCompletionOption::KIND_PLAIN_TEXT:
-			tex = get_theme_icon("CubeMesh", "EditorIcons");
+			tex = get_theme_icon("BoxMesh", "EditorIcons");
 			break;
 		default:
 			tex = get_theme_icon("String", "EditorIcons");

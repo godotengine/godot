@@ -176,10 +176,10 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 
 					BoxShape3D *box = Object::cast_to<BoxShape3D>(*s);
 					if (box) {
-						Ref<CubeMesh> cube_mesh;
-						cube_mesh.instance();
-						cube_mesh->set_size(box->get_extents() * 2.0);
-						mesh = cube_mesh;
+						Ref<BoxMesh> box_mesh;
+						box_mesh.instance();
+						box_mesh->set_size(box->get_extents() * 2.0);
+						mesh = box_mesh;
 					}
 
 					CapsuleShape3D *capsule = Object::cast_to<CapsuleShape3D>(*s);
