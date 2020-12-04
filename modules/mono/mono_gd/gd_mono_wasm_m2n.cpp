@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rid_glue.cpp                                                         */
+/*  gd_mono_wasm_m2n.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,34 +28,52 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rid_glue.h"
+#include "gd_mono_wasm_m2n.h"
 
-#ifdef MONO_GLUE_ENABLED
+#ifdef JAVASCRIPT_ENABLED
 
-#include "core/resource.h"
+#include "core/oa_hash_map.h"
 
-RID *godot_icall_RID_Ctor(Object *p_from) {
-	Resource *res_from = Object::cast_to<Resource>(p_from);
+typedef mono_bool (*GodotMonoM2nIcallTrampolineDispatch)(const char *cookie, void *target_func, Mono_InterpMethodArguments *margs);
 
-	if (res_from)
-		return memnew(RID(res_from->get_rid()));
+// This extern function is implemented in our patched version of Mono
+MONO_API void godot_mono_register_m2n_icall_trampoline_dispatch_hook(GodotMonoM2nIcallTrampolineDispatch hook);
 
-	return memnew(RID);
+namespace GDMonoWasmM2n {
+
+struct HashMapCookieComparator {
+	static bool compare(const char *p_lhs, const char *p_rhs) {
+		return strcmp(p_lhs, p_rhs) == 0;
+	}
+};
+
+// The default hasher supports 'const char *' C Strings, but we need a custom comparator
+OAHashMap<const char *, TrampolineFunc, HashMapHasherDefault, HashMapCookieComparator> trampolines;
+
+void set_trampoline(const char *cookies, GDMonoWasmM2n::TrampolineFunc trampoline_func) {
+	trampolines.set(cookies, trampoline_func);
 }
 
-void godot_icall_RID_Dtor(RID *p_ptr) {
-	ERR_FAIL_NULL(p_ptr);
-	memdelete(p_ptr);
+mono_bool trampoline_dispatch_hook(const char *cookie, void *target_func, Mono_InterpMethodArguments *margs) {
+	TrampolineFunc trampoline_func;
+
+	if (!trampolines.lookup(cookie, trampoline_func)) {
+		return false;
+	}
+
+	(*trampoline_func)(target_func, margs);
+	return true;
 }
 
-uint32_t godot_icall_RID_get_id(RID *p_ptr) {
-	return p_ptr->get_id();
-}
+bool initialized = false;
 
-void godot_register_rid_icalls() {
-	GDMonoUtils::add_internal_call("Godot.RID::godot_icall_RID_Ctor", godot_icall_RID_Ctor);
-	GDMonoUtils::add_internal_call("Godot.RID::godot_icall_RID_Dtor", godot_icall_RID_Dtor);
-	GDMonoUtils::add_internal_call("Godot.RID::godot_icall_RID_get_id", godot_icall_RID_get_id);
+void lazy_initialize() {
+	// Doesn't need to be thread safe
+	if (!initialized) {
+		initialized = true;
+		godot_mono_register_m2n_icall_trampoline_dispatch_hook(&trampoline_dispatch_hook);
+	}
 }
+} // namespace GDMonoWasmM2n
 
-#endif // MONO_GLUE_ENABLED
+#endif
