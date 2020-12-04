@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_raster.cpp                                          */
+/*  rendering_server_default.cpp                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rendering_server_raster.h"
+#include "rendering_server_default.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
@@ -36,35 +36,35 @@
 #include "core/templates/sort_array.h"
 #include "rendering_server_canvas.h"
 #include "rendering_server_globals.h"
-#include "rendering_server_scene.h"
+#include "rendering_server_scene_raster.h"
 
 // careful, these may run in different threads than the visual server
 
-int RenderingServerRaster::changes = 0;
+int RenderingServerDefault::changes = 0;
 
 /* BLACK BARS */
 
-void RenderingServerRaster::black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom) {
+void RenderingServerDefault::black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom) {
 	black_margin[MARGIN_LEFT] = p_left;
 	black_margin[MARGIN_TOP] = p_top;
 	black_margin[MARGIN_RIGHT] = p_right;
 	black_margin[MARGIN_BOTTOM] = p_bottom;
 }
 
-void RenderingServerRaster::black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom) {
+void RenderingServerDefault::black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom) {
 	black_image[MARGIN_LEFT] = p_left;
 	black_image[MARGIN_TOP] = p_top;
 	black_image[MARGIN_RIGHT] = p_right;
 	black_image[MARGIN_BOTTOM] = p_bottom;
 }
 
-void RenderingServerRaster::_draw_margins() {
+void RenderingServerDefault::_draw_margins() {
 	RSG::canvas_render->draw_window_margins(black_margin, black_image);
 };
 
 /* FREE */
 
-void RenderingServerRaster::free(RID p_rid) {
+void RenderingServerDefault::free(RID p_rid) {
 	if (RSG::storage->free(p_rid)) {
 		return;
 	}
@@ -77,14 +77,11 @@ void RenderingServerRaster::free(RID p_rid) {
 	if (RSG::scene->free(p_rid)) {
 		return;
 	}
-	if (RSG::scene_render->free(p_rid)) {
-		return;
-	}
 }
 
 /* EVENT QUEUING */
 
-void RenderingServerRaster::request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata) {
+void RenderingServerDefault::request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata) {
 	ERR_FAIL_NULL(p_where);
 	FrameDrawnCallbacks fdc;
 	fdc.object = p_where->get_instance_id();
@@ -94,7 +91,7 @@ void RenderingServerRaster::request_frame_drawn_callback(Object *p_where, const 
 	frame_drawn_callbacks.push_back(fdc);
 }
 
-void RenderingServerRaster::draw(bool p_swap_buffers, double frame_step) {
+void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 	//needs to be done before changes is reset to 0, to not force the editor to redraw
 	RS::get_singleton()->emit_signal("frame_pre_draw");
 
@@ -104,11 +101,8 @@ void RenderingServerRaster::draw(bool p_swap_buffers, double frame_step) {
 
 	TIMESTAMP_BEGIN()
 
-	RSG::scene_render->update(); //update scenes stuff before updating instances
+	RSG::scene->update(); //update scenes stuff before updating instances
 
-	RSG::scene->update_dirty_instances(); //update scene stuff
-
-	RSG::scene->render_particle_colliders();
 	RSG::storage->update_particles(); //need to be done after instances are updated (colliders and particle transforms), and colliders are rendered
 
 	RSG::scene->render_probes();
@@ -165,18 +159,18 @@ void RenderingServerRaster::draw(bool p_swap_buffers, double frame_step) {
 	frame_profile_frame = RSG::storage->get_captured_timestamps_frame();
 }
 
-void RenderingServerRaster::sync() {
+void RenderingServerDefault::sync() {
 }
 
-bool RenderingServerRaster::has_changed() const {
+bool RenderingServerDefault::has_changed() const {
 	return changes > 0;
 }
 
-void RenderingServerRaster::init() {
+void RenderingServerDefault::init() {
 	RSG::rasterizer->initialize();
 }
 
-void RenderingServerRaster::finish() {
+void RenderingServerDefault::finish() {
 	if (test_cube.is_valid()) {
 		free(test_cube);
 	}
@@ -186,69 +180,69 @@ void RenderingServerRaster::finish() {
 
 /* STATUS INFORMATION */
 
-int RenderingServerRaster::get_render_info(RenderInfo p_info) {
+int RenderingServerDefault::get_render_info(RenderInfo p_info) {
 	return RSG::storage->get_render_info(p_info);
 }
 
-String RenderingServerRaster::get_video_adapter_name() const {
+String RenderingServerDefault::get_video_adapter_name() const {
 	return RSG::storage->get_video_adapter_name();
 }
 
-String RenderingServerRaster::get_video_adapter_vendor() const {
+String RenderingServerDefault::get_video_adapter_vendor() const {
 	return RSG::storage->get_video_adapter_vendor();
 }
 
-void RenderingServerRaster::set_frame_profiling_enabled(bool p_enable) {
+void RenderingServerDefault::set_frame_profiling_enabled(bool p_enable) {
 	RSG::storage->capturing_timestamps = p_enable;
 }
 
-uint64_t RenderingServerRaster::get_frame_profile_frame() {
+uint64_t RenderingServerDefault::get_frame_profile_frame() {
 	return frame_profile_frame;
 }
 
-Vector<RenderingServer::FrameProfileArea> RenderingServerRaster::get_frame_profile() {
+Vector<RenderingServer::FrameProfileArea> RenderingServerDefault::get_frame_profile() {
 	return frame_profile;
 }
 
 /* TESTING */
 
-void RenderingServerRaster::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+void RenderingServerDefault::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
 	redraw_request();
 	RSG::rasterizer->set_boot_image(p_image, p_color, p_scale, p_use_filter);
 }
 
-void RenderingServerRaster::set_default_clear_color(const Color &p_color) {
+void RenderingServerDefault::set_default_clear_color(const Color &p_color) {
 	RSG::viewport->set_default_clear_color(p_color);
 }
 
-bool RenderingServerRaster::has_feature(Features p_feature) const {
+bool RenderingServerDefault::has_feature(Features p_feature) const {
 	return false;
 }
 
-void RenderingServerRaster::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
-	RSG::scene_render->sdfgi_set_debug_probe_select(p_position, p_dir);
+void RenderingServerDefault::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
+	RSG::scene->sdfgi_set_debug_probe_select(p_position, p_dir);
 }
 
-RID RenderingServerRaster::get_test_cube() {
+RID RenderingServerDefault::get_test_cube() {
 	if (!test_cube.is_valid()) {
 		test_cube = _make_test_cube();
 	}
 	return test_cube;
 }
 
-bool RenderingServerRaster::has_os_feature(const String &p_feature) const {
+bool RenderingServerDefault::has_os_feature(const String &p_feature) const {
 	return RSG::storage->has_os_feature(p_feature);
 }
 
-void RenderingServerRaster::set_debug_generate_wireframes(bool p_generate) {
+void RenderingServerDefault::set_debug_generate_wireframes(bool p_generate) {
 	RSG::storage->set_debug_generate_wireframes(p_generate);
 }
 
-void RenderingServerRaster::call_set_use_vsync(bool p_enable) {
+void RenderingServerDefault::call_set_use_vsync(bool p_enable) {
 	DisplayServer::get_singleton()->_set_use_vsync(p_enable);
 }
 
-bool RenderingServerRaster::is_low_end() const {
+bool RenderingServerDefault::is_low_end() const {
 	// FIXME: Commented out when rebasing vulkan branch on master,
 	// causes a crash, it seems rasterizer is not initialized yet the
 	// first time it's called.
@@ -256,14 +250,15 @@ bool RenderingServerRaster::is_low_end() const {
 	return false;
 }
 
-RenderingServerRaster::RenderingServerRaster() {
+RenderingServerDefault::RenderingServerDefault() {
 	RSG::canvas = memnew(RenderingServerCanvas);
 	RSG::viewport = memnew(RenderingServerViewport);
-	RSG::scene = memnew(RenderingServerScene);
+	RenderingServerSceneRaster *sr = memnew(RenderingServerSceneRaster);
+	RSG::scene = sr;
 	RSG::rasterizer = Rasterizer::create();
 	RSG::storage = RSG::rasterizer->get_storage();
 	RSG::canvas_render = RSG::rasterizer->get_canvas();
-	RSG::scene_render = RSG::rasterizer->get_scene();
+	sr->scene_render = RSG::rasterizer->get_scene();
 
 	frame_profile_frame = 0;
 
@@ -273,7 +268,7 @@ RenderingServerRaster::RenderingServerRaster() {
 	}
 }
 
-RenderingServerRaster::~RenderingServerRaster() {
+RenderingServerDefault::~RenderingServerDefault() {
 	memdelete(RSG::canvas);
 	memdelete(RSG::viewport);
 	memdelete(RSG::rasterizer);

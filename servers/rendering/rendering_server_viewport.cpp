@@ -33,7 +33,7 @@
 #include "core/config/project_settings.h"
 #include "rendering_server_canvas.h"
 #include "rendering_server_globals.h"
-#include "rendering_server_scene.h"
+#include "rendering_server_scene_raster.h"
 
 static Transform2D _canvas_get_transform(RenderingServerViewport::Viewport *p_viewport, RenderingServerCanvas::Canvas *p_canvas, RenderingServerViewport::Viewport::CanvasData *p_canvas_data, const Vector2 &p_vp_size) {
 	Transform2D xf = p_viewport->global_transform;
@@ -101,17 +101,15 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 
 	Color bgcolor = RSG::storage->get_default_clear_color();
 
-	if (!p_viewport->hide_canvas && !p_viewport->disable_environment && RSG::scene->scenario_owner.owns(p_viewport->scenario)) {
-		RenderingServerScene::Scenario *scenario = RSG::scene->scenario_owner.getornull(p_viewport->scenario);
-		ERR_FAIL_COND(!scenario);
-		if (RSG::scene_render->is_environment(scenario->environment)) {
-			scenario_draw_canvas_bg = RSG::scene_render->environment_get_background(scenario->environment) == RS::ENV_BG_CANVAS;
-
-			scenario_canvas_max_layer = RSG::scene_render->environment_get_canvas_max_layer(scenario->environment);
+	if (!p_viewport->hide_canvas && !p_viewport->disable_environment && RSG::scene->is_scenario(p_viewport->scenario)) {
+		RID environment = RSG::scene->scenario_get_environment(p_viewport->scenario);
+		if (RSG::scene->is_environment(environment)) {
+			scenario_draw_canvas_bg = RSG::scene->environment_get_background(environment) == RS::ENV_BG_CANVAS;
+			scenario_canvas_max_layer = RSG::scene->environment_get_canvas_max_layer(environment);
 		}
 	}
 
-	bool can_draw_3d = RSG::scene->camera_owner.owns(p_viewport->camera);
+	bool can_draw_3d = RSG::scene->is_camera(p_viewport->camera);
 
 	if (p_viewport->clear_mode != RS::VIEWPORT_CLEAR_NEVER) {
 		if (p_viewport->transparent_bg) {
@@ -124,8 +122,8 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 
 	if ((scenario_draw_canvas_bg || can_draw_3d) && !p_viewport->render_buffers.is_valid()) {
 		//wants to draw 3D but there is no render buffer, create
-		p_viewport->render_buffers = RSG::scene_render->render_buffers_create();
-		RSG::scene_render->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, p_viewport->size.width, p_viewport->size.height, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_debanding);
+		p_viewport->render_buffers = RSG::scene->render_buffers_create();
+		RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, p_viewport->size.width, p_viewport->size.height, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_debanding);
 	}
 
 	RSG::storage->render_target_request_clear(p_viewport->render_target, bgcolor);
@@ -559,7 +557,7 @@ void RenderingServerViewport::draw_viewports() {
 		{
 			RSG::storage->render_target_set_external_texture(vp->render_target, 0);
 
-			RSG::scene_render->set_debug_draw_mode(vp->debug_draw);
+			RSG::scene->set_debug_draw_mode(vp->debug_draw);
 			RSG::storage->render_info_begin_capture();
 
 			// render standard mono camera
@@ -598,7 +596,7 @@ void RenderingServerViewport::draw_viewports() {
 
 		RENDER_TIMESTAMP("<Rendering Viewport " + itos(i));
 	}
-	RSG::scene_render->set_debug_draw_mode(RS::VIEWPORT_DEBUG_DRAW_DISABLED);
+	RSG::scene->set_debug_draw_mode(RS::VIEWPORT_DEBUG_DRAW_DISABLED);
 
 	RENDER_TIMESTAMP("<Render Viewports");
 	//this needs to be called to make screen swapping more efficient
@@ -618,7 +616,7 @@ RID RenderingServerViewport::viewport_create() {
 	viewport->hide_scenario = false;
 	viewport->hide_canvas = false;
 	viewport->render_target = RSG::storage->render_target_create();
-	viewport->shadow_atlas = RSG::scene_render->shadow_atlas_create();
+	viewport->shadow_atlas = RSG::scene->shadow_atlas_create();
 	viewport->viewport_render_direct_to_screen = false;
 
 	return rid;
@@ -641,10 +639,10 @@ void RenderingServerViewport::viewport_set_size(RID p_viewport, int p_width, int
 	RSG::storage->render_target_set_size(viewport->render_target, p_width, p_height);
 	if (viewport->render_buffers.is_valid()) {
 		if (p_width == 0 || p_height == 0) {
-			RSG::scene_render->free(viewport->render_buffers);
+			RSG::scene->free(viewport->render_buffers);
 			viewport->render_buffers = RID();
 		} else {
-			RSG::scene_render->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, viewport->screen_space_aa, viewport->use_debanding);
+			RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, viewport->screen_space_aa, viewport->use_debanding);
 		}
 	}
 }
@@ -838,14 +836,14 @@ void RenderingServerViewport::viewport_set_shadow_atlas_size(RID p_viewport, int
 
 	viewport->shadow_atlas_size = p_size;
 
-	RSG::scene_render->shadow_atlas_set_size(viewport->shadow_atlas, viewport->shadow_atlas_size);
+	RSG::scene->shadow_atlas_set_size(viewport->shadow_atlas, viewport->shadow_atlas_size);
 }
 
 void RenderingServerViewport::viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	RSG::scene_render->shadow_atlas_set_quadrant_subdivision(viewport->shadow_atlas, p_quadrant, p_subdiv);
+	RSG::scene->shadow_atlas_set_quadrant_subdivision(viewport->shadow_atlas, p_quadrant, p_subdiv);
 }
 
 void RenderingServerViewport::viewport_set_msaa(RID p_viewport, RS::ViewportMSAA p_msaa) {
@@ -857,7 +855,7 @@ void RenderingServerViewport::viewport_set_msaa(RID p_viewport, RS::ViewportMSAA
 	}
 	viewport->msaa = p_msaa;
 	if (viewport->render_buffers.is_valid()) {
-		RSG::scene_render->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, p_msaa, viewport->screen_space_aa, viewport->use_debanding);
+		RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, p_msaa, viewport->screen_space_aa, viewport->use_debanding);
 	}
 }
 
@@ -870,7 +868,7 @@ void RenderingServerViewport::viewport_set_screen_space_aa(RID p_viewport, RS::V
 	}
 	viewport->screen_space_aa = p_mode;
 	if (viewport->render_buffers.is_valid()) {
-		RSG::scene_render->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, p_mode, viewport->use_debanding);
+		RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, p_mode, viewport->use_debanding);
 	}
 }
 
@@ -883,7 +881,7 @@ void RenderingServerViewport::viewport_set_use_debanding(RID p_viewport, bool p_
 	}
 	viewport->use_debanding = p_use_debanding;
 	if (viewport->render_buffers.is_valid()) {
-		RSG::scene_render->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, viewport->screen_space_aa, p_use_debanding);
+		RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, viewport->screen_space_aa, p_use_debanding);
 	}
 }
 
@@ -965,9 +963,9 @@ bool RenderingServerViewport::free(RID p_rid) {
 		Viewport *viewport = viewport_owner.getornull(p_rid);
 
 		RSG::storage->free(viewport->render_target);
-		RSG::scene_render->free(viewport->shadow_atlas);
+		RSG::scene->free(viewport->shadow_atlas);
 		if (viewport->render_buffers.is_valid()) {
-			RSG::scene_render->free(viewport->render_buffers);
+			RSG::scene->free(viewport->render_buffers);
 		}
 
 		while (viewport->canvas_map.front()) {
