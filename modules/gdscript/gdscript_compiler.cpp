@@ -130,7 +130,8 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 		} break;
 		case GDScriptParser::DataType::SCRIPT: {
 			result.kind = GDScriptDataType::SCRIPT;
-			result.script_type = Ref<Script>(p_datatype.script_type).ptr();
+			result.script_type_ref = Ref<Script>(p_datatype.script_type);
+			result.script_type = result.script_type_ref.ptr();
 			result.native_type = result.script_type->get_instance_base_type();
 		} break;
 		case GDScriptParser::DataType::GDSCRIPT: {
@@ -159,7 +160,8 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			}
 
 			result.kind = GDScriptDataType::GDSCRIPT;
-			result.script_type = Ref<Script>(script).ptr();
+			result.script_type_ref = Ref<Script>(script);
+			result.script_type = result.script_type_ref.ptr();
 			result.native_type = script->get_instance_base_type();
 		} break;
 		default: {
@@ -170,8 +172,8 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 
 	// Only hold strong reference to the script if it's not the owner of the
 	// element qualified with this type, to avoid cyclic references (leaks).
-	if (result.script_type && result.script_type != p_owner) {
-		result.script_type_ref = Ref<Script>(result.script_type);
+	if (result.script_type && result.script_type == p_owner) {
+		result.script_type_ref = Ref<Script>();
 	}
 
 	return result;
