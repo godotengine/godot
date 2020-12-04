@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_scene.cpp                                           */
+/*  renderer_scene_render.cpp                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,10 +28,4 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rendering_server_scene.h"
-
-RenderingServerScene::RenderingServerScene() {
-}
-
-RenderingServerScene::~RenderingServerScene() {
-}
+#include "renderer_scene_render.h"

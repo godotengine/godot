@@ -31,7 +31,7 @@
 #ifndef LIGHT_CLUSTER_BUILDER_H
 #define LIGHT_CLUSTER_BUILDER_H
 
-#include "servers/rendering/rasterizer_rd/rasterizer_storage_rd.h"
+#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 
 class LightClusterBuilder {
 public:

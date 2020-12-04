@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_storage_rd.h                                              */
+/*  renderer_storage_rd.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,20 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZER_STORAGE_RD_H
-#define RASTERIZER_STORAGE_RD_H
+#ifndef RENDERING_SERVER_STORAGE_RD_H
+#define RENDERING_SERVER_STORAGE_RD_H
 
 #include "core/templates/rid_owner.h"
-#include "servers/rendering/rasterizer.h"
-#include "servers/rendering/rasterizer_rd/rasterizer_effects_rd.h"
-#include "servers/rendering/rasterizer_rd/shader_compiler_rd.h"
-#include "servers/rendering/rasterizer_rd/shaders/canvas_sdf.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/giprobe_sdf.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/particles.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/particles_copy.glsl.gen.h"
+#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/renderer_rd/effects_rd.h"
+#include "servers/rendering/renderer_rd/shader_compiler_rd.h"
+#include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/giprobe_sdf.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/particles.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/particles_copy.glsl.gen.h"
+#include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 
-class RasterizerStorageRD : public RasterizerStorage {
+class RendererStorageRD : public RendererStorage {
 public:
 	static _FORCE_INLINE_ void store_transform(const Transform &p_mtx, float *p_array) {
 		p_array[0] = p_mtx.basis.elements[0][0];
@@ -139,7 +140,7 @@ public:
 		virtual ~MaterialData();
 
 	private:
-		friend class RasterizerStorageRD;
+		friend class RendererStorageRD;
 		RID self;
 		List<RID>::Element *global_buffer_E = nullptr;
 		List<RID>::Element *global_texture_E = nullptr;
@@ -364,7 +365,7 @@ private:
 		Map<StringName, Variant> params;
 		int32_t priority;
 		RID next_pass;
-		RasterizerScene::InstanceDependency instance_dependency;
+		RendererStorage::InstanceDependency instance_dependency;
 	};
 
 	MaterialDataRequestFunction material_data_request_func[SHADER_TYPE_MAX];
@@ -447,7 +448,7 @@ private:
 
 		Vector<RID> material_cache;
 
-		RasterizerScene::InstanceDependency instance_dependency;
+		RendererStorage::InstanceDependency instance_dependency;
 	};
 
 	mutable RID_Owner<Mesh> mesh_owner;
@@ -481,7 +482,7 @@ private:
 		bool dirty = false;
 		MultiMesh *dirty_list = nullptr;
 
-		RasterizerScene::InstanceDependency instance_dependency;
+		RendererStorage::InstanceDependency instance_dependency;
 	};
 
 	mutable RID_Owner<MultiMesh> multimesh_owner;
@@ -652,7 +653,7 @@ private:
 		ParticleEmissionBuffer *emission_buffer = nullptr;
 		RID emission_storage_buffer;
 
-		Set<RasterizerScene::InstanceBase *> collisions;
+		Set<RendererSceneRender::InstanceBase *> collisions;
 
 		Particles() :
 				inactive(true),
@@ -679,7 +680,7 @@ private:
 				clear(true) {
 		}
 
-		RasterizerScene::InstanceDependency instance_dependency;
+		RendererStorage::InstanceDependency instance_dependency;
 
 		ParticlesFrameParams frame_params;
 	};
@@ -734,7 +735,7 @@ private:
 		bool valid;
 		RID version;
 
-		//RenderPipelineVertexFormatCacheRD pipelines[SKY_VERSION_MAX];
+		//PipelineCacheRD pipelines[SKY_VERSION_MAX];
 		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
 
@@ -752,7 +753,7 @@ private:
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		virtual void get_instance_param_list(List<RasterizerStorage::InstanceShaderParam> *p_param_list) const;
+		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
@@ -762,7 +763,7 @@ private:
 	};
 
 	ShaderData *_create_particles_shader_func();
-	static RasterizerStorageRD::ShaderData *_create_particles_shader_funcs() {
+	static RendererStorageRD::ShaderData *_create_particles_shader_funcs() {
 		return base_singleton->_create_particles_shader_func();
 	}
 
@@ -782,7 +783,7 @@ private:
 	};
 
 	MaterialData *_create_particles_material_func(ParticlesShaderData *p_shader);
-	static RasterizerStorageRD::MaterialData *_create_particles_material_funcs(ShaderData *p_shader) {
+	static RendererStorageRD::MaterialData *_create_particles_material_funcs(ShaderData *p_shader) {
 		return base_singleton->_create_particles_material_func(static_cast<ParticlesShaderData *>(p_shader));
 	}
 
@@ -807,7 +808,7 @@ private:
 
 		RS::ParticlesCollisionHeightfieldResolution heightfield_resolution = RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024;
 
-		RasterizerScene::InstanceDependency instance_dependency;
+		RendererStorage::InstanceDependency instance_dependency;
 	};
 
 	mutable RID_Owner<ParticlesCollision> particles_collision_owner;
@@ -826,7 +827,7 @@ private:
 
 		RID uniform_set_3d;
 
-		RasterizerScene::InstanceDependency instance_dependency;
+		RendererStorage::InstanceDependency instance_dependency;
 	};
 
 	mutable RID_Owner<Skeleton> skeleton_owner;
@@ -858,7 +859,7 @@ private:
 		bool directional_sky_only = false;
 		uint64_t version = 0;
 
-		RasterizerScene::InstanceDependency instance_dependency;
+		RendererStorage::InstanceDependency instance_dependency;
 	};
 
 	mutable RID_Owner<Light> light_owner;
@@ -880,7 +881,7 @@ private:
 		bool enable_shadows = false;
 		uint32_t cull_mask = (1 << 20) - 1;
 
-		RasterizerScene::InstanceDependency instance_dependency;
+		RendererStorage::InstanceDependency instance_dependency;
 	};
 
 	mutable RID_Owner<ReflectionProbe> reflection_probe_owner;
@@ -901,7 +902,7 @@ private:
 		float distance_fade_length = 1;
 		float normal_fade = 0.0;
 
-		RasterizerScene::InstanceDependency instance_dependency;
+		RendererStorage::InstanceDependency instance_dependency;
 	};
 
 	mutable RID_Owner<Decal> decal_owner;
@@ -939,7 +940,7 @@ private:
 		uint32_t version = 1;
 		uint32_t data_version = 1;
 
-		RasterizerScene::InstanceDependency instance_dependency;
+		RendererStorage::InstanceDependency instance_dependency;
 	};
 
 	GiprobeSdfShaderRD giprobe_sdf_shader;
@@ -968,7 +969,7 @@ private:
 			int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
 		};
 
-		RasterizerScene::InstanceDependency instance_dependency;
+		RendererStorage::InstanceDependency instance_dependency;
 	};
 
 	bool using_lightmap_array; //high end uses this
@@ -1129,7 +1130,7 @@ private:
 	void _update_global_variables();
 	/* EFFECTS */
 
-	RasterizerEffectsRD effects;
+	EffectsRD effects;
 
 public:
 	/* TEXTURE API */
@@ -1261,7 +1262,7 @@ public:
 
 	void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters);
 
-	void material_update_dependency(RID p_material, RasterizerScene::InstanceBase *p_instance);
+	void material_update_dependency(RID p_material, InstanceBaseDependency *p_instance);
 	void material_force_update_textures(RID p_material, ShaderType p_shader_type);
 
 	void material_set_data_request_function(ShaderType p_shader_type, MaterialDataRequestFunction p_function);
@@ -1660,8 +1661,8 @@ public:
 	Color reflection_probe_get_ambient_color(RID p_probe) const;
 	float reflection_probe_get_ambient_color_energy(RID p_probe) const;
 
-	void base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance);
-	void skeleton_update_dependency(RID p_skeleton, RasterizerScene::InstanceBase *p_instance);
+	void base_update_dependency(RID p_base, InstanceBaseDependency *p_instance);
+	void skeleton_update_dependency(RID p_skeleton, InstanceBaseDependency *p_instance);
 
 	/* DECAL API */
 
@@ -1911,8 +1912,8 @@ public:
 		return particles->particles_transforms_buffer_uniform_set;
 	}
 
-	virtual void particles_add_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance);
-	virtual void particles_remove_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance);
+	virtual void particles_add_collision(RID p_particles, InstanceBaseDependency *p_instance);
+	virtual void particles_remove_collision(RID p_particles, InstanceBaseDependency *p_instance);
 
 	/* PARTICLES COLLISION */
 
@@ -2021,12 +2022,12 @@ public:
 
 	RID get_default_rd_storage_buffer() { return default_rd_storage_buffer; }
 
-	static RasterizerStorageRD *base_singleton;
+	static RendererStorageRD *base_singleton;
 
-	RasterizerEffectsRD *get_effects();
+	EffectsRD *get_effects();
 
-	RasterizerStorageRD();
-	~RasterizerStorageRD();
+	RendererStorageRD();
+	~RendererStorageRD();
 };
 
 #endif // RASTERIZER_STORAGE_RD_H

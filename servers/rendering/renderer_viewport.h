@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_viewport.h                                          */
+/*  renderer_viewport.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -33,11 +33,11 @@
 
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "rasterizer.h"
+#include "renderer_compositor.h"
 #include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 
-class RenderingServerViewport {
+class RendererViewport {
 public:
 	struct CanvasBase {
 	};
@@ -244,8 +244,8 @@ public:
 
 	bool free(RID p_rid);
 
-	RenderingServerViewport();
-	virtual ~RenderingServerViewport() {}
+	RendererViewport();
+	virtual ~RendererViewport() {}
 };
 
 #endif // VISUALSERVERVIEWPORT_H

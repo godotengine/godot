@@ -4,4 +4,4 @@ Import("env")
 
 env.add_source_files(env.servers_sources, "*.cpp")
 
-SConscript("rasterizer_rd/SCsub")
+SConscript("renderer_rd/SCsub")

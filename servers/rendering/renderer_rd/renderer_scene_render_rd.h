@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_scene_rd.h                                                */
+/*  renderer_scene_render_rd.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,27 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZER_SCENE_RD_H
-#define RASTERIZER_SCENE_RD_H
+#ifndef RENDERING_SERVER_SCENE_RENDER_RD_H
+#define RENDERING_SERVER_SCENE_RENDER_RD_H
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
-#include "servers/rendering/rasterizer.h"
-#include "servers/rendering/rasterizer_rd/light_cluster_builder.h"
-#include "servers/rendering/rasterizer_rd/rasterizer_storage_rd.h"
-#include "servers/rendering/rasterizer_rd/shaders/gi.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/giprobe.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/giprobe_debug.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/sdfgi_debug.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/sdfgi_debug_probes.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/sdfgi_direct_light.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/sdfgi_integrate.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/sdfgi_preprocess.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/sky.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/volumetric_fog.glsl.gen.h"
+#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/renderer_rd/light_cluster_builder.h"
+#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
+#include "servers/rendering/renderer_rd/shaders/gi.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/giprobe.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/giprobe_debug.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/sdfgi_debug.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/sdfgi_debug_probes.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/sdfgi_direct_light.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/sdfgi_integrate.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/sdfgi_preprocess.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/sky.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/volumetric_fog.glsl.gen.h"
+#include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 
-class RasterizerSceneRD : public RasterizerScene {
+class RendererSceneRenderRD : public RendererSceneRender {
 protected:
 	double time;
 
@@ -138,11 +139,11 @@ protected:
 private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 	double time_step = 0;
-	static RasterizerSceneRD *singleton;
+	static RendererSceneRenderRD *singleton;
 
 	int roughness_layers;
 
-	RasterizerStorageRD *storage;
+	RendererStorageRD *storage;
 
 	struct ReflectionData {
 		struct Layer {
@@ -200,11 +201,11 @@ private:
 		RID default_shader_rd;
 	} sky_shader;
 
-	struct SkyShaderData : public RasterizerStorageRD::ShaderData {
+	struct SkyShaderData : public RendererStorageRD::ShaderData {
 		bool valid;
 		RID version;
 
-		RenderPipelineVertexFormatCacheRD pipelines[SKY_VERSION_MAX];
+		PipelineCacheRD pipelines[SKY_VERSION_MAX];
 		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
 
@@ -224,7 +225,7 @@ private:
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		virtual void get_instance_param_list(List<RasterizerStorage::InstanceShaderParam> *p_param_list) const;
+		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
@@ -233,12 +234,12 @@ private:
 		virtual ~SkyShaderData();
 	};
 
-	RasterizerStorageRD::ShaderData *_create_sky_shader_func();
-	static RasterizerStorageRD::ShaderData *_create_sky_shader_funcs() {
-		return static_cast<RasterizerSceneRD *>(singleton)->_create_sky_shader_func();
+	RendererStorageRD::ShaderData *_create_sky_shader_func();
+	static RendererStorageRD::ShaderData *_create_sky_shader_funcs() {
+		return static_cast<RendererSceneRenderRD *>(singleton)->_create_sky_shader_func();
 	};
 
-	struct SkyMaterialData : public RasterizerStorageRD::MaterialData {
+	struct SkyMaterialData : public RendererStorageRD::MaterialData {
 		uint64_t last_frame;
 		SkyShaderData *shader_data;
 		RID uniform_buffer;
@@ -253,9 +254,9 @@ private:
 		virtual ~SkyMaterialData();
 	};
 
-	RasterizerStorageRD::MaterialData *_create_sky_material_func(SkyShaderData *p_shader);
-	static RasterizerStorageRD::MaterialData *_create_sky_material_funcs(RasterizerStorageRD::ShaderData *p_shader) {
-		return static_cast<RasterizerSceneRD *>(singleton)->_create_sky_material_func(static_cast<SkyShaderData *>(p_shader));
+	RendererStorageRD::MaterialData *_create_sky_material_func(SkyShaderData *p_shader);
+	static RendererStorageRD::MaterialData *_create_sky_material_funcs(RendererStorageRD::ShaderData *p_shader) {
+		return static_cast<RendererSceneRenderRD *>(singleton)->_create_sky_material_func(static_cast<SkyShaderData *>(p_shader));
 	};
 
 	enum SkyTextureSetVersion {
@@ -512,7 +513,7 @@ private:
 	GiprobeDebugShaderRD giprobe_debug_shader;
 	RID giprobe_debug_shader_version;
 	RID giprobe_debug_shader_version_shaders[GI_PROBE_DEBUG_MAX];
-	RenderPipelineVertexFormatCacheRD giprobe_debug_shader_version_pipelines[GI_PROBE_DEBUG_MAX];
+	PipelineCacheRD giprobe_debug_shader_version_pipelines[GI_PROBE_DEBUG_MAX];
 	RID giprobe_debug_uniform_set;
 
 	/* SHADOW ATLAS */
@@ -1077,7 +1078,7 @@ private:
 		RID debug_probes_shader;
 		RID debug_probes_shader_version;
 
-		RenderPipelineVertexFormatCacheRD debug_probes_pipeline[PROBE_DEBUG_MAX];
+		PipelineCacheRD debug_probes_pipeline[PROBE_DEBUG_MAX];
 
 		struct Light {
 			float color[3];
@@ -1951,8 +1952,8 @@ public:
 
 	void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir);
 
-	RasterizerSceneRD(RasterizerStorageRD *p_storage);
-	~RasterizerSceneRD();
+	RendererSceneRenderRD(RendererStorageRD *p_storage);
+	~RendererSceneRenderRD();
 };
 
 #endif // RASTERIZER_SCENE_RD_H

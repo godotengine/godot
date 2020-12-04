@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_effects_rd.h                                              */
+/*  effects_rd.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,36 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZER_EFFECTS_RD_H
-#define RASTERIZER_EFFECTS_RD_H
+#ifndef EFFECTS_RD_H
+#define EFFECTS_RD_H
 
 #include "core/math/camera_matrix.h"
-#include "servers/rendering/rasterizer_rd/render_pipeline_vertex_format_cache_rd.h"
-#include "servers/rendering/rasterizer_rd/shaders/bokeh_dof.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/copy.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/copy_to_fb.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/cube_to_dp.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/cubemap_downsampler.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/cubemap_filter.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/cubemap_roughness.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/luminance_reduce.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/resolve.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/roughness_limiter.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/screen_space_reflection.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/screen_space_reflection_filter.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/screen_space_reflection_scale.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/shadow_reduce.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/sort.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/specular_merge.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/ssao.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/ssao_blur.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/ssao_minify.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/subsurface_scattering.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/tonemap.glsl.gen.h"
+#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/renderer_rd/shaders/bokeh_dof.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/copy.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/copy_to_fb.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/cube_to_dp.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/cubemap_downsampler.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/cubemap_filter.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/cubemap_roughness.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/luminance_reduce.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/resolve.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/roughness_limiter.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/screen_space_reflection.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/screen_space_reflection_filter.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/screen_space_reflection_scale.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/shadow_reduce.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/sort.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/specular_merge.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/ssao.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/ssao_blur.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/ssao_minify.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/subsurface_scattering.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/tonemap.glsl.gen.h"
 
 #include "servers/rendering_server.h"
 
-class RasterizerEffectsRD {
+class EffectsRD {
 	enum CopyMode {
 		COPY_MODE_GAUSSIAN_COPY,
 		COPY_MODE_GAUSSIAN_COPY_8BIT,
@@ -144,7 +144,7 @@ class RasterizerEffectsRD {
 		CopyToFbPushConstant push_constant;
 		CopyToFbShaderRD shader;
 		RID shader_version;
-		RenderPipelineVertexFormatCacheRD pipelines[COPY_TO_FB_MAX];
+		PipelineCacheRD pipelines[COPY_TO_FB_MAX];
 
 	} copy_to_fb;
 
@@ -206,7 +206,7 @@ class RasterizerEffectsRD {
 		TonemapPushConstant push_constant;
 		TonemapShaderRD shader;
 		RID shader_version;
-		RenderPipelineVertexFormatCacheRD pipelines[TONEMAP_MODE_MAX];
+		PipelineCacheRD pipelines[TONEMAP_MODE_MAX];
 	} tonemap;
 
 	enum LuminanceReduceMode {
@@ -426,7 +426,7 @@ class RasterizerEffectsRD {
 	struct SpecularMerge {
 		SpecularMergeShaderRD shader;
 		RID shader_version;
-		RenderPipelineVertexFormatCacheRD pipelines[SPECULAR_MERGE_MAX];
+		PipelineCacheRD pipelines[SPECULAR_MERGE_MAX];
 
 	} specular_merge;
 
@@ -671,7 +671,7 @@ public:
 	void roughness_limit(RID p_source_normal, RID p_roughness, const Size2i &p_size, float p_curve);
 	void cubemap_downsample(RID p_source_cubemap, RID p_dest_cubemap, const Size2i &p_size);
 	void cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap, bool p_use_array);
-	void render_sky(RD::DrawListID p_list, float p_time, RID p_fb, RID p_samplers, RID p_fog, RenderPipelineVertexFormatCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const CameraMatrix &p_camera, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position);
+	void render_sky(RD::DrawListID p_list, float p_time, RID p_fb, RID p_samplers, RID p_fog, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const CameraMatrix &p_camera, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position);
 
 	void screen_space_reflection(RID p_diffuse, RID p_normal_roughness, RS::EnvironmentSSRRoughnessQuality p_roughness_quality, RID p_blur_radius, RID p_blur_radius2, RID p_metallic, const Color &p_metallic_mask, RID p_depth, RID p_scale_depth, RID p_scale_normal, RID p_output, RID p_output_blur, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const CameraMatrix &p_camera);
 	void merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_base, RID p_reflection);
@@ -684,8 +684,8 @@ public:
 
 	void sort_buffer(RID p_uniform_set, int p_size);
 
-	RasterizerEffectsRD();
-	~RasterizerEffectsRD();
+	EffectsRD();
+	~EffectsRD();
 };
 
 #endif // !RASTERIZER_EFFECTS_RD_H

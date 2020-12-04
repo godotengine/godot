@@ -47,7 +47,7 @@
 #import <dlfcn.h>
 
 #if defined(VULKAN_ENABLED)
-#include "servers/rendering/rasterizer_rd/rasterizer_rd.h"
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #import <QuartzCore/CAMetalLayer.h>
 #include <vulkan/vulkan_metal.h>
 #endif

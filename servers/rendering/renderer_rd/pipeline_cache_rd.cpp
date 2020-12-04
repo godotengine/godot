@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  render_pipeline_vertex_format_cache_rd.cpp                           */
+/*  pipeline_cache_rd.cpp                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "render_pipeline_vertex_format_cache_rd.h"
+#include "pipeline_cache_rd.h"
 #include "core/os/memory.h"
 
-RID RenderPipelineVertexFormatCacheRD::_generate_version(RD::VertexFormatID p_vertex_format_id, RD::FramebufferFormatID p_framebuffer_format_id, bool p_wireframe) {
+RID PipelineCacheRD::_generate_version(RD::VertexFormatID p_vertex_format_id, RD::FramebufferFormatID p_framebuffer_format_id, bool p_wireframe) {
 	RD::PipelineMultisampleState multisample_state_version = multisample_state;
 	multisample_state_version.sample_count = RD::get_singleton()->framebuffer_format_get_texture_samples(p_framebuffer_format_id);
 
@@ -49,7 +49,7 @@ RID RenderPipelineVertexFormatCacheRD::_generate_version(RD::VertexFormatID p_ve
 	return pipeline;
 }
 
-void RenderPipelineVertexFormatCacheRD::_clear() {
+void PipelineCacheRD::_clear() {
 	if (versions) {
 		for (uint32_t i = 0; i < version_count; i++) {
 			//shader may be gone, so this may not be valid
@@ -63,7 +63,7 @@ void RenderPipelineVertexFormatCacheRD::_clear() {
 	}
 }
 
-void RenderPipelineVertexFormatCacheRD::setup(RID p_shader, RD::RenderPrimitive p_primitive, const RD::PipelineRasterizationState &p_rasterization_state, RD::PipelineMultisampleState p_multisample, const RD::PipelineDepthStencilState &p_depth_stencil_state, const RD::PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags) {
+void PipelineCacheRD::setup(RID p_shader, RD::RenderPrimitive p_primitive, const RD::PipelineRasterizationState &p_rasterization_state, RD::PipelineMultisampleState p_multisample, const RD::PipelineDepthStencilState &p_depth_stencil_state, const RD::PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags) {
 	ERR_FAIL_COND(p_shader.is_null());
 	_clear();
 	shader = p_shader;
@@ -76,24 +76,24 @@ void RenderPipelineVertexFormatCacheRD::setup(RID p_shader, RD::RenderPrimitive 
 	dynamic_state_flags = p_dynamic_state_flags;
 }
 
-void RenderPipelineVertexFormatCacheRD::update_shader(RID p_shader) {
+void PipelineCacheRD::update_shader(RID p_shader) {
 	ERR_FAIL_COND(p_shader.is_null());
 	_clear();
 	setup(p_shader, render_primitive, rasterization_state, multisample_state, depth_stencil_state, blend_state, dynamic_state_flags);
 }
 
-void RenderPipelineVertexFormatCacheRD::clear() {
+void PipelineCacheRD::clear() {
 	_clear();
 	shader = RID(); //clear shader
 	input_mask = 0;
 }
 
-RenderPipelineVertexFormatCacheRD::RenderPipelineVertexFormatCacheRD() {
+PipelineCacheRD::PipelineCacheRD() {
 	version_count = 0;
 	versions = nullptr;
 	input_mask = 0;
 }
 
-RenderPipelineVertexFormatCacheRD::~RenderPipelineVertexFormatCacheRD() {
+PipelineCacheRD::~PipelineCacheRD() {
 	_clear();
 }

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_rd.cpp                                                    */
+/*  renderer_compositor_rd.cpp                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rasterizer_rd.h"
+#include "renderer_compositor_rd.h"
 
 #include "core/config/project_settings.h"
 
-void RasterizerRD::prepare_for_blitting_render_targets() {
+void RendererCompositorRD::prepare_for_blitting_render_targets() {
 	RD::get_singleton()->prepare_screen_for_drawing();
 }
 
-void RasterizerRD::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
+void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(p_screen);
 
 	for (int i = 0; i < p_amount; i++) {
@@ -76,7 +76,7 @@ void RasterizerRD::blit_render_targets_to_screen(DisplayServer::WindowID p_scree
 	RD::get_singleton()->draw_list_end();
 }
 
-void RasterizerRD::begin_frame(double frame_step) {
+void RendererCompositorRD::begin_frame(double frame_step) {
 	frame++;
 	delta = frame_step;
 	time += frame_step;
@@ -88,14 +88,14 @@ void RasterizerRD::begin_frame(double frame_step) {
 	scene->set_time(time, frame_step);
 }
 
-void RasterizerRD::end_frame(bool p_swap_buffers) {
+void RendererCompositorRD::end_frame(bool p_swap_buffers) {
 #ifndef _MSC_VER
 #warning TODO: likely pass a bool to swap buffers to avoid display?
 #endif
 	RD::get_singleton()->swap_buffers(); //probably should pass some bool to avoid display?
 }
 
-void RasterizerRD::initialize() {
+void RendererCompositorRD::initialize() {
 	{ //create framebuffer copy shader
 		RenderingDevice::ShaderStageData vert;
 		vert.shader_stage = RenderingDevice::SHADER_STAGE_VERTEX;
@@ -154,10 +154,10 @@ void RasterizerRD::initialize() {
 	}
 }
 
-ThreadWorkPool RasterizerRD::thread_work_pool;
-uint64_t RasterizerRD::frame = 1;
+ThreadWorkPool RendererCompositorRD::thread_work_pool;
+uint64_t RendererCompositorRD::frame = 1;
 
-void RasterizerRD::finalize() {
+void RendererCompositorRD::finalize() {
 	thread_work_pool.finish();
 
 	memdelete(scene);
@@ -170,14 +170,14 @@ void RasterizerRD::finalize() {
 	RD::get_singleton()->free(copy_viewports_sampler);
 }
 
-RasterizerRD *RasterizerRD::singleton = nullptr;
+RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
 
-RasterizerRD::RasterizerRD() {
+RendererCompositorRD::RendererCompositorRD() {
 	singleton = this;
 	thread_work_pool.init();
 	time = 0;
 
-	storage = memnew(RasterizerStorageRD);
-	canvas = memnew(RasterizerCanvasRD(storage));
-	scene = memnew(RasterizerSceneHighEndRD(storage));
+	storage = memnew(RendererStorageRD);
+	canvas = memnew(RendererCanvasRenderRD(storage));
+	scene = memnew(RendererSceneRenderForward(storage));
 }
