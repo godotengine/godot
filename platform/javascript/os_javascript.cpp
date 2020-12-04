@@ -43,6 +43,7 @@
 #include "modules/websocket/remote_debugger_peer_websocket.h"
 #endif
 
+#include <dlfcn.h>
 #include <emscripten.h>
 #include <stdlib.h>
 
@@ -185,6 +186,13 @@ void OS_JavaScript::file_access_close_callback(const String &p_file, int p_flags
 
 bool OS_JavaScript::is_userfs_persistent() const {
 	return idb_available;
+}
+
+Error OS_JavaScript::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+	String path = p_path.get_file();
+	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ". Error: " + dlerror());
+	return OK;
 }
 
 OS_JavaScript *OS_JavaScript::get_singleton() {

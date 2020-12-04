@@ -34,6 +34,7 @@ const Engine = (function () {
 		this.onExecute = null;
 		this.onExit = null;
 		this.persistentPaths = ['/userfs'];
+		this.gdnativeLibs = [];
 	}
 
 	Engine.prototype.init = /** @param {string=} basePath */ function (basePath) {
@@ -61,6 +62,7 @@ const Engine = (function () {
 			// Emscripten configuration.
 			config['thisProgram'] = me.executableName;
 			config['noExitRuntime'] = true;
+			config['dynamicLibraries'] = me.gdnativeLibs;
 			Godot(config).then(function (module) {
 				module['initFS'](me.persistentPaths).then(function (fs_err) {
 					me.rtenv = module;
@@ -249,6 +251,10 @@ const Engine = (function () {
 		this.persistentPaths = persistentPaths;
 	};
 
+	Engine.prototype.setGDNativeLibraries = function (gdnativeLibs) {
+		this.gdnativeLibs = gdnativeLibs;
+	};
+
 	Engine.prototype.requestQuit = function () {
 		if (this.rtenv) {
 			this.rtenv['request_quit']();
@@ -277,6 +283,7 @@ const Engine = (function () {
 	Engine.prototype['setOnExit'] = Engine.prototype.setOnExit;
 	Engine.prototype['copyToFS'] = Engine.prototype.copyToFS;
 	Engine.prototype['setPersistentPaths'] = Engine.prototype.setPersistentPaths;
+	Engine.prototype['setGDNativeLibraries'] = Engine.prototype.setGDNativeLibraries;
 	Engine.prototype['requestQuit'] = Engine.prototype.requestQuit;
 	return Engine;
 }());
