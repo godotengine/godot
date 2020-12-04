@@ -135,7 +135,6 @@ _FORCE_INLINE_ int &get_runtime_invoke_count_ref() {
 }
 
 MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **r_exc);
-MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **r_exc);
 
 MonoString *object_to_string(MonoObject *p_obj, MonoException **r_exc);
 
