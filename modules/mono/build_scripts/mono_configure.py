@@ -259,7 +259,8 @@ def configure(env, env_mono):
             env_mono.Append(CPPDEFINES=["_REENTRANT"])
 
             if mono_static:
-                env.Append(LINKFLAGS=["-rdynamic"])
+                if not is_javascript:
+                    env.Append(LINKFLAGS=["-rdynamic"])
 
                 mono_lib_file = os.path.join(mono_lib_path, "lib" + mono_lib + ".a")
 
