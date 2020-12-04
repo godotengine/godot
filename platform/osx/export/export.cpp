@@ -577,7 +577,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	String export_format = use_dmg() && p_path.ends_with("dmg") ? "dmg" : "zip";
 
 	// Create our application bundle.
-	String tmp_app_dir_name = pkg_name;
+	String tmp_app_dir_name = pkg_name + ".app";
 	String tmp_app_path_name = EditorSettings::get_singleton()->get_cache_dir().plus_file(tmp_app_dir_name);
 	print_line("Exporting to " + tmp_app_path_name);
 
