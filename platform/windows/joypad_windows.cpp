@@ -158,7 +158,7 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 
 	const DWORD devtype = (instance->dwDevType & 0xFF);
 
-	if ((devtype != DI8DEVTYPE_JOYSTICK) && (devtype != DI8DEVTYPE_GAMEPAD) && (devtype != DI8DEVTYPE_1STPERSON)) {
+	if ((devtype != DI8DEVTYPE_JOYSTICK) && (devtype != DI8DEVTYPE_GAMEPAD) && (devtype != DI8DEVTYPE_1STPERSON) && (devtype != DI8DEVTYPE_DRIVING)) {
 		return false;
 	}
 
