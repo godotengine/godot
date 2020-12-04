@@ -36,6 +36,9 @@
 #include "../mono_gc_handle.h"
 #include "../utils/macros.h"
 #include "gd_mono_header.h"
+#ifdef JAVASCRIPT_ENABLED
+#include "gd_mono_wasm_m2n.h"
+#endif
 
 #include "core/object/class_db.h"
 #include "core/object/reference.h"
@@ -155,6 +158,22 @@ private:
 };
 
 StringName get_native_godot_class_name(GDMonoClass *p_class);
+
+template <typename... P>
+void add_internal_call(const char *p_name, void (*p_func)(P...)) {
+#ifdef JAVASCRIPT_ENABLED
+	GDMonoWasmM2n::ICallTrampolines<P...>::add();
+#endif
+	mono_add_internal_call(p_name, (void *)p_func);
+}
+
+template <typename R, typename... P>
+void add_internal_call(const char *p_name, R (*p_func)(P...)) {
+#ifdef JAVASCRIPT_ENABLED
+	GDMonoWasmM2n::ICallTrampolinesR<R, P...>::add();
+#endif
+	mono_add_internal_call(p_name, (void *)p_func);
+}
 } // namespace GDMonoUtils
 
 #define NATIVE_GDMONOCLASS_NAME(m_class) (GDMonoUtils::get_native_godot_class_name(m_class))

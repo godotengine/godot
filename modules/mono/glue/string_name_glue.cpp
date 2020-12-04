@@ -53,10 +53,10 @@ MonoBoolean godot_icall_StringName_is_empty(StringName *p_ptr) {
 }
 
 void godot_register_string_name_icalls() {
-	mono_add_internal_call("Godot.StringName::godot_icall_StringName_Ctor", (void *)godot_icall_StringName_Ctor);
-	mono_add_internal_call("Godot.StringName::godot_icall_StringName_Dtor", (void *)godot_icall_StringName_Dtor);
-	mono_add_internal_call("Godot.StringName::godot_icall_StringName_operator_String", (void *)godot_icall_StringName_operator_String);
-	mono_add_internal_call("Godot.StringName::godot_icall_StringName_is_empty", (void *)godot_icall_StringName_is_empty);
+	GDMonoUtils::add_internal_call("Godot.StringName::godot_icall_StringName_Ctor", godot_icall_StringName_Ctor);
+	GDMonoUtils::add_internal_call("Godot.StringName::godot_icall_StringName_Dtor", godot_icall_StringName_Dtor);
+	GDMonoUtils::add_internal_call("Godot.StringName::godot_icall_StringName_operator_String", godot_icall_StringName_operator_String);
+	GDMonoUtils::add_internal_call("Godot.StringName::godot_icall_StringName_is_empty", godot_icall_StringName_is_empty);
 }
 
 #endif // MONO_GLUE_ENABLED
