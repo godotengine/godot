@@ -1160,7 +1160,7 @@
 		<constant name="FEATURE_FONT_SYSTEM" value="32" enum="Feature">
 			TextServer supports loading system fonts.
 		</constant>
-		<constant name="FEATURE_USE_SUPPORT_DATA" value="128" enum="Feature">
+		<constant name="FEATURE_USE_SUPPORT_DATA" value="64" enum="Feature">
 			TextServer require external data file for some features.
 		</constant>
 	</constants>
