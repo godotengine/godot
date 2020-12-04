@@ -255,6 +255,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="operator -" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="operator /" qualifiers="operator">
 			<return type="Color">
 			</return>

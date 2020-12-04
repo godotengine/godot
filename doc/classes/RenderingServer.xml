@@ -537,17 +537,6 @@
 				Sets the shape of the occluder polygon.
 			</description>
 		</method>
-		<method name="canvas_occluder_polygon_set_shape_as_lines">
-			<return type="void">
-			</return>
-			<argument index="0" name="occluder_polygon" type="RID">
-			</argument>
-			<argument index="1" name="shape" type="PackedVector2Array">
-			</argument>
-			<description>
-				Sets the shape of the occluder polygon as lines.
-			</description>
-		</method>
 		<method name="canvas_set_item_mirroring">
 			<return type="void">
 			</return>
@@ -1625,25 +1614,6 @@
 				Sets a shader material's shader.
 			</description>
 		</method>
-		<method name="mesh_add_surface_from_arrays">
-			<return type="void">
-			</return>
-			<argument index="0" name="mesh" type="RID">
-			</argument>
-			<argument index="1" name="primitive" type="int" enum="RenderingServer.PrimitiveType">
-			</argument>
-			<argument index="2" name="arrays" type="Array">
-			</argument>
-			<argument index="3" name="blend_shapes" type="Array" default="[  ]">
-			</argument>
-			<argument index="4" name="lods" type="Dictionary" default="{
-}">
-			</argument>
-			<argument index="5" name="compress_format" type="int" default="31744">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="mesh_clear">
 			<return type="void">
 			</return>
@@ -1742,32 +1712,46 @@
 				Returns a mesh's surface's arrays for blend shapes.
 			</description>
 		</method>
+		<method name="mesh_surface_get_format_attribute_stride" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="format" type="int">
+			</argument>
+			<argument index="1" name="vertex_count" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="mesh_surface_get_format_offset" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="format" type="int">
 			</argument>
-			<argument index="1" name="vertex_len" type="int">
+			<argument index="1" name="vertex_count" type="int">
 			</argument>
-			<argument index="2" name="index_len" type="int">
-			</argument>
-			<argument index="3" name="array_index" type="int">
+			<argument index="2" name="array_index" type="int">
 			</argument>
 			<description>
-				Function is unused in Godot 3.x.
 			</description>
 		</method>
-		<method name="mesh_surface_get_format_stride" qualifiers="const">
+		<method name="mesh_surface_get_format_skin_stride" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="format" type="int">
 			</argument>
-			<argument index="1" name="vertex_len" type="int">
-			</argument>
-			<argument index="2" name="index_len" type="int">
+			<argument index="1" name="vertex_count" type="int">
 			</argument>
 			<description>
-				Function is unused in Godot 3.x.
+			</description>
+		</method>
+		<method name="mesh_surface_get_format_vertex_stride" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="format" type="int">
+			</argument>
+			<argument index="1" name="vertex_count" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="mesh_surface_get_material" qualifiers="const">
@@ -3084,16 +3068,24 @@
 		<constant name="ARRAY_TEX_UV2" value="5" enum="ArrayType">
 			Array is an UV coordinates array for the second UV coordinates.
 		</constant>
-		<constant name="ARRAY_BONES" value="6" enum="ArrayType">
+		<constant name="ARRAY_CUSTOM0" value="6" enum="ArrayType">
+		</constant>
+		<constant name="ARRAY_CUSTOM1" value="7" enum="ArrayType">
+		</constant>
+		<constant name="ARRAY_CUSTOM2" value="8" enum="ArrayType">
+		</constant>
+		<constant name="ARRAY_CUSTOM3" value="9" enum="ArrayType">
+		</constant>
+		<constant name="ARRAY_BONES" value="10" enum="ArrayType">
 			Array contains bone information.
 		</constant>
-		<constant name="ARRAY_WEIGHTS" value="7" enum="ArrayType">
+		<constant name="ARRAY_WEIGHTS" value="11" enum="ArrayType">
 			Array is weight information.
 		</constant>
-		<constant name="ARRAY_INDEX" value="8" enum="ArrayType">
+		<constant name="ARRAY_INDEX" value="12" enum="ArrayType">
 			Array is index array.
 		</constant>
-		<constant name="ARRAY_MAX" value="9" enum="ArrayType">
+		<constant name="ARRAY_MAX" value="13" enum="ArrayType">
 			Represents the size of the [enum ArrayType] enum.
 		</constant>
 		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
@@ -3114,40 +3106,45 @@
 		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat">
 			Flag used to mark an UV coordinates array for the second UV coordinates.
 		</constant>
-		<constant name="ARRAY_FORMAT_BONES" value="64" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM0" value="64" enum="ArrayFormat">
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM1" value="128" enum="ArrayFormat">
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM2" value="256" enum="ArrayFormat">
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM3" value="512" enum="ArrayFormat">
+		</constant>
+		<constant name="ARRAY_FORMAT_BONES" value="1024" enum="ArrayFormat">
 			Flag used to mark a bone information array.
 		</constant>
-		<constant name="ARRAY_FORMAT_WEIGHTS" value="128" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_WEIGHTS" value="2048" enum="ArrayFormat">
 			Flag used to mark a weights array.
 		</constant>
-		<constant name="ARRAY_FORMAT_INDEX" value="256" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_INDEX" value="4096" enum="ArrayFormat">
 			Flag used to mark an index array.
 		</constant>
-		<constant name="ARRAY_COMPRESS_NORMAL" value="1024" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) normal array.
+		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="-8185" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_TANGENT" value="2048" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) tangent array.
+		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_COLOR" value="4096" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) color array.
+		<constant name="ARRAY_FORMAT_CUSTOM0_SHIFT" value="13" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_TEX_UV" value="8192" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) UV coordinates array.
+		<constant name="ARRAY_FORMAT_CUSTOM1_SHIFT" value="16" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_TEX_UV2" value="16384" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) UV coordinates array for the second UV coordinates.
+		<constant name="ARRAY_FORMAT_CUSTOM2_SHIFT" value="19" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_INDEX" value="131072" enum="ArrayFormat">
-			Flag used to mark a compressed index array.
+		<constant name="ARRAY_FORMAT_CUSTOM3_SHIFT" value="22" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_DEFAULT" value="31744" enum="ArrayFormat">
-			Used to set flags [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV] and [constant ARRAY_COMPRESS_TEX_UV2] quickly.
+		<constant name="ARRAY_FORMAT_CUSTOM_MASK" value="7" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144" enum="ArrayFormat">
+		<constant name="ARRAY_COMPRESS_FLAGS_BASE" value="25" enum="ArrayFormat">
+		</constant>
+		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="33554432" enum="ArrayFormat">
 			Flag used to mark that the array contains 2D vertices.
 		</constant>
-		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="1048576" enum="ArrayFormat">
+		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="67108864" enum="ArrayFormat">
+		</constant>
+		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat">
 		</constant>
 		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
 			Primitive to draw consists of points.

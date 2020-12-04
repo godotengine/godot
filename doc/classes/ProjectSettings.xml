@@ -1084,6 +1084,10 @@
 		</member>
 		<member name="rendering/quality/2d/snap_2d_vertices_to_pixel" type="bool" setter="" getter="" default="false">
 		</member>
+		<member name="rendering/quality/2d_sdf/oversize" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/quality/2d_sdf/scale" type="int" setter="" getter="" default="1">
+		</member>
 		<member name="rendering/quality/2d_shadow_atlas/size" type="int" setter="" getter="" default="2048">
 		</member>
 		<member name="rendering/quality/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="2">

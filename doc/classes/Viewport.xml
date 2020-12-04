@@ -234,6 +234,10 @@
 		<member name="screen_space_aa" type="int" setter="set_screen_space_aa" getter="get_screen_space_aa" enum="Viewport.ScreenSpaceAA" default="0">
 			Sets the screen-space antialiasing method used. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
 		</member>
+		<member name="sdf_oversize" type="int" setter="set_sdf_oversize" getter="get_sdf_oversize" enum="Viewport.SDFOversize" default="1">
+		</member>
+		<member name="sdf_scale" type="int" setter="set_sdf_scale" getter="get_sdf_scale" enum="Viewport.SDFScale" default="1">
+		</member>
 		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
 			The subdivision amount of the first quadrant on the shadow atlas.
 		</member>
@@ -427,6 +431,24 @@
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX" value="3" enum="DefaultCanvasItemTextureRepeat">
 			Max value for [enum DefaultCanvasItemTextureRepeat] enum.
+		</constant>
+		<constant name="SDF_OVERSIZE_100_PERCENT" value="0" enum="SDFOversize">
+		</constant>
+		<constant name="SDF_OVERSIZE_120_PERCENT" value="1" enum="SDFOversize">
+		</constant>
+		<constant name="SDF_OVERSIZE_150_PERCENT" value="2" enum="SDFOversize">
+		</constant>
+		<constant name="SDF_OVERSIZE_200_PERCENT" value="3" enum="SDFOversize">
+		</constant>
+		<constant name="SDF_OVERSIZE_MAX" value="4" enum="SDFOversize">
+		</constant>
+		<constant name="SDF_SCALE_100_PERCENT" value="0" enum="SDFScale">
+		</constant>
+		<constant name="SDF_SCALE_50_PERCENT" value="1" enum="SDFScale">
+		</constant>
+		<constant name="SDF_SCALE_25_PERCENT" value="2" enum="SDFScale">
+		</constant>
+		<constant name="SDF_SCALE_MAX" value="3" enum="SDFScale">
 		</constant>
 	</constants>
 </class>

@@ -18,6 +18,8 @@
 		<member name="occluder" type="OccluderPolygon2D" setter="set_occluder_polygon" getter="get_occluder_polygon">
 			The [OccluderPolygon2D] used to compute the shadow.
 		</member>
+		<member name="sdf_collision" type="bool" setter="set_as_sdf_collision" getter="is_set_as_sdf_collision" default="true">
+		</member>
 	</members>
 	<constants>
 	</constants>

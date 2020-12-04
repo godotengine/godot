@@ -581,6 +581,7 @@ Vector<Ref<Shape3D>> Mesh::convex_decompose() const {
 
 Mesh::Mesh() {
 }
+
 #if 0
 static Vector<uint8_t> _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_format, uint32_t p_elements) {
 	enum ArrayType {
@@ -732,6 +733,7 @@ static Vector<uint8_t> _fix_array_compatibility(const Vector<uint8_t> &p_src, ui
 	return ret;
 }
 #endif
+
 bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 	String sname = p_name;
 
@@ -1186,14 +1188,16 @@ void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &
 	Error err = RS::get_singleton()->mesh_create_surface_data_from_arrays(&surface, (RenderingServer::PrimitiveType)p_primitive, p_arrays, p_blend_shapes, p_lods, p_flags);
 	ERR_FAIL_COND(err != OK);
 
-	/*	print_line("format: " + itos(surface.format));
+	/* Debug code.
+	print_line("format: " + itos(surface.format));
 	print_line("aabb: " + surface.aabb);
 	print_line("array size: " + itos(surface.vertex_data.size()));
 	print_line("vertex count: " + itos(surface.vertex_count));
 	print_line("index size: " + itos(surface.index_data.size()));
 	print_line("index count: " + itos(surface.index_count));
 	print_line("primitive: " + itos(surface.primitive));
-*/
+	*/
+
 	add_surface(surface.format, PrimitiveType(surface.primitive), surface.vertex_data, surface.attribute_data, surface.skin_data, surface.vertex_count, surface.index_data, surface.index_count, surface.aabb, surface.blend_shape_data, surface.blend_shape_count, surface.bone_aabbs, surface.lods);
 }
 
@@ -1611,63 +1615,6 @@ void ArrayMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_surfaces", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_surfaces", "_get_surfaces");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_shape_mode", PROPERTY_HINT_ENUM, "Normalized,Relative"), "set_blend_shape_mode", "get_blend_shape_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, ""), "set_custom_aabb", "get_custom_aabb");
-
-	BIND_CONSTANT(NO_INDEX_ARRAY);
-	BIND_CONSTANT(ARRAY_WEIGHTS_SIZE);
-
-	BIND_ENUM_CONSTANT(ARRAY_VERTEX);
-	BIND_ENUM_CONSTANT(ARRAY_NORMAL);
-	BIND_ENUM_CONSTANT(ARRAY_TANGENT);
-	BIND_ENUM_CONSTANT(ARRAY_COLOR);
-	BIND_ENUM_CONSTANT(ARRAY_TEX_UV);
-	BIND_ENUM_CONSTANT(ARRAY_TEX_UV2);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM0);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM1);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM2);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM3);
-	BIND_ENUM_CONSTANT(ARRAY_BONES);
-	BIND_ENUM_CONSTANT(ARRAY_WEIGHTS);
-	BIND_ENUM_CONSTANT(ARRAY_INDEX);
-	BIND_ENUM_CONSTANT(ARRAY_MAX);
-
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA8_UNORM);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA8_SNORM);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RG_HALF);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA_HALF);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_R_FLOAT);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RG_FLOAT);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGB_FLOAT);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA_FLOAT);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_MAX);
-
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_VERTEX);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_NORMAL);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TANGENT);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_COLOR);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TEX_UV);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TEX_UV2);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM0);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM1);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM2);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM3);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_BONES);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_WEIGHTS);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_INDEX);
-
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_BLEND_SHAPE_MASK);
-
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM_BASE);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM0_SHIFT);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM1_SHIFT);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM2_SHIFT);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM3_SHIFT);
-
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM_MASK);
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_FLAGS_BASE);
-
-	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_2D_VERTICES);
-	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_DYNAMIC_UPDATE);
-	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_8_BONE_WEIGHTS);
 }
 
 void ArrayMesh::reload_from_file() {
