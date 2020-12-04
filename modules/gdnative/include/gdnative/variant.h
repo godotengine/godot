@@ -52,7 +52,7 @@ typedef enum godot_variant_type {
 	// atomic types
 	GODOT_VARIANT_TYPE_BOOL,
 	GODOT_VARIANT_TYPE_INT,
-	GODOT_VARIANT_TYPE_REAL,
+	GODOT_VARIANT_TYPE_FLOAT,
 	GODOT_VARIANT_TYPE_STRING,
 
 	// math types
