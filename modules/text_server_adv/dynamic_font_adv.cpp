@@ -33,8 +33,6 @@
 #include FT_STROKER_H
 #include FT_ADVANCES_H
 
-HashMap<String, Vector<uint8_t>> DynamicFontDataAdvanced::font_mem_cache;
-
 DynamicFontDataAdvanced::DataAtSize *DynamicFontDataAdvanced::get_data_for_size(int p_size, int p_outline_size) {
 	ERR_FAIL_COND_V(!valid, nullptr);
 	ERR_FAIL_COND_V(p_size < 0 || p_size > UINT16_MAX, nullptr);
@@ -55,11 +53,10 @@ DynamicFontDataAdvanced::DataAtSize *DynamicFontDataAdvanced::get_data_for_size(
 	if (E != nullptr) {
 		fds = E->get();
 	} else {
-		// FT_OPEN_STREAM is extremely slow only on Android.
-		if (OS::get_singleton()->get_name() == "Android" && font_mem == nullptr && font_path != String()) {
-			if (font_mem_cache.has(font_path)) {
-				font_mem = font_mem_cache[font_path].ptr();
-				font_mem_size = font_mem_cache[font_path].size();
+		if (font_mem == nullptr && font_path != String()) {
+			if (!font_mem_cache.empty()) {
+				font_mem = font_mem_cache.ptr();
+				font_mem_size = font_mem_cache.size();
 			} else {
 				FileAccess *f = FileAccess::open(font_path, FileAccess::READ);
 				if (!f) {
@@ -67,11 +64,9 @@ DynamicFontDataAdvanced::DataAtSize *DynamicFontDataAdvanced::get_data_for_size(
 				}
 
 				size_t len = f->get_len();
-				font_mem_cache[font_path] = Vector<uint8_t>();
-				Vector<uint8_t> &fontdata = font_mem_cache[font_path];
-				fontdata.resize(len);
-				f->get_buffer(fontdata.ptrw(), len);
-				font_mem = fontdata.ptr();
+				font_mem_cache.resize(len);
+				f->get_buffer(font_mem_cache.ptrw(), len);
+				font_mem = font_mem_cache.ptr();
 				font_mem_size = len;
 				f->close();
 			}
@@ -79,27 +74,7 @@ DynamicFontDataAdvanced::DataAtSize *DynamicFontDataAdvanced::get_data_for_size(
 
 		int error = 0;
 		fds = memnew(DataAtSize);
-		if (font_mem == nullptr && font_path != String()) {
-			FileAccess *f = FileAccess::open(font_path, FileAccess::READ);
-			if (!f) {
-				memdelete(fds);
-				ERR_FAIL_V_MSG(nullptr, "Cannot open font file '" + font_path + "'.");
-			}
-
-			memset(&fds->stream, 0, sizeof(FT_StreamRec));
-			fds->stream.base = nullptr;
-			fds->stream.size = f->get_len();
-			fds->stream.pos = 0;
-			fds->stream.descriptor.pointer = f;
-			fds->stream.read = _ft_stream_io;
-			fds->stream.close = _ft_stream_close;
-
-			FT_Open_Args fargs;
-			memset(&fargs, 0, sizeof(FT_Open_Args));
-			fargs.flags = FT_OPEN_STREAM;
-			fargs.stream = &fds->stream;
-			error = FT_Open_Face(library, &fargs, 0, &fds->face);
-		} else if (font_mem) {
+		if (font_mem) {
 			memset(&fds->stream, 0, sizeof(FT_StreamRec));
 			fds->stream.base = (unsigned char *)font_mem;
 			fds->stream.size = font_mem_size;
@@ -167,25 +142,6 @@ DynamicFontDataAdvanced::DataAtSize *DynamicFontDataAdvanced::get_data_for_size(
 	}
 
 	return fds;
-}
-
-unsigned long DynamicFontDataAdvanced::_ft_stream_io(FT_Stream stream, unsigned long offset, unsigned char *buffer, unsigned long count) {
-	FileAccess *f = (FileAccess *)stream->descriptor.pointer;
-
-	if (f->get_position() != offset) {
-		f->seek(offset);
-	}
-	if (count == 0) {
-		return 0;
-	}
-
-	return f->get_buffer(buffer, count);
-}
-
-void DynamicFontDataAdvanced::_ft_stream_close(FT_Stream stream) {
-	FileAccess *f = (FileAccess *)stream->descriptor.pointer;
-	f->close();
-	memdelete(f);
 }
 
 Dictionary DynamicFontDataAdvanced::get_feature_list() const {
