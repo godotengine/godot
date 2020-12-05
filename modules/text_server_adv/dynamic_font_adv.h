@@ -116,7 +116,7 @@ private:
 	const uint8_t *font_mem = nullptr;
 	int font_mem_size = 0;
 	String font_path;
-	static HashMap<String, Vector<uint8_t>> font_mem_cache;
+	Vector<uint8_t> font_mem_cache;
 
 	float rect_margin = 1.f;
 	int base_size = 16;
@@ -127,9 +127,6 @@ private:
 
 	Map<CacheID, DataAtSize *> size_cache;
 	Map<CacheID, DataAtSize *> size_cache_outline;
-
-	static unsigned long _ft_stream_io(FT_Stream stream, unsigned long offset, unsigned char *buffer, unsigned long count);
-	static void _ft_stream_close(FT_Stream stream);
 
 	DataAtSize *get_data_for_size(int p_size, int p_outline_size = 0);
 
