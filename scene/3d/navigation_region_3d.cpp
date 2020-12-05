@@ -182,6 +182,7 @@ void NavigationRegion3D::bake_navigation_mesh() {
 void NavigationRegion3D::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
 	set_navigation_mesh(p_nav_mesh);
 	bake_thread = nullptr;
+	emit_signal("bake_finished");
 }
 
 String NavigationRegion3D::get_configuration_warning() const {
