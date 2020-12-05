@@ -89,7 +89,7 @@ Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Ve
 			password.empty() ? nullptr : password.utf8().get_data());
 
 	for (int i = 0; i < p_headers.size(); i++) {
-		int header_separator = p_headers[i].find(": ");
+		int header_separator = p_headers[i].find(":");
 		ERR_FAIL_COND_V(header_separator < 0, ERR_INVALID_PARAMETER);
 		godot_xhr_set_request_header(xhr_id,
 				p_headers[i].left(header_separator).utf8().get_data(),
