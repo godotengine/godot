@@ -2367,7 +2367,7 @@ void VisualScriptFunctionState::connect_to_signal(Object *p_obj, const String &p
 		binds.push_back(p_binds[i]);
 	}
 	binds.push_back(Ref<VisualScriptFunctionState>(this)); //add myself on the back to avoid dying from unreferencing
-	p_obj->connect_compat(p_signal, this, "_signal_callback", binds, CONNECT_ONESHOT);
+	p_obj->connect(p_signal, Callable(this, "_signal_callback"), binds, CONNECT_ONESHOT);
 }
 
 bool VisualScriptFunctionState::is_valid() const {

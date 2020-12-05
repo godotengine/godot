@@ -3620,11 +3620,11 @@ void TileSetEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		tileset_editor_button->show();
 		editor->make_bottom_panel_item_visible(tileset_editor);
-		get_tree()->connect_compat("idle_frame", tileset_editor, "_on_workspace_process");
+		get_tree()->connect("idle_frame", Callable(tileset_editor, "_on_workspace_process"));
 	} else {
 		editor->hide_bottom_panel();
 		tileset_editor_button->hide();
-		get_tree()->disconnect_compat("idle_frame", tileset_editor, "_on_workspace_process");
+		get_tree()->disconnect("idle_frame", Callable(tileset_editor, "_on_workspace_process"));
 	}
 }
 
