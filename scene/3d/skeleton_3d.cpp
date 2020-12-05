@@ -848,7 +848,7 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 
 	skin_bindings.insert(skin_ref.operator->());
 
-	skin->connect_compat("changed", skin_ref.operator->(), "_skin_changed");
+	skin->connect("changed", Callable(skin_ref.operator->(), "_skin_changed"));
 
 	_make_dirty(); //skin needs to be updated, so update skeleton
 

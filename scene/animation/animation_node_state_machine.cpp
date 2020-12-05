@@ -565,7 +565,7 @@ void AnimationNodeStateMachine::replace_node(const StringName &p_name, Ref<Anima
 	{
 		Ref<AnimationNode> node = states[p_name].node;
 		if (node.is_valid()) {
-			node->disconnect_compat("tree_changed", this, "_tree_changed");
+			node->disconnect("tree_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed));
 		}
 	}
 
@@ -574,7 +574,7 @@ void AnimationNodeStateMachine::replace_node(const StringName &p_name, Ref<Anima
 	emit_changed();
 	emit_signal("tree_changed");
 
-	p_node->connect_compat("tree_changed", this, "_tree_changed", varray(), CONNECT_REFERENCE_COUNTED);
+	p_node->connect("tree_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed), varray(), CONNECT_REFERENCE_COUNTED);
 }
 
 Ref<AnimationNode> AnimationNodeStateMachine::get_node(const StringName &p_name) const {
