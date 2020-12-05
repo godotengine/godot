@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <!-- Backported from newer Microsoft.NET.Sdk version -->
-  <Target Name="IncludeTargetingPackReference" BeforeTargets="_GetRestoreSettingsPerFramework;_CheckForInvalidConfigurationAndPlatform"
+  <Target Name="GodotIncludeTargetingPackReference" BeforeTargets="_GetRestoreSettingsPerFramework;_CheckForInvalidConfigurationAndPlatform"
           Condition=" '$(GodotUseNETFrameworkRefAssemblies)' == 'true' and '$(TargetFrameworkMoniker)' != '' and '$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(AutomaticallyUseReferenceAssemblyPackages)' == 'true' ">
     <GetReferenceAssemblyPaths
         TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
