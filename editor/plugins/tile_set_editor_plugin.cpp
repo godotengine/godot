@@ -2344,8 +2344,8 @@ void TileSetEditor::_set_edited_collision_shape(const Ref<Shape2D> &p_shape) {
 }
 
 void TileSetEditor::_set_snap_step(Vector2 p_val) {
-	snap_step.x = CLAMP(p_val.x, 0, 256);
-	snap_step.y = CLAMP(p_val.y, 0, 256);
+	snap_step.x = CLAMP(p_val.x, 1, 256);
+	snap_step.y = CLAMP(p_val.y, 1, 256);
 	workspace->update();
 }
 
