@@ -42,7 +42,7 @@ void EditorPluginSettings::_notification(int p_what) {
 	if (p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN) {
 		update_plugins();
 	} else if (p_what == Node::NOTIFICATION_READY) {
-		plugin_config_dialog->connect_compat("plugin_ready", EditorNode::get_singleton(), "_on_plugin_ready");
+		plugin_config_dialog->connect("plugin_ready", Callable(EditorNode::get_singleton(), "_on_plugin_ready"));
 		plugin_list->connect("button_pressed", callable_mp(this, &EditorPluginSettings::_cell_button_pressed));
 	}
 }
