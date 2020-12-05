@@ -55,7 +55,7 @@ class MaterialEditor : public Control {
 	Camera3D *camera;
 
 	Ref<SphereMesh> sphere_mesh;
-	Ref<CubeMesh> box_mesh;
+	Ref<BoxMesh> box_mesh;
 
 	TextureButton *sphere_switch;
 	TextureButton *box_switch;

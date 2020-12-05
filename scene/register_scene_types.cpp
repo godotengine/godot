@@ -670,8 +670,8 @@ void register_scene_types() {
 
 #ifndef _3D_DISABLED
 	ClassDB::register_virtual_class<PrimitiveMesh>();
+	ClassDB::register_class<BoxMesh>();
 	ClassDB::register_class<CapsuleMesh>();
-	ClassDB::register_class<CubeMesh>();
 	ClassDB::register_class<CylinderMesh>();
 	ClassDB::register_class<PlaneMesh>();
 	ClassDB::register_class<PrismMesh>();
@@ -835,6 +835,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("CSGShape", "CSGShape3D");
 	ClassDB::add_compatibility_class("CSGSphere", "CSGSphere3D");
 	ClassDB::add_compatibility_class("CSGTorus", "CSGTorus3D");
+	ClassDB::add_compatibility_class("CubeMesh", "BoxMesh");
 	ClassDB::add_compatibility_class("CylinderShape", "CylinderShape3D");
 	ClassDB::add_compatibility_class("DirectionalLight", "DirectionalLight3D");
 	ClassDB::add_compatibility_class("EditorSpatialGizmo", "EditorNode3DGizmo");
