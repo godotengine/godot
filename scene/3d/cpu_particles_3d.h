@@ -61,11 +61,11 @@ public:
 		PARAM_MAX
 	};
 
-	enum Flags {
-		FLAG_ALIGN_Y_TO_VELOCITY,
-		FLAG_ROTATE_Y,
-		FLAG_DISABLE_Z,
-		FLAG_MAX
+	enum ParticleFlags {
+		PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY,
+		PARTICLE_FLAG_ROTATE_Y,
+		PARTICLE_FLAG_DISABLE_Z,
+		PARTICLE_FLAG_MAX
 	};
 
 	enum EmissionShape {
@@ -160,7 +160,7 @@ private:
 	Color color;
 	Ref<Gradient> color_ramp;
 
-	bool flags[FLAG_MAX];
+	bool particle_flags[PARTICLE_FLAG_MAX];
 
 	EmissionShape emission_shape;
 	float emission_sphere_radius;
@@ -256,8 +256,8 @@ public:
 	void set_color_ramp(const Ref<Gradient> &p_ramp);
 	Ref<Gradient> get_color_ramp() const;
 
-	void set_particle_flag(Flags p_flag, bool p_enable);
-	bool get_particle_flag(Flags p_flag) const;
+	void set_particle_flag(ParticleFlags p_particle_flag, bool p_enable);
+	bool get_particle_flag(ParticleFlags p_particle_flag) const;
 
 	void set_emission_shape(EmissionShape p_shape);
 	void set_emission_sphere_radius(float p_radius);
@@ -290,7 +290,7 @@ public:
 
 VARIANT_ENUM_CAST(CPUParticles3D::DrawOrder)
 VARIANT_ENUM_CAST(CPUParticles3D::Parameter)
-VARIANT_ENUM_CAST(CPUParticles3D::Flags)
+VARIANT_ENUM_CAST(CPUParticles3D::ParticleFlags)
 VARIANT_ENUM_CAST(CPUParticles3D::EmissionShape)
 
 #endif // CPU_PARTICLES_H

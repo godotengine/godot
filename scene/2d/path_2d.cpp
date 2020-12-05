@@ -170,7 +170,7 @@ void PathFollow2D::_update_transform() {
 	}
 	Vector2 pos = c->interpolate_baked(offset, cubic);
 
-	if (rotate) {
+	if (rotates) {
 		float ahead = offset + lookahead;
 
 		if (loop && ahead >= path_length) {
@@ -279,7 +279,7 @@ void PathFollow2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_unit_offset", "unit_offset"), &PathFollow2D::set_unit_offset);
 	ClassDB::bind_method(D_METHOD("get_unit_offset"), &PathFollow2D::get_unit_offset);
 
-	ClassDB::bind_method(D_METHOD("set_rotate", "enable"), &PathFollow2D::set_rotate);
+	ClassDB::bind_method(D_METHOD("set_rotates", "enable"), &PathFollow2D::set_rotates);
 	ClassDB::bind_method(D_METHOD("is_rotating"), &PathFollow2D::is_rotating);
 
 	ClassDB::bind_method(D_METHOD("set_cubic_interpolation", "enable"), &PathFollow2D::set_cubic_interpolation);
@@ -295,7 +295,7 @@ void PathFollow2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_offset", PROPERTY_HINT_RANGE, "0,1,0.0001,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_unit_offset", "get_unit_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset"), "set_v_offset", "get_v_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotate"), "set_rotate", "is_rotating");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotates"), "set_rotates", "is_rotating");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interp"), "set_cubic_interpolation", "get_cubic_interpolation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lookahead", PROPERTY_HINT_RANGE, "0.001,1024.0,0.001"), "set_lookahead", "get_lookahead");
@@ -371,13 +371,13 @@ float PathFollow2D::get_lookahead() const {
 	return lookahead;
 }
 
-void PathFollow2D::set_rotate(bool p_rotate) {
-	rotate = p_rotate;
+void PathFollow2D::set_rotates(bool p_rotates) {
+	rotates = p_rotates;
 	_update_transform();
 }
 
 bool PathFollow2D::is_rotating() const {
-	return rotate;
+	return rotates;
 }
 
 void PathFollow2D::set_loop(bool p_loop) {
@@ -393,7 +393,7 @@ PathFollow2D::PathFollow2D() {
 	h_offset = 0;
 	v_offset = 0;
 	path = nullptr;
-	rotate = true;
+	rotates = true;
 	cubic = true;
 	loop = true;
 	lookahead = 4;

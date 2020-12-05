@@ -567,7 +567,7 @@ RID RendererStorageRD::texture_2d_create(const Ref<Image> &p_image) {
 		rd_format.depth = 1;
 		rd_format.array_layers = 1;
 		rd_format.mipmaps = texture.mipmaps;
-		rd_format.type = texture.rd_type;
+		rd_format.texture_type = texture.rd_type;
 		rd_format.samples = RD::TEXTURE_SAMPLES_1;
 		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
@@ -675,7 +675,7 @@ RID RendererStorageRD::texture_2d_layered_create(const Vector<Ref<Image>> &p_lay
 		rd_format.depth = 1;
 		rd_format.array_layers = texture.layers;
 		rd_format.mipmaps = texture.mipmaps;
-		rd_format.type = texture.rd_type;
+		rd_format.texture_type = texture.rd_type;
 		rd_format.samples = RD::TEXTURE_SAMPLES_1;
 		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
@@ -793,7 +793,7 @@ RID RendererStorageRD::texture_3d_create(Image::Format p_format, int p_width, in
 		rd_format.depth = texture.depth;
 		rd_format.array_layers = 1;
 		rd_format.mipmaps = texture.mipmaps;
-		rd_format.type = texture.rd_type;
+		rd_format.texture_type = texture.rd_type;
 		rd_format.samples = RD::TEXTURE_SAMPLES_1;
 		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
@@ -1298,7 +1298,7 @@ bool RendererStorageRD::canvas_texture_get_uniform_set(RID p_texture, RS::Canvas
 		Vector<RD::Uniform> uniforms;
 		{ //diffuse
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 0;
 
 			t = texture_owner.getornull(ct->diffuse);
@@ -1313,7 +1313,7 @@ bool RendererStorageRD::canvas_texture_get_uniform_set(RID p_texture, RS::Canvas
 		}
 		{ //normal
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 1;
 
 			t = texture_owner.getornull(ct->normalmap);
@@ -1328,7 +1328,7 @@ bool RendererStorageRD::canvas_texture_get_uniform_set(RID p_texture, RS::Canvas
 		}
 		{ //specular
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 2;
 
 			t = texture_owner.getornull(ct->specular);
@@ -1343,7 +1343,7 @@ bool RendererStorageRD::canvas_texture_get_uniform_set(RID p_texture, RS::Canvas
 		}
 		{ //sampler
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 3;
 			u.ids.push_back(sampler_rd_get_default(filter, repeat));
 			uniforms.push_back(u);
@@ -3591,14 +3591,14 @@ void RendererStorageRD::particles_set_amount(RID p_particles, int p_amount) {
 
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 1;
 				u.ids.push_back(particles->particle_buffer);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 2;
 				u.ids.push_back(particles->particle_instance_buffer);
 				uniforms.push_back(u);
@@ -3901,14 +3901,14 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
 			u.ids.push_back(p_particles->frame_params_buffer);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 1;
 			u.ids.push_back(p_particles->particle_buffer);
 			uniforms.push_back(u);
@@ -3916,7 +3916,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 2;
 			if (p_particles->emission_storage_buffer.is_valid()) {
 				u.ids.push_back(p_particles->emission_storage_buffer);
@@ -3927,7 +3927,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 3;
 			Particles *sub_emitter = particles_owner.getornull(p_particles->sub_emitter);
 			if (sub_emitter) {
@@ -4134,7 +4134,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 0;
 				for (uint32_t i = 0; i < ParticlesFrameParams::MAX_3D_TEXTURES; i++) {
 					RID rd_tex;
@@ -4154,7 +4154,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 1;
 				if (collision_heightmap_texture.is_valid()) {
 					u.ids.push_back(collision_heightmap_texture);
@@ -4255,7 +4255,7 @@ void RendererStorageRD::particles_set_view_axis(RID p_particles, const Vector3 &
 
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 0;
 				u.ids.push_back(particles->particles_sort_buffer);
 				uniforms.push_back(u);
@@ -4614,7 +4614,7 @@ void RendererStorageRD::ParticlesMaterialData::update_parameters(const Map<Strin
 	{
 		if (shader_data->ubo_size) {
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 0;
 			u.ids.push_back(uniform_buffer);
 			uniforms.push_back(u);
@@ -4623,7 +4623,7 @@ void RendererStorageRD::ParticlesMaterialData::update_parameters(const Map<Strin
 		const RID *textures = texture_cache.ptrw();
 		for (uint32_t i = 0; i < tex_uniform_count; i++) {
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 1 + i;
 			u.ids.push_back(textures[i]);
 			uniforms.push_back(u);
@@ -4679,7 +4679,7 @@ RID RendererStorageRD::particles_collision_get_heightfield_framebuffer(RID p_par
 		tf.format = RD::DATA_FORMAT_D32_SFLOAT;
 		tf.width = size.x;
 		tf.height = size.y;
-		tf.type = RD::TEXTURE_TYPE_2D;
+		tf.texture_type = RD::TEXTURE_TYPE_2D;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
 		particles_collision->heightfield_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -5588,7 +5588,7 @@ void RendererStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_to_
 			tf.width = gi_probe->octree_size.x;
 			tf.height = gi_probe->octree_size.y;
 			tf.depth = gi_probe->octree_size.z;
-			tf.type = RD::TEXTURE_TYPE_3D;
+			tf.texture_type = RD::TEXTURE_TYPE_3D;
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 			Vector<Vector<uint8_t>> s;
 			s.push_back(p_distance_field);
@@ -5617,21 +5617,21 @@ void RendererStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_to_
 			Vector<RD::Uniform> uniforms;
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 1;
 				u.ids.push_back(gi_probe->octree_buffer);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 2;
 				u.ids.push_back(gi_probe->data_buffer);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 3;
 				u.ids.push_back(shared_tex);
 				uniforms.push_back(u);
@@ -6122,7 +6122,7 @@ void RendererStorageRD::_update_render_target(RenderTarget *rt) {
 		rd_format.depth = 1;
 		rd_format.array_layers = 1;
 		rd_format.mipmaps = 1;
-		rd_format.type = RD::TEXTURE_TYPE_2D;
+		rd_format.texture_type = RD::TEXTURE_TYPE_2D;
 		rd_format.samples = RD::TEXTURE_SAMPLES_1;
 		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 		rd_format.shareable_formats.push_back(rt->color_format);
@@ -6191,7 +6191,7 @@ void RendererStorageRD::_create_render_target_backbuffer(RenderTarget *rt) {
 	tf.format = rt->color_format;
 	tf.width = rt->size.width;
 	tf.height = rt->size.height;
-	tf.type = RD::TEXTURE_TYPE_2D;
+	tf.texture_type = RD::TEXTURE_TYPE_2D;
 	tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	tf.mipmaps = mipmaps_required;
 
@@ -6420,7 +6420,7 @@ RID RendererStorageRD::render_target_get_sdf_texture(RID p_render_target) {
 		tformat.width = 4;
 		tformat.height = 4;
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
-		tformat.type = RD::TEXTURE_TYPE_2D;
+		tformat.texture_type = RD::TEXTURE_TYPE_2D;
 
 		Vector<uint8_t> pv;
 		pv.resize(16 * 4);
@@ -6447,7 +6447,7 @@ void RendererStorageRD::_render_target_allocate_sdf(RenderTarget *rt) {
 	tformat.width = size.width;
 	tformat.height = size.height;
 	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-	tformat.type = RD::TEXTURE_TYPE_2D;
+	tformat.texture_type = RD::TEXTURE_TYPE_2D;
 
 	rt->sdf_buffer_write = RD::get_singleton()->texture_create(tformat, RD::TextureView());
 
@@ -6494,28 +6494,28 @@ void RendererStorageRD::_render_target_allocate_sdf(RenderTarget *rt) {
 		Vector<RD::Uniform> uniforms;
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 1;
 			u.ids.push_back(rt->sdf_buffer_write);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 2;
 			u.ids.push_back(rt->sdf_buffer_read);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 3;
 			u.ids.push_back(rt->sdf_buffer_process[0]);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 4;
 			u.ids.push_back(rt->sdf_buffer_process[1]);
 			uniforms.push_back(u);
@@ -6983,7 +6983,7 @@ void RendererStorageRD::_update_decal_atlas() {
 	tformat.width = decal_atlas.size.width;
 	tformat.height = decal_atlas.size.height;
 	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-	tformat.type = RD::TEXTURE_TYPE_2D;
+	tformat.texture_type = RD::TEXTURE_TYPE_2D;
 	tformat.mipmaps = decal_atlas.mipmaps;
 	tformat.shareable_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_UNORM);
 	tformat.shareable_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_SRGB);
@@ -7946,7 +7946,7 @@ RendererStorageRD::RendererStorageRD() {
 		tformat.width = 4;
 		tformat.height = 4;
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.type = RD::TEXTURE_TYPE_2D;
+		tformat.texture_type = RD::TEXTURE_TYPE_2D;
 
 		Vector<uint8_t> pv;
 		pv.resize(16 * 4);
@@ -8038,7 +8038,7 @@ RendererStorageRD::RendererStorageRD() {
 		tformat.height = 4;
 		tformat.array_layers = 6;
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+		tformat.texture_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
 
 		Vector<uint8_t> pv;
 		pv.resize(16 * 4);
@@ -8066,7 +8066,7 @@ RendererStorageRD::RendererStorageRD() {
 		tformat.height = 4;
 		tformat.array_layers = 6;
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.type = RD::TEXTURE_TYPE_CUBE;
+		tformat.texture_type = RD::TEXTURE_TYPE_CUBE;
 
 		Vector<uint8_t> pv;
 		pv.resize(16 * 4);
@@ -8094,7 +8094,7 @@ RendererStorageRD::RendererStorageRD() {
 		tformat.height = 4;
 		tformat.array_layers = 6;
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.type = RD::TEXTURE_TYPE_CUBE;
+		tformat.texture_type = RD::TEXTURE_TYPE_CUBE;
 
 		Vector<uint8_t> pv;
 		pv.resize(16 * 4);
@@ -8122,7 +8122,7 @@ RendererStorageRD::RendererStorageRD() {
 		tformat.height = 4;
 		tformat.depth = 4;
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.type = RD::TEXTURE_TYPE_3D;
+		tformat.texture_type = RD::TEXTURE_TYPE_3D;
 
 		Vector<uint8_t> pv;
 		pv.resize(64 * 4);
@@ -8148,7 +8148,7 @@ RendererStorageRD::RendererStorageRD() {
 		tformat.height = 4;
 		tformat.array_layers = 1;
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.type = RD::TEXTURE_TYPE_2D_ARRAY;
+		tformat.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 
 		Vector<uint8_t> pv;
 		pv.resize(16 * 4);
@@ -8453,7 +8453,7 @@ RendererStorageRD::RendererStorageRD() {
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 1;
 			u.ids.resize(12);
 			RID *ids_ptr = u.ids.ptrw();
@@ -8474,7 +8474,7 @@ RendererStorageRD::RendererStorageRD() {
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 2;
 			u.ids.push_back(global_variables_get_storage_buffer());
 			uniforms.push_back(u);

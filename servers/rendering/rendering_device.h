@@ -392,7 +392,7 @@ public:
 		uint32_t depth;
 		uint32_t array_layers;
 		uint32_t mipmaps;
-		TextureType type;
+		TextureType texture_type;
 		TextureSamples samples;
 		uint32_t usage_bits;
 		Vector<DataFormat> shareable_formats;
@@ -404,7 +404,7 @@ public:
 			depth = 1;
 			array_layers = 1;
 			mipmaps = 1;
-			type = TEXTURE_TYPE_2D;
+			texture_type = TEXTURE_TYPE_2D;
 			samples = TEXTURE_SAMPLES_1;
 			usage_bits = 0;
 		}
@@ -629,7 +629,7 @@ public:
 	virtual RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>()) = 0;
 
 	struct Uniform {
-		UniformType type;
+		UniformType uniform_type;
 		int binding; //binding index as specified in shader
 
 		//for single items, provide one ID, for
@@ -640,7 +640,7 @@ public:
 		Vector<RID> ids;
 
 		Uniform() {
-			type = UNIFORM_TYPE_IMAGE;
+			uniform_type = UNIFORM_TYPE_IMAGE;
 			binding = 0;
 		}
 	};

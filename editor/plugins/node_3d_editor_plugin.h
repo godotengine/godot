@@ -868,7 +868,7 @@ public:
 
 	Ref<StandardMaterial3D> get_material(const String &p_name, const Ref<EditorNode3DGizmo> &p_gizmo = Ref<EditorNode3DGizmo>());
 
-	virtual String get_name() const;
+	virtual String get_gizmo_name() const;
 	virtual int get_priority() const;
 	virtual bool can_be_hidden() const;
 	virtual bool is_selectable_when_hidden() const;

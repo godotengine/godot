@@ -70,7 +70,7 @@ private:
 	real_t lookahead;
 	bool cubic;
 	bool loop;
-	bool rotate;
+	bool rotates;
 
 	void _update_transform();
 
@@ -99,7 +99,7 @@ public:
 	void set_loop(bool p_loop);
 	bool has_loop() const;
 
-	void set_rotate(bool p_rotate);
+	void set_rotates(bool p_rotates);
 	bool is_rotating() const;
 
 	void set_cubic_interpolation(bool p_enable);

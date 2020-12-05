@@ -129,7 +129,7 @@ void RendererSceneRenderRD::_update_reflection_data(ReflectionData &rd, int p_si
 	tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 	tf.width = 64; // Always 64x64
 	tf.height = 64;
-	tf.type = RD::TEXTURE_TYPE_CUBE;
+	tf.texture_type = RD::TEXTURE_TYPE_CUBE;
 	tf.array_layers = 6;
 	tf.mipmaps = 7;
 	tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -284,7 +284,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 		tf_sdf.width = sdfgi->cascade_size; // Always 64x64
 		tf_sdf.height = sdfgi->cascade_size;
 		tf_sdf.depth = sdfgi->cascade_size;
-		tf_sdf.type = RD::TEXTURE_TYPE_3D;
+		tf_sdf.texture_type = RD::TEXTURE_TYPE_3D;
 		tf_sdf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
 		{
@@ -341,7 +341,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 		tf_probes.width = sdfgi->probe_axis_count * sdfgi->probe_axis_count;
 		tf_probes.height = sdfgi->probe_axis_count * SDFGI::SH_SIZE;
 		tf_probes.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-		tf_probes.type = RD::TEXTURE_TYPE_2D_ARRAY;
+		tf_probes.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 
 		sdfgi->history_size = requested_history_size;
 
@@ -351,7 +351,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 
 		RD::TextureFormat tf_probe_average = tf_probes;
 		tf_probe_average.format = RD::DATA_FORMAT_R32G32B32A32_SINT; //signed integer because SH are signed
-		tf_probe_average.type = RD::TEXTURE_TYPE_2D;
+		tf_probe_average.texture_type = RD::TEXTURE_TYPE_2D;
 
 		sdfgi->lightprobe_history_scroll = RD::get_singleton()->texture_create(tf_probe_history, RD::TextureView());
 		sdfgi->lightprobe_average_scroll = RD::get_singleton()->texture_create(tf_probe_average, RD::TextureView());
@@ -378,7 +378,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			tf_ambient.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT; //pack well with RGBE
 			tf_ambient.width = sdfgi->probe_axis_count * sdfgi->probe_axis_count;
 			tf_ambient.height = sdfgi->probe_axis_count;
-			tf_ambient.type = RD::TEXTURE_TYPE_2D_ARRAY;
+			tf_ambient.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 			//lightprobe texture is an octahedral texture
 			sdfgi->ambient_texture = RD::get_singleton()->texture_create(tf_ambient, RD::TextureView());
 		}
@@ -443,21 +443,21 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 				Vector<RD::Uniform> uniforms;
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 					u.binding = 1;
 					u.ids.push_back(sdfgi->render_sdf[(passes & 1) ? 1 : 0]); //if passes are even, we read from buffer 0, else we read from buffer 1
 					uniforms.push_back(u);
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 					u.binding = 2;
 					u.ids.push_back(sdfgi->render_albedo);
 					uniforms.push_back(u);
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 					u.binding = 3;
 					for (int j = 0; j < 8; j++) {
 						u.ids.push_back(sdfgi->render_occlusion[j]);
@@ -466,21 +466,21 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 					u.binding = 4;
 					u.ids.push_back(sdfgi->render_emission);
 					uniforms.push_back(u);
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 					u.binding = 5;
 					u.ids.push_back(sdfgi->render_emission_aniso);
 					uniforms.push_back(u);
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 					u.binding = 6;
 					u.ids.push_back(sdfgi->render_geom_facing);
 					uniforms.push_back(u);
@@ -488,28 +488,28 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 					u.binding = 7;
 					u.ids.push_back(cascade.sdf_tex);
 					uniforms.push_back(u);
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 					u.binding = 8;
 					u.ids.push_back(sdfgi->occlusion_data);
 					uniforms.push_back(u);
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+					u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 					u.binding = 10;
 					u.ids.push_back(cascade.solid_cell_dispatch_buffer);
 					uniforms.push_back(u);
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+					u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 					u.binding = 11;
 					u.ids.push_back(cascade.solid_cell_buffer);
 					uniforms.push_back(u);
@@ -522,42 +522,42 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 				Vector<RD::Uniform> uniforms;
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 					u.binding = 1;
 					u.ids.push_back(sdfgi->render_albedo);
 					uniforms.push_back(u);
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 					u.binding = 2;
 					u.ids.push_back(sdfgi->render_geom_facing);
 					uniforms.push_back(u);
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 					u.binding = 3;
 					u.ids.push_back(sdfgi->render_emission);
 					uniforms.push_back(u);
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 					u.binding = 4;
 					u.ids.push_back(sdfgi->render_emission_aniso);
 					uniforms.push_back(u);
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+					u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 					u.binding = 5;
 					u.ids.push_back(cascade.solid_cell_dispatch_buffer);
 					uniforms.push_back(u);
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+					u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 					u.binding = 6;
 					u.ids.push_back(cascade.solid_cell_buffer);
 					uniforms.push_back(u);
@@ -569,7 +569,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 				Vector<RD::Uniform> uniforms;
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 					u.binding = 1;
 					for (int j = 0; j < 8; j++) {
 						u.ids.push_back(sdfgi->render_occlusion[j]);
@@ -578,7 +578,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 					u.binding = 2;
 					u.ids.push_back(sdfgi->occlusion_data);
 					uniforms.push_back(u);
@@ -596,7 +596,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			{
 				RD::Uniform u;
 				u.binding = 1;
-				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
 					if (j < rb->sdfgi->cascades.size()) {
 						u.ids.push_back(rb->sdfgi->cascades[j].sdf_tex);
@@ -609,63 +609,63 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			{
 				RD::Uniform u;
 				u.binding = 2;
-				u.type = RD::UNIFORM_TYPE_SAMPLER;
+				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 				u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.binding = 3;
-				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.ids.push_back(cascade.solid_cell_dispatch_buffer);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.binding = 4;
-				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.ids.push_back(cascade.solid_cell_buffer);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.binding = 5;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.ids.push_back(cascade.light_data);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.binding = 6;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.ids.push_back(cascade.light_aniso_0_tex);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.binding = 7;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.ids.push_back(cascade.light_aniso_1_tex);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.binding = 8;
-				u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+				u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 				u.ids.push_back(rb->sdfgi->cascades_ubo);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.binding = 9;
-				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.ids.push_back(cascade.lights_buffer);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.binding = 10;
-				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.ids.push_back(rb->sdfgi->lightprobe_texture);
 				uniforms.push_back(u);
 			}
@@ -678,14 +678,14 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			Vector<RD::Uniform> uniforms;
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 1;
 				u.ids.push_back(sdfgi->render_albedo);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 2;
 				u.ids.push_back(sdfgi->render_sdf[0]);
 				uniforms.push_back(u);
@@ -698,14 +698,14 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			Vector<RD::Uniform> uniforms;
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 1;
 				u.ids.push_back(sdfgi->render_albedo);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 2;
 				u.ids.push_back(sdfgi->render_sdf_half[0]);
 				uniforms.push_back(u);
@@ -719,14 +719,14 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			Vector<RD::Uniform> uniforms;
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 1;
 				u.ids.push_back(sdfgi->render_sdf[0]);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 2;
 				u.ids.push_back(sdfgi->render_sdf[1]);
 				uniforms.push_back(u);
@@ -741,14 +741,14 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			Vector<RD::Uniform> uniforms;
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 1;
 				u.ids.push_back(sdfgi->render_sdf_half[0]);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 2;
 				u.ids.push_back(sdfgi->render_sdf_half[1]);
 				uniforms.push_back(u);
@@ -764,21 +764,21 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			Vector<RD::Uniform> uniforms;
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 1;
 				u.ids.push_back(sdfgi->render_albedo);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 2;
 				u.ids.push_back(sdfgi->render_sdf_half[(passes & 1) ? 0 : 1]); //reverse pass order because half size
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 3;
 				u.ids.push_back(sdfgi->render_sdf[(passes & 1) ? 0 : 1]); //reverse pass order because it needs an extra JFA pass
 				uniforms.push_back(u);
@@ -793,14 +793,14 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			Vector<RD::Uniform> uniforms;
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 1;
 				u.ids.push_back(sdfgi->render_albedo);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 2;
 				for (int i = 0; i < 8; i++) {
 					u.ids.push_back(sdfgi->render_occlusion[i]);
@@ -809,7 +809,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 3;
 				u.ids.push_back(sdfgi->render_geom_facing);
 				uniforms.push_back(u);
@@ -826,7 +826,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			{
 				RD::Uniform u;
 				u.binding = 1;
-				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
 					if (j < sdfgi->cascades.size()) {
 						u.ids.push_back(sdfgi->cascades[j].sdf_tex);
@@ -839,7 +839,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			{
 				RD::Uniform u;
 				u.binding = 2;
-				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
 					if (j < sdfgi->cascades.size()) {
 						u.ids.push_back(sdfgi->cascades[j].light_tex);
@@ -852,7 +852,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			{
 				RD::Uniform u;
 				u.binding = 3;
-				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
 					if (j < sdfgi->cascades.size()) {
 						u.ids.push_back(sdfgi->cascades[j].light_aniso_0_tex);
@@ -865,7 +865,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			{
 				RD::Uniform u;
 				u.binding = 4;
-				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
 					if (j < sdfgi->cascades.size()) {
 						u.ids.push_back(sdfgi->cascades[j].light_aniso_1_tex);
@@ -877,7 +877,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_SAMPLER;
+				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 				u.binding = 6;
 				u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 				uniforms.push_back(u);
@@ -885,14 +885,14 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+				u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 				u.binding = 7;
 				u.ids.push_back(sdfgi->cascades_ubo);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 8;
 				u.ids.push_back(sdfgi->lightprobe_data);
 				uniforms.push_back(u);
@@ -900,14 +900,14 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 9;
 				u.ids.push_back(sdfgi->cascades[i].lightprobe_history_tex);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 10;
 				u.ids.push_back(sdfgi->cascades[i].lightprobe_average_tex);
 				uniforms.push_back(u);
@@ -915,21 +915,21 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 11;
 				u.ids.push_back(sdfgi->lightprobe_history_scroll);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 12;
 				u.ids.push_back(sdfgi->lightprobe_average_scroll);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 13;
 				RID parent_average;
 				if (i < sdfgi->cascades.size() - 1) {
@@ -942,7 +942,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 14;
 				u.ids.push_back(sdfgi->ambient_texture);
 				uniforms.push_back(u);
@@ -1338,7 +1338,7 @@ void RendererSceneRenderRD::sdfgi_update_probes(RID p_render_buffers, RID p_envi
 
 					{
 						RD::Uniform u;
-						u.type = RD::UNIFORM_TYPE_TEXTURE;
+						u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 						u.binding = 0;
 						u.ids.push_back(sky->radiance);
 						uniforms.push_back(u);
@@ -1346,7 +1346,7 @@ void RendererSceneRenderRD::sdfgi_update_probes(RID p_render_buffers, RID p_envi
 
 					{
 						RD::Uniform u;
-						u.type = RD::UNIFORM_TYPE_SAMPLER;
+						u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 						u.binding = 1;
 						u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 						uniforms.push_back(u);
@@ -1614,7 +1614,7 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 		{
 			RD::Uniform u;
 			u.binding = 1;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
 				if (rb->sdfgi && j < rb->sdfgi->cascades.size()) {
 					u.ids.push_back(rb->sdfgi->cascades[j].sdf_tex);
@@ -1627,7 +1627,7 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 		{
 			RD::Uniform u;
 			u.binding = 2;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
 				if (rb->sdfgi && j < rb->sdfgi->cascades.size()) {
 					u.ids.push_back(rb->sdfgi->cascades[j].light_tex);
@@ -1640,7 +1640,7 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 		{
 			RD::Uniform u;
 			u.binding = 3;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
 				if (rb->sdfgi && j < rb->sdfgi->cascades.size()) {
 					u.ids.push_back(rb->sdfgi->cascades[j].light_aniso_0_tex);
@@ -1653,7 +1653,7 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 		{
 			RD::Uniform u;
 			u.binding = 4;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
 				if (rb->sdfgi && j < rb->sdfgi->cascades.size()) {
 					u.ids.push_back(rb->sdfgi->cascades[j].light_aniso_1_tex);
@@ -1665,7 +1665,7 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 5;
 			if (rb->sdfgi) {
 				u.ids.push_back(rb->sdfgi->occlusion_texture);
@@ -1676,14 +1676,14 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 6;
 			u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 7;
 			u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
@@ -1691,7 +1691,7 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 9;
 			u.ids.push_back(p_ambient_buffer);
 			uniforms.push_back(u);
@@ -1699,7 +1699,7 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 10;
 			u.ids.push_back(p_reflection_buffer);
 			uniforms.push_back(u);
@@ -1707,7 +1707,7 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 11;
 			if (rb->sdfgi) {
 				u.ids.push_back(rb->sdfgi->lightprobe_texture);
@@ -1718,21 +1718,21 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 12;
 			u.ids.push_back(rb->depth_texture);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 13;
 			u.ids.push_back(p_normal_roughness_buffer);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 14;
 			RID buffer = p_gi_probe_buffer.is_valid() ? p_gi_probe_buffer : storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
 			u.ids.push_back(buffer);
@@ -1740,21 +1740,21 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 15;
 			u.ids.push_back(gi.sdfgi_ubo);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 16;
 			u.ids.push_back(rb->giprobe_buffer);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 17;
 			for (int i = 0; i < RenderBuffers::MAX_GIPROBES; i++) {
 				u.ids.push_back(rb->giprobe_textures[i]);
@@ -1897,7 +1897,7 @@ void RendererSceneRenderRD::_update_dirty_skys() {
 				RD::TextureFormat tf;
 				tf.array_layers = layers * 6;
 				tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-				tf.type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+				tf.texture_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
 				tf.mipmaps = mipmaps;
 				tf.width = w;
 				tf.height = h;
@@ -1912,7 +1912,7 @@ void RendererSceneRenderRD::_update_dirty_skys() {
 				RD::TextureFormat tf;
 				tf.array_layers = 6;
 				tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-				tf.type = RD::TEXTURE_TYPE_CUBE;
+				tf.texture_type = RD::TEXTURE_TYPE_CUBE;
 				tf.mipmaps = MIN(mipmaps, layers);
 				tf.width = w;
 				tf.height = h;
@@ -1932,7 +1932,7 @@ void RendererSceneRenderRD::_update_dirty_skys() {
 			tformat.width = sky->screen_size.x / 2;
 			tformat.height = sky->screen_size.y / 2;
 			tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-			tformat.type = RD::TEXTURE_TYPE_2D;
+			tformat.texture_type = RD::TEXTURE_TYPE_2D;
 
 			sky->half_res_pass = RD::get_singleton()->texture_create(tformat, RD::TextureView());
 			Vector<RID> texs;
@@ -1947,7 +1947,7 @@ void RendererSceneRenderRD::_update_dirty_skys() {
 			tformat.width = sky->screen_size.x / 4;
 			tformat.height = sky->screen_size.y / 4;
 			tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-			tformat.type = RD::TEXTURE_TYPE_2D;
+			tformat.texture_type = RD::TEXTURE_TYPE_2D;
 
 			sky->quarter_res_pass = RD::get_singleton()->texture_create(tformat, RD::TextureView());
 			Vector<RID> texs;
@@ -1994,7 +1994,7 @@ RID RendererSceneRenderRD::sky_get_radiance_uniform_set_rd(RID p_sky, RID p_shad
 			Vector<RD::Uniform> uniforms;
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 0;
 				u.ids.push_back(sky->radiance);
 				uniforms.push_back(u);
@@ -2014,7 +2014,7 @@ RID RendererSceneRenderRD::_get_sky_textures(Sky *p_sky, SkyTextureSetVersion p_
 	Vector<RD::Uniform> uniforms;
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 0;
 		if (p_sky->radiance.is_valid() && p_version <= SKY_TEXTURE_SET_QUARTER_RES) {
 			u.ids.push_back(p_sky->radiance);
@@ -2025,7 +2025,7 @@ RID RendererSceneRenderRD::_get_sky_textures(Sky *p_sky, SkyTextureSetVersion p_
 	}
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 1; // half res
 		if (p_sky->half_res_pass.is_valid() && p_version != SKY_TEXTURE_SET_HALF_RES && p_version != SKY_TEXTURE_SET_CUBEMAP_HALF_RES) {
 			if (p_version >= SKY_TEXTURE_SET_CUBEMAP) {
@@ -2044,7 +2044,7 @@ RID RendererSceneRenderRD::_get_sky_textures(Sky *p_sky, SkyTextureSetVersion p_
 	}
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 2; // quarter res
 		if (p_sky->quarter_res_pass.is_valid() && p_version != SKY_TEXTURE_SET_QUARTER_RES && p_version != SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES) {
 			if (p_version >= SKY_TEXTURE_SET_CUBEMAP) {
@@ -2755,7 +2755,7 @@ void RendererSceneRenderRD::SkyMaterialData::update_parameters(const Map<StringN
 	{
 		if (shader_data->ubo_size) {
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 0;
 			u.ids.push_back(uniform_buffer);
 			uniforms.push_back(u);
@@ -2764,7 +2764,7 @@ void RendererSceneRenderRD::SkyMaterialData::update_parameters(const Map<StringN
 		const RID *textures = texture_cache.ptrw();
 		for (uint32_t i = 0; i < tex_uniform_count; i++) {
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 1 + i;
 			u.ids.push_back(textures[i]);
 			uniforms.push_back(u);
@@ -3331,7 +3331,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 			RD::TextureFormat tf;
 			tf.array_layers = 6 * atlas->count;
 			tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-			tf.type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+			tf.texture_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
 			tf.mipmaps = mipmaps;
 			tf.width = atlas->size;
 			tf.height = atlas->size;
@@ -3948,7 +3948,7 @@ RendererSceneRenderRD::ShadowCubemap *RendererSceneRenderRD::_get_shadow_cubemap
 			tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D32_SFLOAT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D32_SFLOAT : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
 			tf.width = p_size;
 			tf.height = p_size;
-			tf.type = RD::TEXTURE_TYPE_CUBE;
+			tf.texture_type = RD::TEXTURE_TYPE_CUBE;
 			tf.array_layers = 6;
 			tf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 			sc.cubemap = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -4062,7 +4062,7 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 			tf.width = octree_size.x;
 			tf.height = octree_size.y;
 			tf.depth = octree_size.z;
-			tf.type = RD::TEXTURE_TYPE_3D;
+			tf.texture_type = RD::TEXTURE_TYPE_3D;
 			tf.mipmaps = levels.size();
 
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
@@ -4093,14 +4093,14 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 				Vector<RD::Uniform> uniforms;
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+					u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 					u.binding = 1;
 					u.ids.push_back(storage->gi_probe_get_octree_buffer(gi_probe->probe));
 					uniforms.push_back(u);
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+					u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 					u.binding = 2;
 					u.ids.push_back(storage->gi_probe_get_data_buffer(gi_probe->probe));
 					uniforms.push_back(u);
@@ -4108,21 +4108,21 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+					u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 					u.binding = 4;
 					u.ids.push_back(gi_probe->write_buffer);
 					uniforms.push_back(u);
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_TEXTURE;
+					u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 					u.binding = 9;
 					u.ids.push_back(storage->gi_probe_get_sdf_texture(gi_probe->probe));
 					uniforms.push_back(u);
 				}
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_SAMPLER;
+					u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 					u.binding = 10;
 					u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 					uniforms.push_back(u);
@@ -4133,7 +4133,7 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 					if (i == 0) {
 						{
 							RD::Uniform u;
-							u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+							u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 							u.binding = 3;
 							u.ids.push_back(gi_probe_lights_uniform);
 							copy_uniforms.push_back(u);
@@ -4145,7 +4145,7 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 
 						{
 							RD::Uniform u;
-							u.type = RD::UNIFORM_TYPE_TEXTURE;
+							u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 							u.binding = 5;
 							u.ids.push_back(gi_probe->texture);
 							copy_uniforms.push_back(u);
@@ -4158,7 +4158,7 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 
 				{
 					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 					u.binding = 5;
 					u.ids.push_back(mipmap.texture);
 					uniforms.push_back(u);
@@ -4232,7 +4232,7 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 							Vector<RD::Uniform> uniforms;
 							{
 								RD::Uniform u;
-								u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+								u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 								u.binding = 3;
 								u.ids.push_back(gi_probe_lights_uniform);
 								uniforms.push_back(u);
@@ -4240,56 +4240,56 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 
 							{
 								RD::Uniform u;
-								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 								u.binding = 5;
 								u.ids.push_back(dmap.albedo);
 								uniforms.push_back(u);
 							}
 							{
 								RD::Uniform u;
-								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 								u.binding = 6;
 								u.ids.push_back(dmap.normal);
 								uniforms.push_back(u);
 							}
 							{
 								RD::Uniform u;
-								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 								u.binding = 7;
 								u.ids.push_back(dmap.orm);
 								uniforms.push_back(u);
 							}
 							{
 								RD::Uniform u;
-								u.type = RD::UNIFORM_TYPE_TEXTURE;
+								u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 								u.binding = 8;
 								u.ids.push_back(dmap.fb_depth);
 								uniforms.push_back(u);
 							}
 							{
 								RD::Uniform u;
-								u.type = RD::UNIFORM_TYPE_TEXTURE;
+								u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 								u.binding = 9;
 								u.ids.push_back(storage->gi_probe_get_sdf_texture(gi_probe->probe));
 								uniforms.push_back(u);
 							}
 							{
 								RD::Uniform u;
-								u.type = RD::UNIFORM_TYPE_SAMPLER;
+								u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 								u.binding = 10;
 								u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 								uniforms.push_back(u);
 							}
 							{
 								RD::Uniform u;
-								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 								u.binding = 11;
 								u.ids.push_back(dmap.texture);
 								uniforms.push_back(u);
 							}
 							{
 								RD::Uniform u;
-								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 								u.binding = 12;
 								u.ids.push_back(dmap.depth);
 								uniforms.push_back(u);
@@ -4305,14 +4305,14 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 
 						{
 							RD::Uniform u;
-							u.type = RD::UNIFORM_TYPE_IMAGE;
+							u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 							u.binding = 5;
 							u.ids.push_back(gi_probe->dynamic_maps[gi_probe->dynamic_maps.size() - 1].texture);
 							uniforms.push_back(u);
 						}
 						{
 							RD::Uniform u;
-							u.type = RD::UNIFORM_TYPE_IMAGE;
+							u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 							u.binding = 6;
 							u.ids.push_back(gi_probe->dynamic_maps[gi_probe->dynamic_maps.size() - 1].depth);
 							uniforms.push_back(u);
@@ -4321,14 +4321,14 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 						if (write) {
 							{
 								RD::Uniform u;
-								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 								u.binding = 7;
 								u.ids.push_back(dmap.texture);
 								uniforms.push_back(u);
 							}
 							{
 								RD::Uniform u;
-								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 								u.binding = 8;
 								u.ids.push_back(dmap.depth);
 								uniforms.push_back(u);
@@ -4337,14 +4337,14 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 
 						{
 							RD::Uniform u;
-							u.type = RD::UNIFORM_TYPE_TEXTURE;
+							u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 							u.binding = 9;
 							u.ids.push_back(storage->gi_probe_get_sdf_texture(gi_probe->probe));
 							uniforms.push_back(u);
 						}
 						{
 							RD::Uniform u;
-							u.type = RD::UNIFORM_TYPE_SAMPLER;
+							u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 							u.binding = 10;
 							u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 							uniforms.push_back(u);
@@ -4353,7 +4353,7 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 						if (plot) {
 							{
 								RD::Uniform u;
-								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 								u.binding = 11;
 								u.ids.push_back(gi_probe->mipmaps[dmap.mipmap].texture);
 								uniforms.push_back(u);
@@ -4764,21 +4764,21 @@ void RendererSceneRenderRD::_debug_giprobe(RID p_gi_probe, RD::DrawListID p_draw
 	Vector<RD::Uniform> uniforms;
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 		u.binding = 1;
 		u.ids.push_back(storage->gi_probe_get_data_buffer(gi_probe->probe));
 		uniforms.push_back(u);
 	}
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 2;
 		u.ids.push_back(gi_probe->texture);
 		uniforms.push_back(u);
 	}
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_SAMPLER;
+		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 		u.binding = 3;
 		u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 		uniforms.push_back(u);
@@ -4837,28 +4837,28 @@ void RendererSceneRenderRD::_debug_sdfgi_probes(RID p_render_buffers, RD::DrawLi
 		{
 			RD::Uniform u;
 			u.binding = 1;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.ids.push_back(rb->sdfgi->cascades_ubo);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 2;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.ids.push_back(rb->sdfgi->lightprobe_texture);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 3;
-			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 4;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.ids.push_back(rb->sdfgi->occlusion_texture);
 			uniforms.push_back(u);
 		}
@@ -4950,7 +4950,7 @@ void RendererSceneRenderRD::_allocate_blur_textures(RenderBuffers *rb) {
 	tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 	tf.width = rb->width;
 	tf.height = rb->height;
-	tf.type = RD::TEXTURE_TYPE_2D;
+	tf.texture_type = RD::TEXTURE_TYPE_2D;
 	tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	tf.mipmaps = mipmaps_required;
 
@@ -5123,7 +5123,7 @@ void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_frameb
 		tf.format = RD::DATA_FORMAT_R32_SFLOAT;
 		tf.width = rb->width / 2;
 		tf.height = rb->height / 2;
-		tf.type = RD::TEXTURE_TYPE_2D;
+		tf.texture_type = RD::TEXTURE_TYPE_2D;
 		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
 
 		rb->ssr.depth_scaled = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -5138,7 +5138,7 @@ void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_frameb
 		tf.format = RD::DATA_FORMAT_R8_UNORM;
 		tf.width = rb->width / 2;
 		tf.height = rb->height / 2;
-		tf.type = RD::TEXTURE_TYPE_2D;
+		tf.texture_type = RD::TEXTURE_TYPE_2D;
 		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 
 		rb->ssr.blur_radius[0] = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -5444,7 +5444,7 @@ void RendererSceneRenderRD::_sdfgi_debug_draw(RID p_render_buffers, const Camera
 		{
 			RD::Uniform u;
 			u.binding = 1;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			for (uint32_t i = 0; i < SDFGI::MAX_CASCADES; i++) {
 				if (i < rb->sdfgi->cascades.size()) {
 					u.ids.push_back(rb->sdfgi->cascades[i].sdf_tex);
@@ -5457,7 +5457,7 @@ void RendererSceneRenderRD::_sdfgi_debug_draw(RID p_render_buffers, const Camera
 		{
 			RD::Uniform u;
 			u.binding = 2;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			for (uint32_t i = 0; i < SDFGI::MAX_CASCADES; i++) {
 				if (i < rb->sdfgi->cascades.size()) {
 					u.ids.push_back(rb->sdfgi->cascades[i].light_tex);
@@ -5470,7 +5470,7 @@ void RendererSceneRenderRD::_sdfgi_debug_draw(RID p_render_buffers, const Camera
 		{
 			RD::Uniform u;
 			u.binding = 3;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			for (uint32_t i = 0; i < SDFGI::MAX_CASCADES; i++) {
 				if (i < rb->sdfgi->cascades.size()) {
 					u.ids.push_back(rb->sdfgi->cascades[i].light_aniso_0_tex);
@@ -5483,7 +5483,7 @@ void RendererSceneRenderRD::_sdfgi_debug_draw(RID p_render_buffers, const Camera
 		{
 			RD::Uniform u;
 			u.binding = 4;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			for (uint32_t i = 0; i < SDFGI::MAX_CASCADES; i++) {
 				if (i < rb->sdfgi->cascades.size()) {
 					u.ids.push_back(rb->sdfgi->cascades[i].light_aniso_1_tex);
@@ -5496,35 +5496,35 @@ void RendererSceneRenderRD::_sdfgi_debug_draw(RID p_render_buffers, const Camera
 		{
 			RD::Uniform u;
 			u.binding = 5;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.ids.push_back(rb->sdfgi->occlusion_texture);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 8;
-			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 9;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.ids.push_back(rb->sdfgi->cascades_ubo);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 10;
-			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.ids.push_back(rb->texture);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 11;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.ids.push_back(rb->sdfgi->lightprobe_texture);
 			uniforms.push_back(u);
 		}
@@ -6543,7 +6543,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		tf.width = target_width;
 		tf.height = target_height;
 		tf.depth = volumetric_fog_depth;
-		tf.type = RD::TEXTURE_TYPE_3D;
+		tf.texture_type = RD::TEXTURE_TYPE_3D;
 		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
 
 		rb->volumetric_fog->light_density_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -6557,7 +6557,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		{
 			RD::Uniform u;
 			u.binding = 0;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.ids.push_back(rb->volumetric_fog->fog_map);
 			uniforms.push_back(u);
 		}
@@ -6730,7 +6730,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 1;
 			if (shadow_atlas == nullptr || shadow_atlas->shrink_stages.size() == 0) {
 				u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK));
@@ -6743,7 +6743,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 2;
 			if (directional_shadow.shrink_stages.size() == 0) {
 				u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK));
@@ -6755,7 +6755,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 3;
 			u.ids.push_back(get_positional_light_buffer());
 			uniforms.push_back(u);
@@ -6763,7 +6763,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 4;
 			u.ids.push_back(get_directional_light_buffer());
 			uniforms.push_back(u);
@@ -6771,7 +6771,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 5;
 			u.ids.push_back(get_cluster_builder_texture());
 			uniforms.push_back(u);
@@ -6779,7 +6779,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 6;
 			u.ids.push_back(get_cluster_builder_indices_buffer());
 			uniforms.push_back(u);
@@ -6787,7 +6787,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 7;
 			u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
@@ -6795,7 +6795,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 8;
 			u.ids.push_back(rb->volumetric_fog->light_density_map);
 			uniforms.push_back(u);
@@ -6803,7 +6803,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 9;
 			u.ids.push_back(rb->volumetric_fog->fog_map);
 			uniforms.push_back(u);
@@ -6811,7 +6811,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 10;
 			u.ids.push_back(shadow_sampler);
 			uniforms.push_back(u);
@@ -6819,7 +6819,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 11;
 			u.ids.push_back(render_buffers_get_gi_probe_buffer(p_render_buffers));
 			uniforms.push_back(u);
@@ -6827,7 +6827,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 12;
 			for (int i = 0; i < RenderBuffers::MAX_GIPROBES; i++) {
 				u.ids.push_back(rb->giprobe_textures[i]);
@@ -6836,7 +6836,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 13;
 			u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
@@ -6857,7 +6857,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+				u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 				u.binding = 0;
 				u.ids.push_back(gi.sdfgi_ubo);
 				uniforms.push_back(u);
@@ -6865,7 +6865,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 1;
 				u.ids.push_back(rb->sdfgi->ambient_texture);
 				uniforms.push_back(u);
@@ -6873,7 +6873,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 2;
 				u.ids.push_back(rb->sdfgi->occlusion_texture);
 				uniforms.push_back(u);
@@ -8115,7 +8115,7 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 0;
 			u.ids.resize(12);
 			RID *ids_ptr = u.ids.ptrw();
@@ -8136,7 +8136,7 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 1;
 			u.ids.push_back(storage->global_variables_get_storage_buffer());
 			uniforms.push_back(u);
@@ -8145,7 +8145,7 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 		{
 			RD::Uniform u;
 			u.binding = 2;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.ids.push_back(sky_scene_state.uniform_buffer);
 			uniforms.push_back(u);
 		}
@@ -8153,7 +8153,7 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 		{
 			RD::Uniform u;
 			u.binding = 3;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.ids.push_back(sky_scene_state.directional_light_buffer);
 			uniforms.push_back(u);
 		}
@@ -8166,7 +8166,7 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 		{
 			RD::Uniform u;
 			u.binding = 0;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			RID vfog = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
 			u.ids.push_back(vfog);
 			uniforms.push_back(u);
@@ -8185,21 +8185,21 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 		Vector<RD::Uniform> uniforms;
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 0;
 			u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 1;
 			u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE));
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 2;
 			u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE));
 			uniforms.push_back(u);
@@ -8263,14 +8263,14 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 0;
 				u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_WHITE));
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_SAMPLER;
+				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 				u.binding = 1;
 				u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 				uniforms.push_back(u);
