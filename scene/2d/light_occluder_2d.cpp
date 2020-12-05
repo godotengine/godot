@@ -238,7 +238,7 @@ Ref<OccluderPolygon2D> LightOccluder2D::get_occluder_polygon() const {
 
 void LightOccluder2D::set_occluder_light_mask(int p_mask) {
 	mask = p_mask;
-	RS::get_singleton()->canvas_light_occluder_set_light_mask(occluder, mask);
+	RS::get_singleton()->canvas_light_occluder_set_light_mask(occluder, p_mask);
 }
 
 int LightOccluder2D::get_occluder_light_mask() const {
@@ -285,7 +285,7 @@ void LightOccluder2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D"), "set_occluder_polygon", "get_occluder_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdf_collision"), "set_as_sdf_collision", "is_set_as_sdf_collision");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_occluder_light_mask", "get_occluder_light_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "occluder_light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_occluder_light_mask", "get_occluder_light_mask");
 }
 
 LightOccluder2D::LightOccluder2D() {
