@@ -13,6 +13,7 @@
 		    rng.randomize()
 		    var my_random_number = rng.randf_range(-10.0, 10.0)
 		[/codeblock]
+		[b]Note:[/b] The default values of [member seed] and [member state] properties are pseudo-random, and changes when calling [method randomize]. The [code]0[/code] value documented here is a placeholder, and not the actual default seed.
 	</description>
 	<tutorials>
 		<link title="Random number generation">https://docs.godotengine.org/en/latest/tutorials/math/random_number_generation.html</link>
@@ -75,9 +76,26 @@
 	</methods>
 	<members>
 		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="0">
-			The seed used by the random number generator. A given seed will give a reproducible sequence of pseudo-random numbers.
+			Initializes the random number generator state based on the given seed value. A given seed will give a reproducible sequence of pseudo-random numbers.
 			[b]Note:[/b] The RNG does not have an avalanche effect, and can output similar random streams given similar seeds. Consider using a hash function to improve your seed quality if they're sourced externally.
-			[b]Note:[/b] The default value of this property is pseudo-random, and changes when calling [method randomize]. The [code]0[/code] value documented here is a placeholder, and not the actual default seed.
+			[b]Note:[/b] Setting this property produces a side effect of changing the internal [member state], so make sure to initialize the seed [i]before[/i] modifying the [member state]:
+			[codeblock]
+			var rng = RandomNumberGenerator.new()
+			rng.seed = hash("Godot")
+			rng.state = 100 # Restore to some previously saved state.
+			[/codeblock]
+		</member>
+		<member name="state" type="int" setter="set_state" getter="get_state" default="0">
+			The current state of the random number generator. Save and restore this property to restore the generator to a previous state:
+			[codeblock]
+			var rng = RandomNumberGenerator.new()
+			print(rng.randf())
+			var saved_state = rng.state # Store current state.
+			print(rng.randf()) # Advance internal state.
+			rng.state = saved_state # Restore the state.
+			print(rng.randf()) # Prints the same value as in previous.
+			[/codeblock]
+			[b]Note:[/b] Do not set state to arbitrary values, since the random number generator requires the state to have certain qualities to behave properly. It should only be set to values that came from the state property itself. To initialize the random number generator with arbitrary input, use [member seed] instead.
 		</member>
 	</members>
 	<constants>
