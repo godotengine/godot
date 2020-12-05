@@ -37,6 +37,7 @@
 #include "core/os/main_loop.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/vector.h"
 
 #include <stdarg.h>
@@ -120,6 +121,17 @@ public:
 	virtual PackedStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
+
+#ifdef DEBUG_ENABLED
+	struct StackFrame {
+		String function;
+		String module;
+		unsigned int line;
+		String file;
+	};
+
+	virtual void get_stack_trace(LocalVector<StackFrame> &p_frames, int p_skip_frames, int p_max_frames, void *p_context = nullptr) const {}
+#endif
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) { return ERR_UNAVAILABLE; }
 	virtual Error close_dynamic_library(void *p_library_handle) { return ERR_UNAVAILABLE; }

@@ -94,6 +94,10 @@ public:
 
 	void run();
 
+#ifdef DEBUG_ENABLED
+	virtual void get_stack_trace(LocalVector<StackFrame> &p_frames, int p_skip_frames, int p_max_frames, void *p_context = nullptr) const override;
+#endif
+
 	void disable_crash_handler();
 	bool is_disable_crash_handler() const;
 

@@ -32,142 +32,21 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "main/main.h"
+
+#include <debugapi.h>
 
 #ifdef CRASH_HANDLER_EXCEPTION
 
-// Backtrace code code based on: https://stackoverflow.com/questions/6205981/windows-c-stack-trace-from-a-running-app
-
-#include <algorithm>
-#include <iterator>
-#include <string>
-#include <vector>
-
-#include <psapi.h>
-
-#pragma comment(lib, "psapi.lib")
-#pragma comment(lib, "dbghelp.lib")
-
-// Some versions of imagehlp.dll lack the proper packing directives themselves
-// so we need to do it.
-#pragma pack(push, before_imagehlp, 8)
-#include <imagehlp.h>
-#pragma pack(pop, before_imagehlp)
-
-struct module_data {
-	std::string image_name;
-	std::string module_name;
-	void *base_address;
-	DWORD load_size;
-};
-
-class symbol {
-	typedef IMAGEHLP_SYMBOL64 sym_type;
-	sym_type *sym;
-	static const int max_name_len = 1024;
-
-public:
-	symbol(HANDLE process, DWORD64 address) :
-			sym((sym_type *)::operator new(sizeof(*sym) + max_name_len)) {
-		memset(sym, '\0', sizeof(*sym) + max_name_len);
-		sym->SizeOfStruct = sizeof(*sym);
-		sym->MaxNameLength = max_name_len;
-		DWORD64 displacement;
-
-		SymGetSymFromAddr64(process, address, &displacement, sym);
-	}
-
-	std::string name() { return std::string(sym->Name); }
-	std::string undecorated_name() {
-		if (*sym->Name == '\0')
-			return "<couldn't map PC to fn name>";
-		std::vector<char> und_name(max_name_len);
-		UnDecorateSymbolName(sym->Name, &und_name[0], max_name_len, UNDNAME_COMPLETE);
-		return std::string(&und_name[0], strlen(&und_name[0]));
-	}
-};
-
-class get_mod_info {
-	HANDLE process;
-
-public:
-	get_mod_info(HANDLE h) :
-			process(h) {}
-
-	module_data operator()(HMODULE module) {
-		module_data ret;
-		char temp[4096];
-		MODULEINFO mi;
-
-		GetModuleInformation(process, module, &mi, sizeof(mi));
-		ret.base_address = mi.lpBaseOfDll;
-		ret.load_size = mi.SizeOfImage;
-
-		GetModuleFileNameEx(process, module, temp, sizeof(temp));
-		ret.image_name = temp;
-		GetModuleBaseName(process, module, temp, sizeof(temp));
-		ret.module_name = temp;
-		std::vector<char> img(ret.image_name.begin(), ret.image_name.end());
-		std::vector<char> mod(ret.module_name.begin(), ret.module_name.end());
-		SymLoadModule64(process, 0, &img[0], &mod[0], (DWORD64)ret.base_address, ret.load_size);
-		return ret;
-	}
-};
-
 DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
-	HANDLE process = GetCurrentProcess();
-	HANDLE hThread = GetCurrentThread();
-	DWORD offset_from_symbol = 0;
-	IMAGEHLP_LINE64 line = { 0 };
-	std::vector<module_data> modules;
-	DWORD cbNeeded;
-	std::vector<HMODULE> module_handles(1);
-
 	if (OS::get_singleton() == nullptr || OS::get_singleton()->is_disable_crash_handler() || IsDebuggerPresent()) {
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
 	fprintf(stderr, "%s: Program crashed\n", __FUNCTION__);
 
-	if (OS::get_singleton()->get_main_loop())
+	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
-
-	// Load the symbols:
-	if (!SymInitialize(process, nullptr, false))
-		return EXCEPTION_CONTINUE_SEARCH;
-
-	SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_UNDNAME);
-	EnumProcessModules(process, &module_handles[0], module_handles.size() * sizeof(HMODULE), &cbNeeded);
-	module_handles.resize(cbNeeded / sizeof(HMODULE));
-	EnumProcessModules(process, &module_handles[0], module_handles.size() * sizeof(HMODULE), &cbNeeded);
-	std::transform(module_handles.begin(), module_handles.end(), std::back_inserter(modules), get_mod_info(process));
-	void *base = modules[0].base_address;
-
-	// Setup stuff:
-	CONTEXT *context = ep->ContextRecord;
-	STACKFRAME64 frame;
-	bool skip_first = false;
-
-	frame.AddrPC.Mode = AddrModeFlat;
-	frame.AddrStack.Mode = AddrModeFlat;
-	frame.AddrFrame.Mode = AddrModeFlat;
-
-#ifdef _M_X64
-	frame.AddrPC.Offset = context->Rip;
-	frame.AddrStack.Offset = context->Rsp;
-	frame.AddrFrame.Offset = context->Rbp;
-#else
-	frame.AddrPC.Offset = context->Eip;
-	frame.AddrStack.Offset = context->Esp;
-	frame.AddrFrame.Offset = context->Ebp;
-
-	// Skip the first one to avoid a duplicate on 32-bit mode
-	skip_first = true;
-#endif
-
-	line.SizeOfStruct = sizeof(line);
-	IMAGE_NT_HEADERS *h = ImageNtHeader(base);
-	DWORD image_type = h->FileHeader.Machine;
+	}
 
 	String msg;
 	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
@@ -177,31 +56,25 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 
 	fprintf(stderr, "Dumping the backtrace. %s\n", msg.utf8().get_data());
 
-	int n = 0;
-	do {
-		if (skip_first) {
-			skip_first = false;
+	CONTEXT *context = ep->ContextRecord;
+
+	LocalVector<OS::StackFrame> stack;
+	OS::get_singleton()->get_stack_trace(stack, 0, 256, context);
+
+	int frame_count = stack.size();
+	for (int frame_index = 0; frame_index < frame_count; ++frame_index) {
+		OS::StackFrame const &frame = stack[frame_index];
+
+		if (frame.function.empty()) {
+			fprintf(stderr, "[%d] ???\n", frame_index);
+		} else if (frame.file.empty()) {
+			fprintf(stderr, "[%d] %s\n", frame_index, frame.function.utf8().get_data());
 		} else {
-			if (frame.AddrPC.Offset != 0) {
-				std::string fnName = symbol(process, frame.AddrPC.Offset).undecorated_name();
-
-				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &offset_from_symbol, &line))
-					fprintf(stderr, "[%d] %s (%s:%d)\n", n, fnName.c_str(), line.FileName, line.LineNumber);
-				else
-					fprintf(stderr, "[%d] %s\n", n, fnName.c_str());
-			} else
-				fprintf(stderr, "[%d] ???\n", n);
-
-			n++;
+			fprintf(stderr, "[%d] %s (%s:%u)\n", frame_index, frame.function.utf8().get_data(), frame.file.utf8().get_data(), frame.line);
 		}
-
-		if (!StackWalk64(image_type, process, hThread, &frame, context, nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr))
-			break;
-	} while (frame.AddrReturn.Offset != 0 && n < 256);
+	}
 
 	fprintf(stderr, "-- END OF BACKTRACE --\n");
-
-	SymCleanup(process);
 
 	// Pass the exception to the OS
 	return EXCEPTION_CONTINUE_SEARCH;
