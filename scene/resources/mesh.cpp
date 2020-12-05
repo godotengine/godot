@@ -480,9 +480,6 @@ void Mesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRIMITIVE_TRIANGLES);
 	BIND_ENUM_CONSTANT(PRIMITIVE_TRIANGLE_STRIP);
 
-	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_NORMALIZED);
-	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_RELATIVE);
-
 	BIND_ENUM_CONSTANT(ARRAY_VERTEX);
 	BIND_ENUM_CONSTANT(ARRAY_NORMAL);
 	BIND_ENUM_CONSTANT(ARRAY_TANGENT);
@@ -1615,6 +1612,9 @@ void ArrayMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_surfaces", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_surfaces", "_get_surfaces");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_shape_mode", PROPERTY_HINT_ENUM, "Normalized,Relative"), "set_blend_shape_mode", "get_blend_shape_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, ""), "set_custom_aabb", "get_custom_aabb");
+
+	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_NORMALIZED);
+	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_RELATIVE);
 }
 
 void ArrayMesh::reload_from_file() {

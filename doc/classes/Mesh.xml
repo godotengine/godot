@@ -126,29 +126,23 @@
 		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="4" enum="PrimitiveType">
 			Render array as triangle strips.
 		</constant>
-		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
-			Blend shapes are normalized.
-		</constant>
-		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1" enum="BlendShapeMode">
-			Blend shapes are relative to base weight.
-		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
-			Array of vertices.
+			[PackedVector3Array], [PackedVector2Array], or [Array] of vertex positions.
 		</constant>
 		<constant name="ARRAY_NORMAL" value="1" enum="ArrayType">
-			Array of normals.
+			[PackedVector3Array] of vertex normals.
 		</constant>
 		<constant name="ARRAY_TANGENT" value="2" enum="ArrayType">
-			Array of tangents as an array of floats, 4 floats per tangent.
+			[PackedFloat32Array] of vertex tangents. Each element in groups of 4 floats, first 3 floats determine the tangent, and the last the binormal direction as -1 or 1.
 		</constant>
 		<constant name="ARRAY_COLOR" value="3" enum="ArrayType">
-			Array of colors.
+			[PackedColorArray] of vertex colors.
 		</constant>
 		<constant name="ARRAY_TEX_UV" value="4" enum="ArrayType">
-			Array of UV coordinates.
+			[PackedVector2Array] for UV coordinates.
 		</constant>
 		<constant name="ARRAY_TEX_UV2" value="5" enum="ArrayType">
-			Array of second set of UV coordinates.
+			[PackedVector2Array] for second UV coordinates.
 		</constant>
 		<constant name="ARRAY_CUSTOM0" value="6" enum="ArrayType">
 		</constant>
@@ -159,13 +153,14 @@
 		<constant name="ARRAY_CUSTOM3" value="9" enum="ArrayType">
 		</constant>
 		<constant name="ARRAY_BONES" value="10" enum="ArrayType">
-			Array of bone data.
+			[PackedFloat32Array] or [PackedInt32Array] of bone indices. Each element is a group of 4 numbers.
 		</constant>
 		<constant name="ARRAY_WEIGHTS" value="11" enum="ArrayType">
-			Array of weights.
+			[PackedFloat32Array] of bone weights. Each element in groups of 4 floats.
 		</constant>
 		<constant name="ARRAY_INDEX" value="12" enum="ArrayType">
-			Array of indices.
+			[PackedInt32Array] of integers used as indices referencing vertices, colors, normals, tangents, and textures. All of those arrays must have the same number of elements as the vertex array. No index can be beyond the vertex array size. When this index array is present, it puts the function into "index mode," where the index selects the *i*'th vertex, normal, tangent, color, UV, etc. This means if you want to have different normals or colors along an edge, you have to duplicate the vertices.
+			For triangles, the index array is interpreted as triples, referring to the vertices of each triangle. For lines, the index array is in pairs indicating the start and end of each line.
 		</constant>
 		<constant name="ARRAY_MAX" value="13" enum="ArrayType">
 			Represents the size of the [enum ArrayType] enum.
@@ -187,6 +182,7 @@
 		<constant name="ARRAY_CUSTOM_RGBA_FLOAT" value="7" enum="ArrayCustomFormat">
 		</constant>
 		<constant name="ARRAY_CUSTOM_MAX" value="8" enum="ArrayCustomFormat">
+			Represents the size of the [enum ArrayCustomFormat] enum.
 		</constant>
 		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
 			Mesh array contains vertices. All meshes require a vertex array so this should always be present.
@@ -223,7 +219,7 @@
 		<constant name="ARRAY_FORMAT_INDEX" value="4096" enum="ArrayFormat">
 			Mesh array uses indices.
 		</constant>
-		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="-8185" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="2147475463" enum="ArrayFormat">
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat">
 		</constant>

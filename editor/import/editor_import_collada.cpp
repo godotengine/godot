@@ -470,9 +470,9 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 			p_mesh->add_blend_shape(name);
 		}
 		if (p_morph_data->mode == "RELATIVE") {
-			p_mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_RELATIVE);
+			p_mesh->set_blend_shape_mode(ArrayMesh::BLEND_SHAPE_MODE_RELATIVE);
 		} else if (p_morph_data->mode == "NORMALIZED") {
-			p_mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
+			p_mesh->set_blend_shape_mode(ArrayMesh::BLEND_SHAPE_MODE_NORMALIZED);
 		}
 	}
 
