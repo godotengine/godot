@@ -2,8 +2,6 @@
   <PropertyGroup>
     <!-- Determines if we should import Microsoft.NET.Sdk, if it wasn't already imported. -->
     <GodotSdkImportsMicrosoftNetSdk Condition=" '$(UsingMicrosoftNETSdk)' != 'true' ">true</GodotSdkImportsMicrosoftNetSdk>
-
-    <GodotProjectTypeGuid>{8F3E2DF0-C35C-4265-82FC-BEA011F4A7ED}</GodotProjectTypeGuid>
   </PropertyGroup>
 
   <PropertyGroup>
