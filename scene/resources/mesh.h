@@ -125,11 +125,6 @@ public:
 		PRIMITIVE_MAX = RenderingServer::PRIMITIVE_MAX,
 	};
 
-	enum BlendShapeMode {
-		BLEND_SHAPE_MODE_NORMALIZED = RS::BLEND_SHAPE_MODE_NORMALIZED,
-		BLEND_SHAPE_MODE_RELATIVE = RS::BLEND_SHAPE_MODE_RELATIVE,
-	};
-
 	virtual int get_surface_count() const = 0;
 	virtual int surface_get_array_len(int p_idx) const = 0;
 	virtual int surface_get_array_index_len(int p_idx) const = 0;
@@ -175,6 +170,12 @@ class ArrayMesh : public Mesh {
 
 	Array _get_surfaces() const;
 	void _set_surfaces(const Array &p_data);
+
+public:
+	enum BlendShapeMode {
+		BLEND_SHAPE_MODE_NORMALIZED = RS::BLEND_SHAPE_MODE_NORMALIZED,
+		BLEND_SHAPE_MODE_RELATIVE = RS::BLEND_SHAPE_MODE_RELATIVE,
+	};
 
 private:
 	struct Surface {
@@ -267,6 +268,6 @@ VARIANT_ENUM_CAST(Mesh::ArrayType);
 VARIANT_ENUM_CAST(Mesh::ArrayFormat);
 VARIANT_ENUM_CAST(Mesh::ArrayCustomFormat);
 VARIANT_ENUM_CAST(Mesh::PrimitiveType);
-VARIANT_ENUM_CAST(Mesh::BlendShapeMode);
+VARIANT_ENUM_CAST(ArrayMesh::BlendShapeMode);
 
 #endif

@@ -838,7 +838,7 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 			String ai_anim_mesh_name = AssimpUtils::get_assimp_string(ai_mesh->mAnimMeshes[j]->mName);
 			if (!morph_mesh_string_lookup.has(ai_anim_mesh_name)) {
 				morph_mesh_string_lookup.insert(ai_anim_mesh_name, j);
-				mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
+				mesh->set_blend_shape_mode(ArrayMesh::BLEND_SHAPE_MODE_NORMALIZED);
 				if (ai_anim_mesh_name.empty()) {
 					ai_anim_mesh_name = String("morph_") + itos(j);
 				}
