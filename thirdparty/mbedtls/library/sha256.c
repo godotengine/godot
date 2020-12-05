@@ -1,8 +1,14 @@
 /*
  *  FIPS-180-2 compliant SHA-256 implementation
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 /*
  *  The SHA-256 Secure Hash Standard was published by NIST in 2002.
@@ -49,6 +74,10 @@
 #endif /* MBEDTLS_PLATFORM_C */
 #endif /* MBEDTLS_SELF_TEST */
 
+#define SHA256_VALIDATE_RET(cond)                           \
+    MBEDTLS_INTERNAL_VALIDATE_RET( cond, MBEDTLS_ERR_SHA256_BAD_INPUT_DATA )
+#define SHA256_VALIDATE(cond)  MBEDTLS_INTERNAL_VALIDATE( cond )
+
 #if !defined(MBEDTLS_SHA256_ALT)
 
 /*
@@ -76,6 +105,8 @@ do {                                                    \
 
 void mbedtls_sha256_init( mbedtls_sha256_context *ctx )
 {
+    SHA256_VALIDATE( ctx != NULL );
+
     memset( ctx, 0, sizeof( mbedtls_sha256_context ) );
 }
 
@@ -90,6 +121,9 @@ void mbedtls_sha256_free( mbedtls_sha256_context *ctx )
 void mbedtls_sha256_clone( mbedtls_sha256_context *dst,
                            const mbedtls_sha256_context *src )
 {
+    SHA256_VALIDATE( dst != NULL );
+    SHA256_VALIDATE( src != NULL );
+
     *dst = *src;
 }
 
@@ -98,6 +132,9 @@ void mbedtls_sha256_clone( mbedtls_sha256_context *dst,
  */
 int mbedtls_sha256_starts_ret( mbedtls_sha256_context *ctx, int is224 )
 {
+    SHA256_VALIDATE_RET( ctx != NULL );
+    SHA256_VALIDATE_RET( is224 == 0 || is224 == 1 );
+
     ctx->total[0] = 0;
     ctx->total[1] = 0;
 
@@ -160,8 +197,8 @@ static const uint32_t K[] =
     0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2,
 };
 
-#define  SHR(x,n) ((x & 0xFFFFFFFF) >> n)
-#define ROTR(x,n) (SHR(x,n) | (x << (32 - n)))
+#define  SHR(x,n) (((x) & 0xFFFFFFFF) >> (n))
+#define ROTR(x,n) (SHR(x,n) | ((x) << (32 - (n))))
 
 #define S0(x) (ROTR(x, 7) ^ ROTR(x,18) ^  SHR(x, 3))
 #define S1(x) (ROTR(x,17) ^ ROTR(x,19) ^  SHR(x,10))
@@ -169,21 +206,22 @@ static const uint32_t K[] =
 #define S2(x) (ROTR(x, 2) ^ ROTR(x,13) ^ ROTR(x,22))
 #define S3(x) (ROTR(x, 6) ^ ROTR(x,11) ^ ROTR(x,25))
 
-#define F0(x,y,z) ((x & y) | (z & (x | y)))
-#define F1(x,y,z) (z ^ (x & (y ^ z)))
+#define F0(x,y,z) (((x) & (y)) | ((z) & ((x) | (y))))
+#define F1(x,y,z) ((z) ^ ((x) & ((y) ^ (z))))
 
 #define R(t)                                    \
-(                                               \
-    W[t] = S1(W[t -  2]) + W[t -  7] +          \
-           S0(W[t - 15]) + W[t - 16]            \
-)
+    (                                           \
+        W[t] = S1(W[(t) -  2]) + W[(t) -  7] +  \
+               S0(W[(t) - 15]) + W[(t) - 16]    \
+    )
 
-#define P(a,b,c,d,e,f,g,h,x,K)                  \
-{                                               \
-    temp1 = h + S3(e) + F1(e,f,g) + K + x;      \
-    temp2 = S2(a) + F0(a,b,c);                  \
-    d += temp1; h = temp1 + temp2;              \
-}
+#define P(a,b,c,d,e,f,g,h,x,K)                          \
+    do                                                  \
+    {                                                   \
+        temp1 = (h) + S3(e) + F1((e),(f),(g)) + (K) + (x);      \
+        temp2 = S2(a) + F0((a),(b),(c));                        \
+        (d) += temp1; (h) = temp1 + temp2;              \
+    } while( 0 )
 
 int mbedtls_internal_sha256_process( mbedtls_sha256_context *ctx,
                                 const unsigned char data[64] )
@@ -191,6 +229,9 @@ int mbedtls_internal_sha256_process( mbedtls_sha256_context *ctx,
     uint32_t temp1, temp2, W[64];
     uint32_t A[8];
     unsigned int i;
+
+    SHA256_VALIDATE_RET( ctx != NULL );
+    SHA256_VALIDATE_RET( (const unsigned char *)data != NULL );
 
     for( i = 0; i < 8; i++ )
         A[i] = ctx->state[i];
@@ -263,6 +304,9 @@ int mbedtls_sha256_update_ret( mbedtls_sha256_context *ctx,
     size_t fill;
     uint32_t left;
 
+    SHA256_VALIDATE_RET( ctx != NULL );
+    SHA256_VALIDATE_RET( ilen == 0 || input != NULL );
+
     if( ilen == 0 )
         return( 0 );
 
@@ -320,6 +364,9 @@ int mbedtls_sha256_finish_ret( mbedtls_sha256_context *ctx,
     int ret;
     uint32_t used;
     uint32_t high, low;
+
+    SHA256_VALIDATE_RET( ctx != NULL );
+    SHA256_VALIDATE_RET( (unsigned char *)output != NULL );
 
     /*
      * Add padding: 0x80 then 0x00 until 8 bytes remain for the length
@@ -394,6 +441,10 @@ int mbedtls_sha256_ret( const unsigned char *input,
 {
     int ret;
     mbedtls_sha256_context ctx;
+
+    SHA256_VALIDATE_RET( is224 == 0 || is224 == 1 );
+    SHA256_VALIDATE_RET( ilen == 0 || input != NULL );
+    SHA256_VALIDATE_RET( (unsigned char *)output != NULL );
 
     mbedtls_sha256_init( &ctx );
 

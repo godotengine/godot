@@ -98,4 +98,4 @@ int WebPRescalerHasPendingOutput(const WebPRescaler* const rescaler) {
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_UTILS_RESCALER_UTILS_H_ */
+#endif  // WEBP_UTILS_RESCALER_UTILS_H_

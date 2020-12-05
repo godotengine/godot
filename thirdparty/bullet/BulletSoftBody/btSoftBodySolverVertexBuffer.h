@@ -16,7 +16,6 @@ subject to the following restrictions:
 #ifndef BT_SOFT_BODY_SOLVER_VERTEX_BUFFER_H
 #define BT_SOFT_BODY_SOLVER_VERTEX_BUFFER_H
 
-
 class btVertexBufferDescriptor
 {
 public:
@@ -27,8 +26,7 @@ public:
 		OPENGL_BUFFER
 	};
 
-protected:	
-
+protected:
 	bool m_hasVertexPositions;
 	bool m_hasNormals;
 
@@ -51,7 +49,6 @@ public:
 
 	virtual ~btVertexBufferDescriptor()
 	{
-
 	}
 
 	virtual bool hasVertexPositions() const
@@ -102,7 +99,6 @@ public:
 	}
 };
 
-
 class btCPUVertexBufferDescriptor : public btVertexBufferDescriptor
 {
 protected:
@@ -114,7 +110,7 @@ public:
 	 * vertexOffset is the offset in floats to the first vertex.
 	 * vertexStride is the stride in floats between vertices.
 	 */
-	btCPUVertexBufferDescriptor( float *basePointer, int vertexOffset, int vertexStride )
+	btCPUVertexBufferDescriptor(float *basePointer, int vertexOffset, int vertexStride)
 	{
 		m_basePointer = basePointer;
 		m_vertexOffset = vertexOffset;
@@ -127,7 +123,7 @@ public:
 	 * vertexOffset is the offset in floats to the first vertex.
 	 * vertexStride is the stride in floats between vertices.
 	 */
-	btCPUVertexBufferDescriptor( float *basePointer, int vertexOffset, int vertexStride, int normalOffset, int normalStride )
+	btCPUVertexBufferDescriptor(float *basePointer, int vertexOffset, int vertexStride, int normalOffset, int normalStride)
 	{
 		m_basePointer = basePointer;
 
@@ -142,7 +138,6 @@ public:
 
 	virtual ~btCPUVertexBufferDescriptor()
 	{
-
 	}
 
 	/**
@@ -162,4 +157,4 @@ public:
 	}
 };
 
-#endif // #ifndef BT_SOFT_BODY_SOLVER_VERTEX_BUFFER_H
+#endif  // #ifndef BT_SOFT_BODY_SOLVER_VERTEX_BUFFER_H

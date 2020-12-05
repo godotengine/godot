@@ -1,25 +1,24 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftfstype.c                                                             */
-/*                                                                         */
-/*    FreeType utility file to access FSType data (body).                  */
-/*                                                                         */
-/*  Copyright 2008-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftfstype.c
+ *
+ *   FreeType utility file to access FSType data (body).
+ *
+ * Copyright (C) 2008-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
-#include <ft2build.h>
-#include FT_TYPE1_TABLES_H
-#include FT_TRUETYPE_TABLES_H
-#include FT_INTERNAL_SERVICE_H
-#include FT_SERVICE_POSTSCRIPT_INFO_H
+#include <freetype/t1tables.h>
+#include <freetype/tttables.h>
+#include <freetype/internal/ftserv.h>
+#include <freetype/internal/services/svpsinfo.h>
 
 
   /* documentation is in freetype.h */

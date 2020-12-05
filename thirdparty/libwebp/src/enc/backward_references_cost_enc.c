@@ -67,7 +67,7 @@ static int CostModelBuild(CostModel* const m, int xsize, int cache_bits,
 
   // The following code is similar to VP8LHistogramCreate but converts the
   // distance to plane code.
-  VP8LHistogramInit(histo, cache_bits);
+  VP8LHistogramInit(histo, cache_bits, /*init_arrays=*/ 1);
   while (VP8LRefsCursorOk(&c)) {
     VP8LHistogramAddSinglePixOrCopy(histo, c.cur_pos, VP8LDistanceToPlaneCode,
                                     xsize);

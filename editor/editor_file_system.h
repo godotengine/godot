@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,16 +31,15 @@
 #ifndef EDITOR_FILE_SYSTEM_H
 #define EDITOR_FILE_SYSTEM_H
 
-#include "os/dir_access.h"
-#include "os/thread.h"
-#include "os/thread_safe.h"
+#include "core/os/dir_access.h"
+#include "core/os/thread.h"
+#include "core/os/thread_safe.h"
+#include "core/templates/set.h"
 #include "scene/main/node.h"
-#include "set.h"
 class FileAccess;
 
 struct EditorProgressBG;
 class EditorFileSystemDirectory : public Object {
-
 	GDCLASS(EditorFileSystemDirectory, Object);
 
 	String name;
@@ -56,6 +55,7 @@ class EditorFileSystemDirectory : public Object {
 		uint64_t modified_time;
 		uint64_t import_modified_time;
 		bool import_valid;
+		String import_group_file;
 		Vector<String> deps;
 		bool verified; //used for checking changes
 		String script_class_name;
@@ -89,6 +89,7 @@ public:
 	StringName get_file_type(int p_idx) const;
 	Vector<String> get_file_deps(int p_idx) const;
 	bool get_file_import_is_valid(int p_idx) const;
+	uint64_t get_file_modified_time(int p_idx) const;
 	String get_file_script_class_name(int p_idx) const; //used for scripts
 	String get_file_script_class_extends(int p_idx) const; //used for scripts
 	String get_file_script_class_icon_path(int p_idx) const; //used for scripts
@@ -103,20 +104,19 @@ public:
 };
 
 class EditorFileSystem : public Node {
-
 	GDCLASS(EditorFileSystem, Node);
 
 	_THREAD_SAFE_CLASS_
 
 	struct ItemAction {
-
 		enum Action {
 			ACTION_NONE,
 			ACTION_DIR_ADD,
 			ACTION_DIR_REMOVE,
 			ACTION_FILE_ADD,
 			ACTION_FILE_REMOVE,
-			ACTION_FILE_TEST_REIMPORT
+			ACTION_FILE_TEST_REIMPORT,
+			ACTION_FILE_RELOAD
 		};
 
 		Action action;
@@ -127,9 +127,9 @@ class EditorFileSystem : public Node {
 
 		ItemAction() {
 			action = ACTION_NONE;
-			dir = NULL;
-			new_dir = NULL;
-			new_file = NULL;
+			dir = nullptr;
+			new_dir = nullptr;
+			new_file = nullptr;
 		}
 	};
 
@@ -142,7 +142,11 @@ class EditorFileSystem : public Node {
 	bool abort_scan;
 	bool scanning;
 	bool importing;
+	bool first_scan;
+	bool scan_changes_pending;
 	float scan_total;
+	String filesystem_settings_version_for_import;
+	bool revalidate_import_files;
 
 	void _scan_filesystem();
 
@@ -157,12 +161,12 @@ class EditorFileSystem : public Node {
 
 	/* Used for reading the filesystem cache file */
 	struct FileCache {
-
 		String type;
 		uint64_t modification_time;
 		uint64_t import_modification_time;
 		Vector<String> deps;
 		bool import_valid;
+		String import_group_file;
 		String script_class_name;
 		String script_class_extends;
 		String script_class_icon_path;
@@ -171,7 +175,6 @@ class EditorFileSystem : public Node {
 	HashMap<String, FileCache> file_cache;
 
 	struct ScanProgress {
-
 		float low;
 		float hi;
 		mutable EditorProgressBG *progress;
@@ -204,11 +207,10 @@ class EditorFileSystem : public Node {
 
 	bool _update_scan_actions();
 
-	static void _resource_saved(const String &p_path);
-
 	void _update_extensions();
 
 	void _reimport_file(const String &p_file);
+	Error _reimport_group(const String &p_group_file, const Vector<String> &p_files);
 
 	bool _test_for_reimport(const String &p_path, bool p_only_imported_files);
 
@@ -229,6 +231,16 @@ class EditorFileSystem : public Node {
 	void _queue_update_script_classes();
 
 	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
+
+	static Error _resource_import(const String &p_path);
+
+	bool using_fat32_or_exfat; // Workaround for projects in FAT32 or exFAT filesystem (pendrives, most of the time)
+
+	void _find_group_files(EditorFileSystemDirectory *efd, Map<String, Vector<String>> &group_files, Set<String> &groups_to_reimport);
+
+	void _move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location);
+
+	Set<String> group_file_cache;
 
 protected:
 	void _notification(int p_what);
@@ -253,6 +265,9 @@ public:
 	void reimport_files(const Vector<String> &p_files);
 
 	void update_script_classes();
+
+	bool is_group_file(const String &p_path) const;
+	void move_group_file(const String &p_path, const String &p_new_path);
 
 	EditorFileSystem();
 	~EditorFileSystem();

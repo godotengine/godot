@@ -1,14 +1,15 @@
 
 /* arm_init.c - NEON optimised filter functions
  *
+ * Copyright (c) 2018 Cosmin Truta
  * Copyright (c) 2014,2016 Glenn Randers-Pehrson
  * Written by Mans Rullgard, 2011.
- * Last changed in libpng 1.6.22 [May 26, 2016]
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
  * and license in png.h
  */
+
 /* Below, after checking __linux__, various non-C90 POSIX 1003.1 functions are
  * called.
  */

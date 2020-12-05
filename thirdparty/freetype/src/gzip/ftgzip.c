@@ -1,34 +1,33 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftgzip.c                                                               */
-/*                                                                         */
-/*    FreeType support for .gz compressed files.                           */
-/*                                                                         */
-/*  This optional component relies on zlib.  It should mainly be used to   */
-/*  parse compressed PCF fonts, as found with many X11 server              */
-/*  distributions.                                                         */
-/*                                                                         */
-/*  Copyright 2002-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftgzip.c
+ *
+ *   FreeType support for .gz compressed files.
+ *
+ * This optional component relies on zlib.  It should mainly be used to
+ * parse compressed PCF fonts, as found with many X11 server
+ * distributions.
+ *
+ * Copyright (C) 2002-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_MEMORY_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_GZIP_H
+#include <freetype/internal/ftmemory.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/ftgzip.h>
 #include FT_CONFIG_STANDARD_LIBRARY_H
 
 
-#include FT_MODULE_ERRORS_H
+#include <freetype/ftmoderr.h>
 
 #undef FTERRORS_H_
 
@@ -36,14 +35,10 @@
 #define FT_ERR_PREFIX  Gzip_Err_
 #define FT_ERR_BASE    FT_Mod_Err_Gzip
 
-#include FT_ERRORS_H
+#include <freetype/fterrors.h>
 
 
 #ifdef FT_CONFIG_OPTION_USE_ZLIB
-
-#ifdef FT_CONFIG_OPTION_PIC
-#error "gzip code does not support PIC yet"
-#endif
 
 #ifdef FT_CONFIG_OPTION_SYSTEM_ZLIB
 
@@ -637,8 +632,8 @@
     memory = source->memory;
 
     /*
-     *  check the header right now; this prevents allocating un-necessary
-     *  objects when we don't need them
+     * check the header right now; this prevents allocating un-necessary
+     * objects when we don't need them
      */
     error = ft_gzip_check_header( source );
     if ( error )
@@ -660,12 +655,12 @@
     }
 
     /*
-     *  We use the following trick to try to dramatically improve the
-     *  performance while dealing with small files.  If the original stream
-     *  size is less than a certain threshold, we try to load the whole font
-     *  file into memory.  This saves us from using the 32KB buffer needed
-     *  to inflate the file, plus the two 4KB intermediate input/output
-     *  buffers used in the `FT_GZipFile' structure.
+     * We use the following trick to try to dramatically improve the
+     * performance while dealing with small files.  If the original stream
+     * size is less than a certain threshold, we try to load the whole font
+     * file into memory.  This saves us from using the 32KB buffer needed
+     * to inflate the file, plus the two 4KB intermediate input/output
+     * buffers used in the `FT_GZipFile' structure.
      */
     {
       FT_ULong  zip_size = ft_gzip_get_uncompressed_size( source );
@@ -735,7 +730,7 @@
 
     /* check for `input' delayed to `inflate' */
 
-    if ( !memory || ! output_len || !output )
+    if ( !memory || !output_len || !output )
       return FT_THROW( Invalid_Argument );
 
     /* this function is modeled after zlib's `uncompress' function */
@@ -750,7 +745,17 @@
     stream.zfree  = (free_func) ft_gzip_free;
     stream.opaque = memory;
 
+    /* This is a temporary fix and will be removed once the internal
+     * copy of zlib is updated to the newest version. The `|32' flag
+     * is only supported in the new versions of zlib to enable gzip
+     * encoded header.
+     */
+#ifdef FT_CONFIG_OPTION_SYSTEM_ZLIB
+    err = inflateInit2( &stream, MAX_WBITS|32 );
+#else
     err = inflateInit2( &stream, MAX_WBITS );
+#endif
+
     if ( err != Z_OK )
       return FT_THROW( Invalid_Argument );
 

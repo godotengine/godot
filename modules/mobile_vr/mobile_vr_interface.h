@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  mobile_interface.h                                                   */
+/*  mobile_vr_interface.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,8 @@
 #ifndef MOBILE_VR_INTERFACE_H
 #define MOBILE_VR_INTERFACE_H
 
-#include "servers/arvr/arvr_interface.h"
-#include "servers/arvr/arvr_positional_tracker.h"
-
-#include "shaders/lens_distorted.glsl.gen.h"
+#include "servers/xr/xr_interface.h"
+#include "servers/xr/xr_positional_tracker.h"
 
 /**
 	@author Bastiaan Olij <mux213@gmail.com>
@@ -49,18 +47,14 @@
 	more advanced interfaces.
 */
 
-class MobileVRInterface : public ARVRInterface {
-	GDCLASS(MobileVRInterface, ARVRInterface);
+class MobileVRInterface : public XRInterface {
+	GDCLASS(MobileVRInterface, XRInterface);
 
 private:
 	bool initialized;
 	Basis orientation;
 	float eye_height;
 	uint64_t last_ticks;
-
-	LensDistortedShaderGLES3 *lens_shader;
-	GLuint half_screen_quad;
-	GLuint half_screen_array;
 
 	real_t intraocular_dist;
 	real_t display_width;
@@ -113,6 +107,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_eye_height(const real_t p_eye_height);
+	real_t get_eye_height() const;
+
 	void set_iod(const real_t p_iod);
 	real_t get_iod() const;
 
@@ -131,20 +128,21 @@ public:
 	void set_k2(const real_t p_k2);
 	real_t get_k2() const;
 
-	virtual StringName get_name() const;
-	virtual int get_capabilities() const;
+	virtual StringName get_name() const override;
+	virtual int get_capabilities() const override;
 
-	virtual bool is_initialized() const;
-	virtual bool initialize();
-	virtual void uninitialize();
+	virtual bool is_initialized() const override;
+	virtual bool initialize() override;
+	virtual void uninitialize() override;
 
-	virtual Size2 get_render_targetsize();
-	virtual bool is_stereo();
-	virtual Transform get_transform_for_eye(ARVRInterface::Eyes p_eye, const Transform &p_cam_transform);
-	virtual CameraMatrix get_projection_for_eye(ARVRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far);
-	virtual void commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect);
+	virtual Size2 get_render_targetsize() override;
+	virtual bool is_stereo() override;
+	virtual Transform get_transform_for_eye(XRInterface::Eyes p_eye, const Transform &p_cam_transform) override;
+	virtual CameraMatrix get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) override;
+	virtual void commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) override;
 
-	virtual void process();
+	virtual void process() override;
+	virtual void notification(int p_what) override {}
 
 	MobileVRInterface();
 	~MobileVRInterface();

@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStream" inherits="Resource" category="Core" version="3.1">
+<class name="AudioStream" inherits="Resource" version="4.0">
 	<brief_description>
 		Base class for audio streams.
 	</brief_description>
 	<description>
-		Base class for audio streams. Audio streams are used for music playback, or other types of streamed sounds that don't fit or require more flexibility than a [Sample].
+		Base class for audio streams. Audio streams are used for sound effects and music playback, and support WAV (via [AudioStreamSample]) and OGG (via [AudioStreamOGGVorbis]) file formats.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/audio/audio_streams.html</link>
+		<link title="Audio streams">https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html</link>
+		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>
+		<link title="Audio Mic Record Demo">https://godotengine.org/asset-library/asset/527</link>
+		<link title="Audio Spectrum Demo">https://godotengine.org/asset-library/asset/528</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_length" qualifiers="const">
 			<return type="float">

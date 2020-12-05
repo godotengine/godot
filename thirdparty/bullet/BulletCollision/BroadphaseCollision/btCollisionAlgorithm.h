@@ -25,57 +25,51 @@ class btManifoldResult;
 class btCollisionObject;
 struct btCollisionObjectWrapper;
 struct btDispatcherInfo;
-class	btPersistentManifold;
+class btPersistentManifold;
 
-typedef btAlignedObjectArray<btPersistentManifold*>	btManifoldArray;
+typedef btAlignedObjectArray<btPersistentManifold*> btManifoldArray;
 
 struct btCollisionAlgorithmConstructionInfo
 {
 	btCollisionAlgorithmConstructionInfo()
-		:m_dispatcher1(0),
-		m_manifold(0)
+		: m_dispatcher1(0),
+		  m_manifold(0)
 	{
 	}
-	btCollisionAlgorithmConstructionInfo(btDispatcher* dispatcher,int temp)
-		:m_dispatcher1(dispatcher)
+	btCollisionAlgorithmConstructionInfo(btDispatcher* dispatcher, int temp)
+		: m_dispatcher1(dispatcher)
 	{
 		(void)temp;
 	}
 
-	btDispatcher*	m_dispatcher1;
-	btPersistentManifold*	m_manifold;
+	btDispatcher* m_dispatcher1;
+	btPersistentManifold* m_manifold;
 
-//	int	getDispatcherId();
-
+	//	int	getDispatcherId();
 };
-
 
 ///btCollisionAlgorithm is an collision interface that is compatible with the Broadphase and btDispatcher.
 ///It is persistent over frames
 class btCollisionAlgorithm
 {
+protected:
+	btDispatcher* m_dispatcher;
 
 protected:
+	//	int	getDispatcherId();
 
-	btDispatcher*	m_dispatcher;
-
-protected:
-//	int	getDispatcherId();
-	
 public:
-
-	btCollisionAlgorithm() {};
+	btCollisionAlgorithm(){};
 
 	btCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci);
 
-	virtual ~btCollisionAlgorithm() {};
+	virtual ~btCollisionAlgorithm(){};
 
-	virtual void processCollision (const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut) = 0;
+	virtual void processCollision(const btCollisionObjectWrapper* body0Wrap, const btCollisionObjectWrapper* body1Wrap, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut) = 0;
 
-	virtual btScalar calculateTimeOfImpact(btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut) = 0;
+	virtual btScalar calculateTimeOfImpact(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut) = 0;
 
-	virtual	void	getAllContactManifolds(btManifoldArray&	manifoldArray) = 0;
+	virtual void getAllContactManifolds(btManifoldArray& manifoldArray) = 0;
 };
 
-
-#endif //BT_COLLISION_ALGORITHM_H
+#endif  //BT_COLLISION_ALGORITHM_H

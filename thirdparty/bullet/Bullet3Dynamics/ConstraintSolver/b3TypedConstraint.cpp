@@ -13,53 +13,46 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-
 #include "b3TypedConstraint.h"
 //#include "Bullet3Common/b3Serializer.h"
 
-
 #define B3_DEFAULT_DEBUGDRAW_SIZE b3Scalar(0.3f)
 
-
-
-b3TypedConstraint::b3TypedConstraint(b3TypedConstraintType type, int rbA,int rbB)
-:b3TypedObject(type),
-m_userConstraintType(-1),
-m_userConstraintPtr((void*)-1),
-m_breakingImpulseThreshold(B3_INFINITY),
-m_isEnabled(true),
-m_needsFeedback(false),
-m_overrideNumSolverIterations(-1),
-m_rbA(rbA),
-m_rbB(rbB),
-m_appliedImpulse(b3Scalar(0.)),
-m_dbgDrawSize(B3_DEFAULT_DEBUGDRAW_SIZE),
-m_jointFeedback(0)
+b3TypedConstraint::b3TypedConstraint(b3TypedConstraintType type, int rbA, int rbB)
+	: b3TypedObject(type),
+	  m_userConstraintType(-1),
+	  m_userConstraintPtr((void*)-1),
+	  m_breakingImpulseThreshold(B3_INFINITY),
+	  m_isEnabled(true),
+	  m_needsFeedback(false),
+	  m_overrideNumSolverIterations(-1),
+	  m_rbA(rbA),
+	  m_rbB(rbB),
+	  m_appliedImpulse(b3Scalar(0.)),
+	  m_dbgDrawSize(B3_DEFAULT_DEBUGDRAW_SIZE),
+	  m_jointFeedback(0)
 {
 }
 
-
-
-
 b3Scalar b3TypedConstraint::getMotorFactor(b3Scalar pos, b3Scalar lowLim, b3Scalar uppLim, b3Scalar vel, b3Scalar timeFact)
 {
-	if(lowLim > uppLim)
+	if (lowLim > uppLim)
 	{
 		return b3Scalar(1.0f);
 	}
-	else if(lowLim == uppLim)
+	else if (lowLim == uppLim)
 	{
 		return b3Scalar(0.0f);
 	}
 	b3Scalar lim_fact = b3Scalar(1.0f);
 	b3Scalar delta_max = vel / timeFact;
-	if(delta_max < b3Scalar(0.0f))
+	if (delta_max < b3Scalar(0.0f))
 	{
-		if((pos >= lowLim) && (pos < (lowLim - delta_max)))
+		if ((pos >= lowLim) && (pos < (lowLim - delta_max)))
 		{
 			lim_fact = (lowLim - pos) / delta_max;
 		}
-		else if(pos  < lowLim)
+		else if (pos < lowLim)
 		{
 			lim_fact = b3Scalar(0.0f);
 		}
@@ -68,13 +61,13 @@ b3Scalar b3TypedConstraint::getMotorFactor(b3Scalar pos, b3Scalar lowLim, b3Scal
 			lim_fact = b3Scalar(1.0f);
 		}
 	}
-	else if(delta_max > b3Scalar(0.0f))
+	else if (delta_max > b3Scalar(0.0f))
 	{
-		if((pos <= uppLim) && (pos > (uppLim - delta_max)))
+		if ((pos <= uppLim) && (pos > (uppLim - delta_max)))
 		{
 			lim_fact = (uppLim - pos) / delta_max;
 		}
-		else if(pos  > uppLim)
+		else if (pos > uppLim)
 		{
 			lim_fact = b3Scalar(0.0f);
 		}
@@ -85,18 +78,16 @@ b3Scalar b3TypedConstraint::getMotorFactor(b3Scalar pos, b3Scalar lowLim, b3Scal
 	}
 	else
 	{
-			lim_fact = b3Scalar(0.0f);
+		lim_fact = b3Scalar(0.0f);
 	}
 	return lim_fact;
 }
-
-
 
 void b3AngularLimit::set(b3Scalar low, b3Scalar high, b3Scalar _softness, b3Scalar _biasFactor, b3Scalar _relaxationFactor)
 {
 	m_halfRange = (high - low) / 2.0f;
 	m_center = b3NormalizeAngle(low + m_halfRange);
-	m_softness =  _softness;
+	m_softness = _softness;
 	m_biasFactor = _biasFactor;
 	m_relaxationFactor = _relaxationFactor;
 }
@@ -113,7 +104,7 @@ void b3AngularLimit::test(const b3Scalar angle)
 		if (deviation < -m_halfRange)
 		{
 			m_solveLimit = true;
-			m_correction = - (deviation + m_halfRange);
+			m_correction = -(deviation + m_halfRange);
 			m_sign = +1.0f;
 		}
 		else if (deviation > m_halfRange)
@@ -124,7 +115,6 @@ void b3AngularLimit::test(const b3Scalar angle)
 		}
 	}
 }
-
 
 b3Scalar b3AngularLimit::getError() const
 {

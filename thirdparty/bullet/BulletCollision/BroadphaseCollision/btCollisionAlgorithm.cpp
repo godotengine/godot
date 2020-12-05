@@ -20,4 +20,3 @@ btCollisionAlgorithm::btCollisionAlgorithm(const btCollisionAlgorithmConstructio
 {
 	m_dispatcher = ci.m_dispatcher1;
 }
-

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,24 @@
 #ifndef FILE_ACCESS_PACK_H
 #define FILE_ACCESS_PACK_H
 
-#include "list.h"
-#include "map.h"
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "print_string.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/string/print_string.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+
+// Godot's packed file magic header ("GDPC" in ASCII).
+#define PACK_HEADER_MAGIC 0x43504447
+// The current packed file format version number.
+#define PACK_FORMAT_VERSION 2
+
+enum PackFlags {
+	PACK_DIR_ENCRYPTED = 1 << 0
+};
+
+enum PackFileFlags {
+	PACK_FILE_ENCRYPTED = 1 << 0
+};
 
 class PackSource;
 
@@ -46,27 +59,26 @@ class PackedData {
 
 public:
 	struct PackedFile {
-
 		String pack;
 		uint64_t offset; //if offset is ZERO, the file was ERASED
 		uint64_t size;
 		uint8_t md5[16];
 		PackSource *src;
+		bool encrypted;
 	};
 
 private:
 	struct PackedDir {
-		PackedDir *parent;
+		PackedDir *parent = nullptr;
 		String name;
 		Map<String, PackedDir *> subdirs;
 		Set<String> files;
 	};
 
 	struct PathMD5 {
-		uint64_t a;
-		uint64_t b;
+		uint64_t a = 0;
+		uint64_t b = 0;
 		bool operator<(const PathMD5 &p_md5) const {
-
 			if (p_md5.a == a) {
 				return b < p_md5.b;
 			} else {
@@ -76,16 +88,14 @@ private:
 
 		bool operator==(const PathMD5 &p_md5) const {
 			return a == p_md5.a && b == p_md5.b;
-		};
+		}
 
-		PathMD5() {
-			a = b = 0;
-		};
+		PathMD5() {}
 
 		PathMD5(const Vector<uint8_t> p_buf) {
 			a = *((uint64_t *)&p_buf[0]);
 			b = *((uint64_t *)&p_buf[8]);
-		};
+		}
 	};
 
 	Map<PathMD5, PackedFile> files;
@@ -93,55 +103,57 @@ private:
 	Vector<PackSource *> sources;
 
 	PackedDir *root;
-	//Map<String,PackedDir*> dirs;
 
 	static PackedData *singleton;
-	bool disabled;
+	bool disabled = false;
 
 	void _free_packed_dirs(PackedDir *p_dir);
 
 public:
 	void add_pack_source(PackSource *p_source);
-	void add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src); // for PackSource
+	void add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted = false); // for PackSource
 
 	void set_disabled(bool p_disabled) { disabled = p_disabled; }
 	_FORCE_INLINE_ bool is_disabled() const { return disabled; }
 
 	static PackedData *get_singleton() { return singleton; }
-	Error add_pack(const String &p_path);
+	Error add_pack(const String &p_path, bool p_replace_files, size_t p_offset);
 
 	_FORCE_INLINE_ FileAccess *try_open_path(const String &p_path);
 	_FORCE_INLINE_ bool has_path(const String &p_path);
+
+	_FORCE_INLINE_ DirAccess *try_open_directory(const String &p_path);
+	_FORCE_INLINE_ bool has_directory(const String &p_path);
 
 	PackedData();
 	~PackedData();
 };
 
 class PackSource {
-
 public:
-	virtual bool try_open_pack(const String &p_path) = 0;
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset) = 0;
 	virtual FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file) = 0;
 	virtual ~PackSource() {}
 };
 
 class PackedSourcePCK : public PackSource {
-
 public:
-	virtual bool try_open_pack(const String &p_path);
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset);
 	virtual FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file);
 };
 
 class FileAccessPack : public FileAccess {
-
 	PackedData::PackedFile pf;
 
 	mutable size_t pos;
 	mutable bool eof;
+	uint64_t off;
 
 	FileAccess *f;
 	virtual Error _open(const String &p_path, int p_mode_flags);
 	virtual uint64_t _get_modified_time(const String &p_file) { return 0; }
+	virtual uint32_t _get_unix_permissions(const String &p_file) { return 0; }
+	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) { return FAILED; }
 
 public:
 	virtual void close();
@@ -174,30 +186,40 @@ public:
 };
 
 FileAccess *PackedData::try_open_path(const String &p_path) {
-
-	//print_line("try open path " + p_path);
 	PathMD5 pmd5(p_path.md5_buffer());
 	Map<PathMD5, PackedFile>::Element *E = files.find(pmd5);
-	if (!E)
-		return NULL; //not found
-	if (E->get().offset == 0)
-		return NULL; //was erased
+	if (!E) {
+		return nullptr; //not found
+	}
+	if (E->get().offset == 0) {
+		return nullptr; //was erased
+	}
 
 	return E->get().src->get_file(p_path, &E->get());
 }
 
 bool PackedData::has_path(const String &p_path) {
-
 	return files.has(PathMD5(p_path.md5_buffer()));
 }
 
-class DirAccessPack : public DirAccess {
+bool PackedData::has_directory(const String &p_path) {
+	DirAccess *da = try_open_directory(p_path);
+	if (da) {
+		memdelete(da);
+		return true;
+	} else {
+		return false;
+	}
+}
 
+class DirAccessPack : public DirAccess {
 	PackedData::PackedDir *current;
 
 	List<String> list_dirs;
 	List<String> list_files;
-	bool cdir;
+	bool cdir = false;
+
+	PackedData::PackedDir *_find_dir(String p_dir);
 
 public:
 	virtual Error list_dir_begin();
@@ -210,7 +232,7 @@ public:
 	virtual String get_drive(int p_drive);
 
 	virtual Error change_dir(String p_dir);
-	virtual String get_current_dir();
+	virtual String get_current_dir(bool p_include_drive = true);
 
 	virtual bool file_exists(String p_file);
 	virtual bool dir_exists(String p_dir);
@@ -222,8 +244,19 @@ public:
 
 	size_t get_space_left();
 
+	virtual String get_filesystem_type() const;
+
 	DirAccessPack();
-	~DirAccessPack();
+	~DirAccessPack() {}
 };
+
+DirAccess *PackedData::try_open_directory(const String &p_path) {
+	DirAccess *da = memnew(DirAccessPack());
+	if (da->change_dir(p_path) != OK) {
+		memdelete(da);
+		da = nullptr;
+	}
+	return da;
+}
 
 #endif // FILE_ACCESS_PACK_H

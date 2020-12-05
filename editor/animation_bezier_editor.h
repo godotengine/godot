@@ -1,11 +1,40 @@
+/*************************************************************************/
+/*  animation_bezier_editor.h                                            */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #ifndef ANIMATION_BEZIER_EDITOR_H
 #define ANIMATION_BEZIER_EDITOR_H
 
 #include "animation_track_editor.h"
 
 class AnimationBezierTrackEdit : public Control {
-
-	GDCLASS(AnimationBezierTrackEdit, Control)
+	GDCLASS(AnimationBezierTrackEdit, Control);
 
 	enum HandleMode {
 		HANDLE_MODE_FREE,
@@ -33,9 +62,9 @@ class AnimationBezierTrackEdit : public Control {
 
 	Vector<Rect2> view_rects;
 
-	Ref<Texture> bezier_icon;
-	Ref<Texture> bezier_handle_icon;
-	Ref<Texture> selected_icon;
+	Ref<Texture2D> bezier_icon;
+	Ref<Texture2D> bezier_handle_icon;
+	Ref<Texture2D> selected_icon;
 
 	Rect2 close_icon_rect;
 
@@ -82,7 +111,6 @@ class AnimationBezierTrackEdit : public Control {
 	Vector2 menu_insert_key;
 
 	struct AnimMoveRestore {
-
 		int track;
 		float time;
 		Variant key;
@@ -115,12 +143,12 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_tooltip(const Point2 &p_pos) const;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	Ref<Animation> get_animation() const;
 
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track);
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	void set_undo_redo(UndoRedo *p_undo_redo);
 	void set_timeline(AnimationTimelineEdit *p_timeline);

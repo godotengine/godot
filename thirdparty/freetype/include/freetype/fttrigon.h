@@ -1,25 +1,25 @@
-/***************************************************************************/
-/*                                                                         */
-/*  fttrigon.h                                                             */
-/*                                                                         */
-/*    FreeType trigonometric functions (specification).                    */
-/*                                                                         */
-/*  Copyright 2001-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * fttrigon.h
+ *
+ *   FreeType trigonometric functions (specification).
+ *
+ * Copyright (C) 2001-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef FTTRIGON_H_
 #define FTTRIGON_H_
 
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"
@@ -31,15 +31,15 @@
 FT_BEGIN_HEADER
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Section>                                                             */
-  /*   computations                                                        */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * @section:
+   *  computations
+   *
+   */
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @type:
    *   FT_Angle
@@ -52,7 +52,7 @@ FT_BEGIN_HEADER
   typedef FT_Fixed  FT_Angle;
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @macro:
    *   FT_ANGLE_PI
@@ -64,7 +64,7 @@ FT_BEGIN_HEADER
 #define FT_ANGLE_PI  ( 180L << 16 )
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @macro:
    *   FT_ANGLE_2PI
@@ -76,7 +76,7 @@ FT_BEGIN_HEADER
 #define FT_ANGLE_2PI  ( FT_ANGLE_PI * 2 )
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @macro:
    *   FT_ANGLE_PI2
@@ -88,7 +88,7 @@ FT_BEGIN_HEADER
 #define FT_ANGLE_PI2  ( FT_ANGLE_PI / 2 )
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @macro:
    *   FT_ANGLE_PI4
@@ -100,7 +100,7 @@ FT_BEGIN_HEADER
 #define FT_ANGLE_PI4  ( FT_ANGLE_PI / 4 )
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @function:
    *   FT_Sin
@@ -124,7 +124,7 @@ FT_BEGIN_HEADER
   FT_Sin( FT_Angle  angle );
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @function:
    *   FT_Cos
@@ -148,7 +148,7 @@ FT_BEGIN_HEADER
   FT_Cos( FT_Angle  angle );
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @function:
    *   FT_Tan
@@ -168,14 +168,14 @@ FT_BEGIN_HEADER
   FT_Tan( FT_Angle  angle );
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @function:
    *   FT_Atan2
    *
    * @description:
-   *   Return the arc-tangent corresponding to a given vector (x,y) in
-   *   the 2d plane.
+   *   Return the arc-tangent corresponding to a given vector (x,y) in the 2d
+   *   plane.
    *
    * @input:
    *   x ::
@@ -193,7 +193,7 @@ FT_BEGIN_HEADER
             FT_Fixed  y );
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @function:
    *   FT_Angle_Diff
@@ -210,7 +210,7 @@ FT_BEGIN_HEADER
    *     Second angle.
    *
    * @return:
-   *   Constrained value of `value2-value1'.
+   *   Constrained value of `angle2-angle1`.
    *
    */
   FT_EXPORT( FT_Angle )
@@ -218,15 +218,15 @@ FT_BEGIN_HEADER
                  FT_Angle  angle2 );
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @function:
    *   FT_Vector_Unit
    *
    * @description:
    *   Return the unit vector corresponding to a given angle.  After the
-   *   call, the value of `vec.x' will be `cos(angle)', and the value of
-   *   `vec.y' will be `sin(angle)'.
+   *   call, the value of `vec.x` will be `cos(angle)`, and the value of
+   *   `vec.y` will be `sin(angle)`.
    *
    *   This function is useful to retrieve both the sinus and cosinus of a
    *   given angle quickly.
@@ -245,7 +245,7 @@ FT_BEGIN_HEADER
                   FT_Angle    angle );
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @function:
    *   FT_Vector_Rotate
@@ -267,7 +267,7 @@ FT_BEGIN_HEADER
                     FT_Angle    angle );
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @function:
    *   FT_Vector_Length
@@ -288,7 +288,7 @@ FT_BEGIN_HEADER
   FT_Vector_Length( FT_Vector*  vec );
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @function:
    *   FT_Vector_Polarize
@@ -314,7 +314,7 @@ FT_BEGIN_HEADER
                       FT_Angle   *angle );
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @function:
    *   FT_Vector_From_Polar

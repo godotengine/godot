@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/2d/node_2d.h"
 
 class RayCast2D : public Node2D {
-
 	GDCLASS(RayCast2D, Node2D);
 
 	bool enabled;
@@ -47,7 +46,10 @@ class RayCast2D : public Node2D {
 	uint32_t collision_mask;
 	bool exclude_parent_body;
 
-	Vector2 cast_to;
+	Vector2 target_position;
+
+	bool collide_with_areas;
+	bool collide_with_bodies;
 
 protected:
 	void _notification(int p_what);
@@ -55,11 +57,17 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_collide_with_areas(bool p_clip);
+	bool is_collide_with_areas_enabled() const;
+
+	void set_collide_with_bodies(bool p_clip);
+	bool is_collide_with_bodies_enabled() const;
+
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
-	void set_cast_to(const Vector2 &p_point);
-	Vector2 get_cast_to() const;
+	void set_target_position(const Vector2 &p_point);
+	Vector2 get_target_position() const;
 
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;

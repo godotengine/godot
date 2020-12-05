@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,8 +34,7 @@
 #include "scene/gui/container.h"
 
 class SplitContainer : public Container {
-
-	GDCLASS(SplitContainer, Container)
+	GDCLASS(SplitContainer, Container);
 
 public:
 	enum DraggerVisibility {
@@ -45,9 +44,10 @@ public:
 	};
 
 private:
-	bool vertical;
+	bool should_clamp_split_offset;
 	int split_offset;
 	int middle_sep;
+	bool vertical;
 	bool dragging;
 	int drag_from;
 	int drag_ofs;
@@ -67,6 +67,7 @@ protected:
 public:
 	void set_split_offset(int p_offset);
 	int get_split_offset() const;
+	void clamp_split_offset();
 
 	void set_collapsed(bool p_collapsed);
 	bool is_collapsed() const;
@@ -74,9 +75,9 @@ public:
 	void set_dragger_visibility(DraggerVisibility p_visibility);
 	DraggerVisibility get_dragger_visibility() const;
 
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	SplitContainer(bool p_vertical = false);
 };
@@ -84,7 +85,6 @@ public:
 VARIANT_ENUM_CAST(SplitContainer::DraggerVisibility);
 
 class HSplitContainer : public SplitContainer {
-
 	GDCLASS(HSplitContainer, SplitContainer);
 
 public:
@@ -93,7 +93,6 @@ public:
 };
 
 class VSplitContainer : public SplitContainer {
-
 	GDCLASS(VSplitContainer, SplitContainer);
 
 public:

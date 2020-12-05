@@ -1,24 +1,23 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afshaper.c                                                             */
-/*                                                                         */
-/*    HarfBuzz interface for accessing OpenType features (body).           */
-/*                                                                         */
-/*  Copyright 2013-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afshaper.c
+ *
+ *   HarfBuzz interface for accessing OpenType features (body).
+ *
+ * Copyright (C) 2013-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_ADVANCES_H
+#include <freetype/freetype.h>
+#include <freetype/ftadvanc.h>
 #include "afglobal.h"
 #include "aftypes.h"
 #include "afshaper.h"
@@ -26,14 +25,14 @@
 #ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_afshaper
+#define FT_COMPONENT  afshaper
 
 
   /*
@@ -591,14 +590,9 @@
   void*
   af_shaper_buf_create( FT_Face  face )
   {
-    FT_Error   error;
-    FT_Memory  memory = face->memory;
-    FT_ULong*  buf;
+    FT_UNUSED( face );
 
-
-    FT_MEM_ALLOC( buf, sizeof ( FT_ULong ) );
-
-    return (void*)buf;
+    return NULL;
   }
 
 
@@ -606,10 +600,8 @@
   af_shaper_buf_destroy( FT_Face  face,
                          void*    buf )
   {
-    FT_Memory  memory = face->memory;
-
-
-    FT_FREE( buf );
+    FT_UNUSED( face );
+    FT_UNUSED( buf );
   }
 
 

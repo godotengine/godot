@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptConstant" inherits="VisualScriptNode" category="Core" version="3.1">
+<class name="VisualScriptConstant" inherits="VisualScriptNode" version="4.0">
 	<brief_description>
 		Gets a contant's value.
 	</brief_description>
@@ -12,12 +12,10 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="type" type="int" setter="set_constant_type" getter="get_constant_type" enum="Variant.Type">
+		<member name="type" type="int" setter="set_constant_type" getter="get_constant_type" enum="Variant.Type" default="0">
 			The constant's type.
 		</member>
 		<member name="value" type="Variant" setter="set_constant_value" getter="get_constant_value">

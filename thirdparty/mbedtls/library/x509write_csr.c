@@ -1,8 +1,14 @@
 /*
  *  X.509 Certificate Signing Request writing
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 /*
  * References:
@@ -42,6 +67,24 @@
 
 #if defined(MBEDTLS_PEM_WRITE_C)
 #include "mbedtls/pem.h"
+#endif
+
+/*
+ * For the currently used signature algorithms the buffer to store any signature
+ * must be at least of size MAX(MBEDTLS_ECDSA_MAX_LEN, MBEDTLS_MPI_MAX_SIZE)
+ */
+#if MBEDTLS_ECDSA_MAX_LEN > MBEDTLS_MPI_MAX_SIZE
+#define SIGNATURE_MAX_SIZE MBEDTLS_ECDSA_MAX_LEN
+#else
+#define SIGNATURE_MAX_SIZE MBEDTLS_MPI_MAX_SIZE
+#endif
+
+#if defined(MBEDTLS_PLATFORM_C)
+#include "mbedtls/platform.h"
+#else
+#include <stdlib.h>
+#define mbedtls_calloc    calloc
+#define mbedtls_free      free
 #endif
 
 void mbedtls_x509write_csr_init( mbedtls_x509write_csr *ctx )
@@ -81,20 +124,39 @@ int mbedtls_x509write_csr_set_extension( mbedtls_x509write_csr *ctx,
                                0, val, val_len );
 }
 
+static size_t csr_get_unused_bits_for_named_bitstring( unsigned char bitstring,
+                                                       size_t bit_offset )
+{
+    size_t unused_bits;
+
+     /* Count the unused bits removing trailing 0s */
+    for( unused_bits = bit_offset; unused_bits < 8; unused_bits++ )
+        if( ( ( bitstring >> unused_bits ) & 0x1 ) != 0 )
+            break;
+
+     return( unused_bits );
+}
+
 int mbedtls_x509write_csr_set_key_usage( mbedtls_x509write_csr *ctx, unsigned char key_usage )
 {
     unsigned char buf[4];
     unsigned char *c;
+    size_t unused_bits;
     int ret;
 
     c = buf + 4;
 
-    if( ( ret = mbedtls_asn1_write_bitstring( &c, buf, &key_usage, 7 ) ) != 4 )
+    unused_bits = csr_get_unused_bits_for_named_bitstring( key_usage, 0 );
+    ret = mbedtls_asn1_write_bitstring( &c, buf, &key_usage, 8 - unused_bits );
+
+    if( ret < 0 )
         return( ret );
+    else if( ret < 3 || ret > 4 )
+        return( MBEDTLS_ERR_X509_INVALID_FORMAT );
 
     ret = mbedtls_x509write_csr_set_extension( ctx, MBEDTLS_OID_KEY_USAGE,
                                        MBEDTLS_OID_SIZE( MBEDTLS_OID_KEY_USAGE ),
-                                       buf, 4 );
+                                       c, (size_t)ret );
     if( ret != 0 )
         return( ret );
 
@@ -106,89 +168,114 @@ int mbedtls_x509write_csr_set_ns_cert_type( mbedtls_x509write_csr *ctx,
 {
     unsigned char buf[4];
     unsigned char *c;
+    size_t unused_bits;
     int ret;
 
     c = buf + 4;
 
-    if( ( ret = mbedtls_asn1_write_bitstring( &c, buf, &ns_cert_type, 8 ) ) != 4 )
+    unused_bits = csr_get_unused_bits_for_named_bitstring( ns_cert_type, 0 );
+    ret = mbedtls_asn1_write_bitstring( &c,
+                                        buf,
+                                        &ns_cert_type,
+                                        8 - unused_bits );
+
+    if( ret < 0 )
+        return( ret );
+    else if( ret < 3 || ret > 4 )
         return( ret );
 
     ret = mbedtls_x509write_csr_set_extension( ctx, MBEDTLS_OID_NS_CERT_TYPE,
                                        MBEDTLS_OID_SIZE( MBEDTLS_OID_NS_CERT_TYPE ),
-                                       buf, 4 );
+                                       c, (size_t)ret );
     if( ret != 0 )
         return( ret );
 
     return( 0 );
 }
 
-int mbedtls_x509write_csr_der( mbedtls_x509write_csr *ctx, unsigned char *buf, size_t size,
-                       int (*f_rng)(void *, unsigned char *, size_t),
-                       void *p_rng )
+static int x509write_csr_der_internal( mbedtls_x509write_csr *ctx,
+                                 unsigned char *buf,
+                                 size_t size,
+                                 unsigned char *sig,
+                                 int (*f_rng)(void *, unsigned char *, size_t),
+                                 void *p_rng )
 {
     int ret;
     const char *sig_oid;
     size_t sig_oid_len = 0;
     unsigned char *c, *c2;
     unsigned char hash[64];
-    unsigned char sig[MBEDTLS_MPI_MAX_SIZE];
-    unsigned char tmp_buf[2048];
     size_t pub_len = 0, sig_and_oid_len = 0, sig_len;
     size_t len = 0;
     mbedtls_pk_type_t pk_alg;
 
-    /*
-     * Prepare data to be signed in tmp_buf
-     */
-    c = tmp_buf + sizeof( tmp_buf );
+    /* Write the CSR backwards starting from the end of buf */
+    c = buf + size;
 
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_x509_write_extensions( &c, tmp_buf, ctx->extensions ) );
+    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_x509_write_extensions( &c, buf,
+                                                           ctx->extensions ) );
 
     if( len )
     {
-        MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( &c, tmp_buf, len ) );
-        MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( &c, tmp_buf, MBEDTLS_ASN1_CONSTRUCTED |
-                                                        MBEDTLS_ASN1_SEQUENCE ) );
+        MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( &c, buf, len ) );
+        MBEDTLS_ASN1_CHK_ADD( len,
+            mbedtls_asn1_write_tag(
+                &c, buf,
+                MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE ) );
 
-        MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( &c, tmp_buf, len ) );
-        MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( &c, tmp_buf, MBEDTLS_ASN1_CONSTRUCTED |
-                                                        MBEDTLS_ASN1_SET ) );
+        MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( &c, buf, len ) );
+        MBEDTLS_ASN1_CHK_ADD( len,
+            mbedtls_asn1_write_tag(
+                &c, buf,
+                MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SET ) );
 
-        MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_oid( &c, tmp_buf, MBEDTLS_OID_PKCS9_CSR_EXT_REQ,
-                                          MBEDTLS_OID_SIZE( MBEDTLS_OID_PKCS9_CSR_EXT_REQ ) ) );
+        MBEDTLS_ASN1_CHK_ADD( len,
+            mbedtls_asn1_write_oid(
+                &c, buf, MBEDTLS_OID_PKCS9_CSR_EXT_REQ,
+                MBEDTLS_OID_SIZE( MBEDTLS_OID_PKCS9_CSR_EXT_REQ ) ) );
 
-        MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( &c, tmp_buf, len ) );
-        MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( &c, tmp_buf, MBEDTLS_ASN1_CONSTRUCTED |
-                                                        MBEDTLS_ASN1_SEQUENCE ) );
+        MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( &c, buf, len ) );
+        MBEDTLS_ASN1_CHK_ADD( len,
+            mbedtls_asn1_write_tag(
+                &c, buf,
+                MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE ) );
     }
 
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( &c, tmp_buf, len ) );
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( &c, tmp_buf, MBEDTLS_ASN1_CONSTRUCTED |
-                                                    MBEDTLS_ASN1_CONTEXT_SPECIFIC ) );
+    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( &c, buf, len ) );
+    MBEDTLS_ASN1_CHK_ADD( len,
+        mbedtls_asn1_write_tag(
+            &c, buf,
+            MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_CONTEXT_SPECIFIC ) );
 
     MBEDTLS_ASN1_CHK_ADD( pub_len, mbedtls_pk_write_pubkey_der( ctx->key,
-                                                tmp_buf, c - tmp_buf ) );
+                                                              buf, c - buf ) );
     c -= pub_len;
     len += pub_len;
 
     /*
      *  Subject  ::=  Name
      */
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_x509_write_names( &c, tmp_buf, ctx->subject ) );
+    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_x509_write_names( &c, buf,
+                                                         ctx->subject ) );
 
     /*
      *  Version  ::=  INTEGER  {  v1(0), v2(1), v3(2)  }
      */
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_int( &c, tmp_buf, 0 ) );
+    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_int( &c, buf, 0 ) );
 
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( &c, tmp_buf, len ) );
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( &c, tmp_buf, MBEDTLS_ASN1_CONSTRUCTED |
-                                                    MBEDTLS_ASN1_SEQUENCE ) );
+    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( &c, buf, len ) );
+    MBEDTLS_ASN1_CHK_ADD( len,
+        mbedtls_asn1_write_tag(
+            &c, buf,
+            MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE ) );
 
     /*
-     * Prepare signature
+     * Sign the written CSR data into the sig buffer
+     * Note: hash errors can happen only after an internal error
      */
-    mbedtls_md( mbedtls_md_info_from_type( ctx->md_alg ), c, len, hash );
+    ret = mbedtls_md( mbedtls_md_info_from_type( ctx->md_alg ), c, len, hash );
+    if( ret != 0 )
+        return( ret );
 
     if( ( ret = mbedtls_pk_sign( ctx->key, ctx->md_alg, hash, 0, sig, &sig_len,
                                  f_rng, p_rng ) ) != 0 )
@@ -204,30 +291,66 @@ int mbedtls_x509write_csr_der( mbedtls_x509write_csr *ctx, unsigned char *buf, s
         return( MBEDTLS_ERR_X509_INVALID_ALG );
 
     if( ( ret = mbedtls_oid_get_oid_by_sig_alg( pk_alg, ctx->md_alg,
-                                                &sig_oid, &sig_oid_len ) ) != 0 )
+                                              &sig_oid, &sig_oid_len ) ) != 0 )
     {
         return( ret );
     }
 
     /*
-     * Write data to output buffer
+     * Move the written CSR data to the start of buf to create space for
+     * writing the signature into buf.
+     */
+    memmove( buf, c, len );
+
+    /*
+     * Write sig and its OID into buf backwards from the end of buf.
+     * Note: mbedtls_x509_write_sig will check for c2 - ( buf + len ) < sig_len
+     * and return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL if needed.
      */
     c2 = buf + size;
-    MBEDTLS_ASN1_CHK_ADD( sig_and_oid_len, mbedtls_x509_write_sig( &c2, buf,
-                                        sig_oid, sig_oid_len, sig, sig_len ) );
+    MBEDTLS_ASN1_CHK_ADD( sig_and_oid_len,
+        mbedtls_x509_write_sig( &c2, buf + len, sig_oid, sig_oid_len,
+                                sig, sig_len ) );
 
-    if( len > (size_t)( c2 - buf ) )
-        return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
-
+    /*
+     * Compact the space between the CSR data and signature by moving the
+     * CSR data to the start of the signature.
+     */
     c2 -= len;
-    memcpy( c2, c, len );
+    memmove( c2, buf, len );
 
+    /* ASN encode the total size and tag the CSR data with it. */
     len += sig_and_oid_len;
     MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( &c2, buf, len ) );
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( &c2, buf, MBEDTLS_ASN1_CONSTRUCTED |
-                                                 MBEDTLS_ASN1_SEQUENCE ) );
+    MBEDTLS_ASN1_CHK_ADD( len,
+        mbedtls_asn1_write_tag(
+            &c2, buf,
+            MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE ) );
+
+    /* Zero the unused bytes at the start of buf */
+    memset( buf, 0, c2 - buf);
 
     return( (int) len );
+}
+
+int mbedtls_x509write_csr_der( mbedtls_x509write_csr *ctx, unsigned char *buf,
+                               size_t size,
+                               int (*f_rng)(void *, unsigned char *, size_t),
+                               void *p_rng )
+{
+    int ret;
+    unsigned char *sig;
+
+    if( ( sig = mbedtls_calloc( 1, SIGNATURE_MAX_SIZE ) ) == NULL )
+    {
+        return( MBEDTLS_ERR_X509_ALLOC_FAILED );
+    }
+
+    ret = x509write_csr_der_internal( ctx, buf, size, sig, f_rng, p_rng );
+
+    mbedtls_free( sig );
+
+    return( ret );
 }
 
 #define PEM_BEGIN_CSR           "-----BEGIN CERTIFICATE REQUEST-----\n"

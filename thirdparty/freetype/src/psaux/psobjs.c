@@ -1,26 +1,25 @@
-/***************************************************************************/
-/*                                                                         */
-/*  psobjs.c                                                               */
-/*                                                                         */
-/*    Auxiliary functions for PostScript fonts (body).                     */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * psobjs.c
+ *
+ *   Auxiliary functions for PostScript fonts (body).
+ *
+ * Copyright (C) 1996-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_CALC_H
-#include FT_DRIVER_H
+#include <freetype/internal/psaux.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftcalc.h>
+#include <freetype/ftdriver.h>
 
 #include "psobjs.h"
 #include "psconv.h"
@@ -29,14 +28,14 @@
 #include "psauxmod.h"
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_psobjs
+#define FT_COMPONENT  psobjs
 
 
   /*************************************************************************/
@@ -47,26 +46,29 @@
   /*************************************************************************/
   /*************************************************************************/
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    ps_table_new                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Initializes a PS_Table.                                            */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    table  :: The address of the target table.                         */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    count  :: The table size = the maximum number of elements.         */
-  /*                                                                       */
-  /*    memory :: The memory object to use for all subsequent              */
-  /*              reallocations.                                           */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   ps_table_new
+   *
+   * @Description:
+   *   Initializes a PS_Table.
+   *
+   * @InOut:
+   *   table ::
+   *     The address of the target table.
+   *
+   * @Input:
+   *   count ::
+   *     The table size = the maximum number of elements.
+   *
+   *   memory ::
+   *     The memory object to use for all subsequent
+   *     reallocations.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   ps_table_new( PS_Table   table,
                 FT_Int     count,
@@ -144,33 +146,37 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    ps_table_add                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Adds an object to a PS_Table, possibly growing its memory block.   */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    table  :: The target table.                                        */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    idx    :: The index of the object in the table.                    */
-  /*                                                                       */
-  /*    object :: The address of the object to copy in memory.             */
-  /*                                                                       */
-  /*    length :: The length in bytes of the source object.                */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.  An error is returned if a  */
-  /*    reallocation fails.                                                */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   ps_table_add
+   *
+   * @Description:
+   *   Adds an object to a PS_Table, possibly growing its memory block.
+   *
+   * @InOut:
+   *   table ::
+   *     The target table.
+   *
+   * @Input:
+   *   idx ::
+   *     The index of the object in the table.
+   *
+   *   object ::
+   *     The address of the object to copy in memory.
+   *
+   *   length ::
+   *     The length in bytes of the source object.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.  An error is returned if a
+   *   reallocation fails.
+   */
   FT_LOCAL_DEF( FT_Error )
-  ps_table_add( PS_Table  table,
-                FT_Int    idx,
-                void*     object,
-                FT_UInt   length )
+  ps_table_add( PS_Table     table,
+                FT_Int       idx,
+                const void*  object,
+                FT_UInt      length )
   {
     if ( idx < 0 || idx >= table->max_elems )
     {
@@ -207,7 +213,7 @@
     }
 
     /* add the object to the base block and adjust offset */
-    table->elements[idx] = table->block + table->cursor;
+    table->elements[idx] = FT_OFFSET( table->block, table->cursor );
     table->lengths [idx] = length;
     FT_MEM_COPY( table->block + table->cursor, object, length );
 
@@ -216,22 +222,23 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    ps_table_done                                                      */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Finalizes a PS_TableRec (i.e., reallocate it to its current        */
-  /*    cursor).                                                           */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    table :: The target table.                                         */
-  /*                                                                       */
-  /* <Note>                                                                */
-  /*    This function does NOT release the heap's memory block.  It is up  */
-  /*    to the caller to clean it, or reference it in its own structures.  */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   ps_table_done
+   *
+   * @Description:
+   *   Finalizes a PS_TableRec (i.e., reallocate it to its current
+   *   cursor).
+   *
+   * @InOut:
+   *   table ::
+   *     The target table.
+   *
+   * @Note:
+   *   This function does NOT release the heap's memory block.  It is up
+   *   to the caller to clean it, or reference it in its own structures.
+   */
   FT_LOCAL_DEF( void )
   ps_table_done( PS_Table  table )
   {
@@ -498,12 +505,12 @@
   }
 
 
-  /***********************************************************************/
-  /*                                                                     */
-  /* All exported parsing routines handle leading whitespace and stop at */
-  /* the first character which isn't part of the just handled token.     */
-  /*                                                                     */
-  /***********************************************************************/
+  /************************************************************************
+   *
+   * All exported parsing routines handle leading whitespace and stop at
+   * the first character which isn't part of the just handled token.
+   *
+   */
 
 
   FT_LOCAL_DEF( void )
@@ -1100,18 +1107,22 @@
       {
       case T1_FIELD_TYPE_BOOL:
         val = ps_tobool( &cur, limit );
+        FT_TRACE4(( " %s", val ? "true" : "false" ));
         goto Store_Integer;
 
       case T1_FIELD_TYPE_FIXED:
         val = PS_Conv_ToFixed( &cur, limit, 0 );
+        FT_TRACE4(( " %f", (double)val / 65536 ));
         goto Store_Integer;
 
       case T1_FIELD_TYPE_FIXED_1000:
         val = PS_Conv_ToFixed( &cur, limit, 3 );
+        FT_TRACE4(( " %f", (double)val / 65536 / 1000 ));
         goto Store_Integer;
 
       case T1_FIELD_TYPE_INTEGER:
         val = PS_Conv_ToInt( &cur, limit );
+        FT_TRACE4(( " %ld", val ));
         /* fall through */
 
       Store_Integer:
@@ -1188,6 +1199,13 @@
           FT_MEM_COPY( string, cur, len );
           string[len] = 0;
 
+#ifdef FT_DEBUG_LEVEL_TRACE
+          if ( token.type == T1_TOKEN_TYPE_STRING )
+            FT_TRACE4(( " (%s)", string ));
+          else
+            FT_TRACE4(( " /%s", string ));
+#endif
+
           *(FT_String**)q = string;
         }
         break;
@@ -1213,6 +1231,12 @@
           bbox->yMin = FT_RoundFix( temp[1] );
           bbox->xMax = FT_RoundFix( temp[2] );
           bbox->yMax = FT_RoundFix( temp[3] );
+
+          FT_TRACE4(( " [%ld %ld %ld %ld]",
+                      bbox->xMin / 65536,
+                      bbox->yMin / 65536,
+                      bbox->xMax / 65536,
+                      bbox->yMax / 65536 ));
         }
         break;
 
@@ -1251,6 +1275,7 @@
             skip_spaces( &cur, limit );
           }
 
+          FT_TRACE4(( " [" ));
           for ( i = 0; i < max_objects; i++ )
           {
             FT_BBox*  bbox = (FT_BBox*)objects[i];
@@ -1260,7 +1285,14 @@
             bbox->yMin = FT_RoundFix( temp[i +     max_objects] );
             bbox->xMax = FT_RoundFix( temp[i + 2 * max_objects] );
             bbox->yMax = FT_RoundFix( temp[i + 3 * max_objects] );
+
+            FT_TRACE4(( " [%ld %ld %ld %ld]",
+                        bbox->xMin / 65536,
+                        bbox->yMin / 65536,
+                        bbox->xMax / 65536,
+                        bbox->yMax / 65536 ));
           }
+          FT_TRACE4(( "]" ));
 
           FT_FREE( temp );
         }
@@ -1333,6 +1365,8 @@
       *(FT_Byte*)( (FT_Byte*)objects[0] + field->count_offset ) =
         (FT_Byte)num_elements;
 
+    FT_TRACE4(( " [" ));
+
     /* we now load each element, adjusting the field.offset on each one */
     token = elements;
     for ( ; num_elements > 0; num_elements--, token++ )
@@ -1350,6 +1384,8 @@
 
       fieldrec.offset += fieldrec.size;
     }
+
+    FT_TRACE4(( "]" ));
 
 #if 0  /* obsolete -- keep for reference */
     if ( pflags )
@@ -1410,6 +1446,8 @@
                                           bytes,
                                           max_bytes );
 
+    parser->cursor = cur;
+
     if ( delimiters )
     {
       if ( cur < parser->limit && *cur != '>' )
@@ -1419,10 +1457,8 @@
         goto Exit;
       }
 
-      cur++;
+      parser->cursor++;
     }
-
-    parser->cursor = cur;
 
   Exit:
     return error;
@@ -1509,26 +1545,31 @@
   /*************************************************************************/
   /*************************************************************************/
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    t1_builder_init                                                    */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Initializes a given glyph builder.                                 */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    builder :: A pointer to the glyph builder to initialize.           */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    face    :: The current face object.                                */
-  /*                                                                       */
-  /*    size    :: The current size object.                                */
-  /*                                                                       */
-  /*    glyph   :: The current glyph object.                               */
-  /*                                                                       */
-  /*    hinting :: Whether hinting should be applied.                      */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   t1_builder_init
+   *
+   * @Description:
+   *   Initializes a given glyph builder.
+   *
+   * @InOut:
+   *   builder ::
+   *     A pointer to the glyph builder to initialize.
+   *
+   * @Input:
+   *   face ::
+   *     The current face object.
+   *
+   *   size ::
+   *     The current size object.
+   *
+   *   glyph ::
+   *     The current glyph object.
+   *
+   *   hinting ::
+   *     Whether hinting should be applied.
+   */
   FT_LOCAL_DEF( void )
   t1_builder_init( T1_Builder    builder,
                    FT_Face       face,
@@ -1572,19 +1613,20 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    t1_builder_done                                                    */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Finalizes a given glyph builder.  Its contents can still be used   */
-  /*    after the call, but the function saves important information       */
-  /*    within the corresponding glyph slot.                               */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    builder :: A pointer to the glyph builder to finalize.             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   t1_builder_done
+   *
+   * @Description:
+   *   Finalizes a given glyph builder.  Its contents can still be used
+   *   after the call, but the function saves important information
+   *   within the corresponding glyph slot.
+   *
+   * @Input:
+   *   builder ::
+   *     A pointer to the glyph builder to finalize.
+   */
   FT_LOCAL_DEF( void )
   t1_builder_done( T1_Builder  builder )
   {
@@ -1769,26 +1811,31 @@
   /*************************************************************************/
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    cff_builder_init                                                   */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Initializes a given glyph builder.                                 */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    builder :: A pointer to the glyph builder to initialize.           */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    face    :: The current face object.                                */
-  /*                                                                       */
-  /*    size    :: The current size object.                                */
-  /*                                                                       */
-  /*    glyph   :: The current glyph object.                               */
-  /*                                                                       */
-  /*    hinting :: Whether hinting is active.                              */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   cff_builder_init
+   *
+   * @Description:
+   *   Initializes a given glyph builder.
+   *
+   * @InOut:
+   *   builder ::
+   *     A pointer to the glyph builder to initialize.
+   *
+   * @Input:
+   *   face ::
+   *     The current face object.
+   *
+   *   size ::
+   *     The current size object.
+   *
+   *   glyph ::
+   *     The current glyph object.
+   *
+   *   hinting ::
+   *     Whether hinting is active.
+   */
   FT_LOCAL_DEF( void )
   cff_builder_init( CFF_Builder*   builder,
                     TT_Face        face,
@@ -1841,19 +1888,20 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    cff_builder_done                                                   */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Finalizes a given glyph builder.  Its contents can still be used   */
-  /*    after the call, but the function saves important information       */
-  /*    within the corresponding glyph slot.                               */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    builder :: A pointer to the glyph builder to finalize.             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   cff_builder_done
+   *
+   * @Description:
+   *   Finalizes a given glyph builder.  Its contents can still be used
+   *   after the call, but the function saves important information
+   *   within the corresponding glyph slot.
+   *
+   * @Input:
+   *   builder ::
+   *     A pointer to the glyph builder to finalize.
+   */
   FT_LOCAL_DEF( void )
   cff_builder_done( CFF_Builder*  builder )
   {
@@ -1993,6 +2041,14 @@
     first = outline->n_contours <= 1
             ? 0 : outline->contours[outline->n_contours - 2] + 1;
 
+    /* in malformed fonts it can happen that a contour was started */
+    /* but no points were added                                    */
+    if ( outline->n_contours && first == outline->n_points )
+    {
+      outline->n_contours--;
+      return;
+    }
+
     /* We must not include the last point in the path if it */
     /* is located on the first point.                       */
     if ( outline->n_points > 1 )
@@ -2033,26 +2089,31 @@
   /*************************************************************************/
   /*************************************************************************/
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    ps_builder_init                                                    */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Initializes a given glyph builder.                                 */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    builder :: A pointer to the glyph builder to initialize.           */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    face    :: The current face object.                                */
-  /*                                                                       */
-  /*    size    :: The current size object.                                */
-  /*                                                                       */
-  /*    glyph   :: The current glyph object.                               */
-  /*                                                                       */
-  /*    hinting :: Whether hinting should be applied.                      */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   ps_builder_init
+   *
+   * @Description:
+   *   Initializes a given glyph builder.
+   *
+   * @InOut:
+   *   builder ::
+   *     A pointer to the glyph builder to initialize.
+   *
+   * @Input:
+   *   face ::
+   *     The current face object.
+   *
+   *   size ::
+   *     The current size object.
+   *
+   *   glyph ::
+   *     The current glyph object.
+   *
+   *   hinting ::
+   *     Whether hinting should be applied.
+   */
   FT_LOCAL_DEF( void )
   ps_builder_init( PS_Builder*  ps_builder,
                    void*        builder,
@@ -2116,19 +2177,20 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    ps_builder_done                                                    */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Finalizes a given glyph builder.  Its contents can still be used   */
-  /*    after the call, but the function saves important information       */
-  /*    within the corresponding glyph slot.                               */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    builder :: A pointer to the glyph builder to finalize.             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   ps_builder_done
+   *
+   * @Description:
+   *   Finalizes a given glyph builder.  Its contents can still be used
+   *   after the call, but the function saves important information
+   *   within the corresponding glyph slot.
+   *
+   * @Input:
+   *   builder ::
+   *     A pointer to the glyph builder to finalize.
+   */
   FT_LOCAL_DEF( void )
   ps_builder_done( PS_Builder*  builder )
   {
@@ -2336,23 +2398,26 @@
   /*************************************************************************/
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    ps_decoder_init                                                    */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Creates a wrapper decoder for use in the combined                  */
-  /*    Type 1 / CFF interpreter.                                          */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    ps_decoder :: A pointer to the decoder to initialize.              */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    decoder    :: A pointer to the original decoder.                   */
-  /*                                                                       */
-  /*    is_t1      :: Flag indicating Type 1 or CFF                        */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   ps_decoder_init
+   *
+   * @Description:
+   *   Creates a wrapper decoder for use in the combined
+   *   Type 1 / CFF interpreter.
+   *
+   * @InOut:
+   *   ps_decoder ::
+   *     A pointer to the decoder to initialize.
+   *
+   * @Input:
+   *   decoder ::
+   *     A pointer to the original decoder.
+   *
+   *   is_t1 ::
+   *     Flag indicating Type 1 or CFF
+   */
   FT_LOCAL_DEF( void )
   ps_decoder_init( PS_Decoder*  ps_decoder,
                    void*        decoder,
@@ -2511,7 +2576,7 @@
               FT_UShort  seed )
   {
     PS_Conv_EexecDecode( &buffer,
-                         buffer + length,
+                         FT_OFFSET( buffer, length ),
                          buffer,
                          length,
                          &seed );

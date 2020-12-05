@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,63 +29,154 @@
 /*************************************************************************/
 
 #include "theme.h"
-#include "os/file_access.h"
-#include "print_string.h"
-
-Ref<Theme> Theme::default_theme;
+#include "core/os/file_access.h"
+#include "core/string/print_string.h"
 
 void Theme::_emit_theme_changed() {
-
 	emit_changed();
 }
 
-void Theme::_ref_font(Ref<Font> p_sc) {
+Vector<String> Theme::_get_icon_list(const String &p_node_type) const {
+	Vector<String> ilret;
+	List<StringName> il;
 
-	if (!font_refcount.has(p_sc)) {
-		font_refcount[p_sc] = 1;
-		p_sc->connect("changed", this, "_emit_theme_changed");
-	} else {
-		font_refcount[p_sc] += 1;
+	get_icon_list(p_node_type, &il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
 	}
+	return ilret;
 }
 
-void Theme::_unref_font(Ref<Font> p_sc) {
+Vector<String> Theme::_get_stylebox_list(const String &p_node_type) const {
+	Vector<String> ilret;
+	List<StringName> il;
 
-	ERR_FAIL_COND(!font_refcount.has(p_sc));
-	font_refcount[p_sc]--;
-	if (font_refcount[p_sc] == 0) {
-		p_sc->disconnect("changed", this, "_emit_theme_changed");
-		font_refcount.erase(p_sc);
+	get_stylebox_list(p_node_type, &il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
 	}
+	return ilret;
+}
+
+Vector<String> Theme::_get_stylebox_types() const {
+	Vector<String> ilret;
+	List<StringName> il;
+
+	get_stylebox_types(&il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
+Vector<String> Theme::_get_font_list(const String &p_node_type) const {
+	Vector<String> ilret;
+	List<StringName> il;
+
+	get_font_list(p_node_type, &il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
+Vector<String> Theme::_get_font_size_list(const String &p_node_type) const {
+	Vector<String> ilret;
+	List<StringName> il;
+
+	get_font_size_list(p_node_type, &il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
+Vector<String> Theme::_get_color_list(const String &p_node_type) const {
+	Vector<String> ilret;
+	List<StringName> il;
+
+	get_color_list(p_node_type, &il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
+Vector<String> Theme::_get_constant_list(const String &p_node_type) const {
+	Vector<String> ilret;
+	List<StringName> il;
+
+	get_constant_list(p_node_type, &il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
+Vector<String> Theme::_get_type_list(const String &p_node_type) const {
+	Vector<String> ilret;
+	List<StringName> il;
+
+	get_type_list(&il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
 }
 
 bool Theme::_set(const StringName &p_name, const Variant &p_value) {
-
 	String sname = p_name;
 
 	if (sname.find("/") != -1) {
-
 		String type = sname.get_slicec('/', 1);
 		String node_type = sname.get_slicec('/', 0);
 		String name = sname.get_slicec('/', 2);
 
 		if (type == "icons") {
-
 			set_icon(name, node_type, p_value);
 		} else if (type == "styles") {
-
 			set_stylebox(name, node_type, p_value);
 		} else if (type == "fonts") {
-
 			set_font(name, node_type, p_value);
 		} else if (type == "colors") {
-
 			set_color(name, node_type, p_value);
 		} else if (type == "constants") {
-
 			set_constant(name, node_type, p_value);
-		} else
+		} else {
 			return false;
+		}
 
 		return true;
 	}
@@ -94,41 +185,38 @@ bool Theme::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool Theme::_get(const StringName &p_name, Variant &r_ret) const {
-
 	String sname = p_name;
 
 	if (sname.find("/") != -1) {
-
 		String type = sname.get_slicec('/', 1);
 		String node_type = sname.get_slicec('/', 0);
 		String name = sname.get_slicec('/', 2);
 
 		if (type == "icons") {
-
-			if (!has_icon(name, node_type))
-				r_ret = Ref<Texture>();
-			else
+			if (!has_icon(name, node_type)) {
+				r_ret = Ref<Texture2D>();
+			} else {
 				r_ret = get_icon(name, node_type);
+			}
 		} else if (type == "styles") {
-
-			if (!has_stylebox(name, node_type))
+			if (!has_stylebox(name, node_type)) {
 				r_ret = Ref<StyleBox>();
-			else
+			} else {
 				r_ret = get_stylebox(name, node_type);
+			}
 		} else if (type == "fonts") {
-
-			if (!has_font(name, node_type))
+			if (!has_font(name, node_type)) {
 				r_ret = Ref<Font>();
-			else
+			} else {
 				r_ret = get_font(name, node_type);
+			}
 		} else if (type == "colors") {
-
 			r_ret = get_color(name, node_type);
 		} else if (type == "constants") {
-
 			r_ret = get_constant(name, node_type);
-		} else
+		} else {
 			return false;
+		}
 
 		return true;
 	}
@@ -137,65 +225,54 @@ bool Theme::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	List<PropertyInfo> list;
 
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
 	while ((key = icon_map.next(key))) {
-
-		const StringName *key2 = NULL;
+		const StringName *key2 = nullptr;
 
 		while ((key2 = icon_map[*key].next(key2))) {
-
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + *key + "/icons/" + *key2, PROPERTY_HINT_RESOURCE_TYPE, "Texture", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+			list.push_back(PropertyInfo(Variant::OBJECT, String() + *key + "/icons/" + *key2, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = style_map.next(key))) {
-
-		const StringName *key2 = NULL;
+		const StringName *key2 = nullptr;
 
 		while ((key2 = style_map[*key].next(key2))) {
-
 			list.push_back(PropertyInfo(Variant::OBJECT, String() + *key + "/styles/" + *key2, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = font_map.next(key))) {
-
-		const StringName *key2 = NULL;
+		const StringName *key2 = nullptr;
 
 		while ((key2 = font_map[*key].next(key2))) {
-
 			list.push_back(PropertyInfo(Variant::OBJECT, String() + *key + "/fonts/" + *key2, PROPERTY_HINT_RESOURCE_TYPE, "Font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = color_map.next(key))) {
-
-		const StringName *key2 = NULL;
+		const StringName *key2 = nullptr;
 
 		while ((key2 = color_map[*key].next(key2))) {
-
 			list.push_back(PropertyInfo(Variant::COLOR, String() + *key + "/colors/" + *key2));
 		}
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = constant_map.next(key))) {
-
-		const StringName *key2 = NULL;
+		const StringName *key2 = nullptr;
 
 		while ((key2 = constant_map[*key].next(key2))) {
-
 			list.push_back(PropertyInfo(Variant::INT, String() + *key + "/constants/" + *key2));
 		}
 	}
@@ -206,24 +283,19 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-Ref<Theme> Theme::get_default() {
-
-	return default_theme;
-}
-
 void Theme::set_default_theme_font(const Ref<Font> &p_default_font) {
-
-	if (default_theme_font == p_default_font)
+	if (default_theme_font == p_default_font) {
 		return;
+	}
 
 	if (default_theme_font.is_valid()) {
-		_unref_font(default_theme_font);
+		default_theme_font->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
 	}
 
 	default_theme_font = p_default_font;
 
 	if (default_theme_font.is_valid()) {
-		_ref_font(default_theme_font);
+		default_theme_font->connect("changed", callable_mp(this, &Theme::_emit_theme_changed), varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
 	_change_notify();
@@ -231,87 +303,128 @@ void Theme::set_default_theme_font(const Ref<Font> &p_default_font) {
 }
 
 Ref<Font> Theme::get_default_theme_font() const {
-
 	return default_theme_font;
 }
 
-void Theme::set_default(const Ref<Theme> &p_default) {
+void Theme::set_default_theme_font_size(int p_font_size) {
+	if (default_theme_font_size == p_font_size) {
+		return;
+	}
 
+	default_theme_font_size = p_font_size;
+
+	_change_notify();
+	emit_changed();
+}
+
+int Theme::get_default_theme_font_size() const {
+	return default_theme_font_size;
+}
+
+Ref<Theme> Theme::project_default_theme;
+Ref<Theme> Theme::default_theme;
+Ref<Texture2D> Theme::default_icon;
+Ref<StyleBox> Theme::default_style;
+Ref<Font> Theme::default_font;
+int Theme::default_font_size = 16;
+
+Ref<Theme> Theme::get_default() {
+	return default_theme;
+}
+
+void Theme::set_default(const Ref<Theme> &p_default) {
 	default_theme = p_default;
 }
 
-Ref<Texture> Theme::default_icon;
-Ref<StyleBox> Theme::default_style;
-Ref<Font> Theme::default_font;
+Ref<Theme> Theme::get_project_default() {
+	return project_default_theme;
+}
 
-void Theme::set_default_icon(const Ref<Texture> &p_icon) {
+void Theme::set_project_default(const Ref<Theme> &p_project_default) {
+	project_default_theme = p_project_default;
+}
 
+void Theme::set_default_icon(const Ref<Texture2D> &p_icon) {
 	default_icon = p_icon;
 }
-void Theme::set_default_style(const Ref<StyleBox> &p_style) {
 
+void Theme::set_default_style(const Ref<StyleBox> &p_style) {
 	default_style = p_style;
 }
-void Theme::set_default_font(const Ref<Font> &p_font) {
 
+void Theme::set_default_font(const Ref<Font> &p_font) {
 	default_font = p_font;
 }
 
-void Theme::set_icon(const StringName &p_name, const StringName &p_type, const Ref<Texture> &p_icon) {
+void Theme::set_default_font_size(int p_font_size) {
+	default_font_size = p_font_size;
+}
 
+void Theme::set_icon(const StringName &p_name, const StringName &p_node_type, const Ref<Texture2D> &p_icon) {
 	//ERR_FAIL_COND(p_icon.is_null());
 
-	bool new_value = !icon_map.has(p_type) || !icon_map[p_type].has(p_name);
+	bool new_value = !icon_map.has(p_node_type) || !icon_map[p_node_type].has(p_name);
 
-	icon_map[p_type][p_name] = p_icon;
+	if (icon_map[p_node_type].has(p_name) && icon_map[p_node_type][p_name].is_valid()) {
+		icon_map[p_node_type][p_name]->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+	}
+
+	icon_map[p_node_type][p_name] = p_icon;
+
+	if (p_icon.is_valid()) {
+		icon_map[p_node_type][p_name]->connect("changed", callable_mp(this, &Theme::_emit_theme_changed), varray(), CONNECT_REFERENCE_COUNTED);
+	}
 
 	if (new_value) {
 		_change_notify();
 		emit_changed();
 	}
 }
-Ref<Texture> Theme::get_icon(const StringName &p_name, const StringName &p_type) const {
 
-	if (icon_map.has(p_type) && icon_map[p_type].has(p_name) && icon_map[p_type][p_name].is_valid()) {
-
-		return icon_map[p_type][p_name];
+Ref<Texture2D> Theme::get_icon(const StringName &p_name, const StringName &p_node_type) const {
+	if (icon_map.has(p_node_type) && icon_map[p_node_type].has(p_name) && icon_map[p_node_type][p_name].is_valid()) {
+		return icon_map[p_node_type][p_name];
 	} else {
 		return default_icon;
 	}
 }
 
-bool Theme::has_icon(const StringName &p_name, const StringName &p_type) const {
-
-	return (icon_map.has(p_type) && icon_map[p_type].has(p_name) && icon_map[p_type][p_name].is_valid());
+bool Theme::has_icon(const StringName &p_name, const StringName &p_node_type) const {
+	return (icon_map.has(p_node_type) && icon_map[p_node_type].has(p_name) && icon_map[p_node_type][p_name].is_valid());
 }
 
-void Theme::clear_icon(const StringName &p_name, const StringName &p_type) {
+void Theme::clear_icon(const StringName &p_name, const StringName &p_node_type) {
+	ERR_FAIL_COND(!icon_map.has(p_node_type));
+	ERR_FAIL_COND(!icon_map[p_node_type].has(p_name));
 
-	ERR_FAIL_COND(!icon_map.has(p_type));
-	ERR_FAIL_COND(!icon_map[p_type].has(p_name));
+	if (icon_map[p_node_type][p_name].is_valid()) {
+		icon_map[p_node_type][p_name]->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+	}
 
-	icon_map[p_type].erase(p_name);
+	icon_map[p_node_type].erase(p_name);
+
 	_change_notify();
 	emit_changed();
 }
 
-void Theme::get_icon_list(StringName p_type, List<StringName> *p_list) const {
+void Theme::get_icon_list(StringName p_node_type, List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
 
-	if (!icon_map.has(p_type))
+	if (!icon_map.has(p_node_type)) {
 		return;
+	}
 
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
-	while ((key = icon_map[p_type].next(key))) {
-
+	while ((key = icon_map[p_node_type].next(key))) {
 		p_list->push_back(*key);
 	}
 }
 
-void Theme::set_shader(const StringName &p_name, const StringName &p_type, const Ref<Shader> &p_shader) {
-	bool new_value = !shader_map.has(p_type) || !shader_map[p_type].has(p_name);
+void Theme::set_shader(const StringName &p_name, const StringName &p_node_type, const Ref<Shader> &p_shader) {
+	bool new_value = !shader_map.has(p_node_type) || !shader_map[p_node_type].has(p_name);
 
-	shader_map[p_type][p_name] = p_shader;
+	shader_map[p_node_type][p_name] = p_shader;
 
 	if (new_value) {
 		_change_notify();
@@ -319,112 +432,124 @@ void Theme::set_shader(const StringName &p_name, const StringName &p_type, const
 	}
 }
 
-Ref<Shader> Theme::get_shader(const StringName &p_name, const StringName &p_type) const {
-	if (shader_map.has(p_type) && shader_map[p_type].has(p_name) && shader_map[p_type][p_name].is_valid()) {
-		return shader_map[p_type][p_name];
+Ref<Shader> Theme::get_shader(const StringName &p_name, const StringName &p_node_type) const {
+	if (shader_map.has(p_node_type) && shader_map[p_node_type].has(p_name) && shader_map[p_node_type][p_name].is_valid()) {
+		return shader_map[p_node_type][p_name];
 	} else {
-		return NULL;
+		return nullptr;
 	}
 }
 
-bool Theme::has_shader(const StringName &p_name, const StringName &p_type) const {
-	return (shader_map.has(p_type) && shader_map[p_type].has(p_name) && shader_map[p_type][p_name].is_valid());
+bool Theme::has_shader(const StringName &p_name, const StringName &p_node_type) const {
+	return (shader_map.has(p_node_type) && shader_map[p_node_type].has(p_name) && shader_map[p_node_type][p_name].is_valid());
 }
 
-void Theme::clear_shader(const StringName &p_name, const StringName &p_type) {
-	ERR_FAIL_COND(!shader_map.has(p_type));
-	ERR_FAIL_COND(!shader_map[p_type].has(p_name));
+void Theme::clear_shader(const StringName &p_name, const StringName &p_node_type) {
+	ERR_FAIL_COND(!shader_map.has(p_node_type));
+	ERR_FAIL_COND(!shader_map[p_node_type].has(p_name));
 
-	shader_map[p_type].erase(p_name);
+	shader_map[p_node_type].erase(p_name);
 	_change_notify();
 	emit_changed();
 }
 
-void Theme::get_shader_list(const StringName &p_type, List<StringName> *p_list) const {
-	if (!shader_map.has(p_type))
+void Theme::get_shader_list(const StringName &p_node_type, List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
+
+	if (!shader_map.has(p_node_type)) {
 		return;
+	}
 
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
-	while ((key = shader_map[p_type].next(key))) {
-
+	while ((key = shader_map[p_node_type].next(key))) {
 		p_list->push_back(*key);
 	}
 }
 
-void Theme::set_stylebox(const StringName &p_name, const StringName &p_type, const Ref<StyleBox> &p_style) {
-
+void Theme::set_stylebox(const StringName &p_name, const StringName &p_node_type, const Ref<StyleBox> &p_style) {
 	//ERR_FAIL_COND(p_style.is_null());
 
-	bool new_value = !style_map.has(p_type) || !style_map[p_type].has(p_name);
+	bool new_value = !style_map.has(p_node_type) || !style_map[p_node_type].has(p_name);
 
-	style_map[p_type][p_name] = p_style;
+	if (style_map[p_node_type].has(p_name) && style_map[p_node_type][p_name].is_valid()) {
+		style_map[p_node_type][p_name]->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+	}
 
-	if (new_value)
+	style_map[p_node_type][p_name] = p_style;
+
+	if (p_style.is_valid()) {
+		style_map[p_node_type][p_name]->connect("changed", callable_mp(this, &Theme::_emit_theme_changed), varray(), CONNECT_REFERENCE_COUNTED);
+	}
+
+	if (new_value) {
 		_change_notify();
+	}
 	emit_changed();
 }
 
-Ref<StyleBox> Theme::get_stylebox(const StringName &p_name, const StringName &p_type) const {
-
-	if (style_map.has(p_type) && style_map[p_type].has(p_name) && style_map[p_type][p_name].is_valid()) {
-
-		return style_map[p_type][p_name];
+Ref<StyleBox> Theme::get_stylebox(const StringName &p_name, const StringName &p_node_type) const {
+	if (style_map.has(p_node_type) && style_map[p_node_type].has(p_name) && style_map[p_node_type][p_name].is_valid()) {
+		return style_map[p_node_type][p_name];
 	} else {
 		return default_style;
 	}
 }
 
-bool Theme::has_stylebox(const StringName &p_name, const StringName &p_type) const {
-
-	return (style_map.has(p_type) && style_map[p_type].has(p_name) && style_map[p_type][p_name].is_valid());
+bool Theme::has_stylebox(const StringName &p_name, const StringName &p_node_type) const {
+	return (style_map.has(p_node_type) && style_map[p_node_type].has(p_name) && style_map[p_node_type][p_name].is_valid());
 }
 
-void Theme::clear_stylebox(const StringName &p_name, const StringName &p_type) {
+void Theme::clear_stylebox(const StringName &p_name, const StringName &p_node_type) {
+	ERR_FAIL_COND(!style_map.has(p_node_type));
+	ERR_FAIL_COND(!style_map[p_node_type].has(p_name));
 
-	ERR_FAIL_COND(!style_map.has(p_type));
-	ERR_FAIL_COND(!style_map[p_type].has(p_name));
+	if (style_map[p_node_type][p_name].is_valid()) {
+		style_map[p_node_type][p_name]->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+	}
 
-	style_map[p_type].erase(p_name);
+	style_map[p_node_type].erase(p_name);
+
 	_change_notify();
 	emit_changed();
 }
 
-void Theme::get_stylebox_list(StringName p_type, List<StringName> *p_list) const {
+void Theme::get_stylebox_list(StringName p_node_type, List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
 
-	if (!style_map.has(p_type))
+	if (!style_map.has(p_node_type)) {
 		return;
+	}
 
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
-	while ((key = style_map[p_type].next(key))) {
-
+	while ((key = style_map[p_node_type].next(key))) {
 		p_list->push_back(*key);
 	}
 }
 
 void Theme::get_stylebox_types(List<StringName> *p_list) const {
-	const StringName *key = NULL;
+	ERR_FAIL_NULL(p_list);
+
+	const StringName *key = nullptr;
 	while ((key = style_map.next(key))) {
 		p_list->push_back(*key);
 	}
 }
 
-void Theme::set_font(const StringName &p_name, const StringName &p_type, const Ref<Font> &p_font) {
-
+void Theme::set_font(const StringName &p_name, const StringName &p_node_type, const Ref<Font> &p_font) {
 	//ERR_FAIL_COND(p_font.is_null());
 
-	bool new_value = !font_map.has(p_type) || !font_map[p_type].has(p_name);
+	bool new_value = !font_map.has(p_node_type) || !font_map[p_node_type].has(p_name);
 
-	if (!new_value) {
-		if (font_map[p_type][p_name].is_valid()) {
-			_unref_font(font_map[p_type][p_name]);
-		}
+	if (font_map[p_node_type][p_name].is_valid()) {
+		font_map[p_node_type][p_name]->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
 	}
-	font_map[p_type][p_name] = p_font;
+
+	font_map[p_node_type][p_name] = p_font;
 
 	if (p_font.is_valid()) {
-		_ref_font(p_font);
+		font_map[p_node_type][p_name]->connect("changed", callable_mp(this, &Theme::_emit_theme_changed), varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
 	if (new_value) {
@@ -432,53 +557,52 @@ void Theme::set_font(const StringName &p_name, const StringName &p_type, const R
 		emit_changed();
 	}
 }
-Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_type) const {
 
-	if (font_map.has(p_type) && font_map[p_type].has(p_name) && font_map[p_type][p_name].is_valid())
-		return font_map[p_type][p_name];
-	else if (default_theme_font.is_valid())
+Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_node_type) const {
+	if (font_map.has(p_node_type) && font_map[p_node_type].has(p_name) && font_map[p_node_type][p_name].is_valid()) {
+		return font_map[p_node_type][p_name];
+	} else if (default_theme_font.is_valid()) {
 		return default_theme_font;
-	else
+	} else {
 		return default_font;
+	}
 }
 
-bool Theme::has_font(const StringName &p_name, const StringName &p_type) const {
-
-	return (font_map.has(p_type) && font_map[p_type].has(p_name) && font_map[p_type][p_name].is_valid());
+bool Theme::has_font(const StringName &p_name, const StringName &p_node_type) const {
+	return ((font_map.has(p_node_type) && font_map[p_node_type].has(p_name) && font_map[p_node_type][p_name].is_valid()) || default_theme_font.is_valid());
 }
 
-void Theme::clear_font(const StringName &p_name, const StringName &p_type) {
+void Theme::clear_font(const StringName &p_name, const StringName &p_node_type) {
+	ERR_FAIL_COND(!font_map.has(p_node_type));
+	ERR_FAIL_COND(!font_map[p_node_type].has(p_name));
 
-	ERR_FAIL_COND(!font_map.has(p_type));
-	ERR_FAIL_COND(!font_map[p_type].has(p_name));
-
-	if (font_map.has(p_type) && font_map[p_type].has(p_name) && font_map[p_type][p_name].is_valid()) {
-		_unref_font(font_map[p_type][p_name]);
+	if (font_map[p_node_type][p_name].is_valid()) {
+		font_map[p_node_type][p_name]->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
 	}
 
-	font_map[p_type].erase(p_name);
+	font_map[p_node_type].erase(p_name);
 	_change_notify();
 	emit_changed();
 }
 
-void Theme::get_font_list(StringName p_type, List<StringName> *p_list) const {
+void Theme::get_font_list(StringName p_node_type, List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
 
-	if (!font_map.has(p_type))
+	if (!font_map.has(p_node_type)) {
 		return;
+	}
 
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
-	while ((key = font_map[p_type].next(key))) {
-
+	while ((key = font_map[p_node_type].next(key))) {
 		p_list->push_back(*key);
 	}
 }
 
-void Theme::set_color(const StringName &p_name, const StringName &p_type, const Color &p_color) {
+void Theme::set_font_size(const StringName &p_name, const StringName &p_node_type, int p_font_size) {
+	bool new_value = !font_size_map.has(p_node_type) || !font_size_map[p_node_type].has(p_name);
 
-	bool new_value = !color_map.has(p_type) || !color_map[p_type].has(p_name);
-
-	color_map[p_type][p_name] = p_color;
+	font_size_map[p_node_type][p_name] = p_font_size;
 
 	if (new_value) {
 		_change_notify();
@@ -486,46 +610,92 @@ void Theme::set_color(const StringName &p_name, const StringName &p_type, const 
 	}
 }
 
-Color Theme::get_color(const StringName &p_name, const StringName &p_type) const {
+int Theme::get_font_size(const StringName &p_name, const StringName &p_node_type) const {
+	if (font_size_map.has(p_node_type) && font_size_map[p_node_type].has(p_name) && (font_size_map[p_node_type][p_name] > 0)) {
+		return font_size_map[p_node_type][p_name];
+	} else if (default_theme_font_size > 0) {
+		return default_theme_font_size;
+	} else {
+		return default_font_size;
+	}
+}
 
-	if (color_map.has(p_type) && color_map[p_type].has(p_name))
-		return color_map[p_type][p_name];
-	else
+bool Theme::has_font_size(const StringName &p_name, const StringName &p_node_type) const {
+	return ((font_size_map.has(p_node_type) && font_size_map[p_node_type].has(p_name) && (font_size_map[p_node_type][p_name] > 0)) || (default_theme_font_size > 0));
+}
+
+void Theme::clear_font_size(const StringName &p_name, const StringName &p_node_type) {
+	ERR_FAIL_COND(!font_size_map.has(p_node_type));
+	ERR_FAIL_COND(!font_size_map[p_node_type].has(p_name));
+
+	font_size_map[p_node_type].erase(p_name);
+	_change_notify();
+	emit_changed();
+}
+
+void Theme::get_font_size_list(StringName p_node_type, List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
+
+	if (!font_size_map.has(p_node_type)) {
+		return;
+	}
+
+	const StringName *key = nullptr;
+
+	while ((key = font_size_map[p_node_type].next(key))) {
+		p_list->push_back(*key);
+	}
+}
+
+void Theme::set_color(const StringName &p_name, const StringName &p_node_type, const Color &p_color) {
+	bool new_value = !color_map.has(p_node_type) || !color_map[p_node_type].has(p_name);
+
+	color_map[p_node_type][p_name] = p_color;
+
+	if (new_value) {
+		_change_notify();
+		emit_changed();
+	}
+}
+
+Color Theme::get_color(const StringName &p_name, const StringName &p_node_type) const {
+	if (color_map.has(p_node_type) && color_map[p_node_type].has(p_name)) {
+		return color_map[p_node_type][p_name];
+	} else {
 		return Color();
+	}
 }
 
-bool Theme::has_color(const StringName &p_name, const StringName &p_type) const {
-
-	return (color_map.has(p_type) && color_map[p_type].has(p_name));
+bool Theme::has_color(const StringName &p_name, const StringName &p_node_type) const {
+	return (color_map.has(p_node_type) && color_map[p_node_type].has(p_name));
 }
 
-void Theme::clear_color(const StringName &p_name, const StringName &p_type) {
+void Theme::clear_color(const StringName &p_name, const StringName &p_node_type) {
+	ERR_FAIL_COND(!color_map.has(p_node_type));
+	ERR_FAIL_COND(!color_map[p_node_type].has(p_name));
 
-	ERR_FAIL_COND(!color_map.has(p_type));
-	ERR_FAIL_COND(!color_map[p_type].has(p_name));
-
-	color_map[p_type].erase(p_name);
+	color_map[p_node_type].erase(p_name);
 	_change_notify();
 	emit_changed();
 }
 
-void Theme::get_color_list(StringName p_type, List<StringName> *p_list) const {
+void Theme::get_color_list(StringName p_node_type, List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
 
-	if (!color_map.has(p_type))
+	if (!color_map.has(p_node_type)) {
 		return;
+	}
 
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
-	while ((key = color_map[p_type].next(key))) {
-
+	while ((key = color_map[p_node_type].next(key))) {
 		p_list->push_back(*key);
 	}
 }
 
-void Theme::set_constant(const StringName &p_name, const StringName &p_type, int p_constant) {
-
-	bool new_value = !constant_map.has(p_type) || !constant_map[p_type].has(p_name);
-	constant_map[p_type][p_name] = p_constant;
+void Theme::set_constant(const StringName &p_name, const StringName &p_node_type, int p_constant) {
+	bool new_value = !constant_map.has(p_node_type) || !constant_map[p_node_type].has(p_name);
+	constant_map[p_node_type][p_name] = p_constant;
 
 	if (new_value) {
 		_change_notify();
@@ -533,556 +703,242 @@ void Theme::set_constant(const StringName &p_name, const StringName &p_type, int
 	}
 }
 
-int Theme::get_constant(const StringName &p_name, const StringName &p_type) const {
-
-	if (constant_map.has(p_type) && constant_map[p_type].has(p_name))
-		return constant_map[p_type][p_name];
-	else {
+int Theme::get_constant(const StringName &p_name, const StringName &p_node_type) const {
+	if (constant_map.has(p_node_type) && constant_map[p_node_type].has(p_name)) {
+		return constant_map[p_node_type][p_name];
+	} else {
 		return 0;
 	}
 }
 
-bool Theme::has_constant(const StringName &p_name, const StringName &p_type) const {
-
-	return (constant_map.has(p_type) && constant_map[p_type].has(p_name));
+bool Theme::has_constant(const StringName &p_name, const StringName &p_node_type) const {
+	return (constant_map.has(p_node_type) && constant_map[p_node_type].has(p_name));
 }
 
-void Theme::clear_constant(const StringName &p_name, const StringName &p_type) {
+void Theme::clear_constant(const StringName &p_name, const StringName &p_node_type) {
+	ERR_FAIL_COND(!constant_map.has(p_node_type));
+	ERR_FAIL_COND(!constant_map[p_node_type].has(p_name));
 
-	ERR_FAIL_COND(!constant_map.has(p_type));
-	ERR_FAIL_COND(!constant_map[p_type].has(p_name));
-
-	constant_map[p_type].erase(p_name);
+	constant_map[p_node_type].erase(p_name);
 	_change_notify();
 	emit_changed();
 }
 
-void Theme::get_constant_list(StringName p_type, List<StringName> *p_list) const {
+void Theme::get_constant_list(StringName p_node_type, List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
 
-	if (!constant_map.has(p_type))
+	if (!constant_map.has(p_node_type)) {
 		return;
+	}
 
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
-	while ((key = constant_map[p_type].next(key))) {
-
+	while ((key = constant_map[p_node_type].next(key))) {
 		p_list->push_back(*key);
 	}
 }
 
+void Theme::clear() {
+	//these need disconnecting
+	{
+		const StringName *K = nullptr;
+		while ((K = icon_map.next(K))) {
+			const StringName *L = nullptr;
+			while ((L = icon_map[*K].next(L))) {
+				Ref<Texture2D> icon = icon_map[*K][*L];
+				if (icon.is_valid()) {
+					icon->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+				}
+			}
+		}
+	}
+
+	{
+		const StringName *K = nullptr;
+		while ((K = style_map.next(K))) {
+			const StringName *L = nullptr;
+			while ((L = style_map[*K].next(L))) {
+				Ref<StyleBox> style = style_map[*K][*L];
+				if (style.is_valid()) {
+					style->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+				}
+			}
+		}
+	}
+
+	{
+		const StringName *K = nullptr;
+		while ((K = font_map.next(K))) {
+			const StringName *L = nullptr;
+			while ((L = font_map[*K].next(L))) {
+				Ref<Font> font = font_map[*K][*L];
+				if (font.is_valid()) {
+					font->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+				}
+			}
+		}
+	}
+
+	icon_map.clear();
+	style_map.clear();
+	font_map.clear();
+	shader_map.clear();
+	color_map.clear();
+	constant_map.clear();
+
+	_change_notify();
+	emit_changed();
+}
+
 void Theme::copy_default_theme() {
+	Ref<Theme> default_theme2 = get_default();
+	copy_theme(default_theme2);
+}
 
-	Ref<Theme> default_theme = get_default();
+void Theme::copy_theme(const Ref<Theme> &p_other) {
+	if (p_other.is_null()) {
+		clear();
 
-	icon_map = default_theme->icon_map;
-	style_map = default_theme->style_map;
-	font_map = default_theme->font_map;
-	color_map = default_theme->color_map;
-	constant_map = default_theme->constant_map;
+		return;
+	}
+
+	//these need reconnecting, so add normally
+	{
+		const StringName *K = nullptr;
+		while ((K = p_other->icon_map.next(K))) {
+			const StringName *L = nullptr;
+			while ((L = p_other->icon_map[*K].next(L))) {
+				set_icon(*L, *K, p_other->icon_map[*K][*L]);
+			}
+		}
+	}
+
+	{
+		const StringName *K = nullptr;
+		while ((K = p_other->style_map.next(K))) {
+			const StringName *L = nullptr;
+			while ((L = p_other->style_map[*K].next(L))) {
+				set_stylebox(*L, *K, p_other->style_map[*K][*L]);
+			}
+		}
+	}
+
+	{
+		const StringName *K = nullptr;
+		while ((K = p_other->font_map.next(K))) {
+			const StringName *L = nullptr;
+			while ((L = p_other->font_map[*K].next(L))) {
+				set_font(*L, *K, p_other->font_map[*K][*L]);
+			}
+		}
+	}
+
+	//these are ok to just copy
+
+	color_map = p_other->color_map;
+	constant_map = p_other->constant_map;
+	shader_map = p_other->shader_map;
+
 	_change_notify();
 	emit_changed();
 }
 
 void Theme::get_type_list(List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
 
 	Set<StringName> types;
-
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
 	while ((key = icon_map.next(key))) {
-
 		types.insert(*key);
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = style_map.next(key))) {
-
 		types.insert(*key);
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = font_map.next(key))) {
-
 		types.insert(*key);
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = color_map.next(key))) {
-
 		types.insert(*key);
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = constant_map.next(key))) {
-
 		types.insert(*key);
 	}
 
 	for (Set<StringName>::Element *E = types.front(); E; E = E->next()) {
-
 		p_list->push_back(E->get());
 	}
 }
 
 void Theme::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_icon", "name", "node_type", "texture"), &Theme::set_icon);
+	ClassDB::bind_method(D_METHOD("get_icon", "name", "node_type"), &Theme::get_icon);
+	ClassDB::bind_method(D_METHOD("has_icon", "name", "node_type"), &Theme::has_icon);
+	ClassDB::bind_method(D_METHOD("clear_icon", "name", "node_type"), &Theme::clear_icon);
+	ClassDB::bind_method(D_METHOD("get_icon_list", "node_type"), &Theme::_get_icon_list);
 
-	ClassDB::bind_method(D_METHOD("set_icon", "name", "type", "texture"), &Theme::set_icon);
-	ClassDB::bind_method(D_METHOD("get_icon", "name", "type"), &Theme::get_icon);
-	ClassDB::bind_method(D_METHOD("has_icon", "name", "type"), &Theme::has_icon);
-	ClassDB::bind_method(D_METHOD("clear_icon", "name", "type"), &Theme::clear_icon);
-	ClassDB::bind_method(D_METHOD("get_icon_list", "type"), &Theme::_get_icon_list);
-
-	ClassDB::bind_method(D_METHOD("set_stylebox", "name", "type", "texture"), &Theme::set_stylebox);
-	ClassDB::bind_method(D_METHOD("get_stylebox", "name", "type"), &Theme::get_stylebox);
-	ClassDB::bind_method(D_METHOD("has_stylebox", "name", "type"), &Theme::has_stylebox);
-	ClassDB::bind_method(D_METHOD("clear_stylebox", "name", "type"), &Theme::clear_stylebox);
-	ClassDB::bind_method(D_METHOD("get_stylebox_list", "type"), &Theme::_get_stylebox_list);
+	ClassDB::bind_method(D_METHOD("set_stylebox", "name", "node_type", "texture"), &Theme::set_stylebox);
+	ClassDB::bind_method(D_METHOD("get_stylebox", "name", "node_type"), &Theme::get_stylebox);
+	ClassDB::bind_method(D_METHOD("has_stylebox", "name", "node_type"), &Theme::has_stylebox);
+	ClassDB::bind_method(D_METHOD("clear_stylebox", "name", "node_type"), &Theme::clear_stylebox);
+	ClassDB::bind_method(D_METHOD("get_stylebox_list", "node_type"), &Theme::_get_stylebox_list);
 	ClassDB::bind_method(D_METHOD("get_stylebox_types"), &Theme::_get_stylebox_types);
 
-	ClassDB::bind_method(D_METHOD("set_font", "name", "type", "font"), &Theme::set_font);
-	ClassDB::bind_method(D_METHOD("get_font", "name", "type"), &Theme::get_font);
-	ClassDB::bind_method(D_METHOD("has_font", "name", "type"), &Theme::has_font);
-	ClassDB::bind_method(D_METHOD("clear_font", "name", "type"), &Theme::clear_font);
-	ClassDB::bind_method(D_METHOD("get_font_list", "type"), &Theme::_get_font_list);
+	ClassDB::bind_method(D_METHOD("set_font", "name", "node_type", "font"), &Theme::set_font);
+	ClassDB::bind_method(D_METHOD("get_font", "name", "node_type"), &Theme::get_font);
+	ClassDB::bind_method(D_METHOD("has_font", "name", "node_type"), &Theme::has_font);
+	ClassDB::bind_method(D_METHOD("clear_font", "name", "node_type"), &Theme::clear_font);
+	ClassDB::bind_method(D_METHOD("get_font_list", "node_type"), &Theme::_get_font_list);
 
-	ClassDB::bind_method(D_METHOD("set_color", "name", "type", "color"), &Theme::set_color);
-	ClassDB::bind_method(D_METHOD("get_color", "name", "type"), &Theme::get_color);
-	ClassDB::bind_method(D_METHOD("has_color", "name", "type"), &Theme::has_color);
-	ClassDB::bind_method(D_METHOD("clear_color", "name", "type"), &Theme::clear_color);
-	ClassDB::bind_method(D_METHOD("get_color_list", "type"), &Theme::_get_color_list);
+	ClassDB::bind_method(D_METHOD("set_font_size", "name", "node_type", "font_size"), &Theme::set_font_size);
+	ClassDB::bind_method(D_METHOD("get_font_size", "name", "node_type"), &Theme::get_font_size);
+	ClassDB::bind_method(D_METHOD("has_font_size", "name", "node_type"), &Theme::has_font_size);
+	ClassDB::bind_method(D_METHOD("clear_font_size", "name", "node_type"), &Theme::clear_font_size);
+	ClassDB::bind_method(D_METHOD("get_font_size_list", "node_type"), &Theme::_get_font_size_list);
 
-	ClassDB::bind_method(D_METHOD("set_constant", "name", "type", "constant"), &Theme::set_constant);
-	ClassDB::bind_method(D_METHOD("get_constant", "name", "type"), &Theme::get_constant);
-	ClassDB::bind_method(D_METHOD("has_constant", "name", "type"), &Theme::has_constant);
-	ClassDB::bind_method(D_METHOD("clear_constant", "name", "type"), &Theme::clear_constant);
-	ClassDB::bind_method(D_METHOD("get_constant_list", "type"), &Theme::_get_constant_list);
+	ClassDB::bind_method(D_METHOD("set_color", "name", "node_type", "color"), &Theme::set_color);
+	ClassDB::bind_method(D_METHOD("get_color", "name", "node_type"), &Theme::get_color);
+	ClassDB::bind_method(D_METHOD("has_color", "name", "node_type"), &Theme::has_color);
+	ClassDB::bind_method(D_METHOD("clear_color", "name", "node_type"), &Theme::clear_color);
+	ClassDB::bind_method(D_METHOD("get_color_list", "node_type"), &Theme::_get_color_list);
+
+	ClassDB::bind_method(D_METHOD("set_constant", "name", "node_type", "constant"), &Theme::set_constant);
+	ClassDB::bind_method(D_METHOD("get_constant", "name", "node_type"), &Theme::get_constant);
+	ClassDB::bind_method(D_METHOD("has_constant", "name", "node_type"), &Theme::has_constant);
+	ClassDB::bind_method(D_METHOD("clear_constant", "name", "node_type"), &Theme::clear_constant);
+	ClassDB::bind_method(D_METHOD("get_constant_list", "node_type"), &Theme::_get_constant_list);
+
+	ClassDB::bind_method(D_METHOD("clear"), &Theme::clear);
 
 	ClassDB::bind_method(D_METHOD("set_default_font", "font"), &Theme::set_default_theme_font);
 	ClassDB::bind_method(D_METHOD("get_default_font"), &Theme::get_default_theme_font);
 
-	ClassDB::bind_method(D_METHOD("get_type_list", "type"), &Theme::_get_type_list);
+	ClassDB::bind_method(D_METHOD("set_default_font_size", "font_size"), &Theme::set_default_theme_font_size);
+	ClassDB::bind_method(D_METHOD("get_default_font_size"), &Theme::get_default_theme_font_size);
 
-	ClassDB::bind_method(D_METHOD("_emit_theme_changed"), &Theme::_emit_theme_changed);
+	ClassDB::bind_method(D_METHOD("get_type_list", "node_type"), &Theme::_get_type_list);
 
 	ClassDB::bind_method("copy_default_theme", &Theme::copy_default_theme);
+	ClassDB::bind_method(D_METHOD("copy_theme", "other"), &Theme::copy_theme);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_font_size"), "set_default_font_size", "get_default_font_size");
 }
 
 Theme::Theme() {
 }
 
 Theme::~Theme() {
-}
-
-RES ResourceFormatLoaderTheme::load(const String &p_path, const String &p_original_path, Error *r_error) {
-	if (r_error)
-		*r_error = ERR_CANT_OPEN;
-
-	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
-
-	ERR_EXPLAIN("Unable to open theme file: " + p_path);
-	ERR_FAIL_COND_V(err, RES());
-	String base_path = p_path.get_base_dir();
-	Ref<Theme> theme(memnew(Theme));
-	Map<StringName, Variant> library;
-	if (r_error)
-		*r_error = ERR_FILE_CORRUPT;
-
-	bool reading_library = false;
-	int line = 0;
-
-	while (!f->eof_reached()) {
-
-		String l = f->get_line().strip_edges();
-		line++;
-
-		int comment = l.find(";");
-		if (comment != -1)
-			l = l.substr(0, comment);
-		if (l == "")
-			continue;
-
-		if (l.begins_with("[")) {
-			if (l == "[library]") {
-				reading_library = true;
-			} else if (l == "[theme]") {
-				reading_library = false;
-			} else {
-				memdelete(f);
-				ERR_EXPLAIN(p_path + ":" + itos(line) + ": Unknown section type: '" + l + "'.");
-				ERR_FAIL_V(RES());
-			}
-			continue;
-		}
-
-		int eqpos = l.find("=");
-		if (eqpos == -1) {
-			memdelete(f);
-			ERR_EXPLAIN(p_path + ":" + itos(line) + ": Expected '='.");
-			ERR_FAIL_V(RES());
-		}
-
-		String right = l.substr(eqpos + 1, l.length()).strip_edges();
-		if (right == "") {
-			memdelete(f);
-			ERR_EXPLAIN(p_path + ":" + itos(line) + ": Expected value after '='.");
-			ERR_FAIL_V(RES());
-		}
-
-		Variant value;
-
-		if (right.is_valid_integer()) {
-			//is number
-			value = right.to_int();
-		} else if (right.is_valid_html_color()) {
-			//is html color
-			value = Color::html(right);
-		} else if (right.begins_with("@")) { //reference
-
-			String reference = right.substr(1, right.length());
-			if (!library.has(reference)) {
-				memdelete(f);
-				ERR_EXPLAIN(p_path + ":" + itos(line) + ": Invalid reference to '" + reference + "'.");
-				ERR_FAIL_V(RES());
-			}
-
-			value = library[reference];
-
-		} else if (right.begins_with("default")) { //use default
-			//do none
-		} else {
-			//attempt to parse a constructor
-			int popenpos = right.find("(");
-
-			if (popenpos == -1) {
-				memdelete(f);
-				ERR_EXPLAIN(p_path + ":" + itos(line) + ": Invalid constructor syntax: " + right);
-				ERR_FAIL_V(RES());
-			}
-
-			int pclosepos = right.find_last(")");
-
-			if (pclosepos == -1) {
-				ERR_EXPLAIN(p_path + ":" + itos(line) + ": Invalid constructor parameter syntax: " + right);
-				ERR_FAIL_V(RES());
-			}
-
-			String type = right.substr(0, popenpos);
-			String param = right.substr(popenpos + 1, pclosepos - popenpos - 1);
-
-			if (type == "icon") {
-
-				String path;
-
-				if (param.is_abs_path())
-					path = param;
-				else
-					path = base_path + "/" + param;
-
-				Ref<Texture> texture = ResourceLoader::load(path);
-				if (!texture.is_valid()) {
-					memdelete(f);
-					ERR_EXPLAIN(p_path + ":" + itos(line) + ": Couldn't find icon at path: " + path);
-					ERR_FAIL_V(RES());
-				}
-
-				value = texture;
-
-			} else if (type == "sbox") {
-
-				String path;
-
-				if (param.is_abs_path())
-					path = param;
-				else
-					path = base_path + "/" + param;
-
-				Ref<StyleBox> stylebox = ResourceLoader::load(path);
-				if (!stylebox.is_valid()) {
-					memdelete(f);
-					ERR_EXPLAIN(p_path + ":" + itos(line) + ": Couldn't find stylebox at path: " + path);
-					ERR_FAIL_V(RES());
-				}
-
-				value = stylebox;
-
-			} else if (type == "sboxt") {
-
-				Vector<String> params = param.split(",");
-				if (params.size() != 5 && params.size() != 9) {
-					memdelete(f);
-					ERR_EXPLAIN(p_path + ":" + itos(line) + ": Invalid param count for sboxt(): '" + right + "'.");
-					ERR_FAIL_V(RES());
-				}
-
-				String path = params[0];
-
-				if (!param.is_abs_path())
-					path = base_path + "/" + path;
-
-				Ref<Texture> tex = ResourceLoader::load(path);
-				if (tex.is_null()) {
-					memdelete(f);
-					ERR_EXPLAIN(p_path + ":" + itos(line) + ": Could not open texture for sboxt at path: '" + params[0] + "'.");
-					ERR_FAIL_V(RES());
-				}
-
-				Ref<StyleBoxTexture> sbtex(memnew(StyleBoxTexture));
-
-				sbtex->set_texture(tex);
-
-				for (int i = 0; i < 4; i++) {
-					if (!params[i + 1].is_valid_integer()) {
-
-						memdelete(f);
-						ERR_EXPLAIN(p_path + ":" + itos(line) + ": Invalid expand margin parameter for sboxt #" + itos(i + 1) + ", expected integer constant, got: '" + params[i + 1] + "'.");
-						ERR_FAIL_V(RES());
-					}
-
-					int margin = params[i + 1].to_int();
-					sbtex->set_expand_margin_size(Margin(i), margin);
-				}
-
-				if (params.size() == 9) {
-
-					for (int i = 0; i < 4; i++) {
-
-						if (!params[i + 5].is_valid_integer()) {
-							memdelete(f);
-							ERR_EXPLAIN(p_path + ":" + itos(line) + ": Invalid expand margin parameter for sboxt #" + itos(i + 5) + ", expected integer constant, got: '" + params[i + 5] + "'.");
-							ERR_FAIL_V(RES());
-						}
-
-						int margin = params[i + 5].to_int();
-						sbtex->set_margin_size(Margin(i), margin);
-					}
-				}
-
-				value = sbtex;
-			} else if (type == "sboxf") {
-
-				Vector<String> params = param.split(",");
-				if (params.size() < 2) {
-
-					memdelete(f);
-					ERR_EXPLAIN(p_path + ":" + itos(line) + ": Invalid param count for sboxf(): '" + right + "'.");
-					ERR_FAIL_V(RES());
-				}
-
-				Ref<StyleBoxFlat> sbflat(memnew(StyleBoxFlat));
-
-				if (!params[0].is_valid_integer()) {
-
-					memdelete(f);
-					ERR_EXPLAIN(p_path + ":" + itos(line) + ": Expected integer numeric constant for parameter 0 (border size).");
-					ERR_FAIL_V(RES());
-				}
-
-				sbflat->set_border_width_all(params[0].to_int());
-
-				if (!params[0].is_valid_integer()) {
-
-					memdelete(f);
-					ERR_EXPLAIN(p_path + ":" + itos(line) + ": Expected integer numeric constant for parameter 0 (border size).");
-					ERR_FAIL_V(RES());
-				}
-
-				int left = MIN(params.size() - 1, 3);
-
-				int ccodes = 0;
-
-				for (int i = 0; i < left; i++) {
-
-					if (params[i + 1].is_valid_html_color())
-						ccodes++;
-					else
-						break;
-				}
-
-				Color normal;
-				Color bright;
-				Color dark;
-
-				if (ccodes < 1) {
-					memdelete(f);
-					ERR_EXPLAIN(p_path + ":" + itos(line) + ": Expected at least 1, 2 or 3 html color codes.");
-					ERR_FAIL_V(RES());
-				} else if (ccodes == 1) {
-
-					normal = Color::html(params[1]);
-					bright = Color::html(params[1]);
-					dark = Color::html(params[1]);
-				} else if (ccodes == 2) {
-
-					normal = Color::html(params[1]);
-					bright = Color::html(params[2]);
-					dark = Color::html(params[2]);
-				} else {
-
-					normal = Color::html(params[1]);
-					bright = Color::html(params[2]);
-					dark = Color::html(params[3]);
-				}
-
-				sbflat->set_border_color_all(bright);
-				//				sbflat->set_dark_color(dark);
-				sbflat->set_bg_color(normal);
-
-				if (params.size() == ccodes + 5) {
-					//margins
-					for (int i = 0; i < 4; i++) {
-
-						if (!params[i + ccodes + 1].is_valid_integer()) {
-							memdelete(f);
-							ERR_EXPLAIN(p_path + ":" + itos(line) + ": Invalid expand margin parameter for sboxf #" + itos(i + ccodes + 1) + ", expected integer constant, got: '" + params[i + ccodes + 1] + "'.");
-							ERR_FAIL_V(RES());
-						}
-
-						//int margin = params[i+ccodes+1].to_int();
-						//sbflat->set_margin_size(Margin(i),margin);
-					}
-				} else if (params.size() != ccodes + 1) {
-					memdelete(f);
-					ERR_EXPLAIN(p_path + ":" + itos(line) + ": Invalid amount of margin parameters for sboxt.");
-					ERR_FAIL_V(RES());
-				}
-
-				value = sbflat;
-
-			} else {
-				memdelete(f);
-				ERR_EXPLAIN(p_path + ":" + itos(line) + ": Invalid constructor type: '" + type + "'.");
-				ERR_FAIL_V(RES());
-			}
-		}
-
-		//parse left and do something with it
-		String left = l.substr(0, eqpos);
-
-		if (reading_library) {
-
-			left = left.strip_edges();
-			if (!left.is_valid_identifier()) {
-				memdelete(f);
-				ERR_EXPLAIN(p_path + ":" + itos(line) + ": <LibraryItem> is not a valid identifier.");
-				ERR_FAIL_V(RES());
-			}
-			if (library.has(left)) {
-				memdelete(f);
-				ERR_EXPLAIN(p_path + ":" + itos(line) + ": Already in library: '" + left + "'.");
-				ERR_FAIL_V(RES());
-			}
-
-			library[left] = value;
-		} else {
-
-			int pointpos = left.find(".");
-			if (pointpos == -1) {
-				memdelete(f);
-				ERR_EXPLAIN(p_path + ":" + itos(line) + ": Expected 'control.item=..' assign syntax.");
-				ERR_FAIL_V(RES());
-			}
-
-			String control = left.substr(0, pointpos).strip_edges();
-			if (!control.is_valid_identifier()) {
-				memdelete(f);
-				ERR_EXPLAIN(p_path + ":" + itos(line) + ": <Control> is not a valid identifier.");
-				ERR_FAIL_V(RES());
-			}
-			String item = left.substr(pointpos + 1, left.size()).strip_edges();
-			if (!item.is_valid_identifier()) {
-				memdelete(f);
-				ERR_EXPLAIN(p_path + ":" + itos(line) + ": <Item> is not a valid identifier.");
-				ERR_FAIL_V(RES());
-			}
-
-			if (value.get_type() == Variant::NIL) {
-				//try to use exiting
-				if (Theme::get_default()->has_stylebox(item, control))
-					value = Theme::get_default()->get_stylebox(item, control);
-				else if (Theme::get_default()->has_font(item, control))
-					value = Theme::get_default()->get_font(item, control);
-				else if (Theme::get_default()->has_icon(item, control))
-					value = Theme::get_default()->get_icon(item, control);
-				else if (Theme::get_default()->has_color(item, control))
-					value = Theme::get_default()->get_color(item, control);
-				else if (Theme::get_default()->has_constant(item, control))
-					value = Theme::get_default()->get_constant(item, control);
-				else {
-					memdelete(f);
-					ERR_EXPLAIN(p_path + ":" + itos(line) + ": Default not present for: '" + control + "." + item + "'.");
-					ERR_FAIL_V(RES());
-				}
-			}
-
-			if (value.get_type() == Variant::OBJECT) {
-
-				Ref<Resource> res = value;
-				if (!res.is_valid()) {
-
-					memdelete(f);
-					ERR_EXPLAIN(p_path + ":" + itos(line) + ": Invalid resource (NULL).");
-					ERR_FAIL_V(RES());
-				}
-
-				if (Object::cast_to<StyleBox>(*res)) {
-					theme->set_stylebox(item, control, res);
-				} else if (Object::cast_to<Font>(*res)) {
-					theme->set_font(item, control, res);
-				} else if (Object::cast_to<Font>(*res)) {
-					theme->set_font(item, control, res);
-				} else if (Object::cast_to<Texture>(*res)) {
-					theme->set_icon(item, control, res);
-				} else {
-					memdelete(f);
-					ERR_EXPLAIN(p_path + ":" + itos(line) + ": Invalid resource type.");
-					ERR_FAIL_V(RES());
-				}
-			} else if (value.get_type() == Variant::COLOR) {
-
-				theme->set_color(item, control, value);
-
-			} else if (value.get_type() == Variant::INT) {
-
-				theme->set_constant(item, control, value);
-
-			} else {
-
-				memdelete(f);
-				ERR_EXPLAIN(p_path + ":" + itos(line) + ": Couldn't even determine what this setting is! what did you do!?");
-				ERR_FAIL_V(RES());
-			}
-		}
-	}
-
-	f->close();
-	memdelete(f);
-
-	if (r_error)
-		*r_error = OK;
-
-	return theme;
-}
-
-void ResourceFormatLoaderTheme::get_recognized_extensions(List<String> *p_extensions) const {
-
-	p_extensions->push_back("theme");
-}
-
-bool ResourceFormatLoaderTheme::handles_type(const String &p_type) const {
-
-	return p_type == "Theme";
-}
-
-String ResourceFormatLoaderTheme::get_resource_type(const String &p_path) const {
-
-	if (p_path.get_extension().to_lower() == "theme")
-		return "Theme";
-	return "";
 }

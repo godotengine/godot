@@ -1,43 +1,43 @@
-/***************************************************************************/
-/*                                                                         */
-/*  psft.c                                                                 */
-/*                                                                         */
-/*    FreeType Glue Component to Adobe's Interpreter (body).               */
-/*                                                                         */
-/*  Copyright 2013-2014 Adobe Systems Incorporated.                        */
-/*                                                                         */
-/*  This software, and all works of authorship, whether in source or       */
-/*  object code form as indicated by the copyright notice(s) included      */
-/*  herein (collectively, the "Work") is made available, and may only be   */
-/*  used, modified, and distributed under the FreeType Project License,    */
-/*  LICENSE.TXT.  Additionally, subject to the terms and conditions of the */
-/*  FreeType Project License, each contributor to the Work hereby grants   */
-/*  to any individual or legal entity exercising permissions granted by    */
-/*  the FreeType Project License and this section (hereafter, "You" or     */
-/*  "Your") a perpetual, worldwide, non-exclusive, no-charge,              */
-/*  royalty-free, irrevocable (except as stated in this section) patent    */
-/*  license to make, have made, use, offer to sell, sell, import, and      */
-/*  otherwise transfer the Work, where such license applies only to those  */
-/*  patent claims licensable by such contributor that are necessarily      */
-/*  infringed by their contribution(s) alone or by combination of their    */
-/*  contribution(s) with the Work to which such contribution(s) was        */
-/*  submitted.  If You institute patent litigation against any entity      */
-/*  (including a cross-claim or counterclaim in a lawsuit) alleging that   */
-/*  the Work or a contribution incorporated within the Work constitutes    */
-/*  direct or contributory patent infringement, then any patent licenses   */
-/*  granted to You under this License for that Work shall terminate as of  */
-/*  the date such litigation is filed.                                     */
-/*                                                                         */
-/*  By using, modifying, or distributing the Work you indicate that you    */
-/*  have read and understood the terms and conditions of the               */
-/*  FreeType Project License as well as those provided in this section,    */
-/*  and you accept them fully.                                             */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * psft.c
+ *
+ *   FreeType Glue Component to Adobe's Interpreter (body).
+ *
+ * Copyright 2013-2014 Adobe Systems Incorporated.
+ *
+ * This software, and all works of authorship, whether in source or
+ * object code form as indicated by the copyright notice(s) included
+ * herein (collectively, the "Work") is made available, and may only be
+ * used, modified, and distributed under the FreeType Project License,
+ * LICENSE.TXT.  Additionally, subject to the terms and conditions of the
+ * FreeType Project License, each contributor to the Work hereby grants
+ * to any individual or legal entity exercising permissions granted by
+ * the FreeType Project License and this section (hereafter, "You" or
+ * "Your") a perpetual, worldwide, non-exclusive, no-charge,
+ * royalty-free, irrevocable (except as stated in this section) patent
+ * license to make, have made, use, offer to sell, sell, import, and
+ * otherwise transfer the Work, where such license applies only to those
+ * patent claims licensable by such contributor that are necessarily
+ * infringed by their contribution(s) alone or by combination of their
+ * contribution(s) with the Work to which such contribution(s) was
+ * submitted.  If You institute patent litigation against any entity
+ * (including a cross-claim or counterclaim in a lawsuit) alleging that
+ * the Work or a contribution incorporated within the Work constitutes
+ * direct or contributory patent infringement, then any patent licenses
+ * granted to You under this License for that Work shall terminate as of
+ * the date such litigation is filed.
+ *
+ * By using, modifying, or distributing the Work you indicate that you
+ * have read and understood the terms and conditions of the
+ * FreeType Project License as well as those provided in this section,
+ * and you accept them fully.
+ *
+ */
 
 
 #include "psft.h"
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 
 #include "psfont.h"
 #include "pserror.h"
@@ -45,11 +45,11 @@
 #include "cffdecode.h"
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-#include FT_MULTIPLE_MASTERS_H
-#include FT_SERVICE_MULTIPLE_MASTERS_H
+#include <freetype/ftmm.h>
+#include <freetype/internal/services/svmm.h>
 #endif
 
-#include FT_SERVICE_CFF_TABLE_LOAD_H
+#include <freetype/internal/services/svcfftl.h>
 
 
 #define CF2_MAX_SIZE  cf2_intToFixed( 2000 )    /* max ppem */
@@ -120,12 +120,12 @@
   }
 
 
-  /********************************************/
-  /*                                          */
-  /* functions for handling client outline;   */
-  /* FreeType uses coordinates in 26.6 format */
-  /*                                          */
-  /********************************************/
+  /*********************************************
+   *
+   * functions for handling client outline;
+   * FreeType uses coordinates in 26.6 format
+   *
+   */
 
   static void
   cf2_builder_moveTo( CF2_OutlineCallbacks      callbacks,
@@ -313,7 +313,7 @@
     FT_Error   error = FT_Err_Ok;
     CF2_Font   font;
 
-    FT_Bool    is_t1 = decoder->builder.is_t1;
+    FT_Bool  is_t1 = decoder->builder.is_t1;
 
 
     FT_ASSERT( decoder &&
@@ -385,7 +385,7 @@
       FT_ZERO( &buf );
       buf.start =
       buf.ptr   = charstring_base;
-      buf.end   = charstring_base + charstring_len;
+      buf.end   = FT_OFFSET( charstring_base, charstring_len );
 
       FT_ZERO( &transform );
 
@@ -697,7 +697,7 @@
     FT_ASSERT( charstring + len >= charstring );
 
     buf->start = charstring;
-    buf->end   = charstring + len;
+    buf->end   = FT_OFFSET( charstring, len );
     buf->ptr   = buf->start;
 
     return FT_Err_Ok;
@@ -767,13 +767,14 @@
   cf2_freeT1SeacComponent( PS_Decoder*  decoder,
                            CF2_Buffer   buf )
   {
+#ifdef FT_CONFIG_OPTION_INCREMENTAL
+
     T1_Face  face;
     FT_Data  data;
 
 
     FT_ASSERT( decoder );
 
-#ifdef FT_CONFIG_OPTION_INCREMENTAL
     face = (T1_Face)decoder->builder.face;
 
     data.pointer = buf->start;
@@ -783,7 +784,13 @@
       face->root.internal->incremental_interface->funcs->free_glyph_data(
         face->root.internal->incremental_interface->object,
         &data );
-#endif /* FT_CONFIG_OPTION_INCREMENTAL */
+
+#else /* !FT_CONFIG_OPTION_INCREMENTAL */
+
+    FT_UNUSED( decoder );
+    FT_UNUSED( buf );
+
+#endif /* !FT_CONFIG_OPTION_INCREMENTAL */
   }
 
 
@@ -813,7 +820,7 @@
       /* The CID driver stores subroutines with seed bytes.  This     */
       /* case is taken care of when decoder->subrs_len == 0.          */
       if ( decoder->locals_len )
-        buf->end = buf->start + decoder->locals_len[idx];
+        buf->end = FT_OFFSET( buf->start, decoder->locals_len[idx] );
       else
       {
         /* We are using subroutines from a CID font.  We must adjust */

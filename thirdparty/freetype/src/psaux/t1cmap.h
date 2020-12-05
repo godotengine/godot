@@ -1,27 +1,26 @@
-/***************************************************************************/
-/*                                                                         */
-/*  t1cmap.h                                                               */
-/*                                                                         */
-/*    Type 1 character map support (specification).                        */
-/*                                                                         */
-/*  Copyright 2002-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * t1cmap.h
+ *
+ *   Type 1 character map support (specification).
+ *
+ * Copyright (C) 2002-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef T1CMAP_H_
 #define T1CMAP_H_
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_TYPE1_TYPES_H
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/t1types.h>
 
 FT_BEGIN_HEADER
 

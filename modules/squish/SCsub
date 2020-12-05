@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 env_squish = env_modules.Clone()
 
 # Thirdparty source files
-if env['builtin_squish']:
+if env["builtin_squish"]:
     thirdparty_dir = "#thirdparty/squish/"
     thirdparty_sources = [
         "alpha.cpp",
@@ -22,8 +22,11 @@ if env['builtin_squish']:
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_squish.add_source_files(env.modules_sources, thirdparty_sources)
-    env_squish.Append(CPPPATH=[thirdparty_dir])
+    env_squish.Prepend(CPPPATH=[thirdparty_dir])
+
+    env_thirdparty = env_squish.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 # Godot source files
 env_squish.add_source_files(env.modules_sources, "*.cpp")

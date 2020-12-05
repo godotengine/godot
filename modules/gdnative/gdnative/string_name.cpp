@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,14 +30,16 @@
 
 #include "gdnative/string_name.h"
 
-#include "core/string_db.h"
-#include "core/ustring.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
 
 #include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static_assert(sizeof(godot_string_name) == sizeof(StringName), "StringName size mismatch");
 
 void GDAPI godot_string_name_new(godot_string_name *r_dest, const godot_string *p_name) {
 	StringName *dest = (StringName *)r_dest;

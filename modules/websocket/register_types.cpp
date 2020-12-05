@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,53 +27,50 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "register_types.h"
-#include "error_macros.h"
+#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #ifdef JAVASCRIPT_ENABLED
 #include "emscripten.h"
 #include "emws_client.h"
 #include "emws_peer.h"
 #include "emws_server.h"
 #else
-#include "lws_client.h"
-#include "lws_peer.h"
-#include "lws_server.h"
+#include "wsl_client.h"
+#include "wsl_server.h"
+#endif
+#ifdef TOOLS_ENABLED
+#include "editor/debugger/editor_debugger_server.h"
+#include "editor/editor_node.h"
+#include "editor_debugger_server_websocket.h"
+#endif
+
+#ifdef TOOLS_ENABLED
+static void _editor_init_callback() {
+	EditorDebuggerServer::register_protocol_handler("ws://", EditorDebuggerServerWebSocket::create);
+}
 #endif
 
 void register_websocket_types() {
 #ifdef JAVASCRIPT_ENABLED
-	EM_ASM({
-		var IDHandler = {};
-		IDHandler["ids"] = {};
-		IDHandler["has"] = function(id) {
-			return IDHandler.ids.hasOwnProperty(id);
-		};
-		IDHandler["add"] = function(obj) {
-			var id = crypto.getRandomValues(new Int32Array(32))[0];
-			IDHandler.ids[id] = obj;
-			return id;
-		};
-		IDHandler["get"] = function(id) {
-			return IDHandler.ids[id];
-		};
-		IDHandler["remove"] = function(id) {
-			delete IDHandler.ids[id];
-		};
-		Module["IDHandler"] = IDHandler;
-	});
 	EMWSPeer::make_default();
 	EMWSClient::make_default();
 	EMWSServer::make_default();
 #else
-	LWSPeer::make_default();
-	LWSClient::make_default();
-	LWSServer::make_default();
+	WSLPeer::make_default();
+	WSLClient::make_default();
+	WSLServer::make_default();
 #endif
 
 	ClassDB::register_virtual_class<WebSocketMultiplayerPeer>();
 	ClassDB::register_custom_instance_class<WebSocketServer>();
 	ClassDB::register_custom_instance_class<WebSocketClient>();
 	ClassDB::register_custom_instance_class<WebSocketPeer>();
+
+#ifdef TOOLS_ENABLED
+	EditorNode::add_init_callback(&_editor_init_callback);
+#endif
 }
 
 void unregister_websocket_types() {}

@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptGlobalConstant" inherits="VisualScriptNode" category="Core" version="3.1">
+<class name="VisualScriptGlobalConstant" inherits="VisualScriptNode" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="constant" type="int" setter="set_global_constant" getter="get_global_constant">
+		<member name="constant" type="int" setter="set_global_constant" getter="get_global_constant" default="0">
 		</member>
 	</members>
 	<constants>

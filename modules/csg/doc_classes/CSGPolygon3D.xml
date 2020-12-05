@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CSGPolygon3D" inherits="CSGPrimitive3D" version="4.0">
+	<brief_description>
+		Extrudes a 2D polygon shape to create a 3D mesh.
+	</brief_description>
+	<description>
+		This node takes a 2D polygon shape and extrudes it to create a 3D mesh.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="1.0">
+			Extrusion depth when [member mode] is [constant MODE_DEPTH].
+		</member>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+			Material to use for the resulting mesh.
+		</member>
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="CSGPolygon3D.Mode" default="0">
+			Extrusion mode.
+		</member>
+		<member name="path_continuous_u" type="bool" setter="set_path_continuous_u" getter="is_path_continuous_u">
+			If [code]true[/code] the u component of our uv will continuously increase in unison with the distance traveled along our path when [member mode] is [constant MODE_PATH].
+		</member>
+		<member name="path_interval" type="float" setter="set_path_interval" getter="get_path_interval">
+			Interval at which a new extrusion slice is added along the path when [member mode] is [constant MODE_PATH].
+		</member>
+		<member name="path_joined" type="bool" setter="set_path_joined" getter="is_path_joined">
+			If [code]true[/code] the start and end of our path are joined together ensuring there is no seam when [member mode] is [constant MODE_PATH].
+		</member>
+		<member name="path_local" type="bool" setter="set_path_local" getter="is_path_local">
+			If [code]false[/code] we extrude centered on our path, if [code]true[/code] we extrude in relation to the position of our CSGPolygon3D when [member mode] is [constant MODE_PATH].
+		</member>
+		<member name="path_node" type="NodePath" setter="set_path_node" getter="get_path_node">
+			The [Shape3D] object containing the path along which we extrude when [member mode] is [constant MODE_PATH].
+		</member>
+		<member name="path_rotation" type="int" setter="set_path_rotation" getter="get_path_rotation" enum="CSGPolygon3D.PathRotation">
+			The method by which each slice is rotated along the path when [member mode] is [constant MODE_PATH].
+		</member>
+		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array( 0, 0, 0, 1, 1, 1, 1, 0 )">
+			Point array that defines the shape that we'll extrude.
+		</member>
+		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces" default="false">
+			Generates smooth normals so smooth shading is applied to our mesh.
+		</member>
+		<member name="spin_degrees" type="float" setter="set_spin_degrees" getter="get_spin_degrees">
+			Degrees to rotate our extrusion for each slice when [member mode] is [constant MODE_SPIN].
+		</member>
+		<member name="spin_sides" type="int" setter="set_spin_sides" getter="get_spin_sides">
+			Number of extrusion when [member mode] is [constant MODE_SPIN].
+		</member>
+	</members>
+	<constants>
+		<constant name="MODE_DEPTH" value="0" enum="Mode">
+			Shape3D is extruded to [member depth].
+		</constant>
+		<constant name="MODE_SPIN" value="1" enum="Mode">
+			Shape3D is extruded by rotating it around an axis.
+		</constant>
+		<constant name="MODE_PATH" value="2" enum="Mode">
+			Shape3D is extruded along a path set by a [Shape3D] set in [member path_node].
+		</constant>
+		<constant name="PATH_ROTATION_POLYGON" value="0" enum="PathRotation">
+			Slice is not rotated.
+		</constant>
+		<constant name="PATH_ROTATION_PATH" value="1" enum="PathRotation">
+			Slice is rotated around the up vector of the path.
+		</constant>
+		<constant name="PATH_ROTATION_PATH_FOLLOW" value="2" enum="PathRotation">
+			Slice is rotate to match the path exactly.
+		</constant>
+	</constants>
+</class>

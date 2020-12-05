@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,24 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "app_delegate.h"
+#import "godot_app_delegate.h"
 
 #import <UIKit/UIKit.h>
 #include <stdio.h>
+#include <vulkan/vulkan.h>
 
 int gargc;
 char **gargv;
 
 int main(int argc, char *argv[]) {
+#if defined(VULKAN_ENABLED)
+	//MoltenVK - enable full component swizzling support
+	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
+#endif
+
 	printf("*********** main.m\n");
 	gargc = argc;
 	gargv = argv;
 
-	NSAutoreleasePool *pool = [NSAutoreleasePool new];
-	AppDelegate *app = [AppDelegate alloc];
 	printf("running app main\n");
-	UIApplicationMain(argc, argv, nil, @"AppDelegate");
-	printf("main done, pool release\n");
-	[pool release];
+	@autoreleasepool {
+		NSString *className = NSStringFromClass([GodotApplicalitionDelegate class]);
+		UIApplicationMain(argc, argv, nil, className);
+	}
+	printf("main done\n");
 	return 0;
 }

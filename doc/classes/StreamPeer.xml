@@ -1,49 +1,47 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StreamPeer" inherits="Reference" category="Core" version="3.1">
+<class name="StreamPeer" inherits="Reference" version="4.0">
 	<brief_description>
 		Abstraction and base class for stream-based protocols.
 	</brief_description>
 	<description>
-		StreamPeer is an abstraction and base class for stream-based protocols (such as TCP or Unix Sockets). It provides an API for sending and receiving data through streams as raw data or strings.
+		StreamPeer is an abstraction and base class for stream-based protocols (such as TCP or UNIX sockets). It provides an API for sending and receiving data through streams as raw data or strings.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_16">
 			<return type="int">
 			</return>
 			<description>
-				Get a signed 16 bit value from the stream.
+				Gets a signed 16-bit value from the stream.
 			</description>
 		</method>
 		<method name="get_32">
 			<return type="int">
 			</return>
 			<description>
-				Get a signed 32 bit value from the stream.
+				Gets a signed 32-bit value from the stream.
 			</description>
 		</method>
 		<method name="get_64">
 			<return type="int">
 			</return>
 			<description>
-				Get a signed 64 bit value from the stream.
+				Gets a signed 64-bit value from the stream.
 			</description>
 		</method>
 		<method name="get_8">
 			<return type="int">
 			</return>
 			<description>
-				Get a signed byte from the stream.
+				Gets a signed byte from the stream.
 			</description>
 		</method>
 		<method name="get_available_bytes" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of bytes this [code]StreamPeer[/code] has available.
+				Returns the amount of bytes this [StreamPeer] has available.
 			</description>
 		</method>
 		<method name="get_data">
@@ -52,21 +50,21 @@
 			<argument index="0" name="bytes" type="int">
 			</argument>
 			<description>
-				Return a chunk data with the received bytes. The amount of bytes to be received can be requested in the "bytes" argument. If not enough bytes are available, the function will block until the desired amount is received. This function returns two values, an Error code and a data array.
+				Returns a chunk data with the received bytes. The amount of bytes to be received can be requested in the [code]bytes[/code] argument. If not enough bytes are available, the function will block until the desired amount is received. This function returns two values, an [enum @GlobalScope.Error] code and a data array.
 			</description>
 		</method>
 		<method name="get_double">
 			<return type="float">
 			</return>
 			<description>
-				Get a double-precision float from the stream.
+				Gets a double-precision float from the stream.
 			</description>
 		</method>
 		<method name="get_float">
 			<return type="float">
 			</return>
 			<description>
-				Get a single-precision float from the stream.
+				Gets a single-precision float from the stream.
 			</description>
 		</method>
 		<method name="get_partial_data">
@@ -75,60 +73,63 @@
 			<argument index="0" name="bytes" type="int">
 			</argument>
 			<description>
-				Return a chunk data with the received bytes. The amount of bytes to be received can be requested in the "bytes" argument. If not enough bytes are available, the function will return how many were actually received. This function returns two values, an Error code, and a data array.
+				Returns a chunk data with the received bytes. The amount of bytes to be received can be requested in the "bytes" argument. If not enough bytes are available, the function will return how many were actually received. This function returns two values, an [enum @GlobalScope.Error] code, and a data array.
 			</description>
 		</method>
 		<method name="get_string">
 			<return type="String">
 			</return>
-			<argument index="0" name="bytes" type="int">
+			<argument index="0" name="bytes" type="int" default="-1">
 			</argument>
 			<description>
-				Get a string with byte-length "bytes" from the stream.
+				Gets a string with byte-length [code]bytes[/code] from the stream. If [code]bytes[/code] is negative (default) the length will be read from the stream using the reverse process of [method put_string].
 			</description>
 		</method>
 		<method name="get_u16">
 			<return type="int">
 			</return>
 			<description>
-				Get an unsigned 16 bit value from the stream.
+				Gets an unsigned 16-bit value from the stream.
 			</description>
 		</method>
 		<method name="get_u32">
 			<return type="int">
 			</return>
 			<description>
-				Get an unsigned 32 bit value from the stream.
+				Gets an unsigned 32-bit value from the stream.
 			</description>
 		</method>
 		<method name="get_u64">
 			<return type="int">
 			</return>
 			<description>
-				Get an unsigned 64 bit value from the stream.
+				Gets an unsigned 64-bit value from the stream.
 			</description>
 		</method>
 		<method name="get_u8">
 			<return type="int">
 			</return>
 			<description>
-				Get an unsigned byte from the stream.
+				Gets an unsigned byte from the stream.
 			</description>
 		</method>
 		<method name="get_utf8_string">
 			<return type="String">
 			</return>
-			<argument index="0" name="bytes" type="int">
+			<argument index="0" name="bytes" type="int" default="-1">
 			</argument>
 			<description>
-				Get a utf8 string with byte-length "bytes" from the stream (this decodes the string sent as utf8).
+				Gets an UTF-8 string with byte-length [code]bytes[/code] from the stream (this decodes the string sent as UTF-8). If [code]bytes[/code] is negative (default) the length will be read from the stream using the reverse process of [method put_utf8_string].
 			</description>
 		</method>
 		<method name="get_var">
 			<return type="Variant">
 			</return>
+			<argument index="0" name="allow_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Get a Variant from the stream.
+				Gets a Variant from the stream. If [code]allow_objects[/code] is [code]true[/code], decoding objects is allowed.
+				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
 		<method name="put_16">
@@ -137,7 +138,7 @@
 			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
-				Put a signed 16 bit value into the stream.
+				Puts a signed 16-bit value into the stream.
 			</description>
 		</method>
 		<method name="put_32">
@@ -146,7 +147,7 @@
 			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
-				Put a signed 32 bit value into the stream.
+				Puts a signed 32-bit value into the stream.
 			</description>
 		</method>
 		<method name="put_64">
@@ -155,7 +156,7 @@
 			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
-				Put a signed 64 bit value into the stream.
+				Puts a signed 64-bit value into the stream.
 			</description>
 		</method>
 		<method name="put_8">
@@ -164,16 +165,16 @@
 			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
-				Put a signed byte into the stream.
+				Puts a signed byte into the stream.
 			</description>
 		</method>
 		<method name="put_data">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="data" type="PoolByteArray">
+			<argument index="0" name="data" type="PackedByteArray">
 			</argument>
 			<description>
-				Send a chunk of data through the connection, blocking if necessary until the data is done sending. This function returns an Error code.
+				Sends a chunk of data through the connection, blocking if necessary until the data is done sending. This function returns an [enum @GlobalScope.Error] code.
 			</description>
 		</method>
 		<method name="put_double">
@@ -182,7 +183,7 @@
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				Put a double-precision float into the stream.
+				Puts a double-precision float into the stream.
 			</description>
 		</method>
 		<method name="put_float">
@@ -191,16 +192,29 @@
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				Put a single-precision float into the stream.
+				Puts a single-precision float into the stream.
 			</description>
 		</method>
 		<method name="put_partial_data">
 			<return type="Array">
 			</return>
-			<argument index="0" name="data" type="PoolByteArray">
+			<argument index="0" name="data" type="PackedByteArray">
 			</argument>
 			<description>
-				Send a chunk of data through the connection, if all the data could not be sent at once, only part of it will. This function returns two values, an Error code and an integer, describing how much data was actually sent.
+				Sends a chunk of data through the connection. If all the data could not be sent at once, only part of it will. This function returns two values, an [enum @GlobalScope.Error] code and an integer, describing how much data was actually sent.
+			</description>
+		</method>
+		<method name="put_string">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="String">
+			</argument>
+			<description>
+				Puts a zero-terminated ASCII string into the stream prepended by a 32-bit unsigned integer representing its size.
+				Note: To put an ASCII string without prepending its size, you can use [method put_data]:
+				[codeblock]
+				put_data("Hello world".to_ascii())
+				[/codeblock]
 			</description>
 		</method>
 		<method name="put_u16">
@@ -209,7 +223,7 @@
 			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
-				Put an unsigned 16 bit value into the stream.
+				Puts an unsigned 16-bit value into the stream.
 			</description>
 		</method>
 		<method name="put_u32">
@@ -218,7 +232,7 @@
 			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
-				Put an unsigned 32 bit value into the stream.
+				Puts an unsigned 32-bit value into the stream.
 			</description>
 		</method>
 		<method name="put_u64">
@@ -227,7 +241,7 @@
 			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
-				Put an unsigned 64 bit value into the stream.
+				Puts an unsigned 64-bit value into the stream.
 			</description>
 		</method>
 		<method name="put_u8">
@@ -236,7 +250,7 @@
 			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
-				Put an unsigned byte into the stream.
+				Puts an unsigned byte into the stream.
 			</description>
 		</method>
 		<method name="put_utf8_string">
@@ -245,7 +259,11 @@
 			<argument index="0" name="value" type="String">
 			</argument>
 			<description>
-				Put a zero-terminated utf8 string into the stream.
+				Puts a zero-terminated UTF-8 string into the stream prepended by a 32 bits unsigned integer representing its size.
+				Note: To put an UTF-8 string without prepending its size, you can use [method put_data]:
+				[codeblock]
+				put_data("Hello world".to_utf8())
+				[/codeblock]
 			</description>
 		</method>
 		<method name="put_var">
@@ -253,14 +271,16 @@
 			</return>
 			<argument index="0" name="value" type="Variant">
 			</argument>
+			<argument index="1" name="full_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Put a Variant into the stream.
+				Puts a Variant into the stream. If [code]full_objects[/code] is [code]true[/code] encoding objects is allowed (and can potentially include code).
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="big_endian" type="bool" setter="set_big_endian" getter="is_big_endian_enabled">
-			If [code]true[/code], this [code]StreamPeer[/code] will using big-endian format for encoding and decoding.
+		<member name="big_endian" type="bool" setter="set_big_endian" getter="is_big_endian_enabled" default="false">
+			If [code]true[/code], this [StreamPeer] will using big-endian format for encoding and decoding.
 		</member>
 	</members>
 	<constants>

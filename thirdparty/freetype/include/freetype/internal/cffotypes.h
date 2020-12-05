@@ -1,30 +1,29 @@
-/***************************************************************************/
-/*                                                                         */
-/*  cffotypes.h                                                            */
-/*                                                                         */
-/*    Basic OpenType/CFF object type definitions (specification).          */
-/*                                                                         */
-/*  Copyright 2017-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * cffotypes.h
+ *
+ *   Basic OpenType/CFF object type definitions (specification).
+ *
+ * Copyright (C) 2017-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef CFFOTYPES_H_
 #define CFFOTYPES_H_
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_CFF_TYPES_H
-#include FT_INTERNAL_TRUETYPE_TYPES_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/cfftypes.h>
+#include <freetype/internal/tttypes.h>
+#include <freetype/internal/services/svpscmap.h>
+#include <freetype/internal/pshints.h>
 
 
 FT_BEGIN_HEADER
@@ -33,14 +32,14 @@ FT_BEGIN_HEADER
   typedef TT_Face  CFF_Face;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    CFF_Size                                                           */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A handle to an OpenType size object.                               */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @type:
+   *   CFF_Size
+   *
+   * @description:
+   *   A handle to an OpenType size object.
+   */
   typedef struct  CFF_SizeRec_
   {
     FT_SizeRec  root;
@@ -49,14 +48,14 @@ FT_BEGIN_HEADER
   } CFF_SizeRec, *CFF_Size;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    CFF_GlyphSlot                                                      */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A handle to an OpenType glyph slot object.                         */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @type:
+   *   CFF_GlyphSlot
+   *
+   * @description:
+   *   A handle to an OpenType glyph slot object.
+   */
   typedef struct  CFF_GlyphSlotRec_
   {
     FT_GlyphSlotRec  root;
@@ -70,14 +69,14 @@ FT_BEGIN_HEADER
   } CFF_GlyphSlotRec, *CFF_GlyphSlot;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    CFF_Internal                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    The interface to the `internal' field of `FT_Size'.                */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @type:
+   *   CFF_Internal
+   *
+   * @description:
+   *   The interface to the 'internal' field of `FT_Size`.
+   */
   typedef struct  CFF_InternalRec_
   {
     PSH_Globals  topfont;
@@ -86,10 +85,10 @@ FT_BEGIN_HEADER
   } CFF_InternalRec, *CFF_Internal;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Subglyph transformation record.                                       */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * Subglyph transformation record.
+   */
   typedef struct  CFF_Transform_
   {
     FT_Fixed    xx, xy;     /* transformation matrix coefficients */

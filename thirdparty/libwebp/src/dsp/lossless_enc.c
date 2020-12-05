@@ -515,13 +515,17 @@ static WEBP_INLINE int ColorTransformDelta(int8_t color_pred, int8_t color) {
   return ((int)color_pred * color) >> 5;
 }
 
+static WEBP_INLINE int8_t U32ToS8(uint32_t v) {
+  return (int8_t)(v & 0xff);
+}
+
 void VP8LTransformColor_C(const VP8LMultipliers* const m, uint32_t* data,
                           int num_pixels) {
   int i;
   for (i = 0; i < num_pixels; ++i) {
     const uint32_t argb = data[i];
-    const uint32_t green = argb >> 8;
-    const uint32_t red = argb >> 16;
+    const int8_t green = U32ToS8(argb >>  8);
+    const int8_t red   = U32ToS8(argb >> 16);
     int new_red = red & 0xff;
     int new_blue = argb & 0xff;
     new_red -= ColorTransformDelta(m->green_to_red_, green);
@@ -535,7 +539,7 @@ void VP8LTransformColor_C(const VP8LMultipliers* const m, uint32_t* data,
 
 static WEBP_INLINE uint8_t TransformColorRed(uint8_t green_to_red,
                                              uint32_t argb) {
-  const uint32_t green = argb >> 8;
+  const int8_t green = U32ToS8(argb >> 8);
   int new_red = argb >> 16;
   new_red -= ColorTransformDelta(green_to_red, green);
   return (new_red & 0xff);
@@ -544,9 +548,9 @@ static WEBP_INLINE uint8_t TransformColorRed(uint8_t green_to_red,
 static WEBP_INLINE uint8_t TransformColorBlue(uint8_t green_to_blue,
                                               uint8_t red_to_blue,
                                               uint32_t argb) {
-  const uint32_t green = argb >> 8;
-  const uint32_t red = argb >> 16;
-  uint8_t new_blue = argb;
+  const int8_t green = U32ToS8(argb >>  8);
+  const int8_t red   = U32ToS8(argb >> 16);
+  uint8_t new_blue = argb & 0xff;
   new_blue -= ColorTransformDelta(green_to_blue, green);
   new_blue -= ColorTransformDelta(red_to_blue, red);
   return (new_blue & 0xff);
@@ -558,7 +562,7 @@ void VP8LCollectColorRedTransforms_C(const uint32_t* argb, int stride,
   while (tile_height-- > 0) {
     int x;
     for (x = 0; x < tile_width; ++x) {
-      ++histo[TransformColorRed(green_to_red, argb[x])];
+      ++histo[TransformColorRed((uint8_t)green_to_red, argb[x])];
     }
     argb += stride;
   }
@@ -571,7 +575,8 @@ void VP8LCollectColorBlueTransforms_C(const uint32_t* argb, int stride,
   while (tile_height-- > 0) {
     int x;
     for (x = 0; x < tile_width; ++x) {
-      ++histo[TransformColorBlue(green_to_blue, red_to_blue, argb[x])];
+      ++histo[TransformColorBlue((uint8_t)green_to_blue, (uint8_t)red_to_blue,
+                                 argb[x])];
     }
     argb += stride;
   }
@@ -632,38 +637,67 @@ static double ExtraCostCombined_C(const uint32_t* X, const uint32_t* Y,
 
 //------------------------------------------------------------------------------
 
-static void HistogramAdd_C(const VP8LHistogram* const a,
-                           const VP8LHistogram* const b,
-                           VP8LHistogram* const out) {
+static void AddVector_C(const uint32_t* a, const uint32_t* b, uint32_t* out,
+                        int size) {
+  int i;
+  for (i = 0; i < size; ++i) out[i] = a[i] + b[i];
+}
+
+static void AddVectorEq_C(const uint32_t* a, uint32_t* out, int size) {
+  int i;
+  for (i = 0; i < size; ++i) out[i] += a[i];
+}
+
+#define ADD(X, ARG, LEN) do {                                                  \
+  if (a->is_used_[X]) {                                                        \
+    if (b->is_used_[X]) {                                                      \
+      VP8LAddVector(a->ARG, b->ARG, out->ARG, (LEN));                          \
+    } else {                                                                   \
+      memcpy(&out->ARG[0], &a->ARG[0], (LEN) * sizeof(out->ARG[0]));           \
+    }                                                                          \
+  } else if (b->is_used_[X]) {                                                 \
+    memcpy(&out->ARG[0], &b->ARG[0], (LEN) * sizeof(out->ARG[0]));             \
+  } else {                                                                     \
+    memset(&out->ARG[0], 0, (LEN) * sizeof(out->ARG[0]));                      \
+  }                                                                            \
+} while (0)
+
+#define ADD_EQ(X, ARG, LEN) do {                                               \
+  if (a->is_used_[X]) {                                                        \
+    if (out->is_used_[X]) {                                                    \
+      VP8LAddVectorEq(a->ARG, out->ARG, (LEN));                                \
+    } else {                                                                   \
+      memcpy(&out->ARG[0], &a->ARG[0], (LEN) * sizeof(out->ARG[0]));           \
+    }                                                                          \
+  }                                                                            \
+} while (0)
+
+void VP8LHistogramAdd(const VP8LHistogram* const a,
+                      const VP8LHistogram* const b, VP8LHistogram* const out) {
   int i;
   const int literal_size = VP8LHistogramNumCodes(a->palette_code_bits_);
   assert(a->palette_code_bits_ == b->palette_code_bits_);
+
   if (b != out) {
-    for (i = 0; i < literal_size; ++i) {
-      out->literal_[i] = a->literal_[i] + b->literal_[i];
-    }
-    for (i = 0; i < NUM_DISTANCE_CODES; ++i) {
-      out->distance_[i] = a->distance_[i] + b->distance_[i];
-    }
-    for (i = 0; i < NUM_LITERAL_CODES; ++i) {
-      out->red_[i] = a->red_[i] + b->red_[i];
-      out->blue_[i] = a->blue_[i] + b->blue_[i];
-      out->alpha_[i] = a->alpha_[i] + b->alpha_[i];
+    ADD(0, literal_, literal_size);
+    ADD(1, red_, NUM_LITERAL_CODES);
+    ADD(2, blue_, NUM_LITERAL_CODES);
+    ADD(3, alpha_, NUM_LITERAL_CODES);
+    ADD(4, distance_, NUM_DISTANCE_CODES);
+    for (i = 0; i < 5; ++i) {
+      out->is_used_[i] = (a->is_used_[i] | b->is_used_[i]);
     }
   } else {
-    for (i = 0; i < literal_size; ++i) {
-      out->literal_[i] += a->literal_[i];
-    }
-    for (i = 0; i < NUM_DISTANCE_CODES; ++i) {
-      out->distance_[i] += a->distance_[i];
-    }
-    for (i = 0; i < NUM_LITERAL_CODES; ++i) {
-      out->red_[i] += a->red_[i];
-      out->blue_[i] += a->blue_[i];
-      out->alpha_[i] += a->alpha_[i];
-    }
+    ADD_EQ(0, literal_, literal_size);
+    ADD_EQ(1, red_, NUM_LITERAL_CODES);
+    ADD_EQ(2, blue_, NUM_LITERAL_CODES);
+    ADD_EQ(3, alpha_, NUM_LITERAL_CODES);
+    ADD_EQ(4, distance_, NUM_DISTANCE_CODES);
+    for (i = 0; i < 5; ++i) out->is_used_[i] |= a->is_used_[i];
   }
 }
+#undef ADD
+#undef ADD_EQ
 
 //------------------------------------------------------------------------------
 // Image transforms.
@@ -848,7 +882,8 @@ VP8LCombinedShannonEntropyFunc VP8LCombinedShannonEntropy;
 VP8LGetEntropyUnrefinedFunc VP8LGetEntropyUnrefined;
 VP8LGetCombinedEntropyUnrefinedFunc VP8LGetCombinedEntropyUnrefined;
 
-VP8LHistogramAddFunc VP8LHistogramAdd;
+VP8LAddVectorFunc VP8LAddVector;
+VP8LAddVectorEqFunc VP8LAddVectorEq;
 
 VP8LVectorMismatchFunc VP8LVectorMismatch;
 VP8LBundleColorMapFunc VP8LBundleColorMap;
@@ -885,7 +920,8 @@ WEBP_DSP_INIT_FUNC(VP8LEncDspInit) {
   VP8LGetEntropyUnrefined = GetEntropyUnrefined_C;
   VP8LGetCombinedEntropyUnrefined = GetCombinedEntropyUnrefined_C;
 
-  VP8LHistogramAdd = HistogramAdd_C;
+  VP8LAddVector = AddVector_C;
+  VP8LAddVectorEq = AddVectorEq_C;
 
   VP8LVectorMismatch = VectorMismatch_C;
   VP8LBundleColorMap = VP8LBundleColorMap_C;
@@ -971,7 +1007,8 @@ WEBP_DSP_INIT_FUNC(VP8LEncDspInit) {
   assert(VP8LCombinedShannonEntropy != NULL);
   assert(VP8LGetEntropyUnrefined != NULL);
   assert(VP8LGetCombinedEntropyUnrefined != NULL);
-  assert(VP8LHistogramAdd != NULL);
+  assert(VP8LAddVector != NULL);
+  assert(VP8LAddVectorEq != NULL);
   assert(VP8LVectorMismatch != NULL);
   assert(VP8LBundleColorMap != NULL);
   assert(VP8LPredictorsSub[0] != NULL);

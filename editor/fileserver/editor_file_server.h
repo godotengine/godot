@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,14 +31,13 @@
 #ifndef EDITOR_FILE_SERVER_H
 #define EDITOR_FILE_SERVER_H
 
-#include "io/file_access_network.h"
-#include "io/packet_peer.h"
-#include "io/tcp_server.h"
-#include "object.h"
-#include "os/thread.h"
+#include "core/io/file_access_network.h"
+#include "core/io/packet_peer.h"
+#include "core/io/tcp_server.h"
+#include "core/object/class_db.h"
+#include "core/os/thread.h"
 
 class EditorFileServer : public Object {
-
 	GDCLASS(EditorFileServer, Object);
 
 	enum Command {
@@ -48,7 +47,6 @@ class EditorFileServer : public Object {
 	};
 
 	struct ClientData {
-
 		Thread *thread;
 		Ref<StreamPeerTCP> connection;
 		Map<int, FileAccess *> files;
@@ -62,7 +60,7 @@ class EditorFileServer : public Object {
 	static void _close_client(ClientData *cd);
 	static void _subthread_start(void *s);
 
-	Mutex *wait_mutex;
+	Mutex wait_mutex;
 	Thread *thread;
 	static void _thread_start(void *);
 	bool quit;

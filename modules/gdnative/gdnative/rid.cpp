@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,13 +30,15 @@
 
 #include "gdnative/rid.h"
 
-#include "core/resource.h"
-#include "core/rid.h"
-#include "core/variant.h"
+#include "core/io/resource.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static_assert(sizeof(godot_rid) == sizeof(RID), "RID size mismatch");
 
 void GDAPI godot_rid_new(godot_rid *r_dest) {
 	RID *dest = (RID *)r_dest;

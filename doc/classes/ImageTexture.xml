@@ -1,67 +1,50 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ImageTexture" inherits="Texture" category="Core" version="3.1">
+<class name="ImageTexture" inherits="Texture2D" version="4.0">
 	<brief_description>
-		A [Texture] based on an [Image].
+		A [Texture2D] based on an [Image].
 	</brief_description>
 	<description>
-		A [Texture] based on an [Image]. Can be created from an [Image] with [method create_from_image].
+		A [Texture2D] based on an [Image]. For an image to be displayed, an [ImageTexture] has to be created from it using the [method create_from_image] method:
+		[codeblock]
+		var texture = ImageTexture.new()
+		var image = Image.new()
+		image.load("res://icon.png")
+		texture.create_from_image(image)
+		$Sprite2D.texture = texture
+		[/codeblock]
+		This way, textures can be created at run-time by loading images both from within the editor and externally.
+		[b]Warning:[/b] Prefer to load imported textures with [method @GDScript.load] over loading them from within the filesystem dynamically with [method Image.load], as it may not work in exported projects:
+		[codeblock]
+		var texture = load("res://icon.png")
+		$Sprite2D.texture = texture
+		[/codeblock]
+		This is because images have to be imported as [StreamTexture2D] first to be loaded with [method @GDScript.load]. If you'd still like to load an image file just like any other [Resource], import it as an [Image] resource instead, and then load it normally using the [method @GDScript.load] method.
+		But do note that the image data can still be retrieved from an imported texture as well using the [method Texture2D.get_data] method, which returns a copy of the data:
+		[codeblock]
+		var texture = load("res://icon.png")
+		var image : Image = texture.get_data()
+		[/codeblock]
+		An [ImageTexture] is not meant to be operated from within the editor interface directly, and is mostly useful for rendering images on screen dynamically via code. If you need to generate images procedurally from within the editor, consider saving and importing images as custom texture resources implementing a new [EditorImportPlugin].
+		[b]Note:[/b] The maximum texture size is 16384×16384 pixels due to graphics hardware limitations.
 	</description>
 	<tutorials>
+		<link title="Importing images">https://docs.godotengine.org/en/latest/tutorials/assets_pipeline/importing_images.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
-		<method name="create">
-			<return type="void">
-			</return>
-			<argument index="0" name="width" type="int">
-			</argument>
-			<argument index="1" name="height" type="int">
-			</argument>
-			<argument index="2" name="format" type="int" enum="Image.Format">
-			</argument>
-			<argument index="3" name="flags" type="int" default="7">
-			</argument>
-			<description>
-				Create a new [code]ImageTexture[/code] with "width" and "height".
-				"format" one of [Image].FORMAT_*.
-				"flags" one or more of [Texture].FLAG_*.
-			</description>
-		</method>
 		<method name="create_from_image">
 			<return type="void">
 			</return>
 			<argument index="0" name="image" type="Image">
 			</argument>
-			<argument index="1" name="flags" type="int" default="7">
-			</argument>
 			<description>
-				Create a new [code]ImageTexture[/code] from an [Image] with "flags" from [Texture].FLAG_*.
+				Initializes the texture by allocating and setting the data from an [Image].
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format">
 			</return>
 			<description>
-				Return the format of the [code]ImageTexture[/code], one of [Image].FORMAT_*.
-			</description>
-		</method>
-		<method name="load">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<description>
-				Load an [code]ImageTexture[/code] from a file path.
-			</description>
-		</method>
-		<method name="set_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="image" type="Image">
-			</argument>
-			<description>
-				Set the [Image] of this [code]ImageTexture[/code].
+				Returns the format of the texture, one of [enum Image.Format].
 			</description>
 		</method>
 		<method name="set_size_override">
@@ -70,27 +53,23 @@
 			<argument index="0" name="size" type="Vector2">
 			</argument>
 			<description>
-				Resizes the [code]ImageTexture[/code] to the specified dimensions.
+				Resizes the texture to the specified dimensions.
+			</description>
+		</method>
+		<method name="update">
+			<return type="void">
+			</return>
+			<argument index="0" name="image" type="Image">
+			</argument>
+			<argument index="1" name="immediate" type="bool" default="false">
+			</argument>
+			<description>
+				Replaces the texture's data with a new [Image]. If [code]immediate[/code] is [code]true[/code], it will take effect immediately after the call.
+				[b]Note:[/b] The texture has to be initialized first with the [method create_from_image] method before it can be updated. The new image dimensions, format, and mipmaps configuration should match the existing texture's image configuration, otherwise it has to be re-created with the [method create_from_image] method.
+				Use this method over [method create_from_image] if you need to update the texture frequently, which is faster than allocating additional memory for a new texture each time.
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="lossy_quality" type="float" setter="set_lossy_storage_quality" getter="get_lossy_storage_quality">
-			The storage quality for [code]ImageTexture[/code].STORAGE_COMPRESS_LOSSY.
-		</member>
-		<member name="storage" type="int" setter="set_storage" getter="get_storage" enum="ImageTexture.Storage">
-			The storage type (raw, lossy, or compressed).
-		</member>
-	</members>
 	<constants>
-		<constant name="STORAGE_RAW" value="0" enum="Storage">
-			[Image] data is stored raw and unaltered.
-		</constant>
-		<constant name="STORAGE_COMPRESS_LOSSY" value="1" enum="Storage">
-			[Image] data is compressed with a lossy algorithm. You can set the storage quality with [method set_lossy_storage_quality].
-		</constant>
-		<constant name="STORAGE_COMPRESS_LOSSLESS" value="2" enum="Storage">
-			[Image] data is compressed with a lossless algorithm.
-		</constant>
 	</constants>
 </class>

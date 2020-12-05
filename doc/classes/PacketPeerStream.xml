@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PacketPeerStream" inherits="PacketPeer" category="Core" version="3.1">
+<class name="PacketPeerStream" inherits="PacketPeer" version="4.0">
 	<brief_description>
 		Wrapper to use a PacketPeer over a StreamPeer.
 	</brief_description>
@@ -8,14 +8,12 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="input_buffer_max_size" type="int" setter="set_input_buffer_max_size" getter="get_input_buffer_max_size">
+		<member name="input_buffer_max_size" type="int" setter="set_input_buffer_max_size" getter="get_input_buffer_max_size" default="65532">
 		</member>
-		<member name="output_buffer_max_size" type="int" setter="set_output_buffer_max_size" getter="get_output_buffer_max_size">
+		<member name="output_buffer_max_size" type="int" setter="set_output_buffer_max_size" getter="get_output_buffer_max_size" default="65532">
 		</member>
 		<member name="stream_peer" type="StreamPeer" setter="set_stream_peer" getter="get_stream_peer">
 			The wrapped [StreamPeer] object.

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,19 +30,18 @@
 
 #include "multi_node_edit.h"
 
-#include "core/helper/math_fieldwise.h"
+#include "core/math/math_fieldwise.h"
 #include "editor_node.h"
 
 bool MultiNodeEdit::_set(const StringName &p_name, const Variant &p_value) {
-
 	return _set_impl(p_name, p_value, "");
 }
 
 bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, const String &p_field) {
-
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
-	if (!es)
+	if (!es) {
 		return false;
+	}
 
 	String name = p_name;
 
@@ -50,17 +49,18 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 		name = "script";
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *ur = EditorNode::get_undo_redo();
 
-	ur->create_action(TTR("MultiNode Set") + " " + String(name));
+	ur->create_action(TTR("MultiNode Set") + " " + String(name), UndoRedo::MERGE_ENDS);
 	for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
-
-		if (!es->has_node(E->get()))
+		if (!es->has_node(E->get())) {
 			continue;
+		}
 
 		Node *n = es->get_node(E->get());
-		if (!n)
+		if (!n) {
 			continue;
+		}
 
 		if (p_value.get_type() == Variant::NODE_PATH) {
 			Node *tonode = n->get_node(p_value);
@@ -88,10 +88,10 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 }
 
 bool MultiNodeEdit::_get(const StringName &p_name, Variant &r_ret) const {
-
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
-	if (!es)
+	if (!es) {
 		return false;
+	}
 
 	String name = p_name;
 	if (name == "scripts") { // script set is intercepted at object level (check Variant Object::get() ) ,so use a different name
@@ -99,67 +99,72 @@ bool MultiNodeEdit::_get(const StringName &p_name, Variant &r_ret) const {
 	}
 
 	for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
-
-		if (!es->has_node(E->get()))
+		if (!es->has_node(E->get())) {
 			continue;
+		}
 
 		const Node *n = es->get_node(E->get());
-		if (!n)
+		if (!n) {
 			continue;
+		}
 
 		bool found;
 		r_ret = n->get(name, &found);
-		if (found)
+		if (found) {
 			return true;
+		}
 	}
 
 	return false;
 }
 
 void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	HashMap<String, PLData> usage;
 
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
-	if (!es)
+	if (!es) {
 		return;
+	}
 
 	int nc = 0;
 
-	List<PLData *> datas;
+	List<PLData *> data_list;
 
 	for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
-
-		if (!es->has_node(E->get()))
+		if (!es->has_node(E->get())) {
 			continue;
+		}
 
 		Node *n = es->get_node(E->get());
-		if (!n)
+		if (!n) {
 			continue;
+		}
 
 		List<PropertyInfo> plist;
 		n->get_property_list(&plist, true);
 
 		for (List<PropertyInfo>::Element *F = plist.front(); F; F = F->next()) {
-
-			if (F->get().name == "script")
+			if (F->get().name == "script") {
 				continue; //added later manually, since this is intercepted before being set (check Variant Object::get() )
+			}
 			if (!usage.has(F->get().name)) {
 				PLData pld;
 				pld.uses = 0;
 				pld.info = F->get();
 				usage[F->get().name] = pld;
-				datas.push_back(usage.getptr(F->get().name));
+				data_list.push_back(usage.getptr(F->get().name));
 			}
 
-			usage[F->get().name].uses++;
+			// Make sure only properties with the same exact PropertyInfo data will appear
+			if (usage[F->get().name].info == F->get()) {
+				usage[F->get().name].uses++;
+			}
 		}
 
 		nc++;
 	}
 
-	for (List<PLData *>::Element *E = datas.front(); E; E = E->next()) {
-
+	for (List<PLData *>::Element *E = data_list.front(); E; E = E->next()) {
 		if (nc == E->get()->uses) {
 			p_list->push_back(E->get()->info);
 		}
@@ -169,17 +174,23 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void MultiNodeEdit::clear_nodes() {
-
 	nodes.clear();
 }
 
 void MultiNodeEdit::add_node(const NodePath &p_node) {
-
 	nodes.push_back(p_node);
 }
 
-void MultiNodeEdit::set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field) {
+int MultiNodeEdit::get_node_count() const {
+	return nodes.size();
+}
 
+NodePath MultiNodeEdit::get_node(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, nodes.size(), NodePath());
+	return nodes[p_index];
+}
+
+void MultiNodeEdit::set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field) {
 	_set_impl(p_property, p_value, p_field);
 }
 

@@ -1,34 +1,33 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ttpost.c                                                               */
-/*                                                                         */
-/*    PostScript name table processing for TrueType and OpenType fonts     */
-/*    (body).                                                              */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ttpost.c
+ *
+ *   PostScript name table processing for TrueType and OpenType fonts
+ *   (body).
+ *
+ * Copyright (C) 1996-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The post table is not completely loaded by the core engine.  This     */
-  /* file loads the missing PS glyph names and implements an API to access */
-  /* them.                                                                 */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * The post table is not completely loaded by the core engine.  This
+   * file loads the missing PS glyph names and implements an API to access
+   * them.
+   *
+   */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_TRUETYPE_TAGS_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/tttags.h>
 
 
 #ifdef TT_CONFIG_OPTION_POSTSCRIPT_NAMES
@@ -38,23 +37,23 @@
 #include "sferrors.h"
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_ttpost
+#define FT_COMPONENT  ttpost
 
 
-  /* If this configuration macro is defined, we rely on the `PSNames' */
+  /* If this configuration macro is defined, we rely on the `psnames' */
   /* module to grab the glyph names.                                  */
 
 #ifdef FT_CONFIG_OPTION_POSTSCRIPT_NAMES
 
 
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
+#include <freetype/internal/services/svpscmap.h>
 
 #define MAC_NAME( x )  (FT_String*)psnames->macintosh_name( (FT_UInt)(x) )
 
@@ -62,9 +61,9 @@
 #else /* FT_CONFIG_OPTION_POSTSCRIPT_NAMES */
 
 
-   /* Otherwise, we ignore the `PSNames' module, and provide our own  */
+   /* Otherwise, we ignore the `psnames' module, and provide our own  */
    /* table of Mac names.  Thus, it is possible to build a version of */
-   /* FreeType without the Type 1 driver & PSNames module.            */
+   /* FreeType without the Type 1 driver & psnames module.            */
 
 #define MAC_NAME( x )  (FT_String*)tt_post_default_names[x]
 
@@ -240,7 +239,7 @@
           break;
         else
         {
-          FT_TRACE6(( "load_format_20: %d byte left in post table\n",
+          FT_TRACE6(( "load_format_20: %ld byte left in post table\n",
                       post_limit - FT_STREAM_POS() ));
 
           if ( FT_READ_BYTE( len ) )
@@ -459,28 +458,31 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_face_get_ps_name                                                */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Get the PostScript glyph name of a glyph.                          */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    face   :: A handle to the parent face.                             */
-  /*                                                                       */
-  /*    idx    :: The glyph index.                                         */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    PSname :: The address of a string pointer.  Undefined in case of   */
-  /*              error, otherwise it is a pointer to the glyph name.      */
-  /*                                                                       */
-  /*              You must not modify the returned string!                 */
-  /*                                                                       */
-  /* <Output>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_face_get_ps_name
+   *
+   * @Description:
+   *   Get the PostScript glyph name of a glyph.
+   *
+   * @Input:
+   *   face ::
+   *     A handle to the parent face.
+   *
+   *   idx ::
+   *     The glyph index.
+   *
+   * @InOut:
+   *   PSname ::
+   *     The address of a string pointer.  Undefined in case of
+   *     error, otherwise it is a pointer to the glyph name.
+   *
+   *     You must not modify the returned string!
+   *
+   * @Output:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   tt_face_get_ps_name( TT_Face      face,
                        FT_UInt      idx,

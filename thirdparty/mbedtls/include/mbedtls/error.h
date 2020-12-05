@@ -4,8 +4,14 @@
  * \brief Error to string translation
  */
 /*
- *  Copyright (C) 2006-2018, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -19,10 +25,35 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 #ifndef MBEDTLS_ERROR_H
 #define MBEDTLS_ERROR_H
+
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
 
 #include <stddef.h>
 
@@ -74,12 +105,13 @@
  * MD4       1                  0x002D-0x002D
  * MD5       1                  0x002F-0x002F
  * RIPEMD160 1                  0x0031-0x0031
- * SHA1      1                  0x0035-0x0035
- * SHA256    1                  0x0037-0x0037
- * SHA512    1                  0x0039-0x0039
+ * SHA1      1                  0x0035-0x0035 0x0073-0x0073
+ * SHA256    1                  0x0037-0x0037 0x0074-0x0074
+ * SHA512    1                  0x0039-0x0039 0x0075-0x0075
  * CHACHA20  3                  0x0051-0x0055
  * POLY1305  3                  0x0057-0x005B
  * CHACHAPOLY 2 0x0054-0x0056
+ * PLATFORM  1  0x0070-0x0072
  *
  * High-level module nr (3 bits - 0x0...-0x7...)
  * Name      ID  Nr of Errors
@@ -90,12 +122,13 @@
  * DHM       3   11
  * PK        3   15 (Started from top)
  * RSA       4   11
- * ECP       4   9 (Started from top)
+ * ECP       4   10 (Started from top)
  * MD        5   5
  * HKDF      5   1 (Started from top)
+ * SSL       5   1 (Started from 0x5E80)
  * CIPHER    6   8
- * SSL       6   22 (Started from top)
- * SSL       7   31
+ * SSL       6   23 (Started from top)
+ * SSL       7   32
  *
  * Module dependent error code (5 bits 0x.00.-0x.F8.)
  */

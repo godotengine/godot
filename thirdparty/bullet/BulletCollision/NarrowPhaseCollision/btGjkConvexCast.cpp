@@ -13,8 +13,6 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-
-
 #include "btGjkConvexCast.h"
 #include "BulletCollision/CollisionShapes/btSphereShape.h"
 #include "btGjkPairDetector.h"
@@ -27,41 +25,39 @@ subject to the following restrictions:
 #define MAX_ITERATIONS 32
 #endif
 
-btGjkConvexCast::btGjkConvexCast(const btConvexShape* convexA,const btConvexShape* convexB,btSimplexSolverInterface* simplexSolver)
-:m_simplexSolver(simplexSolver),
-m_convexA(convexA),
-m_convexB(convexB)
+btGjkConvexCast::btGjkConvexCast(const btConvexShape* convexA, const btConvexShape* convexB, btSimplexSolverInterface* simplexSolver)
+	: m_simplexSolver(simplexSolver),
+	  m_convexA(convexA),
+	  m_convexB(convexB)
 {
 }
 
-bool	btGjkConvexCast::calcTimeOfImpact(
-					const btTransform& fromA,
-					const btTransform& toA,
-					const btTransform& fromB,
-					const btTransform& toB,
-					CastResult& result)
+bool btGjkConvexCast::calcTimeOfImpact(
+	const btTransform& fromA,
+	const btTransform& toA,
+	const btTransform& fromB,
+	const btTransform& toB,
+	CastResult& result)
 {
-
-
 	m_simplexSolver->reset();
 
 	/// compute linear velocity for this interval, to interpolate
 	//assume no rotation/angular velocity, assert here?
-	btVector3 linVelA,linVelB;
-	linVelA = toA.getOrigin()-fromA.getOrigin();
-	linVelB = toB.getOrigin()-fromB.getOrigin();
+	btVector3 linVelA, linVelB;
+	linVelA = toA.getOrigin() - fromA.getOrigin();
+	linVelB = toB.getOrigin() - fromB.getOrigin();
 
 	btScalar radius = btScalar(0.001);
 	btScalar lambda = btScalar(0.);
-	btVector3 v(1,0,0);
+	btVector3 v(1, 0, 0);
 
 	int maxIter = MAX_ITERATIONS;
 
 	btVector3 n;
-	n.setValue(btScalar(0.),btScalar(0.),btScalar(0.));
+	n.setValue(btScalar(0.), btScalar(0.), btScalar(0.));
 	bool hasResult = false;
 	btVector3 c;
-	btVector3 r = (linVelA-linVelB);
+	btVector3 r = (linVelA - linVelB);
 
 	btScalar lastLambda = lambda;
 	//btScalar epsilon = btScalar(0.001);
@@ -69,17 +65,14 @@ bool	btGjkConvexCast::calcTimeOfImpact(
 	int numIter = 0;
 	//first solution, using GJK
 
-
 	btTransform identityTrans;
 	identityTrans.setIdentity();
 
+	//	result.drawCoordSystem(sphereTr);
 
-//	result.drawCoordSystem(sphereTr);
+	btPointCollector pointCollector;
 
-	btPointCollector	pointCollector;
-
-		
-	btGjkPairDetector gjk(m_convexA,m_convexB,m_simplexSolver,0);//m_penetrationDepthSolver);		
+	btGjkPairDetector gjk(m_convexA, m_convexB, m_simplexSolver, 0);  //m_penetrationDepthSolver);
 	btGjkPairDetector::ClosestPointInput input;
 
 	//we don't use margins during CCD
@@ -87,7 +80,7 @@ bool	btGjkConvexCast::calcTimeOfImpact(
 
 	input.m_transformA = fromA;
 	input.m_transformB = fromB;
-	gjk.getClosestPoints(input,pointCollector,0);
+	gjk.getClosestPoints(input, pointCollector, 0);
 
 	hasResult = pointCollector.m_hasResult;
 	c = pointCollector.m_pointInWorld;
@@ -98,20 +91,18 @@ bool	btGjkConvexCast::calcTimeOfImpact(
 		dist = pointCollector.m_distance;
 		n = pointCollector.m_normalOnBInWorld;
 
-	
-
 		//not close enough
 		while (dist > radius)
 		{
 			numIter++;
 			if (numIter > maxIter)
 			{
-				return false; //todo: report a failure
+				return false;  //todo: report a failure
 			}
 			btScalar dLambda = btScalar(0.);
 
 			btScalar projectedLinearVelocity = r.dot(n);
-			
+
 			dLambda = dist / (projectedLinearVelocity);
 
 			lambda = lambda - dLambda;
@@ -132,35 +123,35 @@ bool	btGjkConvexCast::calcTimeOfImpact(
 			lastLambda = lambda;
 
 			//interpolate to next lambda
-			result.DebugDraw( lambda );
-			input.m_transformA.getOrigin().setInterpolate3(fromA.getOrigin(),toA.getOrigin(),lambda);
-			input.m_transformB.getOrigin().setInterpolate3(fromB.getOrigin(),toB.getOrigin(),lambda);
-			
-			gjk.getClosestPoints(input,pointCollector,0);
+			result.DebugDraw(lambda);
+			input.m_transformA.getOrigin().setInterpolate3(fromA.getOrigin(), toA.getOrigin(), lambda);
+			input.m_transformB.getOrigin().setInterpolate3(fromB.getOrigin(), toB.getOrigin(), lambda);
+
+			gjk.getClosestPoints(input, pointCollector, 0);
 			if (pointCollector.m_hasResult)
 			{
 				if (pointCollector.m_distance < btScalar(0.))
 				{
 					result.m_fraction = lastLambda;
 					n = pointCollector.m_normalOnBInWorld;
-					result.m_normal=n;
+					result.m_normal = n;
 					result.m_hitPoint = pointCollector.m_pointInWorld;
 					return true;
 				}
-				c = pointCollector.m_pointInWorld;		
+				c = pointCollector.m_pointInWorld;
 				n = pointCollector.m_normalOnBInWorld;
 				dist = pointCollector.m_distance;
-			} else
+			}
+			else
 			{
 				//??
 				return false;
 			}
-
 		}
 
 		//is n normalized?
 		//don't report time of impact for motion away from the contact normal (or causes minor penetration)
-		if (n.dot(r)>=-result.m_allowedPenetration)
+		if (n.dot(r) >= -result.m_allowedPenetration)
 			return false;
 
 		result.m_fraction = lambda;
@@ -170,7 +161,4 @@ bool	btGjkConvexCast::calcTimeOfImpact(
 	}
 
 	return false;
-
-
 }
-

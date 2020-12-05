@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,27 @@
 #ifndef IMAGE_LOADER_BMP_H
 #define IMAGE_LOADER_BMP_H
 
-#include "io/image_loader.h"
+#include "core/io/image_loader.h"
 
 class ImageLoaderBMP : public ImageFormatLoader {
 protected:
 	static const unsigned BITMAP_SIGNATURE = 0x4d42;
+
+	static const unsigned BITMAP_FILE_HEADER_SIZE = 14; // bmp_file_header_s
+	static const unsigned BITMAP_INFO_HEADER_MIN_SIZE = 40; // bmp_info_header_s
+
+	enum bmp_compression_s {
+		BI_RGB = 0x00,
+		BI_RLE8 = 0x01, // compressed
+		BI_RLE4 = 0x02, // compressed
+		BI_BITFIELDS = 0x03,
+		BI_JPEG = 0x04,
+		BI_PNG = 0x05,
+		BI_ALPHABITFIELDS = 0x06,
+		BI_CMYK = 0x0b,
+		BI_CMYKRLE8 = 0x0c, // compressed
+		BI_CMYKRLE4 = 0x0d // compressed
+	};
 
 	struct bmp_header_s {
 		struct bmp_file_header_s {
@@ -57,21 +73,13 @@ protected:
 			uint32_t bmp_pixels_per_meter_y;
 			uint32_t bmp_colors_used;
 			uint32_t bmp_important_colors;
-			uint32_t bmp_red_mask;
-			uint32_t bmp_green_mask;
-			uint32_t bmp_blue_mask;
-			uint32_t bmp_alpha_mask;
-			uint32_t bmp_cs_type;
-			uint32_t bmp_endpoints[9];
-			uint32_t bmp_gamma_red;
-			uint32_t bmp_gamma_green;
-			uint32_t bmp_gamma_blue;
 		} bmp_info_header;
 	};
 
 	static Error convert_to_image(Ref<Image> p_image,
 			const uint8_t *p_buffer,
 			const uint8_t *p_color_buffer,
+			const uint32_t color_table_size,
 			const bmp_header_s &p_header);
 
 public:

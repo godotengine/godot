@@ -28,14 +28,10 @@ THE SOFTWARE.
 #ifndef PCFDRIVR_H_
 #define PCFDRIVR_H_
 
-#include <ft2build.h>
-#include FT_INTERNAL_DRIVER_H
+#include <freetype/internal/ftdrv.h>
+
 
 FT_BEGIN_HEADER
-
-#ifdef FT_CONFIG_OPTION_PIC
-#error "this module does not support PIC yet"
-#endif
 
   FT_EXPORT_VAR( const FT_Driver_ClassRec )  pcf_driver_class;
 

@@ -1,28 +1,27 @@
-/***************************************************************************/
-/*                                                                         */
-/*  otvcommn.h                                                             */
-/*                                                                         */
-/*    OpenType common tables validation (specification).                   */
-/*                                                                         */
-/*  Copyright 2004-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * otvcommn.h
+ *
+ *   OpenType common tables validation (specification).
+ *
+ * Copyright (C) 2004-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef OTVCOMMN_H_
 #define OTVCOMMN_H_
 
 
-#include <ft2build.h>
 #include "otvalid.h"
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 
 
 FT_BEGIN_HEADER

@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StreamPeerBuffer" inherits="StreamPeer" category="Core" version="3.1">
+<class name="StreamPeerBuffer" inherits="StreamPeer" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="clear">
 			<return type="void">
@@ -51,7 +49,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="data_array" type="PoolByteArray" setter="set_data_array" getter="get_data_array">
+		<member name="data_array" type="PackedByteArray" setter="set_data_array" getter="get_data_array" default="PackedByteArray(  )">
 		</member>
 	</members>
 	<constants>

@@ -1,3 +1,4 @@
+/* clang-format off */
 static const int _lodpi_font_height=14;
 static const int _lodpi_font_ascent=11;
 static const int _lodpi_font_charcount=191;
@@ -7,7 +8,7 @@ static const int _lodpi_font_charrects[191][8]={
 {224,85,180,5,11,0,1,7},
 {192,32,16,11,13,-2,-1,9},
 {96,2,216,3,2,0,3,8},
-{160,1734439808,0,0,0,11,0,4},
+{160,0,0,0,0,11,0,4},
 {32,0,0,0,0,11,0,4},
 {33,65,234,2,10,1,1,4},
 {225,112,169,5,11,0,1,7},
@@ -13113,3 +13114,4 @@ static const unsigned char _lodpi_font_img_data[12909]={
 96,
 130,
 };
+/* clang-format on */

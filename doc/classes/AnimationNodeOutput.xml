@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeOutput" inherits="AnimationNode" category="Core" version="3.1">
+<class name="AnimationNodeOutput" inherits="AnimationNode" version="4.0">
 	<brief_description>
+		Generic output node to be added to [AnimationNodeBlendTree].
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
+		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<constants>

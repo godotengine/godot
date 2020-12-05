@@ -1,25 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScrollBar" inherits="Range" category="Core" version="3.1">
+<class name="ScrollBar" inherits="Range" version="4.0">
 	<brief_description>
 		Base class for scroll bars.
 	</brief_description>
 	<description>
-		Scrollbars are a [Range] based [Control], that display a draggable area (the size of the page). Horizontal ([HScrollBar]) and Vertical ([VScrollBar]) versions are available.
+		Scrollbars are a [Range]-based [Control], that display a draggable area (the size of the page). Horizontal ([HScrollBar]) and Vertical ([VScrollBar]) versions are available.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="custom_step" type="float" setter="set_custom_step" getter="get_custom_step">
+		<member name="custom_step" type="float" setter="set_custom_step" getter="get_custom_step" default="-1.0">
+			Overrides the step used when clicking increment and decrement buttons or when using arrow keys when the [ScrollBar] is focused.
 		</member>
+		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" override="true" default="0" />
+		<member name="step" type="float" setter="set_step" getter="get_step" override="true" default="0.0" />
 	</members>
 	<signals>
 		<signal name="scrolling">
 			<description>
-				Emitted whenever the scrollbar is being scrolled.
+				Emitted when the scrollbar is being scrolled.
 			</description>
 		</signal>
 	</signals>

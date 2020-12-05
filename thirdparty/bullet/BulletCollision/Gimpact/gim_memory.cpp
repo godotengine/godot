@@ -27,7 +27,6 @@ email: projectileman@yahoo.com
 -----------------------------------------------------------------------------
 */
 
-
 #include "gim_memory.h"
 #include "stdlib.h"
 
@@ -40,52 +39,49 @@ static gim_alloca_function *g_allocafn = 0;
 static gim_realloc_function *g_reallocfn = 0;
 static gim_free_function *g_freefn = 0;
 
-void gim_set_alloc_handler (gim_alloc_function *fn)
+void gim_set_alloc_handler(gim_alloc_function *fn)
 {
-  g_allocfn = fn;
+	g_allocfn = fn;
 }
 
-void gim_set_alloca_handler (gim_alloca_function *fn)
+void gim_set_alloca_handler(gim_alloca_function *fn)
 {
-  g_allocafn = fn;
+	g_allocafn = fn;
 }
 
-void gim_set_realloc_handler (gim_realloc_function *fn)
+void gim_set_realloc_handler(gim_realloc_function *fn)
 {
-  g_reallocfn = fn;
+	g_reallocfn = fn;
 }
 
-void gim_set_free_handler (gim_free_function *fn)
+void gim_set_free_handler(gim_free_function *fn)
 {
-  g_freefn = fn;
+	g_freefn = fn;
 }
 
 gim_alloc_function *gim_get_alloc_handler()
 {
-  return g_allocfn;
+	return g_allocfn;
 }
 
 gim_alloca_function *gim_get_alloca_handler()
 {
-  return g_allocafn;
+	return g_allocafn;
 }
 
-
-gim_realloc_function *gim_get_realloc_handler ()
+gim_realloc_function *gim_get_realloc_handler()
 {
-  return g_reallocfn;
+	return g_reallocfn;
 }
 
-
-gim_free_function  *gim_get_free_handler ()
+gim_free_function *gim_get_free_handler()
 {
-  return g_freefn;
+	return g_freefn;
 }
 
-
-void * gim_alloc(size_t size)
+void *gim_alloc(size_t size)
 {
-	void * ptr;
+	void *ptr;
 	if (g_allocfn)
 	{
 		ptr = g_allocfn(size);
@@ -93,27 +89,29 @@ void * gim_alloc(size_t size)
 	else
 	{
 #ifdef GIM_SIMD_MEMORY
-		ptr = btAlignedAlloc(size,16);
+		ptr = btAlignedAlloc(size, 16);
 #else
 		ptr = malloc(size);
 #endif
 	}
-  	return ptr;
+	return ptr;
 }
 
-void * gim_alloca(size_t size)
+void *gim_alloca(size_t size)
 {
-  if (g_allocafn) return g_allocafn(size); else return gim_alloc(size);
+	if (g_allocafn)
+		return g_allocafn(size);
+	else
+		return gim_alloc(size);
 }
 
-
-void * gim_realloc(void *ptr, size_t oldsize, size_t newsize)
+void *gim_realloc(void *ptr, size_t oldsize, size_t newsize)
 {
- 	void * newptr = gim_alloc(newsize);
-    size_t copysize = oldsize<newsize?oldsize:newsize;
-    gim_simd_memcpy(newptr,ptr,copysize);
-    gim_free(ptr);
-    return newptr;
+	void *newptr = gim_alloc(newsize);
+	size_t copysize = oldsize < newsize ? oldsize : newsize;
+	gim_simd_memcpy(newptr, ptr, copysize);
+	gim_free(ptr);
+	return newptr;
 }
 
 void gim_free(void *ptr)
@@ -121,15 +119,14 @@ void gim_free(void *ptr)
 	if (!ptr) return;
 	if (g_freefn)
 	{
-	   g_freefn(ptr);
+		g_freefn(ptr);
 	}
 	else
 	{
-	#ifdef GIM_SIMD_MEMORY
+#ifdef GIM_SIMD_MEMORY
 		btAlignedFree(ptr);
-	#else
+#else
 		free(ptr);
-	#endif
+#endif
 	}
 }
-

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDVertexAttribute" inherits="Reference" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="format" type="int" setter="set_format" getter="get_format" enum="RenderingDevice.DataFormat" default="226">
+		</member>
+		<member name="frequency" type="int" setter="set_frequency" getter="get_frequency" enum="RenderingDevice.VertexFrequency" default="0">
+		</member>
+		<member name="location" type="int" setter="set_location" getter="get_location" default="0">
+		</member>
+		<member name="offset" type="int" setter="set_offset" getter="get_offset" default="0">
+		</member>
+		<member name="stride" type="int" setter="set_stride" getter="get_stride" default="0">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

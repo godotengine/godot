@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,27 +27,27 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef OS_SERVER_H
 #define OS_SERVER_H
 
+#include "core/input/input.h"
 #include "drivers/dummy/texture_loader_dummy.h"
-#include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "main/input_default.h"
-#include "platform/x11/crash_handler_x11.h"
-#include "platform/x11/power_x11.h"
+#ifdef __APPLE__
+#include "platform/osx/crash_handler_osx.h"
+#include "platform/osx/semaphore_osx.h"
+#else
+#include "platform/x11/crash_handler_linuxbsd.h"
+#endif
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
-#include "servers/visual_server.h"
+#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering_server.h"
 
 #undef CursorShape
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class OS_Server : public OS_Unix {
-
-	VisualServer *visual_server;
+	RenderingServer *rendering_server;
 	VideoMode current_videomode;
 	List<String> args;
 	MainLoop *main_loop;
@@ -55,19 +55,16 @@ class OS_Server : public OS_Unix {
 	bool grab;
 
 	virtual void delete_main_loop();
-	IP_Unix *ip_unix;
 
 	bool force_quit;
 
 	InputDefault *input;
 
-	PowerX11 *power_manager;
-
 	CrashHandler crash_handler;
 
 	int video_driver_index;
 
-	ResourceFormatDummyTexture *resource_loader_dummy;
+	Ref<ResourceFormatDummyTexture> resource_loader_dummy;
 
 protected:
 	virtual int get_video_driver_count() const;
@@ -83,10 +80,7 @@ protected:
 	virtual void set_main_loop(MainLoop *p_main_loop);
 
 public:
-	virtual String get_name();
-
-	virtual void set_cursor_shape(CursorShape p_shape);
-	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
+	virtual String get_name() const;
 
 	virtual void set_mouse_show(bool p_show);
 	virtual void set_mouse_grab(bool p_grab);
@@ -109,9 +103,6 @@ public:
 
 	void run();
 
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
 	virtual bool _check_internal_feature_support(const String &p_feature);
 
 	virtual String get_config_path() const;

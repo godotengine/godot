@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2017 University of Cambridge
+          New API code Copyright (c) 2016-2019 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -71,7 +71,7 @@ static const unsigned char compile_error_texts[] =
   /* 5 */
   "number too big in {} quantifier\0"
   "missing terminating ] for character class\0"
-  "invalid escape sequence in character class\0"
+  "escape sequence is invalid in character class\0"
   "range out of order in character class\0"
   "quantifier does not follow a repeatable item\0"
   /* 10 */
@@ -95,7 +95,7 @@ static const unsigned char compile_error_texts[] =
   /* 25 */
   "lookbehind assertion is not fixed length\0"
   "a relative value of zero is not allowed\0"
-  "conditional group contains more than two branches\0"
+  "conditional subpattern contains more than two branches\0"
   "assertion expected after (?( or (?(?C)\0"
   "digit expected after (?+ or (?-\0"
   /* 30 */
@@ -107,36 +107,37 @@ static const unsigned char compile_error_texts[] =
   /* 35 */
   "lookbehind is too complicated\0"
   "\\C is not allowed in a lookbehind assertion in UTF-" XSTRING(PCRE2_CODE_UNIT_WIDTH) " mode\0"
-  "PCRE does not support \\L, \\l, \\N{name}, \\U, or \\u\0"
+  "PCRE2 does not support \\F, \\L, \\l, \\N{name}, \\U, or \\u\0"
   "number after (?C is greater than 255\0"
   "closing parenthesis for (?C expected\0"
   /* 40 */
   "invalid escape sequence in (*VERB) name\0"
   "unrecognized character after (?P\0"
-  "syntax error in subpattern name (missing terminator)\0"
+  "syntax error in subpattern name (missing terminator?)\0"
   "two named subpatterns have the same name (PCRE2_DUPNAMES not set)\0"
-  "group name must start with a non-digit\0"
+  "subpattern name must start with a non-digit\0"
   /* 45 */
   "this version of PCRE2 does not have support for \\P, \\p, or \\X\0"
   "malformed \\P or \\p sequence\0"
   "unknown property name after \\P or \\p\0"
-  "subpattern name is too long (maximum " XSTRING(MAX_NAME_SIZE) " characters)\0"
+  "subpattern name is too long (maximum " XSTRING(MAX_NAME_SIZE) " code units)\0"
   "too many named subpatterns (maximum " XSTRING(MAX_NAME_COUNT) ")\0"
   /* 50 */
   "invalid range in character class\0"
   "octal value is greater than \\377 in 8-bit non-UTF-8 mode\0"
   "internal error: overran compiling workspace\0"
   "internal error: previously-checked referenced subpattern not found\0"
-  "DEFINE group contains more than one branch\0"
+  "DEFINE subpattern contains more than one branch\0"
   /* 55 */
   "missing opening brace after \\o\0"
   "internal error: unknown newline setting\0"
   "\\g is not followed by a braced, angle-bracketed, or quoted name/number or by a plain number\0"
   "(?R (recursive pattern call) must be followed by a closing parenthesis\0"
-  "an argument is not allowed for (*ACCEPT), (*FAIL), or (*COMMIT)\0"
+  /* "an argument is not allowed for (*ACCEPT), (*FAIL), or (*COMMIT)\0" */
+  "obsolete error (should not occur)\0"  /* Was the above */
   /* 60 */
   "(*VERB) not recognized or malformed\0"
-  "group number is too big\0"
+  "subpattern number is too big\0"
   "subpattern name expected\0"
   "internal error: parsed pattern overflow\0"
   "non-octal character in \\o{} (closing brace missing?)\0"
@@ -160,7 +161,7 @@ static const unsigned char compile_error_texts[] =
   "using UCP is disabled by the application\0"
   "name is too long in (*MARK), (*PRUNE), (*SKIP), or (*THEN)\0"
   "character code point value in \\u.... sequence is too large\0"
-  "digits missing in \\x{} or \\o{}\0"
+  "digits missing in \\x{} or \\o{} or \\N{U+}\0"
   "syntax error or number too big in (?(VERSION condition\0"
   /* 80 */
   "internal error: unknown opcode in auto_possessify()\0"
@@ -178,6 +179,13 @@ static const unsigned char compile_error_texts[] =
   "internal error: bad code value in parsed_skip()\0"
   "PCRE2_EXTRA_ALLOW_SURROGATE_ESCAPES is not allowed in UTF-16 mode\0"
   "invalid option bits with PCRE2_LITERAL\0"
+  "\\N{U+dddd} is supported only in Unicode (UTF) mode\0"
+  "invalid hyphen in option setting\0"
+  /* 95 */
+  "(*alpha_assertion) not recognized\0"
+  "script runs require Unicode support, which this version of PCRE2 does not have\0"
+  "too many capturing groups (maximum 65535)\0"
+  "atomic assertion expected after (?( or (?(?C)\0"
   ;
 
 /* Match-time and UTF error texts are in the same format. */
@@ -255,11 +263,14 @@ static const unsigned char match_error_texts[] =
   "expected closing curly bracket in replacement string\0"
   "bad substitution in replacement string\0"
   /* 60 */
-  "match with end before start is not supported\0"
+  "match with end before start or start moved backwards is not supported\0"
   "too many replacements (more than INT_MAX)\0"
   "bad serialized data\0"
   "heap limit exceeded\0"
   "invalid syntax\0"
+  /* 65 */
+  "internal error - duplicate substitution match\0"
+  "PCRE2_MATCH_INVALID_UTF is not supported for DFA matching\0"
   ;
 
 

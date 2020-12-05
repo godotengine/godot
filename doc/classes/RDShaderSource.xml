@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDShaderSource" inherits="Reference" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_stage_source" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_stage_source">
+			<return type="void">
+			</return>
+			<argument index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage">
+			</argument>
+			<argument index="1" name="source" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="language" type="int" setter="set_language" getter="get_language" enum="RenderingDevice.ShaderLanguage" default="0">
+		</member>
+		<member name="source_compute" type="String" setter="set_stage_source" getter="get_stage_source" default="&quot;&quot;">
+		</member>
+		<member name="source_fragment" type="String" setter="set_stage_source" getter="get_stage_source" default="&quot;&quot;">
+		</member>
+		<member name="source_tesselation_control" type="String" setter="set_stage_source" getter="get_stage_source" default="&quot;&quot;">
+		</member>
+		<member name="source_tesselation_evaluation" type="String" setter="set_stage_source" getter="get_stage_source" default="&quot;&quot;">
+		</member>
+		<member name="source_vertex" type="String" setter="set_stage_source" getter="get_stage_source" default="&quot;&quot;">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

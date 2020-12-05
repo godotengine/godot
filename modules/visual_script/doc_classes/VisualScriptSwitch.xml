@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptSwitch" inherits="VisualScriptNode" category="Core" version="3.1">
+<class name="VisualScriptSwitch" inherits="VisualScriptNode" version="4.0">
 	<brief_description>
 		Branches program flow based on a given input's value.
 	</brief_description>
 	<description>
-		Branches the flow based on an input's value. Use "Case Count" in the Inspector to set the number of branches and each comparison's optional type.
+		Branches the flow based on an input's value. Use [b]Case Count[/b] in the Inspector to set the number of branches and each comparison's optional type.
 		[b]Input Ports:[/b]
 		- Sequence: [code]'input' is[/code]
 		- Data (variant): [code]=[/code]
@@ -17,8 +17,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<constants>

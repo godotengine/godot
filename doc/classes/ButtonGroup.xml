@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ButtonGroup" inherits="Resource" category="Core" version="3.1">
+<class name="ButtonGroup" inherits="Resource" version="4.0">
 	<brief_description>
 		Group of Buttons.
 	</brief_description>
@@ -9,21 +9,25 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
+		<method name="get_buttons">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an [Array] of [Button]s who have this as their [ButtonGroup] (see [member BaseButton.button_group]).
+			</description>
+		</method>
 		<method name="get_pressed_button">
 			<return type="BaseButton">
 			</return>
 			<description>
-				Return the pressed button.
+				Returns the current pressed button.
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" override="true" default="true" />
+	</members>
 	<constants>
 	</constants>
-	<theme_items>
-		<theme_item name="panel" type="StyleBox">
-		</theme_item>
-	</theme_items>
 </class>

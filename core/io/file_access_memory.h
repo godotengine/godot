@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,12 @@
 #ifndef FILE_ACCESS_MEMORY_H
 #define FILE_ACCESS_MEMORY_H
 
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 
 class FileAccessMemory : public FileAccess {
-
-	uint8_t *data;
-	int length;
-	mutable int pos;
+	uint8_t *data = nullptr;
+	int length = 0;
+	mutable int pos = 0;
 
 	static FileAccess *create();
 
@@ -70,8 +69,10 @@ public:
 	virtual bool file_exists(const String &p_name); ///< return true if a file exists
 
 	virtual uint64_t _get_modified_time(const String &p_file) { return 0; }
+	virtual uint32_t _get_unix_permissions(const String &p_file) { return 0; }
+	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) { return FAILED; }
 
-	FileAccessMemory();
+	FileAccessMemory() {}
 };
 
 #endif // FILE_ACCESS_MEMORY_H

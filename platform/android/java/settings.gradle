@@ -1,0 +1,6 @@
+// Configure the root project.
+rootProject.name = "Godot"
+
+include ':app'
+include ':lib'
+include ':nativeSrcsConfigs'

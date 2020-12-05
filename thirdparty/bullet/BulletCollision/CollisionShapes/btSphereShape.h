@@ -16,17 +16,17 @@ subject to the following restrictions:
 #define BT_SPHERE_MINKOWSKI_H
 
 #include "btConvexInternalShape.h"
-#include "BulletCollision/BroadphaseCollision/btBroadphaseProxy.h" // for the types
+#include "BulletCollision/BroadphaseCollision/btBroadphaseProxy.h"  // for the types
 
 ///The btSphereShape implements an implicit sphere, centered around a local origin with radius.
-ATTRIBUTE_ALIGNED16(class) btSphereShape : public btConvexInternalShape
+ATTRIBUTE_ALIGNED16(class)
+btSphereShape : public btConvexInternalShape
 
 {
-	
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
-	btSphereShape (btScalar radius) : btConvexInternalShape ()
+	btSphereShape(btScalar radius) : btConvexInternalShape()
 	{
 		m_shapeType = SPHERE_SHAPE_PROXYTYPE;
 		m_localScaling.setValue(1.0, 1.0, 1.0);
@@ -35,42 +35,37 @@ public:
 		m_collisionMargin = radius;
 		m_padding = 0;
 	}
-	
-	virtual btVector3	localGetSupportingVertex(const btVector3& vec)const;
-	virtual btVector3	localGetSupportingVertexWithoutMargin(const btVector3& vec)const;
+
+	virtual btVector3 localGetSupportingVertex(const btVector3& vec) const;
+	virtual btVector3 localGetSupportingVertexWithoutMargin(const btVector3& vec) const;
 	//notice that the vectors should be unit length
-	virtual void	batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const;
+	virtual void batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors, btVector3* supportVerticesOut, int numVectors) const;
 
+	virtual void calculateLocalInertia(btScalar mass, btVector3 & inertia) const;
 
-	virtual void	calculateLocalInertia(btScalar mass,btVector3& inertia) const;
+	virtual void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const;
 
-	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const;
+	btScalar getRadius() const { return m_implicitShapeDimensions.getX() * m_localScaling.getX(); }
 
-
-	btScalar	getRadius() const { return m_implicitShapeDimensions.getX() * m_localScaling.getX();}
-
-	void	setUnscaledRadius(btScalar	radius)
+	void setUnscaledRadius(btScalar radius)
 	{
 		m_implicitShapeDimensions.setX(radius);
 		btConvexInternalShape::setMargin(radius);
 	}
 
 	//debugging
-	virtual const char*	getName()const {return "SPHERE";}
+	virtual const char* getName() const { return "SPHERE"; }
 
-	virtual void	setMargin(btScalar margin)
+	virtual void setMargin(btScalar margin)
 	{
 		btConvexInternalShape::setMargin(margin);
 	}
-	virtual btScalar	getMargin() const
+	virtual btScalar getMargin() const
 	{
 		//to improve gjk behaviour, use radius+margin as the full margin, so never get into the penetration case
 		//this means, non-uniform scaling is not supported anymore
 		return getRadius();
 	}
-
-
 };
 
-
-#endif //BT_SPHERE_MINKOWSKI_H
+#endif  //BT_SPHERE_MINKOWSKI_H

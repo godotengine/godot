@@ -5,6 +5,7 @@ Comment=Multi-platform 2D and 3D game engine with a feature-rich editor
 Exec=godot %f
 Icon=godot
 Terminal=false
+PrefersNonDefaultGPU=true
 Type=Application
 MimeType=application/x-godot-project;
 Categories=Development;IDE;

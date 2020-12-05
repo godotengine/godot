@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PackedByteArray" version="4.0">
+	<brief_description>
+		A packed [Array] of bytes.
+	</brief_description>
+	<description>
+		An [Array] specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
+		[b]Note:[/b] This type is passed by value and not by reference.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="PackedByteArray" qualifiers="constructor">
+			<return type="PackedByteArray">
+			</return>
+			<description>
+				Constructs an empty [PackedByteArray].
+			</description>
+		</method>
+		<method name="PackedByteArray" qualifiers="constructor">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="from" type="PackedByteArray">
+			</argument>
+			<description>
+				Constructs a [PackedByteArray] as a copy of the given [PackedByteArray].
+			</description>
+		</method>
+		<method name="PackedByteArray" qualifiers="constructor">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="from" type="Array">
+			</argument>
+			<description>
+				Constructs a new [PackedByteArray]. Optionally, you can pass in a generic [Array] that will be converted.
+			</description>
+		</method>
+		<method name="append">
+			<return type="bool">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<description>
+				Appends an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<return type="void">
+			</return>
+			<argument index="0" name="array" type="PackedByteArray">
+			</argument>
+			<description>
+				Appends a [PackedByteArray] at the end of this array.
+			</description>
+		</method>
+		<method name="compress">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="compression_mode" type="int" default="0">
+			</argument>
+			<description>
+				Returns a new [PackedByteArray] with the data compressed. Set the compression mode using one of [enum File.CompressionMode]'s constants.
+			</description>
+		</method>
+		<method name="decompress">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="buffer_size" type="int">
+			</argument>
+			<argument index="1" name="compression_mode" type="int" default="0">
+			</argument>
+			<description>
+				Returns a new [PackedByteArray] with the data decompressed. Set [code]buffer_size[/code] to the size of the uncompressed data. Set the compression mode using one of [enum File.CompressionMode]'s constants.
+			</description>
+		</method>
+		<method name="decompress_dynamic">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="max_output_size" type="int">
+			</argument>
+			<argument index="1" name="compression_mode" type="int" default="0">
+			</argument>
+			<description>
+				Returns a new [PackedByteArray] with the data decompressed. Set the compression mode using one of [enum File.CompressionMode]'s constants. [b]This method only accepts gzip and deflate compression modes.[/b]
+				This method is potentially slower than [code]decompress[/code], as it may have to re-allocate it's output buffer multiple times while decompressing, where as [code]decompress[/code] knows it's output buffer size from the beginning.
+				GZIP has a maximal compression ratio of 1032:1, meaning it's very possible for a small compressed payload to decompress to a potentially very large output. To guard against this, you may provide a maximum size this function is allowed to allocate in bytes via [code]max_output_size[/code]. Passing -1 will allow for unbounded output. If any positive value is passed, and the decompression exceeds that amount in bytes, then an error will be returned.
+			</description>
+		</method>
+		<method name="empty">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the array is empty.
+			</description>
+		</method>
+		<method name="get_string_from_ascii">
+			<return type="String">
+			</return>
+			<description>
+				Converts ASCII/Latin-1 encoded array to [String]. Fast alternative to [method get_string_from_utf8] if the content is ASCII/Latin-1 only. Unlike the UTF-8 function this function maps every byte to a character in the array. Multibyte sequences will not be interpreted correctly. For parsing user input always use [method get_string_from_utf8].
+			</description>
+		</method>
+		<method name="get_string_from_utf16">
+			<return type="String">
+			</return>
+			<description>
+				Converts UTF-16 encoded array to [String]. If the BOM is missing, system endianness is assumed. Returns empty string if source array is not valid UTF-16 string.
+			</description>
+		</method>
+		<method name="get_string_from_utf32">
+			<return type="String">
+			</return>
+			<description>
+				Converts UTF-32 encoded array to [String]. System endianness is assumed. Returns empty string if source array is not valid UTF-32 string.
+			</description>
+		</method>
+		<method name="get_string_from_utf8">
+			<return type="String">
+			</return>
+			<description>
+				Converts UTF-8 encoded array to [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred. Returns empty string if source array is not valid UTF-8 string.
+			</description>
+		</method>
+		<method name="has">
+			<return type="bool">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the array contains [code]value[/code].
+			</description>
+		</method>
+		<method name="hex_encode">
+			<return type="String">
+			</return>
+			<description>
+				Returns a hexadecimal representation of this array as a [String].
+				[codeblocks]
+				[gdscript]
+				var array = PackedByteArray([11, 46, 255])
+				print(array.hex_encode()) # Prints: 0b2eff
+				[/gdscript]
+				[csharp]
+				var array = new byte[] {11, 46, 255};
+				GD.Print(array.HexEncode()); // Prints: 0b2eff
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int">
+			</return>
+			<argument index="0" name="at_index" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
+			</description>
+		</method>
+		<method name="invert">
+			<return type="void">
+			</return>
+			<description>
+				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="right" type="PackedByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="int">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="push_back">
+			<return type="bool">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<description>
+				Appends an element at the end of the array.
+			</description>
+		</method>
+		<method name="remove">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Removes an element from the array by index.
+			</description>
+		</method>
+		<method name="resize">
+			<return type="int">
+			</return>
+			<argument index="0" name="new_size" type="int">
+			</argument>
+			<description>
+				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
+			</description>
+		</method>
+		<method name="set">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+				Changes the byte at the given index.
+			</description>
+		</method>
+		<method name="size">
+			<return type="int">
+			</return>
+			<description>
+				Returns the size of the array.
+			</description>
+		</method>
+		<method name="sort">
+			<return type="void">
+			</return>
+			<description>
+				Sorts the elements of the array in ascending order.
+			</description>
+		</method>
+		<method name="subarray">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<argument index="1" name="to" type="int">
+			</argument>
+			<description>
+				Returns the slice of the [PackedByteArray] between indices (inclusive) as a new [PackedByteArray]. Any negative index is considered to be from the end of the array.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

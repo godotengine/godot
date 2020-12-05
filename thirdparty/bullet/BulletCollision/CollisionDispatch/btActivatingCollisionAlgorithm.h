@@ -21,17 +21,15 @@ subject to the following restrictions:
 ///This class is not enabled yet (work-in-progress) to more aggressively activate objects.
 class btActivatingCollisionAlgorithm : public btCollisionAlgorithm
 {
-//	btCollisionObject* m_colObj0;
-//	btCollisionObject* m_colObj1;
+	//	btCollisionObject* m_colObj0;
+	//	btCollisionObject* m_colObj1;
 
 protected:
+	btActivatingCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci);
 
-	btActivatingCollisionAlgorithm (const btCollisionAlgorithmConstructionInfo& ci);
-
-	btActivatingCollisionAlgorithm (const btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap);
+	btActivatingCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* body0Wrap, const btCollisionObjectWrapper* body1Wrap);
 
 public:
 	virtual ~btActivatingCollisionAlgorithm();
-
 };
-#endif //__BT_ACTIVATING_COLLISION_ALGORITHM_H
+#endif  //__BT_ACTIVATING_COLLISION_ALGORITHM_H

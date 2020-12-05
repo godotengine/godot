@@ -1,28 +1,27 @@
-/***************************************************************************/
-/*                                                                         */
-/*  t1decode.h                                                             */
-/*                                                                         */
-/*    PostScript Type 1 decoding routines (specification).                 */
-/*                                                                         */
-/*  Copyright 2000-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * t1decode.h
+ *
+ *   PostScript Type 1 decoding routines (specification).
+ *
+ * Copyright (C) 2000-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef T1DECODE_H_
 #define T1DECODE_H_
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_INTERNAL_TYPE1_TYPES_H
+#include <freetype/internal/psaux.h>
+#include <freetype/internal/t1types.h>
 
 
 FT_BEGIN_HEADER

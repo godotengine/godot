@@ -1,8 +1,14 @@
 /*
  *  Platform-specific and custom entropy polling functions
  *
- *  Copyright (C) 2006-2016, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 #if defined(__linux__)
@@ -114,6 +139,7 @@ int mbedtls_platform_entropy_poll( void *data, unsigned char *output, size_t len
 #include <sys/syscall.h>
 #if defined(SYS_getrandom)
 #define HAVE_GETRANDOM
+#include <errno.h>
 
 static int getrandom_wrapper( void *buf, size_t buflen, unsigned int flags )
 {
@@ -123,47 +149,8 @@ static int getrandom_wrapper( void *buf, size_t buflen, unsigned int flags )
     memset( buf, 0, buflen );
 #endif
 #endif
-
     return( syscall( SYS_getrandom, buf, buflen, flags ) );
 }
-
-#include <sys/utsname.h>
-/* Check if version is at least 3.17.0 */
-static int check_version_3_17_plus( void )
-{
-    int minor;
-    struct utsname un;
-    const char *ver;
-
-    /* Get version information */
-    uname(&un);
-    ver = un.release;
-
-    /* Check major version; assume a single digit */
-    if( ver[0] < '3' || ver[0] > '9' || ver [1] != '.' )
-        return( -1 );
-
-    if( ver[0] - '0' > 3 )
-        return( 0 );
-
-    /* Ok, so now we know major == 3, check minor.
-     * Assume 1 or 2 digits. */
-    if( ver[2] < '0' || ver[2] > '9' )
-        return( -1 );
-
-    minor = ver[2] - '0';
-
-    if( ver[3] >= '0' && ver[3] <= '9' )
-        minor = 10 * minor + ver[3] - '0';
-    else if( ver [3] != '.' )
-        return( -1 );
-
-    if( minor < 17 )
-        return( -1 );
-
-    return( 0 );
-}
-static int has_getrandom = -1;
 #endif /* SYS_getrandom */
 #endif /* __linux__ */
 
@@ -174,22 +161,21 @@ int mbedtls_platform_entropy_poll( void *data,
 {
     FILE *file;
     size_t read_len;
+    int ret;
     ((void) data);
 
 #if defined(HAVE_GETRANDOM)
-    if( has_getrandom == -1 )
-        has_getrandom = ( check_version_3_17_plus() == 0 );
-
-    if( has_getrandom )
+    ret = getrandom_wrapper( output, len, 0 );
+    if( ret >= 0 )
     {
-        int ret;
-
-        if( ( ret = getrandom_wrapper( output, len, 0 ) ) < 0 )
-            return( MBEDTLS_ERR_ENTROPY_SOURCE_FAILED );
-
         *olen = ret;
         return( 0 );
     }
+    else if( errno != ENOSYS )
+        return( MBEDTLS_ERR_ENTROPY_SOURCE_FAILED );
+    /* Fall through if the system call isn't known. */
+#else
+    ((void) ret);
 #endif /* HAVE_GETRANDOM */
 
     *olen = 0;

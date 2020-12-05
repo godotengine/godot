@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NativeScript" inherits="Script" category="Core" version="3.1">
+<class name="NativeScript" inherits="Script" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_class_documentation" qualifiers="const">
 			<return type="String">
@@ -19,7 +17,7 @@
 		<method name="get_method_documentation" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="method" type="String">
+			<argument index="0" name="method" type="StringName">
 			</argument>
 			<description>
 				Returns the documentation string that was previously set with [code]godot_nativescript_set_method_documentation[/code].
@@ -28,7 +26,7 @@
 		<method name="get_property_documentation" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="path" type="String">
+			<argument index="0" name="path" type="StringName">
 			</argument>
 			<description>
 				Returns the documentation string that was previously set with [code]godot_nativescript_set_property_documentation[/code].
@@ -37,14 +35,14 @@
 		<method name="get_signal_documentation" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="signal_name" type="String">
+			<argument index="0" name="signal_name" type="StringName">
 			</argument>
 			<description>
 				Returns the documentation string that was previously set with [code]godot_nativescript_set_signal_documentation[/code].
 			</description>
 		</method>
 		<method name="new" qualifiers="vararg">
-			<return type="Object">
+			<return type="Variant">
 			</return>
 			<description>
 				Constructs a new object of the base type with a script of this type already attached.
@@ -53,9 +51,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="class_name" type="String" setter="set_class_name" getter="get_class_name">
+		<member name="class_name" type="String" setter="set_class_name" getter="get_class_name" default="&quot;&quot;">
 		</member>
 		<member name="library" type="GDNativeLibrary" setter="set_library" getter="get_library">
+		</member>
+		<member name="script_class_icon_path" type="String" setter="set_script_class_icon_path" getter="get_script_class_icon_path" default="&quot;&quot;">
+		</member>
+		<member name="script_class_name" type="String" setter="set_script_class_name" getter="get_script_class_name" default="&quot;&quot;">
 		</member>
 	</members>
 	<constants>

@@ -1,36 +1,15 @@
 /* ******************************************************************
-   bitstream
-   Part of FSE library
-   header file (to include)
-   Copyright (C) 2013-2017, Yann Collet.
-
-   BSD 2-Clause License (http://www.opensource.org/licenses/bsd-license.php)
-
-   Redistribution and use in source and binary forms, with or without
-   modification, are permitted provided that the following conditions are
-   met:
-
-       * Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.
-       * Redistributions in binary form must reproduce the above
-   copyright notice, this list of conditions and the following disclaimer
-   in the documentation and/or other materials provided with the
-   distribution.
-
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-   You can contact the author at :
-   - Source repository : https://github.com/Cyan4973/FiniteStateEntropy
+ * bitstream
+ * Part of FSE library
+ * Copyright (c) 2013-2020, Yann Collet, Facebook, Inc.
+ *
+ * You can contact the author at :
+ * - Source repository : https://github.com/Cyan4973/FiniteStateEntropy
+ *
+ * This source code is licensed under both the BSD-style license (found in the
+ * LICENSE file in the root directory of this source tree) and the GPLv2 (found
+ * in the COPYING file in the root directory of this source tree).
+ * You may select, at your option, one of the above-listed licenses.
 ****************************************************************** */
 #ifndef BITSTREAM_H_MODULE
 #define BITSTREAM_H_MODULE
@@ -49,19 +28,9 @@ extern "C" {
 *  Dependencies
 ******************************************/
 #include "mem.h"            /* unaligned access routines */
+#include "compiler.h"       /* UNLIKELY() */
+#include "debug.h"          /* assert(), DEBUGLOG(), RAWLOG() */
 #include "error_private.h"  /* error codes and messages */
-
-
-/*-*************************************
-*  Debug
-***************************************/
-#if defined(BIT_DEBUG) && (BIT_DEBUG>=1)
-#  include <assert.h>
-#else
-#  ifndef assert
-#    define assert(condition) ((void)0)
-#  endif
-#endif
 
 
 /*=========================================
@@ -69,6 +38,8 @@ extern "C" {
 =========================================*/
 #if defined(__BMI__) && defined(__GNUC__)
 #  include <immintrin.h>   /* support for bextr (experimental) */
+#elif defined(__ICCARM__)
+#  include <intrinsics.h>
 #endif
 
 #define STREAM_ACCUMULATOR_MIN_32  25
@@ -83,8 +54,7 @@ extern "C" {
  * A critical property of these streams is that they encode and decode in **reverse** direction.
  * So the first bit sequence you add will be the last to be read, like a LIFO stack.
  */
-typedef struct
-{
+typedef struct {
     size_t bitContainer;
     unsigned bitPos;
     char*  startPtr;
@@ -118,8 +88,7 @@ MEM_STATIC size_t BIT_closeCStream(BIT_CStream_t* bitC);
 /*-********************************************
 *  bitStream decoding API (read backward)
 **********************************************/
-typedef struct
-{
+typedef struct {
     size_t   bitContainer;
     unsigned bitsConsumed;
     const char* ptr;
@@ -173,10 +142,11 @@ MEM_STATIC unsigned BIT_highbit32 (U32 val)
     {
 #   if defined(_MSC_VER)   /* Visual */
         unsigned long r=0;
-        _BitScanReverse ( &r, val );
-        return (unsigned) r;
+        return _BitScanReverse ( &r, val ) ? (unsigned)r : 0;
 #   elif defined(__GNUC__) && (__GNUC__ >= 3)   /* Use GCC Intrinsic */
-        return 31 - __builtin_clz (val);
+        return __builtin_clz (val) ^ 31;
+#   elif defined(__ICCARM__)    /* IAR Intrinsic */
+        return 31 - __CLZ(val);
 #   else   /* Software version */
         static const unsigned DeBruijnClz[32] = { 0,  9,  1, 10, 13, 21,  2, 29,
                                                  11, 14, 16, 18, 22, 25,  3, 30,
@@ -236,7 +206,8 @@ MEM_STATIC void BIT_addBits(BIT_CStream_t* bitC,
 }
 
 /*! BIT_addBitsFast() :
- *  works only if `value` is _clean_, meaning all high bits above nbBits are 0 */
+ *  works only if `value` is _clean_,
+ *  meaning all high bits above nbBits are 0 */
 MEM_STATIC void BIT_addBitsFast(BIT_CStream_t* bitC,
                                 size_t value, unsigned nbBits)
 {
@@ -253,9 +224,9 @@ MEM_STATIC void BIT_flushBitsFast(BIT_CStream_t* bitC)
 {
     size_t const nbBytes = bitC->bitPos >> 3;
     assert(bitC->bitPos < sizeof(bitC->bitContainer) * 8);
+    assert(bitC->ptr <= bitC->endPtr);
     MEM_writeLEST(bitC->ptr, bitC->bitContainer);
     bitC->ptr += nbBytes;
-    assert(bitC->ptr <= bitC->endPtr);
     bitC->bitPos &= 7;
     bitC->bitContainer >>= nbBytes*8;
 }
@@ -269,6 +240,7 @@ MEM_STATIC void BIT_flushBits(BIT_CStream_t* bitC)
 {
     size_t const nbBytes = bitC->bitPos >> 3;
     assert(bitC->bitPos < sizeof(bitC->bitContainer) * 8);
+    assert(bitC->ptr <= bitC->endPtr);
     MEM_writeLEST(bitC->ptr, bitC->bitContainer);
     bitC->ptr += nbBytes;
     if (bitC->ptr > bitC->endPtr) bitC->ptr = bitC->endPtr;
@@ -352,17 +324,10 @@ MEM_STATIC size_t BIT_getUpperBits(size_t bitContainer, U32 const start)
 
 MEM_STATIC size_t BIT_getMiddleBits(size_t bitContainer, U32 const start, U32 const nbBits)
 {
-#if defined(__BMI__) && defined(__GNUC__) && __GNUC__*1000+__GNUC_MINOR__ >= 4008  /* experimental */
-#  if defined(__x86_64__)
-    if (sizeof(bitContainer)==8)
-        return _bextr_u64(bitContainer, start, nbBits);
-    else
-#  endif
-        return _bextr_u32(bitContainer, start, nbBits);
-#else
+    U32 const regMask = sizeof(bitContainer)*8 - 1;
+    /* if start > regMask, bitstream is corrupted, and result is undefined */
     assert(nbBits < BIT_MASK_SIZE);
-    return (bitContainer >> start) & BIT_mask[nbBits];
-#endif
+    return (bitContainer >> (start & regMask)) & BIT_mask[nbBits];
 }
 
 MEM_STATIC size_t BIT_getLowerBits(size_t bitContainer, U32 const nbBits)
@@ -379,9 +344,13 @@ MEM_STATIC size_t BIT_getLowerBits(size_t bitContainer, U32 const nbBits)
  * @return : value extracted */
 MEM_STATIC size_t BIT_lookBits(const BIT_DStream_t* bitD, U32 nbBits)
 {
-#if defined(__BMI__) && defined(__GNUC__)   /* experimental; fails if bitD->bitsConsumed + nbBits > sizeof(bitD->bitContainer)*8 */
+    /* arbitrate between double-shift and shift+mask */
+#if 1
+    /* if bitD->bitsConsumed + nbBits > sizeof(bitD->bitContainer)*8,
+     * bitstream is likely corrupted, and result is undefined */
     return BIT_getMiddleBits(bitD->bitContainer, (sizeof(bitD->bitContainer)*8) - bitD->bitsConsumed - nbBits, nbBits);
 #else
+    /* this code path is slower on my os-x laptop */
     U32 const regMask = sizeof(bitD->bitContainer)*8 - 1;
     return ((bitD->bitContainer << (bitD->bitsConsumed & regMask)) >> 1) >> ((regMask-nbBits) & regMask);
 #endif
@@ -405,7 +374,7 @@ MEM_STATIC void BIT_skipBits(BIT_DStream_t* bitD, U32 nbBits)
  *  Read (consume) next n bits from local register and update.
  *  Pay attention to not read more than nbBits contained into local register.
  * @return : extracted value. */
-MEM_STATIC size_t BIT_readBits(BIT_DStream_t* bitD, U32 nbBits)
+MEM_STATIC size_t BIT_readBits(BIT_DStream_t* bitD, unsigned nbBits)
 {
     size_t const value = BIT_lookBits(bitD, nbBits);
     BIT_skipBits(bitD, nbBits);
@@ -414,12 +383,29 @@ MEM_STATIC size_t BIT_readBits(BIT_DStream_t* bitD, U32 nbBits)
 
 /*! BIT_readBitsFast() :
  *  unsafe version; only works only if nbBits >= 1 */
-MEM_STATIC size_t BIT_readBitsFast(BIT_DStream_t* bitD, U32 nbBits)
+MEM_STATIC size_t BIT_readBitsFast(BIT_DStream_t* bitD, unsigned nbBits)
 {
     size_t const value = BIT_lookBitsFast(bitD, nbBits);
     assert(nbBits >= 1);
     BIT_skipBits(bitD, nbBits);
     return value;
+}
+
+/*! BIT_reloadDStreamFast() :
+ *  Similar to BIT_reloadDStream(), but with two differences:
+ *  1. bitsConsumed <= sizeof(bitD->bitContainer)*8 must hold!
+ *  2. Returns BIT_DStream_overflow when bitD->ptr < bitD->limitPtr, at this
+ *     point you must use BIT_reloadDStream() to reload.
+ */
+MEM_STATIC BIT_DStream_status BIT_reloadDStreamFast(BIT_DStream_t* bitD)
+{
+    if (UNLIKELY(bitD->ptr < bitD->limitPtr))
+        return BIT_DStream_overflow;
+    assert(bitD->bitsConsumed <= sizeof(bitD->bitContainer)*8);
+    bitD->ptr -= bitD->bitsConsumed >> 3;
+    bitD->bitsConsumed &= 7;
+    bitD->bitContainer = MEM_readLEST(bitD->ptr);
+    return BIT_DStream_unfinished;
 }
 
 /*! BIT_reloadDStream() :
@@ -433,10 +419,7 @@ MEM_STATIC BIT_DStream_status BIT_reloadDStream(BIT_DStream_t* bitD)
         return BIT_DStream_overflow;
 
     if (bitD->ptr >= bitD->limitPtr) {
-        bitD->ptr -= bitD->bitsConsumed >> 3;
-        bitD->bitsConsumed &= 7;
-        bitD->bitContainer = MEM_readLEST(bitD->ptr);
-        return BIT_DStream_unfinished;
+        return BIT_reloadDStreamFast(bitD);
     }
     if (bitD->ptr == bitD->start) {
         if (bitD->bitsConsumed < sizeof(bitD->bitContainer)*8) return BIT_DStream_endOfBuffer;

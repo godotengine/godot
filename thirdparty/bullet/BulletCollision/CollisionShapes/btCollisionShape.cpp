@@ -20,47 +20,44 @@ subject to the following restrictions:
   can be used by probes that are checking whether the
   library is actually installed.
 */
-extern "C" 
+extern "C"
 {
-void btBulletCollisionProbe ();
+	void btBulletCollisionProbe();
 
-void btBulletCollisionProbe () {}
+	void btBulletCollisionProbe() {}
 }
 
-
-
-void	btCollisionShape::getBoundingSphere(btVector3& center,btScalar& radius) const
+void btCollisionShape::getBoundingSphere(btVector3& center, btScalar& radius) const
 {
 	btTransform tr;
 	tr.setIdentity();
-	btVector3 aabbMin,aabbMax;
+	btVector3 aabbMin, aabbMax;
 
-	getAabb(tr,aabbMin,aabbMax);
+	getAabb(tr, aabbMin, aabbMax);
 
-	radius = (aabbMax-aabbMin).length()*btScalar(0.5);
-	center = (aabbMin+aabbMax)*btScalar(0.5);
+	radius = (aabbMax - aabbMin).length() * btScalar(0.5);
+	center = (aabbMin + aabbMax) * btScalar(0.5);
 }
 
-
-btScalar	btCollisionShape::getContactBreakingThreshold(btScalar defaultContactThreshold) const
+btScalar btCollisionShape::getContactBreakingThreshold(btScalar defaultContactThreshold) const
 {
 	return getAngularMotionDisc() * defaultContactThreshold;
 }
 
-btScalar	btCollisionShape::getAngularMotionDisc() const
+btScalar btCollisionShape::getAngularMotionDisc() const
 {
 	///@todo cache this value, to improve performance
-	btVector3	center;
+	btVector3 center;
 	btScalar disc;
-	getBoundingSphere(center,disc);
+	getBoundingSphere(center, disc);
 	disc += (center).length();
 	return disc;
 }
 
-void btCollisionShape::calculateTemporalAabb(const btTransform& curTrans,const btVector3& linvel,const btVector3& angvel,btScalar timeStep, btVector3& temporalAabbMin,btVector3& temporalAabbMax) const
+void btCollisionShape::calculateTemporalAabb(const btTransform& curTrans, const btVector3& linvel, const btVector3& angvel, btScalar timeStep, btVector3& temporalAabbMin, btVector3& temporalAabbMax) const
 {
 	//start with static aabb
-	getAabb(curTrans,temporalAabbMin,temporalAabbMax);
+	getAabb(curTrans, temporalAabbMin, temporalAabbMax);
 
 	btScalar temporalAabbMaxx = temporalAabbMax.getX();
 	btScalar temporalAabbMaxy = temporalAabbMax.getY();
@@ -70,36 +67,36 @@ void btCollisionShape::calculateTemporalAabb(const btTransform& curTrans,const b
 	btScalar temporalAabbMinz = temporalAabbMin.getZ();
 
 	// add linear motion
-	btVector3 linMotion = linvel*timeStep;
+	btVector3 linMotion = linvel * timeStep;
 	///@todo: simd would have a vector max/min operation, instead of per-element access
 	if (linMotion.x() > btScalar(0.))
-		temporalAabbMaxx += linMotion.x(); 
+		temporalAabbMaxx += linMotion.x();
 	else
 		temporalAabbMinx += linMotion.x();
 	if (linMotion.y() > btScalar(0.))
-		temporalAabbMaxy += linMotion.y(); 
+		temporalAabbMaxy += linMotion.y();
 	else
 		temporalAabbMiny += linMotion.y();
 	if (linMotion.z() > btScalar(0.))
-		temporalAabbMaxz += linMotion.z(); 
+		temporalAabbMaxz += linMotion.z();
 	else
 		temporalAabbMinz += linMotion.z();
 
 	//add conservative angular motion
 	btScalar angularMotion = angvel.length() * getAngularMotionDisc() * timeStep;
-	btVector3 angularMotion3d(angularMotion,angularMotion,angularMotion);
-	temporalAabbMin = btVector3(temporalAabbMinx,temporalAabbMiny,temporalAabbMinz);
-	temporalAabbMax = btVector3(temporalAabbMaxx,temporalAabbMaxy,temporalAabbMaxz);
+	btVector3 angularMotion3d(angularMotion, angularMotion, angularMotion);
+	temporalAabbMin = btVector3(temporalAabbMinx, temporalAabbMiny, temporalAabbMinz);
+	temporalAabbMax = btVector3(temporalAabbMaxx, temporalAabbMaxy, temporalAabbMaxz);
 
 	temporalAabbMin -= angularMotion3d;
 	temporalAabbMax += angularMotion3d;
 }
 
 ///fills the dataBuffer and returns the struct name (and 0 on failure)
-const char*	btCollisionShape::serialize(void* dataBuffer, btSerializer* serializer) const
+const char* btCollisionShape::serialize(void* dataBuffer, btSerializer* serializer) const
 {
-	btCollisionShapeData* shapeData = (btCollisionShapeData*) dataBuffer;
-	char* name = (char*) serializer->findNameForPointer(this);
+	btCollisionShapeData* shapeData = (btCollisionShapeData*)dataBuffer;
+	char* name = (char*)serializer->findNameForPointer(this);
 	shapeData->m_name = (char*)serializer->getUniquePointer(name);
 	if (shapeData->m_name)
 	{
@@ -113,10 +110,10 @@ const char*	btCollisionShape::serialize(void* dataBuffer, btSerializer* serializ
 	return "btCollisionShapeData";
 }
 
-void	btCollisionShape::serializeSingleShape(btSerializer* serializer) const
+void btCollisionShape::serializeSingleShape(btSerializer* serializer) const
 {
 	int len = calculateSerializeBufferSize();
-	btChunk* chunk = serializer->allocate(len,1);
+	btChunk* chunk = serializer->allocate(len, 1);
 	const char* structType = serialize(chunk->m_oldPtr, serializer);
-	serializer->finalizeChunk(chunk,structType,BT_SHAPE_CODE,(void*)this);
+	serializer->finalizeChunk(chunk, structType, BT_SHAPE_CODE, (void*)this);
 }

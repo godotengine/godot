@@ -1,39 +1,39 @@
-/***************************************************************************/
-/*                                                                         */
-/*  gxvcommn.h                                                             */
-/*                                                                         */
-/*    TrueTypeGX/AAT common tables validation (specification).             */
-/*                                                                         */
-/*  Copyright 2004-2018 by                                                 */
-/*  suzuki toshiya, Masatake YAMATO, Red Hat K.K.,                         */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * gxvcommn.h
+ *
+ *   TrueTypeGX/AAT common tables validation (specification).
+ *
+ * Copyright (C) 2004-2020 by
+ * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
-/***************************************************************************/
-/*                                                                         */
-/* gxvalid is derived from both gxlayout module and otvalid module.        */
-/* Development of gxlayout is supported by the Information-technology      */
-/* Promotion Agency(IPA), Japan.                                           */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * gxvalid is derived from both gxlayout module and otvalid module.
+ * Development of gxlayout is supported by the Information-technology
+ * Promotion Agency(IPA), Japan.
+ *
+ */
 
 
   /*
    * keywords in variable naming
    * ---------------------------
-   *  table: Of type FT_Bytes, pointing to the start of this table/subtable.
-   *  limit: Of type FT_Bytes, pointing to the end of this table/subtable,
+   * table:  Of type FT_Bytes, pointing to the start of this table/subtable.
+   * limit:  Of type FT_Bytes, pointing to the end of this table/subtable,
    *         including padding for alignment.
-   *  offset: Of type FT_UInt, the number of octets from the start to target.
-   *  length: Of type FT_UInt, the number of octets from the start to the
-   *          end in this table/subtable, including padding for alignment.
+   * offset: Of type FT_UInt, the number of octets from the start to target.
+   * length: Of type FT_UInt, the number of octets from the start to the
+   *         end in this table/subtable, including padding for alignment.
    *
    *  _MIN, _MAX: Should be added to the tail of macros, as INT_MIN, etc.
    */
@@ -43,10 +43,9 @@
 #define GXVCOMMN_H_
 
 
-#include <ft2build.h>
 #include "gxvalid.h"
-#include FT_INTERNAL_DEBUG_H
-#include FT_SFNT_NAMES_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/ftsnames.h>
 
 
 FT_BEGIN_HEADER

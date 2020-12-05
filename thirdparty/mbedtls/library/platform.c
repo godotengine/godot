@@ -1,8 +1,14 @@
 /*
  *  Platform abstraction layer
  *
- *  Copyright (C) 2006-2016, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -30,7 +55,14 @@
 #include "mbedtls/platform.h"
 #include "mbedtls/platform_util.h"
 
-#if defined(MBEDTLS_PLATFORM_MEMORY)
+/* The compile time configuration of memory allocation via the macros
+ * MBEDTLS_PLATFORM_{FREE/CALLOC}_MACRO takes precedence over the runtime
+ * configuration via mbedtls_platform_set_calloc_free(). So, omit everything
+ * related to the latter if MBEDTLS_PLATFORM_{FREE/CALLOC}_MACRO are defined. */
+#if defined(MBEDTLS_PLATFORM_MEMORY) &&                 \
+    !( defined(MBEDTLS_PLATFORM_CALLOC_MACRO) &&        \
+       defined(MBEDTLS_PLATFORM_FREE_MACRO) )
+
 #if !defined(MBEDTLS_PLATFORM_STD_CALLOC)
 static void *platform_calloc_uninit( size_t n, size_t size )
 {
@@ -71,7 +103,9 @@ int mbedtls_platform_set_calloc_free( void * (*calloc_func)( size_t, size_t ),
     mbedtls_free_func = free_func;
     return( 0 );
 }
-#endif /* MBEDTLS_PLATFORM_MEMORY */
+#endif /* MBEDTLS_PLATFORM_MEMORY &&
+          !( defined(MBEDTLS_PLATFORM_CALLOC_MACRO) &&
+             defined(MBEDTLS_PLATFORM_FREE_MACRO) ) */
 
 #if defined(_WIN32)
 #include <stdarg.h>

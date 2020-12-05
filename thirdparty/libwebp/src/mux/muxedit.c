@@ -69,12 +69,12 @@ void WebPMuxDelete(WebPMux* mux) {
   if (idx == (INDEX)) {                                                        \
     err = ChunkAssignData(&chunk, data, copy_data, tag);                       \
     if (err == WEBP_MUX_OK) {                                                  \
-      err = ChunkSetNth(&chunk, (LIST), nth);                                  \
+      err = ChunkSetHead(&chunk, (LIST));                                      \
     }                                                                          \
     return err;                                                                \
   }
 
-static WebPMuxError MuxSet(WebPMux* const mux, uint32_t tag, uint32_t nth,
+static WebPMuxError MuxSet(WebPMux* const mux, uint32_t tag,
                            const WebPData* const data, int copy_data) {
   WebPChunk chunk;
   WebPMuxError err = WEBP_MUX_NOT_FOUND;
@@ -190,7 +190,7 @@ WebPMuxError WebPMuxSetChunk(WebPMux* mux, const char fourcc[4],
   if (err != WEBP_MUX_OK && err != WEBP_MUX_NOT_FOUND) return err;
 
   // Add the given chunk.
-  return MuxSet(mux, tag, 1, chunk_data, copy_data);
+  return MuxSet(mux, tag, chunk_data, copy_data);
 }
 
 // Creates a chunk from given 'data' and sets it as 1st chunk in 'chunk_list'.
@@ -202,7 +202,7 @@ static WebPMuxError AddDataToChunkList(
   ChunkInit(&chunk);
   err = ChunkAssignData(&chunk, data, copy_data, tag);
   if (err != WEBP_MUX_OK) goto Err;
-  err = ChunkSetNth(&chunk, chunk_list, 1);
+  err = ChunkSetHead(&chunk, chunk_list);
   if (err != WEBP_MUX_OK) goto Err;
   return WEBP_MUX_OK;
  Err:
@@ -266,14 +266,14 @@ WebPMuxError WebPMuxPushFrame(WebPMux* mux, const WebPMuxFrameInfo* info,
                               int copy_data) {
   WebPMuxImage wpi;
   WebPMuxError err;
-  const WebPData* const bitstream = &info->bitstream;
 
   // Sanity checks.
   if (mux == NULL || info == NULL) return WEBP_MUX_INVALID_ARGUMENT;
 
   if (info->id != WEBP_CHUNK_ANMF) return WEBP_MUX_INVALID_ARGUMENT;
 
-  if (bitstream->bytes == NULL || bitstream->size > MAX_CHUNK_PAYLOAD) {
+  if (info->bitstream.bytes == NULL ||
+      info->bitstream.size > MAX_CHUNK_PAYLOAD) {
     return WEBP_MUX_INVALID_ARGUMENT;
   }
 
@@ -287,7 +287,7 @@ WebPMuxError WebPMuxPushFrame(WebPMux* mux, const WebPMuxFrameInfo* info,
   }
 
   MuxImageInit(&wpi);
-  err = SetAlphaAndImageChunks(bitstream, copy_data, &wpi);
+  err = SetAlphaAndImageChunks(&info->bitstream, copy_data, &wpi);
   if (err != WEBP_MUX_OK) goto Err;
   assert(wpi.img_ != NULL);  // As SetAlphaAndImageChunks() was successful.
 
@@ -342,7 +342,7 @@ WebPMuxError WebPMuxSetAnimationParams(WebPMux* mux,
   // Set the animation parameters.
   PutLE32(data, params->bgcolor);
   PutLE16(data + 4, params->loop_count);
-  return MuxSet(mux, kChunks[IDX_ANIM].tag, 1, &anim, 1);
+  return MuxSet(mux, kChunks[IDX_ANIM].tag, &anim, 1);
 }
 
 WebPMuxError WebPMuxSetCanvasSize(WebPMux* mux,
@@ -540,7 +540,7 @@ static WebPMuxError CreateVP8XChunk(WebPMux* const mux) {
   PutLE24(data + 4, width - 1);   // canvas width.
   PutLE24(data + 7, height - 1);  // canvas height.
 
-  return MuxSet(mux, kChunks[IDX_VP8X].tag, 1, &vp8x, 1);
+  return MuxSet(mux, kChunks[IDX_VP8X].tag, &vp8x, 1);
 }
 
 // Cleans up 'mux' by removing any unnecessary chunks.

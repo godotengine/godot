@@ -1,66 +1,70 @@
-/***************************************************************************/
-/*                                                                         */
-/*  cfftypes.h                                                             */
-/*                                                                         */
-/*    Basic OpenType/CFF type definitions and interface (specification     */
-/*    only).                                                               */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * cfftypes.h
+ *
+ *   Basic OpenType/CFF type definitions and interface (specification
+ *   only).
+ *
+ * Copyright (C) 1996-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef CFFTYPES_H_
 #define CFFTYPES_H_
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_TYPE1_TABLES_H
-#include FT_INTERNAL_SERVICE_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
-#include FT_INTERNAL_TYPE1_TYPES_H
+#include <freetype/freetype.h>
+#include <freetype/t1tables.h>
+#include <freetype/internal/ftserv.h>
+#include <freetype/internal/services/svpscmap.h>
+#include <freetype/internal/pshints.h>
+#include <freetype/internal/t1types.h>
 
 
 FT_BEGIN_HEADER
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    CFF_IndexRec                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A structure used to model a CFF Index table.                       */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    stream      :: The source input stream.                            */
-  /*                                                                       */
-  /*    start       :: The position of the first index byte in the         */
-  /*                   input stream.                                       */
-  /*                                                                       */
-  /*    count       :: The number of elements in the index.                */
-  /*                                                                       */
-  /*    off_size    :: The size in bytes of object offsets in index.       */
-  /*                                                                       */
-  /*    data_offset :: The position of first data byte in the index's      */
-  /*                   bytes.                                              */
-  /*                                                                       */
-  /*    data_size   :: The size of the data table in this index.           */
-  /*                                                                       */
-  /*    offsets     :: A table of element offsets in the index.  Must be   */
-  /*                   loaded explicitly.                                  */
-  /*                                                                       */
-  /*    bytes       :: If the index is loaded in memory, its bytes.        */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   CFF_IndexRec
+   *
+   * @description:
+   *   A structure used to model a CFF Index table.
+   *
+   * @fields:
+   *   stream ::
+   *     The source input stream.
+   *
+   *   start ::
+   *     The position of the first index byte in the input stream.
+   *
+   *   count ::
+   *     The number of elements in the index.
+   *
+   *   off_size ::
+   *     The size in bytes of object offsets in index.
+   *
+   *   data_offset ::
+   *     The position of first data byte in the index's bytes.
+   *
+   *   data_size ::
+   *     The size of the data table in this index.
+   *
+   *   offsets ::
+   *     A table of element offsets in the index.  Must be loaded explicitly.
+   *
+   *   bytes ::
+   *     If the index is loaded in memory, its bytes.
+   */
   typedef struct  CFF_IndexRec_
   {
     FT_Stream  stream;

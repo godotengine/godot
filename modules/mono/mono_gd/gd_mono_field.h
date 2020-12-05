@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,11 +32,10 @@
 #define GDMONOFIELD_H
 
 #include "gd_mono.h"
-#include "gd_mono_class_member.h"
 #include "gd_mono_header.h"
+#include "i_mono_class_member.h"
 
-class GDMonoField : public GDMonoClassMember {
-
+class GDMonoField : public IMonoClassMember {
 	GDMonoClass *owner;
 	MonoClassField *mono_field;
 
@@ -47,19 +46,22 @@ class GDMonoField : public GDMonoClassMember {
 	MonoCustomAttrInfo *attributes;
 
 public:
-	virtual MemberType get_member_type() { return MEMBER_TYPE_FIELD; }
+	virtual GDMonoClass *get_enclosing_class() const final { return owner; }
 
-	virtual StringName get_name() { return name; }
+	virtual MemberType get_member_type() const final { return MEMBER_TYPE_FIELD; }
 
-	virtual bool is_static();
-	virtual Visibility get_visibility();
+	virtual StringName get_name() const final { return name; }
 
-	virtual bool has_attribute(GDMonoClass *p_attr_class);
-	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class);
+	virtual bool is_static() final;
+	virtual Visibility get_visibility() final;
+
+	virtual bool has_attribute(GDMonoClass *p_attr_class) final;
+	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) final;
 	void fetch_attributes();
 
 	_FORCE_INLINE_ ManagedType get_type() const { return type; }
 
+	void set_value(MonoObject *p_object, MonoObject *p_value);
 	void set_value_raw(MonoObject *p_object, void *p_ptr);
 	void set_value_from_variant(MonoObject *p_object, const Variant &p_value);
 

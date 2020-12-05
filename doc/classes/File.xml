@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="File" inherits="Reference" category="Core" version="3.1">
+<class name="File" inherits="Reference" version="4.0">
 	<brief_description>
 		Type to handle file reading and writing operations.
 	</brief_description>
 	<description>
 		File type. This is used to permanently store data into the user device's file system and to read from it. This can be used to store game save data or player configuration files, for example.
 		Here's a sample on how to write and read from a file:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		func save(content):
 		    var file = File.new()
 		    file.open("user://save_game.dat", File.WRITE)
@@ -19,13 +20,33 @@
 		    var content = file.get_as_text()
 		    file.close()
 		    return content
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		public void Save(string content)
+		{
+		    var file = new File();
+		    file.Open("user://save_game.dat", File.ModeFlags.Write);
+		    file.StoreString(content);
+		    file.Close();
+		}
+
+		public string Load()
+		{
+		    var file = new File();
+		    file.Open("user://save_game.dat", File.ModeFlags.Read);
+		    string content = file.GetAsText();
+		    file.Close();
+		    return content;
+		}
+		[/csharp]
+		[/codeblocks]
+		In the example above, the file will be saved in the user data folder as specified in the [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]Data paths[/url] documentation.
+		[b]Note:[/b] To access project resources once exported, it is recommended to use [ResourceLoader] instead of the [File] API, as some files are converted to engine-specific formats and their original source files might not be present in the exported PCK package.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/getting_started/step_by_step/filesystem.html</link>
+		<link title="File system">https://docs.godotengine.org/en/latest/getting_started/step_by_step/filesystem.html</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="close">
 			<return type="void">
@@ -38,7 +59,8 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the file cursor has reached the end of the file.
+				Returns [code]true[/code] if the file cursor has read past the end of the file.
+				[b]Note:[/b] This function will still return [code]false[/code] while at the end of the file and only activates when reading past it. This can be confusing but it conforms to how low-level file access works in all operating systems. There is always [method get_len] and [method get_position] to implement a custom logic.
 			</description>
 		</method>
 		<method name="file_exists" qualifiers="const">
@@ -48,34 +70,35 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the file exists in the given path.
+				[b]Note:[/b] Many resources types are imported (e.g. textures or sound files), and their source asset will not be included in the exported game, as only the imported version is used. See [method ResourceLoader.exists] for an alternative approach that takes resource remapping into account.
 			</description>
 		</method>
 		<method name="get_16" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the next 16 bits from the file as an integer.
+				Returns the next 16 bits from the file as an integer. See [method store_16] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_32" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the next 32 bits from the file as an integer.
+				Returns the next 32 bits from the file as an integer. See [method store_32] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_64" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the next 64 bits from the file as an integer.
+				Returns the next 64 bits from the file as an integer. See [method store_64] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_8" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the next 8 bits from the file as an integer.
+				Returns the next 8 bits from the file as an integer. See [method store_8] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_as_text" qualifiers="const">
@@ -83,45 +106,47 @@
 			</return>
 			<description>
 				Returns the whole file as a [String].
+				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_buffer" qualifiers="const">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="len" type="int">
 			</argument>
 			<description>
-				Returns next [code]len[/code] bytes of the file as a [PoolByteArray].
+				Returns next [code]len[/code] bytes of the file as a [PackedByteArray].
 			</description>
 		</method>
 		<method name="get_csv_line" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="delim" type="String" default="&quot;,&quot;">
 			</argument>
 			<description>
-				Returns the next value of the file in CSV (Comma Separated Values) format. You can pass a different delimiter to use other than the default "," (comma).
+				Returns the next value of the file in CSV (Comma-Separated Values) format. You can pass a different delimiter [code]delim[/code] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
+				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_double" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Returns the next 64 bits from the file as a floating point number.
+				Returns the next 64 bits from the file as a floating-point number.
 			</description>
 		</method>
 		<method name="get_error" qualifiers="const">
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Returns the last error that happened when trying to perform operations. Compare with the [code]ERR_FILE_*[/code] constants from [@GlobalScope].
+				Returns the last error that happened when trying to perform operations. Compare with the [code]ERR_FILE_*[/code] constants from [enum Error].
 			</description>
 		</method>
 		<method name="get_float" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Returns the next 32 bits from the file as a floating point number.
+				Returns the next 32 bits from the file as a floating-point number.
 			</description>
 		</method>
 		<method name="get_len" qualifiers="const">
@@ -136,6 +161,7 @@
 			</return>
 			<description>
 				Returns the next line of the file as a [String].
+				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_md5" qualifiers="const">
@@ -161,6 +187,7 @@
 			</return>
 			<description>
 				Returns a [String] saved in Pascal format from the file.
+				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">
@@ -188,7 +215,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the next bits from the file as a floating point number.
+				Returns the next bits from the file as a floating-point number.
 			</description>
 		</method>
 		<method name="get_sha256" qualifiers="const">
@@ -203,8 +230,11 @@
 		<method name="get_var" qualifiers="const">
 			<return type="Variant">
 			</return>
+			<argument index="0" name="allow_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Returns the next [Variant] value from the file.
+				Returns the next [Variant] value from the file. If [code]allow_objects[/code] is [code]true[/code], decoding objects is allowed.
+				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
 		<method name="is_open" qualifiers="const">
@@ -219,7 +249,7 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="flags" type="int">
+			<argument index="1" name="flags" type="int" enum="File.ModeFlags">
 			</argument>
 			<description>
 				Opens the file for writing or reading, depending on the flags.
@@ -230,12 +260,12 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="mode_flags" type="int">
+			<argument index="1" name="mode_flags" type="int" enum="File.ModeFlags">
 			</argument>
-			<argument index="2" name="compression_mode" type="int" default="0">
+			<argument index="2" name="compression_mode" type="int" enum="File.CompressionMode" default="0">
 			</argument>
 			<description>
-				Opens a compressed file for reading or writing. Use COMPRESSION_* constants to set [code]compression_mode[/code].
+				Opens a compressed file for reading or writing.
 			</description>
 		</method>
 		<method name="open_encrypted">
@@ -243,12 +273,13 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="mode_flags" type="int">
+			<argument index="1" name="mode_flags" type="int" enum="File.ModeFlags">
 			</argument>
-			<argument index="2" name="key" type="PoolByteArray">
+			<argument index="2" name="key" type="PackedByteArray">
 			</argument>
 			<description>
 				Opens an encrypted file in write or read mode. You need to pass a binary key to encrypt/decrypt it.
+				[b]Note:[/b] The provided key must be 32 bytes long.
 			</description>
 		</method>
 		<method name="open_encrypted_with_pass">
@@ -256,7 +287,7 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="mode_flags" type="int">
+			<argument index="1" name="mode_flags" type="int" enum="File.ModeFlags">
 			</argument>
 			<argument index="2" name="pass" type="String">
 			</argument>
@@ -270,7 +301,7 @@
 			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
-				Change the file reading/writing cursor to the specified position (in bytes from the beginning of the file).
+				Changes the file reading/writing cursor to the specified position (in bytes from the beginning of the file).
 			</description>
 		</method>
 		<method name="seek_end">
@@ -279,7 +310,8 @@
 			<argument index="0" name="position" type="int" default="0">
 			</argument>
 			<description>
-				Changes the file reading/writing cursor to the specified position (in bytes from the end of the file). Note that this is an offset, so you should use negative numbers or the cursor will be at the end of the file.
+				Changes the file reading/writing cursor to the specified position (in bytes from the end of the file).
+				[b]Note:[/b] This is an offset, so you should use negative numbers or the cursor will be at the end of the file.
 			</description>
 		</method>
 		<method name="store_16">
@@ -289,6 +321,42 @@
 			</argument>
 			<description>
 				Stores an integer as 16 bits in the file.
+				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 2^16 - 1][/code]. Any other value will overflow and wrap around.
+				To store a signed integer, use [method store_64] or store a signed integer from the interval [code][-2^15, 2^15 - 1][/code] (i.e. keeping one bit for the signedness) and compute its sign manually when reading. For example:
+				[codeblocks]
+				[gdscript]
+				const MAX_15B = 1 &lt;&lt; 15
+				const MAX_16B = 1 &lt;&lt; 16
+
+				func unsigned16_to_signed(unsigned):
+				    return (unsigned + MAX_15B) % MAX_16B - MAX_15B
+
+				func _ready():
+				    var f = File.new()
+				    f.open("user://file.dat", File.WRITE_READ)
+				    f.store_16(-42) # This wraps around and stores 65494 (2^16 - 42).
+				    f.store_16(121) # In bounds, will store 121.
+				    f.seek(0) # Go back to start to read the stored value.
+				    var read1 = f.get_16() # 65494
+				    var read2 = f.get_16() # 121
+				    var converted1 = unsigned16_to_signed(read1) # -42
+				    var converted2 = unsigned16_to_signed(read2) # 121
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    var f = new File();
+				    f.Open("user://file.dat", File.ModeFlags.WriteRead);
+				    f.Store16(unchecked((ushort)-42)); // This wraps around and stores 65494 (2^16 - 42).
+				    f.Store16(121); // In bounds, will store 121.
+				    f.Seek(0); // Go back to start to read the stored value.
+				    ushort read1 = f.Get16(); // 65494
+				    ushort read2 = f.Get16(); // 121
+				    short converted1 = BitConverter.ToInt16(BitConverter.GetBytes(read1), 0); // -42
+				    short converted2 = BitConverter.ToInt16(BitConverter.GetBytes(read2), 0); // 121
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="store_32">
@@ -298,6 +366,8 @@
 			</argument>
 			<description>
 				Stores an integer as 32 bits in the file.
+				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 2^32 - 1][/code]. Any other value will overflow and wrap around.
+				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
 			</description>
 		</method>
 		<method name="store_64">
@@ -307,6 +377,7 @@
 			</argument>
 			<description>
 				Stores an integer as 64 bits in the file.
+				[b]Note:[/b] The [code]value[/code] must lie in the interval [code][-2^63, 2^63 - 1][/code] (i.e. be a valid [int] value).
 			</description>
 		</method>
 		<method name="store_8">
@@ -316,15 +387,29 @@
 			</argument>
 			<description>
 				Stores an integer as 8 bits in the file.
+				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 255][/code]. Any other value will overflow and wrap around.
+				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
 			</description>
 		</method>
 		<method name="store_buffer">
 			<return type="void">
 			</return>
-			<argument index="0" name="buffer" type="PoolByteArray">
+			<argument index="0" name="buffer" type="PackedByteArray">
 			</argument>
 			<description>
 				Stores the given array of bytes in the file.
+			</description>
+		</method>
+		<method name="store_csv_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="values" type="PackedStringArray">
+			</argument>
+			<argument index="1" name="delim" type="String" default="&quot;,&quot;">
+			</argument>
+			<description>
+				Store the given [PackedStringArray] in the file as a line formatted in the CSV (Comma-Separated Values) format. You can pass a different delimiter [code]delim[/code] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
+				Text will be encoded as UTF-8.
 			</description>
 		</method>
 		<method name="store_double">
@@ -333,7 +418,7 @@
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				Stores a floating point number as 64 bits in the file.
+				Stores a floating-point number as 64 bits in the file.
 			</description>
 		</method>
 		<method name="store_float">
@@ -342,7 +427,7 @@
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				Stores a floating point number as 32 bits in the file.
+				Stores a floating-point number as 32 bits in the file.
 			</description>
 		</method>
 		<method name="store_line">
@@ -351,7 +436,7 @@
 			<argument index="0" name="line" type="String">
 			</argument>
 			<description>
-				Stores the given [String] as a line in the file.
+				Appends [code]line[/code] to the file followed by a line return character ([code]\n[/code]), encoding the text as UTF-8.
 			</description>
 		</method>
 		<method name="store_pascal_string">
@@ -361,6 +446,7 @@
 			</argument>
 			<description>
 				Stores the given [String] as a line in the file in Pascal format (i.e. also store the length of the string).
+				Text will be encoded as UTF-8.
 			</description>
 		</method>
 		<method name="store_real">
@@ -369,7 +455,7 @@
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				Stores a floating point number in the file.
+				Stores a floating-point number in the file.
 			</description>
 		</method>
 		<method name="store_string">
@@ -378,7 +464,7 @@
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
-				Stores the given [String] in the file.
+				Appends [code]string[/code] to the file without a line return, encoding the text as UTF-8.
 			</description>
 		</method>
 		<method name="store_var">
@@ -386,41 +472,43 @@
 			</return>
 			<argument index="0" name="value" type="Variant">
 			</argument>
+			<argument index="1" name="full_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Stores any Variant value in the file.
+				Stores any Variant value in the file. If [code]full_objects[/code] is [code]true[/code], encoding objects is allowed (and can potentially include code).
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="endian_swap" type="bool" setter="set_endian_swap" getter="get_endian_swap">
-			If [code]true[/code] the file's endianness is swapped. Use this if you're dealing with files written in big endian machines.
-			Note that this is about the file format, not CPU type. This is always reset to [code]false[/code] whenever you open the file.
+		<member name="endian_swap" type="bool" setter="set_endian_swap" getter="get_endian_swap" default="false">
+			If [code]true[/code], the file's endianness is swapped. Use this if you're dealing with files written on big-endian machines.
+			[b]Note:[/b] This is about the file format, not CPU type. This is always reset to [code]false[/code] whenever you open the file.
 		</member>
 	</members>
 	<constants>
 		<constant name="READ" value="1" enum="ModeFlags">
-			Opens the file for read operations.
+			Opens the file for read operations. The cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="WRITE" value="2" enum="ModeFlags">
-			Opens the file for write operations. Create it if the file does not exist and truncate if it exists.
+			Opens the file for write operations. The file is created if it does not exist, and truncated if it does.
 		</constant>
 		<constant name="READ_WRITE" value="3" enum="ModeFlags">
-			Opens the file for read and write operations. Does not truncate the file.
+			Opens the file for read and write operations. Does not truncate the file. The cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="WRITE_READ" value="7" enum="ModeFlags">
-			Opens the file for read and write operations. Create it if the file does not exist and truncate if it exists.
+			Opens the file for read and write operations. The file is created if it does not exist, and truncated if it does. The cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0" enum="CompressionMode">
-			Uses the FastLZ compression method.
+			Uses the [url=http://fastlz.org/]FastLZ[/url] compression method.
 		</constant>
 		<constant name="COMPRESSION_DEFLATE" value="1" enum="CompressionMode">
-			Uses the Deflate compression method.
+			Uses the [url=https://en.wikipedia.org/wiki/DEFLATE]DEFLATE[/url] compression method.
 		</constant>
 		<constant name="COMPRESSION_ZSTD" value="2" enum="CompressionMode">
-			Uses the Zstd compression method.
+			Uses the [url=https://facebook.github.io/zstd/]Zstandard[/url] compression method.
 		</constant>
 		<constant name="COMPRESSION_GZIP" value="3" enum="CompressionMode">
-			Uses the gzip compression method.
+			Uses the [url=https://www.gzip.org/]gzip[/url] compression method.
 		</constant>
 	</constants>
 </class>

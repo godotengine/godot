@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,9 @@
 #ifndef NETWORKED_MULTIPLAYER_PEER_H
 #define NETWORKED_MULTIPLAYER_PEER_H
 
-#include "io/packet_peer.h"
+#include "core/io/packet_peer.h"
 
 class NetworkedMultiplayerPeer : public PacketPeer {
-
 	GDCLASS(NetworkedMultiplayerPeer, PacketPeer);
 
 protected:
@@ -74,10 +73,10 @@ public:
 
 	virtual ConnectionStatus get_connection_status() const = 0;
 
-	NetworkedMultiplayerPeer();
+	NetworkedMultiplayerPeer() {}
 };
 
 VARIANT_ENUM_CAST(NetworkedMultiplayerPeer::TransferMode)
 VARIANT_ENUM_CAST(NetworkedMultiplayerPeer::ConnectionStatus)
 
-#endif // NetworkedMultiplayerPeer_H
+#endif // NETWORKED_MULTIPLAYER_PEER_H

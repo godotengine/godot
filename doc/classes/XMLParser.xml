@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XMLParser" inherits="Reference" category="Core" version="3.1">
+<class name="XMLParser" inherits="Reference" version="4.0">
 	<brief_description>
-		Low-level class for creating parsers for XML files.
+		Low-level class for creating parsers for [url=https://en.wikipedia.org/wiki/XML]XML[/url] files.
 	</brief_description>
 	<description>
-		This class can serve as base to make custom XML parsers. Since XML is a very flexible standard, this interface is low level so it can be applied to any possible schema.
+		This class can serve as base to make custom XML parsers. Since XML is a very flexible standard, this interface is low-level so it can be applied to any possible schema.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_attribute_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Get the amount of attributes in the current element.
+				Gets the amount of attributes in the current element.
 			</description>
 		</method>
 		<method name="get_attribute_name" qualifiers="const">
@@ -24,7 +22,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Get the name of the attribute specified by the index in [code]idx[/code] argument.
+				Gets the name of the attribute specified by the index in [code]idx[/code] argument.
 			</description>
 		</method>
 		<method name="get_attribute_value" qualifiers="const">
@@ -33,14 +31,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Get the value of the attribute specified by the index in [code]idx[/code] argument.
+				Gets the value of the attribute specified by the index in [code]idx[/code] argument.
 			</description>
 		</method>
 		<method name="get_current_line" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Get the current line in the parsed file (currently not implemented).
+				Gets the current line in the parsed file (currently not implemented).
 			</description>
 		</method>
 		<method name="get_named_attribute_value" qualifiers="const">
@@ -49,7 +47,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Get the value of a certain attribute of the current element by name. This will raise an error if the element has no such attribute.
+				Gets the value of a certain attribute of the current element by name. This will raise an error if the element has no such attribute.
 			</description>
 		</method>
 		<method name="get_named_attribute_value_safe" qualifiers="const">
@@ -58,35 +56,35 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Get the value of a certain attribute of the current element by name. This will return an empty [String] if the attribute is not found.
+				Gets the value of a certain attribute of the current element by name. This will return an empty [String] if the attribute is not found.
 			</description>
 		</method>
 		<method name="get_node_data" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Get the contents of a text node. This will raise an error in any other type of node.
+				Gets the contents of a text node. This will raise an error in any other type of node.
 			</description>
 		</method>
 		<method name="get_node_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Get the name of the current element node. This will raise an error if the current node type is not [code]NODE_ELEMENT[/code] nor [code]NODE_ELEMENT_END[/code]
+				Gets the name of the current element node. This will raise an error if the current node type is neither [constant NODE_ELEMENT] nor [constant NODE_ELEMENT_END].
 			</description>
 		</method>
 		<method name="get_node_offset" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Get the byte offset of the current node since the beginning of the file or buffer.
+				Gets the byte offset of the current node since the beginning of the file or buffer.
 			</description>
 		</method>
 		<method name="get_node_type">
 			<return type="int" enum="XMLParser.NodeType">
 			</return>
 			<description>
-				Get the type of the current node. Compare with [code]NODE_*[/code] constants.
+				Gets the type of the current node. Compare with [enum NodeType] constants.
 			</description>
 		</method>
 		<method name="has_attribute" qualifiers="const">
@@ -95,14 +93,14 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Check whether or not the current element has a certain attribute.
+				Check whether the current element has a certain attribute.
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Check whether the current element is empty (this only works for completely empty tags, e.g. &lt;element \&gt;).
+				Check whether the current element is empty (this only works for completely empty tags, e.g. [code]&lt;element \&gt;[/code]).
 			</description>
 		</method>
 		<method name="open">
@@ -111,23 +109,23 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
-				Open a XML file for parsing. This returns an error code.
+				Opens an XML file for parsing. This returns an error code.
 			</description>
 		</method>
 		<method name="open_buffer">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="buffer" type="PoolByteArray">
+			<argument index="0" name="buffer" type="PackedByteArray">
 			</argument>
 			<description>
-				Open a XML raw buffer for parsing. This returns an error code.
+				Opens an XML raw buffer for parsing. This returns an error code.
 			</description>
 		</method>
 		<method name="read">
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Read the next node of the file. This returns an error code.
+				Reads the next node of the file. This returns an error code.
 			</description>
 		</method>
 		<method name="seek">
@@ -136,7 +134,7 @@
 			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
-				Move the buffer cursor to a certain offset (since the beginning) and read the next node there. This returns an error code.
+				Moves the buffer cursor to a certain offset (since the beginning) and read the next node there. This returns an error code.
 			</description>
 		</method>
 		<method name="skip_section">
@@ -149,25 +147,25 @@
 	</methods>
 	<constants>
 		<constant name="NODE_NONE" value="0" enum="NodeType">
-			There's no node (no file or buffer opened)
+			There's no node (no file or buffer opened).
 		</constant>
 		<constant name="NODE_ELEMENT" value="1" enum="NodeType">
-			Element (tag)
+			Element (tag).
 		</constant>
 		<constant name="NODE_ELEMENT_END" value="2" enum="NodeType">
-			End of element
+			End of element.
 		</constant>
 		<constant name="NODE_TEXT" value="3" enum="NodeType">
-			Text node
+			Text node.
 		</constant>
 		<constant name="NODE_COMMENT" value="4" enum="NodeType">
-			Comment node
+			Comment node.
 		</constant>
 		<constant name="NODE_CDATA" value="5" enum="NodeType">
-			CDATA content
+			CDATA content.
 		</constant>
 		<constant name="NODE_UNKNOWN" value="6" enum="NodeType">
-			Unknown node
+			Unknown node.
 		</constant>
 	</constants>
 </class>

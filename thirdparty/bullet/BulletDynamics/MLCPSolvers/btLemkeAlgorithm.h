@@ -19,90 +19,84 @@ subject to the following restrictions:
 //Math library was replaced from fmatvec to a the file src/LinearMath/btMatrixX.h
 //STL/std::vector replaced by btAlignedObjectArray
 
-
-
 #ifndef BT_NUMERICS_LEMKE_ALGORITHM_H_
 #define BT_NUMERICS_LEMKE_ALGORITHM_H_
 
 #include "LinearMath/btMatrixX.h"
 
-
-#include <vector> //todo: replace by btAlignedObjectArray
+#include <vector>  //todo: replace by btAlignedObjectArray
 
 class btLemkeAlgorithm
 {
 public:
- 
+	btLemkeAlgorithm(const btMatrixXu& M_, const btVectorXu& q_, const int& DEBUGLEVEL_ = 0) : DEBUGLEVEL(DEBUGLEVEL_)
+	{
+		setSystem(M_, q_);
+	}
 
-  btLemkeAlgorithm(const btMatrixXu& M_, const btVectorXu& q_, const int & DEBUGLEVEL_ = 0) :
-	  DEBUGLEVEL(DEBUGLEVEL_)
-  {
-	setSystem(M_, q_);
-  }
-
-  /* GETTER / SETTER */
-  /**
+	/* GETTER / SETTER */
+	/**
    * \brief return info of solution process
    */
-  int getInfo() {
-	return info;
-  }
+	int getInfo()
+	{
+		return info;
+	}
 
-  /**
+	/**
    * \brief get the number of steps until the solution was found
    */
-  int getSteps(void) {
-	return steps;
-  }
+	int getSteps(void)
+	{
+		return steps;
+	}
 
-
-
-  /**
+	/**
    * \brief set system with Matrix M and vector q
    */
-  void setSystem(const btMatrixXu & M_, const btVectorXu & q_)
+	void setSystem(const btMatrixXu& M_, const btVectorXu& q_)
 	{
 		m_M = M_;
 		m_q = q_;
-  }
-  /***************************************************/
+	}
+	/***************************************************/
 
-  /**
+	/**
    * \brief solve algorithm adapted from : Fast Implementation of Lemke’s Algorithm for Rigid Body Contact Simulation (John E. Lloyd)
    */
-  btVectorXu solve(unsigned int maxloops = 0);
+	btVectorXu solve(unsigned int maxloops = 0);
 
-  virtual ~btLemkeAlgorithm() {
-  }
+	virtual ~btLemkeAlgorithm()
+	{
+	}
 
 protected:
-  int findLexicographicMinimum(const btMatrixXu &A, const int & pivotColIndex);
-  bool LexicographicPositive(const btVectorXu & v);
-  void GaussJordanEliminationStep(btMatrixXu &A, int pivotRowIndex, int pivotColumnIndex, const btAlignedObjectArray<int>& basis);
-  bool greaterZero(const btVectorXu & vector);
-  bool validBasis(const btAlignedObjectArray<int>& basis);
+	int findLexicographicMinimum(const btMatrixXu& A, const int& pivotColIndex);
+	bool LexicographicPositive(const btVectorXu& v);
+	void GaussJordanEliminationStep(btMatrixXu& A, int pivotRowIndex, int pivotColumnIndex, const btAlignedObjectArray<int>& basis);
+	bool greaterZero(const btVectorXu& vector);
+	bool validBasis(const btAlignedObjectArray<int>& basis);
 
-  btMatrixXu m_M;
-  btVectorXu m_q;
+	btMatrixXu m_M;
+	btVectorXu m_q;
 
-  /**
+	/**
    * \brief number of steps until the Lemke algorithm found a solution
    */
-  unsigned int steps;
+	unsigned int steps;
 
-  /**
+	/**
    * \brief define level of debug output
    */
-  int DEBUGLEVEL;
+	int DEBUGLEVEL;
 
-  /**
+	/**
    * \brief did the algorithm find a solution
    *
    * -1 : not successful
    *  0 : successful
    */
-  int info;
+	int info;
 };
-
 
 #endif /* BT_NUMERICS_LEMKE_ALGORITHM_H_ */

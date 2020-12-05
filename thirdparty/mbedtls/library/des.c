@@ -1,8 +1,14 @@
 /*
  *  FIPS-46-3 compliant Triple-DES implementation
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 /*
  *  DES, on which TDES is based, was originally designed by Horst Feistel
@@ -257,50 +282,57 @@ static const uint32_t RHs[16] =
 /*
  * Initial Permutation macro
  */
-#define DES_IP(X,Y)                                             \
-{                                                               \
-    T = ((X >>  4) ^ Y) & 0x0F0F0F0F; Y ^= T; X ^= (T <<  4);   \
-    T = ((X >> 16) ^ Y) & 0x0000FFFF; Y ^= T; X ^= (T << 16);   \
-    T = ((Y >>  2) ^ X) & 0x33333333; X ^= T; Y ^= (T <<  2);   \
-    T = ((Y >>  8) ^ X) & 0x00FF00FF; X ^= T; Y ^= (T <<  8);   \
-    Y = ((Y << 1) | (Y >> 31)) & 0xFFFFFFFF;                    \
-    T = (X ^ Y) & 0xAAAAAAAA; Y ^= T; X ^= T;                   \
-    X = ((X << 1) | (X >> 31)) & 0xFFFFFFFF;                    \
-}
+#define DES_IP(X,Y)                                                       \
+    do                                                                    \
+    {                                                                     \
+        T = (((X) >>  4) ^ (Y)) & 0x0F0F0F0F; (Y) ^= T; (X) ^= (T <<  4); \
+        T = (((X) >> 16) ^ (Y)) & 0x0000FFFF; (Y) ^= T; (X) ^= (T << 16); \
+        T = (((Y) >>  2) ^ (X)) & 0x33333333; (X) ^= T; (Y) ^= (T <<  2); \
+        T = (((Y) >>  8) ^ (X)) & 0x00FF00FF; (X) ^= T; (Y) ^= (T <<  8); \
+        (Y) = (((Y) << 1) | ((Y) >> 31)) & 0xFFFFFFFF;                    \
+        T = ((X) ^ (Y)) & 0xAAAAAAAA; (Y) ^= T; (X) ^= T;                 \
+        (X) = (((X) << 1) | ((X) >> 31)) & 0xFFFFFFFF;                    \
+    } while( 0 )
 
 /*
  * Final Permutation macro
  */
-#define DES_FP(X,Y)                                             \
-{                                                               \
-    X = ((X << 31) | (X >> 1)) & 0xFFFFFFFF;                    \
-    T = (X ^ Y) & 0xAAAAAAAA; X ^= T; Y ^= T;                   \
-    Y = ((Y << 31) | (Y >> 1)) & 0xFFFFFFFF;                    \
-    T = ((Y >>  8) ^ X) & 0x00FF00FF; X ^= T; Y ^= (T <<  8);   \
-    T = ((Y >>  2) ^ X) & 0x33333333; X ^= T; Y ^= (T <<  2);   \
-    T = ((X >> 16) ^ Y) & 0x0000FFFF; Y ^= T; X ^= (T << 16);   \
-    T = ((X >>  4) ^ Y) & 0x0F0F0F0F; Y ^= T; X ^= (T <<  4);   \
-}
+#define DES_FP(X,Y)                                                       \
+    do                                                                    \
+    {                                                                     \
+        (X) = (((X) << 31) | ((X) >> 1)) & 0xFFFFFFFF;                    \
+        T = ((X) ^ (Y)) & 0xAAAAAAAA; (X) ^= T; (Y) ^= T;                 \
+        (Y) = (((Y) << 31) | ((Y) >> 1)) & 0xFFFFFFFF;                    \
+        T = (((Y) >>  8) ^ (X)) & 0x00FF00FF; (X) ^= T; (Y) ^= (T <<  8); \
+        T = (((Y) >>  2) ^ (X)) & 0x33333333; (X) ^= T; (Y) ^= (T <<  2); \
+        T = (((X) >> 16) ^ (Y)) & 0x0000FFFF; (Y) ^= T; (X) ^= (T << 16); \
+        T = (((X) >>  4) ^ (Y)) & 0x0F0F0F0F; (Y) ^= T; (X) ^= (T <<  4); \
+    } while( 0 )
 
 /*
  * DES round macro
  */
-#define DES_ROUND(X,Y)                          \
-{                                               \
-    T = *SK++ ^ X;                              \
-    Y ^= SB8[ (T      ) & 0x3F ] ^              \
-         SB6[ (T >>  8) & 0x3F ] ^              \
-         SB4[ (T >> 16) & 0x3F ] ^              \
-         SB2[ (T >> 24) & 0x3F ];               \
-                                                \
-    T = *SK++ ^ ((X << 28) | (X >> 4));         \
-    Y ^= SB7[ (T      ) & 0x3F ] ^              \
-         SB5[ (T >>  8) & 0x3F ] ^              \
-         SB3[ (T >> 16) & 0x3F ] ^              \
-         SB1[ (T >> 24) & 0x3F ];               \
-}
+#define DES_ROUND(X,Y)                              \
+    do                                              \
+    {                                               \
+        T = *SK++ ^ (X);                            \
+        (Y) ^= SB8[ (T      ) & 0x3F ] ^            \
+               SB6[ (T >>  8) & 0x3F ] ^            \
+               SB4[ (T >> 16) & 0x3F ] ^            \
+               SB2[ (T >> 24) & 0x3F ];             \
+                                                    \
+        T = *SK++ ^ (((X) << 28) | ((X) >> 4));     \
+        (Y) ^= SB7[ (T      ) & 0x3F ] ^            \
+               SB5[ (T >>  8) & 0x3F ] ^            \
+               SB3[ (T >> 16) & 0x3F ] ^            \
+               SB1[ (T >> 24) & 0x3F ];             \
+    } while( 0 )
 
-#define SWAP(a,b) { uint32_t t = a; a = b; b = t; t = 0; }
+#define SWAP(a,b)                                       \
+    do                                                  \
+    {                                                   \
+        uint32_t t = (a); (a) = (b); (b) = t; t = 0;    \
+    } while( 0 )
 
 void mbedtls_des_init( mbedtls_des_context *ctx )
 {

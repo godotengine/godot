@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,8 @@
 #ifndef CONNECTIONS_DIALOG_H
 #define CONNECTIONS_DIALOG_H
 
-#include "editor/property_editor.h"
+#include "core/object/undo_redo.h"
+#include "editor/editor_inspector.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
@@ -44,35 +45,72 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
-#include "undo_redo.h"
 
 class PopupMenu;
 class ConnectDialogBinds;
 
 class ConnectDialog : public ConfirmationDialog {
-
 	GDCLASS(ConnectDialog, ConfirmationDialog);
 
+public:
+	struct ConnectionData {
+		Node *source = nullptr;
+		Node *target = nullptr;
+		StringName signal;
+		StringName method;
+		uint32_t flags = 0;
+		Vector<Variant> binds;
+
+		ConnectionData() {
+		}
+		ConnectionData(const Connection &p_connection) {
+			source = Object::cast_to<Node>(p_connection.signal.get_object());
+			signal = p_connection.signal.get_name();
+			target = Object::cast_to<Node>(p_connection.callable.get_object());
+			method = p_connection.callable.get_method();
+			flags = p_connection.flags;
+			binds = p_connection.binds;
+		}
+		operator Connection() {
+			Connection c;
+			c.signal = ::Signal(source, signal);
+			c.callable = Callable(target, method);
+			c.flags = flags;
+			c.binds = binds;
+			return c;
+		}
+	};
+
+private:
+	Label *connect_to_label;
+	LineEdit *from_signal;
 	Node *source;
 	StringName signal;
-	LineEdit *dst_path;
 	LineEdit *dst_method;
 	ConnectDialogBinds *cdbinds;
 	bool bEditMode;
+	NodePath dst_path;
+	VBoxContainer *vbc_right;
 
 	SceneTreeEditor *tree;
-	ConfirmationDialog *error;
-	PropertyEditor *bind_editor;
+	AcceptDialog *error;
+	EditorInspector *bind_editor;
 	OptionButton *type_list;
-	CheckButton *deferred;
-	CheckButton *oneshot;
-	CheckButton *make_callback;
+	CheckBox *deferred;
+	CheckBox *oneshot;
+	CheckButton *advanced;
 
-	void ok_pressed();
+	Label *error_label;
+
+	void ok_pressed() override;
 	void _cancel_pressed();
+	void _item_activated();
+	void _text_entered(const String &_text);
 	void _tree_node_selected();
 	void _add_bind();
 	void _remove_bind();
+	void _advanced_pressed();
+	void _update_ok_enabled();
 
 protected:
 	void _notification(int p_what);
@@ -87,21 +125,26 @@ public:
 	void set_dst_method(const StringName &p_method);
 	Vector<Variant> get_binds() const;
 
-	bool get_make_callback() { return make_callback->is_visible() && make_callback->is_pressed(); }
 	bool get_deferred() const;
 	bool get_oneshot() const;
 	bool is_editing() const;
 
-	void init(Connection c, bool bEdit = false);
+	void init(ConnectionData c, bool bEdit = false);
 
+	void popup_dialog(const String &p_for_signal);
 	ConnectDialog();
 	~ConnectDialog();
 };
 
-//========================================
+//////////////////////////////////////////
+
+// Custom Tree needed to use a RichTextLabel as tooltip control
+// when display signal documentation.
+class ConnectionsDockTree : public Tree {
+	virtual Control *make_custom_tooltip(const String &p_text) const;
+};
 
 class ConnectionsDock : public VBoxContainer {
-
 	GDCLASS(ConnectionsDock, VBoxContainer);
 
 	//Right-click Pop-up Menu Options.
@@ -117,7 +160,7 @@ class ConnectionsDock : public VBoxContainer {
 	};
 
 	Node *selectedNode;
-	Tree *tree;
+	ConnectionsDockTree *tree;
 	EditorNode *editor;
 
 	ConfirmationDialog *disconnect_all_dialog;
@@ -126,9 +169,14 @@ class ConnectionsDock : public VBoxContainer {
 	PopupMenu *signal_menu;
 	PopupMenu *slot_menu;
 	UndoRedo *undo_redo;
+	LineEdit *search_box;
+
+	Map<StringName, Map<StringName, String>> descr_cache;
+
+	void _filter_changed(const String &p_text);
 
 	void _make_or_edit_connection();
-	void _connect(Connection cToMake);
+	void _connect(ConnectDialog::ConnectionData cToMake);
 	void _disconnect(TreeItem &item);
 	void _disconnect_all();
 
@@ -137,7 +185,7 @@ class ConnectionsDock : public VBoxContainer {
 	bool _is_item_signal(TreeItem &item);
 
 	void _open_connection_dialog(TreeItem &item);
-	void _open_connection_dialog(Connection cToEdit);
+	void _open_connection_dialog(ConnectDialog::ConnectionData cToEdit);
 	void _go_to_script(TreeItem &item);
 
 	void _handle_signal_menu_option(int option);
@@ -155,7 +203,7 @@ public:
 	void set_node(Node *p_node);
 	void update_tree();
 
-	ConnectionsDock(EditorNode *p_editor = NULL);
+	ConnectionsDock(EditorNode *p_editor = nullptr);
 	~ConnectionsDock();
 };
 

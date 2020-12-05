@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectEQ" inherits="AudioEffect" category="Core" version="3.1">
+<class name="AudioEffectEQ" inherits="AudioEffect" version="4.0">
 	<brief_description>
 		Base class for audio equalizers. Gives you control over frequencies.
 		Use it to create a custom equalizer if [AudioEffectEQ6], [AudioEffectEQ10] or [AudioEffectEQ21] don't fit your needs.
 	</brief_description>
 	<description>
-		AudioEffectEQ gives you control over frequencies. Use it to compensate for existing deficiencies in audio. AudioEffectEQ are very useful on the Master Bus to completely master a mix and give it character. They are also very useful when a game is run on a mobile device, to adjust the mix to that kind of speakers (it can be added but disabled when headphones are plugged).
+		AudioEffectEQ gives you control over frequencies. Use it to compensate for existing deficiencies in audio. AudioEffectEQs are useful on the Master bus to completely master a mix and give it more character. They are also useful when a game is run on a mobile device, to adjust the mix to that kind of speakers (it can be added but disabled when headphones are plugged).
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_band_count" qualifiers="const">
 			<return type="int">

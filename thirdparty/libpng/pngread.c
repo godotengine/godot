@@ -1,10 +1,10 @@
 
 /* pngread.c - read a PNG file
  *
- * Last changed in libpng 1.6.35 [July 15, 2018]
+ * Copyright (c) 2018-2019 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
- * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
- * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+ * Copyright (c) 1996-1997 Andreas Dilger
+ * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -161,6 +161,9 @@ png_read_info(png_structrp png_ptr, png_inforp info_ptr)
 
       else if (chunk_name == png_IDAT)
       {
+#ifdef PNG_READ_APNG_SUPPORTED
+         png_have_info(png_ptr, info_ptr);
+#endif
          png_ptr->idat_size = length;
          break;
       }
@@ -255,12 +258,89 @@ png_read_info(png_structrp png_ptr, png_inforp info_ptr)
          png_handle_iTXt(png_ptr, info_ptr, length);
 #endif
 
+#ifdef PNG_READ_APNG_SUPPORTED
+      else if (chunk_name == png_acTL)
+         png_handle_acTL(png_ptr, info_ptr, length);
+
+      else if (chunk_name == png_fcTL)
+         png_handle_fcTL(png_ptr, info_ptr, length);
+
+      else if (chunk_name == png_fdAT)
+         png_handle_fdAT(png_ptr, info_ptr, length);
+#endif
+
       else
          png_handle_unknown(png_ptr, info_ptr, length,
              PNG_HANDLE_CHUNK_AS_DEFAULT);
    }
 }
 #endif /* SEQUENTIAL_READ */
+
+#ifdef PNG_READ_APNG_SUPPORTED
+void PNGAPI
+png_read_frame_head(png_structp png_ptr, png_infop info_ptr)
+{
+    png_byte have_chunk_after_DAT; /* after IDAT or after fdAT */
+
+    png_debug(0, "Reading frame head");
+
+    if (!(png_ptr->mode & PNG_HAVE_acTL))
+        png_error(png_ptr, "attempt to png_read_frame_head() but "
+                           "no acTL present");
+
+    /* do nothing for the main IDAT */
+    if (png_ptr->num_frames_read == 0)
+        return;
+
+    png_read_reset(png_ptr);
+    png_ptr->flags &= ~PNG_FLAG_ROW_INIT;
+    png_ptr->mode &= ~PNG_HAVE_fcTL;
+
+    have_chunk_after_DAT = 0;
+    for (;;)
+    {
+        png_uint_32 length = png_read_chunk_header(png_ptr);
+
+        if (png_ptr->chunk_name == png_IDAT)
+        {
+            /* discard trailing IDATs for the first frame */
+            if (have_chunk_after_DAT || png_ptr->num_frames_read > 1)
+                png_error(png_ptr, "png_read_frame_head(): out of place IDAT");
+            png_crc_finish(png_ptr, length);
+        }
+
+        else if (png_ptr->chunk_name == png_fcTL)
+        {
+            png_handle_fcTL(png_ptr, info_ptr, length);
+            have_chunk_after_DAT = 1;
+        }
+
+        else if (png_ptr->chunk_name == png_fdAT)
+        {
+            png_ensure_sequence_number(png_ptr, length);
+
+            /* discard trailing fdATs for frames other than the first */
+            if (!have_chunk_after_DAT && png_ptr->num_frames_read > 1)
+                png_crc_finish(png_ptr, length - 4);
+            else if(png_ptr->mode & PNG_HAVE_fcTL)
+            {
+                png_ptr->idat_size = length - 4;
+                png_ptr->mode |= PNG_HAVE_IDAT;
+
+                break;
+            }
+            else
+                png_error(png_ptr, "png_read_frame_head(): out of place fdAT");
+        }
+        else
+        {
+            png_warning(png_ptr, "Skipped (ignored) a chunk "
+                                 "between APNG chunks");
+            png_crc_finish(png_ptr, length);
+        }
+    }
+}
+#endif /* PNG_READ_APNG_SUPPORTED */
 
 /* Optional call to update the users info_ptr structure */
 void PNGAPI
@@ -994,6 +1074,12 @@ png_read_destroy(png_structrp png_ptr)
    png_ptr->chunk_list = NULL;
 #endif
 
+#if defined(PNG_READ_EXPAND_SUPPORTED) && \
+    defined(PNG_ARM_NEON_IMPLEMENTATION)
+   png_free(png_ptr, png_ptr->riffled_palette);
+   png_ptr->riffled_palette = NULL;
+#endif
+
    /* NOTE: the 'setjmp' buffer may still be allocated and the memory and error
     * callbacks are still set at this point.  They are required to complete the
     * destruction of the png_struct itself.
@@ -1621,7 +1707,7 @@ png_image_skip_unused_chunks(png_structrp png_ptr)
     * errors (which are unfortunately quite common.)
     */
    {
-         static PNG_CONST png_byte chunks_to_process[] = {
+         static const png_byte chunks_to_process[] = {
             98,  75,  71,  68, '\0',  /* bKGD */
             99,  72,  82,  77, '\0',  /* cHRM */
            103,  65,  77,  65, '\0',  /* gAMA */
@@ -1758,9 +1844,9 @@ png_create_colormap_entry(png_image_read_control *display,
     png_uint_32 alpha, int encoding)
 {
    png_imagep image = display->image;
-   const int output_encoding = (image->format & PNG_FORMAT_FLAG_LINEAR) != 0 ?
+   int output_encoding = (image->format & PNG_FORMAT_FLAG_LINEAR) != 0 ?
        P_LINEAR : P_sRGB;
-   const int convert_to_Y = (image->format & PNG_FORMAT_FLAG_COLOR) == 0 &&
+   int convert_to_Y = (image->format & PNG_FORMAT_FLAG_COLOR) == 0 &&
        (red != green || green != blue);
 
    if (ip > 255)
@@ -1869,13 +1955,13 @@ png_create_colormap_entry(png_image_read_control *display,
    /* Store the value. */
    {
 #     ifdef PNG_FORMAT_AFIRST_SUPPORTED
-         const int afirst = (image->format & PNG_FORMAT_FLAG_AFIRST) != 0 &&
+         int afirst = (image->format & PNG_FORMAT_FLAG_AFIRST) != 0 &&
             (image->format & PNG_FORMAT_FLAG_ALPHA) != 0;
 #     else
 #        define afirst 0
 #     endif
 #     ifdef PNG_FORMAT_BGR_SUPPORTED
-         const int bgr = (image->format & PNG_FORMAT_FLAG_BGR) != 0 ? 2 : 0;
+         int bgr = (image->format & PNG_FORMAT_FLAG_BGR) != 0 ? 2 : 0;
 #     else
 #        define bgr 0
 #     endif
@@ -2085,11 +2171,11 @@ png_image_read_colormap(png_voidp argument)
 {
    png_image_read_control *display =
       png_voidcast(png_image_read_control*, argument);
-   const png_imagep image = display->image;
+   png_imagep image = display->image;
 
-   const png_structrp png_ptr = image->opaque->png_ptr;
-   const png_uint_32 output_format = image->format;
-   const int output_encoding = (output_format & PNG_FORMAT_FLAG_LINEAR) != 0 ?
+   png_structrp png_ptr = image->opaque->png_ptr;
+   png_uint_32 output_format = image->format;
+   int output_encoding = (output_format & PNG_FORMAT_FLAG_LINEAR) != 0 ?
       P_LINEAR : P_sRGB;
 
    unsigned int cmap_entries;
@@ -2802,7 +2888,7 @@ png_image_read_colormap(png_voidp argument)
             unsigned int num_trans = png_ptr->num_trans;
             png_const_bytep trans = num_trans > 0 ? png_ptr->trans_alpha : NULL;
             png_const_colorp colormap = png_ptr->palette;
-            const int do_background = trans != NULL &&
+            int do_background = trans != NULL &&
                (output_format & PNG_FORMAT_FLAG_ALPHA) == 0;
             unsigned int i;
 
@@ -3946,7 +4032,7 @@ png_image_read_direct(png_voidp argument)
        */
       if (linear != 0)
       {
-         PNG_CONST png_uint_16 le = 0x0001;
+         png_uint_16 le = 0x0001;
 
          if ((*(png_const_bytep) & le) != 0)
             png_set_swap(png_ptr);
@@ -4108,7 +4194,7 @@ png_image_finish_read(png_imagep image, png_const_colorp background,
        * original PNG format because it may not occur in the output PNG format
        * and libpng deals with the issues of reading the original.
        */
-      const unsigned int channels = PNG_IMAGE_PIXEL_CHANNELS(image->format);
+      unsigned int channels = PNG_IMAGE_PIXEL_CHANNELS(image->format);
 
       /* The following checks just the 'row_stride' calculation to ensure it
        * fits in a signed 32-bit value.  Because channels/components can be
@@ -4119,7 +4205,7 @@ png_image_finish_read(png_imagep image, png_const_colorp background,
       if (image->width <= 0x7fffffffU/channels) /* no overflow */
       {
          png_uint_32 check;
-         const png_uint_32 png_row_stride = image->width * channels;
+         png_uint_32 png_row_stride = image->width * channels;
 
          if (row_stride == 0)
             row_stride = (png_int_32)/*SAFE*/png_row_stride;

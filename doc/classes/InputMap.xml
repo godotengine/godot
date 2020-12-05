@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputMap" inherits="Object" category="Core" version="3.1">
+<class name="InputMap" inherits="Object" version="4.0">
 	<brief_description>
 		Singleton that manages [InputEventAction].
 	</brief_description>
 	<description>
-		Manages all [InputEventAction] which can be created/modified from the project settings menu [code]Project &gt; Project Settings &gt; Input Map[/code] or in code with [method add_action] and [method action_add_event]. See [method Node._input].
+		Manages all [InputEventAction] which can be created/modified from the project settings menu [b]Project &gt; Project Settings &gt; Input Map[/b] or in code with [method add_action] and [method action_add_event]. See [method Node._input].
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/inputs/inputevent.html#inputmap</link>
+		<link title="InputEvent: InputMap">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html#inputmap</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="action_add_event">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
@@ -26,7 +24,7 @@
 		<method name="action_erase_event">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
@@ -37,51 +35,62 @@
 		<method name="action_erase_events">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
+				Removes all events from an action.
+			</description>
+		</method>
+		<method name="action_get_events">
+			<return type="Array">
+			</return>
+			<argument index="0" name="action" type="StringName">
+			</argument>
+			<description>
+				Returns an array of [InputEvent]s associated with a given action.
 			</description>
 		</method>
 		<method name="action_has_event">
 			<return type="bool">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<description>
-				Returns [true] if an action has an [InputEvent] associated with it.
+				Returns [code]true[/code] if the action has the given [InputEvent] associated with it.
 			</description>
 		</method>
 		<method name="action_set_deadzone">
 			<return type="void">
 			</return>
-			<argument index="0" name="deadzone" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
-			<argument index="1" name="arg1" type="float">
+			<argument index="1" name="deadzone" type="float">
 			</argument>
 			<description>
+				Sets a deadzone value for the action.
 			</description>
 		</method>
 		<method name="add_action">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="deadzone" type="float" default="0.5">
 			</argument>
 			<description>
-				Adds an (empty) action to the [code]InputMap[/code], with a configurable [code]deadzone[/code].
+				Adds an empty action to the [InputMap] with a configurable [code]deadzone[/code].
 				An [InputEvent] can then be added to this action with [method action_add_event].
 			</description>
 		</method>
 		<method name="erase_action">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
-				Removes an action from the [code]InputMap[/code].
+				Removes an action from the [InputMap].
 			</description>
 		</method>
 		<method name="event_is_action" qualifiers="const">
@@ -89,42 +98,33 @@
 			</return>
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
-			<argument index="1" name="action" type="String">
+			<argument index="1" name="action" type="StringName">
 			</argument>
 			<description>
-				Returns [true] if the given event is part of an existing action. This method ignores keyboard modifiers if the given [InputEvent] is not pressed (for proper release detection). See [method action_has_event] if you don't want this behavior.
-			</description>
-		</method>
-		<method name="get_action_list">
-			<return type="Array">
-			</return>
-			<argument index="0" name="action" type="String">
-			</argument>
-			<description>
-				Returns an array of [InputEvent]s associated with a given action.
+				Returns [code]true[/code] if the given event is part of an existing action. This method ignores keyboard modifiers if the given [InputEvent] is not pressed (for proper release detection). See [method action_has_event] if you don't want this behavior.
 			</description>
 		</method>
 		<method name="get_actions">
 			<return type="Array">
 			</return>
 			<description>
-				Returns an array of all actions in the [code]InputMap[/code].
+				Returns an array of all actions in the [InputMap].
 			</description>
 		</method>
 		<method name="has_action" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the [code]InputMap[/code] has a registered action with the given name.
+				Returns [code]true[/code] if the [InputMap] has a registered action with the given name.
 			</description>
 		</method>
-		<method name="load_from_globals">
+		<method name="load_from_project_settings">
 			<return type="void">
 			</return>
 			<description>
-				Clears all [InputEventAction] in the [code]InputMap[/code] and load it anew from [ProjectSettings].
+				Clears all [InputEventAction] in the [InputMap] and load it anew from [ProjectSettings].
 			</description>
 		</method>
 	</methods>

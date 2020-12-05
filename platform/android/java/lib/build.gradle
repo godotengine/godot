@@ -1,0 +1,109 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+dependencies {
+    implementation libraries.supportCoreUtils
+    implementation libraries.kotlinStdLib
+    implementation libraries.v4Support
+}
+
+def pathToRootDir = "../../../../"
+
+android {
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
+
+    defaultConfig {
+        minSdkVersion versions.minSdk
+        targetSdkVersion versions.targetSdk
+    }
+
+    compileOptions {
+        sourceCompatibility versions.javaVersion
+        targetCompatibility versions.javaVersion
+    }
+
+    lintOptions {
+        abortOnError false
+        disable 'MissingTranslation', 'UnusedResources'
+    }
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+
+        // Should be uncommented for development purpose within Android Studio
+        // doNotStrip '**/*.so'
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            res.srcDirs = ['res']
+            aidl.srcDirs = ['aidl']
+            assets.srcDirs = ['assets']
+        }
+        debug.jniLibs.srcDirs = ['libs/debug']
+        release.jniLibs.srcDirs = ['libs/release']
+    }
+
+    libraryVariants.all { variant ->
+        variant.outputs.all { output ->
+            output.outputFileName = "godot-lib.${variant.name}.aar"
+        }
+
+        def buildType = variant.buildType.name.capitalize()
+
+        def releaseTarget = buildType.toLowerCase()
+        if (releaseTarget == null || releaseTarget == "") {
+            throw new GradleException("Invalid build type: " + buildType)
+        }
+
+        if (!supportedAbis.contains(defaultAbi)) {
+            throw new GradleException("Invalid default abi: " + defaultAbi)
+        }
+
+        // Find scons' executable path
+        File sconsExecutableFile = null
+        def sconsName = "scons"
+        def sconsExts = (org.gradle.internal.os.OperatingSystem.current().isWindows()
+            ? [".bat", ".exe"]
+            : [""])
+        logger.lifecycle("Looking for $sconsName executable path")
+        for (ext in sconsExts) {
+            String sconsNameExt = sconsName + ext
+            logger.lifecycle("Checking $sconsNameExt")
+
+            sconsExecutableFile = org.gradle.internal.os.OperatingSystem.current().findInPath(sconsNameExt)
+            if (sconsExecutableFile != null) {
+                // We're done!
+                break
+            }
+
+            // Check all the options in path
+            List<File> allOptions = org.gradle.internal.os.OperatingSystem.current().findAllInPath(sconsNameExt)
+            if (!allOptions.isEmpty()) {
+                // Pick the first option and we're done!
+                sconsExecutableFile = allOptions.get(0)
+                break
+            }
+        }
+
+        if (sconsExecutableFile == null) {
+            throw new GradleException("Unable to find executable path for the '$sconsName' command.")
+        } else {
+            logger.lifecycle("Found executable path for $sconsName: ${sconsExecutableFile.absolutePath}")
+        }
+
+        // Creating gradle task to generate the native libraries for the default abi.
+        def taskName = getSconsTaskName(buildType)
+        tasks.create(name: taskName, type: Exec) {
+            executable sconsExecutableFile.absolutePath
+            args "--directory=${pathToRootDir}", "platform=android", "target=${releaseTarget}", "android_arch=${defaultAbi}", "-j" + Runtime.runtime.availableProcessors()
+        }
+
+        // Schedule the tasks so the generated libs are present before the aar file is packaged.
+        tasks["merge${buildType}JniLibFolders"].dependsOn taskName
+    }
+}

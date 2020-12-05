@@ -32,10 +32,10 @@
 #define BT_ID_POW(x, y) btPow(x, y)
 #define BT_ID_PI SIMD_PI
 #ifdef _WIN32
-	#define BT_ID_SNPRINTF _snprintf
+#define BT_ID_SNPRINTF _snprintf
 #else
-	#define BT_ID_SNPRINTF snprintf
-#endif //
+#define BT_ID_SNPRINTF snprintf
+#endif  //
 #endif
 // error messages
 #include "IDErrorMessages.hpp"
@@ -52,8 +52,8 @@
 #error "custom inverse dynamics config, but no custom namespace defined"
 #endif
 
-#define BT_ID_MAX(a,b) std::max(a,b)
-#define BT_ID_MIN(a,b) std::min(a,b)
+#define BT_ID_MAX(a, b) std::max(a, b)
+#define BT_ID_MIN(a, b) std::min(a, b)
 
 #else
 #define btInverseDynamics btInverseDynamicsBullet3
@@ -62,8 +62,8 @@
 #include "LinearMath/btScalar.h"
 typedef btScalar idScalar;
 #include "LinearMath/btMinMax.h"
-#define BT_ID_MAX(a,b) btMax(a,b)
-#define BT_ID_MIN(a,b) btMin(a,b)
+#define BT_ID_MAX(a, b) btMax(a, b)
+#define BT_ID_MIN(a, b) btMin(a, b)
 
 #ifdef BT_USE_DOUBLE_PRECISION
 #define BT_ID_USE_DOUBLE_PRECISION
@@ -71,31 +71,31 @@ typedef btScalar idScalar;
 
 #ifndef BT_USE_INVERSE_DYNAMICS_WITH_BULLET2
 
-
 // use bullet types for arrays and array indices
 #include "Bullet3Common/b3AlignedObjectArray.h"
 // this is to make it work with C++2003, otherwise we could do this:
 // template <typename T>
 // using idArray = b3AlignedObjectArray<T>;
 template <typename T>
-struct idArray {
+struct idArray
+{
 	typedef b3AlignedObjectArray<T> type;
 };
 typedef int idArrayIdx;
 #define ID_DECLARE_ALIGNED_ALLOCATOR() B3_DECLARE_ALIGNED_ALLOCATOR()
 
-#else // BT_USE_INVERSE_DYNAMICS_WITH_BULLET2
+#else  // BT_USE_INVERSE_DYNAMICS_WITH_BULLET2
 
 #include "LinearMath/btAlignedObjectArray.h"
 template <typename T>
-struct idArray {
+struct idArray
+{
 	typedef btAlignedObjectArray<T> type;
 };
 typedef int idArrayIdx;
 #define ID_DECLARE_ALIGNED_ALLOCATOR() BT_DECLARE_ALIGNED_ALLOCATOR()
 
-#endif // BT_USE_INVERSE_DYNAMICS_WITH_BULLET2
-
+#endif  // BT_USE_INVERSE_DYNAMICS_WITH_BULLET2
 
 // use bullet's allocator functions
 #define idMalloc btAllocFunc

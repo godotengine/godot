@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectBandLimitFilter" inherits="AudioEffectFilter" category="Core" version="3.1">
+<class name="AudioEffectBandLimitFilter" inherits="AudioEffectFilter" version="4.0">
 	<brief_description>
-		Adds a band limit filter to the Audio Bus.
+		Adds a band limit filter to the audio bus.
 	</brief_description>
 	<description>
-		Limits the frequencies in a range around the [member cutoff_hz] and allows frequencies outside of this range to pass.
+		Limits the frequencies in a range around the [member AudioEffectFilter.cutoff_hz] and allows frequencies outside of this range to pass.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<constants>

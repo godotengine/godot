@@ -1,48 +1,47 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftccmap.c                                                              */
-/*                                                                         */
-/*    FreeType CharMap cache (body)                                        */
-/*                                                                         */
-/*  Copyright 2000-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftccmap.c
+ *
+ *   FreeType CharMap cache (body)
+ *
+ * Copyright (C) 2000-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_CACHE_H
+#include <freetype/freetype.h>
+#include <freetype/ftcache.h>
 #include "ftcmanag.h"
-#include FT_INTERNAL_MEMORY_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftmemory.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftdebug.h>
 
 #include "ftccback.h"
 #include "ftcerror.h"
 
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_cache
+#define FT_COMPONENT  cache
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Each FTC_CMapNode contains a simple array to map a range of character */
-  /* codes to equivalent glyph indices.                                    */
-  /*                                                                       */
-  /* For now, the implementation is very basic: Each node maps a range of  */
-  /* 128 consecutive character codes to their corresponding glyph indices. */
-  /*                                                                       */
-  /* We could do more complex things, but I don't think it is really very  */
-  /* useful.                                                               */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * Each FTC_CMapNode contains a simple array to map a range of character
+   * codes to equivalent glyph indices.
+   *
+   * For now, the implementation is very basic: Each node maps a range of
+   * 128 consecutive character codes to their corresponding glyph indices.
+   *
+   * We could do more complex things, but I don't think it is really very
+   * useful.
+   *
+   */
 
 
   /* number of glyph indices / character code per node */

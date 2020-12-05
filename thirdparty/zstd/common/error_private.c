@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
+ * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -14,6 +14,10 @@
 
 const char* ERR_getErrorString(ERR_enum code)
 {
+#ifdef ZSTD_STRIP_ERROR_STRINGS
+    (void)code;
+    return "Error strings stripped";
+#else
     static const char* const notErrorCode = "Unspecified error code";
     switch( code )
     {
@@ -39,10 +43,13 @@ const char* ERR_getErrorString(ERR_enum code)
     case PREFIX(dictionaryCreation_failed): return "Cannot create Dictionary from provided samples";
     case PREFIX(dstSize_tooSmall): return "Destination buffer is too small";
     case PREFIX(srcSize_wrong): return "Src size is incorrect";
+    case PREFIX(dstBuffer_null): return "Operation on NULL destination buffer";
         /* following error codes are not stable and may be removed or changed in a future version */
     case PREFIX(frameIndex_tooLarge): return "Frame index is too large";
     case PREFIX(seekableIO): return "An I/O error occurred when reading/seeking";
+    case PREFIX(dstBuffer_wrong): return "Destination buffer is wrong";
     case PREFIX(maxCode):
     default: return notErrorCode;
     }
+#endif
 }

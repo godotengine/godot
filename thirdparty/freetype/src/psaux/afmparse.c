@@ -1,24 +1,23 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afmparse.c                                                             */
-/*                                                                         */
-/*    AFM parser (body).                                                   */
-/*                                                                         */
-/*  Copyright 2006-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afmparse.c
+ *
+ *   AFM parser (body).
+ *
+ * Copyright (C) 2006-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
+#include <freetype/freetype.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/psaux.h>
 
 #ifndef T1_CONFIG_OPTION_NO_AFM
 
@@ -28,13 +27,13 @@
 #include "psauxerr.h"
 
 
-/***************************************************************************/
-/*                                                                         */
-/*    AFM_Stream                                                           */
-/*                                                                         */
-/* The use of AFM_Stream is largely inspired by parseAFM.[ch] from t1lib.  */
-/*                                                                         */
-/*                                                                         */
+  /**************************************************************************
+   *
+   * AFM_Stream
+   *
+   * The use of AFM_Stream is largely inspired by parseAFM.[ch] from t1lib.
+   *
+   */
 
   enum
   {
@@ -193,11 +192,11 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*    AFM_Parser                                                         */
-  /*                                                                       */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * AFM_Parser
+   *
+   */
 
   /* all keys defined in Ch. 7-10 of 5004.AFM_Spec.pdf */
   typedef enum  AFM_Token_
@@ -953,7 +952,8 @@
         error = afm_parse_kern_data( parser );
         if ( error )
           goto Fail;
-        /* fall through since we only support kern data */
+        /* we only support kern data, so ... */
+        /* fall through                      */
 
       case AFM_TOKEN_ENDFONTMETRICS:
         return FT_Err_Ok;

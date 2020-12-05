@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SegmentShape2D" inherits="Shape2D" category="Core" version="3.1">
+<class name="SegmentShape2D" inherits="Shape2D" version="4.0">
 	<brief_description>
 		Segment shape for 2D collisions.
 	</brief_description>
@@ -8,15 +8,13 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="a" type="Vector2" setter="set_a" getter="get_a">
+		<member name="a" type="Vector2" setter="set_a" getter="get_a" default="Vector2( 0, 0 )">
 			The segment's first point position.
 		</member>
-		<member name="b" type="Vector2" setter="set_b" getter="get_b">
+		<member name="b" type="Vector2" setter="set_b" getter="get_b" default="Vector2( 0, 10 )">
 			The segment's second point position.
 		</member>
 	</members>

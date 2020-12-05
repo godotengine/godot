@@ -1,20 +1,20 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftsynth.h                                                              */
-/*                                                                         */
-/*    FreeType synthesizing code for emboldening and slanting              */
-/*    (specification).                                                     */
-/*                                                                         */
-/*  Copyright 2000-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftsynth.h
+ *
+ *   FreeType synthesizing code for emboldening and slanting
+ *   (specification).
+ *
+ * Copyright (C) 2000-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
   /*************************************************************************/
@@ -35,7 +35,7 @@
 
 
   /* Main reason for not lifting the functions in this module to a  */
-  /* `standard' API is that the used parameters for emboldening and */
+  /* 'standard' API is that the used parameters for emboldening and */
   /* slanting are not configurable.  Consider the functions as a    */
   /* code resource that should be copied into the application and   */
   /* adapted to the particular needs.                               */
@@ -45,8 +45,7 @@
 #define FTSYNTH_H_
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"
@@ -57,7 +56,7 @@
 
 FT_BEGIN_HEADER
 
-  /* Embolden a glyph by a `reasonable' value (which is highly a matter of */
+  /* Embolden a glyph by a 'reasonable' value (which is highly a matter of */
   /* taste).  This function is actually a convenience function, providing  */
   /* a wrapper for @FT_Outline_Embolden and @FT_Bitmap_Embolden.           */
   /*                                                                       */

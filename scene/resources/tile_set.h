@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,15 +31,15 @@
 #ifndef TILE_SET_H
 #define TILE_SET_H
 
-#include "core/array.h"
-#include "resource.h"
+#include "core/io/resource.h"
+#include "core/variant/array.h"
 #include "scene/2d/light_occluder_2d.h"
-#include "scene/2d/navigation_polygon.h"
+#include "scene/2d/navigation_region_2d.h"
+#include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/shape_2d.h"
 #include "scene/resources/texture.h"
 
 class TileSet : public Resource {
-
 	GDCLASS(TileSet, Resource);
 
 public:
@@ -47,11 +47,10 @@ public:
 		Ref<Shape2D> shape;
 		Transform2D shape_transform;
 		Vector2 autotile_coord;
-		bool one_way_collision;
+		bool one_way_collision = false;
+		float one_way_collision_margin = 1.0;
 
-		ShapeData() {
-			one_way_collision = false;
-		}
+		ShapeData() {}
 	};
 
 	enum BitmaskMode {
@@ -69,7 +68,17 @@ public:
 		BIND_RIGHT = 32,
 		BIND_BOTTOMLEFT = 64,
 		BIND_BOTTOM = 128,
-		BIND_BOTTOMRIGHT = 256
+		BIND_BOTTOMRIGHT = 256,
+
+		BIND_IGNORE_TOPLEFT = 1 << 16,
+		BIND_IGNORE_TOP = 1 << 17,
+		BIND_IGNORE_TOPRIGHT = 1 << 18,
+		BIND_IGNORE_LEFT = 1 << 19,
+		BIND_IGNORE_CENTER = 1 << 20,
+		BIND_IGNORE_RIGHT = 1 << 21,
+		BIND_IGNORE_BOTTOMLEFT = 1 << 22,
+		BIND_IGNORE_BOTTOM = 1 << 23,
+		BIND_IGNORE_BOTTOMRIGHT = 1 << 24
 	};
 
 	enum TileMode {
@@ -79,30 +88,24 @@ public:
 	};
 
 	struct AutotileData {
-		BitmaskMode bitmask_mode;
-		int spacing;
-		Size2 size;
-		Vector2 icon_coord;
-		Map<Vector2, uint16_t> flags;
-		Map<Vector2, Ref<OccluderPolygon2D> > occluder_map;
-		Map<Vector2, Ref<NavigationPolygon> > navpoly_map;
-		Map<Vector2, int> priority_map;
-
+		BitmaskMode bitmask_mode = BITMASK_2X2;
 		// Default size to prevent invalid value
-		explicit AutotileData() :
-				size(64, 64),
-				spacing(0),
-				icon_coord(0, 0) {
-			bitmask_mode = BITMASK_2X2;
-		}
+		Size2 size = Size2(64, 64);
+		Vector2 icon_coord = Vector2(0, 0);
+		int spacing = 0;
+		Map<Vector2, uint32_t> flags;
+		Map<Vector2, Ref<OccluderPolygon2D>> occluder_map;
+		Map<Vector2, Ref<NavigationPolygon>> navpoly_map;
+		Map<Vector2, int> priority_map;
+		Map<Vector2, int> z_index_map;
+
+		explicit AutotileData() {}
 	};
 
 private:
 	struct TileData {
-
 		String name;
-		Ref<Texture> texture;
-		Ref<Texture> normal_map;
+		Ref<Texture2D> texture;
 		Vector2 offset;
 		Rect2i region;
 		Vector<ShapeData> shapes_data;
@@ -111,16 +114,13 @@ private:
 		Vector2 navigation_polygon_offset;
 		Ref<NavigationPolygon> navigation_polygon;
 		Ref<ShaderMaterial> material;
-		Color modulate;
-		TileMode tile_mode;
-		AutotileData autotile_data;
-		int z_index;
-
+		TileMode tile_mode = SINGLE_TILE;
 		// Default modulate for back-compat
-		explicit TileData() :
-				tile_mode(SINGLE_TILE),
-				modulate(1, 1, 1),
-				z_index(0) {}
+		Color modulate = Color(1, 1, 1);
+		AutotileData autotile_data;
+		int z_index = 0;
+
+		explicit TileData() {}
 	};
 
 	Map<int, TileData> tile_map;
@@ -132,6 +132,7 @@ protected:
 	void _tile_set_shapes(int p_id, const Array &p_shapes);
 	Array _tile_get_shapes(int p_id) const;
 	Array _get_tiles_ids() const;
+	void _decompose_convex_shape(Ref<Shape2D> p_shape);
 
 	static void _bind_methods();
 
@@ -144,11 +145,8 @@ public:
 	void tile_set_name(int p_id, const String &p_name);
 	String tile_get_name(int p_id) const;
 
-	void tile_set_texture(int p_id, const Ref<Texture> &p_texture);
-	Ref<Texture> tile_get_texture(int p_id) const;
-
-	void tile_set_normal_map(int p_id, const Ref<Texture> &p_normal_map);
-	Ref<Texture> tile_get_normal_map(int p_id) const;
+	void tile_set_texture(int p_id, const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> tile_get_texture(int p_id) const;
 
 	void tile_set_texture_offset(int p_id, const Vector2 &p_offset);
 	Vector2 tile_get_texture_offset(int p_id) const;
@@ -173,10 +171,15 @@ public:
 	int autotile_get_subtile_priority(int p_id, const Vector2 &p_coord);
 	const Map<Vector2, int> &autotile_get_priority_map(int p_id) const;
 
-	void autotile_set_bitmask(int p_id, Vector2 p_coord, uint16_t p_flag);
-	uint16_t autotile_get_bitmask(int p_id, Vector2 p_coord);
-	const Map<Vector2, uint16_t> &autotile_get_bitmask_map(int p_id);
-	Vector2 autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, const Node *p_tilemap_node = NULL, const Vector2 &p_tile_location = Vector2());
+	void autotile_set_z_index(int p_id, const Vector2 &p_coord, int p_z_index);
+	int autotile_get_z_index(int p_id, const Vector2 &p_coord);
+	const Map<Vector2, int> &autotile_get_z_index_map(int p_id) const;
+
+	void autotile_set_bitmask(int p_id, Vector2 p_coord, uint32_t p_flag);
+	uint32_t autotile_get_bitmask(int p_id, Vector2 p_coord);
+	const Map<Vector2, uint32_t> &autotile_get_bitmask_map(int p_id);
+	Vector2 autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, const Node *p_tilemap_node = nullptr, const Vector2 &p_tile_location = Vector2());
+	Vector2 atlastile_get_subtile_by_priority(int p_id, const Node *p_tilemap_node = nullptr, const Vector2 &p_tile_location = Vector2());
 
 	void tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_shape);
 	Ref<Shape2D> tile_get_shape(int p_id, int p_shape_id) const;
@@ -189,6 +192,9 @@ public:
 
 	void tile_set_shape_one_way(int p_id, int p_shape_id, bool p_one_way);
 	bool tile_get_shape_one_way(int p_id, int p_shape_id) const;
+
+	void tile_set_shape_one_way_margin(int p_id, int p_shape_id, float p_margin);
+	float tile_get_shape_one_way_margin(int p_id, int p_shape_id) const;
 
 	void tile_clear_shapes(int p_id);
 	void tile_add_shape(int p_id, const Ref<Shape2D> &p_shape, const Transform2D &p_transform, bool p_one_way = false, const Vector2 &p_autotile_coord = Vector2());
@@ -211,7 +217,7 @@ public:
 
 	void autotile_set_light_occluder(int p_id, const Ref<OccluderPolygon2D> &p_light_occluder, const Vector2 &p_coord);
 	Ref<OccluderPolygon2D> autotile_get_light_occluder(int p_id, const Vector2 &p_coord) const;
-	const Map<Vector2, Ref<OccluderPolygon2D> > &autotile_get_light_oclusion_map(int p_id) const;
+	const Map<Vector2, Ref<OccluderPolygon2D>> &autotile_get_light_oclusion_map(int p_id) const;
 
 	void tile_set_navigation_polygon_offset(int p_id, const Vector2 &p_offset);
 	Vector2 tile_get_navigation_polygon_offset(int p_id) const;
@@ -221,7 +227,7 @@ public:
 
 	void autotile_set_navigation_polygon(int p_id, const Ref<NavigationPolygon> &p_navigation_polygon, const Vector2 &p_coord);
 	Ref<NavigationPolygon> autotile_get_navigation_polygon(int p_id, const Vector2 &p_coord) const;
-	const Map<Vector2, Ref<NavigationPolygon> > &autotile_get_navigation_map(int p_id) const;
+	const Map<Vector2, Ref<NavigationPolygon>> &autotile_get_navigation_map(int p_id) const;
 
 	void tile_set_z_index(int p_id, int p_z_index);
 	int tile_get_z_index(int p_id) const;

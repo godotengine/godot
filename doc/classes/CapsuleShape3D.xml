@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CapsuleShape3D" inherits="Shape3D" version="4.0">
+	<brief_description>
+		Capsule shape for collisions.
+	</brief_description>
+	<description>
+		Capsule shape for collisions.
+	</description>
+	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="1.0">
+			The capsule's height.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+			The capsule's radius.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

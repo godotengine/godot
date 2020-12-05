@@ -1,32 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CylinderMesh" inherits="PrimitiveMesh" category="Core" version="3.1">
+<class name="CylinderMesh" inherits="PrimitiveMesh" version="4.0">
 	<brief_description>
 		Class representing a cylindrical [PrimitiveMesh].
 	</brief_description>
 	<description>
-		Class representing a cylindrical [PrimitiveMesh].
+		Class representing a cylindrical [PrimitiveMesh]. This class can be used to create cones by setting either the [member top_radius] or [member bottom_radius] properties to 0.0.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="bottom_radius" type="float" setter="set_bottom_radius" getter="get_bottom_radius">
-			Bottom radius of the cylinder. Defaults to 1.0.
+		<member name="bottom_radius" type="float" setter="set_bottom_radius" getter="get_bottom_radius" default="1.0">
+			Bottom radius of the cylinder.
 		</member>
-		<member name="height" type="float" setter="set_height" getter="get_height">
-			Full height of the cylinder. Defaults to 2.0.
+		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
+			Full height of the cylinder.
 		</member>
-		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments">
-			Number of radial segments on the cylinder. Defaults to 64.
+		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" default="64">
+			Number of radial segments on the cylinder.
 		</member>
-		<member name="rings" type="int" setter="set_rings" getter="get_rings">
-			Number of edge rings along the height of the cylinder. Defaults to 4.
+		<member name="rings" type="int" setter="set_rings" getter="get_rings" default="4">
+			Number of edge rings along the height of the cylinder.
 		</member>
-		<member name="top_radius" type="float" setter="set_top_radius" getter="get_top_radius">
-			Top radius of the cylinder. Defaults to 1.0.
+		<member name="top_radius" type="float" setter="set_top_radius" getter="get_top_radius" default="1.0">
+			Top radius of the cylinder.
 		</member>
 	</members>
 	<constants>

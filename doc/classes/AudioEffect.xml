@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffect" inherits="Resource" category="Core" version="3.1">
+<class name="AudioEffect" inherits="Resource" version="4.0">
 	<brief_description>
-		Audio Effect For Audio.
+		Audio effect for audio.
 	</brief_description>
 	<description>
 		Base resource for audio bus. Applies an audio effect on the bus that the resource is applied on.
 	</description>
 	<tutorials>
+		<link title="Audio Mic Record Demo">https://godotengine.org/asset-library/asset/527</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<constants>

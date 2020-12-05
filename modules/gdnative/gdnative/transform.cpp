@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,13 @@
 #include "gdnative/transform.h"
 
 #include "core/math/transform.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static_assert(sizeof(godot_transform) == sizeof(Transform), "Transform size mismatch");
 
 void GDAPI godot_transform_new_with_axis_origin(godot_transform *r_dest, const godot_vector3 *p_x_axis, const godot_vector3 *p_y_axis, const godot_vector3 *p_z_axis, const godot_vector3 *p_origin) {
 	const Vector3 *x_axis = (const Vector3 *)p_x_axis;
@@ -54,6 +56,12 @@ void GDAPI godot_transform_new(godot_transform *r_dest, const godot_basis *p_bas
 	const Vector3 *origin = (const Vector3 *)p_origin;
 	Transform *dest = (Transform *)r_dest;
 	*dest = Transform(*basis, *origin);
+}
+
+void GDAPI godot_transform_new_with_quat(godot_transform *r_dest, const godot_quat *p_quat) {
+	const Quat *quat = (const Quat *)p_quat;
+	Transform *dest = (Transform *)r_dest;
+	*dest = Transform(*quat);
 }
 
 godot_basis GDAPI godot_transform_get_basis(const godot_transform *p_self) {

@@ -5,8 +5,14 @@
  *
  * \author Daniel King <damaki.gh@gmail.com>
  *
- *  Copyright (C) 2006-2016, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -20,7 +26,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -53,15 +78,21 @@
 #define inline __inline
 #endif
 
+/* Parameter validation macros */
+#define CHACHA20_VALIDATE_RET( cond )                                       \
+    MBEDTLS_INTERNAL_VALIDATE_RET( cond, MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA )
+#define CHACHA20_VALIDATE( cond )                                           \
+    MBEDTLS_INTERNAL_VALIDATE( cond )
+
 #define BYTES_TO_U32_LE( data, offset )                           \
-    ( (uint32_t) data[offset]                                     \
-          | (uint32_t) ( (uint32_t) data[( offset ) + 1] << 8 )   \
-          | (uint32_t) ( (uint32_t) data[( offset ) + 2] << 16 )  \
-          | (uint32_t) ( (uint32_t) data[( offset ) + 3] << 24 )  \
+    ( (uint32_t) (data)[offset]                                   \
+      | (uint32_t) ( (uint32_t) (data)[( offset ) + 1] << 8 )     \
+      | (uint32_t) ( (uint32_t) (data)[( offset ) + 2] << 16 )    \
+      | (uint32_t) ( (uint32_t) (data)[( offset ) + 3] << 24 )    \
     )
 
 #define ROTL32( value, amount ) \
-        ( (uint32_t) ( value << amount ) | ( value >> ( 32 - amount ) ) )
+    ( (uint32_t) ( (value) << (amount) ) | ( (value) >> ( 32 - (amount) ) ) )
 
 #define CHACHA20_CTR_INDEX ( 12U )
 
@@ -181,14 +212,13 @@ static void chacha20_block( const uint32_t initial_state[16],
 
 void mbedtls_chacha20_init( mbedtls_chacha20_context *ctx )
 {
-    if( ctx != NULL )
-    {
-        mbedtls_platform_zeroize( ctx->state, sizeof( ctx->state ) );
-        mbedtls_platform_zeroize( ctx->keystream8, sizeof( ctx->keystream8 ) );
+    CHACHA20_VALIDATE( ctx != NULL );
 
-        /* Initially, there's no keystream bytes available */
-        ctx->keystream_bytes_used = CHACHA20_BLOCK_SIZE_BYTES;
-    }
+    mbedtls_platform_zeroize( ctx->state, sizeof( ctx->state ) );
+    mbedtls_platform_zeroize( ctx->keystream8, sizeof( ctx->keystream8 ) );
+
+    /* Initially, there's no keystream bytes available */
+    ctx->keystream_bytes_used = CHACHA20_BLOCK_SIZE_BYTES;
 }
 
 void mbedtls_chacha20_free( mbedtls_chacha20_context *ctx )
@@ -202,10 +232,8 @@ void mbedtls_chacha20_free( mbedtls_chacha20_context *ctx )
 int mbedtls_chacha20_setkey( mbedtls_chacha20_context *ctx,
                             const unsigned char key[32] )
 {
-    if( ( ctx == NULL ) || ( key == NULL ) )
-    {
-        return( MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA );
-    }
+    CHACHA20_VALIDATE_RET( ctx != NULL );
+    CHACHA20_VALIDATE_RET( key != NULL );
 
     /* ChaCha20 constants - the string "expand 32-byte k" */
     ctx->state[0] = 0x61707865;
@@ -230,10 +258,8 @@ int mbedtls_chacha20_starts( mbedtls_chacha20_context* ctx,
                              const unsigned char nonce[12],
                              uint32_t counter )
 {
-    if( ( ctx == NULL ) || ( nonce == NULL ) )
-    {
-        return( MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA );
-    }
+    CHACHA20_VALIDATE_RET( ctx != NULL );
+    CHACHA20_VALIDATE_RET( nonce != NULL );
 
     /* Counter */
     ctx->state[12] = counter;
@@ -259,15 +285,9 @@ int mbedtls_chacha20_update( mbedtls_chacha20_context *ctx,
     size_t offset = 0U;
     size_t i;
 
-    if( ctx == NULL )
-    {
-        return( MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA );
-    }
-    else if( ( size > 0U ) && ( ( input == NULL ) || ( output == NULL ) ) )
-    {
-        /* input and output pointers are allowed to be NULL only if size == 0 */
-        return( MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA );
-    }
+    CHACHA20_VALIDATE_RET( ctx != NULL );
+    CHACHA20_VALIDATE_RET( size == 0 || input  != NULL );
+    CHACHA20_VALIDATE_RET( size == 0 || output != NULL );
 
     /* Use leftover keystream bytes, if available */
     while( size > 0U && ctx->keystream_bytes_used < CHACHA20_BLOCK_SIZE_BYTES )
@@ -331,6 +351,11 @@ int mbedtls_chacha20_crypt( const unsigned char key[32],
 {
     mbedtls_chacha20_context ctx;
     int ret;
+
+    CHACHA20_VALIDATE_RET( key != NULL );
+    CHACHA20_VALIDATE_RET( nonce != NULL );
+    CHACHA20_VALIDATE_RET( data_len == 0 || input  != NULL );
+    CHACHA20_VALIDATE_RET( data_len == 0 || output != NULL );
 
     mbedtls_chacha20_init( &ctx );
 

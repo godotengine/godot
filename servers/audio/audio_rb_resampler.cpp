@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,13 +30,13 @@
 
 #include "audio_rb_resampler.h"
 #include "core/math/math_funcs.h"
-#include "os/os.h"
+#include "core/os/os.h"
 #include "servers/audio_server.h"
 
 int AudioRBResampler::get_channel_count() const {
-
-	if (!rb)
+	if (!rb) {
 		return 0;
+	}
 
 	return channels;
 }
@@ -46,11 +46,9 @@ int AudioRBResampler::get_channel_count() const {
 // but it wasn't obvious to integrate that with VideoPlayer
 template <int C>
 uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_increment) {
-
 	uint32_t read = offset & MIX_FRAC_MASK;
 
 	for (int i = 0; i < p_todo; i++) {
-
 		offset = (offset + p_increment) & (((1 << (rb_bits + MIX_FRAC_BITS)) - 1));
 		read += p_increment;
 		uint32_t pos = offset >> MIX_FRAC_BITS;
@@ -60,7 +58,6 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 
 		// since this is a template with a known compile time value (C), conditionals go away when compiling.
 		if (C == 1) {
-
 			float v0 = rb[pos];
 			float v0n = rb[pos_next];
 			v0 += (v0n - v0) * frac;
@@ -68,7 +65,6 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 		}
 
 		if (C == 2) {
-
 			float v0 = rb[(pos << 1) + 0];
 			float v1 = rb[(pos << 1) + 1];
 			float v0n = rb[(pos_next << 1) + 0];
@@ -79,42 +75,25 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 			p_dest[i] = AudioFrame(v0, v1);
 		}
 
-		// For now, channels higher than stereo are almost ignored
+		// This will probably never be used, but added anyway
 		if (C == 4) {
-
 			float v0 = rb[(pos << 2) + 0];
 			float v1 = rb[(pos << 2) + 1];
-			float v2 = rb[(pos << 2) + 2];
-			float v3 = rb[(pos << 2) + 3];
 			float v0n = rb[(pos_next << 2) + 0];
 			float v1n = rb[(pos_next << 2) + 1];
-			float v2n = rb[(pos_next << 2) + 2];
-			float v3n = rb[(pos_next << 2) + 3];
-
 			v0 += (v0n - v0) * frac;
 			v1 += (v1n - v1) * frac;
-			v2 += (v2n - v2) * frac;
-			v3 += (v3n - v3) * frac;
 			p_dest[i] = AudioFrame(v0, v1);
 		}
 
 		if (C == 6) {
-
-			// FIXME: Lot of unused assignments here, but it seems like intermediate calculations
-			// should be done as for C == 2 (C == 4 also has some unused assignments).
 			float v0 = rb[(pos * 6) + 0];
 			float v1 = rb[(pos * 6) + 1];
-			float v2 = rb[(pos * 6) + 2];
-			float v3 = rb[(pos * 6) + 3];
-			float v4 = rb[(pos * 6) + 4];
-			float v5 = rb[(pos * 6) + 5];
 			float v0n = rb[(pos_next * 6) + 0];
 			float v1n = rb[(pos_next * 6) + 1];
-			float v2n = rb[(pos_next * 6) + 2];
-			float v3n = rb[(pos_next * 6) + 3];
-			float v4n = rb[(pos_next * 6) + 4];
-			float v5n = rb[(pos_next * 6) + 5];
 
+			v0 += (v0n - v0) * frac;
+			v1 += (v1n - v1) * frac;
 			p_dest[i] = AudioFrame(v0, v1);
 		}
 	}
@@ -123,9 +102,9 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 }
 
 bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
-
-	if (!rb)
+	if (!rb) {
 		return false;
+	}
 
 	int32_t increment = (src_mix_rate * MIX_FRAC_LEN) / target_mix_rate;
 	int read_space = get_reader_space();
@@ -134,14 +113,23 @@ bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
 	{
 		int src_read = 0;
 		switch (channels) {
-			case 1: src_read = _resample<1>(p_dest, target_todo, increment); break;
-			case 2: src_read = _resample<2>(p_dest, target_todo, increment); break;
-			case 4: src_read = _resample<4>(p_dest, target_todo, increment); break;
-			case 6: src_read = _resample<6>(p_dest, target_todo, increment); break;
+			case 1:
+				src_read = _resample<1>(p_dest, target_todo, increment);
+				break;
+			case 2:
+				src_read = _resample<2>(p_dest, target_todo, increment);
+				break;
+			case 4:
+				src_read = _resample<4>(p_dest, target_todo, increment);
+				break;
+			case 6:
+				src_read = _resample<6>(p_dest, target_todo, increment);
+				break;
 		}
 
-		if (src_read > read_space)
+		if (src_read > read_space) {
 			src_read = read_space;
+		}
 
 		rb_read_pos = (rb_read_pos + src_read) & rb_mask;
 
@@ -153,7 +141,7 @@ bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
 		}
 
 		// Fill zeros (silence) for the rest of frames
-		for (uint32_t i = target_todo; i < p_frames; i++) {
+		for (int i = target_todo; i < p_frames; i++) {
 			p_dest[i] = AudioFrame(0, 0);
 		}
 	}
@@ -162,15 +150,15 @@ bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
 }
 
 int AudioRBResampler::get_num_of_ready_frames() {
-	if (!is_ready())
+	if (!is_ready()) {
 		return 0;
+	}
 	int32_t increment = (src_mix_rate * MIX_FRAC_LEN) / target_mix_rate;
 	int read_space = get_reader_space();
 	return (int64_t(read_space) << MIX_FRAC_BITS) / increment;
 }
 
 Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_mix_rate, int p_buffer_msec, int p_minbuff_needed) {
-
 	ERR_FAIL_COND_V(p_channels != 1 && p_channels != 2 && p_channels != 4 && p_channels != 6, ERR_INVALID_PARAMETER);
 
 	int desired_rb_bits = nearest_shift(MAX((p_buffer_msec / 1000.0) * p_src_mix_rate, p_minbuff_needed));
@@ -178,14 +166,12 @@ Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_m
 	bool recreate = !rb;
 
 	if (rb && (uint32_t(desired_rb_bits) != rb_bits || channels != uint32_t(p_channels))) {
-
 		memdelete_arr(rb);
 		memdelete_arr(read_buf);
 		recreate = true;
 	}
 
 	if (recreate) {
-
 		channels = p_channels;
 		rb_bits = desired_rb_bits;
 		rb_len = (1 << rb_bits);
@@ -202,7 +188,6 @@ Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_m
 
 	//avoid maybe strange noises upon load
 	for (unsigned int i = 0; i < (rb_len * channels); i++) {
-
 		rb[i] = 0;
 		read_buf[i] = 0;
 	}
@@ -211,27 +196,24 @@ Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_m
 }
 
 void AudioRBResampler::clear() {
-
-	if (!rb)
+	if (!rb) {
 		return;
+	}
 
 	//should be stopped at this point but just in case
-	if (rb) {
-		memdelete_arr(rb);
-		memdelete_arr(read_buf);
-	}
-	rb = NULL;
+	memdelete_arr(rb);
+	memdelete_arr(read_buf);
+	rb = nullptr;
 	offset = 0;
 	rb_read_pos = 0;
 	rb_write_pos = 0;
-	read_buf = NULL;
+	read_buf = nullptr;
 }
 
 AudioRBResampler::AudioRBResampler() {
-
-	rb = NULL;
+	rb = nullptr;
 	offset = 0;
-	read_buf = NULL;
+	read_buf = nullptr;
 	rb_read_pos = 0;
 	rb_write_pos = 0;
 
@@ -245,7 +227,6 @@ AudioRBResampler::AudioRBResampler() {
 }
 
 AudioRBResampler::~AudioRBResampler() {
-
 	if (rb) {
 		memdelete_arr(rb);
 		memdelete_arr(read_buf);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,7 +52,7 @@ class DependencyEditor : public AcceptDialog {
 	String editing;
 	List<String> missing;
 
-	void _fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String> > &candidates);
+	void _fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String>> &candidates);
 
 	void _searched(const String &p_path);
 	void _load_pressed(Object *p_item, int p_cell, int p_button);
@@ -63,7 +63,6 @@ class DependencyEditor : public AcceptDialog {
 
 protected:
 	static void _bind_methods();
-	void _notification(int p_what);
 
 public:
 	void edit(const String &p_path);
@@ -124,7 +123,9 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 	void _find_all_removed_dependencies(EditorFileSystemDirectory *efsd, Vector<RemovedDependency> &p_removed);
 	void _build_removed_dependency_tree(const Vector<RemovedDependency> &p_removed);
 
-	void ok_pressed();
+	void ok_pressed() override;
+
+	static void _bind_methods();
 
 public:
 	void show(const Vector<String> &p_folders, const Vector<String> &p_files);
@@ -134,15 +135,23 @@ public:
 class DependencyErrorDialog : public ConfirmationDialog {
 	GDCLASS(DependencyErrorDialog, ConfirmationDialog);
 
+public:
+	enum Mode {
+		MODE_SCENE,
+		MODE_RESOURCE,
+	};
+
+private:
 	String for_file;
+	Mode mode;
 	Button *fdep;
 	Label *text;
 	Tree *files;
-	void ok_pressed();
-	void custom_action(const String &);
+	void ok_pressed() override;
+	void custom_action(const String &) override;
 
 public:
-	void show(const String &p_for_file, const Vector<String> &report);
+	void show(Mode p_mode, const String &p_for_file, const Vector<String> &report);
 	DependencyErrorDialog();
 };
 
@@ -152,7 +161,7 @@ class OrphanResourcesDialog : public ConfirmationDialog {
 	DependencyEditor *dep_edit;
 	Tree *files;
 	ConfirmationDialog *delete_confirm;
-	void ok_pressed();
+	void ok_pressed() override;
 
 	bool _fill_owners(EditorFileSystemDirectory *efsd, HashMap<String, int> &refs, TreeItem *p_parent);
 

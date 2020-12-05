@@ -1,59 +1,34 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SurfaceTool" inherits="Reference" category="Core" version="3.1">
+<class name="SurfaceTool" inherits="Reference" version="4.0">
 	<brief_description>
 		Helper tool to create geometry.
 	</brief_description>
 	<description>
-		The [code]SurfaceTool[/code] is used to construct a [Mesh] by specifying vertex attributes individually. It can be used to construct a [Mesh] from script. All properties except index need to be added before a call to [method add_vertex]. For example adding vertex colors and UVs looks like
+		The [SurfaceTool] is used to construct a [Mesh] by specifying vertex attributes individually. It can be used to construct a [Mesh] from a script. All properties except indices need to be added before calling [method add_vertex]. For example, to add vertex colors and UVs:
 		[codeblock]
 		var st = SurfaceTool.new()
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
-		st.add_color(Color(1, 0, 0))
-		st.add_uv(Vector2(0, 0))
-		st.add_vertex(Vector3(0, 0, 0))
+		st.set_color(Color(1, 0, 0))
+		st.set_uv(Vector2(0, 0))
+		st.set_vertex(Vector3(0, 0, 0))
 		[/codeblock]
-		The [code]SurfaceTool[/code] now contains one vertex of a triangle which has a UV coordinate and a specified [Color]. If another vertex were added without calls to [method add_uv] or [method add_color] then the last values would be used.
-		It is very important that vertex attributes are passed [b]before[/b] the call to [method add_vertex], failure to do this will result in an error when committing the vertex information to a mesh.
+		The above [SurfaceTool] now contains one vertex of a triangle which has a UV coordinate and a specified [Color]. If another vertex were added without calling [method set_uv] or [method set_color], then the last values would be used.
+		Vertex attributes must be passed [b]before[/b] calling [method add_vertex]. Failure to do so will result in an error when committing the vertex information to a mesh.
+		Additionally, the attributes used before the first vertex is added determine the format of the mesh. For example, if you only add UVs to the first vertex, you cannot add color to any of the subsequent vertices.
+		See also [ArrayMesh], [ImmediateGeometry3D] and [MeshDataTool] for procedural geometry generation.
+		[b]Note:[/b] Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.
 	</description>
 	<tutorials>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
-		<method name="add_bones">
-			<return type="void">
-			</return>
-			<argument index="0" name="bones" type="PoolIntArray">
-			</argument>
-			<description>
-				Add an array of bones for the next Vertex to use.
-			</description>
-		</method>
-		<method name="add_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="color" type="Color">
-			</argument>
-			<description>
-				Specify a [Color] for the next Vertex to use.
-			</description>
-		</method>
 		<method name="add_index">
 			<return type="void">
 			</return>
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Adds an index to index array if you are using indexed Vertices. Does not need to be called before adding Vertex.
-			</description>
-		</method>
-		<method name="add_normal">
-			<return type="void">
-			</return>
-			<argument index="0" name="normal" type="Vector3">
-			</argument>
-			<description>
-				Specify a normal for the next Vertex to use.
+				Adds an index to index array if you are using indexed vertices. Does not need to be called before adding vertices.
 			</description>
 		</method>
 		<method name="add_smooth_group">
@@ -62,61 +37,27 @@
 			<argument index="0" name="smooth" type="bool">
 			</argument>
 			<description>
-				Specify whether current Vertex (if using only Vertex arrays) or current index (if also using index arrays) should utilize smooth normals for normal calculation.
-			</description>
-		</method>
-		<method name="add_tangent">
-			<return type="void">
-			</return>
-			<argument index="0" name="tangent" type="Plane">
-			</argument>
-			<description>
-				Specify a Tangent for the next Vertex to use.
-			</description>
-		</method>
-		<method name="add_to_format">
-			<return type="void">
-			</return>
-			<argument index="0" name="flags" type="int">
-			</argument>
-			<description>
+				Specifies whether the current vertex (if using only vertex arrays) or current index (if also using index arrays) should use smooth normals for normal calculation.
 			</description>
 		</method>
 		<method name="add_triangle_fan">
 			<return type="void">
 			</return>
-			<argument index="0" name="vertexes" type="PoolVector3Array">
+			<argument index="0" name="vertices" type="PackedVector3Array">
 			</argument>
-			<argument index="1" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
+			<argument index="1" name="uvs" type="PackedVector2Array" default="PackedVector2Array(  )">
 			</argument>
-			<argument index="2" name="colors" type="PoolColorArray" default="PoolColorArray(  )">
+			<argument index="2" name="colors" type="PackedColorArray" default="PackedColorArray(  )">
 			</argument>
-			<argument index="3" name="uv2s" type="PoolVector2Array" default="PoolVector2Array(  )">
+			<argument index="3" name="uv2s" type="PackedVector2Array" default="PackedVector2Array(  )">
 			</argument>
-			<argument index="4" name="normals" type="PoolVector3Array" default="PoolVector3Array(  )">
+			<argument index="4" name="normals" type="PackedVector3Array" default="PackedVector3Array(  )">
 			</argument>
 			<argument index="5" name="tangents" type="Array" default="[  ]">
 			</argument>
 			<description>
-				Insert a triangle fan made of array data into [Mesh] being constructed.
-			</description>
-		</method>
-		<method name="add_uv">
-			<return type="void">
-			</return>
-			<argument index="0" name="uv" type="Vector2">
-			</argument>
-			<description>
-				Specify UV Coordinate for next Vertex to use.
-			</description>
-		</method>
-		<method name="add_uv2">
-			<return type="void">
-			</return>
-			<argument index="0" name="uv2" type="Vector2">
-			</argument>
-			<description>
-				Specify an optional second set of UV coordinates for next Vertex to use.
+				Inserts a triangle fan made of array data into [Mesh] being constructed.
+				Requires the primitive type be set to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
 		<method name="add_vertex">
@@ -125,16 +66,7 @@
 			<argument index="0" name="vertex" type="Vector3">
 			</argument>
 			<description>
-				Specify position of current Vertex. Should be called after specifying other vertex properties (e.g. Color, UV).
-			</description>
-		</method>
-		<method name="add_weights">
-			<return type="void">
-			</return>
-			<argument index="0" name="weights" type="PoolRealArray">
-			</argument>
-			<description>
-				Specify weight value for next Vertex to use.
+				Specifies the position of current vertex. Should be called after specifying other vertex properties (e.g. Color, UV).
 			</description>
 		</method>
 		<method name="append_from">
@@ -147,6 +79,7 @@
 			<argument index="2" name="transform" type="Transform">
 			</argument>
 			<description>
+				Append vertices from a given [Mesh] surface onto the current vertex array with specified [Transform].
 			</description>
 		</method>
 		<method name="begin">
@@ -155,7 +88,7 @@
 			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType">
 			</argument>
 			<description>
-				Called before adding any Vertices. Takes the primitive type as an argument (e.g. Mesh.PRIMITIVE_TRIANGLES).
+				Called before adding any vertices. Takes the primitive type as an argument (e.g. [constant Mesh.PRIMITIVE_TRIANGLES]).
 			</description>
 		</method>
 		<method name="clear">
@@ -170,10 +103,18 @@
 			</return>
 			<argument index="0" name="existing" type="ArrayMesh" default="null">
 			</argument>
-			<argument index="1" name="flags" type="int" default="97280">
+			<argument index="1" name="flags" type="int" default="0">
 			</argument>
 			<description>
 				Returns a constructed [ArrayMesh] from current information passed in. If an existing [ArrayMesh] is passed in as an argument, will add an extra surface to the existing [ArrayMesh].
+				[b]FIXME:[/b] Document possible values for [code]flags[/code], it changed in 4.0. Likely some combinations of [enum Mesh.ArrayFormat].
+			</description>
+		</method>
+		<method name="commit_to_arrays">
+			<return type="Array">
+			</return>
+			<description>
+				Commits the data to the same format used by [method ArrayMesh.add_surface_from_arrays]. This way you can further process the mesh data using the [ArrayMesh] API.
 			</description>
 		</method>
 		<method name="create_from">
@@ -184,13 +125,27 @@
 			<argument index="1" name="surface" type="int">
 			</argument>
 			<description>
+				Creates a vertex array from an existing [Mesh].
+			</description>
+		</method>
+		<method name="create_from_blend_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="existing" type="Mesh">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<argument index="2" name="blend_shape" type="String">
+			</argument>
+			<description>
+				Creates a vertex array from the specified blend shape of an existing [Mesh]. This can be used to extract a specific pose from a blend shape.
 			</description>
 		</method>
 		<method name="deindex">
 			<return type="void">
 			</return>
 			<description>
-				Removes index array by expanding Vertex array.
+				Removes the index array by expanding the vertex array.
 			</description>
 		</method>
 		<method name="generate_normals">
@@ -199,12 +154,27 @@
 			<argument index="0" name="flip" type="bool" default="false">
 			</argument>
 			<description>
-				Generates normals from Vertices so you do not have to do it manually.
-				Setting "flip" [code]true[/code] inverts resulting normals.
+				Generates normals from vertices so you do not have to do it manually. If [code]flip[/code] is [code]true[/code], the resulting normals will be inverted.
+				Requires the primitive type to be set to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
 		<method name="generate_tangents">
 			<return type="void">
+			</return>
+			<description>
+				Generates a tangent vector for each vertex. Requires that each vertex have UVs and normals set already.
+			</description>
+		</method>
+		<method name="get_custom_format" qualifiers="const">
+			<return type="int" enum="SurfaceTool.CustomFormat">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_skin_weight_count" qualifiers="const">
+			<return type="int" enum="SurfaceTool.SkinWeightCount">
 			</return>
 			<description>
 			</description>
@@ -213,7 +183,46 @@
 			<return type="void">
 			</return>
 			<description>
-				Shrinks Vertex array by creating an index array. Avoids reusing Vertices.
+				Shrinks the vertex array by creating an index array (avoids reusing vertices).
+			</description>
+		</method>
+		<method name="set_bones">
+			<return type="void">
+			</return>
+			<argument index="0" name="bones" type="PackedInt32Array">
+			</argument>
+			<description>
+				Specifies an array of bones for the next vertex to use. [code]bones[/code] must contain 4 integers.
+			</description>
+		</method>
+		<method name="set_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Specifies a [Color] for the next vertex to use.
+				[b]Note:[/b] The material must have [member BaseMaterial3D.vertex_color_use_as_albedo] enabled for the vertex color to be visible.
+			</description>
+		</method>
+		<method name="set_custom">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="custom" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_format">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="format" type="int" enum="SurfaceTool.CustomFormat">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_material">
@@ -225,7 +234,82 @@
 				Sets [Material] to be used by the [Mesh] you are constructing.
 			</description>
 		</method>
+		<method name="set_normal">
+			<return type="void">
+			</return>
+			<argument index="0" name="normal" type="Vector3">
+			</argument>
+			<description>
+				Specifies a normal for the next vertex to use.
+			</description>
+		</method>
+		<method name="set_skin_weight_count">
+			<return type="void">
+			</return>
+			<argument index="0" name="count" type="int" enum="SurfaceTool.SkinWeightCount">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_tangent">
+			<return type="void">
+			</return>
+			<argument index="0" name="tangent" type="Plane">
+			</argument>
+			<description>
+				Specifies a tangent for the next vertex to use.
+			</description>
+		</method>
+		<method name="set_uv">
+			<return type="void">
+			</return>
+			<argument index="0" name="uv" type="Vector2">
+			</argument>
+			<description>
+				Specifies a set of UV coordinates to use for the next vertex.
+			</description>
+		</method>
+		<method name="set_uv2">
+			<return type="void">
+			</return>
+			<argument index="0" name="uv2" type="Vector2">
+			</argument>
+			<description>
+				Specifies an optional second set of UV coordinates to use for the next vertex.
+			</description>
+		</method>
+		<method name="set_weights">
+			<return type="void">
+			</return>
+			<argument index="0" name="weights" type="PackedFloat32Array">
+			</argument>
+			<description>
+				Specifies weight values for next vertex to use. [code]weights[/code] must contain 4 values.
+			</description>
+		</method>
 	</methods>
 	<constants>
+		<constant name="CUSTOM_RGBA8_UNORM" value="0" enum="CustomFormat">
+		</constant>
+		<constant name="CUSTOM_RGBA8_SNORM" value="1" enum="CustomFormat">
+		</constant>
+		<constant name="CUSTOM_RG_HALF" value="2" enum="CustomFormat">
+		</constant>
+		<constant name="CUSTOM_RGBA_HALF" value="3" enum="CustomFormat">
+		</constant>
+		<constant name="CUSTOM_R_FLOAT" value="4" enum="CustomFormat">
+		</constant>
+		<constant name="CUSTOM_RG_FLOAT" value="5" enum="CustomFormat">
+		</constant>
+		<constant name="CUSTOM_RGB_FLOAT" value="6" enum="CustomFormat">
+		</constant>
+		<constant name="CUSTOM_RGBA_FLOAT" value="7" enum="CustomFormat">
+		</constant>
+		<constant name="CUSTOM_MAX" value="8" enum="CustomFormat">
+		</constant>
+		<constant name="SKIN_4_WEIGHTS" value="0" enum="SkinWeightCount">
+		</constant>
+		<constant name="SKIN_8_WEIGHTS" value="1" enum="SkinWeightCount">
+		</constant>
 	</constants>
 </class>

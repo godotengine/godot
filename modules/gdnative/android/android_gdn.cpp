@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,8 @@
 // These entry points are only for the android platform and are simple stubs in all others.
 
 #ifdef __ANDROID__
+#include "platform/android/java_godot_wrapper.h"
+#include "platform/android/os_android.h"
 #include "platform/android/thread_jandroid.h"
 #else
 #define JNIEnv void
@@ -48,23 +50,34 @@ JNIEnv *GDAPI godot_android_get_env() {
 #ifdef __ANDROID__
 	return ThreadAndroid::get_env();
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
 jobject GDAPI godot_android_get_activity() {
 #ifdef __ANDROID__
-	JNIEnv *env = ThreadAndroid::get_env();
-
-	jclass activityThread = env->FindClass("android/app/ActivityThread");
-	jmethodID currentActivityThread = env->GetStaticMethodID(activityThread, "currentActivityThread", "()Landroid/app/ActivityThread;");
-	jobject at = env->CallStaticObjectMethod(activityThread, currentActivityThread);
-	jmethodID getApplication = env->GetMethodID(activityThread, "getApplication", "()Landroid/app/Application;");
-	jobject context = env->CallObjectMethod(at, getApplication);
-
-	return env->NewGlobalRef(context);
+	OS_Android *os_android = (OS_Android *)OS::get_singleton();
+	return os_android->get_godot_java()->get_activity();
 #else
-	return NULL;
+	return nullptr;
+#endif
+}
+
+jobject GDAPI godot_android_get_surface() {
+#ifdef __ANDROID__
+	OS_Android *os_android = (OS_Android *)OS::get_singleton();
+	return os_android->get_godot_java()->get_surface();
+#else
+	return nullptr;
+#endif
+}
+
+bool GDAPI godot_android_is_activity_resumed() {
+#ifdef __ANDROID__
+	OS_Android *os_android = (OS_Android *)OS::get_singleton();
+	return os_android->get_godot_java()->is_activity_resumed();
+#else
+	return false;
 #endif
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,15 +30,15 @@
 
 #include "register_types.h"
 
-#include "engine.h"
+#include "core/config/engine.h"
 
 #include "csharp_script.h"
 
-CSharpLanguage *script_language_cs = NULL;
-ResourceFormatLoaderCSharpScript *resource_loader_cs = NULL;
-ResourceFormatSaverCSharpScript *resource_saver_cs = NULL;
+CSharpLanguage *script_language_cs = nullptr;
+Ref<ResourceFormatLoaderCSharpScript> resource_loader_cs;
+Ref<ResourceFormatSaverCSharpScript> resource_saver_cs;
 
-_GodotSharp *_godotsharp = NULL;
+_GodotSharp *_godotsharp = nullptr;
 
 void register_mono_types() {
 	ClassDB::register_class<CSharpScript>();
@@ -52,22 +52,27 @@ void register_mono_types() {
 	script_language_cs->set_language_index(ScriptServer::get_language_count());
 	ScriptServer::register_language(script_language_cs);
 
-	resource_loader_cs = memnew(ResourceFormatLoaderCSharpScript);
+	resource_loader_cs.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_cs);
-	resource_saver_cs = memnew(ResourceFormatSaverCSharpScript);
+
+	resource_saver_cs.instance();
 	ResourceSaver::add_resource_format_saver(resource_saver_cs);
 }
 
 void unregister_mono_types() {
 	ScriptServer::unregister_language(script_language_cs);
 
-	if (script_language_cs)
+	if (script_language_cs) {
 		memdelete(script_language_cs);
-	if (resource_loader_cs)
-		memdelete(resource_loader_cs);
-	if (resource_saver_cs)
-		memdelete(resource_saver_cs);
+	}
 
-	if (_godotsharp)
+	ResourceLoader::remove_resource_format_loader(resource_loader_cs);
+	resource_loader_cs.unref();
+
+	ResourceSaver::remove_resource_format_saver(resource_saver_cs);
+	resource_saver_cs.unref();
+
+	if (_godotsharp) {
 		memdelete(_godotsharp);
+	}
 }

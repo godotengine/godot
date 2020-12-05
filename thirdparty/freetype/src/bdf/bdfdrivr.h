@@ -28,22 +28,17 @@ THE SOFTWARE.
 #ifndef BDFDRIVR_H_
 #define BDFDRIVR_H_
 
-#include <ft2build.h>
-#include FT_INTERNAL_DRIVER_H
+#include <freetype/internal/ftdrv.h>
 
 #include "bdf.h"
 
 
 FT_BEGIN_HEADER
 
-#ifdef FT_CONFIG_OPTION_PIC
-#error "this module does not support PIC yet"
-#endif
-
 
   typedef struct  BDF_encoding_el_
   {
-    FT_Long    enc;
+    FT_ULong   enc;
     FT_UShort  glyph;
 
   } BDF_encoding_el;
@@ -59,9 +54,6 @@ FT_BEGIN_HEADER
     bdf_font_t*       bdffont;
 
     BDF_encoding_el*  en_table;
-
-    FT_CharMap        charmap_handle;
-    FT_CharMapRec     charmap;  /* a single charmap per face */
 
     FT_UInt           default_glyph;
 

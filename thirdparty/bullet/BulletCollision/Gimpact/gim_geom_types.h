@@ -33,10 +33,7 @@ email: projectileman@yahoo.com
 -----------------------------------------------------------------------------
 */
 
-
 #include "gim_math.h"
-
-
 
 //! Short Integer vector 2D
 typedef GSHORT vec2s[2];
@@ -92,6 +89,4 @@ typedef GREAL quatf[4];
 
 //typedef struct _aabb3f aabb3f;
 
-
-
-#endif // GIM_GEOM_TYPES_H_INCLUDED
+#endif  // GIM_GEOM_TYPES_H_INCLUDED

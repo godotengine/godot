@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,15 +34,10 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/path_2d.h"
-#include "scene/gui/tool_button.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class CanvasItemEditor;
 
 class Path2DEditor : public HBoxContainer {
-
 	GDCLASS(Path2DEditor, HBoxContainer);
 
 	UndoRedo *undo_redo;
@@ -64,15 +59,16 @@ class Path2DEditor : public HBoxContainer {
 	};
 
 	Mode mode;
-	ToolButton *curve_create;
-	ToolButton *curve_edit;
-	ToolButton *curve_edit_curve;
-	ToolButton *curve_del;
-	ToolButton *curve_close;
+	Button *curve_create;
+	Button *curve_edit;
+	Button *curve_edit_curve;
+	Button *curve_del;
+	Button *curve_close;
 	MenuButton *handle_menu;
 
 	bool mirror_handle_angle;
 	bool mirror_handle_length;
+	bool on_edge;
 
 	enum HandleOption {
 		HANDLE_OPTION_ANGLE,
@@ -80,7 +76,6 @@ class Path2DEditor : public HBoxContainer {
 	};
 
 	enum Action {
-
 		ACTION_NONE,
 		ACTION_MOVING_POINT,
 		ACTION_MOVING_IN,
@@ -93,6 +88,7 @@ class Path2DEditor : public HBoxContainer {
 	Point2 moving_screen_from;
 	float orig_in_length;
 	float orig_out_length;
+	Vector2 edge_point;
 
 	void _mode_selected(int p_mode);
 	void _handle_option_pressed(int p_option);
@@ -107,27 +103,26 @@ protected:
 
 public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
-	void forward_draw_over_viewport(Control *p_overlay);
+	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void edit(Node *p_path2d);
 	Path2DEditor(EditorNode *p_editor);
 };
 
 class Path2DEditorPlugin : public EditorPlugin {
-
 	GDCLASS(Path2DEditorPlugin, EditorPlugin);
 
 	Path2DEditor *path2d_editor;
 	EditorNode *editor;
 
 public:
-	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return path2d_editor->forward_gui_input(p_event); }
-	virtual void forward_draw_over_viewport(Control *p_overlay) { return path2d_editor->forward_draw_over_viewport(p_overlay); }
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return path2d_editor->forward_gui_input(p_event); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { path2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
-	virtual String get_name() const { return "Path2D"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "Path2D"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	Path2DEditorPlugin(EditorNode *p_node);
 	~Path2DEditorPlugin();

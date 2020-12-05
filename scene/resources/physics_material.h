@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,22 +27,22 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef physics_material_override_H
-#define physics_material_override_H
 
-#include "resource.h"
-#include "servers/physics_server.h"
+#ifndef PHYSICS_MATERIAL_H
+#define PHYSICS_MATERIAL_H
+
+#include "core/io/resource.h"
+#include "servers/physics_server_3d.h"
 
 class PhysicsMaterial : public Resource {
-
 	GDCLASS(PhysicsMaterial, Resource);
 	OBJ_SAVE_TYPE(PhysicsMaterial);
-	RES_BASE_EXTENSION("PhyMat");
+	RES_BASE_EXTENSION("phymat");
 
-	real_t friction;
-	bool rough;
-	real_t bounce;
-	bool absorbent;
+	real_t friction = 1;
+	bool rough = false;
+	real_t bounce = 0;
+	bool absorbent = false;
 
 protected:
 	static void _bind_methods();
@@ -68,7 +68,7 @@ public:
 		return absorbent ? -bounce : bounce;
 	}
 
-	PhysicsMaterial();
+	PhysicsMaterial() {}
 };
 
-#endif // physics_material_override_H
+#endif // PHYSICS_MATERIAL_H

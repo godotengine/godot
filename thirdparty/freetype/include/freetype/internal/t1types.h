@@ -1,32 +1,31 @@
-/***************************************************************************/
-/*                                                                         */
-/*  t1types.h                                                              */
-/*                                                                         */
-/*    Basic Type1/Type2 type definitions and interface (specification      */
-/*    only).                                                               */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * t1types.h
+ *
+ *   Basic Type1/Type2 type definitions and interface (specification
+ *   only).
+ *
+ * Copyright (C) 1996-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef T1TYPES_H_
 #define T1TYPES_H_
 
 
-#include <ft2build.h>
-#include FT_TYPE1_TABLES_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
-#include FT_INTERNAL_SERVICE_H
-#include FT_INTERNAL_HASH_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
+#include <freetype/t1tables.h>
+#include <freetype/internal/pshints.h>
+#include <freetype/internal/ftserv.h>
+#include <freetype/internal/fthash.h>
+#include <freetype/internal/services/svpscmap.h>
 
 
 FT_BEGIN_HEADER
@@ -45,36 +44,39 @@ FT_BEGIN_HEADER
   /*************************************************************************/
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    T1_EncodingRec                                                     */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A structure modeling a custom encoding.                            */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    num_chars  :: The number of character codes in the encoding.       */
-  /*                  Usually 256.                                         */
-  /*                                                                       */
-  /*    code_first :: The lowest valid character code in the encoding.     */
-  /*                                                                       */
-  /*    code_last  :: The highest valid character code in the encoding     */
-  /*                  + 1. When equal to code_first there are no valid     */
-  /*                  character codes.                                     */
-  /*                                                                       */
-  /*    char_index :: An array of corresponding glyph indices.             */
-  /*                                                                       */
-  /*    char_name  :: An array of corresponding glyph names.               */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   T1_EncodingRec
+   *
+   * @description:
+   *   A structure modeling a custom encoding.
+   *
+   * @fields:
+   *   num_chars ::
+   *     The number of character codes in the encoding.  Usually 256.
+   *
+   *   code_first ::
+   *     The lowest valid character code in the encoding.
+   *
+   *   code_last ::
+   *     The highest valid character code in the encoding + 1. When equal to
+   *     code_first there are no valid character codes.
+   *
+   *   char_index ::
+   *     An array of corresponding glyph indices.
+   *
+   *   char_name ::
+   *     An array of corresponding glyph names.
+   */
   typedef struct  T1_EncodingRecRec_
   {
     FT_Int       num_chars;
     FT_Int       code_first;
     FT_Int       code_last;
 
-    FT_UShort*   char_index;
-    FT_String**  char_name;
+    FT_UShort*         char_index;
+    const FT_String**  char_name;
 
   } T1_EncodingRec, *T1_Encoding;
 

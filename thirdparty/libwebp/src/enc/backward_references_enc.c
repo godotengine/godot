@@ -191,13 +191,14 @@ void VP8LHashChainClear(VP8LHashChain* const p) {
 
 // -----------------------------------------------------------------------------
 
-#define HASH_MULTIPLIER_HI (0xc6a4a793ULL)
-#define HASH_MULTIPLIER_LO (0x5bd1e996ULL)
+static const uint32_t kHashMultiplierHi = 0xc6a4a793u;
+static const uint32_t kHashMultiplierLo = 0x5bd1e996u;
 
-static WEBP_INLINE uint32_t GetPixPairHash64(const uint32_t* const argb) {
+static WEBP_UBSAN_IGNORE_UNSIGNED_OVERFLOW WEBP_INLINE
+uint32_t GetPixPairHash64(const uint32_t* const argb) {
   uint32_t key;
-  key  = (argb[1] * HASH_MULTIPLIER_HI) & 0xffffffffu;
-  key += (argb[0] * HASH_MULTIPLIER_LO) & 0xffffffffu;
+  key  = argb[1] * kHashMultiplierHi;
+  key += argb[0] * kHashMultiplierLo;
   key = key >> (32 - HASH_BITS);
   return key;
 }
@@ -715,6 +716,7 @@ static int CalculateBestCacheSize(const uint32_t* argb, int quality,
   for (i = 0; i <= cache_bits_max; ++i) {
     histos[i] = VP8LAllocateHistogram(i);
     if (histos[i] == NULL) goto Error;
+    VP8LHistogramInit(histos[i], i, /*init_arrays=*/ 1);
     if (i == 0) continue;
     cc_init[i] = VP8LColorCacheInit(&hashers[i], i);
     if (!cc_init[i]) goto Error;

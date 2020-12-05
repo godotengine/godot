@@ -151,4 +151,4 @@ static WEBP_INLINE void VP8LPutBits(VP8LBitWriter* const bw,
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_UTILS_BIT_WRITER_UTILS_H_ */
+#endif  // WEBP_UTILS_BIT_WRITER_UTILS_H_

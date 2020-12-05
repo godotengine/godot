@@ -1,27 +1,26 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftincrem.h                                                             */
-/*                                                                         */
-/*    FreeType incremental loading (specification).                        */
-/*                                                                         */
-/*  Copyright 2002-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftincrem.h
+ *
+ *   FreeType incremental loading (specification).
+ *
+ * Copyright (C) 2002-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef FTINCREM_H_
 #define FTINCREM_H_
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_PARAMETER_TAGS_H
+#include <freetype/freetype.h>
+#include <freetype/ftparams.h>
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"
@@ -32,7 +31,7 @@
 
 FT_BEGIN_HEADER
 
-  /***************************************************************************
+  /**************************************************************************
    *
    * @section:
    *    incremental
@@ -45,7 +44,7 @@ FT_BEGIN_HEADER
    *
    * @description:
    *   This section contains various functions used to perform so-called
-   *   `incremental' glyph loading.  This is a mode where all glyphs loaded
+   *   'incremental' glyph loading.  This is a mode where all glyphs loaded
    *   from a given @FT_Face are provided by the client application.
    *
    *   Apart from that, all other tables are loaded normally from the font
@@ -60,23 +59,24 @@ FT_BEGIN_HEADER
    */
 
 
-  /***************************************************************************
+  /**************************************************************************
    *
    * @type:
    *   FT_Incremental
    *
    * @description:
    *   An opaque type describing a user-provided object used to implement
-   *   `incremental' glyph loading within FreeType.  This is used to support
-   *   embedded fonts in certain environments (e.g., PostScript interpreters),
-   *   where the glyph data isn't in the font file, or must be overridden by
-   *   different values.
+   *   'incremental' glyph loading within FreeType.  This is used to support
+   *   embedded fonts in certain environments (e.g., PostScript
+   *   interpreters), where the glyph data isn't in the font file, or must be
+   *   overridden by different values.
    *
    * @note:
-   *   It is up to client applications to create and implement @FT_Incremental
-   *   objects, as long as they provide implementations for the methods
-   *   @FT_Incremental_GetGlyphDataFunc, @FT_Incremental_FreeGlyphDataFunc
-   *   and @FT_Incremental_GetGlyphMetricsFunc.
+   *   It is up to client applications to create and implement
+   *   @FT_Incremental objects, as long as they provide implementations for
+   *   the methods @FT_Incremental_GetGlyphDataFunc,
+   *   @FT_Incremental_FreeGlyphDataFunc and
+   *   @FT_Incremental_GetGlyphMetricsFunc.
    *
    *   See the description of @FT_Incremental_InterfaceRec to understand how
    *   to use incremental objects with FreeType.
@@ -85,14 +85,14 @@ FT_BEGIN_HEADER
   typedef struct FT_IncrementalRec_*  FT_Incremental;
 
 
-  /***************************************************************************
+  /**************************************************************************
    *
    * @struct:
    *   FT_Incremental_MetricsRec
    *
    * @description:
-   *   A small structure used to contain the basic glyph metrics returned
-   *   by the @FT_Incremental_GetGlyphMetricsFunc method.
+   *   A small structure used to contain the basic glyph metrics returned by
+   *   the @FT_Incremental_GetGlyphMetricsFunc method.
    *
    * @fields:
    *   bearing_x ::
@@ -109,7 +109,7 @@ FT_BEGIN_HEADER
    *
    * @note:
    *   These correspond to horizontal or vertical metrics depending on the
-   *   value of the `vertical' argument to the function
+   *   value of the `vertical` argument to the function
    *   @FT_Incremental_GetGlyphMetricsFunc.
    *
    */
@@ -123,7 +123,7 @@ FT_BEGIN_HEADER
   } FT_Incremental_MetricsRec;
 
 
-  /***************************************************************************
+  /**************************************************************************
    *
    * @struct:
    *   FT_Incremental_Metrics
@@ -135,7 +135,7 @@ FT_BEGIN_HEADER
    typedef struct FT_Incremental_MetricsRec_*  FT_Incremental_Metrics;
 
 
-  /***************************************************************************
+  /**************************************************************************
    *
    * @type:
    *   FT_Incremental_GetGlyphDataFunc
@@ -147,8 +147,8 @@ FT_BEGIN_HEADER
    *
    *   Note that the format of the glyph's data bytes depends on the font
    *   file format.  For TrueType, it must correspond to the raw bytes within
-   *   the `glyf' table.  For PostScript formats, it must correspond to the
-   *   *unencrypted* charstring bytes, without any `lenIV' header.  It is
+   *   the 'glyf' table.  For PostScript formats, it must correspond to the
+   *   **unencrypted** charstring bytes, without any `lenIV` header.  It is
    *   undefined for any other format.
    *
    * @input:
@@ -169,8 +169,8 @@ FT_BEGIN_HEADER
    *
    * @note:
    *   If this function returns successfully the method
-   *   @FT_Incremental_FreeGlyphDataFunc will be called later to release
-   *   the data bytes.
+   *   @FT_Incremental_FreeGlyphDataFunc will be called later to release the
+   *   data bytes.
    *
    *   Nested calls to @FT_Incremental_GetGlyphDataFunc can happen for
    *   compound glyphs.
@@ -182,7 +182,7 @@ FT_BEGIN_HEADER
                                       FT_Data*        adata );
 
 
-  /***************************************************************************
+  /**************************************************************************
    *
    * @type:
    *   FT_Incremental_FreeGlyphDataFunc
@@ -206,7 +206,7 @@ FT_BEGIN_HEADER
                                        FT_Data*        data );
 
 
-  /***************************************************************************
+  /**************************************************************************
    *
    * @type:
    *   FT_Incremental_GetGlyphMetricsFunc
@@ -214,8 +214,8 @@ FT_BEGIN_HEADER
    * @description:
    *   A function used to retrieve the basic metrics of a given glyph index
    *   before accessing its data.  This is necessary because, in certain
-   *   formats like TrueType, the metrics are stored in a different place from
-   *   the glyph images proper.
+   *   formats like TrueType, the metrics are stored in a different place
+   *   from the glyph images proper.
    *
    * @input:
    *   incremental ::
@@ -229,9 +229,9 @@ FT_BEGIN_HEADER
    *     If true, return vertical metrics.
    *
    *   ametrics ::
-   *     This parameter is used for both input and output.
-   *     The original glyph metrics, if any, in font units.  If metrics are
-   *     not available all the values must be set to zero.
+   *     This parameter is used for both input and output.  The original
+   *     glyph metrics, if any, in font units.  If metrics are not available
+   *     all the values must be set to zero.
    *
    * @output:
    *   ametrics ::
@@ -252,8 +252,8 @@ FT_BEGIN_HEADER
    *   FT_Incremental_FuncsRec
    *
    * @description:
-   *   A table of functions for accessing fonts that load data
-   *   incrementally.  Used in @FT_Incremental_InterfaceRec.
+   *   A table of functions for accessing fonts that load data incrementally.
+   *   Used in @FT_Incremental_InterfaceRec.
    *
    * @fields:
    *   get_glyph_data ::
@@ -263,8 +263,8 @@ FT_BEGIN_HEADER
    *     The function to release glyph data.  Must not be null.
    *
    *   get_glyph_metrics ::
-   *     The function to get glyph metrics.  May be null if the font does
-   *     not provide overriding glyph metrics.
+   *     The function to get glyph metrics.  May be null if the font does not
+   *     provide overriding glyph metrics.
    *
    */
   typedef struct  FT_Incremental_FuncsRec_
@@ -276,7 +276,7 @@ FT_BEGIN_HEADER
   } FT_Incremental_FuncsRec;
 
 
-  /***************************************************************************
+  /**************************************************************************
    *
    * @struct:
    *   FT_Incremental_InterfaceRec
@@ -286,30 +286,30 @@ FT_BEGIN_HEADER
    *   wants to support incremental glyph loading.  You should use it with
    *   @FT_PARAM_TAG_INCREMENTAL as in the following example:
    *
-   *     {
-   *       FT_Incremental_InterfaceRec  inc_int;
-   *       FT_Parameter                 parameter;
-   *       FT_Open_Args                 open_args;
+   *   ```
+   *     FT_Incremental_InterfaceRec  inc_int;
+   *     FT_Parameter                 parameter;
+   *     FT_Open_Args                 open_args;
    *
    *
-   *       // set up incremental descriptor
-   *       inc_int.funcs  = my_funcs;
-   *       inc_int.object = my_object;
+   *     // set up incremental descriptor
+   *     inc_int.funcs  = my_funcs;
+   *     inc_int.object = my_object;
    *
-   *       // set up optional parameter
-   *       parameter.tag  = FT_PARAM_TAG_INCREMENTAL;
-   *       parameter.data = &inc_int;
+   *     // set up optional parameter
+   *     parameter.tag  = FT_PARAM_TAG_INCREMENTAL;
+   *     parameter.data = &inc_int;
    *
-   *       // set up FT_Open_Args structure
-   *       open_args.flags      = FT_OPEN_PATHNAME | FT_OPEN_PARAMS;
-   *       open_args.pathname   = my_font_pathname;
-   *       open_args.num_params = 1;
-   *       open_args.params     = &parameter; // we use one optional argument
+   *     // set up FT_Open_Args structure
+   *     open_args.flags      = FT_OPEN_PATHNAME | FT_OPEN_PARAMS;
+   *     open_args.pathname   = my_font_pathname;
+   *     open_args.num_params = 1;
+   *     open_args.params     = &parameter; // we use one optional argument
    *
-   *       // open the font
-   *       error = FT_Open_Face( library, &open_args, index, &face );
-   *       ...
-   *     }
+   *     // open the font
+   *     error = FT_Open_Face( library, &open_args, index, &face );
+   *     ...
+   *   ```
    *
    */
   typedef struct  FT_Incremental_InterfaceRec_
@@ -320,7 +320,7 @@ FT_BEGIN_HEADER
   } FT_Incremental_InterfaceRec;
 
 
-  /***************************************************************************
+  /**************************************************************************
    *
    * @type:
    *   FT_Incremental_Interface

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,46 +32,56 @@
 #define MULTIMESH_H
 
 #include "scene/resources/mesh.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 class MultiMesh : public Resource {
-
 	GDCLASS(MultiMesh, Resource);
 	RES_BASE_EXTENSION("multimesh");
 
 public:
 	enum TransformFormat {
-		TRANSFORM_2D = VS::MULTIMESH_TRANSFORM_2D,
-		TRANSFORM_3D = VS::MULTIMESH_TRANSFORM_3D
-	};
-
-	enum ColorFormat {
-		COLOR_NONE = VS::MULTIMESH_COLOR_NONE,
-		COLOR_8BIT = VS::MULTIMESH_COLOR_8BIT,
-		COLOR_FLOAT = VS::MULTIMESH_COLOR_FLOAT,
+		TRANSFORM_2D = RS::MULTIMESH_TRANSFORM_2D,
+		TRANSFORM_3D = RS::MULTIMESH_TRANSFORM_3D
 	};
 
 private:
 	Ref<Mesh> mesh;
 	RID multimesh;
 	TransformFormat transform_format;
-	ColorFormat color_format;
+	bool use_colors;
+	bool use_custom_data;
+	int instance_count;
+	int visible_instance_count;
 
 protected:
 	static void _bind_methods();
 
-	void _set_transform_array(const PoolVector<Vector3> &p_array);
-	PoolVector<Vector3> _get_transform_array() const;
+#ifndef DISABLE_DEPRECATED
+	// Kept for compatibility from 3.x to 4.0.
+	void _set_transform_array(const Vector<Vector3> &p_array);
+	Vector<Vector3> _get_transform_array() const;
 
-	void _set_color_array(const PoolVector<Color> &p_array);
-	PoolVector<Color> _get_color_array() const;
+	void _set_transform_2d_array(const Vector<Vector2> &p_array);
+	Vector<Vector2> _get_transform_2d_array() const;
+
+	void _set_color_array(const Vector<Color> &p_array);
+	Vector<Color> _get_color_array() const;
+
+	void _set_custom_data_array(const Vector<Color> &p_array);
+	Vector<Color> _get_custom_data_array() const;
+#endif
+	void set_buffer(const Vector<float> &p_buffer);
+	Vector<float> get_buffer() const;
 
 public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 
-	void set_color_format(ColorFormat p_color_format);
-	ColorFormat get_color_format() const;
+	void set_use_colors(bool p_enable);
+	bool is_using_colors() const;
+
+	void set_use_custom_data(bool p_enable);
+	bool is_using_custom_data() const;
 
 	void set_transform_format(TransformFormat p_transform_format);
 	TransformFormat get_transform_format() const;
@@ -79,21 +89,28 @@ public:
 	void set_instance_count(int p_count);
 	int get_instance_count() const;
 
+	void set_visible_instance_count(int p_count);
+	int get_visible_instance_count() const;
+
 	void set_instance_transform(int p_instance, const Transform &p_transform);
+	void set_instance_transform_2d(int p_instance, const Transform2D &p_transform);
 	Transform get_instance_transform(int p_instance) const;
+	Transform2D get_instance_transform_2d(int p_instance) const;
 
 	void set_instance_color(int p_instance, const Color &p_color);
 	Color get_instance_color(int p_instance) const;
 
+	void set_instance_custom_data(int p_instance, const Color &p_custom_data);
+	Color get_instance_custom_data(int p_instance) const;
+
 	virtual AABB get_aabb() const;
 
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override;
 
 	MultiMesh();
 	~MultiMesh();
 };
 
 VARIANT_ENUM_CAST(MultiMesh::TransformFormat);
-VARIANT_ENUM_CAST(MultiMesh::ColorFormat);
 
 #endif // MULTI_MESH_H

@@ -28,48 +28,46 @@ GJK-EPA collision solver by Nathanael Presson, 2008
 #include "BulletCollision/CollisionShapes/btConvexShape.h"
 
 ///btGjkEpaSolver contributed under zlib by Nathanael Presson
-struct	btGjkEpaSolver2
+struct btGjkEpaSolver2
 {
-struct	sResults
+	struct sResults
 	{
-	enum eStatus
+		enum eStatus
 		{
-		Separated,		/* Shapes doesnt penetrate												*/ 
-		Penetrating,	/* Shapes are penetrating												*/ 
-		GJK_Failed,		/* GJK phase fail, no big issue, shapes are probably just 'touching'	*/ 
-		EPA_Failed		/* EPA phase fail, bigger problem, need to save parameters, and debug	*/ 
-		}		status;
-	btVector3	witnesses[2];
-	btVector3	normal;
-	btScalar	distance;
+			Separated,   /* Shapes doesnt penetrate												*/
+			Penetrating, /* Shapes are penetrating												*/
+			GJK_Failed,  /* GJK phase fail, no big issue, shapes are probably just 'touching'	*/
+			EPA_Failed   /* EPA phase fail, bigger problem, need to save parameters, and debug	*/
+		} status;
+		btVector3 witnesses[2];
+		btVector3 normal;
+		btScalar distance;
 	};
 
-static int		StackSizeRequirement();
+	static int StackSizeRequirement();
 
-static bool		Distance(	const btConvexShape* shape0,const btTransform& wtrs0,
-							const btConvexShape* shape1,const btTransform& wtrs1,
-							const btVector3& guess,
-							sResults& results);
+	static bool Distance(const btConvexShape* shape0, const btTransform& wtrs0,
+						 const btConvexShape* shape1, const btTransform& wtrs1,
+						 const btVector3& guess,
+						 sResults& results);
 
-static bool		Penetration(const btConvexShape* shape0,const btTransform& wtrs0,
-							const btConvexShape* shape1,const btTransform& wtrs1,
+	static bool Penetration(const btConvexShape* shape0, const btTransform& wtrs0,
+							const btConvexShape* shape1, const btTransform& wtrs1,
 							const btVector3& guess,
 							sResults& results,
-							bool usemargins=true);
+							bool usemargins = true);
 #ifndef __SPU__
-static btScalar	SignedDistance(	const btVector3& position,
-								btScalar margin,
-								const btConvexShape* shape,
-								const btTransform& wtrs,
-								sResults& results);
-							
-static bool		SignedDistance(	const btConvexShape* shape0,const btTransform& wtrs0,
-								const btConvexShape* shape1,const btTransform& wtrs1,
-								const btVector3& guess,
-								sResults& results);
-#endif //__SPU__
+	static btScalar SignedDistance(const btVector3& position,
+								   btScalar margin,
+								   const btConvexShape* shape,
+								   const btTransform& wtrs,
+								   sResults& results);
 
+	static bool SignedDistance(const btConvexShape* shape0, const btTransform& wtrs0,
+							   const btConvexShape* shape1, const btTransform& wtrs1,
+							   const btVector3& guess,
+							   sResults& results);
+#endif  //__SPU__
 };
 
-#endif //BT_GJK_EPA2_H
-
+#endif  //BT_GJK_EPA2_H

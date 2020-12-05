@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScriptEditor" inherits="PanelContainer" category="Core" version="3.1">
+<class name="ScriptEditor" inherits="PanelContainer" version="4.0">
 	<brief_description>
+		Godot editor's script editor.
 	</brief_description>
 	<description>
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_script_editor].
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="can_drop_data_fw" qualifiers="const">
 			<return type="bool">
@@ -33,6 +33,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_current_editor" qualifiers="const">
+			<return type="ScriptEditorBase">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_current_script">
 			<return type="Script">
 			</return>
@@ -50,11 +56,26 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_open_script_editors" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_open_scripts" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
 				Returns an array with all [Script] objects which are currently open in editor.
+			</description>
+		</method>
+		<method name="goto_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line_number" type="int">
+			</argument>
+			<description>
+				Goes to the specified line in the current script.
 			</description>
 		</method>
 		<method name="open_script_create_dialog">
@@ -65,19 +86,36 @@
 			<argument index="1" name="base_path" type="String">
 			</argument>
 			<description>
+				Opens the script create dialog. The script will extend [code]base_name[/code]. The file extension can be omitted from [code]base_path[/code]. It will be added based on the selected scripting language.
+			</description>
+		</method>
+		<method name="register_syntax_highlighter">
+			<return type="void">
+			</return>
+			<argument index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="unregister_syntax_highlighter">
+			<return type="void">
+			</return>
+			<argument index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="editor_script_changed">
-			<argument index="0" name="script" type="Object">
+			<argument index="0" name="script" type="Script">
 			</argument>
 			<description>
 				Emitted when user changed active script. Argument is a freshly activated [Script].
 			</description>
 		</signal>
 		<signal name="script_close">
-			<argument index="0" name="script" type="Object">
+			<argument index="0" name="script" type="Script">
 			</argument>
 			<description>
 				Emitted when editor is about to close the active script. Argument is a [Script] that is going to be closed.

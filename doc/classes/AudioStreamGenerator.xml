@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamGenerator" inherits="AudioStream" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length" default="0.5">
+		</member>
+		<member name="mix_rate" type="float" setter="set_mix_rate" getter="get_mix_rate" default="44100.0">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

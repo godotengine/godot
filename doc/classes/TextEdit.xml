@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextEdit" inherits="Control" category="Core" version="3.1">
+<class name="TextEdit" inherits="Control" version="4.0">
 	<brief_description>
 		Multiline text editing control.
 	</brief_description>
@@ -8,33 +8,13 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
-		<method name="add_color_region">
+		<method name="add_gutter">
 			<return type="void">
 			</return>
-			<argument index="0" name="begin_key" type="String">
-			</argument>
-			<argument index="1" name="end_key" type="String">
-			</argument>
-			<argument index="2" name="color" type="Color">
-			</argument>
-			<argument index="3" name="line_only" type="bool" default="false">
+			<argument index="0" name="at" type="int" default="-1">
 			</argument>
 			<description>
-				Add color region (given the delimiters) and its colors.
-			</description>
-		</method>
-		<method name="add_keyword_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="keyword" type="String">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<description>
-				Add a keyword and its color.
 			</description>
 		</method>
 		<method name="can_fold" qualifiers="const">
@@ -43,41 +23,49 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Returns if the given line is foldable, that is, it has indented lines right below it.
 			</description>
 		</method>
-		<method name="clear_colors">
+		<method name="center_viewport_to_cursor">
 			<return type="void">
 			</return>
 			<description>
-				Clear all the syntax coloring information.
+				Centers the viewport on the line the editing cursor is at. This also resets the [member scroll_horizontal] value to [code]0[/code].
+			</description>
+		</method>
+		<method name="clear_opentype_features">
+			<return type="void">
+			</return>
+			<description>
+				Removes all OpenType features.
 			</description>
 		</method>
 		<method name="clear_undo_history">
 			<return type="void">
 			</return>
 			<description>
-				Clear the undo history.
+				Clears the undo history.
 			</description>
 		</method>
 		<method name="copy">
 			<return type="void">
 			</return>
 			<description>
-				Copy the current selection.
+				Copy's the current text selection.
 			</description>
 		</method>
 		<method name="cursor_get_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the column the editing cursor is at.
+				Returns the column the editing cursor is at.
 			</description>
 		</method>
 		<method name="cursor_get_line" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the line the editing cursor is at.
+				Returns the line the editing cursor is at.
 			</description>
 		</method>
 		<method name="cursor_set_column">
@@ -88,6 +76,8 @@
 			<argument index="1" name="adjust_viewport" type="bool" default="true">
 			</argument>
 			<description>
+				Moves the cursor at the specified [code]column[/code] index.
+				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the cursor position after the move occurs.
 			</description>
 		</method>
 		<method name="cursor_set_line">
@@ -102,26 +92,30 @@
 			<argument index="3" name="wrap_index" type="int" default="0">
 			</argument>
 			<description>
+				Moves the cursor at the specified [code]line[/code] index.
+				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the cursor position after the move occurs.
+				If [code]can_be_hidden[/code] is set to [code]true[/code], the specified [code]line[/code] can be hidden using [method set_line_as_hidden].
 			</description>
 		</method>
 		<method name="cut">
 			<return type="void">
 			</return>
 			<description>
-				Cut the current selection.
+				Cut's the current selection.
 			</description>
 		</method>
 		<method name="deselect">
 			<return type="void">
 			</return>
 			<description>
-				Clears the current selection.
+				Deselects the current selection.
 			</description>
 		</method>
 		<method name="fold_all_lines">
 			<return type="void">
 			</return>
 			<description>
+				Folds all lines that are possible to be folded (see [method can_fold]).
 			</description>
 		</method>
 		<method name="fold_line">
@@ -130,19 +124,35 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Folds the given line, if possible (see [method can_fold]).
 			</description>
 		</method>
-		<method name="get_breakpoints" qualifiers="const">
-			<return type="Array">
+		<method name="get_gutter_count" qualifiers="const">
+			<return type="int">
 			</return>
 			<description>
-				Return an array containing the line number of each breakpoint.
 			</description>
 		</method>
-		<method name="get_keyword_color" qualifiers="const">
-			<return type="Color">
+		<method name="get_gutter_name" qualifiers="const">
+			<return type="String">
 			</return>
-			<argument index="0" name="keyword" type="String">
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_gutter_type" qualifiers="const">
+			<return type="int" enum="TextEdit.GutterType">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_gutter_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="gutter" type="int">
 			</argument>
 			<description>
 			</description>
@@ -153,18 +163,74 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
-				Return the text of a specific line.
+				Returns the text of a specific line.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of total lines in the text.
+				Returns the amount of total lines in the text.
+			</description>
+		</method>
+		<method name="get_line_gutter_icon" qualifiers="const">
+			<return type="Texture2D">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_line_gutter_item_color">
+			<return type="Color">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_line_gutter_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_line_gutter_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
 			<return type="PopupMenu">
+			</return>
+			<description>
+				Returns the [PopupMenu] of this [TextEdit]. By default, this menu is displayed when right-clicking on the [TextEdit].
+			</description>
+		</method>
+		<method name="get_opentype_feature" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<description>
+				Returns OpenType feature [code]tag[/code].
+			</description>
+		</method>
+		<method name="get_selection_column" qualifiers="const">
+			<return type="int">
 			</return>
 			<description>
 			</description>
@@ -173,49 +239,54 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the selection begin column.
+				Returns the selection begin column.
 			</description>
 		</method>
 		<method name="get_selection_from_line" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the selection begin line.
+				Returns the selection begin line.
+			</description>
+		</method>
+		<method name="get_selection_line" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_selection_mode" qualifiers="const">
+			<return type="int" enum="TextEdit.SelectionMode">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_selection_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Return the text inside the selection.
+				Returns the text inside the selection.
 			</description>
 		</method>
 		<method name="get_selection_to_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the selection end column.
+				Returns the selection end column.
 			</description>
 		</method>
 		<method name="get_selection_to_line" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the selection end line.
+				Returns the selection end line.
 			</description>
 		</method>
 		<method name="get_word_under_cursor" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-			</description>
-		</method>
-		<method name="has_keyword_color" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="keyword" type="String">
-			</argument>
-			<description>
+				Returns a [String] text with the word under the caret (text cursor) location.
 			</description>
 		</method>
 		<method name="insert_text_at_cursor">
@@ -224,13 +295,48 @@
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-				Insert a given text at the cursor position.
+				Insert the specified text at the cursor position.
 			</description>
 		</method>
 		<method name="is_folded" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+				Returns whether the line at the specified index is folded or not.
+			</description>
+		</method>
+		<method name="is_gutter_clickable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_gutter_drawn" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_gutter_overwritable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_line_gutter_clickable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
 			</argument>
 			<description>
 			</description>
@@ -241,13 +347,14 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Returns whether the line at the specified index is hidden or not.
 			</description>
 		</method>
 		<method name="is_selection_active" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if the selection is active.
+				Returns [code]true[/code] if the selection is active.
 			</description>
 		</method>
 		<method name="menu_option">
@@ -256,6 +363,7 @@
 			<argument index="0" name="option" type="int">
 			</argument>
 			<description>
+				Triggers a right-click menu action by the specified index. See [enum MenuItems] for a list of available indexes.
 			</description>
 		</method>
 		<method name="paste">
@@ -272,15 +380,16 @@
 				Perform redo operation.
 			</description>
 		</method>
-		<method name="remove_breakpoints">
+		<method name="remove_gutter">
 			<return type="void">
 			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
 			<description>
-				Removes all the breakpoints (without firing "breakpoint_toggled" signal).
 			</description>
 		</method>
 		<method name="search" qualifiers="const">
-			<return type="PoolIntArray">
+			<return type="Dictionary">
 			</return>
 			<argument index="0" name="key" type="String">
 			</argument>
@@ -291,7 +400,15 @@
 			<argument index="3" name="from_column" type="int">
 			</argument>
 			<description>
-				Perform a search inside the text. Search flags can be specified in the SEARCH_* enum.
+				Perform a search inside the text. Search flags can be specified in the [enum SearchFlags] enum.
+				Returns an empty [code]Dictionary[/code] if no result was found. Otherwise, returns a [code]Dictionary[/code] containing [code]line[/code] and [code]column[/code] entries, e.g:
+				[codeblock]
+				var result = search(key, flags, line, column)
+				if !result.empty():
+				    # Result found.
+				    var line_number = result.line
+				    var column_number = result.column
+				[/codeblock]
 			</description>
 		</method>
 		<method name="select">
@@ -307,6 +424,7 @@
 			</argument>
 			<description>
 				Perform selection, from line/column to line/column.
+				If [member selecting_enabled] is [code]false[/code], no selection will occur.
 			</description>
 		</method>
 		<method name="select_all">
@@ -314,6 +432,90 @@
 			</return>
 			<description>
 				Select all the text.
+				If [member selecting_enabled] is [code]false[/code], no selection will occur.
+			</description>
+		</method>
+		<method name="set_gutter_clickable">
+			<return type="void">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<argument index="1" name="clickable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gutter_custom_draw">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="object" type="Object">
+			</argument>
+			<argument index="2" name="callback" type="StringName">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gutter_draw">
+			<return type="void">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<argument index="1" name="draw" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gutter_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gutter_overwritable">
+			<return type="void">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<argument index="1" name="overwritable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gutter_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<argument index="1" name="type" type="int" enum="TextEdit.GutterType">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gutter_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<argument index="1" name="width" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="new_text" type="String">
+			</argument>
+			<description>
+				Sets the text for a specific line.
 			</description>
 		</method>
 		<method name="set_line_as_hidden">
@@ -322,6 +524,90 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+				If [code]true[/code], hides the line of the specified index.
+			</description>
+		</method>
+		<method name="set_line_gutter_clickable">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<argument index="2" name="clickable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_line_gutter_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<argument index="2" name="icon" type="Texture2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_line_gutter_item_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<argument index="2" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_line_gutter_metadata">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<argument index="2" name="metadata" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_line_gutter_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<argument index="2" name="text" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_opentype_feature">
+			<return type="void">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+				Sets OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
+			</description>
+		</method>
+		<method name="set_selection_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="TextEdit.SelectionMode">
+			</argument>
+			<argument index="1" name="line" type="int" default="-1">
+			</argument>
+			<argument index="2" name="column" type="int" default="-1">
 			</argument>
 			<description>
 			</description>
@@ -348,75 +634,142 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Unfolds the given line, if folded.
 			</description>
 		</method>
 		<method name="unhide_all_lines">
 			<return type="void">
 			</return>
 			<description>
+				Unhide all lines that were previously set to hidden by [method set_line_as_hidden].
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="breakpoint_gutter" type="bool" setter="set_breakpoint_gutter_enabled" getter="is_breakpoint_gutter_enabled">
-			If [code]true[/code] the breakpoint gutter is visible.
+		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled" default="false">
+			If [code]true[/code], the caret (visual cursor) blinks.
 		</member>
-		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
-			If [code]true[/code] the caret (visual cursor) blinks.
-		</member>
-		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed">
+		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed" default="0.65">
 			Duration (in seconds) of a caret's blinking cycle.
 		</member>
-		<member name="caret_block_mode" type="bool" setter="cursor_set_block_mode" getter="cursor_is_block_mode">
-			If [code]true[/code] the caret displays as a rectangle.
-			If [code]false[/code] the caret displays as a bar.
+		<member name="caret_block_mode" type="bool" setter="cursor_set_block_mode" getter="cursor_is_block_mode" default="false">
+			If [code]true[/code], the caret displays as a rectangle.
+			If [code]false[/code], the caret displays as a bar.
 		</member>
-		<member name="caret_moving_by_right_click" type="bool" setter="set_right_click_moves_caret" getter="is_right_click_moving_caret">
-			If [code]true[/code] a right click moves the cursor at the mouse position before displaying the context menu.
-			If [code]false[/code] the context menu disregards mouse location.
+		<member name="caret_mid_grapheme" type="bool" setter="set_mid_grapheme_caret_enabled" getter="get_mid_grapheme_caret_enabled" default="false">
+			Allow moving caret, selecting and removing the individual composite character components.
+			Note: [kbd]Backspace[/kbd] is always removing individual composite character components.
 		</member>
-		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
-			If [code]true[/code] a right click displays the context menu.
+		<member name="caret_moving_by_right_click" type="bool" setter="set_right_click_moves_caret" getter="is_right_click_moving_caret" default="true">
+			If [code]true[/code], a right-click moves the cursor at the mouse position before displaying the context menu.
+			If [code]false[/code], the context menu disregards mouse location.
 		</member>
-		<member name="hiding_enabled" type="int" setter="set_hiding_enabled" getter="is_hiding_enabled">
+		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="true">
+			If [code]true[/code], a right-click displays the context menu.
 		</member>
-		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled">
+		<member name="draw_control_chars" type="bool" setter="set_draw_control_chars" getter="get_draw_control_chars" default="false">
+			If [code]true[/code], control characters are displayed.
 		</member>
-		<member name="highlight_current_line" type="bool" setter="set_highlight_current_line" getter="is_highlight_current_line_enabled">
-			If [code]true[/code] the line containing the cursor is highlighted.
+		<member name="draw_spaces" type="bool" setter="set_draw_spaces" getter="is_drawing_spaces" default="false">
+			If [code]true[/code], the "space" character will have a visible representation.
 		</member>
-		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color">
+		<member name="draw_tabs" type="bool" setter="set_draw_tabs" getter="is_drawing_tabs" default="false">
+			If [code]true[/code], the "tab" character will have a visible representation.
 		</member>
-		<member name="readonly" type="bool" setter="set_readonly" getter="is_readonly">
-			If [code]true[/code] read-only mode is enabled. Existing text cannot be modified and new text cannot be added.
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
+		<member name="hiding_enabled" type="bool" setter="set_hiding_enabled" getter="is_hiding_enabled" default="false">
+			If [code]true[/code], all lines that have been set to hidden by [method set_line_as_hidden], will not be visible.
 		</member>
-		<member name="show_line_numbers" type="bool" setter="set_show_line_numbers" getter="is_show_line_numbers_enabled">
-			If [code]true[/code] line numbers are displayed to the left of the text.
+		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled" default="false">
+			If [code]true[/code], all occurrences of the selected text will be highlighted.
 		</member>
-		<member name="smooth_scrolling" type="bool" setter="set_smooth_scroll_enable" getter="is_smooth_scroll_enabled">
+		<member name="highlight_current_line" type="bool" setter="set_highlight_current_line" getter="is_highlight_current_line_enabled" default="false">
+			If [code]true[/code], the line containing the cursor is highlighted.
 		</member>
-		<member name="syntax_highlighting" type="bool" setter="set_syntax_coloring" getter="is_syntax_coloring_enabled">
+		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
+			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
-		<member name="text" type="String" setter="set_text" getter="get_text">
+		<member name="minimap_draw" type="bool" setter="draw_minimap" getter="is_drawing_minimap" default="false">
+			If [code]true[/code], a minimap is shown, providing an outline of your source code.
+		</member>
+		<member name="minimap_width" type="int" setter="set_minimap_width" getter="get_minimap_width" default="80">
+			The width, in pixels, of the minimap.
+		</member>
+		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" override="true" enum="Control.CursorShape" default="1" />
+		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color" default="false">
+			If [code]true[/code], custom [code]font_color_selected[/code] will be used for selected text.
+		</member>
+		<member name="readonly" type="bool" setter="set_readonly" getter="is_readonly" default="false">
+			If [code]true[/code], read-only mode is enabled. Existing text cannot be modified and new text cannot be added.
+		</member>
+		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
+			If there is a horizontal scrollbar this determines the current horizontal scroll value in pixels.
+		</member>
+		<member name="scroll_vertical" type="float" setter="set_v_scroll" getter="get_v_scroll" default="0.0">
+			If there is a vertical scrollbar this determines the current vertical scroll value in line numbers, starting at 0 for the top line.
+		</member>
+		<member name="selecting_enabled" type="bool" setter="set_selecting_enabled" getter="is_selecting_enabled" default="true">
+			If [code]true[/code], text can be selected.
+			If [code]false[/code], text can not be selected by the user or by the [method select] or [method select_all] methods.
+		</member>
+		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
+			If [code]true[/code], shortcut keys for context menu items are enabled, even if the context menu is disabled.
+		</member>
+		<member name="smooth_scrolling" type="bool" setter="set_smooth_scroll_enable" getter="is_smooth_scroll_enabled" default="false">
+			If [code]true[/code], sets the [code]step[/code] of the scrollbars to [code]0.25[/code] which results in smoother scrolling.
+		</member>
+		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="Control.StructuredTextParser" default="0">
+			Set BiDi algorithm override for the structured text.
+		</member>
+		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[  ]">
+			Set additional options for BiDi override.
+		</member>
+		<member name="syntax_highlighter" type="SyntaxHighlighter" setter="set_syntax_highlighter" getter="get_syntax_highlighter">
+		</member>
+		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			String value of the [TextEdit].
 		</member>
-		<member name="v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed">
-			If [code]true[/code], enables text wrapping when it goes beyond he edge of what is visible.
+		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
+			Base text writing direction.
 		</member>
-		<member name="wrap_enabled" type="bool" setter="set_wrap_enabled" getter="is_wrap_enabled">
+		<member name="v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed" default="80.0">
+			Vertical scroll sensitivity.
+		</member>
+		<member name="virtual_keyboard_enabled" type="bool" setter="set_virtual_keyboard_enabled" getter="is_virtual_keyboard_enabled" default="true">
+			If [code]true[/code], the native virtual keyboard is shown when focused on platforms that support it.
+		</member>
+		<member name="wrap_enabled" type="bool" setter="set_wrap_enabled" getter="is_wrap_enabled" default="false">
+			If [code]true[/code], enables text wrapping when it goes beyond the edge of what is visible.
 		</member>
 	</members>
 	<signals>
-		<signal name="breakpoint_toggled">
-			<argument index="0" name="row" type="int">
-			</argument>
-			<description>
-				Emitted when a breakpoint is placed via the breakpoint gutter.
-			</description>
-		</signal>
 		<signal name="cursor_changed">
 			<description>
 				Emitted when the cursor changes.
+			</description>
+		</signal>
+		<signal name="gutter_added">
+			<description>
+			</description>
+		</signal>
+		<signal name="gutter_clicked">
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="gutter_removed">
+			<description>
+			</description>
+		</signal>
+		<signal name="lines_edited_from">
+			<argument index="0" name="from_line" type="int">
+			</argument>
+			<argument index="1" name="to_line" type="int">
+			</argument>
+			<description>
 			</description>
 		</signal>
 		<signal name="request_completion">
@@ -429,6 +782,12 @@
 			<argument index="1" name="row" type="int">
 			</argument>
 			<argument index="2" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="symbol_validate">
+			<argument index="0" name="symbol" type="String">
 			</argument>
 			<description>
 			</description>
@@ -449,8 +808,24 @@
 		<constant name="SEARCH_BACKWARDS" value="4" enum="SearchFlags">
 			Search from end to beginning.
 		</constant>
+		<constant name="SELECTION_MODE_NONE" value="0" enum="SelectionMode">
+		</constant>
+		<constant name="SELECTION_MODE_SHIFT" value="1" enum="SelectionMode">
+		</constant>
+		<constant name="SELECTION_MODE_POINTER" value="2" enum="SelectionMode">
+		</constant>
+		<constant name="SELECTION_MODE_WORD" value="3" enum="SelectionMode">
+		</constant>
+		<constant name="SELECTION_MODE_LINE" value="4" enum="SelectionMode">
+		</constant>
+		<constant name="GUTTER_TYPE_STRING" value="0" enum="GutterType">
+		</constant>
+		<constant name="GUTTER_TPYE_ICON" value="1" enum="GutterType">
+		</constant>
+		<constant name="GUTTER_TPYE_CUSTOM" value="2" enum="GutterType">
+		</constant>
 		<constant name="MENU_CUT" value="0" enum="MenuItems">
-			Cuts (Copies and clears) the selected text.
+			Cuts (copies and clears) the selected text.
 		</constant>
 		<constant name="MENU_COPY" value="1" enum="MenuItems">
 			Copies the selected text.
@@ -467,75 +842,148 @@
 		<constant name="MENU_UNDO" value="5" enum="MenuItems">
 			Undoes the previous action.
 		</constant>
-		<constant name="MENU_MAX" value="6" enum="MenuItems">
+		<constant name="MENU_REDO" value="6" enum="MenuItems">
+			Redoes the previous action.
+		</constant>
+		<constant name="MENU_DIR_INHERITED" value="7" enum="MenuItems">
+			Sets text direction to inherited.
+		</constant>
+		<constant name="MENU_DIR_AUTO" value="8" enum="MenuItems">
+			Sets text direction to automatic.
+		</constant>
+		<constant name="MENU_DIR_LTR" value="9" enum="MenuItems">
+			Sets text direction to left-to-right.
+		</constant>
+		<constant name="MENU_DIR_RTL" value="10" enum="MenuItems">
+			Sets text direction to right-to-left.
+		</constant>
+		<constant name="MENU_DISPLAY_UCC" value="11" enum="MenuItems">
+			Toggles control character display.
+		</constant>
+		<constant name="MENU_INSERT_LRM" value="12" enum="MenuItems">
+			Inserts left-to-right mark (LRM) character.
+		</constant>
+		<constant name="MENU_INSERT_RLM" value="13" enum="MenuItems">
+			Inserts right-to-left mark (RLM) character.
+		</constant>
+		<constant name="MENU_INSERT_LRE" value="14" enum="MenuItems">
+			Inserts start of left-to-right embedding (LRE) character.
+		</constant>
+		<constant name="MENU_INSERT_RLE" value="15" enum="MenuItems">
+			Inserts start of right-to-left embedding (RLE) character.
+		</constant>
+		<constant name="MENU_INSERT_LRO" value="16" enum="MenuItems">
+			Inserts start of left-to-right override (LRO) character.
+		</constant>
+		<constant name="MENU_INSERT_RLO" value="17" enum="MenuItems">
+			Inserts start of right-to-left override (RLO) character.
+		</constant>
+		<constant name="MENU_INSERT_PDF" value="18" enum="MenuItems">
+			Inserts pop direction formatting (PDF) character.
+		</constant>
+		<constant name="MENU_INSERT_ALM" value="19" enum="MenuItems">
+			Inserts Arabic letter mark (ALM) character.
+		</constant>
+		<constant name="MENU_INSERT_LRI" value="20" enum="MenuItems">
+			Inserts left-to-right isolate (LRI) character.
+		</constant>
+		<constant name="MENU_INSERT_RLI" value="21" enum="MenuItems">
+			Inserts right-to-left isolate (RLI) character.
+		</constant>
+		<constant name="MENU_INSERT_FSI" value="22" enum="MenuItems">
+			Inserts first strong isolate (FSI) character.
+		</constant>
+		<constant name="MENU_INSERT_PDI" value="23" enum="MenuItems">
+			Inserts pop direction isolate (PDI) character.
+		</constant>
+		<constant name="MENU_INSERT_ZWJ" value="24" enum="MenuItems">
+			Inserts zero width joiner (ZWJ) character.
+		</constant>
+		<constant name="MENU_INSERT_ZWNJ" value="25" enum="MenuItems">
+			Inserts zero width non-joiner (ZWNJ) character.
+		</constant>
+		<constant name="MENU_INSERT_WJ" value="26" enum="MenuItems">
+			Inserts word joiner (WJ) character.
+		</constant>
+		<constant name="MENU_INSERT_SHY" value="27" enum="MenuItems">
+			Inserts soft hyphen (SHY) character.
+		</constant>
+		<constant name="MENU_MAX" value="28" enum="MenuItems">
+			Represents the size of the [enum MenuItems] enum.
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="background_color" type="Color">
+		<theme_item name="background_color" type="Color" default="Color( 0, 0, 0, 0 )">
+			Sets the background [Color] of this [TextEdit]. [member syntax_highlighting] has to be enabled.
 		</theme_item>
-		<theme_item name="brace_mismatch_color" type="Color">
+		<theme_item name="brace_mismatch_color" type="Color" default="Color( 1, 0.2, 0.2, 1 )">
 		</theme_item>
-		<theme_item name="breakpoint_color" type="Color">
+		<theme_item name="caret_background_color" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
-		<theme_item name="caret_background_color" type="Color">
+		<theme_item name="caret_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 		</theme_item>
-		<theme_item name="caret_color" type="Color">
-		</theme_item>
-		<theme_item name="code_folding_color" type="Color">
+		<theme_item name="code_folding_color" type="Color" default="Color( 0.8, 0.8, 0.8, 0.8 )">
 		</theme_item>
 		<theme_item name="completion" type="StyleBox">
 		</theme_item>
-		<theme_item name="completion_background_color" type="Color">
+		<theme_item name="completion_background_color" type="Color" default="Color( 0.17, 0.16, 0.2, 1 )">
 		</theme_item>
-		<theme_item name="completion_existing_color" type="Color">
+		<theme_item name="completion_existing_color" type="Color" default="Color( 0.87, 0.87, 0.87, 0.13 )">
 		</theme_item>
-		<theme_item name="completion_font_color" type="Color">
+		<theme_item name="completion_font_color" type="Color" default="Color( 0.67, 0.67, 0.67, 1 )">
 		</theme_item>
-		<theme_item name="completion_lines" type="int">
+		<theme_item name="completion_lines" type="int" default="7">
 		</theme_item>
-		<theme_item name="completion_max_width" type="int">
+		<theme_item name="completion_max_width" type="int" default="50">
 		</theme_item>
-		<theme_item name="completion_scroll_color" type="Color">
+		<theme_item name="completion_scroll_color" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
-		<theme_item name="completion_scroll_width" type="int">
+		<theme_item name="completion_scroll_width" type="int" default="3">
 		</theme_item>
-		<theme_item name="completion_selected_color" type="Color">
+		<theme_item name="completion_selected_color" type="Color" default="Color( 0.26, 0.26, 0.27, 1 )">
 		</theme_item>
-		<theme_item name="current_line_color" type="Color">
+		<theme_item name="current_line_color" type="Color" default="Color( 0.25, 0.25, 0.26, 0.8 )">
+			Sets the [Color] of the breakpoints. [member breakpoint_gutter] has to be enabled.
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">
 		</theme_item>
 		<theme_item name="font" type="Font">
+			Sets the default [Font].
 		</theme_item>
-		<theme_item name="font_color" type="Color">
+		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+			Sets the font [Color].
 		</theme_item>
-		<theme_item name="font_color_selected" type="Color">
+		<theme_item name="font_color_readonly" type="Color" default="Color( 0.88, 0.88, 0.88, 0.5 )">
 		</theme_item>
-		<theme_item name="function_color" type="Color">
+		<theme_item name="font_color_selected" type="Color" default="Color( 0, 0, 0, 1 )">
+			Sets the [Color] of the selected text. [member override_selected_font_color] has to be enabled.
 		</theme_item>
-		<theme_item name="line_number_color" type="Color">
+		<theme_item name="font_size" type="int">
+			Sets default font size.
 		</theme_item>
-		<theme_item name="line_spacing" type="int">
+		<theme_item name="line_spacing" type="int" default="4">
+			Sets the spacing between the lines.
 		</theme_item>
-		<theme_item name="mark_color" type="Color">
-		</theme_item>
-		<theme_item name="member_variable_color" type="Color">
+		<theme_item name="mark_color" type="Color" default="Color( 1, 0.4, 0.4, 0.4 )">
+			Sets the [Color] of marked text.
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
-		</theme_item>
-		<theme_item name="number_color" type="Color">
+			Sets the [StyleBox] of this [TextEdit].
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
+			Sets the [StyleBox] of this [TextEdit] when [member readonly] is enabled.
 		</theme_item>
-		<theme_item name="safe_line_number_color" type="Color">
+		<theme_item name="selection_color" type="Color" default="Color( 0.49, 0.49, 0.49, 1 )">
+			Sets the highlight [Color] of text selections.
 		</theme_item>
-		<theme_item name="selection_color" type="Color">
+		<theme_item name="space" type="Texture2D">
+			Sets a custom [Texture2D] for space text characters.
 		</theme_item>
-		<theme_item name="symbol_color" type="Color">
+		<theme_item name="tab" type="Texture2D">
+			Sets a custom [Texture2D] for tab text characters.
 		</theme_item>
-		<theme_item name="tab" type="Texture">
-		</theme_item>
-		<theme_item name="word_highlighted_color" type="Color">
+		<theme_item name="word_highlighted_color" type="Color" default="Color( 0.8, 0.9, 0.9, 0.15 )">
+			Sets the highlight [Color] of multiple occurrences. [member highlight_all_occurrences] has to be enabled.
 		</theme_item>
 	</theme_items>
 </class>

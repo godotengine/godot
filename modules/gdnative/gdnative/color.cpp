@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,21 +30,21 @@
 
 #include "gdnative/color.h"
 
-#include "core/color.h"
-#include "core/variant.h"
+#include "core/math/color.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void GDAPI godot_color_new_rgba(godot_color *r_dest, const godot_real p_r, const godot_real p_g, const godot_real p_b, const godot_real p_a) {
+static_assert(sizeof(godot_color) == sizeof(Color), "Color size mismatch");
 
+void GDAPI godot_color_new_rgba(godot_color *r_dest, const godot_real p_r, const godot_real p_g, const godot_real p_b, const godot_real p_a) {
 	Color *dest = (Color *)r_dest;
 	*dest = Color(p_r, p_g, p_b, p_a);
 }
 
 void GDAPI godot_color_new_rgb(godot_color *r_dest, const godot_real p_r, const godot_real p_g, const godot_real p_b) {
-
 	Color *dest = (Color *)r_dest;
 	*dest = Color(p_r, p_g, p_b);
 }
@@ -116,14 +116,29 @@ godot_int GDAPI godot_color_to_rgba32(const godot_color *p_self) {
 	return self->to_rgba32();
 }
 
+godot_int GDAPI godot_color_to_abgr32(const godot_color *p_self) {
+	const Color *self = (const Color *)p_self;
+	return self->to_abgr32();
+}
+
+godot_int GDAPI godot_color_to_abgr64(const godot_color *p_self) {
+	const Color *self = (const Color *)p_self;
+	return self->to_abgr64();
+}
+
+godot_int GDAPI godot_color_to_argb64(const godot_color *p_self) {
+	const Color *self = (const Color *)p_self;
+	return self->to_argb64();
+}
+
+godot_int GDAPI godot_color_to_rgba64(const godot_color *p_self) {
+	const Color *self = (const Color *)p_self;
+	return self->to_rgba64();
+}
+
 godot_int GDAPI godot_color_to_argb32(const godot_color *p_self) {
 	const Color *self = (const Color *)p_self;
 	return self->to_argb32();
-}
-
-godot_real GDAPI godot_color_gray(const godot_color *p_self) {
-	const Color *self = (const Color *)p_self;
-	return self->gray();
 }
 
 godot_color GDAPI godot_color_inverted(const godot_color *p_self) {
@@ -133,18 +148,11 @@ godot_color GDAPI godot_color_inverted(const godot_color *p_self) {
 	return dest;
 }
 
-godot_color GDAPI godot_color_contrasted(const godot_color *p_self) {
-	godot_color dest;
-	const Color *self = (const Color *)p_self;
-	*((Color *)&dest) = self->contrasted();
-	return dest;
-}
-
-godot_color GDAPI godot_color_linear_interpolate(const godot_color *p_self, const godot_color *p_b, const godot_real p_t) {
+godot_color GDAPI godot_color_lerp(const godot_color *p_self, const godot_color *p_b, const godot_real p_t) {
 	godot_color dest;
 	const Color *self = (const Color *)p_self;
 	const Color *b = (const Color *)p_b;
-	*((Color *)&dest) = self->linear_interpolate(*b, p_t);
+	*((Color *)&dest) = self->lerp(*b, p_t);
 	return dest;
 }
 
@@ -153,6 +161,27 @@ godot_color GDAPI godot_color_blend(const godot_color *p_self, const godot_color
 	const Color *self = (const Color *)p_self;
 	const Color *over = (const Color *)p_over;
 	*((Color *)&dest) = self->blend(*over);
+	return dest;
+}
+
+godot_color GDAPI godot_color_darkened(const godot_color *p_self, const godot_real p_amount) {
+	godot_color dest;
+	const Color *self = (const Color *)p_self;
+	*((Color *)&dest) = self->darkened(p_amount);
+	return dest;
+}
+
+godot_color GDAPI godot_color_from_hsv(const godot_color *p_self, const godot_real p_h, const godot_real p_s, const godot_real p_v, const godot_real p_a) {
+	godot_color dest;
+	const Color *self = (const Color *)p_self;
+	*((Color *)&dest) = self->from_hsv(p_h, p_s, p_v, p_a);
+	return dest;
+}
+
+godot_color GDAPI godot_color_lightened(const godot_color *p_self, const godot_real p_amount) {
+	godot_color dest;
+	const Color *self = (const Color *)p_self;
+	*((Color *)&dest) = self->lightened(p_amount);
 	return dest;
 }
 

@@ -1,42 +1,48 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextureButton" inherits="BaseButton" category="Core" version="3.1">
+<class name="TextureButton" inherits="BaseButton" version="4.0">
 	<brief_description>
 		Texture-based button. Supports Pressed, Hover, Disabled and Focused states.
 	</brief_description>
 	<description>
-		[code]TextureButton[/code] has the same functionality as [Button], except it uses sprites instead of Godot's [Theme] resource. It is faster to create, but it doesn't support localization like more complex Controls.
-		The Normal state's texture is required. Others are optional.
+		[TextureButton] has the same functionality as [Button], except it uses sprites instead of Godot's [Theme] resource. It is faster to create, but it doesn't support localization like more complex [Control]s.
+		The "normal" state must contain a texture ([member texture_normal]); other textures are optional.
+		See also [BaseButton] which contains common properties and methods associated with this node.
 	</description>
 	<tutorials>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="expand" type="bool" setter="set_expand" getter="get_expand">
-			If [code]true[/code] the texture stretches to the edges of the node's bounding rectangle using the [member stretch_mode]. If [code]false[/code] the texture will not scale with the node. Default value: [code]false[/code].
+		<member name="expand" type="bool" setter="set_expand" getter="get_expand" default="false">
+			If [code]true[/code], the texture stretches to the edges of the node's bounding rectangle using the [member stretch_mode]. If [code]false[/code], the texture will not scale with the node.
 		</member>
-		<member name="stretch_mode" type="int" setter="set_stretch_mode" getter="get_stretch_mode" enum="TextureButton.StretchMode">
-			Controls the texture's behavior when you resize the node's bounding rectangle, [b]only if[/b] [member expand] is [code]true[/code]. Set it to one of the [code]STRETCH_*[/code] constants. See the constants to learn more.
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
+			If [code]true[/code], texture is flipped horizontally.
+		</member>
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
+			If [code]true[/code], texture is flipped vertically.
+		</member>
+		<member name="stretch_mode" type="int" setter="set_stretch_mode" getter="get_stretch_mode" enum="TextureButton.StretchMode" default="0">
+			Controls the texture's behavior when you resize the node's bounding rectangle, [b]only if[/b] [member expand] is [code]true[/code]. Set it to one of the [enum StretchMode] constants. See the constants to learn more.
 		</member>
 		<member name="texture_click_mask" type="BitMap" setter="set_click_mask" getter="get_click_mask">
-			Pure black and white [Bitmap] image to use for click detection. On the mask, white pixels represent the button's clickable area. Use it to create buttons with curved shapes.
+			Pure black and white [BitMap] image to use for click detection. On the mask, white pixels represent the button's clickable area. Use it to create buttons with curved shapes.
 		</member>
-		<member name="texture_disabled" type="Texture" setter="set_disabled_texture" getter="get_disabled_texture">
+		<member name="texture_disabled" type="Texture2D" setter="set_disabled_texture" getter="get_disabled_texture">
 			Texture to display when the node is disabled. See [member BaseButton.disabled].
 		</member>
-		<member name="texture_focused" type="Texture" setter="set_focused_texture" getter="get_focused_texture">
+		<member name="texture_focused" type="Texture2D" setter="set_focused_texture" getter="get_focused_texture">
 			Texture to display when the node has mouse or keyboard focus.
 		</member>
-		<member name="texture_hover" type="Texture" setter="set_hover_texture" getter="get_hover_texture">
+		<member name="texture_hover" type="Texture2D" setter="set_hover_texture" getter="get_hover_texture">
 			Texture to display when the mouse hovers the node.
 		</member>
-		<member name="texture_normal" type="Texture" setter="set_normal_texture" getter="get_normal_texture">
+		<member name="texture_normal" type="Texture2D" setter="set_normal_texture" getter="get_normal_texture">
 			Texture to display by default, when the node is [b]not[/b] in the disabled, focused, hover or pressed state.
 		</member>
-		<member name="texture_pressed" type="Texture" setter="set_pressed_texture" getter="get_pressed_texture">
-			Texture to display on mouse down over the node, if the node has keyboard focus and the player presses the enter key or if the player presses the [member BaseButton.shortcut] key.
+		<member name="texture_pressed" type="Texture2D" setter="set_pressed_texture" getter="get_pressed_texture">
+			Texture to display on mouse down over the node, if the node has keyboard focus and the player presses the Enter key or if the player presses the [member BaseButton.shortcut] key.
 		</member>
 	</members>
 	<constants>

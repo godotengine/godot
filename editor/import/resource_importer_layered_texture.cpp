@@ -1,210 +1,372 @@
+/*************************************************************************/
+/*  resource_importer_layered_texture.cpp                                */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "resource_importer_layered_texture.h"
 
 #include "resource_importer_texture.h"
 
+#include "core/io/config_file.h"
+#include "core/io/image_loader.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "io/config_file.h"
-#include "io/image_loader.h"
+#include "resource_importer_texture.h"
 #include "scene/resources/texture.h"
 
 String ResourceImporterLayeredTexture::get_importer_name() const {
+	switch (mode) {
+		case MODE_CUBEMAP: {
+			return "cubemap_texture";
+		} break;
+		case MODE_2D_ARRAY: {
+			return "2d_array_texture";
+		} break;
+		case MODE_CUBEMAP_ARRAY: {
+			return "cubemap_array_texture";
+		} break;
+		case MODE_3D: {
+			return "3d_texture";
+		} break;
+	}
 
-	return is_3d ? "texture_3d" : "texture_array";
+	ERR_FAIL_V("");
 }
 
 String ResourceImporterLayeredTexture::get_visible_name() const {
+	switch (mode) {
+		case MODE_CUBEMAP: {
+			return "Cubemap";
+		} break;
+		case MODE_2D_ARRAY: {
+			return "Texture2DArray";
+		} break;
+		case MODE_CUBEMAP_ARRAY: {
+			return "CubemapArray";
+		} break;
+		case MODE_3D: {
+			return "Texture3D";
+		} break;
+	}
 
-	return is_3d ? "Texture3D" : "TextureArray";
+	ERR_FAIL_V("");
 }
-void ResourceImporterLayeredTexture::get_recognized_extensions(List<String> *p_extensions) const {
 
+void ResourceImporterLayeredTexture::get_recognized_extensions(List<String> *p_extensions) const {
 	ImageLoader::get_recognized_extensions(p_extensions);
 }
+
 String ResourceImporterLayeredTexture::get_save_extension() const {
-	return is_3d ? "tex3d" : "texarr";
+	switch (mode) {
+		case MODE_CUBEMAP: {
+			return "scube";
+		} break;
+		case MODE_2D_ARRAY: {
+			return "stexarray";
+		} break;
+		case MODE_CUBEMAP_ARRAY: {
+			return "scubearray";
+		} break;
+		case MODE_3D: {
+			return "stex3d";
+		} break;
+	}
+
+	ERR_FAIL_V(String());
 }
 
 String ResourceImporterLayeredTexture::get_resource_type() const {
-
-	return is_3d ? "Texture3D" : "TextureArray";
+	switch (mode) {
+		case MODE_CUBEMAP: {
+			return "StreamCubemap";
+		} break;
+		case MODE_2D_ARRAY: {
+			return "StreamTexture2DArray";
+		} break;
+		case MODE_CUBEMAP_ARRAY: {
+			return "StreamCubemapArray";
+		} break;
+		case MODE_3D: {
+			return "StreamTexture3D";
+		} break;
+	}
+	ERR_FAIL_V(String());
 }
 
 bool ResourceImporterLayeredTexture::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
-
+	if (p_option == "compress/lossy_quality" && p_options.has("compress/mode")) {
+		return int(p_options["compress/mode"]) == COMPRESS_LOSSY;
+	}
 	return true;
 }
 
 int ResourceImporterLayeredTexture::get_preset_count() const {
-	return 3;
+	return 0;
 }
+
 String ResourceImporterLayeredTexture::get_preset_name(int p_idx) const {
-
-	static const char *preset_names[] = {
-		"3D",
-		"2D",
-		"ColorCorrect"
-	};
-
-	return preset_names[p_idx];
+	return "";
 }
 
 void ResourceImporterLayeredTexture::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Lossless (PNG),Lossy (WebP),Video RAM (S3TC/ETC/BPTC),Uncompressed,Basis Universal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "compress/lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.7));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/hdr_compression", PROPERTY_HINT_ENUM, "Disabled,Opaque Only,Always"), 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/bptc_ldr", PROPERTY_HINT_ENUM, "Disabled,Enabled,RGBA Only"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mipmaps/generate"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mipmaps/limit", PROPERTY_HINT_RANGE, "-1,256"), -1));
 
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Lossless,Video RAM,Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), p_preset == PRESET_3D ? 1 : 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "flags/repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirrored"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "flags/filter"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "flags/mipmaps"), p_preset == PRESET_COLOR_CORRECT ? 0 : 1));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "flags/srgb", PROPERTY_HINT_ENUM, "Disable,Enable"), p_preset == PRESET_3D ? 1 : 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/horizontal", PROPERTY_HINT_RANGE, "1,256,1"), p_preset == PRESET_COLOR_CORRECT ? 16 : 8));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/vertical", PROPERTY_HINT_RANGE, "1,256,1"), p_preset == PRESET_COLOR_CORRECT ? 1 : 8));
+	if (mode == MODE_2D_ARRAY || mode == MODE_3D) {
+		r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/horizontal", PROPERTY_HINT_RANGE, "1,256,1"), 8));
+		r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/vertical", PROPERTY_HINT_RANGE, "1,256,1"), 8));
+	}
+	if (mode == MODE_CUBEMAP || mode == MODE_CUBEMAP_ARRAY) {
+		r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/arrangement", PROPERTY_HINT_ENUM, "1x6,2x3,3x2,6x1"), 1));
+		if (mode == MODE_CUBEMAP_ARRAY) {
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/layout", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/amount", PROPERTY_HINT_RANGE, "1,1024,1,or_greater"), 1));
+		}
+	}
 }
 
-void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_images, const String &p_to_path, int p_compress_mode, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags) {
+void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, Image::CompressMode p_vram_compression, Image::CompressSource p_csource, Image::UsedChannels used_channels, bool p_mipmaps, bool p_force_po2) {
+	Vector<Ref<Image>> mipmap_images; //for 3D
 
-	FileAccess *f = FileAccess::open(p_to_path, FileAccess::WRITE);
-	f->store_8('G');
-	f->store_8('D');
-	if (is_3d) {
-		f->store_8('3');
-	} else {
-		f->store_8('A');
-	}
-	f->store_8('T'); //godot streamable texture
+	if (mode == MODE_3D) {
+		//3D saves in its own way
 
-	f->store_32(p_images[0]->get_width());
-	f->store_32(p_images[0]->get_height());
-	f->store_32(p_images.size()); //depth
-	f->store_32(p_texture_flags);
-	if (p_compress_mode != COMPRESS_VIDEO_RAM) {
-		//vram needs to do a first compression to tell what the format is, for the rest its ok
-		f->store_32(p_images[0]->get_format());
-		f->store_32(p_compress_mode); // 0 - lossless (PNG), 1 - vram, 2 - uncompressed
-	}
+		for (int i = 0; i < p_images.size(); i++) {
+			if (p_images.write[i]->has_mipmaps()) {
+				p_images.write[i]->clear_mipmaps();
+			}
 
-	if ((p_compress_mode == COMPRESS_LOSSLESS) && p_images[0]->get_format() > Image::FORMAT_RGBA8) {
-		p_compress_mode = COMPRESS_UNCOMPRESSED; //these can't go as lossy
-	}
+			if (p_force_po2) {
+				p_images.write[i]->resize_to_po2();
+			}
+		}
 
-	for (int i = 0; i < p_images.size(); i++) {
+		if (p_mipmaps) {
+			Vector<Ref<Image>> parent_images = p_images;
+			//create 3D mipmaps, this is horrible, though not used very often
+			int w = p_images[0]->get_width();
+			int h = p_images[0]->get_height();
+			int d = p_images.size();
 
-		switch (p_compress_mode) {
-			case COMPRESS_LOSSLESS: {
+			while (w > 1 || h > 1 || d > 1) {
+				Vector<Ref<Image>> mipmaps;
+				int mm_w = MAX(1, w >> 1);
+				int mm_h = MAX(1, h >> 1);
+				int mm_d = MAX(1, d >> 1);
 
-				Ref<Image> image = p_images[i]->duplicate();
-				if (p_mipmaps) {
-					image->generate_mipmaps();
-				} else {
-					image->clear_mipmaps();
-				}
+				for (int i = 0; i < mm_d; i++) {
+					Ref<Image> mm;
+					mm.instance();
+					mm->create(mm_w, mm_h, false, p_images[0]->get_format());
+					Vector3 pos;
+					pos.z = float(i) * float(d) / float(mm_d) + 0.5;
+					for (int x = 0; x < mm_w; x++) {
+						for (int y = 0; y < mm_h; y++) {
+							pos.x = float(x) * float(w) / float(mm_w) + 0.5;
+							pos.y = float(y) * float(h) / float(mm_h) + 0.5;
 
-				int mmc = image->get_mipmap_count() + 1;
-				f->store_32(mmc);
+							Vector3i posi = Vector3i(pos);
+							Vector3 fract = pos - Vector3(posi);
+							Vector3i posi_n = posi;
+							if (posi_n.x < w - 1) {
+								posi_n.x++;
+							}
+							if (posi_n.y < h - 1) {
+								posi_n.y++;
+							}
+							if (posi_n.z < d - 1) {
+								posi_n.z++;
+							}
 
-				for (int i = 0; i < mmc; i++) {
+							Color c000 = parent_images[posi.z]->get_pixel(posi.x, posi.y);
+							Color c100 = parent_images[posi.z]->get_pixel(posi_n.x, posi.y);
+							Color c010 = parent_images[posi.z]->get_pixel(posi.x, posi_n.y);
+							Color c110 = parent_images[posi.z]->get_pixel(posi_n.x, posi_n.y);
+							Color c001 = parent_images[posi_n.z]->get_pixel(posi.x, posi.y);
+							Color c101 = parent_images[posi_n.z]->get_pixel(posi_n.x, posi.y);
+							Color c011 = parent_images[posi_n.z]->get_pixel(posi.x, posi_n.y);
+							Color c111 = parent_images[posi_n.z]->get_pixel(posi_n.x, posi_n.y);
 
-					if (i > 0) {
-						image->shrink_x2();
+							Color cx00 = c000.lerp(c100, fract.x);
+							Color cx01 = c001.lerp(c101, fract.x);
+							Color cx10 = c010.lerp(c110, fract.x);
+							Color cx11 = c011.lerp(c111, fract.x);
+
+							Color cy0 = cx00.lerp(cx10, fract.y);
+							Color cy1 = cx01.lerp(cx11, fract.y);
+
+							Color cz = cy0.lerp(cy1, fract.z);
+
+							mm->set_pixel(x, y, cz);
+						}
 					}
 
-					PoolVector<uint8_t> data = Image::lossless_packer(image);
-					int data_len = data.size();
-					f->store_32(data_len);
-
-					PoolVector<uint8_t>::Read r = data.read();
-					f->store_buffer(r.ptr(), data_len);
+					mipmaps.push_back(mm);
 				}
 
-			} break;
-			case COMPRESS_VIDEO_RAM: {
+				w = mm_w;
+				h = mm_h;
+				d = mm_d;
 
-				Ref<Image> image = p_images[i]->duplicate();
-				image->generate_mipmaps(false);
+				mipmap_images.append_array(mipmaps);
+				parent_images = mipmaps;
+			}
+		}
+	} else {
+		for (int i = 0; i < p_images.size(); i++) {
+			if (p_force_po2) {
+				p_images.write[i]->resize_to_po2();
+			}
 
-				Image::CompressSource csource = Image::COMPRESS_SOURCE_LAYERED;
-				image->compress(p_vram_compression, csource, 0.7);
-
-				if (i == 0) {
-					//hack so we can properly tell the format
-					f->store_32(image->get_format());
-					f->store_32(p_compress_mode); // 0 - lossless (PNG), 1 - vram, 2 - uncompressed
-				}
-
-				PoolVector<uint8_t> data = image->get_data();
-				int dl = data.size();
-
-				PoolVector<uint8_t>::Read r = data.read();
-				f->store_buffer(r.ptr(), dl);
-			} break;
-			case COMPRESS_UNCOMPRESSED: {
-
-				Ref<Image> image = p_images[i]->duplicate();
-
-				if (p_mipmaps) {
-					image->generate_mipmaps();
-				} else {
-					image->clear_mipmaps();
-				}
-
-				PoolVector<uint8_t> data = image->get_data();
-				int dl = data.size();
-
-				PoolVector<uint8_t>::Read r = data.read();
-
-				f->store_buffer(r.ptr(), dl);
-
-			} break;
+			if (p_mipmaps) {
+				p_images.write[i]->generate_mipmaps();
+			} else {
+				p_images.write[i]->clear_mipmaps();
+			}
 		}
 	}
 
-	memdelete(f);
+	FileAccessRef f = FileAccess::open(p_to_path, FileAccess::WRITE);
+	f->store_8('G');
+	f->store_8('S');
+	f->store_8('T');
+	f->store_8('L');
+
+	f->store_32(StreamTextureLayered::FORMAT_VERSION);
+	f->store_32(p_images.size()); //2d layers or 3d depth
+	f->store_32(mode);
+	f->store_32(0);
+
+	f->store_32(0);
+	f->store_32(mipmap_images.size()); // amount of mipmaps
+	f->store_32(0);
+	f->store_32(0);
+
+	for (int i = 0; i < p_images.size(); i++) {
+		ResourceImporterTexture::save_to_stex_format(f, p_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_lossy);
+	}
+
+	for (int i = 0; i < mipmap_images.size(); i++) {
+		ResourceImporterTexture::save_to_stex_format(f, mipmap_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_lossy);
+	}
+
+	f->close();
 }
 
-Error ResourceImporterLayeredTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
-
+Error ResourceImporterLayeredTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	int compress_mode = p_options["compress/mode"];
-	int repeat = p_options["flags/repeat"];
-	bool filter = p_options["flags/filter"];
-	bool mipmaps = p_options["flags/mipmaps"];
-	int srgb = p_options["flags/srgb"];
-	int hslices = p_options["slices/horizontal"];
-	int vslices = p_options["slices/vertical"];
+	float lossy = p_options["compress/lossy_quality"];
+	int hdr_compression = p_options["compress/hdr_compression"];
+	int bptc_ldr = p_options["compress/bptc_ldr"];
+	bool mipmaps = p_options["mipmaps/generate"];
+	//bool mipmap_limit = p_options["mipmaps/limit"];
+
+	int channel_pack = p_options["compress/channel_pack"];
+	int hslices = (p_options.has("slices/horizontal")) ? int(p_options["slices/horizontal"]) : 0;
+	int vslices = (p_options.has("slices/vertical")) ? int(p_options["slices/vertical"]) : 0;
+	int arrangement = (p_options.has("slices/arrangement")) ? int(p_options["slices/arrangement"]) : 0;
+	int layout = (p_options.has("slices/layout")) ? int(p_options["slices/layout"]) : 0;
+	int amount = (p_options.has("slices/amount")) ? int(p_options["slices/amount"]) : 0;
+
+	if (mode == MODE_CUBEMAP || mode == MODE_CUBEMAP_ARRAY) {
+		switch (arrangement) {
+			case CUBEMAP_FORMAT_1X6: {
+				hslices = 1;
+				vslices = 6;
+			} break;
+			case CUBEMAP_FORMAT_2X3: {
+				hslices = 2;
+				vslices = 3;
+			} break;
+			case CUBEMAP_FORMAT_3X2: {
+				hslices = 3;
+				vslices = 2;
+			} break;
+			case CUBEMAP_FORMAT_6X1: {
+				hslices = 6;
+				vslices = 1;
+			} break;
+		}
+
+		if (mode == MODE_CUBEMAP_ARRAY) {
+			if (layout == 0) {
+				hslices *= amount;
+			} else {
+				vslices *= amount;
+			}
+		}
+	}
 
 	Ref<Image> image;
 	image.instance();
-	Error err = ImageLoader::load_image(p_source_file, image, NULL, false, 1.0);
-	if (err != OK)
+	Error err = ImageLoader::load_image(p_source_file, image, nullptr, false, 1.0);
+	if (err != OK) {
 		return err;
+	}
 
-	int tex_flags = 0;
-	if (repeat > 0)
-		tex_flags |= Texture::FLAG_REPEAT;
-	if (repeat == 2)
-		tex_flags |= Texture::FLAG_MIRRORED_REPEAT;
-	if (filter)
-		tex_flags |= Texture::FLAG_FILTER;
-	if (mipmaps || compress_mode == COMPRESS_VIDEO_RAM)
-		tex_flags |= Texture::FLAG_MIPMAPS;
-	if (srgb == 1)
-		tex_flags |= Texture::FLAG_CONVERT_TO_LINEAR;
+	if (compress_mode == COMPRESS_BASIS_UNIVERSAL && image->get_format() >= Image::FORMAT_RF) {
+		//basis universal does not support float formats, fall back
+		compress_mode = COMPRESS_VRAM_COMPRESSED;
+	}
 
-	Vector<Ref<Image> > slices;
-
-	int slice_w = image->get_width() / hslices;
-	int slice_h = image->get_height() / vslices;
+	if (compress_mode == COMPRESS_VRAM_COMPRESSED) {
+		mipmaps = true;
+	}
 
 	//optimize
-	if (compress_mode == COMPRESS_VIDEO_RAM) {
+	if (compress_mode == COMPRESS_VRAM_COMPRESSED) {
 		//if using video ram, optimize
-		if (srgb) {
+		if (channel_pack == 0) {
 			//remove alpha if not needed, so compression is more efficient
 			if (image->get_format() == Image::FORMAT_RGBA8 && !image->detect_alpha()) {
 				image->convert(Image::FORMAT_RGB8);
 			}
-		} else {
+		} else if (image->get_format() < Image::FORMAT_RGBA8) {
 			image->optimize_channels();
 		}
 	}
+
+	Image::CompressSource csource = Image::COMPRESS_SOURCE_GENERIC;
+	if (channel_pack == 0) {
+		csource = Image::COMPRESS_SOURCE_SRGB;
+	}
+
+	Image::UsedChannels used_channels = image->detect_used_channels(csource);
+
+	Vector<Ref<Image>> slices;
+
+	int slice_w = image->get_width() / hslices;
+	int slice_h = image->get_height() / vslices;
 
 	for (int i = 0; i < vslices; i++) {
 		for (int j = 0; j < hslices; j++) {
@@ -220,54 +382,167 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	}
 
 	String extension = get_save_extension();
+	Array formats_imported;
 
-	if (compress_mode == COMPRESS_VIDEO_RAM) {
+	if (compress_mode == COMPRESS_VRAM_COMPRESSED) {
 		//must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
 		//Android, GLES 2.x
 
 		bool ok_on_pc = false;
+		bool is_hdr = (image->get_format() >= Image::FORMAT_RF && image->get_format() <= Image::FORMAT_RGBE9995);
+		bool is_ldr = (image->get_format() >= Image::FORMAT_L8 && image->get_format() <= Image::FORMAT_RGB565);
+		bool can_bptc = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_bptc");
+		bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc");
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc")) {
+		if (can_bptc) {
+			formats_imported.push_back("bptc"); //needs to be aded anyway
+		}
+		bool can_compress_hdr = hdr_compression > 0;
 
-			_save_tex(slices, p_save_path + ".s3tc." + extension, compress_mode, Image::COMPRESS_S3TC, mipmaps, tex_flags);
+		if (is_hdr && can_compress_hdr) {
+			if (used_channels == Image::USED_CHANNELS_LA || used_channels == Image::USED_CHANNELS_RGBA) {
+				//can compress hdr, but hdr with alpha is not compressible
+
+				if (hdr_compression == 2) {
+					//but user selected to compress hdr anyway, so force an alpha-less format.
+					if (image->get_format() == Image::FORMAT_RGBAF) {
+						for (int i = 0; i < slices.size(); i++) {
+							slices.write[i]->convert(Image::FORMAT_RGBF);
+						}
+
+					} else if (image->get_format() == Image::FORMAT_RGBAH) {
+						for (int i = 0; i < slices.size(); i++) {
+							slices.write[i]->convert(Image::FORMAT_RGBH);
+						}
+					}
+				} else {
+					can_compress_hdr = false;
+				}
+			}
+
+			if (can_compress_hdr) {
+				if (!can_bptc) {
+					//default to rgbe
+					if (image->get_format() != Image::FORMAT_RGBE9995) {
+						for (int i = 0; i < slices.size(); i++) {
+							slices.write[i]->convert(Image::FORMAT_RGBE9995);
+						}
+					}
+				}
+			} else {
+				can_bptc = false;
+			}
+		}
+
+		if (is_ldr && can_bptc) {
+			if (bptc_ldr == 0 || (bptc_ldr == 1 && !(used_channels == Image::USED_CHANNELS_LA || used_channels == Image::USED_CHANNELS_RGBA))) {
+				can_bptc = false;
+			}
+		}
+
+		if (can_bptc || can_s3tc) {
+			_save_tex(slices, p_save_path + ".s3tc." + extension, compress_mode, lossy, can_bptc ? Image::COMPRESS_BPTC : Image::COMPRESS_S3TC, csource, used_channels, mipmaps, false);
 			r_platform_variants->push_back("s3tc");
+			formats_imported.push_back("s3tc");
 			ok_on_pc = true;
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2")) {
-
-			_save_tex(slices, p_save_path + ".etc2." + extension, compress_mode, Image::COMPRESS_ETC2, mipmaps, tex_flags);
+			_save_tex(slices, p_save_path + ".etc2." + extension, compress_mode, lossy, Image::COMPRESS_ETC2, csource, used_channels, mipmaps, true);
 			r_platform_variants->push_back("etc2");
-		}
-
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc")) {
-			_save_tex(slices, p_save_path + ".etc." + extension, compress_mode, Image::COMPRESS_ETC, mipmaps, tex_flags);
-			r_platform_variants->push_back("etc");
+			formats_imported.push_back("etc2");
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc")) {
-
-			_save_tex(slices, p_save_path + ".pvrtc." + extension, compress_mode, Image::COMPRESS_PVRTC4, mipmaps, tex_flags);
+			_save_tex(slices, p_save_path + ".etc2." + extension, compress_mode, lossy, Image::COMPRESS_ETC2, csource, used_channels, mipmaps, true);
 			r_platform_variants->push_back("pvrtc");
+			formats_imported.push_back("pvrtc");
 		}
 
 		if (!ok_on_pc) {
-			EditorNode::add_io_error("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correcly on PC.");
+			EditorNode::add_io_error("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC.");
 		}
 	} else {
 		//import normally
-		_save_tex(slices, p_save_path + "." + extension, compress_mode, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, tex_flags);
+		_save_tex(slices, p_save_path + "." + extension, compress_mode, lossy, Image::COMPRESS_S3TC /* IGNORED */, csource, used_channels, mipmaps, false);
+	}
+
+	if (r_metadata) {
+		Dictionary metadata;
+		metadata["vram_texture"] = compress_mode == COMPRESS_VRAM_COMPRESSED;
+		if (formats_imported.size()) {
+			metadata["imported_formats"] = formats_imported;
+		}
+		*r_metadata = metadata;
 	}
 
 	return OK;
 }
 
-ResourceImporterLayeredTexture *ResourceImporterLayeredTexture::singleton = NULL;
+const char *ResourceImporterLayeredTexture::compression_formats[] = {
+	"bptc",
+	"s3tc",
+	"etc",
+	"etc2",
+	"pvrtc",
+	nullptr
+};
+String ResourceImporterLayeredTexture::get_import_settings_string() const {
+	String s;
+
+	int index = 0;
+	while (compression_formats[index]) {
+		String setting_path = "rendering/vram_compression/import_" + String(compression_formats[index]);
+		bool test = ProjectSettings::get_singleton()->get(setting_path);
+		if (test) {
+			s += String(compression_formats[index]);
+		}
+		index++;
+	}
+
+	return s;
+}
+
+bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_path) const {
+	//will become invalid if formats are missing to import
+	Dictionary metadata = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
+
+	if (!metadata.has("vram_texture")) {
+		return false;
+	}
+
+	bool vram = metadata["vram_texture"];
+	if (!vram) {
+		return true; //do not care about non vram
+	}
+
+	Vector<String> formats_imported;
+	if (metadata.has("imported_formats")) {
+		formats_imported = metadata["imported_formats"];
+	}
+
+	int index = 0;
+	bool valid = true;
+	while (compression_formats[index]) {
+		String setting_path = "rendering/vram_compression/import_" + String(compression_formats[index]);
+		bool test = ProjectSettings::get_singleton()->get(setting_path);
+		if (test) {
+			if (formats_imported.find(compression_formats[index]) == -1) {
+				valid = false;
+				break;
+			}
+		}
+		index++;
+	}
+
+	return valid;
+}
+
+ResourceImporterLayeredTexture *ResourceImporterLayeredTexture::singleton = nullptr;
 
 ResourceImporterLayeredTexture::ResourceImporterLayeredTexture() {
-
 	singleton = this;
-	is_3d = true;
+	mode = MODE_CUBEMAP;
 }
 
 ResourceImporterLayeredTexture::~ResourceImporterLayeredTexture() {

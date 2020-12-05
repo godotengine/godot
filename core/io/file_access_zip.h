@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,35 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef MINIZIP_ENABLED
-
 #ifndef FILE_ACCESS_ZIP_H
 #define FILE_ACCESS_ZIP_H
 
+#ifdef MINIZIP_ENABLED
+
 #include "core/io/file_access_pack.h"
-#include "map.h"
+#include "core/templates/map.h"
 
 #include "thirdparty/minizip/unzip.h"
 
 #include <stdlib.h>
 
 class ZipArchive : public PackSource {
-
 public:
 	struct File {
-
-		int package;
+		int package = -1;
 		unz_file_pos file_pos;
-		File() {
-
-			package = -1;
-		};
+		File() {}
 	};
 
 private:
 	struct Package {
 		String filename;
-		unzFile zfile;
+		unzFile zfile = nullptr;
 	};
 	Vector<Package> packages;
 
@@ -74,7 +69,7 @@ public:
 
 	bool file_exists(String p_name) const;
 
-	virtual bool try_open_pack(const String &p_path);
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset);
 	FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file);
 
 	static ZipArchive *get_singleton();
@@ -84,13 +79,10 @@ public:
 };
 
 class FileAccessZip : public FileAccess {
-
-	unzFile zfile;
+	unzFile zfile = nullptr;
 	unz_file_info64 file_info;
 
 	mutable bool at_eof;
-
-	ZipArchive *archive;
 
 public:
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
@@ -114,11 +106,13 @@ public:
 	virtual bool file_exists(const String &p_name); ///< return true if a file exists
 
 	virtual uint64_t _get_modified_time(const String &p_file) { return 0; } // todo
+	virtual uint32_t _get_unix_permissions(const String &p_file) { return 0; }
+	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) { return FAILED; }
 
 	FileAccessZip(const String &p_path, const PackedData::PackedFile &p_file);
 	~FileAccessZip();
 };
 
-#endif // FILE_ACCESS_ZIP_H
-
 #endif // MINIZIP_ENABLED
+
+#endif // FILE_ACCESS_ZIP_H

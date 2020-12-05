@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,11 @@
 #ifndef SHORTCUT_H
 #define SHORTCUT_H
 
-#include "os/input_event.h"
-#include "resource.h"
+#include "core/input/input_event.h"
+#include "core/io/resource.h"
 
-class ShortCut : public Resource {
-
-	GDCLASS(ShortCut, Resource);
+class Shortcut : public Resource {
+	GDCLASS(Shortcut, Resource);
 
 	Ref<InputEvent> shortcut;
 
@@ -51,7 +50,7 @@ public:
 
 	String get_as_text() const;
 
-	ShortCut();
+	Shortcut();
 };
 
 #endif // SHORTCUT_H

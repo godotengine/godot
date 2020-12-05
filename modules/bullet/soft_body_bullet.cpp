@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,22 +32,11 @@
 
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
-#include "scene/3d/soft_body.h"
+#include "scene/3d/soft_body_3d.h"
 #include "space_bullet.h"
 
 SoftBodyBullet::SoftBodyBullet() :
-		CollisionObjectBullet(CollisionObjectBullet::TYPE_SOFT_BODY),
-		total_mass(1),
-		simulation_precision(5),
-		linear_stiffness(0.5),
-		areaAngular_stiffness(0.5),
-		volume_stiffness(0.5),
-		pressure_coefficient(0.),
-		pose_matching_coefficient(0.),
-		damping_coefficient(0.01),
-		drag_coefficient(0.),
-		bt_soft_body(NULL),
-		isScratched(false) {}
+		CollisionObjectBullet(CollisionObjectBullet::TYPE_SOFT_BODY) {}
 
 SoftBodyBullet::~SoftBodyBullet() {
 }
@@ -72,19 +61,14 @@ void SoftBodyBullet::set_space(SpaceBullet *p_space) {
 	}
 }
 
-void SoftBodyBullet::dispatch_callbacks() {}
-
-void SoftBodyBullet::on_collision_filters_change() {}
-
-void SoftBodyBullet::on_collision_checker_start() {}
-
 void SoftBodyBullet::on_enter_area(AreaBullet *p_area) {}
 
 void SoftBodyBullet::on_exit_area(AreaBullet *p_area) {}
 
-void SoftBodyBullet::update_visual_server(SoftBodyVisualServerHandler *p_visual_server_handler) {
-	if (!bt_soft_body)
+void SoftBodyBullet::update_rendering_server(SoftBodyRenderingServerHandler *p_rendering_server_handler) {
+	if (!bt_soft_body) {
 		return;
+	}
 
 	/// Update visual server vertices
 	const btSoftBody::tNodeArray &nodes(bt_soft_body->m_nodes);
@@ -102,8 +86,8 @@ void SoftBodyBullet::update_visual_server(SoftBodyVisualServerHandler *p_visual_
 
 		const int vs_indices_size(vs_indices->size());
 		for (int x = 0; x < vs_indices_size; ++x) {
-			p_visual_server_handler->set_vertex((*vs_indices)[x], vertex_position);
-			p_visual_server_handler->set_normal((*vs_indices)[x], vertex_normal);
+			p_rendering_server_handler->set_vertex((*vs_indices)[x], vertex_position);
+			p_rendering_server_handler->set_normal((*vs_indices)[x], vertex_normal);
 		}
 	}
 
@@ -118,31 +102,30 @@ void SoftBodyBullet::update_visual_server(SoftBodyVisualServerHandler *p_visual_
 	B_TO_G(aabb_min, aabb.position);
 	B_TO_G(size, aabb.size);
 
-	p_visual_server_handler->set_aabb(aabb);
+	p_rendering_server_handler->set_aabb(aabb);
 }
 
 void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
-
-	if (p_mesh.is_null())
+	if (p_mesh.is_null()) {
 		soft_mesh.unref();
-	else
+	} else {
 		soft_mesh = p_mesh;
+	}
 
 	if (soft_mesh.is_null()) {
-
 		destroy_soft_body();
 		return;
 	}
 
 	Array arrays = soft_mesh->surface_get_arrays(0);
-	ERR_FAIL_COND(!(soft_mesh->surface_get_format(0) & VS::ARRAY_FORMAT_INDEX));
-	set_trimesh_body_shape(arrays[VS::ARRAY_INDEX], arrays[VS::ARRAY_VERTEX]);
+	ERR_FAIL_COND(!(soft_mesh->surface_get_format(0) & RS::ARRAY_FORMAT_INDEX));
+	set_trimesh_body_shape(arrays[RS::ARRAY_INDEX], arrays[RS::ARRAY_VERTEX]);
 }
 
 void SoftBodyBullet::destroy_soft_body() {
-
-	if (!bt_soft_body)
+	if (!bt_soft_body) {
 		return;
+	}
 
 	if (space) {
 		/// Remove from world before deletion
@@ -150,7 +133,7 @@ void SoftBodyBullet::destroy_soft_body() {
 	}
 
 	destroyBulletCollisionObject();
-	bt_soft_body = NULL;
+	bt_soft_body = nullptr;
 }
 
 void SoftBodyBullet::set_soft_transform(const Transform &p_transform) {
@@ -159,8 +142,9 @@ void SoftBodyBullet::set_soft_transform(const Transform &p_transform) {
 }
 
 void SoftBodyBullet::move_all_nodes(const Transform &p_transform) {
-	if (!bt_soft_body)
+	if (!bt_soft_body) {
 		return;
+	}
 	btTransform bt_transf;
 	G_TO_B(p_transform, bt_transf);
 	bt_soft_body->transform(bt_transf);
@@ -174,6 +158,7 @@ void SoftBodyBullet::set_node_position(int p_node_index, const Vector3 &p_global
 
 void SoftBodyBullet::set_node_position(int p_node_index, const btVector3 &p_global_position) {
 	if (bt_soft_body) {
+		bt_soft_body->m_nodes[p_node_index].m_q = bt_soft_body->m_nodes[p_node_index].m_x;
 		bt_soft_body->m_nodes[p_node_index].m_x = p_global_position;
 	}
 }
@@ -185,11 +170,12 @@ void SoftBodyBullet::get_node_position(int p_node_index, Vector3 &r_position) co
 }
 
 void SoftBodyBullet::get_node_offset(int p_node_index, Vector3 &r_offset) const {
-	if (soft_mesh.is_null())
+	if (soft_mesh.is_null()) {
 		return;
+	}
 
 	Array arrays = soft_mesh->surface_get_arrays(0);
-	PoolVector<Vector3> vertices(arrays[VS::ARRAY_VERTEX]);
+	Vector<Vector3> vertices(arrays[RS::ARRAY_VERTEX]);
 
 	if (0 <= p_node_index && vertices.size() > p_node_index) {
 		r_offset = vertices[p_node_index];
@@ -231,15 +217,15 @@ void SoftBodyBullet::reset_all_node_mass() {
 }
 
 void SoftBodyBullet::reset_all_node_positions() {
-	if (soft_mesh.is_null())
+	if (soft_mesh.is_null()) {
 		return;
+	}
 
 	Array arrays = soft_mesh->surface_get_arrays(0);
-	PoolVector<Vector3> vs_vertices(arrays[VS::ARRAY_VERTEX]);
-	PoolVector<Vector3>::Read vs_vertices_read = vs_vertices.read();
+	Vector<Vector3> vs_vertices(arrays[RS::ARRAY_VERTEX]);
+	const Vector3 *vs_vertices_read = vs_vertices.ptr();
 
 	for (int vertex_index = bt_soft_body->m_nodes.size() - 1; 0 <= vertex_index; --vertex_index) {
-
 		G_TO_B(vs_vertices_read[indices_table[vertex_index][0]], bt_soft_body->m_nodes[vertex_index].m_x);
 
 		bt_soft_body->m_nodes[vertex_index].m_q = bt_soft_body->m_nodes[vertex_index].m_x;
@@ -325,7 +311,7 @@ void SoftBodyBullet::set_drag_coefficient(real_t p_val) {
 	}
 }
 
-void SoftBodyBullet::set_trimesh_body_shape(PoolVector<int> p_indices, PoolVector<Vector3> p_vertices) {
+void SoftBodyBullet::set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector3> p_vertices) {
 	/// Assert the current soft body is destroyed
 	destroy_soft_body();
 
@@ -344,10 +330,9 @@ void SoftBodyBullet::set_trimesh_body_shape(PoolVector<int> p_indices, PoolVecto
 
 			const int vs_vertices_size(p_vertices.size());
 
-			PoolVector<Vector3>::Read p_vertices_read = p_vertices.read();
+			const Vector3 *p_vertices_read = p_vertices.ptr();
 
 			for (int vs_vertex_index = 0; vs_vertex_index < vs_vertices_size; ++vs_vertex_index) {
-
 				Map<Vector3, int>::Element *e = unique_vertices.find(p_vertices_read[vs_vertex_index]);
 				int vertex_id;
 				if (e) {
@@ -371,7 +356,7 @@ void SoftBodyBullet::set_trimesh_body_shape(PoolVector<int> p_indices, PoolVecto
 		{ // Parse vertices to bullet
 
 			bt_vertices.resize(indices_map_size * 3);
-			PoolVector<Vector3>::Read p_vertices_read = p_vertices.read();
+			const Vector3 *p_vertices_read = p_vertices.ptr();
 
 			for (int i = 0; i < indices_map_size; ++i) {
 				bt_vertices.write[3 * i + 0] = p_vertices_read[indices_table[i][0]].x;
@@ -387,7 +372,7 @@ void SoftBodyBullet::set_trimesh_body_shape(PoolVector<int> p_indices, PoolVecto
 
 			bt_triangles.resize(triangles_size * 3);
 
-			PoolVector<int>::Read p_indices_read = p_indices.read();
+			const int *p_indices_read = p_indices.ptr();
 
 			for (int i = 0; i < triangles_size; ++i) {
 				bt_triangles.write[3 * i + 0] = vs_indices_to_physics_table[p_indices_read[3 * i + 2]];
@@ -403,13 +388,13 @@ void SoftBodyBullet::set_trimesh_body_shape(PoolVector<int> p_indices, PoolVecto
 }
 
 void SoftBodyBullet::setup_soft_body() {
-
-	if (!bt_soft_body)
+	if (!bt_soft_body) {
 		return;
+	}
 
 	// Soft body setup
 	setupBulletCollisionObject(bt_soft_body);
-	bt_soft_body->m_worldInfo = NULL; // Remove fake world info
+	bt_soft_body->m_worldInfo = nullptr; // Remove fake world info
 	bt_soft_body->getCollisionShape()->setMargin(0.01);
 	bt_soft_body->setCollisionFlags(bt_soft_body->getCollisionFlags() & (~(btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_STATIC_OBJECT)));
 

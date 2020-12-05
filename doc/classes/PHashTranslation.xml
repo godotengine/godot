@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PHashTranslation" inherits="Translation" category="Core" version="3.1">
+<class name="PHashTranslation" inherits="Translation" version="4.0">
 	<brief_description>
 		Optimized translation.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="generate">
 			<return type="void">
@@ -17,6 +15,7 @@
 			<argument index="0" name="from" type="Translation">
 			</argument>
 			<description>
+				Generates and sets an optimized translation from the given [Translation] resource.
 			</description>
 		</method>
 	</methods>

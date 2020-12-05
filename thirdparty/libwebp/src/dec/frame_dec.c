@@ -338,7 +338,6 @@ void VP8InitDithering(const WebPDecoderOptions* const options,
       for (s = 0; s < NUM_MB_SEGMENTS; ++s) {
         VP8QuantMatrix* const dqm = &dec->dqm_[s];
         if (dqm->uv_quant_ < DITHER_AMP_TAB_SIZE) {
-          // TODO(skal): should we specially dither more for uv_quant_ < 0?
           const int idx = (dqm->uv_quant_ < 0) ? 0 : dqm->uv_quant_;
           dqm->dither_ = (f * kQuantToDitherAmp[idx]) >> 3;
         }
@@ -669,15 +668,9 @@ int VP8GetThreadMethod(const WebPDecoderOptions* const options,
   (void)height;
   assert(headers == NULL || !headers->is_lossless);
 #if defined(WEBP_USE_THREAD)
-  if (width < MIN_WIDTH_FOR_THREADS) return 0;
-  // TODO(skal): tune the heuristic further
-#if 0
-  if (height < 2 * width) return 2;
+  if (width >= MIN_WIDTH_FOR_THREADS) return 2;
 #endif
-  return 2;
-#else   // !WEBP_USE_THREAD
   return 0;
-#endif
 }
 
 #undef MT_CACHE_LINES
@@ -739,7 +732,7 @@ static int AllocateMemory(VP8Decoder* const dec) {
   mem += f_info_size;
   dec->thread_ctx_.id_ = 0;
   dec->thread_ctx_.f_info_ = dec->f_info_;
-  if (dec->mt_method_ > 0) {
+  if (dec->filter_type_ > 0 && dec->mt_method_ > 0) {
     // secondary cache line. The deblocking process need to make use of the
     // filtering strength from previous macroblock row, while the new ones
     // are being decoded in parallel. We'll just swap the pointers.

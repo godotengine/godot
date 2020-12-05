@@ -1,4 +1,4 @@
-.TH GODOT "6" "Februaryot 2018" "godot 3.1" "Games"
+.TH GODOT "6" "January 2020" "godot 4.0" "Games"
 .SH NAME
 godot \- multi\-platform 2D and 3D game engine with a feature\-rich editor
 .SH SYNOPSIS
@@ -56,10 +56,10 @@ Remote filesystem (<host/IP>[:<port>] address).
 Password for remote filesystem.
 .TP
 \fB\-\-audio\-driver\fR <driver>
-Audio driver ('PulseAudio', 'ALSA').
+Audio driver ('PulseAudio', 'ALSA', 'Dummy').
 .TP
 \fB\-\-video\-driver\fR <driver>
-Video driver ('GLES3', 'GLES2').
+Video driver ('Vulkan', 'GLES2').
 .SS "Display options:"
 .TP
 \fB\-f\fR, \fB\-\-fullscreen\fR
@@ -85,6 +85,12 @@ Force low\-DPI mode (macOS and Windows only).
 .TP
 \fB\-\-no\-window\fR
 Disable window creation (Windows only). Useful together with \fB\-\-script\fR.
+.TP
+\fB\-\-enable\-vsync\-via\-compositor\fR
+When vsync is enabled, vsync via the OS' window compositor (Windows only).
+.TP
+\fB\-\-disable\-vsync\-via\-compositor\fR
+Disable vsync via the OS' window compositor (Windows only).
 .SS "Debug options:"
 .TP
 \fB\-d\fR, \fB\-\-debug\fR
@@ -130,11 +136,16 @@ Run a script.
 \fB\-\-check\-only\fR
 Only parse for errors and quit (use with --script).
 .TP
-\fB\-\-export\fR <target>
-Export the project using the given export target. Export only main pack if path ends with .pck or .zip.
+\fB\-\-export\fR <preset> <path>
+Export the project using the given preset and matching release template. The preset name should match one defined in export_presets.cfg.
+.br
+<path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe'). The target directory should exist.
 .TP
-\fB\-\-export\-debug\fR
-Like \-\-export, but use debug template.
+\fB\-\-export\-debug\fR <preset> <path>
+Same as \-\-export, but using the debug template.
+.TP
+\fB\-\-export\-pack\fR <preset> <path>
+Same as \-\-export, but only export the game pack for the given preset. The <path> extension determines whether it will be in PCK or ZIP format.
 .TP
 \fB\-\-doctool\fR <path>
 Dump the engine API reference to the given <path> in XML format, merging if existing files are found.
@@ -143,13 +154,13 @@ Dump the engine API reference to the given <path> in XML format, merging if exis
 Disallow dumping the base types (used with \fB\-\-doctool\fR).
 .TP
 \fB\-\-build\-solutions\fR
-Build the scripting solutions (e.g. for C# projects).
+Build the scripting solutions (e.g. for C# projects). Implies \-\-editor and requires a valid project to edit.
 .TP
 \fB\-\-gdnative\-generate\-json\-api\fR
 Generate JSON dump of the Godot API for GDNative bindings.
 .TP
 \fB\-\-test\fR <test>
-Run a unit test ('string', 'math', 'physics', 'physics_2d', 'render', 'oa_hash_map', 'gui', 'io', 'shaderlang', 'gd_tokenizer', 'gd_parser', 'gd_compiler', 'gd_bytecode', 'image', 'ordered_hash_map').
+Run a unit test ('string', 'math', 'physics', 'physics_2d', 'render', 'oa_hash_map', 'gui', 'shaderlang', 'gd_tokenizer', 'gd_parser', 'gd_compiler', 'gd_bytecode', 'ordered_hash_map', 'astar').
 .SH FILES
 XDG_DATA_CONFIG/godot/ or ~/.config/godot/
 .RS
@@ -179,5 +190,5 @@ Godot Engine is a free and open source project and welcomes any kind of
 contributions. In particular, you can report issues or make suggestions on
 Godot's issue tracker at \fIhttps://github.com/godotengine/godot/issues\fR.
 .SH AUTHOR
-Man page written by Rémi Verschelde <akien@godotengine.org> on behalf of the
+Man page written by Rémi Verschelde <remi@godotengine.org> on behalf of the
 Godot Engine development team.

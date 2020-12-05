@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,45 +32,33 @@
 
 #include "mono_gd/gd_mono.h"
 
-uint32_t MonoGCHandle::make_strong_handle(MonoObject *p_object) {
-
-	return mono_gchandle_new(p_object, /* pinned: */ false);
-}
-
-uint32_t MonoGCHandle::make_weak_handle(MonoObject *p_object) {
-
-	return mono_gchandle_new_weakref(p_object, /* track_resurrection: */ false);
-}
-
-Ref<MonoGCHandle> MonoGCHandle::create_strong(MonoObject *p_object) {
-
-	return memnew(MonoGCHandle(make_strong_handle(p_object)));
-}
-
-Ref<MonoGCHandle> MonoGCHandle::create_weak(MonoObject *p_object) {
-
-	return memnew(MonoGCHandle(make_weak_handle(p_object)));
-}
-
-void MonoGCHandle::release() {
-
+void MonoGCHandleData::release() {
 #ifdef DEBUG_ENABLED
-	CRASH_COND(GDMono::get_singleton() == NULL);
+	CRASH_COND(handle && GDMono::get_singleton() == nullptr);
 #endif
 
-	if (!released && GDMono::get_singleton()->is_runtime_initialized()) {
-		mono_gchandle_free(handle);
-		released = true;
+	if (handle && GDMono::get_singleton()->is_runtime_initialized()) {
+		GDMonoUtils::free_gchandle(handle);
+		handle = 0;
 	}
 }
 
-MonoGCHandle::MonoGCHandle(uint32_t p_handle) {
-
-	released = false;
-	handle = p_handle;
+MonoGCHandleData MonoGCHandleData::new_strong_handle(MonoObject *p_object) {
+	return MonoGCHandleData(GDMonoUtils::new_strong_gchandle(p_object), gdmono::GCHandleType::STRONG_HANDLE);
 }
 
-MonoGCHandle::~MonoGCHandle() {
+MonoGCHandleData MonoGCHandleData::new_strong_handle_pinned(MonoObject *p_object) {
+	return MonoGCHandleData(GDMonoUtils::new_strong_gchandle_pinned(p_object), gdmono::GCHandleType::STRONG_HANDLE);
+}
 
-	release();
+MonoGCHandleData MonoGCHandleData::new_weak_handle(MonoObject *p_object) {
+	return MonoGCHandleData(GDMonoUtils::new_weak_gchandle(p_object), gdmono::GCHandleType::WEAK_HANDLE);
+}
+
+Ref<MonoGCHandleRef> MonoGCHandleRef::create_strong(MonoObject *p_object) {
+	return memnew(MonoGCHandleRef(MonoGCHandleData::new_strong_handle(p_object)));
+}
+
+Ref<MonoGCHandleRef> MonoGCHandleRef::create_weak(MonoObject *p_object) {
+	return memnew(MonoGCHandleRef(MonoGCHandleData::new_weak_handle(p_object)));
 }

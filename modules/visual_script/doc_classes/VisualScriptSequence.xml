@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptSequence" inherits="VisualScriptNode" category="Core" version="3.1">
+<class name="VisualScriptSequence" inherits="VisualScriptNode" version="4.0">
 	<brief_description>
 		Executes a series of Sequence ports.
 	</brief_description>
@@ -14,12 +14,10 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="steps" type="int" setter="set_steps" getter="get_steps">
+		<member name="steps" type="int" setter="set_steps" getter="get_steps" default="1">
 			The number of steps in the sequence.
 		</member>
 	</members>

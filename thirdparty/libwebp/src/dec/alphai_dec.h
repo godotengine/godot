@@ -51,4 +51,4 @@ void WebPDeallocateAlphaMemory(VP8Decoder* const dec);
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_DEC_ALPHAI_DEC_H_ */
+#endif  // WEBP_DEC_ALPHAI_DEC_H_

@@ -32,4 +32,4 @@ int WebPDequantizeLevels(uint8_t* const data, int width, int height, int stride,
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_UTILS_QUANT_LEVELS_DEC_UTILS_H_ */
+#endif  // WEBP_UTILS_QUANT_LEVELS_DEC_UTILS_H_

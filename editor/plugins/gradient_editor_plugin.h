@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_
-#define TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_
+#ifndef GRADIENT_EDITOR_PLUGIN_H
+#define GRADIENT_EDITOR_PLUGIN_H
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/gradient_edit.h"
 
 class GradientEditor : public GradientEdit {
-	GDCLASS(GradientEditor, GradientEdit)
+	GDCLASS(GradientEditor, GradientEdit);
 
 	bool editing;
 	Ref<Gradient> gradient;
@@ -48,26 +48,26 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	void set_gradient(const Ref<Gradient> &p_gradient);
 	GradientEditor();
 };
 
 class EditorInspectorPluginGradient : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorPluginGradient, EditorInspectorPlugin)
+	GDCLASS(EditorInspectorPluginGradient, EditorInspectorPlugin);
+
 public:
-	virtual bool can_handle(Object *p_object);
-	virtual void parse_begin(Object *p_object);
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
 };
 
 class GradientEditorPlugin : public EditorPlugin {
-
 	GDCLASS(GradientEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const { return "ColorRamp"; }
+	virtual String get_name() const override { return "Gradient"; }
 
 	GradientEditorPlugin(EditorNode *p_node);
 };
 
-#endif /* TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_ */
+#endif // GRADIENT_EDITOR_PLUGIN_H

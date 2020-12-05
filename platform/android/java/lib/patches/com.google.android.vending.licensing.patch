@@ -1,0 +1,42 @@
+diff --git a/platform/android/java/src/com/google/android/vending/licensing/PreferenceObfuscator.java b/platform/android/java/src/com/google/android/vending/licensing/PreferenceObfuscator.java
+index 7c42bfc28..feb579af0 100644
+--- a/platform/android/java/src/com/google/android/vending/licensing/PreferenceObfuscator.java
++++ b/platform/android/java/src/com/google/android/vending/licensing/PreferenceObfuscator.java
+@@ -45,6 +45,9 @@ public class PreferenceObfuscator {
+     public void putString(String key, String value) {
+         if (mEditor == null) {
+             mEditor = mPreferences.edit();
++            // -- GODOT start --
++            mEditor.apply();
++            // -- GODOT end --
+         }
+         String obfuscatedValue = mObfuscator.obfuscate(value, key);
+         mEditor.putString(key, obfuscatedValue);
+diff --git a/platform/android/java/src/com/google/android/vending/licensing/util/Base64.java b/platform/android/java/src/com/google/android/vending/licensing/util/Base64.java
+index a0d2779af..a8bf65f9c 100644
+--- a/platform/android/java/src/com/google/android/vending/licensing/util/Base64.java
++++ b/platform/android/java/src/com/google/android/vending/licensing/util/Base64.java
+@@ -31,6 +31,10 @@ package com.google.android.vending.licensing.util;
+  * @version 1.3
+  */
+ 
++// -- GODOT start --
+import org.godotengine.godot.BuildConfig;
++// -- GODOT end --
++
+ /**
+  * Base64 converter class. This code is not a full-blown MIME encoder;
+  * it simply converts binary data to base64 data and back.
+@@ -341,7 +345,11 @@ public class Base64 {
+       e += 4;
+     }
+ 
+-    assert (e == outBuff.length);
++    // -- GODOT start --
++    //assert (e == outBuff.length);
++    if (BuildConfig.DEBUG && e != outBuff.length)
++      throw new RuntimeException();
++    // -- GODOT end --
+     return outBuff;
+   }
+ 

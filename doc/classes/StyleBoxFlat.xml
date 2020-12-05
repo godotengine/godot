@@ -1,36 +1,72 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StyleBoxFlat" inherits="StyleBox" category="Core" version="3.1">
+<class name="StyleBoxFlat" inherits="StyleBox" version="4.0">
 	<brief_description>
-		Customizable Stylebox with a given set of parameters. (no texture required)
+		Customizable [StyleBox] with a given set of parameters (no texture required).
 	</brief_description>
 	<description>
-		This stylebox can be used to achieve all kinds of looks without the need of a texture. Those properties are customizable:
-		 - Color
-		 - Border width (individual width for each border)
-		 - Rounded corners (individual radius for each corner)
-		 - Shadow
-		 About corner radius:
-		 	Setting corner radius to high values is allowed. As soon as corners would overlap the stylebox will switch to a relative system. Example:
-			[codeblock]
-			height = 30
-			corner_radius_top_left = 50
-			corner_radius_bottom_left = 100
-			[/codeblock]
-			The relative system now would take the 1:2 ratio of the two left corners to calculate the actual corner width. Both corners added will [b]never[/b] be more than the height. Result:
-			[codeblock]
-			corner_radius_top_left: 10
-			corner_radius_bottom_left: 20
-			[/codeblock]
+		This [StyleBox] can be used to achieve all kinds of looks without the need of a texture. Those properties are customizable:
+		- Color
+		- Border width (individual width for each border)
+		- Rounded corners (individual radius for each corner)
+		- Shadow (with blur and offset)
+		Setting corner radius to high values is allowed. As soon as corners would overlap, the stylebox will switch to a relative system. Example:
+		[codeblock]
+		height = 30
+		corner_radius_top_left = 50
+		corner_radius_bottom_left = 100
+		[/codeblock]
+		The relative system now would take the 1:2 ratio of the two left corners to calculate the actual corner width. Both corners added will [b]never[/b] be more than the height. Result:
+		[codeblock]
+		corner_radius_top_left: 10
+		corner_radius_bottom_left: 20
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
+		<method name="get_border_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<description>
+				Returns the given [code]margin[/code]'s border width. See [enum Margin] for possible values.
+			</description>
+		</method>
 		<method name="get_border_width_min" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the smallest border width out of all four borders.
+			</description>
+		</method>
+		<method name="get_corner_radius" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="corner" type="int" enum="Corner">
+			</argument>
+			<description>
+				Returns the given [code]corner[/code]'s radius. See [enum Corner] for possible values.
+			</description>
+		</method>
+		<method name="get_expand_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<description>
+				Returns the size of the given [code]margin[/code]'s expand margin. See [enum Margin] for possible values.
+			</description>
+		</method>
+		<method name="set_border_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<argument index="1" name="width" type="int">
+			</argument>
+			<description>
+				Sets the border width to [code]width[/code] pixels for the given [code]margin[/code]. See [enum Margin] for possible values.
 			</description>
 		</method>
 		<method name="set_border_width_all">
@@ -39,6 +75,18 @@
 			<argument index="0" name="width" type="int">
 			</argument>
 			<description>
+				Sets the border width to [code]width[/code] pixels for all margins.
+			</description>
+		</method>
+		<method name="set_corner_radius">
+			<return type="void">
+			</return>
+			<argument index="0" name="corner" type="int" enum="Corner">
+			</argument>
+			<argument index="1" name="radius" type="int">
+			</argument>
+			<description>
+				Sets the corner radius to [code]radius[/code] pixels for the given [code]corner[/code]. See [enum Corner] for possible values.
 			</description>
 		</method>
 		<method name="set_corner_radius_all">
@@ -47,6 +95,7 @@
 			<argument index="0" name="radius" type="int">
 			</argument>
 			<description>
+				Sets the corner radius to [code]radius[/code] pixels for all corners.
 			</description>
 		</method>
 		<method name="set_corner_radius_individual">
@@ -61,6 +110,18 @@
 			<argument index="3" name="radius_bottom_left" type="int">
 			</argument>
 			<description>
+				Sets the corner radius for each corner to [code]radius_top_left[/code], [code]radius_top_right[/code], [code]radius_bottom_right[/code], and [code]radius_bottom_left[/code] pixels.
+			</description>
+		</method>
+		<method name="set_expand_margin">
+			<return type="void">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<argument index="1" name="size" type="float">
+			</argument>
+			<description>
+				Sets the expand margin to [code]size[/code] pixels for the given [code]margin[/code]. See [enum Margin] for possible values.
 			</description>
 		</method>
 		<method name="set_expand_margin_all">
@@ -69,6 +130,7 @@
 			<argument index="0" name="size" type="float">
 			</argument>
 			<description>
+				Sets the expand margin to [code]size[/code] pixels for all margins.
 			</description>
 		</method>
 		<method name="set_expand_margin_individual">
@@ -83,73 +145,77 @@
 			<argument index="3" name="size_bottom" type="float">
 			</argument>
 			<description>
+				Sets the expand margin for each margin to [code]size_left[/code], [code]size_top[/code], [code]size_right[/code], and [code]size_bottom[/code] pixels.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="anti_aliasing" type="bool" setter="set_anti_aliased" getter="is_anti_aliased">
-			Anti Aliasing draws a small ring around edges. This ring fades to transparent. As a result edges look much smoother. This is only noticeable when using rounded corners.
+		<member name="anti_aliasing" type="bool" setter="set_anti_aliased" getter="is_anti_aliased" default="true">
+			Antialiasing draws a small ring around the edges, which fades to transparency. As a result, edges look much smoother. This is only noticeable when using rounded corners.
 		</member>
-		<member name="anti_aliasing_size" type="int" setter="set_aa_size" getter="get_aa_size">
+		<member name="anti_aliasing_size" type="int" setter="set_aa_size" getter="get_aa_size" default="1">
 			This changes the size of the faded ring. Higher values can be used to achieve a "blurry" effect.
 		</member>
-		<member name="bg_color" type="Color" setter="set_bg_color" getter="get_bg_color">
+		<member name="bg_color" type="Color" setter="set_bg_color" getter="get_bg_color" default="Color( 0.6, 0.6, 0.6, 1 )">
 			The background color of the stylebox.
 		</member>
-		<member name="border_blend" type="bool" setter="set_border_blend" getter="get_border_blend">
-			When set to true, the border will fade into the background color.
+		<member name="border_blend" type="bool" setter="set_border_blend" getter="get_border_blend" default="false">
+			If [code]true[/code], the border will fade into the background color.
 		</member>
-		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color">
+		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color" default="Color( 0.8, 0.8, 0.8, 1 )">
 			Sets the color of the border.
 		</member>
-		<member name="border_width_bottom" type="int" setter="set_border_width" getter="get_border_width">
+		<member name="border_width_bottom" type="int" setter="set_border_width" getter="get_border_width" default="0">
 			Border width for the bottom border.
 		</member>
-		<member name="border_width_left" type="int" setter="set_border_width" getter="get_border_width">
+		<member name="border_width_left" type="int" setter="set_border_width" getter="get_border_width" default="0">
 			Border width for the left border.
 		</member>
-		<member name="border_width_right" type="int" setter="set_border_width" getter="get_border_width">
+		<member name="border_width_right" type="int" setter="set_border_width" getter="get_border_width" default="0">
 			Border width for the right border.
 		</member>
-		<member name="border_width_top" type="int" setter="set_border_width" getter="get_border_width">
+		<member name="border_width_top" type="int" setter="set_border_width" getter="get_border_width" default="0">
 			Border width for the top border.
 		</member>
-		<member name="corner_detail" type="int" setter="set_corner_detail" getter="get_corner_detail">
-			This sets the amount of vertices used for each corner. Higher values result in rounder corners but take more processing power to compute. When choosing a value you should take the corner radius ([method set_corner_radius]) into account.
-			For corner radius smaller than 10: 4-5 should be enough
-			For corner radius smaller than 30: 8-12 should be enough ...
+		<member name="corner_detail" type="int" setter="set_corner_detail" getter="get_corner_detail" default="8">
+			This sets the amount of vertices used for each corner. Higher values result in rounder corners but take more processing power to compute. When choosing a value, you should take the corner radius ([method set_corner_radius_all]) into account.
+			For corner radii smaller than 10, [code]4[/code] or [code]5[/code] should be enough. For corner radii smaller than 30, values between [code]8[/code] and [code]12[/code] should be enough.
+			A corner detail of [code]1[/code] will result in chamfered corners instead of rounded corners, which is useful for some artistic effects.
 		</member>
-		<member name="corner_radius_bottom_left" type="int" setter="set_corner_radius" getter="get_corner_radius">
-			The corner radius of the bottom left corner. When set to 0 the corner is not rounded.
+		<member name="corner_radius_bottom_left" type="int" setter="set_corner_radius" getter="get_corner_radius" default="0">
+			The bottom-left corner's radius. If [code]0[/code], the corner is not rounded.
 		</member>
-		<member name="corner_radius_bottom_right" type="int" setter="set_corner_radius" getter="get_corner_radius">
-			The corner radius of the bottom right corner. When set to 0 the corner is not rounded.
+		<member name="corner_radius_bottom_right" type="int" setter="set_corner_radius" getter="get_corner_radius" default="0">
+			The bottom-right corner's radius. If [code]0[/code], the corner is not rounded.
 		</member>
-		<member name="corner_radius_top_left" type="int" setter="set_corner_radius" getter="get_corner_radius">
-			The corner radius of the top left corner. When set to 0 the corner is not rounded.
+		<member name="corner_radius_top_left" type="int" setter="set_corner_radius" getter="get_corner_radius" default="0">
+			The top-left corner's radius. If [code]0[/code], the corner is not rounded.
 		</member>
-		<member name="corner_radius_top_right" type="int" setter="set_corner_radius" getter="get_corner_radius">
-			The corner radius of the top right corner. When set to 0 the corner is not rounded.
+		<member name="corner_radius_top_right" type="int" setter="set_corner_radius" getter="get_corner_radius" default="0">
+			The top-right corner's radius. If [code]0[/code], the corner is not rounded.
 		</member>
-		<member name="draw_center" type="bool" setter="set_draw_center" getter="is_draw_center_enabled">
-			Toggels drawing of the inner part of the stylebox.
+		<member name="draw_center" type="bool" setter="set_draw_center" getter="is_draw_center_enabled" default="true">
+			Toggles drawing of the inner part of the stylebox.
 		</member>
-		<member name="expand_margin_bottom" type="float" setter="set_expand_margin" getter="get_expand_margin">
-			Expands the stylebox outside of the control rect on the bottom edge. Useful in combination with border_width_bottom. To draw a border outside the control rect.
+		<member name="expand_margin_bottom" type="float" setter="set_expand_margin" getter="get_expand_margin" default="0.0">
+			Expands the stylebox outside of the control rect on the bottom edge. Useful in combination with [member border_width_bottom] to draw a border outside the control rect.
 		</member>
-		<member name="expand_margin_left" type="float" setter="set_expand_margin" getter="get_expand_margin">
-			Expands the stylebox outside of the control rect on the left edge. Useful in combination with border_width_left. To draw a border outside the control rect.
+		<member name="expand_margin_left" type="float" setter="set_expand_margin" getter="get_expand_margin" default="0.0">
+			Expands the stylebox outside of the control rect on the left edge. Useful in combination with [member border_width_left] to draw a border outside the control rect.
 		</member>
-		<member name="expand_margin_right" type="float" setter="set_expand_margin" getter="get_expand_margin">
-			Expands the stylebox outside of the control rect on the right edge. Useful in combination with border_width_right. To draw a border outside the control rect.
+		<member name="expand_margin_right" type="float" setter="set_expand_margin" getter="get_expand_margin" default="0.0">
+			Expands the stylebox outside of the control rect on the right edge. Useful in combination with [member border_width_right] to draw a border outside the control rect.
 		</member>
-		<member name="expand_margin_top" type="float" setter="set_expand_margin" getter="get_expand_margin">
-			Expands the stylebox outside of the control rect on the top edge. Useful in combination with border_width_top. To draw a border outside the control rect.
+		<member name="expand_margin_top" type="float" setter="set_expand_margin" getter="get_expand_margin" default="0.0">
+			Expands the stylebox outside of the control rect on the top edge. Useful in combination with [member border_width_top] to draw a border outside the control rect.
 		</member>
-		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color">
-			The color of the shadow. (This has no effect when shadow_size &lt; 1)
+		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" default="Color( 0, 0, 0, 0.6 )">
+			The color of the shadow. This has no effect if [member shadow_size] is lower than 1.
 		</member>
-		<member name="shadow_size" type="int" setter="set_shadow_size" getter="get_shadow_size">
+		<member name="shadow_offset" type="Vector2" setter="set_shadow_offset" getter="get_shadow_offset" default="Vector2( 0, 0 )">
+			The shadow offset in pixels. Adjusts the position of the shadow relatively to the stylebox.
+		</member>
+		<member name="shadow_size" type="int" setter="set_shadow_size" getter="get_shadow_size" default="0">
 			The shadow size in pixels.
 		</member>
 	</members>

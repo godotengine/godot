@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GrooveJoint2D" inherits="Joint2D" category="Core" version="3.1">
+<class name="GrooveJoint2D" inherits="Joint2D" version="4.0">
 	<brief_description>
 		Groove constraint for 2D physics.
 	</brief_description>
@@ -8,16 +8,14 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="initial_offset" type="float" setter="set_initial_offset" getter="get_initial_offset">
-			The body B's initial anchor position defined by the joint's origin and a local offset [member initial_offset] along the joint's y axis (along the groove). Default value: [code]25[/code]
+		<member name="initial_offset" type="float" setter="set_initial_offset" getter="get_initial_offset" default="25.0">
+			The body B's initial anchor position defined by the joint's origin and a local offset [member initial_offset] along the joint's Y axis (along the groove).
 		</member>
-		<member name="length" type="float" setter="set_length" getter="get_length">
-			The groove's length. The groove is from the joint's origin towards [member length] along the joint's local y axis. Default value: [code]50[/code]
+		<member name="length" type="float" setter="set_length" getter="get_length" default="50.0">
+			The groove's length. The groove is from the joint's origin towards [member length] along the joint's local Y axis.
 		</member>
 	</members>
 	<constants>

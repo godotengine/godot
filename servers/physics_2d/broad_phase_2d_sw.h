@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,12 @@
 #ifndef BROAD_PHASE_2D_SW_H
 #define BROAD_PHASE_2D_SW_H
 
-#include "math_funcs.h"
-#include "rect2.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
 
 class CollisionObject2DSW;
 
 class BroadPhase2DSW {
-
 public:
 	typedef BroadPhase2DSW *(*CreateFunction)();
 
@@ -58,8 +57,8 @@ public:
 	virtual bool is_static(ID p_id) const = 0;
 	virtual int get_subindex(ID p_id) const = 0;
 
-	virtual int cull_segment(const Vector2 &p_from, const Vector2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = NULL) = 0;
-	virtual int cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = NULL) = 0;
+	virtual int cull_segment(const Vector2 &p_from, const Vector2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = nullptr) = 0;
+	virtual int cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = nullptr) = 0;
 
 	virtual void set_pair_callback(PairCallback p_pair_callback, void *p_userdata) = 0;
 	virtual void set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata) = 0;

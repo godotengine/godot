@@ -734,7 +734,6 @@ VP8BlockCopy VP8Copy16x8;
 
 extern void VP8EncDspInitSSE2(void);
 extern void VP8EncDspInitSSE41(void);
-extern void VP8EncDspInitAVX2(void);
 extern void VP8EncDspInitNEON(void);
 extern void VP8EncDspInitMIPS32(void);
 extern void VP8EncDspInitMIPSdspR2(void);
@@ -782,11 +781,6 @@ WEBP_DSP_INIT_FUNC(VP8EncDspInit) {
         VP8EncDspInitSSE41();
       }
 #endif
-    }
-#endif
-#if defined(WEBP_USE_AVX2)
-    if (VP8GetCPUInfo(kAVX2)) {
-      VP8EncDspInitAVX2();
     }
 #endif
 #if defined(WEBP_USE_MIPS32)

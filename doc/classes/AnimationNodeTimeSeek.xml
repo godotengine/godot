@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeTimeSeek" inherits="AnimationNode" category="Core" version="3.1">
+<class name="AnimationNodeTimeSeek" inherits="AnimationNode" version="4.0">
 	<brief_description>
+		A time-seeking animation node to be used with [AnimationTree].
 	</brief_description>
 	<description>
+		This node can be used to cause a seek command to happen to any sub-children of the graph. After setting the time, this value returns to -1.
 	</description>
 	<tutorials>
+		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
-	<members>
-		<member name="seek_pos" type="float" setter="set_seek_pos" getter="get_seek_pos">
-		</member>
-	</members>
 	<constants>
 	</constants>
 </class>

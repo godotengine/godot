@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="QuadMesh" inherits="PrimitiveMesh" category="Core" version="3.1">
+<class name="QuadMesh" inherits="PrimitiveMesh" version="4.0">
 	<brief_description>
 		Class representing a square mesh.
 	</brief_description>
 	<description>
-		Class representing a square mesh with size (2,2,0). Consider using a [PlaneMesh] if you require a differently sized plane.
+		Class representing a square [PrimitiveMesh]. This flat mesh does not have a thickness. By default, this mesh is aligned on the X and Y axes; this default rotation is more suited for use with billboarded materials. Unlike [PlaneMesh], this mesh doesn't provide subdivision options.
 	</description>
 	<tutorials>
+		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
+		<link title="2D in 3D Demo">https://godotengine.org/asset-library/asset/129</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size">
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 1, 1 )">
+			Size on the X and Y axes.
 		</member>
 	</members>
 	<constants>

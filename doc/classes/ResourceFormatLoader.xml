@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceFormatLoader" inherits="Reference" version="4.0">
+	<brief_description>
+		Loads a specific resource type from a file.
+	</brief_description>
+	<description>
+		Godot loads resources in the editor or in exported games using ResourceFormatLoaders. They are queried automatically via the [ResourceLoader] singleton, or when a resource with internal dependencies is loaded. Each file type may load as a different resource type, so multiple ResourceFormatLoaders are registered in the engine.
+		Extending this class allows you to define your own loader. Be sure to respect the documented return types and values. You should give it a global class name with [code]class_name[/code] for it to be registered. Like built-in ResourceFormatLoaders, it will be called automatically when loading resources of its handled type(s). You may also implement a [ResourceFormatSaver].
+		[b]Note:[/b] You can also extend [EditorImportPlugin] if the resource type you need exists but Godot is unable to load its format. Choosing one way over another depends if the format is suitable or not for the final exported game. For example, it's better to import [code].png[/code] textures as [code].stex[/code] ([StreamTexture2D]) first, so they can be loaded with better efficiency on the graphics card.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_dependencies" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="add_types" type="String">
+			</argument>
+			<description>
+				If implemented, gets the dependencies of a given resource. If [code]add_types[/code] is [code]true[/code], paths should be appended [code]::TypeName[/code], where [code]TypeName[/code] is the class name of the dependency.
+				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just return [code]"Resource"[/code] for them.
+			</description>
+		</method>
+		<method name="get_recognized_extensions" qualifiers="virtual">
+			<return type="PackedStringArray">
+			</return>
+			<description>
+				Gets the list of extensions for files this loader is able to read.
+			</description>
+		</method>
+		<method name="get_resource_type" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Gets the class name of the resource associated with the given path. If the loader cannot handle it, it should return [code]""[/code].
+				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just return [code]"Resource"[/code] for them.
+			</description>
+		</method>
+		<method name="handles_type" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="typename" type="StringName">
+			</argument>
+			<description>
+				Tells which resource class this loader can load.
+				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just handle [code]"Resource"[/code] for them.
+			</description>
+		</method>
+		<method name="load" qualifiers="virtual">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="original_path" type="String">
+			</argument>
+			<description>
+				Loads a resource when the engine finds this loader to be compatible. If the loaded resource is the result of an import, [code]original_path[/code] will target the source file. Returns a [Resource] object on success, or an [enum Error] constant in case of failure.
+			</description>
+		</method>
+		<method name="rename_dependencies" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="renames" type="String">
+			</argument>
+			<description>
+				If implemented, renames dependencies within the given resource and saves it. [code]renames[/code] is a dictionary [code]{ String =&gt; String }[/code] mapping old dependency paths to new paths.
+				Returns [constant OK] on success, or an [enum Error] constant in case of failure.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

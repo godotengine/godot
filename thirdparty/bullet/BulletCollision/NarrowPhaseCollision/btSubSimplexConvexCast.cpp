@@ -13,7 +13,6 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-
 #include "btSubSimplexConvexCast.h"
 #include "BulletCollision/CollisionShapes/btConvexShape.h"
 
@@ -22,32 +21,26 @@ subject to the following restrictions:
 #include "btPointCollector.h"
 #include "LinearMath/btTransformUtil.h"
 
-btSubsimplexConvexCast::btSubsimplexConvexCast (const btConvexShape* convexA,const btConvexShape* convexB,btSimplexSolverInterface* simplexSolver)
-:m_simplexSolver(simplexSolver),
-m_convexA(convexA),m_convexB(convexB)
+btSubsimplexConvexCast::btSubsimplexConvexCast(const btConvexShape* convexA, const btConvexShape* convexB, btSimplexSolverInterface* simplexSolver)
+	: m_simplexSolver(simplexSolver),
+	  m_convexA(convexA),
+	  m_convexB(convexB)
 {
 }
 
-///Typically the conservative advancement reaches solution in a few iterations, clip it to 32 for degenerate cases.
-///See discussion about this here http://continuousphysics.com/Bullet/phpBB2/viewtopic.php?t=565
-#ifdef BT_USE_DOUBLE_PRECISION
-#define MAX_ITERATIONS 64
-#else
-#define MAX_ITERATIONS 32
-#endif
-bool	btSubsimplexConvexCast::calcTimeOfImpact(
-		const btTransform& fromA,
-		const btTransform& toA,
-		const btTransform& fromB,
-		const btTransform& toB,
-		CastResult& result)
-{
 
+bool btSubsimplexConvexCast::calcTimeOfImpact(
+	const btTransform& fromA,
+	const btTransform& toA,
+	const btTransform& fromB,
+	const btTransform& toB,
+	CastResult& result)
+{
 	m_simplexSolver->reset();
 
-	btVector3 linVelA,linVelB;
-	linVelA = toA.getOrigin()-fromA.getOrigin();
-	linVelB = toB.getOrigin()-fromB.getOrigin();
+	btVector3 linVelA, linVelB;
+	linVelA = toA.getOrigin() - fromA.getOrigin();
+	linVelB = toB.getOrigin() - fromB.getOrigin();
 
 	btScalar lambda = btScalar(0.);
 
@@ -55,36 +48,31 @@ bool	btSubsimplexConvexCast::calcTimeOfImpact(
 	btTransform interpolatedTransB = fromB;
 
 	///take relative motion
-	btVector3 r = (linVelA-linVelB);
+	btVector3 r = (linVelA - linVelB);
 	btVector3 v;
-	
-	btVector3 supVertexA = fromA(m_convexA->localGetSupportingVertex(-r*fromA.getBasis()));
-	btVector3 supVertexB = fromB(m_convexB->localGetSupportingVertex(r*fromB.getBasis()));
-	v = supVertexA-supVertexB;
-	int maxIter = MAX_ITERATIONS;
+
+	btVector3 supVertexA = fromA(m_convexA->localGetSupportingVertex(-r * fromA.getBasis()));
+	btVector3 supVertexB = fromB(m_convexB->localGetSupportingVertex(r * fromB.getBasis()));
+	v = supVertexA - supVertexB;
+	int maxIter = result.m_subSimplexCastMaxIterations;
 
 	btVector3 n;
-	n.setValue(btScalar(0.),btScalar(0.),btScalar(0.));
-	
+	n.setValue(btScalar(0.), btScalar(0.), btScalar(0.));
+
 	btVector3 c;
 
-	
-
-
 	btScalar dist2 = v.length2();
-#ifdef BT_USE_DOUBLE_PRECISION
-	btScalar epsilon = btScalar(0.0001);
-#else
-	btScalar epsilon = btScalar(0.0001);
-#endif //BT_USE_DOUBLE_PRECISION
-	btVector3	w,p;
+
+
+
+	btVector3 w, p;
 	btScalar VdotR;
-	
-	while ( (dist2 > epsilon) && maxIter--)
+
+	while ((dist2 > result.m_subSimplexCastEpsilon) && maxIter--)
 	{
-		supVertexA = interpolatedTransA(m_convexA->localGetSupportingVertex(-v*interpolatedTransA.getBasis()));
-		supVertexB = interpolatedTransB(m_convexB->localGetSupportingVertex(v*interpolatedTransB.getBasis()));
-		w = supVertexA-supVertexB;
+		supVertexA = interpolatedTransA(m_convexA->localGetSupportingVertex(-v * interpolatedTransA.getBasis()));
+		supVertexB = interpolatedTransB(m_convexB->localGetSupportingVertex(v * interpolatedTransB.getBasis()));
+		w = supVertexA - supVertexB;
 
 		btScalar VdotW = v.dot(w);
 
@@ -93,68 +81,63 @@ bool	btSubsimplexConvexCast::calcTimeOfImpact(
 			return false;
 		}
 
-		if ( VdotW > btScalar(0.))
+		if (VdotW > btScalar(0.))
 		{
 			VdotR = v.dot(r);
 
-			if (VdotR >= -(SIMD_EPSILON*SIMD_EPSILON))
+			if (VdotR >= -(SIMD_EPSILON * SIMD_EPSILON))
 				return false;
 			else
 			{
 				lambda = lambda - VdotW / VdotR;
 				//interpolate to next lambda
 				//	x = s + lambda * r;
-				interpolatedTransA.getOrigin().setInterpolate3(fromA.getOrigin(),toA.getOrigin(),lambda);
-				interpolatedTransB.getOrigin().setInterpolate3(fromB.getOrigin(),toB.getOrigin(),lambda);
+				interpolatedTransA.getOrigin().setInterpolate3(fromA.getOrigin(), toA.getOrigin(), lambda);
+				interpolatedTransB.getOrigin().setInterpolate3(fromB.getOrigin(), toB.getOrigin(), lambda);
 				//m_simplexSolver->reset();
 				//check next line
-				 w = supVertexA-supVertexB;
-				
+				w = supVertexA - supVertexB;
+
 				n = v;
-				
 			}
-		} 
+		}
 		///Just like regular GJK only add the vertex if it isn't already (close) to current vertex, it would lead to divisions by zero and NaN etc.
 		if (!m_simplexSolver->inSimplex(w))
-			m_simplexSolver->addVertex( w, supVertexA , supVertexB);
+			m_simplexSolver->addVertex(w, supVertexA, supVertexB);
 
 		if (m_simplexSolver->closest(v))
 		{
 			dist2 = v.length2();
-			
+
 			//todo: check this normal for validity
 			//n=v;
 			//printf("V=%f , %f, %f\n",v[0],v[1],v[2]);
 			//printf("DIST2=%f\n",dist2);
 			//printf("numverts = %i\n",m_simplexSolver->numVertices());
-		} else
+		}
+		else
 		{
 			dist2 = btScalar(0.);
-		} 
+		}
 	}
 
 	//int numiter = MAX_ITERATIONS - maxIter;
-//	printf("number of iterations: %d", numiter);
-	
+	//	printf("number of iterations: %d", numiter);
+
 	//don't report a time of impact when moving 'away' from the hitnormal
-	
 
 	result.m_fraction = lambda;
-	if (n.length2() >= (SIMD_EPSILON*SIMD_EPSILON))
+	if (n.length2() >= (SIMD_EPSILON * SIMD_EPSILON))
 		result.m_normal = n.normalized();
 	else
 		result.m_normal = btVector3(btScalar(0.0), btScalar(0.0), btScalar(0.0));
 
 	//don't report time of impact for motion away from the contact normal (or causes minor penetration)
-	if (result.m_normal.dot(r)>=-result.m_allowedPenetration)
+	if (result.m_normal.dot(r) >= -result.m_allowedPenetration)
 		return false;
 
-	btVector3 hitA,hitB;
-	m_simplexSolver->compute_points(hitA,hitB);
-	result.m_hitPoint=hitB;
+	btVector3 hitA, hitB;
+	m_simplexSolver->compute_points(hitA, hitB);
+	result.m_hitPoint = hitB;
 	return true;
 }
-
-
-
-

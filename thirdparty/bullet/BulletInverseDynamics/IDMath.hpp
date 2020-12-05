@@ -5,7 +5,8 @@
 #define IDMATH_HPP_
 #include "IDConfig.hpp"
 
-namespace btInverseDynamics {
+namespace btInverseDynamics
+{
 /// set all elements to zero
 void setZero(vec3& v);
 /// set all elements to zero
@@ -23,11 +24,11 @@ idScalar maxAbs(const vec3& v);
 
 #if (defined BT_ID_HAVE_MAT3X)
 idScalar maxAbsMat3x(const mat3x& m);
-void setZero(mat3x&m);
+void setZero(mat3x& m);
 // define math functions on mat3x here to avoid allocations in operators.
-void mul(const mat33&a, const mat3x&b, mat3x* result);
-void add(const mat3x&a, const mat3x&b, mat3x* result);
-void sub(const mat3x&a, const mat3x&b, mat3x* result);
+void mul(const mat33& a, const mat3x& b, mat3x* result);
+void add(const mat3x& a, const mat3x& b, mat3x* result);
+void sub(const mat3x& a, const mat3x& b, mat3x* result);
 #endif
 
 /// get offset vector & transform matrix from DH parameters
@@ -94,6 +95,6 @@ mat33 transformZ(const idScalar& gamma);
 ///calculate rpy angles (x-y-z Euler angles) from a given rotation matrix
 /// @param rot rotation matrix
 /// @returns x-y-z Euler angles
-vec3 rpyFromMatrix(const mat33&rot);
-}
+vec3 rpyFromMatrix(const mat33& rot);
+}  // namespace btInverseDynamics
 #endif  // IDMATH_HPP_

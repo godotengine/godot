@@ -31,7 +31,7 @@ extern "C" {
 
 // version numbers
 #define DEC_MAJ_VERSION 1
-#define DEC_MIN_VERSION 0
+#define DEC_MIN_VERSION 1
 #define DEC_REV_VERSION 0
 
 // YUV-cache parameters. Cache is 32-bytes wide (= one cacheline).
@@ -316,4 +316,4 @@ const uint8_t* VP8DecompressAlphaRows(VP8Decoder* const dec,
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_DEC_VP8I_DEC_H_ */
+#endif  // WEBP_DEC_VP8I_DEC_H_

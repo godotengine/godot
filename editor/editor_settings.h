@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,26 +31,22 @@
 #ifndef EDITOR_SETTINGS_H
 #define EDITOR_SETTINGS_H
 
-#include "object.h"
-
 #include "core/io/config_file.h"
-#include "os/thread_safe.h"
-#include "resource.h"
+#include "core/io/resource.h"
+#include "core/object/class_db.h"
+#include "core/os/thread_safe.h"
+#include "core/string/translation.h"
 #include "scene/gui/shortcut.h"
-#include "translation.h"
 
 class EditorPlugin;
 
 class EditorSettings : public Resource {
-
 	GDCLASS(EditorSettings, Resource);
 
-private:
 	_THREAD_SAFE_CLASS_
 
 public:
 	struct Plugin {
-
 		EditorPlugin *instance;
 		String path;
 		String name;
@@ -64,30 +60,19 @@ public:
 
 private:
 	struct VariantContainer {
-		int order;
+		int order = 0;
 		Variant variant;
 		Variant initial;
-		bool has_default_value;
-		bool hide_from_editor;
-		bool save;
-		bool restart_if_changed;
-		VariantContainer() {
-			variant = Variant();
-			initial = Variant();
-			order = 0;
-			hide_from_editor = false;
-			has_default_value = false;
-			save = false;
-			restart_if_changed = false;
-		}
-		VariantContainer(const Variant &p_variant, int p_order) {
-			variant = p_variant;
-			initial = Variant();
-			order = p_order;
-			hide_from_editor = false;
-			has_default_value = false;
-			save = false;
-			restart_if_changed = false;
+		bool has_default_value = false;
+		bool hide_from_editor = false;
+		bool save = false;
+		bool restart_if_changed = false;
+
+		VariantContainer() {}
+
+		VariantContainer(const Variant &p_variant, int p_order) :
+				order(p_order),
+				variant(p_variant) {
 		}
 	};
 
@@ -98,7 +83,7 @@ private:
 	int last_order;
 
 	Ref<Resource> clipboard;
-	Map<String, Ref<ShortCut> > shortcuts;
+	Map<String, Ref<Shortcut>> shortcuts;
 
 	String resource_path;
 	String settings_dir;
@@ -107,7 +92,7 @@ private:
 	String config_file_path;
 	String project_config_dir;
 
-	Vector<String> favorite_dirs;
+	Vector<String> favorites;
 	Vector<String> recent_dirs;
 
 	bool save_changed_setting;
@@ -120,9 +105,10 @@ private:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _add_property_info_bind(const Dictionary &p_info);
 
-	void _load_defaults(Ref<ConfigFile> p_extra_config = NULL);
+	void _load_defaults(Ref<ConfigFile> p_extra_config = Ref<ConfigFile>());
 	void _load_default_text_editor_theme();
 	bool _save_text_editor_theme(String p_file);
+	bool _is_default_text_editor_theme(String p_theme_name);
 
 protected:
 	static void _bind_methods();
@@ -150,10 +136,11 @@ public:
 	void set_initial_value(const StringName &p_setting, const Variant &p_value, bool p_update_current = false);
 	void set_restart_if_changed(const StringName &p_setting, bool p_restart);
 	void set_manually(const StringName &p_setting, const Variant &p_value, bool p_emit_signal = false) {
-		if (p_emit_signal)
+		if (p_emit_signal) {
 			_set(p_setting, p_value);
-		else
+		} else {
 			_set_only(p_setting, p_value);
+		}
 	}
 	bool property_can_revert(const String &p_setting);
 	Variant property_get_revert(const String &p_setting);
@@ -168,13 +155,15 @@ public:
 	String get_project_settings_dir() const;
 	String get_text_editor_themes_dir() const;
 	String get_script_templates_dir() const;
+	String get_project_script_templates_dir() const;
 	String get_cache_dir() const;
+	String get_feature_profiles_dir() const;
 
 	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
 	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const;
 
-	void set_favorite_dirs(const Vector<String> &p_favorites_dirs);
-	Vector<String> get_favorite_dirs() const;
+	void set_favorites(const Vector<String> &p_favorites);
+	Vector<String> get_favorites() const;
 	void set_recent_dirs(const Vector<String> &p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
 	void load_favorites();
@@ -186,13 +175,14 @@ public:
 	bool import_text_editor_theme(String p_file);
 	bool save_text_editor_theme();
 	bool save_text_editor_theme_as(String p_file);
+	bool is_default_text_editor_theme();
 
-	Vector<String> get_script_templates(const String &p_extension);
+	Vector<String> get_script_templates(const String &p_extension, const String &p_custom_path = String());
 	String get_editor_layouts_config() const;
 
-	void add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcut);
+	void add_shortcut(const String &p_name, Ref<Shortcut> &p_shortcut);
 	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
-	Ref<ShortCut> get_shortcut(const String &p_name) const;
+	Ref<Shortcut> get_shortcut(const String &p_name) const;
 	void get_shortcut_list(List<String> *r_shortcuts);
 
 	void notify_changes();
@@ -211,7 +201,7 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 Variant _EDITOR_GET(const String &p_setting);
 
 #define ED_IS_SHORTCUT(p_name, p_ev) (EditorSettings::get_singleton()->is_shortcut(p_name, p_ev))
-Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode = 0);
-Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path);
+Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode = 0);
+Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path);
 
 #endif // EDITOR_SETTINGS_H

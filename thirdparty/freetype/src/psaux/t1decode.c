@@ -1,27 +1,26 @@
-/***************************************************************************/
-/*                                                                         */
-/*  t1decode.c                                                             */
-/*                                                                         */
-/*    PostScript Type 1 decoding routines (body).                          */
-/*                                                                         */
-/*  Copyright 2000-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * t1decode.c
+ *
+ *   PostScript Type 1 decoding routines (body).
+ *
+ * Copyright (C) 2000-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
-#include FT_INTERNAL_HASH_H
-#include FT_OUTLINE_H
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/pshints.h>
+#include <freetype/internal/fthash.h>
+#include <freetype/ftoutln.h>
 
 #include "t1decode.h"
 #include "psobjs.h"
@@ -31,14 +30,14 @@
 /* ensure proper sign extension */
 #define Fix2Int( f )  ( (FT_Int)(FT_Short)( (f) >> 16 ) )
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_t1decode
+#define FT_COMPONENT  t1decode
 
 
   typedef enum  T1_Operator_
@@ -109,24 +108,26 @@
   };
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    t1_lookup_glyph_by_stdcharcode_ps                                  */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Looks up a given glyph by its StandardEncoding charcode.  Used to  */
-  /*    implement the SEAC Type 1 operator in the Adobe engine             */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    face     :: The current face object.                               */
-  /*                                                                       */
-  /*    charcode :: The character code to look for.                        */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    A glyph index in the font face.  Returns -1 if the corresponding   */
-  /*    glyph wasn't found.                                                */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   t1_lookup_glyph_by_stdcharcode_ps
+   *
+   * @Description:
+   *   Looks up a given glyph by its StandardEncoding charcode.  Used to
+   *   implement the SEAC Type 1 operator in the Adobe engine
+   *
+   * @Input:
+   *   face ::
+   *     The current face object.
+   *
+   *   charcode ::
+   *     The character code to look for.
+   *
+   * @Return:
+   *   A glyph index in the font face.  Returns -1 if the corresponding
+   *   glyph wasn't found.
+   */
   FT_LOCAL_DEF( FT_Int )
   t1_lookup_glyph_by_stdcharcode_ps( PS_Decoder*  decoder,
                                      FT_Int       charcode )
@@ -159,24 +160,27 @@
 
 
 #ifdef T1_CONFIG_OPTION_OLD_ENGINE
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    t1_lookup_glyph_by_stdcharcode                                     */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Looks up a given glyph by its StandardEncoding charcode.  Used to  */
-  /*    implement the SEAC Type 1 operator.                                */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    face     :: The current face object.                               */
-  /*                                                                       */
-  /*    charcode :: The character code to look for.                        */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    A glyph index in the font face.  Returns -1 if the corresponding   */
-  /*    glyph wasn't found.                                                */
-  /*                                                                       */
+
+  /**************************************************************************
+   *
+   * @Function:
+   *   t1_lookup_glyph_by_stdcharcode
+   *
+   * @Description:
+   *   Looks up a given glyph by its StandardEncoding charcode.  Used to
+   *   implement the SEAC Type 1 operator.
+   *
+   * @Input:
+   *   face ::
+   *     The current face object.
+   *
+   *   charcode ::
+   *     The character code to look for.
+   *
+   * @Return:
+   *   A glyph index in the font face.  Returns -1 if the corresponding
+   *   glyph wasn't found.
+   */
   static FT_Int
   t1_lookup_glyph_by_stdcharcode( T1_Decoder  decoder,
                                   FT_Int      charcode )
@@ -217,30 +221,36 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    t1operator_seac                                                    */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Implements the `seac' Type 1 operator for a Type 1 decoder.        */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    decoder :: The current CID decoder.                                */
-  /*                                                                       */
-  /*    asb     :: The accent's side bearing.                              */
-  /*                                                                       */
-  /*    adx     :: The horizontal offset of the accent.                    */
-  /*                                                                       */
-  /*    ady     :: The vertical offset of the accent.                      */
-  /*                                                                       */
-  /*    bchar   :: The base character's StandardEncoding charcode.         */
-  /*                                                                       */
-  /*    achar   :: The accent character's StandardEncoding charcode.       */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   t1operator_seac
+   *
+   * @Description:
+   *   Implements the `seac' Type 1 operator for a Type 1 decoder.
+   *
+   * @Input:
+   *   decoder ::
+   *     The current CID decoder.
+   *
+   *   asb ::
+   *     The accent's side bearing.
+   *
+   *   adx ::
+   *     The horizontal offset of the accent.
+   *
+   *   ady ::
+   *     The vertical offset of the accent.
+   *
+   *   bchar ::
+   *     The base character's StandardEncoding charcode.
+   *
+   *   achar ::
+   *     The accent character's StandardEncoding charcode.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   static FT_Error
   t1operator_seac( T1_Decoder  decoder,
                    FT_Pos      asb,
@@ -356,6 +366,12 @@
 
     FT_GlyphLoader_Prepare( decoder->builder.loader );  /* prepare loader */
 
+    /* save the left bearing and width of the SEAC   */
+    /* glyph as they will be erased by the next load */
+
+    left_bearing = decoder->builder.left_bearing;
+    advance      = decoder->builder.advance;
+
     /* the seac operator must not be nested */
     decoder->seac = TRUE;
     error = t1_decoder_parse_glyph( decoder, (FT_UInt)bchar_index );
@@ -363,11 +379,14 @@
     if ( error )
       goto Exit;
 
-    /* save the left bearing and width of the base character */
-    /* as they will be erased by the next load.              */
+    /* If the SEAC glyph doesn't have a (H)SBW of its */
+    /* own use the values from the base glyph.        */
 
-    left_bearing = decoder->builder.left_bearing;
-    advance      = decoder->builder.advance;
+    if ( decoder->builder.parse_state != T1_Parse_Have_Width )
+    {
+      left_bearing = decoder->builder.left_bearing;
+      advance      = decoder->builder.advance;
+    }
 
     decoder->builder.left_bearing.x = 0;
     decoder->builder.left_bearing.y = 0;
@@ -385,8 +404,8 @@
     if ( error )
       goto Exit;
 
-    /* restore the left side bearing and   */
-    /* advance width of the base character */
+    /* restore the left side bearing and advance width   */
+    /* of the SEAC glyph or base character (saved above) */
 
     decoder->builder.left_bearing = left_bearing;
     decoder->builder.advance      = advance;
@@ -399,24 +418,27 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    t1_decoder_parse_charstrings                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Parses a given Type 1 charstrings program.                         */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    decoder         :: The current Type 1 decoder.                     */
-  /*                                                                       */
-  /*    charstring_base :: The base address of the charstring stream.      */
-  /*                                                                       */
-  /*    charstring_len  :: The length in bytes of the charstring stream.   */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   t1_decoder_parse_charstrings
+   *
+   * @Description:
+   *   Parses a given Type 1 charstrings program.
+   *
+   * @Input:
+   *   decoder ::
+   *     The current Type 1 decoder.
+   *
+   *   charstring_base ::
+   *     The base address of the charstring stream.
+   *
+   *   charstring_len ::
+   *     The length in bytes of the charstring stream.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   t1_decoder_parse_charstrings( T1_Decoder  decoder,
                                 FT_Byte*    charstring_base,
@@ -466,9 +488,6 @@
     if ( decoder->buildchar && decoder->len_buildchar > 0 )
       FT_ARRAY_ZERO( decoder->buildchar, decoder->len_buildchar );
 
-    FT_TRACE4(( "\n"
-                "Start charstring\n" ));
-
     zone->base           = charstring_base;
     limit = zone->limit  = charstring_base + charstring_len;
     ip    = zone->cursor = zone->base;
@@ -503,11 +522,11 @@
       }
 #endif
 
-      /*********************************************************************/
-      /*                                                                   */
-      /* Decode operator or operand                                        */
-      /*                                                                   */
-      /*                                                                   */
+      /**********************************************************************
+       *
+       * Decode operator or operand
+       *
+       */
 
       /* first of all, decompress operator or value */
       switch ( *ip++ )
@@ -639,10 +658,8 @@
         if ( value > 32000 || value < -32000 )
         {
           if ( large_int )
-          {
             FT_ERROR(( "t1_decoder_parse_charstrings:"
                        " no `div' after large integer\n" ));
-          }
           else
             large_int = TRUE;
         }
@@ -710,11 +727,11 @@
         large_int = FALSE;
       }
 
-      /*********************************************************************/
-      /*                                                                   */
-      /*  Push value on stack, or process operator                         */
-      /*                                                                   */
-      /*                                                                   */
+      /**********************************************************************
+       *
+       * Push value on stack, or process operator
+       *
+       */
       if ( op == op_none )
       {
         if ( top - decoder->stack >= T1_MAX_CHARSTRINGS_OPERANDS )
@@ -752,16 +769,17 @@
         subr_no = Fix2Int( top[1] );
         arg_cnt = Fix2Int( top[0] );
 
-        /***********************************************************/
-        /*                                                         */
-        /* remove all operands to callothersubr from the stack     */
-        /*                                                         */
-        /* for handled othersubrs, where we know the number of     */
-        /* arguments, we increase the stack by the value of        */
-        /* known_othersubr_result_cnt                              */
-        /*                                                         */
-        /* for unhandled othersubrs the following pops adjust the  */
-        /* stack pointer as necessary                              */
+        /************************************************************
+         *
+         * remove all operands to callothersubr from the stack
+         *
+         * for handled othersubrs, where we know the number of
+         * arguments, we increase the stack by the value of
+         * known_othersubr_result_cnt
+         *
+         * for unhandled othersubrs the following pops adjust the
+         * stack pointer as necessary
+         */
 
         if ( arg_cnt > top - decoder->stack )
           goto Stack_Underflow;
@@ -1219,11 +1237,14 @@
 
           FT_UNUSED( orig_y );
 
-          /* the `metrics_only' indicates that we only want to compute */
-          /* the glyph's metrics (lsb + advance width), not load the   */
+          /* `metrics_only' indicates that we only want to compute the */
+          /* glyph's metrics (lsb + advance width) without loading the */
           /* rest of it; so exit immediately                           */
           if ( builder->metrics_only )
+          {
+            FT_TRACE4(( "\n" ));
             return FT_Err_Ok;
+          }
 
           break;
 
@@ -1251,11 +1272,14 @@
           x = ADD_LONG( builder->pos_x, top[0] );
           y = ADD_LONG( builder->pos_y, top[1] );
 
-          /* the `metrics_only' indicates that we only want to compute */
-          /* the glyph's metrics (lsb + advance width), not load the   */
+          /* `metrics_only' indicates that we only want to compute the */
+          /* glyph's metrics (lsb + advance width) without loading the */
           /* rest of it; so exit immediately                           */
           if ( builder->metrics_only )
+          {
+            FT_TRACE4(( "\n" ));
             return FT_Err_Ok;
+          }
 
           break;
 
@@ -1638,26 +1662,31 @@
     return FT_THROW( Stack_Underflow );
   }
 
-#else /* T1_CONFIG_OPTION_OLD_ENGINE */
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    t1_decoder_parse_metrics                                           */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Parses a given Type 1 charstrings program to extract width         */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    decoder         :: The current Type 1 decoder.                     */
-  /*                                                                       */
-  /*    charstring_base :: The base address of the charstring stream.      */
-  /*                                                                       */
-  /*    charstring_len  :: The length in bytes of the charstring stream.   */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+#else /* !T1_CONFIG_OPTION_OLD_ENGINE */
+
+
+  /**************************************************************************
+   *
+   * @Function:
+   *   t1_decoder_parse_metrics
+   *
+   * @Description:
+   *   Parses a given Type 1 charstrings program to extract width
+   *
+   * @Input:
+   *   decoder ::
+   *     The current Type 1 decoder.
+   *
+   *   charstring_base ::
+   *     The base address of the charstring stream.
+   *
+   *   charstring_len ::
+   *     The length in bytes of the charstring stream.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   t1_decoder_parse_metrics( T1_Decoder  decoder,
                             FT_Byte*    charstring_base,
@@ -1667,6 +1696,7 @@
     FT_Byte*         ip;
     FT_Byte*         limit;
     T1_Builder       builder = &decoder->builder;
+    FT_Bool          large_int;
 
 #ifdef FT_DEBUG_LEVEL_TRACE
     FT_Bool          bol = TRUE;
@@ -1680,12 +1710,11 @@
 
     builder->parse_state = T1_Parse_Start;
 
-    FT_TRACE4(( "\n"
-                "Start charstring: get width\n" ));
-
     zone->base           = charstring_base;
     limit = zone->limit  = charstring_base + charstring_len;
     ip    = zone->cursor = zone->base;
+
+    large_int = FALSE;
 
     /* now, execute loop */
     while ( ip < limit )
@@ -1698,16 +1727,16 @@
 #ifdef FT_DEBUG_LEVEL_TRACE
       if ( bol )
       {
-        FT_TRACE5(( " (%d)", decoder->top - decoder->stack ));
+        FT_TRACE5(( " (%ld)", decoder->top - decoder->stack ));
         bol = FALSE;
       }
 #endif
 
-      /*********************************************************************/
-      /*                                                                   */
-      /* Decode operator or operand                                        */
-      /*                                                                   */
-      /*                                                                   */
+      /**********************************************************************
+       *
+       * Decode operator or operand
+       *
+       */
 
       /* first of all, decompress operator or value */
       switch ( *ip++ )
@@ -1720,8 +1749,6 @@
       case 7:
       case 8:
       case 9:
-      case 10:
-      case 11:
       case 14:
       case 15:
       case 21:
@@ -1729,6 +1756,13 @@
       case 30:
       case 31:
         goto No_Width;
+
+      case 10:
+        op = op_callsubr;
+        break;
+      case 11:
+        op = op_return;
+        break;
 
       case 13:
         op = op_hsbw;
@@ -1746,6 +1780,9 @@
         {
         case 7:
           op = op_sbw;
+          break;
+        case 12:
+          op = op_div;
           break;
 
         default:
@@ -1776,13 +1813,19 @@
         /* anyway.                                                         */
         if ( value > 32000 || value < -32000 )
         {
-          FT_ERROR(( "t1_decoder_parse_metrics:"
-                     " large integer found for width\n" ));
-          goto Syntax_Error;
+          if ( large_int )
+          {
+            FT_ERROR(( "t1_decoder_parse_metrics:"
+                       " no `div' after large integer\n" ));
+            goto Syntax_Error;
+          }
+          else
+            large_int = TRUE;
         }
         else
         {
-          value = (FT_Int32)( (FT_UInt32)value << 16 );
+          if ( !large_int )
+            value = (FT_Int32)( (FT_UInt32)value << 16 );
         }
 
         break;
@@ -1807,7 +1850,8 @@
               value = -( ( ( ip[-2] - 251 ) * 256 ) + ip[-1] + 108 );
           }
 
-          value = (FT_Int32)( (FT_UInt32)value << 16 );
+          if ( !large_int )
+            value = (FT_Int32)( (FT_UInt32)value << 16 );
         }
         else
         {
@@ -1817,11 +1861,18 @@
         }
       }
 
-      /*********************************************************************/
-      /*                                                                   */
-      /*  Push value on stack, or process operator                         */
-      /*                                                                   */
-      /*                                                                   */
+      if ( large_int && !( op == op_none || op == op_div ) )
+      {
+        FT_ERROR(( "t1_decoder_parse_metrics:"
+                   " no `div' after large integer\n" ));
+        goto Syntax_Error;
+      }
+
+      /**********************************************************************
+       *
+       * Push value on stack, or process operator
+       *
+       */
       if ( op == op_none )
       {
         if ( top - decoder->stack >= T1_MAX_CHARSTRINGS_OPERANDS )
@@ -1831,6 +1882,9 @@
         }
 
 #ifdef FT_DEBUG_LEVEL_TRACE
+        if ( large_int )
+          FT_TRACE4(( " %d", value ));
+        else
           FT_TRACE4(( " %d", value / 65536 ));
 #endif
 
@@ -1849,11 +1903,21 @@
 
 #ifdef FT_DEBUG_LEVEL_TRACE
 
-        if ( top - decoder->stack != num_args )
-          FT_TRACE0(( "t1_decoder_parse_metrics:"
-                      " too much operands on the stack"
-                      " (seen %d, expected %d)\n",
-                      top - decoder->stack, num_args ));
+        switch ( op )
+        {
+        case op_callsubr:
+        case op_div:
+        case op_return:
+          break;
+
+        default:
+          if ( top - decoder->stack != num_args )
+            FT_TRACE0(( "t1_decoder_parse_metrics:"
+                        " too much operands on the stack"
+                        " (seen %ld, expected %d)\n",
+                        top - decoder->stack, num_args ));
+          break;
+        }
 
 #endif /* FT_DEBUG_LEVEL_TRACE */
 
@@ -1873,8 +1937,9 @@
           builder->advance.y = 0;
 
           /* we only want to compute the glyph's metrics */
-          /* (lsb + advance width), not load the rest of */
-          /* it; so exit immediately                     */
+          /* (lsb + advance width) without loading the   */
+          /* rest of it; so exit immediately             */
+          FT_TRACE4(( "\n" ));
           return FT_Err_Ok;
 
         case op_sbw:
@@ -1891,15 +1956,115 @@
           builder->advance.y = top[3];
 
           /* we only want to compute the glyph's metrics */
-          /* (lsb + advance width), not load the rest of */
-          /* it; so exit immediately                     */
+          /* (lsb + advance width), without loading the  */
+          /* rest of it; so exit immediately             */
+          FT_TRACE4(( "\n" ));
           return FT_Err_Ok;
+
+        case op_div:
+          FT_TRACE4(( " div" ));
+
+          /* if `large_int' is set, we divide unscaled numbers; */
+          /* otherwise, we divide numbers in 16.16 format --    */
+          /* in both cases, it is the same operation            */
+          *top = FT_DivFix( top[0], top[1] );
+          top++;
+
+          large_int = FALSE;
+          break;
+
+        case op_callsubr:
+          {
+            FT_Int  idx;
+
+
+            FT_TRACE4(( " callsubr" ));
+
+            idx = Fix2Int( top[0] );
+
+            if ( decoder->subrs_hash )
+            {
+              size_t*  val = ft_hash_num_lookup( idx,
+                                                 decoder->subrs_hash );
+
+
+              if ( val )
+                idx = *val;
+              else
+                idx = -1;
+            }
+
+            if ( idx < 0 || idx >= decoder->num_subrs )
+            {
+              FT_ERROR(( "t1_decoder_parse_metrics:"
+                         " invalid subrs index\n" ));
+              goto Syntax_Error;
+            }
+
+            if ( zone - decoder->zones >= T1_MAX_SUBRS_CALLS )
+            {
+              FT_ERROR(( "t1_decoder_parse_metrics:"
+                         " too many nested subrs\n" ));
+              goto Syntax_Error;
+            }
+
+            zone->cursor = ip;  /* save current instruction pointer */
+
+            zone++;
+
+            /* The Type 1 driver stores subroutines without the seed bytes. */
+            /* The CID driver stores subroutines with seed bytes.  This     */
+            /* case is taken care of when decoder->subrs_len == 0.          */
+            zone->base = decoder->subrs[idx];
+
+            if ( decoder->subrs_len )
+              zone->limit = zone->base + decoder->subrs_len[idx];
+            else
+            {
+              /* We are using subroutines from a CID font.  We must adjust */
+              /* for the seed bytes.                                       */
+              zone->base  += ( decoder->lenIV >= 0 ? decoder->lenIV : 0 );
+              zone->limit  = decoder->subrs[idx + 1];
+            }
+
+            zone->cursor = zone->base;
+
+            if ( !zone->base )
+            {
+              FT_ERROR(( "t1_decoder_parse_metrics:"
+                         " invoking empty subrs\n" ));
+              goto Syntax_Error;
+            }
+
+            decoder->zone = zone;
+            ip            = zone->base;
+            limit         = zone->limit;
+            break;
+          }
+
+        case op_return:
+          FT_TRACE4(( " return" ));
+
+          if ( zone <= decoder->zones )
+          {
+            FT_ERROR(( "t1_decoder_parse_metrics:"
+                       " unexpected return\n" ));
+            goto Syntax_Error;
+          }
+
+          zone--;
+          ip            = zone->cursor;
+          limit         = zone->limit;
+          decoder->zone = zone;
+          break;
 
         default:
           FT_ERROR(( "t1_decoder_parse_metrics:"
                      " unhandled opcode %d\n", op ));
           goto Syntax_Error;
         }
+
+        decoder->top = top;
 
       } /* general operator processing */
 
@@ -1917,7 +2082,8 @@
   Stack_Underflow:
     return FT_THROW( Stack_Underflow );
   }
-#endif /* T1_CONFIG_OPTION_OLD_ENGINE */
+
+#endif /* !T1_CONFIG_OPTION_OLD_ENGINE */
 
 
   /* initialize T1 decoder */
@@ -1934,7 +2100,7 @@
   {
     FT_ZERO( decoder );
 
-    /* retrieve PSNames interface from list of current modules */
+    /* retrieve `psnames' interface from list of current modules */
     {
       FT_Service_PsCMaps  psnames;
 

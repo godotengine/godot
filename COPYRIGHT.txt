@@ -10,8 +10,9 @@
 # all corresponding files (also recursively in subfolders), apart from those
 # with a more explicit copyright statement.
 #
-# Licenses are given with their SPDX identifier, and are all included in
-# plain text at the end of this file (in alphabetical order).
+# Licenses are given with their debian/copyright short name (or SPDX identifier
+# if no standard short name exists) and are all included in plain text at the
+# end of this file (in alphabetical order).
 #
 # Disclaimer for thirdparty libraries:
 # ------------------------------------
@@ -42,8 +43,8 @@ Source: https://github.com/godotengine/godot
 
 Files: *
 Comment: Godot Engine
-Copyright: 2007-2018, Juan Linietsky, Ariel Manzur.
-  2014-2018, Godot Engine contributors.
+Copyright: 2007-2020, Juan Linietsky, Ariel Manzur.
+ 2014-2020, Godot Engine contributors.
 License: Expat
 
 Files: ./icon.png
@@ -52,32 +53,17 @@ Files: ./icon.png
  ./logo.svg
 Comment: Godot Engine logo
 Copyright: 2017, Andrea Calabró
-License: CC-BY-3.0
+License: CC-BY-4.0
 
-Files: ./platform/android/android_native_app_glue.c
- ./platform/android/android_native_app_glue.h
- ./platform/android/java/aidl/com/android/vending/billing/IInAppBillingService.aidl
+Files: ./platform/android/java/aidl/com/android/vending/billing/IInAppBillingService.aidl
  ./platform/android/java/res/layout/status_bar_ongoing_event_progress_bar.xml
- ./platform/android/java/src/com/android/vending/licensing/*
  ./platform/android/java/src/com/google/android/vending/expansion/downloader/*
+ ./platform/android/java/src/com/google/android/vending/licensing/*
  ./platform/android/java/src/org/godotengine/godot/input/InputManagerCompat.java
  ./platform/android/java/src/org/godotengine/godot/input/InputManagerV16.java
- ./platform/android/java/src/org/godotengine/godot/input/InputManagerV9.java
 Comment: The Android Open Source Project
 Copyright: 2008-2013, The Android Open Source Project
 License: Apache-2.0
-
-Files: ./platform/android/cpu-features.c
- ./platform/android/cpu-features.h
-Comment: The Android Open Source Project
-Copyright: 2010, The Android Open Source Project
-License: BSD-2-clause
-
-Files: ./platform/android/ifaddrs_android.cpp
- ./platform/android/ifaddrs_android.h
-Comment: The Android Open Source Project
-Copyright: 2012-2013, Google Inc.
-License: BSD-3-clause
 
 Files: ./platform/android/java/src/com/android/vending/licensing/util/Base64.java
  ./platform/android/java/src/com/android/vending/licensing/util/Base64DecoderException.java
@@ -85,15 +71,10 @@ Comment: The Android Open Source Project
 Copyright: 2002, Google Inc.
 License: Apache-2.0
 
-Files: ./platform/android/power_android.cpp
- ./platform/osx/power_osx.cpp
- ./platform/windows/power_windows.cpp
- ./platform/x11/power_x11.cpp
-Comment: Simple DirectMedia Layer
-Copyright: 1997-2017, Sam Lantinga
-  2007-2018, Juan Linietsky, Ariel Manzur.
-  2014-2018, Godot Engine contributors.
-License: Expat and Zlib
+Files: ./scene/animation/tween_interpolaters.cpp
+Comment: Penner Easing
+Copyright: 2001, Robert Penner
+License: BSD-3-clause
 
 Files: ./servers/physics/gjk_epa.cpp
  ./servers/physics/joints/generic_6dof_joint_sw.cpp
@@ -107,27 +88,31 @@ Files: ./servers/physics/gjk_epa.cpp
  ./servers/physics/joints/slider_joint_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
-  2007-2018, Juan Linietsky, Ariel Manzur.
-  2014-2018, Godot Engine contributors.
+ 2007-2020, Juan Linietsky, Ariel Manzur.
+ 2014-2020, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./servers/physics/joints/cone_twist_joint_sw.cpp
  ./servers/physics/joints/cone_twist_joint_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
-  2007-2018, Juan Linietsky, Ariel Manzur.
-  2014-2018, Godot Engine contributors.
+ 2007-2020, Juan Linietsky, Ariel Manzur.
+ 2014-2020, Godot Engine contributors.
 License: Expat and Zlib
 
-Files: ./thirdparty/b2d_convexdecomp/
-Comment: Box2D (ConvexDecomp)
-Copyright: 2007, Eric Jordan
-  2006-2009, Erin Catto
-License: Zlib
+Files: ./thirdparty/assimp/
+Comment: Open Asset Import Library (assimp)
+Copyright: 2006-2016, assimp team
+License: BSD-3-clause
+
+Files: ./thirdparty/basis_universal/
+Comment: Basis Universal
+Copyright: 2019, Binomial LLC.
+License: Apache-2.0
 
 Files: ./thirdparty/bullet/
 Comment: Bullet Continuous Collision Detection and Physics Library
-Copyright: 2003-2008, Erwin Coumans
+Copyright: 2003-2013, Erwin Coumans
 License: Zlib
 
 Files: ./thirdparty/certs/ca-certificates.crt
@@ -135,9 +120,20 @@ Comment: CA certificates
 Copyright: Mozilla Contributors
 License: MPL-2.0
 
+Files: ./thirdparty/cvtt/
+Comment: Convection Texture Tools Stand-Alone Kernels
+Copyright: 2018, Eric Lasota
+ 2018, Microsoft Corp.
+License: Expat
+
+Files: ./thirdparty/doctest/
+Comment: doctest
+Copyright: 2016-2020, Viktor Kirilov
+License: Expat
+
 Files: ./thirdparty/enet/
 Comment: ENet
-Copyright: 2002-2016, Lee Salzman
+Copyright: 2002-2020, Lee Salzman
 License: Expat
 
 Files: ./thirdparty/etc2comp/
@@ -161,15 +157,49 @@ Copyright: 2018, Source Foundry Authors
   2003, Bitstream Inc.
 License: Expat and Bitstream Vera Fonts Copyright
 
+Files: ./thirdparty/fonts/Tamsyn*.png
+Comment: Tamsyn font
+Copyright: 2015, Scott Fial
+License: Tamsyn
+
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2017, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2020, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
-Files: ./thirdparty/glad/
-Comment: glad
-Copyright: 2013, David Herberth
-License: Expat
+Files: ./thirdparty/glslang/
+Comment: glslang
+Copyright: 2015-2020 Google, Inc.
+  2014-2020, The Khronos Group Inc
+  2002, NVIDIA Corporation.
+License: glslang
+
+Files: ./thirdparty/graphite/
+Comment: Graphite engine
+Copyright: 2010, SIL International
+License: MPL-2.0
+
+Files: ./thirdparty/harfbuzz/
+Comment: HarfBuzz text shaping library
+Copyright: 2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020 Google, Inc.
+ 2018,2019,2020 Ebrahim Byagowi
+ 2019,2020 Facebook, Inc.
+ 2012 Mozilla Foundation
+ 2011 Codethink Limited
+ 2008,2010 Nokia Corporation and/or its subsidiary(-ies)
+ 2009 Keith Stribley
+ 2009 Martin Hosken and SIL International
+ 2007 Chris Wilson
+ 2006 Behdad Esfahbod
+ 2005 David Turner
+ 2004,2007,2008,2009,2010 Red Hat, Inc.
+ 1998-2004 David Turner and Werner Lemberg
+License: HarfBuzz
+
+Files: ./thirdparty/icu4c/
+Comment: International Components for Unicode
+Copyright: 1991-2020, Unicode
+License: Unicode
 
 Files: ./thirdparty/jpeg_compressor/
 Comment: jpeg-compressor
@@ -183,9 +213,11 @@ License: BSD-3-clause
 
 Files: ./thirdparty/libpng/
 Comment: libpng
-Copyright: 1995-1996, Guy Eric Schalnat, Group 42, Inc.
- 1996-1997, Andreas Dilger
- 1998-2018, Glenn Randers-Pehrson
+Copyright: 1995-2019, The PNG Reference Library Authors.
+ 2018-2019, Cosmin Truta.
+ 2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.
+ 1996-1997, Andreas Dilger.
+ 1995-1996, Guy Eric Schalnat, Group 42, Inc.
 License: Zlib
 
 Files: ./thirdparty/libsimplewebm/
@@ -213,46 +245,33 @@ Comment: The WebM Project
 Copyright: 2010, The WebM Project authors.
 License: BSD-3-clause
 
+Files: ./thirdparty/libvpx/third_party/android/cpu-features.c
+ ./thirdparty/libvpx/third_party/android/cpu-features.h
+Comment: The Android Open Source Project
+Copyright: 2010, The Android Open Source Project
+License: BSD-2-clause
+
 Files: ./thirdparty/libwebp/
 Comment: WebP codec
 Copyright: 2010, Google Inc.
 License: BSD-3-clause
 
-Files: ./thirdparty/libwebsockets/
-Comment: libwebsockets
-Copyright: 2010-2017, Andy Green
-License: LGPL-2.1+SLE (libwebsockets)
-
 Files: ./thirdparty/mbedtls/
 Comment: Mbed TLS
-Copyright: 2006-2015, ARM Limited
+Copyright: 2006-2018, Arm Limited (or its affiliates)
 License: Apache-2.0
 
 Files: ./thirdparty/miniupnpc/
 Comment: MiniUPnPc
-Copyright: 2005-2016, Thomas Bernard
+Copyright: 2005-2018, Thomas Bernard
 License: BSD-3-clause
 
 Files: ./thirdparty/minizip/
 Comment: MiniZip
 Copyright: 1998-2010, Gilles Vollant
-  2007-2008, Even Rouault
-  2009-2010, Mathias Svensson
+ 2007-2008, Even Rouault
+ 2009-2010, Mathias Svensson
 License: Zlib
-
-Files: ./thirdparty/misc/aes256.cpp
- ./thirdparty/misc/aes256.h
- ./thirdparty/misc/sha256.c
- ./thirdparty/misc/sha256.h
-Comment: AES-256 and SHA-256 implementation
-Copyright: 2007-2011, Ilya O. Levin
-License: ISC
-
-Files: ./thirdparty/misc/base64.c
- ./thirdparty/misc/base64.h
-Comment: BASE64 conversion methods
-Copyright: Ari Edelkind
-License: public-domain
 
 Files: ./thirdparty/misc/clipper.cpp
  ./thirdparty/misc/clipper.hpp
@@ -260,29 +279,22 @@ Comment: Clipper
 Copyright: 2010-2017, Angus Johnson
 License: BSL-1.0
 
-Files: ./thirdparty/misc/curl_hostcheck.c
- ./thirdparty/misc/curl_hostcheck.h
-Comment: curl
-Copyright: 1998-2012, Daniel Stenberg et al.
-License: curl
+Files: ./thirdparty/misc/easing_equations.cpp
+Comment: Robert Penner's Easing Functions
+Copyright: 2001, Robert Penner
+License: BSD-3-clause
 
 Files: ./thirdparty/misc/fastlz.c
  ./thirdparty/misc/fastlz.h
 Comment: FastLZ
-Copyright: 2005-2007, Ariya Hidayat
+Copyright: 2005-2020, Ariya Hidayat
 License: Expat
 
-Files: ./thirdparty/misc/hq2x.cpp
- ./thirdparty/misc/hq2x.h
-Comment: hq2x implementation
-Copyright: 2016, Bruno Ribeiro
-License: Apache-2.0
-
-Files: ./thirdparty/misc/md5.cpp
- ./thirdparty/misc/md5.h
-Comment: MD5 Message Digest Algorithm
-Copyright: 1990, RSA Data Security, Inc.
-License: RSA-MD
+Files: ./thirdparty/misc/ifaddrs-android.cc
+ ./thirdparty/misc/ifaddrs-android.h
+Comment: libjingle
+Copyright: 2012-2013, Google Inc.
+License: BSD-3-clause
 
 Files: ./thirdparty/misc/mikktspace.c
  ./thirdparty/misc/mikktspace.h
@@ -302,12 +314,6 @@ Comment: SMAZ
 Copyright: 2006-2009, Salvatore Sanfilippo
 License: BSD-3-clause
 
-Files: ./thirdparty/misc/stb_truetype.h
- ./thirdparty/misc/stb_vorbis.c
-Comment: stb libraries
-Copyright: 2007-2017, Sean Barrett
-License: public-domain
-
 Files: ./thirdparty/misc/triangulator.cpp
  ./thirdparty/misc/triangulator.h
 Comment: PolyPartition
@@ -324,6 +330,11 @@ Comment: NanoSVG
 Copyright: 2013-2014, Mikko Mononen
 License: Zlib
 
+Files: ./thirdparty/oidn/
+Comment: Intel Open Image Denoise
+Copyright: 2009-2019, Intel Corporation
+License: Apache-2.0
+
 Files: ./thirdparty/opus/
 Comment: Opus
 Copyright: 2001-2011, Xiph.Org, Skype Limited, Octasic,
@@ -334,8 +345,8 @@ License: BSD-3-clause
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
-Copyright: 1997-2017, University of Cambridge,
- 2009-2017, Zoltan Herczeg
+Copyright: 1997-2019, University of Cambridge,
+ 2009-2019, Zoltan Herczeg
 License: BSD-3-clause
 
 Files: ./thirdparty/pvrtccompressor/
@@ -348,26 +359,52 @@ Comment: Recast
 Copyright: 2009, Mikko Mononen
 License: Zlib
 
-Files: ./thirdparty/rtaudio/
-Comment: RtAudio
-Copyright: 2001-2016, Gary P. Scavone
-License: Expat
+Files: ./thirdparty/rvo2/
+Comment: RVO2
+Copyright: 2016, University of North Carolina at Chapel Hill
+License: Apache 2.0
 
 Files: ./thirdparty/squish/
 Comment: libSquish
 Copyright: 2006, Simon Brown
 License: Expat
 
-Files: ./thirdparty/thekla_atlas/
-Comment: Thekla Atlas
-Copyright: 2013, Thekla, Inc
-License: Expat
-
 Files: ./thirdparty/tinyexr/
 Comment: TinyEXR
-Copyright: 2014-2017, Syoyo Fujita
+Copyright: 2014-2020, Syoyo Fujita
   2002, Industrial Light & Magic, a division of Lucas Digital Ltd. LLC
-License: BSD-3-Clause
+License: BSD-3-clause
+
+Files: ./thirdparty/vhacd/
+Comment: V-HACD
+Copyright: 2011, Khaled Mamou
+  2003-2009, Erwin Coumans
+License: BSD-3-clause
+
+Files: ./thirdparty/vulkan/
+Comment: Vulkan Ecosystem Components (Vulkan ICD loader and headers)
+Copyright: 2014-2020, The Khronos Group Inc.
+  2014-2020, Valve Corporation
+  2014-2020, LunarG, Inc.
+  2015-2020, Google Inc.
+License: Apache-2.0
+
+Files: ./thirdparty/vulkan/vk_mem_alloc.h
+Comment: Vulkan Memory Allocator
+Copyright: 2017-2019, Advanced Micro Devices, Inc.
+License: Expat
+
+Files: ./thirdparty/wslay/
+Comment: Wslay
+Copyright: 2011-2015, Tatsuhiro Tsujikawa
+License: Expat
+
+Files: ./thirdparty/xatlas/
+Comment: xatlas
+Copyright: 2018-2020, Jonathan Young
+  2013, Thekla, Inc
+  2006, NVIDIA Corporation, Ignacio Castano
+License: Expat
 
 Files: ./thirdparty/zlib/
 Comment: zlib
@@ -376,8 +413,8 @@ License: Zlib
 
 Files: ./thirdparty/zstd/
 Comment: Zstandard
-Copyright: 2016-2018, Facebook, Inc.
-License: BSD-3-Clause
+Copyright: 2016-2020, Facebook, Inc.
+License: BSD-3-clause
 
 
 
@@ -511,359 +548,317 @@ License: BSL-1.0
  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  DEALINGS IN THE SOFTWARE.
 
-License: CC-BY-3.0
- Creative Commons Attribution 3.0 Unported
+License: CC-BY-4.0
+ Creative Commons Attribution 4.0 International Public License
  .
- CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE
- LEGAL SERVICES. DISTRIBUTION OF THIS LICENSE DOES NOT CREATE AN
- ATTORNEY-CLIENT RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS INFORMATION
- ON AN "AS-IS" BASIS. CREATIVE COMMONS MAKES NO WARRANTIES REGARDING THE
- INFORMATION PROVIDED, AND DISCLAIMS LIABILITY FOR DAMAGES RESULTING FROM
- ITS USE.
+ By exercising the Licensed Rights (defined below), You accept and agree
+ to be bound by the terms and conditions of this Creative Commons
+ Attribution 4.0 International Public License ("Public
+ License"). To the extent this Public License may be interpreted as a
+ contract, You are granted the Licensed Rights in consideration of Your
+ acceptance of these terms and conditions, and the Licensor grants You
+ such rights in consideration of benefits the Licensor receives from
+ making the Licensed Material available under these terms and
+ conditions.
  .
- License
+ Section 1 -- Definitions.
  .
- THE WORK (AS DEFINED BELOW) IS PROVIDED UNDER THE TERMS OF THIS CREATIVE
- COMMONS PUBLIC LICENSE ("CCPL" OR "LICENSE"). THE WORK IS PROTECTED BY
- COPYRIGHT AND/OR OTHER APPLICABLE LAW. ANY USE OF THE WORK OTHER THAN AS
- AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
+ a. Adapted Material means material subject to Copyright and Similar
+ Rights that is derived from or based upon the Licensed Material
+ and in which the Licensed Material is translated, altered,
+ arranged, transformed, or otherwise modified in a manner requiring
+ permission under the Copyright and Similar Rights held by the
+ Licensor. For purposes of this Public License, where the Licensed
+ Material is a musical work, performance, or sound recording,
+ Adapted Material is always produced where the Licensed Material is
+ synched in timed relation with a moving image.
  .
- BY EXERCISING ANY RIGHTS TO THE WORK PROVIDED HERE, YOU ACCEPT AND AGREE
- TO BE BOUND BY THE TERMS OF THIS LICENSE. TO THE EXTENT THIS LICENSE MAY
- BE CONSIDERED TO BE A CONTRACT, THE LICENSOR GRANTS YOU THE RIGHTS
- CONTAINED HERE IN CONSIDERATION OF YOUR ACCEPTANCE OF SUCH TERMS AND
- CONDITIONS.
+ b. Adapter's License means the license You apply to Your Copyright
+ and Similar Rights in Your contributions to Adapted Material in
+ accordance with the terms and conditions of this Public License.
  .
- 1. Definitions
+ c. Copyright and Similar Rights means copyright and/or similar rights
+ closely related to copyright including, without limitation,
+ performance, broadcast, sound recording, and Sui Generis Database
+ Rights, without regard to how the rights are labeled or
+ categorized. For purposes of this Public License, the rights
+ specified in Section 2(b)(1)-(2) are not Copyright and Similar
+ Rights.
  .
- a. "Adaptation" means a work based upon the Work, or upon the Work and
- other pre-existing works, such as a translation, adaptation, derivative
- work, arrangement of music or other alterations of a literary or
- artistic work, or phonogram or performance and includes cinematographic
- adaptations or any other form in which the Work may be recast,
- transformed, or adapted including in any form recognizably derived from
- the original, except that a work that constitutes a Collection will not
- be considered an Adaptation for the purpose of this License. For the
- avoidance of doubt, where the Work is a musical work, performance or
- phonogram, the synchronization of the Work in timed-relation with a
- moving image ("synching") will be considered an Adaptation for the
- purpose of this License.
+ d. Effective Technological Measures means those measures that, in the
+ absence of proper authority, may not be circumvented under laws
+ fulfilling obligations under Article 11 of the WIPO Copyright
+ Treaty adopted on December 20, 1996, and/or similar international
+ agreements.
  .
- b. "Collection" means a collection of literary or artistic works, such
- as encyclopedias and anthologies, or performances, phonograms or
- broadcasts, or other works or subject matter other than works listed in
- Section 1(f) below, which, by reason of the selection and arrangement of
- their contents, constitute intellectual creations, in which the Work is
- included in its entirety in unmodified form along with one or more other
- contributions, each constituting separate and independent works in
- themselves, which together are assembled into a collective whole. A work
- that constitutes a Collection will not be considered an Adaptation (as
- defined above) for the purposes of this License.
+ e. Exceptions and Limitations means fair use, fair dealing, and/or
+ any other exception or limitation to Copyright and Similar Rights
+ that applies to Your use of the Licensed Material.
  .
- c.  "Distribute" means to make available to the public the original and
- copies of the Work or Adaptation, as appropriate, through sale or other
- transfer of ownership.
+ f. Licensed Material means the artistic or literary work, database,
+ or other material to which the Licensor applied this Public
+ License.
  .
- d. "Licensor" means the individual, individuals, entity or entities that
- offer(s) the Work under the terms of this License.
+ g. Licensed Rights means the rights granted to You subject to the
+ terms and conditions of this Public License, which are limited to
+ all Copyright and Similar Rights that apply to Your use of the
+ Licensed Material and that the Licensor has authority to license.
  .
- e. "Original Author" means, in the case of a literary or artistic work,
- the individual, individuals, entity or entities who created the Work or
- if no individual or entity can be identified, the publisher; and in
- addition (i) in the case of a performance the actors, singers,
- musicians, dancers, and other persons who act, sing, deliver, declaim,
- play in, interpret or otherwise perform literary or artistic works or
- expressions of folklore; (ii) in the case of a phonogram the producer
- being the person or legal entity who first fixes the sounds of a
- performance or other sounds; and, (iii) in the case of broadcasts, the
- organization that transmits the broadcast.
+ h. Licensor means the individual(s) or entity(ies) granting rights
+ under this Public License.
  .
- f. "Work" means the literary and/or artistic work offered under the
- terms of this License including without limitation any production in the
- literary, scientific and artistic domain, whatever may be the mode or
- form of its expression including digital form, such as a book, pamphlet
- and other writing; a lecture, address, sermon or other work of the same
- nature; a dramatic or dramatico-musical work; a choreographic work or
- entertainment in dumb show; a musical composition with or without words;
- a cinematographic work to which are assimilated works expressed by a
- process analogous to cinematography; a work of drawing, painting,
- architecture, sculpture, engraving or lithography; a photographic work
- to which are assimilated works expressed by a process analogous to
- photography; a work of applied art; an illustration, map, plan, sketch
- or three-dimensional work relative to geography, topography,
- architecture or science; a performance; a broadcast; a phonogram; a
- compilation of data to the extent it is protected as a copyrightable
- work; or a work performed by a variety or circus performer to the extent
- it is not otherwise considered a literary or artistic work.
+ i. Share means to provide material to the public by any means or
+ process that requires permission under the Licensed Rights, such
+ as reproduction, public display, public performance, distribution,
+ dissemination, communication, or importation, and to make material
+ available to the public including in ways that members of the
+ public may access the material from a place and at a time
+ individually chosen by them.
  .
- g. "You" means an individual or entity exercising rights under this
- License who has not previously violated the terms of this License with
- respect to the Work, or who has received express permission from the
- Licensor to exercise rights under this License despite a previous
- violation.
+ j. Sui Generis Database Rights means rights other than copyright
+ resulting from Directive 96/9/EC of the European Parliament and of
+ the Council of 11 March 1996 on the legal protection of databases,
+ as amended and/or succeeded, as well as other essentially
+ equivalent rights anywhere in the world.
  .
- h. "Publicly Perform" means to perform public recitations of the Work
- and to communicate to the public those public recitations, by any means
- or process, including by wire or wireless means or public digital
- performances; to make available to the public Works in such a way that
- members of the public may access these Works from a place and at a place
- individually chosen by them; to perform the Work to the public by any
- means or process and the communication to the public of the performances
- of the Work, including by public digital performance; to broadcast and
- rebroadcast the Work by any means including signs, sounds or images.
+ k. You means the individual or entity exercising the Licensed Rights
+ under this Public License. Your has a corresponding meaning.
  .
- i. "Reproduce" means to make copies of the Work by any means including
- without limitation by sound or visual recordings and the right of
- fixation and reproducing fixations of the Work, including storage of a
- protected performance or phonogram in digital form or other electronic
- medium.
+ Section 2 -- Scope.
  .
- 2. Fair Dealing Rights. Nothing in this License is intended to reduce,
- limit, or restrict any uses free from copyright or rights arising from
- limitations or exceptions that are provided for in connection with the
- copyright protection under copyright law or other applicable laws.
+ a. License grant.
  .
- 3. License Grant. Subject to the terms and conditions of this License,
- Licensor hereby grants You a worldwide, royalty-free, non-exclusive,
- perpetual (for the duration of the applicable copyright) license to
- exercise the rights in the Work as stated below:
+ 1. Subject to the terms and conditions of this Public License,
+ the Licensor hereby grants You a worldwide, royalty-free,
+ non-sublicensable, non-exclusive, irrevocable license to
+ exercise the Licensed Rights in the Licensed Material to:
  .
- a. to Reproduce the Work, to incorporate the Work into one or more
- Collections, and to Reproduce the Work as incorporated in the
- Collections;
+ a. reproduce and Share the Licensed Material, in whole or
+ in part; and
  .
- b. to create and Reproduce Adaptations provided that any such
- Adaptation, including any translation in any medium, takes reasonable
- steps to clearly label, demarcate or otherwise identify that changes
- were made to the original Work. For example, a translation could be
- marked "The original work was translated from English to Spanish," or a
- modification could indicate "The original work has been modified.";
+ b. produce, reproduce, and Share Adapted Material.
  .
- c. to Distribute and Publicly Perform the Work including as incorporated
- in Collections; and,
+ 2. Exceptions and Limitations. For the avoidance of doubt, where
+ Exceptions and Limitations apply to Your use, this Public
+ License does not apply, and You do not need to comply with
+ its terms and conditions.
  .
- d. to Distribute and Publicly Perform Adaptations.
+ 3. Term. The term of this Public License is specified in Section
+ 6(a).
  .
- e. For the avoidance of doubt:
+ 4. Media and formats; technical modifications allowed. The
+ Licensor authorizes You to exercise the Licensed Rights in
+ all media and formats whether now known or hereafter created,
+ and to make technical modifications necessary to do so. The
+ Licensor waives and/or agrees not to assert any right or
+ authority to forbid You from making technical modifications
+ necessary to exercise the Licensed Rights, including
+ technical modifications necessary to circumvent Effective
+ Technological Measures. For purposes of this Public License,
+ simply making modifications authorized by this Section 2(a)
+ (4) never produces Adapted Material.
  .
- i. Non-waivable Compulsory License Schemes. In those jurisdictions in
- which the right to collect royalties through any statutory or compulsory
- licensing scheme cannot be waived, the Licensor reserves the exclusive
- right to collect such royalties for any exercise by You of the rights
- granted under this License;
+ 5. Downstream recipients.
  .
- ii. Waivable Compulsory License Schemes. In those jurisdictions in which
- the right to collect royalties through any statutory or compulsory
- licensing scheme can be waived, the Licensor waives the exclusive right
- to collect such royalties for any exercise by You of the rights granted
- under this License; and,
+ a. Offer from the Licensor -- Licensed Material. Every
+ recipient of the Licensed Material automatically
+ receives an offer from the Licensor to exercise the
+ Licensed Rights under the terms and conditions of this
+ Public License.
  .
- iii. Voluntary License Schemes. The Licensor waives the right to collect
- royalties, whether individually or, in the event that the Licensor is a
- member of a collecting society that administers voluntary licensing
- schemes, via that society, from any exercise by You of the rights
- granted under this License.
+ b. No downstream restrictions. You may not offer or impose
+ any additional or different terms or conditions on, or
+ apply any Effective Technological Measures to, the
+ Licensed Material if doing so restricts exercise of the
+ Licensed Rights by any recipient of the Licensed
+ Material.
  .
- The above rights may be exercised in all media and formats whether now
- known or hereafter devised. The above rights include the right to make
- such modifications as are technically necessary to exercise the rights
- in other media and formats. Subject to Section 8(f), all rights not
- expressly granted by Licensor are hereby reserved.
+ 6. No endorsement. Nothing in this Public License constitutes or
+ may be construed as permission to assert or imply that You
+ are, or that Your use of the Licensed Material is, connected
+ with, or sponsored, endorsed, or granted official status by,
+ the Licensor or others designated to receive attribution as
+ provided in Section 3(a)(1)(A)(i).
  .
- 4. Restrictions. The license granted in Section 3 above is expressly
- made subject to and limited by the following restrictions:
+ b. Other rights.
  .
- a. You may Distribute or Publicly Perform the Work only under the terms
- of this License. You must include a copy of, or the Uniform Resource
- Identifier (URI) for, this License with every copy of the Work You
- Distribute or Publicly Perform. You may not offer or impose any terms on
- the Work that restrict the terms of this License or the ability of the
- recipient of the Work to exercise the rights granted to that recipient
- under the terms of the License. You may not sublicense the Work. You
- must keep intact all notices that refer to this License and to the
- disclaimer of warranties with every copy of the Work You Distribute or
- Publicly Perform. When You Distribute or Publicly Perform the Work, You
- may not impose any effective technological measures on the Work that
- restrict the ability of a recipient of the Work from You to exercise the
- rights granted to that recipient under the terms of the License. This
- Section 4(a) applies to the Work as incorporated in a Collection, but
- this does not require the Collection apart from the Work itself to be
- made subject to the terms of this License. If You create a Collection,
- upon notice from any Licensor You must, to the extent practicable,
- remove from the Collection any credit as required by Section 4(b), as
- requested. If You create an Adaptation, upon notice from any Licensor
- You must, to the extent practicable, remove from the Adaptation any
- credit as required by Section 4(b), as requested.
+ 1. Moral rights, such as the right of integrity, are not
+ licensed under this Public License, nor are publicity,
+ privacy, and/or other similar personality rights; however, to
+ the extent possible, the Licensor waives and/or agrees not to
+ assert any such rights held by the Licensor to the limited
+ extent necessary to allow You to exercise the Licensed
+ Rights, but not otherwise.
  .
- b. If You Distribute, or Publicly Perform the Work or any Adaptations or
- Collections, You must, unless a request has been made pursuant to
- Section 4(a), keep intact all copyright notices for the Work and
- provide, reasonable to the medium or means You are utilizing: (i) the
- name of the Original Author (or pseudonym, if applicable) if supplied,
- and/or if the Original Author and/or Licensor designate another party or
- parties (e.g., a sponsor institute, publishing entity, journal) for
- attribution ("Attribution Parties") in Licensor's copyright notice,
- terms of service or by other reasonable means, the name of such party or
- parties; (ii) the title of the Work if supplied; (iii) to the extent
- reasonably practicable, the URI, if any, that Licensor specifies to be
- associated with the Work, unless such URI does not refer to the
- copyright notice or licensing information for the Work; and (iv) ,
- consistent with Section 3(b), in the case of an Adaptation, a credit
- identifying the use of the Work in the Adaptation (e.g., "French
- translation of the Work by Original Author," or "Screenplay based on
- original Work by Original Author"). The credit required by this Section
- 4 (b) may be implemented in any reasonable manner; provided, however,
- that in the case of a Adaptation or Collection, at a minimum such credit
- will appear, if a credit for all contributing authors of the Adaptation
- or Collection appears, then as part of these credits and in a manner at
- least as prominent as the credits for the other contributing authors.
- For the avoidance of doubt, You may only use the credit required by this
- Section for the purpose of attribution in the manner set out above and,
- by exercising Your rights under this License, You may not implicitly or
- explicitly assert or imply any connection with, sponsorship or
- endorsement by the Original Author, Licensor and/or Attribution Parties,
- as appropriate, of You or Your use of the Work, without the separate,
- express prior written permission of the Original Author, Licensor and/or
- Attribution Parties.
+ 2. Patent and trademark rights are not licensed under this
+ Public License.
  .
- c. Except as otherwise agreed in writing by the Licensor or as may be
- otherwise permitted by applicable law, if You Reproduce, Distribute or
- Publicly Perform the Work either by itself or as part of any Adaptations
- or Collections, You must not distort, mutilate, modify or take other
- derogatory action in relation to the Work which would be prejudicial to
- the Original Author's honor or reputation. Licensor agrees that in those
- jurisdictions (e.g. Japan), in which any exercise of the right granted
- in Section 3(b) of this License (the right to make Adaptations) would be
- deemed to be a distortion, mutilation, modification or other derogatory
- action prejudicial to the Original Author's honor and reputation, the
- Licensor will waive or not assert, as appropriate, this Section, to the
- fullest extent permitted by the applicable national law, to enable You
- to reasonably exercise Your right under Section 3(b) of this License
- (right to make Adaptations) but not otherwise.
+ 3. To the extent possible, the Licensor waives any right to
+ collect royalties from You for the exercise of the Licensed
+ Rights, whether directly or through a collecting society
+ under any voluntary or waivable statutory or compulsory
+ licensing scheme. In all other cases the Licensor expressly
+ reserves any right to collect such royalties.
  .
- 5. Representations, Warranties and Disclaimer
+ Section 3 -- License Conditions.
  .
- UNLESS OTHERWISE MUTUALLY AGREED TO BY THE PARTIES IN WRITING, LICENSOR
- OFFERS THE WORK AS-IS AND MAKES NO REPRESENTATIONS OR WARRANTIES OF ANY
- KIND CONCERNING THE WORK, EXPRESS, IMPLIED, STATUTORY OR OTHERWISE,
- INCLUDING, WITHOUT LIMITATION, WARRANTIES OF TITLE, MERCHANTIBILITY,
- FITNESS FOR A PARTICULAR PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF
- LATENT OR OTHER DEFECTS, ACCURACY, OR THE PRESENCE OF ABSENCE OF ERRORS,
- WHETHER OR NOT DISCOVERABLE. SOME JURISDICTIONS DO NOT ALLOW THE
- EXCLUSION OF IMPLIED WARRANTIES, SO SUCH EXCLUSION MAY NOT APPLY TO YOU.
+ Your exercise of the Licensed Rights is expressly made subject to the
+ following conditions.
  .
- 6. Limitation on Liability. EXCEPT TO THE EXTENT REQUIRED BY APPLICABLE
- LAW, IN NO EVENT WILL LICENSOR BE LIABLE TO YOU ON ANY LEGAL THEORY FOR
- ANY SPECIAL, INCIDENTAL, CONSEQUENTIAL, PUNITIVE OR EXEMPLARY DAMAGES
- ARISING OUT OF THIS LICENSE OR THE USE OF THE WORK, EVEN IF LICENSOR HAS
- BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+ a. Attribution.
  .
- 7. Termination
+ 1. If You Share the Licensed Material (including in modified
+ form), You must:
  .
- a. This License and the rights granted hereunder will terminate
- automatically upon any breach by You of the terms of this License.
- Individuals or entities who have received Adaptations or Collections
- from You under this License, however, will not have their licenses
- terminated provided such individuals or entities remain in full
- compliance with those licenses. Sections 1, 2, 5, 6, 7, and 8 will
- survive any termination of this License.
+ a. retain the following if it is supplied by the Licensor
+ with the Licensed Material:
  .
- b. Subject to the above terms and conditions, the license granted here
- is perpetual (for the duration of the applicable copyright in the Work).
- Notwithstanding the above, Licensor reserves the right to release the
- Work under different license terms or to stop distributing the Work at
- any time; provided, however that any such election will not serve to
- withdraw this License (or any other license that has been, or is
- required to be, granted under the terms of this License), and this
- License will continue in full force and effect unless terminated as
- stated above.
+ i. identification of the creator(s) of the Licensed
+ Material and any others designated to receive
+ attribution, in any reasonable manner requested by
+ the Licensor (including by pseudonym if
+ designated);
  .
- 8. Miscellaneous
+ ii. a copyright notice;
  .
- a. Each time You Distribute or Publicly Perform the Work or a
- Collection, the Licensor offers to the recipient a license to the Work
- on the same terms and conditions as the license granted to You under
- this License.
+ iii. a notice that refers to this Public License;
  .
- b. Each time You Distribute or Publicly Perform an Adaptation, Licensor
- offers to the recipient a license to the original Work on the same terms
- and conditions as the license granted to You under this License.
+ iv. a notice that refers to the disclaimer of
+ warranties;
  .
- c. If any provision of this License is invalid or unenforceable under
- applicable law, it shall not affect the validity or enforceability of
- the remainder of the terms of this License, and without further action
- by the parties to this agreement, such provision shall be reformed to
- the minimum extent necessary to make such provision valid and
- enforceable.
+ v. a URI or hyperlink to the Licensed Material to the
+ extent reasonably practicable;
  .
- d. No term or provision of this License shall be deemed waived and no
- breach consented to unless such waiver or consent shall be in writing
- and signed by the party to be charged with such waiver or consent. This
- License constitutes the entire agreement between the parties with
- respect to the Work licensed here. There are no understandings,
- agreements or representations with respect to the Work not specified
- here. Licensor shall not be bound by any additional provisions that may
- appear in any communication from You.
+ b. indicate if You modified the Licensed Material and
+ retain an indication of any previous modifications; and
  .
- e. This License may not be modified without the mutual written agreement
- of the Licensor and You.
+ c. indicate the Licensed Material is licensed under this
+ Public License, and include the text of, or the URI or
+ hyperlink to, this Public License.
  .
- f. The rights granted under, and the subject matter referenced, in this
- License were drafted utilizing the terminology of the Berne Convention
- for the Protection of Literary and Artistic Works (as amended on
- September 28, 1979), the Rome Convention of 1961, the WIPO Copyright
- Treaty of 1996, the WIPO Performances and Phonograms Treaty of 1996 and
- the Universal Copyright Convention (as revised on July 24, 1971). These
- rights and subject matter take effect in the relevant jurisdiction in
- which the License terms are sought to be enforced according to the
- corresponding provisions of the implementation of those treaty
- provisions in the applicable national law. If the standard suite of
- rights granted under applicable copyright law includes additional rights
- not granted under this License, such additional rights are deemed to be
- included in the License; this License is not intended to restrict the
- license of any rights under applicable law.
+ 2. You may satisfy the conditions in Section 3(a)(1) in any
+ reasonable manner based on the medium, means, and context in
+ which You Share the Licensed Material. For example, it may be
+ reasonable to satisfy the conditions by providing a URI or
+ hyperlink to a resource that includes the required
+ information.
  .
- Creative Commons Notice
+ 3. If requested by the Licensor, You must remove any of the
+ information required by Section 3(a)(1)(A) to the extent
+ reasonably practicable.
  .
- Creative Commons is not a party to this License, and makes no warranty
- whatsoever in connection with the Work. Creative Commons will not be
- liable to You or any party on any legal theory for any damages
- whatsoever, including without limitation any general, special,
- incidental or consequential damages arising in connection to this
- license. Notwithstanding the foregoing two (2) sentences, if Creative
- Commons has expressly identified itself as the Licensor hereunder, it
- shall have all rights and obligations of Licensor.
+ 4. If You Share Adapted Material You produce, the Adapter's
+ License You apply must not prevent recipients of the Adapted
+ Material from complying with this Public License.
  .
- Except for the limited purpose of indicating to the public that the Work
- is licensed under the CCPL, Creative Commons does not authorize the use
- by either party of the trademark "Creative Commons" or any related
- trademark or logo of Creative Commons without the prior written consent
- of Creative Commons. Any permitted use will be in compliance with
- Creative Commons' then-current trademark usage guidelines, as may be
- published on its website or otherwise made available upon request from
- time to time. For the avoidance of doubt, this trademark restriction
- does not form part of this License.
+ Section 4 -- Sui Generis Database Rights.
  .
- Creative Commons may be contacted at http://creativecommons.org/.
-
-License: curl
- All rights reserved.
+ Where the Licensed Rights include Sui Generis Database Rights that
+ apply to Your use of the Licensed Material:
  .
- Permission to use, copy, modify, and distribute this software for any purpose
- with or without fee is hereby granted, provided that the above copyright
- notice and this permission notice appear in all copies.
+ a. for the avoidance of doubt, Section 2(a)(1) grants You the right
+ to extract, reuse, reproduce, and Share all or a substantial
+ portion of the contents of the database;
  .
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY RIGHTS. IN
- NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
- OR OTHER DEALINGS IN THE SOFTWARE.
+ b. if You include all or a substantial portion of the database
+ contents in a database in which You have Sui Generis Database
+ Rights, then the database in which You have Sui Generis Database
+ Rights (but not its individual contents) is Adapted Material; and
  .
- Except as contained in this notice, the name of a copyright holder shall not
- be used in advertising or otherwise to promote the sale, use or other dealings
- in this Software without prior written authorization of the copyright holder.
+ c. You must comply with the conditions in Section 3(a) if You Share
+ all or a substantial portion of the contents of the database.
+ .
+ For the avoidance of doubt, this Section 4 supplements and does not
+ replace Your obligations under this Public License where the Licensed
+ Rights include other Copyright and Similar Rights.
+ .
+ Section 5 -- Disclaimer of Warranties and Limitation of Liability.
+ .
+ a. UNLESS OTHERWISE SEPARATELY UNDERTAKEN BY THE LICENSOR, TO THE
+ EXTENT POSSIBLE, THE LICENSOR OFFERS THE LICENSED MATERIAL AS-IS
+ AND AS-AVAILABLE, AND MAKES NO REPRESENTATIONS OR WARRANTIES OF
+ ANY KIND CONCERNING THE LICENSED MATERIAL, WHETHER EXPRESS,
+ IMPLIED, STATUTORY, OR OTHER. THIS INCLUDES, WITHOUT LIMITATION,
+ WARRANTIES OF TITLE, MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ PURPOSE, NON-INFRINGEMENT, ABSENCE OF LATENT OR OTHER DEFECTS,
+ ACCURACY, OR THE PRESENCE OR ABSENCE OF ERRORS, WHETHER OR NOT
+ KNOWN OR DISCOVERABLE. WHERE DISCLAIMERS OF WARRANTIES ARE NOT
+ ALLOWED IN FULL OR IN PART, THIS DISCLAIMER MAY NOT APPLY TO YOU.
+ .
+ b. TO THE EXTENT POSSIBLE, IN NO EVENT WILL THE LICENSOR BE LIABLE
+ TO YOU ON ANY LEGAL THEORY (INCLUDING, WITHOUT LIMITATION,
+ NEGLIGENCE) OR OTHERWISE FOR ANY DIRECT, SPECIAL, INDIRECT,
+ INCIDENTAL, CONSEQUENTIAL, PUNITIVE, EXEMPLARY, OR OTHER LOSSES,
+ COSTS, EXPENSES, OR DAMAGES ARISING OUT OF THIS PUBLIC LICENSE OR
+ USE OF THE LICENSED MATERIAL, EVEN IF THE LICENSOR HAS BEEN
+ ADVISED OF THE POSSIBILITY OF SUCH LOSSES, COSTS, EXPENSES, OR
+ DAMAGES. WHERE A LIMITATION OF LIABILITY IS NOT ALLOWED IN FULL OR
+ IN PART, THIS LIMITATION MAY NOT APPLY TO YOU.
+ .
+ c. The disclaimer of warranties and limitation of liability provided
+ above shall be interpreted in a manner that, to the extent
+ possible, most closely approximates an absolute disclaimer and
+ waiver of all liability.
+ .
+ Section 6 -- Term and Termination.
+ .
+ a. This Public License applies for the term of the Copyright and
+ Similar Rights licensed here. However, if You fail to comply with
+ this Public License, then Your rights under this Public License
+ terminate automatically.
+ .
+ b. Where Your right to use the Licensed Material has terminated under
+ Section 6(a), it reinstates:
+ .
+ 1. automatically as of the date the violation is cured, provided
+ it is cured within 30 days of Your discovery of the
+ violation; or
+ .
+ 2. upon express reinstatement by the Licensor.
+ .
+ For the avoidance of doubt, this Section 6(b) does not affect any
+ right the Licensor may have to seek remedies for Your violations
+ of this Public License.
+ .
+ c. For the avoidance of doubt, the Licensor may also offer the
+ Licensed Material under separate terms or conditions or stop
+ distributing the Licensed Material at any time; however, doing so
+ will not terminate this Public License.
+ .
+ d. Sections 1, 5, 6, 7, and 8 survive termination of this Public
+ License.
+ .
+ Section 7 -- Other Terms and Conditions.
+ .
+ a. The Licensor shall not be bound by any additional or different
+ terms or conditions communicated by You unless expressly agreed.
+ .
+ b. Any arrangements, understandings, or agreements regarding the
+ Licensed Material not stated herein are separate from and
+ independent of the terms and conditions of this Public License.
+ .
+ Section 8 -- Interpretation.
+ .
+ a. For the avoidance of doubt, this Public License does not, and
+ shall not be interpreted to, reduce, limit, restrict, or impose
+ conditions on any use of the Licensed Material that could lawfully
+ be made without permission under this Public License.
+ .
+ b. To the extent possible, if any provision of this Public License is
+ deemed unenforceable, it shall be automatically reformed to the
+ minimum extent necessary to make it enforceable. If the provision
+ cannot be reformed, it shall be severed from this Public License
+ without affecting the enforceability of the remaining terms and
+ conditions.
+ .
+ c. No term or condition of this Public License will be waived and no
+ failure to comply consented to unless expressly agreed to by the
+ Licensor.
+ .
+ d. Nothing in this Public License constitutes or may be interpreted
+ as a limitation upon, or waiver of, any privileges and immunities
+ that apply to the Licensor or You, including from the legal
+ processes of any jurisdiction or authority.
 
 License: Expat
  Permission is hereby granted, free of charge, to any person obtaining
@@ -884,6 +879,147 @@ License: Expat
  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+License: glslang
+ Here, glslang proper means core GLSL parsing, HLSL parsing, and SPIR-V code
+ generation. Glslang proper requires use of a number of licenses, one that covers
+ preprocessing and others that covers non-preprocessing.
+ .
+ Bison was removed long ago. You can build glslang from the source grammar,
+ using tools of your choice, without using bison or any bison files.
+ .
+ Other parts, outside of glslang proper, include:
+ .
+ - gl_types.h, only needed for OpenGL-like reflection, and can be left out of
+   a parse and codegen project.  See it for its license.
+ .
+ - update_glslang_sources.py, which is not part of the project proper and does
+   not need to be used.
+ .
+ - the SPIR-V "remapper", which is optional, but has the same license as
+   glslang proper
+ .
+ - Google tests and SPIR-V tools, and anything in the external subdirectory
+   are external and optional; see them for their respective licenses.
+ .
+ --------------------------------------------------------------------------------
+ .
+ The core of glslang-proper, minus the preprocessor is licenced as follows:
+ .
+ --------------------------------------------------------------------------------
+ 3-Clause BSD License
+ --------------------------------------------------------------------------------
+ .
+ Copyright (C) 2015-2018 Google, Inc.
+ Copyright (C) <various other dates and companies>
+ .
+ All rights reserved.
+ .
+ See: <License: BSD-3-clause>.
+ .
+ --------------------------------------------------------------------------------
+ 2-Clause BSD License
+ --------------------------------------------------------------------------------
+ .
+ Copyright 2020 The Khronos Group Inc
+ .
+ See: <License: BSD-2-clause>.
+ .
+ --------------------------------------------------------------------------------
+ The MIT License
+ --------------------------------------------------------------------------------
+ .
+ Copyright 2020 The Khronos Group Inc
+ .
+ See: <License: Expat>.
+ .
+ --------------------------------------------------------------------------------
+ APACHE LICENSE, VERSION 2.0
+ --------------------------------------------------------------------------------
+ .
+ See: <License: Apache-2.0>.
+ .
+ --------------------------------------------------------------------------------
+ GPL 3 with special bison exception
+ --------------------------------------------------------------------------------
+ .
+ Bison implementation for Yacc-like parsers in C
+ .
+ Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
+ .
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ .
+ As a special exception, you may create a larger work that contains
+ part or all of the Bison parser skeleton and distribute that work
+ under terms of your choice, so long as that work isn't itself a
+ parser generator using the skeleton or a modified version thereof
+ as a parser skeleton.  Alternatively, if you modify or redistribute
+ the parser skeleton itself, you may (at your option) remove this
+ special exception, which will cause the skeleton and the resulting
+ Bison output files to be licensed under the GNU General Public
+ License without this special exception.
+ .
+ This special exception was added by the Free Software Foundation in
+ version 2.2 of Bison.
+ .
+ --------------------------------------------------------------------------------
+ ================================================================================
+ --------------------------------------------------------------------------------
+ .
+ The preprocessor has the core licenses stated above, plus an additional licence:
+ .
+ Copyright (c) 2002, NVIDIA Corporation.
+ .
+ NVIDIA Corporation("NVIDIA") supplies this software to you in
+ consideration of your agreement to the following terms, and your use,
+ installation, modification or redistribution of this NVIDIA software
+ constitutes acceptance of these terms.  If you do not agree with these
+ terms, please do not use, install, modify or redistribute this NVIDIA
+ software.
+ .
+ In consideration of your agreement to abide by the following terms, and
+ subject to these terms, NVIDIA grants you a personal, non-exclusive
+ license, under NVIDIA's copyrights in this original NVIDIA software (the
+ "NVIDIA Software"), to use, reproduce, modify and redistribute the
+ NVIDIA Software, with or without modifications, in source and/or binary
+ forms; provided that if you redistribute the NVIDIA Software, you must
+ retain the copyright notice of NVIDIA, this notice and the following
+ text and disclaimers in all such redistributions of the NVIDIA Software.
+ Neither the name, trademarks, service marks nor logos of NVIDIA
+ Corporation may be used to endorse or promote products derived from the
+ NVIDIA Software without specific prior written permission from NVIDIA.
+ Except as expressly stated in this notice, no other rights or licenses
+ express or implied, are granted by NVIDIA herein, including but not
+ limited to any patent rights that may be infringed by your derivative
+ works or by other works in which the NVIDIA Software may be
+ incorporated. No hardware is licensed hereunder.
+ .
+ THE NVIDIA SOFTWARE IS BEING PROVIDED ON AN "AS IS" BASIS, WITHOUT
+ WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ INCLUDING WITHOUT LIMITATION, WARRANTIES OR CONDITIONS OF TITLE,
+ NON-INFRINGEMENT, MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR
+ ITS USE AND OPERATION EITHER ALONE OR IN COMBINATION WITH OTHER
+ PRODUCTS.
+ .
+ IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL, INDIRECT,
+ INCIDENTAL, EXEMPLARY, CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ TO, LOST PROFITS; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) OR ARISING IN ANY WAY
+ OUT OF THE USE, REPRODUCTION, MODIFICATION AND/OR DISTRIBUTION OF THE
+ NVIDIA SOFTWARE, HOWEVER CAUSED AND WHETHER UNDER THEORY OF CONTRACT,
+ TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY OR OTHERWISE, EVEN IF
+ NVIDIA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 License: FTL
                     The FreeType Project LICENSE
@@ -1048,576 +1184,45 @@ License: FTL
    Robert Wilhelm    <robert.wilhelm@freetype.org>
    Werner Lemberg    <werner.lemberg@freetype.org>
 
-License: ISC
- Permission to use, copy, modify, and/or distribute this software for any
- purpose with or without fee is hereby granted, provided that the above
- copyright notice and this permission notice appear in all copies.
- .
- THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-License: LGPL-2.1+SLE (libwebsockets)
- Libwebsockets and included programs are provided under the terms of the GNU
- Library General Public License (LGPL) 2.1, with the following exceptions:
- .
- 1) Any reference, whether in these modifications or in the GNU
- Library General Public License 2.1, to this License, these terms, the
- GNU Lesser Public License,  GNU Library General Public License, LGPL, or
- any similar reference shall refer to the GNU Library General Public
- License 2.1 as modified by these paragraphs 1) through 4).
- .
- 2) Static linking of programs with the libwebsockets library does not
- constitute a derivative work and does not require the author to provide
- source code for the program, use the shared libwebsockets libraries, or
- link their program against a user-supplied version of libwebsockets.
- .
- If you link the program to a modified version of libwebsockets, then the
- changes to libwebsockets must be provided under the terms of the LGPL in
- sections 1, 2, and 4.
- .
- 3) You do not have to provide a copy of the libwebsockets license with
- programs that are linked to the libwebsockets library, nor do you have to
- identify the libwebsockets license in your program or documentation as
- required by section 6 of the LGPL.
- .
- However, programs must still identify their use of libwebsockets. The
- following example statement can be included in user documentation to
- satisfy this requirement:
- .
- "[program] is based in part on the work of the libwebsockets  project
- (https://libwebsockets.org)"
- .
- 4) Some sources included have their own, more liberal licenses, or options
- to get original sources with the liberal terms.
- .
- Original liberal license retained
- .
-   - lib/misc/sha-1.c    - 3-clause BSD license retained, link to original
-   - win32port/zlib      - ZLIB license (see zlib.h)
-   - lib/tls/mbedtls/wrapper - Apache 2.0 (only built if linked against mbedtls)
- .
- Relicensed to libwebsocket license
- .
-   - lib/misc/base64-decode.c - relicensed to LGPL2.1+SLE, link to original
-   - lib/misc/daemonize.c     - relicensed from Public Domain to LGPL2.1+SLE,
-                                link to original Public Domain version
- .
- Public Domain (CC-zero) to simplify reuse
- .
-   - test-apps/*.c
-   - test-apps/*.h
-   - minimal-examples/*
-   - lwsws/*
- .
- ------ end of exceptions
- .
-                   GNU LESSER GENERAL PUBLIC LICENSE
-                        Version 2.1, February 1999
- .
-  Copyright (C) 1991, 1999 Free Software Foundation, Inc.
-  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-  Everyone is permitted to copy and distribute verbatim copies
-  of this license document, but changing it is not allowed.
- .
- [This is the first released version of the Lesser GPL.  It also counts
-  as the successor of the GNU Library Public License, version 2, hence
-  the version number 2.1.]
- .
-                             Preamble
- .
-   The licenses for most software are designed to take away your
- freedom to share and change it.  By contrast, the GNU General Public
- Licenses are intended to guarantee your freedom to share and change
- free software--to make sure the software is free for all its users.
- .
-   This license, the Lesser General Public License, applies to some
- specially designated software packages--typically libraries--of the
- Free Software Foundation and other authors who decide to use it.  You
- can use it too, but we suggest you first think carefully about whether
- this license or the ordinary General Public License is the better
- strategy to use in any particular case, based on the explanations below.
- .
-   When we speak of free software, we are referring to freedom of use,
- not price.  Our General Public Licenses are designed to make sure that
- you have the freedom to distribute copies of free software (and charge
- for this service if you wish); that you receive source code or can get
- it if you want it; that you can change the software and use pieces of
- it in new free programs; and that you are informed that you can do
- these things.
- .
-   To protect your rights, we need to make restrictions that forbid
- distributors to deny you these rights or to ask you to surrender these
- rights.  These restrictions translate to certain responsibilities for
- you if you distribute copies of the library or if you modify it.
- .
-   For example, if you distribute copies of the library, whether gratis
- or for a fee, you must give the recipients all the rights that we gave
- you.  You must make sure that they, too, receive or can get the source
- code.  If you link other code with the library, you must provide
- complete object files to the recipients, so that they can relink them
- with the library after making changes to the library and recompiling
- it.  And you must show them these terms so they know their rights.
- .
-   We protect your rights with a two-step method: (1) we copyright the
- library, and (2) we offer you this license, which gives you legal
- permission to copy, distribute and/or modify the library.
- .
-   To protect each distributor, we want to make it very clear that
- there is no warranty for the free library.  Also, if the library is
- modified by someone else and passed on, the recipients should know
- that what they have is not the original version, so that the original
- author's reputation will not be affected by problems that might be
- introduced by others.
- .
-   Finally, software patents pose a constant threat to the existence of
- any free program.  We wish to make sure that a company cannot
- effectively restrict the users of a free program by obtaining a
- restrictive license from a patent holder.  Therefore, we insist that
- any patent license obtained for a version of the library must be
- consistent with the full freedom of use specified in this license.
- .
-   Most GNU software, including some libraries, is covered by the
- ordinary GNU General Public License.  This license, the GNU Lesser
- General Public License, applies to certain designated libraries, and
- is quite different from the ordinary General Public License.  We use
- this license for certain libraries in order to permit linking those
- libraries into non-free programs.
- .
-   When a program is linked with a library, whether statically or using
- a shared library, the combination of the two is legally speaking a
- combined work, a derivative of the original library.  The ordinary
- General Public License therefore permits such linking only if the
- entire combination fits its criteria of freedom.  The Lesser General
- Public License permits more lax criteria for linking other code with
- the library.
- .
-   We call this license the "Lesser" General Public License because it
- does Less to protect the user's freedom than the ordinary General
- Public License.  It also provides other free software developers Less
- of an advantage over competing non-free programs.  These disadvantages
- are the reason we use the ordinary General Public License for many
- libraries.  However, the Lesser license provides advantages in certain
- special circumstances.
- .
-   For example, on rare occasions, there may be a special need to
- encourage the widest possible use of a certain library, so that it becomes
- a de-facto standard.  To achieve this, non-free programs must be
- allowed to use the library.  A more frequent case is that a free
- library does the same job as widely used non-free libraries.  In this
- case, there is little to gain by limiting the free library to free
- software only, so we use the Lesser General Public License.
- .
-   In other cases, permission to use a particular library in non-free
- programs enables a greater number of people to use a large body of
- free software.  For example, permission to use the GNU C Library in
- non-free programs enables many more people to use the whole GNU
- operating system, as well as its variant, the GNU/Linux operating
- system.
- .
-   Although the Lesser General Public License is Less protective of the
- users' freedom, it does ensure that the user of a program that is
- linked with the Library has the freedom and the wherewithal to run
- that program using a modified version of the Library.
- .
-   The precise terms and conditions for copying, distribution and
- modification follow.  Pay close attention to the difference between a
- "work based on the library" and a "work that uses the library".  The
- former contains code derived from the library, whereas the latter must
- be combined with the library in order to run.
- .
-                   GNU LESSER GENERAL PUBLIC LICENSE
-    TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
- .
-   0. This License Agreement applies to any software library or other
- program which contains a notice placed by the copyright holder or
- other authorized party saying it may be distributed under the terms of
- this Lesser General Public License (also called "this License").
- Each licensee is addressed as "you".
- .
-   A "library" means a collection of software functions and/or data
- prepared so as to be conveniently linked with application programs
- (which use some of those functions and data) to form executables.
- .
-   The "Library", below, refers to any such software library or work
- which has been distributed under these terms.  A "work based on the
- Library" means either the Library or any derivative work under
- copyright law: that is to say, a work containing the Library or a
- portion of it, either verbatim or with modifications and/or translated
- straightforwardly into another language.  (Hereinafter, translation is
- included without limitation in the term "modification".)
- .
-   "Source code" for a work means the preferred form of the work for
- making modifications to it.  For a library, complete source code means
- all the source code for all modules it contains, plus any associated
- interface definition files, plus the scripts used to control compilation
- and installation of the library.
- .
-   Activities other than copying, distribution and modification are not
- covered by this License; they are outside its scope.  The act of
- running a program using the Library is not restricted, and output from
- such a program is covered only if its contents constitute a work based
- on the Library (independent of the use of the Library in a tool for
- writing it).  Whether that is true depends on what the Library does
- and what the program that uses the Library does.
- .
-   1. You may copy and distribute verbatim copies of the Library's
- complete source code as you receive it, in any medium, provided that
- you conspicuously and appropriately publish on each copy an
- appropriate copyright notice and disclaimer of warranty; keep intact
- all the notices that refer to this License and to the absence of any
- warranty; and distribute a copy of this License along with the
- Library.
- .
-   You may charge a fee for the physical act of transferring a copy,
- and you may at your option offer warranty protection in exchange for a
- fee.
- .
-   2. You may modify your copy or copies of the Library or any portion
- of it, thus forming a work based on the Library, and copy and
- distribute such modifications or work under the terms of Section 1
- above, provided that you also meet all of these conditions:
- .
-     a) The modified work must itself be a software library.
- .
-     b) You must cause the files modified to carry prominent notices
-     stating that you changed the files and the date of any change.
- .
-     c) You must cause the whole of the work to be licensed at no
-     charge to all third parties under the terms of this License.
- .
-     d) If a facility in the modified Library refers to a function or a
-     table of data to be supplied by an application program that uses
-     the facility, other than as an argument passed when the facility
-     is invoked, then you must make a good faith effort to ensure that,
-     in the event an application does not supply such function or
-     table, the facility still operates, and performs whatever part of
-     its purpose remains meaningful.
- .
-     (For example, a function in a library to compute square roots has
-     a purpose that is entirely well-defined independent of the
-     application.  Therefore, Subsection 2d requires that any
-     application-supplied function or table used by this function must
-     be optional: if the application does not supply it, the square
-     root function must still compute square roots.)
- .
- These requirements apply to the modified work as a whole.  If
- identifiable sections of that work are not derived from the Library,
- and can be reasonably considered independent and separate works in
- themselves, then this License, and its terms, do not apply to those
- sections when you distribute them as separate works.  But when you
- distribute the same sections as part of a whole which is a work based
- on the Library, the distribution of the whole must be on the terms of
- this License, whose permissions for other licensees extend to the
- entire whole, and thus to each and every part regardless of who wrote
- it.
- .
- Thus, it is not the intent of this section to claim rights or contest
- your rights to work written entirely by you; rather, the intent is to
- exercise the right to control the distribution of derivative or
- collective works based on the Library.
- .
- In addition, mere aggregation of another work not based on the Library
- with the Library (or with a work based on the Library) on a volume of
- a storage or distribution medium does not bring the other work under
- the scope of this License.
- .
-   3. You may opt to apply the terms of the ordinary GNU General Public
- License instead of this License to a given copy of the Library.  To do
- this, you must alter all the notices that refer to this License, so
- that they refer to the ordinary GNU General Public License, version 2,
- instead of to this License.  (If a newer version than version 2 of the
- ordinary GNU General Public License has appeared, then you can specify
- that version instead if you wish.)  Do not make any other change in
- these notices.
- .
-   Once this change is made in a given copy, it is irreversible for
- that copy, so the ordinary GNU General Public License applies to all
- subsequent copies and derivative works made from that copy.
- .
-   This option is useful when you wish to copy part of the code of
- the Library into a program that is not a library.
- .
-   4. You may copy and distribute the Library (or a portion or
- derivative of it, under Section 2) in object code or executable form
- under the terms of Sections 1 and 2 above provided that you accompany
- it with the complete corresponding machine-readable source code, which
- must be distributed under the terms of Sections 1 and 2 above on a
- medium customarily used for software interchange.
- .
-   If distribution of object code is made by offering access to copy
- from a designated place, then offering equivalent access to copy the
- source code from the same place satisfies the requirement to
- distribute the source code, even though third parties are not
- compelled to copy the source along with the object code.
- .
-   5. A program that contains no derivative of any portion of the
- Library, but is designed to work with the Library by being compiled or
- linked with it, is called a "work that uses the Library".  Such a
- work, in isolation, is not a derivative work of the Library, and
- therefore falls outside the scope of this License.
- .
-   However, linking a "work that uses the Library" with the Library
- creates an executable that is a derivative of the Library (because it
- contains portions of the Library), rather than a "work that uses the
- library".  The executable is therefore covered by this License.
- Section 6 states terms for distribution of such executables.
- .
-   When a "work that uses the Library" uses material from a header file
- that is part of the Library, the object code for the work may be a
- derivative work of the Library even though the source code is not.
- Whether this is true is especially significant if the work can be
- linked without the Library, or if the work is itself a library.  The
- threshold for this to be true is not precisely defined by law.
- .
-   If such an object file uses only numerical parameters, data
- structure layouts and accessors, and small macros and small inline
- functions (ten lines or less in length), then the use of the object
- file is unrestricted, regardless of whether it is legally a derivative
- work.  (Executables containing this object code plus portions of the
- Library will still fall under Section 6.)
- .
-   Otherwise, if the work is a derivative of the Library, you may
- distribute the object code for the work under the terms of Section 6.
- Any executables containing that work also fall under Section 6,
- whether or not they are linked directly with the Library itself.
- .
-   6. As an exception to the Sections above, you may also combine or
- link a "work that uses the Library" with the Library to produce a
- work containing portions of the Library, and distribute that work
- under terms of your choice, provided that the terms permit
- modification of the work for the customer's own use and reverse
- engineering for debugging such modifications.
- .
-   You must give prominent notice with each copy of the work that the
- Library is used in it and that the Library and its use are covered by
- this License.  You must supply a copy of this License.  If the work
- during execution displays copyright notices, you must include the
- copyright notice for the Library among them, as well as a reference
- directing the user to the copy of this License.  Also, you must do one
- of these things:
- .
-     a) Accompany the work with the complete corresponding
-     machine-readable source code for the Library including whatever
-     changes were used in the work (which must be distributed under
-     Sections 1 and 2 above); and, if the work is an executable linked
-     with the Library, with the complete machine-readable "work that
-     uses the Library", as object code and/or source code, so that the
-     user can modify the Library and then relink to produce a modified
-     executable containing the modified Library.  (It is understood
-     that the user who changes the contents of definitions files in the
-     Library will not necessarily be able to recompile the application
-     to use the modified definitions.)
- .
-     b) Use a suitable shared library mechanism for linking with the
-     Library.  A suitable mechanism is one that (1) uses at run time a
-     copy of the library already present on the user's computer system,
-     rather than copying library functions into the executable, and (2)
-     will operate properly with a modified version of the library, if
-     the user installs one, as long as the modified version is
-     interface-compatible with the version that the work was made with.
- .
-     c) Accompany the work with a written offer, valid for at
-     least three years, to give the same user the materials
-     specified in Subsection 6a, above, for a charge no more
-     than the cost of performing this distribution.
- .
-     d) If distribution of the work is made by offering access to copy
-     from a designated place, offer equivalent access to copy the above
-     specified materials from the same place.
- .
-     e) Verify that the user has already received a copy of these
-     materials or that you have already sent this user a copy.
- .
-   For an executable, the required form of the "work that uses the
- Library" must include any data and utility programs needed for
- reproducing the executable from it.  However, as a special exception,
- the materials to be distributed need not include anything that is
- normally distributed (in either source or binary form) with the major
- components (compiler, kernel, and so on) of the operating system on
- which the executable runs, unless that component itself accompanies
- the executable.
- .
-   It may happen that this requirement contradicts the license
- restrictions of other proprietary libraries that do not normally
- accompany the operating system.  Such a contradiction means you cannot
- use both them and the Library together in an executable that you
- distribute.
- .
-   7. You may place library facilities that are a work based on the
- Library side-by-side in a single library together with other library
- facilities not covered by this License, and distribute such a combined
- library, provided that the separate distribution of the work based on
- the Library and of the other library facilities is otherwise
- permitted, and provided that you do these two things:
- .
-     a) Accompany the combined library with a copy of the same work
-     based on the Library, uncombined with any other library
-     facilities.  This must be distributed under the terms of the
-     Sections above.
- .
-     b) Give prominent notice with the combined library of the fact
-     that part of it is a work based on the Library, and explaining
-     where to find the accompanying uncombined form of the same work.
- .
-   8. You may not copy, modify, sublicense, link with, or distribute
- the Library except as expressly provided under this License.  Any
- attempt otherwise to copy, modify, sublicense, link with, or
- distribute the Library is void, and will automatically terminate your
- rights under this License.  However, parties who have received copies,
- or rights, from you under this License will not have their licenses
- terminated so long as such parties remain in full compliance.
- .
-   9. You are not required to accept this License, since you have not
- signed it.  However, nothing else grants you permission to modify or
- distribute the Library or its derivative works.  These actions are
- prohibited by law if you do not accept this License.  Therefore, by
- modifying or distributing the Library (or any work based on the
- Library), you indicate your acceptance of this License to do so, and
- all its terms and conditions for copying, distributing or modifying
- the Library or works based on it.
- .
-   10. Each time you redistribute the Library (or any work based on the
- Library), the recipient automatically receives a license from the
- original licensor to copy, distribute, link with or modify the Library
- subject to these terms and conditions.  You may not impose any further
- restrictions on the recipients' exercise of the rights granted herein.
- You are not responsible for enforcing compliance by third parties with
- this License.
- .
-   11. If, as a consequence of a court judgment or allegation of patent
- infringement or for any other reason (not limited to patent issues),
- conditions are imposed on you (whether by court order, agreement or
- otherwise) that contradict the conditions of this License, they do not
- excuse you from the conditions of this License.  If you cannot
- distribute so as to satisfy simultaneously your obligations under this
- License and any other pertinent obligations, then as a consequence you
- may not distribute the Library at all.  For example, if a patent
- license would not permit royalty-free redistribution of the Library by
- all those who receive copies directly or indirectly through you, then
- the only way you could satisfy both it and this License would be to
- refrain entirely from distribution of the Library.
- .
- If any portion of this section is held invalid or unenforceable under any
- particular circumstance, the balance of the section is intended to apply,
- and the section as a whole is intended to apply in other circumstances.
- .
- It is not the purpose of this section to induce you to infringe any
- patents or other property right claims or to contest validity of any
- such claims; this section has the sole purpose of protecting the
- integrity of the free software distribution system which is
- implemented by public license practices.  Many people have made
- generous contributions to the wide range of software distributed
- through that system in reliance on consistent application of that
- system; it is up to the author/donor to decide if he or she is willing
- to distribute software through any other system and a licensee cannot
- impose that choice.
- .
- This section is intended to make thoroughly clear what is believed to
- be a consequence of the rest of this License.
- .
-   12. If the distribution and/or use of the Library is restricted in
- certain countries either by patents or by copyrighted interfaces, the
- original copyright holder who places the Library under this License may add
- an explicit geographical distribution limitation excluding those countries,
- so that distribution is permitted only in or among countries not thus
- excluded.  In such case, this License incorporates the limitation as if
- written in the body of this License.
- .
-   13. The Free Software Foundation may publish revised and/or new
- versions of the Lesser General Public License from time to time.
- Such new versions will be similar in spirit to the present version,
- but may differ in detail to address new problems or concerns.
- .
- Each version is given a distinguishing version number.  If the Library
- specifies a version number of this License which applies to it and
- "any later version", you have the option of following the terms and
- conditions either of that version or of any later version published by
- the Free Software Foundation.  If the Library does not specify a
- license version number, you may choose any version ever published by
- the Free Software Foundation.
- .
-   14. If you wish to incorporate parts of the Library into other free
- programs whose distribution conditions are incompatible with these,
- write to the author to ask for permission.  For software which is
- copyrighted by the Free Software Foundation, write to the Free
- Software Foundation; we sometimes make exceptions for this.  Our
- decision will be guided by the two goals of preserving the free status
- of all derivatives of our free software and of promoting the sharing
- and reuse of software generally.
- .
-                             NO WARRANTY
- .
-   15. BECAUSE THE LIBRARY IS LICENSED FREE OF CHARGE, THERE IS NO
- WARRANTY FOR THE LIBRARY, TO THE EXTENT PERMITTED BY APPLICABLE LAW.
- EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR
- OTHER PARTIES PROVIDE THE LIBRARY "AS IS" WITHOUT WARRANTY OF ANY
- KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE
- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE
- LIBRARY IS WITH YOU.  SHOULD THE LIBRARY PROVE DEFECTIVE, YOU ASSUME
- THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
- .
-   16. IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN
- WRITING WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY
- AND/OR REDISTRIBUTE THE LIBRARY AS PERMITTED ABOVE, BE LIABLE TO YOU
- FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR
- CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE
- LIBRARY (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING
- RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A
- FAILURE OF THE LIBRARY TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
- SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGES.
- .
-                      END OF TERMS AND CONDITIONS
- .
-            How to Apply These Terms to Your New Libraries
- .
-   If you develop a new library, and you want it to be of the greatest
- possible use to the public, we recommend making it free software that
- everyone can redistribute and change.  You can do so by permitting
- redistribution under these terms (or, alternatively, under the terms of the
- ordinary General Public License).
- .
-   To apply these terms, attach the following notices to the library.  It is
- safest to attach them to the start of each source file to most effectively
- convey the exclusion of warranty; and each file should have at least the
- "copyright" line and a pointer to where the full notice is found.
- .
-     <one line to give the library's name and a brief idea of what it does.>
-     Copyright (C) <year>  <name of author>
- .
-     This library is free software; you can redistribute it and/or
-     modify it under the terms of the GNU Lesser General Public
-     License as published by the Free Software Foundation; either
-     version 2.1 of the License, or (at your option) any later version.
- .
-     This library is distributed in the hope that it will be useful,
-     but WITHOUT ANY WARRANTY; without even the implied warranty of
-     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     Lesser General Public License for more details.
- .
-     You should have received a copy of the GNU Lesser General Public
-     License along with this library; if not, write to the Free Software
-     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- .
- Also add information on how to contact you by electronic and paper mail.
- .
- You should also get your employer (if you work as a programmer) or your
- school, if any, to sign a "copyright disclaimer" for the library, if
- necessary.  Here is a sample; alter the names:
- .
-   Yoyodyne, Inc., hereby disclaims all copyright interest in the
-   library `Frob' (a library for tweaking knobs) written by James Random Hacker.
- .
-   <signature of Ty Coon>, 1 April 1990
-   Ty Coon, President of Vice
- .
- That's all there is to it!
+License: HarfBuzz
+ HarfBuzz is licensed under the so-called "Old MIT" license.  Details follow.
+ For parts of HarfBuzz that are licensed under different licenses see individual
+ files names COPYING in subdirectories where applicable.
+ .
+ Copyright (C) 2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020  Google, Inc.
+ Copyright (C) 2018,2019,2020  Ebrahim Byagowi
+ Copyright (C) 2019,2020  Facebook, Inc.
+ Copyright (C) 2012  Mozilla Foundation
+ Copyright (C) 2011  Codethink Limited
+ Copyright (C) 2008,2010  Nokia Corporation and/or its subsidiary(-ies)
+ Copyright (C) 2009  Keith Stribley
+ Copyright (C) 2009  Martin Hosken and SIL International
+ Copyright (C) 2007  Chris Wilson
+ Copyright (C) 2006  Behdad Esfahbod
+ Copyright (C) 2005  David Turner
+ Copyright (C) 2004,2007,2008,2009,2010  Red Hat, Inc.
+ Copyright (C) 1998-2004  David Turner and Werner Lemberg
+ .
+ For full copyright notices consult the individual files in the package.
+ .
+ .
+ Permission is hereby granted, without written agreement and without
+ license or royalty fees, to use, copy, modify, and distribute this
+ software and its documentation for any purpose, provided that the
+ above copyright notice and the following two paragraphs appear in
+ all copies of this software.
+ .
+ IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE TO ANY PARTY FOR
+ DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
+ ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN
+ IF THE COPYRIGHT HOLDER HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ DAMAGE.
+ .
+ THE COPYRIGHT HOLDER SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING,
+ BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
+ ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
+ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 License: MPL-2.0
  Mozilla Public License Version 2.0
@@ -2077,23 +1682,52 @@ License: OFL-1.1
  DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE.
 
-License: RSA-MD
- License to copy and use this software is granted provided that it is
- identified as the "RSA Data Security, Inc. MD5 Message-Digest Algorithm"
- in all material mentioning or referencing this software or this function.
+License: Tamsyn
+ Tamsyn font is free.  You are hereby granted permission to use, copy, modify,
+ and distribute it as you see fit.
  .
- License is also granted to make and use derivative works provided that such
- works are identified as "derived from the RSA Data Security, Inc. MD5
- Message-Digest Algorithm" in all material mentioning or referencing the
- derived work.
+ Tamsyn font is provided "as is" without any express or implied warranty.
  .
- RSA Data Security, Inc. makes no representations concerning either the
- merchantability of this software or the suitability of this software for
- any particular purpose. It is provided "as is" without express or implied
- warranty of any kind.
+ The author makes no representations about the suitability of this font for
+ a particular purpose.
  .
- These notices must be retained in any copies of any part of this
- documentation and/or software.
+ In no event will the author be held liable for damages arising from the use
+ of this font.
+
+License: Unicode
+ COPYRIGHT AND PERMISSION NOTICE (ICU 58 and later)
+ .
+ Copyright (C) 1991-2020 Unicode, Inc. All rights reserved.
+ Distributed under the Terms of Use in https://www.unicode.org/copyright.html.
+ .
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of the Unicode data files and any associated documentation
+ (the "Data Files") or Unicode software and any associated documentation
+ (the "Software") to deal in the Data Files or Software
+ without restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, and/or sell copies of
+ the Data Files or Software, and to permit persons to whom the Data Files
+ or Software are furnished to do so, provided that either
+ (a) this copyright and permission notice appear with all copies
+ of the Data Files or Software, or
+ (b) this copyright and permission notice appear in associated
+ Documentation.
+ .
+ THE DATA FILES AND SOFTWARE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF
+ ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT OF THIRD PARTY RIGHTS.
+ IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS
+ NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL
+ DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ PERFORMANCE OF THE DATA FILES OR SOFTWARE.
+ .
+ Except as contained in this notice, the name of a copyright holder
+ shall not be used in advertising or otherwise to promote the sale,
+ use or other dealings in these Data Files or Software without prior
+ written authorization of the copyright holder.
 
 License: Zlib
  This software is provided 'as-is', without any express or implied

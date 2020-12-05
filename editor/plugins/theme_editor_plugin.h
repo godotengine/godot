@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 
 #include "scene/gui/check_box.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/texture_rect.h"
@@ -40,12 +41,11 @@
 
 #include "editor/editor_node.h"
 
-class ThemeEditor : public Control {
+class ThemeEditor : public VBoxContainer {
+	GDCLASS(ThemeEditor, VBoxContainer);
 
-	GDCLASS(ThemeEditor, Control);
-
-	ScrollContainer *scroll;
-	VBoxContainer *main_vb;
+	Panel *main_panel;
+	MarginContainer *main_container;
 	Ref<Theme> theme;
 
 	EditorFileDialog *file_dialog;
@@ -98,7 +98,6 @@ public:
 };
 
 class ThemeEditorPlugin : public EditorPlugin {
-
 	GDCLASS(ThemeEditorPlugin, EditorPlugin);
 
 	ThemeEditor *theme_editor;
@@ -106,11 +105,11 @@ class ThemeEditorPlugin : public EditorPlugin {
 	Button *button;
 
 public:
-	virtual String get_name() const { return "Theme"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "Theme"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_node) override;
+	virtual bool handles(Object *p_node) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	ThemeEditorPlugin(EditorNode *p_node);
 };

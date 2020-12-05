@@ -1,109 +1,1284 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GlobalScope" category="Core" version="3.1">
+<class name="@GlobalScope" version="4.0">
 	<brief_description>
 		Global scope constants and variables.
 	</brief_description>
 	<description>
-		Global scope constants and variables. This is all that resides in the globals, constants regarding error codes, scancodes, property hints, etc. It's not much.
+		Global scope constants and variables. This is all that resides in the globals, constants regarding error codes, keycodes, property hints, etc.
 		Singletons are also documented here, since they can be accessed from anywhere.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
+		<method name="abs">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="x" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="absf">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the absolute value of float parameter [code]x[/code] (i.e. positive value).
+				[codeblock]
+				# a is 1.2
+				a = absf(-1.2)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="absi">
+			<return type="int">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<description>
+				Returns the absolute value of int parameter [code]x[/code] (i.e. positive value).
+				[codeblock]
+				# a is 1
+				a = absi(-1)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="acos">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the arc cosine of [code]x[/code] in radians. Use to get the angle of cosine [code]x[/code].
+				[codeblock]
+				# c is 0.523599 or 30 degrees if converted with rad2deg(c)
+				c = acos(0.866025)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="asin">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the arc sine of [code]x[/code] in radians. Use to get the angle of sine [code]x[/code].
+				[codeblock]
+				# s is 0.523599 or 30 degrees if converted with rad2deg(s)
+				s = asin(0.5)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="atan">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the arc tangent of [code]x[/code] in radians. Use it to get the angle from an angle's tangent in trigonometry: [code]atan(tan(angle)) == angle[/code].
+				The method cannot know in which quadrant the angle should fall. See [method atan2] if you have both [code]y[/code] and [code]x[/code].
+				[codeblock]
+				a = atan(0.5) # a is 0.463648
+				[/codeblock]
+			</description>
+		</method>
+		<method name="atan2">
+			<return type="float">
+			</return>
+			<argument index="0" name="y" type="float">
+			</argument>
+			<argument index="1" name="x" type="float">
+			</argument>
+			<description>
+				Returns the arc tangent of [code]y/x[/code] in radians. Use to get the angle of tangent [code]y/x[/code]. To compute the value, the method takes into account the sign of both arguments in order to determine the quadrant.
+				Important note: The Y coordinate comes first, by convention.
+				[codeblock]
+				a = atan2(0, -1) # a is 3.141593
+				[/codeblock]
+			</description>
+		</method>
+		<method name="bytes2var">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="bytes" type="PackedByteArray">
+			</argument>
+			<description>
+				Decodes a byte array back to a [Variant] value, without decoding objects.
+				[b]Note:[/b] If you need object deserialization, see [method bytes2var_with_objects].
+			</description>
+		</method>
+		<method name="bytes2var_with_objects">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="bytes" type="PackedByteArray">
+			</argument>
+			<description>
+				Decodes a byte array back to a [Variant] value. Decoding objects is allowed.
+				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
+			</description>
+		</method>
+		<method name="cartesian2polar">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<description>
+				Converts a 2D point expressed in the cartesian coordinate system (X and Y axis) to the polar coordinate system (a distance from the origin and an angle).
+			</description>
+		</method>
+		<method name="ceil">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Rounds [code]x[/code] upward (towards positive infinity), returning the smallest whole number that is not less than [code]x[/code].
+				[codeblock]
+				i = ceil(1.45)  # i is 2
+				i = ceil(1.001) # i is 2
+				[/codeblock]
+				See also [method floor], [method round], and [method stepify].
+			</description>
+		</method>
+		<method name="clamp">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="value" type="Variant">
+			</argument>
+			<argument index="1" name="min" type="Variant">
+			</argument>
+			<argument index="2" name="max" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clampf">
+			<return type="float">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<argument index="1" name="min" type="float">
+			</argument>
+			<argument index="2" name="max" type="float">
+			</argument>
+			<description>
+				Clamps the float [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
+				[codeblock]
+				speed = 42.1
+				# a is 20.0
+				a = clampf(speed, 1.0, 20.0)
+
+				speed = -10.0
+				# a is -1.0
+				a = clampf(speed, -1.0, 1.0)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="clampi">
+			<return type="int">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<argument index="1" name="min" type="int">
+			</argument>
+			<argument index="2" name="max" type="int">
+			</argument>
+			<description>
+				Clamps the integer [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
+				[codeblock]
+				speed = 42
+				# a is 20
+				a = clampi(speed, 1, 20)
+
+				speed = -10
+				# a is -1
+				a = clampi(speed, -1, 1)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="cos">
+			<return type="float">
+			</return>
+			<argument index="0" name="angle_rad" type="float">
+			</argument>
+			<description>
+				Returns the cosine of angle [code]angle_rad[/code] in radians.
+				[codeblock]
+				# Prints 1 then -1
+				print(cos(PI * 2))
+				print(cos(PI))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="cosh">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the hyperbolic cosine of [code]x[/code] in radians.
+				[codeblock]
+				# Prints 1.543081
+				print(cosh(1))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="db2linear">
+			<return type="float">
+			</return>
+			<argument index="0" name="db" type="float">
+			</argument>
+			<description>
+				Converts from decibels to linear energy (audio).
+			</description>
+		</method>
+		<method name="dectime">
+			<return type="float">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<argument index="1" name="amount" type="float">
+			</argument>
+			<argument index="2" name="step" type="float">
+			</argument>
+			<description>
+				Returns the result of [code]value[/code] decreased by [code]step[/code] * [code]amount[/code].
+				[codeblock]
+				# a = 59
+				a = dectime(60, 10, 0.1))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="deg2rad">
+			<return type="float">
+			</return>
+			<argument index="0" name="deg" type="float">
+			</argument>
+			<description>
+				Converts an angle expressed in degrees to radians.
+				[codeblock]
+				# r is 3.141593
+				r = deg2rad(180)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="ease">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="curve" type="float">
+			</argument>
+			<description>
+				Easing function, based on exponent. The curve values are: 0 is constant, 1 is linear, 0 to 1 is ease-in, 1+ is ease out. Negative values are in-out/out in.
+			</description>
+		</method>
+		<method name="exp">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				The natural exponential function. It raises the mathematical constant [b]e[/b] to the power of [code]x[/code] and returns it.
+				[b]e[/b] has an approximate value of 2.71828, and can be obtained with [code]exp(1)[/code].
+				For exponents to other bases use the method [method pow].
+				[codeblock]
+				a = exp(2) # Approximately 7.39
+				[/codeblock]
+			</description>
+		</method>
+		<method name="floor">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Rounds [code]x[/code] downward (towards negative infinity), returning the largest whole number that is not more than [code]x[/code].
+				[codeblock]
+				# a is 2.0
+				a = floor(2.99)
+				# a is -3.0
+				a = floor(-2.99)
+				[/codeblock]
+				See also [method ceil], [method round], and [method stepify].
+				[b]Note:[/b] This method returns a float. If you need an integer, you can use [code]int(x)[/code] directly.
+			</description>
+		</method>
+		<method name="fmod">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<description>
+				Returns the floating-point remainder of [code]x/y[/code], keeping the sign of [code]x[/code].
+				[codeblock]
+				# Remainder is 1.5
+				var remainder = fmod(7, 5.5)
+				[/codeblock]
+				For the integer remainder operation, use the [code]%[/code] operator.
+			</description>
+		</method>
+		<method name="fposmod">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<description>
+				Returns the floating-point modulus of [code]x/y[/code] that wraps equally in positive and negative.
+				[codeblock]
+				for i in 7:
+				    var x = 0.5 * i - 1.5
+				    print("%4.1f %4.1f %4.1f" % [x, fmod(x, 1.5), fposmod(x, 1.5)])
+				[/codeblock]
+				Produces:
+				[codeblock]
+				-1.5 -0.0  0.0
+				-1.0 -1.0  0.5
+				-0.5 -0.5  1.0
+				 0.0  0.0  0.0
+				 0.5  0.5  0.5
+				 1.0  1.0  1.0
+				 1.5  0.0  0.0
+				[/codeblock]
+			</description>
+		</method>
+		<method name="hash">
+			<return type="int">
+			</return>
+			<argument index="0" name="variable" type="Variant">
+			</argument>
+			<description>
+				Returns the integer hash of the variable passed.
+				[codeblock]
+				print(hash("a")) # Prints 177670
+				[/codeblock]
+			</description>
+		</method>
+		<method name="instance_from_id">
+			<return type="Object">
+			</return>
+			<argument index="0" name="instance_id" type="int">
+			</argument>
+			<description>
+				Returns the Object that corresponds to [code]instance_id[/code]. All Objects have a unique instance ID.
+				[codeblock]
+				var foo = "bar"
+				func _ready():
+				    var id = get_instance_id()
+				    var inst = instance_from_id(id)
+				    print(inst.foo) # Prints bar
+				[/codeblock]
+			</description>
+		</method>
+		<method name="inverse_lerp">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="weight" type="float">
+			</argument>
+			<description>
+				Returns a normalized value considering the given range. This is the opposite of [method lerp].
+				[codeblock]
+				var middle = lerp(20, 30, 0.75)
+				# `middle` is now 27.5.
+				# Now, we pretend to have forgotten the original ratio and want to get it back.
+				var ratio = inverse_lerp(20, 30, 27.5)
+				# `ratio` is now 0.75.
+				[/codeblock]
+			</description>
+		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="a" type="float">
+			</argument>
+			<argument index="1" name="b" type="float">
+			</argument>
+			<description>
+				Returns [code]true[/code] if [code]a[/code] and [code]b[/code] are approximately equal to each other.
+				Here, approximately equal means that [code]a[/code] and [code]b[/code] are within a small internal epsilon of each other, which scales with the magnitude of the numbers.
+				Infinity values of the same sign are considered equal.
+			</description>
+		</method>
+		<method name="is_inf">
+			<return type="bool">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns whether [code]x[/code] is an infinity value (either positive infinity or negative infinity).
+			</description>
+		</method>
+		<method name="is_instance_id_valid">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_instance_valid">
+			<return type="bool">
+			</return>
+			<argument index="0" name="instance" type="Variant">
+			</argument>
+			<description>
+				Returns whether [code]instance[/code] is a valid object (e.g. has not been deleted from memory).
+			</description>
+		</method>
+		<method name="is_nan">
+			<return type="bool">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns whether [code]x[/code] is a NaN ("Not a Number" or invalid) value.
+			</description>
+		</method>
+		<method name="is_zero_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns [code]true[/code] if [code]x[/code] is zero or almost zero.
+				This method is faster than using [method is_equal_approx] with one value as zero.
+			</description>
+		</method>
+		<method name="lerp">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="weight" type="float">
+			</argument>
+			<description>
+				Linearly interpolates between two values by a normalized value. This is the opposite of [method inverse_lerp].
+				[codeblock]
+				lerp(0, 4, 0.75) # Returns 3.0
+				[/codeblock]
+			</description>
+		</method>
+		<method name="lerp_angle">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="weight" type="float">
+			</argument>
+			<description>
+				Linearly interpolates between two angles (in radians) by a normalized value.
+				Similar to [method lerp], but interpolates correctly when the angles wrap around [constant @GDScript.TAU].
+				[codeblock]
+				extends Sprite
+				var elapsed = 0.0
+				func _process(delta):
+				    var min_angle = deg2rad(0.0)
+				    var max_angle = deg2rad(90.0)
+				    rotation = lerp_angle(min_angle, max_angle, elapsed)
+				    elapsed += delta
+				[/codeblock]
+			</description>
+		</method>
+		<method name="linear2db">
+			<return type="float">
+			</return>
+			<argument index="0" name="lin" type="float">
+			</argument>
+			<description>
+				Converts from linear energy to decibels (audio). This can be used to implement volume sliders that behave as expected (since volume isn't linear). Example:
+				[codeblock]
+				# "Slider" refers to a node that inherits Range such as HSlider or VSlider.
+				# Its range must be configured to go from 0 to 1.
+				# Change the bus name if you'd like to change the volume of a specific bus only.
+				AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear2db($Slider.value))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="log">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Natural logarithm. The amount of time needed to reach a certain level of continuous growth.
+				[b]Note:[/b] This is not the same as the "log" function on most calculators, which uses a base 10 logarithm.
+				[codeblock]
+				log(10) # Returns 2.302585
+				[/codeblock]
+				[b]Note:[/b] The logarithm of [code]0[/code] returns [code]-inf[/code], while negative values return [code]-nan[/code].
+			</description>
+		</method>
+		<method name="max" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<description>
+				Returns the maximum of the given values. This method can take any number of arguments.
+				[codeblock]
+				max(1, 7, 3, -6, 5) # Returns 7
+				[/codeblock]
+			</description>
+		</method>
+		<method name="maxf">
+			<return type="float">
+			</return>
+			<argument index="0" name="a" type="float">
+			</argument>
+			<argument index="1" name="b" type="float">
+			</argument>
+			<description>
+				Returns the maximum of two float values.
+				[codeblock]
+				maxf(3.6, 24) # Returns 24.0
+				maxf(-3.99, -4) # Returns -3.99
+				[/codeblock]
+			</description>
+		</method>
+		<method name="maxi">
+			<return type="int">
+			</return>
+			<argument index="0" name="a" type="int">
+			</argument>
+			<argument index="1" name="b" type="int">
+			</argument>
+			<description>
+				Returns the maximum of two int values.
+				[codeblock]
+				maxi(1, 2) # Returns 2
+				maxi(-3, -4) # Returns -3
+				[/codeblock]
+			</description>
+		</method>
+		<method name="min" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<description>
+				Returns the minimum of the given values. This method can take any number of arguments.
+				[codeblock]
+				min(1, 7, 3, -6, 5) # Returns -6
+				[/codeblock]
+			</description>
+		</method>
+		<method name="minf">
+			<return type="float">
+			</return>
+			<argument index="0" name="a" type="float">
+			</argument>
+			<argument index="1" name="b" type="float">
+			</argument>
+			<description>
+				Returns the minimum of two float values.
+				[codeblock]
+				minf(3.6, 24) # Returns 3.6
+				minf(-3.99, -4) # Returns -4.0
+				[/codeblock]
+			</description>
+		</method>
+		<method name="mini">
+			<return type="int">
+			</return>
+			<argument index="0" name="a" type="int">
+			</argument>
+			<argument index="1" name="b" type="int">
+			</argument>
+			<description>
+				Returns the minimum of two int values.
+				[codeblock]
+				mini(1, 2) # Returns 1
+				mini(-3, -4) # Returns -4
+				[/codeblock]
+			</description>
+		</method>
+		<method name="move_toward">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="delta" type="float">
+			</argument>
+			<description>
+				Moves [code]from[/code] toward [code]to[/code] by the [code]delta[/code] value.
+				Use a negative [code]delta[/code] value to move away.
+				[codeblock]
+				move_toward(5, 10, 4) # Returns 9
+				move_toward(10, 5, 4) # Returns 6
+				move_toward(10, 5, -1.5) # Returns 11.5
+				[/codeblock]
+			</description>
+		</method>
+		<method name="nearest_po2">
+			<return type="int">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<description>
+				Returns the nearest equal or larger power of 2 for integer [code]value[/code].
+				In other words, returns the smallest value [code]a[/code] where [code]a = pow(2, n)[/code] such that [code]value &lt;= a[/code] for some non-negative integer [code]n[/code].
+				[codeblock]
+				nearest_po2(3) # Returns 4
+				nearest_po2(4) # Returns 4
+				nearest_po2(5) # Returns 8
+
+				nearest_po2(0) # Returns 0 (this may not be what you expect)
+				nearest_po2(-1) # Returns 0 (this may not be what you expect)
+				[/codeblock]
+				[b]WARNING:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for non-positive values of [code]value[/code] (in reality, 1 is the smallest integer power of 2).
+			</description>
+		</method>
+		<method name="polar2cartesian">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="r" type="float">
+			</argument>
+			<argument index="1" name="th" type="float">
+			</argument>
+			<description>
+				Converts a 2D point expressed in the polar coordinate system (a distance from the origin [code]r[/code] and an angle [code]th[/code]) to the cartesian coordinate system (X and Y axis).
+			</description>
+		</method>
+		<method name="pow">
+			<return type="float">
+			</return>
+			<argument index="0" name="base" type="float">
+			</argument>
+			<argument index="1" name="exp" type="float">
+			</argument>
+			<description>
+				Returns the result of [code]base[/code] raised to the power of [code]exp[/code].
+				[codeblock]
+				pow(2, 5) # Returns 32
+				[/codeblock]
+			</description>
+		</method>
+		<method name="print" qualifiers="vararg">
+			<description>
+				Converts one or more arguments to strings in the best way possible and prints them to the console.
+				[codeblock]
+				a = [1, 2, 3]
+				print("a", "b", a) # Prints ab[1, 2, 3]
+				[/codeblock]
+				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
+			</description>
+		</method>
+		<method name="printerr" qualifiers="vararg">
+			<description>
+				Prints one or more arguments to strings in the best way possible to standard error line.
+				[codeblock]
+				printerr("prints to stderr")
+				[/codeblock]
+			</description>
+		</method>
+		<method name="printraw" qualifiers="vararg">
+			<description>
+				Prints one or more arguments to strings in the best way possible to console. No newline is added at the end.
+				[codeblock]
+				printraw("A")
+				printraw("B")
+				# Prints AB
+				[/codeblock]
+				[b]Note:[/b] Due to limitations with Godot's built-in console, this only prints to the terminal. If you need to print in the editor, use another method, such as [method print].
+			</description>
+		</method>
+		<method name="prints" qualifiers="vararg">
+			<description>
+				Prints one or more arguments to the console with a space between each argument.
+				[codeblock]
+				prints("A", "B", "C") # Prints A B C
+				[/codeblock]
+			</description>
+		</method>
+		<method name="printt" qualifiers="vararg">
+			<description>
+				Prints one or more arguments to the console with a tab between each argument.
+				[codeblock]
+				printt("A", "B", "C") # Prints A       B       C
+				[/codeblock]
+			</description>
+		</method>
+		<method name="push_error" qualifiers="vararg">
+			<description>
+				Pushes an error message to Godot's built-in debugger and to the OS terminal.
+				[codeblock]
+				push_error("test error") # Prints "test error" to debugger and terminal as error call
+				[/codeblock]
+				[b]Note:[/b] Errors printed this way will not pause project execution. To print an error message and pause project execution in debug builds, use [code]assert(false, "test error")[/code] instead.
+			</description>
+		</method>
+		<method name="push_warning" qualifiers="vararg">
+			<description>
+				Pushes a warning message to Godot's built-in debugger and to the OS terminal.
+				[codeblock]
+				push_warning("test warning") # Prints "test warning" to debugger and terminal as warning call
+				[/codeblock]
+			</description>
+		</method>
+		<method name="rad2deg">
+			<return type="float">
+			</return>
+			<argument index="0" name="rad" type="float">
+			</argument>
+			<description>
+				Converts an angle expressed in radians to degrees.
+				[codeblock]
+				rad2deg(0.523599) # Returns 30
+				[/codeblock]
+			</description>
+		</method>
+		<method name="rand_from_seed">
+			<return type="PackedInt64Array">
+			</return>
+			<argument index="0" name="seed" type="int">
+			</argument>
+			<description>
+				Random from seed: pass a [code]seed[/code], and an array with both number and new seed is returned. "Seed" here refers to the internal state of the pseudo random number generator. The internal state of the current implementation is 64 bits.
+			</description>
+		</method>
+		<method name="randf">
+			<return type="float">
+			</return>
+			<description>
+				Returns a random floating point value on the interval [code][0, 1][/code].
+				[codeblock]
+				randf() # Returns e.g. 0.375671
+				[/codeblock]
+			</description>
+		</method>
+		<method name="randf_range">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<description>
+				Random range, any floating point value between [code]from[/code] and [code]to[/code].
+				[codeblock]
+				prints(randf_range(-10, 10), randf_range(-10, 10)) # Prints e.g. -3.844535 7.45315
+				[/codeblock]
+			</description>
+		</method>
+		<method name="randi">
+			<return type="int">
+			</return>
+			<description>
+				Returns a random unsigned 32 bit integer. Use remainder to obtain a random value in the interval [code][0, N - 1][/code] (where N is smaller than 2^32).
+				[codeblock]
+				randi()           # Returns random integer between 0 and 2^32 - 1
+				randi() % 20      # Returns random integer between 0 and 19
+				randi() % 100     # Returns random integer between 0 and 99
+				randi() % 100 + 1 # Returns random integer between 1 and 100
+				[/codeblock]
+			</description>
+		</method>
+		<method name="randi_range">
+			<return type="int">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<argument index="1" name="to" type="int">
+			</argument>
+			<description>
+				Random range, any 32-bit integer value between [code]from[/code] and [code]to[/code] (inclusive). If [code]to[/code] is lesser than [code]from[/code] they are swapped.
+				[codeblock]
+				print(randi_range(0, 1)) # Prints 0 or 1
+				print(randi_range(-10, 1000)) # Prints any number from -10 to 1000
+				[/codeblock]
+			</description>
+		</method>
+		<method name="randomize">
+			<description>
+				Randomizes the seed (or the internal state) of the random number generator. Current implementation reseeds using a number based on time.
+				[codeblock]
+				func _ready():
+				    randomize()
+				[/codeblock]
+			</description>
+		</method>
+		<method name="range_lerp">
+			<return type="float">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<argument index="1" name="istart" type="float">
+			</argument>
+			<argument index="2" name="istop" type="float">
+			</argument>
+			<argument index="3" name="ostart" type="float">
+			</argument>
+			<argument index="4" name="ostop" type="float">
+			</argument>
+			<description>
+				Maps a [code]value[/code] from range [code][istart, istop][/code] to [code][ostart, ostop][/code].
+				[codeblock]
+				range_lerp(75, 0, 100, -1, 1) # Returns 0.5
+				[/codeblock]
+			</description>
+		</method>
+		<method name="range_step_decimals">
+			<return type="int">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="round">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Rounds [code]x[/code] to the nearest whole number, with halfway cases rounded away from zero.
+				[codeblock]
+				round(2.6) # Returns 3
+				[/codeblock]
+				See also [method floor], [method ceil], and [method stepify].
+			</description>
+		</method>
+		<method name="seed">
+			<argument index="0" name="base" type="int">
+			</argument>
+			<description>
+				Sets seed for the random number generator.
+				[codeblock]
+				my_seed = "Godot Rocks"
+				seed(my_seed.hash())
+				[/codeblock]
+			</description>
+		</method>
+		<method name="sign">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="x" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="signf">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the sign of [code]x[/code] as a float: -1.0 or 1.0. Returns 0.0 if [code]x[/code] is 0.
+				[codeblock]
+				sign(-6.0) # Returns -1.0
+				sign(0.0)  # Returns 0.0
+				sign(6.0)  # Returns 1.0
+				[/codeblock]
+			</description>
+		</method>
+		<method name="signi">
+			<return type="int">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<description>
+				Returns the sign of [code]x[/code] as an integer: -1 or 1. Returns 0 if [code]x[/code] is 0.
+				[codeblock]
+				sign(-6) # Returns -1
+				sign(0)  # Returns 0
+				sign(6)  # Returns 1
+				[/codeblock]
+			</description>
+		</method>
+		<method name="sin">
+			<return type="float">
+			</return>
+			<argument index="0" name="angle_rad" type="float">
+			</argument>
+			<description>
+				Returns the sine of angle [code]angle_rad[/code] in radians.
+				[codeblock]
+				sin(0.523599) # Returns 0.5
+				[/codeblock]
+			</description>
+		</method>
+		<method name="sinh">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the hyperbolic sine of [code]x[/code].
+				[codeblock]
+				a = log(2.0) # Returns 0.693147
+				sinh(a) # Returns 0.75
+				[/codeblock]
+			</description>
+		</method>
+		<method name="smoothstep">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="x" type="float">
+			</argument>
+			<description>
+				Returns the result of smoothly interpolating the value of [code]x[/code] between [code]0[/code] and [code]1[/code], based on the where [code]x[/code] lies with respect to the edges [code]from[/code] and [code]to[/code].
+				The return value is [code]0[/code] if [code]x &lt;= from[/code], and [code]1[/code] if [code]x &gt;= to[/code]. If [code]x[/code] lies between [code]from[/code] and [code]to[/code], the returned value follows an S-shaped curve that maps [code]x[/code] between [code]0[/code] and [code]1[/code].
+				This S-shaped curve is the cubic Hermite interpolator, given by [code]f(x) = 3*x^2 - 2*x^3[/code].
+				[codeblock]
+				smoothstep(0, 2, -5.0) # Returns 0.0
+				smoothstep(0, 2, 0.5) # Returns 0.15625
+				smoothstep(0, 2, 1.0) # Returns 0.5
+				smoothstep(0, 2, 2.0) # Returns 1.0
+				[/codeblock]
+			</description>
+		</method>
+		<method name="sqrt">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the square root of [code]x[/code], where [code]x[/code] is a non-negative number.
+				[codeblock]
+				sqrt(9) # Returns 3
+				[/codeblock]
+				[b]Note:[/b]Negative values of [code]x[/code] return NaN. If you need negative inputs, use [code]System.Numerics.Complex[/code] in C#.
+			</description>
+		</method>
+		<method name="step_decimals">
+			<return type="int">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the position of the first non-zero digit, after the decimal point. Note that the maximum return value is 10, which is a design decision in the implementation.
+				[codeblock]
+				# n is 0
+				n = step_decimals(5)
+				# n is 4
+				n = step_decimals(1.0005)
+				# n is 9
+				n = step_decimals(0.000000005)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="stepify">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="step" type="float">
+			</argument>
+			<description>
+				Snaps float value [code]x[/code] to a given [code]step[/code]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				[codeblock]
+				stepify(100, 32) # Returns 96
+				stepify(3.14159, 0.01) # Returns 3.14
+				[/codeblock]
+				See also [method ceil], [method floor], and [method round].
+			</description>
+		</method>
+		<method name="str" qualifiers="vararg">
+			<return type="String">
+			</return>
+			<description>
+				Converts one or more arguments to string in the best way possible.
+			</description>
+		</method>
+		<method name="str2var">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="string" type="String">
+			</argument>
+			<description>
+				Converts a formatted string that was returned by [method var2str] to the original value.
+				[codeblock]
+				a = '{ "a": 1, "b": 2 }'
+				b = str2var(a)
+				print(b["a"]) # Prints 1
+				[/codeblock]
+			</description>
+		</method>
+		<method name="tan">
+			<return type="float">
+			</return>
+			<argument index="0" name="angle_rad" type="float">
+			</argument>
+			<description>
+				Returns the tangent of angle [code]angle_rad[/code] in radians.
+				[codeblock]
+				tan(deg2rad(45)) # Returns 1
+				[/codeblock]
+			</description>
+		</method>
+		<method name="tanh">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the hyperbolic tangent of [code]x[/code].
+				[codeblock]
+				a = log(2.0) # Returns 0.693147
+				tanh(a)      # Returns 0.6
+				[/codeblock]
+			</description>
+		</method>
+		<method name="typeof">
+			<return type="int">
+			</return>
+			<argument index="0" name="variable" type="Variant">
+			</argument>
+			<description>
+				Returns the internal type of the given Variant object, using the [enum Variant.Type] values.
+				[codeblock]
+				p = parse_json('["a", "b", "c"]')
+				if typeof(p) == TYPE_ARRAY:
+				    print(p[0]) # Prints a
+				else:
+				    print("unexpected results")
+				[/codeblock]
+			</description>
+		</method>
+		<method name="var2bytes">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="variable" type="Variant">
+			</argument>
+			<description>
+				Encodes a [Variant] value to a byte array, without encoding objects. Deserialization can be done with [method bytes2var].
+				[b]Note:[/b] If you need object serialization, see [method var2bytes_with_objects].
+			</description>
+		</method>
+		<method name="var2bytes_with_objects">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="variable" type="Variant">
+			</argument>
+			<description>
+				Encodes a [Variant] value to a byte array. Encoding objects is allowed (and can potentially include code). Deserialization can be done with [method bytes2var_with_objects].
+			</description>
+		</method>
+		<method name="var2str">
+			<return type="String">
+			</return>
+			<argument index="0" name="variable" type="Variant">
+			</argument>
+			<description>
+				Converts a Variant [code]variable[/code] to a formatted string that can later be parsed using [method str2var].
+				[codeblock]
+				a = { "a": 1, "b": 2 }
+				print(var2str(a))
+				[/codeblock]
+				prints
+				[codeblock]
+				{
+				"a": 1,
+				"b": 2
+				}
+				[/codeblock]
+			</description>
+		</method>
+		<method name="weakref">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="obj" type="Variant">
+			</argument>
+			<description>
+				Returns a weak reference to an object, or [code]null[/code] is the argument is invalid.
+				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
+			</description>
+		</method>
+		<method name="wrapf">
+			<return type="float">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<argument index="1" name="min" type="float">
+			</argument>
+			<argument index="2" name="max" type="float">
+			</argument>
+			<description>
+				Wraps float [code]value[/code] between [code]min[/code] and [code]max[/code].
+				Usable for creating loop-alike behavior or infinite surfaces.
+				[codeblock]
+				# Infinite loop between 5.0 and 9.9
+				value = wrapf(value + 0.1, 5.0, 10.0)
+				[/codeblock]
+				[codeblock]
+				# Infinite rotation (in radians)
+				angle = wrapf(angle + 0.1, 0.0, TAU)
+				[/codeblock]
+				[codeblock]
+				# Infinite rotation (in radians)
+				angle = wrapf(angle + 0.1, -PI, PI)
+				[/codeblock]
+				[b]Note:[/b] If [code]min[/code] is [code]0[/code], this is equivalent to [method fposmod], so prefer using that instead.
+				[code]wrapf[/code] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
+			</description>
+		</method>
+		<method name="wrapi">
+			<return type="int">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<argument index="1" name="min" type="int">
+			</argument>
+			<argument index="2" name="max" type="int">
+			</argument>
+			<description>
+				Wraps integer [code]value[/code] between [code]min[/code] and [code]max[/code].
+				Usable for creating loop-alike behavior or infinite surfaces.
+				[codeblock]
+				# Infinite loop between 5 and 9
+				frame = wrapi(frame + 1, 5, 10)
+				[/codeblock]
+				[codeblock]
+				# result is -2
+				var result = wrapi(-6, -5, -1)
+				[/codeblock]
+			</description>
+		</method>
 	</methods>
 	<members>
-		<member name="ARVRServer" type="ARVRServer" setter="" getter="">
-			[ARVRServer] singleton
-		</member>
 		<member name="AudioServer" type="AudioServer" setter="" getter="">
-			[AudioServer] singleton
+			The [AudioServer] singleton.
+		</member>
+		<member name="CameraServer" type="CameraServer" setter="" getter="">
+			The [CameraServer] singleton.
 		</member>
 		<member name="ClassDB" type="ClassDB" setter="" getter="">
-			[ClassDB] singleton
+			The [ClassDB] singleton.
+		</member>
+		<member name="DisplayServer" type="DisplayServer" setter="" getter="">
+			The [DisplayServer] singleton.
 		</member>
 		<member name="Engine" type="Engine" setter="" getter="">
-			[Engine] singleton
+			The [Engine] singleton.
 		</member>
-		<member name="Geometry" type="Geometry" setter="" getter="">
-			[Geometry] singleton
+		<member name="EngineDebugger" type="EngineDebugger" setter="" getter="">
+			The [EngineDebugger] singleton.
+		</member>
+		<member name="Geometry2D" type="Geometry2D" setter="" getter="">
+			The [Geometry2D] singleton.
+		</member>
+		<member name="Geometry3D" type="Geometry3D" setter="" getter="">
+			The [Geometry3D] singleton.
+		</member>
+		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
+			The [GodotSharp] singleton.
 		</member>
 		<member name="IP" type="IP" setter="" getter="">
-			[IP] singleton
+			The [IP] singleton.
 		</member>
 		<member name="Input" type="Input" setter="" getter="">
-			[Input] singleton
+			The [Input] singleton.
 		</member>
 		<member name="InputMap" type="InputMap" setter="" getter="">
-			[InputMap] singleton
+			The [InputMap] singleton.
 		</member>
 		<member name="JSON" type="JSON" setter="" getter="">
-			[JSON] singleton
+			The [JSON] singleton.
+		</member>
+		<member name="JavaClassWrapper" type="JavaClassWrapper" setter="" getter="">
+			The [JavaClassWrapper] singleton.
+			[b]Note:[/b] Only implemented on Android.
 		</member>
 		<member name="JavaScript" type="JavaScript" setter="" getter="">
-			[JavaScript] singleton
+			The [JavaScript] singleton.
+			[b]Note:[/b] Only implemented on HTML5.
 		</member>
-		<member name="Marshalls" type="Reference" setter="" getter="">
-			[Marshalls] singleton
+		<member name="Marshalls" type="Marshalls" setter="" getter="">
+			The [Marshalls] singleton.
+		</member>
+		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
+			The [NavigationMeshGenerator] singleton.
+		</member>
+		<member name="NavigationServer2D" type="NavigationServer2D" setter="" getter="">
+			The [NavigationServer2D] singleton.
+		</member>
+		<member name="NavigationServer3D" type="NavigationServer3D" setter="" getter="">
+			The [NavigationServer2D] singleton.
 		</member>
 		<member name="OS" type="OS" setter="" getter="">
-			[OS] singleton
+			The [OS] singleton.
 		</member>
 		<member name="Performance" type="Performance" setter="" getter="">
-			[Performance] singleton
+			The [Performance] singleton.
 		</member>
-		<member name="Physics2DServer" type="Physics2DServer" setter="" getter="">
-			[Physics2DServer] singleton
+		<member name="PhysicsServer2D" type="PhysicsServer2D" setter="" getter="">
+			The [PhysicsServer2D] singleton.
 		</member>
-		<member name="PhysicsServer" type="PhysicsServer" setter="" getter="">
-			[PhysicsServer] singleton
+		<member name="PhysicsServer3D" type="PhysicsServer3D" setter="" getter="">
+			The [PhysicsServer3D] singleton.
 		</member>
 		<member name="ProjectSettings" type="ProjectSettings" setter="" getter="">
-			[ProjectSettings] singleton
+			The [ProjectSettings] singleton.
+		</member>
+		<member name="RenderingServer" type="RenderingServer" setter="" getter="">
+			The [RenderingServer] singleton.
 		</member>
 		<member name="ResourceLoader" type="ResourceLoader" setter="" getter="">
-			[ResourceLoader] singleton
+			The [ResourceLoader] singleton.
 		</member>
 		<member name="ResourceSaver" type="ResourceSaver" setter="" getter="">
-			[ResourceSaver] singleton
+			The [ResourceSaver] singleton.
+		</member>
+		<member name="TextServerManager" type="TextServerManager" setter="" getter="">
+			The [TextServerManager] singleton.
 		</member>
 		<member name="TranslationServer" type="TranslationServer" setter="" getter="">
-			[TranslationServer] singleton
+			The [TranslationServer] singleton.
 		</member>
 		<member name="VisualScriptEditor" type="VisualScriptEditor" setter="" getter="">
-			[VisualScriptEditor] singleton
+			The [VisualScriptEditor] singleton.
 		</member>
-		<member name="VisualServer" type="VisualServer" setter="" getter="">
-			[VisualServer] singleton
+		<member name="XRServer" type="XRServer" setter="" getter="">
+			The [XRServer] singleton.
 		</member>
 	</members>
 	<constants>
 		<constant name="MARGIN_LEFT" value="0" enum="Margin">
-			Left margin, used usually for [Control] or [StyleBox] derived classes.
+			Left margin, usually used for [Control] or [StyleBox]-derived classes.
 		</constant>
 		<constant name="MARGIN_TOP" value="1" enum="Margin">
-			Top margin, used usually for [Control] or [StyleBox] derived classes.
+			Top margin, usually used for [Control] or [StyleBox]-derived classes.
 		</constant>
 		<constant name="MARGIN_RIGHT" value="2" enum="Margin">
-			Right margin, used usually for [Control] or [StyleBox] derived classes.
+			Right margin, usually used for [Control] or [StyleBox]-derived classes.
 		</constant>
 		<constant name="MARGIN_BOTTOM" value="3" enum="Margin">
-			Bottom margin, used usually for [Control] or [StyleBox] derived classes.
+			Bottom margin, usually used for [Control] or [StyleBox]-derived classes.
 		</constant>
 		<constant name="CORNER_TOP_LEFT" value="0" enum="Corner">
+			Top-left corner.
 		</constant>
 		<constant name="CORNER_TOP_RIGHT" value="1" enum="Corner">
+			Top-right corner.
 		</constant>
 		<constant name="CORNER_BOTTOM_RIGHT" value="2" enum="Corner">
+			Bottom-right corner.
 		</constant>
 		<constant name="CORNER_BOTTOM_LEFT" value="3" enum="Corner">
+			Bottom-left corner.
 		</constant>
 		<constant name="VERTICAL" value="1" enum="Orientation">
-			General vertical alignment, used usually for [Separator], [ScrollBar], [Slider], etc.
+			General vertical alignment, usually used for [Separator], [ScrollBar], [Slider], etc.
 		</constant>
 		<constant name="HORIZONTAL" value="0" enum="Orientation">
-			General horizontal alignment, used usually for [Separator], [ScrollBar], [Slider], etc.
+			General horizontal alignment, usually used for [Separator], [ScrollBar], [Slider], etc.
 		</constant>
 		<constant name="HALIGN_LEFT" value="0" enum="HAlign">
 			Horizontal left alignment, usually for text-derived classes.
@@ -113,6 +1288,9 @@
 		</constant>
 		<constant name="HALIGN_RIGHT" value="2" enum="HAlign">
 			Horizontal right alignment, usually for text-derived classes.
+		</constant>
+		<constant name="HALIGN_FILL" value="3" enum="HAlign">
+			Expand row to fit width, usually for text-derived classes.
 		</constant>
 		<constant name="VALIGN_TOP" value="0" enum="VAlign">
 			Vertical top alignment, usually for text-derived classes.
@@ -124,1213 +1302,1201 @@
 			Vertical bottom alignment, usually for text-derived classes.
 		</constant>
 		<constant name="SPKEY" value="16777216">
-			Scancodes with this bit applied are non printable.
+			Keycodes with this bit applied are non-printable.
 		</constant>
 		<constant name="KEY_ESCAPE" value="16777217" enum="KeyList">
-			Escape Key
+			Escape key.
 		</constant>
 		<constant name="KEY_TAB" value="16777218" enum="KeyList">
-			Tab Key
+			Tab key.
 		</constant>
 		<constant name="KEY_BACKTAB" value="16777219" enum="KeyList">
-			Shift-Tab Key
+			Shift + Tab key.
 		</constant>
 		<constant name="KEY_BACKSPACE" value="16777220" enum="KeyList">
-			Backspace Key
+			Backspace key.
 		</constant>
 		<constant name="KEY_ENTER" value="16777221" enum="KeyList">
-			Return Key (On Main Keyboard)
+			Return key (on the main keyboard).
 		</constant>
 		<constant name="KEY_KP_ENTER" value="16777222" enum="KeyList">
-			Enter Key (On Numpad)
+			Enter key on the numeric keypad.
 		</constant>
 		<constant name="KEY_INSERT" value="16777223" enum="KeyList">
-			Insert Key
+			Insert key.
 		</constant>
 		<constant name="KEY_DELETE" value="16777224" enum="KeyList">
-			Delete Key
+			Delete key.
 		</constant>
 		<constant name="KEY_PAUSE" value="16777225" enum="KeyList">
-			Pause Key
+			Pause key.
 		</constant>
 		<constant name="KEY_PRINT" value="16777226" enum="KeyList">
-			Printscreen Key
+			Print Screen key.
 		</constant>
 		<constant name="KEY_SYSREQ" value="16777227" enum="KeyList">
-			System Request Key
+			System Request key.
 		</constant>
 		<constant name="KEY_CLEAR" value="16777228" enum="KeyList">
-			Clear Key
+			Clear key.
 		</constant>
 		<constant name="KEY_HOME" value="16777229" enum="KeyList">
-			Home Key
+			Home key.
 		</constant>
 		<constant name="KEY_END" value="16777230" enum="KeyList">
-			End Key
+			End key.
 		</constant>
 		<constant name="KEY_LEFT" value="16777231" enum="KeyList">
-			Left Arrow Key
+			Left arrow key.
 		</constant>
 		<constant name="KEY_UP" value="16777232" enum="KeyList">
-			Up Arrow Key
+			Up arrow key.
 		</constant>
 		<constant name="KEY_RIGHT" value="16777233" enum="KeyList">
-			Right Arrow Key
+			Right arrow key.
 		</constant>
 		<constant name="KEY_DOWN" value="16777234" enum="KeyList">
-			Down Arrow Key
+			Down arrow key.
 		</constant>
 		<constant name="KEY_PAGEUP" value="16777235" enum="KeyList">
-			Pageup Key
+			Page Up key.
 		</constant>
 		<constant name="KEY_PAGEDOWN" value="16777236" enum="KeyList">
-			Pagedown Key
+			Page Down key.
 		</constant>
 		<constant name="KEY_SHIFT" value="16777237" enum="KeyList">
-			Shift Key
+			Shift key.
 		</constant>
 		<constant name="KEY_CONTROL" value="16777238" enum="KeyList">
-			Control Key
+			Control key.
 		</constant>
 		<constant name="KEY_META" value="16777239" enum="KeyList">
-			Meta Key
+			Meta key.
 		</constant>
 		<constant name="KEY_ALT" value="16777240" enum="KeyList">
-			Alt Key
+			Alt key.
 		</constant>
 		<constant name="KEY_CAPSLOCK" value="16777241" enum="KeyList">
-			Capslock Key
+			Caps Lock key.
 		</constant>
 		<constant name="KEY_NUMLOCK" value="16777242" enum="KeyList">
-			Numlock Key
+			Num Lock key.
 		</constant>
 		<constant name="KEY_SCROLLLOCK" value="16777243" enum="KeyList">
-			Scrolllock Key
+			Scroll Lock key.
 		</constant>
 		<constant name="KEY_F1" value="16777244" enum="KeyList">
-			F1 Key
+			F1 key.
 		</constant>
 		<constant name="KEY_F2" value="16777245" enum="KeyList">
-			F2 Key
+			F2 key.
 		</constant>
 		<constant name="KEY_F3" value="16777246" enum="KeyList">
-			F3 Key
+			F3 key.
 		</constant>
 		<constant name="KEY_F4" value="16777247" enum="KeyList">
-			F4 Key
+			F4 key.
 		</constant>
 		<constant name="KEY_F5" value="16777248" enum="KeyList">
-			F5 Key
+			F5 key.
 		</constant>
 		<constant name="KEY_F6" value="16777249" enum="KeyList">
-			F6 Key
+			F6 key.
 		</constant>
 		<constant name="KEY_F7" value="16777250" enum="KeyList">
-			F7 Key
+			F7 key.
 		</constant>
 		<constant name="KEY_F8" value="16777251" enum="KeyList">
-			F8 Key
+			F8 key.
 		</constant>
 		<constant name="KEY_F9" value="16777252" enum="KeyList">
-			F9 Key
+			F9 key.
 		</constant>
 		<constant name="KEY_F10" value="16777253" enum="KeyList">
-			F10 Key
+			F10 key.
 		</constant>
 		<constant name="KEY_F11" value="16777254" enum="KeyList">
-			F11 Key
+			F11 key.
 		</constant>
 		<constant name="KEY_F12" value="16777255" enum="KeyList">
-			F12 Key
+			F12 key.
 		</constant>
 		<constant name="KEY_F13" value="16777256" enum="KeyList">
-			F13 Key
+			F13 key.
 		</constant>
 		<constant name="KEY_F14" value="16777257" enum="KeyList">
-			F14 Key
+			F14 key.
 		</constant>
 		<constant name="KEY_F15" value="16777258" enum="KeyList">
-			F15 Key
+			F15 key.
 		</constant>
 		<constant name="KEY_F16" value="16777259" enum="KeyList">
-			F16 Key
+			F16 key.
 		</constant>
 		<constant name="KEY_KP_MULTIPLY" value="16777345" enum="KeyList">
-			Multiply Key on Numpad
+			Multiply (*) key on the numeric keypad.
 		</constant>
 		<constant name="KEY_KP_DIVIDE" value="16777346" enum="KeyList">
-			Divide Key on Numpad
+			Divide (/) key on the numeric keypad.
 		</constant>
 		<constant name="KEY_KP_SUBTRACT" value="16777347" enum="KeyList">
-			Subtract Key on Numpad
+			Subtract (-) key on the numeric keypad.
 		</constant>
 		<constant name="KEY_KP_PERIOD" value="16777348" enum="KeyList">
-			Period Key on Numpad
+			Period (.) key on the numeric keypad.
 		</constant>
 		<constant name="KEY_KP_ADD" value="16777349" enum="KeyList">
-			Add Key on Numpad
+			Add (+) key on the numeric keypad.
 		</constant>
 		<constant name="KEY_KP_0" value="16777350" enum="KeyList">
-			Number 0 on Numpad
+			Number 0 on the numeric keypad.
 		</constant>
 		<constant name="KEY_KP_1" value="16777351" enum="KeyList">
-			Number 1 on Numpad
+			Number 1 on the numeric keypad.
 		</constant>
 		<constant name="KEY_KP_2" value="16777352" enum="KeyList">
-			Number 2 on Numpad
+			Number 2 on the numeric keypad.
 		</constant>
 		<constant name="KEY_KP_3" value="16777353" enum="KeyList">
-			Number 3 on Numpad
+			Number 3 on the numeric keypad.
 		</constant>
 		<constant name="KEY_KP_4" value="16777354" enum="KeyList">
-			Number 4 on Numpad
+			Number 4 on the numeric keypad.
 		</constant>
 		<constant name="KEY_KP_5" value="16777355" enum="KeyList">
-			Number 5 on Numpad
+			Number 5 on the numeric keypad.
 		</constant>
 		<constant name="KEY_KP_6" value="16777356" enum="KeyList">
-			Number 6 on Numpad
+			Number 6 on the numeric keypad.
 		</constant>
 		<constant name="KEY_KP_7" value="16777357" enum="KeyList">
-			Number 7 on Numpad
+			Number 7 on the numeric keypad.
 		</constant>
 		<constant name="KEY_KP_8" value="16777358" enum="KeyList">
-			Number 8 on Numpad
+			Number 8 on the numeric keypad.
 		</constant>
 		<constant name="KEY_KP_9" value="16777359" enum="KeyList">
-			Number 9 on Numpad
+			Number 9 on the numeric keypad.
 		</constant>
 		<constant name="KEY_SUPER_L" value="16777260" enum="KeyList">
-			Left Super Key (Windows Key)
+			Left Super key (Windows key).
 		</constant>
 		<constant name="KEY_SUPER_R" value="16777261" enum="KeyList">
-			Right Super Key (Windows Key)
+			Right Super key (Windows key).
 		</constant>
 		<constant name="KEY_MENU" value="16777262" enum="KeyList">
-			Context menu key
+			Context menu key.
 		</constant>
 		<constant name="KEY_HYPER_L" value="16777263" enum="KeyList">
-			Left Hyper Key
+			Left Hyper key.
 		</constant>
 		<constant name="KEY_HYPER_R" value="16777264" enum="KeyList">
-			Right Hyper Key
+			Right Hyper key.
 		</constant>
 		<constant name="KEY_HELP" value="16777265" enum="KeyList">
-			Help key
+			Help key.
 		</constant>
 		<constant name="KEY_DIRECTION_L" value="16777266" enum="KeyList">
-			Left Direction Key
+			Left Direction key.
 		</constant>
 		<constant name="KEY_DIRECTION_R" value="16777267" enum="KeyList">
-			Right Direction Key
+			Right Direction key.
 		</constant>
 		<constant name="KEY_BACK" value="16777280" enum="KeyList">
-			Back key
+			Media back key. Not to be confused with the Back button on an Android device.
 		</constant>
 		<constant name="KEY_FORWARD" value="16777281" enum="KeyList">
-			Forward key
+			Media forward key.
 		</constant>
 		<constant name="KEY_STOP" value="16777282" enum="KeyList">
-			Stop key
+			Media stop key.
 		</constant>
 		<constant name="KEY_REFRESH" value="16777283" enum="KeyList">
-			Refresh key
+			Media refresh key.
 		</constant>
 		<constant name="KEY_VOLUMEDOWN" value="16777284" enum="KeyList">
-			Volume down key
+			Volume down key.
 		</constant>
 		<constant name="KEY_VOLUMEMUTE" value="16777285" enum="KeyList">
-			Mute volume key
+			Mute volume key.
 		</constant>
 		<constant name="KEY_VOLUMEUP" value="16777286" enum="KeyList">
-			Volume up key
+			Volume up key.
 		</constant>
 		<constant name="KEY_BASSBOOST" value="16777287" enum="KeyList">
-			Bass Boost Key
+			Bass Boost key.
 		</constant>
 		<constant name="KEY_BASSUP" value="16777288" enum="KeyList">
-			Bass Up Key
+			Bass up key.
 		</constant>
 		<constant name="KEY_BASSDOWN" value="16777289" enum="KeyList">
-			Bass Down Key
+			Bass down key.
 		</constant>
 		<constant name="KEY_TREBLEUP" value="16777290" enum="KeyList">
-			Treble Up Key
+			Treble up key.
 		</constant>
 		<constant name="KEY_TREBLEDOWN" value="16777291" enum="KeyList">
-			Treble Down Key
+			Treble down key.
 		</constant>
 		<constant name="KEY_MEDIAPLAY" value="16777292" enum="KeyList">
-			Media play key
+			Media play key.
 		</constant>
 		<constant name="KEY_MEDIASTOP" value="16777293" enum="KeyList">
-			Media stop key
+			Media stop key.
 		</constant>
 		<constant name="KEY_MEDIAPREVIOUS" value="16777294" enum="KeyList">
-			Previous song key
+			Previous song key.
 		</constant>
 		<constant name="KEY_MEDIANEXT" value="16777295" enum="KeyList">
-			Next song key
+			Next song key.
 		</constant>
 		<constant name="KEY_MEDIARECORD" value="16777296" enum="KeyList">
-			Media record key
+			Media record key.
 		</constant>
 		<constant name="KEY_HOMEPAGE" value="16777297" enum="KeyList">
-			Home page key
+			Home page key.
 		</constant>
 		<constant name="KEY_FAVORITES" value="16777298" enum="KeyList">
-			Favorites key
+			Favorites key.
 		</constant>
 		<constant name="KEY_SEARCH" value="16777299" enum="KeyList">
-			Search key
+			Search key.
 		</constant>
 		<constant name="KEY_STANDBY" value="16777300" enum="KeyList">
-			Standby Key
+			Standby key.
 		</constant>
 		<constant name="KEY_OPENURL" value="16777301" enum="KeyList">
-			Open URL / Launch Browser Key
+			Open URL / Launch Browser key.
 		</constant>
 		<constant name="KEY_LAUNCHMAIL" value="16777302" enum="KeyList">
-			Launch Mail Key
+			Launch Mail key.
 		</constant>
 		<constant name="KEY_LAUNCHMEDIA" value="16777303" enum="KeyList">
-			Launch Media Key
+			Launch Media key.
 		</constant>
 		<constant name="KEY_LAUNCH0" value="16777304" enum="KeyList">
-			Launch Shortcut 0 Key
+			Launch Shortcut 0 key.
 		</constant>
 		<constant name="KEY_LAUNCH1" value="16777305" enum="KeyList">
-			Launch Shortcut 1 Key
+			Launch Shortcut 1 key.
 		</constant>
 		<constant name="KEY_LAUNCH2" value="16777306" enum="KeyList">
-			Launch Shortcut 2 Key
+			Launch Shortcut 2 key.
 		</constant>
 		<constant name="KEY_LAUNCH3" value="16777307" enum="KeyList">
-			Launch Shortcut 3 Key
+			Launch Shortcut 3 key.
 		</constant>
 		<constant name="KEY_LAUNCH4" value="16777308" enum="KeyList">
-			Launch Shortcut 4 Key
+			Launch Shortcut 4 key.
 		</constant>
 		<constant name="KEY_LAUNCH5" value="16777309" enum="KeyList">
-			Launch Shortcut 5 Key
+			Launch Shortcut 5 key.
 		</constant>
 		<constant name="KEY_LAUNCH6" value="16777310" enum="KeyList">
-			Launch Shortcut 6 Key
+			Launch Shortcut 6 key.
 		</constant>
 		<constant name="KEY_LAUNCH7" value="16777311" enum="KeyList">
-			Launch Shortcut 7 Key
+			Launch Shortcut 7 key.
 		</constant>
 		<constant name="KEY_LAUNCH8" value="16777312" enum="KeyList">
-			Launch Shortcut 8 Key
+			Launch Shortcut 8 key.
 		</constant>
 		<constant name="KEY_LAUNCH9" value="16777313" enum="KeyList">
-			Launch Shortcut 9 Key
+			Launch Shortcut 9 key.
 		</constant>
 		<constant name="KEY_LAUNCHA" value="16777314" enum="KeyList">
-			Launch Shortcut A Key
+			Launch Shortcut A key.
 		</constant>
 		<constant name="KEY_LAUNCHB" value="16777315" enum="KeyList">
-			Launch Shortcut B Key
+			Launch Shortcut B key.
 		</constant>
 		<constant name="KEY_LAUNCHC" value="16777316" enum="KeyList">
-			Launch Shortcut C Key
+			Launch Shortcut C key.
 		</constant>
 		<constant name="KEY_LAUNCHD" value="16777317" enum="KeyList">
-			Launch Shortcut D Key
+			Launch Shortcut D key.
 		</constant>
 		<constant name="KEY_LAUNCHE" value="16777318" enum="KeyList">
-			Launch Shortcut E Key
+			Launch Shortcut E key.
 		</constant>
 		<constant name="KEY_LAUNCHF" value="16777319" enum="KeyList">
-			Launch Shortcut F Key
+			Launch Shortcut F key.
 		</constant>
 		<constant name="KEY_UNKNOWN" value="33554431" enum="KeyList">
-			Unknown Key
+			Unknown key.
 		</constant>
 		<constant name="KEY_SPACE" value="32" enum="KeyList">
-			Space Key
+			Space key.
 		</constant>
 		<constant name="KEY_EXCLAM" value="33" enum="KeyList">
-			! key
+			! key.
 		</constant>
 		<constant name="KEY_QUOTEDBL" value="34" enum="KeyList">
-			" key
+			" key.
 		</constant>
 		<constant name="KEY_NUMBERSIGN" value="35" enum="KeyList">
-			# key
+			# key.
 		</constant>
 		<constant name="KEY_DOLLAR" value="36" enum="KeyList">
-			$ key
+			$ key.
 		</constant>
 		<constant name="KEY_PERCENT" value="37" enum="KeyList">
-			% key
+			% key.
 		</constant>
 		<constant name="KEY_AMPERSAND" value="38" enum="KeyList">
-			&amp; key
+			&amp; key.
 		</constant>
 		<constant name="KEY_APOSTROPHE" value="39" enum="KeyList">
-			' key
+			' key.
 		</constant>
 		<constant name="KEY_PARENLEFT" value="40" enum="KeyList">
-			( key
+			( key.
 		</constant>
 		<constant name="KEY_PARENRIGHT" value="41" enum="KeyList">
-			) key
+			) key.
 		</constant>
 		<constant name="KEY_ASTERISK" value="42" enum="KeyList">
-			* key
+			* key.
 		</constant>
 		<constant name="KEY_PLUS" value="43" enum="KeyList">
-			+ key
+			+ key.
 		</constant>
 		<constant name="KEY_COMMA" value="44" enum="KeyList">
-			, key
+			, key.
 		</constant>
 		<constant name="KEY_MINUS" value="45" enum="KeyList">
-			- key
+			- key.
 		</constant>
 		<constant name="KEY_PERIOD" value="46" enum="KeyList">
-			. key
+			. key.
 		</constant>
 		<constant name="KEY_SLASH" value="47" enum="KeyList">
-			/ key
+			/ key.
 		</constant>
 		<constant name="KEY_0" value="48" enum="KeyList">
-			Number 0
+			Number 0.
 		</constant>
 		<constant name="KEY_1" value="49" enum="KeyList">
-			Number 1
+			Number 1.
 		</constant>
 		<constant name="KEY_2" value="50" enum="KeyList">
-			Number 2
+			Number 2.
 		</constant>
 		<constant name="KEY_3" value="51" enum="KeyList">
-			Number 3
+			Number 3.
 		</constant>
 		<constant name="KEY_4" value="52" enum="KeyList">
-			Number 4
+			Number 4.
 		</constant>
 		<constant name="KEY_5" value="53" enum="KeyList">
-			Number 5
+			Number 5.
 		</constant>
 		<constant name="KEY_6" value="54" enum="KeyList">
-			Number 6
+			Number 6.
 		</constant>
 		<constant name="KEY_7" value="55" enum="KeyList">
-			Number 7
+			Number 7.
 		</constant>
 		<constant name="KEY_8" value="56" enum="KeyList">
-			Number 8
+			Number 8.
 		</constant>
 		<constant name="KEY_9" value="57" enum="KeyList">
-			Number 9
+			Number 9.
 		</constant>
 		<constant name="KEY_COLON" value="58" enum="KeyList">
-			: key
+			: key.
 		</constant>
 		<constant name="KEY_SEMICOLON" value="59" enum="KeyList">
-			; key
+			; key.
 		</constant>
 		<constant name="KEY_LESS" value="60" enum="KeyList">
-			Lower than key
+			&lt; key.
 		</constant>
 		<constant name="KEY_EQUAL" value="61" enum="KeyList">
-			= key
+			= key.
 		</constant>
 		<constant name="KEY_GREATER" value="62" enum="KeyList">
-			Greater than key
+			&gt; key.
 		</constant>
 		<constant name="KEY_QUESTION" value="63" enum="KeyList">
-			? key
+			? key.
 		</constant>
 		<constant name="KEY_AT" value="64" enum="KeyList">
-			@ key
+			@ key.
 		</constant>
 		<constant name="KEY_A" value="65" enum="KeyList">
-			A Key
+			A key.
 		</constant>
 		<constant name="KEY_B" value="66" enum="KeyList">
-			B Key
+			B key.
 		</constant>
 		<constant name="KEY_C" value="67" enum="KeyList">
-			C Key
+			C key.
 		</constant>
 		<constant name="KEY_D" value="68" enum="KeyList">
-			D Key
+			D key.
 		</constant>
 		<constant name="KEY_E" value="69" enum="KeyList">
-			E Key
+			E key.
 		</constant>
 		<constant name="KEY_F" value="70" enum="KeyList">
-			F Key
+			F key.
 		</constant>
 		<constant name="KEY_G" value="71" enum="KeyList">
-			G Key
+			G key.
 		</constant>
 		<constant name="KEY_H" value="72" enum="KeyList">
-			H Key
+			H key.
 		</constant>
 		<constant name="KEY_I" value="73" enum="KeyList">
-			I Key
+			I key.
 		</constant>
 		<constant name="KEY_J" value="74" enum="KeyList">
-			J Key
+			J key.
 		</constant>
 		<constant name="KEY_K" value="75" enum="KeyList">
-			K Key
+			K key.
 		</constant>
 		<constant name="KEY_L" value="76" enum="KeyList">
-			L Key
+			L key.
 		</constant>
 		<constant name="KEY_M" value="77" enum="KeyList">
-			M Key
+			M key.
 		</constant>
 		<constant name="KEY_N" value="78" enum="KeyList">
-			N Key
+			N key.
 		</constant>
 		<constant name="KEY_O" value="79" enum="KeyList">
-			O Key
+			O key.
 		</constant>
 		<constant name="KEY_P" value="80" enum="KeyList">
-			P Key
+			P key.
 		</constant>
 		<constant name="KEY_Q" value="81" enum="KeyList">
-			Q Key
+			Q key.
 		</constant>
 		<constant name="KEY_R" value="82" enum="KeyList">
-			R Key
+			R key.
 		</constant>
 		<constant name="KEY_S" value="83" enum="KeyList">
-			S Key
+			S key.
 		</constant>
 		<constant name="KEY_T" value="84" enum="KeyList">
-			T Key
+			T key.
 		</constant>
 		<constant name="KEY_U" value="85" enum="KeyList">
-			U Key
+			U key.
 		</constant>
 		<constant name="KEY_V" value="86" enum="KeyList">
-			V Key
+			V key.
 		</constant>
 		<constant name="KEY_W" value="87" enum="KeyList">
-			W Key
+			W key.
 		</constant>
 		<constant name="KEY_X" value="88" enum="KeyList">
-			X Key
+			X key.
 		</constant>
 		<constant name="KEY_Y" value="89" enum="KeyList">
-			Y Key
+			Y key.
 		</constant>
 		<constant name="KEY_Z" value="90" enum="KeyList">
-			Z Key
+			Z key.
 		</constant>
 		<constant name="KEY_BRACKETLEFT" value="91" enum="KeyList">
-			[ key
+			[ key.
 		</constant>
 		<constant name="KEY_BACKSLASH" value="92" enum="KeyList">
-			\ key
+			\ key.
 		</constant>
 		<constant name="KEY_BRACKETRIGHT" value="93" enum="KeyList">
-			] key
+			] key.
 		</constant>
 		<constant name="KEY_ASCIICIRCUM" value="94" enum="KeyList">
-			^ key
+			^ key.
 		</constant>
 		<constant name="KEY_UNDERSCORE" value="95" enum="KeyList">
-			_ key
+			_ key.
 		</constant>
 		<constant name="KEY_QUOTELEFT" value="96" enum="KeyList">
-			Left Quote Key
+			` key.
 		</constant>
 		<constant name="KEY_BRACELEFT" value="123" enum="KeyList">
-			{ key
+			{ key.
 		</constant>
 		<constant name="KEY_BAR" value="124" enum="KeyList">
-			| key
+			| key.
 		</constant>
 		<constant name="KEY_BRACERIGHT" value="125" enum="KeyList">
-			} key
+			} key.
 		</constant>
 		<constant name="KEY_ASCIITILDE" value="126" enum="KeyList">
-			~ key
+			~ key.
 		</constant>
 		<constant name="KEY_NOBREAKSPACE" value="160" enum="KeyList">
+			Non-breakable space key.
 		</constant>
 		<constant name="KEY_EXCLAMDOWN" value="161" enum="KeyList">
+			¡ key.
 		</constant>
 		<constant name="KEY_CENT" value="162" enum="KeyList">
-			¢ key
+			¢ key.
 		</constant>
 		<constant name="KEY_STERLING" value="163" enum="KeyList">
+			£ key.
 		</constant>
 		<constant name="KEY_CURRENCY" value="164" enum="KeyList">
+			¤ key.
 		</constant>
 		<constant name="KEY_YEN" value="165" enum="KeyList">
-			Yen Key
+			¥ key.
 		</constant>
 		<constant name="KEY_BROKENBAR" value="166" enum="KeyList">
-			¦ key
+			¦ key.
 		</constant>
 		<constant name="KEY_SECTION" value="167" enum="KeyList">
-			§ key
+			§ key.
 		</constant>
 		<constant name="KEY_DIAERESIS" value="168" enum="KeyList">
-			¨ key
+			¨ key.
 		</constant>
 		<constant name="KEY_COPYRIGHT" value="169" enum="KeyList">
-			© key
+			© key.
 		</constant>
 		<constant name="KEY_ORDFEMININE" value="170" enum="KeyList">
+			ª key.
 		</constant>
 		<constant name="KEY_GUILLEMOTLEFT" value="171" enum="KeyList">
-			« key
+			« key.
 		</constant>
 		<constant name="KEY_NOTSIGN" value="172" enum="KeyList">
-			» key
+			¬ key.
 		</constant>
 		<constant name="KEY_HYPHEN" value="173" enum="KeyList">
-			‐ key
+			Soft hyphen key.
 		</constant>
 		<constant name="KEY_REGISTERED" value="174" enum="KeyList">
-			® key
+			® key.
 		</constant>
 		<constant name="KEY_MACRON" value="175" enum="KeyList">
-			Macron Key
+			¯ key.
 		</constant>
 		<constant name="KEY_DEGREE" value="176" enum="KeyList">
-			° key
+			° key.
 		</constant>
 		<constant name="KEY_PLUSMINUS" value="177" enum="KeyList">
-			± key
+			± key.
 		</constant>
 		<constant name="KEY_TWOSUPERIOR" value="178" enum="KeyList">
-			² key
+			² key.
 		</constant>
 		<constant name="KEY_THREESUPERIOR" value="179" enum="KeyList">
-			³ key
+			³ key.
 		</constant>
 		<constant name="KEY_ACUTE" value="180" enum="KeyList">
-			´ key
+			´ key.
 		</constant>
 		<constant name="KEY_MU" value="181" enum="KeyList">
-			µ key
+			µ key.
 		</constant>
 		<constant name="KEY_PARAGRAPH" value="182" enum="KeyList">
-			Paragraph Key
+			¶ key.
 		</constant>
 		<constant name="KEY_PERIODCENTERED" value="183" enum="KeyList">
-			· key
+			· key.
 		</constant>
 		<constant name="KEY_CEDILLA" value="184" enum="KeyList">
-			¬ key
+			¸ key.
 		</constant>
 		<constant name="KEY_ONESUPERIOR" value="185" enum="KeyList">
-			¹ key
+			¹ key.
 		</constant>
 		<constant name="KEY_MASCULINE" value="186" enum="KeyList">
-			♂ key
+			º key.
 		</constant>
 		<constant name="KEY_GUILLEMOTRIGHT" value="187" enum="KeyList">
-			» key
+			» key.
 		</constant>
 		<constant name="KEY_ONEQUARTER" value="188" enum="KeyList">
-			¼ key
+			¼ key.
 		</constant>
 		<constant name="KEY_ONEHALF" value="189" enum="KeyList">
-			½ key
+			½ key.
 		</constant>
 		<constant name="KEY_THREEQUARTERS" value="190" enum="KeyList">
-			¾ key
+			¾ key.
 		</constant>
 		<constant name="KEY_QUESTIONDOWN" value="191" enum="KeyList">
-			¿ key
+			¿ key.
 		</constant>
 		<constant name="KEY_AGRAVE" value="192" enum="KeyList">
-			à key
+			À key.
 		</constant>
 		<constant name="KEY_AACUTE" value="193" enum="KeyList">
-			á key
+			Á key.
 		</constant>
 		<constant name="KEY_ACIRCUMFLEX" value="194" enum="KeyList">
-			â key
+			Â key.
 		</constant>
 		<constant name="KEY_ATILDE" value="195" enum="KeyList">
-			ã key
+			Ã key.
 		</constant>
 		<constant name="KEY_ADIAERESIS" value="196" enum="KeyList">
-			ä key
+			Ä key.
 		</constant>
 		<constant name="KEY_ARING" value="197" enum="KeyList">
-			å key
+			Å key.
 		</constant>
 		<constant name="KEY_AE" value="198" enum="KeyList">
-			æ key
+			Æ key.
 		</constant>
 		<constant name="KEY_CCEDILLA" value="199" enum="KeyList">
-			ç key
+			Ç key.
 		</constant>
 		<constant name="KEY_EGRAVE" value="200" enum="KeyList">
-			è key
+			È key.
 		</constant>
 		<constant name="KEY_EACUTE" value="201" enum="KeyList">
-			é key
+			É key.
 		</constant>
 		<constant name="KEY_ECIRCUMFLEX" value="202" enum="KeyList">
-			ê key
+			Ê key.
 		</constant>
 		<constant name="KEY_EDIAERESIS" value="203" enum="KeyList">
-			ë key
+			Ë key.
 		</constant>
 		<constant name="KEY_IGRAVE" value="204" enum="KeyList">
-			ì key
+			Ì key.
 		</constant>
 		<constant name="KEY_IACUTE" value="205" enum="KeyList">
-			í key
+			Í key.
 		</constant>
 		<constant name="KEY_ICIRCUMFLEX" value="206" enum="KeyList">
-			î key
+			Î key.
 		</constant>
 		<constant name="KEY_IDIAERESIS" value="207" enum="KeyList">
-			ë key
+			Ï key.
 		</constant>
 		<constant name="KEY_ETH" value="208" enum="KeyList">
-			ð key
+			Ð key.
 		</constant>
 		<constant name="KEY_NTILDE" value="209" enum="KeyList">
-			ñ key
+			Ñ key.
 		</constant>
 		<constant name="KEY_OGRAVE" value="210" enum="KeyList">
-			ò key
+			Ò key.
 		</constant>
 		<constant name="KEY_OACUTE" value="211" enum="KeyList">
-			ó key
+			Ó key.
 		</constant>
 		<constant name="KEY_OCIRCUMFLEX" value="212" enum="KeyList">
-			ô key
+			Ô key.
 		</constant>
 		<constant name="KEY_OTILDE" value="213" enum="KeyList">
-			õ key
+			Õ key.
 		</constant>
 		<constant name="KEY_ODIAERESIS" value="214" enum="KeyList">
-			ö key
+			Ö key.
 		</constant>
 		<constant name="KEY_MULTIPLY" value="215" enum="KeyList">
-			× key
+			× key.
 		</constant>
 		<constant name="KEY_OOBLIQUE" value="216" enum="KeyList">
-			ø key
+			Ø key.
 		</constant>
 		<constant name="KEY_UGRAVE" value="217" enum="KeyList">
-			ù key
+			Ù key.
 		</constant>
 		<constant name="KEY_UACUTE" value="218" enum="KeyList">
-			ú key
+			Ú key.
 		</constant>
 		<constant name="KEY_UCIRCUMFLEX" value="219" enum="KeyList">
-			û key
+			Û key.
 		</constant>
 		<constant name="KEY_UDIAERESIS" value="220" enum="KeyList">
-			ü key
+			Ü key.
 		</constant>
 		<constant name="KEY_YACUTE" value="221" enum="KeyList">
-			ý key
+			Ý key.
 		</constant>
 		<constant name="KEY_THORN" value="222" enum="KeyList">
-			þ key
+			Þ key.
 		</constant>
 		<constant name="KEY_SSHARP" value="223" enum="KeyList">
-			ß key
+			ß key.
 		</constant>
 		<constant name="KEY_DIVISION" value="247" enum="KeyList">
-			÷ key
+			÷ key.
 		</constant>
 		<constant name="KEY_YDIAERESIS" value="255" enum="KeyList">
-			ÿ key
+			ÿ key.
 		</constant>
 		<constant name="KEY_CODE_MASK" value="33554431" enum="KeyModifierMask">
-			Key Code Mask
+			Key Code mask.
 		</constant>
 		<constant name="KEY_MODIFIER_MASK" value="-16777216" enum="KeyModifierMask">
-			Modifier Key Mask
+			Modifier key mask.
 		</constant>
 		<constant name="KEY_MASK_SHIFT" value="33554432" enum="KeyModifierMask">
-			Shift Key Mask
+			Shift key mask.
 		</constant>
 		<constant name="KEY_MASK_ALT" value="67108864" enum="KeyModifierMask">
-			Alt Key Mask
+			Alt key mask.
 		</constant>
 		<constant name="KEY_MASK_META" value="134217728" enum="KeyModifierMask">
-			Meta Key Mask
+			Meta key mask.
 		</constant>
 		<constant name="KEY_MASK_CTRL" value="268435456" enum="KeyModifierMask">
-			CTRL Key Mask
+			Ctrl key mask.
 		</constant>
-		<constant name="KEY_MASK_CMD" value="268435456" enum="KeyModifierMask">
-			CMD Key Mask
+		<constant name="KEY_MASK_CMD" value="platform-dependent" enum="KeyModifierMask">
+			Command key mask. On macOS, this is equivalent to [constant KEY_MASK_META]. On other platforms, this is equivalent to [constant KEY_MASK_CTRL]. This mask should be preferred to [constant KEY_MASK_META] or [constant KEY_MASK_CTRL] for system shortcuts as it handles all platforms correctly.
 		</constant>
 		<constant name="KEY_MASK_KPAD" value="536870912" enum="KeyModifierMask">
-			Keypad Key Mask
+			Keypad key mask.
 		</constant>
 		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824" enum="KeyModifierMask">
-			Group Switch Key Mask
+			Group Switch key mask.
 		</constant>
 		<constant name="BUTTON_LEFT" value="1" enum="ButtonList">
-			Left Mouse Button
+			Left mouse button.
 		</constant>
 		<constant name="BUTTON_RIGHT" value="2" enum="ButtonList">
-			Right Mouse Button
+			Right mouse button.
 		</constant>
 		<constant name="BUTTON_MIDDLE" value="3" enum="ButtonList">
-			Middle Mouse Button
+			Middle mouse button.
 		</constant>
 		<constant name="BUTTON_XBUTTON1" value="8" enum="ButtonList">
+			Extra mouse button 1 (only present on some mice).
 		</constant>
 		<constant name="BUTTON_XBUTTON2" value="9" enum="ButtonList">
+			Extra mouse button 2 (only present on some mice).
 		</constant>
 		<constant name="BUTTON_WHEEL_UP" value="4" enum="ButtonList">
-			Mouse wheel up
+			Mouse wheel up.
 		</constant>
 		<constant name="BUTTON_WHEEL_DOWN" value="5" enum="ButtonList">
-			Mouse wheel down
+			Mouse wheel down.
 		</constant>
 		<constant name="BUTTON_WHEEL_LEFT" value="6" enum="ButtonList">
-			Mouse wheel left button
+			Mouse wheel left button (only present on some mice).
 		</constant>
 		<constant name="BUTTON_WHEEL_RIGHT" value="7" enum="ButtonList">
-			Mouse wheel right button
+			Mouse wheel right button (only present on some mice).
 		</constant>
 		<constant name="BUTTON_MASK_LEFT" value="1" enum="ButtonList">
-			Left Mouse Button Mask
+			Left mouse button mask.
 		</constant>
 		<constant name="BUTTON_MASK_RIGHT" value="2" enum="ButtonList">
-			Right Mouse Button Mask
+			Right mouse button mask.
 		</constant>
 		<constant name="BUTTON_MASK_MIDDLE" value="4" enum="ButtonList">
-			Middle Mouse Button Mask
+			Middle mouse button mask.
 		</constant>
 		<constant name="BUTTON_MASK_XBUTTON1" value="128" enum="ButtonList">
+			Extra mouse button 1 mask.
 		</constant>
 		<constant name="BUTTON_MASK_XBUTTON2" value="256" enum="ButtonList">
+			Extra mouse button 2 mask.
 		</constant>
-		<constant name="JOY_BUTTON_0" value="0" enum="JoystickList">
-			Joypad Button 0
+		<constant name="JOY_BUTTON_INVALID" value="-1" enum="JoyButtonList">
+			An invalid game controller button.
 		</constant>
-		<constant name="JOY_BUTTON_1" value="1" enum="JoystickList">
-			Joypad Button 1
+		<constant name="JOY_BUTTON_A" value="0" enum="JoyButtonList">
+			Game controller SDL button A. Corresponds to the bottom action button: Sony Cross, Xbox A, Nintendo B.
 		</constant>
-		<constant name="JOY_BUTTON_2" value="2" enum="JoystickList">
-			Joypad Button 2
+		<constant name="JOY_BUTTON_B" value="1" enum="JoyButtonList">
+			Game controller SDL button B. Corresponds to the right action button: Sony Circle, Xbox B, Nintendo A.
 		</constant>
-		<constant name="JOY_BUTTON_3" value="3" enum="JoystickList">
-			Joypad Button 3
+		<constant name="JOY_BUTTON_X" value="2" enum="JoyButtonList">
+			Game controller SDL button X. Corresponds to the left action button: Sony Square, Xbox X, Nintendo Y.
 		</constant>
-		<constant name="JOY_BUTTON_4" value="4" enum="JoystickList">
-			Joypad Button 4
+		<constant name="JOY_BUTTON_Y" value="3" enum="JoyButtonList">
+			Game controller SDL button Y. Corresponds to the top action button: Sony Triangle, Xbox Y, Nintendo X.
 		</constant>
-		<constant name="JOY_BUTTON_5" value="5" enum="JoystickList">
-			Joypad Button 5
+		<constant name="JOY_BUTTON_BACK" value="4" enum="JoyButtonList">
+			Game controller SDL back button. Corresponds to the Sony Select, Xbox Back, Nintendo - button.
 		</constant>
-		<constant name="JOY_BUTTON_6" value="6" enum="JoystickList">
-			Joypad Button 6
+		<constant name="JOY_BUTTON_GUIDE" value="5" enum="JoyButtonList">
+			Game controller SDL guide button. Corresponds to the Sony PS, Xbox Home button.
 		</constant>
-		<constant name="JOY_BUTTON_7" value="7" enum="JoystickList">
-			Joypad Button 7
+		<constant name="JOY_BUTTON_START" value="6" enum="JoyButtonList">
+			Game controller SDL start button. Corresponds to the Nintendo + button.
 		</constant>
-		<constant name="JOY_BUTTON_8" value="8" enum="JoystickList">
-			Joypad Button 8
+		<constant name="JOY_BUTTON_LEFT_STICK" value="7" enum="JoyButtonList">
+			Game controller SDL left stick button. Corresponds to the Sony L3, Xbox L/LS button.
 		</constant>
-		<constant name="JOY_BUTTON_9" value="9" enum="JoystickList">
-			Joypad Button 9
+		<constant name="JOY_BUTTON_RIGHT_STICK" value="8" enum="JoyButtonList">
+			Game controller SDL right stick button. Corresponds to the Sony R3, Xbox R/RS button.
 		</constant>
-		<constant name="JOY_BUTTON_10" value="10" enum="JoystickList">
-			Joypad Button 10
+		<constant name="JOY_BUTTON_LEFT_SHOULDER" value="9" enum="JoyButtonList">
+			Game controller SDL left shoulder button. Corresponds to the Sony L1, Xbox LB button.
 		</constant>
-		<constant name="JOY_BUTTON_11" value="11" enum="JoystickList">
-			Joypad Button 11
+		<constant name="JOY_BUTTON_RIGHT_SHOULDER" value="10" enum="JoyButtonList">
+			Game controller SDL right shoulder button. Corresponds to the Sony R1, Xbox RB button.
 		</constant>
-		<constant name="JOY_BUTTON_12" value="12" enum="JoystickList">
-			Joypad Button 12
+		<constant name="JOY_BUTTON_DPAD_UP" value="11" enum="JoyButtonList">
+			Game controller D-pad up button.
 		</constant>
-		<constant name="JOY_BUTTON_13" value="13" enum="JoystickList">
-			Joypad Button 13
+		<constant name="JOY_BUTTON_DPAD_DOWN" value="12" enum="JoyButtonList">
+			Game controller D-pad down button.
 		</constant>
-		<constant name="JOY_BUTTON_14" value="14" enum="JoystickList">
-			Joypad Button 14
+		<constant name="JOY_BUTTON_DPAD_LEFT" value="13" enum="JoyButtonList">
+			Game controller D-pad left button.
 		</constant>
-		<constant name="JOY_BUTTON_15" value="15" enum="JoystickList">
-			Joypad Button 15
+		<constant name="JOY_BUTTON_DPAD_RIGHT" value="14" enum="JoyButtonList">
+			Game controller D-pad right button.
 		</constant>
-		<constant name="JOY_BUTTON_MAX" value="16" enum="JoystickList">
-			Joypad Button 16
+		<constant name="JOY_BUTTON_SDL_MAX" value="15" enum="JoyButtonList">
+			The number of SDL game controller buttons.
 		</constant>
-		<constant name="JOY_SONY_CIRCLE" value="1" enum="JoystickList">
-			DUALSHOCK circle button
+		<constant name="JOY_BUTTON_MAX" value="36" enum="JoyButtonList">
+			The maximum number of game controller buttons: Android supports up to 36 buttons.
 		</constant>
-		<constant name="JOY_SONY_X" value="0" enum="JoystickList">
-			DUALSHOCK X button
+		<constant name="JOY_AXIS_INVALID" value="-1" enum="JoyAxisList">
+			An invalid game controller axis.
 		</constant>
-		<constant name="JOY_SONY_SQUARE" value="2" enum="JoystickList">
-			DUALSHOCK square button
+		<constant name="JOY_AXIS_LEFT_X" value="0" enum="JoyAxisList">
+			Game controller left joystick x-axis.
 		</constant>
-		<constant name="JOY_SONY_TRIANGLE" value="3" enum="JoystickList">
-			DUALSHOCK triangle button
+		<constant name="JOY_AXIS_LEFT_Y" value="1" enum="JoyAxisList">
+			Game controller left joystick y-axis.
 		</constant>
-		<constant name="JOY_XBOX_B" value="1" enum="JoystickList">
-			XBOX controller B button
+		<constant name="JOY_AXIS_RIGHT_X" value="2" enum="JoyAxisList">
+			Game controller right joystick x-axis.
 		</constant>
-		<constant name="JOY_XBOX_A" value="0" enum="JoystickList">
-			XBOX controller A button
+		<constant name="JOY_AXIS_RIGHT_Y" value="3" enum="JoyAxisList">
+			Game controller right joystick y-axis.
 		</constant>
-		<constant name="JOY_XBOX_X" value="2" enum="JoystickList">
-			XBOX controller X button
+		<constant name="JOY_AXIS_TRIGGER_LEFT" value="4" enum="JoyAxisList">
+			Game controller left trigger axis.
 		</constant>
-		<constant name="JOY_XBOX_Y" value="3" enum="JoystickList">
-			XBOX controller Y button
+		<constant name="JOY_AXIS_TRIGGER_RIGHT" value="5" enum="JoyAxisList">
+			Game controller right trigger axis.
 		</constant>
-		<constant name="JOY_DS_A" value="1" enum="JoystickList">
-			DualShock controller A button
+		<constant name="JOY_AXIS_SDL_MAX" value="6" enum="JoyAxisList">
+			The number of SDL game controller axes.
 		</constant>
-		<constant name="JOY_DS_B" value="0" enum="JoystickList">
-			DualShock controller B button
-		</constant>
-		<constant name="JOY_DS_X" value="3" enum="JoystickList">
-			DualShock controller X button
-		</constant>
-		<constant name="JOY_DS_Y" value="2" enum="JoystickList">
-			DualShock controller Y button
-		</constant>
-		<constant name="JOY_SELECT" value="10" enum="JoystickList">
-			Joypad Button Select
-		</constant>
-		<constant name="JOY_START" value="11" enum="JoystickList">
-			Joypad Button Start
-		</constant>
-		<constant name="JOY_DPAD_UP" value="12" enum="JoystickList">
-			Joypad DPad Up
-		</constant>
-		<constant name="JOY_DPAD_DOWN" value="13" enum="JoystickList">
-			Joypad DPad Down
-		</constant>
-		<constant name="JOY_DPAD_LEFT" value="14" enum="JoystickList">
-			Joypad DPad Left
-		</constant>
-		<constant name="JOY_DPAD_RIGHT" value="15" enum="JoystickList">
-			Joypad DPad Right
-		</constant>
-		<constant name="JOY_L" value="4" enum="JoystickList">
-			Joypad Left Shoulder Button
-		</constant>
-		<constant name="JOY_L2" value="6" enum="JoystickList">
-			Joypad Left Trigger
-		</constant>
-		<constant name="JOY_L3" value="8" enum="JoystickList">
-			Joypad Left Stick Click
-		</constant>
-		<constant name="JOY_R" value="5" enum="JoystickList">
-			Joypad Right Shoulder Button
-		</constant>
-		<constant name="JOY_R2" value="7" enum="JoystickList">
-			Joypad Right Trigger
-		</constant>
-		<constant name="JOY_R3" value="9" enum="JoystickList">
-			Joypad Right Stick Click
-		</constant>
-		<constant name="JOY_AXIS_0" value="0" enum="JoystickList">
-			Joypad Left Stick Horizontal Axis
-		</constant>
-		<constant name="JOY_AXIS_1" value="1" enum="JoystickList">
-			Joypad Left Stick Vertical Axis
-		</constant>
-		<constant name="JOY_AXIS_2" value="2" enum="JoystickList">
-			Joypad Right Stick Horizontal Axis
-		</constant>
-		<constant name="JOY_AXIS_3" value="3" enum="JoystickList">
-			Joypad Right Stick Vertical Axis
-		</constant>
-		<constant name="JOY_AXIS_4" value="4" enum="JoystickList">
-		</constant>
-		<constant name="JOY_AXIS_5" value="5" enum="JoystickList">
-		</constant>
-		<constant name="JOY_AXIS_6" value="6" enum="JoystickList">
-			Joypad Left Trigger Analog Axis
-		</constant>
-		<constant name="JOY_AXIS_7" value="7" enum="JoystickList">
-			Joypad Right Trigger Analog Axis
-		</constant>
-		<constant name="JOY_AXIS_8" value="8" enum="JoystickList">
-		</constant>
-		<constant name="JOY_AXIS_9" value="9" enum="JoystickList">
-		</constant>
-		<constant name="JOY_AXIS_MAX" value="10" enum="JoystickList">
-		</constant>
-		<constant name="JOY_ANALOG_LX" value="0" enum="JoystickList">
-			Joypad Left Stick Horizontal Axis
-		</constant>
-		<constant name="JOY_ANALOG_LY" value="1" enum="JoystickList">
-			Joypad Left Stick Vertical Axis
-		</constant>
-		<constant name="JOY_ANALOG_RX" value="2" enum="JoystickList">
-			Joypad Right Stick Horizontal Axis
-		</constant>
-		<constant name="JOY_ANALOG_RY" value="3" enum="JoystickList">
-			Joypad Right Stick Vertical Axis
-		</constant>
-		<constant name="JOY_ANALOG_L2" value="6" enum="JoystickList">
-			Joypad Left Analog Trigger
-		</constant>
-		<constant name="JOY_ANALOG_R2" value="7" enum="JoystickList">
-			Joypad Right Analog Trigger
+		<constant name="JOY_AXIS_MAX" value="10" enum="JoyAxisList">
+			The maximum number of game controller axes: OpenVR supports up to 5 Joysticks making a total of 10 axes.
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MidiMessageList">
+			MIDI note OFF message.
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_ON" value="9" enum="MidiMessageList">
+			MIDI note ON message.
 		</constant>
 		<constant name="MIDI_MESSAGE_AFTERTOUCH" value="10" enum="MidiMessageList">
+			MIDI aftertouch message.
 		</constant>
 		<constant name="MIDI_MESSAGE_CONTROL_CHANGE" value="11" enum="MidiMessageList">
+			MIDI control change message.
 		</constant>
 		<constant name="MIDI_MESSAGE_PROGRAM_CHANGE" value="12" enum="MidiMessageList">
+			MIDI program change message.
 		</constant>
 		<constant name="MIDI_MESSAGE_CHANNEL_PRESSURE" value="13" enum="MidiMessageList">
+			MIDI channel pressure message.
 		</constant>
 		<constant name="MIDI_MESSAGE_PITCH_BEND" value="14" enum="MidiMessageList">
+			MIDI pitch bend message.
 		</constant>
 		<constant name="OK" value="0" enum="Error">
-			Functions that return Error return OK when no error occurred. Most functions don't return errors and/or just print errors to STDOUT.
+			Methods that return [enum Error] return [constant OK] when no error occurred. Note that many functions don't return an error code but will print error messages to standard output.
+			Since [constant OK] has value 0, and all other failure codes are positive integers, it can also be used in boolean checks, e.g.:
+			[codeblock]
+			var err = method_that_returns_error()
+			if err != OK:
+			    print("Failure!")
+			# Or, equivalent:
+			if err:
+			    print("Still failing!")
+			[/codeblock]
 		</constant>
 		<constant name="FAILED" value="1" enum="Error">
 			Generic error.
 		</constant>
 		<constant name="ERR_UNAVAILABLE" value="2" enum="Error">
-			Unavailable error
+			Unavailable error.
 		</constant>
 		<constant name="ERR_UNCONFIGURED" value="3" enum="Error">
-			Unconfigured error
+			Unconfigured error.
 		</constant>
 		<constant name="ERR_UNAUTHORIZED" value="4" enum="Error">
-			Unauthorized error
+			Unauthorized error.
 		</constant>
 		<constant name="ERR_PARAMETER_RANGE_ERROR" value="5" enum="Error">
-			Parameter range error
+			Parameter range error.
 		</constant>
 		<constant name="ERR_OUT_OF_MEMORY" value="6" enum="Error">
-			Out of memory (OOM) error
+			Out of memory (OOM) error.
 		</constant>
 		<constant name="ERR_FILE_NOT_FOUND" value="7" enum="Error">
-			File: Not found error
+			File: Not found error.
 		</constant>
 		<constant name="ERR_FILE_BAD_DRIVE" value="8" enum="Error">
-			File: Bad drive error
+			File: Bad drive error.
 		</constant>
 		<constant name="ERR_FILE_BAD_PATH" value="9" enum="Error">
-			File: Bad path error
+			File: Bad path error.
 		</constant>
 		<constant name="ERR_FILE_NO_PERMISSION" value="10" enum="Error">
-			File: No permission error
+			File: No permission error.
 		</constant>
 		<constant name="ERR_FILE_ALREADY_IN_USE" value="11" enum="Error">
-			File: Already in use error
+			File: Already in use error.
 		</constant>
 		<constant name="ERR_FILE_CANT_OPEN" value="12" enum="Error">
-			File: Can't open error
+			File: Can't open error.
 		</constant>
 		<constant name="ERR_FILE_CANT_WRITE" value="13" enum="Error">
-			File: Can't write error
+			File: Can't write error.
 		</constant>
 		<constant name="ERR_FILE_CANT_READ" value="14" enum="Error">
-			File: Can't read error
+			File: Can't read error.
 		</constant>
 		<constant name="ERR_FILE_UNRECOGNIZED" value="15" enum="Error">
-			File: Unrecognized error
+			File: Unrecognized error.
 		</constant>
 		<constant name="ERR_FILE_CORRUPT" value="16" enum="Error">
-			File: Corrupt error
+			File: Corrupt error.
 		</constant>
 		<constant name="ERR_FILE_MISSING_DEPENDENCIES" value="17" enum="Error">
-			File: Missing dependencies error
+			File: Missing dependencies error.
 		</constant>
 		<constant name="ERR_FILE_EOF" value="18" enum="Error">
-			File: End of file (EOF) error
+			File: End of file (EOF) error.
 		</constant>
 		<constant name="ERR_CANT_OPEN" value="19" enum="Error">
-			Can't open error
+			Can't open error.
 		</constant>
 		<constant name="ERR_CANT_CREATE" value="20" enum="Error">
-			Can't create error
-		</constant>
-		<constant name="ERR_PARSE_ERROR" value="43" enum="Error">
-			Parse error
+			Can't create error.
 		</constant>
 		<constant name="ERR_QUERY_FAILED" value="21" enum="Error">
-			Query failed error
+			Query failed error.
 		</constant>
 		<constant name="ERR_ALREADY_IN_USE" value="22" enum="Error">
-			Already in use error
+			Already in use error.
 		</constant>
 		<constant name="ERR_LOCKED" value="23" enum="Error">
-			Locked error
+			Locked error.
 		</constant>
 		<constant name="ERR_TIMEOUT" value="24" enum="Error">
-			Timeout error
+			Timeout error.
+		</constant>
+		<constant name="ERR_CANT_CONNECT" value="25" enum="Error">
+			Can't connect error.
+		</constant>
+		<constant name="ERR_CANT_RESOLVE" value="26" enum="Error">
+			Can't resolve error.
+		</constant>
+		<constant name="ERR_CONNECTION_ERROR" value="27" enum="Error">
+			Connection error.
 		</constant>
 		<constant name="ERR_CANT_ACQUIRE_RESOURCE" value="28" enum="Error">
-			Can't acquire resource error
+			Can't acquire resource error.
+		</constant>
+		<constant name="ERR_CANT_FORK" value="29" enum="Error">
+			Can't fork process error.
 		</constant>
 		<constant name="ERR_INVALID_DATA" value="30" enum="Error">
-			Invalid data error
+			Invalid data error.
 		</constant>
 		<constant name="ERR_INVALID_PARAMETER" value="31" enum="Error">
-			Invalid parameter error
+			Invalid parameter error.
 		</constant>
 		<constant name="ERR_ALREADY_EXISTS" value="32" enum="Error">
-			Already exists error
+			Already exists error.
 		</constant>
 		<constant name="ERR_DOES_NOT_EXIST" value="33" enum="Error">
-			Does not exist error
+			Does not exist error.
 		</constant>
 		<constant name="ERR_DATABASE_CANT_READ" value="34" enum="Error">
-			Database: Read error
+			Database: Read error.
 		</constant>
 		<constant name="ERR_DATABASE_CANT_WRITE" value="35" enum="Error">
-			Database: Write error
+			Database: Write error.
 		</constant>
 		<constant name="ERR_COMPILATION_FAILED" value="36" enum="Error">
-			Compilation failed error
+			Compilation failed error.
 		</constant>
 		<constant name="ERR_METHOD_NOT_FOUND" value="37" enum="Error">
-			Method not found error
+			Method not found error.
 		</constant>
 		<constant name="ERR_LINK_FAILED" value="38" enum="Error">
-			Linking failed error
+			Linking failed error.
 		</constant>
 		<constant name="ERR_SCRIPT_FAILED" value="39" enum="Error">
-			Script failed error
+			Script failed error.
 		</constant>
 		<constant name="ERR_CYCLIC_LINK" value="40" enum="Error">
-			Cycling link (import cycle) error
+			Cycling link (import cycle) error.
+		</constant>
+		<constant name="ERR_INVALID_DECLARATION" value="41" enum="Error">
+			Invalid declaration error.
+		</constant>
+		<constant name="ERR_DUPLICATE_SYMBOL" value="42" enum="Error">
+			Duplicate symbol error.
+		</constant>
+		<constant name="ERR_PARSE_ERROR" value="43" enum="Error">
+			Parse error.
 		</constant>
 		<constant name="ERR_BUSY" value="44" enum="Error">
-			Busy error
+			Busy error.
+		</constant>
+		<constant name="ERR_SKIP" value="45" enum="Error">
+			Skip error.
 		</constant>
 		<constant name="ERR_HELP" value="46" enum="Error">
-			Help error
+			Help error.
 		</constant>
 		<constant name="ERR_BUG" value="47" enum="Error">
-			Bug error
+			Bug error.
+		</constant>
+		<constant name="ERR_PRINTER_ON_FIRE" value="48" enum="Error">
+			Printer on fire error. (This is an easter egg, no engine methods return this error code.)
 		</constant>
 		<constant name="PROPERTY_HINT_NONE" value="0" enum="PropertyHint">
-			No hint for edited property.
+			No hint for the edited property.
 		</constant>
 		<constant name="PROPERTY_HINT_RANGE" value="1" enum="PropertyHint">
-			Hints that the string is a range, defined as "min,max" or "min,max,step". This is valid for integers and floats.
+			Hints that an integer or float property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_lesser"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"-360,360,1,or_greater,or_lesser"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_EXP_RANGE" value="2" enum="PropertyHint">
-			Hints that the string is an exponential range, defined as "min,max" or "min,max,step". This is valid for integers and floats.
+			Hints that an integer or float property should be within an exponential range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_lesser"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"0.01,100,0.01,or_greater"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="3" enum="PropertyHint">
-			Property hint for an enumerated value, like "Hello,Something,Else". This is valid for integer, float and string properties.
+			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_EXP_EASING" value="4" enum="PropertyHint">
+			Hints that a float property should be edited via an exponential easing function. The hint string can include [code]"attenuation"[/code] to flip the curve horizontally and/or [code]"inout"[/code] to also include in/out easing.
 		</constant>
 		<constant name="PROPERTY_HINT_LENGTH" value="5" enum="PropertyHint">
+			Deprecated hint, unused.
 		</constant>
-		<constant name="PROPERTY_HINT_KEY_ACCEL" value="7" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_KEY_ACCEL" value="6" enum="PropertyHint">
+			Deprecated hint, unused.
 		</constant>
-		<constant name="PROPERTY_HINT_FLAGS" value="8" enum="PropertyHint">
-			Property hint for a bitmask description, for bits 0,1,2,3 and 5 the hint would be like "Bit0,Bit1,Bit2,Bit3,,Bit5". Valid only for integers.
+		<constant name="PROPERTY_HINT_FLAGS" value="7" enum="PropertyHint">
+			Hints that an integer property is a bitmask with named bit flags. For example, to allow toggling bits 0, 1, 2 and 4, the hint could be something like [code]"Bit0,Bit1,Bit2,,Bit4"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="9" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="8" enum="PropertyHint">
+			Hints that an integer property is a bitmask using the optionally named 2D render layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="10" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="9" enum="PropertyHint">
+			Hints that an integer property is a bitmask using the optionally named 2D physics layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="11" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="10" enum="PropertyHint">
+			Hints that an integer property is a bitmask using the optionally named 3D render layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="12" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="11" enum="PropertyHint">
+			Hints that an integer property is a bitmask using the optionally named 3D physics layers.
 		</constant>
-		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
-			String property is a file (so pop up a file dialog when edited). Hint string can be a set of wildcards like "*.doc".
+		<constant name="PROPERTY_HINT_FILE" value="12" enum="PropertyHint">
+			Hints that a string property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_DIR" value="14" enum="PropertyHint">
-			String property is a directory (so pop up a file dialog when edited).
+		<constant name="PROPERTY_HINT_DIR" value="13" enum="PropertyHint">
+			Hints that a string property is a path to a directory. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="15" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="14" enum="PropertyHint">
+			Hints that a string property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="16" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="15" enum="PropertyHint">
+			Hints that a string property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="17" enum="PropertyHint">
-			String property is a resource, so open the resource popup menu when edited.
+		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="16" enum="PropertyHint">
+			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture2D"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
 		</constant>
-		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="17" enum="PropertyHint">
+			Hints that a string property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
+		</constant>
+		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="18" enum="PropertyHint">
+			Hints that a string property should have a placeholder text visible on its input field, whenever the property is empty. The hint string is the placeholder text to use.
 		</constant>
 		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="19" enum="PropertyHint">
+			Hints that a color property should be edited without changing its alpha component, i.e. only R, G and B channels are edited.
 		</constant>
 		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="20" enum="PropertyHint">
-			Hints that the image is compressed using lossy compression.
+			Hints that an image is compressed using lossy compression.
 		</constant>
 		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="21" enum="PropertyHint">
-			Hints that the image is compressed using lossless compression.
+			Hints that an image is compressed using lossless compression.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="1" enum="PropertyUsageFlags">
-			Property will be used as storage (default).
+			The property is serialized and saved in the scene file (default).
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR" value="2" enum="PropertyUsageFlags">
-			Property will be visible in editor (default).
+			The property is shown in the editor inspector (default).
 		</constant>
 		<constant name="PROPERTY_USAGE_NETWORK" value="4" enum="PropertyUsageFlags">
+			Deprecated usage flag, unused.
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR_HELPER" value="8" enum="PropertyUsageFlags">
+			Deprecated usage flag, unused.
 		</constant>
 		<constant name="PROPERTY_USAGE_CHECKABLE" value="16" enum="PropertyUsageFlags">
+			The property can be checked in the editor inspector.
 		</constant>
 		<constant name="PROPERTY_USAGE_CHECKED" value="32" enum="PropertyUsageFlags">
+			The property is checked in the editor inspector.
 		</constant>
 		<constant name="PROPERTY_USAGE_INTERNATIONALIZED" value="64" enum="PropertyUsageFlags">
+			The property is a translatable string.
 		</constant>
 		<constant name="PROPERTY_USAGE_GROUP" value="128" enum="PropertyUsageFlags">
+			Used to group properties together in the editor.
 		</constant>
 		<constant name="PROPERTY_USAGE_CATEGORY" value="256" enum="PropertyUsageFlags">
+			Used to categorize properties together in the editor.
 		</constant>
-		<constant name="PROPERTY_USAGE_STORE_IF_NONZERO" value="512" enum="PropertyUsageFlags">
-		</constant>
-		<constant name="PROPERTY_USAGE_STORE_IF_NONONE" value="1024" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_SUBGROUP" value="512" enum="PropertyUsageFlags">
+			Used to group properties together in the editor in a subgroup (under a group).
 		</constant>
 		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="2048" enum="PropertyUsageFlags">
+			The property does not save its state in [PackedScene].
 		</constant>
 		<constant name="PROPERTY_USAGE_RESTART_IF_CHANGED" value="4096" enum="PropertyUsageFlags">
+			Editing the property prompts the user for restarting the editor.
 		</constant>
 		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="8192" enum="PropertyUsageFlags">
+			The property is a script variable which should be serialized and saved in the scene file.
 		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="7" enum="PropertyUsageFlags">
-			Default usage (storage and editor).
+			Default usage (storage, editor and network).
 		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT_INTL" value="71" enum="PropertyUsageFlags">
+			Default usage for translatable strings (storage, editor, network and internationalized).
 		</constant>
 		<constant name="PROPERTY_USAGE_NOEDITOR" value="5" enum="PropertyUsageFlags">
+			Default usage but without showing the property in the editor (storage, network).
 		</constant>
 		<constant name="METHOD_FLAG_NORMAL" value="1" enum="MethodFlags">
-			Flag for normal method
+			Flag for a normal method.
 		</constant>
 		<constant name="METHOD_FLAG_EDITOR" value="2" enum="MethodFlags">
-			Flag for editor method
+			Flag for an editor method.
 		</constant>
 		<constant name="METHOD_FLAG_NOSCRIPT" value="4" enum="MethodFlags">
+			Deprecated method flag, unused.
 		</constant>
 		<constant name="METHOD_FLAG_CONST" value="8" enum="MethodFlags">
-			Flag for constant method
+			Flag for a constant method.
 		</constant>
 		<constant name="METHOD_FLAG_REVERSE" value="16" enum="MethodFlags">
+			Deprecated method flag, unused.
 		</constant>
 		<constant name="METHOD_FLAG_VIRTUAL" value="32" enum="MethodFlags">
-			Flag for virtual method
+			Flag for a virtual method.
 		</constant>
 		<constant name="METHOD_FLAG_FROM_SCRIPT" value="64" enum="MethodFlags">
-			Flag for method from script
+			Deprecated method flag, unused.
 		</constant>
 		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags">
-			Default method flags
+			Default method flags.
 		</constant>
 		<constant name="TYPE_NIL" value="0" enum="Variant.Type">
-			Variable is of type nil (only applied for null).
+			Variable is [code]null[/code].
 		</constant>
 		<constant name="TYPE_BOOL" value="1" enum="Variant.Type">
 			Variable is of type [bool].
@@ -1338,8 +2504,8 @@
 		<constant name="TYPE_INT" value="2" enum="Variant.Type">
 			Variable is of type [int].
 		</constant>
-		<constant name="TYPE_REAL" value="3" enum="Variant.Type">
-			Variable is of type [float]/real.
+		<constant name="TYPE_FLOAT" value="3" enum="Variant.Type">
+			Variable is of type [float] (real).
 		</constant>
 		<constant name="TYPE_STRING" value="4" enum="Variant.Type">
 			Variable is of type [String].
@@ -1347,123 +2513,170 @@
 		<constant name="TYPE_VECTOR2" value="5" enum="Variant.Type">
 			Variable is of type [Vector2].
 		</constant>
-		<constant name="TYPE_RECT2" value="6" enum="Variant.Type">
+		<constant name="TYPE_VECTOR2I" value="6" enum="Variant.Type">
+			Variable is of type [Vector2i].
+		</constant>
+		<constant name="TYPE_RECT2" value="7" enum="Variant.Type">
 			Variable is of type [Rect2].
 		</constant>
-		<constant name="TYPE_VECTOR3" value="7" enum="Variant.Type">
+		<constant name="TYPE_RECT2I" value="8" enum="Variant.Type">
+			Variable is of type [Rect2i].
+		</constant>
+		<constant name="TYPE_VECTOR3" value="9" enum="Variant.Type">
 			Variable is of type [Vector3].
 		</constant>
-		<constant name="TYPE_TRANSFORM2D" value="8" enum="Variant.Type">
+		<constant name="TYPE_VECTOR3I" value="10" enum="Variant.Type">
+			Variable is of type [Vector3i].
+		</constant>
+		<constant name="TYPE_TRANSFORM2D" value="11" enum="Variant.Type">
 			Variable is of type [Transform2D].
 		</constant>
-		<constant name="TYPE_PLANE" value="9" enum="Variant.Type">
+		<constant name="TYPE_PLANE" value="12" enum="Variant.Type">
 			Variable is of type [Plane].
 		</constant>
-		<constant name="TYPE_QUAT" value="10" enum="Variant.Type">
+		<constant name="TYPE_QUAT" value="13" enum="Variant.Type">
 			Variable is of type [Quat].
 		</constant>
-		<constant name="TYPE_AABB" value="11" enum="Variant.Type">
+		<constant name="TYPE_AABB" value="14" enum="Variant.Type">
 			Variable is of type [AABB].
 		</constant>
-		<constant name="TYPE_BASIS" value="12" enum="Variant.Type">
+		<constant name="TYPE_BASIS" value="15" enum="Variant.Type">
 			Variable is of type [Basis].
 		</constant>
-		<constant name="TYPE_TRANSFORM" value="13" enum="Variant.Type">
+		<constant name="TYPE_TRANSFORM" value="16" enum="Variant.Type">
 			Variable is of type [Transform].
 		</constant>
-		<constant name="TYPE_COLOR" value="14" enum="Variant.Type">
+		<constant name="TYPE_COLOR" value="17" enum="Variant.Type">
 			Variable is of type [Color].
 		</constant>
-		<constant name="TYPE_NODE_PATH" value="15" enum="Variant.Type">
+		<constant name="TYPE_STRING_NAME" value="18" enum="Variant.Type">
+			Variable is of type [StringName].
+		</constant>
+		<constant name="TYPE_NODE_PATH" value="19" enum="Variant.Type">
 			Variable is of type [NodePath].
 		</constant>
-		<constant name="TYPE_RID" value="16" enum="Variant.Type">
+		<constant name="TYPE_RID" value="20" enum="Variant.Type">
 			Variable is of type [RID].
 		</constant>
-		<constant name="TYPE_OBJECT" value="17" enum="Variant.Type">
+		<constant name="TYPE_OBJECT" value="21" enum="Variant.Type">
 			Variable is of type [Object].
 		</constant>
-		<constant name="TYPE_DICTIONARY" value="18" enum="Variant.Type">
+		<constant name="TYPE_CALLABLE" value="22" enum="Variant.Type">
+			Variable is of type [Callable].
+		</constant>
+		<constant name="TYPE_SIGNAL" value="23" enum="Variant.Type">
+			Variable is of type [Signal].
+		</constant>
+		<constant name="TYPE_DICTIONARY" value="24" enum="Variant.Type">
 			Variable is of type [Dictionary].
 		</constant>
-		<constant name="TYPE_ARRAY" value="19" enum="Variant.Type">
+		<constant name="TYPE_ARRAY" value="25" enum="Variant.Type">
 			Variable is of type [Array].
 		</constant>
-		<constant name="TYPE_RAW_ARRAY" value="20" enum="Variant.Type">
-			Variable is of type [PoolByteArray].
+		<constant name="TYPE_RAW_ARRAY" value="26" enum="Variant.Type">
+			Variable is of type [PackedByteArray].
 		</constant>
-		<constant name="TYPE_INT_ARRAY" value="21" enum="Variant.Type">
-			Variable is of type [PoolIntArray].
+		<constant name="TYPE_INT32_ARRAY" value="27" enum="Variant.Type">
+			Variable is of type [PackedInt32Array].
 		</constant>
-		<constant name="TYPE_REAL_ARRAY" value="22" enum="Variant.Type">
-			Variable is of type [PoolRealArray].
+		<constant name="TYPE_INT64_ARRAY" value="28" enum="Variant.Type">
+			Variable is of type [PackedInt64Array].
 		</constant>
-		<constant name="TYPE_STRING_ARRAY" value="23" enum="Variant.Type">
-			Variable is of type [PoolStringArray].
+		<constant name="TYPE_FLOAT32_ARRAY" value="29" enum="Variant.Type">
+			Variable is of type [PackedFloat32Array].
 		</constant>
-		<constant name="TYPE_VECTOR2_ARRAY" value="24" enum="Variant.Type">
-			Variable is of type [PoolVector2Array].
+		<constant name="TYPE_FLOAT64_ARRAY" value="30" enum="Variant.Type">
+			Variable is of type [PackedFloat64Array].
 		</constant>
-		<constant name="TYPE_VECTOR3_ARRAY" value="25" enum="Variant.Type">
-			Variable is of type [PoolVector3Array].
+		<constant name="TYPE_STRING_ARRAY" value="31" enum="Variant.Type">
+			Variable is of type [PackedStringArray].
 		</constant>
-		<constant name="TYPE_COLOR_ARRAY" value="26" enum="Variant.Type">
-			Variable is of type [PoolColorArray].
+		<constant name="TYPE_VECTOR2_ARRAY" value="32" enum="Variant.Type">
+			Variable is of type [PackedVector2Array].
 		</constant>
-		<constant name="TYPE_MAX" value="27" enum="Variant.Type">
-			Marker for end of type constants.
+		<constant name="TYPE_VECTOR3_ARRAY" value="33" enum="Variant.Type">
+			Variable is of type [PackedVector3Array].
+		</constant>
+		<constant name="TYPE_COLOR_ARRAY" value="34" enum="Variant.Type">
+			Variable is of type [PackedColorArray].
+		</constant>
+		<constant name="TYPE_MAX" value="35" enum="Variant.Type">
+			Represents the size of the [enum Variant.Type] enum.
 		</constant>
 		<constant name="OP_EQUAL" value="0" enum="Variant.Operator">
+			Equality operator ([code]==[/code]).
 		</constant>
 		<constant name="OP_NOT_EQUAL" value="1" enum="Variant.Operator">
+			Inequality operator ([code]!=[/code]).
 		</constant>
 		<constant name="OP_LESS" value="2" enum="Variant.Operator">
+			Less than operator ([code]&lt;[/code]).
 		</constant>
 		<constant name="OP_LESS_EQUAL" value="3" enum="Variant.Operator">
+			Less than or equal operator ([code]&lt;=[/code]).
 		</constant>
 		<constant name="OP_GREATER" value="4" enum="Variant.Operator">
+			Greater than operator ([code]&gt;[/code]).
 		</constant>
 		<constant name="OP_GREATER_EQUAL" value="5" enum="Variant.Operator">
+			Greater than or equal operator ([code]&gt;=[/code]).
 		</constant>
 		<constant name="OP_ADD" value="6" enum="Variant.Operator">
+			Addition operator ([code]+[/code]).
 		</constant>
 		<constant name="OP_SUBTRACT" value="7" enum="Variant.Operator">
+			Subtraction operator ([code]-[/code]).
 		</constant>
 		<constant name="OP_MULTIPLY" value="8" enum="Variant.Operator">
+			Multiplication operator ([code]*[/code]).
 		</constant>
 		<constant name="OP_DIVIDE" value="9" enum="Variant.Operator">
+			Division operator ([code]/[/code]).
 		</constant>
 		<constant name="OP_NEGATE" value="10" enum="Variant.Operator">
+			Unary negation operator ([code]-[/code]).
 		</constant>
 		<constant name="OP_POSITIVE" value="11" enum="Variant.Operator">
+			Unary plus operator ([code]+[/code]).
 		</constant>
 		<constant name="OP_MODULE" value="12" enum="Variant.Operator">
+			Remainder/modulo operator ([code]%[/code]).
 		</constant>
-		<constant name="OP_STRING_CONCAT" value="13" enum="Variant.Operator">
+		<constant name="OP_SHIFT_LEFT" value="13" enum="Variant.Operator">
+			Left shift operator ([code]&lt;&lt;[/code]).
 		</constant>
-		<constant name="OP_SHIFT_LEFT" value="14" enum="Variant.Operator">
+		<constant name="OP_SHIFT_RIGHT" value="14" enum="Variant.Operator">
+			Right shift operator ([code]&gt;&gt;[/code]).
 		</constant>
-		<constant name="OP_SHIFT_RIGHT" value="15" enum="Variant.Operator">
+		<constant name="OP_BIT_AND" value="15" enum="Variant.Operator">
+			Bitwise AND operator ([code]&amp;[/code]).
 		</constant>
-		<constant name="OP_BIT_AND" value="16" enum="Variant.Operator">
+		<constant name="OP_BIT_OR" value="16" enum="Variant.Operator">
+			Bitwise OR operator ([code]|[/code]).
 		</constant>
-		<constant name="OP_BIT_OR" value="17" enum="Variant.Operator">
+		<constant name="OP_BIT_XOR" value="17" enum="Variant.Operator">
+			Bitwise XOR operator ([code]^[/code]).
 		</constant>
-		<constant name="OP_BIT_XOR" value="18" enum="Variant.Operator">
+		<constant name="OP_BIT_NEGATE" value="18" enum="Variant.Operator">
+			Bitwise NOT operator ([code]~[/code]).
 		</constant>
-		<constant name="OP_BIT_NEGATE" value="19" enum="Variant.Operator">
+		<constant name="OP_AND" value="19" enum="Variant.Operator">
+			Logical AND operator ([code]and[/code] or [code]&amp;&amp;[/code]).
 		</constant>
-		<constant name="OP_AND" value="20" enum="Variant.Operator">
+		<constant name="OP_OR" value="20" enum="Variant.Operator">
+			Logical OR operator ([code]or[/code] or [code]||[/code]).
 		</constant>
-		<constant name="OP_OR" value="21" enum="Variant.Operator">
+		<constant name="OP_XOR" value="21" enum="Variant.Operator">
+			Logical XOR operator (not implemented in GDScript).
 		</constant>
-		<constant name="OP_XOR" value="22" enum="Variant.Operator">
+		<constant name="OP_NOT" value="22" enum="Variant.Operator">
+			Logical NOT operator ([code]not[/code] or [code]![/code]).
 		</constant>
-		<constant name="OP_NOT" value="23" enum="Variant.Operator">
+		<constant name="OP_IN" value="23" enum="Variant.Operator">
+			Logical IN operator ([code]in[/code]).
 		</constant>
-		<constant name="OP_IN" value="24" enum="Variant.Operator">
-		</constant>
-		<constant name="OP_MAX" value="25" enum="Variant.Operator">
+		<constant name="OP_MAX" value="24" enum="Variant.Operator">
+			Represents the size of the [enum Variant.Operator] enum.
 		</constant>
 	</constants>
 </class>

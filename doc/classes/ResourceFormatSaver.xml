@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceFormatSaver" inherits="Reference" version="4.0">
+	<brief_description>
+		Saves a specific resource type to a file.
+	</brief_description>
+	<description>
+		The engine can save resources when you do it from the editor, or when you use the [ResourceSaver] singleton. This is accomplished thanks to multiple [ResourceFormatSaver]s, each handling its own format and called automatically by the engine.
+		By default, Godot saves resources as [code].tres[/code] (text-based), [code].res[/code] (binary) or another built-in format, but you can choose to create your own format by extending this class. Be sure to respect the documented return types and values. You should give it a global class name with [code]class_name[/code] for it to be registered. Like built-in ResourceFormatSavers, it will be called automatically when saving resources of its recognized type(s). You may also implement a [ResourceFormatLoader].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_recognized_extensions" qualifiers="virtual">
+			<return type="PackedStringArray">
+			</return>
+			<argument index="0" name="resource" type="Resource">
+			</argument>
+			<description>
+				Returns the list of extensions available for saving the resource object, provided it is recognized (see [method recognize]).
+			</description>
+		</method>
+		<method name="recognize" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="resource" type="Resource">
+			</argument>
+			<description>
+				Returns whether the given resource object can be saved by this saver.
+			</description>
+		</method>
+		<method name="save" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="resource" type="Resource">
+			</argument>
+			<argument index="2" name="flags" type="int">
+			</argument>
+			<description>
+				Saves the given resource object to a file at the target [code]path[/code]. [code]flags[/code] is a bitmask composed with [enum ResourceSaver.SaverFlags] constants.
+				Returns [constant OK] on success, or an [enum Error] constant in case of failure.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

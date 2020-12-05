@@ -62,6 +62,4 @@ subject to the following restrictions:
 #include "LinearMath/btIDebugDraw.h"
 #include "LinearMath/btSerializer.h"
 
-
-#endif //BULLET_COLLISION_COMMON_H
-
+#endif  //BULLET_COLLISION_COMMON_H

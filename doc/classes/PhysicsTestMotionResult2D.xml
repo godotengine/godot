@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsTestMotionResult2D" inherits="Reference" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="collider" type="Object" setter="" getter="get_collider">
+		</member>
+		<member name="collider_id" type="int" setter="" getter="get_collider_id" default="0">
+		</member>
+		<member name="collider_rid" type="RID" setter="" getter="get_collider_rid">
+		</member>
+		<member name="collider_shape" type="int" setter="" getter="get_collider_shape" default="0">
+		</member>
+		<member name="collider_velocity" type="Vector2" setter="" getter="get_collider_velocity" default="Vector2( 0, 0 )">
+		</member>
+		<member name="collision_normal" type="Vector2" setter="" getter="get_collision_normal" default="Vector2( 0, 0 )">
+		</member>
+		<member name="collision_point" type="Vector2" setter="" getter="get_collision_point" default="Vector2( 0, 0 )">
+		</member>
+		<member name="motion" type="Vector2" setter="" getter="get_motion" default="Vector2( 0, 0 )">
+		</member>
+		<member name="motion_remainder" type="Vector2" setter="" getter="get_motion_remainder" default="Vector2( 0, 0 )">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -1,28 +1,27 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ttmtx.h                                                                */
-/*                                                                         */
-/*    Load the metrics tables common to TTF and OTF fonts (specification). */
-/*                                                                         */
-/*  Copyright 2006-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ttmtx.h
+ *
+ *   Load the metrics tables common to TTF and OTF fonts (specification).
+ *
+ * Copyright (C) 2006-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef TTMTX_H_
 #define TTMTX_H_
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_TRUETYPE_TYPES_H
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/tttypes.h>
 
 
 FT_BEGIN_HEADER

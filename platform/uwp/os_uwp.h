@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,35 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OSUWP_H
-#define OSUWP_H
+#ifndef OS_UWP_H
+#define OS_UWP_H
 
+#include "context_egl_uwp.h"
+#include "core/input/input.h"
 #include "core/math/transform_2d.h"
-#include "core/ustring.h"
+#include "core/os/os.h"
+#include "core/string/ustring.h"
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
-#include "gl_context_egl.h"
 #include "joypad_uwp.h"
-#include "main/input_default.h"
-#include "os/input.h"
-#include "os/os.h"
-#include "power_uwp.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
-#include "servers/visual_server.h"
+#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering_server.h"
 
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
 #include <windows.h>
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-class OSUWP : public OS {
-
+class OS_UWP : public OS {
 public:
 	struct KeyEvent {
-
 		enum MessageType {
 			KEY_EVENT_MESSAGE,
 			CHAR_EVENT_MESSAGE
@@ -65,7 +58,8 @@ public:
 		bool alt, shift, control;
 		MessageType type;
 		bool pressed;
-		unsigned int scancode;
+		unsigned int keycode;
+		unsigned int physical_keycode;
 		unsigned int unicode;
 		bool echo;
 		CorePhysicalKeyStatus status;
@@ -92,10 +86,10 @@ private:
 	bool outside;
 	int old_x, old_y;
 	Point2i center;
-	VisualServer *visual_server;
+	RenderingServer *rendering_server;
 	int pressrc;
 
-	ContextEGL *gl_context;
+	ContextEGL_UWP *gl_context;
 	Windows::UI::Core::CoreWindow ^ window;
 
 	VideoMode video_mode;
@@ -104,8 +98,6 @@ private:
 	MainLoop *main_loop;
 
 	AudioDriverXAudio2 audio_driver;
-
-	PowerUWP *power_manager;
 
 	MouseMode mouse_mode;
 	bool alt_mem;
@@ -144,7 +136,7 @@ private:
 		/* clang-format off */
 	internal:
 		ManagedType() { alert_close_handle = false; }
-		property OSUWP* os;
+		property OS_UWP* os;
 		/* clang-format on */
 	};
 	ManagedType ^ managed_object;
@@ -152,7 +144,7 @@ private:
 	Windows::Devices::Sensors::Magnetometer ^ magnetometer;
 	Windows::Devices::Sensors::Gyrometer ^ gyrometer;
 
-	// functions used by main to initialize/deintialize the OS
+	// functions used by main to initialize/deinitialize the OS
 protected:
 	virtual int get_video_driver_count() const;
 	virtual int get_current_video_driver() const;
@@ -195,7 +187,7 @@ public:
 
 	virtual MainLoop *get_main_loop() const;
 
-	virtual String get_name();
+	virtual String get_name() const;
 
 	virtual Date get_date(bool utc) const;
 	virtual Time get_time(bool utc) const;
@@ -208,16 +200,18 @@ public:
 	virtual void delay_usec(uint32_t p_usec) const;
 	virtual uint64_t get_ticks_usec() const;
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false);
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr);
 	virtual Error kill(const ProcessID &p_pid);
 
 	virtual bool has_environment(const String &p_var) const;
 	virtual String get_environment(const String &p_var) const;
+	virtual bool set_environment(const String &p_var, const String &p_value) const;
 
 	virtual void set_clipboard(const String &p_text);
 	virtual String get_clipboard() const;
 
 	void set_cursor_shape(CursorShape p_shape);
+	CursorShape get_cursor_shape() const;
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 	void set_icon(const Ref<Image> &p_icon);
 
@@ -240,7 +234,7 @@ public:
 	virtual bool has_touchscreen_ui_hint() const;
 
 	virtual bool has_virtual_keyboard() const;
-	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2());
+	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
 	virtual void hide_virtual_keyboard();
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
@@ -251,18 +245,14 @@ public:
 
 	void run();
 
-	virtual bool get_swap_ok_cancel() { return true; }
+	virtual bool get_swap_cancel_ok() { return true; }
 
 	void input_event(const Ref<InputEvent> &p_event);
 
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
-
 	void queue_key_event(KeyEvent &p_event);
 
-	OSUWP();
-	~OSUWP();
+	OS_UWP();
+	~OS_UWP();
 };
 
 #endif

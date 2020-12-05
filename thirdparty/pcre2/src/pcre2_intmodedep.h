@@ -205,19 +205,19 @@ whether its argument, which is assumed to be one code unit, is less than 256.
 The CHMAX_255 macro does not assume one code unit. The maximum length of a MARK
 name must fit in one code unit; currently it is set to 255 or 65535. The
 TABLE_GET macro is used to access elements of tables containing exactly 256
-items. When code points can be greater than 255, a check is needed before
-accessing these tables. */
+items. Its argument is a code unit. When code points can be greater than 255, a
+check is needed before accessing these tables. */
 
 #if PCRE2_CODE_UNIT_WIDTH == 8
 #define MAX_255(c) TRUE
 #define MAX_MARK ((1u << 8) - 1)
+#define TABLE_GET(c, table, default) ((table)[c])
 #ifdef SUPPORT_UNICODE
 #define SUPPORT_WIDE_CHARS
 #define CHMAX_255(c) ((c) <= 255u)
 #else
 #define CHMAX_255(c) TRUE
 #endif  /* SUPPORT_UNICODE */
-#define TABLE_GET(c, table, default) ((table)[c])
 
 #else  /* Code units are 16 or 32 bits */
 #define CHMAX_255(c) ((c) <= 255u)
@@ -226,7 +226,6 @@ accessing these tables. */
 #define SUPPORT_WIDE_CHARS
 #define TABLE_GET(c, table, default) (MAX_255(c)? ((table)[c]):(default))
 #endif
-
 
 
 /* ----------------- Character-handling macros ----------------- */
@@ -585,6 +584,8 @@ typedef struct pcre2_real_match_context {
 #endif
   int    (*callout)(pcre2_callout_block *, void *);
   void    *callout_data;
+  int    (*substitute_callout)(pcre2_substitute_callout_block *, void *);
+  void    *substitute_callout_data;
   PCRE2_SIZE offset_limit;
   uint32_t heap_limit;
   uint32_t match_limit;
@@ -656,7 +657,8 @@ typedef struct pcre2_real_match_data {
   PCRE2_SIZE       leftchar;      /* Offset to leftmost code unit */
   PCRE2_SIZE       rightchar;     /* Offset to rightmost code unit */
   PCRE2_SIZE       startchar;     /* Offset to starting code unit */
-  uint16_t         matchedby;     /* Type of match (normal, JIT, DFA) */
+  uint8_t          matchedby;     /* Type of match (normal, JIT, DFA) */
+  uint8_t          flags;         /* Various flags */
   uint16_t         oveccount;     /* Number of pairs */
   int              rc;            /* The return code from the match */
   PCRE2_SIZE       ovector[131072]; /* Must be last in the structure */
@@ -793,11 +795,23 @@ typedef struct heapframe {
   uint8_t return_id;         /* Where to go on in internal "return" */
   uint8_t op;                /* Processing opcode */
 
+  /* At this point, the structure is 16-bit aligned. On most architectures
+  the alignment requirement for a pointer will ensure that the eptr field below
+  is 32-bit or 64-bit aligned. However, on m68k it is fine to have a pointer
+  that is 16-bit aligned. We must therefore ensure that what comes between here
+  and eptr is an odd multiple of 16 bits so as to get back into 32-bit
+  alignment. This happens naturally when PCRE2_UCHAR is 8 bits wide, but needs
+  fudges in the other cases. In the 32-bit case the padding comes first so that
+  the occu field itself is 32-bit aligned. Without the padding, this structure
+  is no longer a multiple of PCRE2_SIZE on m68k, and the check below fails. */
+
 #if PCRE2_CODE_UNIT_WIDTH == 8
   PCRE2_UCHAR occu[6];       /* Used for other case code units */
 #elif PCRE2_CODE_UNIT_WIDTH == 16
   PCRE2_UCHAR occu[2];       /* Used for other case code units */
+  uint8_t unused[2];         /* Ensure 32-bit alignment (see above) */
 #else
+  uint8_t unused[2];         /* Ensure 32-bit alignment (see above) */
   PCRE2_UCHAR occu[1];       /* Used for other case code units */
 #endif
 
@@ -818,6 +832,9 @@ typedef struct heapframe {
   PCRE2_SIZE ovector[131072]; /* Must be last in the structure */
 } heapframe;
 
+/* This typedef is a check that the size of the heapframe structure is a
+multiple of PCRE2_SIZE. See various comments above. */
+
 typedef char check_heapframe_size[
   ((sizeof(heapframe) % sizeof(PCRE2_SIZE)) == 0)? (+1):(-1)];
 
@@ -836,6 +853,7 @@ typedef struct match_block {
   uint32_t match_call_count;      /* Number of times a new frame is created */
   BOOL hitend;                    /* Hit the end of the subject at some point */
   BOOL hasthen;                   /* Pattern contains (*THEN) */
+  BOOL allowemptypartial;         /* Allow empty hard partial */
   const uint8_t *lcc;             /* Points to lower casing table */
   const uint8_t *fcc;             /* Points to case-flipping table */
   const uint8_t *ctypes;          /* Points to table of type maps */
@@ -848,6 +866,7 @@ typedef struct match_block {
   PCRE2_SPTR name_table;          /* Table of group names */
   PCRE2_SPTR start_code;          /* For use when recursing */
   PCRE2_SPTR start_subject;       /* Start of the subject string */
+  PCRE2_SPTR check_subject;       /* Where UTF-checked from */
   PCRE2_SPTR end_subject;         /* End of the subject string */
   PCRE2_SPTR end_match_ptr;       /* Subject position at end match */
   PCRE2_SPTR start_used_ptr;      /* Earliest consulted character */
@@ -881,6 +900,8 @@ typedef struct dfa_match_block {
   PCRE2_SPTR last_used_ptr;       /* Latest consulted character */
   const uint8_t *tables;          /* Character tables */
   PCRE2_SIZE start_offset;        /* The start offset value */
+  PCRE2_SIZE heap_limit;          /* As it says */
+  PCRE2_SIZE heap_used;           /* As it says */
   uint32_t match_limit;           /* As it says */
   uint32_t match_limit_depth;     /* As it says */
   uint32_t match_call_count;      /* Number of calls of internal function */
@@ -888,6 +909,7 @@ typedef struct dfa_match_block {
   uint32_t poptions;              /* Pattern options */
   uint32_t nltype;                /* Newline type */
   uint32_t nllen;                 /* Newline string length */
+  BOOL allowemptypartial;         /* Allow empty hard partial */
   PCRE2_UCHAR nl[4];              /* Newline string when fixed */
   uint16_t bsr_convention;        /* \R interpretation */
   pcre2_callout_block *cb;        /* Points to a callout block */

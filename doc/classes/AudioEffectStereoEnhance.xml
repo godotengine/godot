@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectStereoEnhance" inherits="AudioEffect" category="Core" version="3.1">
+<class name="AudioEffectStereoEnhance" inherits="AudioEffect" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="pan_pullout" type="float" setter="set_pan_pullout" getter="get_pan_pullout">
+		<member name="pan_pullout" type="float" setter="set_pan_pullout" getter="get_pan_pullout" default="1.0">
 		</member>
-		<member name="surround" type="float" setter="set_surround" getter="get_surround">
+		<member name="surround" type="float" setter="set_surround" getter="get_surround" default="0.0">
 		</member>
-		<member name="time_pullout_ms" type="float" setter="set_time_pullout" getter="get_time_pullout">
+		<member name="time_pullout_ms" type="float" setter="set_time_pullout" getter="get_time_pullout" default="0.0">
 		</member>
 	</members>
 	<constants>

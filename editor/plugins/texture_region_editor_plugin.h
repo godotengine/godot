@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,8 @@
 #include "canvas_item_editor_plugin.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/2d/sprite.h"
+#include "scene/2d/sprite_2d.h"
+#include "scene/3d/sprite_3d.h"
 #include "scene/gui/nine_patch_rect.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
@@ -43,9 +44,8 @@
 	@author Mariano Suligoy
 */
 
-class TextureRegionEditor : public Control {
-
-	GDCLASS(TextureRegionEditor, Control);
+class TextureRegionEditor : public VBoxContainer {
+	GDCLASS(TextureRegionEditor, VBoxContainer);
 
 	enum SnapMode {
 		SNAP_NONE,
@@ -55,10 +55,10 @@ class TextureRegionEditor : public Control {
 	};
 
 	friend class TextureRegionEditorPlugin;
-	MenuButton *snap_mode_button;
-	ToolButton *zoom_in;
-	ToolButton *zoom_reset;
-	ToolButton *zoom_out;
+	OptionButton *snap_mode_button;
+	Button *zoom_in;
+	Button *zoom_reset;
+	Button *zoom_out;
 	HBoxContainer *hb_grid; //For showing/hiding the grid controls when changing the SnapMode
 	SpinBox *sb_step_y;
 	SpinBox *sb_step_x;
@@ -66,7 +66,7 @@ class TextureRegionEditor : public Control {
 	SpinBox *sb_off_x;
 	SpinBox *sb_sep_y;
 	SpinBox *sb_sep_x;
-	Control *edit_draw;
+	Panel *edit_draw;
 
 	VScrollBar *vscroll;
 	HScrollBar *hscroll;
@@ -83,8 +83,9 @@ class TextureRegionEditor : public Control {
 	Vector2 snap_step;
 	Vector2 snap_separation;
 
+	Sprite2D *node_sprite;
+	Sprite3D *node_sprite_3d;
 	NinePatchRect *node_ninepatch;
-	Sprite *node_sprite;
 	Ref<StyleBoxTexture> obj_styleBox;
 	Ref<AtlasTexture> atlas_tex;
 
@@ -92,7 +93,9 @@ class TextureRegionEditor : public Control {
 	Rect2 rect_prev;
 	float prev_margin;
 	int edited_margin;
+	Map<RID, List<Rect2>> cache_map;
 	List<Rect2> autoslice_cache;
+	bool autoslice_is_dirty;
 
 	bool drag;
 	bool creating;
@@ -106,10 +109,13 @@ class TextureRegionEditor : public Control {
 	void _set_snap_step_y(float p_val);
 	void _set_snap_sep_x(float p_val);
 	void _set_snap_sep_y(float p_val);
+	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
 	void _zoom_in();
 	void _zoom_reset();
 	void _zoom_out();
-	void apply_rect(const Rect2 &rect);
+	void apply_rect(const Rect2 &p_rect);
+	void _update_rect();
+	void _update_autoslice();
 
 protected:
 	void _notification(int p_what);
@@ -118,7 +124,7 @@ protected:
 
 	Vector2 snap_point(Vector2 p_target) const;
 
-	virtual void _changed_callback(Object *p_changed, const char *p_prop);
+	virtual void _changed_callback(Object *p_changed, const char *p_prop) override;
 
 public:
 	void _edit_region();
@@ -128,7 +134,8 @@ public:
 	bool is_stylebox();
 	bool is_atlas_texture();
 	bool is_ninepatch();
-	Sprite *get_sprite();
+	Sprite3D *get_sprite_3d();
+	Sprite2D *get_sprite();
 
 	void edit(Object *p_obj);
 	TextureRegionEditor(EditorNode *p_editor);
@@ -137,18 +144,24 @@ public:
 class TextureRegionEditorPlugin : public EditorPlugin {
 	GDCLASS(TextureRegionEditorPlugin, EditorPlugin);
 
+	bool manually_hidden;
 	Button *texture_region_button;
 	TextureRegionEditor *region_editor;
 	EditorNode *editor;
 
+protected:
+	static void _bind_methods();
+
+	void _editor_visiblity_changed();
+
 public:
-	virtual String get_name() const { return "TextureRegion"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-	void set_state(const Dictionary &p_state);
-	Dictionary get_state() const;
+	virtual String get_name() const override { return "TextureRegion"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
+	void set_state(const Dictionary &p_state) override;
+	Dictionary get_state() const override;
 
 	TextureRegionEditorPlugin(EditorNode *p_node);
 };

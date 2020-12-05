@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,9 @@
 #ifdef COREAUDIO_ENABLED
 
 #include "audio_driver_coreaudio.h"
-#include "core/project_settings.h"
-#include "os/os.h"
+
+#include "core/config/project_settings.h"
+#include "core/os/os.h"
 
 #define kOutputBus 0
 #define kInputBus 1
@@ -68,8 +69,6 @@ OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID
 #endif
 
 Error AudioDriverCoreAudio::init() {
-	mutex = Mutex::create();
-
 	AudioComponentDescription desc;
 	zeromem(&desc, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
@@ -80,8 +79,8 @@ Error AudioDriverCoreAudio::init() {
 #endif
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 
-	AudioComponent comp = AudioComponentFindNext(NULL, &desc);
-	ERR_FAIL_COND_V(comp == NULL, FAILED);
+	AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
+	ERR_FAIL_COND_V(comp == nullptr, FAILED);
 
 	OSStatus result = AudioComponentInstanceNew(comp, &audio_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
@@ -93,11 +92,6 @@ Error AudioDriverCoreAudio::init() {
 	prop.mElement = kAudioObjectPropertyElementMaster;
 
 	result = AudioObjectAddPropertyListener(kAudioObjectSystemObject, &prop, &output_device_address_cb, this);
-	ERR_FAIL_COND_V(result != noErr, FAILED);
-
-	prop.mSelector = kAudioHardwarePropertyDefaultInputDevice;
-
-	result = AudioObjectAddPropertyListener(kAudioObjectSystemObject, &prop, &input_device_address_cb, this);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 #endif
 
@@ -122,27 +116,7 @@ Error AudioDriverCoreAudio::init() {
 			break;
 	}
 
-	zeromem(&strdesc, sizeof(strdesc));
-	size = sizeof(strdesc);
-	result = AudioUnitGetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, &size);
-	ERR_FAIL_COND_V(result != noErr, FAILED);
-
-	switch (strdesc.mChannelsPerFrame) {
-		case 1: // Mono
-			capture_channels = 1;
-			break;
-
-		case 2: // Stereo
-			capture_channels = 2;
-			break;
-
-		default:
-			// Unknown number of channels, default to stereo
-			capture_channels = 2;
-			break;
-	}
-
-	mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
+	mix_rate = GLOBAL_GET("audio/mix_rate");
 
 	zeromem(&strdesc, sizeof(strdesc));
 	strdesc.mFormatID = kAudioFormatLinearPCM;
@@ -157,12 +131,7 @@ Error AudioDriverCoreAudio::init() {
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kOutputBus, &strdesc, sizeof(strdesc));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	strdesc.mChannelsPerFrame = capture_channels;
-
-	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, sizeof(strdesc));
-	ERR_FAIL_COND_V(result != noErr, FAILED);
-
-	int latency = GLOBAL_DEF_RST("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
+	int latency = GLOBAL_GET("audio/output_latency");
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 
@@ -174,14 +143,9 @@ Error AudioDriverCoreAudio::init() {
 	unsigned int buffer_size = buffer_frames * channels;
 	samples_in.resize(buffer_size);
 	input_buf.resize(buffer_size);
-	input_buffer.resize(buffer_size * 8);
-	input_position = 0;
-	input_size = 0;
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("CoreAudio: detected " + itos(channels) + " channels");
-		print_line("CoreAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
-	}
+	print_verbose("CoreAudio: detected " + itos(channels) + " channels");
+	print_verbose("CoreAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	AURenderCallbackStruct callback;
 	zeromem(&callback, sizeof(AURenderCallbackStruct));
@@ -190,15 +154,12 @@ Error AudioDriverCoreAudio::init() {
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, kOutputBus, &callback, sizeof(callback));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	zeromem(&callback, sizeof(AURenderCallbackStruct));
-	callback.inputProc = &AudioDriverCoreAudio::input_callback;
-	callback.inputProcRefCon = this;
-	result = AudioUnitSetProperty(audio_unit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, 0, &callback, sizeof(callback));
-	ERR_FAIL_COND_V(result != noErr, FAILED);
-
 	result = AudioUnitInitialize(audio_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
+	if (GLOBAL_GET("audio/enable_audio_input")) {
+		return capture_init();
+	}
 	return OK;
 }
 
@@ -207,7 +168,6 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 		const AudioTimeStamp *inTimeStamp,
 		UInt32 inBusNumber, UInt32 inNumberFrames,
 		AudioBufferList *ioData) {
-
 	AudioDriverCoreAudio *ad = (AudioDriverCoreAudio *)inRefCon;
 
 	if (!ad->active || !ad->try_lock()) {
@@ -221,18 +181,15 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 	ad->start_counting_ticks();
 
 	for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
-
 		AudioBuffer *abuf = &ioData->mBuffers[i];
-		int frames_left = inNumberFrames;
+		unsigned int frames_left = inNumberFrames;
 		int16_t *out = (int16_t *)abuf->mData;
 
 		while (frames_left) {
-
-			int frames = MIN(frames_left, ad->buffer_frames);
+			unsigned int frames = MIN(frames_left, ad->buffer_frames);
 			ad->audio_server_process(frames, ad->samples_in.ptrw());
 
-			for (int j = 0; j < frames * ad->channels; j++) {
-
+			for (unsigned int j = 0; j < frames * ad->channels; j++) {
 				out[j] = ad->samples_in[j] >> 16;
 			}
 
@@ -252,7 +209,6 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 		const AudioTimeStamp *inTimeStamp,
 		UInt32 inBusNumber, UInt32 inNumberFrames,
 		AudioBufferList *ioData) {
-
 	AudioDriverCoreAudio *ad = (AudioDriverCoreAudio *)inRefCon;
 	if (!ad->active) {
 		return 0;
@@ -266,9 +222,9 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 	bufferList.mBuffers[0].mNumberChannels = ad->capture_channels;
 	bufferList.mBuffers[0].mDataByteSize = ad->input_buf.size() * sizeof(int16_t);
 
-	OSStatus result = AudioUnitRender(ad->audio_unit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &bufferList);
+	OSStatus result = AudioUnitRender(ad->input_unit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &bufferList);
 	if (result == noErr) {
-		for (int i = 0; i < inNumberFrames * ad->capture_channels; i++) {
+		for (unsigned int i = 0; i < inNumberFrames * ad->capture_channels; i++) {
 			int32_t sample = ad->input_buf[i] << 16;
 			ad->input_buffer_write(sample);
 
@@ -278,7 +234,7 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 			}
 		}
 	} else {
-		ERR_PRINT(("AudioUnitRender failed, code: " + itos(result)).utf8().get_data());
+		ERR_PRINT("AudioUnitRender failed, code: " + itos(result));
 	}
 
 	ad->unlock();
@@ -290,7 +246,7 @@ void AudioDriverCoreAudio::start() {
 	if (!active) {
 		OSStatus result = AudioOutputUnitStart(audio_unit);
 		if (result != noErr) {
-			ERR_PRINT(("AudioOutputUnitStart failed, code: " + itos(result)).utf8().get_data());
+			ERR_PRINT("AudioOutputUnitStart failed, code: " + itos(result));
 		} else {
 			active = true;
 		}
@@ -301,7 +257,7 @@ void AudioDriverCoreAudio::stop() {
 	if (active) {
 		OSStatus result = AudioOutputUnitStop(audio_unit);
 		if (result != noErr) {
-			ERR_PRINT(("AudioOutputUnitStop failed, code: " + itos(result)).utf8().get_data());
+			ERR_PRINT("AudioOutputUnitStop failed, code: " + itos(result));
 		} else {
 			active = false;
 		}
@@ -317,86 +273,220 @@ AudioDriver::SpeakerMode AudioDriverCoreAudio::get_speaker_mode() const {
 };
 
 void AudioDriverCoreAudio::lock() {
-	if (mutex)
-		mutex->lock();
+	mutex.lock();
 };
 
 void AudioDriverCoreAudio::unlock() {
-	if (mutex)
-		mutex->unlock();
+	mutex.unlock();
 };
 
 bool AudioDriverCoreAudio::try_lock() {
-	if (mutex)
-		return mutex->try_lock() == OK;
-	return true;
+	return mutex.try_lock() == OK;
 }
 
 void AudioDriverCoreAudio::finish() {
-	OSStatus result;
+	capture_finish();
 
-	lock();
+	if (audio_unit) {
+		OSStatus result;
 
-	AURenderCallbackStruct callback;
-	zeromem(&callback, sizeof(AURenderCallbackStruct));
-	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, kOutputBus, &callback, sizeof(callback));
-	if (result != noErr) {
-		ERR_PRINT("AudioUnitSetProperty failed");
-	}
+		lock();
 
-	if (active) {
-		result = AudioOutputUnitStop(audio_unit);
+		AURenderCallbackStruct callback;
+		zeromem(&callback, sizeof(AURenderCallbackStruct));
+		result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, kOutputBus, &callback, sizeof(callback));
 		if (result != noErr) {
-			ERR_PRINT("AudioOutputUnitStop failed");
+			ERR_PRINT("AudioUnitSetProperty failed");
 		}
 
-		active = false;
-	}
+		if (active) {
+			result = AudioOutputUnitStop(audio_unit);
+			if (result != noErr) {
+				ERR_PRINT("AudioOutputUnitStop failed");
+			}
 
-	result = AudioUnitUninitialize(audio_unit);
-	if (result != noErr) {
-		ERR_PRINT("AudioUnitUninitialize failed");
+			active = false;
+		}
+
+		result = AudioUnitUninitialize(audio_unit);
+		if (result != noErr) {
+			ERR_PRINT("AudioUnitUninitialize failed");
+		}
+
+#ifdef OSX_ENABLED
+		AudioObjectPropertyAddress prop;
+		prop.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
+		prop.mScope = kAudioObjectPropertyScopeGlobal;
+		prop.mElement = kAudioObjectPropertyElementMaster;
+
+		result = AudioObjectRemovePropertyListener(kAudioObjectSystemObject, &prop, &output_device_address_cb, this);
+		if (result != noErr) {
+			ERR_PRINT("AudioObjectRemovePropertyListener failed");
+		}
+#endif
+
+		result = AudioComponentInstanceDispose(audio_unit);
+		if (result != noErr) {
+			ERR_PRINT("AudioComponentInstanceDispose failed");
+		}
+
+		audio_unit = nullptr;
+		unlock();
 	}
+}
+
+Error AudioDriverCoreAudio::capture_init() {
+	AudioComponentDescription desc;
+	zeromem(&desc, sizeof(desc));
+	desc.componentType = kAudioUnitType_Output;
+#ifdef OSX_ENABLED
+	desc.componentSubType = kAudioUnitSubType_HALOutput;
+#else
+	desc.componentSubType = kAudioUnitSubType_RemoteIO;
+#endif
+	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
+
+	AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
+	ERR_FAIL_COND_V(comp == nullptr, FAILED);
+
+	OSStatus result = AudioComponentInstanceNew(comp, &input_unit);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 #ifdef OSX_ENABLED
 	AudioObjectPropertyAddress prop;
-	prop.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
+	prop.mSelector = kAudioHardwarePropertyDefaultInputDevice;
 	prop.mScope = kAudioObjectPropertyScopeGlobal;
 	prop.mElement = kAudioObjectPropertyElementMaster;
 
-	result = AudioObjectRemovePropertyListener(kAudioObjectSystemObject, &prop, &output_device_address_cb, this);
-	if (result != noErr) {
-		ERR_PRINT("AudioObjectRemovePropertyListener failed");
-	}
+	result = AudioObjectAddPropertyListener(kAudioObjectSystemObject, &prop, &input_device_address_cb, this);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
 #endif
 
-	result = AudioComponentInstanceDispose(audio_unit);
-	if (result != noErr) {
-		ERR_PRINT("AudioComponentInstanceDispose failed");
-	}
-
-	unlock();
-
-	if (mutex) {
-		memdelete(mutex);
-		mutex = NULL;
-	}
-};
-
-Error AudioDriverCoreAudio::capture_start() {
-
 	UInt32 flag = 1;
-	OSStatus result = AudioUnitSetProperty(audio_unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, kInputBus, &flag, sizeof(flag));
+	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, kInputBus, &flag, sizeof(flag));
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+	flag = 0;
+	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, kOutputBus, &flag, sizeof(flag));
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	UInt32 size;
+#ifdef OSX_ENABLED
+	AudioDeviceID deviceId;
+	size = sizeof(AudioDeviceID);
+	AudioObjectPropertyAddress property = { kAudioHardwarePropertyDefaultInputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+
+	result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property, 0, nullptr, &size, &deviceId);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &deviceId, sizeof(AudioDeviceID));
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+#endif
+
+	AudioStreamBasicDescription strdesc;
+	zeromem(&strdesc, sizeof(strdesc));
+	size = sizeof(strdesc);
+	result = AudioUnitGetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, &size);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	switch (strdesc.mChannelsPerFrame) {
+		case 1: // Mono
+			capture_channels = 1;
+			break;
+
+		case 2: // Stereo
+			capture_channels = 2;
+			break;
+
+		default:
+			// Unknown number of channels, default to stereo
+			capture_channels = 2;
+			break;
+	}
+
+	mix_rate = GLOBAL_GET("audio/mix_rate");
+
+	zeromem(&strdesc, sizeof(strdesc));
+	strdesc.mFormatID = kAudioFormatLinearPCM;
+	strdesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
+	strdesc.mChannelsPerFrame = capture_channels;
+	strdesc.mSampleRate = mix_rate;
+	strdesc.mFramesPerPacket = 1;
+	strdesc.mBitsPerChannel = 16;
+	strdesc.mBytesPerFrame = strdesc.mBitsPerChannel * strdesc.mChannelsPerFrame / 8;
+	strdesc.mBytesPerPacket = strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
+
+	result = AudioUnitSetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, sizeof(strdesc));
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	AURenderCallbackStruct callback;
+	zeromem(&callback, sizeof(AURenderCallbackStruct));
+	callback.inputProc = &AudioDriverCoreAudio::input_callback;
+	callback.inputProcRefCon = this;
+	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, kInputBus, &callback, sizeof(callback));
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	result = AudioUnitInitialize(input_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	return OK;
 }
 
-Error AudioDriverCoreAudio::capture_stop() {
+void AudioDriverCoreAudio::capture_finish() {
+	if (input_unit) {
+		lock();
 
-	UInt32 flag = 0;
-	OSStatus result = AudioUnitSetProperty(audio_unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, kInputBus, &flag, sizeof(flag));
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+		AURenderCallbackStruct callback;
+		zeromem(&callback, sizeof(AURenderCallbackStruct));
+		OSStatus result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, 0, &callback, sizeof(callback));
+		if (result != noErr) {
+			ERR_PRINT("AudioUnitSetProperty failed");
+		}
+
+		result = AudioUnitUninitialize(input_unit);
+		if (result != noErr) {
+			ERR_PRINT("AudioUnitUninitialize failed");
+		}
+
+#ifdef OSX_ENABLED
+		AudioObjectPropertyAddress prop;
+		prop.mSelector = kAudioHardwarePropertyDefaultInputDevice;
+		prop.mScope = kAudioObjectPropertyScopeGlobal;
+		prop.mElement = kAudioObjectPropertyElementMaster;
+
+		result = AudioObjectRemovePropertyListener(kAudioObjectSystemObject, &prop, &input_device_address_cb, this);
+		if (result != noErr) {
+			ERR_PRINT("AudioObjectRemovePropertyListener failed");
+		}
+#endif
+
+		result = AudioComponentInstanceDispose(input_unit);
+		if (result != noErr) {
+			ERR_PRINT("AudioComponentInstanceDispose failed");
+		}
+
+		input_unit = nullptr;
+		unlock();
+	}
+}
+
+Error AudioDriverCoreAudio::capture_start() {
+	input_buffer_init(buffer_frames);
+
+	OSStatus result = AudioOutputUnitStart(input_unit);
+	if (result != noErr) {
+		ERR_PRINT("AudioOutputUnitStart failed, code: " + itos(result));
+	}
+
+	return OK;
+}
+
+Error AudioDriverCoreAudio::capture_stop() {
+	if (input_unit) {
+		OSStatus result = AudioOutputUnitStop(input_unit);
+		if (result != noErr) {
+			ERR_PRINT("AudioOutputUnitStop failed, code: " + itos(result));
+		}
+	}
 
 	return OK;
 }
@@ -404,7 +494,6 @@ Error AudioDriverCoreAudio::capture_stop() {
 #ifdef OSX_ENABLED
 
 Array AudioDriverCoreAudio::_get_device_list(bool capture) {
-
 	Array list;
 
 	list.push_back("Default");
@@ -416,18 +505,18 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 	prop.mElement = kAudioObjectPropertyElementMaster;
 
 	UInt32 size = 0;
-	AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &prop, 0, NULL, &size);
+	AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &prop, 0, nullptr, &size);
 	AudioDeviceID *audioDevices = (AudioDeviceID *)malloc(size);
-	AudioObjectGetPropertyData(kAudioObjectSystemObject, &prop, 0, NULL, &size, audioDevices);
+	AudioObjectGetPropertyData(kAudioObjectSystemObject, &prop, 0, nullptr, &size, audioDevices);
 
 	UInt32 deviceCount = size / sizeof(AudioDeviceID);
 	for (UInt32 i = 0; i < deviceCount; i++) {
 		prop.mScope = capture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput;
 		prop.mSelector = kAudioDevicePropertyStreamConfiguration;
 
-		AudioObjectGetPropertyDataSize(audioDevices[i], &prop, 0, NULL, &size);
+		AudioObjectGetPropertyDataSize(audioDevices[i], &prop, 0, nullptr, &size);
 		AudioBufferList *bufferList = (AudioBufferList *)malloc(size);
-		AudioObjectGetPropertyData(audioDevices[i], &prop, 0, NULL, &size, bufferList);
+		AudioObjectGetPropertyData(audioDevices[i], &prop, 0, nullptr, &size, bufferList);
 
 		UInt32 channelCount = 0;
 		for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++)
@@ -441,7 +530,7 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 			size = sizeof(CFStringRef);
 			prop.mSelector = kAudioObjectPropertyName;
 
-			AudioObjectGetPropertyData(audioDevices[i], &prop, 0, NULL, &size, &cfname);
+			AudioObjectGetPropertyData(audioDevices[i], &prop, 0, nullptr, &size, &cfname);
 
 			CFIndex length = CFStringGetLength(cfname);
 			CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
@@ -461,7 +550,6 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 }
 
 void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
-
 	AudioDeviceID deviceId;
 	bool found = false;
 	if (device != "Default") {
@@ -472,18 +560,18 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 		prop.mElement = kAudioObjectPropertyElementMaster;
 
 		UInt32 size = 0;
-		AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &prop, 0, NULL, &size);
+		AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &prop, 0, nullptr, &size);
 		AudioDeviceID *audioDevices = (AudioDeviceID *)malloc(size);
-		AudioObjectGetPropertyData(kAudioObjectSystemObject, &prop, 0, NULL, &size, audioDevices);
+		AudioObjectGetPropertyData(kAudioObjectSystemObject, &prop, 0, nullptr, &size, audioDevices);
 
 		UInt32 deviceCount = size / sizeof(AudioDeviceID);
 		for (UInt32 i = 0; i < deviceCount && !found; i++) {
 			prop.mScope = capture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput;
 			prop.mSelector = kAudioDevicePropertyStreamConfiguration;
 
-			AudioObjectGetPropertyDataSize(audioDevices[i], &prop, 0, NULL, &size);
+			AudioObjectGetPropertyDataSize(audioDevices[i], &prop, 0, nullptr, &size);
 			AudioBufferList *bufferList = (AudioBufferList *)malloc(size);
-			AudioObjectGetPropertyData(audioDevices[i], &prop, 0, NULL, &size, bufferList);
+			AudioObjectGetPropertyData(audioDevices[i], &prop, 0, nullptr, &size, bufferList);
 
 			UInt32 channelCount = 0;
 			for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++)
@@ -497,7 +585,7 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 				size = sizeof(CFStringRef);
 				prop.mSelector = kAudioObjectPropertyName;
 
-				AudioObjectGetPropertyData(audioDevices[i], &prop, 0, NULL, &size, &cfname);
+				AudioObjectGetPropertyData(audioDevices[i], &prop, 0, nullptr, &size, &cfname);
 
 				CFIndex length = CFStringGetLength(cfname);
 				CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
@@ -523,34 +611,33 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 		UInt32 elem = capture ? kAudioHardwarePropertyDefaultInputDevice : kAudioHardwarePropertyDefaultOutputDevice;
 		AudioObjectPropertyAddress property = { elem, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
 
-		OSStatus result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property, 0, NULL, &size, &deviceId);
+		OSStatus result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property, 0, nullptr, &size, &deviceId);
 		ERR_FAIL_COND(result != noErr);
 
 		found = true;
 	}
 
 	if (found) {
-		OSStatus result = AudioUnitSetProperty(audio_unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, capture ? kInputBus : kOutputBus, &deviceId, sizeof(AudioDeviceID));
+		OSStatus result = AudioUnitSetProperty(capture ? input_unit : audio_unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &deviceId, sizeof(AudioDeviceID));
 		ERR_FAIL_COND(result != noErr);
 
-		// Reset audio input to keep synchronisation.
-		input_position = 0;
-		input_size = 0;
+		if (capture) {
+			// Reset audio input to keep synchronisation.
+			input_position = 0;
+			input_size = 0;
+		}
 	}
 }
 
 Array AudioDriverCoreAudio::get_device_list() {
-
 	return _get_device_list();
 }
 
 String AudioDriverCoreAudio::get_device() {
-
 	return device_name;
 }
 
 void AudioDriverCoreAudio::set_device(String device) {
-
 	device_name = device;
 	if (active) {
 		_set_device(device_name);
@@ -558,7 +645,6 @@ void AudioDriverCoreAudio::set_device(String device) {
 }
 
 void AudioDriverCoreAudio::capture_set_device(const String &p_name) {
-
 	capture_device_name = p_name;
 	if (active) {
 		_set_device(capture_device_name, true);
@@ -566,33 +652,17 @@ void AudioDriverCoreAudio::capture_set_device(const String &p_name) {
 }
 
 Array AudioDriverCoreAudio::capture_get_device_list() {
-
 	return _get_device_list(true);
 }
 
 String AudioDriverCoreAudio::capture_get_device() {
-
 	return capture_device_name;
 }
 
 #endif
 
 AudioDriverCoreAudio::AudioDriverCoreAudio() {
-	active = false;
-	mutex = NULL;
-
-	mix_rate = 0;
-	channels = 2;
-	capture_channels = 2;
-
-	buffer_frames = 0;
-
 	samples_in.clear();
-
-	device_name = "Default";
-	capture_device_name = "Default";
 }
 
-AudioDriverCoreAudio::~AudioDriverCoreAudio(){};
-
-#endif
+#endif // COREAUDIO_ENABLED

@@ -34,54 +34,49 @@ class btCollisionObject;
 
 class btCollisionShape;
 
-/// btCompoundCompoundCollisionAlgorithm  supports collision between two btCompoundCollisionShape shapes
-class btCompoundCompoundCollisionAlgorithm  : public btCompoundCollisionAlgorithm
-{
+extern btShapePairCallback gCompoundCompoundChildShapePairCallback;
 
-	class btHashedSimplePairCache*	m_childCollisionAlgorithmCache;
+/// btCompoundCompoundCollisionAlgorithm  supports collision between two btCompoundCollisionShape shapes
+class btCompoundCompoundCollisionAlgorithm : public btCompoundCollisionAlgorithm
+{
+	class btHashedSimplePairCache* m_childCollisionAlgorithmCache;
 	btSimplePairArray m_removePairs;
 
+	int m_compoundShapeRevision0;  //to keep track of changes, so that childAlgorithm array can be updated
+	int m_compoundShapeRevision1;
 
-	int	m_compoundShapeRevision0;//to keep track of changes, so that childAlgorithm array can be updated
-	int	m_compoundShapeRevision1;
-	
-	void	removeChildAlgorithms();
-	
-//	void	preallocateChildAlgorithms(const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap);
+	void removeChildAlgorithms();
+
+	//	void	preallocateChildAlgorithms(const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap);
 
 public:
-
-	btCompoundCompoundCollisionAlgorithm( const btCollisionAlgorithmConstructionInfo& ci,const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap,bool isSwapped);
+	btCompoundCompoundCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* body0Wrap, const btCollisionObjectWrapper* body1Wrap, bool isSwapped);
 
 	virtual ~btCompoundCompoundCollisionAlgorithm();
 
-	
+	virtual void processCollision(const btCollisionObjectWrapper* body0Wrap, const btCollisionObjectWrapper* body1Wrap, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
 
-	virtual void processCollision (const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
+	btScalar calculateTimeOfImpact(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
 
-	btScalar	calculateTimeOfImpact(btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
+	virtual void getAllContactManifolds(btManifoldArray& manifoldArray);
 
-	virtual	void	getAllContactManifolds(btManifoldArray&	manifoldArray);
-	
-	
-	struct CreateFunc :public 	btCollisionAlgorithmCreateFunc
+	struct CreateFunc : public btCollisionAlgorithmCreateFunc
 	{
-		virtual	btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap)
+		virtual btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* body0Wrap, const btCollisionObjectWrapper* body1Wrap)
 		{
 			void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btCompoundCompoundCollisionAlgorithm));
-			return new(mem) btCompoundCompoundCollisionAlgorithm(ci,body0Wrap,body1Wrap,false);
+			return new (mem) btCompoundCompoundCollisionAlgorithm(ci, body0Wrap, body1Wrap, false);
 		}
 	};
 
-	struct SwappedCreateFunc :public 	btCollisionAlgorithmCreateFunc
+	struct SwappedCreateFunc : public btCollisionAlgorithmCreateFunc
 	{
-		virtual	btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap)
+		virtual btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* body0Wrap, const btCollisionObjectWrapper* body1Wrap)
 		{
 			void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btCompoundCompoundCollisionAlgorithm));
-			return new(mem) btCompoundCompoundCollisionAlgorithm(ci,body0Wrap,body1Wrap,true);
+			return new (mem) btCompoundCompoundCollisionAlgorithm(ci, body0Wrap, body1Wrap, true);
 		}
 	};
-
 };
 
-#endif //BT_COMPOUND_COMPOUND_COLLISION_ALGORITHM_H
+#endif  //BT_COMPOUND_COMPOUND_COLLISION_ALGORITHM_H

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,11 +33,7 @@
 
 #include "scene/gui/range.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class ScrollBar : public Range {
-
 	GDCLASS(ScrollBar, Range);
 
 	enum HighlightStatus {
@@ -51,15 +47,14 @@ class ScrollBar : public Range {
 
 	Orientation orientation;
 	Size2 size;
-	float custom_step;
+	float custom_step = -1;
 
-	HighlightStatus highlight;
+	HighlightStatus highlight = HIGHLIGHT_NONE;
 
 	struct Drag {
-
-		bool active;
-		float pos_at_click;
-		float value_at_click;
+		bool active = false;
+		float pos_at_click = 0;
+		float value_at_click = 0;
 	} drag;
 
 	double get_grabber_size() const;
@@ -71,25 +66,26 @@ class ScrollBar : public Range {
 
 	static void set_can_focus_by_default(bool p_can_focus);
 
-	Node *drag_slave;
-	NodePath drag_slave_path;
+	Node *drag_node = nullptr;
+	NodePath drag_node_path;
+	bool drag_node_enabled = true;
 
-	Vector2 drag_slave_speed;
-	Vector2 drag_slave_accum;
-	Vector2 drag_slave_from;
-	Vector2 last_drag_slave_accum;
-	float last_drag_slave_time;
+	Vector2 drag_node_speed = Vector2();
+	Vector2 drag_node_accum;
+	Vector2 drag_node_from;
+	Vector2 last_drag_node_accum;
+	float last_drag_node_time;
 	float time_since_motion;
-	bool drag_slave_touching;
-	bool drag_slave_touching_deaccel;
+	bool drag_node_touching = false;
+	bool drag_node_touching_deaccel = false;
 	bool click_handled;
 
-	bool scrolling;
-	double target_scroll;
-	bool smooth_scroll_enabled;
+	bool scrolling = false;
+	double target_scroll = 0;
+	bool smooth_scroll_enabled = false;
 
-	void _drag_slave_exit();
-	void _drag_slave_input(const Ref<InputEvent> &p_input);
+	void _drag_node_exit();
+	void _drag_node_input(const Ref<InputEvent> &p_input);
 
 	void _gui_input(Ref<InputEvent> p_event);
 
@@ -102,19 +98,19 @@ public:
 	void set_custom_step(float p_custom_step);
 	float get_custom_step() const;
 
-	void set_drag_slave(const NodePath &p_path);
-	NodePath get_drag_slave() const;
+	void set_drag_node(const NodePath &p_path);
+	NodePath get_drag_node() const;
+	void set_drag_node_enabled(bool p_enable);
 
 	void set_smooth_scroll_enabled(bool p_enable);
 	bool is_smooth_scroll_enabled() const;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	ScrollBar(Orientation p_orientation = VERTICAL);
 	~ScrollBar();
 };
 
 class HScrollBar : public ScrollBar {
-
 	GDCLASS(HScrollBar, ScrollBar);
 
 public:
@@ -123,7 +119,6 @@ public:
 };
 
 class VScrollBar : public ScrollBar {
-
 	GDCLASS(VScrollBar, ScrollBar);
 
 public:

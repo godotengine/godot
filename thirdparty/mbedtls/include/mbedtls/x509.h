@@ -4,8 +4,14 @@
  * \brief X.509 generic defines and structures
  */
 /*
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -19,7 +25,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 #ifndef MBEDTLS_X509_H
 #define MBEDTLS_X509_H
@@ -77,7 +102,7 @@
 #define MBEDTLS_ERR_X509_ALLOC_FAILED                     -0x2880  /**< Allocation of memory failed. */
 #define MBEDTLS_ERR_X509_FILE_IO_ERROR                    -0x2900  /**< Read/write of file failed. */
 #define MBEDTLS_ERR_X509_BUFFER_TOO_SMALL                 -0x2980  /**< Destination buffer is too small. */
-#define MBEDTLS_ERR_X509_FATAL_ERROR                      -0x3000  /**< A fatal error occured, eg the chain is too long or the vrfy callback failed. */
+#define MBEDTLS_ERR_X509_FATAL_ERROR                      -0x3000  /**< A fatal error occurred, eg the chain is too long or the vrfy callback failed. */
 /* \} name */
 
 /**
@@ -250,7 +275,7 @@ int mbedtls_x509_serial_gets( char *buf, size_t size, const mbedtls_x509_buf *se
  *
  * \param to       mbedtls_x509_time to check
  *
- * \return         1 if the given time is in the past or an error occured,
+ * \return         1 if the given time is in the past or an error occurred,
  *                 0 otherwise.
  */
 int mbedtls_x509_time_is_past( const mbedtls_x509_time *to );
@@ -264,10 +289,12 @@ int mbedtls_x509_time_is_past( const mbedtls_x509_time *to );
  *
  * \param from     mbedtls_x509_time to check
  *
- * \return         1 if the given time is in the future or an error occured,
+ * \return         1 if the given time is in the future or an error occurred,
  *                 0 otherwise.
  */
 int mbedtls_x509_time_is_future( const mbedtls_x509_time *from );
+
+#if defined(MBEDTLS_SELF_TEST)
 
 /**
  * \brief          Checkup routine
@@ -275,6 +302,8 @@ int mbedtls_x509_time_is_future( const mbedtls_x509_time *from );
  * \return         0 if successful, or 1 if the test failed
  */
 int mbedtls_x509_self_test( int verbose );
+
+#endif /* MBEDTLS_SELF_TEST */
 
 /*
  * Internal module functions. You probably do not want to use these unless you

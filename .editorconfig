@@ -9,10 +9,18 @@ insert_final_newline = true
 [*.{cpp,hpp,c,h,mm}]
 trim_trailing_whitespace = true
 
-[*.{py,cs}]
+[{*.gradle,AndroidManifest.xml}]
+indent_style = space
+indent_size = 4
+
+[{*.{py,cs},SConstruct,SCsub}]
 indent_style = space
 indent_size = 4
 
 [.travis.yml]
+indent_style = space
+indent_size = 2
+
+[*.{csproj,props,targets,nuspec}]
 indent_style = space
 indent_size = 2

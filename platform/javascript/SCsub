@@ -1,37 +1,75 @@
 #!/usr/bin/env python
 
-Import('env')
+Import("env")
 
 javascript_files = [
-    'audio_driver_javascript.cpp',
-    'http_client_javascript.cpp',
-    'javascript_eval.cpp',
-    'javascript_main.cpp',
-    'os_javascript.cpp',
+    "audio_driver_javascript.cpp",
+    "display_server_javascript.cpp",
+    "http_client_javascript.cpp",
+    "javascript_eval.cpp",
+    "javascript_main.cpp",
+    "os_javascript.cpp",
+    "api/javascript_tools_editor_plugin.cpp",
 ]
 
-build = env.add_program(['#bin/godot${PROGSUFFIX}.js', '#bin/godot${PROGSUFFIX}.wasm'], javascript_files);
-js, wasm = build
+build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
+if env["threads_enabled"]:
+    build_targets.append("#bin/godot${PROGSUFFIX}.worker.js")
 
-js_libraries = [
-    'http_request.js',
+build = env.add_program(build_targets, javascript_files)
+
+env.AddJSLibraries(
+    [
+        "js/libs/library_godot_audio.js",
+        "js/libs/library_godot_display.js",
+        "js/libs/library_godot_http_request.js",
+        "js/libs/library_godot_os.js",
+        "js/libs/library_godot_runtime.js",
+    ]
+)
+
+if env["tools"]:
+    env.AddJSLibraries(["js/libs/library_godot_editor_tools.js"])
+if env["javascript_eval"]:
+    env.AddJSLibraries(["js/libs/library_godot_eval.js"])
+for lib in env["JS_LIBS"]:
+    env.Append(LINKFLAGS=["--js-library", lib])
+env.Depends(build, env["JS_LIBS"])
+
+engine = [
+    "js/engine/preloader.js",
+    "js/engine/utils.js",
+    "js/engine/engine.js",
 ]
-for lib in js_libraries:
-    env.Append(LINKFLAGS=['--js-library', env.File(lib).path])
-env.Depends(build, js_libraries)
+externs = [env.File("#platform/javascript/js/engine/engine.externs.js")]
+js_engine = env.CreateEngineFile("#bin/godot${PROGSUFFIX}.engine.js", engine, externs)
+env.Depends(js_engine, externs)
 
-wrapper_start = env.File('pre.js')
-wrapper_end = env.File('engine.js')
-js_wrapped = env.Textfile('#bin/godot', [wrapper_start, js, wrapper_end], TEXTFILESUFFIX='${PROGSUFFIX}.wrapped.js')
+wrap_list = [
+    build[0],
+    js_engine,
+]
+js_wrapped = env.Textfile("#bin/godot", [env.File(f) for f in wrap_list], TEXTFILESUFFIX="${PROGSUFFIX}.wrapped.js")
 
-zip_dir = env.Dir('#bin/.javascript_zip')
-zip_files = env.InstallAs([
-    zip_dir.File('godot.js'),
-    zip_dir.File('godot.wasm'),
-    zip_dir.File('godot.html')
-], [
-    js_wrapped,
-    wasm,
-    '#misc/dist/html/default.html'
-])
-env.Zip('#bin/godot', zip_files, ZIPROOT=zip_dir, ZIPSUFFIX='${PROGSUFFIX}${ZIPSUFFIX}', ZIPCOMSTR='Archving $SOURCES as $TARGET')
+zip_dir = env.Dir("#bin/.javascript_zip")
+binary_name = "godot.tools" if env["tools"] else "godot"
+out_files = [
+    zip_dir.File(binary_name + ".js"),
+    zip_dir.File(binary_name + ".wasm"),
+    zip_dir.File(binary_name + ".html"),
+    zip_dir.File(binary_name + ".audio.worklet.js"),
+]
+html_file = "#misc/dist/html/editor.html" if env["tools"] else "#misc/dist/html/full-size.html"
+in_files = [js_wrapped, build[1], html_file, "#platform/javascript/js/libs/audio.worklet.js"]
+if env["threads_enabled"]:
+    in_files.append(build[2])
+    out_files.append(zip_dir.File(binary_name + ".worker.js"))
+
+zip_files = env.InstallAs(out_files, in_files)
+env.Zip(
+    "#bin/godot",
+    zip_files,
+    ZIPROOT=zip_dir,
+    ZIPSUFFIX="${PROGSUFFIX}${ZIPSUFFIX}",
+    ZIPCOMSTR="Archiving $SOURCES as $TARGET",
+)

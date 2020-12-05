@@ -1,0 +1,176 @@
+ext.versions = [
+    androidGradlePlugin: '4.1.0',
+    compileSdk         : 29,
+    minSdk             : 18,
+    targetSdk          : 29,
+    buildTools         : '30.0.1',
+    supportCoreUtils   : '1.0.0',
+    kotlinVersion      : '1.4.10',
+    v4Support          : '1.0.0',
+    javaVersion        : 1.8
+
+]
+
+ext.libraries = [
+    androidGradlePlugin: "com.android.tools.build:gradle:$versions.androidGradlePlugin",
+    supportCoreUtils   : "androidx.legacy:legacy-support-core-utils:$versions.supportCoreUtils",
+    kotlinGradlePlugin : "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlinVersion",
+    kotlinStdLib       : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlinVersion",
+    v4Support          : "androidx.legacy:legacy-support-v4:$versions.v4Support"
+]
+
+ext.getExportPackageName = { ->
+    // Retrieve the app id from the project property set by the Godot build command.
+    String appId = project.hasProperty("export_package_name") ? project.property("export_package_name") : ""
+    // Check if the app id is valid, otherwise use the default.
+    if (appId == null || appId.isEmpty()) {
+        appId = "com.godot.game"
+    }
+    return appId
+}
+
+ext.getExportVersionCode = { ->
+    String versionCode = project.hasProperty("export_version_code") ? project.property("export_version_code") : ""
+    if (versionCode == null || versionCode.isEmpty()) {
+        versionCode = "1"
+    }
+    try {
+        return Integer.parseInt(versionCode)
+    } catch (NumberFormatException ignored) {
+        return 1
+    }
+}
+
+ext.getExportVersionName = { ->
+    String versionName = project.hasProperty("export_version_name") ? project.property("export_version_name") : ""
+    if (versionName == null || versionName.isEmpty()) {
+        versionName = "1.0"
+    }
+    return versionName
+}
+
+final String PLUGIN_VALUE_SEPARATOR_REGEX = "\\|"
+
+// get the list of ABIs the project should be exported to
+ext.getExportEnabledABIs = { ->
+    String enabledABIs = project.hasProperty("export_enabled_abis") ? project.property("export_enabled_abis") : "";
+    if (enabledABIs == null || enabledABIs.isEmpty()) {
+        enabledABIs = "armeabi-v7a|arm64-v8a|x86|x86_64|"
+    }
+    Set<String> exportAbiFilter = [];
+    for (String abi_name : enabledABIs.split(PLUGIN_VALUE_SEPARATOR_REGEX)) {
+        if (!abi_name.trim().isEmpty()){
+            exportAbiFilter.add(abi_name);
+        }
+    }
+    return exportAbiFilter;
+}
+
+ext.getExportPath = {
+    String exportPath = project.hasProperty("export_path") ? project.property("export_path") : ""
+    if (exportPath == null || exportPath.isEmpty()) {
+        exportPath = "."
+    }
+    return exportPath
+}
+
+ext.getExportFilename = {
+    String exportFilename = project.hasProperty("export_filename") ? project.property("export_filename") : ""
+    if (exportFilename == null || exportFilename.isEmpty()) {
+        exportFilename = "godot_android"
+    }
+    return exportFilename
+}
+
+/**
+ * Parse the project properties for the 'plugins_maven_repos' property and return the list
+ * of maven repos.
+ */
+ext.getGodotPluginsMavenRepos = { ->
+    Set<String> mavenRepos = []
+
+    // Retrieve the list of maven repos.
+    if (project.hasProperty("plugins_maven_repos")) {
+        String mavenReposProperty = project.property("plugins_maven_repos")
+        if (mavenReposProperty != null && !mavenReposProperty.trim().isEmpty()) {
+            for (String mavenRepoUrl : mavenReposProperty.split(PLUGIN_VALUE_SEPARATOR_REGEX)) {
+                mavenRepos += mavenRepoUrl.trim()
+            }
+        }
+    }
+
+    return mavenRepos
+}
+
+/**
+ * Parse the project properties for the 'plugins_remote_binaries' property and return
+ * it for inclusion in the build dependencies.
+ */
+ext.getGodotPluginsRemoteBinaries = { ->
+    Set<String> remoteDeps = []
+
+    // Retrieve the list of remote plugins binaries.
+    if (project.hasProperty("plugins_remote_binaries")) {
+        String remoteDepsList = project.property("plugins_remote_binaries")
+        if (remoteDepsList != null && !remoteDepsList.trim().isEmpty()) {
+            for (String dep: remoteDepsList.split(PLUGIN_VALUE_SEPARATOR_REGEX)) {
+                remoteDeps += dep.trim()
+            }
+        }
+    }
+    return remoteDeps
+}
+
+/**
+ * Parse the project properties for the 'plugins_local_binaries' property and return
+ * their binaries for inclusion in the build dependencies.
+ */
+ext.getGodotPluginsLocalBinaries = { ->
+    Set<String> binDeps = []
+
+    // Retrieve the list of local plugins binaries.
+    if (project.hasProperty("plugins_local_binaries")) {
+        String pluginsList = project.property("plugins_local_binaries")
+        if (pluginsList != null && !pluginsList.trim().isEmpty()) {
+            for (String plugin : pluginsList.split(PLUGIN_VALUE_SEPARATOR_REGEX)) {
+                binDeps += plugin.trim()
+            }
+        }
+    }
+
+    return binDeps
+}
+
+ext.getReleaseKeystoreFile = { ->
+    String keystoreFile = project.hasProperty("release_keystore_file") ? project.property("release_keystore_file") : ""
+    if (keystoreFile == null || keystoreFile.isEmpty()) {
+        keystoreFile = "."
+    }
+    return keystoreFile
+}
+
+ext.getReleaseKeystorePassword = { ->
+    String keystorePassword = project.hasProperty("release_keystore_password") ? project.property("release_keystore_password") : ""
+    return keystorePassword
+}
+
+ext.getReleaseKeyAlias = { ->
+    String keyAlias = project.hasProperty("release_keystore_alias") ? project.property("release_keystore_alias") : ""
+    return keyAlias
+}
+
+ext.shouldZipAlign = { ->
+    String zipAlignFlag = project.hasProperty("perform_zipalign") ? project.property("perform_zipalign") : ""
+    if (zipAlignFlag == null || zipAlignFlag.isEmpty()) {
+        zipAlignFlag = "false"
+    }
+    return Boolean.parseBoolean(zipAlignFlag)
+}
+
+ext.shouldSign = { ->
+    String signFlag = project.hasProperty("perform_signing") ? project.property("perform_signing") : ""
+    if (signFlag == null || signFlag.isEmpty()) {
+        signFlag = "false"
+    }
+    return Boolean.parseBoolean(signFlag)
+}

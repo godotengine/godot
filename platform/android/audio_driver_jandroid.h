@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,13 +33,10 @@
 
 #include "servers/audio_server.h"
 
-#ifndef ANDROID_NATIVE_ACTIVITY
-
-#include "java_glue.h"
+#include "java_godot_lib_jni.h"
 
 class AudioDriverAndroid : public AudioDriver {
-
-	static Mutex *mutex;
+	static Mutex mutex;
 	static AudioDriverAndroid *s_ad;
 	static jobject io;
 	static jmethodID _init_audio;
@@ -78,5 +75,4 @@ public:
 	AudioDriverAndroid();
 };
 
-#endif
 #endif // AUDIO_DRIVER_ANDROID_H

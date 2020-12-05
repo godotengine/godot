@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptYield" inherits="VisualScriptNode" category="Core" version="3.1">
+<class name="VisualScriptYield" inherits="VisualScriptNode" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="mode" type="int" setter="set_yield_mode" getter="get_yield_mode" enum="VisualScriptYield.YieldMode">
+		<member name="mode" type="int" setter="set_yield_mode" getter="get_yield_mode" enum="VisualScriptYield.YieldMode" default="1">
 		</member>
 		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time">
 		</member>

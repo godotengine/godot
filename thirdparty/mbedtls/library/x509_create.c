@@ -1,8 +1,14 @@
 /*
  *  X.509 base functions for creating certificates / CSRs
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -33,48 +58,84 @@
 
 #include <string.h>
 
+/* Structure linking OIDs for X.509 DN AttributeTypes to their
+ * string representations and default string encodings used by Mbed TLS. */
 typedef struct {
-    const char *name;
-    size_t name_len;
-    const char*oid;
+   const char *name; /* String representation of AttributeType, e.g.
+                      * "CN" or "emailAddress". */
+   size_t name_len;  /* Length of 'name', without trailing 0 byte. */
+   const char *oid;  /* String representation of OID of AttributeType,
+                      * as per RFC 5280, Appendix A.1. */
+   int default_tag;  /* The default character encoding used for the
+                      * given attribute type, e.g.
+                      * MBEDTLS_ASN1_UTF8_STRING for UTF-8. */
 } x509_attr_descriptor_t;
 
 #define ADD_STRLEN( s )     s, sizeof( s ) - 1
 
+/* X.509 DN attributes from RFC 5280, Appendix A.1. */
 static const x509_attr_descriptor_t x509_attrs[] =
 {
-    { ADD_STRLEN( "CN" ),                       MBEDTLS_OID_AT_CN },
-    { ADD_STRLEN( "commonName" ),               MBEDTLS_OID_AT_CN },
-    { ADD_STRLEN( "C" ),                        MBEDTLS_OID_AT_COUNTRY },
-    { ADD_STRLEN( "countryName" ),              MBEDTLS_OID_AT_COUNTRY },
-    { ADD_STRLEN( "O" ),                        MBEDTLS_OID_AT_ORGANIZATION },
-    { ADD_STRLEN( "organizationName" ),         MBEDTLS_OID_AT_ORGANIZATION },
-    { ADD_STRLEN( "L" ),                        MBEDTLS_OID_AT_LOCALITY },
-    { ADD_STRLEN( "locality" ),                 MBEDTLS_OID_AT_LOCALITY },
-    { ADD_STRLEN( "R" ),                        MBEDTLS_OID_PKCS9_EMAIL },
-    { ADD_STRLEN( "OU" ),                       MBEDTLS_OID_AT_ORG_UNIT },
-    { ADD_STRLEN( "organizationalUnitName" ),   MBEDTLS_OID_AT_ORG_UNIT },
-    { ADD_STRLEN( "ST" ),                       MBEDTLS_OID_AT_STATE },
-    { ADD_STRLEN( "stateOrProvinceName" ),      MBEDTLS_OID_AT_STATE },
-    { ADD_STRLEN( "emailAddress" ),             MBEDTLS_OID_PKCS9_EMAIL },
-    { ADD_STRLEN( "serialNumber" ),             MBEDTLS_OID_AT_SERIAL_NUMBER },
-    { ADD_STRLEN( "postalAddress" ),            MBEDTLS_OID_AT_POSTAL_ADDRESS },
-    { ADD_STRLEN( "postalCode" ),               MBEDTLS_OID_AT_POSTAL_CODE },
-    { ADD_STRLEN( "dnQualifier" ),              MBEDTLS_OID_AT_DN_QUALIFIER },
-    { ADD_STRLEN( "title" ),                    MBEDTLS_OID_AT_TITLE },
-    { ADD_STRLEN( "surName" ),                  MBEDTLS_OID_AT_SUR_NAME },
-    { ADD_STRLEN( "SN" ),                       MBEDTLS_OID_AT_SUR_NAME },
-    { ADD_STRLEN( "givenName" ),                MBEDTLS_OID_AT_GIVEN_NAME },
-    { ADD_STRLEN( "GN" ),                       MBEDTLS_OID_AT_GIVEN_NAME },
-    { ADD_STRLEN( "initials" ),                 MBEDTLS_OID_AT_INITIALS },
-    { ADD_STRLEN( "pseudonym" ),                MBEDTLS_OID_AT_PSEUDONYM },
-    { ADD_STRLEN( "generationQualifier" ),      MBEDTLS_OID_AT_GENERATION_QUALIFIER },
-    { ADD_STRLEN( "domainComponent" ),          MBEDTLS_OID_DOMAIN_COMPONENT },
-    { ADD_STRLEN( "DC" ),                       MBEDTLS_OID_DOMAIN_COMPONENT },
-    { NULL, 0, NULL }
+    { ADD_STRLEN( "CN" ),
+      MBEDTLS_OID_AT_CN, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "commonName" ),
+      MBEDTLS_OID_AT_CN, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "C" ),
+      MBEDTLS_OID_AT_COUNTRY, MBEDTLS_ASN1_PRINTABLE_STRING },
+    { ADD_STRLEN( "countryName" ),
+      MBEDTLS_OID_AT_COUNTRY, MBEDTLS_ASN1_PRINTABLE_STRING },
+    { ADD_STRLEN( "O" ),
+      MBEDTLS_OID_AT_ORGANIZATION, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "organizationName" ),
+      MBEDTLS_OID_AT_ORGANIZATION, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "L" ),
+      MBEDTLS_OID_AT_LOCALITY, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "locality" ),
+      MBEDTLS_OID_AT_LOCALITY, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "R" ),
+      MBEDTLS_OID_PKCS9_EMAIL, MBEDTLS_ASN1_IA5_STRING },
+    { ADD_STRLEN( "OU" ),
+      MBEDTLS_OID_AT_ORG_UNIT, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "organizationalUnitName" ),
+      MBEDTLS_OID_AT_ORG_UNIT, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "ST" ),
+      MBEDTLS_OID_AT_STATE, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "stateOrProvinceName" ),
+      MBEDTLS_OID_AT_STATE, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "emailAddress" ),
+      MBEDTLS_OID_PKCS9_EMAIL, MBEDTLS_ASN1_IA5_STRING },
+    { ADD_STRLEN( "serialNumber" ),
+      MBEDTLS_OID_AT_SERIAL_NUMBER, MBEDTLS_ASN1_PRINTABLE_STRING },
+    { ADD_STRLEN( "postalAddress" ),
+      MBEDTLS_OID_AT_POSTAL_ADDRESS, MBEDTLS_ASN1_PRINTABLE_STRING },
+    { ADD_STRLEN( "postalCode" ),
+      MBEDTLS_OID_AT_POSTAL_CODE, MBEDTLS_ASN1_PRINTABLE_STRING },
+    { ADD_STRLEN( "dnQualifier" ),
+      MBEDTLS_OID_AT_DN_QUALIFIER, MBEDTLS_ASN1_PRINTABLE_STRING },
+    { ADD_STRLEN( "title" ),
+      MBEDTLS_OID_AT_TITLE, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "surName" ),
+      MBEDTLS_OID_AT_SUR_NAME, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "SN" ),
+      MBEDTLS_OID_AT_SUR_NAME, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "givenName" ),
+      MBEDTLS_OID_AT_GIVEN_NAME, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "GN" ),
+      MBEDTLS_OID_AT_GIVEN_NAME, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "initials" ),
+      MBEDTLS_OID_AT_INITIALS, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "pseudonym" ),
+      MBEDTLS_OID_AT_PSEUDONYM, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "generationQualifier" ),
+      MBEDTLS_OID_AT_GENERATION_QUALIFIER, MBEDTLS_ASN1_UTF8_STRING },
+    { ADD_STRLEN( "domainComponent" ),
+      MBEDTLS_OID_DOMAIN_COMPONENT, MBEDTLS_ASN1_IA5_STRING },
+    { ADD_STRLEN( "DC" ),
+      MBEDTLS_OID_DOMAIN_COMPONENT,   MBEDTLS_ASN1_IA5_STRING },
+    { NULL, 0, NULL, MBEDTLS_ASN1_NULL }
 };
 
-static const char *x509_at_oid_from_name( const char *name, size_t name_len )
+static const x509_attr_descriptor_t *x509_attr_descr_from_name( const char *name, size_t name_len )
 {
     const x509_attr_descriptor_t *cur;
 
@@ -83,7 +144,10 @@ static const char *x509_at_oid_from_name( const char *name, size_t name_len )
             strncmp( cur->name, name, name_len ) == 0 )
             break;
 
-    return( cur->oid );
+    if ( cur->name == NULL )
+        return( NULL );
+
+    return( cur );
 }
 
 int mbedtls_x509_string_to_names( mbedtls_asn1_named_data **head, const char *name )
@@ -92,6 +156,7 @@ int mbedtls_x509_string_to_names( mbedtls_asn1_named_data **head, const char *na
     const char *s = name, *c = s;
     const char *end = s + strlen( s );
     const char *oid = NULL;
+    const x509_attr_descriptor_t* attr_descr = NULL;
     int in_tag = 1;
     char data[MBEDTLS_X509_MAX_DN_NAME_SIZE];
     char *d = data;
@@ -103,12 +168,13 @@ int mbedtls_x509_string_to_names( mbedtls_asn1_named_data **head, const char *na
     {
         if( in_tag && *c == '=' )
         {
-            if( ( oid = x509_at_oid_from_name( s, c - s ) ) == NULL )
+            if( ( attr_descr = x509_attr_descr_from_name( s, c - s ) ) == NULL )
             {
                 ret = MBEDTLS_ERR_X509_UNKNOWN_OID;
                 goto exit;
             }
 
+            oid = attr_descr->oid;
             s = c + 1;
             in_tag = 0;
             d = data;
@@ -127,12 +193,18 @@ int mbedtls_x509_string_to_names( mbedtls_asn1_named_data **head, const char *na
         }
         else if( !in_tag && ( *c == ',' || c == end ) )
         {
-            if( mbedtls_asn1_store_named_data( head, oid, strlen( oid ),
-                                       (unsigned char *) data,
-                                       d - data ) == NULL )
+            mbedtls_asn1_named_data* cur =
+                mbedtls_asn1_store_named_data( head, oid, strlen( oid ),
+                                               (unsigned char *) data,
+                                               d - data );
+
+            if(cur == NULL )
             {
                 return( MBEDTLS_ERR_X509_ALLOC_FAILED );
             }
+
+            // set tagType
+            cur->val.tag = attr_descr->default_tag;
 
             while( c < end && *(c + 1) == ' ' )
                 c++;
@@ -192,46 +264,40 @@ int mbedtls_x509_set_extension( mbedtls_asn1_named_data **head, const char *oid,
  *
  *  AttributeValue ::= ANY DEFINED BY AttributeType
  */
-static int x509_write_name( unsigned char **p, unsigned char *start,
-                            const char *oid, size_t oid_len,
-                            const unsigned char *name, size_t name_len )
+static int x509_write_name( unsigned char **p, unsigned char *start, mbedtls_asn1_named_data* cur_name)
 {
     int ret;
     size_t len = 0;
+    const char *oid             = (const char*)cur_name->oid.p;
+    size_t oid_len              = cur_name->oid.len;
+    const unsigned char *name   = cur_name->val.p;
+    size_t name_len             = cur_name->val.len;
 
-    // Write PrintableString for all except MBEDTLS_OID_PKCS9_EMAIL
-    //
-    if( MBEDTLS_OID_SIZE( MBEDTLS_OID_PKCS9_EMAIL ) == oid_len &&
-        memcmp( oid, MBEDTLS_OID_PKCS9_EMAIL, oid_len ) == 0 )
-    {
-        MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_ia5_string( p, start,
-                                                  (const char *) name,
-                                                  name_len ) );
-    }
-    else
-    {
-        MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_printable_string( p, start,
-                                                        (const char *) name,
-                                                        name_len ) );
-    }
-
+    // Write correct string tag and value
+    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tagged_string( p, start,
+                                                       cur_name->val.tag,
+                                                       (const char *) name,
+                                                       name_len ) );
     // Write OID
     //
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_oid( p, start, oid, oid_len ) );
+    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_oid( p, start, oid,
+                                                       oid_len ) );
 
     MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( p, start, len ) );
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( p, start, MBEDTLS_ASN1_CONSTRUCTED |
-                                                 MBEDTLS_ASN1_SEQUENCE ) );
+    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( p, start,
+                                                    MBEDTLS_ASN1_CONSTRUCTED |
+                                                    MBEDTLS_ASN1_SEQUENCE ) );
 
     MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( p, start, len ) );
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( p, start, MBEDTLS_ASN1_CONSTRUCTED |
+    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( p, start,
+                                                 MBEDTLS_ASN1_CONSTRUCTED |
                                                  MBEDTLS_ASN1_SET ) );
 
     return( (int) len );
 }
 
 int mbedtls_x509_write_names( unsigned char **p, unsigned char *start,
-                      mbedtls_asn1_named_data *first )
+                              mbedtls_asn1_named_data *first )
 {
     int ret;
     size_t len = 0;
@@ -239,9 +305,7 @@ int mbedtls_x509_write_names( unsigned char **p, unsigned char *start,
 
     while( cur != NULL )
     {
-        MBEDTLS_ASN1_CHK_ADD( len, x509_write_name( p, start, (char *) cur->oid.p,
-                                            cur->oid.len,
-                                            cur->val.p, cur->val.len ) );
+        MBEDTLS_ASN1_CHK_ADD( len, x509_write_name( p, start, cur ) );
         cur = cur->next;
     }
 

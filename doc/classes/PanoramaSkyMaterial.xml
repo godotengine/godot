@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PanoramaSkyMaterial" inherits="Material" version="4.0">
+	<brief_description>
+		A [Material] used with [Sky] to draw a background texture.
+	</brief_description>
+	<description>
+		A resource referenced in a [Sky] that is used to draw a background. The Panorama sky material functions similar to skyboxes in other engines, except it uses an equirectangular sky map instead of a cube map.
+		Using an HDR panorama is strongly recommended for accurate, high-quality reflections. Godot supports the Radiance HDR ([code].hdr[/code]) and OpenEXR ([code].exr[/code]) image formats for this purpose.
+		You can use [url=https://danilw.github.io/GLSL-howto/cubemap_to_panorama_js/cubemap_to_panorama.html]this tool[/url] to convert a cube map to an equirectangular sky map.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="panorama" type="Texture2D" setter="set_panorama" getter="get_panorama">
+			[Texture2D] to be applied to the [PanoramaSkyMaterial].
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

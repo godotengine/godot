@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,26 +31,20 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-#include "typedefs.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
-#include "ustring.h"
+#include "core/string/ustring.h"
+#include "core/typedefs.h"
 
 typedef void (*ThreadCreateCallback)(void *p_userdata);
 
 class Thread {
 public:
 	enum Priority {
-
 		PRIORITY_LOW,
 		PRIORITY_NORMAL,
 		PRIORITY_HIGH
 	};
 
 	struct Settings {
-
 		Priority priority;
 		Settings() { priority = PRIORITY_NORMAL; }
 	};
@@ -67,7 +61,7 @@ protected:
 
 	static ID _main_thread_id;
 
-	Thread();
+	Thread() {}
 
 public:
 	virtual ID get_id() const = 0;
@@ -78,7 +72,7 @@ public:
 	static void wait_to_finish(Thread *p_thread); ///< waits until thread is finished, and deallocates it.
 	static Thread *create(ThreadCreateCallback p_callback, void *p_user, const Settings &p_settings = Settings()); ///< Static function to create a thread, will call p_callback
 
-	virtual ~Thread();
+	virtual ~Thread() {}
 };
 
-#endif
+#endif // THREAD_H

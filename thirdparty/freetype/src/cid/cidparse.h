@@ -1,63 +1,70 @@
-/***************************************************************************/
-/*                                                                         */
-/*  cidparse.h                                                             */
-/*                                                                         */
-/*    CID-keyed Type1 parser (specification).                              */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * cidparse.h
+ *
+ *   CID-keyed Type1 parser (specification).
+ *
+ * Copyright (C) 1996-2020 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef CIDPARSE_H_
 #define CIDPARSE_H_
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_TYPE1_TYPES_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
+#include <freetype/internal/t1types.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/psaux.h>
 
 
 FT_BEGIN_HEADER
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    CID_Parser                                                         */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A CID_Parser is an object used to parse a Type 1 fonts very        */
-  /*    quickly.                                                           */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    root           :: The root PS_ParserRec fields.                    */
-  /*                                                                       */
-  /*    stream         :: The current input stream.                        */
-  /*                                                                       */
-  /*    postscript     :: A pointer to the data to be parsed.              */
-  /*                                                                       */
-  /*    postscript_len :: The length of the data to be parsed.             */
-  /*                                                                       */
-  /*    data_offset    :: The start position of the binary data (i.e., the */
-  /*                      end of the data to be parsed.                    */
-  /*                                                                       */
-  /*    binary_length  :: The length of the data after the `StartData'     */
-  /*                      command if the data format is hexadecimal.       */
-  /*                                                                       */
-  /*    cid            :: A structure which holds the information about    */
-  /*                      the current font.                                */
-  /*                                                                       */
-  /*    num_dict       :: The number of font dictionaries.                 */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Struct:
+   *   CID_Parser
+   *
+   * @Description:
+   *   A CID_Parser is an object used to parse a Type 1 fonts very
+   *   quickly.
+   *
+   * @Fields:
+   *   root ::
+   *     The root PS_ParserRec fields.
+   *
+   *   stream ::
+   *     The current input stream.
+   *
+   *   postscript ::
+   *     A pointer to the data to be parsed.
+   *
+   *   postscript_len ::
+   *     The length of the data to be parsed.
+   *
+   *   data_offset ::
+   *     The start position of the binary data (i.e., the
+   *     end of the data to be parsed.
+   *
+   *   binary_length ::
+   *     The length of the data after the `StartData'
+   *     command if the data format is hexadecimal.
+   *
+   *   cid ::
+   *     A structure which holds the information about
+   *     the current font.
+   *
+   *   num_dict ::
+   *     The number of font dictionaries.
+   */
   typedef struct  CID_Parser_
   {
     PS_ParserRec  root;
@@ -86,11 +93,11 @@ FT_BEGIN_HEADER
   cid_parser_done( CID_Parser*  parser );
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*                            PARSING ROUTINES                           */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   *                           PARSING ROUTINES
+   *
+   */
 
 #define cid_parser_skip_spaces( p )                 \
           (p)->root.funcs.skip_spaces( &(p)->root )

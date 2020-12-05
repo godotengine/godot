@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamPlayback" inherits="Reference" category="Core" version="3.1">
+<class name="AudioStreamPlayback" inherits="Reference" version="4.0">
 	<brief_description>
 		Meta class for playing back audio.
 	</brief_description>
 	<description>
-		Can play, loop, pause a scroll through Audio. See [AudioStream] and [AudioStreamOGGVorbis] for usage.
+		Can play, loop, pause a scroll through audio. See [AudioStream] and [AudioStreamOGGVorbis] for usage.
 	</description>
 	<tutorials>
+		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<constants>

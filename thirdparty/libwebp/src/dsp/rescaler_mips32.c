@@ -209,6 +209,7 @@ static void ExportRowExpand_MIPS32(WebPRescaler* const wrk) {
   }
 }
 
+#if 0  // disabled for now. TODO(skal): make match the C-code
 static void ExportRowShrink_MIPS32(WebPRescaler* const wrk) {
   const int x_out_max = wrk->dst_width * wrk->num_channels;
   uint8_t* dst = wrk->dst;
@@ -273,6 +274,7 @@ static void ExportRowShrink_MIPS32(WebPRescaler* const wrk) {
     );
   }
 }
+#endif  // 0
 
 //------------------------------------------------------------------------------
 // Entry point
@@ -283,7 +285,7 @@ WEBP_TSAN_IGNORE_FUNCTION void WebPRescalerDspInitMIPS32(void) {
   WebPRescalerImportRowExpand = ImportRowExpand_MIPS32;
   WebPRescalerImportRowShrink = ImportRowShrink_MIPS32;
   WebPRescalerExportRowExpand = ExportRowExpand_MIPS32;
-  WebPRescalerExportRowShrink = ExportRowShrink_MIPS32;
+//  WebPRescalerExportRowShrink = ExportRowShrink_MIPS32;
 }
 
 #else  // !WEBP_USE_MIPS32

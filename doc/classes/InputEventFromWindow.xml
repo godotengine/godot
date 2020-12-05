@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventFromWindow" inherits="InputEvent" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="window_id" type="int" setter="set_window_id" getter="get_window_id" default="0">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

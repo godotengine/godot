@@ -19,27 +19,25 @@ subject to the following restrictions:
 #include "BulletCollision/CollisionShapes/btTriangleIndexVertexMaterialArray.h"
 //#include "BulletCollision/CollisionShapes/btOptimizedBvh.h"
 
-
 ///Obtains the material for a specific triangle
-const btMaterial * btMultimaterialTriangleMeshShape::getMaterialProperties(int partID, int triIndex)
+const btMaterial *btMultimaterialTriangleMeshShape::getMaterialProperties(int partID, int triIndex)
 {
-    const unsigned char * materialBase = 0;
-    int numMaterials;
-    PHY_ScalarType materialType;
-    int materialStride;
-    const unsigned char * triangleMaterialBase = 0;
-    int numTriangles;
-    int triangleMaterialStride;
-    PHY_ScalarType triangleType;
+	const unsigned char *materialBase = 0;
+	int numMaterials;
+	PHY_ScalarType materialType;
+	int materialStride;
+	const unsigned char *triangleMaterialBase = 0;
+	int numTriangles;
+	int triangleMaterialStride;
+	PHY_ScalarType triangleType;
 
-    ((btTriangleIndexVertexMaterialArray*)m_meshInterface)->getLockedReadOnlyMaterialBase(&materialBase, numMaterials, materialType, materialStride,
-        &triangleMaterialBase, numTriangles, triangleMaterialStride, triangleType, partID);
+	((btTriangleIndexVertexMaterialArray *)m_meshInterface)->getLockedReadOnlyMaterialBase(&materialBase, numMaterials, materialType, materialStride, &triangleMaterialBase, numTriangles, triangleMaterialStride, triangleType, partID);
 
-    // return the pointer to the place with the friction for the triangle
-    // TODO: This depends on whether it's a moving mesh or not
-    // BUG IN GIMPACT
-    //return (btScalar*)(&materialBase[triangleMaterialBase[(triIndex-1) * triangleMaterialStride] * materialStride]);
-    int * matInd = (int *)(&(triangleMaterialBase[(triIndex * triangleMaterialStride)]));
-    btMaterial *matVal = (btMaterial *)(&(materialBase[*matInd * materialStride]));
-    return (matVal);
+	// return the pointer to the place with the friction for the triangle
+	// TODO: This depends on whether it's a moving mesh or not
+	// BUG IN GIMPACT
+	//return (btScalar*)(&materialBase[triangleMaterialBase[(triIndex-1) * triangleMaterialStride] * materialStride]);
+	int *matInd = (int *)(&(triangleMaterialBase[(triIndex * triangleMaterialStride)]));
+	btMaterial *matVal = (btMaterial *)(&(materialBase[*matInd * materialStride]));
+	return (matVal);
 }
