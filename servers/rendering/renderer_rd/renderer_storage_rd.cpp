@@ -8544,6 +8544,7 @@ RendererStorageRD::~RendererStorageRD() {
 
 	giprobe_sdf_shader.version_free(giprobe_sdf_shader_version);
 	particles_shader.copy_shader.version_free(particles_shader.copy_shader_version);
+	rt_sdf.shader.version_free(rt_sdf.shader_version);
 
 	RenderingServer::get_singleton()->free(particles_shader.default_material);
 	RenderingServer::get_singleton()->free(particles_shader.default_shader);
