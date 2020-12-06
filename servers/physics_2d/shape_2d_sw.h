@@ -237,7 +237,7 @@ public:
 	virtual PhysicsServer2D::ShapeType get_type() const { return PhysicsServer2D::SHAPE_SEGMENT; }
 
 	_FORCE_INLINE_ Vector2 get_xformed_normal(const Transform2D &p_xform) const {
-		return (p_xform.xform(b) - p_xform.xform(a)).normalized().tangent();
+		return (p_xform.xform(b) - p_xform.xform(a)).normalized().orthogonal();
 	}
 	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal, p_transform, r_min, r_max); }
 	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const;
@@ -431,7 +431,7 @@ public:
 		Vector2 a = points[p_idx].pos;
 		p_idx++;
 		Vector2 b = points[p_idx == point_count ? 0 : p_idx].pos;
-		return (p_xform.xform(b) - p_xform.xform(a)).normalized().tangent();
+		return (p_xform.xform(b) - p_xform.xform(a)).normalized().orthogonal();
 	}
 
 	virtual PhysicsServer2D::ShapeType get_type() const { return PhysicsServer2D::SHAPE_CONVEX_POLYGON; }

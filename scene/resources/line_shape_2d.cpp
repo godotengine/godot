@@ -36,7 +36,7 @@
 
 bool LineShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	Vector2 point = get_distance() * get_normal();
-	Vector2 l[2][2] = { { point - get_normal().tangent() * 100, point + get_normal().tangent() * 100 }, { point, point + get_normal() * 30 } };
+	Vector2 l[2][2] = { { point - get_normal().orthogonal() * 100, point + get_normal().orthogonal() * 100 }, { point, point + get_normal() * 30 } };
 
 	for (int i = 0; i < 2; i++) {
 		Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, l[i]);
@@ -77,7 +77,7 @@ real_t LineShape2D::get_distance() const {
 void LineShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector2 point = get_distance() * get_normal();
 
-	Vector2 l1[2] = { point - get_normal().tangent() * 100, point + get_normal().tangent() * 100 };
+	Vector2 l1[2] = { point - get_normal().orthogonal() * 100, point + get_normal().orthogonal() * 100 };
 	RS::get_singleton()->canvas_item_add_line(p_to_rid, l1[0], l1[1], p_color, 3);
 	Vector2 l2[2] = { point, point + get_normal() * 30 };
 	RS::get_singleton()->canvas_item_add_line(p_to_rid, l2[0], l2[1], p_color, 3);
@@ -86,7 +86,7 @@ void LineShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 Rect2 LineShape2D::get_rect() const {
 	Vector2 point = get_distance() * get_normal();
 
-	Vector2 l1[2] = { point - get_normal().tangent() * 100, point + get_normal().tangent() * 100 };
+	Vector2 l1[2] = { point - get_normal().orthogonal() * 100, point + get_normal().orthogonal() * 100 };
 	Vector2 l2[2] = { point, point + get_normal() * 30 };
 	Rect2 rect;
 	rect.position = l1[0];

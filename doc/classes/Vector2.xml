@@ -479,7 +479,7 @@
 				Returns this vector with each component snapped to the nearest multiple of [code]step[/code]. This can also be used to round to an arbitrary number of decimals.
 			</description>
 		</method>
-		<method name="tangent">
+		<method name="orthogonal">
 			<return type="Vector2">
 			</return>
 			<description>

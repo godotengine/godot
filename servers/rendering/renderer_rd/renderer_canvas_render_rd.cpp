@@ -1689,7 +1689,7 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 
 	to_light_xform[2] = from_pos;
 	to_light_xform[1] = light_dir;
-	to_light_xform[0] = -light_dir.tangent();
+	to_light_xform[0] = -light_dir.orthogonal();
 
 	to_light_xform.invert();
 

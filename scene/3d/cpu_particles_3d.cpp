@@ -730,7 +730,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 							Vector2 normal_2d(normal.x, normal.y);
 							Transform2D m2;
 							m2.set_axis(0, normal_2d);
-							m2.set_axis(1, normal_2d.tangent());
+							m2.set_axis(1, normal_2d.orthogonal());
 							Vector2 velocity_2d(p.velocity.x, p.velocity.y);
 							velocity_2d = m2.basis_xform(velocity_2d);
 							p.velocity.x = velocity_2d.x;
