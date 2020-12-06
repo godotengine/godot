@@ -8,7 +8,7 @@ namespace GodotTools.ProjectEditor
 {
     public static class ProjectGenerator
     {
-        public const string GodotSdkVersionToUse = "3.2.3";
+        public const string GodotSdkVersionToUse = "3.2.4";
         public const string GodotSdkNameToUse = "Godot.NET.Sdk";
 
         public static ProjectRootElement GenGameProject(string name)
