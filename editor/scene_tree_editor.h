@@ -76,7 +76,6 @@ class SceneTreeEditor : public Control {
 
 	void _add_nodes(Node *p_node, TreeItem *p_parent);
 	void _test_update_tree();
-	void _update_tree(bool p_scroll_to_selected = false);
 	bool _update_filter(TreeItem *p_parent = nullptr, bool p_scroll_to_selected = false);
 	bool _item_matches_all_terms(TreeItem *p_item, PackedStringArray p_terms);
 	void _tree_changed();
@@ -138,6 +137,9 @@ class SceneTreeEditor : public Control {
 	Vector<StringName> valid_types;
 
 public:
+	// Public for use with callable_mp.
+	void _update_tree(bool p_scroll_to_selected = false);
+
 	void set_filter(const String &p_filter);
 	String get_filter() const;
 

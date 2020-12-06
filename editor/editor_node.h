@@ -543,7 +543,6 @@ private:
 	void _update_file_menu_opened();
 	void _update_file_menu_closed();
 
-	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
 	void _remove_plugin_from_enabled(const String &p_name);
 
 	void _fs_changed();
@@ -553,7 +552,6 @@ private:
 	void _node_renamed();
 	void _editor_select_next();
 	void _editor_select_prev();
-	void _editor_select(int p_which);
 	void _set_scene_metadata(const String &p_file, int p_idx = -1);
 	void _get_scene_metadata(const String &p_file);
 	void _update_title();
@@ -658,8 +656,6 @@ private:
 	void _update_layouts_menu();
 	void _layout_menu_option(int p_id);
 
-	void _clear_undo_history();
-
 	void _update_addon_config();
 
 	void _toggle_distraction_free_mode();
@@ -703,7 +699,11 @@ protected:
 	void set_current_tab(int p_tab);
 
 public:
-	void set_visible_editor(EditorTable p_table) { _editor_select(p_table); }
+	// Public for use with callable_mp.
+	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
+
+	void editor_select(int p_which);
+	void set_visible_editor(EditorTable p_table) { editor_select(p_table); }
 
 	bool call_build();
 

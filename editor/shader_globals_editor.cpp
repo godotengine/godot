@@ -483,7 +483,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	inspector->connect("property_deleted", callable_mp(this, &ShaderGlobalsEditor::_variable_deleted), CONNECT_DEFERRED);
 
 	interface = memnew(ShaderGlobalsEditorInterface);
-	interface->connect("var_changed", Callable(this, "_changed"));
+	interface->connect("var_changed", callable_mp(this, &ShaderGlobalsEditor::_changed));
 }
 
 ShaderGlobalsEditor::~ShaderGlobalsEditor() {
