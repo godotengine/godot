@@ -272,7 +272,7 @@ struct Rect2 {
 			}
 
 			//check inside
-			Vector2 tg = r.tangent();
+			Vector2 tg = r.orthogonal();
 			float s = tg.dot(center) - tg.dot(a);
 			if (s < 0.0) {
 				side_plus++;

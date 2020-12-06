@@ -727,7 +727,7 @@ bool CanvasItemEditor::_get_bone_shape(Vector<Vector2> *shape, Vector<Vector2> *
 	}
 
 	Vector2 rel = to - from;
-	Vector2 relt = rel.tangent().normalized() * bone_width;
+	Vector2 relt = rel.orthogonal().normalized() * bone_width;
 	Vector2 reln = rel.normalized();
 	Vector2 reltn = relt.normalized();
 
@@ -1808,7 +1808,7 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 						}
 
 						ofs = (endpoints[i] + endpoints[next]) / 2;
-						ofs += (endpoints[next] - endpoints[i]).tangent().normalized() * (select_handle->get_size().width / 2);
+						ofs += (endpoints[next] - endpoints[i]).orthogonal().normalized() * (select_handle->get_size().width / 2);
 						if (ofs.distance_to(b->get_position()) < radius) {
 							resize_drag = dragger[i * 2 + 1];
 						}
@@ -3495,7 +3495,7 @@ void CanvasItemEditor::_draw_selection() {
 					select_handle->draw(ci, (endpoints[i] + ofs - (select_handle->get_size() / 2)).floor());
 
 					ofs = (endpoints[i] + endpoints[next]) / 2;
-					ofs += (endpoints[next] - endpoints[i]).tangent().normalized() * (select_handle->get_size().width / 2);
+					ofs += (endpoints[next] - endpoints[i]).orthogonal().normalized() * (select_handle->get_size().width / 2);
 
 					select_handle->draw(ci, (ofs - (select_handle->get_size() / 2)).floor());
 				}

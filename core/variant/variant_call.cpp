@@ -992,7 +992,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, cubic_interpolate, sarray("b", "pre_a", "post_b", "t"), varray());
 	bind_method(Vector2, move_toward, sarray("to", "delta"), varray());
 	bind_method(Vector2, rotated, sarray("phi"), varray());
-	bind_method(Vector2, tangent, sarray(), varray());
+	bind_method(Vector2, orthogonal, sarray(), varray());
 	bind_method(Vector2, floor, sarray(), varray());
 	bind_method(Vector2, ceil, sarray(), varray());
 	bind_method(Vector2, round, sarray(), varray());

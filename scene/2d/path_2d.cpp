@@ -200,7 +200,7 @@ void PathFollow2D::_update_transform() {
 			tangent_to_curve = (ahead_pos - pos).normalized();
 		}
 
-		Vector2 normal_of_curve = -tangent_to_curve.tangent();
+		Vector2 normal_of_curve = -tangent_to_curve.orthogonal();
 
 		pos += tangent_to_curve * h_offset;
 		pos += normal_of_curve * v_offset;

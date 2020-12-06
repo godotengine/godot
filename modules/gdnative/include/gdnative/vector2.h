@@ -102,7 +102,7 @@ godot_vector2 GDAPI godot_vector2_move_toward(const godot_vector2 *p_self, const
 
 godot_vector2 GDAPI godot_vector2_rotated(const godot_vector2 *p_self, const godot_real p_phi);
 
-godot_vector2 GDAPI godot_vector2_tangent(const godot_vector2 *p_self);
+godot_vector2 GDAPI godot_vector2_orthogonal(const godot_vector2 *p_self);
 
 godot_vector2 GDAPI godot_vector2_floor(const godot_vector2 *p_self);
 

@@ -520,7 +520,7 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 
 	Transform2D xf;
 	xf.elements[0] = (p_to - p_from).normalized();
-	xf.elements[1] = xf.elements[0].tangent();
+	xf.elements[1] = xf.elements[0].orthogonal();
 	xf.elements[2] = (p_from + p_to) * 0.5 - xf.elements[1] * icon->get_height() * 0.5 - xf.elements[0] * icon->get_height() * 0.5;
 
 	state_machine_draw->draw_set_transform_matrix(xf);
@@ -690,7 +690,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		tl.width = tr_bidi_offset;
 
 		if (state_machine->has_transition(tl.to_node, tl.from_node)) { //offset if same exists
-			Vector2 offset = -(tl.from - tl.to).normalized().tangent() * tr_bidi_offset;
+			Vector2 offset = -(tl.from - tl.to).normalized().orthogonal() * tr_bidi_offset;
 			tl.from += offset;
 			tl.to += offset;
 		}
