@@ -1565,14 +1565,6 @@ bool PhysicalBone::JointData::_get(const StringName &p_name, Variant &r_ret) con
 void PhysicalBone::JointData::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
-void PhysicalBone::apply_central_impulse(const Vector3 &p_impulse) {
-	PhysicsServer::get_singleton()->body_apply_central_impulse(get_rid(), p_impulse);
-}
-
-void PhysicalBone::apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse) {
-	PhysicsServer::get_singleton()->body_apply_impulse(get_rid(), p_pos, p_impulse);
-}
-
 bool PhysicalBone::PinJointData::_set(const StringName &p_name, const Variant &p_value, RID j) {
 	if (JointData::_set(p_name, p_value, j)) {
 		return true;
@@ -2210,9 +2202,9 @@ void PhysicalBone::_direct_state_changed(Object *p_state) {
 		return;
 	}
 
-	/// Update bone transform
+	RigidBody::_direct_state_changed(p_state);
 
-	PhysicsDirectBodyState *state;
+	/// Update bone transform
 
 #ifdef DEBUG_ENABLED
 	state = Object::cast_to<PhysicsDirectBodyState>(p_state);
@@ -2235,11 +2227,6 @@ void PhysicalBone::_direct_state_changed(Object *p_state) {
 }
 
 void PhysicalBone::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &PhysicalBone::apply_central_impulse);
-	ClassDB::bind_method(D_METHOD("apply_impulse", "position", "impulse"), &PhysicalBone::apply_impulse);
-
-	ClassDB::bind_method(D_METHOD("_direct_state_changed"), &PhysicalBone::_direct_state_changed);
-
 	ClassDB::bind_method(D_METHOD("set_joint_type", "joint_type"), &PhysicalBone::set_joint_type);
 	ClassDB::bind_method(D_METHOD("get_joint_type"), &PhysicalBone::get_joint_type);
 
@@ -2257,32 +2244,11 @@ void PhysicalBone::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_bone_id"), &PhysicalBone::get_bone_id);
 
-	ClassDB::bind_method(D_METHOD("set_mass", "mass"), &PhysicalBone::set_mass);
-	ClassDB::bind_method(D_METHOD("get_mass"), &PhysicalBone::get_mass);
-
-	ClassDB::bind_method(D_METHOD("set_weight", "weight"), &PhysicalBone::set_weight);
-	ClassDB::bind_method(D_METHOD("get_weight"), &PhysicalBone::get_weight);
-
-	ClassDB::bind_method(D_METHOD("set_friction", "friction"), &PhysicalBone::set_friction);
-	ClassDB::bind_method(D_METHOD("get_friction"), &PhysicalBone::get_friction);
-
-	ClassDB::bind_method(D_METHOD("set_bounce", "bounce"), &PhysicalBone::set_bounce);
-	ClassDB::bind_method(D_METHOD("get_bounce"), &PhysicalBone::get_bounce);
-
-	ClassDB::bind_method(D_METHOD("set_gravity_scale", "gravity_scale"), &PhysicalBone::set_gravity_scale);
-	ClassDB::bind_method(D_METHOD("get_gravity_scale"), &PhysicalBone::get_gravity_scale);
-
 	ADD_GROUP("Joint", "joint_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joint_type", PROPERTY_HINT_ENUM, "None,PinJoint,ConeJoint,HingeJoint,SliderJoint,6DOFJoint"), "set_joint_type", "get_joint_type");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "joint_offset"), "set_joint_offset", "get_joint_offset");
 
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "body_offset"), "set_body_offset", "get_body_offset");
-
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "mass", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_mass", "get_mass");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "weight", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_weight", "get_weight");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "gravity_scale", PROPERTY_HINT_RANGE, "-10,10,0.01"), "set_gravity_scale", "get_gravity_scale");
 
 	BIND_ENUM_CONSTANT(JOINT_TYPE_NONE);
 	BIND_ENUM_CONSTANT(JOINT_TYPE_PIN);
@@ -2563,67 +2529,7 @@ const String &PhysicalBone::get_bone_name() const {
 	return bone_name;
 }
 
-void PhysicalBone::set_mass(real_t p_mass) {
-
-	ERR_FAIL_COND(p_mass <= 0);
-	mass = p_mass;
-	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_MASS, mass);
-}
-
-real_t PhysicalBone::get_mass() const {
-
-	return mass;
-}
-
-void PhysicalBone::set_weight(real_t p_weight) {
-
-	set_mass(p_weight / real_t(GLOBAL_DEF("physics/3d/default_gravity", 9.8)));
-}
-
-real_t PhysicalBone::get_weight() const {
-
-	return mass * real_t(GLOBAL_DEF("physics/3d/default_gravity", 9.8));
-}
-
-void PhysicalBone::set_friction(real_t p_friction) {
-
-	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
-
-	friction = p_friction;
-	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, friction);
-}
-
-real_t PhysicalBone::get_friction() const {
-
-	return friction;
-}
-
-void PhysicalBone::set_bounce(real_t p_bounce) {
-
-	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
-
-	bounce = p_bounce;
-	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, bounce);
-}
-
-real_t PhysicalBone::get_bounce() const {
-
-	return bounce;
-}
-
-void PhysicalBone::set_gravity_scale(real_t p_gravity_scale) {
-
-	gravity_scale = p_gravity_scale;
-	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_GRAVITY_SCALE, gravity_scale);
-}
-
-real_t PhysicalBone::get_gravity_scale() const {
-
-	return gravity_scale;
-}
-
 PhysicalBone::PhysicalBone() :
-		PhysicsBody(PhysicsServer::BODY_MODE_STATIC),
 #ifdef TOOLS_ENABLED
 		gizmo_move_joint(false),
 #endif
@@ -2634,11 +2540,7 @@ PhysicalBone::PhysicalBone() :
 		simulate_physics(false),
 		_internal_simulate_physics(false),
 		bone_id(-1),
-		bone_name(""),
-		bounce(0),
-		mass(1),
-		friction(1),
-		gravity_scale(1) {
+		bone_name("") {
 
 	set_static_body(static_body);
 	_reset_physics_simulation_state();

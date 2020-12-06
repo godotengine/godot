@@ -376,9 +376,9 @@ public:
 	KinematicCollision();
 };
 
-class PhysicalBone : public PhysicsBody {
+class PhysicalBone : public RigidBody {
 
-	GDCLASS(PhysicalBone, PhysicsBody);
+	GDCLASS(PhysicalBone, RigidBody);
 
 public:
 	enum JointType {
@@ -572,10 +572,6 @@ private:
 	int bone_id;
 
 	String bone_name;
-	real_t bounce;
-	real_t mass;
-	real_t friction;
-	real_t gravity_scale;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -625,24 +621,6 @@ public:
 
 	void set_bone_name(const String &p_name);
 	const String &get_bone_name() const;
-
-	void set_mass(real_t p_mass);
-	real_t get_mass() const;
-
-	void set_weight(real_t p_weight);
-	real_t get_weight() const;
-
-	void set_friction(real_t p_friction);
-	real_t get_friction() const;
-
-	void set_bounce(real_t p_bounce);
-	real_t get_bounce() const;
-
-	void set_gravity_scale(real_t p_gravity_scale);
-	real_t get_gravity_scale() const;
-
-	void apply_central_impulse(const Vector3 &p_impulse);
-	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
 
 	PhysicalBone();
 	~PhysicalBone();
