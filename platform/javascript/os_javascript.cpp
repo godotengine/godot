@@ -31,7 +31,6 @@
 #include "os_javascript.h"
 
 #include "core/debugger/engine_debugger.h"
-#include "core/io/file_access_buffered_fa.h"
 #include "core/io/json.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
