@@ -13,10 +13,9 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" override="true" default="0.02" />
-		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" override="true" default="1.0" />
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.02" />
+		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="1.0" />
 		<member name="spot_angle" type="float" setter="set_param" getter="get_param" default="45.0">
-			The spotlight's angle in degrees.
 		</member>
 		<member name="spot_angle_attenuation" type="float" setter="set_param" getter="get_param" default="1.0">
 			The spotlight's angular attenuation curve.

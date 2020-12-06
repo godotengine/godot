@@ -278,7 +278,7 @@
 			</description>
 		</method>
 		<method name="get_theme_item" qualifiers="const">
-			<return type="StyleBox">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="data_type" type="int" enum="Theme.DataType">
 			</argument>
@@ -609,11 +609,11 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="DATA_TYPE_COLOR" value="0" enum="DataType">
-			Theme's [Color] item type.
+		<constant name="DATA_TYPE_ICON" value="4" enum="DataType">
+			Theme's icon [Texture2D] item type.
 		</constant>
-		<constant name="DATA_TYPE_CONSTANT" value="1" enum="DataType">
-			Theme's constant item type.
+		<constant name="DATA_TYPE_STYLEBOX" value="5" enum="DataType">
+			Theme's [StyleBox] item type.
 		</constant>
 		<constant name="DATA_TYPE_FONT" value="2" enum="DataType">
 			Theme's [Font] item type.
@@ -621,11 +621,11 @@
 		<constant name="DATA_TYPE_FONT_SIZE" value="3" enum="DataType">
 			Theme's font size item type.
 		</constant>
-		<constant name="DATA_TYPE_ICON" value="4" enum="DataType">
-			Theme's icon [Texture2D] item type.
+		<constant name="DATA_TYPE_COLOR" value="0" enum="DataType">
+			Theme's [Color] item type.
 		</constant>
-		<constant name="DATA_TYPE_STYLEBOX" value="5" enum="DataType">
-			Theme's [StyleBox] item type.
+		<constant name="DATA_TYPE_CONSTANT" value="1" enum="DataType">
+			Theme's constant item type.
 		</constant>
 		<constant name="DATA_TYPE_MAX" value="6" enum="DataType">
 			Maximum value for the DataType enum.
