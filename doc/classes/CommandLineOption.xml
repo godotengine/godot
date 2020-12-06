@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CommandLineOption" inherits="Reference" version="4.0">
+	<brief_description>
+		Defines a possible command-line option.
+	</brief_description>
+	<description>
+		This class is used to describe an option on the command line. It allows different ways of defining the same option with multiple aliases possible. It is also used to describe how the option is used - it may be a flag (e.g. [code]-v[/code]) or take a value (e.g. [code]-o file[/code]).
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="remove_checker">
+			<return type="void">
+			</return>
+			<description>
+				Removes the checker added by [method set_checker].
+			</description>
+		</method>
+		<method name="set_checker">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="callable" type="Callable">
+			</argument>
+			<argument index="1" name="error_msg" type="String">
+			</argument>
+			<description>
+				Sets a [code]callable[/code] that accepts a [String] as input and returns [code]true[/code] if the value matches the given check. If the function returns [code]false[/code], then the parsing will fail and [method CommandLineParser.get_error] will return [code]error_msg[/code].
+				Example:
+				[codeblock]
+				var _parser := CommandLineParser.new()
+				var _command := CommandLineOption.new()
+
+
+				func _init():
+				    option.names = ["i", "ip"]
+				    option.arg_count = 1
+				    option.description = "This option can accept only IP."
+				    option.arg_text = "&lt;ip&gt;"
+				    option.set_checker(Callable(self, "_is_valid_ip"), "Invalid IP");
+				    _parser.add_command(option)
+
+
+				func _is_valid_ip(arg: String) -&gt; bool:
+				    return arg.is_valid_ip_address()
+				[/codeblock]
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="allowed_args" type="PackedStringArray" setter="set_allowed_args" getter="get_allowed_args" default="PackedStringArray(  )">
+			Set of values that allowed by the option. If a different value is passed, the parsing will fail. Empty if any value is allowed.
+		</member>
+		<member name="arg_count" type="int" setter="set_arg_count" getter="get_arg_count" default="1">
+			The number of arguments required for the option. A value less than 0 means all remaining values up to the next option or the end of the argument list.
+		</member>
+		<member name="arg_text" type="String" setter="set_arg_text" getter="get_arg_text" default="&quot;&lt;arg&gt;&quot;">
+			Name for the option arguments that will be displayed in help message. For example: [code]--input &lt;filename&gt;[/code], where [code]&lt;filename&gt;[/code] is arg_text.
+		</member>
+		<member name="category" type="String" setter="set_category" getter="get_category" default="&quot;&quot;">
+			Option category, options sharing the same category are grouped together in the help message.
+		</member>
+		<member name="default_args" type="PackedStringArray" setter="set_default_args" getter="get_default_args" default="PackedStringArray(  )">
+			Set of values that will be used by default if no value specified.
+		</member>
+		<member name="description" type="String" setter="set_description" getter="get_description" default="&quot;&quot;">
+			Option description that will be displayed in help.
+		</member>
+		<member name="hidden" type="bool" setter="set_hidden" getter="is_hidden" default="false">
+			If [code]true[/code], the option will be displayed in help.
+		</member>
+		<member name="multitoken" type="bool" setter="set_multitoken" getter="is_multitoken" default="false">
+			If [code]true[/code], option can be specified multiply times. Number of times can be obtained using [method CommandLineParser.get_occurence_count].
+		</member>
+		<member name="names" type="PackedStringArray" setter="set_names" getter="get_names" default="PackedStringArray(  )">
+			Returns the names set for this option.
+		</member>
+		<member name="positional" type="bool" setter="set_positional" getter="is_positional" default="false">
+			If [code]true[/code], option can be specified without option name. In this case, the first unparsed option marked as [member positional] will be selected.
+		</member>
+		<member name="required" type="bool" setter="set_required" getter="is_required" default="false">
+			If [code]true[/code], [method CommandLineParser.validate] will return an error if the option was not specified in the argument list.
+		</member>
+	</members>
+	<signals>
+		<signal name="validated">
+			<argument index="0" name="values" type="PackedStringArray">
+			</argument>
+			<description>
+				Emitted when after calling [method CommandLineParser.validate] if it returns [constant OK] and this option was specified in the argument list. [code]values[/code] contains all values that was passed to the option.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

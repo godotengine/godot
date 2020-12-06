@@ -38,6 +38,7 @@
 #include "test_basis.h"
 #include "test_class_db.h"
 #include "test_color.h"
+#include "test_command_line_parser.h"
 #include "test_command_queue.h"
 #include "test_config_file.h"
 #include "test_crypto.h"

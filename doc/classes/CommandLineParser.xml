@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CommandLineParser" inherits="Reference" version="4.0">
+	<brief_description>
+		Provides a means for handling the command line options.
+	</brief_description>
+	<description>
+		[method OS.get_cmdline_args] provides the command-line arguments as a simple list of strings. [CommandLineParser] provides the ability to define a set of options, parse the command-line arguments, and store which options have actually been used, as well as option values.
+		Options on the command line are recognized as starting with any of specified [member long_prefixes] or [member short_prefixes] values. Long options consist of more than one character. Short options always consist of one character and can be written in a compact form, for instance [code]-abc[/code] is equivalent to [code]-a -b -c[/code]. Option values can be specified either separated by a space or by an [code]=[/code] sign (if the option takes only 1 argument). Short options can also have sticky values (without a space between, e.g. [code]-Dvalue[/code]).
+		Also values can be specified without an option name and the first option that is marked as [member CommandLineOption.positional] will be assigned automatically. For example, if the [code]input-file[/code] argument is marked as positional, then you can write either [code]--input-file=filename[/code] or just [code]filename[/code].
+		The option [code]--[/code] (without any symbol after) is a special case and means that all following options will be captured as valid and can be obtained later using [method get_forwarded_args].
+		Example:
+		[codeblock]
+		var _parser := CommandLineParser.new()
+
+		var _help: CommandLineOption = _parser.add_help_option()
+		var _version: CommandLineOption = _parser.add_version_option()
+		var _one_arg := CommandLineOption.new()
+
+
+		func _init():
+		    _one_arg.names = ["i", "input"]
+		    _one_arg.category = "General"
+		    _one_arg.arg_text = "&lt;filename&gt;"
+		    _one_arg.description = "Set one any arg."
+		    _parser.add_option(_one_arg)
+
+		    if _parser.parse_args(OS.get_cmdline_args())
+		        print(_parser.get_error())
+		        return
+
+		    if _parser.is_set(_help):
+		        print(_parser.get_help_text(CommandLineHelpFormat.new()))
+		        return
+
+		    if _parser.is_set(_version):
+		        print(ProjectSettings.get_setting("application/config/version"))
+		        return
+
+		    if _parser.validate() != OK:
+		        print(_parser.get_error())
+		        return
+
+		    print(_parser.get_value(_one_arg))
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_help_option">
+			<return type="CommandLineOption">
+			</return>
+			<description>
+				Adds the help option (-h, --help) with default description.
+			</description>
+		</method>
+		<method name="add_option">
+			<return type="void">
+			</return>
+			<argument index="0" name="option" type="CommandLineOption">
+			</argument>
+			<description>
+				Adds the option to look for while parsing.
+			</description>
+		</method>
+		<method name="add_version_option">
+			<return type="CommandLineOption">
+			</return>
+			<description>
+				Adds the version option (-v, --version) with default description.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+				Clears all parsed data and specified options.
+			</description>
+		</method>
+		<method name="find_option" qualifiers="const">
+			<return type="CommandLineOption">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Finds option by name.
+			</description>
+		</method>
+		<method name="get_args" qualifiers="const">
+			<return type="PackedStringArray">
+			</return>
+			<description>
+				Returns all arguments that was passed by [method parse_args].
+			</description>
+		</method>
+		<method name="get_error" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns a human-readable description of the last parcer error that occurred.
+			</description>
+		</method>
+		<method name="get_forwarded_args" qualifiers="const">
+			<return type="PackedStringArray">
+			</return>
+			<description>
+				Returns all arguments that was forwarded (e.g. all arguments after [code]--[/code]).
+			</description>
+		</method>
+		<method name="get_help_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="format" type="CommandLineHelpFormat">
+			</argument>
+			<description>
+				Returns a string containing the complete help information generated from the added options.
+			</description>
+		</method>
+		<method name="get_occurence_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="option" type="CommandLineOption">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_option" qualifiers="const">
+			<return type="CommandLineOption">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the option at index position [code]idx[/code]. Negative indices can be used to count from the back, like in Python (-1 is the last element, -2 the second to last, etc.).
+			</description>
+		</method>
+		<method name="get_option_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of options in the parser.
+			</description>
+		</method>
+		<method name="get_prefix" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="option" type="CommandLineOption">
+			</argument>
+			<description>
+				Returns first used prefix for [code]option[/code]. Example: for parsed [code]--help[/code] will return [code]--[/code]. Convinient helper for [method get_prefixes].
+			</description>
+		</method>
+		<method name="get_prefixes" qualifiers="const">
+			<return type="PackedStringArray">
+			</return>
+			<argument index="0" name="option" type="CommandLineOption">
+			</argument>
+			<description>
+				Returns all used prefixes for [code]option[/code].
+			</description>
+		</method>
+		<method name="get_value" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="option" type="CommandLineOption">
+			</argument>
+			<description>
+				Returns first specified value for [code]option[/code]. Example: for parsed [code]--input filename.png[/code] will return [code]filename.png[/code]. Convinient helper for [method get_values].
+			</description>
+		</method>
+		<method name="get_values" qualifiers="const">
+			<return type="PackedStringArray">
+			</return>
+			<argument index="0" name="option" type="CommandLineOption">
+			</argument>
+			<description>
+				Returns all specified values for [code]option[/code].
+			</description>
+		</method>
+		<method name="is_set" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="option" type="CommandLineOption">
+			</argument>
+			<description>
+				Returns [code]true[/code] if [code]option[/code] was specified.
+			</description>
+		</method>
+		<method name="parse_args">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="args" type="PackedStringArray">
+			</argument>
+			<description>
+				Parses command-line [code]args[/code].
+			</description>
+		</method>
+		<method name="remove_option">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Removes option at specified index [code]idx[/code].
+			</description>
+		</method>
+		<method name="set_option">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="option" type="CommandLineOption">
+			</argument>
+			<description>
+				Replaced option at specified index [code]idx[/code] with [code]option[/code].
+			</description>
+		</method>
+		<method name="validate">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+				Checks if all required methods was specified. If succeed emits [signal CommandLineOption.validated] for options that was parsed.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="allow_adjacent" type="bool" setter="set_allow_adjacent" getter="is_allow_adjacent" default="true">
+			If [code]true[/code], values for options can delimeted by [code]=[/code] sign. Example: [code]--input=filename.png[/code].
+		</member>
+		<member name="allow_compound" type="bool" setter="set_allow_compound" getter="is_allow_compound" default="true">
+			If [code]true[/code], short options can be specified without a space. Example: [code]-aux[/code] will be equivalent to [code]-a -u -x[/code].
+		</member>
+		<member name="allow_forwarding_args" type="bool" setter="set_allow_forwarding_args" getter="is_allow_forwarding_args" default="false">
+			If [code]true[/code], all arguments after [code]--[/code] will be treated as forwarding arguments and will be available using the [method get_forwarded_args]. Such arguments will not be parsed as options.
+		</member>
+		<member name="allow_sticky" type="bool" setter="set_allow_sticky" getter="is_allow_sticky" default="true">
+			If [code]true[/code], values for short options can be specified without a space. Example: [code]-ifilename.png[/code].
+		</member>
+		<member name="long_prefixes" type="PackedStringArray" setter="set_long_prefixes" getter="get_long_prefixes" default="PackedStringArray( &quot;--&quot; )">
+			Prefixes, after which the arguemtn will be considered a long option.
+		</member>
+		<member name="short_prefixes" type="PackedStringArray" setter="set_short_prefixes" getter="get_short_prefixes" default="PackedStringArray( &quot;-&quot; )">
+			Prefixes, after which the arguemtn will be considered a short option.
+		</member>
+		<member name="similarity_bias" type="float" setter="set_similarity_bias" getter="get_similarity_bias" default="0.3">
+			If the user entered the wrong option, the parser will try to suggest the most similar one (in case the user made a typo). If the found most similar option has a similarity value lower than the specified one, then it will not be suggested.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
