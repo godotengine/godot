@@ -33,12 +33,11 @@
 #include "core/config/project_settings.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
-#include "file_access_android.h"
 #include "main/main.h"
 #include "platform/android/display_server_android.h"
 
 #include "dir_access_jandroid.h"
-#include "file_access_jandroid.h"
+#include "file_access_android.h"
 #include "net_socket_android.h"
 
 #include <dlfcn.h>
@@ -61,11 +60,7 @@ void OS_Android::initialize_core() {
 	if (use_apk_expansion)
 		FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	else {
-#ifdef USE_JAVA_FILE_ACCESS
-		FileAccess::make_default<FileAccessJAndroid>(FileAccess::ACCESS_RESOURCES);
-#else
 		FileAccess::make_default<FileAccessAndroid>(FileAccess::ACCESS_RESOURCES);
-#endif
 	}
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
