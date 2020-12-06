@@ -30,7 +30,7 @@
 
 #include "dir_access_jandroid.h"
 #include "core/string/print_string.h"
-#include "file_access_jandroid.h"
+#include "file_access_android.h"
 #include "string_android.h"
 #include "thread_jandroid.h"
 
@@ -146,7 +146,7 @@ bool DirAccessJAndroid::file_exists(String p_file) {
 	else
 		sd = current_dir.plus_file(p_file);
 
-	FileAccessJAndroid *f = memnew(FileAccessJAndroid);
+	FileAccessAndroid *f = memnew(FileAccessAndroid);
 	bool exists = f->file_exists(sd);
 	memdelete(f);
 
