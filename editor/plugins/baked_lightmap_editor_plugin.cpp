@@ -111,10 +111,6 @@ void BakedLightmapEditorPlugin::bake_func_end() {
 	}
 }
 
-void BakedLightmapEditorPlugin::_bind_methods() {
-	ClassDB::bind_method("_bake", &BakedLightmapEditorPlugin::_bake);
-}
-
 BakedLightmapEditorPlugin::BakedLightmapEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	bake = memnew(Button);
@@ -122,7 +118,7 @@ BakedLightmapEditorPlugin::BakedLightmapEditorPlugin(EditorNode *p_node) {
 	bake->set_icon(editor->get_gui_base()->get_theme_icon("Bake", "EditorIcons"));
 	bake->set_text(TTR("Bake Lightmaps"));
 	bake->hide();
-	bake->connect("pressed", Callable(this, "_bake"));
+	bake->connect("pressed", callable_mp(this, &BakedLightmapEditorPlugin::_bake));
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake);
 	lightmap = nullptr;
 

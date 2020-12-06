@@ -210,7 +210,6 @@ void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 
 void TextureLayeredEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &TextureLayeredEditor::_gui_input);
-	ClassDB::bind_method(D_METHOD("_layer_changed"), &TextureLayeredEditor::_layer_changed);
 }
 
 TextureLayeredEditor::TextureLayeredEditor() {
@@ -245,7 +244,7 @@ TextureLayeredEditor::TextureLayeredEditor() {
 	info->add_theme_constant_override("shadow_offset_y", 2);
 
 	setting = false;
-	layer->connect("value_changed", Callable(this, "_layer_changed"));
+	layer->connect("value_changed", callable_mp(this, &TextureLayeredEditor::_layer_changed));
 }
 
 TextureLayeredEditor::~TextureLayeredEditor() {

@@ -168,7 +168,6 @@ private:
 
 	void _select_drive(int p_idx);
 	void _dir_entered(String p_dir);
-	void _file_entered(const String &p_file);
 	void _action_pressed();
 	void _save_confirm_pressed();
 	void _cancel_pressed();
@@ -202,6 +201,8 @@ protected:
 	static void _bind_methods();
 	//bind helpers
 public:
+	void _file_entered(const String &p_file);
+
 	void popup_file_dialog();
 	void clear_filters();
 	void add_filter(const String &p_filter);

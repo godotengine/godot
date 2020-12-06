@@ -6733,7 +6733,7 @@ Node3DEditorPlugin::Node3DEditorPlugin(EditorNode *p_node) {
 	editor->get_main_control()->add_child(spatial_editor);
 
 	spatial_editor->hide();
-	spatial_editor->connect("transform_key_request", Callable(editor->get_inspector_dock(), "_transform_keyed"));
+	spatial_editor->connect("transform_key_request", callable_mp(editor->get_inspector_dock(), &InspectorDock::_transform_keyed));
 }
 
 Node3DEditorPlugin::~Node3DEditorPlugin() {

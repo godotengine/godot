@@ -73,7 +73,6 @@ class SceneTreeEditor : public Control {
 
 	bool _add_nodes(Node *p_node, TreeItem *p_parent);
 	void _test_update_tree();
-	void _update_tree();
 	void _tree_changed();
 	void _node_removed(Node *p_node);
 	void _node_renamed(Node *p_node);
@@ -133,6 +132,8 @@ class SceneTreeEditor : public Control {
 	Vector<StringName> valid_types;
 
 public:
+	void _update_tree();
+
 	void set_filter(const String &p_filter);
 	String get_filter() const;
 

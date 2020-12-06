@@ -52,9 +52,6 @@ class BakedLightmapEditorPlugin : public EditorPlugin {
 	void _bake_select_file(const String &p_file);
 	void _bake();
 
-protected:
-	static void _bind_methods();
-
 public:
 	virtual String get_name() const override { return "BakedLightmap"; }
 	bool has_main_screen() const override { return false; }
