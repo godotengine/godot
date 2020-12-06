@@ -31,7 +31,6 @@
 #include "os_android.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/file_access_buffered_fa.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "file_access_android.h"
@@ -63,15 +62,13 @@ void OS_Android::initialize_core() {
 		FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	else {
 #ifdef USE_JAVA_FILE_ACCESS
-		FileAccess::make_default<FileAccessBufferedFA<FileAccessJAndroid>>(FileAccess::ACCESS_RESOURCES);
+		FileAccess::make_default<FileAccessJAndroid>(FileAccess::ACCESS_RESOURCES);
 #else
-		//FileAccess::make_default<FileAccessBufferedFA<FileAccessAndroid> >(FileAccess::ACCESS_RESOURCES);
 		FileAccess::make_default<FileAccessAndroid>(FileAccess::ACCESS_RESOURCES);
 #endif
 	}
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
-	//FileAccessBufferedFA<FileAccessUnix>::make_default();
 	if (use_apk_expansion)
 		DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
 	else
