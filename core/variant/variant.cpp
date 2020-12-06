@@ -2023,7 +2023,7 @@ Variant::operator Color() const {
 	if (type == COLOR) {
 		return *reinterpret_cast<const Color *>(_data._mem);
 	} else if (type == STRING) {
-		return Color::html(operator String());
+		return Color(operator String());
 	} else if (type == INT) {
 		return Color::hex(operator int());
 	} else {

@@ -408,6 +408,8 @@ Color Color::get_named_color(int p_idx) {
 	return named_colors[p_idx].color;
 }
 
+// For a version that errors on invalid values instead of returning
+// a default color, use the Color(String) constructor instead.
 Color Color::from_string(const String &p_string, const Color &p_default) {
 	if (html_is_valid(p_string)) {
 		return html(p_string);

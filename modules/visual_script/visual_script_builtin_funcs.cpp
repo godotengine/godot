@@ -101,7 +101,6 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"str2var",
 	"var2bytes",
 	"bytes2var",
-	"color_named",
 	"smoothstep",
 	"posmod",
 	"lerp_angle",
@@ -200,7 +199,6 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case LOGIC_MAX:
 		case LOGIC_MIN:
 		case TYPE_CONVERT:
-		case COLORN:
 			return 2;
 		case MATH_LERP:
 		case MATH_LERP_ANGLE:
@@ -476,13 +474,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 				return PropertyInfo(Variant::BOOL, "allow_objects");
 			}
 		} break;
-		case COLORN: {
-			if (p_idx == 0) {
-				return PropertyInfo(Variant::STRING, "name");
-			} else {
-				return PropertyInfo(Variant::FLOAT, "alpha");
-			}
-		} break;
 		case FUNC_MAX: {
 		}
 	}
@@ -634,9 +625,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 			if (p_idx == 1) {
 				t = Variant::BOOL;
 			}
-		} break;
-		case COLORN: {
-			t = Variant::COLOR;
 		} break;
 		case FUNC_MAX: {
 		}
@@ -1176,15 +1164,6 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			*r_return = ret;
 
 		} break;
-		case VisualScriptBuiltinFunc::COLORN: {
-			VALIDATE_ARG_NUM(1);
-
-			Color color = Color::named(*p_inputs[0]);
-			color.a = *p_inputs[1];
-
-			*r_return = String(color);
-
-		} break;
 		default: {
 		}
 	}
@@ -1292,7 +1271,6 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(STR_TO_VAR);
 	BIND_ENUM_CONSTANT(VAR_TO_BYTES);
 	BIND_ENUM_CONSTANT(BYTES_TO_VAR);
-	BIND_ENUM_CONSTANT(COLORN);
 	BIND_ENUM_CONSTANT(MATH_SMOOTHSTEP);
 	BIND_ENUM_CONSTANT(MATH_POSMOD);
 	BIND_ENUM_CONSTANT(MATH_LERP_ANGLE);
@@ -1388,5 +1366,4 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/str2var", create_builtin_func_node<VisualScriptBuiltinFunc::STR_TO_VAR>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/var2bytes", create_builtin_func_node<VisualScriptBuiltinFunc::VAR_TO_BYTES>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/bytes2var", create_builtin_func_node<VisualScriptBuiltinFunc::BYTES_TO_VAR>);
-	VisualScriptLanguage::singleton->add_register_func("functions/built_in/color_named", create_builtin_func_node<VisualScriptBuiltinFunc::COLORN>);
 }
