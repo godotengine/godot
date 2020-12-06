@@ -162,13 +162,13 @@ void GDMonoLog::initialize() {
 		OS::Date date_now = OS::get_singleton()->get_date();
 		OS::Time time_now = OS::get_singleton()->get_time();
 
-		String log_file_name = str_format("%d_%02d_%02d %02d.%02d.%02d",
+		String log_file_name = str_format("%04d-%02d-%02d_%02d.%02d.%02d",
 				date_now.year, date_now.month, date_now.day,
 				time_now.hour, time_now.min, time_now.sec);
 
-		log_file_name += str_format(" (%d)", OS::get_singleton()->get_process_id());
+		log_file_name += str_format("_%d", OS::get_singleton()->get_process_id());
 
-		log_file_name += ".txt";
+		log_file_name += ".log";
 
 		log_file_path = logs_dir.plus_file(log_file_name);
 
