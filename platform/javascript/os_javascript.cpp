@@ -51,7 +51,6 @@
 // Lifecycle
 void OS_JavaScript::initialize() {
 	OS_Unix::initialize_core();
-	FileAccess::make_default<FileAccessBufferedFA<FileAccessUnix>>(FileAccess::ACCESS_RESOURCES);
 	DisplayServerJavaScript::register_javascript_driver();
 
 #ifdef MODULE_WEBSOCKET_ENABLED
