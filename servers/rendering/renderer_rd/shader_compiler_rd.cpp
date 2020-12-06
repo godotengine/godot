@@ -930,7 +930,11 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				}
 				declaration += _mkid(adnode->declarations[i].name);
 				declaration += "[";
-				declaration += itos(adnode->declarations[i].size);
+				if (adnode->size_expression != nullptr) {
+					declaration += _dump_node_code(adnode->size_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				} else {
+					declaration += itos(adnode->declarations[i].size);
+				}
 				declaration += "]";
 				int sz = adnode->declarations[i].initializer.size();
 				if (sz > 0) {

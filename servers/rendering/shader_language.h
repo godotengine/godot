@@ -437,6 +437,7 @@ public:
 		DataType datatype = TYPE_VOID;
 		String struct_name;
 		bool is_const = false;
+		Node *size_expression = nullptr;
 
 		struct Declaration {
 			StringName name;
@@ -496,6 +497,7 @@ public:
 			int line; //for completion
 			int array_size;
 			bool is_const;
+			ConstantNode::Value value;
 		};
 
 		Map<StringName, Variable> variables;
@@ -819,7 +821,7 @@ private:
 		IDENTIFIER_CONSTANT,
 	};
 
-	bool _find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type = nullptr, IdentifierType *r_type = nullptr, bool *r_is_const = nullptr, int *r_array_size = nullptr, StringName *r_struct_name = nullptr);
+	bool _find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type = nullptr, IdentifierType *r_type = nullptr, bool *r_is_const = nullptr, int *r_array_size = nullptr, StringName *r_struct_name = nullptr, ConstantNode::Value *r_constant_value = nullptr);
 	bool _is_operator_assign(Operator p_op) const;
 	bool _validate_assign(Node *p_node, const FunctionInfo &p_function_info, String *r_message = nullptr);
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = nullptr);
