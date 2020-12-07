@@ -11,17 +11,11 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="2.0">
-			Depth of the box measured from the center of the box.
-		</member>
-		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
-			Height of the box measured from the center of the box.
-		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The material used to render the box.
 		</member>
-		<member name="width" type="float" setter="set_width" getter="get_width" default="2.0">
-			Width of the box measured from the center of the box.
+		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3( 2, 2, 2 )">
+			The box's width, height and depth.
 		</member>
 	</members>
 	<constants>
