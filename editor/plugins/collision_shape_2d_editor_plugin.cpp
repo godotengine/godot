@@ -98,7 +98,7 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 			Ref<RectangleShape2D> rect = node->get_shape();
 
 			if (idx < 3) {
-				return rect->get_extents().abs();
+				return rect->get_size().abs();
 			}
 
 		} break;
@@ -179,13 +179,13 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 			if (idx < 3) {
 				Ref<RectangleShape2D> rect = node->get_shape();
 
-				Vector2 extents = rect->get_extents();
+				Vector2 size = rect->get_size();
 				if (idx == 2) {
-					extents = p_point;
+					size = p_point * 2;
 				} else {
-					extents[idx] = p_point[idx];
+					size[idx] = p_point[idx] * 2;
 				}
-				rect->set_extents(extents.abs());
+				rect->set_size(size.abs());
 
 				canvas_item_editor->update_viewport();
 			}
@@ -279,9 +279,9 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 		case RECTANGLE_SHAPE: {
 			Ref<RectangleShape2D> rect = node->get_shape();
 
-			undo_redo->add_do_method(rect.ptr(), "set_extents", rect->get_extents());
+			undo_redo->add_do_method(rect.ptr(), "set_size", rect->get_size());
 			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-			undo_redo->add_undo_method(rect.ptr(), "set_extents", p_org);
+			undo_redo->add_undo_method(rect.ptr(), "set_size", p_org);
 			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 
 		} break;
@@ -493,7 +493,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 			Ref<RectangleShape2D> shape = node->get_shape();
 
 			handles.resize(3);
-			Vector2 ext = shape->get_extents();
+			Vector2 ext = shape->get_size() / 2;
 			handles.write[0] = Point2(ext.x, 0);
 			handles.write[1] = Point2(0, ext.y);
 			handles.write[2] = Point2(ext.x, ext.y);

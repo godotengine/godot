@@ -33,40 +33,40 @@
 #include "servers/physics_server_2d.h"
 #include "servers/rendering_server.h"
 void RectangleShape2D::_update_shape() {
-	PhysicsServer2D::get_singleton()->shape_set_data(get_rid(), extents);
+	PhysicsServer2D::get_singleton()->shape_set_data(get_rid(), size / 2);
 	emit_changed();
 }
 
-void RectangleShape2D::set_extents(const Vector2 &p_extents) {
-	extents = p_extents;
+void RectangleShape2D::set_size(const Vector2 &p_size) {
+	size = p_size;
 	_update_shape();
 }
 
-Vector2 RectangleShape2D::get_extents() const {
-	return extents;
+Vector2 RectangleShape2D::get_size() const {
+	return size;
 }
 
 void RectangleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
-	RenderingServer::get_singleton()->canvas_item_add_rect(p_to_rid, Rect2(-extents, extents * 2.0), p_color);
+	RenderingServer::get_singleton()->canvas_item_add_rect(p_to_rid, Rect2(-size / 2, size), p_color);
 }
 
 Rect2 RectangleShape2D::get_rect() const {
-	return Rect2(-extents, extents * 2.0);
+	return Rect2(-size / 2, size);
 }
 
 real_t RectangleShape2D::get_enclosing_radius() const {
-	return extents.length();
+	return size.length() / 2;
 }
 
 void RectangleShape2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &RectangleShape2D::set_extents);
-	ClassDB::bind_method(D_METHOD("get_extents"), &RectangleShape2D::get_extents);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &RectangleShape2D::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &RectangleShape2D::get_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "extents"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
 }
 
 RectangleShape2D::RectangleShape2D() :
 		Shape2D(PhysicsServer2D::get_singleton()->rectangle_shape_create()) {
-	extents = Vector2(10, 10);
+	size = Vector2(20, 20);
 	_update_shape();
 }

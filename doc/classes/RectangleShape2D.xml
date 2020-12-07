@@ -13,8 +13,8 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="extents" type="Vector2" setter="set_extents" getter="get_extents" default="Vector2( 10, 10 )">
-			The rectangle's half extents. The width and height of this shape is twice the half extents.
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 20, 20 )">
+			The rectangle's width and height.
 		</member>
 	</members>
 	<constants>
