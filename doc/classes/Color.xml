@@ -164,9 +164,9 @@
 		<method name="lerp">
 			<return type="Color">
 			</return>
-			<argument index="0" name="b" type="Color">
+			<argument index="0" name="to" type="Color">
 			</argument>
-			<argument index="1" name="t" type="float">
+			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
 				Returns the linear interpolation with another color. The interpolation factor [code]t[/code] is between 0 and 1.

@@ -92,13 +92,13 @@ struct Color {
 	void invert();
 	Color inverted() const;
 
-	_FORCE_INLINE_ Color lerp(const Color &p_b, float p_t) const {
+	_FORCE_INLINE_ Color lerp(const Color &p_to, float p_weight) const {
 		Color res = *this;
 
-		res.r += (p_t * (p_b.r - r));
-		res.g += (p_t * (p_b.g - g));
-		res.b += (p_t * (p_b.b - b));
-		res.a += (p_t * (p_b.a - a));
+		res.r += (p_weight * (p_to.r - r));
+		res.g += (p_weight * (p_to.g - g));
+		res.b += (p_weight * (p_to.b - b));
+		res.a += (p_weight * (p_to.a - a));
 
 		return res;
 	}

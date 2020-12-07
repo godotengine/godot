@@ -86,10 +86,10 @@ struct Vector3 {
 
 	/* Static Methods between 2 vector3s */
 
-	_FORCE_INLINE_ Vector3 lerp(const Vector3 &p_b, real_t p_t) const;
-	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_b, real_t p_t) const;
-	Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_t) const;
-	Vector3 cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_t) const;
+	_FORCE_INLINE_ Vector3 lerp(const Vector3 &p_to, real_t p_weight) const;
+	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_to, real_t p_weight) const;
+	Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const;
+	Vector3 cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const;
 	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_b) const;
@@ -103,15 +103,15 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 ceil() const;
 	_FORCE_INLINE_ Vector3 round() const;
 
-	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_b) const;
-	_FORCE_INLINE_ real_t distance_squared_to(const Vector3 &p_b) const;
+	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_to) const;
+	_FORCE_INLINE_ real_t distance_squared_to(const Vector3 &p_to) const;
 
 	_FORCE_INLINE_ Vector3 posmod(const real_t p_mod) const;
 	_FORCE_INLINE_ Vector3 posmodv(const Vector3 &p_modv) const;
-	_FORCE_INLINE_ Vector3 project(const Vector3 &p_b) const;
+	_FORCE_INLINE_ Vector3 project(const Vector3 &p_to) const;
 
-	_FORCE_INLINE_ real_t angle_to(const Vector3 &p_b) const;
-	_FORCE_INLINE_ Vector3 direction_to(const Vector3 &p_b) const;
+	_FORCE_INLINE_ real_t angle_to(const Vector3 &p_to) const;
+	_FORCE_INLINE_ Vector3 direction_to(const Vector3 &p_to) const;
 
 	_FORCE_INLINE_ Vector3 slide(const Vector3 &p_normal) const;
 	_FORCE_INLINE_ Vector3 bounce(const Vector3 &p_normal) const;
@@ -195,24 +195,24 @@ Vector3 Vector3::round() const {
 	return Vector3(Math::round(x), Math::round(y), Math::round(z));
 }
 
-Vector3 Vector3::lerp(const Vector3 &p_b, real_t p_t) const {
+Vector3 Vector3::lerp(const Vector3 &p_to, real_t p_weight) const {
 	return Vector3(
-			x + (p_t * (p_b.x - x)),
-			y + (p_t * (p_b.y - y)),
-			z + (p_t * (p_b.z - z)));
+			x + (p_weight * (p_to.x - x)),
+			y + (p_weight * (p_to.y - y)),
+			z + (p_weight * (p_to.z - z)));
 }
 
-Vector3 Vector3::slerp(const Vector3 &p_b, real_t p_t) const {
-	real_t theta = angle_to(p_b);
-	return rotated(cross(p_b).normalized(), theta * p_t);
+Vector3 Vector3::slerp(const Vector3 &p_to, real_t p_weight) const {
+	real_t theta = angle_to(p_to);
+	return rotated(cross(p_to).normalized(), theta * p_weight);
 }
 
-real_t Vector3::distance_to(const Vector3 &p_b) const {
-	return (p_b - *this).length();
+real_t Vector3::distance_to(const Vector3 &p_to) const {
+	return (p_to - *this).length();
 }
 
-real_t Vector3::distance_squared_to(const Vector3 &p_b) const {
-	return (p_b - *this).length_squared();
+real_t Vector3::distance_squared_to(const Vector3 &p_to) const {
+	return (p_to - *this).length_squared();
 }
 
 Vector3 Vector3::posmod(const real_t p_mod) const {
@@ -223,16 +223,16 @@ Vector3 Vector3::posmodv(const Vector3 &p_modv) const {
 	return Vector3(Math::fposmod(x, p_modv.x), Math::fposmod(y, p_modv.y), Math::fposmod(z, p_modv.z));
 }
 
-Vector3 Vector3::project(const Vector3 &p_b) const {
-	return p_b * (dot(p_b) / p_b.length_squared());
+Vector3 Vector3::project(const Vector3 &p_to) const {
+	return p_to * (dot(p_to) / p_to.length_squared());
 }
 
-real_t Vector3::angle_to(const Vector3 &p_b) const {
-	return Math::atan2(cross(p_b).length(), dot(p_b));
+real_t Vector3::angle_to(const Vector3 &p_to) const {
+	return Math::atan2(cross(p_to).length(), dot(p_to));
 }
 
-Vector3 Vector3::direction_to(const Vector3 &p_b) const {
-	Vector3 ret(p_b.x - x, p_b.y - y, p_b.z - z);
+Vector3 Vector3::direction_to(const Vector3 &p_to) const {
+	Vector3 ret(p_to.x - x, p_to.y - y, p_to.z - z);
 	ret.normalize();
 	return ret;
 }

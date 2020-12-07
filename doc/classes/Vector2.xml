@@ -137,10 +137,10 @@
 			</argument>
 			<argument index="2" name="post_b" type="Vector2">
 			</argument>
-			<argument index="3" name="t" type="float">
+			<argument index="3" name="weight" type="float">
 			</argument>
 			<description>
-				Cubically interpolates between this vector and [code]b[/code] using [code]pre_a[/code] and [code]post_b[/code] as handles, and returns the result at position [code]t[/code]. [code]t[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				Cubically interpolates between this vector and [code]b[/code] using [code]pre_a[/code] and [code]post_b[/code] as handles, and returns the result at position [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="direction_to">
@@ -224,9 +224,9 @@
 		<method name="lerp">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="with" type="Vector2">
+			<argument index="0" name="to" type="Vector2">
 			</argument>
-			<argument index="1" name="t" type="float">
+			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
 				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
@@ -452,9 +452,9 @@
 		<method name="slerp">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="with" type="Vector2">
+			<argument index="0" name="to" type="Vector2">
 			</argument>
-			<argument index="1" name="t" type="float">
+			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
 				Returns the result of spherical linear interpolation between this vector and [code]b[/code], by amount [code]t[/code]. [code]t[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
