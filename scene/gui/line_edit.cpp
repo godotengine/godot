@@ -732,6 +732,7 @@ void LineEdit::_notification(int p_what) {
 				style = get_theme_stylebox("read_only");
 				draw_caret = false;
 			}
+			Ref<Font> font = get_theme_font("font");
 
 			style->draw(ci, Rect2(Point2(), size));
 
@@ -742,7 +743,7 @@ void LineEdit::_notification(int p_what) {
 			int x_ofs = 0;
 			bool using_placeholder = text.empty() && ime_text.empty();
 			float text_width = TS->shaped_text_get_size(text_rid).x;
-			float text_height = TS->shaped_text_get_size(text_rid).y;
+			float text_height = TS->shaped_text_get_size(text_rid).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM);
 
 			switch (align) {
 				case ALIGN_FILL:
@@ -833,14 +834,16 @@ void LineEdit::_notification(int p_what) {
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, selection_color);
 				}
 			}
-			const Vector<TextServer::Glyph> glyphs = TS->shaped_text_get_glyphs(text_rid);
+			const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(text_rid);
+			const TextServer::Glyph *glyphs = visual.ptr();
+			int gl_size = visual.size();
 
 			// Draw text.
 			ofs.y += TS->shaped_text_get_ascent(text_rid);
-			for (int i = 0; i < glyphs.size(); i++) {
+			for (int i = 0; i < gl_size; i++) {
 				bool selected = selection.enabled && glyphs[i].start >= selection.begin && glyphs[i].end <= selection.end;
 				for (int j = 0; j < glyphs[i].repeat; j++) {
-					if (ceil(ofs.x) >= x_ofs && floor(ofs.x + glyphs[i].advance) <= ofs_max) {
+					if (ceil(ofs.x) >= x_ofs && (ofs.x + glyphs[i].advance) <= ofs_max) {
 						if (glyphs[i].font_rid != RID()) {
 							TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_color_selected : font_color);
 						} else if ((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
@@ -1570,7 +1573,7 @@ Size2 LineEdit::get_minimum_size() const {
 		min_size.width = MAX(min_size.width, full_width + space_size);
 	}
 
-	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y, font->get_height(font_size));
+	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM), font->get_height(font_size));
 
 	// Take icons into account.
 	bool using_placeholder = text.empty() && ime_text.empty();

@@ -554,14 +554,18 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const
 	int line_start = MAX(p_start, range.x);
 	int last_safe_break = -1;
 	int chunk = 0;
-	for (int i = 0; i < logical.size(); i++) {
-		if (logical[i].start < p_start) {
+
+	int l_size = logical.size();
+	const Glyph *l_gl = logical.ptr();
+
+	for (int i = 0; i < l_size; i++) {
+		if (l_gl[i].start < p_start) {
 			continue;
 		}
-		if (logical[i].count > 0) {
-			if ((p_width[chunk] > 0) && (width + logical[i].advance > p_width[chunk]) && (last_safe_break >= 0)) {
-				lines.push_back(Vector2i(line_start, logical[last_safe_break].end));
-				line_start = logical[last_safe_break].end;
+		if (l_gl[i].count > 0) {
+			if ((p_width[chunk] > 0) && (width + l_gl[i].advance > p_width[chunk]) && (last_safe_break >= 0)) {
+				lines.push_back(Vector2i(line_start, l_gl[last_safe_break].end));
+				line_start = l_gl[last_safe_break].end;
 				i = last_safe_break;
 				last_safe_break = -1;
 				width = 0;
@@ -575,9 +579,9 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const
 				continue;
 			}
 			if ((p_break_flags & BREAK_MANDATORY) == BREAK_MANDATORY) {
-				if ((logical[i].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD) {
-					lines.push_back(Vector2i(line_start, logical[i].end));
-					line_start = logical[i].end;
+				if ((l_gl[i].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD) {
+					lines.push_back(Vector2i(line_start, l_gl[i].end));
+					line_start = l_gl[i].end;
 					last_safe_break = -1;
 					width = 0;
 					chunk = 0;
@@ -588,7 +592,7 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const
 				}
 			}
 			if ((p_break_flags & BREAK_WORD_BOUND) == BREAK_WORD_BOUND) {
-				if ((logical[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
+				if ((l_gl[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 					last_safe_break = i;
 				}
 			}
@@ -596,10 +600,10 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const
 				last_safe_break = i;
 			}
 		}
-		width += logical[i].advance;
+		width += l_gl[i].advance;
 	}
 
-	if (logical.size() > 0) {
+	if (l_size > 0) {
 		lines.push_back(Vector2i(line_start, range.y));
 	} else {
 		lines.push_back(Vector2i(0, 0));
@@ -618,30 +622,34 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_w
 	float width = 0.f;
 	int line_start = MAX(p_start, range.x);
 	int last_safe_break = -1;
-	for (int i = 0; i < logical.size(); i++) {
-		if (logical[i].start < p_start) {
+
+	int l_size = logical.size();
+	const Glyph *l_gl = logical.ptr();
+
+	for (int i = 0; i < l_size; i++) {
+		if (l_gl[i].start < p_start) {
 			continue;
 		}
-		if (logical[i].count > 0) {
-			if ((p_width > 0) && (width + logical[i].advance > p_width) && (last_safe_break >= 0)) {
-				lines.push_back(Vector2i(line_start, logical[last_safe_break].end));
-				line_start = logical[last_safe_break].end;
+		if (l_gl[i].count > 0) {
+			if ((p_width > 0) && (width + l_gl[i].advance > p_width) && (last_safe_break >= 0)) {
+				lines.push_back(Vector2i(line_start, l_gl[last_safe_break].end));
+				line_start = l_gl[last_safe_break].end;
 				i = last_safe_break;
 				last_safe_break = -1;
 				width = 0;
 				continue;
 			}
 			if ((p_break_flags & BREAK_MANDATORY) == BREAK_MANDATORY) {
-				if ((logical[i].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD) {
-					lines.push_back(Vector2i(line_start, logical[i].end));
-					line_start = logical[i].end;
+				if ((l_gl[i].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD) {
+					lines.push_back(Vector2i(line_start, l_gl[i].end));
+					line_start = l_gl[i].end;
 					last_safe_break = -1;
 					width = 0;
 					continue;
 				}
 			}
 			if ((p_break_flags & BREAK_WORD_BOUND) == BREAK_WORD_BOUND) {
-				if ((logical[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
+				if ((l_gl[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 					last_safe_break = i;
 				}
 			}
@@ -649,10 +657,10 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_w
 				last_safe_break = i;
 			}
 		}
-		width += logical[i].advance;
+		width += l_gl[i].advance;
 	}
 
-	if (logical.size() > 0) {
+	if (l_size > 0) {
 		if (lines.size() == 0 || lines[lines.size() - 1].y < range.y) {
 			lines.push_back(Vector2i(line_start, range.y));
 		}
@@ -671,15 +679,19 @@ Vector<Vector2i> TextServer::shaped_text_get_word_breaks(RID p_shaped) const {
 	const Vector2i &range = shaped_text_get_range(p_shaped);
 
 	int word_start = range.x;
-	for (int i = 0; i < logical.size(); i++) {
-		if (logical[i].count > 0) {
-			if ((logical[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
-				words.push_back(Vector2i(word_start, logical[i].end - 1));
-				word_start = logical[i].end;
+
+	int l_size = logical.size();
+	const Glyph *l_gl = logical.ptr();
+
+	for (int i = 0; i < l_size; i++) {
+		if (l_gl[i].count > 0) {
+			if ((l_gl[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
+				words.push_back(Vector2i(word_start, l_gl[i].end - 1));
+				word_start = l_gl[i].end;
 			}
 		}
 	}
-	if (logical.size() > 0) {
+	if (l_size > 0) {
 		words.push_back(Vector2i(word_start, range.y));
 	}
 
@@ -688,7 +700,7 @@ Vector<Vector2i> TextServer::shaped_text_get_word_breaks(RID p_shaped) const {
 
 void TextServer::shaped_text_get_carets(RID p_shaped, int p_position, Rect2 &p_leading_caret, Direction &p_leading_dir, Rect2 &p_trailing_caret, Direction &p_trailing_dir) const {
 	Vector<Rect2> carets;
-	const Vector<TextServer::Glyph> glyphs = shaped_text_get_glyphs(p_shaped);
+	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	const Vector2 &range = shaped_text_get_range(p_shaped);
 	float ascent = shaped_text_get_ascent(p_shaped);
@@ -698,7 +710,11 @@ void TextServer::shaped_text_get_carets(RID p_shaped, int p_position, Rect2 &p_l
 	float off = 0.0f;
 	p_leading_dir = DIRECTION_AUTO;
 	p_trailing_dir = DIRECTION_AUTO;
-	for (int i = 0; i < glyphs.size(); i++) {
+
+	int v_size = visual.size();
+	const Glyph *glyphs = visual.ptr();
+
+	for (int i = 0; i < v_size; i++) {
 		if (glyphs[i].count > 0) {
 			// Caret before grapheme (top / left).
 			if (p_position == glyphs[i].start && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
@@ -831,7 +847,7 @@ void TextServer::shaped_text_get_carets(RID p_shaped, int p_position, Rect2 &p_l
 }
 
 TextServer::Direction TextServer::shaped_text_get_dominant_direciton_in_range(RID p_shaped, int p_start, int p_end) const {
-	const Vector<TextServer::Glyph> glyphs = shaped_text_get_glyphs(p_shaped);
+	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 
 	if (p_start == p_end) {
 		return DIRECTION_AUTO;
@@ -843,7 +859,10 @@ TextServer::Direction TextServer::shaped_text_get_dominant_direciton_in_range(RI
 	int rtl = 0;
 	int ltr = 0;
 
-	for (int i = 0; i < glyphs.size(); i++) {
+	int v_size = visual.size();
+	const Glyph *glyphs = visual.ptr();
+
+	for (int i = 0; i < v_size; i++) {
 		if ((glyphs[i].end > start) && (glyphs[i].start < end)) {
 			if (glyphs[i].count > 0) {
 				if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
@@ -865,7 +884,7 @@ TextServer::Direction TextServer::shaped_text_get_dominant_direciton_in_range(RI
 
 Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start, int p_end) const {
 	Vector<Vector2> ranges;
-	const Vector<TextServer::Glyph> glyphs = shaped_text_get_glyphs(p_shaped);
+	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 
 	if (p_start == p_end) {
 		return ranges;
@@ -874,8 +893,11 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 	int start = MIN(p_start, p_end);
 	int end = MAX(p_start, p_end);
 
+	int v_size = visual.size();
+	const Glyph *glyphs = visual.ptr();
+
 	float off = 0.0f;
-	for (int i = 0; i < glyphs.size(); i++) {
+	for (int i = 0; i < v_size; i++) {
 		for (int k = 0; k < glyphs[i].repeat; k++) {
 			if (glyphs[i].count > 0 && glyphs[i].index != 0) {
 				if (glyphs[i].start < end && glyphs[i].end > start) {
@@ -951,11 +973,15 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 }
 
 int TextServer::shaped_text_hit_test_grapheme(RID p_shaped, float p_coords) const {
-	const Vector<TextServer::Glyph> glyphs = shaped_text_get_glyphs(p_shaped);
+	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 
 	// Exact grapheme hit test, return -1 if missed.
 	float off = 0.0f;
-	for (int i = 0; i < glyphs.size(); i++) {
+
+	int v_size = visual.size();
+	const Glyph *glyphs = visual.ptr();
+
+	for (int i = 0; i < v_size; i++) {
 		for (int j = 0; j < glyphs[i].repeat; j++) {
 			if (p_coords >= off && p_coords < off + glyphs[i].advance) {
 				return i;
@@ -967,13 +993,16 @@ int TextServer::shaped_text_hit_test_grapheme(RID p_shaped, float p_coords) cons
 }
 
 int TextServer::shaped_text_hit_test_position(RID p_shaped, float p_coords) const {
-	const Vector<TextServer::Glyph> glyphs = shaped_text_get_glyphs(p_shaped);
+	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
+
+	int v_size = visual.size();
+	const Glyph *glyphs = visual.ptr();
 
 	// Cursor placement hit test.
 
 	// Place caret to the left of the leftmost grapheme, or to position 0 if string is empty.
 	if (p_coords <= 0) {
-		if (glyphs.size() > 0) {
+		if (v_size > 0) {
 			if ((glyphs[0].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 				return glyphs[0].end;
 			} else {
@@ -986,11 +1015,11 @@ int TextServer::shaped_text_hit_test_position(RID p_shaped, float p_coords) cons
 
 	// Place caret to the right of the rightmost grapheme, or to position 0 if string is empty.
 	if (p_coords >= shaped_text_get_width(p_shaped)) {
-		if (glyphs.size() > 0) {
-			if ((glyphs[glyphs.size() - 1].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-				return glyphs[glyphs.size() - 1].start;
+		if (v_size > 0) {
+			if ((glyphs[v_size - 1].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+				return glyphs[v_size - 1].start;
 			} else {
-				return glyphs[glyphs.size() - 1].end;
+				return glyphs[v_size - 1].end;
 			}
 		} else {
 			return 0;
@@ -998,7 +1027,7 @@ int TextServer::shaped_text_hit_test_position(RID p_shaped, float p_coords) cons
 	}
 
 	float off = 0.0f;
-	for (int i = 0; i < glyphs.size(); i++) {
+	for (int i = 0; i < v_size; i++) {
 		for (int k = 0; k < glyphs[i].repeat; k++) {
 			if (glyphs[i].count > 0) {
 				float advance = 0.f;
@@ -1029,8 +1058,10 @@ int TextServer::shaped_text_hit_test_position(RID p_shaped, float p_coords) cons
 }
 
 int TextServer::shaped_text_next_grapheme_pos(RID p_shaped, int p_pos) {
-	const Vector<TextServer::Glyph> glyphs = shaped_text_get_glyphs(p_shaped);
-	for (int i = 0; i < glyphs.size(); i++) {
+	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
+	int v_size = visual.size();
+	const Glyph *glyphs = visual.ptr();
+	for (int i = 0; i < v_size; i++) {
 		if (p_pos >= glyphs[i].start && p_pos < glyphs[i].end) {
 			return glyphs[i].end;
 		}
@@ -1039,8 +1070,10 @@ int TextServer::shaped_text_next_grapheme_pos(RID p_shaped, int p_pos) {
 }
 
 int TextServer::shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos) {
-	const Vector<TextServer::Glyph> glyphs = shaped_text_get_glyphs(p_shaped);
-	for (int i = 0; i < glyphs.size(); i++) {
+	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
+	int v_size = visual.size();
+	const Glyph *glyphs = visual.ptr();
+	for (int i = 0; i < v_size; i++) {
 		if (p_pos > glyphs[i].start && p_pos <= glyphs[i].end) {
 			return glyphs[i].start;
 		}
@@ -1050,13 +1083,16 @@ int TextServer::shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos) {
 }
 
 void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_pos, float p_clip_l, float p_clip_r, const Color &p_color) const {
-	const Vector<TextServer::Glyph> glyphs = shaped_text_get_glyphs(p_shaped);
+	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	bool hex_codes = shaped_text_get_preserve_control(p_shaped) || shaped_text_get_preserve_invalid(p_shaped);
 
+	int v_size = visual.size();
+	const Glyph *glyphs = visual.ptr();
+
 	Vector2 ofs = p_pos;
 	// Draw at the baseline.
-	for (int i = 0; i < glyphs.size(); i++) {
+	for (int i = 0; i < v_size; i++) {
 		for (int j = 0; j < glyphs[i].repeat; j++) {
 			if (p_clip_r > 0) {
 				// Clip right / bottom.
@@ -1099,12 +1135,14 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 }
 
 void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vector2 &p_pos, float p_clip_l, float p_clip_r, int p_outline_size, const Color &p_color) const {
-	const Vector<TextServer::Glyph> glyphs = shaped_text_get_glyphs(p_shaped);
+	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 
+	int v_size = visual.size();
+	const Glyph *glyphs = visual.ptr();
 	Vector2 ofs = p_pos;
 	// Draw at the baseline.
-	for (int i = 0; i < glyphs.size(); i++) {
+	for (int i = 0; i < v_size; i++) {
 		for (int j = 0; j < glyphs[i].repeat; j++) {
 			if (p_clip_r > 0) {
 				// Clip right / bottom.

@@ -56,11 +56,12 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 	int paren_sp = -1;
 	int start_sp = paren_sp;
 	UErrorCode err = U_ZERO_ERROR;
+	const char32_t *str = p_string.ptr();
 
 	do {
 		script_code = USCRIPT_COMMON;
 		for (script_start = script_end; script_end < p_length; script_end++) {
-			UChar32 ch = p_string[script_end];
+			UChar32 ch = str[script_end];
 			UScriptCode sc = uscript_getScript(ch, &err);
 			if (U_FAILURE(err)) {
 				ERR_FAIL_MSG(u_errorName(err));

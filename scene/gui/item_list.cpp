@@ -78,6 +78,7 @@ void ItemList::add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable) {
 	item.icon_region = Rect2i();
 	item.icon_modulate = Color(1, 1, 1, 1);
 	//item.text=p_item;
+	item.text_buf.instance();
 	item.selectable = p_selectable;
 	item.selected = false;
 	item.disabled = false;
