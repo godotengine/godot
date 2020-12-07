@@ -143,7 +143,7 @@ void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 	if (k.is_valid() && k->is_pressed()) {
 		bool handled = false;
 
-		if (ED_IS_SHORTCUT("editor/undo", p_event)) {
+		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
 			String action = undo_redo->get_current_action_name();
 			if (action != "") {
 				EditorNode::get_log()->add_message("Undo: " + action, EditorLog::MSG_TYPE_EDITOR);
@@ -152,7 +152,7 @@ void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 			handled = true;
 		}
 
-		if (ED_IS_SHORTCUT("editor/redo", p_event)) {
+		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
 			undo_redo->redo();
 			String action = undo_redo->get_current_action_name();
 			if (action != "") {
