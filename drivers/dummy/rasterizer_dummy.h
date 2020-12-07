@@ -383,7 +383,7 @@ public:
 	bool material_is_animated(RID p_material) override { return false; }
 	bool material_casts_shadows(RID p_material) override { return false; }
 	void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override {}
-	void material_update_dependency(RID p_material, RendererSceneRender::InstanceBase *p_instance) override {}
+	void material_update_dependency(RID p_material, InstanceBaseDependency *p_instance) override {}
 
 	/* MESH API */
 
@@ -642,8 +642,8 @@ public:
 	float reflection_probe_get_origin_max_distance(RID p_probe) const override { return 0.0; }
 	bool reflection_probe_renders_shadows(RID p_probe) const override { return false; }
 
-	void base_update_dependency(RID p_base, RendererSceneRender::InstanceBase *p_instance) override {}
-	void skeleton_update_dependency(RID p_base, RendererSceneRender::InstanceBase *p_instance) override {}
+	void base_update_dependency(RID p_base, InstanceBaseDependency *p_instance) override {}
+	void skeleton_update_dependency(RID p_base, InstanceBaseDependency *p_instance) override {}
 
 	/* DECAL API */
 
@@ -826,8 +826,8 @@ public:
 	int particles_get_draw_passes(RID p_particles) const override { return 0; }
 	RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const override { return RID(); }
 
-	void particles_add_collision(RID p_particles, RendererSceneRender::InstanceBase *p_instance) override {}
-	void particles_remove_collision(RID p_particles, RendererSceneRender::InstanceBase *p_instance) override {}
+	void particles_add_collision(RID p_particles, InstanceBaseDependency *p_instance) override {}
+	void particles_remove_collision(RID p_particles, InstanceBaseDependency *p_instance) override {}
 
 	void update_particles() override {}
 
