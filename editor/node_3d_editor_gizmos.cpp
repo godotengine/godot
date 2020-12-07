@@ -3541,7 +3541,7 @@ String CollisionShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_g
 	}
 
 	if (Object::cast_to<BoxShape3D>(*s)) {
-		return "Extents";
+		return "Size";
 	}
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
@@ -3574,7 +3574,7 @@ Variant CollisionShape3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo
 
 	if (Object::cast_to<BoxShape3D>(*s)) {
 		Ref<BoxShape3D> bs = s;
-		return bs->get_extents();
+		return bs->get_size();
 	}
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
@@ -3658,9 +3658,9 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 			d = 0.001;
 		}
 
-		Vector3 he = bs->get_extents();
-		he[p_idx] = d;
-		bs->set_extents(he);
+		Vector3 he = bs->get_size();
+		he[p_idx] = d * 2;
+		bs->set_size(he);
 	}
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
@@ -3737,14 +3737,14 @@ void CollisionShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int 
 	if (Object::cast_to<BoxShape3D>(*s)) {
 		Ref<BoxShape3D> ss = s;
 		if (p_cancel) {
-			ss->set_extents(p_restore);
+			ss->set_size(p_restore);
 			return;
 		}
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
-		ur->create_action(TTR("Change Box Shape Extents"));
-		ur->add_do_method(ss.ptr(), "set_extents", ss->get_extents());
-		ur->add_undo_method(ss.ptr(), "set_extents", p_restore);
+		ur->create_action(TTR("Change Box Shape Size"));
+		ur->add_do_method(ss.ptr(), "set_size", ss->get_size());
+		ur->add_undo_method(ss.ptr(), "set_size", p_restore);
 		ur->commit_action();
 	}
 
@@ -3878,8 +3878,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Ref<BoxShape3D> bs = s;
 		Vector<Vector3> lines;
 		AABB aabb;
-		aabb.position = -bs->get_extents();
-		aabb.size = aabb.position * -2;
+		aabb.position = -bs->get_size() / 2;
+		aabb.size = bs->get_size();
 
 		for (int i = 0; i < 12; i++) {
 			Vector3 a, b;
@@ -3892,7 +3892,7 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		for (int i = 0; i < 3; i++) {
 			Vector3 ax;
-			ax[i] = bs->get_extents()[i];
+			ax[i] = bs->get_size()[i] / 2;
 			handles.push_back(ax);
 		}
 

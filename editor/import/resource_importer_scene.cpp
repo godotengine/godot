@@ -429,7 +429,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			CollisionShape3D *colshape = memnew(CollisionShape3D);
 			if (empty_draw_type == "CUBE") {
 				BoxShape3D *boxShape = memnew(BoxShape3D);
-				boxShape->set_extents(Vector3(1, 1, 1));
+				boxShape->set_size(Vector3(2, 2, 2));
 				colshape->set_shape(boxShape);
 				colshape->set_name("BoxShape3D");
 			} else if (empty_draw_type == "SINGLE_ARROW") {
