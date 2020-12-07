@@ -178,7 +178,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 					if (box) {
 						Ref<BoxMesh> box_mesh;
 						box_mesh.instance();
-						box_mesh->set_size(box->get_extents() * 2.0);
+						box_mesh->set_size(box->get_size());
 						mesh = box_mesh;
 					}
 
