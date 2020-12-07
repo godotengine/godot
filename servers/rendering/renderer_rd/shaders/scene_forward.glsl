@@ -4,7 +4,7 @@
 
 VERSION_DEFINES
 
-#include "scene_high_end_inc.glsl"
+#include "scene_forward_inc.glsl"
 
 /* INPUT ATTRIBS */
 
@@ -296,7 +296,7 @@ VERTEX_SHADER_CODE
 
 VERSION_DEFINES
 
-#include "scene_high_end_inc.glsl"
+#include "scene_forward_inc.glsl"
 
 /* Varyings */
 
@@ -1548,8 +1548,6 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 	out_spec += vec4(irr_light.rgb * blend, blend);
 }
 
-#endif //USE_FORWARD_GI
-
 vec2 octahedron_wrap(vec2 v) {
 	vec2 signVal;
 	signVal.x = v.x >= 0.0 ? 1.0 : -1.0;
@@ -1683,9 +1681,13 @@ void sdfgi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal
 	}
 }
 
+#endif //USE_FORWARD_GI
+
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 #ifndef MODE_RENDER_DEPTH
+
+#ifndef LOW_END_MODE
 
 vec4 volumetric_fog_process(vec2 screen_uv, float z) {
 	vec3 fog_pos = vec3(screen_uv, z * scene_data.volumetric_fog_inv_length);
@@ -1697,6 +1699,7 @@ vec4 volumetric_fog_process(vec2 screen_uv, float z) {
 
 	return texture(sampler3D(volumetric_fog_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), fog_pos);
 }
+#endif
 
 vec4 fog_process(vec3 vertex) {
 	vec3 fog_color = scene_data.fog_light_color;
@@ -2221,30 +2224,13 @@ FRAGMENT_SHADER_CODE
 		specular_light = spec_accum.rgb;
 		ambient_light = amb_accum.rgb;
 	}
-#else
+#elif !defined(LOW_END_MODE)
+
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GI_BUFFERS)) { //use GI buffers
 
 		ivec2 coord;
 
 		if (scene_data.gi_upscale_for_msaa) {
-			/*
-			//find the closest depth to upscale from, based on neighbours
-			ivec2 base_coord = ivec2(gl_FragCoord.xy);
-			float z_dist = gl_FragCoord.z;
-			ivec2 closest_coord = base_coord;
-			float closest_z_dist = abs(texelFetch(sampler2D(depth_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), base_coord,0).r-z_dist);
-
-			for(int i=0;i<4;i++) {
-				const ivec2 neighbours[4]=ivec2[](ivec2(-1,0),ivec2(1,0),ivec2(0,-1),ivec2(0,1));
-				ivec2 neighbour_coord = base_coord + neighbours[i];
-				float neighbour_z_dist = abs(texelFetch(sampler2D(depth_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), neighbour_coord,0).r-z_dist);
-				if (neighbour_z_dist < closest_z_dist) {
-					closest_z_dist = neighbour_z_dist;
-					closest_coord = neighbour_coord;
-				}
-			}
-
-*/
 			ivec2 base_coord = ivec2(gl_FragCoord.xy);
 			ivec2 closest_coord = base_coord;
 			float closest_ang = dot(normal, texelFetch(sampler2D(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), base_coord, 0).xyz * 2.0 - 1.0);
@@ -2823,11 +2809,13 @@ FRAGMENT_SHADER_CODE
 //ambient occlusion
 #if defined(AO_USED)
 
+#ifndef LOW_END_MODE
 	if (scene_data.ssao_enabled && scene_data.ssao_ao_affect > 0.0) {
 		float ssao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv).r;
 		ao = mix(ao, min(ao, ssao), scene_data.ssao_ao_affect);
 		ao_light_affect = mix(ao_light_affect, max(ao_light_affect, scene_data.ssao_light_affect), scene_data.ssao_ao_affect);
 	}
+#endif //LOW_END_MODE
 
 	ambient_light = mix(scene_data.ao_color.rgb, ambient_light, ao);
 	ao_light_affect = mix(1.0, ao, ao_light_affect);
@@ -2835,6 +2823,7 @@ FRAGMENT_SHADER_CODE
 	diffuse_light = mix(scene_data.ao_color.rgb, diffuse_light, ao_light_affect);
 #else
 
+#ifndef LOW_END_MODE
 	if (scene_data.ssao_enabled) {
 		float ao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv).r;
 		ambient_light = mix(scene_data.ao_color.rgb, ambient_light, ao);
@@ -2842,6 +2831,7 @@ FRAGMENT_SHADER_CODE
 		specular_light = mix(scene_data.ao_color.rgb, specular_light, ao_light_affect);
 		diffuse_light = mix(scene_data.ao_color.rgb, diffuse_light, ao_light_affect);
 	}
+#endif //LOW_END_MODE
 
 #endif // AO_USED
 
@@ -2871,11 +2861,13 @@ FRAGMENT_SHADER_CODE
 		specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
 	}
 
+#ifndef LOW_END_MODE
 	if (scene_data.volumetric_fog_enabled) {
 		vec4 fog = volumetric_fog_process(screen_uv, -vertex.z);
 		diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
 		specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
 	}
+#endif // LOW_END_MODE
 
 #if defined(CUSTOM_FOG_USED)
 	diffuse_buffer.rgb = mix(diffuse_buffer.rgb, custom_fog.rgb, custom_fog.a);
@@ -2896,11 +2888,12 @@ FRAGMENT_SHADER_CODE
 		vec4 fog = fog_process(vertex);
 		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 	}
-
+#ifndef LOW_END_MODE
 	if (scene_data.volumetric_fog_enabled) {
 		vec4 fog = volumetric_fog_process(screen_uv, -vertex.z);
 		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 	}
+#endif
 
 #if defined(CUSTOM_FOG_USED)
 	frag_color.rgb = mix(frag_color.rgb, custom_fog.rgb, custom_fog.a);

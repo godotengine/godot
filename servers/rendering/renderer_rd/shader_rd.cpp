@@ -199,6 +199,10 @@ void ShaderRD::_clear_version(Version *p_version) {
 }
 
 void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
+	if (!variants_enabled[p_variant]) {
+		return; //variant is disabled, return
+	}
+
 	Vector<RD::ShaderStageData> stages;
 
 	String error;
@@ -365,6 +369,9 @@ void ShaderRD::_compile_version(Version *p_version) {
 
 	bool all_valid = true;
 	for (int i = 0; i < variant_defines.size(); i++) {
+		if (!variants_enabled[i]) {
+			continue; //disabled
+		}
 		if (p_version->variants[i].is_null()) {
 			all_valid = false;
 			break;
@@ -374,6 +381,9 @@ void ShaderRD::_compile_version(Version *p_version) {
 	if (!all_valid) {
 		//clear versions if they exist
 		for (int i = 0; i < variant_defines.size(); i++) {
+			if (!variants_enabled[i]) {
+				continue; //disabled
+			}
 			if (!p_version->variants[i].is_null()) {
 				RD::get_singleton()->free(p_version->variants[i]);
 			}
@@ -454,12 +464,26 @@ bool ShaderRD::version_free(RID p_version) {
 	return true;
 }
 
+void ShaderRD::set_variant_enabled(int p_variant, bool p_enabled) {
+	ERR_FAIL_COND(version_owner.get_rid_count() > 0); //versions exist
+	ERR_FAIL_INDEX(p_variant, variants_enabled.size());
+	variants_enabled.write[p_variant] = p_enabled;
+}
+
+bool ShaderRD::is_variant_enabled(int p_variant) const {
+	ERR_FAIL_INDEX_V(p_variant, variants_enabled.size(), false);
+	return variants_enabled[p_variant];
+}
+
 void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines) {
 	ERR_FAIL_COND(variant_defines.size());
 	ERR_FAIL_COND(p_variant_defines.size() == 0);
+
 	general_defines = p_general_defines.utf8();
+
 	for (int i = 0; i < p_variant_defines.size(); i++) {
 		variant_defines.push_back(p_variant_defines[i].utf8());
+		variants_enabled.push_back(true);
 	}
 }
 

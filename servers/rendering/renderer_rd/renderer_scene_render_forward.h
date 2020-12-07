@@ -34,16 +34,14 @@
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
-#include "servers/rendering/renderer_rd/shaders/scene_high_end.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/scene_forward.glsl.gen.h"
 
 class RendererSceneRenderForward : public RendererSceneRenderRD {
 	enum {
 		SCENE_UNIFORM_SET = 0,
-		RADIANCE_UNIFORM_SET = 1,
-		VIEW_DEPENDANT_UNIFORM_SET = 2,
-		RENDER_BUFFERS_UNIFORM_SET = 3,
-		TRANSFORMS_UNIFORM_SET = 4,
-		MATERIAL_UNIFORM_SET = 5
+		RENDER_PASS_UNIFORM_SET = 1,
+		TRANSFORMS_UNIFORM_SET = 2,
+		MATERIAL_UNIFORM_SET = 3
 	};
 
 	enum {
@@ -69,7 +67,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	};
 
 	struct {
-		SceneHighEndShaderRD scene_shader;
+		SceneForwardShaderRD scene_shader;
 		ShaderCompilerRD compiler;
 	} shader;
 
@@ -209,7 +207,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 	/* Framebuffer */
 
-	struct RenderBufferDataHighEnd : public RenderBufferData {
+	struct RenderBufferDataForward : public RenderBufferData {
 		//for rendering, may be MSAAd
 
 		RID color;
@@ -246,30 +244,29 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		void clear();
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa);
 
-		RID uniform_set;
-
-		~RenderBufferDataHighEnd();
+		~RenderBufferDataForward();
 	};
 
 	virtual RenderBufferData *_create_render_buffer_data();
-	void _allocate_normal_roughness_texture(RenderBufferDataHighEnd *rb);
+	void _allocate_normal_roughness_texture(RenderBufferDataForward *rb);
 
 	RID shadow_sampler;
 	RID render_base_uniform_set;
-	RID view_dependant_uniform_set;
+	RID render_pass_uniform_set;
+	RID sdfgi_pass_uniform_set;
 
 	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
 
 	virtual void _base_uniforms_changed();
-	void _render_buffers_clear_uniform_set(RenderBufferDataHighEnd *rb);
+	void _render_buffers_clear_uniform_set(RenderBufferDataForward *rb);
 	virtual void _render_buffers_uniform_set_changed(RID p_render_buffers);
 	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers);
 	virtual RID _render_buffers_get_ambient_texture(RID p_render_buffers);
 	virtual RID _render_buffers_get_reflection_texture(RID p_render_buffers);
 
 	void _update_render_base_uniform_set();
-	void _setup_view_dependant_uniform_set(RID p_shadow_atlas, RID p_reflection_atlas, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count);
-	void _update_render_buffers_uniform_set(RID p_render_buffers);
+	RID _setup_sdfgi_render_pass_uniform_set(RID p_albedo_texture, RID p_emission_texture, RID p_emission_aniso_texture, RID p_geom_facing_texture);
+	RID _setup_render_pass_uniform_set(RID p_render_buffers, RID p_radiance_texture, RID p_shadow_atlas, RID p_reflection_atlas, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count);
 
 	struct LightmapData {
 		float normal_xform[12];
@@ -552,8 +549,6 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	RID wireframe_material;
 	RID default_shader_rd;
 	RID default_shader_sdfgi_rd;
-	RID default_radiance_uniform_set;
-	RID default_render_buffers_uniform_set;
 
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
@@ -575,13 +570,15 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	void _setup_lightmaps(InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, const Transform &p_cam_transform);
 
 	void _fill_instances(RenderList::Element **p_elements, int p_element_count, bool p_for_depth, bool p_has_sdfgi = false, bool p_has_opaque_gi = false);
-	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_radiance_uniform_set, RID p_render_buffers_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2());
+	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2());
 	_FORCE_INLINE_ void _add_geometry(InstanceBase *p_instance, uint32_t p_surface, RID p_material, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi = false);
 	_FORCE_INLINE_ void _add_geometry_with_material(InstanceBase *p_instance, uint32_t p_surface, MaterialData *p_material, RID p_material_rid, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi = false);
 
 	void _fill_render_list(InstanceBase **p_cull_result, int p_cull_count, PassMode p_pass_mode, bool p_using_sdfgi = false);
 
 	Map<Size2i, RID> sdfgi_framebuffer_size_cache;
+
+	bool low_end = false;
 
 protected:
 	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, int p_directional_light_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color);

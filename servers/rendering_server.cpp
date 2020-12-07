@@ -2268,6 +2268,9 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/quality/2d_shadow_atlas/size", 2048);
 
+	GLOBAL_DEF("rendering/quality/rd_renderer/use_low_end_renderer", false);
+	GLOBAL_DEF("rendering/quality/rd_renderer/use_low_end_renderer.mobile", true);
+
 	GLOBAL_DEF("rendering/quality/shadow_atlas/size", 4096);
 	GLOBAL_DEF("rendering/quality/shadow_atlas/size.mobile", 2048);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));

@@ -204,6 +204,8 @@ layout(set = 0, binding = 19, std430) restrict readonly buffer GlobalVariableDat
 }
 global_variables;
 
+#ifndef LOW_END_MODE
+
 struct SDFGIProbeCascadeData {
 	vec3 position;
 	float to_probe;
@@ -239,6 +241,8 @@ layout(set = 0, binding = 20, std140) uniform SDFGI {
 }
 sdfgi;
 
+#endif //LOW_END_MODE
+
 // decal atlas
 
 /* Set 1, Radiance */
@@ -255,20 +259,22 @@ layout(set = 1, binding = 0) uniform textureCube radiance_cubemap;
 
 /* Set 2, Reflection and Shadow Atlases (view dependent) */
 
-layout(set = 2, binding = 0) uniform textureCubeArray reflection_atlas;
+layout(set = 1, binding = 1) uniform textureCubeArray reflection_atlas;
 
-layout(set = 2, binding = 1) uniform texture2D shadow_atlas;
+layout(set = 1, binding = 2) uniform texture2D shadow_atlas;
 
-layout(set = 2, binding = 2) uniform texture3D gi_probe_textures[MAX_GI_PROBES];
+#ifndef LOW_END_MODE
+layout(set = 1, binding = 3) uniform texture3D gi_probe_textures[MAX_GI_PROBES];
+#endif
 
 /* Set 3, Render Buffers */
 
 #ifdef MODE_RENDER_SDF
 
-layout(r16ui, set = 3, binding = 0) uniform restrict writeonly uimage3D albedo_volume_grid;
-layout(r32ui, set = 3, binding = 1) uniform restrict writeonly uimage3D emission_grid;
-layout(r32ui, set = 3, binding = 2) uniform restrict writeonly uimage3D emission_aniso_grid;
-layout(r32ui, set = 3, binding = 3) uniform restrict uimage3D geom_facing_grid;
+layout(r16ui, set = 1, binding = 4) uniform restrict writeonly uimage3D albedo_volume_grid;
+layout(r32ui, set = 1, binding = 5) uniform restrict writeonly uimage3D emission_grid;
+layout(r32ui, set = 1, binding = 6) uniform restrict writeonly uimage3D emission_aniso_grid;
+layout(r32ui, set = 1, binding = 7) uniform restrict uimage3D geom_facing_grid;
 
 //still need to be present for shaders that use it, so remap them to something
 #define depth_buffer shadow_atlas
@@ -277,14 +283,17 @@ layout(r32ui, set = 3, binding = 3) uniform restrict uimage3D geom_facing_grid;
 
 #else
 
-layout(set = 3, binding = 0) uniform texture2D depth_buffer;
-layout(set = 3, binding = 1) uniform texture2D color_buffer;
-layout(set = 3, binding = 2) uniform texture2D normal_roughness_buffer;
-layout(set = 3, binding = 4) uniform texture2D ao_buffer;
-layout(set = 3, binding = 5) uniform texture2D ambient_buffer;
-layout(set = 3, binding = 6) uniform texture2D reflection_buffer;
-layout(set = 3, binding = 7) uniform texture2DArray sdfgi_lightprobe_texture;
-layout(set = 3, binding = 8) uniform texture3D sdfgi_occlusion_cascades;
+layout(set = 1, binding = 4) uniform texture2D depth_buffer;
+layout(set = 1, binding = 5) uniform texture2D color_buffer;
+
+#ifndef LOW_END_MODE
+
+layout(set = 1, binding = 6) uniform texture2D normal_roughness_buffer;
+layout(set = 1, binding = 7) uniform texture2D ao_buffer;
+layout(set = 1, binding = 8) uniform texture2D ambient_buffer;
+layout(set = 1, binding = 9) uniform texture2D reflection_buffer;
+layout(set = 1, binding = 10) uniform texture2DArray sdfgi_lightprobe_texture;
+layout(set = 1, binding = 11) uniform texture3D sdfgi_occlusion_cascades;
 
 struct GIProbeData {
 	mat4 xform;
@@ -302,18 +311,20 @@ struct GIProbeData {
 	uint mipmaps;
 };
 
-layout(set = 3, binding = 9, std140) uniform GIProbes {
+layout(set = 1, binding = 12, std140) uniform GIProbes {
 	GIProbeData data[MAX_GI_PROBES];
 }
 gi_probes;
 
-layout(set = 3, binding = 10) uniform texture3D volumetric_fog_texture;
+layout(set = 1, binding = 13) uniform texture3D volumetric_fog_texture;
+
+#endif // LOW_END_MODE
 
 #endif
 
 /* Set 4 Skeleton & Instancing (Multimesh) */
 
-layout(set = 4, binding = 0, std430) restrict readonly buffer Transforms {
+layout(set = 2, binding = 0, std430) restrict readonly buffer Transforms {
 	vec4 data[];
 }
 transforms;
