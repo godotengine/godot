@@ -398,6 +398,32 @@ void PluginScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool 
 #endif
 }
 
+bool PluginScriptLanguage::handles_global_class_type(const String &p_type) const {
+	return p_type == "PluginScript";
+}
+
+String PluginScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
+	if (!p_path.empty()) {
+		Ref<PluginScript> script = ResourceLoader::load(p_path, "PluginScript");
+		if (script.is_valid()) {
+			if (r_base_type) {
+				*r_base_type = script->get_instance_base_type();
+			}
+			if (r_icon_path) {
+				*r_icon_path = script->get_script_class_icon_path();
+			}
+			return script->get_script_class_name();
+		}
+		if (r_base_type) {
+			*r_base_type = String();
+		}
+		if (r_icon_path) {
+			*r_icon_path = String();
+		}
+	}
+	return String();
+}
+
 void PluginScriptLanguage::lock() {
 	_lock.lock();
 }

@@ -302,6 +302,7 @@ Error PluginScript::reload(bool p_keep_state) {
 	_data = manifest.data;
 	_name = *(StringName *)&manifest.name;
 	_tool = manifest.is_tool;
+	_icon_path = *(String *)&manifest.icon_path;
 
 	Dictionary *members = (Dictionary *)&manifest.member_lines;
 	for (const Variant *key = members->next(); key != nullptr; key = members->next(key)) {
