@@ -497,6 +497,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Quat, is_normalized);
 	VCALL_LOCALMEM1R(Quat, is_equal_approx);
 	VCALL_LOCALMEM0R(Quat, inverse);
+	VCALL_LOCALMEM1R(Quat, angle_to);
 	VCALL_LOCALMEM1R(Quat, dot);
 	VCALL_LOCALMEM1R(Quat, xform);
 	VCALL_LOCALMEM2R(Quat, slerp);
@@ -1816,6 +1817,7 @@ void register_variant_methods() {
 	ADDFUNC0R(QUAT, BOOL, Quat, is_normalized, varray());
 	ADDFUNC1R(QUAT, BOOL, Quat, is_equal_approx, QUAT, "quat", varray());
 	ADDFUNC0R(QUAT, QUAT, Quat, inverse, varray());
+	ADDFUNC1R(QUAT, REAL, Quat, angle_to, QUAT, "to", varray());
 	ADDFUNC1R(QUAT, REAL, Quat, dot, QUAT, "b", varray());
 	ADDFUNC1R(QUAT, VECTOR3, Quat, xform, VECTOR3, "v", varray());
 	ADDFUNC2R(QUAT, QUAT, Quat, slerp, QUAT, "to", REAL, "weight", varray());
