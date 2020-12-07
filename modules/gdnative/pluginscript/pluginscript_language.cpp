@@ -142,6 +142,10 @@ bool PluginScriptLanguage::supports_builtin_mode() const {
 	return _desc.supports_builtin_mode;
 }
 
+bool PluginScriptLanguage::can_inherit_from_file() {
+	return _desc.can_inherit_from_file;
+}
+
 int PluginScriptLanguage::find_function(const String &p_function, const String &p_code) const {
 	if (_desc.find_function) {
 		return _desc.find_function(_data, (godot_string *)&p_function, (godot_string *)&p_code);
