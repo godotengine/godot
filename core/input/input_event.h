@@ -260,6 +260,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	static Ref<InputEventKey> create_reference(uint32_t p_keycode_with_modifier_masks);
+
 	InputEventKey() {}
 };
 
@@ -405,6 +407,8 @@ public:
 	virtual bool is_action_type() const override { return true; }
 	virtual String as_text() const override;
 	virtual String to_string() override;
+
+	static Ref<InputEventJoypadButton> create_reference(int p_btn_index);
 
 	InputEventJoypadButton() {}
 };
