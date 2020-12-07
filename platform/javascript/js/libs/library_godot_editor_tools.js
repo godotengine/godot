@@ -30,6 +30,7 @@
 
 const GodotEditorTools = {
 	godot_js_editor_download_file__deps: ['$FS'],
+	godot_js_editor_download_file__sig: 'viii',
 	godot_js_editor_download_file: function (p_path, p_name, p_mime) {
 		const path = GodotRuntime.parseString(p_path);
 		const name = GodotRuntime.parseString(p_name);

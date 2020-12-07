@@ -75,7 +75,7 @@ void main_loop_callback() {
 }
 
 /// When calling main, it is assumed FS is setup and synced.
-int main(int argc, char *argv[]) {
+extern EMSCRIPTEN_KEEPALIVE int godot_js_main(int argc, char *argv[]) {
 	os = new OS_JavaScript();
 
 	// We must override main when testing is enabled
