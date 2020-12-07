@@ -83,6 +83,7 @@ private:
 	bool antialiased;
 	bool force_autohinter;
 	Hinting hinting;
+	Vector<uint8_t> _fontdata;
 
 	String font_path;
 	Map<CacheID, DynamicFontAtSize *> size_cache;
@@ -168,9 +169,6 @@ class DynamicFontAtSize : public Reference {
 	TexturePosition _find_texture_pos_for_glyph(int p_color_size, Image::Format p_image_format, int p_width, int p_height);
 	Character _bitmap_to_character(FT_Bitmap bitmap, int yofs, int xofs, float advance);
 
-	static unsigned long _ft_stream_io(FT_Stream stream, unsigned long offset, unsigned char *buffer, unsigned long count);
-	static void _ft_stream_close(FT_Stream stream);
-
 	HashMap<CharType, Character> char_map;
 
 	_FORCE_INLINE_ void _update_char(CharType p_char);
@@ -179,7 +177,6 @@ class DynamicFontAtSize : public Reference {
 	Ref<DynamicFontData> font;
 	DynamicFontData::CacheID id;
 
-	static HashMap<String, Vector<uint8_t> > _fontdata;
 	Error _load();
 
 public:
