@@ -88,8 +88,8 @@ List<StringName> InputMap::get_actions() const {
 		return actions;
 	}
 
-	for (Map<StringName, Action>::Element *E = input_map.front(); E; E = E->next()) {
-		actions.push_back(E->key());
+	for (OrderedHashMap<StringName, Action>::Element E = input_map.front(); E; E = E.next()) {
+		actions.push_back(E.key());
 	}
 
 	return actions;
@@ -179,12 +179,12 @@ Array InputMap::_action_get_events(const StringName &p_action) {
 }
 
 const List<Ref<InputEvent>> *InputMap::action_get_events(const StringName &p_action) {
-	const Map<StringName, Action>::Element *E = input_map.find(p_action);
+	const OrderedHashMap<StringName, Action>::Element E = input_map.find(p_action);
 	if (!E) {
 		return nullptr;
 	}
 
-	return &E->get().inputs;
+	return &E.get().inputs;
 }
 
 bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match) const {
@@ -192,7 +192,7 @@ bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName 
 }
 
 bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength) const {
-	Map<StringName, Action>::Element *E = input_map.find(p_action);
+	OrderedHashMap<StringName, Action>::Element E = input_map.find(p_action);
 	ERR_FAIL_COND_V_MSG(!E, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
 
 	Ref<InputEventAction> input_event_action = p_event;
@@ -209,7 +209,7 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 	bool pressed;
 	float strength;
 	float raw_strength;
-	List<Ref<InputEvent>>::Element *event = _find_event(E->get(), p_event, p_exact_match, &pressed, &strength, &raw_strength);
+	List<Ref<InputEvent>>::Element *event = _find_event(E.get(), p_event, p_exact_match, &pressed, &strength, &raw_strength);
 	if (event != nullptr) {
 		if (p_pressed != nullptr) {
 			*p_pressed = pressed;
@@ -226,7 +226,7 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 	}
 }
 
-const Map<StringName, InputMap::Action> &InputMap::get_action_map() const {
+const OrderedHashMap<StringName, InputMap::Action> &InputMap::get_action_map() const {
 	return input_map;
 }
 
@@ -260,84 +260,440 @@ void InputMap::load_from_project_settings() {
 	}
 }
 
+struct _BuiltinActionDisplayName {
+	const char *name;
+	const char *display_name;
+};
+
+static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
+	/* clang-format off */
+    { "ui_accept",                                     TTRC("Accept") },
+    { "ui_select",                                     TTRC("Select") },
+    { "ui_cancel",                                     TTRC("Cancel") },
+    { "ui_focus_next",                                 TTRC("Focus Next") },
+    { "ui_focus_prev",                                 TTRC("Focus Prev") },
+    { "ui_left",                                       TTRC("Left") },
+    { "ui_right",                                      TTRC("Right") },
+    { "ui_up",                                         TTRC("Up") },
+    { "ui_down",                                       TTRC("Down") },
+    { "ui_page_up",                                    TTRC("Page Up") },
+    { "ui_page_down",                                  TTRC("Page Down") },
+    { "ui_home",                                       TTRC("Home") },
+    { "ui_end",                                        TTRC("End") },
+    { "ui_cut",                                        TTRC("Cut") },
+    { "ui_copy",                                       TTRC("Copy") },
+    { "ui_paste",                                      TTRC("Paste") },
+    { "ui_undo",                                       TTRC("Undo") },
+    { "ui_redo",                                       TTRC("Redo") },
+    { "ui_text_completion_query",                      TTRC("Completion Query") },
+    { "ui_text_newline",                               TTRC("New Line") },
+    { "ui_text_newline_blank",                         TTRC("New Blank Line") },
+    { "ui_text_newline_above",                         TTRC("New Line Above") },
+    { "ui_text_indent",                                TTRC("Indent") },
+    { "ui_text_dedent",                                TTRC("Dedent") },
+    { "ui_text_backspace",                             TTRC("Backspace") },
+    { "ui_text_backspace_word",                        TTRC("Backspace Word") },
+    { "ui_text_backspace_word.OSX",                    TTRC("Backspace Word") },
+    { "ui_text_backspace_all_to_left",                 TTRC("Backspace all to Left") },
+    { "ui_text_backspace_all_to_left.OSX",             TTRC("Backspace all to Left") },
+    { "ui_text_delete",                                TTRC("Delete") },
+    { "ui_text_delete_word",                           TTRC("Delete Word") },
+    { "ui_text_delete_word.OSX",                       TTRC("Delete Word") },
+    { "ui_text_delete_all_to_right",                   TTRC("Delete all to Right") },
+    { "ui_text_delete_all_to_right.OSX",               TTRC("Delete all to Right") },
+    { "ui_text_caret_left",                            TTRC("Caret Left") },
+    { "ui_text_caret_word_left",                       TTRC("Caret Word Left") },
+    { "ui_text_caret_word_left.OSX",                   TTRC("Caret Word Left") },
+    { "ui_text_caret_right",                           TTRC("Caret Right") },
+    { "ui_text_caret_word_right",                      TTRC("Caret Word Right") },
+    { "ui_text_caret_word_right.OSX",                  TTRC("Caret Word Right") },
+    { "ui_text_caret_up",                              TTRC("Caret Up") },
+    { "ui_text_caret_down",                            TTRC("Caret Down") },
+    { "ui_text_caret_line_start",                      TTRC("Caret Line Start") },
+    { "ui_text_caret_line_start.OSX",                  TTRC("Caret Line Start") },
+    { "ui_text_caret_line_end",                        TTRC("Caret Line End") },
+    { "ui_text_caret_line_end.OSX",                    TTRC("Caret Line End") },
+    { "ui_text_caret_page_up",                         TTRC("Caret Page Up") },
+    { "ui_text_caret_page_down",                       TTRC("Caret Page Down") },
+    { "ui_text_caret_document_start",                  TTRC("Caret Document Start") },
+    { "ui_text_caret_document_start.OSX",              TTRC("Caret Document Start") },
+    { "ui_text_caret_document_end",                    TTRC("Caret Document End") },
+    { "ui_text_caret_document_end.OSX",                TTRC("Caret Document End") },
+    { "ui_text_scroll_up",                             TTRC("Scroll Up") },
+    { "ui_text_scroll_up.OSX",                         TTRC("Scroll Up") },
+    { "ui_text_scroll_down",                           TTRC("Scroll Down") },
+    { "ui_text_scroll_down.OSX",                       TTRC("Scroll Down") },
+    { "ui_text_select_all",                            TTRC("Select All") },
+    { "ui_text_toggle_insert_mode",                    TTRC("Toggle Insert Mode") },
+    { "ui_graph_duplicate",                            TTRC("Duplicate Nodes") },
+    { "ui_graph_delete",                               TTRC("Delete Nodes") },
+    { "ui_filedialog_up_one_level",                    TTRC("Go Up One Level") },
+    { "ui_filedialog_refresh",                         TTRC("Refresh") },
+    { "ui_filedialog_show_hidden",                     TTRC("Show Hidden") },
+    { "ui_swap_input_direction ",                      TTRC("Swap Input Direction") },
+    { "",                                              TTRC("")}
+	/* clang-format on */
+};
+
+String InputMap::get_builtin_display_name(const String &p_name) const {
+	int len = sizeof(_builtin_action_display_names) / sizeof(_BuiltinActionDisplayName);
+
+	for (int i = 0; i < len; i++) {
+		if (_builtin_action_display_names[i].name == p_name) {
+			return RTR(_builtin_action_display_names[i].display_name);
+		}
+	}
+
+	return p_name;
+}
+
+const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
+	// Return cache if it has already been built.
+	if (default_builtin_cache.size()) {
+		return default_builtin_cache;
+	}
+
+	List<Ref<InputEvent>> inputs;
+	inputs.push_back(InputEventKey::create_reference(KEY_ENTER));
+	inputs.push_back(InputEventKey::create_reference(KEY_KP_ENTER));
+	inputs.push_back(InputEventKey::create_reference(KEY_SPACE));
+	default_builtin_cache.insert("ui_accept", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventJoypadButton::create_reference(JOY_BUTTON_Y));
+	inputs.push_back(InputEventKey::create_reference(KEY_SPACE));
+	default_builtin_cache.insert("ui_select", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_ESCAPE));
+	default_builtin_cache.insert("ui_cancel", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_TAB));
+	default_builtin_cache.insert("ui_focus_next", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_TAB | KEY_MASK_SHIFT));
+	default_builtin_cache.insert("ui_focus_prev", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_LEFT));
+	inputs.push_back(InputEventJoypadButton::create_reference(JOY_BUTTON_DPAD_LEFT));
+	default_builtin_cache.insert("ui_left", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT));
+	inputs.push_back(InputEventJoypadButton::create_reference(JOY_BUTTON_DPAD_RIGHT));
+	default_builtin_cache.insert("ui_right", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_UP));
+	inputs.push_back(InputEventJoypadButton::create_reference(JOY_BUTTON_DPAD_UP));
+	default_builtin_cache.insert("ui_up", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_DOWN));
+	inputs.push_back(InputEventJoypadButton::create_reference(JOY_BUTTON_DPAD_DOWN));
+	default_builtin_cache.insert("ui_down", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_PAGEUP));
+	default_builtin_cache.insert("ui_page_up", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_PAGEDOWN));
+	default_builtin_cache.insert("ui_page_down", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_HOME));
+	default_builtin_cache.insert("ui_home", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_END));
+	default_builtin_cache.insert("ui_end", inputs);
+
+	// ///// UI basic Shortcuts /////
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_X | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(KEY_DELETE | KEY_MASK_SHIFT));
+	default_builtin_cache.insert("ui_cut", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_C | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(KEY_INSERT | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_copy", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_V | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(KEY_INSERT | KEY_MASK_SHIFT));
+	default_builtin_cache.insert("ui_paste", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_Z | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_undo", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_Y | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(KEY_Z | KEY_MASK_CMD | KEY_MASK_SHIFT));
+	default_builtin_cache.insert("ui_redo", inputs);
+
+	// ///// UI Text Input Shortcuts /////
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_SPACE | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_completion_query", inputs);
+
+	// Newlines
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_ENTER));
+	inputs.push_back(InputEventKey::create_reference(KEY_KP_ENTER));
+	default_builtin_cache.insert("ui_text_newline", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+
+	inputs.push_back(InputEventKey::create_reference(KEY_ENTER | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(KEY_KP_ENTER | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_newline_blank", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_ENTER | KEY_MASK_SHIFT | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(KEY_KP_ENTER | KEY_MASK_SHIFT | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_newline_above", inputs);
+
+	// Indentation
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_TAB));
+	default_builtin_cache.insert("ui_text_indent", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_TAB | KEY_MASK_SHIFT));
+	default_builtin_cache.insert("ui_text_dedent", inputs);
+
+	// Text Backspace and Delete
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE));
+	default_builtin_cache.insert("ui_text_backspace", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_backspace_word", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE | KEY_MASK_ALT));
+	default_builtin_cache.insert("ui_text_backspace_word.OSX", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	default_builtin_cache.insert("ui_text_backspace_all_to_left", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_backspace_all_to_left.OSX", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_DELETE));
+	default_builtin_cache.insert("ui_text_delete", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_DELETE | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_delete_word", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_DELETE | KEY_MASK_ALT));
+	default_builtin_cache.insert("ui_text_delete_word.OSX", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	default_builtin_cache.insert("ui_text_delete_all_to_right", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_DELETE | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_delete_all_to_right.OSX", inputs);
+
+	// Text Caret Movement Left/Right
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_LEFT));
+	default_builtin_cache.insert("ui_text_caret_left", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_LEFT | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_caret_word_left", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_LEFT | KEY_MASK_ALT));
+	default_builtin_cache.insert("ui_text_caret_word_left.OSX", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT));
+	default_builtin_cache.insert("ui_text_caret_right", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_caret_word_right", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT | KEY_MASK_ALT));
+	default_builtin_cache.insert("ui_text_caret_word_right.OSX", inputs);
+
+	// Text Caret Movement Up/Down
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_UP));
+	default_builtin_cache.insert("ui_text_caret_up", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_DOWN));
+	default_builtin_cache.insert("ui_text_caret_down", inputs);
+
+	// Text Caret Movement Line Start/End
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_HOME));
+	default_builtin_cache.insert("ui_text_caret_line_start", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_A | KEY_MASK_CTRL));
+	inputs.push_back(InputEventKey::create_reference(KEY_LEFT | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_caret_line_start.OSX", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_END));
+	default_builtin_cache.insert("ui_text_caret_line_end", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_E | KEY_MASK_CTRL));
+	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_caret_line_end.OSX", inputs);
+	// Text Caret Movement Page Up/Down
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_PAGEUP));
+	default_builtin_cache.insert("ui_text_caret_page_up", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_PAGEDOWN));
+	default_builtin_cache.insert("ui_text_caret_page_down", inputs);
+
+	// Text Caret Movement Document Start/End
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_HOME | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_caret_document_start", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_UP | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_caret_document_start.OSX", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_END | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_caret_document_end", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_DOWN | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_caret_document_end.OSX", inputs);
+
+	// Text Scrolling
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_UP | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_scroll_up", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_UP | KEY_MASK_CMD | KEY_MASK_ALT));
+	default_builtin_cache.insert("ui_text_scroll_up.OSX", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_DOWN | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_scroll_down", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_DOWN | KEY_MASK_CMD | KEY_MASK_ALT));
+	default_builtin_cache.insert("ui_text_scroll_down.OSX", inputs);
+
+	// Text Misc
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_A | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_select_all", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_INSERT));
+	default_builtin_cache.insert("ui_text_toggle_insert_mode", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_MENU));
+	default_builtin_cache.insert("ui_menu", inputs);
+
+	// ///// UI Graph Shortcuts /////
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_D | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_graph_duplicate", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_DELETE));
+	default_builtin_cache.insert("ui_graph_delete", inputs);
+
+	// ///// UI File Dialog Shortcuts /////
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE));
+	default_builtin_cache.insert("ui_filedialog_up_one_level", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_F5));
+	default_builtin_cache.insert("ui_filedialog_refresh", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_H));
+	default_builtin_cache.insert("ui_filedialog_show_hidden", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_QUOTELEFT | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_swap_input_direction", inputs);
+
+	return default_builtin_cache;
+}
+
 void InputMap::load_default() {
-	Ref<InputEventKey> key;
+	OrderedHashMap<String, List<Ref<InputEvent>>> builtins = get_builtins();
 
-	add_action("ui_accept");
-	key.instance();
-	key->set_keycode(KEY_ENTER);
-	action_add_event("ui_accept", key);
+	// List of Builtins which have an override for OSX.
+	Vector<String> osx_builtins;
+	for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
+		if (String(E.key()).ends_with(".OSX")) {
+			// Strip .OSX from name: some_input_name.OSX -> some_input_name
+			osx_builtins.push_back(String(E.key()).split(".")[0]);
+		}
+	}
 
-	key.instance();
-	key->set_keycode(KEY_KP_ENTER);
-	action_add_event("ui_accept", key);
+	for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
+		String fullname = E.key();
+		String name = fullname.split(".")[0];
+		String override_for = fullname.split(".").size() > 1 ? fullname.split(".")[1] : "";
 
-	key.instance();
-	key->set_keycode(KEY_SPACE);
-	action_add_event("ui_accept", key);
+#ifdef APPLE_STYLE_KEYS
+		if (osx_builtins.has(name) && override_for != "OSX") {
+			// Name has osx builtin but this particular one is for non-osx systems - so skip.
+			continue;
+		}
+#else
+		if (override_for == "OSX") {
+			// Override for OSX - not needed on non-osx platforms.
+			continue;
+		}
+#endif
 
-	add_action("ui_select");
-	key.instance();
-	key->set_keycode(KEY_SPACE);
-	action_add_event("ui_select", key);
+		add_action(name);
 
-	add_action("ui_cancel");
-	key.instance();
-	key->set_keycode(KEY_ESCAPE);
-	action_add_event("ui_cancel", key);
+		List<Ref<InputEvent>> inputs = E.get();
+		for (List<Ref<InputEvent>>::Element *I = inputs.front(); I; I = I->next()) {
+			Ref<InputEventKey> iek = I->get();
 
-	add_action("ui_focus_next");
-	key.instance();
-	key->set_keycode(KEY_TAB);
-	action_add_event("ui_focus_next", key);
-
-	add_action("ui_focus_prev");
-	key.instance();
-	key->set_keycode(KEY_TAB);
-	key->set_shift(true);
-	action_add_event("ui_focus_prev", key);
-
-	add_action("ui_left");
-	key.instance();
-	key->set_keycode(KEY_LEFT);
-	action_add_event("ui_left", key);
-
-	add_action("ui_right");
-	key.instance();
-	key->set_keycode(KEY_RIGHT);
-	action_add_event("ui_right", key);
-
-	add_action("ui_up");
-	key.instance();
-	key->set_keycode(KEY_UP);
-	action_add_event("ui_up", key);
-
-	add_action("ui_down");
-	key.instance();
-	key->set_keycode(KEY_DOWN);
-	action_add_event("ui_down", key);
-
-	add_action("ui_page_up");
-	key.instance();
-	key->set_keycode(KEY_PAGEUP);
-	action_add_event("ui_page_up", key);
-
-	add_action("ui_page_down");
-	key.instance();
-	key->set_keycode(KEY_PAGEDOWN);
-	action_add_event("ui_page_down", key);
-
-	add_action("ui_home");
-	key.instance();
-	key->set_keycode(KEY_HOME);
-	action_add_event("ui_home", key);
-
-	add_action("ui_end");
-	key.instance();
-	key->set_keycode(KEY_END);
-	action_add_event("ui_end", key);
-
-	//set("display/window/handheld/orientation", "landscape");
+			// For the editor, only add keyboard actions.
+			if (iek.is_valid()) {
+				action_add_event(fullname, I->get());
+			}
+		}
+	}
 }
 
 InputMap::InputMap() {

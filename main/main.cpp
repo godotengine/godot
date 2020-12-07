@@ -515,8 +515,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	MAIN_PRINT("Main: Initialize Globals");
 
-	globals = memnew(ProjectSettings);
 	input_map = memnew(InputMap);
+	globals = memnew(ProjectSettings);
 
 	register_core_settings(); //here globals is present
 
