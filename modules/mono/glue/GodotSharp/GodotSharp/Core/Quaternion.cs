@@ -114,6 +114,23 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the angle between this quaternion and `to`.
+        /// This is the magnitude of the angle you would need to rotate
+        /// by to get from one to the other.
+        ///
+        /// Note: This method has an abnormally high amount
+        /// of floating-point error, so methods such as
+        /// <see cref="Mathf.IsZeroApprox"/> will not work reliably.
+        /// </summary>
+        /// <param name="to">The other quaternion.</param>
+        /// <returns>The angle between the quaternions.</returns>
+        public real_t AngleTo(Quaternion to)
+        {
+            real_t dot = Dot(to);
+            return Mathf.Acos(Mathf.Clamp(dot * dot * 2 - 1, -1, 1));
+        }
+
+        /// <summary>
         /// Performs a cubic spherical interpolation between quaternions `preA`,
         /// this vector, `b`, and `postB`, by the given amount `t`.
         /// </summary>
