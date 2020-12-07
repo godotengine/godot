@@ -1330,25 +1330,17 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 		}
 	}
 
-	Ref<InputEventKey> k = p_ev;
-
-	if (k.is_valid()) {
-		if (k->get_keycode() == KEY_D && k->is_pressed() && k->get_command()) {
+	if (p_ev->is_pressed()) {
+		if (p_ev->is_action("ui_graph_duplicate")) {
 			emit_signal("duplicate_nodes_request");
 			accept_event();
-		}
-
-		if (k->get_keycode() == KEY_C && k->is_pressed() && k->get_command()) {
+		} else if (p_ev->is_action("ui_copy")) {
 			emit_signal("copy_nodes_request");
 			accept_event();
-		}
-
-		if (k->get_keycode() == KEY_V && k->is_pressed() && k->get_command()) {
+		} else if (p_ev->is_action("ui_paste")) {
 			emit_signal("paste_nodes_request");
 			accept_event();
-		}
-
-		if (k->get_keycode() == KEY_DELETE && k->is_pressed()) {
+		} else if (p_ev->is_action("ui_graph_delete")) {
 			emit_signal("delete_nodes_request");
 			accept_event();
 		}
