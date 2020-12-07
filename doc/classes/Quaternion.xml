@@ -83,6 +83,16 @@
 				Constructs a quaternion defined by the given values.
 			</description>
 		</method>
+		<method name="angle_to" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="to" type="Quaternion">
+			</argument>
+			<description>
+				Returns the angle between this quaternion and [code]to[/code]. This is the magnitude of the angle you would need to rotate by to get from one to the other.
+				[b]Note:[/b] This method has an abnormally high amount of floating-point error, so methods such as [code]is_zero_approx[/code] will not work reliably.
+			</description>
+		</method>
 		<method name="cubic_slerp" qualifiers="const">
 			<return type="Quaternion">
 			</return>

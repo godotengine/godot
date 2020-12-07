@@ -1552,6 +1552,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Quaternion, is_normalized, sarray(), varray());
 	bind_method(Quaternion, is_equal_approx, sarray("to"), varray());
 	bind_method(Quaternion, inverse, sarray(), varray());
+	bind_method(Quaternion, angle_to, sarray("to"), varray());
 	bind_method(Quaternion, dot, sarray("with"), varray());
 	bind_method(Quaternion, slerp, sarray("to", "weight"), varray());
 	bind_method(Quaternion, slerpni, sarray("to", "weight"), varray());
