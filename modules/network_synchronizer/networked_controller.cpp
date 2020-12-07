@@ -580,6 +580,7 @@ void ServerController::update_peers() {
 	// Unreachable because this is the server controller.
 	CRASH_COND(node->get_tree()->is_network_server() == false);
 	const Vector<int> peer_ids = node->get_tree()->get_network_connected_peers();
+	peers.clear();
 	for (int i = 0; i < peer_ids.size(); i += 1) {
 		const int peer_id = peer_ids[i];
 		if (peer_id != node->get_network_master()) {
