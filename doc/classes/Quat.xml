@@ -92,10 +92,10 @@
 			</argument>
 			<argument index="2" name="post_b" type="Quat">
 			</argument>
-			<argument index="3" name="t" type="float">
+			<argument index="3" name="weight" type="float">
 			</argument>
 			<description>
-				Performs a cubic spherical interpolation between quaternions [code]preA[/code], this vector, [code]b[/code], and [code]postB[/code], by the given amount [code]t[/code].
+				Performs a cubic spherical interpolation between quaternions [code]pre_a[/code], this vector, [code]b[/code], and [code]post_b[/code], by the given amount [code]weight[/code].
 			</description>
 		</method>
 		<method name="dot">
@@ -261,9 +261,9 @@
 		<method name="slerp">
 			<return type="Quat">
 			</return>
-			<argument index="0" name="b" type="Quat">
+			<argument index="0" name="to" type="Quat">
 			</argument>
-			<argument index="1" name="t" type="float">
+			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
 				Returns the result of the spherical linear interpolation between this quaternion and [code]to[/code] by amount [code]weight[/code].
@@ -273,9 +273,9 @@
 		<method name="slerpni">
 			<return type="Quat">
 			</return>
-			<argument index="0" name="b" type="Quat">
+			<argument index="0" name="to" type="Quat">
 			</argument>
-			<argument index="1" name="t" type="float">
+			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
 				Returns the result of the spherical linear interpolation between this quaternion and [code]to[/code] by amount [code]weight[/code], but without checking if the rotation path is not bigger than 90 degrees.

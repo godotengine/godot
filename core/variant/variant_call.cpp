@@ -987,9 +987,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, posmod, sarray("mod"), varray());
 	bind_method(Vector2, posmodv, sarray("modv"), varray());
 	bind_method(Vector2, project, sarray("b"), varray());
-	bind_method(Vector2, lerp, sarray("with", "t"), varray());
-	bind_method(Vector2, slerp, sarray("with", "t"), varray());
-	bind_method(Vector2, cubic_interpolate, sarray("b", "pre_a", "post_b", "t"), varray());
+	bind_method(Vector2, lerp, sarray("to", "weight"), varray());
+	bind_method(Vector2, slerp, sarray("to", "weight"), varray());
+	bind_method(Vector2, cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
 	bind_method(Vector2, move_toward, sarray("to", "delta"), varray());
 	bind_method(Vector2, rotated, sarray("phi"), varray());
 	bind_method(Vector2, tangent, sarray(), varray());
@@ -1060,9 +1060,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, inverse, sarray(), varray());
 	bind_method(Vector3, snapped, sarray("by"), varray());
 	bind_method(Vector3, rotated, sarray("by_axis", "phi"), varray());
-	bind_method(Vector3, lerp, sarray("b", "t"), varray());
-	bind_method(Vector3, slerp, sarray("b", "t"), varray());
-	bind_method(Vector3, cubic_interpolate, sarray("b", "pre_a", "post_b", "t"), varray());
+	bind_method(Vector3, lerp, sarray("to", "weight"), varray());
+	bind_method(Vector3, slerp, sarray("to", "weight"), varray());
+	bind_method(Vector3, cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
 	bind_method(Vector3, move_toward, sarray("to", "delta"), varray());
 	bind_method(Vector3, dot, sarray("with"), varray());
 	bind_method(Vector3, cross, sarray("with"), varray());
@@ -1109,9 +1109,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(Quat, is_equal_approx, sarray("to"), varray());
 	bind_method(Quat, inverse, sarray(), varray());
 	bind_method(Quat, dot, sarray("with"), varray());
-	bind_method(Quat, slerp, sarray("b", "t"), varray());
-	bind_method(Quat, slerpni, sarray("b", "t"), varray());
-	bind_method(Quat, cubic_slerp, sarray("b", "pre_a", "post_b", "t"), varray());
+	bind_method(Quat, slerp, sarray("to", "weight"), varray());
+	bind_method(Quat, slerpni, sarray("to", "weight"), varray());
+	bind_method(Quat, cubic_slerp, sarray("b", "pre_a", "post_b", "weight"), varray());
 	bind_method(Quat, get_euler, sarray(), varray());
 
 	// FIXME: Quat is atomic, this should be done via construcror
@@ -1128,7 +1128,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Color, to_rgba64, sarray(), varray());
 
 	bind_method(Color, inverted, sarray(), varray());
-	bind_method(Color, lerp, sarray("b", "t"), varray());
+	bind_method(Color, lerp, sarray("to", "weight"), varray());
 	bind_method(Color, lightened, sarray("amount"), varray());
 	bind_method(Color, darkened, sarray("amount"), varray());
 	bind_method(Color, to_html, sarray("with_alpha"), varray(true));
@@ -1195,7 +1195,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform2D, translated, sarray("offset"), varray());
 	bind_method(Transform2D, basis_xform, sarray("v"), varray());
 	bind_method(Transform2D, basis_xform_inv, sarray("v"), varray());
-	bind_method(Transform2D, interpolate_with, sarray("xform", "t"), varray());
+	bind_method(Transform2D, interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform2D, is_equal_approx, sarray("xform"), varray());
 
 	/* Basis */
@@ -1212,7 +1212,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Basis, tdoty, sarray("with"), varray());
 	bind_method(Basis, tdotz, sarray("with"), varray());
 	bind_method(Basis, get_orthogonal_index, sarray(), varray());
-	bind_method(Basis, slerp, sarray("b", "t"), varray());
+	bind_method(Basis, slerp, sarray("to", "weight"), varray());
 	bind_method(Basis, is_equal_approx, sarray("b"), varray());
 	bind_method(Basis, get_rotation_quat, sarray(), varray());
 
