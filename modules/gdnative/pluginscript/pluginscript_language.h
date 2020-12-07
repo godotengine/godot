@@ -122,6 +122,11 @@ public:
 
 	virtual void frame();
 
+	/* GLOBAL CLASSES */
+
+	virtual bool handles_global_class_type(const String &p_type) const;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const;
+
 	void lock();
 	void unlock();
 
