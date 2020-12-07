@@ -201,9 +201,9 @@
 		<method name="slerp">
 			<return type="Basis">
 			</return>
-			<argument index="0" name="b" type="Basis">
+			<argument index="0" name="to" type="Basis">
 			</argument>
-			<argument index="1" name="t" type="float">
+			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
 				Assuming that the matrix is a proper rotation matrix, slerp performs a spherical-linear interpolation with another rotation matrix.

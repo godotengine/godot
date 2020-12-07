@@ -72,7 +72,7 @@ Vector3 Vector3::snapped(Vector3 p_val) const {
 	return v;
 }
 
-Vector3 Vector3::cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_t) const {
+Vector3 Vector3::cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const {
 	Vector3 p0 = p_pre_a;
 	Vector3 p1 = *this;
 	Vector3 p2 = p_b;
@@ -93,7 +93,7 @@ Vector3 Vector3::cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, 
 		}
 	}
 
-	real_t t = p_t;
+	real_t t = p_weight;
 	real_t t2 = t * t;
 	real_t t3 = t2 * t;
 
@@ -105,13 +105,13 @@ Vector3 Vector3::cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, 
 	return out;
 }
 
-Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_t) const {
+Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const {
 	Vector3 p0 = p_pre_a;
 	Vector3 p1 = *this;
 	Vector3 p2 = p_b;
 	Vector3 p3 = p_post_b;
 
-	real_t t = p_t;
+	real_t t = p_weight;
 	real_t t2 = t * t;
 	real_t t3 = t2 * t;
 

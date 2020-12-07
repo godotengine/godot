@@ -1017,15 +1017,15 @@ void Basis::set_diagonal(const Vector3 &p_diag) {
 	elements[2][2] = p_diag.z;
 }
 
-Basis Basis::slerp(const Basis &target, const real_t &t) const {
+Basis Basis::slerp(const Basis &p_to, const real_t &p_weight) const {
 	//consider scale
 	Quat from(*this);
-	Quat to(target);
+	Quat to(p_to);
 
-	Basis b(from.slerp(to, t));
-	b.elements[0] *= Math::lerp(elements[0].length(), target.elements[0].length(), t);
-	b.elements[1] *= Math::lerp(elements[1].length(), target.elements[1].length(), t);
-	b.elements[2] *= Math::lerp(elements[2].length(), target.elements[2].length(), t);
+	Basis b(from.slerp(to, p_weight));
+	b.elements[0] *= Math::lerp(elements[0].length(), p_to.elements[0].length(), p_weight);
+	b.elements[1] *= Math::lerp(elements[1].length(), p_to.elements[1].length(), p_weight);
+	b.elements[2] *= Math::lerp(elements[2].length(), p_to.elements[2].length(), p_weight);
 
 	return b;
 }

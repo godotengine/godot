@@ -118,8 +118,8 @@ Vector2 Vector2::posmodv(const Vector2 &p_modv) const {
 	return Vector2(Math::fposmod(x, p_modv.x), Math::fposmod(y, p_modv.y));
 }
 
-Vector2 Vector2::project(const Vector2 &p_b) const {
-	return p_b * (dot(p_b) / p_b.length_squared());
+Vector2 Vector2::project(const Vector2 &p_to) const {
+	return p_to * (dot(p_to) / p_to.length_squared());
 }
 
 Vector2 Vector2::snapped(const Vector2 &p_by) const {
@@ -139,13 +139,13 @@ Vector2 Vector2::clamped(real_t p_len) const {
 	return v;
 }
 
-Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_t) const {
+Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_weight) const {
 	Vector2 p0 = p_pre_a;
 	Vector2 p1 = *this;
 	Vector2 p2 = p_b;
 	Vector2 p3 = p_post_b;
 
-	real_t t = p_t;
+	real_t t = p_weight;
 	real_t t2 = t * t;
 	real_t t3 = t2 * t;
 
