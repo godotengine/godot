@@ -280,6 +280,7 @@ const GodotDisplay = {
 		window_icon: '',
 	},
 
+	godot_js_display_is_swap_ok_cancel__sig: 'i',
 	godot_js_display_is_swap_ok_cancel: function () {
 		const win = (['Windows', 'Win64', 'Win32', 'WinCE']);
 		const plat = navigator.platform || '';
@@ -289,10 +290,12 @@ const GodotDisplay = {
 		return 0;
 	},
 
+	godot_js_display_alert__sig: 'vi',
 	godot_js_display_alert: function (p_text) {
 		window.alert(GodotRuntime.parseString(p_text)); // eslint-disable-line no-alert
 	},
 
+	godot_js_display_pixel_ratio_get__sig: 'f',
 	godot_js_display_pixel_ratio_get: function () {
 		return window.devicePixelRatio || 1;
 	},
@@ -300,14 +303,17 @@ const GodotDisplay = {
 	/*
 	 * Canvas
 	 */
+	godot_js_display_canvas_focus__sig: 'v',
 	godot_js_display_canvas_focus: function () {
 		GodotConfig.canvas.focus();
 	},
 
+	godot_js_display_canvas_is_focused__sig: 'i',
 	godot_js_display_canvas_is_focused: function () {
 		return document.activeElement === GodotConfig.canvas;
 	},
 
+	godot_js_display_canvas_bounding_rect_position_get__sig: 'vii',
 	godot_js_display_canvas_bounding_rect_position_get: function (r_x, r_y) {
 		const brect = GodotConfig.canvas.getBoundingClientRect();
 		GodotRuntime.setHeapValue(r_x, brect.x, 'i32');
@@ -317,6 +323,7 @@ const GodotDisplay = {
 	/*
 	 * Touchscreen
 	 */
+	godot_js_display_touchscreen_is_available__sig: 'i',
 	godot_js_display_touchscreen_is_available: function () {
 		return 'ontouchstart' in window;
 	},
@@ -324,6 +331,7 @@ const GodotDisplay = {
 	/*
 	 * Clipboard
 	 */
+	godot_js_display_clipboard_set__sig: 'ii',
 	godot_js_display_clipboard_set: function (p_text) {
 		const text = GodotRuntime.parseString(p_text);
 		if (!navigator.clipboard || !navigator.clipboard.writeText) {
@@ -336,6 +344,7 @@ const GodotDisplay = {
 		return 0;
 	},
 
+	godot_js_display_clipboard_get__sig: 'ii',
 	godot_js_display_clipboard_get: function (callback) {
 		const func = GodotRuntime.get_func(callback);
 		try {
@@ -354,6 +363,7 @@ const GodotDisplay = {
 	/*
 	 * Window
 	 */
+	godot_js_display_window_request_fullscreen__sig: 'v',
 	godot_js_display_window_request_fullscreen: function () {
 		const canvas = GodotConfig.canvas;
 		(canvas.requestFullscreen || canvas.msRequestFullscreen
@@ -362,10 +372,12 @@ const GodotDisplay = {
 		).call(canvas);
 	},
 
+	godot_js_display_window_title_set__sig: 'vi',
 	godot_js_display_window_title_set: function (p_data) {
 		document.title = GodotRuntime.parseString(p_data);
 	},
 
+	godot_js_display_window_icon_set__sig: 'vii',
 	godot_js_display_window_icon_set: function (p_ptr, p_len) {
 		let link = document.getElementById('-gd-engine-icon');
 		if (link === null) {
@@ -386,6 +398,7 @@ const GodotDisplay = {
 	/*
 	 * Cursor
 	 */
+	godot_js_display_cursor_set_visible__sig: 'vi',
 	godot_js_display_cursor_set_visible: function (p_visible) {
 		const visible = p_visible !== 0;
 		if (visible === GodotDisplayCursor.visible) {
@@ -399,14 +412,17 @@ const GodotDisplay = {
 		}
 	},
 
+	godot_js_display_cursor_is_hidden__sig: 'i',
 	godot_js_display_cursor_is_hidden: function () {
 		return !GodotDisplayCursor.visible;
 	},
 
+	godot_js_display_cursor_set_shape__sig: 'vi',
 	godot_js_display_cursor_set_shape: function (p_string) {
 		GodotDisplayCursor.set_shape(GodotRuntime.parseString(p_string));
 	},
 
+	godot_js_display_cursor_set_custom_shape__sig: 'viiiii',
 	godot_js_display_cursor_set_custom_shape: function (p_shape, p_ptr, p_len, p_hotspot_x, p_hotspot_y) {
 		const shape = GodotRuntime.parseString(p_shape);
 		const old_shape = GodotDisplayCursor.cursors[shape];
@@ -432,6 +448,7 @@ const GodotDisplay = {
 	/*
 	 * Listeners
 	 */
+	godot_js_display_notification_cb__sig: 'viiiii',
 	godot_js_display_notification_cb: function (callback, p_enter, p_exit, p_in, p_out) {
 		const canvas = GodotConfig.canvas;
 		const func = GodotRuntime.get_func(callback);
@@ -443,6 +460,7 @@ const GodotDisplay = {
 		});
 	},
 
+	godot_js_display_paste_cb__sig: 'vi',
 	godot_js_display_paste_cb: function (callback) {
 		const func = GodotRuntime.get_func(callback);
 		GodotDisplayListeners.add(window, 'paste', function (evt) {
@@ -453,6 +471,7 @@ const GodotDisplay = {
 		}, false);
 	},
 
+	godot_js_display_drop_files_cb__sig: 'vi',
 	godot_js_display_drop_files_cb: function (callback) {
 		const func = GodotRuntime.get_func(callback);
 		const dropFiles = function (files) {

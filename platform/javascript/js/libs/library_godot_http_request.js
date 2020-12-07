@@ -50,6 +50,7 @@ const GodotHTTPRequest = {
 		},
 	},
 
+	godot_xhr_new__sig: 'i',
 	godot_xhr_new: function () {
 		const newId = GodotHTTPRequest.getUnusedRequestId();
 		GodotHTTPRequest.requests[newId] = new XMLHttpRequest();
@@ -57,30 +58,36 @@ const GodotHTTPRequest = {
 		return newId;
 	},
 
+	godot_xhr_reset__sig: 'vi',
 	godot_xhr_reset: function (xhrId) {
 		GodotHTTPRequest.requests[xhrId] = new XMLHttpRequest();
 		GodotHTTPRequest.setupRequest(GodotHTTPRequest.requests[xhrId]);
 	},
 
+	godot_xhr_free__sig: 'vi',
 	godot_xhr_free: function (xhrId) {
 		GodotHTTPRequest.requests[xhrId].abort();
 		GodotHTTPRequest.requests[xhrId] = null;
 	},
 
+	godot_xhr_open__sig: 'viiiii',
 	godot_xhr_open: function (xhrId, method, url, p_user, p_password) {
 		const user = p_user > 0 ? GodotRuntime.parseString(p_user) : null;
 		const password = p_password > 0 ? GodotRuntime.parseString(p_password) : null;
 		GodotHTTPRequest.requests[xhrId].open(GodotRuntime.parseString(method), GodotRuntime.parseString(url), true, user, password);
 	},
 
+	godot_xhr_set_request_header__sig: 'viii',
 	godot_xhr_set_request_header: function (xhrId, header, value) {
 		GodotHTTPRequest.requests[xhrId].setRequestHeader(GodotRuntime.parseString(header), GodotRuntime.parseString(value));
 	},
 
+	godot_xhr_send_null__sig: 'vi',
 	godot_xhr_send_null: function (xhrId) {
 		GodotHTTPRequest.requests[xhrId].send();
 	},
 
+	godot_xhr_send_string__sig: 'vii',
 	godot_xhr_send_string: function (xhrId, strPtr) {
 		if (!strPtr) {
 			GodotRuntime.error('Failed to send string per XHR: null pointer');
@@ -89,6 +96,7 @@ const GodotHTTPRequest = {
 		GodotHTTPRequest.requests[xhrId].send(GodotRuntime.parseString(strPtr));
 	},
 
+	godot_xhr_send_data__sig: 'viii',
 	godot_xhr_send_data: function (xhrId, ptr, len) {
 		if (!ptr) {
 			GodotRuntime.error('Failed to send data per XHR: null pointer');
@@ -101,23 +109,28 @@ const GodotHTTPRequest = {
 		GodotHTTPRequest.requests[xhrId].send(HEAPU8.subarray(ptr, ptr + len));
 	},
 
+	godot_xhr_abort__sig: 'vi',
 	godot_xhr_abort: function (xhrId) {
 		GodotHTTPRequest.requests[xhrId].abort();
 	},
 
+	godot_xhr_get_status__sig: 'ii',
 	godot_xhr_get_status: function (xhrId) {
 		return GodotHTTPRequest.requests[xhrId].status;
 	},
 
+	godot_xhr_get_ready_state__sig: 'ii',
 	godot_xhr_get_ready_state: function (xhrId) {
 		return GodotHTTPRequest.requests[xhrId].readyState;
 	},
 
+	godot_xhr_get_response_headers_length__sig: 'ii',
 	godot_xhr_get_response_headers_length: function (xhrId) {
 		const headers = GodotHTTPRequest.requests[xhrId].getAllResponseHeaders();
 		return headers === null ? 0 : GodotRuntime.strlen(headers);
 	},
 
+	godot_xhr_get_response_headers__sig: 'viii',
 	godot_xhr_get_response_headers: function (xhrId, dst, len) {
 		const str = GodotHTTPRequest.requests[xhrId].getAllResponseHeaders();
 		if (str === null) {
@@ -126,11 +139,13 @@ const GodotHTTPRequest = {
 		GodotRuntime.stringToHeap(str, dst, len);
 	},
 
+	godot_xhr_get_response_length__sig: 'ii',
 	godot_xhr_get_response_length: function (xhrId) {
 		const body = GodotHTTPRequest.requests[xhrId].response;
 		return body === null ? 0 : body.byteLength;
 	},
 
+	godot_xhr_get_response__sig: 'viii',
 	godot_xhr_get_response: function (xhrId, dst, len) {
 		let buf = GodotHTTPRequest.requests[xhrId].response;
 		if (buf === null) {

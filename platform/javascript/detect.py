@@ -23,6 +23,7 @@ def get_opts():
         # eval() can be a security concern, so it can be disabled.
         BoolVariable("javascript_eval", "Enable JavaScript eval interface", True),
         BoolVariable("threads_enabled", "Enable WebAssembly Threads support (limited browser support)", False),
+        BoolVariable("gdnative_enabled", "Enable WebAssembly GDNative support (produces bigger binaries)", False),
         BoolVariable("use_closure_compiler", "Use closure compiler to minimize JavaScript code", False),
     ]
 
@@ -83,10 +84,8 @@ def configure(env):
 
     # LTO
     if env["use_lto"]:
-        env.Append(CCFLAGS=["-s", "WASM_OBJECT_FILES=0"])
-        env.Append(LINKFLAGS=["-s", "WASM_OBJECT_FILES=0"])
-        env.Append(CCFLAGS=["-flto"])
-        env.Append(LINKFLAGS=["-flto"])
+        env.Append(CCFLAGS=["-flto=full"])
+        env.Append(LINKFLAGS=["-flto=full"])
 
     # Closure compiler
     if env["use_closure_compiler"]:
@@ -133,6 +132,9 @@ def configure(env):
     if env["javascript_eval"]:
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
 
+    if env["threads_enabled"] and env["gdnative_enabled"]:
+        raise Exception("Threads and GDNative support can't be both enabled due to WebAssembly limitations")
+
     # Thread support (via SharedArrayBuffer).
     if env["threads_enabled"]:
         env.Append(CPPDEFINES=["PTHREAD_NO_RENAME"])
@@ -144,14 +146,15 @@ def configure(env):
     else:
         env.Append(CPPDEFINES=["NO_THREADS"])
 
+    if env["gdnative_enabled"]:
+        env.Append(CCFLAGS=["-s", "RELOCATABLE=1"])
+        env.Append(LINKFLAGS=["-s", "RELOCATABLE=1"])
+        env.extra_suffix = ".gdnative" + env.extra_suffix
+
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
     env.Append(LINKFLAGS=["-s", "ENVIRONMENT=web,worker"])
 
-    # We use IDBFS in javascript_main.cpp. Since Emscripten 1.39.1 it needs to
-    # be linked explicitly.
-    env.Append(LIBS=["idbfs.js"])
-
-    env.Append(LINKFLAGS=["-s", "BINARYEN=1"])
+    # Wrap the JavaScript support code around a closure named Godot.
     env.Append(LINKFLAGS=["-s", "MODULARIZE=1", "-s", "EXPORT_NAME='Godot'"])
 
     # Allow increasing memory buffer size during runtime. This is efficient
@@ -162,12 +165,14 @@ def configure(env):
     # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
     env.Append(LINKFLAGS=["-s", "USE_WEBGL2=1"])
 
+    # Do not call main immediately when the support code is ready.
     env.Append(LINKFLAGS=["-s", "INVOKE_RUN=0"])
 
     # Allow use to take control of swapping WebGL buffers.
     env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
 
-    # callMain for manual start, FS for preloading, PATH and ERRNO_CODES for BrowserFS.
+    # callMain for manual start.
     env.Append(LINKFLAGS=["-s", "EXTRA_EXPORTED_RUNTIME_METHODS=['callMain']"])
+
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-s", "EXIT_RUNTIME=1"])

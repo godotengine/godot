@@ -47,7 +47,7 @@ typedef enum {
 
 extern int godot_xhr_new();
 extern void godot_xhr_reset(int p_xhr_id);
-extern bool godot_xhr_free(int p_xhr_id);
+extern void godot_xhr_free(int p_xhr_id);
 
 extern int godot_xhr_open(int p_xhr_id, const char *p_method, const char *p_url, const char *p_user = NULL, const char *p_password = NULL);
 

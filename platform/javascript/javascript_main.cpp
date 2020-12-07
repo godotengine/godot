@@ -74,7 +74,7 @@ void main_loop_callback() {
 	}
 }
 
-int main(int argc, char *argv[]) {
+extern EMSCRIPTEN_KEEPALIVE int godot_js_main(int argc, char *argv[]) {
 	// Set locale
 	char locale_ptr[16];
 	godot_js_config_locale_get(locale_ptr, sizeof(locale_ptr));

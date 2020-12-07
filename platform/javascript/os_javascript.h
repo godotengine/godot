@@ -185,7 +185,7 @@ public:
 	virtual int get_power_percent_left();
 
 	virtual bool is_userfs_persistent() const;
-
+	Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path);
 	OS_JavaScript();
 };
 
