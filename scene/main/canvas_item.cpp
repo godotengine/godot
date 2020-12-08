@@ -364,7 +364,7 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 	if (p_visible) {
 		update(); //todo optimize
 	} else {
-		emit_signal(SceneStringNames::get_singleton()->hide);
+		emit_signal(SceneStringNames::get_singleton()->hidden);
 	}
 	_block();
 
@@ -1227,7 +1227,7 @@ void CanvasItem::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("draw"));
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
-	ADD_SIGNAL(MethodInfo("hide"));
+	ADD_SIGNAL(MethodInfo("hidden"));
 	ADD_SIGNAL(MethodInfo("item_rect_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);

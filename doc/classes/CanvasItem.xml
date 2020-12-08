@@ -608,7 +608,7 @@
 				Emitted when the [CanvasItem] must redraw. This can only be connected realtime, as deferred will not allow drawing.
 			</description>
 		</signal>
-		<signal name="hide">
+		<signal name="hidden">
 			<description>
 				Emitted when becoming hidden.
 			</description>
