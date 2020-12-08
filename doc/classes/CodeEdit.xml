@@ -179,9 +179,9 @@
 		</theme_item>
 		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 		</theme_item>
-		<theme_item name="font_color_readonly" type="Color" default="Color( 0.88, 0.88, 0.88, 0.5 )">
+		<theme_item name="font_readonly_color" type="Color" default="Color( 0.88, 0.88, 0.88, 0.5 )">
 		</theme_item>
-		<theme_item name="font_color_selected" type="Color" default="Color( 0, 0, 0, 1 )">
+		<theme_item name="font_selected_color" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
 		<theme_item name="font_size" type="int">
 			Font size of the [CodeEdit]'s text.

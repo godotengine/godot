@@ -163,8 +163,8 @@ void LinkButton::_notification(int p_what) {
 				} break;
 				case DRAW_HOVER_PRESSED:
 				case DRAW_PRESSED: {
-					if (has_theme_color("font_color_pressed")) {
-						color = get_theme_color("font_color_pressed");
+					if (has_theme_color("font_pressed_color")) {
+						color = get_theme_color("font_pressed_color");
 					} else {
 						color = get_theme_color("font_color");
 					}
@@ -173,12 +173,12 @@ void LinkButton::_notification(int p_what) {
 
 				} break;
 				case DRAW_HOVER: {
-					color = get_theme_color("font_color_hover");
+					color = get_theme_color("font_hover_color");
 					do_underline = underline_mode != UNDERLINE_MODE_NEVER;
 
 				} break;
 				case DRAW_DISABLED: {
-					color = get_theme_color("font_color_disabled");
+					color = get_theme_color("font_disabled_color");
 					do_underline = underline_mode == UNDERLINE_MODE_ALWAYS;
 
 				} break;

@@ -485,8 +485,8 @@ protected:
 		Color caret_color;
 		Color caret_background_color;
 		Color font_color;
-		Color font_color_selected;
-		Color font_color_readonly;
+		Color font_selected_color;
+		Color font_readonly_color;
 		Color selection_color;
 		Color mark_color;
 		Color code_folding_color;

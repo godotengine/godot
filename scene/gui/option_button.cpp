@@ -62,13 +62,13 @@ void OptionButton::_notification(int p_what) {
 			if (get_theme_constant("modulate_arrow")) {
 				switch (get_draw_mode()) {
 					case DRAW_PRESSED:
-						clr = get_theme_color("font_color_pressed");
+						clr = get_theme_color("font_pressed_color");
 						break;
 					case DRAW_HOVER:
-						clr = get_theme_color("font_color_hover");
+						clr = get_theme_color("font_hover_color");
 						break;
 					case DRAW_DISABLED:
-						clr = get_theme_color("font_color_disabled");
+						clr = get_theme_color("font_disabled_color");
 						break;
 					default:
 						clr = get_theme_color("font_color");

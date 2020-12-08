@@ -637,7 +637,7 @@ void TextEdit::_notification(int p_what) {
 
 			int visible_rows = get_visible_rows() + 1;
 
-			Color color = readonly ? cache.font_color_readonly : cache.font_color;
+			Color color = readonly ? cache.font_readonly_color : cache.font_color;
 
 			if (cache.background_color.a > 0.01) {
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), cache.background_color);
@@ -877,7 +877,7 @@ void TextEdit::_notification(int p_what) {
 
 					Color current_color = cache.font_color;
 					if (readonly) {
-						current_color = cache.font_color_readonly;
+						current_color = cache.font_readonly_color;
 					}
 
 					Vector<String> wrap_rows = get_wrap_rows_text(minimap_line);
@@ -918,7 +918,7 @@ void TextEdit::_notification(int p_what) {
 							if (color_map.has(last_wrap_column + j)) {
 								current_color = color_map[last_wrap_column + j].get("color");
 								if (readonly) {
-									current_color.a = cache.font_color_readonly.a;
+									current_color.a = cache.font_readonly_color.a;
 								}
 							}
 							color = current_color;
@@ -1001,7 +1001,7 @@ void TextEdit::_notification(int p_what) {
 				Dictionary color_map = _get_line_syntax_highlighting(line);
 
 				// Ensure we at least use the font color.
-				Color current_color = readonly ? cache.font_color_readonly : cache.font_color;
+				Color current_color = readonly ? cache.font_readonly_color : cache.font_color;
 
 				const Ref<TextParagraph> ldata = text.get_line_data(line);
 
@@ -1230,7 +1230,7 @@ void TextEdit::_notification(int p_what) {
 									}
 									rect.position.y = TS->shaped_text_get_ascent(rid) + cache.font->get_underline_position(cache.font_size);
 									rect.size.y = cache.font->get_underline_thickness(cache.font_size);
-									draw_rect(rect, cache.font_color_selected);
+									draw_rect(rect, cache.font_selected_color);
 								}
 
 								highlighted_word_col = _get_column_pos_of_word(highlighted_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, highlighted_word_col + 1);
@@ -1249,8 +1249,8 @@ void TextEdit::_notification(int p_what) {
 					for (int j = 0; j < gl_size; j++) {
 						if (color_map.has(glyphs[j].start)) {
 							current_color = color_map[glyphs[j].start].get("color");
-							if (readonly && current_color.a > cache.font_color_readonly.a) {
-								current_color.a = cache.font_color_readonly.a;
+							if (readonly && current_color.a > cache.font_readonly_color.a) {
+								current_color.a = cache.font_readonly_color.a;
 							}
 						}
 
@@ -1259,7 +1259,7 @@ void TextEdit::_notification(int p_what) {
 							int sel_to = (line < selection.to_line) ? TS->shaped_text_get_range(rid).y : selection.to_column;
 
 							if (glyphs[j].start >= sel_from && glyphs[j].end <= sel_to && override_selected_font_color) {
-								current_color = cache.font_color_selected;
+								current_color = cache.font_selected_color;
 							}
 						}
 
@@ -4900,8 +4900,8 @@ void TextEdit::_update_caches() {
 	cache.caret_color = get_theme_color("caret_color");
 	cache.caret_background_color = get_theme_color("caret_background_color");
 	cache.font_color = get_theme_color("font_color");
-	cache.font_color_selected = get_theme_color("font_color_selected");
-	cache.font_color_readonly = get_theme_color("font_color_readonly");
+	cache.font_selected_color = get_theme_color("font_selected_color");
+	cache.font_readonly_color = get_theme_color("font_readonly_color");
 	cache.selection_color = get_theme_color("selection_color");
 	cache.mark_color = get_theme_color("mark_color");
 	cache.current_line_color = get_theme_color("current_line_color");

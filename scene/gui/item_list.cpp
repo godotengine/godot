@@ -890,7 +890,7 @@ void ItemList::_notification(int p_what) {
 
 		Color guide_color = get_theme_color("guide_color");
 		Color font_color = get_theme_color("font_color");
-		Color font_color_selected = get_theme_color("font_color_selected");
+		Color font_selected_color = get_theme_color("font_selected_color");
 
 		if (has_focus()) {
 			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
@@ -1188,7 +1188,7 @@ void ItemList::_notification(int p_what) {
 					max_len = size2.x;
 				}
 
-				Color modulate = items[i].selected ? font_color_selected : (items[i].custom_fg != Color() ? items[i].custom_fg : font_color);
+				Color modulate = items[i].selected ? font_selected_color : (items[i].custom_fg != Color() ? items[i].custom_fg : font_color);
 				if (items[i].disabled) {
 					modulate.a *= 0.5;
 				}

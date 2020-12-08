@@ -380,10 +380,10 @@
 		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			Default font color.
 		</theme_item>
-		<theme_item name="font_color_selected" type="Color" default="Color( 0, 0, 0, 1 )">
+		<theme_item name="font_selected_color" type="Color" default="Color( 0, 0, 0, 1 )">
 			Font color for selected text (inside the selection rectangle).
 		</theme_item>
-		<theme_item name="font_color_uneditable" type="Color" default="Color( 0.88, 0.88, 0.88, 0.5 )">
+		<theme_item name="font_uneditable_color" type="Color" default="Color( 0.88, 0.88, 0.88, 0.5 )">
 			Font color when editing is disabled.
 		</theme_item>
 		<theme_item name="font_size" type="int">
