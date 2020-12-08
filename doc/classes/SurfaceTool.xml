@@ -103,6 +103,18 @@
 				Creates a vertex array from an existing [Mesh].
 			</description>
 		</method>
+		<method name="create_from_arrays">
+			<return type="void" />
+			<argument index="0" name="vertices" type="PackedVector3Array" />
+			<argument index="1" name="indices" type="PackedInt32Array" default="PackedInt32Array()" />
+			<argument index="2" name="colors" type="PackedColorArray" default="PackedColorArray()" />
+			<argument index="3" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
+			<argument index="4" name="uv2s" type="PackedVector2Array" default="PackedVector2Array()" />
+			<argument index="5" name="normals" type="PackedVector3Array" default="PackedVector3Array()" />
+			<argument index="6" name="tangents" type="Array" default="[]" />
+			<description>
+			</description>
+		</method>
 		<method name="create_from_blend_shape">
 			<return type="void" />
 			<argument index="0" name="existing" type="Mesh" />

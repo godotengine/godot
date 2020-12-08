@@ -269,6 +269,30 @@ void SurfaceTool::set_smooth_group(uint32_t p_group) {
 	last_smooth_group = p_group;
 }
 
+void SurfaceTool::create_from_arrays(const Vector<Vector3> &p_vertices, const Vector<int> &p_indices, const Vector<Color> &p_colors, const Vector<Vector2> &p_uvs, const Vector<Vector2> &p_uv2s, const Vector<Vector3> &p_normals, const Vector<Plane> &p_tangents) {
+	for (int i = 0; i < p_vertices.size(); i++) {
+		if (i < p_colors.size()) {
+			set_color(p_colors[i]);
+		}
+		if (i < p_uvs.size()) {
+			set_uv(p_uvs[i]);
+		}
+		if (i < p_uv2s.size()) {
+			set_uv2(p_uv2s[i]);
+		}
+		if (i < p_normals.size()) {
+			set_normal(p_normals[i]);
+		}
+		if (i < p_tangents.size()) {
+			set_tangent(p_tangents[i]);
+		}
+		add_vertex(p_vertices[i]);
+	}
+	for (int i = 0; i < p_indices.size(); i++) {
+		add_index(p_indices[i]);
+	}
+}
+
 void SurfaceTool::add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<Color> &p_colors, const Vector<Vector2> &p_uv2s, const Vector<Vector3> &p_normals, const Vector<Plane> &p_tangents) {
 	ERR_FAIL_COND(!begun);
 	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
@@ -1216,6 +1240,8 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_weights", "weights"), &SurfaceTool::set_weights);
 	ClassDB::bind_method(D_METHOD("set_custom", "index", "custom"), &SurfaceTool::set_custom);
 	ClassDB::bind_method(D_METHOD("set_smooth_group", "index"), &SurfaceTool::set_smooth_group);
+
+	ClassDB::bind_method(D_METHOD("create_from_arrays", "vertices", "indices", "colors", "uvs", "uv2s", "normals", "tangents"), &SurfaceTool::create_from_arrays, DEFVAL(Vector<int>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector3>()), DEFVAL(Vector<Plane>()));
 
 	ClassDB::bind_method(D_METHOD("add_triangle_fan", "vertices", "uvs", "colors", "uv2s", "normals", "tangents"), &SurfaceTool::add_triangle_fan, DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector3>()), DEFVAL(Vector<Plane>()));
 

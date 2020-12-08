@@ -161,6 +161,8 @@ public:
 
 	void add_vertex(const Vector3 &p_vertex);
 
+	void create_from_arrays(const Vector<Vector3> &p_vertices, const Vector<int> &p_indices = Vector<int>(), const Vector<Color> &p_colors = Vector<Color>(), const Vector<Vector2> &p_uvs = Vector<Vector2>(), const Vector<Vector2> &p_uv2s = Vector<Vector2>(), const Vector<Vector3> &p_normals = Vector<Vector3>(), const Vector<Plane> &p_tangents = Vector<Plane>());
+
 	void add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs = Vector<Vector2>(), const Vector<Color> &p_colors = Vector<Color>(), const Vector<Vector2> &p_uv2s = Vector<Vector2>(), const Vector<Vector3> &p_normals = Vector<Vector3>(), const Vector<Plane> &p_tangents = Vector<Plane>());
 
 	void add_index(int p_index);
