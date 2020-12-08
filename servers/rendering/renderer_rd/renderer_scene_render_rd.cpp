@@ -2971,6 +2971,10 @@ void RendererSceneRenderRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
+	if (low_end) {
+		return;
+	}
+
 	env->sdfgi_enabled = p_enable;
 	env->sdfgi_cascades = p_cascades;
 	env->sdfgi_min_cell_size = p_min_cell_size;
@@ -3045,6 +3049,10 @@ void RendererSceneRenderRD::environment_set_volumetric_fog(RID p_env, bool p_ena
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
+	if (low_end) {
+		return;
+	}
+
 	env->volumetric_fog_enabled = p_enable;
 	env->volumetric_fog_density = p_density;
 	env->volumetric_fog_light = p_light;
@@ -3095,6 +3103,10 @@ void RendererSceneRenderRD::environment_set_ssr(RID p_env, bool p_enable, int p_
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
+	if (low_end) {
+		return;
+	}
+
 	env->ssr_enabled = p_enable;
 	env->ssr_max_steps = p_max_steps;
 	env->ssr_fade_in = p_fade_int;
@@ -3113,6 +3125,10 @@ RS::EnvironmentSSRRoughnessQuality RendererSceneRenderRD::environment_get_ssr_ro
 void RendererSceneRenderRD::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_bias, float p_light_affect, float p_ao_channel_affect, RS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
+
+	if (low_end) {
+		return;
+	}
 
 	env->ssao_enabled = p_enable;
 	env->ssao_radius = p_radius;
@@ -4024,6 +4040,10 @@ bool RendererSceneRenderRD::gi_probe_needs_update(RID p_probe) const {
 	GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!gi_probe, false);
 
+	if (low_end) {
+		return false;
+	}
+
 	//return true;
 	return gi_probe->last_probe_version != storage->gi_probe_get_version(gi_probe->probe);
 }
@@ -4031,6 +4051,10 @@ bool RendererSceneRenderRD::gi_probe_needs_update(RID p_probe) const {
 void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, int p_dynamic_object_count, InstanceBase **p_dynamic_objects) {
 	GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
 	ERR_FAIL_COND(!gi_probe);
+
+	if (low_end) {
+		return;
+	}
 
 	uint32_t data_version = storage->gi_probe_get_data_version(gi_probe->probe);
 
@@ -7952,6 +7976,10 @@ int RendererSceneRenderRD::get_max_directional_lights() const {
 	return cluster.max_directional_lights;
 }
 
+bool RendererSceneRenderRD::is_low_end() const {
+	return low_end;
+}
+
 RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 	storage = p_storage;
 	singleton = this;
@@ -7961,9 +7989,15 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 	sky_use_cubemap_array = GLOBAL_GET("rendering/quality/reflections/texture_array_reflections");
 	//	sky_use_cubemap_array = false;
 
-	//uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
+	uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
-	{
+	low_end = GLOBAL_GET("rendering/quality/rd_renderer/use_low_end_renderer");
+
+	if (textures_per_stage < 48) {
+		low_end = true;
+	}
+
+	if (!low_end) {
 		//kinda complicated to compute the amount of slots, we try to use as many as we can
 
 		gi_probe_max_lights = 32;
@@ -7992,7 +8026,7 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 		}
 	}
 
-	{
+	if (!low_end) {
 		String defines;
 		Vector<String> versions;
 		versions.push_back("\n#define MODE_DEBUG_COLOR\n");
@@ -8208,121 +8242,125 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 		sky_scene_state.fog_only_texture_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_TEXTURES);
 	}
 
-	{
-		Vector<String> preprocess_modes;
-		preprocess_modes.push_back("\n#define MODE_SCROLL\n");
-		preprocess_modes.push_back("\n#define MODE_SCROLL_OCCLUSION\n");
-		preprocess_modes.push_back("\n#define MODE_INITIALIZE_JUMP_FLOOD\n");
-		preprocess_modes.push_back("\n#define MODE_INITIALIZE_JUMP_FLOOD_HALF\n");
-		preprocess_modes.push_back("\n#define MODE_JUMPFLOOD\n");
-		preprocess_modes.push_back("\n#define MODE_JUMPFLOOD_OPTIMIZED\n");
-		preprocess_modes.push_back("\n#define MODE_UPSCALE_JUMP_FLOOD\n");
-		preprocess_modes.push_back("\n#define MODE_OCCLUSION\n");
-		preprocess_modes.push_back("\n#define MODE_STORE\n");
-		String defines = "\n#define OCCLUSION_SIZE " + itos(SDFGI::CASCADE_SIZE / SDFGI::PROBE_DIVISOR) + "\n";
-		sdfgi_shader.preprocess.initialize(preprocess_modes, defines);
-		sdfgi_shader.preprocess_shader = sdfgi_shader.preprocess.version_create();
-		for (int i = 0; i < SDGIShader::PRE_PROCESS_MAX; i++) {
-			sdfgi_shader.preprocess_pipeline[i] = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.preprocess.version_get_shader(sdfgi_shader.preprocess_shader, i));
-		}
-	}
-
-	{
-		//calculate tables
-		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
-
-		Vector<String> direct_light_modes;
-		direct_light_modes.push_back("\n#define MODE_PROCESS_STATIC\n");
-		direct_light_modes.push_back("\n#define MODE_PROCESS_DYNAMIC\n");
-		sdfgi_shader.direct_light.initialize(direct_light_modes, defines);
-		sdfgi_shader.direct_light_shader = sdfgi_shader.direct_light.version_create();
-		for (int i = 0; i < SDGIShader::DIRECT_LIGHT_MODE_MAX; i++) {
-			sdfgi_shader.direct_light_pipeline[i] = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.direct_light.version_get_shader(sdfgi_shader.direct_light_shader, i));
-		}
-	}
-
-	{
-		//calculate tables
-		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
-		defines += "\n#define SH_SIZE " + itos(SDFGI::SH_SIZE) + "\n";
-
-		Vector<String> integrate_modes;
-		integrate_modes.push_back("\n#define MODE_PROCESS\n");
-		integrate_modes.push_back("\n#define MODE_STORE\n");
-		integrate_modes.push_back("\n#define MODE_SCROLL\n");
-		integrate_modes.push_back("\n#define MODE_SCROLL_STORE\n");
-		sdfgi_shader.integrate.initialize(integrate_modes, defines);
-		sdfgi_shader.integrate_shader = sdfgi_shader.integrate.version_create();
-
-		for (int i = 0; i < SDGIShader::INTEGRATE_MODE_MAX; i++) {
-			sdfgi_shader.integrate_pipeline[i] = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.integrate.version_get_shader(sdfgi_shader.integrate_shader, i));
+	if (!low_end) {
+		//SDFGI
+		{
+			Vector<String> preprocess_modes;
+			preprocess_modes.push_back("\n#define MODE_SCROLL\n");
+			preprocess_modes.push_back("\n#define MODE_SCROLL_OCCLUSION\n");
+			preprocess_modes.push_back("\n#define MODE_INITIALIZE_JUMP_FLOOD\n");
+			preprocess_modes.push_back("\n#define MODE_INITIALIZE_JUMP_FLOOD_HALF\n");
+			preprocess_modes.push_back("\n#define MODE_JUMPFLOOD\n");
+			preprocess_modes.push_back("\n#define MODE_JUMPFLOOD_OPTIMIZED\n");
+			preprocess_modes.push_back("\n#define MODE_UPSCALE_JUMP_FLOOD\n");
+			preprocess_modes.push_back("\n#define MODE_OCCLUSION\n");
+			preprocess_modes.push_back("\n#define MODE_STORE\n");
+			String defines = "\n#define OCCLUSION_SIZE " + itos(SDFGI::CASCADE_SIZE / SDFGI::PROBE_DIVISOR) + "\n";
+			sdfgi_shader.preprocess.initialize(preprocess_modes, defines);
+			sdfgi_shader.preprocess_shader = sdfgi_shader.preprocess.version_create();
+			for (int i = 0; i < SDGIShader::PRE_PROCESS_MAX; i++) {
+				sdfgi_shader.preprocess_pipeline[i] = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.preprocess.version_get_shader(sdfgi_shader.preprocess_shader, i));
+			}
 		}
 
 		{
-			Vector<RD::Uniform> uniforms;
+			//calculate tables
+			String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
 
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 0;
-				u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_WHITE));
-				uniforms.push_back(u);
+			Vector<String> direct_light_modes;
+			direct_light_modes.push_back("\n#define MODE_PROCESS_STATIC\n");
+			direct_light_modes.push_back("\n#define MODE_PROCESS_DYNAMIC\n");
+			sdfgi_shader.direct_light.initialize(direct_light_modes, defines);
+			sdfgi_shader.direct_light_shader = sdfgi_shader.direct_light.version_create();
+			for (int i = 0; i < SDGIShader::DIRECT_LIGHT_MODE_MAX; i++) {
+				sdfgi_shader.direct_light_pipeline[i] = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.direct_light.version_get_shader(sdfgi_shader.direct_light_shader, i));
 			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-				u.binding = 1;
-				u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
-				uniforms.push_back(u);
-			}
-
-			sdfgi_shader.integrate_default_sky_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.integrate.version_get_shader(sdfgi_shader.integrate_shader, 0), 1);
 		}
-	}
-	{
-		//calculate tables
-		String defines = "\n#define SDFGI_OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
-		Vector<String> gi_modes;
-		gi_modes.push_back("");
-		gi.shader.initialize(gi_modes, defines);
-		gi.shader_version = gi.shader.version_create();
-		for (int i = 0; i < GI::MODE_MAX; i++) {
-			gi.pipelines[i] = RD::get_singleton()->compute_pipeline_create(gi.shader.version_get_shader(gi.shader_version, i));
-		}
-
-		gi.sdfgi_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(GI::SDFGIData));
-	}
-	{
-		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
-		Vector<String> debug_modes;
-		debug_modes.push_back("");
-		sdfgi_shader.debug.initialize(debug_modes, defines);
-		sdfgi_shader.debug_shader = sdfgi_shader.debug.version_create();
-		sdfgi_shader.debug_shader_version = sdfgi_shader.debug.version_get_shader(sdfgi_shader.debug_shader, 0);
-		sdfgi_shader.debug_pipeline = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.debug_shader_version);
-	}
-	{
-		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
-
-		Vector<String> versions;
-		versions.push_back("\n#define MODE_PROBES\n");
-		versions.push_back("\n#define MODE_VISIBILITY\n");
-
-		sdfgi_shader.debug_probes.initialize(versions, defines);
-		sdfgi_shader.debug_probes_shader = sdfgi_shader.debug_probes.version_create();
 
 		{
-			RD::PipelineRasterizationState rs;
-			rs.cull_mode = RD::POLYGON_CULL_DISABLED;
-			RD::PipelineDepthStencilState ds;
-			ds.enable_depth_test = true;
-			ds.enable_depth_write = true;
-			ds.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
-			for (int i = 0; i < SDGIShader::PROBE_DEBUG_MAX; i++) {
-				RID debug_probes_shader_version = sdfgi_shader.debug_probes.version_get_shader(sdfgi_shader.debug_probes_shader, i);
-				sdfgi_shader.debug_probes_pipeline[i].setup(debug_probes_shader_version, RD::RENDER_PRIMITIVE_TRIANGLE_STRIPS, rs, RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(), 0);
+			//calculate tables
+			String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+			defines += "\n#define SH_SIZE " + itos(SDFGI::SH_SIZE) + "\n";
+
+			Vector<String> integrate_modes;
+			integrate_modes.push_back("\n#define MODE_PROCESS\n");
+			integrate_modes.push_back("\n#define MODE_STORE\n");
+			integrate_modes.push_back("\n#define MODE_SCROLL\n");
+			integrate_modes.push_back("\n#define MODE_SCROLL_STORE\n");
+			sdfgi_shader.integrate.initialize(integrate_modes, defines);
+			sdfgi_shader.integrate_shader = sdfgi_shader.integrate.version_create();
+
+			for (int i = 0; i < SDGIShader::INTEGRATE_MODE_MAX; i++) {
+				sdfgi_shader.integrate_pipeline[i] = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.integrate.version_get_shader(sdfgi_shader.integrate_shader, i));
+			}
+
+			{
+				Vector<RD::Uniform> uniforms;
+
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+					u.binding = 0;
+					u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_WHITE));
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
+					u.binding = 1;
+					u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+					uniforms.push_back(u);
+				}
+
+				sdfgi_shader.integrate_default_sky_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.integrate.version_get_shader(sdfgi_shader.integrate_shader, 0), 1);
 			}
 		}
+		{
+			//calculate tables
+			String defines = "\n#define SDFGI_OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+			Vector<String> gi_modes;
+			gi_modes.push_back("");
+			gi.shader.initialize(gi_modes, defines);
+			gi.shader_version = gi.shader.version_create();
+			for (int i = 0; i < GI::MODE_MAX; i++) {
+				gi.pipelines[i] = RD::get_singleton()->compute_pipeline_create(gi.shader.version_get_shader(gi.shader_version, i));
+			}
+
+			gi.sdfgi_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(GI::SDFGIData));
+		}
+		{
+			String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+			Vector<String> debug_modes;
+			debug_modes.push_back("");
+			sdfgi_shader.debug.initialize(debug_modes, defines);
+			sdfgi_shader.debug_shader = sdfgi_shader.debug.version_create();
+			sdfgi_shader.debug_shader_version = sdfgi_shader.debug.version_get_shader(sdfgi_shader.debug_shader, 0);
+			sdfgi_shader.debug_pipeline = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.debug_shader_version);
+		}
+		{
+			String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+
+			Vector<String> versions;
+			versions.push_back("\n#define MODE_PROBES\n");
+			versions.push_back("\n#define MODE_VISIBILITY\n");
+
+			sdfgi_shader.debug_probes.initialize(versions, defines);
+			sdfgi_shader.debug_probes_shader = sdfgi_shader.debug_probes.version_create();
+
+			{
+				RD::PipelineRasterizationState rs;
+				rs.cull_mode = RD::POLYGON_CULL_DISABLED;
+				RD::PipelineDepthStencilState ds;
+				ds.enable_depth_test = true;
+				ds.enable_depth_write = true;
+				ds.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
+				for (int i = 0; i < SDGIShader::PROBE_DEBUG_MAX; i++) {
+					RID debug_probes_shader_version = sdfgi_shader.debug_probes.version_get_shader(sdfgi_shader.debug_probes_shader, i);
+					sdfgi_shader.debug_probes_pipeline[i].setup(debug_probes_shader_version, RD::RENDER_PRIMITIVE_TRIANGLE_STRIPS, rs, RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(), 0);
+				}
+			}
+		}
+		default_giprobe_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(GI::GIProbeData) * RenderBuffers::MAX_GIPROBES);
 	}
 
 	//cluster setup
@@ -8366,7 +8404,7 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 
 	cluster.builder.setup(16, 8, 24);
 
-	{
+	if (!low_end) {
 		String defines = "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(cluster.max_directional_lights) + "\n";
 		Vector<String> volumetric_fog_modes;
 		volumetric_fog_modes.push_back("\n#define MODE_DENSITY\n");
@@ -8379,7 +8417,6 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 			volumetric_fog.pipelines[i] = RD::get_singleton()->compute_pipeline_create(volumetric_fog.shader.version_get_shader(volumetric_fog.shader_version, i));
 		}
 	}
-	default_giprobe_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(GI::GIProbeData) * RenderBuffers::MAX_GIPROBES);
 
 	{
 		RD::SamplerState sampler;
@@ -8427,22 +8464,25 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 		RD::get_singleton()->free(sky_scene_state.uniform_set);
 	}
 
-	RD::get_singleton()->free(default_giprobe_buffer);
-	RD::get_singleton()->free(gi_probe_lights_uniform);
-	RD::get_singleton()->free(gi.sdfgi_ubo);
+	if (!low_end) {
+		RD::get_singleton()->free(default_giprobe_buffer);
+		RD::get_singleton()->free(gi_probe_lights_uniform);
+		RD::get_singleton()->free(gi.sdfgi_ubo);
 
-	giprobe_debug_shader.version_free(giprobe_debug_shader_version);
-	giprobe_shader.version_free(giprobe_lighting_shader_version);
-	gi.shader.version_free(gi.shader_version);
-	sdfgi_shader.debug_probes.version_free(sdfgi_shader.debug_probes_shader);
-	sdfgi_shader.debug.version_free(sdfgi_shader.debug_shader);
-	sdfgi_shader.direct_light.version_free(sdfgi_shader.direct_light_shader);
-	sdfgi_shader.integrate.version_free(sdfgi_shader.integrate_shader);
-	sdfgi_shader.preprocess.version_free(sdfgi_shader.preprocess_shader);
+		giprobe_debug_shader.version_free(giprobe_debug_shader_version);
+		giprobe_shader.version_free(giprobe_lighting_shader_version);
+		gi.shader.version_free(gi.shader_version);
+		sdfgi_shader.debug_probes.version_free(sdfgi_shader.debug_probes_shader);
+		sdfgi_shader.debug.version_free(sdfgi_shader.debug_shader);
+		sdfgi_shader.direct_light.version_free(sdfgi_shader.direct_light_shader);
+		sdfgi_shader.integrate.version_free(sdfgi_shader.integrate_shader);
+		sdfgi_shader.preprocess.version_free(sdfgi_shader.preprocess_shader);
 
-	volumetric_fog.shader.version_free(volumetric_fog.shader_version);
+		volumetric_fog.shader.version_free(volumetric_fog.shader_version);
 
-	memdelete_arr(gi_probe_lights);
+		memdelete_arr(gi_probe_lights);
+	}
+
 	SkyMaterialData *md = (SkyMaterialData *)storage->material_get_data(sky_shader.default_material, RendererStorageRD::SHADER_TYPE_SKY);
 	sky_shader.shader.version_free(md->shader_data->version);
 	RD::get_singleton()->free(sky_scene_state.directional_light_buffer);

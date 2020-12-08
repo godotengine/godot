@@ -46,6 +46,7 @@ class ShaderRD {
 	//versions
 	CharString general_defines;
 	Vector<CharString> variant_defines;
+	Vector<bool> variants_enabled;
 
 	struct Version {
 		CharString uniforms;
@@ -109,6 +110,7 @@ public:
 
 	_FORCE_INLINE_ RID version_get_shader(RID p_version, int p_variant) {
 		ERR_FAIL_INDEX_V(p_variant, variant_defines.size(), RID());
+		ERR_FAIL_COND_V(!variants_enabled[p_variant], RID());
 
 		Version *version = version_owner.getornull(p_version);
 		ERR_FAIL_COND_V(!version, RID());
@@ -127,6 +129,9 @@ public:
 	bool version_is_valid(RID p_version);
 
 	bool version_free(RID p_version);
+
+	void set_variant_enabled(int p_variant, bool p_enabled);
+	bool is_variant_enabled(int p_variant) const;
 
 	void initialize(const Vector<String> &p_variant_defines, const String &p_general_defines = "");
 	virtual ~ShaderRD();

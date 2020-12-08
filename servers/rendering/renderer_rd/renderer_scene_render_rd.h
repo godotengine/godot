@@ -1456,6 +1456,8 @@ private:
 		float weight;
 	};
 
+	bool low_end = false;
+
 public:
 	/* SHADOW ATLAS API */
 
@@ -1951,6 +1953,8 @@ public:
 	int get_max_directional_lights() const;
 
 	void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir);
+
+	bool is_low_end() const;
 
 	RendererSceneRenderRD(RendererStorageRD *p_storage);
 	~RendererSceneRenderRD();
