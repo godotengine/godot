@@ -77,21 +77,29 @@ const GodotAudio = {
 
 		create_input: function (callback) {
 			if (GodotAudio.input) {
-				return; // Already started.
+				return 0; // Already started.
 			}
 			function gotMediaInput(stream) {
-				GodotAudio.input = GodotAudio.ctx.createMediaStreamSource(stream);
-				callback(GodotAudio.input);
+				try {
+					GodotAudio.input = GodotAudio.ctx.createMediaStreamSource(stream);
+					callback(GodotAudio.input);
+				} catch (e) {
+					GodotRuntime.error('Failed creaating input.', e);
+				}
 			}
-			if (navigator.mediaDevices.getUserMedia) {
+			if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 				navigator.mediaDevices.getUserMedia({
 					'audio': true,
 				}).then(gotMediaInput, function (e) {
-					GodotRuntime.print(e);
+					GodotRuntime.error('Error getting user media.', e);
 				});
 			} else {
 				if (!navigator.getUserMedia) {
 					navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+				}
+				if (!navigator.getUserMedia) {
+					GodotRuntime.error('getUserMedia not available.');
+					return 1;
 				}
 				navigator.getUserMedia({
 					'audio': true,
@@ -99,6 +107,7 @@ const GodotAudio = {
 					GodotRuntime.print(e);
 				});
 			}
+			return 0;
 		},
 
 		close_async: function (resolve, reject) {
@@ -161,12 +170,9 @@ const GodotAudio = {
 	},
 
 	godot_audio_capture_start__proxy: 'sync',
-	godot_audio_capture_start__sig: 'v',
+	godot_audio_capture_start__sig: 'i',
 	godot_audio_capture_start: function () {
-		if (GodotAudio.input) {
-			return; // Already started.
-		}
-		GodotAudio.create_input(function (input) {
+		return GodotAudio.create_input(function (input) {
 			input.connect(GodotAudio.driver.get_node());
 		});
 	},
