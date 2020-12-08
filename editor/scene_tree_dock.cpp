@@ -449,6 +449,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				Node *n = Object::cast_to<Node>(selection[i]);
 				Ref<Script> existing = n->get_script();
 				Ref<Script> empty = EditorNode::get_singleton()->get_object_custom_type_base(n);
+				if (empty.is_null() && existing.is_valid()) {
+					empty = EditorNode::get_editor_data().script_class_get_base_from_anonymous_path(existing->get_path());
+				}
 				if (existing != empty) {
 					editor_data->get_undo_redo().add_do_method(n, "set_script", empty);
 					editor_data->get_undo_redo().add_undo_method(n, "set_script", existing);
@@ -2452,7 +2455,8 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 		existing_script = selected->get_script();
 
-		if (EditorNode::get_singleton()->get_object_custom_type_base(selected) == existing_script) {
+		if (EditorNode::get_singleton()->get_object_custom_type_base(selected) == existing_script ||
+			(existing_script.is_valid() && EditorNode::get_editor_data().script_class_get_name(existing_script->get_path()) != StringName())) {
 			existing_script_removable = false;
 		}
 	}

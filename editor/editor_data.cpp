@@ -912,6 +912,24 @@ String EditorData::script_class_get_icon_path(const String &p_class) const {
 	return ret;
 }
 
+Ref<Script> EditorData::script_class_get_base_from_anonymous_path(const String &p_path) const {
+	StringName name = script_class_get_name(p_path);
+	if (name != StringName()) {
+		return nullptr;
+	}
+	Ref<Script> script = ResourceLoader::load(p_path, "Script");
+	if (script.is_null()) {
+		return nullptr;
+	}
+	do {
+		if (script_class_get_name(script->get_path()) != StringName()) {
+			return script;
+		}
+		script = script->get_base_script();
+	} while (script.is_valid());
+	return nullptr;
+}
+
 StringName EditorData::script_class_get_name(const String &p_path) const {
 	return _script_class_file_to_path.has(p_path) ? _script_class_file_to_path[p_path] : StringName();
 }

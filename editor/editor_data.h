@@ -212,6 +212,7 @@ public:
 
 	Ref<Script> script_class_load_script(const String &p_class) const;
 
+	Ref<Script> script_class_get_base_from_anonymous_path(const String &p_path) const;
 	StringName script_class_get_name(const String &p_path) const;
 	void script_class_set_name(const String &p_path, const StringName &p_class);
 
