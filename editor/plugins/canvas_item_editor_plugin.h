@@ -288,9 +288,9 @@ private:
 	MenuOption last_option;
 
 	struct _SelectResult {
-		CanvasItem *item;
-		float z_index;
-		bool has_z;
+		CanvasItem *item = nullptr;
+		float z_index = 0;
+		bool has_z = true;
 		_FORCE_INLINE_ bool operator<(const _SelectResult &p_rr) const {
 			return has_z && p_rr.has_z ? p_rr.z_index < z_index : p_rr.has_z;
 		}
@@ -308,8 +308,6 @@ private:
 		Transform2D xform;
 		float length = 0.f;
 		uint64_t last_pass = 0;
-
-		BoneList() {}
 	};
 
 	uint64_t bone_last_frame;
@@ -331,7 +329,7 @@ private:
 	struct PoseClipboard {
 		Vector2 pos;
 		Vector2 scale;
-		float rot;
+		float rot = 0;
 		ObjectID id;
 	};
 	List<PoseClipboard> pose_clipboard;

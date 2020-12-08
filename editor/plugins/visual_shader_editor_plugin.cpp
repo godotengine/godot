@@ -49,7 +49,7 @@
 
 struct FloatConstantDef {
 	String name;
-	float value;
+	float value = 0;
 	String desc;
 };
 
@@ -4060,9 +4060,6 @@ void VisualShaderNodePortPreview::_notification(int p_what) {
 }
 
 void VisualShaderNodePortPreview::_bind_methods() {
-}
-
-VisualShaderNodePortPreview::VisualShaderNodePortPreview() {
 }
 
 //////////////////////////////////

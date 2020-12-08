@@ -86,8 +86,8 @@ class ScriptCreateDialog : public ConfirmationDialog {
 		SCRIPT_ORIGIN_EDITOR,
 	};
 	struct ScriptTemplateInfo {
-		int id;
-		ScriptOrigin origin;
+		int id = 0;
+		ScriptOrigin origin = ScriptOrigin::SCRIPT_ORIGIN_EDITOR;
 		String dir;
 		String name;
 		String extension;

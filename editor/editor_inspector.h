@@ -176,7 +176,7 @@ class EditorInspectorPlugin : public Reference {
 
 	friend class EditorInspector;
 	struct AddedEditor {
-		Control *property_editor;
+		Control *property_editor = nullptr;
 		Vector<String> properties;
 		String label;
 	};

@@ -56,26 +56,26 @@ class VisualShaderGraphPlugin : public Reference {
 
 private:
 	struct InputPort {
-		Button *default_input_button;
+		Button *default_input_button = nullptr;
 	};
 
 	struct Port {
-		TextureButton *preview_button;
+		TextureButton *preview_button = nullptr;
 	};
 
 	struct Link {
-		VisualShader::Type type;
-		VisualShaderNode *visual_node;
-		GraphNode *graph_node;
-		bool preview_visible;
-		int preview_pos;
+		VisualShader::Type type = VisualShader::Type::TYPE_MAX;
+		VisualShaderNode *visual_node = nullptr;
+		GraphNode *graph_node = nullptr;
+		bool preview_visible = 0;
+		int preview_pos = 0;
 		Map<int, InputPort> input_ports;
 		Map<int, Port> output_ports;
-		VBoxContainer *preview_box;
-		LineEdit *uniform_name;
-		OptionButton *const_op;
-		CodeEdit *expression_edit;
-		CurveEditor *curve_editor;
+		VBoxContainer *preview_box = nullptr;
+		LineEdit *uniform_name = nullptr;
+		OptionButton *const_op = nullptr;
+		CodeEdit *expression_edit = nullptr;
+		CurveEditor *curve_editor = nullptr;
 	};
 
 	Ref<VisualShader> visual_shader;
@@ -206,16 +206,16 @@ class VisualShaderEditor : public VBoxContainer {
 		String category;
 		String type;
 		String description;
-		int sub_func;
+		int sub_func = 0;
 		String sub_func_str;
 		Ref<Script> script;
-		int mode;
-		int return_type;
-		int func;
-		float value;
-		bool highend;
-		bool is_custom;
-		int temp_idx;
+		int mode = 0;
+		int return_type = 0;
+		int func = 0;
+		float value = 0;
+		bool highend = false;
+		bool is_custom = false;
+		int temp_idx = 0;
 
 		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_sub_category = String(), const String &p_type = String(), const String &p_description = String(), int p_sub_func = -1, int p_return_type = -1, int p_mode = -1, int p_func = -1, float p_value = -1, bool p_highend = false) {
 			name = p_name;
@@ -283,8 +283,8 @@ class VisualShaderEditor : public VBoxContainer {
 	static VisualShaderEditor *singleton;
 
 	struct DragOp {
-		VisualShader::Type type;
-		int node;
+		VisualShader::Type type = VisualShader::Type::TYPE_MAX;
+		int node = 0;
 		Vector2 from;
 		Vector2 to;
 	};
@@ -462,9 +462,9 @@ public:
 class VisualShaderNodePortPreview : public Control {
 	GDCLASS(VisualShaderNodePortPreview, Control);
 	Ref<VisualShader> shader;
-	VisualShader::Type type;
-	int node;
-	int port;
+	VisualShader::Type type = VisualShader::Type::TYPE_MAX;
+	int node = 0;
+	int port = 0;
 	void _shader_changed(); //must regen
 protected:
 	void _notification(int p_what);
@@ -473,7 +473,6 @@ protected:
 public:
 	virtual Size2 get_minimum_size() const override;
 	void setup(const Ref<VisualShader> &p_shader, VisualShader::Type p_type, int p_node, int p_port);
-	VisualShaderNodePortPreview();
 };
 
 class VisualShaderConversionPlugin : public EditorResourceConversionPlugin {

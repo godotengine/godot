@@ -42,8 +42,6 @@ public:
 	static const char *SIGNAL_RESULT_FOUND;
 	static const char *SIGNAL_FINISHED;
 
-	FindInFiles();
-
 	void set_search_text(String p_pattern);
 	void set_whole_words(bool p_whole_word);
 	void set_match_case(bool p_match_case);
@@ -76,15 +74,15 @@ private:
 	String _pattern;
 	Set<String> _extension_filter;
 	String _root_dir;
-	bool _whole_words;
-	bool _match_case;
+	bool _whole_words = true;
+	bool _match_case = true;
 
 	// State
-	bool _searching;
+	bool _searching = false;
 	String _current_dir;
 	Vector<PackedStringArray> _folders_stack;
 	Vector<String> _files_to_scan;
-	int _initial_files_count;
+	int _initial_files_count = 0;
 };
 
 class LineEdit;
@@ -188,10 +186,10 @@ private:
 	void _on_replace_all_clicked();
 
 	struct Result {
-		int line_number;
-		int begin;
-		int end;
-		int begin_trimmed;
+		int line_number = 0;
+		int begin = 0;
+		int end = 0;
+		int begin_trimmed = 0;
 	};
 
 	void apply_replaces_in_file(String fpath, const Vector<Result> &locations, String new_text);

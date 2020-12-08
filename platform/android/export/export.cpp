@@ -205,7 +205,7 @@ static const char *SPLASH_BG_COLOR_PATH = "res/drawable/splash_bg_color.png";
 
 struct LauncherIcon {
 	const char *export_path;
-	int dimensions;
+	int dimensions = 0;
 };
 
 static const int icon_densities_count = 6;
@@ -250,12 +250,12 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		String id;
 		String name;
 		String description;
-		int api_level;
+		int api_level = 0;
 	};
 
 	struct APKExportData {
 		zipFile apk;
-		EditorProgress *ep;
+		EditorProgress *ep = nullptr;
 	};
 
 	Vector<PluginConfig> plugins;

@@ -60,9 +60,9 @@ class AudioStreamPreviewGenerator : public Node {
 		Ref<AudioStreamPreview> preview;
 		Ref<AudioStream> base_stream;
 		Ref<AudioStreamPlayback> playback;
-		volatile bool generating;
+		volatile bool generating = false;
 		ObjectID id;
-		Thread *thread;
+		Thread *thread = nullptr;
 	};
 
 	Map<ObjectID, Preview> previews;

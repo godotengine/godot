@@ -47,13 +47,13 @@ class EditorSettings : public Resource {
 
 public:
 	struct Plugin {
-		EditorPlugin *instance;
+		EditorPlugin *instance = nullptr;
 		String path;
 		String name;
 		String author;
 		String version;
 		String description;
-		bool installs;
+		bool installs = false;
 		String script;
 		Vector<String> install_files;
 	};

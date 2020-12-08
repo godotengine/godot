@@ -301,4 +301,6 @@ MeshLibraryEditorPlugin::MeshLibraryEditorPlugin(EditorNode *p_node) {
 	mesh_library_editor->set_anchors_and_margins_preset(Control::PRESET_TOP_WIDE);
 	mesh_library_editor->set_end(Point2(0, 22));
 	mesh_library_editor->hide();
+
+	editor = nullptr;
 }

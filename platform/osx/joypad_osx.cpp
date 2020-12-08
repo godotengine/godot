@@ -37,14 +37,6 @@
 static JoypadOSX *self = nullptr;
 
 joypad::joypad() {
-	device_ref = nullptr;
-	ff_device = nullptr;
-	ff_axes = nullptr;
-	ff_directions = nullptr;
-	ffservice = 0;
-	ff_timestamp = 0;
-	id = 0;
-
 	ff_constant_force.lMagnitude = 10000;
 	ff_effect.dwDuration = 0;
 	ff_effect.dwSamplePeriod = 0;

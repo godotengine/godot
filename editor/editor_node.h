@@ -107,10 +107,10 @@ public:
 		String path;
 		List<String> args;
 		String output;
-		Thread *execute_output_thread;
+		Thread *execute_output_thread = nullptr;
 		Mutex execute_output_mutex;
-		int exitcode;
-		volatile bool done;
+		int exitcode = 0;
+		volatile bool done = false;
 	};
 
 private:
@@ -409,8 +409,8 @@ private:
 
 	struct BottomPanelItem {
 		String name;
-		Control *control;
-		Button *button;
+		Control *control = nullptr;
+		Button *button = nullptr;
 	};
 
 	Vector<BottomPanelItem> bottom_panel_items;
@@ -554,8 +554,8 @@ private:
 	struct ExportDefer {
 		String preset;
 		String path;
-		bool debug;
-		bool pack_only;
+		bool debug = false;
+		bool pack_only = false;
 	} export_defer;
 
 	bool cmdline_export_mode;

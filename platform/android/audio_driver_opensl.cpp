@@ -339,6 +339,4 @@ void AudioDriverOpenSL::set_pause(bool p_pause) {
 
 AudioDriverOpenSL::AudioDriverOpenSL() {
 	s_ad = this;
-	pause = false;
-	active = false;
 }

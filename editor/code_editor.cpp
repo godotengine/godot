@@ -81,6 +81,8 @@ GotoLineDialog::GotoLineDialog() {
 	register_text_enter(line);
 	text_editor = nullptr;
 
+	line_label = nullptr;
+
 	set_hide_on_ok(false);
 }
 

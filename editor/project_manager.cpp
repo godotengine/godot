@@ -984,13 +984,13 @@ public:
 		String path;
 		String icon;
 		String main_scene;
-		uint64_t last_edited;
-		bool favorite;
-		bool grayed;
-		bool missing;
-		int version;
+		uint64_t last_edited = 0;
+		bool favorite = false;
+		bool grayed = false;
+		bool missing = false;
+		int version = 0;
 
-		ProjectListItemControl *control;
+		ProjectListItemControl *control = nullptr;
 
 		Item() {}
 
@@ -1076,7 +1076,7 @@ private:
 };
 
 struct ProjectListComparator {
-	FilterOption order_option;
+	FilterOption order_option = FilterOption::EDIT_DATE;
 
 	// operator<
 	_FORCE_INLINE_ bool operator()(const ProjectList::Item &a, const ProjectList::Item &b) const {

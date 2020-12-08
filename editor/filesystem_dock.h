@@ -270,8 +270,8 @@ private:
 		String path;
 		StringName type;
 		Vector<String> sources;
-		bool import_broken;
-		uint64_t modified_time;
+		bool import_broken = false;
+		uint64_t modified_time = 0;
 
 		bool operator<(const FileInfo &fi) const {
 			return NaturalNoCaseComparator()(name, fi.name);

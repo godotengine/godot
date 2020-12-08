@@ -61,13 +61,13 @@ class EditorAudioBus : public PanelContainer {
 	static const int CHANNELS_MAX = 4;
 
 	struct {
-		bool prev_active;
+		bool prev_active = false;
 
-		float peak_l;
-		float peak_r;
+		float peak_l = 0;
+		float peak_r = 0;
 
-		TextureProgress *vu_l;
-		TextureProgress *vu_r;
+		TextureProgress *vu_l = nullptr;
+		TextureProgress *vu_r = nullptr;
 	} channel[CHANNELS_MAX];
 
 	OptionButton *send;
@@ -214,9 +214,9 @@ class EditorAudioMeterNotches : public Control {
 
 private:
 	struct AudioNotch {
-		float relative_position;
-		float db_value;
-		bool render_db_value;
+		float relative_position = 0;
+		float db_value = 0;
+		bool render_db_value = false;
 
 		_FORCE_INLINE_ AudioNotch(float r_pos, float db_v, bool rndr_val) {
 			relative_position = r_pos;

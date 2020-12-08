@@ -49,15 +49,6 @@
 static const char *ignore_str = "/dev/input/js";
 #endif
 
-JoypadLinux::Joypad::Joypad() {
-	fd = -1;
-	dpad = 0;
-	devpath = "";
-	for (int i = 0; i < MAX_ABS; i++) {
-		abs_info[i] = nullptr;
-	}
-}
-
 JoypadLinux::Joypad::~Joypad() {
 	for (int i = 0; i < MAX_ABS; i++) {
 		if (abs_info[i]) {

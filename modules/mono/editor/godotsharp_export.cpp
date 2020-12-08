@@ -55,10 +55,10 @@ MonoAssemblyName *new_mono_assembly_name() {
 
 struct AssemblyRefInfo {
 	String name;
-	uint16_t major;
-	uint16_t minor;
-	uint16_t build;
-	uint16_t revision;
+	uint16_t major = 0;
+	uint16_t minor = 0;
+	uint16_t build = 0;
+	uint16_t revision = 0;
 };
 
 AssemblyRefInfo get_assemblyref_name(MonoImage *p_image, int index) {
