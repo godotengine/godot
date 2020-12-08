@@ -120,6 +120,8 @@ public:
 	virtual String get_system_dir(SystemDir p_dir) const;
 
 	void vibrate_handheld(int p_duration_ms);
+	virtual void set_low_processor_usage_mode(bool p_enabled);
+	virtual bool is_in_low_processor_usage_mode() const;
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);
