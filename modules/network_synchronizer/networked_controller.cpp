@@ -400,25 +400,30 @@ bool NetworkedController::is_nonet_controller() const {
 }
 
 void NetworkedController::set_enabled(bool p_enabled) {
-	ERR_FAIL_COND_MSG(is_server_controller() == false, "This function can be used only on server side.");
+	ERR_FAIL_COND_MSG(
+			is_server_controller() == false &&
+					is_nonet_controller() == false,
+			"This function can be used only on server side.");
 	if (enabled == p_enabled) {
 		return;
 	}
 
 	enabled = p_enabled;
 
-	if (enabled == false) {
-		// Notify the dolls this actor is disabled.
-		ServerController *server_controller = static_cast<ServerController *>(controller);
-		for (uint32_t i = 0; i < server_controller->peers.size(); i += 1) {
-			if (server_controller->peers[i].active) {
-				// Notify this actor is no more active.
-				rpc_id(server_controller->peers[i].peer, "_rpc_doll_notify_sync_pause", server_controller->epoch);
+	if (is_server_controller()) {
+		if (enabled == false) {
+			// Notify the dolls this actor is disabled.
+			ServerController *server_controller = static_cast<ServerController *>(controller);
+			for (uint32_t i = 0; i < server_controller->peers.size(); i += 1) {
+				if (server_controller->peers[i].active) {
+					// Notify this actor is no more active.
+					rpc_id(server_controller->peers[i].peer, "_rpc_doll_notify_sync_pause", server_controller->epoch);
+				}
 			}
 		}
-	}
 
-	rpc_id(get_network_master(), "_rpc_set_client_enabled", enabled);
+		rpc_id(get_network_master(), "_rpc_set_client_enabled", enabled);
+	}
 }
 
 bool NetworkedController::is_enabled() const {
@@ -1618,6 +1623,10 @@ NoNetController::NoNetController(NetworkedController *p_node) :
 }
 
 void NoNetController::process(real_t p_delta) {
+	if (unlikely(node->is_enabled() == false)) {
+		return;
+	}
+
 	node->get_inputs_buffer_mut().begin_write(0); // No need of meta in this case.
 	node->call("collect_inputs", p_delta, &node->get_inputs_buffer_mut());
 	node->get_inputs_buffer_mut().dry();
