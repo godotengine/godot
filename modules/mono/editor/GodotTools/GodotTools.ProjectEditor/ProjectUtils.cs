@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using JetBrains.Annotations;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Globbing;
+using Semver;
 
 namespace GodotTools.ProjectEditor
 {
@@ -189,7 +191,7 @@ namespace GodotTools.ProjectEditor
                         continue;
 
 
-                    string normalizedRemove= item.Remove.NormalizePath();
+                    string normalizedRemove = item.Remove.NormalizePath();
 
                     var glob = MSBuildGlob.Parse(normalizedRemove);
 
@@ -233,7 +235,7 @@ namespace GodotTools.ProjectEditor
             if (!string.IsNullOrEmpty(root.Sdk))
                 return;
 
-            root.Sdk = ProjectGenerator.GodotSdkAttrValue;
+            root.Sdk = $"{ProjectGenerator.GodotSdkNameToUse}/{ProjectGenerator.GodotSdkVersionToUse}";
 
             root.ToolsVersion = null;
             root.DefaultTargets = null;
@@ -408,11 +410,32 @@ namespace GodotTools.ProjectEditor
 
         public static void EnsureGodotSdkIsUpToDate(MSBuildProject project)
         {
-            var root = project.Root;
-            string godotSdkAttrValue = ProjectGenerator.GodotSdkAttrValue;
+            string godotSdkAttrValue = $"{ProjectGenerator.GodotSdkNameToUse}/{ProjectGenerator.GodotSdkVersionToUse}";
 
-            if (!string.IsNullOrEmpty(root.Sdk) && root.Sdk.Trim().Equals(godotSdkAttrValue, StringComparison.OrdinalIgnoreCase))
-                return;
+            var root = project.Root;
+            string rootSdk = root.Sdk?.Trim();
+
+            if (!string.IsNullOrEmpty(rootSdk))
+            {
+                // Check if the version is already the same.
+                if (rootSdk.Equals(godotSdkAttrValue, StringComparison.OrdinalIgnoreCase))
+                    return;
+
+                // We also allow higher versions as long as the major and minor are the same.
+                var semVerToUse = SemVersion.Parse(ProjectGenerator.GodotSdkVersionToUse);
+                var godotSdkAttrLaxValueRegex = new Regex($@"^{ProjectGenerator.GodotSdkNameToUse}/(?<ver>.*)$");
+
+                var match = godotSdkAttrLaxValueRegex.Match(rootSdk);
+
+                if (match.Success &&
+                    SemVersion.TryParse(match.Groups["ver"].Value, out var semVerDetected) &&
+                    semVerDetected.Major == semVerToUse.Major &&
+                    semVerDetected.Minor == semVerToUse.Minor &&
+                    semVerDetected > semVerToUse)
+                {
+                    return;
+                }
+            }
 
             root.Sdk = godotSdkAttrValue;
             project.HasUnsavedChanges = true;
