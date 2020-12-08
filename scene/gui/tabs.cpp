@@ -153,7 +153,7 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 		if (cb_pressing && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 			if (cb_hover != -1) {
 				//pressed
-				emit_signal("tab_close", cb_hover);
+				emit_signal("tab_closed", cb_hover);
 			}
 
 			cb_pressing = false;
@@ -641,7 +641,7 @@ void Tabs::_update_hover() {
 	}
 	if (hover != hover_now) {
 		hover = hover_now;
-		emit_signal("tab_hover", hover);
+		emit_signal("tab_hovered", hover);
 	}
 
 	if (hover_buttons == -1) { // no hover
@@ -1114,8 +1114,8 @@ void Tabs::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("right_button_pressed", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_close", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_hover", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_closed", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_hovered", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("reposition_active_tab_request", PropertyInfo(Variant::INT, "idx_to")));
 	ADD_SIGNAL(MethodInfo("tab_clicked", PropertyInfo(Variant::INT, "tab")));
 
