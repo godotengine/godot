@@ -459,39 +459,6 @@ void LineBuilder::strip_begin(Vector2 up, Vector2 down, Color color, float uvx) 
 	_last_index[DOWN] = vi + 1;
 }
 
-void LineBuilder::strip_new_quad(Vector2 up, Vector2 down, Color color, float uvx) {
-	int vi = vertices.size();
-
-	vertices.push_back(vertices[_last_index[UP]]);
-	vertices.push_back(vertices[_last_index[DOWN]]);
-	vertices.push_back(up);
-	vertices.push_back(down);
-
-	if (_interpolate_color) {
-		colors.push_back(color);
-		colors.push_back(color);
-		colors.push_back(color);
-		colors.push_back(color);
-	}
-
-	if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
-		uvs.push_back(uvs[_last_index[UP]]);
-		uvs.push_back(uvs[_last_index[DOWN]]);
-		uvs.push_back(Vector2(uvx, UP));
-		uvs.push_back(Vector2(uvx, DOWN));
-	}
-
-	indices.push_back(vi);
-	indices.push_back(vi + 3);
-	indices.push_back(vi + 1);
-	indices.push_back(vi);
-	indices.push_back(vi + 2);
-	indices.push_back(vi + 3);
-
-	_last_index[UP] = vi + 2;
-	_last_index[DOWN] = vi + 3;
-}
-
 void LineBuilder::strip_add_quad(Vector2 up, Vector2 down, Color color, float uvx) {
 	int vi = vertices.size();
 

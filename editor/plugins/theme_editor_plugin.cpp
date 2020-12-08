@@ -507,13 +507,6 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 					theme->set_icon(E->get(), type, import ? base_theme->get_icon(E->get(), type) : Ref<Texture2D>());
 				}
 
-				List<StringName> shaders;
-				base_theme->get_shader_list(type, &shaders);
-
-				for (List<StringName>::Element *E = shaders.front(); E; E = E->next()) {
-					theme->set_shader(E->get(), type, import ? base_theme->get_shader(E->get(), type) : Ref<Shader>());
-				}
-
 				List<StringName> styleboxs;
 				base_theme->get_stylebox_list(type, &styleboxs);
 

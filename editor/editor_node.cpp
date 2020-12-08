@@ -175,7 +175,6 @@
 #include "editor/pvrtc_compress.h"
 #include "editor/quick_open.h"
 #include "editor/register_exporters.h"
-#include "editor/run_settings_dialog.h"
 #include "editor/settings_config_dialog.h"
 #include "scene/main/window.h"
 #include "servers/display_server.h"
@@ -2557,9 +2556,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			run_play_current();
 
 		} break;
-		case RUN_SCENE_SETTINGS: {
-			run_settings_dialog->popup_run_settings();
-		} break;
 		case RUN_SETTINGS: {
 			project_settings->popup_project_settings();
 		} break;
@@ -4836,16 +4832,6 @@ Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
 	return tb;
 }
 
-bool EditorNode::are_bottom_panels_hidden() const {
-	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		if (bottom_panel_items[i].button->is_pressed()) {
-			return false;
-		}
-	}
-
-	return true;
-}
-
 void EditorNode::hide_bottom_panel() {
 	for (int i = 0; i < bottom_panel_items.size(); i++) {
 		if (bottom_panel_items[i].control->is_visible()) {
@@ -6090,9 +6076,6 @@ EditorNode::EditorNode() {
 
 	project_settings = memnew(ProjectSettingsEditor(&editor_data));
 	gui_base->add_child(project_settings);
-
-	run_settings_dialog = memnew(RunSettingsDialog);
-	gui_base->add_child(run_settings_dialog);
 
 	export_template_manager = memnew(ExportTemplateManager);
 	gui_base->add_child(export_template_manager);

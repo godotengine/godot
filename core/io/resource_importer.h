@@ -70,7 +70,6 @@ public:
 	virtual String get_import_group_file(const String &p_path) const;
 	virtual bool exists(const String &p_path) const;
 
-	virtual bool can_be_imported(const String &p_path) const;
 	virtual int get_import_order(const String &p_path) const;
 
 	String get_internal_resource_path(const String &p_path) const;

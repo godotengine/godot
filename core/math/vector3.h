@@ -89,7 +89,6 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 lerp(const Vector3 &p_to, real_t p_weight) const;
 	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_to, real_t p_weight) const;
 	Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const;
-	Vector3 cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const;
 	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_b) const;

@@ -161,7 +161,6 @@ private:
 		RUN_STOP,
 		RUN_PLAY_SCENE,
 		RUN_PLAY_CUSTOM_SCENE,
-		RUN_SCENE_SETTINGS,
 		RUN_SETTINGS,
 		RUN_PROJECT_DATA_FOLDER,
 		RUN_PROJECT_MANAGER,
@@ -312,7 +311,6 @@ private:
 	ConfirmationDialog *remove_android_build_template;
 
 	EditorSettingsDialog *settings_config_dialog;
-	RunSettingsDialog *run_settings_dialog;
 	ProjectSettingsEditor *project_settings;
 	PopupMenu *vcs_actions_menu;
 	EditorFileDialog *file;
@@ -824,7 +822,6 @@ public:
 	Button *get_pause_button() { return pause_button; }
 
 	Button *add_bottom_panel_item(String p_text, Control *p_item);
-	bool are_bottom_panels_hidden() const;
 	void make_bottom_panel_item_visible(Control *p_item);
 	void raise_bottom_panel_item(Control *p_item);
 	void hide_bottom_panel();
