@@ -485,7 +485,7 @@ void EditorNode::_notification(int p_what) {
 				RS::DOFBlurQuality dof_quality = RS::DOFBlurQuality(int(GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_bokeh_quality")));
 				bool dof_jitter = GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_use_jitter");
 				RS::get_singleton()->camera_effects_set_dof_blur_quality(dof_quality, dof_jitter);
-				RS::get_singleton()->environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
+				RS::get_singleton()->environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"), GLOBAL_GET("rendering/quality/ssao/adaptive_target"), GLOBAL_GET("rendering/quality/ssao/blur_passes"), GLOBAL_GET("rendering/quality/ssao/fadeout_from"), GLOBAL_GET("rendering/quality/ssao/fadeout_to"));
 				RS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_enabled"), GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_amount"), GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_limit"));
 				bool glow_bicubic = int(GLOBAL_GET("rendering/quality/glow/upscale_mode")) > 0;
 				RS::get_singleton()->environment_glow_set_use_bicubic_upscale(glow_bicubic);

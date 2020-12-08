@@ -516,8 +516,8 @@ public:
 	PASS6(environment_set_ssr, RID, bool, int, float, float, float)
 	PASS1(environment_set_ssr_roughness_quality, RS::EnvironmentSSRRoughnessQuality)
 
-	PASS9(environment_set_ssao, RID, bool, float, float, float, float, float, RS::EnvironmentSSAOBlur, float)
-	PASS2(environment_set_ssao_quality, RS::EnvironmentSSAOQuality, bool)
+	PASS10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
+	PASS6(environment_set_ssao_quality, RS::EnvironmentSSAOQuality, bool, float, int, float, float)
 
 	PASS11(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, RS::EnvironmentGlowBlendMode, float, float, float)
 	PASS1(environment_glow_set_use_bicubic_upscale, bool)

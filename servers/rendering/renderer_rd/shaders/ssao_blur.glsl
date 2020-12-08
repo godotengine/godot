@@ -1,3 +1,22 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2016, Intel Corporation
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+// the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// File changes (yyyy-mm-dd)
+// 2016-09-07: filip.strugar@intel.com: first commit
+// 2020-12-05: clayjohn: convert to Vulkan and Godot
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #[compute]
 
 #version 450
@@ -7,147 +26,129 @@ VERSION_DEFINES
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 layout(set = 0, binding = 0) uniform sampler2D source_ssao;
-layout(set = 1, binding = 0) uniform sampler2D source_depth;
-#ifdef MODE_UPSCALE
-layout(set = 2, binding = 0) uniform sampler2D source_depth_mipmaps;
-#endif
 
-layout(r8, set = 3, binding = 0) uniform restrict writeonly image2D dest_image;
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-// Tunable Parameters:
+layout(rg8, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;
 
 layout(push_constant, binding = 1, std430) uniform Params {
-	float edge_sharpness; /** Increase to make depth edges crisper. Decrease to reduce flicker. */
-	int filter_scale;
-	float z_far;
-	float z_near;
-	bool orthogonal;
-	uint pad0;
-	uint pad1;
-	uint pad2;
-	ivec2 axis; /** (1, 0) or (0, 1) */
-	ivec2 screen_size;
+	float edge_sharpness;
+	float pad;
+	vec2 half_screen_pixel_size;
 }
 params;
 
-/** Filter radius in pixels. This will be multiplied by SCALE. */
-#define R (4)
+vec4 unpack_edges(float p_packed_val) {
+	uint packed_val = uint(p_packed_val * 255.5);
+	vec4 edgesLRTB;
+	edgesLRTB.x = float((packed_val >> 6) & 0x03) / 3.0;
+	edgesLRTB.y = float((packed_val >> 4) & 0x03) / 3.0;
+	edgesLRTB.z = float((packed_val >> 2) & 0x03) / 3.0;
+	edgesLRTB.w = float((packed_val >> 0) & 0x03) / 3.0;
 
-//////////////////////////////////////////////////////////////////////////////////////////////
+	return clamp(edgesLRTB + params.edge_sharpness, 0.0, 1.0);
+}
 
-// Gaussian coefficients
-const float gaussian[R + 1] =
-		//float[](0.356642, 0.239400, 0.072410, 0.009869);
-		//float[](0.398943, 0.241971, 0.053991, 0.004432, 0.000134);  // stddev = 1.0
-		float[](0.153170, 0.144893, 0.122649, 0.092902, 0.062970); // stddev = 2.0
-//float[](0.111220, 0.107798, 0.098151, 0.083953, 0.067458, 0.050920, 0.036108); // stddev = 3.0
+void add_sample(float p_ssao_value, float p_edge_value, inout float r_sum, inout float r_sum_weight) {
+	float weight = p_edge_value;
+
+	r_sum += (weight * p_ssao_value);
+	r_sum_weight += weight;
+}
+
+#ifdef MODE_WIDE
+vec2 sample_blurred_wide(vec2 p_coord) {
+	vec2 vC = textureLodOffset(source_ssao, vec2(p_coord), 0.0, ivec2(0, 0)).xy;
+	vec2 vL = textureLodOffset(source_ssao, vec2(p_coord), 0.0, ivec2(-2, 0)).xy;
+	vec2 vT = textureLodOffset(source_ssao, vec2(p_coord), 0.0, ivec2(0, -2)).xy;
+	vec2 vR = textureLodOffset(source_ssao, vec2(p_coord), 0.0, ivec2(2, 0)).xy;
+	vec2 vB = textureLodOffset(source_ssao, vec2(p_coord), 0.0, ivec2(0, 2)).xy;
+
+	float packed_edges = vC.y;
+	vec4 edgesLRTB = unpack_edges(packed_edges);
+	edgesLRTB.x *= unpack_edges(vL.y).y;
+	edgesLRTB.z *= unpack_edges(vT.y).w;
+	edgesLRTB.y *= unpack_edges(vR.y).x;
+	edgesLRTB.w *= unpack_edges(vB.y).z;
+
+	float ssao_value = vC.x;
+	float ssao_valueL = vL.x;
+	float ssao_valueT = vT.x;
+	float ssao_valueR = vR.x;
+	float ssao_valueB = vB.x;
+
+	float sum_weight = 0.8f;
+	float sum = ssao_value * sum_weight;
+
+	add_sample(ssao_valueL, edgesLRTB.x, sum, sum_weight);
+	add_sample(ssao_valueR, edgesLRTB.y, sum, sum_weight);
+	add_sample(ssao_valueT, edgesLRTB.z, sum, sum_weight);
+	add_sample(ssao_valueB, edgesLRTB.w, sum, sum_weight);
+
+	float ssao_avg = sum / sum_weight;
+
+	ssao_value = ssao_avg;
+
+	return vec2(ssao_value, packed_edges);
+}
+#endif
+
+#ifdef MODE_SMART
+vec2 sample_blurred(vec3 p_pos, vec2 p_coord) {
+	float packed_edges = texelFetch(source_ssao, ivec2(p_pos.xy), 0).y;
+	vec4 edgesLRTB = unpack_edges(packed_edges);
+
+	vec4 valuesUL = textureGather(source_ssao, vec2(p_coord - params.half_screen_pixel_size * 0.5));
+	vec4 valuesBR = textureGather(source_ssao, vec2(p_coord + params.half_screen_pixel_size * 0.5));
+
+	float ssao_value = valuesUL.y;
+	float ssao_valueL = valuesUL.x;
+	float ssao_valueT = valuesUL.z;
+	float ssao_valueR = valuesBR.z;
+	float ssao_valueB = valuesBR.x;
+
+	float sum_weight = 0.5;
+	float sum = ssao_value * sum_weight;
+
+	add_sample(ssao_valueL, edgesLRTB.x, sum, sum_weight);
+	add_sample(ssao_valueR, edgesLRTB.y, sum, sum_weight);
+
+	add_sample(ssao_valueT, edgesLRTB.z, sum, sum_weight);
+	add_sample(ssao_valueB, edgesLRTB.w, sum, sum_weight);
+
+	float ssao_avg = sum / sum_weight;
+
+	ssao_value = ssao_avg;
+
+	return vec2(ssao_value, packed_edges);
+}
+#endif
 
 void main() {
 	// Pixel being shaded
 	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
-	if (any(greaterThanEqual(ssC, params.screen_size))) { //too large, do nothing
-		return;
-	}
 
-#ifdef MODE_UPSCALE
+#ifdef MODE_NON_SMART
 
-	//closest one should be the same pixel, but check nearby just in case
-	float depth = texelFetch(source_depth, ssC, 0).r;
+	vec2 halfPixel = params.half_screen_pixel_size * 0.5f;
 
-	depth = depth * 2.0 - 1.0;
-	if (params.orthogonal) {
-		depth = ((depth + (params.z_far + params.z_near) / (params.z_far - params.z_near)) * (params.z_far - params.z_near)) / 2.0;
-	} else {
-		depth = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near - depth * (params.z_far - params.z_near));
-	}
+	vec2 uv = (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size;
 
-	vec2 pixel_size = 1.0 / vec2(params.screen_size);
-	vec2 closest_uv = vec2(ssC) * pixel_size + pixel_size * 0.5;
-	vec2 from_uv = closest_uv;
-	vec2 ps2 = pixel_size; // * 2.0;
+	vec2 centre = textureLod(source_ssao, vec2(uv), 0.0).xy;
 
-	float closest_depth = abs(textureLod(source_depth_mipmaps, closest_uv, 0.0).r - depth);
+	vec4 vals;
+	vals.x = textureLod(source_ssao, vec2(uv + vec2(-halfPixel.x * 3, -halfPixel.y)), 0.0).x;
+	vals.y = textureLod(source_ssao, vec2(uv + vec2(+halfPixel.x, -halfPixel.y * 3)), 0.0).x;
+	vals.z = textureLod(source_ssao, vec2(uv + vec2(-halfPixel.x, +halfPixel.y * 3)), 0.0).x;
+	vals.w = textureLod(source_ssao, vec2(uv + vec2(+halfPixel.x * 3, +halfPixel.y)), 0.0).x;
 
-	vec2 offsets[4] = vec2[](vec2(ps2.x, 0), vec2(-ps2.x, 0), vec2(0, ps2.y), vec2(0, -ps2.y));
-	for (int i = 0; i < 4; i++) {
-		vec2 neighbour = from_uv + offsets[i];
-		float neighbour_depth = abs(textureLod(source_depth_mipmaps, neighbour, 0.0).r - depth);
-		if (neighbour_depth < closest_depth) {
-			closest_uv = neighbour;
-			closest_depth = neighbour_depth;
-		}
-	}
+	vec2 sampled = vec2(dot(vals, vec4(0.2)) + centre.x * 0.2, centre.y);
 
-	float visibility = textureLod(source_ssao, closest_uv, 0.0).r;
-	imageStore(dest_image, ssC, vec4(visibility));
 #else
-
-	float depth = texelFetch(source_depth, ssC, 0).r;
-
-#ifdef MODE_FULL_SIZE
-	depth = depth * 2.0 - 1.0;
-
-	if (params.orthogonal) {
-		depth = ((depth + (params.z_far + params.z_near) / (params.z_far - params.z_near)) * (params.z_far - params.z_near)) / 2.0;
-	} else {
-		depth = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near - depth * (params.z_far - params.z_near));
-	}
+#ifdef MODE_SMART
+	vec2 sampled = sample_blurred(vec3(gl_GlobalInvocationID), (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size);
+#else // MODE_WIDE
+	vec2 sampled = sample_blurred_wide((vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size);
+#endif
 
 #endif
-	float depth_divide = 1.0 / params.z_far;
-
-	//depth *= depth_divide;
-
-	/*
-	if (depth > params.z_far * 0.999) {
-		discard; //skybox
-	}
-	*/
-
-	float sum = texelFetch(source_ssao, ssC, 0).r;
-
-	// Base weight for depth falloff.  Increase this for more blurriness,
-	// decrease it for better edge discrimination
-	float BASE = gaussian[0];
-	float totalWeight = BASE;
-	sum *= totalWeight;
-
-	ivec2 clamp_limit = params.screen_size - ivec2(1);
-
-	for (int r = -R; r <= R; ++r) {
-		// We already handled the zero case above.  This loop should be unrolled and the static branch optimized out,
-		// so the IF statement has no runtime cost
-		if (r != 0) {
-			ivec2 ppos = ssC + params.axis * (r * params.filter_scale);
-			float value = texelFetch(source_ssao, clamp(ppos, ivec2(0), clamp_limit), 0).r;
-			ivec2 rpos = clamp(ppos, ivec2(0), clamp_limit);
-
-			float temp_depth = texelFetch(source_depth, rpos, 0).r;
-#ifdef MODE_FULL_SIZE
-			temp_depth = temp_depth * 2.0 - 1.0;
-			if (params.orthogonal) {
-				temp_depth = ((temp_depth + (params.z_far + params.z_near) / (params.z_far - params.z_near)) * (params.z_far - params.z_near)) / 2.0;
-			} else {
-				temp_depth = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near - temp_depth * (params.z_far - params.z_near));
-			}
-			//temp_depth *= depth_divide;
-#endif
-			// spatial domain: offset gaussian tap
-			float weight = 0.3 + gaussian[abs(r)];
-			//weight *= max(0.0, dot(temp_normal, normal));
-
-			// range domain (the "bilateral" weight). As depth difference increases, decrease weight.
-			weight *= max(0.0, 1.0 - params.edge_sharpness * abs(temp_depth - depth));
-
-			sum += value * weight;
-			totalWeight += weight;
-		}
-	}
-
-	const float epsilon = 0.0001;
-	float visibility = sum / (totalWeight + epsilon);
-
-	imageStore(dest_image, ssC, vec4(visibility));
-#endif
+	imageStore(dest_image, ivec2(ssC), vec4(sampled, 0.0, 0.0));
 }
