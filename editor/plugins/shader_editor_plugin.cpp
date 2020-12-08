@@ -117,7 +117,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	get_text_editor()->add_theme_color_override("line_number_color", line_number_color);
 	get_text_editor()->add_theme_color_override("caret_color", caret_color);
 	get_text_editor()->add_theme_color_override("caret_background_color", caret_background_color);
-	get_text_editor()->add_theme_color_override("font_color_selected", text_selected_color);
+	get_text_editor()->add_theme_color_override("font_selected_color", text_selected_color);
 	get_text_editor()->add_theme_color_override("selection_color", selection_color);
 	get_text_editor()->add_theme_color_override("brace_mismatch_color", brace_mismatch_color);
 	get_text_editor()->add_theme_color_override("current_line_color", current_line_color);

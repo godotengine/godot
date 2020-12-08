@@ -459,7 +459,7 @@ private:
 		Ref<Texture2D> updown;
 
 		Color font_color;
-		Color font_color_selected;
+		Color font_selected_color;
 		Color guide_color;
 		Color drop_position_color;
 		Color relationship_line_color;

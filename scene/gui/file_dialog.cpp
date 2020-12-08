@@ -50,20 +50,20 @@ VBoxContainer *FileDialog::get_vbox() {
 
 void FileDialog::_theme_changed() {
 	Color font_color = vbox->get_theme_color("font_color", "Button");
-	Color font_color_hover = vbox->get_theme_color("font_color_hover", "Button");
-	Color font_color_pressed = vbox->get_theme_color("font_color_pressed", "Button");
+	Color font_hover_color = vbox->get_theme_color("font_hover_color", "Button");
+	Color font_pressed_color = vbox->get_theme_color("font_pressed_color", "Button");
 
-	dir_up->add_theme_color_override("icon_color_normal", font_color);
-	dir_up->add_theme_color_override("icon_color_hover", font_color_hover);
-	dir_up->add_theme_color_override("icon_color_pressed", font_color_pressed);
+	dir_up->add_theme_color_override("icon_normal_color", font_color);
+	dir_up->add_theme_color_override("icon_hover_color", font_hover_color);
+	dir_up->add_theme_color_override("icon_pressed_color", font_pressed_color);
 
-	refresh->add_theme_color_override("icon_color_normal", font_color);
-	refresh->add_theme_color_override("icon_color_hover", font_color_hover);
-	refresh->add_theme_color_override("icon_color_pressed", font_color_pressed);
+	refresh->add_theme_color_override("icon_normal_color", font_color);
+	refresh->add_theme_color_override("icon_hover_color", font_hover_color);
+	refresh->add_theme_color_override("icon_pressed_color", font_pressed_color);
 
-	show_hidden->add_theme_color_override("icon_color_normal", font_color);
-	show_hidden->add_theme_color_override("icon_color_hover", font_color_hover);
-	show_hidden->add_theme_color_override("icon_color_pressed", font_color_pressed);
+	show_hidden->add_theme_color_override("icon_normal_color", font_color);
+	show_hidden->add_theme_color_override("icon_hover_color", font_hover_color);
+	show_hidden->add_theme_color_override("icon_pressed_color", font_pressed_color);
 }
 
 void FileDialog::_notification(int p_what) {
