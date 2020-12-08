@@ -69,6 +69,7 @@ private:
 	String _source;
 	String _path;
 	StringName _name;
+	String _icon_path;
 
 protected:
 	static void _bind_methods();
@@ -84,6 +85,14 @@ protected:
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 #endif
 public:
+	String get_script_class_name() const {
+		return _name;
+	}
+
+	String get_script_class_icon_path() const {
+		return _icon_path;
+	}
+
 	virtual bool can_instance() const override;
 
 	virtual Ref<Script> get_base_script() const override; //for script inheritance

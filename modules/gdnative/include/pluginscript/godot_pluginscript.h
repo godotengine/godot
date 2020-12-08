@@ -72,6 +72,7 @@ typedef struct {
 	godot_string_name name;
 	godot_bool is_tool;
 	godot_string_name base;
+	godot_string icon_path;
 
 	// Member lines format: {<string>: <int>}
 	godot_dictionary member_lines;
