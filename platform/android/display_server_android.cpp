@@ -725,7 +725,6 @@ void DisplayServerAndroid::process_mouse_event(int input_device, int event_actio
 				ev->set_global_position(hover_prev_pos);
 				ev->set_relative(event_pos);
 			}
-			ev->set_relative(event_pos - hover_prev_pos);
 			ev->set_button_mask(event_buttons_mask);
 			Input::get_singleton()->accumulate_input_event(ev);
 		} break;
