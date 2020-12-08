@@ -144,6 +144,11 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 		return inputHandler.onGenericMotionEvent(event) || super.onGenericMotionEvent(event);
 	}
 
+	@Override
+	public boolean onCapturedPointerEvent(MotionEvent event) {
+		return inputHandler.onGenericMotionEvent(event);
+	}
+
 	private void init(XRMode xrMode, boolean translucent, int depth, int stencil) {
 		setPreserveEGLContextOnPause(true);
 		setFocusableInTouchMode(true);

@@ -245,7 +245,7 @@ public class GodotInputHandler implements InputDeviceListener {
 				}
 			});
 			return true;
-		} else if ((event.getSource() & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE) {
+		} else if (event.isFromSource(InputDevice.SOURCE_MOUSE) || event.isFromSource(InputDevice.SOURCE_MOUSE_RELATIVE)) {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 				return handleMouseEvent(event);
 			}
@@ -461,6 +461,11 @@ public class GodotInputHandler implements InputDeviceListener {
 						GodotLib.touch(event.getSource(), action, 0, 1, new float[] { 0, x, y }, buttonsMask, verticalFactor, horizontalFactor);
 					}
 				});
+			}
+			case MotionEvent.ACTION_DOWN:
+			case MotionEvent.ACTION_UP: {
+				// we can safely ignore these cases because they are always come beside ACTION_BUTTON_PRESS and ACTION_BUTTON_RELEASE
+				return true;
 			}
 		}
 		return false;

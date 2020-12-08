@@ -120,6 +120,11 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 	}
 
 	@Override
+	public boolean onCapturedPointerEvent(MotionEvent event) {
+		return mInputHandler.onGenericMotionEvent(event);
+	}
+
+	@Override
 	public void onResume() {
 		super.onResume();
 

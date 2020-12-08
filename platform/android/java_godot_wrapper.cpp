@@ -109,6 +109,16 @@ jobject GodotJavaWrapper::get_class_loader() {
 	}
 }
 
+GodotJavaViewWrapper *GodotJavaWrapper::get_godot_view() {
+	if (_godot_view != nullptr) {
+		return _godot_view;
+	}
+	JNIEnv *env = ThreadAndroid::get_env();
+	jmethodID godot_view_getter = env->GetMethodID(godot_class, "getRenderView", "()Lorg/godotengine/godot/GodotRenderView;");
+	_godot_view = new GodotJavaViewWrapper(env->CallObjectMethod(godot_instance, godot_view_getter));
+	return _godot_view;
+}
+
 void GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
 	if (_on_video_init)
 		if (p_env == nullptr)
