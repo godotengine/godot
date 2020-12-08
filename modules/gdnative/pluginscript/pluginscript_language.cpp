@@ -142,7 +142,7 @@ bool PluginScriptLanguage::supports_builtin_mode() const {
 	return _desc.supports_builtin_mode;
 }
 
-bool PluginScriptLanguage::can_inherit_from_file() {
+bool PluginScriptLanguage::can_inherit_from_file() const {
 	return _desc.can_inherit_from_file;
 }
 
