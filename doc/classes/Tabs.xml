@@ -299,14 +299,14 @@
 				Emitted when a tab is clicked, even if it is the current tab.
 			</description>
 		</signal>
-		<signal name="tab_close">
+		<signal name="tab_closed">
 			<argument index="0" name="tab" type="int">
 			</argument>
 			<description>
 				Emitted when a tab is closed.
 			</description>
 		</signal>
-		<signal name="tab_hover">
+		<signal name="tab_hovered">
 			<argument index="0" name="tab" type="int">
 			</argument>
 			<description>
