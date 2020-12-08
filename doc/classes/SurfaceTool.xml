@@ -22,6 +22,16 @@
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
+		<method name="add_colors">
+			<return type="void">
+			</return>
+			<argument index="0" name="colors" type="PackedColorArray">
+			</argument>
+			<description>
+				Adds an array of [Color]'s to be applied on the specified vertices. Should be called before [method add_vertices].
+				[b]Note:[/b] The material must have [member BaseMaterial3D.vertex_color_use_as_albedo] enabled for the vertex color to be visible.
+			</description>
+		</method>
 		<method name="add_index">
 			<return type="void">
 			</return>
@@ -31,6 +41,24 @@
 				Adds an index to index array if you are using indexed vertices. Does not need to be called before adding vertices.
 			</description>
 		</method>
+		<method name="add_indices">
+			<return type="void">
+			</return>
+			<argument index="0" name="indices" type="PackedInt32Array">
+			</argument>
+			<description>
+				Adds an array of indices. Does not need to be called before adding vertices.
+			</description>
+		</method>
+		<method name="add_normals">
+			<return type="void">
+			</return>
+			<argument index="0" name="normals" type="PackedVector3Array">
+			</argument>
+			<description>
+				Adds an array of normals to be applied on the specified vertices. Should be called before [method add_vertices].
+			</description>
+		</method>
 		<method name="add_smooth_group">
 			<return type="void">
 			</return>
@@ -38,6 +66,15 @@
 			</argument>
 			<description>
 				Specifies whether the current vertex (if using only vertex arrays) or current index (if also using index arrays) should use smooth normals for normal calculation.
+			</description>
+		</method>
+		<method name="add_tangents">
+			<return type="void">
+			</return>
+			<argument index="0" name="tangents" type="Array">
+			</argument>
+			<description>
+				Adds an array of tangents to be applied on the specified vertices. This array should entirely be contained from [Plane]'s. Should be called before [method add_vertices].
 			</description>
 		</method>
 		<method name="add_triangle_fan">
@@ -60,6 +97,24 @@
 				Requires the primitive type be set to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
+		<method name="add_uvs">
+			<return type="void">
+			</return>
+			<argument index="0" name="uvs" type="PackedVector2Array">
+			</argument>
+			<description>
+				Adds an array of UV coordinates to be applied on the specified vertices. Should be called before [method add_vertices].
+			</description>
+		</method>
+		<method name="add_uvs2">
+			<return type="void">
+			</return>
+			<argument index="0" name="uvs2" type="PackedVector2Array">
+			</argument>
+			<description>
+				Adds the second array of UV coordinates to be applied on the specified vertices. Should be called before [method add_vertices].
+			</description>
+		</method>
 		<method name="add_vertex">
 			<return type="void">
 			</return>
@@ -67,6 +122,15 @@
 			</argument>
 			<description>
 				Specifies the position of current vertex. Should be called after specifying other vertex properties (e.g. Color, UV).
+			</description>
+		</method>
+		<method name="add_vertices">
+			<return type="void">
+			</return>
+			<argument index="0" name="vertices" type="PackedVector3Array">
+			</argument>
+			<description>
+				Adds an array of vertices. Should be called after specifying other vertex properties (e.g. Color, UV).
 			</description>
 		</method>
 		<method name="append_from">

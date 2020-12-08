@@ -105,6 +105,12 @@ private:
 	Vector<float> last_weights;
 	Plane last_tangent;
 
+	Vector<Color> last_colors;
+	Vector<Vector3> last_normals;
+	Vector<Plane> last_tangents;
+	Vector<Vector2> last_uvs;
+	Vector<Vector2> last_uvs2;
+
 	SkinWeightCount skin_weights;
 
 	Color last_custom[RS::ARRAY_CUSTOM_COUNT];
@@ -148,6 +154,14 @@ public:
 
 	void add_smooth_group(bool p_smooth);
 	void add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs = Vector<Vector2>(), const Vector<Color> &p_colors = Vector<Color>(), const Vector<Vector2> &p_uv2s = Vector<Vector2>(), const Vector<Vector3> &p_normals = Vector<Vector3>(), const Vector<Plane> &p_tangents = Vector<Plane>());
+
+	void add_colors(const Vector<Color> &p_colors);
+	void add_normals(const Vector<Vector3> &p_normals);
+	void add_tangents(const Vector<Plane> &p_tangents);
+	void add_uvs(const Vector<Vector2> &p_uvs);
+	void add_uvs2(const Vector<Vector2> &p_uvs2);
+	void add_vertices(const Vector<Vector3> &p_vertices);
+	void add_indices(const Vector<int> &p_indices);
 
 	void add_index(int p_index);
 

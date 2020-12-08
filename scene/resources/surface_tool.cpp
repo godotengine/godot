@@ -290,6 +290,58 @@ void SurfaceTool::add_triangle_fan(const Vector<Vector3> &p_vertices, const Vect
 #undef ADD_POINT
 }
 
+void SurfaceTool::add_colors(const Vector<Color> &p_colors) {
+	last_colors.append_array(p_colors);
+}
+
+void SurfaceTool::add_normals(const Vector<Vector3> &p_normals) {
+	last_normals.append_array(p_normals);
+}
+
+void SurfaceTool::add_tangents(const Vector<Plane> &p_tangents) {
+	last_tangents.append_array(p_tangents);
+}
+
+void SurfaceTool::add_uvs(const Vector<Vector2> &p_uvs) {
+	last_uvs.append_array(p_uvs);
+}
+
+void SurfaceTool::add_uvs2(const Vector<Vector2> &p_uvs2) {
+	last_uvs2.append_array(p_uvs2);
+}
+
+void SurfaceTool::add_vertices(const Vector<Vector3> &p_vertices) {
+	for (int i = 0; i < p_vertices.size(); i++) {
+		if (i < last_colors.size()) {
+			set_color(last_colors[i]);
+		}
+		if (i < last_normals.size()) {
+			set_normal(last_normals[i]);
+		}
+		if (i < last_tangents.size()) {
+			set_tangent(last_tangents[i]);
+		}
+		if (i < last_uvs.size()) {
+			set_uv(last_uvs[i]);
+		}
+		if (i < last_uvs2.size()) {
+			set_uv2(last_uvs2[i]);
+		}
+		add_vertex(p_vertices[i]);
+	}
+	last_colors.clear();
+	last_normals.clear();
+	last_tangents.clear();
+	last_uvs.clear();
+	last_uvs2.clear();
+}
+
+void SurfaceTool::add_indices(const Vector<int> &p_indices) {
+	for (int i = 0; i < p_indices.size(); i++) {
+		add_index(p_indices[i]);
+	}
+}
+
 void SurfaceTool::add_index(int p_index) {
 	ERR_FAIL_COND(!begun);
 
@@ -1112,6 +1164,11 @@ void SurfaceTool::clear() {
 	index_array.clear();
 	vertex_array.clear();
 	smooth_groups.clear();
+	last_colors.clear();
+	last_normals.clear();
+	last_tangents.clear();
+	last_uvs.clear();
+	last_uvs2.clear();
 	material.unref();
 	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
 		last_custom_format[i] = CUSTOM_MAX;
@@ -1158,6 +1215,14 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_smooth_group", "smooth"), &SurfaceTool::add_smooth_group);
 
 	ClassDB::bind_method(D_METHOD("add_triangle_fan", "vertices", "uvs", "colors", "uv2s", "normals", "tangents"), &SurfaceTool::add_triangle_fan, DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector3>()), DEFVAL(Vector<Plane>()));
+
+	ClassDB::bind_method(D_METHOD("add_colors", "colors"), &SurfaceTool::add_colors);
+	ClassDB::bind_method(D_METHOD("add_normals", "normals"), &SurfaceTool::add_normals);
+	ClassDB::bind_method(D_METHOD("add_tangents", "tangents"), &SurfaceTool::add_tangents);
+	ClassDB::bind_method(D_METHOD("add_uvs", "uvs"), &SurfaceTool::add_uvs);
+	ClassDB::bind_method(D_METHOD("add_uvs2", "uvs2"), &SurfaceTool::add_uvs2);
+	ClassDB::bind_method(D_METHOD("add_vertices", "vertices"), &SurfaceTool::add_vertices);
+	ClassDB::bind_method(D_METHOD("add_indices", "indices"), &SurfaceTool::add_indices);
 
 	ClassDB::bind_method(D_METHOD("add_index", "index"), &SurfaceTool::add_index);
 
