@@ -704,7 +704,6 @@ ResourceLoaderText::ResourceLoaderText() {
 
 	resources_total = 0;
 	resource_current = 0;
-	use_sub_threads = false;
 
 	progress = nullptr;
 	lines = false;

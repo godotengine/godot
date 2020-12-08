@@ -519,7 +519,7 @@ public:
 		DataType basetype = TYPE_VOID;
 		bool basetype_const = false;
 		StringName base_struct_name;
-		DataPrecision precision;
+		DataPrecision precision = PRECISION_DEFAULT;
 		DataType datatype = TYPE_VOID;
 		int array_size = 0;
 		StringName struct_name;

@@ -486,7 +486,7 @@ void Sprite3D::_draw() {
 		RS::get_singleton()->immediate_normal(immediate, normal);
 		RS::get_singleton()->immediate_tangent(immediate, tangent);
 		RS::get_singleton()->immediate_color(immediate, color);
-		RS::get_singleton()->immediate_uv(immediate, uvs[i]);
+		RS::get_singleton()->immediate_uv(immediate, uvs[index[i]]);
 
 		Vector3 vtx;
 		vtx[x_axis] = vertices[index[i]][0];
@@ -815,7 +815,7 @@ void AnimatedSprite3D::_draw() {
 		RS::get_singleton()->immediate_normal(immediate, normal);
 		RS::get_singleton()->immediate_tangent(immediate, tangent);
 		RS::get_singleton()->immediate_color(immediate, color);
-		RS::get_singleton()->immediate_uv(immediate, uvs[i]);
+		RS::get_singleton()->immediate_uv(immediate, uvs[indices[i]]);
 
 		Vector3 vtx;
 		vtx[x_axis] = vertices[indices[i]][0];

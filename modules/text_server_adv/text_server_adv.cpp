@@ -1636,7 +1636,6 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 						gl.start = sd_glyphs[i].start;
 						gl.end = sd_glyphs[i].end;
 						gl.count = 1;
-						gl.repeat = 1;
 						gl.font_rid = sd_glyphs[i].font_rid;
 						gl.font_size = sd_glyphs[i].font_size;
 						gl.flags = GRAPHEME_IS_BREAK_SOFT | GRAPHEME_IS_VIRTUAL;
@@ -1825,7 +1824,6 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 						gl.start = sd->glyphs[i].start;
 						gl.end = sd->glyphs[i].end;
 						gl.count = 1;
-						gl.repeat = 1;
 						gl.font_rid = sd->glyphs[i].font_rid;
 						gl.font_size = sd->glyphs[i].font_size;
 						gl.flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_VIRTUAL;
@@ -1860,8 +1858,6 @@ TextServer::Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced
 
 	// Process glyphs.
 	TextServer::Glyph gl;
-	gl.start = -1;
-	gl.end = -1;
 
 	if (p_direction == HB_DIRECTION_RTL || p_direction == HB_DIRECTION_BTT) {
 		gl.flags |= TextServer::GRAPHEME_IS_RTL;
@@ -1907,7 +1903,6 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 				gl.index = p_sd->text[i];
 				gl.font_size = fs;
 				gl.font_rid = RID();
-				gl.flags = 0;
 				if (p_direction == HB_DIRECTION_RTL || p_direction == HB_DIRECTION_BTT) {
 					gl.flags |= TextServer::GRAPHEME_IS_RTL;
 				}
@@ -2232,7 +2227,6 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 							gl.start = span.start;
 							gl.end = span.end;
 							gl.count = 1;
-							gl.index = 0;
 							gl.flags = GRAPHEME_IS_VALID | GRAPHEME_IS_VIRTUAL;
 							if (sd->orientation == ORIENTATION_HORIZONTAL) {
 								gl.advance = sd->objects[span.embedded_key].rect.size.x;

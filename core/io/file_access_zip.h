@@ -59,8 +59,6 @@ private:
 
 	static ZipArchive *instance;
 
-	FileAccess::CreateFunc fa_create_func;
-
 public:
 	void close_handle(unzFile p_file) const;
 	unzFile get_file_handle(String p_file) const;

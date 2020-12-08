@@ -62,8 +62,6 @@ class OS {
 
 	char *last_error;
 
-	void *_stack_bottom;
-
 	CompositeLogger *_logger = nullptr;
 
 	bool restart_on_exit = false;

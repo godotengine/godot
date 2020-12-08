@@ -591,7 +591,7 @@ void Environment::set_glow_level(int p_level, float p_intensity) {
 }
 
 float Environment::get_glow_level(int p_level) const {
-	ERR_FAIL_INDEX_V(p_level, RS::MAX_GLOW_LEVELS, false);
+	ERR_FAIL_INDEX_V(p_level, RS::MAX_GLOW_LEVELS, 0.0);
 
 	return glow_levels[p_level];
 }

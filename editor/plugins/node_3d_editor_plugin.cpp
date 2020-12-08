@@ -2512,7 +2512,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				gpu_time_history[i] = 0;
 			}
 			cpu_time_history_index = 0;
-			cpu_time_history_index = 0;
+			gpu_time_history_index = 0;
 		}
 		if (show_fps) {
 			cpu_time_history[cpu_time_history_index] = RS::get_singleton()->viewport_get_measured_render_time_cpu(viewport->get_viewport_rid());

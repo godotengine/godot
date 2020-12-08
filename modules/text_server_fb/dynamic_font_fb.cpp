@@ -139,8 +139,6 @@ DynamicFontDataFallback::DataAtSize *DynamicFontDataFallback::get_data_for_size(
 DynamicFontDataFallback::TexturePosition DynamicFontDataFallback::find_texture_pos_for_glyph(DynamicFontDataFallback::DataAtSize *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height) {
 	TexturePosition ret;
 	ret.index = -1;
-	ret.x = 0;
-	ret.y = 0;
 
 	int mw = p_width;
 	int mh = p_height;

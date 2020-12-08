@@ -6130,7 +6130,7 @@ void RenderingDeviceVulkan::draw_list_bind_render_pipeline(DrawListID p_list, RI
 
 void RenderingDeviceVulkan::draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index) {
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_MSG(p_index >= limits.maxBoundDescriptorSets || p_index > MAX_UNIFORM_SETS,
+	ERR_FAIL_COND_MSG(p_index >= limits.maxBoundDescriptorSets || p_index >= MAX_UNIFORM_SETS,
 			"Attempting to bind a descriptor set (" + itos(p_index) + ") greater than what the hardware supports (" + itos(limits.maxBoundDescriptorSets) + ").");
 #endif
 	DrawList *dl = _get_draw_list_ptr(p_list);
@@ -6552,7 +6552,7 @@ void RenderingDeviceVulkan::compute_list_bind_uniform_set(ComputeListID p_list, 
 	ComputeList *cl = compute_list;
 
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_MSG(p_index >= limits.maxBoundDescriptorSets || p_index > MAX_UNIFORM_SETS,
+	ERR_FAIL_COND_MSG(p_index >= limits.maxBoundDescriptorSets || p_index >= MAX_UNIFORM_SETS,
 			"Attempting to bind a descriptor set (" + itos(p_index) + ") greater than what the hardware supports (" + itos(limits.maxBoundDescriptorSets) + ").");
 #endif
 

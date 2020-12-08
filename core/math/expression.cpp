@@ -1003,31 +1003,19 @@ Expression::ENode *Expression::_parse_expression() {
 					priority = 1;
 					unary = true;
 					break;
-
 				case Variant::OP_MULTIPLY:
-					priority = 2;
-					break;
 				case Variant::OP_DIVIDE:
-					priority = 2;
-					break;
 				case Variant::OP_MODULE:
 					priority = 2;
 					break;
-
 				case Variant::OP_ADD:
-					priority = 3;
-					break;
 				case Variant::OP_SUBTRACT:
 					priority = 3;
 					break;
-
 				case Variant::OP_SHIFT_LEFT:
-					priority = 4;
-					break;
 				case Variant::OP_SHIFT_RIGHT:
 					priority = 4;
 					break;
-
 				case Variant::OP_BIT_AND:
 					priority = 5;
 					break;
@@ -1037,31 +1025,17 @@ Expression::ENode *Expression::_parse_expression() {
 				case Variant::OP_BIT_OR:
 					priority = 7;
 					break;
-
 				case Variant::OP_LESS:
-					priority = 8;
-					break;
 				case Variant::OP_LESS_EQUAL:
-					priority = 8;
-					break;
 				case Variant::OP_GREATER:
-					priority = 8;
-					break;
 				case Variant::OP_GREATER_EQUAL:
-					priority = 8;
-					break;
-
 				case Variant::OP_EQUAL:
-					priority = 8;
-					break;
 				case Variant::OP_NOT_EQUAL:
 					priority = 8;
 					break;
-
 				case Variant::OP_IN:
 					priority = 10;
 					break;
-
 				case Variant::OP_NOT:
 					priority = 11;
 					unary = true;
@@ -1072,7 +1046,6 @@ Expression::ENode *Expression::_parse_expression() {
 				case Variant::OP_OR:
 					priority = 13;
 					break;
-
 				default: {
 					_set_error("Parser bug, invalid operator in expression: " + itos(expression[i].op));
 					return nullptr;

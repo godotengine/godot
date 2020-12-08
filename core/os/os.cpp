@@ -505,11 +505,7 @@ void OS::add_frame_delay(bool p_can_draw) {
 }
 
 OS::OS() {
-	void *volatile stack_bottom;
-
 	singleton = this;
-
-	_stack_bottom = (void *)(&stack_bottom);
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));

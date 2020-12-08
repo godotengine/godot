@@ -3152,13 +3152,13 @@ bool RendererSceneRenderRD::environment_is_ssao_enabled(RID p_env) const {
 
 float RendererSceneRenderRD::environment_get_ssao_ao_affect(RID p_env) const {
 	Environment *env = environment_owner.getornull(p_env);
-	ERR_FAIL_COND_V(!env, false);
+	ERR_FAIL_COND_V(!env, 0.0);
 	return env->ssao_ao_channel_affect;
 }
 
 float RendererSceneRenderRD::environment_get_ssao_light_affect(RID p_env) const {
 	Environment *env = environment_owner.getornull(p_env);
-	ERR_FAIL_COND_V(!env, false);
+	ERR_FAIL_COND_V(!env, 0.0);
 	return env->ssao_direct_light_affect;
 }
 
@@ -5711,8 +5711,8 @@ bool RendererSceneRenderRD::render_buffers_is_sdfgi_using_occlusion(RID p_render
 
 float RendererSceneRenderRD::render_buffers_get_sdfgi_energy(RID p_render_buffers) const {
 	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
-	ERR_FAIL_COND_V(!rb, 0);
-	ERR_FAIL_COND_V(!rb->sdfgi, false);
+	ERR_FAIL_COND_V(!rb, 0.0);
+	ERR_FAIL_COND_V(!rb->sdfgi, 0.0);
 
 	return rb->sdfgi->energy;
 }
@@ -7360,7 +7360,6 @@ void RendererSceneRenderRD::render_sdfgi(RID p_render_buffers, int p_region, Ins
 				ipush_constant.store_ambient_texture = false;
 
 				ipush_constant.image_size[0] = rb->sdfgi->probe_axis_count * rb->sdfgi->probe_axis_count;
-				ipush_constant.image_size[1] = rb->sdfgi->probe_axis_count;
 				ipush_constant.image_size[1] = rb->sdfgi->probe_axis_count;
 
 				int32_t probe_divisor = rb->sdfgi->cascade_size / SDFGI::PROBE_DIVISOR;

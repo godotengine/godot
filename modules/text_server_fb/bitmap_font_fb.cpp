@@ -198,7 +198,6 @@ Error BitmapFontDataFallback::load_from_memory(const uint8_t *p_data, size_t p_s
 		chr.rect.position.y = c[2];
 		chr.rect.size.x = c[3];
 		chr.rect.size.y = c[4];
-		chr.texture_idx = 0;
 		if (c[7] < 0) {
 			chr.advance.x = c[3];
 		} else {
