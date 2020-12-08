@@ -370,8 +370,13 @@ public:
 	CanvasItem *get_parent_item() const;
 
 	virtual Transform2D get_transform() const = 0;
-
 	virtual Transform2D get_global_transform() const;
+	virtual Transform2D get_relative_transform_to_ancestor(const Node *p_ancestor) const;
+
+	virtual void set_transform(const Transform2D &p_transform) = 0;
+	virtual void set_global_transform(const Transform2D &p_transform);
+	virtual void set_relative_transform_to_ancestor(const Transform2D &p_transform, const Node *p_parent);
+
 	virtual Transform2D get_global_transform_with_canvas() const;
 	virtual Transform2D get_screen_transform() const;
 

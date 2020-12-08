@@ -500,6 +500,7 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
 
 	virtual Transform2D get_transform() const override;
+	virtual void set_transform(const Transform2D &p_transform) override;
 
 	bool is_top_level_control() const;
 

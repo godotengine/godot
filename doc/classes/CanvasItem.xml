@@ -457,6 +457,15 @@
 				Returns the mouse position relative to this item's position.
 			</description>
 		</method>
+		<method name="get_relative_transform_to_ancestor" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="ancestor" type="Node">
+			</argument>
+			<description>
+				Returns the [Transform2D] relative to this node's ancestor.
+			</description>
+		</method>
 		<method name="get_transform" qualifiers="const">
 			<return type="Transform2D">
 			</return>

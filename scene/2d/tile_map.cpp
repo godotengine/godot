@@ -137,7 +137,7 @@ void TileMap::_update_quadrant_transform() {
 
 	Transform2D nav_rel;
 	if (navigation) {
-		nav_rel = get_relative_transform_to_parent(navigation);
+		nav_rel = get_relative_transform_to_ancestor(navigation);
 	}
 
 	for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
@@ -319,7 +319,7 @@ void TileMap::update_dirty_quadrants() {
 	Vector2 tofs = get_cell_draw_offset();
 	Transform2D nav_rel;
 	if (navigation) {
-		nav_rel = get_relative_transform_to_parent(navigation);
+		nav_rel = get_relative_transform_to_ancestor(navigation);
 	}
 
 	Vector2 qofs;

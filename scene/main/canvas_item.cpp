@@ -486,6 +486,39 @@ Transform2D CanvasItem::get_global_transform() const {
 	return global_transform;
 }
 
+Transform2D CanvasItem::get_relative_transform_to_ancestor(const Node *p_ancestor) const {
+	if (p_ancestor == this) {
+		return Transform2D();
+	}
+
+	CanvasItem *parent_2d = Object::cast_to<CanvasItem>(get_parent());
+
+	ERR_FAIL_COND_V(!parent_2d, Transform2D());
+	if (p_ancestor == parent_2d) {
+		return get_transform();
+	} else {
+		return parent_2d->get_relative_transform_to_ancestor(p_ancestor) * get_transform();
+	}
+}
+
+void CanvasItem::set_global_transform(const Transform2D &p_transform) {
+	CanvasItem *pi = get_parent_item();
+	if (pi) {
+		set_transform(pi->get_global_transform().affine_inverse() * p_transform);
+	} else {
+		set_transform(p_transform);
+	}
+}
+
+void CanvasItem::set_relative_transform_to_ancestor(const Transform2D &p_transform, const Node *p_ancestor) {
+	CanvasItem *pi = get_parent_item();
+	if (pi) {
+		set_transform(pi->get_relative_transform_to_ancestor(p_ancestor).affine_inverse() * p_transform);
+	} else {
+		set_transform(p_transform);
+	}
+}
+
 void CanvasItem::_top_level_raise_self() {
 	if (!is_inside_tree()) {
 		return;
@@ -1168,6 +1201,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_set_transform_matrix", "xform"), &CanvasItem::draw_set_transform_matrix);
 	ClassDB::bind_method(D_METHOD("get_transform"), &CanvasItem::get_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &CanvasItem::get_global_transform);
+	ClassDB::bind_method(D_METHOD("get_relative_transform_to_ancestor", "ancestor"), &CanvasItem::get_relative_transform_to_ancestor);
 	ClassDB::bind_method(D_METHOD("get_global_transform_with_canvas"), &CanvasItem::get_global_transform_with_canvas);
 	ClassDB::bind_method(D_METHOD("get_viewport_transform"), &CanvasItem::get_viewport_transform);
 	ClassDB::bind_method(D_METHOD("get_viewport_rect"), &CanvasItem::get_viewport_rect);

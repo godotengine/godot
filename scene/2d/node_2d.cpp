@@ -344,15 +344,6 @@ void Node2D::set_transform(const Transform2D &p_transform) {
 	_notify_transform();
 }
 
-void Node2D::set_global_transform(const Transform2D &p_transform) {
-	CanvasItem *pi = get_parent_item();
-	if (pi) {
-		set_transform(pi->get_global_transform().affine_inverse() * p_transform);
-	} else {
-		set_transform(p_transform);
-	}
-}
-
 void Node2D::set_z_index(int p_z) {
 	ERR_FAIL_COND(p_z < RS::CANVAS_ITEM_Z_MIN);
 	ERR_FAIL_COND(p_z > RS::CANVAS_ITEM_Z_MAX);
@@ -375,21 +366,6 @@ bool Node2D::is_z_relative() const {
 
 int Node2D::get_z_index() const {
 	return z_index;
-}
-
-Transform2D Node2D::get_relative_transform_to_parent(const Node *p_parent) const {
-	if (p_parent == this) {
-		return Transform2D();
-	}
-
-	Node2D *parent_2d = Object::cast_to<Node2D>(get_parent());
-
-	ERR_FAIL_COND_V(!parent_2d, Transform2D());
-	if (p_parent == parent_2d) {
-		return get_transform();
-	} else {
-		return parent_2d->get_relative_transform_to_parent(p_parent) * get_transform();
-	}
 }
 
 void Node2D::look_at(const Vector2 &p_pos) {
@@ -441,6 +417,7 @@ void Node2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_transform", "xform"), &Node2D::set_transform);
 	ClassDB::bind_method(D_METHOD("set_global_transform", "xform"), &Node2D::set_global_transform);
+	ClassDB::bind_method(D_METHOD("set_relative_transform_to_ancestor", "xform", "ancestor"), &Node2D::set_relative_transform_to_ancestor);
 
 	ClassDB::bind_method(D_METHOD("look_at", "point"), &Node2D::look_at);
 	ClassDB::bind_method(D_METHOD("get_angle_to", "point"), &Node2D::get_angle_to);
@@ -453,8 +430,6 @@ void Node2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_z_as_relative", "enable"), &Node2D::set_z_as_relative);
 	ClassDB::bind_method(D_METHOD("is_z_relative"), &Node2D::is_z_relative);
-
-	ClassDB::bind_method(D_METHOD("get_relative_transform_to_parent", "parent"), &Node2D::get_relative_transform_to_parent);
 
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");

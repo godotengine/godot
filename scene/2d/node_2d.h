@@ -98,8 +98,9 @@ public:
 	float get_global_rotation_degrees() const;
 	Size2 get_global_scale() const;
 
-	void set_transform(const Transform2D &p_transform);
-	void set_global_transform(const Transform2D &p_transform);
+	Transform2D get_transform() const override;
+	void set_transform(const Transform2D &p_transform) override;
+
 	void set_global_position(const Point2 &p_pos);
 	void set_global_rotation(float p_radians);
 	void set_global_rotation_degrees(float p_degrees);
@@ -116,10 +117,6 @@ public:
 
 	void set_z_as_relative(bool p_enabled);
 	bool is_z_relative() const;
-
-	Transform2D get_relative_transform_to_parent(const Node *p_parent) const;
-
-	Transform2D get_transform() const override;
 
 	Node2D();
 };

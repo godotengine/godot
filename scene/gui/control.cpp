@@ -2307,6 +2307,11 @@ Transform2D Control::get_transform() const {
 	return xform;
 }
 
+void Control::set_transform(const Transform2D &p_transform) {
+	// control doesn't support setting transform manually yet
+	ERR_FAIL_MSG("Control does not support setting transform directly.  Use set_position(), set_scale(), etc.");
+}
+
 String Control::_get_tooltip() const {
 	return data.tooltip;
 }
