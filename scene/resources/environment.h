@@ -70,13 +70,6 @@ public:
 		TONE_MAPPER_ACES,
 	};
 
-	enum SSAOBlur {
-		SSAO_BLUR_DISABLED,
-		SSAO_BLUR_1x1,
-		SSAO_BLUR_2x2,
-		SSAO_BLUR_3x3,
-	};
-
 	enum SDFGICascades {
 		SDFGI_CASCADES_4,
 		SDFGI_CASCADES_6,
@@ -148,12 +141,13 @@ private:
 	// SSAO
 	bool ssao_enabled = false;
 	float ssao_radius = 1.0;
-	float ssao_intensity = 1.0;
-	float ssao_bias = 0.01;
+	float ssao_intensity = 2.0;
+	float ssao_power = 1.5;
+	float ssao_detail = 0.5;
+	float ssao_horizon = 0.06;
+	float ssao_sharpness = 0.98;
 	float ssao_direct_light_affect = 0.0;
 	float ssao_ao_channel_affect = 0.0;
-	SSAOBlur ssao_blur = SSAO_BLUR_3x3;
-	float ssao_edge_sharpness = 4.0;
 	void _update_ssao();
 
 	// SDFGI
@@ -295,16 +289,18 @@ public:
 	float get_ssao_radius() const;
 	void set_ssao_intensity(float p_intensity);
 	float get_ssao_intensity() const;
-	void set_ssao_bias(float p_bias);
-	float get_ssao_bias() const;
+	void set_ssao_power(float p_power);
+	float get_ssao_power() const;
+	void set_ssao_detail(float p_detail);
+	float get_ssao_detail() const;
+	void set_ssao_horizon(float p_horizon);
+	float get_ssao_horizon() const;
+	void set_ssao_sharpness(float p_sharpness);
+	float get_ssao_sharpness() const;
 	void set_ssao_direct_light_affect(float p_direct_light_affect);
 	float get_ssao_direct_light_affect() const;
 	void set_ssao_ao_channel_affect(float p_ao_channel_affect);
 	float get_ssao_ao_channel_affect() const;
-	void set_ssao_blur(SSAOBlur p_blur);
-	SSAOBlur get_ssao_blur() const;
-	void set_ssao_edge_sharpness(float p_edge_sharpness);
-	float get_ssao_edge_sharpness() const;
 
 	// SDFGI
 	void set_sdfgi_enabled(bool p_enabled);
@@ -414,7 +410,6 @@ VARIANT_ENUM_CAST(Environment::BGMode)
 VARIANT_ENUM_CAST(Environment::AmbientSource)
 VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
-VARIANT_ENUM_CAST(Environment::SSAOBlur)
 VARIANT_ENUM_CAST(Environment::SDFGICascades)
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
