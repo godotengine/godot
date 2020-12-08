@@ -86,7 +86,7 @@
 				Emitted when a button on this controller is pressed.
 			</description>
 		</signal>
-		<signal name="button_release">
+		<signal name="button_released">
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
