@@ -103,19 +103,6 @@ public:
 		m_enableLimit = false;
 	}
 
-	G6DOFRotationalLimitMotorSW(const G6DOFRotationalLimitMotorSW &limot) {
-		m_targetVelocity = limot.m_targetVelocity;
-		m_maxMotorForce = limot.m_maxMotorForce;
-		m_limitSoftness = limot.m_limitSoftness;
-		m_loLimit = limot.m_loLimit;
-		m_hiLimit = limot.m_hiLimit;
-		m_ERP = limot.m_ERP;
-		m_bounce = limot.m_bounce;
-		m_currentLimit = limot.m_currentLimit;
-		m_currentLimitError = limot.m_currentLimitError;
-		m_enableMotor = limot.m_enableMotor;
-	}
-
 	//! Is limited
 	bool isLimited() {
 		return (m_loLimit < m_hiLimit);
@@ -161,16 +148,6 @@ public:
 		enable_limit[0] = true;
 		enable_limit[1] = true;
 		enable_limit[2] = true;
-	}
-
-	G6DOFTranslationalLimitMotorSW(const G6DOFTranslationalLimitMotorSW &other) {
-		m_lowerLimit = other.m_lowerLimit;
-		m_upperLimit = other.m_upperLimit;
-		m_accumulatedImpulse = other.m_accumulatedImpulse;
-
-		m_limitSoftness = other.m_limitSoftness;
-		m_damping = other.m_damping;
-		m_restitution = other.m_restitution;
 	}
 
 	//! Test limit
@@ -242,11 +219,8 @@ protected:
 
 	//!@}
 
-	Generic6DOFJointSW &operator=(Generic6DOFJointSW &other) {
-		ERR_PRINT("pito");
-		(void)other;
-		return *this;
-	}
+	Generic6DOFJointSW(Generic6DOFJointSW const &) = delete;
+	void operator=(Generic6DOFJointSW const &) = delete;
 
 	void buildLinearJacobian(
 			JacobianEntrySW &jacLinear, const Vector3 &normalWorld,
