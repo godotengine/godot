@@ -257,13 +257,13 @@ int Compression::decompress_dynamic(Vector<uint8_t> *p_dst_vect, int p_max_dst_s
 	} while (ret != Z_STREAM_END);
 
 	// If all done successfully, resize the output if it's larger than the actual output
-	if (ret == Z_STREAM_END && (unsigned long)p_dst_vect->size() > strm.total_out) {
+	if ((unsigned long)p_dst_vect->size() > strm.total_out) {
 		p_dst_vect->resize(strm.total_out);
 	}
 
 	// clean up and return
 	(void)inflateEnd(&strm);
-	return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
+	return Z_OK;
 }
 
 int Compression::zlib_level = Z_DEFAULT_COMPRESSION;

@@ -3174,7 +3174,7 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const FunctionInfo &p_functi
 }
 
 bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(StringName p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat) {
-	for (int i = 0; shader->functions.size(); i++) {
+	for (int i = 0; i < shader->functions.size(); i++) {
 		if (shader->functions[i].name == p_name) {
 			ERR_FAIL_INDEX_V(p_argument, shader->functions[i].function->arguments.size(), false);
 			FunctionNode::Argument *arg = &shader->functions[i].function->arguments.write[p_argument];
@@ -3208,7 +3208,7 @@ bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(StringNam
 }
 
 bool ShaderLanguage::_propagate_function_call_sampler_builtin_reference(StringName p_name, int p_argument, const StringName &p_builtin) {
-	for (int i = 0; shader->functions.size(); i++) {
+	for (int i = 0; i < shader->functions.size(); i++) {
 		if (shader->functions[i].name == p_name) {
 			ERR_FAIL_INDEX_V(p_argument, shader->functions[i].function->arguments.size(), false);
 			FunctionNode::Argument *arg = &shader->functions[i].function->arguments.write[p_argument];

@@ -6619,8 +6619,8 @@ void TextEdit::set_line_length_guideline_hard_column(int p_column) {
 }
 
 void TextEdit::set_draw_minimap(bool p_draw) {
-	draw_minimap = p_draw;
 	if (draw_minimap != p_draw) {
+		draw_minimap = p_draw;
 		_update_wrap_at();
 	}
 	update();
@@ -6631,8 +6631,8 @@ bool TextEdit::is_drawing_minimap() const {
 }
 
 void TextEdit::set_minimap_width(int p_minimap_width) {
-	minimap_width = p_minimap_width;
 	if (minimap_width != p_minimap_width) {
+		minimap_width = p_minimap_width;
 		_update_wrap_at();
 	}
 	update();

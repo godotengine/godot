@@ -447,7 +447,6 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 			if (cell != last_cell) {
 				//cell changed, update pointer to indices
 				giw[cell * 2 + 1] = i;
-				last_cell = cell;
 				solidw[cell] = true;
 			}
 			tiw[i] = triangle_sort[i].triangle_index;

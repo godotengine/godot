@@ -228,6 +228,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 				} break;
 
+				case (KEY_Y): // PASTE (Yank for unix users).
 				case (KEY_V): { // PASTE.
 
 					if (editable) {
@@ -258,13 +259,6 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 				} break;
 
-				case (KEY_Y): { // PASTE (Yank for unix users).
-
-					if (editable) {
-						paste_text();
-					}
-
-				} break;
 				case (KEY_K): { // Delete from cursor_pos to end.
 
 					if (editable) {

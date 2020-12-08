@@ -74,7 +74,7 @@ bool SurfaceTool::Vertex::operator==(const Vertex &p_vertex) const {
 		}
 	}
 
-	for (int i = 0; i < RS::ARRAY_CUSTOM_MAX; i++) {
+	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
 		if (custom[i] != p_vertex.custom[i]) {
 			return false;
 		}

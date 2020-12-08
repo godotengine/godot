@@ -1003,10 +1003,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 		} break;
-		case Variant::STRING: {
-			_encode_string(p_variant, buf, r_len);
-
-		} break;
+		case Variant::STRING:
 		case Variant::STRING_NAME: {
 			_encode_string(p_variant, buf, r_len);
 

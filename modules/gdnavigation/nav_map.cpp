@@ -707,7 +707,7 @@ void NavMap::sync() {
 	}
 
 	if (regenerate_links) {
-		map_update_id = map_update_id + 1 % 9999999;
+		map_update_id = (map_update_id + 1) % 9999999;
 	}
 
 	if (agents_dirty) {
