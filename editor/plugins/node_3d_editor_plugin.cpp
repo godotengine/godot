@@ -2500,9 +2500,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		if (show_info) {
 			String text;
-			text += "X: " + rtos(current_camera->get_translation().x).pad_decimals(1) + "\n";
-			text += "Y: " + rtos(current_camera->get_translation().y).pad_decimals(1) + "\n";
-			text += "Z: " + rtos(current_camera->get_translation().z).pad_decimals(1) + "\n";
+			text += "X: " + rtos(current_camera->get_position().x).pad_decimals(1) + "\n";
+			text += "Y: " + rtos(current_camera->get_position().y).pad_decimals(1) + "\n";
+			text += "Z: " + rtos(current_camera->get_position().z).pad_decimals(1) + "\n";
 			text += TTR("Pitch") + ": " + itos(Math::round(current_camera->get_rotation_degrees().x)) + "\n";
 			text += TTR("Yaw") + ": " + itos(Math::round(current_camera->get_rotation_degrees().y)) + "\n\n";
 
@@ -5834,7 +5834,7 @@ void Node3DEditor::_init_grid() {
 		return;
 	}
 	Camera3D *camera = get_editor_viewport(0)->camera;
-	Vector3 camera_position = camera->get_translation();
+	Vector3 camera_position = camera->get_position();
 	if (camera_position == Vector3()) {
 		return; // Camera3D is invalid, don't draw the grid.
 	}
