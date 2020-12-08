@@ -375,21 +375,21 @@ bool NetworkedController::is_server_controller() const {
 	ERR_FAIL_COND_V(get_tree() == nullptr, false);
 	if (controller_type != CONTROLLER_TYPE_NULL)
 		return controller_type == CONTROLLER_TYPE_SERVER;
-	return get_tree()->is_network_server();
+	return get_tree()->has_network_peer() && get_tree()->is_network_server();
 }
 
 bool NetworkedController::is_player_controller() const {
 	ERR_FAIL_COND_V(get_tree() == nullptr, false);
 	if (controller_type != CONTROLLER_TYPE_NULL)
 		return controller_type == CONTROLLER_TYPE_PLAYER;
-	return get_tree()->is_network_server() == false && is_network_master();
+	return (get_tree()->has_network_peer() && get_tree()->is_network_server() == false) && is_network_master();
 }
 
 bool NetworkedController::is_doll_controller() const {
 	ERR_FAIL_COND_V(get_tree() == nullptr, false);
 	if (controller_type != CONTROLLER_TYPE_NULL)
 		return controller_type == CONTROLLER_TYPE_DOLL;
-	return get_tree()->is_network_server() == false && is_network_master() == false;
+	return (get_tree()->has_network_peer() && get_tree()->is_network_server() == false) && is_network_master() == false;
 }
 
 bool NetworkedController::is_nonet_controller() const {
