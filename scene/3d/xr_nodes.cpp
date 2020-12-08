@@ -211,7 +211,7 @@ void XRController3D::_notification(int p_what) {
 							emit_signal("button_pressed", i);
 							button_states += mask;
 						} else if (was_pressed && !is_pressed) {
-							emit_signal("button_release", i);
+							emit_signal("button_released", i);
 							button_states -= mask;
 						};
 
@@ -257,7 +257,7 @@ void XRController3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mesh"), &XRController3D::get_mesh);
 
 	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::INT, "button")));
-	ADD_SIGNAL(MethodInfo("button_release", PropertyInfo(Variant::INT, "button")));
+	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::INT, "button")));
 	ADD_SIGNAL(MethodInfo("mesh_updated", PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh")));
 };
 
