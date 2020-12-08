@@ -2217,10 +2217,6 @@ void AnimationTrackEdit::draw_bg(int p_clip_left, int p_clip_right) {
 void AnimationTrackEdit::draw_fg(int p_clip_left, int p_clip_right) {
 }
 
-void AnimationTrackEdit::draw_texture_clipped(const Ref<Texture2D> &p_texture, const Vector2 &p_pos) {
-	draw_texture_region_clipped(p_texture, Rect2(p_pos, p_texture->get_size()), Rect2(Point2(), p_texture->get_size()));
-}
-
 void AnimationTrackEdit::draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region) {
 	int clip_left = timeline->get_name_limit();
 	int clip_right = get_size().width - timeline->get_buttons_width();

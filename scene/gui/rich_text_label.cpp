@@ -1424,20 +1424,6 @@ bool RichTextLabel::_find_strikethrough(Item *p_item) {
 	return false;
 }
 
-bool RichTextLabel::_find_by_type(Item *p_item, ItemType p_type) {
-	ERR_FAIL_INDEX_V((int)p_type, 19, false);
-
-	Item *item = p_item;
-
-	while (item) {
-		if (item->type == p_type) {
-			return true;
-		}
-		item = item->parent;
-	}
-	return false;
-}
-
 void RichTextLabel::_fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack) {
 	Item *item = p_item;
 	while (item) {

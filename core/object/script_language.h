@@ -274,8 +274,6 @@ class ScriptCodeCompletionCache {
 	static ScriptCodeCompletionCache *singleton;
 
 public:
-	virtual RES get_cached_resource(const String &p_path) = 0;
-
 	static ScriptCodeCompletionCache *get_singleton() { return singleton; }
 
 	ScriptCodeCompletionCache();

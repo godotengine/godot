@@ -1641,17 +1641,6 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 	}
 }
 
-void ScriptEditor::ensure_focus_current() {
-	if (!is_inside_tree()) {
-		return;
-	}
-
-	ScriptEditorBase *current = _get_current_editor();
-	if (current) {
-		current->ensure_focus();
-	}
-}
-
 void ScriptEditor::_members_overview_selected(int p_idx) {
 	ScriptEditorBase *se = _get_current_editor();
 	if (!se) {

@@ -1167,11 +1167,6 @@ Ref<Texture2D> Window::get_theme_icon(const StringName &p_name, const StringName
 	return Control::get_icons(theme_owner, theme_owner_window, p_name, type);
 }
 
-Ref<Shader> Window::get_theme_shader(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::get_shaders(theme_owner, theme_owner_window, p_name, type);
-}
-
 Ref<StyleBox> Window::get_theme_stylebox(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::get_styleboxs(theme_owner, theme_owner_window, p_name, type);
@@ -1200,11 +1195,6 @@ int Window::get_theme_constant(const StringName &p_name, const StringName &p_typ
 bool Window::has_theme_icon(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::has_icons(theme_owner, theme_owner_window, p_name, type);
-}
-
-bool Window::has_theme_shader(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::has_shaders(theme_owner, theme_owner_window, p_name, type);
 }
 
 bool Window::has_theme_stylebox(const StringName &p_name, const StringName &p_type) const {

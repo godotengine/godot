@@ -50,7 +50,6 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void clear_nodes();
 	void add_node(const NodePath &p_node);
 
 	int get_node_count() const;

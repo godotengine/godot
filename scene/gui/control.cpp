@@ -223,13 +223,6 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 			}
 			data.icon_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("custom_shaders/")) {
-			String dname = name.get_slicec('/', 1);
-			if (data.shader_override.has(dname)) {
-				data.shader_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
-			}
-			data.shader_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.style_override.has(dname)) {
@@ -264,9 +257,6 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		if (name.begins_with("custom_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_icon_override(dname, p_value);
-		} else if (name.begins_with("custom_shaders/")) {
-			String dname = name.get_slicec('/', 1);
-			add_theme_shader_override(dname, p_value);
 		} else if (name.begins_with("custom_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_style_override(dname, p_value);
@@ -318,9 +308,6 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 	if (sname.begins_with("custom_icons/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = data.icon_override.has(name) ? Variant(data.icon_override[name]) : Variant();
-	} else if (sname.begins_with("custom_shaders/")) {
-		String name = sname.get_slicec('/', 1);
-		r_ret = data.shader_override.has(name) ? Variant(data.shader_override[name]) : Variant();
 	} else if (sname.begins_with("custom_styles/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = data.style_override.has(name) ? Variant(data.style_override[name]) : Variant();
@@ -364,18 +351,6 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 			}
 
 			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_icons/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", hint));
-		}
-	}
-	{
-		List<StringName> names;
-		theme->get_shader_list(get_class_name(), &names);
-		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
-			if (data.shader_override.has(E->get())) {
-				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
-			}
-
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_shaders/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "Shader,VisualShader", hint));
 		}
 	}
 	{
@@ -479,10 +454,6 @@ bool Control::is_layout_rtl() const {
 	} else {
 		return (data.layout_dir == LAYOUT_DIRECTION_RTL);
 	}
-}
-
-void Control::_resize(const Size2 &p_size) {
-	_size_changed();
 }
 
 //moved theme configuration here, so controls can set up even if still not inside active scene
@@ -901,35 +872,6 @@ Ref<Texture2D> Control::get_icons(Control *p_theme_owner, Window *p_theme_owner_
 	return Theme::get_default()->get_icon(p_name, p_node_type);
 }
 
-Ref<Shader> Control::get_theme_shader(const StringName &p_name, const StringName &p_node_type) const {
-	if (p_node_type == StringName() || p_node_type == get_class_name()) {
-		const Ref<Shader> *sdr = data.shader_override.getptr(p_name);
-		if (sdr) {
-			return *sdr;
-		}
-	}
-
-	StringName type = p_node_type ? p_node_type : get_class_name();
-
-	return get_shaders(data.theme_owner, data.theme_owner_window, p_name, type);
-}
-
-Ref<Shader> Control::get_shaders(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type) {
-	Ref<Shader> shader;
-
-	if (_find_theme_item(p_theme_owner, p_theme_owner_window, shader, &Theme::get_shader, &Theme::has_shader, p_name, p_node_type)) {
-		return shader;
-	}
-
-	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_shader(p_name, p_node_type)) {
-			return Theme::get_project_default()->get_shader(p_name, p_node_type);
-		}
-	}
-
-	return Theme::get_default()->get_shader(p_name, p_node_type);
-}
-
 Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const StringName &p_node_type) const {
 	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		const Ref<StyleBox> *style = data.style_override.getptr(p_name);
@@ -1078,11 +1020,6 @@ bool Control::has_theme_icon_override(const StringName &p_name) const {
 	return tex != nullptr;
 }
 
-bool Control::has_theme_shader_override(const StringName &p_name) const {
-	const Ref<Shader> *sdr = data.shader_override.getptr(p_name);
-	return sdr != nullptr;
-}
-
 bool Control::has_theme_stylebox_override(const StringName &p_name) const {
 	const Ref<StyleBox> *style = data.style_override.getptr(p_name);
 	return style != nullptr;
@@ -1131,31 +1068,6 @@ bool Control::has_icons(Control *p_theme_owner, Window *p_theme_owner_window, co
 		}
 	}
 	return Theme::get_default()->has_icon(p_name, p_node_type);
-}
-
-bool Control::has_theme_shader(const StringName &p_name, const StringName &p_node_type) const {
-	if (p_node_type == StringName() || p_node_type == get_class_name()) {
-		if (has_theme_shader_override(p_name)) {
-			return true;
-		}
-	}
-
-	StringName type = p_node_type ? p_node_type : get_class_name();
-
-	return has_shaders(data.theme_owner, data.theme_owner_window, p_name, type);
-}
-
-bool Control::has_shaders(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type) {
-	if (_has_theme_item(p_theme_owner, p_theme_owner_window, &Theme::has_shader, p_name, p_node_type)) {
-		return true;
-	}
-
-	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_shader(p_name, p_node_type)) {
-			return true;
-		}
-	}
-	return Theme::get_default()->has_shader(p_name, p_node_type);
 }
 
 bool Control::has_theme_stylebox(const StringName &p_name, const StringName &p_node_type) const {
@@ -1886,23 +1798,6 @@ void Control::add_theme_icon_override(const StringName &p_name, const Ref<Textur
 		data.icon_override[p_name] = p_icon;
 		if (data.icon_override[p_name].is_valid()) {
 			data.icon_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
-		}
-	}
-	notification(NOTIFICATION_THEME_CHANGED);
-}
-
-void Control::add_theme_shader_override(const StringName &p_name, const Ref<Shader> &p_shader) {
-	if (data.shader_override.has(p_name)) {
-		data.shader_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
-	}
-
-	// clear if "null" is passed instead of a shader
-	if (p_shader.is_null()) {
-		data.shader_override.erase(p_name);
-	} else {
-		data.shader_override[p_name] = p_shader;
-		if (data.shader_override[p_name].is_valid()) {
-			data.shader_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 		}
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
@@ -2905,7 +2800,6 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_theme"), &Control::get_theme);
 
 	ClassDB::bind_method(D_METHOD("add_theme_icon_override", "name", "texture"), &Control::add_theme_icon_override);
-	ClassDB::bind_method(D_METHOD("add_theme_shader_override", "name", "shader"), &Control::add_theme_shader_override);
 	ClassDB::bind_method(D_METHOD("add_theme_stylebox_override", "name", "stylebox"), &Control::add_theme_style_override);
 	ClassDB::bind_method(D_METHOD("add_theme_font_override", "name", "font"), &Control::add_theme_font_override);
 	ClassDB::bind_method(D_METHOD("add_theme_font_size_override", "name", "font_size"), &Control::add_theme_font_size_override);
@@ -2920,7 +2814,6 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "node_type"), &Control::get_theme_constant, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon_override", "name"), &Control::has_theme_icon_override);
-	ClassDB::bind_method(D_METHOD("has_theme_shader_override", "name"), &Control::has_theme_shader_override);
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox_override", "name"), &Control::has_theme_stylebox_override);
 	ClassDB::bind_method(D_METHOD("has_theme_font_override", "name"), &Control::has_theme_font_override);
 	ClassDB::bind_method(D_METHOD("has_theme_font_size_override", "name"), &Control::has_theme_font_size_override);

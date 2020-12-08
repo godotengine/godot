@@ -691,11 +691,6 @@ void EditorData::set_edited_scene_version(uint64_t version, int p_scene_idx) {
 	}
 }
 
-uint64_t EditorData::get_edited_scene_version() const {
-	ERR_FAIL_INDEX_V(current_edited_scene, edited_scene.size(), 0);
-	return edited_scene[current_edited_scene].version;
-}
-
 uint64_t EditorData::get_scene_version(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), 0);
 	return edited_scene[p_idx].version;

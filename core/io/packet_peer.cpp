@@ -151,11 +151,6 @@ void PacketPeer::_bind_methods() {
 
 /***************/
 
-void PacketPeerStream::_set_stream_peer(REF p_peer) {
-	ERR_FAIL_COND_MSG(p_peer.is_null(), "It's not a reference to a valid Resource object.");
-	set_stream_peer(p_peer);
-}
-
 void PacketPeerStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream_peer", "peer"), &PacketPeerStream::set_stream_peer);
 	ClassDB::bind_method(D_METHOD("get_stream_peer"), &PacketPeerStream::get_stream_peer);
@@ -263,10 +258,8 @@ int PacketPeerStream::get_max_packet_size() const {
 }
 
 void PacketPeerStream::set_stream_peer(const Ref<StreamPeer> &p_peer) {
-	//ERR_FAIL_COND(p_peer.is_null());
-
 	if (p_peer.ptr() != peer.ptr()) {
-		ring_buffer.advance_read(ring_buffer.data_left()); // reset the ring buffer
+		ring_buffer.advance_read(ring_buffer.data_left()); // Reset the ring buffer.
 	}
 
 	peer = p_peer;

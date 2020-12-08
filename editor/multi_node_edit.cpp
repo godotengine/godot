@@ -173,10 +173,6 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "scripts", PROPERTY_HINT_RESOURCE_TYPE, "Script"));
 }
 
-void MultiNodeEdit::clear_nodes() {
-	nodes.clear();
-}
-
 void MultiNodeEdit::add_node(const NodePath &p_node) {
 	nodes.push_back(p_node);
 }

@@ -404,16 +404,6 @@ void StyleBoxFlat::set_corner_radius_individual(const int radius_top_left, const
 	emit_changed();
 }
 
-int StyleBoxFlat::get_corner_radius_min() const {
-	int smallest = corner_radius[0];
-	for (int i = 1; i < 4; i++) {
-		if (smallest > corner_radius[i]) {
-			smallest = corner_radius[i];
-		}
-	}
-	return smallest;
-}
-
 void StyleBoxFlat::set_corner_radius(const Corner p_corner, const int radius) {
 	ERR_FAIL_INDEX((int)p_corner, 4);
 	corner_radius[p_corner] = radius;

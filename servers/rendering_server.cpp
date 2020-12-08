@@ -2184,15 +2184,6 @@ void RenderingServer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("frame_post_draw"));
 }
 
-void RenderingServer::_canvas_item_add_style_box(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector<float> &p_margins, const Color &p_modulate) {
-	ERR_FAIL_COND(p_margins.size() != 4);
-	//canvas_item_add_style_box(p_item,p_rect,p_source,p_texture,Vector2(p_margins[0],p_margins[1]),Vector2(p_margins[2],p_margins[3]),true,p_modulate);
-}
-
-void RenderingServer::_camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far) {
-	camera_set_orthogonal(p_camera, p_size, p_z_near, p_z_far);
-}
-
 void RenderingServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry3D::MeshData &p_mesh_data) {
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;

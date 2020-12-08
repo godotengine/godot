@@ -1481,16 +1481,6 @@ int SceneState::add_name(const StringName &p_name) {
 	return names.size() - 1;
 }
 
-int SceneState::find_name(const StringName &p_name) const {
-	for (int i = 0; i < names.size(); i++) {
-		if (names[i] == p_name) {
-			return i;
-		}
-	}
-
-	return -1;
-}
-
 int SceneState::add_value(const Variant &p_value) {
 	variants.push_back(p_value);
 	return variants.size() - 1;

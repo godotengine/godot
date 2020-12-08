@@ -829,10 +829,6 @@ void SceneTreeEditor::set_display_foreign_nodes(bool p_display) {
 	_update_tree();
 }
 
-bool SceneTreeEditor::get_display_foreign_nodes() const {
-	return display_foreign;
-}
-
 void SceneTreeEditor::set_valid_types(const Vector<StringName> &p_valid) {
 	valid_types = p_valid;
 }

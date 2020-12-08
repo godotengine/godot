@@ -172,7 +172,6 @@ public:
 	//build API
 
 	int add_name(const StringName &p_name);
-	int find_name(const StringName &p_name) const;
 	int add_value(const Variant &p_value);
 	int add_node_path(const NodePath &p_path);
 	int add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index);

@@ -823,10 +823,6 @@ void Object::property_list_changed_notify() {
 	_change_notify();
 }
 
-void Object::cancel_delete() {
-	_predelete_ok = true;
-}
-
 void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance) {
 	//this function is not meant to be used in any of these ways
 	ERR_FAIL_COND(p_script.is_null());

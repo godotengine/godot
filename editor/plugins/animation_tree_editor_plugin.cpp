@@ -142,9 +142,6 @@ void AnimationTreeEditor::enter_editor(const String &p_path) {
 	edit_path(path);
 }
 
-void AnimationTreeEditor::_about_to_show_root() {
-}
-
 void AnimationTreeEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PROCESS) {
 		ObjectID root;

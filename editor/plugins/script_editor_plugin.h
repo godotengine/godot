@@ -453,7 +453,6 @@ public:
 
 	bool toggle_scripts_panel();
 	bool is_scripts_panel_toggled();
-	void ensure_focus_current();
 	void apply_scripts() const;
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
 

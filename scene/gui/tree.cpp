@@ -597,12 +597,6 @@ String TreeItem::get_button_tooltip(int p_column, int p_idx) const {
 	return cells[p_column].buttons[p_idx].tooltip;
 }
 
-int TreeItem::get_button_id(int p_column, int p_idx) const {
-	ERR_FAIL_INDEX_V(p_column, cells.size(), -1);
-	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), -1);
-	return cells[p_column].buttons[p_idx].id;
-}
-
 void TreeItem::erase_button(int p_column, int p_idx) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	ERR_FAIL_INDEX(p_idx, cells[p_column].buttons.size());
@@ -4079,10 +4073,6 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 
 void Tree::set_cursor_can_exit_tree(bool p_enable) {
 	cursor_can_exit_tree = p_enable;
-}
-
-bool Tree::can_cursor_exit_tree() const {
-	return cursor_can_exit_tree;
 }
 
 void Tree::set_hide_folding(bool p_hide) {
