@@ -188,7 +188,8 @@ static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 ///////////////////////////////////////////////////////////////////////////
 namespace cubic {
 static real_t in(real_t t, real_t b, real_t c, real_t d) {
-	return c * (t /= d) * t * t + b;
+	t /= d;
+	return c * t * t * t + b;
 }
 
 static real_t out(real_t t, real_t b, real_t c, real_t d) {
@@ -197,8 +198,10 @@ static real_t out(real_t t, real_t b, real_t c, real_t d) {
 }
 
 static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
-	if ((t /= d / 2) < 1) return c / 2 * t * t * t + b;
-	return c / 2 * ((t -= 2) * t * t + 2) + b;
+	t /= d / 2;
+	if (t < 1) return c / 2 * t * t * t + b;
+	t -= 2;
+	return c / 2 * (t * t * t + 2) + b;
 }
 
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
@@ -210,16 +213,22 @@ static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 ///////////////////////////////////////////////////////////////////////////
 namespace circ {
 static real_t in(real_t t, real_t b, real_t c, real_t d) {
-	return -c * (sqrt(1 - (t /= d) * t) - 1) + b; // TODO: ehrich: operation with t is undefined
+	t /= d;
+	return -c * (sqrt(1 - t * t) - 1) + b;
 }
 
 static real_t out(real_t t, real_t b, real_t c, real_t d) {
-	return c * sqrt(1 - (t = t / d - 1) * t) + b; // TODO: ehrich: operation with t is undefined
+	t = t / d - 1;
+	return c * sqrt(1 - t * t) + b;
 }
 
 static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
-	if ((t /= d / 2) < 1) return -c / 2 * (sqrt(1 - t * t) - 1) + b;
-	return c / 2 * (sqrt(1 - t * (t -= 2)) + 1) + b; // TODO: ehrich: operation with t is undefined
+	t /= d / 2;
+	if (t < 1) {
+		return -c / 2 * (sqrt(1 - t * t) - 1) + b;
+	}
+	t -= 2;
+	return c / 2 * (sqrt(1 - t * t) + 1) + b;
 }
 
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
@@ -271,14 +280,16 @@ static real_t in(real_t t, real_t b, real_t c, real_t d) {
 
 static real_t out(real_t t, real_t b, real_t c, real_t d) {
 	float s = 1.70158f;
-	return c * ((t = t / d - 1) * t * ((s + 1) * t + s) + 1) + b; // TODO: ehrich: operation with t is undefined
+	t = t / d - 1;
+	return c * (t * t * ((s + 1) * t + s) + 1) + b;
 }
 
 static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
-	float s = 1.70158f;
-	if ((t /= d / 2) < 1) return c / 2 * (t * t * (((s *= (1.525f)) + 1) * t - s)) + b; // TODO: ehrich: operation with s is undefined
-	float postFix = t -= 2;
-	return c / 2 * ((postFix)*t * (((s *= (1.525f)) + 1) * t + s) + 2) + b; // TODO: ehrich: operation with s is undefined
+	float s = 1.70158f * 1.525f;
+	t /= d / 2;
+	if (t < 1) return c / 2 * (t * t * ((s + 1) * t - s)) + b;
+	t -= 2;
+	return c / 2 * (t * t * ((s + 1) * t + s) + 2) + b;
 }
 
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
