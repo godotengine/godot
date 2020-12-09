@@ -5822,8 +5822,7 @@ void SpatialEditor::snap_selected_nodes_to_floor() {
 					Vector3 size = aabb.size * Vector3(0.5, 0.0, 0.5);
 					from = aabb.position + size;
 					position_offset.y = from.y - sp->get_global_transform().origin.y;
-				}
-				else {
+				} else {
 					from = sp->get_global_transform().origin;
 				}
 			} else if (vi.size()) {
