@@ -326,7 +326,7 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 			cpos.y -= font->get_ascent();
 			cpos.y += ch->v_align;
 			Color modulate = p_modulate;
-			if (FT_HAS_COLOR(face)) {
+			if (FT_HAS_COLOR(font->face)) {
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 			RID texture = font->textures[ch->texture_idx].texture->get_rid();
