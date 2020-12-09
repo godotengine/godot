@@ -552,8 +552,8 @@ void FontData::_convert_packed_4bit(Ref<Image> &p_source, int p_page, int p_sz) 
 			int ofs_dst = (i * w + j) * 2;
 			wr[ofs_dst + 0] = 255;
 			wro[ofs_dst + 0] = 255;
-			if (r[ofs_src + 0] > 0x0F) {
-				wr[ofs_dst + 1] = (r[ofs_src + 0] - 0x0F) * 2;
+			if (r[ofs_src + 0] > 0x0f) {
+				wr[ofs_dst + 1] = (r[ofs_src + 0] - 0x0f) * 2;
 				wro[ofs_dst + 1] = 0;
 			} else {
 				wr[ofs_dst + 1] = 0;
@@ -561,8 +561,8 @@ void FontData::_convert_packed_4bit(Ref<Image> &p_source, int p_page, int p_sz) 
 			}
 			wg[ofs_dst + 0] = 255;
 			wgo[ofs_dst + 0] = 255;
-			if (r[ofs_src + 1] > 0x0F) {
-				wg[ofs_dst + 1] = (r[ofs_src + 1] - 0x0F) * 2;
+			if (r[ofs_src + 1] > 0x0f) {
+				wg[ofs_dst + 1] = (r[ofs_src + 1] - 0x0f) * 2;
 				wgo[ofs_dst + 1] = 0;
 			} else {
 				wg[ofs_dst + 1] = 0;
@@ -570,8 +570,8 @@ void FontData::_convert_packed_4bit(Ref<Image> &p_source, int p_page, int p_sz) 
 			}
 			wb[ofs_dst + 0] = 255;
 			wbo[ofs_dst + 0] = 255;
-			if (r[ofs_src + 2] > 0x0F) {
-				wb[ofs_dst + 1] = (r[ofs_src + 2] - 0x0F) * 2;
+			if (r[ofs_src + 2] > 0x0f) {
+				wb[ofs_dst + 1] = (r[ofs_src + 2] - 0x0f) * 2;
 				wbo[ofs_dst + 1] = 0;
 			} else {
 				wb[ofs_dst + 1] = 0;
@@ -579,8 +579,8 @@ void FontData::_convert_packed_4bit(Ref<Image> &p_source, int p_page, int p_sz) 
 			}
 			wa[ofs_dst + 0] = 255;
 			wao[ofs_dst + 0] = 255;
-			if (r[ofs_src + 3] > 0x0F) {
-				wa[ofs_dst + 1] = (r[ofs_src + 3] - 0x0F) * 2;
+			if (r[ofs_src + 3] > 0x0f) {
+				wa[ofs_dst + 1] = (r[ofs_src + 3] - 0x0f) * 2;
 				wao[ofs_dst + 1] = 0;
 			} else {
 				wa[ofs_dst + 1] = 0;
@@ -626,28 +626,28 @@ void FontData::_convert_rgba_4bit(Ref<Image> &p_source, int p_page, int p_sz) {
 		for (int j = 0; j < w; j++) {
 			int ofs = (i * w + j) * 4;
 
-			if (r[ofs + 0] > 0x7F) {
+			if (r[ofs + 0] > 0x7f) {
 				wg[ofs + 0] = r[ofs + 0];
 				wo[ofs + 0] = 0;
 			} else {
 				wg[ofs + 0] = 0;
 				wo[ofs + 0] = r[ofs + 0] * 2;
 			}
-			if (r[ofs + 1] > 0x7F) {
+			if (r[ofs + 1] > 0x7f) {
 				wg[ofs + 1] = r[ofs + 1];
 				wo[ofs + 1] = 0;
 			} else {
 				wg[ofs + 1] = 0;
 				wo[ofs + 1] = r[ofs + 1] * 2;
 			}
-			if (r[ofs + 2] > 0x7F) {
+			if (r[ofs + 2] > 0x7f) {
 				wg[ofs + 2] = r[ofs + 2];
 				wo[ofs + 2] = 0;
 			} else {
 				wg[ofs + 2] = 0;
 				wo[ofs + 2] = r[ofs + 2] * 2;
 			}
-			if (r[ofs + 3] > 0x7F) {
+			if (r[ofs + 3] > 0x7f) {
 				wg[ofs + 3] = r[ofs + 3];
 				wo[ofs + 3] = 0;
 			} else {
@@ -719,7 +719,7 @@ void FontData::_convert_mono_4bit(Ref<Image> &p_source, int p_page, int p_ch, in
 			int ofs_dst = (i * w + j) * 2;
 			wg[ofs_dst + 0] = 255;
 			wo[ofs_dst + 0] = 255;
-			if (r[ofs_src + p_ch] > 0x7F) {
+			if (r[ofs_src + p_ch] > 0x7f) {
 				wg[ofs_dst + 1] = r[ofs_src + p_ch];
 				wo[ofs_dst + 1] = 0;
 			} else {

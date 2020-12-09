@@ -205,7 +205,7 @@
 
 	for (int i = 0; i < u32text.length(); i++) {
 		const char32_t codepoint = u32text[i];
-		if ((codepoint & 0xFF00) == 0xF700) {
+		if ((codepoint & 0xff00) == 0xf700) {
 			continue;
 		}
 

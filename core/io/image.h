@@ -60,7 +60,7 @@ public:
 	enum {
 		MAX_WIDTH = (1 << 24), // force a limit somehow
 		MAX_HEIGHT = (1 << 24), // force a limit somehow
-		MAX_PIXELS = 268435456
+		MAX_PIXELS = 268'435'456
 	};
 
 	enum Format {

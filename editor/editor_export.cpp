@@ -1870,7 +1870,7 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 	int64_t embedded_size;
 	Error err = save_pack(p_preset, p_debug, pck_path, &so_files, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
 	if (err == OK && p_preset->get("binary_format/embed_pck")) {
-		if (embedded_size >= 0x100000000 && !p_preset->get("binary_format/64_bits")) {
+		if (embedded_size >= 0x1'0000'0000 && !p_preset->get("binary_format/64_bits")) {
 			EditorNode::get_singleton()->show_warning(TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
 			return ERR_INVALID_PARAMETER;
 		}

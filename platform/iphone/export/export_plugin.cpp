@@ -838,7 +838,7 @@ private:
 		Vector<char> ret;
 		ret.resize(sizeof(num) * 2);
 		for (uint64_t i = 0; i < sizeof(num) * 2; ++i) {
-			uint8_t four_bits = (num >> (sizeof(num) * 8 - (i + 1) * 4)) & 0xF;
+			uint8_t four_bits = (num >> (sizeof(num) * 8 - (i + 1) * 4)) & 0xf;
 			ret.write[i] = _hex_char(four_bits);
 		}
 		return String::utf8(ret.ptr(), ret.size());
@@ -874,7 +874,7 @@ struct ExportLibsData {
 void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_project_data, const Vector<IOSExportAsset> &p_additional_assets) {
 	// that is just a random number, we just need Godot IDs not to clash with
 	// existing IDs in the project.
-	PbxId current_id = { 0x58938401, 0, 0 };
+	PbxId current_id = { 0x5893'8401, 0, 0 };
 	String pbx_files;
 	String pbx_frameworks_build;
 	String pbx_frameworks_refs;

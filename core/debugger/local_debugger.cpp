@@ -68,7 +68,7 @@ struct LocalDebugger::ScriptsProfiler {
 	void _print_frame_data(bool p_accumulated) {
 		uint64_t diff = OS::get_singleton()->get_ticks_usec() - idle_accum;
 
-		if (!p_accumulated && diff < 1000000) { //show every one second
+		if (!p_accumulated && diff < 1'000'000) { //show every one second
 			return;
 		}
 

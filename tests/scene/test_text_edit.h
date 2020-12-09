@@ -2752,7 +2752,7 @@ TEST_CASE("[SceneTree][TextEdit] caret") {
 
 	text_edit->set_caret_column(-1);
 	CHECK(text_edit->get_caret_column() == 0);
-	text_edit->set_caret_column(10000000);
+	text_edit->set_caret_column(10'000'000);
 	CHECK(text_edit->get_caret_column() == 141);
 
 	memdelete(text_edit);
@@ -3142,7 +3142,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	text_edit->set_h_scroll(-100);
 	CHECK(text_edit->get_h_scroll() == 0);
 
-	text_edit->set_h_scroll(10000000);
+	text_edit->set_h_scroll(10'000'000);
 	CHECK(text_edit->get_h_scroll() == 313);
 
 	text_edit->set_h_scroll(-100);

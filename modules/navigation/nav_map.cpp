@@ -647,7 +647,7 @@ void NavMap::sync() {
 		}
 
 		// Update the update ID.
-		map_update_id = (map_update_id + 1) % 9999999;
+		map_update_id = (map_update_id + 1) % 9'999'999;
 	}
 
 	// Update agents tree.

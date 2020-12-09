@@ -66,7 +66,7 @@ union MarshallReal {
 
 static inline unsigned int encode_uint16(uint16_t p_uint, uint8_t *p_arr) {
 	for (int i = 0; i < 2; i++) {
-		*p_arr = p_uint & 0xFF;
+		*p_arr = p_uint & 0xff;
 		p_arr++;
 		p_uint >>= 8;
 	}
@@ -76,7 +76,7 @@ static inline unsigned int encode_uint16(uint16_t p_uint, uint8_t *p_arr) {
 
 static inline unsigned int encode_uint32(uint32_t p_uint, uint8_t *p_arr) {
 	for (int i = 0; i < 4; i++) {
-		*p_arr = p_uint & 0xFF;
+		*p_arr = p_uint & 0xff;
 		p_arr++;
 		p_uint >>= 8;
 	}
@@ -94,7 +94,7 @@ static inline unsigned int encode_float(float p_float, uint8_t *p_arr) {
 
 static inline unsigned int encode_uint64(uint64_t p_uint, uint8_t *p_arr) {
 	for (int i = 0; i < 8; i++) {
-		*p_arr = p_uint & 0xFF;
+		*p_arr = p_uint & 0xff;
 		p_arr++;
 		p_uint >>= 8;
 	}
@@ -112,7 +112,7 @@ static inline unsigned int encode_double(double p_double, uint8_t *p_arr) {
 
 static inline unsigned int encode_uintr(uintr_t p_uint, uint8_t *p_arr) {
 	for (size_t i = 0; i < sizeof(uintr_t); i++) {
-		*p_arr = p_uint & 0xFF;
+		*p_arr = p_uint & 0xff;
 		p_arr++;
 		p_uint >>= 8;
 	}
@@ -182,7 +182,7 @@ static inline uint64_t decode_uint64(const uint8_t *p_arr) {
 	uint64_t u = 0;
 
 	for (int i = 0; i < 8; i++) {
-		uint64_t b = (*p_arr) & 0xFF;
+		uint64_t b = (*p_arr) & 0xff;
 		b <<= (i * 8);
 		u |= b;
 		p_arr++;

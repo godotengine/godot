@@ -314,7 +314,7 @@ void GPUParticles3DEditor::_generate_aabb() {
 			rect.merge_with(capture);
 		}
 
-		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
+		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1'000'000.0;
 	}
 
 	if (!was_emitting) {

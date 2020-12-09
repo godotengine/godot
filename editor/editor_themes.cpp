@@ -527,7 +527,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("readonly_color", "Editor", readonly_color);
 
 	if (!dark_theme) {
-		theme->set_color("vulkan_color", "Editor", Color::hex(0xad1128ff));
+		theme->set_color("vulkan_color", "Editor", Color::hex(0xad11'28ff));
 	} else {
 		theme->set_color("vulkan_color", "Editor", Color(1.0, 0.0, 0.0));
 	}

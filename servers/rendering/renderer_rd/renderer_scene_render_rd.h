@@ -264,7 +264,7 @@ private:
 			QUADRANT_SHIFT = 27,
 			OMNI_LIGHT_FLAG = 1 << 26,
 			SHADOW_INDEX_MASK = OMNI_LIGHT_FLAG - 1,
-			SHADOW_INVALID = 0xFFFFFFFF
+			SHADOW_INVALID = 0xffff'ffff
 		};
 
 		struct Quadrant {

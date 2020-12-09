@@ -369,7 +369,7 @@ float AudioDriverPulseAudio::get_latency() {
 		}
 
 		if (palat > 0) {
-			latency = double(palat) / 1000000.0;
+			latency = double(palat) / 1'000'000.0;
 		}
 
 		unlock();

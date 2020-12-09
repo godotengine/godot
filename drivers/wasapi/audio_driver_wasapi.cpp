@@ -83,7 +83,7 @@ public:
 			/* [annotation][in] */
 			_In_opt_ LPCGUID AudioSessionGuid) = 0;
 };
-__CRT_UUID_DECL(IAudioClient3, 0x7ED4EE07, 0x8E67, 0x4CD4, 0x8C, 0x1A, 0x2B, 0x7A, 0x59, 0x87, 0xAD, 0x42)
+__CRT_UUID_DECL(IAudioClient3, 0x7ed4'ee07, 0x8e67, 0x4cd4, 0x8c, 0x1a, 0x2b, 0x7a, 0x59, 0x87, 0xad, 0x42)
 
 #endif // __IAudioClient3_INTERFACE_DEFINED__
 
@@ -97,7 +97,7 @@ __CRT_UUID_DECL(IAudioClient3, 0x7ED4EE07, 0x8E67, 0x4CD4, 0x8C, 0x1A, 0x2B, 0x7
 	const PROPERTYKEY id = { { a, b, c, { d, e, f, g, h, i, j, k, } }, l };
 /* clang-format on */
 
-DEFINE_PROPERTYKEY(PKEY_Device_FriendlyName, 0xa45c254e, 0xdf1c, 0x4efd, 0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0, 14);
+DEFINE_PROPERTYKEY(PKEY_Device_FriendlyName, 0xa45c'254e, 0xdf1c, 0x4efd, 0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0, 14);
 #endif
 
 const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
@@ -113,7 +113,7 @@ const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 		(memory) = nullptr;    \
 	}
 
-#define REFTIMES_PER_SEC 10000000
+#define REFTIMES_PER_SEC 10'000'000
 #define REFTIMES_PER_MILLISEC 10000
 
 #define CAPTURE_BUFFER_CHANNELS 2

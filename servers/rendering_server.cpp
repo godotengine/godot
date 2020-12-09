@@ -1124,7 +1124,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 
 				for (int j = 0; j < p_vertex_len; j++) {
 					const uint32_t v = *(const uint32_t *)&r[j * vertex_elem_size + offsets[i]];
-					w[j] = Vector3((v & 0x3FF) / 1023.0, ((v >> 10) & 0x3FF) / 1023.0, ((v >> 20) & 0x3FF) / 1023.0) * Vector3(2, 2, 2) - Vector3(1, 1, 1);
+					w[j] = Vector3((v & 0x3ff) / 1023.0, ((v >> 10) & 0x3ff) / 1023.0, ((v >> 20) & 0x3ff) / 1023.0) * Vector3(2, 2, 2) - Vector3(1, 1, 1);
 				}
 
 				ret[i] = arr;
@@ -1140,9 +1140,9 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 				for (int j = 0; j < p_vertex_len; j++) {
 					const uint32_t v = *(const uint32_t *)&r[j * vertex_elem_size + offsets[i]];
 
-					w[j * 4 + 0] = ((v & 0x3FF) / 1023.0) * 2.0 - 1.0;
-					w[j * 4 + 1] = (((v >> 10) & 0x3FF) / 1023.0) * 2.0 - 1.0;
-					w[j * 4 + 2] = (((v >> 20) & 0x3FF) / 1023.0) * 2.0 - 1.0;
+					w[j * 4 + 0] = ((v & 0x3ff) / 1023.0) * 2.0 - 1.0;
+					w[j * 4 + 1] = (((v >> 10) & 0x3ff) / 1023.0) * 2.0 - 1.0;
+					w[j * 4 + 2] = (((v >> 20) & 0x3ff) / 1023.0) * 2.0 - 1.0;
 					w[j * 4 + 3] = ((v >> 30) / 3.0) * 2.0 - 1.0;
 				}
 

@@ -2174,7 +2174,7 @@ double VisualScriptMathConstant::const_value[MATH_CONSTANT_MAX] = {
 	Math_PI,
 	Math_PI * 0.5,
 	Math_TAU,
-	2.71828182845904523536,
+	2.718'281'828'459'045'235'36,
 	Math::sqrt(2.0),
 	INFINITY,
 	NAN

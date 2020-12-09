@@ -175,7 +175,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 		uint64_t ticks_elapsed = OS::get_singleton()->get_ticks_usec() - print_frame_profile_ticks_from;
 		print_frame_profile_frame_count++;
-		if (ticks_elapsed > 1000000) {
+		if (ticks_elapsed > 1'000'000) {
 			print_line("GPU PROFILE (total " + rtos(total_time) + "ms): ");
 
 			float print_threshold = 0.01;

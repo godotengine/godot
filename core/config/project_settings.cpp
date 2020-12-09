@@ -950,7 +950,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 
 		_VCSort vc;
 		vc.name = E.key;
-		vc.order = global_prop ? global_prop->get().order : 0xFFFFFFF;
+		vc.order = global_prop ? global_prop->get().order : 0xfffffff;
 		vc.type = E.value.get_type();
 		vc.flags = PROPERTY_USAGE_STORAGE;
 		vclist.insert(vc);

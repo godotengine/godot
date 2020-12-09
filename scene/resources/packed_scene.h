@@ -47,7 +47,7 @@ class SceneState : public RefCounted {
 	int base_scene_idx = -1;
 
 	enum {
-		NO_PARENT_SAVED = 0x7FFFFFFF,
+		NO_PARENT_SAVED = 0x7fff'ffff,
 		NAME_INDEX_BITS = 18,
 		NAME_MASK = (1 << NAME_INDEX_BITS) - 1,
 	};
@@ -102,7 +102,7 @@ protected:
 public:
 	enum {
 		FLAG_ID_IS_PATH = (1 << 30),
-		TYPE_INSTANCED = 0x7FFFFFFF,
+		TYPE_INSTANCED = 0x7fff'ffff,
 		FLAG_INSTANCE_IS_PLACEHOLDER = (1 << 30),
 		FLAG_MASK = (1 << 24) - 1,
 	};

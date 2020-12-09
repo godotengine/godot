@@ -952,7 +952,7 @@ void RendererSceneRenderRD::shadow_atlas_set_quadrant_subdivision(RID p_atlas, i
 	ERR_FAIL_INDEX(p_subdivision, 16384);
 
 	uint32_t subdiv = next_power_of_2(p_subdivision);
-	if (subdiv & 0xaaaaaaaa) { //sqrt(subdiv) must be integer
+	if (subdiv & 0xaaaa'aaaa) { //sqrt(subdiv) must be integer
 		subdiv <<= 1;
 	}
 

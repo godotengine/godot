@@ -220,7 +220,7 @@ TEST_CASE("[Vector] To byte array") {
 	vector.push_back(0);
 	vector.push_back(-1);
 	vector.push_back(2008);
-	vector.push_back(999999999);
+	vector.push_back(999'999'999);
 
 	Vector<uint8_t> byte_array = vector.to_byte_array();
 	CHECK(byte_array.size() == 16);

@@ -47,7 +47,7 @@ uint32_t MultiplayerPeer::generate_unique_id() const {
 		hash = hash_djb2_one_32(
 				(uint32_t)((uint64_t)&hash), hash); // Rely on ASLR stack
 
-		hash = hash & 0x7FFFFFFF; // Make it compatible with unsigned, since negative ID is used for exclusion
+		hash = hash & 0x7fff'ffff; // Make it compatible with unsigned, since negative ID is used for exclusion
 	}
 
 	return hash;

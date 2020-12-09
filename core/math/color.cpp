@@ -114,7 +114,7 @@ String _to_hex(float p_val) {
 
 	for (int i = 0; i < 2; i++) {
 		char32_t c[2] = { 0, 0 };
-		int lv = v & 0xF;
+		int lv = v & 0xf;
 		if (lv < 10) {
 			c[0] = '0' + lv;
 		} else {
@@ -259,25 +259,25 @@ void Color::invert() {
 }
 
 Color Color::hex(uint32_t p_hex) {
-	float a = (p_hex & 0xFF) / 255.0f;
+	float a = (p_hex & 0xff) / 255.0f;
 	p_hex >>= 8;
-	float b = (p_hex & 0xFF) / 255.0f;
+	float b = (p_hex & 0xff) / 255.0f;
 	p_hex >>= 8;
-	float g = (p_hex & 0xFF) / 255.0f;
+	float g = (p_hex & 0xff) / 255.0f;
 	p_hex >>= 8;
-	float r = (p_hex & 0xFF) / 255.0f;
+	float r = (p_hex & 0xff) / 255.0f;
 
 	return Color(r, g, b, a);
 }
 
 Color Color::hex64(uint64_t p_hex) {
-	float a = (p_hex & 0xFFFF) / 65535.0f;
+	float a = (p_hex & 0xffff) / 65535.0f;
 	p_hex >>= 16;
-	float b = (p_hex & 0xFFFF) / 65535.0f;
+	float b = (p_hex & 0xffff) / 65535.0f;
 	p_hex >>= 16;
-	float g = (p_hex & 0xFFFF) / 65535.0f;
+	float g = (p_hex & 0xffff) / 65535.0f;
 	p_hex >>= 16;
-	float r = (p_hex & 0xFFFF) / 65535.0f;
+	float r = (p_hex & 0xffff) / 65535.0f;
 
 	return Color(r, g, b, a);
 }

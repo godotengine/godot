@@ -77,7 +77,7 @@ constexpr float ZOOM_FREELOOK_MAX = 10'000;
 #endif
 
 constexpr real_t MIN_Z = 0.01;
-constexpr real_t MAX_Z = 1000000.0;
+constexpr real_t MAX_Z = 1'000'000.0;
 
 constexpr real_t MIN_FOV = 0.01;
 constexpr real_t MAX_FOV = 179;
@@ -5900,12 +5900,12 @@ void Node3DEditor::_init_indicators() {
 			// To both allow having a large origin size and avoid jitter
 			// at small scales, we should segment the line into pieces.
 			// 3 pieces seems to do the trick, and let's use powers of 2.
-			origin_points.set(x, axis * 1048576);
+			origin_points.set(x, axis * 1'048'576);
 			origin_points.set(x + 1, axis * 1024);
 			origin_points.set(x + 2, axis * 1024);
 			origin_points.set(x + 3, axis * -1024);
 			origin_points.set(x + 4, axis * -1024);
-			origin_points.set(x + 5, axis * -1048576);
+			origin_points.set(x + 5, axis * -1'048'576);
 			x += 6;
 		}
 
@@ -6339,9 +6339,9 @@ void fragment() {
 				vec[i] = 1;
 
 				// line extending through infinity(ish)
-				surftool->add_vertex(vec * -1048576);
+				surftool->add_vertex(vec * -1'048'576);
 				surftool->add_vertex(Vector3());
-				surftool->add_vertex(vec * 1048576);
+				surftool->add_vertex(vec * 1'048'576);
 				surftool->set_material(mat_hl);
 				surftool->commit(axis_gizmo[i]);
 			}

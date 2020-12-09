@@ -55,12 +55,12 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ Key::BACKSPACE, VK_BACK }, // (0x08)
 	{ Key::TAB, VK_TAB }, // (0x09)
 
-	// 0x0A-0B are reserved.
+	// 0x0a-0B are reserved.
 
-	{ Key::CLEAR, VK_CLEAR }, // (0x0C)
-	{ Key::ENTER, VK_RETURN }, // (0x0D)
+	{ Key::CLEAR, VK_CLEAR }, // (0x0c)
+	{ Key::ENTER, VK_RETURN }, // (0x0d)
 
-	// 0x0E-0F are undefined.
+	// 0x0e-0F are undefined.
 
 	{ Key::SHIFT, VK_SHIFT }, // (0x10)
 	{ Key::CTRL, VK_CONTROL }, // (0x11)
@@ -70,9 +70,9 @@ static _WinTranslatePair _vk_to_keycode[] = {
 
 	// 0x15-1A are IME keys. We have no mapping.
 
-	{ Key::ESCAPE, VK_ESCAPE }, // (0x1B)
+	{ Key::ESCAPE, VK_ESCAPE }, // (0x1b)
 
-	// 0x1C-1F are IME keys. We have no mapping.
+	// 0x1c-1F are IME keys. We have no mapping.
 
 	{ Key::SPACE, VK_SPACE }, // (0x20)
 	{ Key::PAGEUP, VK_PRIOR }, // (0x21)
@@ -88,17 +88,17 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	// Old select key, e.g. on Digital Equipment Corporation keyboards.
 	// Old and uncommon, we have no mapping.
 
-	{ Key::PRINT, VK_PRINT }, // (0x2A)
+	{ Key::PRINT, VK_PRINT }, // (0x2a)
 	// Old IBM key, modern keyboards use VK_SNAPSHOT. Map to VK_SNAPSHOT.
 
-	// VK_EXECUTE (0x2B)
+	// VK_EXECUTE (0x2b)
 	// Old and uncommon, we have no mapping.
 
-	{ Key::PRINT, VK_SNAPSHOT }, // (0x2C)
-	{ Key::INSERT, VK_INSERT }, // (0x2D)
-	{ Key::KEY_DELETE, VK_DELETE }, // (0x2E)
+	{ Key::PRINT, VK_SNAPSHOT }, // (0x2c)
+	{ Key::INSERT, VK_INSERT }, // (0x2d)
+	{ Key::KEY_DELETE, VK_DELETE }, // (0x2e)
 
-	{ Key::HELP, VK_HELP }, // (0x2F)
+	{ Key::HELP, VK_HELP }, // (0x2f)
 	// Old and uncommon, but we have a mapping.
 
 	{ Key::KEY_0, (0x30) }, // 0 key.
@@ -111,7 +111,7 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ Key::KEY_7, (0x37) }, // 7 key.
 	{ Key::KEY_8, (0x38) }, // 8 key.
 	{ Key::KEY_9, (0x39) }, // 9 key.
-	// 0x3A-40 are undefined.
+	// 0x3a-40 are undefined.
 	{ Key::A, (0x41) }, // A key.
 	{ Key::B, (0x42) }, // B key.
 	{ Key::C, (0x43) }, // C key.
@@ -121,12 +121,12 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ Key::G, (0x47) }, // G key.
 	{ Key::H, (0x48) }, // H key.
 	{ Key::I, (0x49) }, // I key
-	{ Key::J, (0x4A) }, // J key.
-	{ Key::K, (0x4B) }, // K key.
-	{ Key::L, (0x4C) }, // L key.
-	{ Key::M, (0x4D) }, // M key.
-	{ Key::N, (0x4E) }, // N key.
-	{ Key::O, (0x4F) }, // O key.
+	{ Key::J, (0x4a) }, // J key.
+	{ Key::K, (0x4b) }, // K key.
+	{ Key::L, (0x4c) }, // L key.
+	{ Key::M, (0x4d) }, // M key.
+	{ Key::N, (0x4e) }, // N key.
+	{ Key::O, (0x4f) }, // O key.
 	{ Key::P, (0x50) }, // P key.
 	{ Key::Q, (0x51) }, // Q key.
 	{ Key::R, (0x52) }, // R key.
@@ -137,13 +137,13 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ Key::W, (0x57) }, // W key.
 	{ Key::X, (0x58) }, // X key.
 	{ Key::Y, (0x59) }, // Y key.
-	{ Key::Z, (0x5A) }, // Z key.
+	{ Key::Z, (0x5a) }, // Z key.
 
-	{ (Key)KeyModifierMask::META, VK_LWIN }, // (0x5B)
-	{ (Key)KeyModifierMask::META, VK_RWIN }, // (0x5C)
-	{ Key::MENU, VK_APPS }, // (0x5D)
-	// 0x5E is reserved.
-	{ Key::STANDBY, VK_SLEEP }, // (0x5F)
+	{ (Key)KeyModifierMask::META, VK_LWIN }, // (0x5b)
+	{ (Key)KeyModifierMask::META, VK_RWIN }, // (0x5c)
+	{ Key::MENU, VK_APPS }, // (0x5d)
+	// 0x5e is reserved.
+	{ Key::STANDBY, VK_SLEEP }, // (0x5f)
 	{ Key::KP_0, VK_NUMPAD0 }, // (0x60)
 	{ Key::KP_1, VK_NUMPAD1 }, // (0x61)
 	{ Key::KP_2, VK_NUMPAD2 }, // (0x62)
@@ -154,15 +154,15 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ Key::KP_7, VK_NUMPAD7 }, // (0x67)
 	{ Key::KP_8, VK_NUMPAD8 }, // (0x68)
 	{ Key::KP_9, VK_NUMPAD9 }, // (0x69)
-	{ Key::KP_MULTIPLY, VK_MULTIPLY }, // (0x6A)
-	{ Key::KP_ADD, VK_ADD }, // (0x6B)
-	{ Key::KP_PERIOD, VK_SEPARATOR }, // (0x6C)
-	// VK_SEPERATOR (key 0x6C) is not found on US keyboards.
+	{ Key::KP_MULTIPLY, VK_MULTIPLY }, // (0x6a)
+	{ Key::KP_ADD, VK_ADD }, // (0x6b)
+	{ Key::KP_PERIOD, VK_SEPARATOR }, // (0x6c)
+	// VK_SEPERATOR (key 0x6c) is not found on US keyboards.
 	// It is used on some Brazilian and Far East keyboards.
 	// We don't have a direct mapping, map to period.
-	{ Key::KP_SUBTRACT, VK_SUBTRACT }, // (0x6D)
-	{ Key::KP_PERIOD, VK_DECIMAL }, // (0x6E)
-	{ Key::KP_DIVIDE, VK_DIVIDE }, // (0x6F)
+	{ Key::KP_SUBTRACT, VK_SUBTRACT }, // (0x6d)
+	{ Key::KP_PERIOD, VK_DECIMAL }, // (0x6e)
+	{ Key::KP_DIVIDE, VK_DIVIDE }, // (0x6f)
 	{ Key::F1, VK_F1 }, // (0x70)
 	{ Key::F2, VK_F2 }, // (0x71)
 	{ Key::F3, VK_F3 }, // (0x72)
@@ -173,12 +173,12 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ Key::F8, VK_F8 }, // (0x77)
 	{ Key::F9, VK_F9 }, // (0x78)
 	{ Key::F10, VK_F10 }, // (0x79)
-	{ Key::F11, VK_F11 }, // (0x7A)
-	{ Key::F12, VK_F12 }, // (0x7B)
-	{ Key::F13, VK_F13 }, // (0x7C)
-	{ Key::F14, VK_F14 }, // (0x7D)
-	{ Key::F15, VK_F15 }, // (0x7E)
-	{ Key::F16, VK_F16 }, // (0x7F)
+	{ Key::F11, VK_F11 }, // (0x7a)
+	{ Key::F12, VK_F12 }, // (0x7b)
+	{ Key::F13, VK_F13 }, // (0x7c)
+	{ Key::F14, VK_F14 }, // (0x7d)
+	{ Key::F15, VK_F15 }, // (0x7e)
+	{ Key::F16, VK_F16 }, // (0x7f)
 	// We have no mappings for F17-F24. (0x80-87)
 	// 0x88-8F are reserved for UI navigation.
 	{ Key::NUMLOCK, VK_NUMLOCK }, // (0x90)
@@ -190,127 +190,127 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	// 0x93-96 are OEM specific (e.g. used by Fujitsu/OASYS), we have no mappings.
 	// 0x97-9F are unassigned.
 
-	{ Key::SHIFT, VK_LSHIFT }, // (0xA0)
-	{ Key::SHIFT, VK_RSHIFT }, // (0xA1)
-	{ Key::CTRL, VK_LCONTROL }, // (0xA2)
-	{ Key::CTRL, VK_RCONTROL }, // (0xA3)
-	{ Key::MENU, VK_LMENU }, // (0xA4)
-	{ Key::MENU, VK_RMENU }, // (0xA5)
+	{ Key::SHIFT, VK_LSHIFT }, // (0xa0)
+	{ Key::SHIFT, VK_RSHIFT }, // (0xa1)
+	{ Key::CTRL, VK_LCONTROL }, // (0xa2)
+	{ Key::CTRL, VK_RCONTROL }, // (0xa3)
+	{ Key::MENU, VK_LMENU }, // (0xa4)
+	{ Key::MENU, VK_RMENU }, // (0xa5)
 
-	{ Key::BACK, VK_BROWSER_BACK }, // (0xA6)
-	{ Key::FORWARD, VK_BROWSER_FORWARD }, // (0xA7)
-	{ Key::REFRESH, VK_BROWSER_REFRESH }, // (0xA8)
-	{ Key::STOP, VK_BROWSER_STOP }, // (0xA9)
-	{ Key::SEARCH, VK_BROWSER_SEARCH }, // (0xAA)
-	{ Key::FAVORITES, VK_BROWSER_FAVORITES }, // (0xAB)
-	{ Key::HOMEPAGE, VK_BROWSER_HOME }, // (0xAC)
-	{ Key::VOLUMEMUTE, VK_VOLUME_MUTE }, // (0xAD)
-	{ Key::VOLUMEDOWN, VK_VOLUME_DOWN }, // (0xAE)
-	{ Key::VOLUMEUP, VK_VOLUME_UP }, // (0xAF)
-	{ Key::MEDIANEXT, VK_MEDIA_NEXT_TRACK }, // (0xB0)
-	{ Key::MEDIAPREVIOUS, VK_MEDIA_PREV_TRACK }, // (0xB1)
-	{ Key::MEDIASTOP, VK_MEDIA_STOP }, // (0xB2)
+	{ Key::BACK, VK_BROWSER_BACK }, // (0xa6)
+	{ Key::FORWARD, VK_BROWSER_FORWARD }, // (0xa7)
+	{ Key::REFRESH, VK_BROWSER_REFRESH }, // (0xa8)
+	{ Key::STOP, VK_BROWSER_STOP }, // (0xa9)
+	{ Key::SEARCH, VK_BROWSER_SEARCH }, // (0xaa)
+	{ Key::FAVORITES, VK_BROWSER_FAVORITES }, // (0xab)
+	{ Key::HOMEPAGE, VK_BROWSER_HOME }, // (0xac)
+	{ Key::VOLUMEMUTE, VK_VOLUME_MUTE }, // (0xad)
+	{ Key::VOLUMEDOWN, VK_VOLUME_DOWN }, // (0xae)
+	{ Key::VOLUMEUP, VK_VOLUME_UP }, // (0xaf)
+	{ Key::MEDIANEXT, VK_MEDIA_NEXT_TRACK }, // (0xb0)
+	{ Key::MEDIAPREVIOUS, VK_MEDIA_PREV_TRACK }, // (0xb1)
+	{ Key::MEDIASTOP, VK_MEDIA_STOP }, // (0xb2)
 
-	{ Key::MEDIAPLAY, VK_MEDIA_PLAY_PAUSE }, // (0xB3)
+	{ Key::MEDIAPLAY, VK_MEDIA_PLAY_PAUSE }, // (0xb3)
 	// Media button play/pause toggle.
 	// Map to media play (there is no other 'play' mapping on Windows).
 
-	{ Key::LAUNCHMAIL, VK_LAUNCH_MAIL }, // (0xB4)
-	{ Key::LAUNCHMEDIA, VK_LAUNCH_MEDIA_SELECT }, // (0xB5)
-	{ Key::LAUNCH0, VK_LAUNCH_APP1 }, // (0xB6)
-	{ Key::LAUNCH1, VK_LAUNCH_APP2 }, // (0xB7)
+	{ Key::LAUNCHMAIL, VK_LAUNCH_MAIL }, // (0xb4)
+	{ Key::LAUNCHMEDIA, VK_LAUNCH_MEDIA_SELECT }, // (0xb5)
+	{ Key::LAUNCH0, VK_LAUNCH_APP1 }, // (0xb6)
+	{ Key::LAUNCH1, VK_LAUNCH_APP2 }, // (0xb7)
 
-	// 0xB8-B9 are reserved.
+	// 0xb8-B9 are reserved.
 
-	{ Key::SEMICOLON, VK_OEM_1 }, // (0xBA)
+	{ Key::SEMICOLON, VK_OEM_1 }, // (0xba)
 	// Misc. character, can vary by keyboard/region.
 	// Windows 2000/XP:  For US standard keyboards, the ';:' key.
 
-	{ Key::EQUAL, VK_OEM_PLUS }, // (0xBB)
+	{ Key::EQUAL, VK_OEM_PLUS }, // (0xbb)
 	// Windows 2000/XP: For any country/region, the '+' key.
-	{ Key::COMMA, VK_OEM_COMMA }, // (0xBC)
+	{ Key::COMMA, VK_OEM_COMMA }, // (0xbc)
 	// Windows 2000/XP: For any country/region, the ',' key.
-	{ Key::MINUS, VK_OEM_MINUS }, // (0xBD)
+	{ Key::MINUS, VK_OEM_MINUS }, // (0xbd)
 	// Windows 2000/XP: For any country/region, the '-' key.
-	{ Key::PERIOD, VK_OEM_PERIOD }, // (0xBE)
+	{ Key::PERIOD, VK_OEM_PERIOD }, // (0xbe)
 	// Windows 2000/XP: For any country/region, the '.' key.
 
-	{ Key::SLASH, VK_OEM_2 }, // (0xBF)
+	{ Key::SLASH, VK_OEM_2 }, // (0xbf)
 	// Windows 2000/XP: For US standard keyboards, the '/?' key.
 
-	{ Key::QUOTELEFT, VK_OEM_3 }, // (0xC0)
+	{ Key::QUOTELEFT, VK_OEM_3 }, // (0xc0)
 	// Windows 2000/XP: For US standard keyboards, the '`~' key.
 
-	// 0xC1-D7 are reserved. 0xD8-DA are unassigned.
-	// TODO: 0xC3-DA may be used for old gamepads? Maybe we want to support this? See WinUser.h.
+	// 0xc1-D7 are reserved. 0xd8-DA are unassigned.
+	// TODO: 0xc3-DA may be used for old gamepads? Maybe we want to support this? See WinUser.h.
 
-	{ Key::BRACKETLEFT, VK_OEM_4 }, // (0xDB)
+	{ Key::BRACKETLEFT, VK_OEM_4 }, // (0xdb)
 	// Misc. character, can vary by keyboard/region.
 	// Windows 2000/XP: For US standard keyboards, the '[{' key.
 
-	{ Key::BACKSLASH, VK_OEM_5 }, // (0xDC)
+	{ Key::BACKSLASH, VK_OEM_5 }, // (0xdc)
 	// Misc. character, can vary by keyboard/region.
 	// Windows 2000/XP: For US standard keyboards, the '\|' key.
 
-	{ Key::BRACKETRIGHT, VK_OEM_6 }, // (0xDD)
+	{ Key::BRACKETRIGHT, VK_OEM_6 }, // (0xdd)
 	// Misc. character, can vary by keyboard/region.
 	// Windows 2000/XP: For US standard keyboards, the ']}' key.
 
-	{ Key::APOSTROPHE, VK_OEM_7 }, // (0xDE)
+	{ Key::APOSTROPHE, VK_OEM_7 }, // (0xde)
 	// Misc. character, can vary by keyboard/region.
 	// Windows 2000/XP: For US standard keyboards, single quote/double quote.
 
-	// VK_OEM_8 (0xDF)
+	// VK_OEM_8 (0xdf)
 	// Misc. character, can vary by keyboard/region. We have no mapping.
 
-	// 0xE0 is reserved. 0xE1 is OEM specific, we have no mapping.
+	// 0xe0 is reserved. 0xe1 is OEM specific, we have no mapping.
 
-	// VK_OEM_102 (0xE2)
+	// VK_OEM_102 (0xe2)
 	// Either angle bracket or backslash key on the RT 102-key keyboard.
 	// Old and uncommon, we have no mapping.
 
-	{ Key::HELP, VK_ICO_HELP }, // (0xE3)
+	{ Key::HELP, VK_ICO_HELP }, // (0xe3)
 	// OEM (ICO) help key. Map to help.
 
-	// 0xE4 is OEM (e.g. ICO) specific, we have no mapping.
+	// 0xe4 is OEM (e.g. ICO) specific, we have no mapping.
 
-	// VK_PROCESSKEY (0xE5)
+	// VK_PROCESSKEY (0xe5)
 	// For IME, we have no mapping.
 
-	{ Key::CLEAR, VK_ICO_CLEAR }, // (0xE6)
+	{ Key::CLEAR, VK_ICO_CLEAR }, // (0xe6)
 	// OEM (ICO) clear key. Map to clear.
 
-	// VK_PACKET (0xE7)
+	// VK_PACKET (0xe7)
 	// Used to pass Unicode characters as if they were keystrokes.
 	// See Win32 API docs. We have no mapping.
 
-	// 0xE8 is unassigned, 0xE9-F5 are OEM (Nokia/Ericsson) specific, we have no mappings.
+	// 0xe8 is unassigned, 0xe9-F5 are OEM (Nokia/Ericsson) specific, we have no mappings.
 
-	{ Key::ESCAPE, VK_ATTN }, // (0xF6)
+	{ Key::ESCAPE, VK_ATTN }, // (0xf6)
 	// Old IBM 'ATTN' key used on midrange computers, e.g. AS/400, map to Escape.
 
-	{ Key::TAB, VK_CRSEL }, // (0xF7)
+	{ Key::TAB, VK_CRSEL }, // (0xf7)
 	// Old IBM 3270  'CrSel' (cursor select) key, used to select data fields, map to Tab.
 
-	// VK_EXSEL (0xF7)
+	// VK_EXSEL (0xf7)
 	// Old IBM 3270  extended selection key. No mapping.
 
-	// VK_EREOF (0xF8)
+	// VK_EREOF (0xf8)
 	// Old IBM 3270 erase to end of field key. No mapping.
 
-	{ Key::MEDIAPLAY, VK_PLAY }, // (0xFA)
+	{ Key::MEDIAPLAY, VK_PLAY }, // (0xfa)
 	// Old IBM 3270 'Play' key. Map to media play.
 
-	// VK_ZOOM (0xFB)
+	// VK_ZOOM (0xfb)
 	// Old IBM 3290 'Zoom' key. No mapping.
 
-	// VK_NONAME (0xFC)
+	// VK_NONAME (0xfc)
 	// Reserved. No mapping.
 
-	// VK_PA1 (0xFD)
+	// VK_PA1 (0xfd)
 	// Old IBM 3270 PA1 key. No mapping.
 
-	{ Key::CLEAR, VK_OEM_CLEAR }, // (0xFE)
+	{ Key::CLEAR, VK_OEM_CLEAR }, // (0xfe)
 	// OEM specific clear key. Unclear how it differs from normal clear. Map to clear.
 
 	{ Key::UNKNOWN, 0 }
@@ -326,12 +326,12 @@ static _WinTranslatePair _scancode_to_keycode[] = {
 	{ Key::KEY_6, 0x07 },
 	{ Key::KEY_7, 0x08 },
 	{ Key::KEY_8, 0x09 },
-	{ Key::KEY_9, 0x0A },
-	{ Key::KEY_0, 0x0B },
-	{ Key::MINUS, 0x0C },
-	{ Key::EQUAL, 0x0D },
-	{ Key::BACKSPACE, 0x0E },
-	{ Key::TAB, 0x0F },
+	{ Key::KEY_9, 0x0a },
+	{ Key::KEY_0, 0x0b },
+	{ Key::MINUS, 0x0c },
+	{ Key::EQUAL, 0x0d },
+	{ Key::BACKSPACE, 0x0e },
+	{ Key::TAB, 0x0f },
 	{ Key::Q, 0x10 },
 	{ Key::W, 0x11 },
 	{ Key::E, 0x12 },
@@ -342,12 +342,12 @@ static _WinTranslatePair _scancode_to_keycode[] = {
 	{ Key::I, 0x17 },
 	{ Key::O, 0x18 },
 	{ Key::P, 0x19 },
-	{ Key::BRACELEFT, 0x1A },
-	{ Key::BRACERIGHT, 0x1B },
-	{ Key::ENTER, 0x1C },
-	{ Key::CTRL, 0x1D },
-	{ Key::A, 0x1E },
-	{ Key::S, 0x1F },
+	{ Key::BRACELEFT, 0x1a },
+	{ Key::BRACERIGHT, 0x1b },
+	{ Key::ENTER, 0x1c },
+	{ Key::CTRL, 0x1d },
+	{ Key::A, 0x1e },
+	{ Key::S, 0x1f },
 	{ Key::D, 0x20 },
 	{ Key::F, 0x21 },
 	{ Key::G, 0x22 },
@@ -358,12 +358,12 @@ static _WinTranslatePair _scancode_to_keycode[] = {
 	{ Key::SEMICOLON, 0x27 },
 	{ Key::APOSTROPHE, 0x28 },
 	{ Key::QUOTELEFT, 0x29 },
-	{ Key::SHIFT, 0x2A },
-	{ Key::BACKSLASH, 0x2B },
-	{ Key::Z, 0x2C },
-	{ Key::X, 0x2D },
-	{ Key::C, 0x2E },
-	{ Key::V, 0x2F },
+	{ Key::SHIFT, 0x2a },
+	{ Key::BACKSLASH, 0x2b },
+	{ Key::Z, 0x2c },
+	{ Key::X, 0x2d },
+	{ Key::C, 0x2e },
+	{ Key::V, 0x2f },
 	{ Key::B, 0x30 },
 	{ Key::N, 0x31 },
 	{ Key::M, 0x32 },
@@ -374,12 +374,12 @@ static _WinTranslatePair _scancode_to_keycode[] = {
 	{ Key::PRINT, 0x37 },
 	{ Key::ALT, 0x38 },
 	{ Key::SPACE, 0x39 },
-	{ Key::CAPSLOCK, 0x3A },
-	{ Key::F1, 0x3B },
-	{ Key::F2, 0x3C },
-	{ Key::F3, 0x3D },
-	{ Key::F4, 0x3E },
-	{ Key::F5, 0x3F },
+	{ Key::CAPSLOCK, 0x3a },
+	{ Key::F1, 0x3b },
+	{ Key::F2, 0x3c },
+	{ Key::F3, 0x3d },
+	{ Key::F4, 0x3e },
+	{ Key::F5, 0x3f },
 	{ Key::F6, 0x40 },
 	{ Key::F7, 0x41 },
 	{ Key::F8, 0x42 },
@@ -390,21 +390,21 @@ static _WinTranslatePair _scancode_to_keycode[] = {
 	{ Key::HOME, 0x47 },
 	{ Key::UP, 0x48 },
 	{ Key::PAGEUP, 0x49 },
-	{ Key::KP_SUBTRACT, 0x4A },
-	{ Key::LEFT, 0x4B },
-	{ Key::KP_5, 0x4C },
-	{ Key::RIGHT, 0x4D },
-	{ Key::KP_ADD, 0x4E },
-	{ Key::END, 0x4F },
+	{ Key::KP_SUBTRACT, 0x4a },
+	{ Key::LEFT, 0x4b },
+	{ Key::KP_5, 0x4c },
+	{ Key::RIGHT, 0x4d },
+	{ Key::KP_ADD, 0x4e },
+	{ Key::END, 0x4f },
 	{ Key::DOWN, 0x50 },
 	{ Key::PAGEDOWN, 0x51 },
 	{ Key::INSERT, 0x52 },
 	{ Key::KEY_DELETE, 0x53 },
 	{ Key::F11, 0x57 },
 	{ Key::F12, 0x58 },
-	{ Key::META, 0x5B },
-	{ Key::META, 0x5C },
-	{ Key::MENU, 0x5D },
+	{ Key::META, 0x5b },
+	{ Key::META, 0x5c },
+	{ Key::MENU, 0x5d },
 	{ Key::F13, 0x64 },
 	{ Key::F14, 0x65 },
 	{ Key::F15, 0x66 },

@@ -40,7 +40,7 @@ namespace TestColor {
 TEST_CASE("[Color] Constructor methods") {
 	const Color blue_rgba = Color(0.25098, 0.376471, 1, 0.501961);
 	const Color blue_html = Color::html("#4060ff80");
-	const Color blue_hex = Color::hex(0x4060ff80);
+	const Color blue_hex = Color::hex(0x4060'ff80);
 	const Color blue_hex64 = Color::hex64(0x4040'6060'ffff'8080);
 
 	CHECK_MESSAGE(
@@ -122,13 +122,13 @@ TEST_CASE("[Color] Conversion methods") {
 			cyan_transparent.to_html() == "00ffff00",
 			"The returned RGBA HTML color code should match the expected value.");
 	CHECK_MESSAGE(
-			cyan.to_argb32() == 0xff00ffff,
+			cyan.to_argb32() == 0xff00'ffff,
 			"The returned 32-bit RGB number should match the expected value.");
 	CHECK_MESSAGE(
-			cyan.to_abgr32() == 0xffffff00,
+			cyan.to_abgr32() == 0xffff'ff00,
 			"The returned 32-bit BGR number should match the expected value.");
 	CHECK_MESSAGE(
-			cyan.to_rgba32() == 0x00ffffff,
+			cyan.to_rgba32() == 0x00ff'ffff,
 			"The returned 32-bit BGR number should match the expected value.");
 	CHECK_MESSAGE(
 			cyan.to_argb64() == 0xffff'0000'ffff'ffff,
@@ -164,15 +164,15 @@ TEST_CASE("[Color] Linear <-> sRGB conversion") {
 
 TEST_CASE("[Color] Named colors") {
 	CHECK_MESSAGE(
-			Color::named("red").is_equal_approx(Color::hex(0xFF0000FF)),
+			Color::named("red").is_equal_approx(Color::hex(0xff0000ff)),
 			"The named color \"red\" should match the expected value.");
 
 	// Named colors have their names automatically normalized.
 	CHECK_MESSAGE(
-			Color::named("white_smoke").is_equal_approx(Color::hex(0xF5F5F5FF)),
+			Color::named("white_smoke").is_equal_approx(Color::hex(0xf5f5f5ff)),
 			"The named color \"white_smoke\" should match the expected value.");
 	CHECK_MESSAGE(
-			Color::named("Slate Blue").is_equal_approx(Color::hex(0x6A5ACDFF)),
+			Color::named("Slate Blue").is_equal_approx(Color::hex(0x6a5acdff)),
 			"The named color \"Slate Blue\" should match the expected value.");
 
 	ERR_PRINT_OFF;

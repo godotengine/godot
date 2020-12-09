@@ -616,7 +616,7 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx, bool
 		}
 
 		if (i == p_arg_idx) {
-			arghint += String::chr(0xFFFF);
+			arghint += String::chr(0xffff);
 		}
 		arghint += E.name + ": " + _get_visual_datatype(E, true);
 
@@ -625,7 +625,7 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx, bool
 		}
 
 		if (i == p_arg_idx) {
-			arghint += String::chr(0xFFFF);
+			arghint += String::chr(0xffff);
 		}
 
 		i++;
@@ -636,11 +636,11 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx, bool
 			arghint += ", ";
 		}
 		if (p_arg_idx >= p_info.arguments.size()) {
-			arghint += String::chr(0xFFFF);
+			arghint += String::chr(0xffff);
 		}
 		arghint += "...";
 		if (p_arg_idx >= p_info.arguments.size()) {
-			arghint += String::chr(0xFFFF);
+			arghint += String::chr(0xffff);
 		}
 	}
 
@@ -658,7 +658,7 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 		}
 
 		if (i == p_arg_idx) {
-			arghint += String::chr(0xFFFF);
+			arghint += String::chr(0xffff);
 		}
 		const GDScriptParser::ParameterNode *par = p_function->parameters[i];
 		arghint += par->identifier->name.operator String() + ": " + par->get_datatype().to_string();
@@ -713,7 +713,7 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 			arghint += " = " + def_val;
 		}
 		if (i == p_arg_idx) {
-			arghint += String::chr(0xFFFF);
+			arghint += String::chr(0xffff);
 		}
 	}
 

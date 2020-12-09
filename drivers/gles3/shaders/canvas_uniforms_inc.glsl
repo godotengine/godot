@@ -6,7 +6,7 @@
 #define SDF_MAX_LENGTH 16384.0
 
 //1 means enabled, 2+ means trails in use
-#define FLAGS_INSTANCING_MASK uint(0x7F)
+#define FLAGS_INSTANCING_MASK uint(0x7f)
 #define FLAGS_INSTANCING_HAS_COLORS uint(1 << 7)
 #define FLAGS_INSTANCING_HAS_CUSTOM_DATA uint(1 << 8)
 

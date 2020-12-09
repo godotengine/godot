@@ -254,7 +254,7 @@ RemoteDebugger::ErrorMessage RemoteDebugger::_create_overflow_error(const String
 	oe.error_descr = p_descr;
 	oe.warning = false;
 	uint64_t time = OS::get_singleton()->get_ticks_msec();
-	oe.hr = time / 3600000;
+	oe.hr = time / 3'600'000;
 	oe.min = (time / 60000) % 60;
 	oe.sec = (time / 1000) % 60;
 	oe.msec = time % 1000;
@@ -344,7 +344,7 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 	oe.source_func = p_func;
 	oe.warning = p_type == ERR_HANDLER_WARNING;
 	uint64_t time = OS::get_singleton()->get_ticks_msec();
-	oe.hr = time / 3600000;
+	oe.hr = time / 3'600'000;
 	oe.min = (time / 60000) % 60;
 	oe.sec = (time / 1000) % 60;
 	oe.msec = time % 1000;

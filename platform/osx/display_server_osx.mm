@@ -2750,10 +2750,10 @@ void DisplayServerOSX::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 
 			uint32_t color = image->get_pixel(column_index, row_index).to_argb32();
 
-			uint8_t alpha = (color >> 24) & 0xFF;
-			pixels[i * 4 + 0] = ((color >> 16) & 0xFF) * alpha / 255;
-			pixels[i * 4 + 1] = ((color >> 8) & 0xFF) * alpha / 255;
-			pixels[i * 4 + 2] = ((color)&0xFF) * alpha / 255;
+			uint8_t alpha = (color >> 24) & 0xff;
+			pixels[i * 4 + 0] = ((color >> 16) & 0xff) * alpha / 255;
+			pixels[i * 4 + 1] = ((color >> 8) & 0xff) * alpha / 255;
+			pixels[i * 4 + 2] = ((color)&0xff) * alpha / 255;
 			pixels[i * 4 + 3] = alpha;
 		}
 

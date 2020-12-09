@@ -45,7 +45,7 @@
 #error "Can't build GDScript LSP without JSONRPC module."
 #endif
 
-#define LSP_MAX_BUFFER_SIZE 4194304
+#define LSP_MAX_BUFFER_SIZE 4'194'304
 #define LSP_MAX_CLIENTS 8
 
 class GDScriptLanguageProtocol : public JSONRPC {

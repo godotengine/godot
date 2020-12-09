@@ -42,12 +42,12 @@ static inline float undenormalise(volatile float f) {
 
 	v.f = f;
 
-	// original: return (v.i & 0x7f800000) == 0 ? 0.0f : f;
+	// original: return (v.i & 0x7f80'0000) == 0 ? 0.0f : f;
 	// version from Tim Blechmann:
-	return (v.i & 0x7f800000) < 0x08000000 ? 0.0f : f;
+	return (v.i & 0x7f80'0000) < 0x0800'0000 ? 0.0f : f;
 }
 
-static const float AUDIO_PEAK_OFFSET = 0.0000000001f;
+static const float AUDIO_PEAK_OFFSET = 0.000'000'000'1f;
 static const float AUDIO_MIN_PEAK_DB = -200.0f; // linear2db(AUDIO_PEAK_OFFSET)
 
 struct AudioFrame {

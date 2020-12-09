@@ -285,13 +285,13 @@ Error GLTFDocument::_parse_glb(Ref<FileAccess> f, Ref<GLTFState> state) {
 	ERR_FAIL_NULL_V(state, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(f->get_position() != 0, ERR_FILE_CANT_READ);
 	uint32_t magic = f->get_32();
-	ERR_FAIL_COND_V(magic != 0x46546C67, ERR_FILE_UNRECOGNIZED); //glTF
+	ERR_FAIL_COND_V(magic != 0x4654'6c67, ERR_FILE_UNRECOGNIZED); //glTF
 	f->get_32(); // version
 	f->get_32(); // length
 	uint32_t chunk_length = f->get_32();
 	uint32_t chunk_type = f->get_32();
 
-	ERR_FAIL_COND_V(chunk_type != 0x4E4F534A, ERR_PARSE_ERROR); //JSON
+	ERR_FAIL_COND_V(chunk_type != 0x4e4f'534a, ERR_PARSE_ERROR); //JSON
 	Vector<uint8_t> json_data;
 	json_data.resize(chunk_length);
 	uint32_t len = f->get_buffer(json_data.ptrw(), chunk_length);
@@ -318,7 +318,7 @@ Error GLTFDocument::_parse_glb(Ref<FileAccess> f, Ref<GLTFState> state) {
 		return OK; //all good
 	}
 
-	ERR_FAIL_COND_V(chunk_type != 0x004E4942, ERR_PARSE_ERROR); //BIN
+	ERR_FAIL_COND_V(chunk_type != 0x004e'4942, ERR_PARSE_ERROR); //BIN
 
 	state->glb_data.resize(chunk_length);
 	len = f->get_buffer(state->glb_data.ptrw(), chunk_length);
@@ -6604,7 +6604,7 @@ Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> 
 	}
 	f->seek(0);
 	uint32_t magic = f->get_32();
-	if (magic == 0x46546C67) {
+	if (magic == 0x4654'6c67) {
 		//binary file
 		//text file
 		f->seek(0);
@@ -6716,20 +6716,20 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 
 		String json = Variant(state->json).to_json_string();
 
-		const uint32_t magic = 0x46546C67; // GLTF
+		const uint32_t magic = 0x4654'6c67; // GLTF
 		const int32_t header_size = 12;
 		const int32_t chunk_header_size = 8;
 		CharString cs = json.utf8();
 		const uint32_t text_data_length = cs.length();
 		const uint32_t text_chunk_length = ((text_data_length + 3) & (~3));
-		const uint32_t text_chunk_type = 0x4E4F534A; //JSON
+		const uint32_t text_chunk_type = 0x4e4f'534a; //JSON
 
 		uint32_t binary_data_length = 0;
 		if (state->buffers.size()) {
 			binary_data_length = state->buffers[0].size();
 		}
 		const uint32_t binary_chunk_length = ((binary_data_length + 3) & (~3));
-		const uint32_t binary_chunk_type = 0x004E4942; //BIN
+		const uint32_t binary_chunk_type = 0x004e'4942; //BIN
 
 		f->create(FileAccess::ACCESS_RESOURCES);
 		f->store_32(magic);
@@ -6826,7 +6826,7 @@ PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> state, Error 
 	ERR_FAIL_COND_V(err != OK, PackedByteArray());
 	String json = Variant(state->json).to_json_string();
 
-	const uint32_t magic = 0x46546C67; // GLTF
+	const uint32_t magic = 0x4654'6c67; // GLTF
 	const int32_t header_size = 12;
 	const int32_t chunk_header_size = 8;
 
@@ -6836,13 +6836,13 @@ PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> state, Error 
 	CharString cs = json.utf8();
 	const uint32_t text_chunk_length = cs.length();
 
-	const uint32_t text_chunk_type = 0x4E4F534A; //JSON
+	const uint32_t text_chunk_type = 0x4e4f'534a; //JSON
 	int32_t binary_data_length = 0;
 	if (state->buffers.size()) {
 		binary_data_length = state->buffers[0].size();
 	}
 	const int32_t binary_chunk_length = binary_data_length;
-	const int32_t binary_chunk_type = 0x004E4942; //BIN
+	const int32_t binary_chunk_type = 0x004e'4942; //BIN
 
 	Ref<StreamPeerBuffer> buffer;
 	buffer.instantiate();

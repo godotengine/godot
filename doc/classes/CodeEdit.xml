@@ -240,13 +240,13 @@
 		<method name="get_text_for_code_completion" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the full text with char [code]0xFFFF[/code] at the caret location.
+				Returns the full text with char [code]0xffff[/code] at the caret location.
 			</description>
 		</method>
 		<method name="get_text_for_symbol_lookup">
 			<return type="String" />
 			<description>
-				Returns the full text with char [code]0xFFFF[/code] at the cursor location.
+				Returns the full text with char [code]0xffff[/code] at the cursor location.
 			</description>
 		</method>
 		<method name="has_auto_brace_completion_close_key" qualifiers="const">

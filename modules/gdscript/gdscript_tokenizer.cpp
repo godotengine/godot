@@ -781,7 +781,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 
 		char32_t ch = _peek();
 
-		if (ch == 0x200E || ch == 0x200F || (ch >= 0x202A && ch <= 0x202E) || (ch >= 0x2066 && ch <= 0x2069)) {
+		if (ch == 0x200e || ch == 0x200f || (ch >= 0x202a && ch <= 0x202e) || (ch >= 0x2066 && ch <= 0x2069)) {
 			Token error = make_error("Invisible text direction control character present in the string, escape it (\"\\u" + String::num_int64(ch, 16) + "\") to avoid confusion.");
 			error.start_column = column;
 			error.leftmost_column = error.start_column;
@@ -899,7 +899,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 			}
 			// Parse UTF-16 pair.
 			if (valid_escape) {
-				if ((escaped & 0xfffffc00) == 0xd800) {
+				if ((escaped & 0xffff'fc00) == 0xd800) {
 					if (prev == 0) {
 						prev = escaped;
 						prev_pos = column - 2;
@@ -912,7 +912,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 						valid_escape = false;
 						prev = 0;
 					}
-				} else if ((escaped & 0xfffffc00) == 0xdc00) {
+				} else if ((escaped & 0xffff'fc00) == 0xdc00) {
 					if (prev == 0) {
 						Token error = make_error("Invalid UTF-16 sequence in string, unpaired trail surrogate");
 						error.start_column = column - 2;

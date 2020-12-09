@@ -84,7 +84,7 @@ void main() {
 
 	mat4 model_matrix = mat4(vec4(draw_data.world_x, 0.0, 0.0), vec4(draw_data.world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(draw_data.world_ofs, 0.0, 1.0));
 
-#define FLAGS_INSTANCING_MASK 0x7F
+#define FLAGS_INSTANCING_MASK 0x7f
 #define FLAGS_INSTANCING_HAS_COLORS (1 << 7)
 #define FLAGS_INSTANCING_HAS_CUSTOM_DATA (1 << 8)
 
@@ -517,7 +517,7 @@ void main() {
 		color *= texture(sampler2D(color_texture, texture_sampler), uv);
 	}
 
-	uint light_count = (draw_data.flags >> FLAGS_LIGHT_COUNT_SHIFT) & 0xF; //max 16 lights
+	uint light_count = (draw_data.flags >> FLAGS_LIGHT_COUNT_SHIFT) & 0xf; //max 16 lights
 	bool using_light = light_count > 0 || canvas_data.directional_light_count > 0;
 
 	vec3 normal;
@@ -654,7 +654,7 @@ void main() {
 			}
 		}
 		light_base >>= (i & 3) * 8;
-		light_base &= 0xFF;
+		light_base &= 0xff;
 
 		vec2 tex_uv = (vec4(vertex, 0.0, 1.0) * mat4(light_array.data[light_base].texture_matrix[0], light_array.data[light_base].texture_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
 		vec2 tex_uv_atlas = tex_uv * light_array.data[light_base].atlas_rect.zw + light_array.data[light_base].atlas_rect.xy;

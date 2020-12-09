@@ -89,7 +89,7 @@ void main() {
 
 	uint slice = uint(clamp(floor(depth * 32.0), 0.0, 31.0));
 	uint slice_minmax = cluster_data.data[offset + params.max_cluster_element_count_div_32 + slice];
-	uint item_min = slice_minmax & 0xFFFF;
+	uint item_min = slice_minmax & 0xffff;
 	uint item_max = slice_minmax >> 16;
 
 	uint item_count = 0;

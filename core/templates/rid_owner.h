@@ -104,7 +104,7 @@ class RID_Alloc : public RID_AllocBase {
 			//initialize
 			for (uint32_t i = 0; i < elements_in_chunk; i++) {
 				// Don't initialize chunk.
-				validator_chunks[chunk_count][i] = 0xFFFFFFFF;
+				validator_chunks[chunk_count][i] = 0xffff'ffff;
 				free_list_chunks[chunk_count][i] = alloc_count + i;
 			}
 
@@ -116,14 +116,14 @@ class RID_Alloc : public RID_AllocBase {
 		uint32_t free_chunk = free_index / elements_in_chunk;
 		uint32_t free_element = free_index % elements_in_chunk;
 
-		uint32_t validator = (uint32_t)(_gen_id() & 0x7FFFFFFF);
+		uint32_t validator = (uint32_t)(_gen_id() & 0x7fff'ffff);
 		uint64_t id = validator;
 		id <<= 32;
 		id |= free_index;
 
 		validator_chunks[free_chunk][free_element] = validator;
 
-		validator_chunks[free_chunk][free_element] |= 0x80000000; //mark uninitialized bit
+		validator_chunks[free_chunk][free_element] |= 0x8000'0000; //mark uninitialized bit
 
 		alloc_count++;
 
@@ -160,7 +160,7 @@ public:
 		}
 
 		uint64_t id = p_rid.get_id();
-		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
+		uint32_t idx = uint32_t(id & 0xffff'ffff);
 		if (unlikely(idx >= max_alloc)) {
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
@@ -174,14 +174,14 @@ public:
 		uint32_t validator = uint32_t(id >> 32);
 
 		if (unlikely(p_initialize)) {
-			if (unlikely(!(validator_chunks[idx_chunk][idx_element] & 0x80000000))) {
+			if (unlikely(!(validator_chunks[idx_chunk][idx_element] & 0x8000'0000))) {
 				if (THREAD_SAFE) {
 					spin_lock.unlock();
 				}
 				ERR_FAIL_V_MSG(nullptr, "Initializing already initialized RID");
 			}
 
-			if (unlikely((validator_chunks[idx_chunk][idx_element] & 0x7FFFFFFF) != validator)) {
+			if (unlikely((validator_chunks[idx_chunk][idx_element] & 0x7fff'ffff) != validator)) {
 				if (THREAD_SAFE) {
 					spin_lock.unlock();
 				}
@@ -189,13 +189,13 @@ public:
 				return nullptr;
 			}
 
-			validator_chunks[idx_chunk][idx_element] &= 0x7FFFFFFF; //initialized
+			validator_chunks[idx_chunk][idx_element] &= 0x7fff'ffff; //initialized
 
 		} else if (unlikely(validator_chunks[idx_chunk][idx_element] != validator)) {
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
-			if ((validator_chunks[idx_chunk][idx_element] & 0x80000000) && validator_chunks[idx_chunk][idx_element] != 0xFFFFFFFF) {
+			if ((validator_chunks[idx_chunk][idx_element] & 0x8000'0000) && validator_chunks[idx_chunk][idx_element] != 0xffff'ffff) {
 				ERR_FAIL_V_MSG(nullptr, "Attempting to use an uninitialized RID");
 			}
 			return nullptr;
@@ -226,7 +226,7 @@ public:
 		}
 
 		uint64_t id = p_rid.get_id();
-		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
+		uint32_t idx = uint32_t(id & 0xffff'ffff);
 		if (unlikely(idx >= max_alloc)) {
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
@@ -239,7 +239,7 @@ public:
 
 		uint32_t validator = uint32_t(id >> 32);
 
-		bool owned = (validator_chunks[idx_chunk][idx_element] & 0x7FFFFFFF) == validator;
+		bool owned = (validator_chunks[idx_chunk][idx_element] & 0x7fff'ffff) == validator;
 
 		if (THREAD_SAFE) {
 			spin_lock.unlock();
@@ -254,7 +254,7 @@ public:
 		}
 
 		uint64_t id = p_rid.get_id();
-		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
+		uint32_t idx = uint32_t(id & 0xffff'ffff);
 		if (unlikely(idx >= max_alloc)) {
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
@@ -266,7 +266,7 @@ public:
 		uint32_t idx_element = idx % elements_in_chunk;
 
 		uint32_t validator = uint32_t(id >> 32);
-		if (unlikely(validator_chunks[idx_chunk][idx_element] & 0x80000000)) {
+		if (unlikely(validator_chunks[idx_chunk][idx_element] & 0x8000'0000)) {
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
@@ -279,7 +279,7 @@ public:
 		}
 
 		chunks[idx_chunk][idx_element].~T();
-		validator_chunks[idx_chunk][idx_element] = 0xFFFFFFFF; // go invalid
+		validator_chunks[idx_chunk][idx_element] = 0xffff'ffff; // go invalid
 
 		alloc_count--;
 		free_list_chunks[alloc_count / elements_in_chunk][alloc_count % elements_in_chunk] = idx;
@@ -298,7 +298,7 @@ public:
 		}
 		for (size_t i = 0; i < max_alloc; i++) {
 			uint64_t validator = validator_chunks[i / elements_in_chunk][i % elements_in_chunk];
-			if (validator != 0xFFFFFFFF) {
+			if (validator != 0xffff'ffff) {
 				p_owned->push_back(_make_from_id((validator << 32) | i));
 			}
 		}
@@ -315,7 +315,7 @@ public:
 		uint32_t idx = 0;
 		for (size_t i = 0; i < max_alloc; i++) {
 			uint64_t validator = validator_chunks[i / elements_in_chunk][i % elements_in_chunk];
-			if (validator != 0xFFFFFFFF) {
+			if (validator != 0xffff'ffff) {
 				p_rid_buffer[idx] = _make_from_id((validator << 32) | i);
 				idx++;
 			}
@@ -347,10 +347,10 @@ public:
 
 			for (size_t i = 0; i < max_alloc; i++) {
 				uint64_t validator = validator_chunks[i / elements_in_chunk][i % elements_in_chunk];
-				if (validator & 0x80000000) {
+				if (validator & 0x8000'0000) {
 					continue; //uninitialized
 				}
-				if (validator != 0xFFFFFFFF) {
+				if (validator != 0xffff'ffff) {
 					chunks[i / elements_in_chunk][i % elements_in_chunk].~T();
 				}
 			}

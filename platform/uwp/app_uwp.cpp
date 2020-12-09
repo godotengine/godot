@@ -490,7 +490,7 @@ char **App::get_command_line(unsigned int *out_argc) {
 		return fail_cl;
 	}
 
-#define READ_LE_4(v) ((int)(##v[3] & 0xFF) << 24) | ((int)(##v[2] & 0xFF) << 16) | ((int)(##v[1] & 0xFF) << 8) | ((int)(##v[0] & 0xFF))
+#define READ_LE_4(v) ((int)(##v[3] & 0xff) << 24) | ((int)(##v[2] & 0xff) << 16) | ((int)(##v[1] & 0xff) << 8) | ((int)(##v[0] & 0xff))
 #define CMD_MAX_LEN 65535
 
 	uint8_t len[4];

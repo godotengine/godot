@@ -81,7 +81,7 @@ public:
 		Transform3D transform;
 
 		Camera() {
-			visible_layers = 0xFFFFFFFF;
+			visible_layers = 0xffff'ffff;
 			fov = 75;
 			type = PERSPECTIVE;
 			znear = 0.05;
@@ -246,7 +246,7 @@ public:
 		// Store instance pointer as well as common instance processing information,
 		// to make processing more cache friendly.
 		enum Flags {
-			FLAG_BASE_TYPE_MASK = 0xFF,
+			FLAG_BASE_TYPE_MASK = 0xff,
 			FLAG_CAST_SHADOWS = (1 << 8),
 			FLAG_CAST_SHADOWS_ONLY = (1 << 9),
 			FLAG_REDRAW_IF_VISIBLE = (1 << 10),

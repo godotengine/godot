@@ -50,7 +50,7 @@ struct Light {
 	bool reverse_cull = false;
 	RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DYNAMIC;
 	uint32_t max_sdfgi_cascade = 2;
-	uint32_t cull_mask = 0xFFFFFFFF;
+	uint32_t cull_mask = 0xffff'ffff;
 	bool distance_fade = false;
 	real_t distance_fade_begin = 40.0;
 	real_t distance_fade_shadow = 50.0;

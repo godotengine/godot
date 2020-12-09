@@ -33,7 +33,7 @@
 
 #include "core/io/file_access.h"
 
-#define ENCRYPTED_HEADER_MAGIC 0x43454447
+#define ENCRYPTED_HEADER_MAGIC 0x43'45'44'47
 
 class FileAccessEncrypted : public FileAccess {
 public:

@@ -160,7 +160,7 @@ uint32_t SurfaceTool::TriangleHasher::hash(const int *p_triangle) {
 		SWAP(t0, t1);
 	}
 
-	return (t0 * 73856093) ^ (t1 * 19349663) ^ (t2 * 83492791);
+	return (t0 * 73'856'093) ^ (t1 * 19'349'663) ^ (t2 * 83'492'791);
 }
 
 bool SurfaceTool::TriangleHasher::compare(const int *p_lhs, const int *p_rhs) {

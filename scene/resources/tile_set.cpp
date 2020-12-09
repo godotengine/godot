@@ -442,7 +442,7 @@ void TileSet::_update_terrains_cache() {
 
 void TileSet::_compute_next_source_id() {
 	while (sources.has(next_source_id)) {
-		next_source_id = (next_source_id + 1) % 1073741824; // 2 ** 30
+		next_source_id = (next_source_id + 1) % 1'073'741'824; // 2 ** 30
 	};
 }
 
@@ -4351,7 +4351,7 @@ void TileSetAtlasSource::_compute_next_alternative_id(const Vector2i p_atlas_coo
 	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
 
 	while (tiles[p_atlas_coords].alternatives.has(tiles[p_atlas_coords].next_alternative_id)) {
-		tiles[p_atlas_coords].next_alternative_id = (tiles[p_atlas_coords].next_alternative_id % 1073741823) + 1; // 2 ** 30
+		tiles[p_atlas_coords].next_alternative_id = (tiles[p_atlas_coords].next_alternative_id % 1'073'741'823) + 1; // 2 ** 30
 	};
 }
 
@@ -4479,7 +4479,7 @@ void TileSetAtlasSource::_update_padded_texture() {
 
 void TileSetScenesCollectionSource::_compute_next_alternative_id() {
 	while (scenes.has(next_scene_id)) {
-		next_scene_id = (next_scene_id % 1073741823) + 1; // 2 ** 30
+		next_scene_id = (next_scene_id % 1'073'741'823) + 1; // 2 ** 30
 	};
 }
 

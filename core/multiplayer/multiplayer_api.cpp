@@ -180,7 +180,7 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 // - The first LSB 5 bits are used for the variant type.
 // - The next two bits are used to store the encoding mode.
 // - The most significant is used to store the boolean value.
-#define VARIANT_META_TYPE_MASK 0x1F
+#define VARIANT_META_TYPE_MASK 0x1f
 #define VARIANT_META_EMODE_MASK 0x60
 #define VARIANT_META_BOOL_MASK 0x80
 #define ENCODE_8 0 << 5

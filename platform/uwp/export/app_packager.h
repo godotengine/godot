@@ -49,13 +49,13 @@
 
 class AppxPackager {
 	enum {
-		FILE_HEADER_MAGIC = 0x04034b50,
-		DATA_DESCRIPTOR_MAGIC = 0x08074b50,
-		CENTRAL_DIR_MAGIC = 0x02014b50,
-		END_OF_CENTRAL_DIR_MAGIC = 0x06054b50,
-		ZIP64_END_OF_CENTRAL_DIR_MAGIC = 0x06064b50,
-		ZIP64_END_DIR_LOCATOR_MAGIC = 0x07064b50,
-		P7X_SIGNATURE = 0x58434b50,
+		FILE_HEADER_MAGIC = 0x0403'4b50,
+		DATA_DESCRIPTOR_MAGIC = 0x0807'4b50,
+		CENTRAL_DIR_MAGIC = 0x0201'4b50,
+		END_OF_CENTRAL_DIR_MAGIC = 0x0605'4b50,
+		ZIP64_END_OF_CENTRAL_DIR_MAGIC = 0x0606'4b50,
+		ZIP64_END_DIR_LOCATOR_MAGIC = 0x0706'4b50,
+		P7X_SIGNATURE = 0x5843'4b50,
 		ZIP64_HEADER_ID = 0x0001,
 		ZIP_VERSION = 20,
 		ZIP_ARCHIVE_VERSION = 45,
@@ -104,21 +104,21 @@ class AppxPackager {
 
 	_FORCE_INLINE_ unsigned int buf_put_int16(uint16_t p_val, uint8_t *p_buf) {
 		for (int i = 0; i < 2; i++) {
-			*p_buf++ = (p_val >> (i * 8)) & 0xFF;
+			*p_buf++ = (p_val >> (i * 8)) & 0xff;
 		}
 		return 2;
 	}
 
 	_FORCE_INLINE_ unsigned int buf_put_int32(uint32_t p_val, uint8_t *p_buf) {
 		for (int i = 0; i < 4; i++) {
-			*p_buf++ = (p_val >> (i * 8)) & 0xFF;
+			*p_buf++ = (p_val >> (i * 8)) & 0xff;
 		}
 		return 4;
 	}
 
 	_FORCE_INLINE_ unsigned int buf_put_int64(uint64_t p_val, uint8_t *p_buf) {
 		for (int i = 0; i < 8; i++) {
-			*p_buf++ = (p_val >> (i * 8)) & 0xFF;
+			*p_buf++ = (p_val >> (i * 8)) & 0xff;
 		}
 		return 8;
 	}

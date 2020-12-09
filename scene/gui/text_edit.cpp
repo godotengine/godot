@@ -3358,42 +3358,42 @@ void TextEdit::menu_option(int p_option) {
 		} break;
 		case MENU_INSERT_LRM: {
 			if (editable) {
-				insert_text_at_caret(String::chr(0x200E));
+				insert_text_at_caret(String::chr(0x200e));
 			}
 		} break;
 		case MENU_INSERT_RLM: {
 			if (editable) {
-				insert_text_at_caret(String::chr(0x200F));
+				insert_text_at_caret(String::chr(0x200f));
 			}
 		} break;
 		case MENU_INSERT_LRE: {
 			if (editable) {
-				insert_text_at_caret(String::chr(0x202A));
+				insert_text_at_caret(String::chr(0x202a));
 			}
 		} break;
 		case MENU_INSERT_RLE: {
 			if (editable) {
-				insert_text_at_caret(String::chr(0x202B));
+				insert_text_at_caret(String::chr(0x202b));
 			}
 		} break;
 		case MENU_INSERT_LRO: {
 			if (editable) {
-				insert_text_at_caret(String::chr(0x202D));
+				insert_text_at_caret(String::chr(0x202d));
 			}
 		} break;
 		case MENU_INSERT_RLO: {
 			if (editable) {
-				insert_text_at_caret(String::chr(0x202E));
+				insert_text_at_caret(String::chr(0x202e));
 			}
 		} break;
 		case MENU_INSERT_PDF: {
 			if (editable) {
-				insert_text_at_caret(String::chr(0x202C));
+				insert_text_at_caret(String::chr(0x202c));
 			}
 		} break;
 		case MENU_INSERT_ALM: {
 			if (editable) {
-				insert_text_at_caret(String::chr(0x061C));
+				insert_text_at_caret(String::chr(0x061c));
 			}
 		} break;
 		case MENU_INSERT_LRI: {
@@ -3418,12 +3418,12 @@ void TextEdit::menu_option(int p_option) {
 		} break;
 		case MENU_INSERT_ZWJ: {
 			if (editable) {
-				insert_text_at_caret(String::chr(0x200D));
+				insert_text_at_caret(String::chr(0x200d));
 			}
 		} break;
 		case MENU_INSERT_ZWNJ: {
 			if (editable) {
-				insert_text_at_caret(String::chr(0x200C));
+				insert_text_at_caret(String::chr(0x200c));
 			}
 		} break;
 		case MENU_INSERT_WJ: {
@@ -3433,7 +3433,7 @@ void TextEdit::menu_option(int p_option) {
 		} break;
 		case MENU_INSERT_SHY: {
 			if (editable) {
-				insert_text_at_caret(String::chr(0x00AD));
+				insert_text_at_caret(String::chr(0x00ad));
 			}
 		}
 	}

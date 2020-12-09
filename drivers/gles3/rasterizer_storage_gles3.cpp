@@ -653,10 +653,10 @@ void RasterizerStorageGLES3::initialize() {
 		uint32_t bits = i;
 
 		bits = (bits << 16) | (bits >> 16);
-		bits = ((bits & 0x55555555) << 1) | ((bits & 0xAAAAAAAA) >> 1);
-		bits = ((bits & 0x33333333) << 2) | ((bits & 0xCCCCCCCC) >> 2);
-		bits = ((bits & 0x0F0F0F0F) << 4) | ((bits & 0xF0F0F0F0) >> 4);
-		bits = ((bits & 0x00FF00FF) << 8) | ((bits & 0xFF00FF00) >> 8);
+		bits = ((bits & 0x5555'5555) << 1) | ((bits & 0xaaaa'aaaa) >> 1);
+		bits = ((bits & 0x3333'3333) << 2) | ((bits & 0xcccc'cccc) >> 2);
+		bits = ((bits & 0x0f0f'0f0f) << 4) | ((bits & 0xf0f0'f0f0) >> 4);
+		bits = ((bits & 0x00ff'00ff) << 8) | ((bits & 0xff00'ff00) >> 8);
 
 		float value = float(bits) * 2.3283064365386963e-10;
 		radical_inverse[i] = uint8_t(CLAMP(value * 255.0, 0, 255));

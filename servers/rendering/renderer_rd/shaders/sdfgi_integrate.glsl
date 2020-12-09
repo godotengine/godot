@@ -136,7 +136,7 @@ uint rgbe_encode(vec3 color) {
 	float sRed = floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
 	float sGreen = floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
 	float sBlue = floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
-	return (uint(sRed) & 0x1FF) | ((uint(sGreen) & 0x1FF) << 9) | ((uint(sBlue) & 0x1FF) << 18) | ((uint(exps) & 0x1F) << 27);
+	return (uint(sRed) & 0x1ff) | ((uint(sGreen) & 0x1ff) << 9) | ((uint(sBlue) & 0x1ff) << 18) | ((uint(exps) & 0x1f) << 27);
 }
 
 struct SH {
@@ -175,7 +175,7 @@ void main() {
 
 	// quickly ensure each probe has a different "offset" for the vogel function, based on integer world position
 	uvec3 h3 = hash3(uvec3(params.world_offset + probe_cell));
-	float offset = hashf3(vec3(h3 & uvec3(0xFFFFF)));
+	float offset = hashf3(vec3(h3 & uvec3(0xfffff)));
 
 	//for a more homogeneous hemisphere, alternate based on history frames
 	uint ray_offset = params.history_index;

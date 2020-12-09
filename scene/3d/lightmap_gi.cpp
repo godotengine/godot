@@ -475,7 +475,7 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 		Vector3::Axis longest_axis = Vector3::Axis(bounds_all.get_longest_axis_index());
 
 		//find the simplex that will go under
-		uint32_t min_d_idx = 0xFFFFFFFF;
+		uint32_t min_d_idx = 0xffff'ffff;
 		float min_d_dist = 1e20;
 
 		for (uint32_t i = 0; i < centers.size(); i++) {
@@ -1125,7 +1125,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		LocalVector<int32_t> planes_tested;
 		planes_tested.resize(bsp_planes.size());
 		for (uint32_t i = 0; i < planes_tested.size(); i++) {
-			planes_tested[i] = 0x7FFFFFFF;
+			planes_tested[i] = 0x7fff'ffff;
 		}
 
 		if (p_bake_step) {

@@ -34,8 +34,8 @@
 #include "core/math/vector3.h"
 #include "tests/test_macros.h"
 
-#define Math_SQRT13 0.57735026918962576450914878050196
-#define Math_SQRT3 1.7320508075688772935274463415059
+#define Math_SQRT13 0.577'350'269'189'625'764'509'148'780'501'96
+#define Math_SQRT3 1.732'050'807'568'877'293'527'446'341'505'9
 
 namespace TestVector3 {
 
@@ -102,13 +102,13 @@ TEST_CASE("[Vector3] Interpolation methods") {
 			vector1.lerp(vector2, 1.0 / 3.0).is_equal_approx(Vector3(2, 3, 4)),
 			"Vector3 lerp should work as expected.");
 	CHECK_MESSAGE(
-			vector1.normalized().slerp(vector2.normalized(), 0.5).is_equal_approx(Vector3(0.363866806030273438, 0.555698215961456299, 0.747529566287994385)),
+			vector1.normalized().slerp(vector2.normalized(), 0.5).is_equal_approx(Vector3(0.363'866'806'030'273'438, 0.555'698'215'961'456'299, 0.747'529'566'287'994'385)),
 			"Vector3 slerp should work as expected.");
 	CHECK_MESSAGE(
-			vector1.normalized().slerp(vector2.normalized(), 1.0 / 3.0).is_equal_approx(Vector3(0.332119762897491455, 0.549413740634918213, 0.766707837581634521)),
+			vector1.normalized().slerp(vector2.normalized(), 1.0 / 3.0).is_equal_approx(Vector3(0.332'119'762'897'491'455, 0.549'413'740'634'918'213, 0.766'707'837'581'634'521)),
 			"Vector3 slerp should work as expected.");
 	CHECK_MESSAGE(
-			Vector3(5, 0, 0).slerp(Vector3(0, 3, 4), 0.5).is_equal_approx(Vector3(3.535533905029296875, 2.121320486068725586, 2.828427314758300781)),
+			Vector3(5, 0, 0).slerp(Vector3(0, 3, 4), 0.5).is_equal_approx(Vector3(3.535'533'905'029'296'875, 2.121'320'486'068'725'586, 2.828'427'314'758'300'781)),
 			"Vector3 slerp with non-normalized values should work as expected.");
 	CHECK_MESSAGE(
 			Vector3(1, 1, 1).slerp(Vector3(2, 2, 2), 0.5).is_equal_approx(Vector3(1.5, 1.5, 1.5)),
@@ -123,7 +123,7 @@ TEST_CASE("[Vector3] Interpolation methods") {
 			Vector3(1, 1, 1).slerp(Vector3(), 0.5) == Vector3(0.5, 0.5, 0.5),
 			"Vector3 slerp with one input as zero should behave like a regular lerp.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector1.slerp(vector2, 0.5).length(), (real_t)6.25831088708303172),
+			Math::is_equal_approx(vector1.slerp(vector2, 0.5).length(), (real_t)6.258'310'887'083'031'72),
 			"Vector3 slerp with different length input should return a vector with an interpolated length.");
 	CHECK_MESSAGE(
 			Math::is_equal_approx(vector1.angle_to(vector1.slerp(vector2, 0.5)) * 2, vector1.angle_to(vector2)),
@@ -132,7 +132,7 @@ TEST_CASE("[Vector3] Interpolation methods") {
 			vector1.cubic_interpolate(vector2, Vector3(), Vector3(7, 7, 7), 0.5) == Vector3(2.375, 3.5, 4.625),
 			"Vector3 cubic_interpolate should work as expected.");
 	CHECK_MESSAGE(
-			vector1.cubic_interpolate(vector2, Vector3(), Vector3(7, 7, 7), 1.0 / 3.0).is_equal_approx(Vector3(1.851851940155029297, 2.962963104248046875, 4.074074268341064453)),
+			vector1.cubic_interpolate(vector2, Vector3(), Vector3(7, 7, 7), 1.0 / 3.0).is_equal_approx(Vector3(1.851'851'940'155'029'297, 2.962'963'104'248'046'875, 4.074'074'268'341'064'453)),
 			"Vector3 cubic_interpolate should work as expected.");
 	CHECK_MESSAGE(
 			Vector3(1, 0, 0).move_toward(Vector3(10, 0, 0), 3) == Vector3(4, 0, 0),
@@ -152,13 +152,13 @@ TEST_CASE("[Vector3] Length methods") {
 			vector2.length_squared() == 2900,
 			"Vector3 length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector2.length(), (real_t)53.8516480713450403125),
+			Math::is_equal_approx(vector2.length(), (real_t)53.851'648'071'345'040'312'5),
 			"Vector3 length should work as expected.");
 	CHECK_MESSAGE(
 			vector1.distance_squared_to(vector2) == 1400,
 			"Vector3 distance_squared_to should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector1.distance_to(vector2), (real_t)37.41657386773941385584),
+			Math::is_equal_approx(vector1.distance_to(vector2), (real_t)37.416'573'867'739'413'855'84),
 			"Vector3 distance_to should work as expected.");
 }
 
@@ -236,7 +236,7 @@ TEST_CASE("[Vector3] Operators") {
 			"Vector3 multiplication with integers should give exact results.");
 
 	CHECK_MESSAGE(
-			(decimal1 / decimal2).is_equal_approx(Vector3(1.91666666666666666, 1.44117647058823529, 1.39285714285714286)),
+			(decimal1 / decimal2).is_equal_approx(Vector3(1.916'666'666'666'666'66, 1.441'176'470'588'235'29, 1.392'857'142'857'142'86)),
 			"Vector3 division should behave as expected.");
 	CHECK_MESSAGE(
 			(power1 / power2) == Vector3(1.5, 12.0, 2.5),

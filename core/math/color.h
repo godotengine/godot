@@ -152,7 +152,7 @@ struct _NO_DISCARD_ Color {
 		float sGreen = Math::floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
 		float sBlue = Math::floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
 
-		return (uint32_t(Math::fast_ftoi(sRed)) & 0x1FF) | ((uint32_t(Math::fast_ftoi(sGreen)) & 0x1FF) << 9) | ((uint32_t(Math::fast_ftoi(sBlue)) & 0x1FF) << 18) | ((uint32_t(Math::fast_ftoi(exps)) & 0x1F) << 27);
+		return (uint32_t(Math::fast_ftoi(sRed)) & 0x1ff) | ((uint32_t(Math::fast_ftoi(sGreen)) & 0x1ff) << 9) | ((uint32_t(Math::fast_ftoi(sBlue)) & 0x1ff) << 18) | ((uint32_t(Math::fast_ftoi(exps)) & 0x1f) << 27);
 	}
 
 	_FORCE_INLINE_ Color blend(const Color &p_over) const {

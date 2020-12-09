@@ -43,7 +43,7 @@ typedef struct {
 
 extern "C" U_EXPORT const ICU_data_header U_ICUDATA_ENTRY_POINT = {
 	32,
-	0xDA, 0x27,
+	0xda, 0x27,
 	{ sizeof(UDataInfo),
 			0,
 #if U_IS_BIG_ENDIAN
@@ -54,7 +54,7 @@ extern "C" U_EXPORT const ICU_data_header U_ICUDATA_ENTRY_POINT = {
 			U_CHARSET_FAMILY,
 			sizeof(UChar),
 			0,
-			{ 0x54, 0x6F, 0x43, 0x50 },
+			{ 0x54, 0x6f, 0x43, 0x50 },
 			{ 1, 0, 0, 0 },
 			{ 0, 0, 0, 0 } },
 	{ 0, 0, 0, 0, 0, 0, 0, 0 },

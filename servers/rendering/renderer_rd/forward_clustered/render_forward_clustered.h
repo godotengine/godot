@@ -124,7 +124,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 	RID render_base_uniform_set;
 
-	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
+	uint64_t lightmap_texture_array_version = 0xffff'ffff;
 
 	virtual void _base_uniforms_changed() override;
 	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers) override;
@@ -216,9 +216,9 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR = 1 << 14,
 		INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA = 1 << 15,
 		INSTANCE_DATA_FLAGS_PARTICLE_TRAIL_SHIFT = 16,
-		INSTANCE_DATA_FLAGS_PARTICLE_TRAIL_MASK = 0xFF,
+		INSTANCE_DATA_FLAGS_PARTICLE_TRAIL_MASK = 0xff,
 		INSTANCE_DATA_FLAGS_FADE_SHIFT = 24,
-		INSTANCE_DATA_FLAGS_FADE_MASK = 0xFFUL << INSTANCE_DATA_FLAGS_FADE_SHIFT
+		INSTANCE_DATA_FLAGS_FADE_MASK = 0xffUL << INSTANCE_DATA_FLAGS_FADE_SHIFT
 	};
 
 	struct SceneState {

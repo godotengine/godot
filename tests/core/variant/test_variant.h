@@ -58,13 +58,13 @@ static inline Dictionary build_dictionary(Variant key, Variant item, Targs... Fa
 }
 
 TEST_CASE("[Variant] Writer and parser integer") {
-	int64_t a32 = 2147483648; // 2^31, so out of bounds for 32-bit signed int [-2^31, +2^31-1].
+	int64_t a32 = 2'147'483'648; // 2^31, so out of bounds for 32-bit signed int [-2^31, +2^31-1].
 	String a32_str;
 	VariantWriter::write_to_string(a32, a32_str);
 
 	CHECK_MESSAGE(a32_str != "-2147483648", "Should not wrap around");
 
-	int64_t b64 = 9223372036854775807; // 2^63-1, upper bound for signed 64-bit int.
+	int64_t b64 = 9'223'372'036'854'775'807; // 2^63-1, upper bound for signed 64-bit int.
 	String b64_str;
 	VariantWriter::write_to_string(b64, b64_str);
 
@@ -80,25 +80,25 @@ TEST_CASE("[Variant] Writer and parser integer") {
 	VariantParser::parse(&ss, b64_parsed, errs, line);
 	b64_int_parsed = b64_parsed;
 
-	CHECK_MESSAGE(b64_int_parsed == 9223372036854775807, "Should parse back.");
+	CHECK_MESSAGE(b64_int_parsed == 9'223'372'036'854'775'807, "Should parse back.");
 
 	ss.s = "9223372036854775808"; // Overflowed by one.
 	VariantParser::parse(&ss, b64_parsed, errs, line);
 	b64_int_parsed = b64_parsed;
 
-	CHECK_MESSAGE(b64_int_parsed == 9223372036854775807, "The result should be clamped to max value.");
+	CHECK_MESSAGE(b64_int_parsed == 9'223'372'036'854'775'807, "The result should be clamped to max value.");
 
 	ss.s = "1e100"; // Googol! Scientific notation.
 	VariantParser::parse(&ss, b64_parsed, errs, line);
 	b64_int_parsed = b64_parsed;
 
-	CHECK_MESSAGE(b64_int_parsed == 9223372036854775807, "The result should be clamped to max value.");
+	CHECK_MESSAGE(b64_int_parsed == 9'223'372'036'854'775'807, "The result should be clamped to max value.");
 }
 
 TEST_CASE("[Variant] Writer and parser Variant::FLOAT") {
 	// Variant::FLOAT is always 64-bit (C++ double).
 	// This is the maximum non-infinity double-precision float.
-	double a64 = 179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0;
+	double a64 = 179'769'313'486'231'570'814'527'423'731'704'356'798'070'567'525'844'996'598'917'476'803'157'260'780'028'538'760'589'558'632'766'878'171'540'458'953'514'382'464'234'321'326'889'464'182'768'467'546'703'537'516'986'049'910'576'551'282'076'245'490'090'389'328'944'075'868'508'455'133'942'304'583'236'903'222'948'165'808'559'332'123'348'274'797'826'204'144'723'168'738'177'180'919'299'881'250'404'026'184'124'858'368.0;
 	String a64_str;
 	VariantWriter::write_to_string(a64, a64_str);
 

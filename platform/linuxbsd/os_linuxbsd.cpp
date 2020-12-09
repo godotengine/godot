@@ -251,7 +251,7 @@ uint64_t OS_LinuxBSD::get_embedded_pck_offset() const {
 	// Read and check ELF magic number.
 	{
 		uint32_t magic = f->get_32();
-		if (magic != 0x464c457f) { // 0x7F + "ELF"
+		if (magic != 0x464c'457f) { // 0x7f + "ELF"
 			return 0;
 		}
 	}

@@ -349,7 +349,7 @@
 			<return type="bool" />
 			<argument index="0" name="with_prefix" type="bool" default="false" />
 			<description>
-				Returns [code]true[/code] if this string contains a valid hexadecimal number. If [code]with_prefix[/code] is [code]true[/code], then a validity of the hexadecimal number is determined by [code]0x[/code] prefix, for instance: [code]0xDEADC0DE[/code].
+				Returns [code]true[/code] if this string contains a valid hexadecimal number. If [code]with_prefix[/code] is [code]true[/code], then a validity of the hexadecimal number is determined by [code]0x[/code] prefix, for instance: [code]0xdeadc0de[/code].
 			</description>
 		</method>
 		<method name="is_valid_html_color" qualifiers="const">

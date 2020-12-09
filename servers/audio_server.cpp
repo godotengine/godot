@@ -81,7 +81,7 @@ double AudioDriver::get_time_since_last_mix() {
 	lock();
 	uint64_t last_mix_time = _last_mix_time;
 	unlock();
-	return (OS::get_singleton()->get_ticks_usec() - last_mix_time) / 1000000.0;
+	return (OS::get_singleton()->get_ticks_usec() - last_mix_time) / 1'000'000.0;
 }
 
 double AudioDriver::get_time_to_next_mix() {
@@ -89,7 +89,7 @@ double AudioDriver::get_time_to_next_mix() {
 	uint64_t last_mix_time = _last_mix_time;
 	uint64_t last_mix_frames = _last_mix_frames;
 	unlock();
-	double total = (OS::get_singleton()->get_ticks_usec() - last_mix_time) / 1000000.0;
+	double total = (OS::get_singleton()->get_ticks_usec() - last_mix_time) / 1'000'000.0;
 	double mix_buffer = last_mix_frames / (double)get_mix_rate();
 	return mix_buffer - total;
 }

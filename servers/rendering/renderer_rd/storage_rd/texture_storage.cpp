@@ -1873,7 +1873,7 @@ void TextureStorage::update_decal_atlas() {
 				//best fit
 				DecalAtlas::SortItem &si = items[i];
 				int best_idx = -1;
-				int best_height = 0x7FFFFFFF;
+				int best_height = 0x7fff'ffff;
 				for (int j = 0; j <= base_size - si.size.width; j++) {
 					int height = 0;
 					for (int k = 0; k < si.size.width; k++) {

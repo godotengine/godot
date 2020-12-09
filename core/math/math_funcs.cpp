@@ -63,13 +63,13 @@ int Math::step_decimals(double p_step) {
 		0.9999, // somehow compensate for floating point error
 		0.09999,
 		0.009999,
-		0.0009999,
-		0.00009999,
-		0.000009999,
-		0.0000009999,
-		0.00000009999,
-		0.000000009999,
-		0.0000000009999
+		0.000'999'9,
+		0.000'099'99,
+		0.000'009'999,
+		0.000'000'999'9,
+		0.000'000'099'99,
+		0.000'000'009'999,
+		0.000'000'000'999'9
 	};
 
 	double abs = Math::abs(p_step);
@@ -86,7 +86,7 @@ int Math::step_decimals(double p_step) {
 // Only meant for editor usage in float ranges, where a step of 0
 // means that decimal digits should not be limited in String::num.
 int Math::range_step_decimals(double p_step) {
-	if (p_step < 0.0000000000001) {
+	if (p_step < 0.000'000'000'000'1) {
 		return 16; // Max value hardcoded in String::num
 	}
 	return step_decimals(p_step);
@@ -144,17 +144,17 @@ uint32_t Math::larger_prime(uint32_t p_val) {
 		196613,
 		393241,
 		786433,
-		1572869,
-		3145739,
-		6291469,
-		12582917,
-		25165843,
-		50331653,
-		100663319,
-		201326611,
-		402653189,
-		805306457,
-		1610612741,
+		1'572'869,
+		3'145'739,
+		6'291'469,
+		12'582'917,
+		25'165'843,
+		50'331'653,
+		100'663'319,
+		201'326'611,
+		402'653'189,
+		805'306'457,
+		1'610'612'741,
 		0,
 	};
 

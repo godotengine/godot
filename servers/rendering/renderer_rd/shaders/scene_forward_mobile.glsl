@@ -774,14 +774,14 @@ void main() {
 
 		uint decal_indices = draw_call.decals.x;
 		for (uint i = 0; i < 8; i++) {
-			uint decal_index = decal_indices & 0xFF;
+			uint decal_index = decal_indices & 0xff;
 			if (i == 4) {
 				decal_indices = draw_call.decals.y;
 			} else {
 				decal_indices = decal_indices >> 8;
 			}
 
-			if (decal_index == 0xFF) {
+			if (decal_index == 0xff) {
 				break;
 			}
 
@@ -986,10 +986,10 @@ void main() {
 
 	} else if (bool(draw_call.flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(draw_call.flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
-		uint ofs = draw_call.gi_offset & 0xFFFF;
+		uint ofs = draw_call.gi_offset & 0xffff;
 		vec3 uvw;
 		uvw.xy = uv2 * draw_call.lightmap_uv_scale.zw + draw_call.lightmap_uv_scale.xy;
-		uvw.z = float((draw_call.gi_offset >> 16) & 0xFFFF);
+		uvw.z = float((draw_call.gi_offset >> 16) & 0xffff);
 
 		if (uses_sh) {
 			uvw.z *= 4.0; //SH textures use 4 times more data
@@ -1029,14 +1029,14 @@ void main() {
 
 		uint reflection_indices = draw_call.reflection_probes.x;
 		for (uint i = 0; i < 8; i++) {
-			uint reflection_index = reflection_indices & 0xFF;
+			uint reflection_index = reflection_indices & 0xff;
 			if (i == 4) {
 				reflection_indices = draw_call.reflection_probes.y;
 			} else {
 				reflection_indices = reflection_indices >> 8;
 			}
 
-			if (reflection_index == 0xFF) {
+			if (reflection_index == 0xff) {
 				break;
 			}
 #ifdef LIGHT_ANISOTROPY_USED
@@ -1395,9 +1395,9 @@ void main() {
 			float shadow = 1.0;
 #ifndef SHADOWS_DISABLED
 			if (i < 4) {
-				shadow = float(shadow0 >> (i * 8) & 0xFF) / 255.0;
+				shadow = float(shadow0 >> (i * 8) & 0xff) / 255.0;
 			} else {
-				shadow = float(shadow1 >> ((i - 4) * 8) & 0xFF) / 255.0;
+				shadow = float(shadow1 >> ((i - 4) * 8) & 0xff) / 255.0;
 			}
 #endif
 			blur_shadow(shadow);
@@ -1434,14 +1434,14 @@ void main() {
 	if (!sc_disable_omni_lights) { //omni lights
 		uint light_indices = draw_call.omni_lights.x;
 		for (uint i = 0; i < 8; i++) {
-			uint light_index = light_indices & 0xFF;
+			uint light_index = light_indices & 0xff;
 			if (i == 4) {
 				light_indices = draw_call.omni_lights.y;
 			} else {
 				light_indices = light_indices >> 8;
 			}
 
-			if (light_index == 0xFF) {
+			if (light_index == 0xff) {
 				break;
 			}
 
@@ -1479,14 +1479,14 @@ void main() {
 
 		uint light_indices = draw_call.spot_lights.x;
 		for (uint i = 0; i < 8; i++) {
-			uint light_index = light_indices & 0xFF;
+			uint light_index = light_indices & 0xff;
 			if (i == 4) {
 				light_indices = draw_call.spot_lights.y;
 			} else {
 				light_indices = light_indices >> 8;
 			}
 
-			if (light_index == 0xFF) {
+			if (light_index == 0xff) {
 				break;
 			}
 

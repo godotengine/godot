@@ -213,7 +213,7 @@ class Noise : public Resource {
 		out.c[0] = (uint8_t)((alpha * fg.c[0] + inv_alpha * bg.c[0]) >> 8);
 		out.c[1] = (uint8_t)((alpha * fg.c[1] + inv_alpha * bg.c[1]) >> 8);
 		out.c[2] = (uint8_t)((alpha * fg.c[2] + inv_alpha * bg.c[2]) >> 8);
-		out.c[3] = 0xFF;
+		out.c[3] = 0xff;
 
 		return out.l;
 	}

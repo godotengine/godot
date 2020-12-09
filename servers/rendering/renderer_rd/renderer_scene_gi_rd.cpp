@@ -36,7 +36,7 @@
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
 
-const Vector3i RendererSceneGIRD::SDFGI::Cascade::DIRTY_ALL = Vector3i(0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF);
+const Vector3i RendererSceneGIRD::SDFGI::Cascade::DIRTY_ALL = Vector3i(0x7fff'ffff, 0x7fff'ffff, 0x7fff'ffff);
 
 ////////////////////////////////////////////////////////////////////////////////
 // SDFGI

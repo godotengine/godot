@@ -252,7 +252,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 								}
 								index += 4; //will add at the end anyway
 
-								if ((res & 0xfffffc00) == 0xd800) {
+								if ((res & 0xffff'fc00) == 0xd800) {
 									if (p_str[index + 1] != '\\' || p_str[index + 2] != 'u') {
 										r_err_str = "Invalid UTF-16 sequence in string, unpaired lead surrogate";
 										return ERR_PARSE_ERROR;
@@ -286,14 +286,14 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 										trail <<= 4;
 										trail |= v;
 									}
-									if ((trail & 0xfffffc00) == 0xdc00) {
+									if ((trail & 0xffff'fc00) == 0xdc00) {
 										res = (res << 10UL) + trail - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
 										index += 4; //will add at the end anyway
 									} else {
 										r_err_str = "Invalid UTF-16 sequence in string, unpaired lead surrogate";
 										return ERR_PARSE_ERROR;
 									}
-								} else if ((res & 0xfffffc00) == 0xdc00) {
+								} else if ((res & 0xffff'fc00) == 0xdc00) {
 									r_err_str = "Invalid UTF-16 sequence in string, unpaired trail surrogate";
 									return ERR_PARSE_ERROR;
 								}

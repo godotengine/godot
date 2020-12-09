@@ -404,28 +404,28 @@ String VulkanContext::SubgroupCapabilities::supported_stages_desc() const {
 	}
 
 	/* these are not defined on Android GRMBL */
-	if (supportedStages & 0x00000100 /* VK_SHADER_STAGE_RAYGEN_BIT_KHR */) {
+	if (supportedStages & 0x0000'0100 /* VK_SHADER_STAGE_RAYGEN_BIT_KHR */) {
 		res += ", STAGE_RAYGEN_KHR";
 	}
-	if (supportedStages & 0x00000200 /* VK_SHADER_STAGE_ANY_HIT_BIT_KHR */) {
+	if (supportedStages & 0x0000'0200 /* VK_SHADER_STAGE_ANY_HIT_BIT_KHR */) {
 		res += ", STAGE_ANY_HIT_KHR";
 	}
-	if (supportedStages & 0x00000400 /* VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR */) {
+	if (supportedStages & 0x0000'0400 /* VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR */) {
 		res += ", STAGE_CLOSEST_HIT_KHR";
 	}
-	if (supportedStages & 0x00000800 /* VK_SHADER_STAGE_MISS_BIT_KHR */) {
+	if (supportedStages & 0x0000'0800 /* VK_SHADER_STAGE_MISS_BIT_KHR */) {
 		res += ", STAGE_MISS_KHR";
 	}
-	if (supportedStages & 0x00001000 /* VK_SHADER_STAGE_INTERSECTION_BIT_KHR */) {
+	if (supportedStages & 0x0000'1000 /* VK_SHADER_STAGE_INTERSECTION_BIT_KHR */) {
 		res += ", STAGE_INTERSECTION_KHR";
 	}
-	if (supportedStages & 0x00002000 /* VK_SHADER_STAGE_CALLABLE_BIT_KHR */) {
+	if (supportedStages & 0x0000'2000 /* VK_SHADER_STAGE_CALLABLE_BIT_KHR */) {
 		res += ", STAGE_CALLABLE_KHR";
 	}
-	if (supportedStages & 0x00000040 /* VK_SHADER_STAGE_TASK_BIT_NV */) {
+	if (supportedStages & 0x0000'0040 /* VK_SHADER_STAGE_TASK_BIT_NV */) {
 		res += ", STAGE_TASK_NV";
 	}
-	if (supportedStages & 0x00000080 /* VK_SHADER_STAGE_MESH_BIT_NV */) {
+	if (supportedStages & 0x0000'0080 /* VK_SHADER_STAGE_MESH_BIT_NV */) {
 		res += ", STAGE_MESH_NV";
 	}
 
@@ -822,9 +822,9 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 	} vendor_names[] = {
 		{ 0x1002, "AMD" },
 		{ 0x1010, "ImgTec" },
-		{ 0x106B, "Apple" },
-		{ 0x10DE, "NVIDIA" },
-		{ 0x13B5, "ARM" },
+		{ 0x106b, "Apple" },
+		{ 0x10de, "NVIDIA" },
+		{ 0x13b5, "ARM" },
 		{ 0x5143, "Qualcomm" },
 		{ 0x8086, "Intel" },
 		{ 0, nullptr },
@@ -1502,8 +1502,8 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	}
 
 	VkExtent2D swapchainExtent;
-	// width and height are either both 0xFFFFFFFF, or both not 0xFFFFFFFF.
-	if (surfCapabilities.currentExtent.width == 0xFFFFFFFF) {
+	// width and height are either both 0xffff'ffff, or both not 0xffff'ffff.
+	if (surfCapabilities.currentExtent.width == 0xffff'ffff) {
 		// If the surface size is undefined, the size is set to the size
 		// of the images requested, which must fit within the minimum and
 		// maximum values.

@@ -1072,7 +1072,7 @@ void ItemList::_notification(int p_what) {
 				int fit_size = size.x - bg->get_minimum_size().width - mw;
 
 				//2-attempt best fit
-				current_columns = 0x7FFFFFFF;
+				current_columns = 0x7fff'ffff;
 				if (max_columns > 0) {
 					current_columns = max_columns;
 				}
@@ -1419,7 +1419,7 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 	}
 
 	int closest = -1;
-	int closest_dist = 0x7FFFFFFF;
+	int closest_dist = 0x7fff'ffff;
 
 	for (int i = 0; i < items.size(); i++) {
 		Rect2 rc = items[i].rect_cache;

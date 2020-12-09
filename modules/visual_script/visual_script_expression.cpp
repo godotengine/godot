@@ -407,7 +407,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 						}
 
 						// Parse UTF-16 pair.
-						if ((res & 0xfffffc00) == 0xd800) {
+						if ((res & 0xffff'fc00) == 0xd800) {
 							if (prev == 0) {
 								prev = res;
 								continue;
@@ -416,7 +416,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 								r_token.type = TK_ERROR;
 								return ERR_PARSE_ERROR;
 							}
-						} else if ((res & 0xfffffc00) == 0xdc00) {
+						} else if ((res & 0xffff'fc00) == 0xdc00) {
 							if (prev == 0) {
 								_set_error("Invalid UTF-16 sequence in string, unpaired trail surrogate");
 								r_token.type = TK_ERROR;
@@ -1095,7 +1095,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 	while (expression.size() > 1) {
 		int next_op = -1;
-		int min_priority = 0xFFFFF;
+		int min_priority = 0xfffff;
 		bool is_unary = false;
 
 		for (int i = 0; i < expression.size(); i++) {

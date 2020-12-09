@@ -1197,7 +1197,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 
 	// Reset the drawing indices
 	if (_rendering_quadrant_order_dirty) {
-		int index = -(int64_t)0x80000000; //always must be drawn below children.
+		int index = -(int64_t)0x8000'0000; //always must be drawn below children.
 
 		for (int layer = 0; layer < (int)layers.size(); layer++) {
 			// Sort the quadrants coords per world coordinates
@@ -1272,9 +1272,9 @@ void TileMap::_rendering_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 
 					Color color;
 					color = color.from_hsv(
-							(float)((hash >> 24) & 0xFF) / 256.0,
-							Math::lerp(0.5, 1.0, (float)((hash >> 16) & 0xFF) / 256.0),
-							Math::lerp(0.5, 1.0, (float)((hash >> 8) & 0xFF) / 256.0),
+							(float)((hash >> 24) & 0xff) / 256.0,
+							Math::lerp(0.5, 1.0, (float)((hash >> 16) & 0xff) / 256.0),
+							Math::lerp(0.5, 1.0, (float)((hash >> 8) & 0xff) / 256.0),
 							0.8);
 
 					// Draw a placeholder tile.
@@ -1903,9 +1903,9 @@ void TileMap::_scenes_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 
 					Color color;
 					color = color.from_hsv(
-							(float)((hash >> 24) & 0xFF) / 256.0,
-							Math::lerp(0.5, 1.0, (float)((hash >> 16) & 0xFF) / 256.0),
-							Math::lerp(0.5, 1.0, (float)((hash >> 8) & 0xFF) / 256.0),
+							(float)((hash >> 24) & 0xff) / 256.0,
+							Math::lerp(0.5, 1.0, (float)((hash >> 16) & 0xff) / 256.0),
+							Math::lerp(0.5, 1.0, (float)((hash >> 8) & 0xff) / 256.0),
 							0.8);
 
 					// Draw a placeholder tile.
@@ -2289,7 +2289,7 @@ Map<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_wave_function_collapse(
 	Set<Vector2i> to_replace = Set<Vector2i>(p_to_replace);
 	while (!to_replace.is_empty()) {
 		// Compute the minimum number of tile possibilities for each cell.
-		int min_nb_possibilities = 100000000;
+		int min_nb_possibilities = 100'000'000;
 		for (const KeyValue<Vector2i, Set<TileSet::TerrainsPattern>> &E : per_cell_acceptable_tiles) {
 			min_nb_possibilities = MIN(min_nb_possibilities, E.value.size());
 		}

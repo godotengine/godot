@@ -273,7 +273,7 @@ static String _hex_str(uint8_t p_byte) {
 	ret[2] = 0;
 
 	ret[0] = dict[p_byte >> 4];
-	ret[1] = dict[p_byte & 0xF];
+	ret[1] = dict[p_byte & 0xf];
 
 	return ret;
 }

@@ -1936,4 +1936,3 @@ public class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback
 	private int mEGLContextClientVersion;
 	private boolean mPreserveEGLContextOnPause;
 }
-

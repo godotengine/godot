@@ -75,22 +75,22 @@ Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 		uint8_t b0 = (uint8_t)p_key[0];
 		uint8_t b1 = (uint8_t)p_key[1];
 		uint8_t b2 = (uint8_t)p_key[2];
-		if (b1 == 0 && b0 > 0x1F && b0 < 0x7F) { // ASCII.
-			if (b0 > 0x60 && b0 < 0x7B) { // Lowercase ASCII.
+		if (b1 == 0 && b0 > 0x1f && b0 < 0x7f) { // ASCII.
+			if (b0 > 0x60 && b0 < 0x7b) { // Lowercase ASCII.
 				b0 -= 32;
 			}
 			return (Key)b0;
 		}
 
-#define _U_2BYTES_MASK 0xE0
-#define _U_2BYTES 0xC0
+#define _U_2BYTES_MASK 0xe0
+#define _U_2BYTES 0xc0
 		// Latin-1 codes.
 		if (b2 == 0 && (b0 & _U_2BYTES_MASK) == _U_2BYTES) { // 2-bytes utf8, only known latin.
-			uint32_t key = ((b0 & ~_U_2BYTES_MASK) << 6) | (b1 & 0x3F);
-			if (key >= 0xA0 && key <= 0xDF) {
+			uint32_t key = ((b0 & ~_U_2BYTES_MASK) << 6) | (b1 & 0x3f);
+			if (key >= 0xa0 && key <= 0xdf) {
 				return (Key)key;
 			}
-			if (key >= 0xE0 && key <= 0xFF) { // Lowercase known latin.
+			if (key >= 0xe0 && key <= 0xff) { // Lowercase known latin.
 				key -= 0x20;
 				return (Key)key;
 			}

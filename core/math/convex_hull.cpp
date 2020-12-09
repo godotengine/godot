@@ -1761,7 +1761,7 @@ real_t ConvexHullInternal::shrink(real_t p_amount, real_t p_clamp_amount) {
 	}
 
 	uint32_t seed = 243703;
-	for (int32_t i = 0; i < face_count; i++, seed = 1664525 * seed + 1013904223) {
+	for (int32_t i = 0; i < face_count; i++, seed = 1'664'525 * seed + 1'013'904'223) {
 		SWAP(faces[i], faces[seed % face_count]);
 	}
 

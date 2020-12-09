@@ -550,12 +550,12 @@ static real_t rand_from_seed(uint32_t &seed) {
 	int k;
 	int s = int(seed);
 	if (s == 0) {
-		s = 305420679;
+		s = 305'420'679;
 	}
 	k = s / 127773;
 	s = 16807 * (s - k * 127773) - 2836 * k;
 	if (s < 0) {
-		s += 2147483647;
+		s += 2'147'483'647;
 	}
 	seed = uint32_t(s);
 	return (seed % uint32_t(65536)) / 65535.0;
@@ -778,7 +778,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 				}
 				// rotate spread to direction
 				Vector3 binormal = Vector3(0.0, 1.0, 0.0).cross(direction_nrm);
-				if (binormal.length_squared() < 0.00000001) {
+				if (binormal.length_squared() < 0.000'000'01) {
 					// direction is parallel to Y. Choose Z as the binormal.
 					binormal = Vector3(0.0, 0.0, 1.0);
 				}

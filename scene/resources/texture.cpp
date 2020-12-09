@@ -2618,7 +2618,7 @@ void AnimatedTexture::_update_proxy() {
 		prev_ticks = OS::get_singleton()->get_ticks_usec();
 	} else {
 		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-		delta = float(double(ticks - prev_ticks) / 1000000.0);
+		delta = float(double(ticks - prev_ticks) / 1'000'000.0);
 		prev_ticks = ticks;
 	}
 

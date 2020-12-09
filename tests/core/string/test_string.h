@@ -86,8 +86,8 @@ TEST_CASE("[String] Assign from char32_t string (copycon)") {
 
 TEST_CASE("[String] UTF8") {
 	/* how can i embed UTF in here? */
-	static const char32_t u32str[] = { 0x0045, 0x0020, 0x304A, 0x360F, 0x3088, 0x3046, 0x1F3A4, 0 };
-	static const uint8_t u8str[] = { 0x45, 0x20, 0xE3, 0x81, 0x8A, 0xE3, 0x98, 0x8F, 0xE3, 0x82, 0x88, 0xE3, 0x81, 0x86, 0xF0, 0x9F, 0x8E, 0xA4, 0 };
+	static const char32_t u32str[] = { 0x0045, 0x0020, 0x304a, 0x360f, 0x3088, 0x3046, 0x1f3a4, 0 };
+	static const uint8_t u8str[] = { 0x45, 0x20, 0xe3, 0x81, 0x8a, 0xe3, 0x98, 0x8f, 0xe3, 0x82, 0x88, 0xe3, 0x81, 0x86, 0xf0, 0x9f, 0x8e, 0xa4, 0 };
 	String s = u32str;
 	bool err = s.parse_utf8(s.utf8().get_data());
 	CHECK(!err);
@@ -103,8 +103,8 @@ TEST_CASE("[String] UTF8") {
 
 TEST_CASE("[String] UTF16") {
 	/* how can i embed UTF in here? */
-	static const char32_t u32str[] = { 0x0045, 0x0020, 0x304A, 0x360F, 0x3088, 0x3046, 0x1F3A4, 0 };
-	static const char16_t u16str[] = { 0x0045, 0x0020, 0x304A, 0x360F, 0x3088, 0x3046, 0xD83C, 0xDFA4, 0 };
+	static const char32_t u32str[] = { 0x0045, 0x0020, 0x304a, 0x360f, 0x3088, 0x3046, 0x1f3a4, 0 };
+	static const char16_t u16str[] = { 0x0045, 0x0020, 0x304a, 0x360f, 0x3088, 0x3046, 0xd83c, 0xdfa4, 0 };
 	String s = u32str;
 	bool err = s.parse_utf16(s.utf16().get_data());
 	CHECK(!err);
@@ -120,8 +120,8 @@ TEST_CASE("[String] UTF16") {
 
 TEST_CASE("[String] UTF8 with BOM") {
 	/* how can i embed UTF in here? */
-	static const char32_t u32str[] = { 0x0045, 0x0020, 0x304A, 0x360F, 0x3088, 0x3046, 0x1F3A4, 0 };
-	static const uint8_t u8str[] = { 0xEF, 0xBB, 0xBF, 0x45, 0x20, 0xE3, 0x81, 0x8A, 0xE3, 0x98, 0x8F, 0xE3, 0x82, 0x88, 0xE3, 0x81, 0x86, 0xF0, 0x9F, 0x8E, 0xA4, 0 };
+	static const char32_t u32str[] = { 0x0045, 0x0020, 0x304a, 0x360f, 0x3088, 0x3046, 0x1f3a4, 0 };
+	static const uint8_t u8str[] = { 0xef, 0xbb, 0xbf, 0x45, 0x20, 0xe3, 0x81, 0x8a, 0xe3, 0x98, 0x8f, 0xe3, 0x82, 0x88, 0xe3, 0x81, 0x86, 0xf0, 0x9f, 0x8e, 0xa4, 0 };
 	String s;
 	bool err = s.parse_utf8((const char *)u8str);
 	CHECK(!err);
@@ -133,9 +133,9 @@ TEST_CASE("[String] UTF8 with BOM") {
 
 TEST_CASE("[String] UTF16 with BOM") {
 	/* how can i embed UTF in here? */
-	static const char32_t u32str[] = { 0x0020, 0x0045, 0x304A, 0x360F, 0x3088, 0x3046, 0x1F3A4, 0 };
-	static const char16_t u16str[] = { 0xFEFF, 0x0020, 0x0045, 0x304A, 0x360F, 0x3088, 0x3046, 0xD83C, 0xDFA4, 0 };
-	static const char16_t u16str_swap[] = { 0xFFFE, 0x2000, 0x4500, 0x4A30, 0x0F36, 0x8830, 0x4630, 0x3CD8, 0xA4DF, 0 };
+	static const char32_t u32str[] = { 0x0020, 0x0045, 0x304a, 0x360f, 0x3088, 0x3046, 0x1f3a4, 0 };
+	static const char16_t u16str[] = { 0xfeff, 0x0020, 0x0045, 0x304a, 0x360f, 0x3088, 0x3046, 0xd83c, 0xdfa4, 0 };
+	static const char16_t u16str_swap[] = { 0xfffe, 0x2000, 0x4500, 0x4a30, 0x0f36, 0x8830, 0x4630, 0x3cd8, 0xa4df, 0 };
 	String s;
 	bool err = s.parse_utf16(u16str);
 	CHECK(!err);
@@ -154,7 +154,7 @@ TEST_CASE("[String] UTF16 with BOM") {
 
 TEST_CASE("[String] Invalid UTF8") {
 	ERR_PRINT_OFF
-	static const uint8_t u8str[] = { 0x45, 0xE3, 0x81, 0x8A, 0x8F, 0xE3, 0xE3, 0x98, 0x8F, 0xE3, 0x82, 0x88, 0xE3, 0x81, 0x86, 0xF0, 0x9F, 0x8E, 0xA4, 0 };
+	static const uint8_t u8str[] = { 0x45, 0xe3, 0x81, 0x8a, 0x8f, 0xe3, 0xe3, 0x98, 0x8f, 0xe3, 0x82, 0x88, 0xe3, 0x81, 0x86, 0xf0, 0x9f, 0x8e, 0xa4, 0 };
 	String s;
 	bool err = s.parse_utf8((const char *)u8str);
 	CHECK(err);
@@ -167,7 +167,7 @@ TEST_CASE("[String] Invalid UTF8") {
 
 TEST_CASE("[String] Invalid UTF16") {
 	ERR_PRINT_OFF
-	static const char16_t u16str[] = { 0x0045, 0x304A, 0x3088, 0x3046, 0xDFA4, 0 };
+	static const char16_t u16str[] = { 0x0045, 0x304a, 0x3088, 0x3046, 0xdfa4, 0 };
 	String s;
 	bool err = s.parse_utf16(u16str);
 	CHECK(err);
@@ -298,7 +298,7 @@ TEST_CASE("[String] Natural compare function test") {
 }
 
 TEST_CASE("[String] hex_encode_buffer") {
-	static const uint8_t u8str[] = { 0x45, 0xE3, 0x81, 0x8A, 0x8F, 0xE3 };
+	static const uint8_t u8str[] = { 0x45, 0xe3, 0x81, 0x8a, 0x8f, 0xe3 };
 	String s = String::hex_encode_buffer(u8str, 6);
 	CHECK(s == U"45e3818a8fe3");
 }
@@ -362,10 +362,10 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num(-0.0) == "-0"); // Includes sign even for zero.
 	CHECK(String::num(3.141593) == "3.141593");
 	CHECK(String::num(3.141593, 3) == "3.142");
-	CHECK(String::num_scientific(30000000) == "3e+07");
+	CHECK(String::num_scientific(30'000'000) == "3e+07");
 	CHECK(String::num_int64(3141593) == "3141593");
-	CHECK(String::num_int64(0xA141593, 16) == "a141593");
-	CHECK(String::num_int64(0xA141593, 16, true) == "A141593");
+	CHECK(String::num_int64(0xa141593, 16) == "a141593");
+	CHECK(String::num_int64(0xa141593, 16, true) == "A141593");
 	CHECK(String::num(42.100023, 4) == "42.1"); // No trailing zeros.
 
 	// String::num_real tests.
@@ -386,29 +386,29 @@ TEST_CASE("[String] Number to string") {
 #endif // REAL_T_IS_DOUBLE
 
 	// Checks doubles with many decimal places.
-	CHECK(String::num(0.0000012345432123454321, -1) == "0.00000123454321"); // -1 uses 14 as sane default.
-	CHECK(String::num(0.0000012345432123454321) == "0.00000123454321"); // -1 is the default value.
-	CHECK(String::num(-0.0000012345432123454321) == "-0.00000123454321");
-	CHECK(String::num(-10000.0000012345432123454321) == "-10000.0000012345");
-	CHECK(String::num(0.0000000000012345432123454321) == "0.00000000000123");
-	CHECK(String::num(0.0000000000012345432123454321, 3) == "0");
+	CHECK(String::num(0.000'001'234'543'212'345'432'1, -1) == "0.00000123454321"); // -1 uses 14 as sane default.
+	CHECK(String::num(0.000'001'234'543'212'345'432'1) == "0.00000123454321"); // -1 is the default value.
+	CHECK(String::num(-0.000'001'234'543'212'345'432'1) == "-0.00000123454321");
+	CHECK(String::num(-10000.000'001'234'543'212'345'432'1) == "-10000.0000012345");
+	CHECK(String::num(0.000'000'000'001'234'543'212'345'432'1) == "0.00000000000123");
+	CHECK(String::num(0.000'000'000'001'234'543'212'345'432'1, 3) == "0");
 
 	// Note: When relevant (remainder > 0.5), the last digit gets rounded up,
 	// which can also lead to not include a trailing zero, e.g. "...89" -> "...9".
-	CHECK(String::num(0.0000056789876567898765) == "0.00000567898766"); // Should round last digit.
-	CHECK(String::num(10000.000005678999999999) == "10000.000005679"); // We cut at ...789|99 which is rounded to ...79, so only 13 decimals.
-	CHECK(String::num(42.12999999, 6) == "42.13"); // Also happens with lower decimals count.
+	CHECK(String::num(0.000'005'678'987'656'789'876'5) == "0.00000567898766"); // Should round last digit.
+	CHECK(String::num(10000.000'005'678'999'999'999) == "10000.000005679"); // We cut at ...789|99 which is rounded to ...79, so only 13 decimals.
+	CHECK(String::num(42.129'999'99, 6) == "42.13"); // Also happens with lower decimals count.
 
 	// 32 is MAX_DECIMALS. We can't reliably store that many so we can't compare against a string,
 	// but we can check that the string length is 34 (32 + 2 for "0.").
-	CHECK(String::num(0.00000123456789987654321123456789987654321, 32).length() == 34);
-	CHECK(String::num(0.00000123456789987654321123456789987654321, 42).length() == 34); // Should enforce MAX_DECIMALS.
-	CHECK(String::num(10000.00000123456789987654321123456789987654321, 42).length() == 38); // 32 decimals + "10000.".
+	CHECK(String::num(0.000'001'234'567'899'876'543'211'234'567'899'876'543'21, 32).length() == 34);
+	CHECK(String::num(0.000'001'234'567'899'876'543'211'234'567'899'876'543'21, 42).length() == 34); // Should enforce MAX_DECIMALS.
+	CHECK(String::num(10000.000'001'234'567'899'876'543'211'234'567'899'876'543'21, 42).length() == 38); // 32 decimals + "10000.".
 }
 
 TEST_CASE("[String] String to integer") {
 	static const char *nums[4] = { "1237461283", "- 22", "0", " - 1123412" };
-	static const int num[4] = { 1237461283, -22, 0, -1123412 };
+	static const int num[4] = { 1'237'461'283, -22, 0, -1'123'412 };
 
 	for (int i = 0; i < 4; i++) {
 		CHECK(String(nums[i]).to_int() == num[i]);
@@ -416,8 +416,8 @@ TEST_CASE("[String] String to integer") {
 }
 
 TEST_CASE("[String] Hex to integer") {
-	static const char *nums[4] = { "0xFFAE", "22", "0", "AADDAD" };
-	static const int64_t num[4] = { 0xFFAE, 0x22, 0, 0xAADDAD };
+	static const char *nums[4] = { "0xffae", "22", "0", "AADDAD" };
+	static const int64_t num[4] = { 0xffae, 0x22, 0, 0xaaddad };
 
 	for (int i = 0; i < 4; i++) {
 		CHECK(String(nums[i]).hex_to_int() == num[i]);
@@ -426,7 +426,7 @@ TEST_CASE("[String] Hex to integer") {
 
 TEST_CASE("[String] String to float") {
 	static const char *nums[4] = { "-12348298412.2", "0.05", "2.0002", " -0.0001" };
-	static const double num[4] = { -12348298412.2, 0.05, 2.0002, -0.0001 };
+	static const double num[4] = { -12'348'298'412.2, 0.05, 2.0002, -0.0001 };
 
 	for (int i = 0; i < 4; i++) {
 		CHECK(!(ABS(String(nums[i]).to_float() - num[i]) > 0.00001));
@@ -1258,7 +1258,7 @@ TEST_CASE("[String] uri_encode/unescape") {
 	String t = "Godot%20Engine%3A%27docs%27";
 
 	String x1 = "T%C4%93%C5%A1t";
-	static const uint8_t u8str[] = { 0x54, 0xC4, 0x93, 0xC5, 0xA1, 0x74, 0x00 };
+	static const uint8_t u8str[] = { 0x54, 0xc4, 0x93, 0xc5, 0xa1, 0x74, 0x00 };
 	String x2 = String::utf8((const char *)u8str);
 	String x3 = U"Tēšt";
 
@@ -1299,11 +1299,11 @@ TEST_CASE("[String] xml_unescape") {
 	input = "&#xFFFFFFFF;";
 	result = input.xml_unescape();
 	CHECK(result.length() == 1);
-	CHECK(result[0] == 0xFFFFFFFF);
+	CHECK(result[0] == 0xffff'ffff);
 	input = "&#4294967295;";
 	result = input.xml_unescape();
 	CHECK(result.length() == 1);
-	CHECK(result[0] == 0xFFFFFFFF);
+	CHECK(result[0] == 0xffff'ffff);
 
 	// Check out of range of char32_t
 	input = "&#xFFFFFFFFF;";
@@ -1370,17 +1370,17 @@ TEST_CASE("[String] SHA1/SHA256/MD5") {
 	String s = "Godot";
 	String sha1 = "a1e91f39b9fce6a9998b14bdbe2aa2b39dc2d201";
 	static uint8_t sha1_buf[20] = {
-		0xA1, 0xE9, 0x1F, 0x39, 0xB9, 0xFC, 0xE6, 0xA9, 0x99, 0x8B, 0x14, 0xBD, 0xBE, 0x2A, 0xA2, 0xB3,
-		0x9D, 0xC2, 0xD2, 0x01
+		0xa1, 0xe9, 0x1f, 0x39, 0xb9, 0xfc, 0xe6, 0xa9, 0x99, 0x8b, 0x14, 0xbd, 0xbe, 0x2a, 0xa2, 0xb3,
+		0x9d, 0xc2, 0xd2, 0x01
 	};
 	String sha256 = "2a02b2443f7985d89d09001086ae3dcfa6eb0f55c6ef170715d42328e16e6cb8";
 	static uint8_t sha256_buf[32] = {
-		0x2A, 0x02, 0xB2, 0x44, 0x3F, 0x79, 0x85, 0xD8, 0x9D, 0x09, 0x00, 0x10, 0x86, 0xAE, 0x3D, 0xCF,
-		0xA6, 0xEB, 0x0F, 0x55, 0xC6, 0xEF, 0x17, 0x07, 0x15, 0xD4, 0x23, 0x28, 0xE1, 0x6E, 0x6C, 0xB8
+		0x2a, 0x02, 0xb2, 0x44, 0x3f, 0x79, 0x85, 0xd8, 0x9d, 0x09, 0x00, 0x10, 0x86, 0xae, 0x3d, 0xcf,
+		0xa6, 0xeb, 0x0f, 0x55, 0xc6, 0xef, 0x17, 0x07, 0x15, 0xd4, 0x23, 0x28, 0xe1, 0x6e, 0x6c, 0xb8
 	};
 	String md5 = "4a336d087aeb0390da10ee2ea7cb87f8";
 	static uint8_t md5_buf[16] = {
-		0x4A, 0x33, 0x6D, 0x08, 0x7A, 0xEB, 0x03, 0x90, 0xDA, 0x10, 0xEE, 0x2E, 0xA7, 0xCB, 0x87, 0xF8
+		0x4a, 0x33, 0x6d, 0x08, 0x7a, 0xeb, 0x03, 0x90, 0xda, 0x10, 0xee, 0x2e, 0xa7, 0xcb, 0x87, 0xf8
 	};
 
 	PackedByteArray buf = s.sha1_buffer();
@@ -1407,7 +1407,7 @@ TEST_CASE("[String] Join") {
 }
 
 TEST_CASE("[String] Is_*") {
-	static const char *data[12] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1" };
+	static const char *data[12] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xab", "AB", "Test1", "1Test", "Test*1" };
 	static bool isnum[12] = { true, true, true, false, false, false, false, false, false, false, false, false };
 	static bool isint[12] = { true, true, false, false, false, false, false, false, false, false, false, false };
 	static bool ishex[12] = { true, true, false, false, true, false, true, false, true, false, false, false };
@@ -1428,9 +1428,9 @@ TEST_CASE("[String] Is_*") {
 TEST_CASE("[String] humanize_size") {
 	CHECK(String::humanize_size(1000) == "1000 B");
 	CHECK(String::humanize_size(1025) == "1.00 KiB");
-	CHECK(String::humanize_size(1025300) == "1001.2 KiB");
-	CHECK(String::humanize_size(100523550) == "95.86 MiB");
-	CHECK(String::humanize_size(5345555000) == "4.97 GiB");
+	CHECK(String::humanize_size(1'025'300) == "1001.2 KiB");
+	CHECK(String::humanize_size(100'523'550) == "95.86 MiB");
+	CHECK(String::humanize_size(5'345'555'000) == "4.97 GiB");
 }
 
 TEST_CASE("[String] validate_node_name") {

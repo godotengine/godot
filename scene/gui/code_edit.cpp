@@ -206,8 +206,8 @@ void CodeEdit::_notification(int p_what) {
 				}
 				Size2 minsize = sb->get_minimum_size() + Size2(max_width, line_count * font_height + (line_spacing * line_count - 1));
 
-				int offset = font->get_string_size(code_hint_lines[0].substr(0, code_hint_lines[0].find(String::chr(0xFFFF))), font_size).x;
-				if (code_hint_xpos == -0xFFFF) {
+				int offset = font->get_string_size(code_hint_lines[0].substr(0, code_hint_lines[0].find(String::chr(0xffff))), font_size).x;
+				if (code_hint_xpos == -0xffff) {
 					code_hint_xpos = get_caret_draw_pos().x - offset;
 				}
 				Point2 hint_ofs = Vector2(code_hint_xpos, get_caret_draw_pos().y);
@@ -225,14 +225,14 @@ void CodeEdit::_notification(int p_what) {
 
 					int begin = 0;
 					int end = 0;
-					if (line.contains(String::chr(0xFFFF))) {
-						begin = font->get_string_size(line.substr(0, line.find(String::chr(0xFFFF))), font_size).x;
-						end = font->get_string_size(line.substr(0, line.rfind(String::chr(0xFFFF))), font_size).x;
+					if (line.contains(String::chr(0xffff))) {
+						begin = font->get_string_size(line.substr(0, line.find(String::chr(0xffff))), font_size).x;
+						end = font->get_string_size(line.substr(0, line.rfind(String::chr(0xffff))), font_size).x;
 					}
 
 					Point2 round_ofs = hint_ofs + sb->get_offset() + Vector2(0, font->get_ascent(font_size) + font_height * i + yofs);
 					round_ofs = round_ofs.round();
-					draw_string(font, round_ofs, line.replace(String::chr(0xFFFF), ""), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
+					draw_string(font, round_ofs, line.replace(String::chr(0xffff), ""), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 					if (end > 0) {
 						// Draw an underline for the currently edited function parameter.
 						const Vector2 b = hint_ofs + sb->get_offset() + Vector2(begin, font_height + font_height * i + yofs);
@@ -1717,7 +1717,7 @@ Point2 CodeEdit::get_delimiter_end_position(int p_line, int p_column) const {
 /* Code hint */
 void CodeEdit::set_code_hint(const String &p_hint) {
 	code_hint = p_hint;
-	code_hint_xpos = -0xFFFF;
+	code_hint_xpos = -0xffff;
 	update();
 }
 
@@ -1762,7 +1762,7 @@ String CodeEdit::get_text_for_code_completion() const {
 		if (i == get_caret_line()) {
 			completion_text += line.substr(0, get_caret_column());
 			/* Not unicode, represents the caret. */
-			completion_text += String::chr(0xFFFF);
+			completion_text += String::chr(0xffff);
 			completion_text += line.substr(get_caret_column(), line.size());
 		} else {
 			completion_text += line;
@@ -2038,7 +2038,7 @@ String CodeEdit::get_text_for_symbol_lookup() {
 		if (i == line) {
 			lookup_text += text.substr(0, col);
 			/* Not unicode, represents the cursor. */
-			lookup_text += String::chr(0xFFFF);
+			lookup_text += String::chr(0xffff);
 			lookup_text += text.substr(col, text.size());
 		} else {
 			lookup_text += text;

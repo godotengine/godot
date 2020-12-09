@@ -6,7 +6,7 @@
 
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
-#define NO_CHILDREN 0xFFFFFFFF
+#define NO_CHILDREN 0xffffffff
 
 struct CellChildren {
 	uint children[8];
@@ -191,14 +191,14 @@ void main() {
 	}
 	cell_index += params.cell_offset;
 
-	uvec3 posu = uvec3(cell_data.data[cell_index].position & 0x7FF, (cell_data.data[cell_index].position >> 11) & 0x3FF, cell_data.data[cell_index].position >> 21);
+	uvec3 posu = uvec3(cell_data.data[cell_index].position & 0x7ff, (cell_data.data[cell_index].position >> 11) & 0x3ff, cell_data.data[cell_index].position >> 21);
 	vec4 albedo = unpackUnorm4x8(cell_data.data[cell_index].albedo);
 
 #ifdef MODE_COMPUTE_LIGHT
 
 	vec3 pos = vec3(posu) + vec3(0.5);
 
-	vec3 emission = vec3(ivec3(cell_data.data[cell_index].emission & 0x3FF, (cell_data.data[cell_index].emission >> 10) & 0x7FF, cell_data.data[cell_index].emission >> 21)) * params.emission_scale;
+	vec3 emission = vec3(ivec3(cell_data.data[cell_index].emission & 0x3ff, (cell_data.data[cell_index].emission >> 10) & 0x7ff, cell_data.data[cell_index].emission >> 21)) * params.emission_scale;
 	vec4 normal = unpackSnorm4x8(cell_data.data[cell_index].normal);
 
 	vec3 accum = vec3(0.0);

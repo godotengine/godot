@@ -92,14 +92,14 @@ TEST_CASE("[OrderedHashMap] Iteration") {
 	map.insert(42, 84);
 	map.insert(123, 12385);
 	map.insert(0, 12934);
-	map.insert(123485, 1238888);
+	map.insert(123485, 1'238'888);
 	map.insert(123, 111111);
 
 	Vector<Pair<int, int>> expected;
 	expected.push_back(Pair<int, int>(42, 84));
 	expected.push_back(Pair<int, int>(123, 111111));
 	expected.push_back(Pair<int, int>(0, 12934));
-	expected.push_back(Pair<int, int>(123485, 1238888));
+	expected.push_back(Pair<int, int>(123485, 1'238'888));
 
 	int idx = 0;
 	for (OrderedHashMap<int, int>::Element E = map.front(); E; E = E.next()) {
@@ -113,7 +113,7 @@ TEST_CASE("[OrderedHashMap] Const iteration") {
 	map.insert(42, 84);
 	map.insert(123, 12385);
 	map.insert(0, 12934);
-	map.insert(123485, 1238888);
+	map.insert(123485, 1'238'888);
 	map.insert(123, 111111);
 
 	const OrderedHashMap<int, int> const_map = map;
@@ -122,7 +122,7 @@ TEST_CASE("[OrderedHashMap] Const iteration") {
 	expected.push_back(Pair<int, int>(42, 84));
 	expected.push_back(Pair<int, int>(123, 111111));
 	expected.push_back(Pair<int, int>(0, 12934));
-	expected.push_back(Pair<int, int>(123485, 1238888));
+	expected.push_back(Pair<int, int>(123485, 1'238'888));
 
 	int idx = 0;
 	for (OrderedHashMap<int, int>::ConstElement E = const_map.front(); E; E = E.next()) {

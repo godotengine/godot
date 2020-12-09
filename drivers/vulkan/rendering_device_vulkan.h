@@ -853,7 +853,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			uint32_t dynamic_state = 0;
 			VertexFormatID vertex_format = INVALID_ID;
 			uint32_t vertex_array_size = 0;
-			uint32_t vertex_max_instances_allowed = 0xFFFFFFFF;
+			uint32_t vertex_max_instances_allowed = 0xffff'ffff;
 			bool index_buffer_uses_restart_indices = false;
 			uint32_t index_array_size = 0;
 			uint32_t index_array_max_index = 0;

@@ -1042,7 +1042,7 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 					}
 					uses_lightmap = true;
 				} else {
-					inst->gi_offset_cache = 0xFFFFFFFF;
+					inst->gi_offset_cache = 0xffff'ffff;
 				}
 
 			} else if (inst->lightmap_sh) {
@@ -1067,8 +1067,8 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 				}
 
 				if (inst->voxel_gi_instances[0].is_valid()) {
-					uint32_t probe0_index = 0xFFFF;
-					uint32_t probe1_index = 0xFFFF;
+					uint32_t probe0_index = 0xffff;
+					uint32_t probe1_index = 0xffff;
 
 					for (uint32_t j = 0; j < scene_state.voxelgis_used; j++) {
 						if (scene_state.voxelgi_ids[j] == inst->voxel_gi_instances[0]) {
@@ -1078,7 +1078,7 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 						}
 					}
 
-					if (probe0_index == 0xFFFF && probe1_index != 0xFFFF) {
+					if (probe0_index == 0xffff && probe1_index != 0xffff) {
 						//0 must always exist if a probe exists
 						SWAP(probe0_index, probe1_index);
 					}
@@ -1091,7 +1091,7 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 						flags |= INSTANCE_DATA_FLAG_USE_SDFGI;
 						uses_gi = true;
 					}
-					inst->gi_offset_cache = 0xFFFFFFFF;
+					inst->gi_offset_cache = 0xffff'ffff;
 				}
 			}
 		}
@@ -2713,7 +2713,7 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 	sdcache->sort.sort_key2 = 0;
 
 	sdcache->sort.surface_index = p_surface;
-	sdcache->sort.material_id_low = p_material_id & 0xFFFF;
+	sdcache->sort.material_id_low = p_material_id & 0xffff;
 	sdcache->sort.material_id_hi = p_material_id >> 16;
 	sdcache->sort.shader_id = p_shader_id;
 	sdcache->sort.geometry_id = p_mesh.get_local_index(); //only meshes can repeat anyway

@@ -81,10 +81,10 @@ TEST_CASE("[Vector2] Interpolation methods") {
 			vector1.lerp(vector2, 1.0 / 3.0).is_equal_approx(Vector2(2, 3)),
 			"Vector2 lerp should work as expected.");
 	CHECK_MESSAGE(
-			vector1.normalized().slerp(vector2.normalized(), 0.5).is_equal_approx(Vector2(0.538953602313995361, 0.84233558177947998)),
+			vector1.normalized().slerp(vector2.normalized(), 0.5).is_equal_approx(Vector2(0.538'953'602'313'995'361, 0.842'335'581'779'479'98)),
 			"Vector2 slerp should work as expected.");
 	CHECK_MESSAGE(
-			vector1.normalized().slerp(vector2.normalized(), 1.0 / 3.0).is_equal_approx(Vector2(0.508990883827209473, 0.860771894454956055)),
+			vector1.normalized().slerp(vector2.normalized(), 1.0 / 3.0).is_equal_approx(Vector2(0.508'990'883'827'209'473, 0.860'771'894'454'956'055)),
 			"Vector2 slerp should work as expected.");
 	CHECK_MESSAGE(
 			Vector2(5, 0).slerp(Vector2(0, 5), 0.5).is_equal_approx(Vector2(5, 5) * Math_SQRT12),
@@ -102,7 +102,7 @@ TEST_CASE("[Vector2] Interpolation methods") {
 			Vector2(1, 1).slerp(Vector2(), 0.5) == Vector2(0.5, 0.5),
 			"Vector2 slerp with one input as zero should behave like a regular lerp.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector1.slerp(vector2, 0.5).length(), (real_t)4.31959610746631919),
+			Math::is_equal_approx(vector1.slerp(vector2, 0.5).length(), (real_t)4.319'596'107'466'319'19),
 			"Vector2 slerp with different length input should return a vector with an interpolated length.");
 	CHECK_MESSAGE(
 			Math::is_equal_approx(vector1.angle_to(vector1.slerp(vector2, 0.5)) * 2, vector1.angle_to(vector2)),
@@ -111,7 +111,7 @@ TEST_CASE("[Vector2] Interpolation methods") {
 			vector1.cubic_interpolate(vector2, Vector2(), Vector2(7, 7), 0.5) == Vector2(2.375, 3.5),
 			"Vector2 cubic_interpolate should work as expected.");
 	CHECK_MESSAGE(
-			vector1.cubic_interpolate(vector2, Vector2(), Vector2(7, 7), 1.0 / 3.0).is_equal_approx(Vector2(1.851851940155029297, 2.962963104248046875)),
+			vector1.cubic_interpolate(vector2, Vector2(), Vector2(7, 7), 1.0 / 3.0).is_equal_approx(Vector2(1.851'851'940'155'029'297, 2.962'963'104'248'046'875)),
 			"Vector2 cubic_interpolate should work as expected.");
 	CHECK_MESSAGE(
 			Vector2(1, 0).move_toward(Vector2(10, 0), 3) == Vector2(4, 0),
@@ -131,13 +131,13 @@ TEST_CASE("[Vector2] Length methods") {
 			vector2.length_squared() == 1300,
 			"Vector2 length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector2.length(), (real_t)36.05551275463989293119),
+			Math::is_equal_approx(vector2.length(), (real_t)36.055'512'754'639'892'931'19),
 			"Vector2 length should work as expected.");
 	CHECK_MESSAGE(
 			vector1.distance_squared_to(vector2) == 500,
 			"Vector2 distance_squared_to should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector1.distance_to(vector2), (real_t)22.36067977499789696409),
+			Math::is_equal_approx(vector1.distance_to(vector2), (real_t)22.360'679'774'997'896'964'09),
 			"Vector2 distance_to should work as expected.");
 }
 
@@ -212,7 +212,7 @@ TEST_CASE("[Vector2] Operators") {
 			"Vector2 multiplication with integers should give exact results.");
 
 	CHECK_MESSAGE(
-			(decimal1 / decimal2).is_equal_approx(Vector2(1.91666666666666666, 1.44117647058823529)),
+			(decimal1 / decimal2).is_equal_approx(Vector2(1.916'666'666'666'666'66, 1.441'176'470'588'235'29)),
 			"Vector2 division should behave as expected.");
 	CHECK_MESSAGE(
 			(power1 / power2) == Vector2(1.5, 12.0),

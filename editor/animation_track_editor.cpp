@@ -1613,7 +1613,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			if (use_fps) {
 				float step_size = animation->get_step();
 				if (step_size > 0) {
-					int prev_frame_ofs = -10000000;
+					int prev_frame_ofs = -10'000'000;
 
 					for (int i = 0; i < zoomw; i++) {
 						float pos = get_value() + double(i) / scale;
@@ -5486,7 +5486,7 @@ void AnimationTrackEditor::_bezier_edit(int p_for_track) {
 void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 	// Duplicait!
 	if (selection.size() && animation.is_valid() && (!transpose || (_get_track_selected() >= 0 && _get_track_selected() < animation->get_track_count()))) {
-		int top_track = 0x7FFFFFFF;
+		int top_track = 0x7fff'ffff;
 		float top_time = 1e10;
 		for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 			const SelectedKey &sk = E->key();
@@ -5499,7 +5499,7 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 				top_track = sk.track;
 			}
 		}
-		ERR_FAIL_COND(top_track == 0x7FFFFFFF || top_time == 1e10);
+		ERR_FAIL_COND(top_track == 0x7fff'ffff || top_time == 1e10);
 
 		//
 

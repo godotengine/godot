@@ -223,15 +223,15 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 
 String EditorHelp::_fix_constant(const String &p_constant) const {
 	if (p_constant.strip_edges() == "4294967295") {
-		return "0xFFFFFFFF";
+		return "0xffffffff";
 	}
 
 	if (p_constant.strip_edges() == "2147483647") {
-		return "0x7FFFFFFF";
+		return "0x7fffffff";
 	}
 
 	if (p_constant.strip_edges() == "1048575") {
-		return "0xFFFFF";
+		return "0xfffff";
 	}
 
 	return p_constant;
@@ -323,7 +323,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 }
 
 void EditorHelp::_add_bulletpoint() {
-	static const char32_t prefix[3] = { 0x25CF /* filled circle */, ' ', 0 };
+	static const char32_t prefix[3] = { 0x25cf /* filled circle */, ' ', 0 };
 	class_desc->add_text(String(prefix));
 }
 

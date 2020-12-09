@@ -77,7 +77,7 @@ TEST_CASE("[Vector2i] Length methods") {
 			vector2.length_squared() == 1300,
 			"Vector2i length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector2.length(), 36.05551275463989293119),
+			Math::is_equal_approx(vector2.length(), 36.055'512'754'639'892'931'19),
 			"Vector2i length should work as expected.");
 }
 

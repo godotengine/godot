@@ -3853,9 +3853,9 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 						Color color;
 						color = color.from_hsv(
-								(float)((hash >> 24) & 0xFF) / 256.0,
-								Math::lerp(0.5, 1.0, (float)((hash >> 16) & 0xFF) / 256.0),
-								Math::lerp(0.5, 1.0, (float)((hash >> 8) & 0xFF) / 256.0),
+								(float)((hash >> 24) & 0xff) / 256.0,
+								Math::lerp(0.5, 1.0, (float)((hash >> 16) & 0xff) / 256.0),
+								Math::lerp(0.5, 1.0, (float)((hash >> 8) & 0xff) / 256.0),
 								0.8);
 
 						// Draw the scaled tile.
