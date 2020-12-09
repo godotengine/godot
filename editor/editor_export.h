@@ -424,8 +424,6 @@ private:
 	String debug_file_32;
 	String debug_file_64;
 
-	Set<String> extra_features;
-
 	int chmod_flags;
 
 	FixUpEmbeddedPckFunc fixup_embedded_pck_func;

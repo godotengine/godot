@@ -227,7 +227,6 @@ public:
 	int get_button_count(int p_column) const;
 	String get_button_tooltip(int p_column, int p_idx) const;
 	Ref<Texture2D> get_button(int p_column, int p_idx) const;
-	int get_button_id(int p_column, int p_idx) const;
 	void erase_button(int p_column, int p_idx);
 	int get_button_by_id(int p_column, int p_id) const;
 	void set_button(int p_column, int p_idx, const Ref<Texture2D> &p_button);
@@ -633,7 +632,6 @@ public:
 	void scroll_to_item(TreeItem *p_item);
 
 	void set_cursor_can_exit_tree(bool p_enable);
-	bool can_cursor_exit_tree() const;
 
 	VScrollBar *get_vscroll_bar() { return v_scroll; }
 

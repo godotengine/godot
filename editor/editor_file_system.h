@@ -248,7 +248,6 @@ public:
 	float get_scanning_progress() const;
 	void scan();
 	void scan_changes();
-	void get_changed_sources(List<String> *r_changed);
 	void update_file(const String &p_file);
 
 	EditorFileSystemDirectory *get_filesystem_path(const String &p_path);

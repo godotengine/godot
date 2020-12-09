@@ -449,18 +449,6 @@ double ScrollBar::get_area_offset() const {
 	return ofs;
 }
 
-double ScrollBar::get_click_pos(const Point2 &p_pos) const {
-	float pos = (orientation == VERTICAL) ? p_pos.y : p_pos.x;
-	pos -= get_area_offset();
-
-	float area = get_area_size();
-	if (area == 0) {
-		return 0;
-	} else {
-		return pos / area;
-	}
-}
-
 double ScrollBar::get_grabber_offset() const {
 	return (get_area_size()) * get_as_ratio();
 }

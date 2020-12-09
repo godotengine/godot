@@ -212,7 +212,6 @@ private:
 		NodePath focus_prev;
 
 		HashMap<StringName, Ref<Texture2D>> icon_override;
-		HashMap<StringName, Ref<Shader>> shader_override;
 		HashMap<StringName, Ref<StyleBox>> style_override;
 		HashMap<StringName, Ref<Font>> font_override;
 		HashMap<StringName, int> font_size_override;
@@ -238,7 +237,6 @@ private:
 	void _update_minimum_size();
 
 	void _update_scroll();
-	void _resize(const Size2 &p_size);
 
 	void _compute_margins(Rect2 p_rect, const float p_anchors[4], float (&r_margins)[4]);
 	void _compute_anchors(Rect2 p_rect, const float p_margins[4], float (&r_anchors)[4]);
@@ -264,7 +262,6 @@ private:
 	_FORCE_INLINE_ static bool _has_theme_item(Control *p_theme_owner, Window *p_theme_owner_window, bool (Theme::*has_func)(const StringName &, const StringName &) const, const StringName &p_name, const StringName &p_node_type);
 
 	static Ref<Texture2D> get_icons(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
-	static Ref<Shader> get_shaders(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 	static Ref<StyleBox> get_styleboxs(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 	static Ref<Font> get_fonts(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 	static int get_font_sizes(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
@@ -272,7 +269,6 @@ private:
 	static int get_constants(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 
 	static bool has_icons(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
-	static bool has_shaders(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 	static bool has_styleboxs(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 	static bool has_fonts(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 	static bool has_font_sizes(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
@@ -456,7 +452,6 @@ public:
 	/* SKINNING */
 
 	void add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon);
-	void add_theme_shader_override(const StringName &p_name, const Ref<Shader> &p_shader);
 	void add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
 	void add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font);
 	void add_theme_font_size_override(const StringName &p_name, int p_font_size);
@@ -464,7 +459,6 @@ public:
 	void add_theme_constant_override(const StringName &p_name, int p_constant);
 
 	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_node_type = StringName()) const;
-	Ref<Shader> get_theme_shader(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	Ref<Font> get_theme_font(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	int get_theme_font_size(const StringName &p_name, const StringName &p_node_type = StringName()) const;
@@ -472,7 +466,6 @@ public:
 	int get_theme_constant(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 
 	bool has_theme_icon_override(const StringName &p_name) const;
-	bool has_theme_shader_override(const StringName &p_name) const;
 	bool has_theme_stylebox_override(const StringName &p_name) const;
 	bool has_theme_font_override(const StringName &p_name) const;
 	bool has_theme_font_size_override(const StringName &p_name) const;
@@ -480,7 +473,6 @@ public:
 	bool has_theme_constant_override(const StringName &p_name) const;
 
 	bool has_theme_icon(const StringName &p_name, const StringName &p_node_type = StringName()) const;
-	bool has_theme_shader(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	bool has_theme_stylebox(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	bool has_theme_font(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	bool has_theme_font_size(const StringName &p_name, const StringName &p_node_type = StringName()) const;

@@ -1934,23 +1934,6 @@ void SceneTreeDock::_selection_changed() {
 	_update_script_button();
 }
 
-Node *SceneTreeDock::_get_selection_group_tail(Node *p_node, List<Node *> p_list) {
-	Node *tail = p_node;
-	Node *parent = tail->get_parent();
-
-	for (int i = p_node->get_index(); i < parent->get_child_count(); i++) {
-		Node *sibling = parent->get_child(i);
-
-		if (p_list.find(sibling)) {
-			tail = sibling;
-		} else {
-			break;
-		}
-	}
-
-	return tail;
-}
-
 void SceneTreeDock::_do_create(Node *p_parent) {
 	Object *c = create_dialog->instance_selected();
 

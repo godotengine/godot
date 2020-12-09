@@ -253,7 +253,6 @@ public:
 	Rect2i get_usable_parent_rect() const;
 
 	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Ref<Shader> get_theme_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
 	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
 	Ref<Font> get_theme_font(const StringName &p_name, const StringName &p_type = StringName()) const;
 	int get_theme_font_size(const StringName &p_name, const StringName &p_type = StringName()) const;
@@ -261,7 +260,6 @@ public:
 	int get_theme_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
 
 	bool has_theme_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_theme_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
 	bool has_theme_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
 	bool has_theme_font(const StringName &p_name, const StringName &p_type = StringName()) const;
 	bool has_theme_font_size(const StringName &p_name, const StringName &p_type = StringName()) const;

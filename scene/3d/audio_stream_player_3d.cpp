@@ -327,9 +327,6 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 	return att;
 }
 
-void _update_sound() {
-}
-
 void AudioStreamPlayer3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		velocity_tracker->reset(get_global_transform().origin);

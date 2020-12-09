@@ -49,14 +49,6 @@ const char *OS_Server::get_video_driver_name(int p_driver) const {
 	return "Dummy";
 }
 
-int OS_Server::get_audio_driver_count() const {
-	return 1;
-}
-
-const char *OS_Server::get_audio_driver_name(int p_driver) const {
-	return "Dummy";
-}
-
 int OS_Server::get_current_video_driver() const {
 	return video_driver_index;
 }

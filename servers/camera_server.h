@@ -95,15 +95,16 @@ public:
 	int get_feed_index(int p_id);
 	Ref<CameraFeed> get_feed_by_id(int p_id);
 
-	// add and remove feeds
+	// Add and remove feeds.
 	void add_feed(const Ref<CameraFeed> &p_feed);
 	void remove_feed(const Ref<CameraFeed> &p_feed);
 
-	// get our feeds
+	// Get our feeds.
 	Ref<CameraFeed> get_feed(int p_index);
 	int get_feed_count();
 	Array get_feeds();
 
+	// Intended for use with custom CameraServer implementation.
 	RID feed_texture(int p_id, FeedImage p_texture);
 
 	CameraServer();

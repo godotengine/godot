@@ -421,52 +421,6 @@ void Theme::get_icon_list(StringName p_node_type, List<StringName> *p_list) cons
 	}
 }
 
-void Theme::set_shader(const StringName &p_name, const StringName &p_node_type, const Ref<Shader> &p_shader) {
-	bool new_value = !shader_map.has(p_node_type) || !shader_map[p_node_type].has(p_name);
-
-	shader_map[p_node_type][p_name] = p_shader;
-
-	if (new_value) {
-		_change_notify();
-		emit_changed();
-	}
-}
-
-Ref<Shader> Theme::get_shader(const StringName &p_name, const StringName &p_node_type) const {
-	if (shader_map.has(p_node_type) && shader_map[p_node_type].has(p_name) && shader_map[p_node_type][p_name].is_valid()) {
-		return shader_map[p_node_type][p_name];
-	} else {
-		return nullptr;
-	}
-}
-
-bool Theme::has_shader(const StringName &p_name, const StringName &p_node_type) const {
-	return (shader_map.has(p_node_type) && shader_map[p_node_type].has(p_name) && shader_map[p_node_type][p_name].is_valid());
-}
-
-void Theme::clear_shader(const StringName &p_name, const StringName &p_node_type) {
-	ERR_FAIL_COND(!shader_map.has(p_node_type));
-	ERR_FAIL_COND(!shader_map[p_node_type].has(p_name));
-
-	shader_map[p_node_type].erase(p_name);
-	_change_notify();
-	emit_changed();
-}
-
-void Theme::get_shader_list(const StringName &p_node_type, List<StringName> *p_list) const {
-	ERR_FAIL_NULL(p_list);
-
-	if (!shader_map.has(p_node_type)) {
-		return;
-	}
-
-	const StringName *key = nullptr;
-
-	while ((key = shader_map[p_node_type].next(key))) {
-		p_list->push_back(*key);
-	}
-}
-
 void Theme::set_stylebox(const StringName &p_name, const StringName &p_node_type, const Ref<StyleBox> &p_style) {
 	//ERR_FAIL_COND(p_style.is_null());
 
@@ -782,7 +736,6 @@ void Theme::clear() {
 	icon_map.clear();
 	style_map.clear();
 	font_map.clear();
-	shader_map.clear();
 	color_map.clear();
 	constant_map.clear();
 
@@ -837,7 +790,6 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 
 	color_map = p_other->color_map;
 	constant_map = p_other->constant_map;
-	shader_map = p_other->shader_map;
 
 	_change_notify();
 	emit_changed();

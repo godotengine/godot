@@ -1044,10 +1044,6 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 	efs->scanning_changes_done = true;
 }
 
-void EditorFileSystem::get_changed_sources(List<String> *r_changed) {
-	*r_changed = sources_changed;
-}
-
 void EditorFileSystem::scan_changes() {
 	if (first_scan || // Prevent a premature changes scan from inhibiting the first full scan
 			scanning || scanning_changes || thread) {

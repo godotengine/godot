@@ -34,7 +34,6 @@
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "scene/resources/font.h"
-#include "scene/resources/shader.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
@@ -48,7 +47,6 @@ class Theme : public Resource {
 	HashMap<StringName, HashMap<StringName, Ref<StyleBox>>> style_map;
 	HashMap<StringName, HashMap<StringName, Ref<Font>>> font_map;
 	HashMap<StringName, HashMap<StringName, int>> font_size_map;
-	HashMap<StringName, HashMap<StringName, Ref<Shader>>> shader_map;
 	HashMap<StringName, HashMap<StringName, Color>> color_map;
 	HashMap<StringName, HashMap<StringName, int>> constant_map;
 
@@ -101,12 +99,6 @@ public:
 	bool has_icon(const StringName &p_name, const StringName &p_node_type) const;
 	void clear_icon(const StringName &p_name, const StringName &p_node_type);
 	void get_icon_list(StringName p_node_type, List<StringName> *p_list) const;
-
-	void set_shader(const StringName &p_name, const StringName &p_node_type, const Ref<Shader> &p_shader);
-	Ref<Shader> get_shader(const StringName &p_name, const StringName &p_node_type) const;
-	bool has_shader(const StringName &p_name, const StringName &p_node_type) const;
-	void clear_shader(const StringName &p_name, const StringName &p_node_type);
-	void get_shader_list(const StringName &p_node_type, List<StringName> *p_list) const;
 
 	void set_stylebox(const StringName &p_name, const StringName &p_node_type, const Ref<StyleBox> &p_style);
 	Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_node_type) const;

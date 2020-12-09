@@ -192,10 +192,6 @@ bool ResourceFormatImporter::recognize_path(const String &p_path, const String &
 	return FileAccess::exists(p_path + ".import");
 }
 
-bool ResourceFormatImporter::can_be_imported(const String &p_path) const {
-	return ResourceFormatLoader::recognize_path(p_path);
-}
-
 int ResourceFormatImporter::get_import_order(const String &p_path) const {
 	Ref<ResourceImporter> importer;
 
