@@ -724,7 +724,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 			case ClassNode::Member::ENUM: {
 				Dictionary enum_dict;
 				for (int j = 0; j < m.m_enum->values.size(); j++) {
-					enum_dict[m.m_enum->values[i].identifier->name] = m.m_enum->values[i].value;
+					enum_dict[m.m_enum->values[j].identifier->name] = m.m_enum->values[j].value;
 				}
 
 				Dictionary api;
