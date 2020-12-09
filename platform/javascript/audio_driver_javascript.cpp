@@ -189,7 +189,9 @@ Error AudioDriverJavaScript::capture_start() {
 	lock();
 	input_buffer_init(buffer_length);
 	unlock();
-	godot_audio_capture_start();
+	if (godot_audio_capture_start()) {
+		return FAILED;
+	}
 	return OK;
 }
 

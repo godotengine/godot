@@ -41,7 +41,7 @@ extern int godot_audio_is_available();
 extern int godot_audio_init(int p_mix_rate, int p_latency, void (*_state_cb)(int), void (*_latency_cb)(float));
 extern void godot_audio_resume();
 
-extern void godot_audio_capture_start();
+extern int godot_audio_capture_start();
 extern void godot_audio_capture_stop();
 
 // Worklet
