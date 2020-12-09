@@ -547,6 +547,11 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vec
 	real_t d = 1e10;
 	bool inters = false;
 
+	if (contains_point(p_begin)) {
+		r_point = p_begin;
+		return true;
+	}
+
 	for (int i = 0; i < point_count; i++) {
 		//hmm.. no can do..
 		/*
