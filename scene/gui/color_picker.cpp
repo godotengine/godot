@@ -615,7 +615,7 @@ void ColorPicker::_screen_pick_pressed() {
 		screen->set_default_cursor_shape(CURSOR_POINTING_HAND);
 		screen->connect("gui_input", callable_mp(this, &ColorPicker::_screen_input));
 		// It immediately toggles off in the first press otherwise.
-		screen->call_deferred("connect", "hide", Callable(btn_pick, "set_pressed"), varray(false));
+		screen->call_deferred("connect", "hidden", Callable(btn_pick, "set_pressed"), varray(false));
 	}
 	screen->raise();
 #ifndef _MSC_VER
