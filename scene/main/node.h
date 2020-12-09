@@ -74,9 +74,8 @@ public:
 
 private:
 	struct GroupData {
-		bool persistent;
-		SceneTree::Group *group;
-		GroupData() { persistent = false; }
+		bool persistent = false;
+		SceneTree::Group *group = nullptr;
 	};
 
 	struct NetData {
