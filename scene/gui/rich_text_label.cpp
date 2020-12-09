@@ -518,7 +518,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 										uint64_t char_current_rand = item_shake->offset_random(c_item_offset);
 										uint64_t char_previous_rand = item_shake->offset_previous_random(c_item_offset);
-										uint64_t max_rand = 2147483647;
+										uint64_t max_rand = 2'147'483'647;
 										double current_offset = Math::range_lerp(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
 										double previous_offset = Math::range_lerp(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
 										double n_time = (double)(item_shake->elapsed_time / (0.5f / item_shake->rate));

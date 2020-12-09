@@ -367,12 +367,12 @@ void test_vec(Plane p_vec) {
 }
 
 uint32_t ihash(uint32_t a) {
-	a = (a + 0x7ed55d16) + (a << 12);
-	a = (a ^ 0xc761c23c) ^ (a >> 19);
-	a = (a + 0x165667b1) + (a << 5);
-	a = (a + 0xd3a2646c) ^ (a << 9);
-	a = (a + 0xfd7046c5) + (a << 3);
-	a = (a ^ 0xb55a4f09) ^ (a >> 16);
+	a = (a + 0x7ed5'5d16) + (a << 12);
+	a = (a ^ 0xc761'c23c) ^ (a >> 19);
+	a = (a + 0x1656'67b1) + (a << 5);
+	a = (a + 0xd3a2'646c) ^ (a << 9);
+	a = (a + 0xfd70'46c5) + (a << 3);
+	a = (a ^ 0xb55a'4f09) ^ (a >> 16);
 	return a;
 }
 
@@ -380,17 +380,17 @@ uint32_t ihash2(uint32_t a) {
 	a = (a ^ 61) ^ (a >> 16);
 	a = a + (a << 3);
 	a = a ^ (a >> 4);
-	a = a * 0x27d4eb2d;
+	a = a * 0x27d4'eb2d;
 	a = a ^ (a >> 15);
 	return a;
 }
 
 uint32_t ihash3(uint32_t a) {
-	a = (a + 0x479ab41d) + (a << 8);
-	a = (a ^ 0xe4aa10ce) ^ (a >> 5);
-	a = (a + 0x9942f0a6) - (a << 14);
-	a = (a ^ 0x5aedd67d) ^ (a >> 3);
-	a = (a + 0x17bea992) + (a << 7);
+	a = (a + 0x479a'b41d) + (a << 8);
+	a = (a ^ 0xe4aa'10ce) ^ (a >> 5);
+	a = (a + 0x9942'f0a6) - (a << 14);
+	a = (a ^ 0x5aed'd67d) ^ (a >> 3);
+	a = (a + 0x17be'a992) + (a << 7);
 	return a;
 }
 

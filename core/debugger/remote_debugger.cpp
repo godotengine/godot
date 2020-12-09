@@ -258,8 +258,8 @@ struct RemoteDebugger::ScriptsProfiler {
 				w[i].sig_id = sig_map[ptrs[i]->signature];
 			}
 			w[i].call_count = ptrs[i]->call_count;
-			w[i].total_time = ptrs[i]->total_time / 1000000.0;
-			w[i].self_time = ptrs[i]->self_time / 1000000.0;
+			w[i].total_time = ptrs[i]->total_time / 1'000'000.0;
+			w[i].self_time = ptrs[i]->self_time / 1'000'000.0;
 		}
 	}
 
@@ -523,7 +523,7 @@ RemoteDebugger::ErrorMessage RemoteDebugger::_create_overflow_error(const String
 	oe.error_descr = p_descr;
 	oe.warning = false;
 	uint64_t time = OS::get_singleton()->get_ticks_msec();
-	oe.hr = time / 3600000;
+	oe.hr = time / 3'600'000;
 	oe.min = (time / 60000) % 60;
 	oe.sec = (time / 1000) % 60;
 	oe.msec = time % 1000;
@@ -613,7 +613,7 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 	oe.source_func = p_func;
 	oe.warning = p_type == ERR_HANDLER_WARNING;
 	uint64_t time = OS::get_singleton()->get_ticks_msec();
-	oe.hr = time / 3600000;
+	oe.hr = time / 3'600'000;
 	oe.min = (time / 60000) % 60;
 	oe.sec = (time / 1000) % 60;
 	oe.msec = time % 1000;
@@ -822,7 +822,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		}
 
 		// This is for the camera override to stay live even when the game is paused from the editor
-		loop_time_sec = (OS::get_singleton()->get_ticks_usec() - loop_begin_usec) / 1000000.0f;
+		loop_time_sec = (OS::get_singleton()->get_ticks_usec() - loop_begin_usec) / 1'000'000.0f;
 		RenderingServer::get_singleton()->sync();
 		if (RenderingServer::get_singleton()->has_changed()) {
 			RenderingServer::get_singleton()->draw(true, loop_time_sec * Engine::get_singleton()->get_time_scale());

@@ -539,7 +539,7 @@ TEST_CASE("[GDNative String] Hex to integer") {
 TEST_CASE("[GDNative String] String to float") {
 	static const wchar_t *wnums[4] = { L"-12348298412.2", L"0.05", L"2.0002", L" -0.0001" };
 	static const char *nums[4] = { "-12348298412.2", "0.05", "2.0002", " -0.0001" };
-	static const double num[4] = { -12348298412.2, 0.05, 2.0002, -0.0001 };
+	static const double num[4] = { -12'348'298'412.2, 0.05, 2.0002, -0.0001 };
 
 	for (int i = 0; i < 4; i++) {
 		godot_string s;
@@ -1962,15 +1962,15 @@ TEST_CASE("[GDNative String] humanize_size") {
 	CHECK(u32scmp(godot_string_get_data(&s), U"1.00 KiB") == 0);
 	godot_string_destroy(&s);
 
-	s = godot_string_humanize_size(1025300);
+	s = godot_string_humanize_size(1'025'300);
 	CHECK(u32scmp(godot_string_get_data(&s), U"1001.2 KiB") == 0);
 	godot_string_destroy(&s);
 
-	s = godot_string_humanize_size(100523550);
+	s = godot_string_humanize_size(100'523'550);
 	CHECK(u32scmp(godot_string_get_data(&s), U"95.86 MiB") == 0);
 	godot_string_destroy(&s);
 
-	s = godot_string_humanize_size(5345555000);
+	s = godot_string_humanize_size(5'345'555'000);
 	CHECK(u32scmp(godot_string_get_data(&s), U"4.97 GiB") == 0);
 	godot_string_destroy(&s);
 }

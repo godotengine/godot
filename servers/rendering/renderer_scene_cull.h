@@ -85,7 +85,7 @@ public:
 		Transform transform;
 
 		Camera() {
-			visible_layers = 0xFFFFFFFF;
+			visible_layers = 0xffff'ffff;
 			fov = 75;
 			type = PERSPECTIVE;
 			znear = 0.05;

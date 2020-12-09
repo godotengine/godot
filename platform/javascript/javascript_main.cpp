@@ -66,7 +66,7 @@ void main_loop_callback() {
 
 	int target_fps = Engine::get_singleton()->get_target_fps();
 	if (target_fps > 0) {
-		target_ticks += (uint64_t)(1000000 / target_fps);
+		target_ticks += (uint64_t)(1'000'000 / target_fps);
 	}
 	if (os->main_loop_iterate()) {
 		emscripten_cancel_main_loop(); // Cancel current loop and wait for cleanup_after_sync.

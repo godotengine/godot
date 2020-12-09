@@ -939,7 +939,7 @@ void ResourceLoaderText::open(FileAccess *p_f, bool p_skip_first_tag) {
 static void bs_save_unicode_string(FileAccess *f, const String &p_string, bool p_bit_on_len = false) {
 	CharString utf8 = p_string.utf8();
 	if (p_bit_on_len) {
-		f->store_32((utf8.length() + 1) | 0x80000000);
+		f->store_32((utf8.length() + 1) | 0x8000'0000);
 	} else {
 		f->store_32(utf8.length() + 1);
 	}

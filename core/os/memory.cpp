@@ -173,7 +173,7 @@ void Memory::free_static(void *p_ptr, bool p_pad_align) {
 }
 
 uint64_t Memory::get_mem_available() {
-	return -1; // 0xFFFF...
+	return -1; // 0xffff...
 }
 
 uint64_t Memory::get_mem_usage() {

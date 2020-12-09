@@ -4972,7 +4972,7 @@ void AnimationTrackEditor::_bezier_edit(int p_for_track) {
 void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 	//duplicait!
 	if (selection.size() && animation.is_valid() && (!transpose || (_get_track_selected() >= 0 && _get_track_selected() < animation->get_track_count()))) {
-		int top_track = 0x7FFFFFFF;
+		int top_track = 0x7fff'ffff;
 		float top_time = 1e10;
 		for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 			const SelectedKey &sk = E->key();
@@ -4985,7 +4985,7 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 				top_track = sk.track;
 			}
 		}
-		ERR_FAIL_COND(top_track == 0x7FFFFFFF || top_time == 1e10);
+		ERR_FAIL_COND(top_track == 0x7fff'ffff || top_time == 1e10);
 
 		//
 

@@ -42,9 +42,9 @@ static inline float undenormalise(volatile float f) {
 
 	v.f = f;
 
-	// original: return (v.i & 0x7f800000) == 0 ? 0.0f : f;
+	// original: return (v.i & 0x7f80'0000) == 0 ? 0.0f : f;
 	// version from Tim Blechmann:
-	return (v.i & 0x7f800000) < 0x08000000 ? 0.0f : f;
+	return (v.i & 0x7f80'0000) < 0x0800'0000 ? 0.0f : f;
 }
 
 struct AudioFrame {

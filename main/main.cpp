@@ -2533,7 +2533,7 @@ bool Main::iteration() {
 	frames++;
 	Engine::get_singleton()->_idle_frames++;
 
-	if (frame > 1000000) {
+	if (frame > 1'000'000) {
 		if (editor || project_manager) {
 			if (print_fps) {
 				print_line("Editor FPS: " + itos(frames));
@@ -2548,7 +2548,7 @@ bool Main::iteration() {
 		idle_process_max = 0;
 		physics_process_max = 0;
 
-		frame %= 1000000;
+		frame %= 1'000'000;
 		frames = 0;
 	}
 

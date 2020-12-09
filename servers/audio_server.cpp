@@ -72,11 +72,11 @@ void AudioDriver::update_mix_time(int p_frames) {
 }
 
 double AudioDriver::get_time_since_last_mix() const {
-	return (OS::get_singleton()->get_ticks_usec() - _last_mix_time) / 1000000.0;
+	return (OS::get_singleton()->get_ticks_usec() - _last_mix_time) / 1'000'000.0;
 }
 
 double AudioDriver::get_time_to_next_mix() const {
-	double total = (OS::get_singleton()->get_ticks_usec() - _last_mix_time) / 1000000.0;
+	double total = (OS::get_singleton()->get_ticks_usec() - _last_mix_time) / 1'000'000.0;
 	double mix_buffer = _last_mix_frames / (double)get_mix_rate();
 	return mix_buffer - total;
 }

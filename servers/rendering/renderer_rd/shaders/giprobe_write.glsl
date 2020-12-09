@@ -6,7 +6,7 @@ VERSION_DEFINES
 
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
-#define NO_CHILDREN 0xFFFFFFFF
+#define NO_CHILDREN 0xffffffff
 #define GREY_VEC vec3(0.33333, 0.33333, 0.33333)
 
 struct CellChildren {

@@ -410,7 +410,7 @@ void FileAccess::store_16(uint16_t p_dest) {
 void FileAccess::store_32(uint32_t p_dest) {
 	uint16_t a, b;
 
-	a = p_dest & 0xFFFF;
+	a = p_dest & 0xffff;
 	b = p_dest >> 16;
 
 	if (endian_swap) {
@@ -424,7 +424,7 @@ void FileAccess::store_32(uint32_t p_dest) {
 void FileAccess::store_64(uint64_t p_dest) {
 	uint32_t a, b;
 
-	a = p_dest & 0xFFFFFFFF;
+	a = p_dest & 0xffff'ffff;
 	b = p_dest >> 32;
 
 	if (endian_swap) {

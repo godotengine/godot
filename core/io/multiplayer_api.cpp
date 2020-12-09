@@ -203,8 +203,8 @@ void _profile_bandwidth_data(const String &p_inout, int p_size) {
 
 // Returns the packet size stripping the node path added when the node is not yet cached.
 int get_packet_len(uint32_t p_node_target, int p_packet_len) {
-	if (p_node_target & 0x80000000) {
-		int ofs = p_node_target & 0x7FFFFFFF;
+	if (p_node_target & 0x8000'0000) {
+		int ofs = p_node_target & 0x7fff'ffff;
 		return p_packet_len - (p_packet_len - ofs);
 	} else {
 		return p_packet_len;
@@ -320,10 +320,10 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, uint32_t p_node_target, int p_packet_len) {
 	Node *node = nullptr;
 
-	if (p_node_target & 0x80000000) {
+	if (p_node_target & 0x8000'0000) {
 		// Use full path (not cached yet).
 
-		int ofs = p_node_target & 0x7FFFFFFF;
+		int ofs = p_node_target & 0x7fff'ffff;
 
 		ERR_FAIL_COND_V_MSG(ofs >= p_packet_len, nullptr, "Invalid packet received. Size smaller than declared.");
 
@@ -965,7 +965,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 				network_peer->put_packet(packet_cache.ptr(), ofs);
 			} else {
 				// This one did not confirm path yet, so use entire path (sorry!).
-				encode_uint32(0x80000000 | ofs, &(packet_cache.write[1])); // Offset to path and flag.
+				encode_uint32(0x8000'0000 | ofs, &(packet_cache.write[1])); // Offset to path and flag.
 				network_peer->put_packet(packet_cache.ptr(), ofs + path_len);
 			}
 		}

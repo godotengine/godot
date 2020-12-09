@@ -378,7 +378,7 @@ static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, 
 
 		f->seek(pe_pos);
 		uint32_t magic = f->get_32();
-		if (magic != 0x00004550) {
+		if (magic != 0x00'00'45'50) { // "PE" + NUL + NUL
 			f->close();
 			return ERR_FILE_CORRUPT;
 		}

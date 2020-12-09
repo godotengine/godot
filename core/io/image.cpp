@@ -2440,7 +2440,7 @@ Rect2 Image::get_used_rect() const {
 		return Rect2();
 	}
 
-	int minx = 0xFFFFFF, miny = 0xFFFFFFF;
+	int minx = 0xffffff, miny = 0xfffffff;
 	int maxx = -1, maxy = -1;
 	for (int j = 0; j < height; j++) {
 		for (int i = 0; i < width; i++) {
@@ -3406,7 +3406,7 @@ void Image::fix_alpha_edges() {
 
 	const int max_radius = 4;
 	const int alpha_threshold = 20;
-	const int max_dist = 0x7FFFFFFF;
+	const int max_dist = 0x7fff'ffff;
 
 	for (int i = 0; i < height; i++) {
 		for (int j = 0; j < width; j++) {

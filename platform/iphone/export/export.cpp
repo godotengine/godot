@@ -160,7 +160,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 				}
 			}
 
-			uint64_t wait = 3000000;
+			uint64_t wait = 3'000'000;
 			uint64_t time = OS::get_singleton()->get_ticks_usec();
 			while (OS::get_singleton()->get_ticks_usec() - time < wait) {
 				OS::get_singleton()->delay_usec(300000);
@@ -1033,7 +1033,7 @@ struct ExportLibsData {
 void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_project_data, const Vector<IOSExportAsset> &p_additional_assets) {
 	// that is just a random number, we just need Godot IDs not to clash with
 	// existing IDs in the project.
-	PbxId current_id = { 0x58938401, 0, 0 };
+	PbxId current_id = { 0x5893'8401, 0, 0 };
 	String pbx_files;
 	String pbx_frameworks_build;
 	String pbx_frameworks_refs;

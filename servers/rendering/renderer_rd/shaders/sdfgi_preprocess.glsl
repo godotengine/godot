@@ -186,7 +186,7 @@ void main() {
 		return; //fits outside the 3D texture, dont do anything
 	}
 
-	uint albedo = ((src_process_voxels.data[index].albedo & 0x7FFF) << 1) | 1; //add solid bit
+	uint albedo = ((src_process_voxels.data[index].albedo & 0x7fff) << 1) | 1; //add solid bit
 	imageStore(dst_albedo, write_pos, uvec4(albedo));
 
 	uint facing = (src_process_voxels.data[index].albedo >> 15) & 0x3F; //6 anisotropic facing bits
@@ -970,7 +970,7 @@ void main() {
 	{
 		ivec3 occ_pos = pos;
 		occ_pos.z += params.cascade * params.grid_size;
-		imageStore(dst_occlusion, occ_pos, uvec4(occlusion & 0xFFFF));
+		imageStore(dst_occlusion, occ_pos, uvec4(occlusion & 0xffff));
 		occ_pos.x += params.grid_size;
 		imageStore(dst_occlusion, occ_pos, uvec4(occlusion >> 16));
 	}

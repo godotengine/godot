@@ -151,7 +151,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 	for (int i = 0; i < size; i++) {
 		const Map<uint32_t, int> &t = table[i];
 		if (t.size() == 0) {
-			htw[i] = 0xFFFFFFFF; //nothing
+			htw[i] = 0xffff'ffff; //nothing
 			continue;
 		} else if (t.size() > 1) {
 			collisions += t.size() - 1;
@@ -235,7 +235,7 @@ StringName PHashTranslation::get_message(const StringName &p_src_text, const Str
 
 	uint32_t p = htptr[h % htsize];
 
-	if (p == 0xFFFFFFFF) {
+	if (p == 0xffff'ffff) {
 		return StringName(); //nothing
 	}
 

@@ -255,7 +255,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	RID render_pass_uniform_set;
 	RID sdfgi_pass_uniform_set;
 
-	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
+	uint64_t lightmap_texture_array_version = 0xffff'ffff;
 
 	virtual void _base_uniforms_changed();
 	void _render_buffers_clear_uniform_set(RenderBufferDataForward *rb);

@@ -277,7 +277,7 @@ void EditorPropertyArray::update_property() {
 			hbc->add_child(label);
 			length = memnew(EditorSpinSlider);
 			length->set_step(1);
-			length->set_max(1000000);
+			length->set_max(1'000'000);
 			length->set_h_size_flags(SIZE_EXPAND_FILL);
 			hbc->add_child(length);
 			length->connect("value_changed", callable_mp(this, &EditorPropertyArray::_length_changed));

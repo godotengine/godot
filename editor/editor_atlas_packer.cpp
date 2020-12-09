@@ -150,7 +150,7 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 
 		for (int x = 0; x < heights_size; x++) {
 			top_heights.write[x] = -1;
-			bottom_heights.write[x] = 0x7FFFFFFF;
+			bottom_heights.write[x] = 0x7fff'ffff;
 		}
 
 		for (int x = 0; x < bmw; x++) {
@@ -226,7 +226,7 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 		int *atlas_ptr = heights.ptrw();
 
 		for (int i = 0; i < bitmaps.size(); i++) {
-			int best_height = 0x7FFFFFFF;
+			int best_height = 0x7fff'ffff;
 			int best_height_offset = -1;
 			int w = bitmaps[i].top_heights.size();
 

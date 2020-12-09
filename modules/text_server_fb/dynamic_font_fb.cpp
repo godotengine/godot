@@ -156,7 +156,7 @@ DynamicFontDataFallback::TexturePosition DynamicFontDataFallback::find_texture_p
 			continue;
 		}
 
-		ret.y = 0x7FFFFFFF;
+		ret.y = 0x7fff'ffff;
 		ret.x = 0;
 
 		for (int j = 0; j < ct.texture_size - mw; j++) {
@@ -175,7 +175,7 @@ DynamicFontDataFallback::TexturePosition DynamicFontDataFallback::find_texture_p
 			}
 		}
 
-		if (ret.y == 0x7FFFFFFF || ret.y + mh > ct.texture_size) {
+		if (ret.y == 0x7fff'ffff || ret.y + mh > ct.texture_size) {
 			continue; //fail, could not fit it here
 		}
 

@@ -809,8 +809,8 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	}
 
 	VkExtent2D swapchainExtent;
-	// width and height are either both 0xFFFFFFFF, or both not 0xFFFFFFFF.
-	if (surfCapabilities.currentExtent.width == 0xFFFFFFFF) {
+	// width and height are either both 0xffff'ffff, or both not 0xffff'ffff.
+	if (surfCapabilities.currentExtent.width == 0xffff'ffff) {
 		// If the surface size is undefined, the size is set to the size
 		// of the images requested, which must fit within the minimum and
 		// maximum values.

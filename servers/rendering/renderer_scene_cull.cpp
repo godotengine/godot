@@ -2310,7 +2310,7 @@ void RendererSceneCull::_prepare_scene(const Transform p_cam_transform, const Ca
 		uint32_t cascade_count = 0;
 		uint32_t sdfgi_light_cull_count = 0;
 
-		uint32_t prev_cascade = 0xFFFFFFFF;
+		uint32_t prev_cascade = 0xffff'ffff;
 		for (int i = 0; i < scene_render->sdfgi_get_pending_region_count(p_render_buffers); i++) {
 			AABB region = scene_render->sdfgi_get_pending_region_bounds(p_render_buffers, i);
 			uint32_t region_cascade = scene_render->sdfgi_get_pending_region_cascade(p_render_buffers, i);

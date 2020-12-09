@@ -415,9 +415,9 @@ void JoypadWindows::post_hat(int p_device, DWORD p_dpad) {
 
 	// Should be -1 when centered, but according to docs:
 	// "Some drivers report the centered position of the POV indicator as 65,535. Determine whether the indicator is centered as follows:
-	//  BOOL POVCentered = (LOWORD(dwPOV) == 0xFFFF);"
+	//  BOOL POVCentered = (LOWORD(dwPOV) == 0xffff);"
 	// https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee416628(v%3Dvs.85)#remarks
-	if (LOWORD(p_dpad) == 0xFFFF) {
+	if (LOWORD(p_dpad) == 0xffff) {
 		dpad_val = Input::HAT_MASK_CENTER;
 	}
 	if (p_dpad == 0) {
@@ -484,7 +484,7 @@ void JoypadWindows::joypad_vibration_start_xinput(int p_device, float p_weak_mag
 		effect.wRightMotorSpeed = (65535 * p_weak_magnitude);
 		if (xinput_set_state(p_device, &effect) == ERROR_SUCCESS) {
 			joy.ff_timestamp = p_timestamp;
-			joy.ff_end_timestamp = p_duration == 0 ? 0 : p_timestamp + (uint64_t)(p_duration * 1000000.0);
+			joy.ff_end_timestamp = p_duration == 0 ? 0 : p_timestamp + (uint64_t)(p_duration * 1'000'000.0);
 			joy.vibrating = true;
 		}
 	}

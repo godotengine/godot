@@ -330,7 +330,7 @@ void ScriptTextEditor::add_callback(const String &p_function, PackedStringArray 
 		String func = script->get_language()->make_function("", p_function, p_args);
 		//code=code+func;
 		code_editor->get_text_editor()->cursor_set_line(pos + 1);
-		code_editor->get_text_editor()->cursor_set_column(1000000); //none shall be that big
+		code_editor->get_text_editor()->cursor_set_column(1'000'000); //none shall be that big
 		code_editor->get_text_editor()->insert_text_at_cursor("\n\n" + func);
 	}
 	code_editor->get_text_editor()->cursor_set_line(pos);

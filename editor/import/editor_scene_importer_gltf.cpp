@@ -86,14 +86,14 @@ Error EditorSceneImporterGLTF::_parse_glb(const String &p_path, GLTFState &state
 	}
 
 	uint32_t magic = f->get_32();
-	ERR_FAIL_COND_V(magic != 0x46546C67, ERR_FILE_UNRECOGNIZED); //glTF
+	ERR_FAIL_COND_V(magic != 0x46'54'6c'67, ERR_FILE_UNRECOGNIZED); //glTF
 	f->get_32(); // version
 	f->get_32(); // length
 
 	uint32_t chunk_length = f->get_32();
 	uint32_t chunk_type = f->get_32();
 
-	ERR_FAIL_COND_V(chunk_type != 0x4E4F534A, ERR_PARSE_ERROR); //JSON
+	ERR_FAIL_COND_V(chunk_type != 0x4e'4f'53'4a, ERR_PARSE_ERROR); //JSON
 	Vector<uint8_t> json_data;
 	json_data.resize(chunk_length);
 	uint32_t len = f->get_buffer(json_data.ptrw(), chunk_length);
@@ -122,7 +122,7 @@ Error EditorSceneImporterGLTF::_parse_glb(const String &p_path, GLTFState &state
 		return OK; //all good
 	}
 
-	ERR_FAIL_COND_V(chunk_type != 0x004E4942, ERR_PARSE_ERROR); //BIN
+	ERR_FAIL_COND_V(chunk_type != 0x00'4e'49'42, ERR_PARSE_ERROR); //BIN
 
 	state.glb_data.resize(chunk_length);
 	len = f->get_buffer(state.glb_data.ptrw(), chunk_length);

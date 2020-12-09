@@ -1589,7 +1589,7 @@ void TextEdit::_notification(int p_what) {
 					int len = font->get_string_size(l, cache.font_size).x;
 					max_w = MAX(len, max_w);
 					if (i == 0) {
-						offset = font->get_string_size(l.substr(0, l.find(String::chr(0xFFFF))), cache.font_size).x;
+						offset = font->get_string_size(l.substr(0, l.find(String::chr(0xffff))), cache.font_size).x;
 					} else {
 						spacing += cache.line_spacing;
 					}
@@ -1598,7 +1598,7 @@ void TextEdit::_notification(int p_what) {
 				Size2 size2 = Size2(max_w, sc * font->get_height(cache.font_size) + spacing);
 				Size2 minsize = size2 + sb->get_minimum_size();
 
-				if (completion_hint_offset == -0xFFFF) {
+				if (completion_hint_offset == -0xffff) {
 					completion_hint_offset = cursor_pos.x - offset;
 				}
 
@@ -1618,14 +1618,14 @@ void TextEdit::_notification(int p_what) {
 					int end = 0;
 					String l = completion_hint.get_slice("\n", i);
 
-					if (l.find(String::chr(0xFFFF)) != -1) {
-						begin = font->get_string_size(l.substr(0, l.find(String::chr(0xFFFF))), cache.font_size).x;
-						end = font->get_string_size(l.substr(0, l.rfind(String::chr(0xFFFF))), cache.font_size).x;
+					if (l.find(String::chr(0xffff)) != -1) {
+						begin = font->get_string_size(l.substr(0, l.find(String::chr(0xffff))), cache.font_size).x;
+						end = font->get_string_size(l.substr(0, l.rfind(String::chr(0xffff))), cache.font_size).x;
 					}
 
 					Point2 round_ofs = hint_ofs + sb->get_offset() + Vector2(0, font->get_ascent(cache.font_size) + font->get_height(cache.font_size) * i + spacing);
 					round_ofs = round_ofs.round();
-					draw_string(font, round_ofs, l.replace(String::chr(0xFFFF), ""), HALIGN_LEFT, -1, cache.font_size, font_color);
+					draw_string(font, round_ofs, l.replace(String::chr(0xffff), ""), HALIGN_LEFT, -1, cache.font_size, font_color);
 					if (end > 0) {
 						Vector2 b = hint_ofs + sb->get_offset() + Vector2(begin, font->get_height(cache.font_size) + font->get_height(cache.font_size) * i + spacing - 1);
 						draw_line(b, b + Vector2(end - begin, 0), font_color);
@@ -4764,7 +4764,7 @@ String TextEdit::get_text_for_lookup_completion() {
 	for (int i = 0; i < len; i++) {
 		if (i == row) {
 			longthing += text[i].substr(0, col);
-			longthing += String::chr(0xFFFF); // Not unicode, represents the cursor.
+			longthing += String::chr(0xffff); // Not unicode, represents the cursor.
 			longthing += text[i].substr(col, text[i].size());
 		} else {
 			longthing += text[i];
@@ -4784,7 +4784,7 @@ String TextEdit::get_text_for_completion() {
 	for (int i = 0; i < len; i++) {
 		if (i == cursor.line) {
 			longthing += text[i].substr(0, cursor.column);
-			longthing += String::chr(0xFFFF); // Not unicode, represents the cursor.
+			longthing += String::chr(0xffff); // Not unicode, represents the cursor.
 			longthing += text[i].substr(cursor.column, text[i].size());
 		} else {
 			longthing += text[i];
@@ -6493,7 +6493,7 @@ void TextEdit::query_code_comple() {
 
 void TextEdit::set_code_hint(const String &p_hint) {
 	completion_hint = p_hint;
-	completion_hint_offset = -0xFFFF;
+	completion_hint_offset = -0xffff;
 	update();
 }
 

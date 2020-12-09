@@ -12,7 +12,7 @@ layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 #ifndef MODE_DYNAMIC
 
-#define NO_CHILDREN 0xFFFFFFFF
+#define NO_CHILDREN 0xffffffff
 #define GREY_VEC vec3(0.33333, 0.33333, 0.33333)
 
 struct CellChildren {
@@ -755,8 +755,8 @@ void main() {
 
 #ifdef MODE_ANISOTROPIC
 			//do not care about anisotropy for dynamic objects, just store full lit in all directions
-			imageStore(aniso_pos_texture, pos3d, uvec4(0xFFFF));
-			imageStore(aniso_neg_texture, pos3d, uvec4(0xFFFF));
+			imageStore(aniso_pos_texture, pos3d, uvec4(0xffff));
+			imageStore(aniso_neg_texture, pos3d, uvec4(0xffff));
 
 #endif // ANISOTROPIC
 		}

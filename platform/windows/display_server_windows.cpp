@@ -1614,7 +1614,7 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	pos = icon_dir->idEntries[big_icon_index].dwImageOffset;
 	f->seek(pos);
 	f->get_buffer((uint8_t *)&data_big.write[0], bytecount_big);
-	HICON icon_big = CreateIconFromResource((PBYTE)&data_big.write[0], bytecount_big, TRUE, 0x00030000);
+	HICON icon_big = CreateIconFromResource((PBYTE)&data_big.write[0], bytecount_big, TRUE, 0x0003'0000);
 	ERR_FAIL_COND_MSG(!icon_big, "Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Read the small icon
@@ -1624,7 +1624,7 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	pos = icon_dir->idEntries[small_icon_index].dwImageOffset;
 	f->seek(pos);
 	f->get_buffer((uint8_t *)&data_small.write[0], bytecount_small);
-	HICON icon_small = CreateIconFromResource((PBYTE)&data_small.write[0], bytecount_small, TRUE, 0x00030000);
+	HICON icon_small = CreateIconFromResource((PBYTE)&data_small.write[0], bytecount_small, TRUE, 0x0003'0000);
 	ERR_FAIL_COND_MSG(!icon_small, "Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Online tradition says to be sure last error is cleared and set the small icon first
@@ -1685,7 +1685,7 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 		}
 	}
 
-	HICON hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+	HICON hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x0003'0000);
 
 	/* Set the icon for the window */
 	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
@@ -1704,8 +1704,8 @@ bool DisplayServerWindows::vsync_is_using_via_compositor() const {
 void DisplayServerWindows::set_context(Context p_context) {
 }
 
-#define MI_WP_SIGNATURE 0xFF515700
-#define SIGNATURE_MASK 0xFFFFFF00
+#define MI_WP_SIGNATURE 0xff51'5700
+#define SIGNATURE_MASK 0xffff'ff00
 // Keeping the name suggested by Microsoft, but this macro really answers:
 // Is this mouse event emulated from touch or pen input?
 #define IsPenEvent(dw) (((dw)&SIGNATURE_MASK) == MI_WP_SIGNATURE)
@@ -2747,7 +2747,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			const int buffsize = 4096;
 			WCHAR buf[buffsize];
 
-			int fcount = DragQueryFileW(hDropInfo, 0xFFFFFFFF, nullptr, 0);
+			int fcount = DragQueryFileW(hDropInfo, 0xffff'ffff, nullptr, 0);
 
 			Vector<String> files;
 
@@ -2794,13 +2794,13 @@ void DisplayServerWindows::_process_key_events() {
 				if (!KeyMappingWindows::is_extended_key(ke.wParam) && ((i == 0 && ke.uMsg == WM_CHAR) || (i > 0 && key_event_buffer[i - 1].uMsg == WM_CHAR))) {
 					static char32_t prev_wc = 0;
 					char32_t unicode = ke.wParam;
-					if ((unicode & 0xfffffc00) == 0xd800) {
+					if ((unicode & 0xffff'fc00) == 0xd800) {
 						if (prev_wc != 0) {
 							ERR_PRINT("invalid utf16 surrogate input");
 						}
 						prev_wc = unicode;
 						break; // Skip surrogate.
-					} else if ((unicode & 0xfffffc00) == 0xdc00) {
+					} else if ((unicode & 0xffff'fc00) == 0xdc00) {
 						if (prev_wc == 0) {
 							ERR_PRINT("invalid utf16 surrogate input");
 							break; // Skip invalid surrogate.
@@ -2860,13 +2860,13 @@ void DisplayServerWindows::_process_key_events() {
 				if (i + 1 < key_event_pos && key_event_buffer[i + 1].uMsg == WM_CHAR) {
 					char32_t unicode = key_event_buffer[i + 1].wParam;
 					static char32_t prev_wck = 0;
-					if ((unicode & 0xfffffc00) == 0xd800) {
+					if ((unicode & 0xffff'fc00) == 0xd800) {
 						if (prev_wck != 0) {
 							ERR_PRINT("invalid utf16 surrogate input");
 						}
 						prev_wck = unicode;
 						break; // Skip surrogate.
-					} else if ((unicode & 0xfffffc00) == 0xdc00) {
+					} else if ((unicode & 0xffff'fc00) == 0xdc00) {
 						if (prev_wck == 0) {
 							ERR_PRINT("invalid utf16 surrogate input");
 							break; // Skip invalid surrogate.

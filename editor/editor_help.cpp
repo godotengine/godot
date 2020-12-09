@@ -209,15 +209,15 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 
 String EditorHelp::_fix_constant(const String &p_constant) const {
 	if (p_constant.strip_edges() == "4294967295") {
-		return "0xFFFFFFFF";
+		return "0xffffffff";
 	}
 
 	if (p_constant.strip_edges() == "2147483647") {
-		return "0x7FFFFFFF";
+		return "0x7fffffff";
 	}
 
 	if (p_constant.strip_edges() == "1048575") {
-		return "0xFFFFF";
+		return "0xfffff";
 	}
 
 	return p_constant;
