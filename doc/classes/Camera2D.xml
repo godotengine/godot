@@ -55,7 +55,7 @@
 			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<description>
-				Returns the drag margin for the specified [enum Side]. See also [member drag_margin_bottom], [member drag_margin_top], [member drag_margin_left], and [member drag_margin_right].
+				Returns the specified [enum Side]'s margin. See also [member drag_bottom_margin], [member drag_top_margin], [member drag_left_margin], and [member drag_right_margin].
 			</description>
 		</method>
 		<method name="get_limit" qualifiers="const">
@@ -90,7 +90,7 @@
 			<argument index="1" name="drag_margin" type="float">
 			</argument>
 			<description>
-				Sets the drag margin for the specified [enum Side]. See also [member drag_margin_bottom], [member drag_margin_top], [member drag_margin_left], and [member drag_margin_right].
+				Sets the specified [enum Side]'s margin. See also [member drag_bottom_margin], [member drag_top_margin], [member drag_left_margin], and [member drag_right_margin].
 			</description>
 		</method>
 		<method name="set_limit">
@@ -115,23 +115,31 @@
 		<member name="custom_viewport" type="Node" setter="set_custom_viewport" getter="get_custom_viewport">
 			The custom [Viewport] node attached to the [Camera2D]. If [code]null[/code] or not a [Viewport], uses the default viewport instead.
 		</member>
-		<member name="drag_margin_bottom" type="float" setter="set_drag_margin" getter="get_drag_margin" default="0.2">
-			Bottom margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.
+		<member name="drag_bottom_margin" type="float" setter="set_drag_margin" getter="get_drag_margin" default="0.2">
+			Bottom margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the bottom edge of the screen.
 		</member>
-		<member name="drag_margin_h_enabled" type="bool" setter="set_h_drag_enabled" getter="is_h_drag_enabled" default="false">
-			If [code]true[/code], the camera only moves when reaching the horizontal drag margins. If [code]false[/code], the camera moves horizontally regardless of margins.
+		<member name="drag_horizontal_enabled" type="bool" setter="set_h_drag_enabled" getter="is_h_drag_enabled" default="false">
+			If [code]true[/code], the camera only moves when reaching the horizontal (left and right) drag margins. If [code]false[/code], the camera moves horizontally regardless of margins.
 		</member>
-		<member name="drag_margin_left" type="float" setter="set_drag_margin" getter="get_drag_margin" default="0.2">
-			Left margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.
+		<member name="drag_horizontal_offset" type="float" setter="set_h_offset" getter="get_h_offset" default="0.0">
+			The relative horizontal drag offset of the camera between the right ([code]-1[/code]) and left ([code]1[/code]) drag margins.
+			[b]Note:[/b] Used to set the initial horizontal drag offset; determine the current offset; or force the current offset. It's not automatically updated when the horizontal drag margin is enabled or the drag margins are changed.
 		</member>
-		<member name="drag_margin_right" type="float" setter="set_drag_margin" getter="get_drag_margin" default="0.2">
-			Right margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.
+		<member name="drag_left_margin" type="float" setter="set_drag_margin" getter="get_drag_margin" default="0.2">
+			Left margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the left edge of the screen.
 		</member>
-		<member name="drag_margin_top" type="float" setter="set_drag_margin" getter="get_drag_margin" default="0.2">
-			Top margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.
+		<member name="drag_right_margin" type="float" setter="set_drag_margin" getter="get_drag_margin" default="0.2">
+			Right margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the right edge of the screen.
 		</member>
-		<member name="drag_margin_v_enabled" type="bool" setter="set_v_drag_enabled" getter="is_v_drag_enabled" default="false">
-			If [code]true[/code], the camera only moves when reaching the vertical drag margins. If [code]false[/code], the camera moves vertically regardless of margins.
+		<member name="drag_top_margin" type="float" setter="set_drag_margin" getter="get_drag_margin" default="0.2">
+			Top margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the top edge of the screen.
+		</member>
+		<member name="drag_vertical_enabled" type="bool" setter="set_drag_vertical_enabled" getter="is_drag_vertical_enabled" default="false">
+			If [code]true[/code], the camera only moves when reaching the vertical (top and bottom) drag margins. If [code]false[/code], the camera moves vertically regardless of the drag margins.
+		</member>
+		<member name="drag_vertical_offset" type="float" setter="set_drag_verticaloffset" getter="get_drag_vertical_offset" default="0.0">
+			The relative vertical drag offset of the camera between the bottom ([code]-1[/code]) and top ([code]1[/code]) drag margins.
+			[b]Note:[/b] Used to set the initial vertical drag offset; determine the current offset; or force the current offset. It's not automatically updated when the vertical drag margin is enabled or the drag margins are changed.
 		</member>
 		<member name="editor_draw_drag_margin" type="bool" setter="set_margin_drawing_enabled" getter="is_margin_drawing_enabled" default="false">
 			If [code]true[/code], draws the camera's drag margin rectangle in the editor.
@@ -159,14 +167,6 @@
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The camera's offset, useful for looking around or camera shake animations.
-		</member>
-		<member name="offset_h" type="float" setter="set_h_offset" getter="get_h_offset" default="0.0">
-			The horizontal offset of the camera, relative to the drag margins.
-			[b]Note:[/b] Offset H is used only to force offset relative to margins. It's not updated in any way if drag margins are enabled and can be used to set initial offset.
-		</member>
-		<member name="offset_v" type="float" setter="set_v_offset" getter="get_v_offset" default="0.0">
-			The vertical offset of the camera, relative to the drag margins.
-			[b]Note:[/b] Used the same as [member offset_h].
 		</member>
 		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="Camera2D.Camera2DProcessMode" default="1">
 			The camera's process callback. See [enum Camera2DProcessMode].

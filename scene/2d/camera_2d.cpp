@@ -104,31 +104,31 @@ Transform2D Camera2D::get_camera_transform() {
 
 	if (!first) {
 		if (anchor_mode == ANCHOR_MODE_DRAG_CENTER) {
-			if (h_drag_enabled && !Engine::get_singleton()->is_editor_hint() && !h_offset_changed) {
+			if (drag_horizontal_enabled && !Engine::get_singleton()->is_editor_hint() && !drag_horizontal_offset_changed) {
 				camera_pos.x = MIN(camera_pos.x, (new_camera_pos.x + screen_size.x * 0.5 * zoom.x * drag_margin[SIDE_LEFT]));
 				camera_pos.x = MAX(camera_pos.x, (new_camera_pos.x - screen_size.x * 0.5 * zoom.x * drag_margin[SIDE_RIGHT]));
 			} else {
-				if (h_ofs < 0) {
-					camera_pos.x = new_camera_pos.x + screen_size.x * 0.5 * drag_margin[SIDE_RIGHT] * h_ofs;
+				if (drag_horizontal_offset < 0) {
+					camera_pos.x = new_camera_pos.x + screen_size.x * 0.5 * drag_margin[SIDE_RIGHT] * drag_horizontal_offset;
 				} else {
-					camera_pos.x = new_camera_pos.x + screen_size.x * 0.5 * drag_margin[SIDE_LEFT] * h_ofs;
+					camera_pos.x = new_camera_pos.x + screen_size.x * 0.5 * drag_margin[SIDE_LEFT] * drag_horizontal_offset;
 				}
 
-				h_offset_changed = false;
+				drag_horizontal_offset_changed = false;
 			}
 
-			if (v_drag_enabled && !Engine::get_singleton()->is_editor_hint() && !v_offset_changed) {
+			if (drag_vertical_enabled && !Engine::get_singleton()->is_editor_hint() && !drag_vertical_offset_changed) {
 				camera_pos.y = MIN(camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5 * zoom.y * drag_margin[SIDE_TOP]));
 				camera_pos.y = MAX(camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5 * zoom.y * drag_margin[SIDE_BOTTOM]));
 
 			} else {
-				if (v_ofs < 0) {
-					camera_pos.y = new_camera_pos.y + screen_size.y * 0.5 * drag_margin[SIDE_BOTTOM] * v_ofs;
+				if (drag_vertical_offset < 0) {
+					camera_pos.y = new_camera_pos.y + screen_size.y * 0.5 * drag_margin[SIDE_BOTTOM] * drag_vertical_offset;
 				} else {
-					camera_pos.y = new_camera_pos.y + screen_size.y * 0.5 * drag_margin[SIDE_TOP] * v_ofs;
+					camera_pos.y = new_camera_pos.y + screen_size.y * 0.5 * drag_margin[SIDE_TOP] * drag_vertical_offset;
 				}
 
-				v_offset_changed = false;
+				drag_vertical_offset_changed = false;
 			}
 
 		} else if (anchor_mode == ANCHOR_MODE_FIXED_TOP_LEFT) {
@@ -476,15 +476,15 @@ void Camera2D::align() {
 
 	Point2 current_camera_pos = get_global_transform().get_origin();
 	if (anchor_mode == ANCHOR_MODE_DRAG_CENTER) {
-		if (h_ofs < 0) {
-			camera_pos.x = current_camera_pos.x + screen_size.x * 0.5 * drag_margin[SIDE_RIGHT] * h_ofs;
+		if (drag_horizontal_offset < 0) {
+			camera_pos.x = current_camera_pos.x + screen_size.x * 0.5 * drag_margin[SIDE_RIGHT] * drag_horizontal_offset;
 		} else {
-			camera_pos.x = current_camera_pos.x + screen_size.x * 0.5 * drag_margin[SIDE_LEFT] * h_ofs;
+			camera_pos.x = current_camera_pos.x + screen_size.x * 0.5 * drag_margin[SIDE_LEFT] * drag_horizontal_offset;
 		}
-		if (v_ofs < 0) {
-			camera_pos.y = current_camera_pos.y + screen_size.y * 0.5 * drag_margin[SIDE_TOP] * v_ofs;
+		if (drag_vertical_offset < 0) {
+			camera_pos.y = current_camera_pos.y + screen_size.y * 0.5 * drag_margin[SIDE_TOP] * drag_vertical_offset;
 		} else {
-			camera_pos.y = current_camera_pos.y + screen_size.y * 0.5 * drag_margin[SIDE_BOTTOM] * v_ofs;
+			camera_pos.y = current_camera_pos.y + screen_size.y * 0.5 * drag_margin[SIDE_BOTTOM] * drag_vertical_offset;
 		}
 	} else if (anchor_mode == ANCHOR_MODE_FIXED_TOP_LEFT) {
 		camera_pos = current_camera_pos;
@@ -518,44 +518,44 @@ Size2 Camera2D::_get_camera_screen_size() const {
 	return get_viewport_rect().size;
 }
 
-void Camera2D::set_h_drag_enabled(bool p_enabled) {
-	h_drag_enabled = p_enabled;
+void Camera2D::set_drag_horizontal_enabled(bool p_enabled) {
+	drag_horizontal_enabled = p_enabled;
 }
 
-bool Camera2D::is_h_drag_enabled() const {
-	return h_drag_enabled;
+bool Camera2D::is_drag_horizontal_enabled() const {
+	return drag_horizontal_enabled;
 }
 
-void Camera2D::set_v_drag_enabled(bool p_enabled) {
-	v_drag_enabled = p_enabled;
+void Camera2D::set_drag_vertical_enabled(bool p_enabled) {
+	drag_vertical_enabled = p_enabled;
 }
 
-bool Camera2D::is_v_drag_enabled() const {
-	return v_drag_enabled;
+bool Camera2D::is_drag_vertical_enabled() const {
+	return drag_vertical_enabled;
 }
 
-void Camera2D::set_v_offset(float p_offset) {
-	v_ofs = p_offset;
-	v_offset_changed = true;
+void Camera2D::set_drag_vertical_offset(float p_offset) {
+	drag_vertical_offset = p_offset;
+	drag_vertical_offset_changed = true;
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
 	_update_scroll();
 	smoothed_camera_pos = old_smoothed_camera_pos;
 }
 
-float Camera2D::get_v_offset() const {
-	return v_ofs;
+float Camera2D::get_drag_vertical_offset() const {
+	return drag_vertical_offset;
 }
 
-void Camera2D::set_h_offset(float p_offset) {
-	h_ofs = p_offset;
-	h_offset_changed = true;
+void Camera2D::set_drag_horizontal_offset(float p_offset) {
+	drag_horizontal_offset = p_offset;
+	drag_horizontal_offset_changed = true;
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
 	_update_scroll();
 	smoothed_camera_pos = old_smoothed_camera_pos;
 }
 
-float Camera2D::get_h_offset() const {
-	return h_ofs;
+float Camera2D::get_drag_horizontal_offset() const {
+	return drag_horizontal_offset;
 }
 
 void Camera2D::_set_old_smoothing(float p_enable) {
@@ -663,17 +663,17 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_limit_smoothing_enabled", "limit_smoothing_enabled"), &Camera2D::set_limit_smoothing_enabled);
 	ClassDB::bind_method(D_METHOD("is_limit_smoothing_enabled"), &Camera2D::is_limit_smoothing_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_v_drag_enabled", "enabled"), &Camera2D::set_v_drag_enabled);
-	ClassDB::bind_method(D_METHOD("is_v_drag_enabled"), &Camera2D::is_v_drag_enabled);
+	ClassDB::bind_method(D_METHOD("set_drag_vertical_enabled", "enabled"), &Camera2D::set_drag_vertical_enabled);
+	ClassDB::bind_method(D_METHOD("is_drag_vertical_enabled"), &Camera2D::is_drag_vertical_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_h_drag_enabled", "enabled"), &Camera2D::set_h_drag_enabled);
-	ClassDB::bind_method(D_METHOD("is_h_drag_enabled"), &Camera2D::is_h_drag_enabled);
+	ClassDB::bind_method(D_METHOD("set_drag_horizontal_enabled", "enabled"), &Camera2D::set_drag_horizontal_enabled);
+	ClassDB::bind_method(D_METHOD("is_drag_horizontal_enabled"), &Camera2D::is_drag_horizontal_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_v_offset", "ofs"), &Camera2D::set_v_offset);
-	ClassDB::bind_method(D_METHOD("get_v_offset"), &Camera2D::get_v_offset);
+	ClassDB::bind_method(D_METHOD("set_drag_vertical_offset", "offset"), &Camera2D::set_drag_vertical_offset);
+	ClassDB::bind_method(D_METHOD("get_drag_vertical_offset"), &Camera2D::get_drag_vertical_offset);
 
-	ClassDB::bind_method(D_METHOD("set_h_offset", "ofs"), &Camera2D::set_h_offset);
-	ClassDB::bind_method(D_METHOD("get_h_offset"), &Camera2D::get_h_offset);
+	ClassDB::bind_method(D_METHOD("set_drag_horizontal_offset", "offset"), &Camera2D::set_drag_horizontal_offset);
+	ClassDB::bind_method(D_METHOD("get_drag_horizontal_offset"), &Camera2D::get_drag_horizontal_offset);
 
 	ClassDB::bind_method(D_METHOD("set_drag_margin", "margin", "drag_margin"), &Camera2D::set_drag_margin);
 	ClassDB::bind_method(D_METHOD("get_drag_margin", "margin"), &Camera2D::get_drag_margin);
@@ -723,23 +723,19 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_bottom"), "set_limit", "get_limit", SIDE_BOTTOM);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_smoothed"), "set_limit_smoothing_enabled", "is_limit_smoothing_enabled");
 
-	ADD_GROUP("Draw Margin", "draw_margin_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_margin_h_enabled"), "set_h_drag_enabled", "is_h_drag_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_margin_v_enabled"), "set_v_drag_enabled", "is_v_drag_enabled");
-
 	ADD_GROUP("Smoothing", "smoothing_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smoothing_enabled"), "set_enable_follow_smoothing", "is_follow_smoothing_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "smoothing_speed"), "set_follow_smoothing", "get_follow_smoothing");
 
-	ADD_GROUP("Offset", "offset_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset_h", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_h_offset", "get_h_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset_v", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_v_offset", "get_v_offset");
-
-	ADD_GROUP("Drag Margin", "drag_margin_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "drag_margin_left", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", SIDE_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "drag_margin_top", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", SIDE_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "drag_margin_right", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", SIDE_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "drag_margin_bottom", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", SIDE_BOTTOM);
+	ADD_GROUP("Drag", "drag_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_horizontal_enabled"), "set_drag_horizontal_enabled", "is_drag_horizontal_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_vertical_enabled"), "set_drag_vertical_enabled", "is_drag_vertical_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drag_horizontal_offset", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_drag_horizontal_offset", "get_drag_horizontal_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drag_vertical_offset", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_drag_vertical_offset", "get_drag_vertical_offset");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "drag_left_margin", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", SIDE_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "drag_top_margin", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", SIDE_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "drag_right_margin", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", SIDE_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "drag_bottom_margin", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", SIDE_BOTTOM);
 
 	ADD_GROUP("Editor", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_draw_screen"), "set_screen_drawing_enabled", "is_screen_drawing_enabled");
@@ -780,12 +776,12 @@ Camera2D::Camera2D() {
 	limit_drawing_enabled = false;
 	margin_drawing_enabled = false;
 
-	h_drag_enabled = false;
-	v_drag_enabled = false;
-	h_ofs = 0;
-	v_ofs = 0;
-	h_offset_changed = false;
-	v_offset_changed = false;
+	drag_horizontal_enabled = false;
+	drag_vertical_enabled = false;
+	drag_horizontal_offset = 0;
+	drag_vertical_offset = 0;
+	drag_horizontal_offset_changed = false;
+	drag_vertical_offset_changed = false;
 
 	set_notify_transform(true);
 }
