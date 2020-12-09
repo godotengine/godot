@@ -232,7 +232,7 @@ void PopupMenu::_submenu_timeout() {
 }
 
 void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
-	if (p_event->is_action("ui_down") && p_event->is_pressed() && mouse_over != items.size() - 1) {
+	if (p_event->is_action("ui_down") && p_event->is_pressed()) {
 		int search_from = mouse_over + 1;
 		if (search_from >= items.size()) {
 			search_from = 0;
@@ -248,7 +248,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 				break;
 			}
 		}
-	} else if (p_event->is_action("ui_up") && p_event->is_pressed() && mouse_over != 0) {
+	} else if (p_event->is_action("ui_up") && p_event->is_pressed()) {
 		int search_from = mouse_over - 1;
 		if (search_from < 0) {
 			search_from = items.size() - 1;
