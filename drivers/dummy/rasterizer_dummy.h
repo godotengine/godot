@@ -175,6 +175,8 @@ public:
 	void update() override {}
 	void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override {}
 
+	bool is_low_end() const override { return true; }
+
 	RasterizerSceneDummy() {}
 	~RasterizerSceneDummy() {}
 };
