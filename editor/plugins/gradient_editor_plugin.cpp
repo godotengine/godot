@@ -47,6 +47,7 @@ void GradientEditor::_gradient_changed() {
 	Vector<Gradient::Point> points = gradient->get_points();
 	set_points(points);
 	editing = false;
+	update();
 }
 
 void GradientEditor::_ramp_changed() {
