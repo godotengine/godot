@@ -568,7 +568,7 @@ PhysicalSkyMaterial::PhysicalSkyMaterial() {
 	code += "\tCOLOR = pow(color, vec3(1.0 / (1.2 + (1.2 * sun_fade))));\n";
 	code += "\tCOLOR *= exposure;\n";
 	code += "\t// Make optional, eliminates banding\n";
-	code += "\tCOLOR += (hash(EYEDIR * 1741.9782) * 0.08 - 0.04) * 0.008 * dither_strength;\n";
+	code += "\tCOLOR += (hash(EYEDIR * 1741.9782) * 0.08 - 0.04) * 0.016 * dither_strength;\n";
 	code += "}\n";
 
 	shader = RS::get_singleton()->shader_create();
