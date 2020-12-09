@@ -6132,7 +6132,7 @@ EditorNode::EditorNode() {
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("editor/reload_saved_scene", TTR("Reload Saved Scene")), EDIT_RELOAD_SAVED_SCENE);
-	p->add_shortcut(ED_SHORTCUT("editor/close_scene", TTR("Close Scene"), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_W), FILE_CLOSE);
+	p->add_shortcut(ED_SHORTCUT("editor/close_scene", TTR("Close Scene"), KEY_MASK_CMD + KEY_W), FILE_CLOSE);
 
 	recent_scenes = memnew(PopupMenu);
 	recent_scenes->set_name("RecentScenes");
