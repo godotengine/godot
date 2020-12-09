@@ -423,7 +423,7 @@ void ScrollContainer::update_scrollbars() {
 
 	v_scroll->set_max(min.height);
 	if (hide_scroll_v) {
-
+		v_scroll->set_page(size.height);
 		v_scroll->hide();
 		scroll.y = 0;
 	} else {
@@ -440,7 +440,7 @@ void ScrollContainer::update_scrollbars() {
 
 	h_scroll->set_max(min.width);
 	if (hide_scroll_h) {
-
+		h_scroll->set_page(size.width);
 		h_scroll->hide();
 		scroll.x = 0;
 	} else {

@@ -30,7 +30,6 @@
 
 #include "os_javascript.h"
 
-#include "core/io/file_access_buffered_fa.h"
 #include "core/io/json.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -818,7 +817,6 @@ int OS_JavaScript::get_current_video_driver() const {
 void OS_JavaScript::initialize_core() {
 
 	OS_Unix::initialize_core();
-	FileAccess::make_default<FileAccessBufferedFA<FileAccessUnix> >(FileAccess::ACCESS_RESOURCES);
 }
 
 Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {

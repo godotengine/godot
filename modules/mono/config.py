@@ -28,6 +28,14 @@ def configure(env):
             PathVariable.PathAccept,
         )
     )
+    envvars.Add(
+        PathVariable(
+            "mono_bcl",
+            "Path to a custom Mono BCL (Base Class Library) directory for the target platform",
+            "",
+            PathVariable.PathAccept,
+        )
+    )
     envvars.Add(BoolVariable("mono_static", "Statically link Mono", default_mono_static))
     envvars.Add(BoolVariable("mono_glue", "Build with the Mono glue sources", True))
     envvars.Add(BoolVariable("build_cil", "Build C# solutions", True))

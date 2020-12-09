@@ -42,7 +42,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "platform/osx/logo.gen.h"
-#include "string.h"
+
 #include <sys/stat.h>
 
 class EditorExportPlatformOSX : public EditorExportPlatform {
@@ -504,36 +504,36 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	else
 		pkg_name = "Unnamed";
 
-	String pkg_name_safe = OS::get_singleton()->get_safe_dir_name(pkg_name);
+	pkg_name = OS::get_singleton()->get_safe_dir_name(pkg_name);
 
-	Error err = OK;
-	String tmp_app_path_name = "";
-
-	DirAccess *tmp_app_path = NULL;
 	String export_format = use_dmg() && p_path.ends_with("dmg") ? "dmg" : "zip";
 
 	// Create our application bundle.
-	tmp_app_path_name = EditorSettings::get_singleton()->get_cache_dir().plus_file(pkg_name + ".app");
+	String tmp_app_dir_name = pkg_name + ".app";
+	String tmp_app_path_name = EditorSettings::get_singleton()->get_cache_dir().plus_file(tmp_app_dir_name);
 	print_line("Exporting to " + tmp_app_path_name);
-	tmp_app_path = DirAccess::create_for_path(tmp_app_path_name);
-	if (!tmp_app_path) {
+
+	Error err = OK;
+
+	DirAccessRef tmp_app_dir = DirAccess::create_for_path(tmp_app_path_name);
+	if (!tmp_app_dir) {
 		err = ERR_CANT_CREATE;
 	}
 
 	// Create our folder structure.
 	if (err == OK) {
 		print_line("Creating " + tmp_app_path_name + "/Contents/MacOS");
-		err = tmp_app_path->make_dir_recursive(tmp_app_path_name + "/Contents/MacOS");
+		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/MacOS");
 	}
 
 	if (err == OK) {
 		print_line("Creating " + tmp_app_path_name + "/Contents/Frameworks");
-		err = tmp_app_path->make_dir_recursive(tmp_app_path_name + "/Contents/Frameworks");
+		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Frameworks");
 	}
 
 	if (err == OK) {
 		print_line("Creating " + tmp_app_path_name + "/Contents/Resources");
-		err = tmp_app_path->make_dir_recursive(tmp_app_path_name + "/Contents/Resources");
+		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Resources");
 	}
 
 	// Now process our template.
@@ -610,14 +610,14 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					ret = unzGoToNextFile(src_pkg_zip);
 					continue; // skip
 				}
-				file = file.replace("/data.mono.osx.64.release_debug/", "/data_" + pkg_name_safe + "/");
+				file = file.replace("/data.mono.osx.64.release_debug/", "/data_" + pkg_name + "/");
 			}
 			if (file.find("/data.mono.osx.64.release/") != -1) {
 				if (p_debug) {
 					ret = unzGoToNextFile(src_pkg_zip);
 					continue; // skip
 				}
-				file = file.replace("/data.mono.osx.64.release/", "/data_" + pkg_name_safe + "/");
+				file = file.replace("/data.mono.osx.64.release/", "/data_" + pkg_name + "/");
 			}
 
 			print_line("ADDING: " + file + " size: " + itos(data.size()));
@@ -626,7 +626,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			// Write it into our application bundle.
 			file = tmp_app_path_name.plus_file(file);
 			if (err == OK) {
-				err = tmp_app_path->make_dir_recursive(file.get_base_dir());
+				err = tmp_app_dir->make_dir_recursive(file.get_base_dir());
 			}
 			if (err == OK) {
 				FileAccess *f = FileAccess::open(file, FileAccess::WRITE);
@@ -721,7 +721,10 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		}
 
 		// Clean up temporary .app dir.
-		OS::get_singleton()->move_to_trash(tmp_app_path_name);
+		tmp_app_dir->change_dir(tmp_app_path_name);
+		tmp_app_dir->erase_contents_recursive();
+		tmp_app_dir->change_dir("..");
+		tmp_app_dir->remove(tmp_app_dir_name);
 	}
 
 	return err;

@@ -38,7 +38,7 @@
 			<argument index="0" name="from" type="float">
 			</argument>
 			<description>
-				Cast a float value to an integer value, this method simply removes the number fractions, so for example [code]int(2.7)[/code] will be equals to 2, [code]int(.1)[/code] will be equals to 0 and [code]int(-2.7)[/code] will be equals to -2.
+				Cast a float value to an integer value, this method simply removes the number fractions (i.e. rounds [code]from[/code] towards zero), so for example [code]int(2.7)[/code] will be equals to 2, [code]int(0.1)[/code] will be equals to 0 and [code]int(-2.7)[/code] will be equals to -2. This operation is also called truncation.
 			</description>
 		</method>
 		<method name="int">
