@@ -5798,7 +5798,7 @@ void SpatialEditor::snap_selected_nodes_to_floor() {
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 		Spatial *sp = Object::cast_to<Spatial>(E->get());
 		if (sp) {
-			Vector3 from = sp->get_global_transform().origin;
+			Vector3 from = Vector3();
 			Vector3 position_offset = Vector3();
 
 			// Priorities for snapping to floor are CollisionShapes, VisualInstances and then origin
@@ -5823,6 +5823,9 @@ void SpatialEditor::snap_selected_nodes_to_floor() {
 					from = aabb.position + size;
 					position_offset.y = from.y - sp->get_global_transform().origin.y;
 				}
+				else {
+					from = sp->get_global_transform().origin;
+				}
 			} else if (vi.size()) {
 				AABB aabb = vi.front()->get()->get_transformed_aabb();
 				for (Set<VisualInstance *>::Element *I = vi.front(); I; I = I->next()) {
@@ -5831,7 +5834,9 @@ void SpatialEditor::snap_selected_nodes_to_floor() {
 				Vector3 size = aabb.size * Vector3(0.5, 0.0, 0.5);
 				from = aabb.position + size;
 				position_offset.y = from.y - sp->get_global_transform().origin.y;
-			} 
+			} else {
+				from = sp->get_global_transform().origin;
+			}
 
 			// We add a bit of margin to the from position to avoid it from snapping
 			// when the spatial is already on a floor and there's another floor under
