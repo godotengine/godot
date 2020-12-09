@@ -4975,9 +4975,6 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			for (int i = 0; i < 3; ++i) {
 				if (grid_enable[i]) {
 					grid_visible[i] = grid_enabled;
-					if (grid_instance[i].is_valid()) {
-						VisualServer::get_singleton()->instance_set_visible(grid_instance[i], grid_enabled);
-					}
 				}
 			}
 			_finish_grid();
@@ -6147,7 +6144,6 @@ void SpatialEditor::clear() {
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN), true);
 	for (int i = 0; i < 3; ++i) {
 		if (grid_enable[i]) {
-			VisualServer::get_singleton()->instance_set_visible(grid_instance[i], true);
 			grid_visible[i] = true;
 		}
 	}
