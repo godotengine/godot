@@ -1835,7 +1835,7 @@ void EditorNode::push_item(Object *p_object, const String &p_property, bool p_in
 	ObjectID id = p_object->get_instance_id();
 	if (id != editor_history.get_current()) {
 		if (p_inspector_only) {
-			editor_history.add_object_inspector_only(id);
+			editor_history.add_object(id, String(), true);
 		} else if (p_property == "") {
 			editor_history.add_object(id);
 		} else {

@@ -44,6 +44,7 @@ void EditorHistory::cleanup_history() {
 
 		for (int j = 0; j < history[i].path.size(); j++) {
 			if (!history[i].path[j].ref.is_null()) {
+				// Reference is not null - object still alive.
 				continue;
 			}
 
@@ -51,21 +52,16 @@ void EditorHistory::cleanup_history() {
 			if (obj) {
 				Node *n = Object::cast_to<Node>(obj);
 				if (n && n->is_inside_tree()) {
+					// Node valid and inside tree - object still alive.
 					continue;
 				}
-				if (!n) { // Possibly still alive
+				if (!n) {
+					// Node not valid but object is - object still alive.
 					continue;
 				}
-			}
+			} // Else: object not valid - not alive.
 
-			if (j <= history[i].level) {
-				//before or equal level, complete fail
-				fail = true;
-			} else {
-				//after level, clip
-				history.write[i].path.resize(j);
-			}
-
+			fail = true;
 			break;
 		}
 
@@ -80,7 +76,7 @@ void EditorHistory::cleanup_history() {
 	}
 }
 
-void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int p_level_change, bool p_inspector_only) {
+void EditorHistory::add_object(ObjectID p_object, const String &p_property, bool p_inspector_only) {
 	Object *obj = ObjectDB::get_instance(p_object);
 	ERR_FAIL_COND(!obj);
 	Reference *r = Object::cast_to<Reference>(obj);
@@ -101,42 +97,20 @@ void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int
 	}
 
 	if (p_property != "" && has_prev) {
-		//add a sub property
+		// Add a sub property of the edited object. (add the new item to the path)
 		History &pr = history.write[current];
 		h = pr;
 		h.path.resize(h.level + 1);
 		h.path.push_back(o);
 		h.level++;
-	} else if (p_level_change != -1 && has_prev) {
-		//add a sub property
-		History &pr = history.write[current];
-		h = pr;
-		ERR_FAIL_INDEX(p_level_change, h.path.size());
-		h.level = p_level_change;
 	} else {
-		//add a new node
+		// Create a new history item
 		h.path.push_back(o);
 		h.level = 0;
 	}
 
 	history.push_back(h);
 	current++;
-}
-
-void EditorHistory::add_object_inspector_only(ObjectID p_object) {
-	_add_object(p_object, "", -1, true);
-}
-
-void EditorHistory::add_object(ObjectID p_object) {
-	_add_object(p_object, "", -1);
-}
-
-void EditorHistory::add_object(ObjectID p_object, const String &p_subprop) {
-	_add_object(p_object, p_subprop, -1);
-}
-
-void EditorHistory::add_object(ObjectID p_object, int p_relevel) {
-	_add_object(p_object, "", p_relevel);
 }
 
 int EditorHistory::get_history_len() {
@@ -192,64 +166,36 @@ bool EditorHistory::previous() {
 }
 
 bool EditorHistory::is_current_inspector_only() const {
-	if (current < 0 || current >= history.size()) {
-		return false;
-	}
+	ERR_FAIL_INDEX_V(current, history.size(), 0);
 
 	const History &h = history[current];
 	return h.path[h.level].inspector_only;
 }
 
 ObjectID EditorHistory::get_current() {
-	if (current < 0 || current >= history.size()) {
-		return ObjectID();
-	}
-
-	History &h = history.write[current];
-	Object *obj = ObjectDB::get_instance(h.path[h.level].object);
-	if (!obj) {
-		return ObjectID();
-	}
-
-	return obj->get_instance_id();
+	Object *obj = ObjectDB::get_instance(get_history_obj(current));
+	return obj ? obj->get_instance_id() : ObjectID();
 }
 
 int EditorHistory::get_path_size() const {
-	if (current < 0 || current >= history.size()) {
-		return 0;
-	}
+	ERR_FAIL_INDEX_V(current, history.size(), 0);
 
-	const History &h = history[current];
-	return h.path.size();
+	return history[current].path.size();
 }
 
 ObjectID EditorHistory::get_path_object(int p_index) const {
-	if (current < 0 || current >= history.size()) {
-		return ObjectID();
-	}
+	ERR_FAIL_INDEX_V(current, history.size(), ObjectID());
+	ERR_FAIL_INDEX_V(p_index, history[current].path.size(), ObjectID());
 
-	const History &h = history[current];
-
-	ERR_FAIL_INDEX_V(p_index, h.path.size(), ObjectID());
-
-	Object *obj = ObjectDB::get_instance(h.path[p_index].object);
-	if (!obj) {
-		return ObjectID();
-	}
-
-	return obj->get_instance_id();
+	Object *obj = ObjectDB::get_instance(history[current].path[p_index].object);
+	return obj ? obj->get_instance_id() : ObjectID();
 }
 
 String EditorHistory::get_path_property(int p_index) const {
-	if (current < 0 || current >= history.size()) {
-		return "";
-	}
+	ERR_FAIL_INDEX_V(current, history.size(), "");
+	ERR_FAIL_INDEX_V(p_index, history[current].path.size(), "");
 
-	const History &h = history[current];
-
-	ERR_FAIL_INDEX_V(p_index, h.path.size(), "");
-
-	return h.path[p_index].property;
+	return history[current].path[p_index].property;
 }
 
 void EditorHistory::clear() {
@@ -260,6 +206,8 @@ void EditorHistory::clear() {
 EditorHistory::EditorHistory() {
 	current = -1;
 }
+
+////////////////////////////////////////////////////////////
 
 EditorPlugin *EditorData::get_editor(Object *p_object) {
 	// We need to iterate backwards so that we can check user-created plugins first.

@@ -38,11 +38,13 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/texture.h"
 
+/**
+ * Stores the history of objects which have been selected for editing in the Editor & the Inspector.
+ *
+ * Used in the editor to set & access the currently edited object, as well as the history of objects which have been edited.
+*/
 class EditorHistory {
-	enum {
-		HISTORY_MAX = 64
-	};
-
+	// Stores the object & property (if relevant).
 	struct Obj {
 		REF ref;
 		ObjectID object;
@@ -50,47 +52,49 @@ class EditorHistory {
 		bool inspector_only = false;
 	};
 
+	// Represents the history of an object that has been edited.
 	struct History {
+		// The sub-resources of the parent object (first in the path) that have been edited. For example, Node2D -> nested resource -> nested resource, if edited each individually in their own inspector.
 		Vector<Obj> path;
+		// The current point in the path. This is always equal to the last item in the path - it is never decremented.
 		int level = 0;
 	};
 	friend class EditorData;
 
 	Vector<History> history;
-	int current;
-
-	//Vector<EditorPlugin*> editor_plugins;
-
-	struct PropertyData {
-		String name;
-		Variant value;
-	};
-
-	void _add_object(ObjectID p_object, const String &p_property, int p_level_change, bool p_inspector_only = false);
+	int current; // The current history item being edited.
 
 public:
+	// Remove invalid objects from the history.
 	void cleanup_history();
 
 	bool is_at_beginning() const;
 	bool is_at_end() const;
 
-	void add_object_inspector_only(ObjectID p_object);
-	void add_object(ObjectID p_object);
-	void add_object(ObjectID p_object, const String &p_subprop);
-	void add_object(ObjectID p_object, int p_relevel);
+	// Adds an object to the edit history. A property name can be passed if the target is a subresource of the given object.
+	// If the object should not change the main screen plugin, it can be set as inspector only.
+	void add_object(ObjectID p_object, const String &p_property = String(), bool p_inspector_only = false);
 
 	int get_history_len();
 	int get_history_pos();
+
+	// Gets an object from the history. The most recent object would have p_obj = get_history_len() - 1.
 	ObjectID get_history_obj(int p_obj) const;
 	bool is_history_obj_inspector_only(int p_obj) const;
 
+	// Set 'current' to the next item in the history.
 	bool next();
+	// Set 'current' to the previous item in the history.
 	bool previous();
+
 	ObjectID get_current();
 	bool is_current_inspector_only() const;
 
+	// Gets the size of the path of the current history item.
 	int get_path_size() const;
+	// Gets the object of the current history item, if valid.
 	ObjectID get_path_object(int p_index) const;
+	// Gets the property of the current history item.
 	String get_path_property(int p_index) const;
 
 	void clear();
