@@ -6,7 +6,6 @@ android_files = [
     "os_android.cpp",
     "file_access_android.cpp",
     "audio_driver_opensl.cpp",
-    "file_access_jandroid.cpp",
     "dir_access_jandroid.cpp",
     "thread_jandroid.cpp",
     "net_socket_android.cpp",
