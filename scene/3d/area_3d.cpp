@@ -505,11 +505,11 @@ bool Area3D::is_overriding_audio_bus() const {
 	return audio_bus_override;
 }
 
-void Area3D::set_audio_bus(const StringName &p_audio_bus) {
+void Area3D::set_audio_bus_name(const StringName &p_audio_bus) {
 	audio_bus = p_audio_bus;
 }
 
-StringName Area3D::get_audio_bus() const {
+StringName Area3D::get_audio_bus_name() const {
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == audio_bus) {
 			return audio_bus;
@@ -625,8 +625,8 @@ void Area3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_audio_bus_override", "enable"), &Area3D::set_audio_bus_override);
 	ClassDB::bind_method(D_METHOD("is_overriding_audio_bus"), &Area3D::is_overriding_audio_bus);
 
-	ClassDB::bind_method(D_METHOD("set_audio_bus", "name"), &Area3D::set_audio_bus);
-	ClassDB::bind_method(D_METHOD("get_audio_bus"), &Area3D::get_audio_bus);
+	ClassDB::bind_method(D_METHOD("set_audio_bus_name", "name"), &Area3D::set_audio_bus_name);
+	ClassDB::bind_method(D_METHOD("get_audio_bus_name"), &Area3D::get_audio_bus_name);
 
 	ClassDB::bind_method(D_METHOD("set_use_reverb_bus", "enable"), &Area3D::set_use_reverb_bus);
 	ClassDB::bind_method(D_METHOD("is_using_reverb_bus"), &Area3D::is_using_reverb_bus);
@@ -665,7 +665,7 @@ void Area3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_GROUP("Audio Bus", "audio_bus_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_bus_override"), "set_audio_bus_override", "is_overriding_audio_bus");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus", "get_audio_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus_name", "get_audio_bus_name");
 	ADD_GROUP("Reverb Bus", "reverb_bus_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reverb_bus_enable"), "set_use_reverb_bus", "is_using_reverb_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "reverb_bus_name", PROPERTY_HINT_ENUM, ""), "set_reverb_bus", "get_reverb_bus");
