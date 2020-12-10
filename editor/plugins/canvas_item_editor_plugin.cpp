@@ -2268,12 +2268,12 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 				(!Input::get_singleton()->is_key_pressed(KEY_DOWN)) &&
 				(!Input::get_singleton()->is_key_pressed(KEY_LEFT)) &&
 				(!Input::get_singleton()->is_key_pressed(KEY_RIGHT))) {
-			if (drag_selection.size() != 1) {
+			if (drag_selection.size() > 1) {
 				_commit_canvas_item_state(
 						drag_selection,
 						vformat(TTR("Move %d CanvasItems"), drag_selection.size()),
 						true);
-			} else {
+			} else if (drag_selection.size() == 1) {
 				_commit_canvas_item_state(
 						drag_selection,
 						vformat(TTR("Move CanvasItem \"%s\" to (%d, %d)"),

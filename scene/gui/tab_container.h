@@ -52,6 +52,7 @@ private:
 	int current;
 	int previous;
 	bool tabs_visible;
+	bool all_tabs_in_front;
 	bool buttons_visible_cache;
 	bool menu_hovered;
 	int highlight_arrow;
@@ -91,6 +92,9 @@ public:
 
 	void set_tabs_visible(bool p_visible);
 	bool are_tabs_visible() const;
+
+	void set_all_tabs_in_front(bool p_is_front);
+	bool is_all_tabs_in_front() const;
 
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;

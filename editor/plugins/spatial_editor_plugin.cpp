@@ -5803,13 +5803,25 @@ void SpatialEditor::snap_selected_nodes_to_floor() {
 			Set<CollisionShape *> cs = _get_child_nodes<CollisionShape>(sp);
 
 			if (cs.size()) {
-				AABB aabb = sp->get_global_transform().xform(cs.front()->get()->get_shape()->get_debug_mesh()->get_aabb());
-				for (Set<CollisionShape *>::Element *I = cs.front(); I; I = I->next()) {
-					aabb.merge_with(sp->get_global_transform().xform(I->get()->get_shape()->get_debug_mesh()->get_aabb()));
+				AABB aabb;
+				bool found_valid_shape = false;
+				if (cs.front()->get()->get_shape().is_valid()) {
+					aabb = sp->get_global_transform().xform(cs.front()->get()->get_shape()->get_debug_mesh()->get_aabb());
+					found_valid_shape = true;
 				}
-				Vector3 size = aabb.size * Vector3(0.5, 0.0, 0.5);
-				from = aabb.position + size;
-				position_offset.y = from.y - sp->get_global_transform().origin.y;
+				for (Set<CollisionShape *>::Element *I = cs.front(); I; I = I->next()) {
+					if (I->get()->get_shape().is_valid()) {
+						aabb.merge_with(sp->get_global_transform().xform(I->get()->get_shape()->get_debug_mesh()->get_aabb()));
+						found_valid_shape = true;
+					}
+				}
+				if (found_valid_shape) {
+					Vector3 size = aabb.size * Vector3(0.5, 0.0, 0.5);
+					from = aabb.position + size;
+					position_offset.y = from.y - sp->get_global_transform().origin.y;
+				} else {
+					from = sp->get_global_transform().origin;
+				}
 			} else if (vi.size()) {
 				AABB aabb = vi.front()->get()->get_transformed_aabb();
 				for (Set<VisualInstance *>::Element *I = vi.front(); I; I = I->next()) {

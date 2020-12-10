@@ -221,6 +221,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		if (search_from >= items.size())
 			search_from = 0;
 
+		bool match_found = false;
 		for (int i = search_from; i < items.size(); i++) {
 
 			if (i < 0 || i >= items.size())
@@ -232,7 +233,21 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 				emit_signal("id_focused", i);
 				update();
 				accept_event();
+				match_found = true;
 				break;
+			}
+		}
+
+		if (!match_found) {
+			// If the last item is not selectable, try re-searching from the start.
+			for (int i = 0; i < search_from; i++) {
+				if (!items[i].separator && !items[i].disabled) {
+					mouse_over = i;
+					emit_signal("id_focused", i);
+					update();
+					accept_event();
+					break;
+				}
 			}
 		}
 	} else if (p_event->is_action("ui_up") && p_event->is_pressed()) {
@@ -241,6 +256,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		if (search_from < 0)
 			search_from = items.size() - 1;
 
+		bool match_found = false;
 		for (int i = search_from; i >= 0; i--) {
 
 			if (i >= items.size())
@@ -252,7 +268,21 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 				emit_signal("id_focused", i);
 				update();
 				accept_event();
+				match_found = true;
 				break;
+			}
+		}
+
+		if (!match_found) {
+			// If the first item is not selectable, try re-searching from the end.
+			for (int i = items.size() - 1; i >= search_from; i--) {
+				if (!items[i].separator && !items[i].disabled) {
+					mouse_over = i;
+					emit_signal("id_focused", i);
+					update();
+					accept_event();
+					break;
+				}
 			}
 		}
 	} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
@@ -482,6 +512,7 @@ void PopupMenu::_notification(int p_what) {
 			Color font_color_disabled = get_color("font_color_disabled");
 			Color font_color_accel = get_color("font_color_accel");
 			Color font_color_hover = get_color("font_color_hover");
+			Color font_color_separator = get_color("font_color_separator");
 			float font_h = font->get_height();
 
 			// Add the check and the wider icon to the offset of all items.
@@ -566,7 +597,7 @@ void PopupMenu::_notification(int p_what) {
 
 					if (text != String()) {
 						int center = (get_size().width - font->get_string_size(text).width) / 2;
-						font->draw(ci, Point2(center, item_ofs.y + Math::floor((h - font_h) / 2.0)), text, font_color_disabled);
+						font->draw(ci, Point2(center, item_ofs.y + Math::floor((h - font_h) / 2.0)), text, font_color_separator);
 					}
 				} else {
 

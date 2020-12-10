@@ -687,6 +687,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color_hover", "PopupMenu", font_color_hl);
 	theme->set_color("font_color_accel", "PopupMenu", font_color_disabled);
 	theme->set_color("font_color_disabled", "PopupMenu", font_color_disabled);
+	theme->set_color("font_color_separator", "PopupMenu", font_color_disabled);
 	theme->set_icon("checked", "PopupMenu", theme->get_icon("GuiChecked", "EditorIcons"));
 	theme->set_icon("unchecked", "PopupMenu", theme->get_icon("GuiUnchecked", "EditorIcons"));
 	theme->set_icon("radio_checked", "PopupMenu", theme->get_icon("GuiRadioChecked", "EditorIcons"));

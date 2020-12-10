@@ -703,8 +703,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			auto_build_solutions = true;
 			editor = true;
-		} else if (I->get() == "--doctool") { // Dump the engine API reference
-
 			OS::get_singleton()->set_no_window_mode(true);
 			auto_quit = true;
 #ifdef DEBUG_METHODS_ENABLED

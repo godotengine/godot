@@ -349,6 +349,11 @@ void TabContainer::_notification(int p_what) {
 					break;
 			}
 
+			if (all_tabs_in_front) {
+				// Draw the tab area.
+				panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
+			}
+
 			// Draw unselected tabs in back
 			int x = 0;
 			int x_current = 0;
@@ -372,8 +377,10 @@ void TabContainer::_notification(int p_what) {
 				last_tab_cache = index;
 			}
 
-			// Draw the tab area.
-			panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
+			if (!all_tabs_in_front) {
+				// Draw the tab area.
+				panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
+			}
 
 			// Draw selected tab in front. only draw selected tab when it's in visible range.
 			if (tabs.size() > 0 && current - first_tab_cache < tab_widths.size() && current >= first_tab_cache) {
@@ -835,6 +842,20 @@ bool TabContainer::are_tabs_visible() const {
 	return tabs_visible;
 }
 
+void TabContainer::set_all_tabs_in_front(bool p_in_front) {
+	if (p_in_front == all_tabs_in_front) {
+		return;
+	}
+
+	all_tabs_in_front = p_in_front;
+
+	update();
+}
+
+bool TabContainer::is_all_tabs_in_front() const {
+	return all_tabs_in_front;
+}
+
 Control *TabContainer::_get_tab(int p_idx) const {
 
 	return get_tab_control(p_idx);
@@ -1031,6 +1052,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_align"), &TabContainer::get_tab_align);
 	ClassDB::bind_method(D_METHOD("set_tabs_visible", "visible"), &TabContainer::set_tabs_visible);
 	ClassDB::bind_method(D_METHOD("are_tabs_visible"), &TabContainer::are_tabs_visible);
+	ClassDB::bind_method(D_METHOD("set_all_tabs_in_front", "is_front"), &TabContainer::set_all_tabs_in_front);
+	ClassDB::bind_method(D_METHOD("is_all_tabs_in_front"), &TabContainer::is_all_tabs_in_front);
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabContainer::set_tab_title);
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabContainer::get_tab_title);
 	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon"), &TabContainer::set_tab_icon);
@@ -1059,6 +1082,7 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_align", "get_tab_align");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front"), "set_all_tabs_in_front", "is_all_tabs_in_front");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
 
@@ -1080,6 +1104,7 @@ TabContainer::TabContainer() {
 	align = ALIGN_CENTER;
 	tabs_visible = true;
 	popup_obj_id = 0;
+	all_tabs_in_front = false;
 	drag_to_rearrange_enabled = false;
 	tabs_rearrange_group = -1;
 	use_hidden_tabs_for_min_size = false;
