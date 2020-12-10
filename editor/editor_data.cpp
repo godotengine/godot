@@ -1032,7 +1032,6 @@ EditorData::EditorData() {
 	script_class_load_icon_paths();
 }
 
-///////////
 void EditorSelection::_node_removed(Node *p_node) {
 	if (!selection.has(p_node)) {
 		return;
@@ -1066,8 +1065,6 @@ void EditorSelection::add_node(Node *p_node) {
 	selection[p_node] = meta;
 
 	p_node->connect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed), varray(p_node), CONNECT_ONESHOT);
-
-	//emit_signal(SNAME("selection_changed"));
 }
 
 void EditorSelection::remove_node(Node *p_node) {
@@ -1085,31 +1082,10 @@ void EditorSelection::remove_node(Node *p_node) {
 	}
 	selection.erase(p_node);
 	p_node->disconnect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed));
-	//emit_signal(SNAME("selection_changed"));
 }
 
 bool EditorSelection::is_selected(Node *p_node) const {
 	return selection.has(p_node);
-}
-
-Array EditorSelection::_get_transformable_selected_nodes() {
-	Array ret;
-
-	for (const Node *E : selected_node_list) {
-		ret.push_back(E);
-	}
-
-	return ret;
-}
-
-TypedArray<Node> EditorSelection::get_selected_nodes() {
-	TypedArray<Node> ret;
-
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		ret.push_back(E.key);
-	}
-
-	return ret;
 }
 
 void EditorSelection::_bind_methods() {
@@ -1117,7 +1093,6 @@ void EditorSelection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_node", "node"), &EditorSelection::add_node);
 	ClassDB::bind_method(D_METHOD("remove_node", "node"), &EditorSelection::remove_node);
 	ClassDB::bind_method(D_METHOD("get_selected_nodes"), &EditorSelection::get_selected_nodes);
-	ClassDB::bind_method(D_METHOD("get_transformable_selected_nodes"), &EditorSelection::_get_transformable_selected_nodes);
 	ClassDB::bind_method(D_METHOD("_emit_change"), &EditorSelection::_emit_change);
 	ADD_SIGNAL(MethodInfo("selection_changed"));
 }
@@ -1133,6 +1108,9 @@ void EditorSelection::_update_nl() {
 
 	selected_node_list.clear();
 
+	// If the selection does not have the parent of the selected node, then add the node to the node list.
+	// However, if the parent is already selected, then adding this node is redundant as
+	// it is included with the parent, so skip it.
 	for (const KeyValue<Node *, Object *> &E : selection) {
 		Node *parent = E.key;
 		parent = parent->get_parent();
@@ -1170,6 +1148,15 @@ void EditorSelection::update() {
 void EditorSelection::_emit_change() {
 	emit_signal(SNAME("selection_changed"));
 	emitted = false;
+}
+
+TypedArray<Node> EditorSelection::get_selected_nodes() {
+	TypedArray<Node> ret;
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		ret.push_back(E.key);
+	}
+
+	return ret;
 }
 
 List<Node *> &EditorSelection::get_selected_node_list() {

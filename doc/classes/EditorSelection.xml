@@ -30,12 +30,6 @@
 				Gets the list of selected nodes.
 			</description>
 		</method>
-		<method name="get_transformable_selected_nodes">
-			<return type="Array" />
-			<description>
-				Gets the list of selected nodes, optimized for transform operations (i.e. moving them, rotating, etc). This list avoids situations where a node is selected and also child/grandchild.
-			</description>
-		</method>
 		<method name="remove_node">
 			<return type="void" />
 			<argument index="0" name="node" type="Node" />
