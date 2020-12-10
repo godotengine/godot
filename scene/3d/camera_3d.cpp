@@ -651,26 +651,26 @@ Vector3 Camera3D::get_doppler_tracked_velocity() const {
 	}
 }
 
-Camera3D::Camera3D() {
-	camera = RenderingServer::get_singleton()->camera_create();
-	size = 1;
-	fov = 0;
-	frustum_offset = Vector2();
-	near = 0;
-	far = 0;
-	current = false;
-	viewport = nullptr;
-	force_change = false;
-	mode = PROJECTION_PERSPECTIVE;
+Camera3D::Camera3D() :
+		camera(RenderingServer::get_singleton()->camera_create()),
+		size(1),
+		fov(0),
+		frustum_offset(Vector2()),
+		near(0),
+		far(0),
+		current(false),
+		viewport(nullptr),
+		force_change(false),
+		mode(PROJECTION_PERSPECTIVE),
+		keep_aspect(KEEP_HEIGHT),
+		layers(0xfffff),
+		v_offset(0),
+		h_offset(0),
+		doppler_tracking(DOPPLER_TRACKING_DISABLED) {
 	set_perspective(75.0, 0.05, 100.0);
-	keep_aspect = KEEP_HEIGHT;
-	layers = 0xfffff;
-	v_offset = 0;
-	h_offset = 0;
 	RenderingServer::get_singleton()->camera_set_cull_mask(camera, layers);
 	//active=false;
 	velocity_tracker.instance();
-	doppler_tracking = DOPPLER_TRACKING_DISABLED;
 	set_notify_transform(true);
 	set_disable_scale(true);
 }
