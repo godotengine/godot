@@ -511,7 +511,7 @@ public:
 
 	/* Constructors */
 
-	typedef void (*ValidatedConstructor)(Variant &r_base, const Variant **p_args);
+	typedef void (*ValidatedConstructor)(Variant *r_base, const Variant **p_args);
 	typedef void (*PTRConstructor)(void *base, const void **p_args);
 
 	static int get_constructor_count(Variant::Type p_type);
@@ -550,8 +550,8 @@ public:
 	static bool has_indexing(Variant::Type p_type);
 	static Variant::Type get_indexed_element_type(Variant::Type p_type);
 
-	typedef void (*ValidatedIndexedSetter)(Variant *base, int64_t index, const Variant *value, bool &oob);
-	typedef void (*ValidatedIndexedGetter)(const Variant *base, int64_t index, Variant *value, bool &oob);
+	typedef void (*ValidatedIndexedSetter)(Variant *base, int64_t index, const Variant *value, bool *oob);
+	typedef void (*ValidatedIndexedGetter)(const Variant *base, int64_t index, Variant *value, bool *oob);
 
 	static ValidatedIndexedSetter get_member_validated_indexed_setter(Variant::Type p_type);
 	static ValidatedIndexedGetter get_member_validated_indexed_getter(Variant::Type p_type);
@@ -571,9 +571,9 @@ public:
 
 	static bool is_keyed(Variant::Type p_type);
 
-	typedef void (*ValidatedKeyedSetter)(Variant *base, const Variant *key, const Variant *value, bool &valid);
-	typedef void (*ValidatedKeyedGetter)(const Variant *base, const Variant *key, Variant *value, bool &valid);
-	typedef bool (*ValidatedKeyedChecker)(const Variant *base, const Variant *key, bool &valid);
+	typedef void (*ValidatedKeyedSetter)(Variant *base, const Variant *key, const Variant *value, bool *valid);
+	typedef void (*ValidatedKeyedGetter)(const Variant *base, const Variant *key, Variant *value, bool *valid);
+	typedef bool (*ValidatedKeyedChecker)(const Variant *base, const Variant *key, bool *valid);
 
 	static ValidatedKeyedSetter get_member_validated_keyed_setter(Variant::Type p_type);
 	static ValidatedKeyedGetter get_member_validated_keyed_getter(Variant::Type p_type);

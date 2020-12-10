@@ -69,9 +69,9 @@ public:
 		construct_helper(*VariantGetInternalPtr<T>::get_ptr(&r_ret), p_args, r_error, BuildIndexSequence<sizeof...(P)>{});
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantTypeChanger<T>::change(&r_ret);
-		validated_construct_helper(*VariantGetInternalPtr<T>::get_ptr(&r_ret), p_args, BuildIndexSequence<sizeof...(P)>{});
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<T>::change(r_ret);
+		validated_construct_helper(*VariantGetInternalPtr<T>::get_ptr(r_ret), p_args, BuildIndexSequence<sizeof...(P)>{});
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		ptr_construct_helper(base, p_args, BuildIndexSequence<sizeof...(P)>{});
@@ -107,9 +107,9 @@ public:
 		}
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantInternal::clear(&r_ret);
-		VariantInternal::object_assign(&r_ret, p_args[0]);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantInternal::clear(r_ret);
+		VariantInternal::object_assign(r_ret, p_args[0]);
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		PtrToArg<Object *>::encode(PtrToArg<Object *>::convert(p_args[0]), base);
@@ -141,9 +141,9 @@ public:
 		VariantInternal::object_assign_null(&r_ret);
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantInternal::clear(&r_ret);
-		VariantInternal::object_assign_null(&r_ret);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantInternal::clear(r_ret);
+		VariantInternal::object_assign_null(r_ret);
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		PtrToArg<Object *>::encode(nullptr, base);
@@ -194,9 +194,9 @@ public:
 		*VariantGetInternalPtr<Callable>::get_ptr(&r_ret) = Callable(object_id, method);
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantTypeChanger<Callable>::change(&r_ret);
-		*VariantGetInternalPtr<Callable>::get_ptr(&r_ret) = Callable(VariantInternal::get_object_id(p_args[0]), *VariantGetInternalPtr<StringName>::get_ptr(p_args[1]));
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<Callable>::change(r_ret);
+		*VariantGetInternalPtr<Callable>::get_ptr(r_ret) = Callable(VariantInternal::get_object_id(p_args[0]), *VariantGetInternalPtr<StringName>::get_ptr(p_args[1]));
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		PtrToArg<Callable>::encode(Callable(PtrToArg<Object *>::convert(p_args[0]), PtrToArg<StringName>::convert(p_args[1])), base);
@@ -251,9 +251,9 @@ public:
 		*VariantGetInternalPtr<Signal>::get_ptr(&r_ret) = Signal(object_id, method);
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantTypeChanger<Signal>::change(&r_ret);
-		*VariantGetInternalPtr<Signal>::get_ptr(&r_ret) = Signal(VariantInternal::get_object_id(p_args[0]), *VariantGetInternalPtr<StringName>::get_ptr(p_args[1]));
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<Signal>::change(r_ret);
+		*VariantGetInternalPtr<Signal>::get_ptr(r_ret) = Signal(VariantInternal::get_object_id(p_args[0]), *VariantGetInternalPtr<StringName>::get_ptr(p_args[1]));
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		PtrToArg<Signal>::encode(Signal(PtrToArg<Object *>::convert(p_args[0]), PtrToArg<StringName>::convert(p_args[1])), base);
@@ -298,9 +298,9 @@ public:
 		}
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantTypeChanger<Array>::change(&r_ret);
-		Array &dst_arr = *VariantGetInternalPtr<Array>::get_ptr(&r_ret);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<Array>::change(r_ret);
+		Array &dst_arr = *VariantGetInternalPtr<Array>::get_ptr(r_ret);
 		const T &src_arr = *VariantGetInternalPtr<T>::get_ptr(p_args[0]);
 
 		int size = src_arr.size();
@@ -357,10 +357,10 @@ public:
 		}
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantTypeChanger<T>::change(&r_ret);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<T>::change(r_ret);
 		const Array &src_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
-		T &dst_arr = *VariantGetInternalPtr<T>::get_ptr(&r_ret);
+		T &dst_arr = *VariantGetInternalPtr<T>::get_ptr(r_ret);
 
 		int size = src_arr.size();
 		dst_arr.resize(size);
@@ -408,8 +408,8 @@ public:
 		VariantInternal::clear(&r_ret);
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantInternal::clear(&r_ret);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantInternal::clear(r_ret);
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		PtrToArg<Variant>::encode(Variant(), base);
@@ -436,8 +436,8 @@ public:
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantTypeChanger<T>::change_and_reset(&r_ret);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<T>::change_and_reset(r_ret);
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		PtrToArg<T>::encode(T(), base);
@@ -463,8 +463,8 @@ public:
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantInternal::clear(&r_ret);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantInternal::clear(r_ret);
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		ERR_FAIL_MSG("can't ptrcall nil constructor");
@@ -491,9 +491,9 @@ public:
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantInternal::clear(&r_ret);
-		VariantInternal::object_assign_null(&r_ret);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantInternal::clear(r_ret);
+		VariantInternal::object_assign_null(r_ret);
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		PtrToArg<Object *>::encode(nullptr, base);
