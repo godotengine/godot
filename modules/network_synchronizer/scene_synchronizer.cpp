@@ -746,7 +746,7 @@ void SceneSynchronizer::set_peer_networking_enable(int p_peer, bool p_enable) {
 	} else {
 		ERR_FAIL_COND_MSG(synchronizer_type != SYNCHRONIZER_TYPE_NONETWORK, "At this point no network is expected.");
 
-		static_cast<NoNetSynchronizer *>(synchronizer)->set_enable(p_enable);
+		static_cast<NoNetSynchronizer *>(synchronizer)->set_enabled(p_enable);
 	}
 }
 
@@ -762,7 +762,7 @@ bool SceneSynchronizer::is_peer_networking_enable(int p_peer) const {
 		return pd->enabled;
 	} else {
 		ERR_FAIL_COND_V_MSG(synchronizer_type != SYNCHRONIZER_TYPE_NONETWORK, false, "At this point no network is expected.");
-		return static_cast<NoNetSynchronizer *>(synchronizer)->is_enable();
+		return static_cast<NoNetSynchronizer *>(synchronizer)->is_enabled();
 	}
 }
 
@@ -903,7 +903,7 @@ void SceneSynchronizer::_rpc_notify_need_full_snapshot() {
 
 void SceneSynchronizer::_rpc_notify_peer_status(bool p_enabled) {
 	ERR_FAIL_COND_MSG(synchronizer_type != SYNCHRONIZER_TYPE_CLIENT, "The peer status is supposed to be received by the client.");
-	static_cast<ClientSynchronizer *>(synchronizer)->set_enable(p_enabled);
+	static_cast<ClientSynchronizer *>(synchronizer)->set_enabled(p_enabled);
 }
 
 void SceneSynchronizer::update_peers() {
@@ -1550,7 +1550,7 @@ void NoNetSynchronizer::process() {
 void NoNetSynchronizer::receive_snapshot(Variant _p_snapshot) {
 }
 
-void NoNetSynchronizer::set_enable(bool p_enabled) {
+void NoNetSynchronizer::set_enabled(bool p_enabled) {
 	if (enabled == p_enabled) {
 		// Nothing to do.
 		return;
@@ -1565,7 +1565,7 @@ void NoNetSynchronizer::set_enable(bool p_enabled) {
 	}
 }
 
-bool NoNetSynchronizer::is_enable() const {
+bool NoNetSynchronizer::is_enabled() const {
 	return enabled;
 }
 
@@ -2712,7 +2712,7 @@ bool ClientSynchronizer::parse_sync_data(
 	return true;
 }
 
-void ClientSynchronizer::set_enable(bool p_enabled) {
+void ClientSynchronizer::set_enabled(bool p_enabled) {
 	if (enabled == p_enabled) {
 		// Nothing to do.
 		return;

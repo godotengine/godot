@@ -333,8 +333,8 @@ public:
 	virtual void process() override;
 	virtual void receive_snapshot(Variant p_snapshot) override;
 
-	void set_enable(bool p_enabled);
-	bool is_enable() const;
+	void set_enabled(bool p_enabled);
+	bool is_enabled() const;
 };
 
 class ServerSynchronizer : public Synchronizer {
@@ -416,7 +416,7 @@ public:
 			void (*p_controller_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_input_id),
 			void (*p_variable_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data, NetVarId p_var_id, const Variant &p_value));
 
-	void set_enable(bool p_enabled);
+	void set_enabled(bool p_enabled);
 
 private:
 	/// Store node data organized per controller.
