@@ -50,8 +50,8 @@ class XRPositionalTracker : public Object {
 public:
 	enum TrackerHand {
 		TRACKER_HAND_UNKNOWN, /* unknown or not applicable */
-		TRACKER_LEFT_HAND, /* controller is the left hand controller */
-		TRACKER_RIGHT_HAND /* controller is the right hand controller */
+		TRACKER_HAND_LEFT, /* controller is the left hand controller */
+		TRACKER_HAND_RIGHT /* controller is the right hand controller */
 	};
 
 private:
