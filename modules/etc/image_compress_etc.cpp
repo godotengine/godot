@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  image_etc.cpp                                                        */
+/*  image_compress_etc.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "image_etc.h"
-#include "Etc.h"
-#include "EtcFilter.h"
+#include "image_compress_etc.h"
+
 #include "core/io/image.h"
 #include "core/os/copymem.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+
+#include <Etc.h>
+#include <EtcFilter.h>
 
 static Image::Format _get_etc2_mode(Image::UsedChannels format) {
 	switch (format) {
