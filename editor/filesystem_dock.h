@@ -221,7 +221,7 @@ private:
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm();
 	void _move_with_overwrite();
-	bool _check_existing();
+	Vector<String> _check_existing();
 	void _move_operation_confirm(const String &p_to_path, bool overwrite = false);
 
 	void _tree_rmb_option(int p_option);
