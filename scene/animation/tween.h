@@ -129,7 +129,6 @@ private:
 	typedef real_t (*interpolater)(real_t t, real_t b, real_t c, real_t d);
 	static interpolater interpolaters[TRANS_COUNT][EASE_COUNT];
 
-	real_t _run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d);
 	Variant &_get_delta_val(InterpolateData &p_data);
 	Variant _get_initial_val(const InterpolateData &p_data) const;
 	Variant _get_final_val(const InterpolateData &p_data) const;
@@ -143,6 +142,7 @@ private:
 	void _build_interpolation(InterpolateType p_interpolation_type, Object *p_object, NodePath *p_property, StringName *p_method, Variant p_initial_val, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay);
 
 protected:
+	real_t _run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d);
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
