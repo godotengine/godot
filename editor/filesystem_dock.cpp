@@ -1505,7 +1505,8 @@ void FileSystemDock::_move_with_overwrite() {
 	_move_operation_confirm(to_move_path, true);
 }
 
-bool FileSystemDock::_check_existing() {
+Vector<String> FileSystemDock::_check_existing() {
+	Vector<String> conflicting_items;
 	String &p_to_path = to_move_path;
 	for (int i = 0; i < to_move.size(); i++) {
 		String ol_pth = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
@@ -1515,21 +1516,24 @@ bool FileSystemDock::_check_existing() {
 		String old_path = (p_item.is_file || p_item.path.ends_with("/")) ? p_item.path : (p_item.path + "/");
 		String new_path = (p_item.is_file || p_new_path.ends_with("/")) ? p_new_path : (p_new_path + "/");
 
-		if (p_item.is_file && FileAccess::exists(new_path)) {
-			return false;
-		} else if (!p_item.is_file && DirAccess::exists(new_path)) {
-			return false;
+		if ((p_item.is_file && FileAccess::exists(new_path)) ||
+				(!p_item.is_file && DirAccess::exists(new_path))) {
+			conflicting_items.push_back(old_path);
 		}
 	}
-	return true;
+	return conflicting_items;
 }
 
 void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_overwrite) {
 	if (!p_overwrite) {
 		to_move_path = p_to_path;
-		bool can_move = _check_existing();
-		if (!can_move) {
+		Vector<String> conflicting_items = _check_existing();
+		if (!conflicting_items.empty()) {
 			// Ask to do something.
+			overwrite_dialog->set_text(vformat(
+					TTR("The following files or folders conflict with items in the target location '%s':\n\n%s\n\nDo you wish to overwrite them?"),
+					to_move_path,
+					String("\n").join(conflicting_items)));
 			overwrite_dialog->popup_centered();
 			return;
 		}
@@ -2849,7 +2853,6 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	rename_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
 
 	overwrite_dialog = memnew(ConfirmationDialog);
-	overwrite_dialog->set_text(TTR("There is already file or folder with the same name in this location."));
 	overwrite_dialog->get_ok()->set_text(TTR("Overwrite"));
 	add_child(overwrite_dialog);
 	overwrite_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_move_with_overwrite));
