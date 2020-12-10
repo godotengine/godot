@@ -738,7 +738,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				const Variant::ValidatedKeyedSetter setter = _keyed_setters_ptr[index_setter];
 
 				bool valid;
-				setter(dst, index, value, valid);
+				setter(dst, index, value, &valid);
 
 #ifdef DEBUG_ENABLED
 				if (!valid) {
@@ -770,7 +770,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int64_t int_index = *VariantInternal::get_int(index);
 
 				bool oob;
-				setter(dst, int_index, value, oob);
+				setter(dst, int_index, value, &oob);
 
 #ifdef DEBUG_ENABLED
 				if (oob) {
@@ -835,9 +835,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				// Allow better error message in cases where src and dst are the same stack position.
 				Variant ret;
-				getter(src, key, &ret, valid);
+				getter(src, key, &ret, &valid);
 #else
-				getter(src, key, dst, valid);
+				getter(src, key, dst, &valid);
 #endif
 #ifdef DEBUG_ENABLED
 				if (!valid) {
@@ -870,7 +870,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int64_t int_index = *VariantInternal::get_int(index);
 
 				bool oob;
-				getter(src, int_index, dst, oob);
+				getter(src, int_index, dst, &oob);
 
 #ifdef DEBUG_ENABLED
 				if (oob) {
@@ -1292,7 +1292,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				GET_INSTRUCTION_ARG(dst, argc);
 
-				constructor(*dst, (const Variant **)argptrs);
+				constructor(dst, (const Variant **)argptrs);
 
 				ip += 3;
 			}
