@@ -1181,7 +1181,7 @@ struct VariantKeyedSetGetObject {
 
 	static bool has(const Variant *base, const Variant *key, bool *r_valid) {
 		Object *obj = base->get_validated_object();
-		if (obj != nullptr) {
+		if (!obj) {
 			*r_valid = false;
 			return false;
 		}
