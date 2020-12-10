@@ -29,11 +29,8 @@
 /*************************************************************************/
 
 #include "texture_loader_pvr.h"
-#include "PvrTcEncoder.h"
-#include "RgbaBitmap.h"
+
 #include "core/os/file_access.h"
-#include <string.h>
-#include <new>
 
 static void _pvrtc_decompress(Image *p_img);
 
@@ -111,11 +108,11 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 	switch (flags & 0xFF) {
 		case 0x18:
 		case 0xC:
-			format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC2A : Image::FORMAT_PVRTC2;
+			format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC1_2A : Image::FORMAT_PVRTC1_2;
 			break;
 		case 0x19:
 		case 0xD:
-			format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4;
+			format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC1_4A : Image::FORMAT_PVRTC1_4;
 			break;
 		case 0x16:
 			format = Image::FORMAT_L8;
@@ -183,53 +180,8 @@ String ResourceFormatPVR::get_resource_type(const String &p_path) const {
 	return "";
 }
 
-static void _compress_pvrtc4(Image *p_img) {
-	Ref<Image> img = p_img->duplicate();
-
-	bool make_mipmaps = false;
-	if (!img->is_size_po2() || img->get_width() != img->get_height()) {
-		make_mipmaps = img->has_mipmaps();
-		img->resize_to_po2(true);
-	}
-	img->convert(Image::FORMAT_RGBA8);
-	if (!img->has_mipmaps() && make_mipmaps) {
-		img->generate_mipmaps();
-	}
-
-	bool use_alpha = img->detect_alpha();
-
-	Ref<Image> new_img;
-	new_img.instance();
-	new_img->create(img->get_width(), img->get_height(), img->has_mipmaps(), use_alpha ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4);
-
-	Vector<uint8_t> data = new_img->get_data();
-	{
-		uint8_t *wr = data.ptrw();
-		const uint8_t *r = img->get_data().ptr();
-
-		for (int i = 0; i <= new_img->get_mipmap_count(); i++) {
-			int ofs, size, w, h;
-			img->get_mipmap_offset_size_and_dimensions(i, ofs, size, w, h);
-			Javelin::RgbaBitmap bm(w, h);
-			void *dst = (void *)bm.GetData();
-			copymem(dst, &r[ofs], size);
-			Javelin::ColorRgba<unsigned char> *dp = bm.GetData();
-			for (int j = 0; j < size / 4; j++) {
-				/* red and blue colors are swapped.  */
-				SWAP(dp[j].r, dp[j].b);
-			}
-			new_img->get_mipmap_offset_size_and_dimensions(i, ofs, size, w, h);
-			Javelin::PvrTcEncoder::EncodeRgba4Bpp(&wr[ofs], bm);
-		}
-	}
-
-	p_img->create(new_img->get_width(), new_img->get_height(), new_img->has_mipmaps(), new_img->get_format(), data);
-}
-
 ResourceFormatPVR::ResourceFormatPVR() {
 	Image::_image_decompress_pvrtc = _pvrtc_decompress;
-	Image::_image_compress_pvrtc4_func = _compress_pvrtc4;
-	Image::_image_compress_pvrtc2_func = _compress_pvrtc4;
 }
 
 /////////////////////////////////////////////////////////
@@ -635,9 +587,9 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 }
 
 static void _pvrtc_decompress(Image *p_img) {
-	ERR_FAIL_COND(p_img->get_format() != Image::FORMAT_PVRTC2 && p_img->get_format() != Image::FORMAT_PVRTC2A && p_img->get_format() != Image::FORMAT_PVRTC4 && p_img->get_format() != Image::FORMAT_PVRTC4A);
+	ERR_FAIL_COND(p_img->get_format() != Image::FORMAT_PVRTC1_2 && p_img->get_format() != Image::FORMAT_PVRTC1_2A && p_img->get_format() != Image::FORMAT_PVRTC1_4 && p_img->get_format() != Image::FORMAT_PVRTC1_4A);
 
-	bool _2bit = (p_img->get_format() == Image::FORMAT_PVRTC2 || p_img->get_format() == Image::FORMAT_PVRTC2A);
+	bool _2bit = (p_img->get_format() == Image::FORMAT_PVRTC1_2 || p_img->get_format() == Image::FORMAT_PVRTC1_2A);
 
 	Vector<uint8_t> data = p_img->get_data();
 	const uint8_t *r = data.ptr();

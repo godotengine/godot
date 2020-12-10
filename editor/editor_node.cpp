@@ -58,7 +58,9 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tabs.h"
 #include "scene/gui/texture_progress.h"
+#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display_server.h"
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
@@ -172,12 +174,10 @@
 #include "editor/progress_dialog.h"
 #include "editor/project_export.h"
 #include "editor/project_settings_editor.h"
-#include "editor/pvrtc_compress.h"
 #include "editor/quick_open.h"
 #include "editor/register_exporters.h"
 #include "editor/settings_config_dialog.h"
-#include "scene/main/window.h"
-#include "servers/display_server.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -5725,8 +5725,6 @@ EditorNode::EditorNode() {
 		smp.instance();
 		EditorInspector::add_inspector_plugin(smp);
 	}
-
-	_pvrtc_register_compressors();
 
 	editor_selection = memnew(EditorSelection);
 
