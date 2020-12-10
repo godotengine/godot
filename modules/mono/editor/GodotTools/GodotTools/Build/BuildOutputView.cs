@@ -30,7 +30,8 @@ namespace GodotTools.Build
         private readonly object pendingBuildLogTextLock = new object();
         [NotNull] private string pendingBuildLogText = string.Empty;
 
-        [Signal] public event Action BuildStateChanged;
+        [Signal]
+        public delegate void BuildStateChanged();
 
         public bool HasBuildExited { get; private set; } = false;
 
