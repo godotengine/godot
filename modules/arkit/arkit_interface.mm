@@ -398,14 +398,14 @@ XRPositionalTracker *ARKitInterface::get_anchor_for_uuid(const unsigned char *p_
 	}
 
 	XRPositionalTracker *new_tracker = memnew(XRPositionalTracker);
-	new_tracker->set_type(XRServer::TRACKER_ANCHOR);
+	new_tracker->set_tracker_type(XRServer::TRACKER_ANCHOR);
 
 	char tracker_name[256];
 	sprintf(tracker_name, "Anchor %02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", p_uuid[0], p_uuid[1], p_uuid[2], p_uuid[3], p_uuid[4], p_uuid[5], p_uuid[6], p_uuid[7], p_uuid[8], p_uuid[9], p_uuid[10], p_uuid[11], p_uuid[12], p_uuid[13], p_uuid[14], p_uuid[15]);
 
 	String name = tracker_name;
 	print_line("Adding tracker " + name);
-	new_tracker->set_name(name);
+	new_tracker->set_tracker_name(name);
 
 	// add our tracker
 	XRServer::get_singleton()->add_tracker(new_tracker);

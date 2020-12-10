@@ -59,9 +59,9 @@ private:
 	StringName name; // (unique) name of the tracker
 	int tracker_id; // tracker index id that is unique per type
 	int joy_id; // if we also have a related joystick entity, the id of the joystick
-	bool tracks_orientation; // do we track orientation?
+	bool tracking_orientation; // do we track orientation?
 	Basis orientation; // our orientation
-	bool tracks_position; // do we track position?
+	bool tracking_position; // do we track position?
 	Vector3 rw_position; // our position "in the real world, so without world_scale applied"
 	Ref<Mesh> mesh; // when available, a mesh that can be used to render this tracker
 	TrackerHand hand; // if known, the hand this tracker is held in
@@ -71,23 +71,23 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_type(XRServer::TrackerType p_type);
+	void set_tracker_type(XRServer::TrackerType p_type);
 	XRServer::TrackerType get_tracker_type() const;
-	void set_name(const String &p_name);
+	void set_tracker_name(const String &p_name);
 	StringName get_tracker_name() const;
 	int get_tracker_id() const;
 	void set_joy_id(int p_joy_id);
 	int get_joy_id() const;
-	bool get_tracks_orientation() const;
+	bool is_tracking_orientation() const;
 	void set_orientation(const Basis &p_orientation);
 	Basis get_orientation() const;
-	bool get_tracks_position() const;
+	bool is_tracking_position() const;
 	void set_position(const Vector3 &p_position); // set position with world_scale applied
 	Vector3 get_position() const; // get position with world_scale applied
 	void set_rw_position(const Vector3 &p_rw_position);
 	Vector3 get_rw_position() const;
-	XRPositionalTracker::TrackerHand get_hand() const;
-	void set_hand(const XRPositionalTracker::TrackerHand p_hand);
+	XRPositionalTracker::TrackerHand get_tracker_hand() const;
+	void set_tracker_hand(const XRPositionalTracker::TrackerHand p_hand);
 	real_t get_rumble() const;
 	void set_rumble(real_t p_rumble);
 	void set_mesh(const Ref<Mesh> &p_mesh);
