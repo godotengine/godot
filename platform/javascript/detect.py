@@ -1,6 +1,8 @@
 import os
+import sys
 
 from emscripten_helpers import run_closure_compiler, create_engine_file, add_js_libraries
+from methods import get_compiler_version
 from SCons.Util import WhereIs
 
 
@@ -20,6 +22,13 @@ def get_opts():
     from SCons.Variables import BoolVariable
 
     return [
+        ("initial_memory", "Initial WASM memory (in MiB)", 16),
+        BoolVariable("use_assertions", "Use emscripten runtime assertions", False),
+        BoolVariable("use_thinlto", "Use ThinLTO", False),
+        BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
+        BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
+        BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN)", False),
+        BoolVariable("use_safe_heap", "Use emscripten SAFE_HEAP sanitizer", False),
         # eval() can be a security concern, so it can be disabled.
         BoolVariable("javascript_eval", "Enable JavaScript eval interface", True),
         BoolVariable("threads_enabled", "Enable WebAssembly Threads support (limited browser support)", False),
@@ -41,6 +50,11 @@ def get_flags():
 
 
 def configure(env):
+    try:
+        env["initial_memory"] = int(env["initial_memory"])
+    except:
+        print("Initial memory must be a valid integer")
+        sys.exit(255)
 
     ## Build type
 
@@ -63,15 +77,18 @@ def configure(env):
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(CCFLAGS=["-O1", "-g"])
         env.Append(LINKFLAGS=["-O1", "-g"])
+        env["use_assertions"] = True
+
+    if env["use_assertions"]:
         env.Append(LINKFLAGS=["-s", "ASSERTIONS=1"])
 
     if env["tools"]:
         if not env["threads_enabled"]:
-            raise RuntimeError(
-                "Threads must be enabled to build the editor. Please add the 'threads_enabled=yes' option"
-            )
-        # Tools need more memory. Initial stack memory in bytes. See `src/settings.js` in emscripten repository (will be renamed to INITIAL_MEMORY).
-        env.Append(LINKFLAGS=["-s", "TOTAL_MEMORY=33554432"])
+            print("Threads must be enabled to build the editor. Please add the 'threads_enabled=yes' option")
+            sys.exit(255)
+        if env["initial_memory"] < 32:
+            print("Editor build requires at least 32MiB of initial memory. Forcing it.")
+            env["initial_memory"] = 32
     else:
         # Disable exceptions and rtti on non-tools (template) builds
         # These flags help keep the file size down.
@@ -79,13 +96,32 @@ def configure(env):
         # Don't use dynamic_cast, necessary with no-rtti.
         env.Append(CPPDEFINES=["NO_SAFE_CAST"])
 
+    env.Append(LINKFLAGS=["-s", "INITIAL_MEMORY=%sMB" % env["initial_memory"]])
+
     ## Copy env variables.
     env["ENV"] = os.environ
 
     # LTO
-    if env["use_lto"]:
+    if env["use_thinlto"]:
+        env.Append(CCFLAGS=["-flto=thin"])
+        env.Append(LINKFLAGS=["-flto=thin"])
+    elif env["use_lto"]:
         env.Append(CCFLAGS=["-flto=full"])
         env.Append(LINKFLAGS=["-flto=full"])
+
+    # Sanitizers
+    if env["use_ubsan"]:
+        env.Append(CCFLAGS=["-fsanitize=undefined"])
+        env.Append(LINKFLAGS=["-fsanitize=undefined"])
+    if env["use_asan"]:
+        env.Append(CCFLAGS=["-fsanitize=address"])
+        env.Append(LINKFLAGS=["-fsanitize=address"])
+    if env["use_lsan"]:
+        env.Append(CCFLAGS=["-fsanitize=leak"])
+        env.Append(LINKFLAGS=["-fsanitize=leak"])
+    if env["use_safe_heap"]:
+        env.Append(CCFLAGS=["-s", "SAFE_HEAP=1"])
+        env.Append(LINKFLAGS=["-s", "SAFE_HEAP=1"])
 
     # Closure compiler
     if env["use_closure_compiler"]:
@@ -133,7 +169,8 @@ def configure(env):
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
 
     if env["threads_enabled"] and env["gdnative_enabled"]:
-        raise Exception("Threads and GDNative support can't be both enabled due to WebAssembly limitations")
+        print("Threads and GDNative support can't be both enabled due to WebAssembly limitations")
+        sys.exit(255)
 
     # Thread support (via SharedArrayBuffer).
     if env["threads_enabled"]:
@@ -147,6 +184,10 @@ def configure(env):
         env.Append(CPPDEFINES=["NO_THREADS"])
 
     if env["gdnative_enabled"]:
+        major, minor, patch = get_compiler_version(env)
+        if major < 2 or (major == 2 and minor == 0 and patch < 10):
+            print("GDNative support requires emscripten >= 2.0.10, detected: %s.%s.%s" % (major, minor, patch))
+            sys.exit(255)
         env.Append(CCFLAGS=["-s", "RELOCATABLE=1"])
         env.Append(LINKFLAGS=["-s", "RELOCATABLE=1"])
         env.extra_suffix = ".gdnative" + env.extra_suffix
