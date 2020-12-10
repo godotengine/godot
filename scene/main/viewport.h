@@ -624,7 +624,7 @@ public:
 	enum ClearMode {
 		CLEAR_MODE_ALWAYS,
 		CLEAR_MODE_NEVER,
-		CLEAR_MODE_ONLY_NEXT_FRAME
+		CLEAR_MODE_ONCE
 	};
 
 	enum UpdateMode {
