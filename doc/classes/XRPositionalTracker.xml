@@ -101,10 +101,10 @@
 		<constant name="TRACKER_HAND_UNKNOWN" value="0" enum="TrackerHand">
 			The hand this tracker is held in is unknown or not applicable.
 		</constant>
-		<constant name="TRACKER_LEFT_HAND" value="1" enum="TrackerHand">
+		<constant name="TRACKER_HAND_LEFT" value="1" enum="TrackerHand">
 			This tracker is the left hand controller.
 		</constant>
-		<constant name="TRACKER_RIGHT_HAND" value="2" enum="TrackerHand">
+		<constant name="TRACKER_HAND_RIGHT" value="2" enum="TrackerHand">
 			This tracker is the right hand controller.
 		</constant>
 	</constants>
