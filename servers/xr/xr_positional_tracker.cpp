@@ -42,17 +42,17 @@ void XRPositionalTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tracker_id"), &XRPositionalTracker::get_tracker_id);
 	ClassDB::bind_method(D_METHOD("get_tracker_name"), &XRPositionalTracker::get_tracker_name);
 	ClassDB::bind_method(D_METHOD("get_joy_id"), &XRPositionalTracker::get_joy_id);
-	ClassDB::bind_method(D_METHOD("get_tracks_orientation"), &XRPositionalTracker::get_tracks_orientation);
+	ClassDB::bind_method(D_METHOD("is_tracking_orientation"), &XRPositionalTracker::is_tracking_orientation);
 	ClassDB::bind_method(D_METHOD("get_orientation"), &XRPositionalTracker::get_orientation);
-	ClassDB::bind_method(D_METHOD("get_tracks_position"), &XRPositionalTracker::get_tracks_position);
+	ClassDB::bind_method(D_METHOD("is_tracking_position"), &XRPositionalTracker::is_tracking_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &XRPositionalTracker::get_position);
-	ClassDB::bind_method(D_METHOD("get_hand"), &XRPositionalTracker::get_hand);
+	ClassDB::bind_method(D_METHOD("get_tracker_hand"), &XRPositionalTracker::get_tracker_hand);
 	ClassDB::bind_method(D_METHOD("get_transform", "adjust_by_reference_frame"), &XRPositionalTracker::get_transform);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &XRPositionalTracker::get_mesh);
 
 	// these functions we don't want to expose to normal users but do need to be callable from GDNative
-	ClassDB::bind_method(D_METHOD("_set_type", "type"), &XRPositionalTracker::set_type);
-	ClassDB::bind_method(D_METHOD("_set_name", "name"), &XRPositionalTracker::set_name);
+	ClassDB::bind_method(D_METHOD("_set_tracker_type", "type"), &XRPositionalTracker::set_tracker_type);
+	ClassDB::bind_method(D_METHOD("_set_tracker_name", "name"), &XRPositionalTracker::set_tracker_name);
 	ClassDB::bind_method(D_METHOD("_set_joy_id", "joy_id"), &XRPositionalTracker::set_joy_id);
 	ClassDB::bind_method(D_METHOD("_set_orientation", "orientation"), &XRPositionalTracker::set_orientation);
 	ClassDB::bind_method(D_METHOD("_set_rw_position", "rw_position"), &XRPositionalTracker::set_rw_position);
@@ -63,7 +63,7 @@ void XRPositionalTracker::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rumble"), "set_rumble", "get_rumble");
 };
 
-void XRPositionalTracker::set_type(XRServer::TrackerType p_type) {
+void XRPositionalTracker::set_tracker_type(XRServer::TrackerType p_type) {
 	if (type != p_type) {
 		type = p_type;
 		hand = XRPositionalTracker::TRACKER_HAND_UNKNOWN;
@@ -81,7 +81,7 @@ XRServer::TrackerType XRPositionalTracker::get_tracker_type() const {
 	return type;
 };
 
-void XRPositionalTracker::set_name(const String &p_name) {
+void XRPositionalTracker::set_tracker_name(const String &p_name) {
 	name = p_name;
 };
 
@@ -101,14 +101,14 @@ int XRPositionalTracker::get_joy_id() const {
 	return joy_id;
 };
 
-bool XRPositionalTracker::get_tracks_orientation() const {
-	return tracks_orientation;
+bool XRPositionalTracker::is_tracking_orientation() const {
+	return tracking_orientation;
 };
 
 void XRPositionalTracker::set_orientation(const Basis &p_orientation) {
 	_THREAD_SAFE_METHOD_
 
-	tracks_orientation = true; // obviously we have this
+	tracking_orientation = true; // obviously we have this
 	orientation = p_orientation;
 };
 
@@ -118,8 +118,8 @@ Basis XRPositionalTracker::get_orientation() const {
 	return orientation;
 };
 
-bool XRPositionalTracker::get_tracks_position() const {
-	return tracks_position;
+bool XRPositionalTracker::is_tracking_position() const {
+	return tracking_position;
 };
 
 void XRPositionalTracker::set_position(const Vector3 &p_position) {
@@ -130,7 +130,7 @@ void XRPositionalTracker::set_position(const Vector3 &p_position) {
 	real_t world_scale = xr_server->get_world_scale();
 	ERR_FAIL_COND(world_scale == 0);
 
-	tracks_position = true; // obviously we have this
+	tracking_position = true; // obviously we have this
 	rw_position = p_position / world_scale;
 };
 
@@ -147,7 +147,7 @@ Vector3 XRPositionalTracker::get_position() const {
 void XRPositionalTracker::set_rw_position(const Vector3 &p_rw_position) {
 	_THREAD_SAFE_METHOD_
 
-	tracks_position = true; // obviously we have this
+	tracking_position = true; // obviously we have this
 	rw_position = p_rw_position;
 };
 
@@ -169,11 +169,11 @@ Ref<Mesh> XRPositionalTracker::get_mesh() const {
 	return mesh;
 };
 
-XRPositionalTracker::TrackerHand XRPositionalTracker::get_hand() const {
+XRPositionalTracker::TrackerHand XRPositionalTracker::get_tracker_hand() const {
 	return hand;
 };
 
-void XRPositionalTracker::set_hand(const XRPositionalTracker::TrackerHand p_hand) {
+void XRPositionalTracker::set_tracker_hand(const XRPositionalTracker::TrackerHand p_hand) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
@@ -227,8 +227,8 @@ XRPositionalTracker::XRPositionalTracker() {
 	name = "Unknown";
 	joy_id = -1;
 	tracker_id = 0;
-	tracks_orientation = false;
-	tracks_position = false;
+	tracking_orientation = false;
+	tracking_position = false;
 	hand = TRACKER_HAND_UNKNOWN;
 	rumble = 0.0;
 };

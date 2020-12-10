@@ -12,7 +12,7 @@
 		<link title="VR tutorial index">https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
-		<method name="get_hand" qualifiers="const">
+		<method name="get_tracker_hand" qualifiers="const">
 			<return type="int" enum="XRPositionalTracker.TrackerHand">
 			</return>
 			<description>
@@ -68,18 +68,18 @@
 				Returns the tracker's type, which will be one of the values from the [enum XRServer.TrackerType] enum.
 			</description>
 		</method>
-		<method name="get_tracks_orientation" qualifiers="const">
+		<method name="is_tracking_orientation" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if this device tracks orientation.
+				Returns [code]true[/code] if this device is tracking orientation.
 			</description>
 		</method>
-		<method name="get_tracks_position" qualifiers="const">
+		<method name="is_tracking_position" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if this device tracks position.
+				Returns [code]true[/code] if this device is tracking position.
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
