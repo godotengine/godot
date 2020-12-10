@@ -95,6 +95,10 @@ void SceneSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_peer_networking_enable", "peer", "enabled"), &SceneSynchronizer::set_peer_networking_enable);
 	ClassDB::bind_method(D_METHOD("get_peer_networking_enable", "peer"), &SceneSynchronizer::is_peer_networking_enable);
 
+	ClassDB::bind_method(D_METHOD("is_server"), &SceneSynchronizer::is_server);
+	ClassDB::bind_method(D_METHOD("is_client"), &SceneSynchronizer::is_client);
+	ClassDB::bind_method(D_METHOD("is_networked"), &SceneSynchronizer::is_networked);
+
 	ClassDB::bind_method(D_METHOD("_on_peer_connected"), &SceneSynchronizer::_on_peer_connected);
 	ClassDB::bind_method(D_METHOD("_on_peer_disconnected"), &SceneSynchronizer::_on_peer_disconnected);
 
@@ -298,7 +302,9 @@ void SceneSynchronizer::register_variable(Node *p_node, StringName p_variable, S
 		track_variable_changes(p_node, p_variable, p_node, p_on_change_notify, p_flags);
 	}
 
-	synchronizer->on_variable_added(node_data, p_variable);
+	if (synchronizer) {
+		synchronizer->on_variable_added(node_data, p_variable);
+	}
 }
 
 void SceneSynchronizer::unregister_variable(Node *p_node, StringName p_variable) {
@@ -649,9 +655,7 @@ Variant SceneSynchronizer::pop_scene_changes(Object *p_diff_handle) const {
 }
 
 void SceneSynchronizer::apply_scene_changes(Variant p_sync_data) {
-	ERR_FAIL_COND_MSG(
-			synchronizer_type != SYNCHRONIZER_TYPE_CLIENT,
-			"This function is not supposed to be called on server.");
+	ERR_FAIL_COND_MSG(is_client() == false, "This function is not supposed to be called on server.");
 
 	ClientSynchronizer *client_sync = static_cast<ClientSynchronizer *>(synchronizer);
 
@@ -714,7 +718,7 @@ bool SceneSynchronizer::is_end_sync() const {
 }
 
 void SceneSynchronizer::force_state_notify() {
-	ERR_FAIL_COND(synchronizer_type != SYNCHRONIZER_TYPE_SERVER);
+	ERR_FAIL_COND(is_server() == false);
 	ServerSynchronizer *r = static_cast<ServerSynchronizer *>(synchronizer);
 	// + 1.0 is just a ridiculous high number to be sure to avoid float
 	// precision error.
@@ -745,7 +749,6 @@ void SceneSynchronizer::set_peer_networking_enable(int p_peer, bool p_enable) {
 		rpc_id(p_peer, "_rpc_notify_peer_status", p_enable);
 	} else {
 		ERR_FAIL_COND_MSG(synchronizer_type != SYNCHRONIZER_TYPE_NONETWORK, "At this point no network is expected.");
-
 		static_cast<NoNetSynchronizer *>(synchronizer)->set_enabled(p_enable);
 	}
 }
@@ -888,12 +891,12 @@ void SceneSynchronizer::__clear() {
 }
 
 void SceneSynchronizer::_rpc_send_state(Variant p_snapshot) {
-	ERR_FAIL_COND(get_tree()->is_network_server() == true);
-	synchronizer->receive_snapshot(p_snapshot);
+	ERR_FAIL_COND_MSG(is_client() == false, "Only clients are suposed to receive the server snapshot.");
+	static_cast<ClientSynchronizer *>(synchronizer)->receive_snapshot(p_snapshot);
 }
 
 void SceneSynchronizer::_rpc_notify_need_full_snapshot() {
-	ERR_FAIL_COND(get_tree()->is_network_server() == false);
+	ERR_FAIL_COND_MSG(is_server() == false, "Only the server can receive the request to send a full snapshot.");
 
 	const int sender_peer = get_tree()->get_multiplayer()->get_rpc_sender_id();
 	NetUtility::PeerData *pd = peer_data.lookup_ptr(sender_peer);
@@ -902,7 +905,7 @@ void SceneSynchronizer::_rpc_notify_need_full_snapshot() {
 }
 
 void SceneSynchronizer::_rpc_notify_peer_status(bool p_enabled) {
-	ERR_FAIL_COND_MSG(synchronizer_type != SYNCHRONIZER_TYPE_CLIENT, "The peer status is supposed to be received by the client.");
+	ERR_FAIL_COND_MSG(is_client() == false, "The peer status is supposed to be received by the client.");
 	static_cast<ClientSynchronizer *>(synchronizer)->set_enabled(p_enabled);
 }
 
@@ -1012,11 +1015,13 @@ void SceneSynchronizer::change_event_add(NetUtility::NodeData *p_node_data, NetV
 	}
 
 	// Notify the synchronizer.
-	synchronizer->on_variable_changed(
-			p_node_data,
-			p_var_id,
-			p_old,
-			event_flag);
+	if (synchronizer) {
+		synchronizer->on_variable_changed(
+				p_node_data,
+				p_var_id,
+				p_old,
+				event_flag);
+	}
 }
 
 void SceneSynchronizer::change_events_flush() {
@@ -1128,7 +1133,9 @@ void SceneSynchronizer::add_node_data(NetUtility::NodeData *p_node_data) {
 }
 
 void SceneSynchronizer::drop_node_data(NetUtility::NodeData *p_node_data) {
-	synchronizer->on_node_removed(p_node_data);
+	if (synchronizer) {
+		synchronizer->on_node_removed(p_node_data);
+	}
 
 	if (p_node_data->controlled_by) {
 		// This node is controlled by another one, remove from that node.
@@ -1327,8 +1334,20 @@ bool SceneSynchronizer::synchronizer_variant_evaluation(
 	}
 }
 
+bool SceneSynchronizer::is_server() const {
+	return synchronizer_type == SYNCHRONIZER_TYPE_SERVER;
+}
+
 bool SceneSynchronizer::is_client() const {
 	return synchronizer_type == SYNCHRONIZER_TYPE_CLIENT;
+}
+
+bool SceneSynchronizer::is_no_network() const {
+	return synchronizer_type == SYNCHRONIZER_TYPE_NONETWORK;
+}
+
+bool SceneSynchronizer::is_networked() const {
+	return is_client() || is_server();
 }
 
 #ifdef DEBUG_ENABLED
@@ -1478,6 +1497,11 @@ void SceneSynchronizer::reset_controller(NetUtility::NodeData *p_controller_nd) 
 void SceneSynchronizer::process() {
 #ifdef DEBUG_ENABLED
 	validate_nodes();
+	// Never triggered because this function is called by `PHYSICS_PROCESS`,
+	// notification that is emitted only when the node is in the tree.
+	// When the node is in the tree, there is no way that the `synchronizer` is
+	// null.
+	CRASH_COND(synchronizer == nullptr);
 #endif
 
 	synchronizer->process();
@@ -1547,9 +1571,6 @@ void NoNetSynchronizer::process() {
 	scene_synchronizer->change_events_flush();
 }
 
-void NoNetSynchronizer::receive_snapshot(Variant _p_snapshot) {
-}
-
 void NoNetSynchronizer::set_enabled(bool p_enabled) {
 	if (enabled == p_enabled) {
 		// Nothing to do.
@@ -1604,11 +1625,6 @@ void ServerSynchronizer::process() {
 	scene_synchronizer->change_events_flush();
 
 	process_snapshot_notificator(delta);
-}
-
-void ServerSynchronizer::receive_snapshot(Variant _p_snapshot) {
-	// Unreachable
-	CRASH_NOW();
 }
 
 void ServerSynchronizer::on_node_added(NetUtility::NodeData *p_node_data) {

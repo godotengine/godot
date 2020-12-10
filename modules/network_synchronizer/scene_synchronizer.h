@@ -279,8 +279,8 @@ private:
 
 	real_t get_pretended_delta() const;
 
-	// Read the node variables and store the value if is different from the
-	// previous one and emits a signal.
+	/// Read the node variables and store the value if is different from the
+	/// previous one and emits a signal.
 	void pull_node_changes(NetUtility::NodeData *p_node_data);
 
 	/// Add node data and generates the `NetNodeId` if allowed.
@@ -291,14 +291,21 @@ private:
 	void set_node_data_id(NetUtility::NodeData *p_node_data, NetNodeId p_id);
 
 public:
-	// Returns true when the vectors are the same.
+	/// Returns true when the vectors are the same.
 	bool vec2_evaluation(const Vector2 &a, const Vector2 &b) const;
-	// Returns true when the vectors are the same.
+	/// Returns true when the vectors are the same.
 	bool vec3_evaluation(const Vector3 &a, const Vector3 &b) const;
-	// Returns true when the variants are the same.
+	/// Returns true when the variants are the same.
 	bool synchronizer_variant_evaluation(const Variant &v_1, const Variant &v_2) const;
 
+	/// Returns true if this peer is server.
+	bool is_server() const;
+	/// Returns true if this peer is client.
 	bool is_client() const;
+	/// Returns true if there is no network.
+	bool is_no_network() const;
+	/// Returns true if network is enabled.
+	bool is_networked() const;
 };
 
 class Synchronizer {
@@ -312,7 +319,6 @@ public:
 	virtual void clear() = 0;
 
 	virtual void process() = 0;
-	virtual void receive_snapshot(Variant p_snapshot) = 0;
 	virtual void on_node_added(NetUtility::NodeData *p_node_data) {}
 	virtual void on_node_removed(NetUtility::NodeData *p_node_data) {}
 	virtual void on_variable_added(NetUtility::NodeData *p_node_data, StringName p_var_name) {}
@@ -329,9 +335,7 @@ public:
 	NoNetSynchronizer(SceneSynchronizer *p_node);
 
 	virtual void clear() override;
-
 	virtual void process() override;
-	virtual void receive_snapshot(Variant p_snapshot) override;
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
@@ -356,7 +360,6 @@ public:
 
 	virtual void clear() override;
 	virtual void process() override;
-	virtual void receive_snapshot(Variant p_snapshot) override;
 	virtual void on_node_added(NetUtility::NodeData *p_node_data) override;
 	virtual void on_variable_added(NetUtility::NodeData *p_node_data, StringName p_var_name) override;
 	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, Variant p_old_value, int p_flag) override;
@@ -403,12 +406,12 @@ public:
 	virtual void clear() override;
 
 	virtual void process() override;
-	virtual void receive_snapshot(Variant p_snapshot) override;
 	virtual void on_node_added(NetUtility::NodeData *p_node_data) override;
 	virtual void on_node_removed(NetUtility::NodeData *p_node_data) override;
 	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, Variant p_old_value, int p_flag) override;
 	virtual void on_controller_reset(NetUtility::NodeData *p_node_data) override;
 
+	void receive_snapshot(Variant p_snapshot);
 	bool parse_sync_data(
 			Variant p_snapshot,
 			void *p_user_pointer,
