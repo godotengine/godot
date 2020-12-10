@@ -108,11 +108,11 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 	switch (flags & 0xFF) {
 		case 0x18:
 		case 0xC:
-			format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC2A : Image::FORMAT_PVRTC2;
+			format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC1_2A : Image::FORMAT_PVRTC1_2;
 			break;
 		case 0x19:
 		case 0xD:
-			format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4;
+			format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC1_4A : Image::FORMAT_PVRTC1_4;
 			break;
 		case 0x16:
 			format = Image::FORMAT_L8;
@@ -587,9 +587,9 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 }
 
 static void _pvrtc_decompress(Image *p_img) {
-	ERR_FAIL_COND(p_img->get_format() != Image::FORMAT_PVRTC2 && p_img->get_format() != Image::FORMAT_PVRTC2A && p_img->get_format() != Image::FORMAT_PVRTC4 && p_img->get_format() != Image::FORMAT_PVRTC4A);
+	ERR_FAIL_COND(p_img->get_format() != Image::FORMAT_PVRTC1_2 && p_img->get_format() != Image::FORMAT_PVRTC1_2A && p_img->get_format() != Image::FORMAT_PVRTC1_4 && p_img->get_format() != Image::FORMAT_PVRTC1_4A);
 
-	bool _2bit = (p_img->get_format() == Image::FORMAT_PVRTC2 || p_img->get_format() == Image::FORMAT_PVRTC2A);
+	bool _2bit = (p_img->get_format() == Image::FORMAT_PVRTC1_2 || p_img->get_format() == Image::FORMAT_PVRTC1_2A);
 
 	Vector<uint8_t> data = p_img->get_data();
 	const uint8_t *r = data.ptr();

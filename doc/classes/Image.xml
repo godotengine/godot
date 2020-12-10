@@ -636,18 +636,19 @@
 		<constant name="FORMAT_BPTC_RGBFU" value="24" enum="Format">
 			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with unsigned floating-point RGB components.
 		</constant>
-		<constant name="FORMAT_PVRTC2" value="25" enum="Format">
+		<constant name="FORMAT_PVRTC1_2" value="25" enum="Format">
 			Texture format used on PowerVR-supported mobile platforms, uses 2-bit color depth with no alpha. More information can be found [url=https://en.wikipedia.org/wiki/PVRTC]here[/url].
 			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
-		<constant name="FORMAT_PVRTC2A" value="26" enum="Format">
-			Same as [url=https://en.wikipedia.org/wiki/PVRTC]PVRTC2[/url], but with an alpha component.
+		<constant name="FORMAT_PVRTC1_2A" value="26" enum="Format">
+			Same as [constant FORMAT_PVRTC1_2], but with an alpha component.
 		</constant>
-		<constant name="FORMAT_PVRTC4" value="27" enum="Format">
-			Similar to [url=https://en.wikipedia.org/wiki/PVRTC]PVRTC2[/url], but with 4-bit color depth and no alpha.
+		<constant name="FORMAT_PVRTC1_4" value="27" enum="Format">
+			Texture format used on PowerVR-supported mobile platforms, uses 4-bit color depth with no alpha. More information can be found [url=https://en.wikipedia.org/wiki/PVRTC]here[/url].
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
-		<constant name="FORMAT_PVRTC4A" value="28" enum="Format">
-			Same as [url=https://en.wikipedia.org/wiki/PVRTC]PVRTC4[/url], but with an alpha component.
+		<constant name="FORMAT_PVRTC1_4A" value="28" enum="Format">
+			Same as [constant FORMAT_PVRTC1_4], but with an alpha component.
 		</constant>
 		<constant name="FORMAT_ETC" value="29" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC1]Ericsson Texture Compression format 1[/url], also referred to as "ETC1", and is part of the OpenGL ES graphics standard. This format cannot store an alpha channel.
@@ -714,17 +715,17 @@
 		<constant name="COMPRESS_S3TC" value="0" enum="CompressMode">
 			Use S3TC compression.
 		</constant>
-		<constant name="COMPRESS_PVRTC2" value="1" enum="CompressMode">
-			Use PVRTC2 compression.
+		<constant name="COMPRESS_PVRTC1_4" value="1" enum="CompressMode">
+			Use PVRTC1 4-bpp compression.
 		</constant>
-		<constant name="COMPRESS_PVRTC4" value="2" enum="CompressMode">
-			Use PVRTC4 compression.
-		</constant>
-		<constant name="COMPRESS_ETC" value="3" enum="CompressMode">
+		<constant name="COMPRESS_ETC" value="2" enum="CompressMode">
 			Use ETC compression.
 		</constant>
-		<constant name="COMPRESS_ETC2" value="4" enum="CompressMode">
+		<constant name="COMPRESS_ETC2" value="3" enum="CompressMode">
 			Use ETC2 compression.
+		</constant>
+		<constant name="COMPRESS_BPTC" value="4" enum="CompressMode">
+			Use BPTC compression.
 		</constant>
 		<constant name="USED_CHANNELS_L" value="0" enum="UsedChannels">
 		</constant>

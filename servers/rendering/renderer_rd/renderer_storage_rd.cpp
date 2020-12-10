@@ -318,7 +318,7 @@ Ref<Image> RendererStorageRD::_validate_texture_format(const Ref<Image> &p_image
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 		} break; //unsigned float bc6hu
-		case Image::FORMAT_PVRTC2: {
+		case Image::FORMAT_PVRTC1_2: {
 			//this is not properly supported by MoltekVK it seems, so best to use ETC2
 			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
 				r_format.format = RD::DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG;
@@ -336,7 +336,7 @@ Ref<Image> RendererStorageRD::_validate_texture_format(const Ref<Image> &p_image
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 
 		} break; //pvrtc
-		case Image::FORMAT_PVRTC2A: {
+		case Image::FORMAT_PVRTC1_2A: {
 			//this is not properly supported by MoltekVK it seems, so best to use ETC2
 			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
 				r_format.format = RD::DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG;
@@ -353,7 +353,7 @@ Ref<Image> RendererStorageRD::_validate_texture_format(const Ref<Image> &p_image
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
-		case Image::FORMAT_PVRTC4: {
+		case Image::FORMAT_PVRTC1_4: {
 			//this is not properly supported by MoltekVK it seems, so best to use ETC2
 			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
 				r_format.format = RD::DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG;
@@ -370,7 +370,7 @@ Ref<Image> RendererStorageRD::_validate_texture_format(const Ref<Image> &p_image
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 		} break;
-		case Image::FORMAT_PVRTC4A: {
+		case Image::FORMAT_PVRTC1_4A: {
 			//this is not properly supported by MoltekVK it seems, so best to use ETC2
 			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
 				r_format.format = RD::DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG;

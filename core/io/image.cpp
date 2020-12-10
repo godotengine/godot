@@ -66,10 +66,10 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"BPTC_RGBA",
 	"BPTC_RGBF",
 	"BPTC_RGBFU",
-	"PVRTC2", //pvrtc
-	"PVRTC2A",
-	"PVRTC4",
-	"PVRTC4A",
+	"PVRTC1_2", //pvrtc
+	"PVRTC1_2A",
+	"PVRTC1_4",
+	"PVRTC1_4A",
 	"ETC", //etc1
 	"ETC2_R11", //etc2
 	"ETC2_R11S", //signed", NOT srgb.
@@ -155,13 +155,13 @@ int Image::get_format_pixel_size(Format p_format) {
 			return 1; //float /
 		case FORMAT_BPTC_RGBFU:
 			return 1; //unsigned float
-		case FORMAT_PVRTC2:
+		case FORMAT_PVRTC1_2:
 			return 1; //pvrtc
-		case FORMAT_PVRTC2A:
+		case FORMAT_PVRTC1_2A:
 			return 1;
-		case FORMAT_PVRTC4:
+		case FORMAT_PVRTC1_4:
 			return 1;
-		case FORMAT_PVRTC4A:
+		case FORMAT_PVRTC1_4A:
 			return 1;
 		case FORMAT_ETC:
 			return 1; //etc1
@@ -200,13 +200,13 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 			r_w = 4;
 			r_h = 4;
 		} break;
-		case FORMAT_PVRTC2:
-		case FORMAT_PVRTC2A: {
+		case FORMAT_PVRTC1_2:
+		case FORMAT_PVRTC1_2A: {
 			r_w = 16;
 			r_h = 8;
 		} break;
-		case FORMAT_PVRTC4A:
-		case FORMAT_PVRTC4: {
+		case FORMAT_PVRTC1_4A:
+		case FORMAT_PVRTC1_4: {
 			r_w = 8;
 			r_h = 8;
 		} break;
@@ -242,9 +242,9 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 }
 
 int Image::get_format_pixel_rshift(Format p_format) {
-	if (p_format == FORMAT_DXT1 || p_format == FORMAT_RGTC_R || p_format == FORMAT_PVRTC4 || p_format == FORMAT_PVRTC4A || p_format == FORMAT_ETC || p_format == FORMAT_ETC2_R11 || p_format == FORMAT_ETC2_R11S || p_format == FORMAT_ETC2_RGB8 || p_format == FORMAT_ETC2_RGB8A1) {
+	if (p_format == FORMAT_DXT1 || p_format == FORMAT_RGTC_R || p_format == FORMAT_PVRTC1_4 || p_format == FORMAT_PVRTC1_4A || p_format == FORMAT_ETC || p_format == FORMAT_ETC2_R11 || p_format == FORMAT_ETC2_R11S || p_format == FORMAT_ETC2_RGB8 || p_format == FORMAT_ETC2_RGB8A1) {
 		return 1;
-	} else if (p_format == FORMAT_PVRTC2 || p_format == FORMAT_PVRTC2A) {
+	} else if (p_format == FORMAT_PVRTC1_2 || p_format == FORMAT_PVRTC1_2A) {
 		return 2;
 	} else {
 		return 0;
@@ -261,12 +261,12 @@ int Image::get_format_block_size(Format p_format) {
 
 			return 4;
 		}
-		case FORMAT_PVRTC2:
-		case FORMAT_PVRTC2A: {
+		case FORMAT_PVRTC1_2:
+		case FORMAT_PVRTC1_2A: {
 			return 4;
 		}
-		case FORMAT_PVRTC4A:
-		case FORMAT_PVRTC4: {
+		case FORMAT_PVRTC1_4A:
+		case FORMAT_PVRTC1_4: {
 			return 4;
 		}
 		case FORMAT_ETC: {
@@ -2216,8 +2216,8 @@ bool Image::is_invisible() const {
 
 		} break;
 
-		case FORMAT_PVRTC2A:
-		case FORMAT_PVRTC4A:
+		case FORMAT_PVRTC1_2A:
+		case FORMAT_PVRTC1_4A:
 		case FORMAT_DXT3:
 		case FORMAT_DXT5: {
 			detected = true;
@@ -2258,8 +2258,8 @@ Image::AlphaMode Image::detect_alpha() const {
 			}
 
 		} break;
-		case FORMAT_PVRTC2A:
-		case FORMAT_PVRTC4A:
+		case FORMAT_PVRTC1_2A:
+		case FORMAT_PVRTC1_4A:
 		case FORMAT_DXT3:
 		case FORMAT_DXT5: {
 			detected = true;
@@ -2355,7 +2355,7 @@ Error Image::decompress() {
 		_image_decompress_bc(this);
 	} else if (format >= FORMAT_BPTC_RGBA && format <= FORMAT_BPTC_RGBFU && _image_decompress_bptc) {
 		_image_decompress_bptc(this);
-	} else if (format >= FORMAT_PVRTC2 && format <= FORMAT_PVRTC4A && _image_decompress_pvrtc) {
+	} else if (format >= FORMAT_PVRTC1_2 && format <= FORMAT_PVRTC1_4A && _image_decompress_pvrtc) {
 		_image_decompress_pvrtc(this);
 	} else if (format == FORMAT_ETC && _image_decompress_etc1) {
 		_image_decompress_etc1(this);
@@ -2377,13 +2377,9 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 			ERR_FAIL_COND_V(!_image_compress_bc_func, ERR_UNAVAILABLE);
 			_image_compress_bc_func(this, p_lossy_quality, p_channels);
 		} break;
-		case COMPRESS_PVRTC2: {
-			ERR_FAIL_COND_V(!_image_compress_pvrtc2_func, ERR_UNAVAILABLE);
-			_image_compress_pvrtc2_func(this);
-		} break;
-		case COMPRESS_PVRTC4: {
-			ERR_FAIL_COND_V(!_image_compress_pvrtc4_func, ERR_UNAVAILABLE);
-			_image_compress_pvrtc4_func(this);
+		case COMPRESS_PVRTC1_4: {
+			ERR_FAIL_COND_V(!_image_compress_pvrtc1_4bpp_func, ERR_UNAVAILABLE);
+			_image_compress_pvrtc1_4bpp_func(this);
 		} break;
 		case COMPRESS_ETC: {
 			ERR_FAIL_COND_V(!_image_compress_etc1_func, ERR_UNAVAILABLE);
@@ -2714,8 +2710,7 @@ ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
 
 void (*Image::_image_compress_bc_func)(Image *, float, Image::UsedChannels) = nullptr;
 void (*Image::_image_compress_bptc_func)(Image *, float, Image::UsedChannels) = nullptr;
-void (*Image::_image_compress_pvrtc2_func)(Image *) = nullptr;
-void (*Image::_image_compress_pvrtc4_func)(Image *) = nullptr;
+void (*Image::_image_compress_pvrtc1_4bpp_func)(Image *) = nullptr;
 void (*Image::_image_compress_etc1_func)(Image *, float) = nullptr;
 void (*Image::_image_compress_etc2_func)(Image *, float, Image::UsedChannels) = nullptr;
 void (*Image::_image_decompress_pvrtc)(Image *) = nullptr;
@@ -3173,10 +3168,10 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBA); //btpc bc6h
 	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBF); //float /
 	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBFU); //unsigned float
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC2); //pvrtc
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC2A);
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC4);
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC4A);
+	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_2); //pvrtc
+	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_2A);
+	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_4);
+	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_4A);
 	BIND_ENUM_CONSTANT(FORMAT_ETC); //etc1
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11); //etc2
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11S); //signed ); NOT srgb.
@@ -3200,10 +3195,10 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALPHA_BLEND);
 
 	BIND_ENUM_CONSTANT(COMPRESS_S3TC);
-	BIND_ENUM_CONSTANT(COMPRESS_PVRTC2);
-	BIND_ENUM_CONSTANT(COMPRESS_PVRTC4);
+	BIND_ENUM_CONSTANT(COMPRESS_PVRTC1_4);
 	BIND_ENUM_CONSTANT(COMPRESS_ETC);
 	BIND_ENUM_CONSTANT(COMPRESS_ETC2);
+	BIND_ENUM_CONSTANT(COMPRESS_BPTC);
 
 	BIND_ENUM_CONSTANT(USED_CHANNELS_L);
 	BIND_ENUM_CONSTANT(USED_CHANNELS_LA);

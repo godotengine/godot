@@ -91,10 +91,10 @@ public:
 		FORMAT_BPTC_RGBA, //btpc bc7
 		FORMAT_BPTC_RGBF, //float bc6h
 		FORMAT_BPTC_RGBFU, //unsigned float bc6hu
-		FORMAT_PVRTC2, //pvrtc
-		FORMAT_PVRTC2A,
-		FORMAT_PVRTC4,
-		FORMAT_PVRTC4A,
+		FORMAT_PVRTC1_2, //pvrtc1
+		FORMAT_PVRTC1_2A,
+		FORMAT_PVRTC1_4,
+		FORMAT_PVRTC1_4A,
 		FORMAT_ETC, //etc1
 		FORMAT_ETC2_R11, //etc2
 		FORMAT_ETC2_R11S, //signed, NOT srgb.
@@ -138,8 +138,7 @@ public:
 
 	static void (*_image_compress_bc_func)(Image *, float, UsedChannels p_channels);
 	static void (*_image_compress_bptc_func)(Image *, float p_lossy_quality, UsedChannels p_channels);
-	static void (*_image_compress_pvrtc2_func)(Image *);
-	static void (*_image_compress_pvrtc4_func)(Image *);
+	static void (*_image_compress_pvrtc1_4bpp_func)(Image *);
 	static void (*_image_compress_etc1_func)(Image *, float);
 	static void (*_image_compress_etc2_func)(Image *, float, UsedChannels p_channels);
 
@@ -332,11 +331,10 @@ public:
 
 	enum CompressMode {
 		COMPRESS_S3TC,
-		COMPRESS_PVRTC2,
-		COMPRESS_PVRTC4,
+		COMPRESS_PVRTC1_4,
 		COMPRESS_ETC,
 		COMPRESS_ETC2,
-		COMPRESS_BPTC
+		COMPRESS_BPTC,
 	};
 	enum CompressSource {
 		COMPRESS_SOURCE_GENERIC,

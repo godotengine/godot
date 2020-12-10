@@ -36,7 +36,7 @@
 #include <PvrTcEncoder.h>
 #include <RgbaBitmap.h>
 
-static void _compress_pvrtc4(Image *p_img) {
+static void _compress_pvrtc1_4bpp(Image *p_img) {
 	Ref<Image> img = p_img->duplicate();
 
 	bool make_mipmaps = false;
@@ -53,7 +53,7 @@ static void _compress_pvrtc4(Image *p_img) {
 
 	Ref<Image> new_img;
 	new_img.instance();
-	new_img->create(img->get_width(), img->get_height(), img->has_mipmaps(), use_alpha ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4);
+	new_img->create(img->get_width(), img->get_height(), img->has_mipmaps(), use_alpha ? Image::FORMAT_PVRTC1_4A : Image::FORMAT_PVRTC1_4);
 
 	Vector<uint8_t> data = new_img->get_data();
 	{
@@ -80,7 +80,5 @@ static void _compress_pvrtc4(Image *p_img) {
 }
 
 void _register_pvrtc_compress_func() {
-	// FIXME: We claim to support PVRTC2 but use the same method as for PVRTC4.
-	Image::_image_compress_pvrtc2_func = _compress_pvrtc4;
-	Image::_image_compress_pvrtc4_func = _compress_pvrtc4;
+	Image::_image_compress_pvrtc1_4bpp_func = _compress_pvrtc1_4bpp;
 }
