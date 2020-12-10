@@ -115,8 +115,9 @@ struct SurfaceData {
 	Array morphs;
 };
 
-MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *mesh_geometry, const FBXDocParser::Model *model, bool use_compression) {
+MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, bool use_compression) {
 
+	mesh_geometry = p_mesh_geometry;
 	// todo: make this just use a uint64_t FBX ID this is a copy of our original materials unfortunately.
 	const std::vector<const FBXDocParser::Material *> &material_lookup = model->GetMaterials();
 
@@ -195,7 +196,7 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 	// TODO please add skinning.
 	//mesh_id = mesh_geometry->ID();
 
-	sanitize_vertex_weights();
+	sanitize_vertex_weights(state);
 
 	// Re organize polygon vertices to to correctly take into account strange
 	// UVs.
@@ -214,7 +215,6 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 	// Make sure that from this moment on the mesh_geometry is no used anymore.
 	// This is a safety step, because the mesh_geometry data are no more valid
 	// at this point.
-	mesh_geometry = nullptr;
 
 	const int vertex_count = vertices.size();
 
@@ -305,7 +305,7 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 
 			// This must be done before add_vertex because the surface tool is
 			// expecting this before the st->add_vertex() call
-			add_vertex(
+			add_vertex(state,
 					surface->surface_tool,
 					state.scale,
 					vertex,
@@ -350,6 +350,7 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 			for (unsigned int vi = 0; vi < surface->vertices_map.size(); vi += 1) {
 				const Vertex vertex = surface->vertices_map[vi];
 				add_vertex(
+						state,
 						morph_st,
 						state.scale,
 						vertex,
@@ -405,8 +406,26 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 	return godot_mesh;
 }
 
-void FBXMeshData::sanitize_vertex_weights() {
-	const int max_bones = VS::ARRAY_WEIGHTS_SIZE;
+void FBXMeshData::sanitize_vertex_weights(const ImportState &state) {
+	const int max_vertex_influence_count = VS::ARRAY_WEIGHTS_SIZE;
+	Map<int, int> skeleton_to_skin_bind_id;
+	// TODO: error's need added
+	const FBXDocParser::Skin *fbx_skin = mesh_geometry->DeformerSkin();
+
+	if (fbx_skin == nullptr || fbx_skin->Clusters().size() == 0) {
+		return; // do nothing
+	}
+
+	//
+	// Precalculate the skin cluster mapping
+	//
+
+	int bind_id = 0;
+	for (const FBXDocParser::Cluster *cluster : fbx_skin->Clusters()) {
+		Ref<FBXBone> bone = state.fbx_bone_map[cluster->TargetNode()->ID()];
+		skeleton_to_skin_bind_id.insert(bone->godot_bone_id, bind_id);
+		bind_id++;
+	}
 
 	for (const Vertex *v = vertex_weights.next(nullptr); v != nullptr; v = vertex_weights.next(v)) {
 		VertexWeightMapping *vm = vertex_weights.getptr(*v);
@@ -414,7 +433,6 @@ void FBXMeshData::sanitize_vertex_weights() {
 		ERR_CONTINUE(vm->bones_ref.size() != vm->weights.size()); // No message, already checked.
 
 		const int initial_size = vm->weights.size();
-
 		{
 			// Init bone id
 			int *bones_ptr = vm->bones.ptrw();
@@ -423,7 +441,7 @@ void FBXMeshData::sanitize_vertex_weights() {
 			for (int i = 0; i < vm->weights.size(); i += 1) {
 				// At this point this is not possible because the skeleton is already initialized.
 				CRASH_COND(bones_ref_ptr[i]->godot_bone_id == -2);
-				bones_ptr[i] = bones_ref_ptr[i]->godot_bone_id;
+				bones_ptr[i] = skeleton_to_skin_bind_id[bones_ref_ptr[i]->godot_bone_id];
 			}
 
 			// From this point on the data is no more valid.
@@ -446,18 +464,18 @@ void FBXMeshData::sanitize_vertex_weights() {
 
 		{
 			// Resize
-			vm->weights.resize(max_bones);
-			vm->bones.resize(max_bones);
+			vm->weights.resize(max_vertex_influence_count);
+			vm->bones.resize(max_vertex_influence_count);
 			real_t *weights_ptr = vm->weights.ptrw();
 			int *bones_ptr = vm->bones.ptrw();
-			for (int i = initial_size; i < max_bones; i += 1) {
+			for (int i = initial_size; i < max_vertex_influence_count; i += 1) {
 				weights_ptr[i] = 0.0;
 				bones_ptr[i] = 0;
 			}
 
 			// Normalize
 			real_t sum = 0.0;
-			for (int i = 0; i < max_bones; i += 1) {
+			for (int i = 0; i < max_vertex_influence_count; i += 1) {
 				sum += weights_ptr[i];
 			}
 			if (sum > 0.0) {
@@ -499,9 +517,22 @@ void FBXMeshData::reorganize_vertices(
 		// Take the normal and see if we need to duplicate this polygon.
 		if (r_normals_raw.has(index)) {
 			const HashMap<PolygonId, Vector3> *nrml_arr = r_normals_raw.getptr(index);
+
 			if (nrml_arr->has(polygon_index)) {
 				this_vert_poly_normal = nrml_arr->get(polygon_index);
+			} else if (nrml_arr->has(-1)) {
+				this_vert_poly_normal = nrml_arr->get(-1);
+			} else {
+				print_error("invalid normal detected: " + itos(index) + " polygon index: " + itos(polygon_index));
+				for (const PolygonId *pid = nrml_arr->next(nullptr); pid != nullptr; pid = nrml_arr->next(pid)) {
+					print_verbose("debug contents key: " + itos(*pid));
+
+					if (nrml_arr->has(*pid)) {
+						print_verbose("contents valid: " + nrml_arr->get(*pid));
+					}
+				}
 			}
+
 			// Now, check if we need to duplicate it.
 			for (const PolygonId *pid = nrml_arr->next(nullptr); pid != nullptr; pid = nrml_arr->next(pid)) {
 				if (*pid == polygon_index) {
@@ -683,6 +714,7 @@ void FBXMeshData::reorganize_vertices(
 }
 
 void FBXMeshData::add_vertex(
+		const ImportState &state,
 		Ref<SurfaceTool> p_surface_tool,
 		real_t p_scale,
 		Vertex p_vertex,
@@ -719,7 +751,22 @@ void FBXMeshData::add_vertex(
 	// TODO what about binormals?
 	// TODO there is other?
 
-	gen_weight_info(p_surface_tool, p_vertex);
+	if (vertex_weights.has(p_vertex)) {
+		// Let's extract the weight info.
+		const VertexWeightMapping *vm = vertex_weights.getptr(p_vertex);
+		const Vector<int> &bones = vm->bones;
+
+		// the bug is that the bone idx is wrong because it is not ref'ing the skin.
+
+		if (bones.size() > VS::ARRAY_WEIGHTS_SIZE) {
+			print_error("[weight overflow detected]");
+		}
+
+		p_surface_tool->add_weights(vm->weights);
+		// 0 1 2 3 4 5 6 7 < local skeleton / skin for mesh
+		// 0 1 2 3 4 5 6 7 8 9 10  < actual skeleton with all joints
+		p_surface_tool->add_bones(bones);
+	}
 
 	// The surface tool want the vertex position as last thing.
 	p_surface_tool->add_vertex((p_vertices_position[p_vertex] + p_morph_value) * p_scale);
@@ -895,14 +942,7 @@ void FBXMeshData::gen_weight_info(Ref<SurfaceTool> st, Vertex vertex_id) const {
 		const VertexWeightMapping *vm = vertex_weights.getptr(vertex_id);
 		st->add_weights(vm->weights);
 		st->add_bones(vm->bones);
-		print_verbose("[doc] Triangle added weights to mesh for bones");
-	} else {
-		// This vertex doesn't have any bone info, while the model is using the
-		// bones.
-		// So nothing more to do.
 	}
-
-	print_verbose("[doc] Triangle added weights to mesh for bones");
 }
 
 int FBXMeshData::get_vertex_from_polygon_vertex(const std::vector<int> &p_polygon_indices, int p_index) const {

@@ -106,7 +106,7 @@ public:
 	}
 
 private:
-	const Skin *skin;
+	const Skin *skin = nullptr;
 	std::vector<const BlendShape *> blendShapes;
 };
 

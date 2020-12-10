@@ -40,6 +40,7 @@
 #include "import_state.h"
 #include "tools/import_utils.h"
 
+struct FBXNode;
 struct FBXMeshData;
 struct FBXBone;
 struct ImportState;
@@ -68,6 +69,10 @@ struct FBXMeshData : Reference {
 		Vector<Vector3> normals;
 	};
 
+	// FIXME: remove this is a hack for testing only
+	mutable const FBXDocParser::MeshGeometry *mesh_geometry = nullptr;
+
+	Ref<FBXNode> mesh_node = nullptr;
 	/// vertex id, Weight Info
 	/// later: perf we can use array here
 	HashMap<int, VertexWeightMapping> vertex_weights;
@@ -75,7 +80,7 @@ struct FBXMeshData : Reference {
 	// translate fbx mesh data from document context to FBX Mesh Geometry Context
 	bool valid_weight_indexes = false;
 
-	MeshInstance *create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *mesh_geometry, const FBXDocParser::Model *model, bool use_compression);
+	MeshInstance *create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, bool use_compression);
 
 	void gen_weight_info(Ref<SurfaceTool> st, int vertex_id) const;
 
@@ -87,7 +92,7 @@ struct FBXMeshData : Reference {
 	MeshInstance *godot_mesh_instance = nullptr;
 
 private:
-	void sanitize_vertex_weights();
+	void sanitize_vertex_weights(const ImportState &state);
 
 	/// Make sure to reorganize the vertices so that the correct UV is taken.
 	/// This step is needed because differently from the normal, that can be
@@ -107,6 +112,7 @@ private:
 			HashMap<int, HashMap<int, Vector2> > &r_uv_2_raw);
 
 	void add_vertex(
+			const ImportState &state,
 			Ref<SurfaceTool> p_surface_tool,
 			real_t p_scale,
 			int p_vertex,
@@ -135,17 +141,17 @@ private:
 	/// Returns -1 if `p_index` is invalid.
 	int get_vertex_from_polygon_vertex(const std::vector<int> &p_face_indices, int p_index) const;
 
-	/// Retuns true if this polygon_vertex_index is the end of a new polygon.
+	/// Returns true if this polygon_vertex_index is the end of a new polygon.
 	bool is_end_of_polygon(const std::vector<int> &p_face_indices, int p_index) const;
 
-	/// Retuns true if this polygon_vertex_index is the begin of a new polygon.
+	/// Returns true if this polygon_vertex_index is the begin of a new polygon.
 	bool is_start_of_polygon(const std::vector<int> &p_face_indices, int p_index) const;
 
 	/// Returns the number of polygons.
 	int count_polygons(const std::vector<int> &p_face_indices) const;
 
-	/// Used to extract data from the `MappingData` alligned with vertex.
-	/// Useful to extract normal/uvs/colors/tangets/etc...
+	/// Used to extract data from the `MappingData` aligned with vertex.
+	/// Useful to extract normal/uvs/colors/tangents/etc...
 	/// If the function fails somehow, it returns an hollow vector and print an error.
 	template <class R, class T>
 	HashMap<int, R> extract_per_vertex_data(
@@ -157,7 +163,7 @@ private:
 			R p_fall_back) const;
 
 	/// Used to extract data from the `MappingData` organized per polygon.
-	/// Useful to extract the materila
+	/// Useful to extract the material
 	/// If the function fails somehow, it returns an hollow vector and print an error.
 	template <class T>
 	HashMap<int, T> extract_per_polygon(

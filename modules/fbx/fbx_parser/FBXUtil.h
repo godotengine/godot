@@ -83,14 +83,6 @@ namespace FBXDocParser {
 
 namespace Util {
 
-/** helper for std::for_each to delete all heap-allocated items in a container */
-template <typename T>
-struct delete_fun {
-	void operator()(const volatile T *del) {
-		delete del;
-	}
-};
-
 /** Get a string representation for a #TokenType. */
 const char *TokenTypeString(TokenType t);
 

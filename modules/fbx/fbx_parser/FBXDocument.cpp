@@ -184,7 +184,6 @@ ObjectPtr LazyObject::LoadObject() {
 		if (!strcmp(classtag.c_str(), "Cluster")) {
 			object.reset(new Cluster(id, element, doc, name));
 		} else if (!strcmp(classtag.c_str(), "Skin")) {
-
 			object.reset(new Skin(id, element, doc, name));
 		} else if (!strcmp(classtag.c_str(), "BlendShape")) {
 			object.reset(new BlendShape(id, element, doc, name));
@@ -288,12 +287,15 @@ Document::~Document() {
 		delete v.second;
 	}
 
+	if (metadata_properties != nullptr) {
+		delete metadata_properties;
+	}
 	// clear globals import pointer
 	globals.reset();
 }
 
 // ------------------------------------------------------------------------------------------------
-static const unsigned int LowerSupportedVersion = 7100;
+static const unsigned int LowerSupportedVersion = 7300;
 static const unsigned int UpperSupportedVersion = 7700;
 
 bool Document::ReadHeader() {
@@ -310,17 +312,31 @@ bool Document::ReadHeader() {
 	// While we may have some success with newer files, we don't support
 	// the older 6.n fbx format
 	if (fbxVersion < LowerSupportedVersion) {
-		DOMWarning("unsupported, old format version, supported are only FBX 2011, FBX 2012 and FBX 2013, you can re-export using Maya, 3DS, blender or Autodesk FBX tool");
+		DOMWarning("unsupported, old format version, FBX 2015-2020, you must re-export in a more modern version of your original modelling application");
 		return false;
 	}
 	if (fbxVersion > UpperSupportedVersion) {
-		DOMWarning("unsupported, newer format version, supported are only FBX 2011, up to FBX 2020"
+		DOMWarning("unsupported, newer format version, supported are only FBX 2015, up to FBX 2020"
 				   " trying to read it nevertheless");
 	}
 
 	const ElementPtr ecreator = shead->GetElement("Creator");
 	if (ecreator) {
 		creator = ParseTokenAsString(GetRequiredToken(ecreator, 0));
+	}
+
+	//
+	// Scene Info
+	//
+
+	const ElementPtr scene_info = shead->GetElement("SceneInfo");
+
+	if (scene_info) {
+		PropertyTable *fileExportProps = const_cast<PropertyTable *>(GetPropertyTable(*this, "", scene_info, scene_info->Compound(), true));
+
+		if (fileExportProps) {
+			metadata_properties = fileExportProps;
+		}
 	}
 
 	const ElementPtr etimestamp = shead->GetElement("CreationTimeStamp");
