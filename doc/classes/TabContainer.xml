@@ -137,6 +137,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="all_tabs_in_front" type="bool" setter="set_all_tabs_in_front" getter="is_all_tabs_in_front" default="false">
+			If [code]true[/code], all tabs are drawn in front of the panel. If [code]false[/code], inactive tabs are drawn behind the panel.
+		</member>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="0">
 			The current tab index. When set, this index's [Control] node's [code]visible[/code] property is set to [code]true[/code] and all others are set to [code]false[/code].
 		</member>
@@ -148,9 +151,6 @@
 		</member>
 		<member name="tabs_visible" type="bool" setter="set_tabs_visible" getter="are_tabs_visible" default="true">
 			If [code]true[/code], tabs are visible. If [code]false[/code], tabs' content and titles are hidden.
-		</member>
-		<member name="all_tabs_in_front" type="bool" setter="set_all_tabs_in_front" getter="is_all_tabs_in_front" default="false">
-			If [code]true[/code], all tabs are drawn in front of the panel. If [code]false[/code], inactive tabs are drawn behind the panel.
 		</member>
 		<member name="use_hidden_tabs_for_min_size" type="bool" setter="set_use_hidden_tabs_for_min_size" getter="get_use_hidden_tabs_for_min_size" default="false">
 			If [code]true[/code], children [Control] nodes that are hidden have their minimum size take into account in the total, instead of only the currently visible one.

@@ -24,7 +24,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_image">
+		<method name="get_image" qualifiers="const">
 			<return type="Image">
 			</return>
 			<argument index="0" name="width" type="int">
@@ -35,7 +35,7 @@
 				Generate a noise image with the requested [code]width[/code] and [code]height[/code], based on the current noise parameters.
 			</description>
 		</method>
-		<method name="get_noise_1d">
+		<method name="get_noise_1d" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="x" type="float">
@@ -45,7 +45,7 @@
 				[b]Note:[/b] This method actually returns the 2D noise value [code][-1,1][/code] with fixed y-coordinate value 0.0.
 			</description>
 		</method>
-		<method name="get_noise_2d">
+		<method name="get_noise_2d" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="x" type="float">
@@ -56,7 +56,7 @@
 				Returns the 2D noise value [code][-1,1][/code] at the given position.
 			</description>
 		</method>
-		<method name="get_noise_2dv">
+		<method name="get_noise_2dv" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="pos" type="Vector2">
@@ -65,7 +65,7 @@
 				Returns the 2D noise value [code][-1,1][/code] at the given position.
 			</description>
 		</method>
-		<method name="get_noise_3d">
+		<method name="get_noise_3d" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="x" type="float">
@@ -78,7 +78,7 @@
 				Returns the 3D noise value [code][-1,1][/code] at the given position.
 			</description>
 		</method>
-		<method name="get_noise_3dv">
+		<method name="get_noise_3dv" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="pos" type="Vector3">
@@ -87,7 +87,7 @@
 				Returns the 3D noise value [code][-1,1][/code] at the given position.
 			</description>
 		</method>
-		<method name="get_noise_4d">
+		<method name="get_noise_4d" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="x" type="float">
@@ -102,7 +102,7 @@
 				Returns the 4D noise value [code][-1,1][/code] at the given position.
 			</description>
 		</method>
-		<method name="get_seamless_image">
+		<method name="get_seamless_image" qualifiers="const">
 			<return type="Image">
 			</return>
 			<argument index="0" name="size" type="int">
