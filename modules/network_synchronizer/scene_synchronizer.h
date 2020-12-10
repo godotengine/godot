@@ -236,9 +236,7 @@ public:
 	void _on_node_removed(Node *p_node);
 
 	void reset_synchronizer_mode();
-	/// Can only be called by the server
 	void clear();
-	void __clear();
 
 	void _rpc_send_state(Variant p_snapshot);
 	void _rpc_notify_need_full_snapshot();

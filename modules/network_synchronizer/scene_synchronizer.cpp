@@ -104,7 +104,6 @@ void SceneSynchronizer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_on_node_removed"), &SceneSynchronizer::_on_node_removed);
 
-	ClassDB::bind_method(D_METHOD("__clear"), &SceneSynchronizer::__clear);
 	ClassDB::bind_method(D_METHOD("_rpc_send_state"), &SceneSynchronizer::_rpc_send_state);
 	ClassDB::bind_method(D_METHOD("_rpc_notify_need_full_snapshot"), &SceneSynchronizer::_rpc_notify_need_full_snapshot);
 	ClassDB::bind_method(D_METHOD("_rpc_notify_peer_status", "enabled"), &SceneSynchronizer::_rpc_notify_peer_status);
@@ -136,7 +135,7 @@ void SceneSynchronizer::_notification(int p_what) {
 			if (Engine::get_singleton()->is_editor_hint())
 				return;
 
-			__clear();
+			clear();
 			reset_synchronizer_mode();
 
 			get_multiplayer()->connect("network_peer_connected", Callable(this, "_on_peer_connected"));
@@ -168,7 +167,7 @@ void SceneSynchronizer::_notification(int p_what) {
 
 			get_tree()->disconnect("node_removed", Callable(this, "_on_node_removed"));
 
-			__clear();
+			clear();
 
 			if (synchronizer) {
 				memdelete(synchronizer);
@@ -185,7 +184,6 @@ void SceneSynchronizer::_notification(int p_what) {
 }
 
 SceneSynchronizer::SceneSynchronizer() {
-	rpc_config("__clear", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_send_state", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_notify_need_full_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_notify_peer_status", MultiplayerAPI::RPC_MODE_REMOTE);
@@ -195,7 +193,7 @@ SceneSynchronizer::SceneSynchronizer() {
 }
 
 SceneSynchronizer::~SceneSynchronizer() {
-	__clear();
+	clear();
 	if (synchronizer) {
 		memdelete(synchronizer);
 		synchronizer = nullptr;
@@ -860,16 +858,6 @@ void SceneSynchronizer::reset_synchronizer_mode() {
 }
 
 void SceneSynchronizer::clear() {
-	if (synchronizer_type == SYNCHRONIZER_TYPE_NONETWORK || synchronizer_type == SYNCHRONIZER_TYPE_NULL || get_tree() == nullptr) {
-		__clear();
-	} else {
-		ERR_FAIL_COND_MSG(get_tree()->is_network_server() == false, "The clear function must be called on server");
-		__clear();
-		rpc("__clear");
-	}
-}
-
-void SceneSynchronizer::__clear() {
 	// Drop the node_data.
 	for (uint32_t i = 0; i < node_data.size(); i += 1) {
 		if (node_data[i] != nullptr) {
