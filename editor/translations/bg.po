@@ -12,11 +12,12 @@
 # Stoyan <stoyan.stoyanov99@protonmail.com>, 2020.
 # zooid <the.zooid@gmail.com>, 2020.
 # Любомир Василев <lyubomirv@gmx.com>, 2020.
+# Ziv D <wizdavid@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-08 10:26+0000\n"
+"PO-Revision-Date: 2020-12-07 08:11+0000\n"
 "Last-Translator: Любомир Василев <lyubomirv@gmx.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
@@ -25,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3.2\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -889,9 +890,8 @@ msgid "Signals"
 msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "Поставяне на възелите"
+msgstr "Филтриране на сигналите"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -1015,12 +1015,12 @@ msgid "Owners Of:"
 msgstr ""
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
 msgstr ""
-"Да се премахнат ли избраните файлове от проекта? (Действието е необратимо)"
+"Да се премахнат ли избраните файлове от проекта? (Действието е необратимо)\n"
+"Ще можете да ги откриете в кошчето, ако искате да ги възстановите."
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1072,7 +1072,7 @@ msgstr ""
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -1629,9 +1629,8 @@ msgid "Node Dock"
 msgstr "Панел за възлите"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem Dock"
-msgstr "Показване във файловата система"
+msgstr "Панел за файловата система"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Dock"
@@ -1938,7 +1937,7 @@ msgstr "Наследява:"
 
 #: editor/editor_help.cpp
 msgid "Inherited by:"
-msgstr ""
+msgstr "Наследява се от:"
 
 #: editor/editor_help.cpp
 msgid "Description"
@@ -2396,9 +2395,8 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Сцена, която никога не е била запазвана, не може да бъде презаредена."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "Запазване на сцената"
+msgstr "Презареждане на запазената сцена"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2864,9 +2862,8 @@ msgid "Q&A"
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Report a Bug"
-msgstr "Повторно внасяне"
+msgstr "Докладване на проблем"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
@@ -3552,6 +3549,16 @@ msgid "Name contains invalid characters."
 msgstr ""
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr "Преименуване на файла:"
 
@@ -3568,9 +3575,8 @@ msgid "Duplicating folder:"
 msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "New Inherited Scene"
-msgstr "Нов скрипт"
+msgstr "Нова сцена – наследник"
 
 #: editor/filesystem_dock.cpp
 msgid "Set As Main Scene"
@@ -3600,22 +3606,9 @@ msgstr ""
 msgid "View Owners..."
 msgstr ""
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr ""
-
-#: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr ""
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr ""
-
-#: editor/filesystem_dock.cpp
-#, fuzzy
-msgid "Move to Trash"
-msgstr "Преместване на кадъра"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -3640,10 +3633,15 @@ msgid "Collapse All"
 msgstr "Свиване на всичко"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
+msgid "Duplicate..."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+msgid "Move to Trash"
+msgstr "Преместване в кошчето"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
 msgstr ""
 
 #: editor/filesystem_dock.cpp
@@ -3677,7 +3675,10 @@ msgid "Move"
 msgstr ""
 
 #: editor/filesystem_dock.cpp
-msgid "There is already file or folder with the same name in this location."
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
 msgstr ""
 
 #: editor/filesystem_dock.cpp
@@ -4460,7 +4461,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Directions"
-msgstr "Указания"
+msgstr "Направления"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
@@ -5259,9 +5260,8 @@ msgid "Create Custom Bone(s) from Node(s)"
 msgstr "Възпроизвеждане на сцена по избор"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Bones"
-msgstr "Възпроизвеждане на сцена по избор"
+msgstr "Изчистване на костите"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
@@ -5280,9 +5280,8 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Zoom Reset"
-msgstr "Оригинално увеличение"
+msgstr "Връщане на оригиналния мащаб"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5317,9 +5316,8 @@ msgstr "Режим на завъртане"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Mode"
-msgstr "Режим на Селектиране"
+msgstr "Режим на скалиране"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6330,9 +6328,8 @@ msgid "Transform UV Map"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Transform Polygon"
-msgstr "Създаване на папка"
+msgstr "Преобразуване на полигона"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint Bone Weights"
@@ -6367,22 +6364,20 @@ msgid "Move Points"
 msgstr "Преместване на точките"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Command: Rotate"
-msgstr "Влачене: завъртане"
+msgstr "Command: завъртане"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: преместване на всичко"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Shift+Command: Scale"
-msgstr "Shift+Ctrl: мащабиране"
+msgstr "Shift+Command: мащабиране"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Ctrl: Rotate"
-msgstr "Ctrl: Завъртане"
+msgstr "Ctrl: завъртане"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6423,14 +6418,12 @@ msgid "Radius:"
 msgstr "Радиус:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Polygon to UV"
-msgstr "Полигон -> UV"
+msgstr "Копиране на полигона в UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy UV to Polygon"
-msgstr "Превръщане в Polygon2D"
+msgstr "Копиране на UV в полигона"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -6694,9 +6687,8 @@ msgid "Copy Script Path"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "History Previous"
-msgstr "История Назад"
+msgstr "Назад в историята"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Next"
@@ -7018,9 +7010,8 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Create Rest Pose from Bones"
-msgstr "Възпроизвеждане на сцена по избор"
+msgstr "Създаване на поза на покоя от костите"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
@@ -7231,9 +7222,8 @@ msgid "View Information"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View FPS"
-msgstr "Преглед на файловете"
+msgstr "Показване на кадри/сек"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Half Resolution"
@@ -7244,9 +7234,8 @@ msgid "Audio Listener"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Enable Doppler"
-msgstr "Позволи филтриране"
+msgstr "Включване на доплеровия ефект"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Cinematic Preview"
@@ -7502,14 +7491,12 @@ msgid "Create Mesh2D"
 msgstr "Създаване на Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh2D Preview"
-msgstr "Преглед"
+msgstr "Преглед на Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Polygon2D"
-msgstr "Създаване на папка"
+msgstr "Създаване на Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Polygon2D Preview"
@@ -7560,9 +7547,8 @@ msgid "Invalid geometry, can't create collision polygon."
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "Създаване на папка"
+msgstr "Създаване на съседен CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create light occluder."
@@ -7649,9 +7635,8 @@ msgid "New Animation"
 msgstr "Нова анимация"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Speed:"
-msgstr "Скорост (кадри в секунда):"
+msgstr "Скорост:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Loop"
@@ -7789,20 +7774,19 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Template"
-msgstr ""
+msgstr "Създаване на празен шаблон"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Editor Template"
-msgstr ""
+msgstr "Създаване на празен шаблон за редактора"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create From Current Editor Theme"
-msgstr ""
+msgstr "Създаване от текущата тема на редактора"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Button"
-msgstr "Средно копче"
+msgstr "Бутон-превключвател"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Disabled Button"
@@ -7906,9 +7890,8 @@ msgid "Color"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme File"
-msgstr "Тема"
+msgstr "Файл с тема"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -7920,18 +7903,16 @@ msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Cut Selection"
-msgstr "Центрирай върху Селекцията"
+msgstr "Изрязване на избраното"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint TileMap"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Line Draw"
-msgstr "Линейно"
+msgstr "Изчертаване на линия"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rectangle Paint"
@@ -7958,14 +7939,12 @@ msgid "Disable Autotile"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Enable Priority"
-msgstr "Промени Филтрите"
+msgstr "Включване на приоритета"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Filter tiles"
-msgstr "Поставяне на възелите"
+msgstr "Филтриране на плочките"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Give a TileSet resource to this TileMap to use its tiles."
@@ -7992,14 +7971,12 @@ msgid "Pick Tile"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate Left"
-msgstr "Режим на Завъртане"
+msgstr "Завъртане наляво"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate Right"
-msgstr "Завъртане на Полигон"
+msgstr "Завъртане надясно"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Flip Horizontally"
@@ -8010,9 +7987,8 @@ msgid "Flip Vertically"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Transform"
-msgstr "Изнасяне към платформа"
+msgstr "Изчистване на трансформацията"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Add Texture(s) to TileSet."
@@ -8045,27 +8021,24 @@ msgid "New Atlas"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Next Coordinate"
-msgstr "Следващ скрипт"
+msgstr "Следваща координата"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the next shape, subtile, or Tile."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Coordinate"
-msgstr "Предишен подпрозорец"
+msgstr "Предходна координата"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Region"
-msgstr "Режим на Завъртане"
+msgstr "Регион"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Collision"
@@ -8077,28 +8050,24 @@ msgid "Occlusion"
 msgstr "Приставки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation"
-msgstr "Анимационен Възел"
+msgstr "Навигация"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Bitmask"
-msgstr "Режим на Завъртане"
+msgstr "Побитова маска"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Priority"
 msgstr "Приоритет"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Z Index"
-msgstr "Панорамен режим на Отместване (на работния прозорец)"
+msgstr "Индекс по Z"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Region Mode"
-msgstr "Режим на Завъртане"
+msgstr "Режим на регион"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Collision Mode"
@@ -8110,28 +8079,24 @@ msgid "Occlusion Mode"
 msgstr "Приставки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation Mode"
-msgstr "Анимационен Възел"
+msgstr "Режим на навигация"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Bitmask Mode"
-msgstr "Режим на Завъртане"
+msgstr "Режим на побитова маска"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Priority Mode"
 msgstr "Режим на приоритет"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Icon Mode"
-msgstr "Панорамен режим на Отместване (на работния прозорец)"
+msgstr "Режим на иконки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Z Index Mode"
-msgstr "Панорамен режим на Отместване (на работния прозорец)"
+msgstr "Режим на индекс по Z"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
@@ -8142,34 +8107,28 @@ msgid "Paste bitmask."
 msgstr "Поставяне на битова маска."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Erase bitmask."
-msgstr "Изтрий точки."
+msgstr "Изтриване на побитовата маска."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create a new rectangle."
-msgstr "Създай нови възли."
+msgstr "Създаване на нов правоъгълник."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Rectangle"
-msgstr "Нова сцена"
+msgstr "Нов правоъгълник"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create a new polygon."
-msgstr "Създай нов полигон от нулата."
+msgstr "Създаване на нов полигон."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Polygon"
-msgstr "Преместване на полигона"
+msgstr "Нов полигон"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Selected Shape"
-msgstr "Изтриване на избран(и) ключ(ове)"
+msgstr "Изтриване на избраната форма"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -8189,9 +8148,10 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove selected texture? This will remove all tiles which use it."
-msgstr "Преместване на пътечката нагоре."
+msgstr ""
+"Преместване на избраната текстура? Това ще премахне всички плочки, които я "
+"ползват."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
@@ -8206,9 +8166,8 @@ msgid "Merge from scene?"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Texture"
-msgstr "Внасяне на текстури"
+msgstr "Премахване на текстурата"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -8270,23 +8229,20 @@ msgstr ""
 "Щракнете на друга плочка, за да я редактирате."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Set Tile Region"
-msgstr "Двуизмерна текстура"
+msgstr "Задаване на регион от плочки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Tile"
-msgstr "Създаване на папка"
+msgstr "Създаване на плочка"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Bitmask"
-msgstr "Промени Филтрите"
+msgstr "Редактиране на побитовата маска на плочката"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Collision Polygon"
@@ -8302,33 +8258,28 @@ msgid "Edit Navigation Polygon"
 msgstr "Редактиране на полигона за навигация"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Tile Bitmask"
-msgstr "Поставяне на възелите"
+msgstr "Поставяне на побитовата маска на плочката"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Polygon Concave"
-msgstr "Преместване на Полигон"
+msgstr "Преобразуване на полигона във вдлъбнат"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Polygon Convex"
-msgstr "Преместване на Полигон"
+msgstr "Преобразуване на полигона в изпъкнал"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Tile"
-msgstr "Затваряне на всичко"
+msgstr "Премахване на плочката"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Collision Polygon"
-msgstr "Преместване на Полигон"
+msgstr "Премахване на полигона за колизии"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -8336,28 +8287,24 @@ msgid "Remove Occlusion Polygon"
 msgstr "Преместване на Полигон"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Navigation Polygon"
-msgstr "Завъртане на Полигон"
+msgstr "Премахване на полигона за навигация"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Priority"
-msgstr "Промени Филтрите"
+msgstr "Редактиране на приоритета на плочката"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Convex"
-msgstr "Преместване на Полигон"
+msgstr "Преобразуване в изпъкнал"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Concave"
-msgstr "Преместване на Полигон"
+msgstr "Преобразуване във вдлъбнат"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -8404,9 +8351,8 @@ msgid "Version Control System"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Initialize"
-msgstr "Всяка дума с Главна буква"
+msgstr "Инициализиране"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Staging area"
@@ -8425,14 +8371,12 @@ msgid "Modified"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Renamed"
-msgstr "Възел"
+msgstr "Преименуван"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Deleted"
-msgstr "Изтрий"
+msgstr "Изтрит"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Typechange"
@@ -8486,9 +8430,8 @@ msgid "Scalar"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector"
-msgstr "Инспектор"
+msgstr "Вектор"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
@@ -8551,9 +8494,8 @@ msgid "Add Node to Visual Shader"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Node(s) Moved"
-msgstr "Възелът е преместен"
+msgstr "Възлите са преместени"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
@@ -9573,6 +9515,10 @@ msgid "OpenGL ES 3.0"
 msgstr ""
 
 #: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
+msgstr ""
+
+#: editor/project_manager.cpp
 msgid ""
 "Higher visual quality\n"
 "All features available\n"
@@ -10307,9 +10253,8 @@ msgid "Instance Child Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach Script"
-msgstr "Закачане на скрипт"
+msgstr "Разкачане на скрипта"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10344,9 +10289,8 @@ msgid "Make node as Root"
 msgstr "Превръщане на възела в корен"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
-msgstr "Изтриване на %d възела?"
+msgstr "Изтриване на %d възела и дъщерните им елементи?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -12059,6 +12003,26 @@ msgid ""
 "\"Particles Animation\" enabled."
 msgstr ""
 
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr ""
+
 #: scene/2d/light_2d.cpp
 #, fuzzy
 msgid ""
@@ -12336,6 +12300,26 @@ msgid ""
 "Size changes to RigidBody (in character or rigid modes) will be overridden "
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
 msgstr ""
 
 #: scene/3d/remote_transform.cpp

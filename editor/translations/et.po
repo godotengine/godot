@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2020-09-01 10:38+0000\n"
+"PO-Revision-Date: 2020-12-02 09:52+0000\n"
 "Last-Translator: StReef <streef.gtx@gmail.com>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/et/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2.1-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1064,7 +1064,7 @@ msgstr ""
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -2566,7 +2566,7 @@ msgstr "Vaikimisi"
 #: editor/editor_node.cpp editor/editor_properties.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
 msgid "Show in FileSystem"
-msgstr ""
+msgstr "Kuva failikuvajas"
 
 #: editor/editor_node.cpp
 msgid "Play This Scene"
@@ -3582,6 +3582,16 @@ msgid "Name contains invalid characters."
 msgstr ""
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr ""
 
@@ -3629,21 +3639,9 @@ msgstr "Redigeeri sõltuvusi..."
 msgid "View Owners..."
 msgstr "Kuva omanikud..."
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "Muuda nime..."
-
-#: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "Duplikeeri..."
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Teisalda..."
-
-#: editor/filesystem_dock.cpp
-msgid "Move to Trash"
-msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -3668,11 +3666,16 @@ msgid "Collapse All"
 msgstr "Ahenda kõik"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
-msgstr "Nimeta ümber"
+msgid "Duplicate..."
+msgstr "Duplikeeri..."
+
+#: editor/filesystem_dock.cpp
+msgid "Move to Trash"
+msgstr ""
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "Muuda nime..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -3705,8 +3708,11 @@ msgid "Move"
 msgstr ""
 
 #: editor/filesystem_dock.cpp
-msgid "There is already file or folder with the same name in this location."
-msgstr ""
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "Nimeta ümber"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -3961,7 +3967,7 @@ msgstr ""
 #: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save As..."
-msgstr ""
+msgstr "Salvest kui..."
 
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
@@ -5283,7 +5289,7 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode"
-msgstr ""
+msgstr "Valimisrežiim"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -5304,17 +5310,17 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Move Mode"
-msgstr ""
+msgstr "Liigutamisrežiim"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Mode"
-msgstr ""
+msgstr "Pööramisrežiim"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
-msgstr ""
+msgstr "Skaleerimisrežiim"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5349,7 +5355,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Grid Snap"
-msgstr ""
+msgstr "Kasuta ruudustiku naksamist"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
@@ -5407,7 +5413,7 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock the selected object in place (can't be moved)."
-msgstr ""
+msgstr "Lukusta valitud objekt praegusele kohale (seda ei saa liigutada)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6555,7 +6561,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "New Text File..."
-msgstr ""
+msgstr "Uus tekstifail..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open File"
@@ -6563,7 +6569,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save File As..."
-msgstr ""
+msgstr "Salvesta fail kui..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Can't obtain the script for running."
@@ -6596,7 +6602,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As..."
-msgstr ""
+msgstr "Salvesta teema kui..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "%s Class Reference"
@@ -6650,19 +6656,19 @@ msgstr "Eelmine skript"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "File"
-msgstr ""
+msgstr "Fail"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open..."
-msgstr ""
+msgstr "Ava..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reopen Closed Script"
-msgstr ""
+msgstr "Taasava suletud skript"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
-msgstr ""
+msgstr "Salvesta kõik"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Soft Reload Script"
@@ -7177,11 +7183,11 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
-msgstr ""
+msgstr "Kuva tavaliselt"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Wireframe"
-msgstr ""
+msgstr "Kuva traadiraamina"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Overdraw"
@@ -7189,7 +7195,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Unshaded"
-msgstr ""
+msgstr "Kuva varjutamata"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Environment"
@@ -7205,7 +7211,7 @@ msgstr "Kuva informatsioon"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View FPS"
-msgstr ""
+msgstr "Kuva kaardisagedus"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Half Resolution"
@@ -7213,7 +7219,7 @@ msgstr "Poolresolutioon"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Audio Listener"
-msgstr ""
+msgstr "Heli kuulaja"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Enable Doppler"
@@ -7299,11 +7305,11 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Local Space"
-msgstr ""
+msgstr "Kasuta kohalikku ruumi"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
-msgstr ""
+msgstr "Kasuta naksamist"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -9481,6 +9487,10 @@ msgid "OpenGL ES 3.0"
 msgstr ""
 
 #: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
+msgstr ""
+
+#: editor/project_manager.cpp
 msgid ""
 "Higher visual quality\n"
 "All features available\n"
@@ -9990,7 +10000,7 @@ msgstr ""
 
 #: editor/property_editor.cpp
 msgid "File..."
-msgstr ""
+msgstr "Fail..."
 
 #: editor/property_editor.cpp
 msgid "Dir..."
@@ -10281,7 +10291,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
-msgstr ""
+msgstr "Salvesta uus stseen kui..."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -10490,7 +10500,7 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Open Script:"
-msgstr ""
+msgstr "Ava skript:"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -10506,7 +10516,7 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Visibility"
-msgstr ""
+msgstr "Sea nähtavus sisse/välja"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -11896,6 +11906,26 @@ msgid ""
 "\"Particles Animation\" enabled."
 msgstr ""
 
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr ""
+
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
@@ -12154,6 +12184,26 @@ msgid ""
 "Size changes to RigidBody (in character or rigid modes) will be overridden "
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
 msgstr ""
 
 #: scene/3d/remote_transform.cpp

@@ -20,8 +20,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-23 21:42+0000\n"
-"Last-Translator: Miroslav <zinmirx@gmail.com>\n"
+"PO-Revision-Date: 2020-11-29 08:29+0000\n"
+"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -1109,7 +1109,7 @@ msgstr "Огляд підключених ресурсів"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -3730,6 +3730,16 @@ msgid "Name contains invalid characters."
 msgstr "Назва містить некоректні символи."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr "Перейменування файлу:"
 
@@ -3777,21 +3787,9 @@ msgstr "Редагувати залежності..."
 msgid "View Owners..."
 msgstr "Переглянути власників..."
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "Перейменувати..."
-
-#: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "Дублювати..."
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Перемістити до..."
-
-#: editor/filesystem_dock.cpp
-msgid "Move to Trash"
-msgstr "Пересунути до смітника"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -3816,11 +3814,16 @@ msgid "Collapse All"
 msgstr "Згорнути все"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
-msgstr "Перейменувати"
+msgid "Duplicate..."
+msgstr "Дублювати..."
+
+#: editor/filesystem_dock.cpp
+msgid "Move to Trash"
+msgstr "Пересунути до смітника"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "Перейменувати..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -3855,8 +3858,11 @@ msgid "Move"
 msgstr "Перемістити"
 
 #: editor/filesystem_dock.cpp
-msgid "There is already file or folder with the same name in this location."
-msgstr "У вказаному каталозі вже міститься тека або файл із вказано назвою."
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "Перейменувати"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -8349,23 +8355,20 @@ msgid "Create a new rectangle."
 msgstr "Створити прямокутник."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Rectangle"
-msgstr "Намалювати прямокутник"
+msgstr "Новий прямокутник"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Створити новий полігон."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Polygon"
-msgstr "Перемістити полігон"
+msgstr "Новий полігон"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Selected Shape"
-msgstr "Вилучити вибране"
+msgstr "Вилучити позначену форму"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -9844,6 +9847,10 @@ msgstr "Обробник:"
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
 msgstr "OpenGL ES 3.0"
+
+#: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12441,6 +12448,26 @@ msgstr ""
 "Анімація CPUParticles2D потребує використання CanvasItemMaterial із "
 "увімкненим параметром «Анімація часток»."
 
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr ""
+
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
@@ -12774,6 +12801,26 @@ msgstr ""
 "фізичним рушієм під час роботи.\n"
 "Замість цієї зміни, вам варто змінити розміри дочірніх форм зіткнення."
 
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
@@ -13017,6 +13064,9 @@ msgstr "Змінні величини можна пов'язувати лише 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
+
+#~ msgid "There is already file or folder with the same name in this location."
+#~ msgstr "У вказаному каталозі вже міститься тека або файл із вказано назвою."
 
 #~ msgid "Missing 'build-tools' directory!"
 #~ msgstr "Не знайдено каталогу «build-tools»!"
