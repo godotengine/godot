@@ -23,12 +23,12 @@ def get_opts():
 
     return [
         ("initial_memory", "Initial WASM memory (in MiB)", 16),
-        BoolVariable("use_assertions", "Use emscripten runtime assertions", False),
+        BoolVariable("use_assertions", "Use Emscripten runtime assertions", False),
         BoolVariable("use_thinlto", "Use ThinLTO", False),
-        BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
-        BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
-        BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN)", False),
-        BoolVariable("use_safe_heap", "Use emscripten SAFE_HEAP sanitizer", False),
+        BoolVariable("use_ubsan", "Use Emscripten undefined behavior sanitizer (UBSAN)", False),
+        BoolVariable("use_asan", "Use Emscripten address sanitizer (ASAN)", False),
+        BoolVariable("use_lsan", "Use Emscripten leak sanitizer (LSAN)", False),
+        BoolVariable("use_safe_heap", "Use Emscripten SAFE_HEAP sanitizer", False),
         # eval() can be a security concern, so it can be disabled.
         BoolVariable("javascript_eval", "Enable JavaScript eval interface", True),
         BoolVariable("threads_enabled", "Enable WebAssembly Threads support (limited browser support)", False),

@@ -37,16 +37,13 @@
 #include "platform/javascript/logo.gen.h"
 #include "platform/javascript/run_icon.gen.h"
 
-#define EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE "webassembly_release.zip"
-#define EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG "webassembly_debug.zip"
-
 class EditorHTTPServer : public Reference {
 private:
 	Ref<TCP_Server> server;
 	Ref<StreamPeerTCP> connection;
-	uint64_t time;
+	uint64_t time = 0;
 	uint8_t req_buf[4096];
-	int req_pos;
+	int req_pos = 0;
 
 	void _clear_client() {
 		connection = Ref<StreamPeerTCP>();
@@ -211,7 +208,12 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 	Ref<ImageTexture> logo;
 	Ref<ImageTexture> run_icon;
 	Ref<ImageTexture> stop_icon;
-	int menu_options;
+	int menu_options = 0;
+
+	Ref<EditorHTTPServer> server;
+	bool server_quit = false;
+	Mutex server_lock;
+	Thread *server_thread = nullptr;
 
 	enum ExportMode {
 		EXPORT_MODE_NORMAL = 0,
@@ -240,12 +242,6 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 	}
 
 	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects);
-
-private:
-	Ref<EditorHTTPServer> server;
-	bool server_quit;
-	Mutex server_lock;
-	Thread *server_thread;
 
 	static void _server_thread_poll(void *data);
 
@@ -685,7 +681,6 @@ void EditorExportPlatformJavaScript::_server_thread_poll(void *data) {
 
 EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 	server.instance();
-	server_quit = false;
 	server_thread = Thread::create(_server_thread_poll, this);
 
 	Ref<Image> img = memnew(Image(_javascript_logo));
@@ -702,8 +697,6 @@ EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 	} else {
 		stop_icon.instance();
 	}
-
-	menu_options = 0;
 }
 
 EditorExportPlatformJavaScript::~EditorExportPlatformJavaScript() {
