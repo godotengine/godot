@@ -316,6 +316,8 @@ struct PeerData {
 	bool force_notify_snapshot = true;
 	// For new peers a full snapshot is needed.
 	bool need_full_snapshot = true;
+	// Used to know if the peer is enabled.
+	bool enabled = true;
 };
 
 struct Snapshot {

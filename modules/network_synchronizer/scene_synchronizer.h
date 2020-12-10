@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  scene_synchronizer.h                                                     */
+/*  scene_synchronizer.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -224,6 +224,11 @@ public:
 
 	/// This function works only on server.
 	void force_state_notify();
+	/// Make peers as dirty, so they will be reloaded next frame.
+	void dirty_peers();
+
+	void set_peer_networking_enable(int p_peer, bool p_enable);
+	bool is_peer_networking_enable(int p_peer) const;
 
 	void _on_peer_connected(int p_peer);
 	void _on_peer_disconnected(int p_peer);
@@ -237,8 +242,10 @@ public:
 
 	void _rpc_send_state(Variant p_snapshot);
 	void _rpc_notify_need_full_snapshot();
+	void _rpc_notify_peer_status(bool p_enabled);
 
 	void update_peers();
+	void clear_peers();
 
 	void change_events_begin(int p_flag);
 	void change_event_add(NetUtility::NodeData *p_node_data, NetVarId p_var_id, const Variant &p_old);
@@ -259,6 +266,9 @@ private:
 
 	/// Returns the latest generated `NetNodeId`.
 	NetNodeId get_biggest_node_id() const;
+
+	void reset_controllers();
+	void reset_controller(NetUtility::NodeData *p_controller);
 
 	void process();
 	
@@ -307,10 +317,13 @@ public:
 	virtual void on_node_removed(NetUtility::NodeData *p_node_data) {}
 	virtual void on_variable_added(NetUtility::NodeData *p_node_data, StringName p_var_name) {}
 	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, Variant p_old_value, int p_flag) {}
+	virtual void on_controller_reset(NetUtility::NodeData *p_node_data) {}
 };
 
 class NoNetSynchronizer : public Synchronizer {
 	friend class SceneSynchronizer;
+
+	bool enabled = true;
 
 public:
 	NoNetSynchronizer(SceneSynchronizer *p_node);
@@ -319,6 +332,9 @@ public:
 
 	virtual void process() override;
 	virtual void receive_snapshot(Variant p_snapshot) override;
+
+	void set_enable(bool p_enabled);
+	bool is_enable() const;
 };
 
 class ServerSynchronizer : public Synchronizer {
@@ -361,6 +377,7 @@ class ClientSynchronizer : public Synchronizer {
 	std::deque<NetUtility::Snapshot> client_snapshots;
 	std::deque<NetUtility::Snapshot> server_snapshots;
 	uint32_t last_checked_input = 0;
+	bool enabled = true;
 
 	bool need_full_snapshot_notified = false;
 
@@ -390,6 +407,7 @@ public:
 	virtual void on_node_added(NetUtility::NodeData *p_node_data) override;
 	virtual void on_node_removed(NetUtility::NodeData *p_node_data) override;
 	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, Variant p_old_value, int p_flag) override;
+	virtual void on_controller_reset(NetUtility::NodeData *p_node_data) override;
 
 	bool parse_sync_data(
 			Variant p_snapshot,
@@ -397,6 +415,8 @@ public:
 			void (*p_node_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data),
 			void (*p_controller_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_input_id),
 			void (*p_variable_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data, NetVarId p_var_id, const Variant &p_value));
+
+	void set_enable(bool p_enabled);
 
 private:
 	/// Store node data organized per controller.

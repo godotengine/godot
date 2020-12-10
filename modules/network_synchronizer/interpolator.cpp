@@ -85,7 +85,7 @@ int Interpolator::register_variable(const Variant &p_default, Fallback p_fallbac
 }
 
 void Interpolator::set_variable_default(int p_var_id, const Variant &p_default) {
-	ERR_FAIL_INDEX(p_var_id, variables.size());
+	ERR_FAIL_INDEX(p_var_id, int(variables.size()));
 	ERR_FAIL_COND(variables[p_var_id].default_value.get_type() != p_default.get_type());
 	variables[p_var_id].default_value = p_default;
 }

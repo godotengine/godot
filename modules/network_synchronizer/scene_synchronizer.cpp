@@ -92,6 +92,9 @@ void SceneSynchronizer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_state_notify"), &SceneSynchronizer::force_state_notify);
 
+	ClassDB::bind_method(D_METHOD("set_peer_networking_enable", "peer", "enabled"), &SceneSynchronizer::set_peer_networking_enable);
+	ClassDB::bind_method(D_METHOD("get_peer_networking_enable", "peer"), &SceneSynchronizer::is_peer_networking_enable);
+
 	ClassDB::bind_method(D_METHOD("_on_peer_connected"), &SceneSynchronizer::_on_peer_connected);
 	ClassDB::bind_method(D_METHOD("_on_peer_disconnected"), &SceneSynchronizer::_on_peer_disconnected);
 
@@ -100,9 +103,13 @@ void SceneSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("__clear"), &SceneSynchronizer::__clear);
 	ClassDB::bind_method(D_METHOD("_rpc_send_state"), &SceneSynchronizer::_rpc_send_state);
 	ClassDB::bind_method(D_METHOD("_rpc_notify_need_full_snapshot"), &SceneSynchronizer::_rpc_notify_need_full_snapshot);
+	ClassDB::bind_method(D_METHOD("_rpc_notify_peer_status", "enabled"), &SceneSynchronizer::_rpc_notify_peer_status);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "server_notify_state_interval", PROPERTY_HINT_RANGE, "0.001,10.0,0.0001"), "set_server_notify_state_interval", "get_server_notify_state_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "comparison_float_tolerance", PROPERTY_HINT_RANGE, "0.000001,0.01,0.000001"), "set_comparison_float_tolerance", "get_comparison_float_tolerance");
+
+	ADD_SIGNAL(MethodInfo("sync_started"));
+	ADD_SIGNAL(MethodInfo("sync_paused"));
 }
 
 void SceneSynchronizer::_notification(int p_what) {
@@ -132,10 +139,25 @@ void SceneSynchronizer::_notification(int p_what) {
 			get_multiplayer()->connect("network_peer_disconnected", Callable(this, "_on_peer_disconnected"));
 
 			get_tree()->connect("node_removed", Callable(this, "_on_node_removed"));
+
+			// Make sure to reset all the assigned controllers.
+			reset_controllers();
+
+			// Init the peers already connected.
+			{
+				const Vector<int> peer_ids = get_tree()->get_network_connected_peers();
+				const int *peer_ids_ptr = peer_ids.ptr();
+				for (int i = 0; i < peer_ids.size(); i += 1) {
+					_on_peer_connected(peer_ids_ptr[i]);
+				}
+			}
+
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (Engine::get_singleton()->is_editor_hint())
 				return;
+
+			clear_peers();
 
 			get_multiplayer()->disconnect("network_peer_connected", Callable(this, "_on_peer_connected"));
 			get_multiplayer()->disconnect("network_peer_disconnected", Callable(this, "_on_peer_disconnected"));
@@ -151,6 +173,9 @@ void SceneSynchronizer::_notification(int p_what) {
 			}
 
 			set_physics_process_internal(false);
+
+			// Make sure to reset all the assigned controllers.
+			reset_controllers();
 		}
 	}
 }
@@ -159,6 +184,7 @@ SceneSynchronizer::SceneSynchronizer() {
 	rpc_config("__clear", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_send_state", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_notify_need_full_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
+	rpc_config("_rpc_notify_peer_status", MultiplayerAPI::RPC_MODE_REMOTE);
 
 	// Avoid too much useless re-allocations.
 	event_listener.reserve(100);
@@ -207,7 +233,7 @@ NetUtility::NodeData *SceneSynchronizer::register_node(Node *p_node) {
 
 			nd->is_controller = true;
 			controller->set_scene_synchronizer(this);
-			peer_dirty = true;
+			dirty_peers();
 		}
 
 		add_node_data(nd);
@@ -532,7 +558,7 @@ Node *SceneSynchronizer::controller_get_dependency(Node *p_controller, int p_ind
 	NetUtility::NodeData *controller_nd = find_node_data(p_controller);
 	ERR_FAIL_COND_V_MSG(controller_nd == nullptr, nullptr, "The passed controller (" + p_controller->get_path() + ") is not registered.");
 	ERR_FAIL_COND_V_MSG(controller_nd->is_controller == false, nullptr, "The node passed as controller (" + p_controller->get_path() + ") is not a controller.");
-	ERR_FAIL_INDEX_V(p_index, controller_nd->dependency_nodes.size(), nullptr);
+	ERR_FAIL_INDEX_V(p_index, int(controller_nd->dependency_nodes.size()), nullptr);
 
 	return controller_nd->dependency_nodes[p_index]->node;
 }
@@ -695,12 +721,64 @@ void SceneSynchronizer::force_state_notify() {
 	r->state_notifier_timer = get_server_notify_state_interval() + 1.0;
 }
 
+void SceneSynchronizer::dirty_peers() {
+	peer_dirty = true;
+}
+
+void SceneSynchronizer::set_peer_networking_enable(int p_peer, bool p_enable) {
+	ERR_FAIL_COND_MSG(p_peer == 1, "Disable the server is not possible.");
+
+	if (synchronizer_type == SYNCHRONIZER_TYPE_SERVER) {
+		NetUtility::PeerData *pd = peer_data.lookup_ptr(p_peer);
+		ERR_FAIL_COND_MSG(pd == nullptr, "The peer: " + itos(p_peer) + " is not know. [bug]");
+
+		if (pd->enabled == p_enable) {
+			// Nothing to do.
+			return;
+		}
+
+		pd->enabled = p_enable;
+
+		dirty_peers();
+
+		// Just notify the peer status.
+		rpc_id(p_peer, "_rpc_notify_peer_status", p_enable);
+	} else {
+		ERR_FAIL_COND_MSG(synchronizer_type != SYNCHRONIZER_TYPE_NONETWORK, "At this point no network is expected.");
+
+		static_cast<NoNetSynchronizer *>(synchronizer)->set_enable(p_enable);
+	}
+}
+
+bool SceneSynchronizer::is_peer_networking_enable(int p_peer) const {
+	if (p_peer == 1) {
+		// Server is always enabled.
+		return true;
+	}
+
+	if (synchronizer_type == SYNCHRONIZER_TYPE_SERVER) {
+		NetUtility::PeerData *pd = peer_data.lookup_ptr(p_peer);
+		ERR_FAIL_COND_V_MSG(pd == nullptr, false, "The peer: " + itos(p_peer) + " is not know. [bug]");
+		return pd->enabled;
+	} else {
+		ERR_FAIL_COND_V_MSG(synchronizer_type != SYNCHRONIZER_TYPE_NONETWORK, false, "At this point no network is expected.");
+		return static_cast<NoNetSynchronizer *>(synchronizer)->is_enable();
+	}
+}
+
 void SceneSynchronizer::_on_peer_connected(int p_peer) {
-	peer_data.set(p_peer, NetUtility::PeerData());
+	peer_data.insert(p_peer, NetUtility::PeerData());
+	dirty_peers();
 }
 
 void SceneSynchronizer::_on_peer_disconnected(int p_peer) {
 	peer_data.remove(p_peer);
+
+	// Notify all controllers that this peer is gone.
+	for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
+		NetworkedController *c = static_cast<NetworkedController *>(node_data_controllers[i]->node);
+		c->controller->deactivate_peer(p_peer);
+	}
 }
 
 void SceneSynchronizer::_on_node_removed(Node *p_node) {
@@ -766,24 +844,20 @@ void SceneSynchronizer::reset_synchronizer_mode() {
 		}
 	}
 
-	if (synchronizer) {
-		// Notify the presence all available nodes and its variables to the synchronizer.
-		for (uint32_t i = 0; i < node_data.size(); i += 1) {
-			synchronizer->on_node_added(node_data[i]);
-			for (uint32_t y = 0; y < node_data[i]->vars.size(); y += 1) {
-				synchronizer->on_variable_added(node_data[i], node_data[i]->vars[y].var.name);
-			}
+	// Notify the presence all available nodes and its variables to the synchronizer.
+	for (uint32_t i = 0; i < node_data.size(); i += 1) {
+		synchronizer->on_node_added(node_data[i]);
+		for (uint32_t y = 0; y < node_data[i]->vars.size(); y += 1) {
+			synchronizer->on_variable_added(node_data[i], node_data[i]->vars[y].var.name);
 		}
 	}
 
 	// Reset the controllers.
-	for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
-		static_cast<NetworkedController *>(node_data_controllers[i]->node)->reset();
-	}
+	reset_controllers();
 }
 
 void SceneSynchronizer::clear() {
-	if (synchronizer_type == SYNCHRONIZER_TYPE_NONETWORK) {
+	if (synchronizer_type == SYNCHRONIZER_TYPE_NONETWORK || synchronizer_type == SYNCHRONIZER_TYPE_NULL || get_tree() == nullptr) {
 		__clear();
 	} else {
 		ERR_FAIL_COND_MSG(get_tree()->is_network_server() == false, "The clear function must be called on server");
@@ -793,18 +867,13 @@ void SceneSynchronizer::clear() {
 }
 
 void SceneSynchronizer::__clear() {
+	// Drop the node_data.
 	for (uint32_t i = 0; i < node_data.size(); i += 1) {
-		Node *node = static_cast<Node *>(ObjectDB::get_instance(node_data[i]->instance_id));
-		if (node != nullptr) {
-			for (uint32_t y = 0; y < node_data[i]->vars.size(); y += 1) {
-				// Unregister the variable so the connected variables are
-				// correctly removed
-				unregister_variable(node, node_data[i]->vars[y].var.name);
-			}
+		if (node_data[i] != nullptr) {
+			drop_node_data(node_data[i]);
 		}
 	}
 
-	// Reset so to relase the internal memory.
 	node_data.reset();
 	organized_node_data.reset();
 	node_data_controllers.reset();
@@ -832,17 +901,73 @@ void SceneSynchronizer::_rpc_notify_need_full_snapshot() {
 	pd->need_full_snapshot = true;
 }
 
+void SceneSynchronizer::_rpc_notify_peer_status(bool p_enabled) {
+	ERR_FAIL_COND_MSG(synchronizer_type != SYNCHRONIZER_TYPE_CLIENT, "The peer status is supposed to be received by the client.");
+	static_cast<ClientSynchronizer *>(synchronizer)->set_enable(p_enabled);
+}
+
 void SceneSynchronizer::update_peers() {
-	if (peer_dirty == false) {
+#ifdef DEBUG_ENABLED
+	// This function is only called on server.
+	CRASH_COND(synchronizer_type != SYNCHRONIZER_TYPE_SERVER);
+#endif
+
+	if (likely(peer_dirty == false)) {
 		return;
 	}
+
 	peer_dirty = false;
 
-	for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
-		NetUtility::PeerData *pd = peer_data.lookup_ptr(node_data_controllers[i]->node->get_network_master());
-		if (pd) {
-			pd->controller_id = node_data_controllers[i]->id;
+	for (OAHashMap<int, NetUtility::PeerData>::Iterator it = peer_data.iter();
+			it.valid;
+			it = peer_data.next_iter(it)) {
+
+		// Validate the peer.
+		if (it.value->controller_id != UINT32_MAX) {
+			NetUtility::NodeData *nd = get_node_data(it.value->controller_id);
+			if (nd == nullptr ||
+					nd->is_controller == false ||
+					nd->node->get_network_master() != (*it.key)) {
+				// Invalidate the controller id
+				it.value->controller_id = UINT32_MAX;
+			}
 		}
+
+		if (it.value->controller_id == UINT32_MAX) {
+			// The controller_id is not assigned, search it.
+			for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
+				if (node_data_controllers[i]->node->get_network_master() == (*it.key)) {
+					// Controller found.
+					it.value->controller_id = node_data_controllers[i]->id;
+					break;
+				}
+			}
+		}
+
+		// Propagate the peer change to controllers.
+		for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
+			NetworkedController *c = static_cast<NetworkedController *>(node_data_controllers[i]->node);
+
+			if (it.value->controller_id == node_data_controllers[i]->id) {
+				// This is the controller owned by this peer.
+				c->get_server_controller()->set_enabled(it.value->enabled);
+			} else {
+				// This is a controller owned by another peer.
+				if (it.value->enabled) {
+					c->controller->activate_peer(*it.key);
+				} else {
+					c->controller->deactivate_peer(*it.key);
+				}
+			}
+		}
+	}
+}
+
+void SceneSynchronizer::clear_peers() {
+	peer_data.clear();
+	for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
+		NetworkedController *c = static_cast<NetworkedController *>(node_data_controllers[i]->node);
+		c->controller->clear_peers();
 	}
 }
 
@@ -994,9 +1119,12 @@ void SceneSynchronizer::add_node_data(NetUtility::NodeData *p_node_data) {
 
 	if (p_node_data->is_controller) {
 		node_data_controllers.push_back(p_node_data);
+		reset_controller(p_node_data);
 	}
 
-	synchronizer->on_node_added(p_node_data);
+	if (synchronizer) {
+		synchronizer->on_node_added(p_node_data);
+	}
 }
 
 void SceneSynchronizer::drop_node_data(NetUtility::NodeData *p_node_data) {
@@ -1010,7 +1138,7 @@ void SceneSynchronizer::drop_node_data(NetUtility::NodeData *p_node_data) {
 
 	if (p_node_data->is_controller) {
 		// This is a controller, make sure to reset the peers.
-		peer_dirty = true;
+		dirty_peers();
 		node_data_controllers.erase(p_node_data);
 	}
 
@@ -1292,10 +1420,66 @@ NetNodeId SceneSynchronizer::get_biggest_node_id() const {
 	return organized_node_data.size() == 0 ? UINT32_MAX : organized_node_data.size() - 1;
 }
 
+void SceneSynchronizer::reset_controllers() {
+	for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
+		reset_controller(node_data_controllers[i]);
+	}
+}
+
+void SceneSynchronizer::reset_controller(NetUtility::NodeData *p_controller_nd) {
+#ifdef DEBUG_ENABLED
+	// This can't happen because the callers make sure the `NodeData` is a
+	// controller.
+	CRASH_COND(p_controller_nd->is_controller == false);
+#endif
+
+	NetworkedController *controller = static_cast<NetworkedController *>(p_controller_nd->node);
+
+	// Reset the controller type.
+	if (controller->controller != nullptr) {
+		memdelete(controller->controller);
+		controller->controller = nullptr;
+		controller->controller_type = NetworkedController::CONTROLLER_TYPE_NULL;
+		controller->set_physics_process_internal(false);
+	}
+
+	if (get_tree() == nullptr) {
+		if (synchronizer) {
+			synchronizer->on_controller_reset(p_controller_nd);
+		}
+
+		// Nothing to do.
+		return;
+	}
+
+	if (get_tree()->get_network_peer().is_null()) {
+		controller->controller_type = NetworkedController::CONTROLLER_TYPE_NONETWORK;
+		controller->controller = memnew(NoNetController(controller));
+	} else if (get_tree()->is_network_server()) {
+		controller->controller_type = NetworkedController::CONTROLLER_TYPE_SERVER;
+		controller->controller = memnew(ServerController(controller, controller->get_network_traced_frames()));
+	} else if (controller->is_network_master()) {
+		controller->controller_type = NetworkedController::CONTROLLER_TYPE_PLAYER;
+		controller->controller = memnew(PlayerController(controller));
+	} else {
+		controller->controller_type = NetworkedController::CONTROLLER_TYPE_DOLL;
+		controller->controller = memnew(DollController(controller));
+		controller->set_physics_process_internal(true);
+	}
+
+	dirty_peers();
+	controller->controller->ready();
+
+	if (synchronizer) {
+		synchronizer->on_controller_reset(p_controller_nd);
+	}
+}
+
 void SceneSynchronizer::process() {
 #ifdef DEBUG_ENABLED
 	validate_nodes();
 #endif
+
 	synchronizer->process();
 	purge_node_dependencies();
 }
@@ -1332,9 +1516,14 @@ NoNetSynchronizer::NoNetSynchronizer(SceneSynchronizer *p_node) :
 		Synchronizer(p_node) {}
 
 void NoNetSynchronizer::clear() {
+	enabled = true;
 }
 
 void NoNetSynchronizer::process() {
+	if (unlikely(enabled == false)) {
+		return;
+	}
+
 	const real_t delta = scene_synchronizer->get_physics_process_delta_time();
 
 	// Process the scene
@@ -1361,6 +1550,25 @@ void NoNetSynchronizer::process() {
 void NoNetSynchronizer::receive_snapshot(Variant _p_snapshot) {
 }
 
+void NoNetSynchronizer::set_enable(bool p_enabled) {
+	if (enabled == p_enabled) {
+		// Nothing to do.
+		return;
+	}
+
+	enabled = p_enabled;
+
+	if (enabled) {
+		scene_synchronizer->emit_signal("sync_started");
+	} else {
+		scene_synchronizer->emit_signal("sync_paused");
+	}
+}
+
+bool NoNetSynchronizer::is_enable() const {
+	return enabled;
+}
+
 ServerSynchronizer::ServerSynchronizer(SceneSynchronizer *p_node) :
 		Synchronizer(p_node) {}
 
@@ -1371,6 +1579,8 @@ void ServerSynchronizer::clear() {
 }
 
 void ServerSynchronizer::process() {
+	scene_synchronizer->update_peers();
+
 	const real_t delta = scene_synchronizer->get_physics_process_delta_time();
 
 	// Process the scene
@@ -1461,8 +1671,6 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 		state_notifier_timer = 0.0;
 	}
 
-	scene_synchronizer->update_peers();
-
 	Vector<Variant> full_global_nodes_snapshot;
 	Vector<Variant> delta_global_nodes_snapshot;
 	for (
@@ -1477,6 +1685,10 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 			// Nothing to do.
 			continue;
 		}
+		if (unlikely(peer_it.value->enabled == false)) {
+			// This peer is disabled.
+			continue;
+		}
 
 		peer_it.value->force_notify_snapshot = false;
 
@@ -1488,9 +1700,6 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 		ERR_CONTINUE_MSG(nd->is_controller == false, "[BUG] A controller il expected, The node " + nd->node->get_path() + " is submitted instead.");
 
 		NetworkedController *controller = static_cast<NetworkedController *>(nd->node);
-		if (unlikely(controller->is_enabled() == false)) {
-			continue;
-		}
 
 		Vector<Variant> snap;
 		if (peer_it.value->need_full_snapshot) {
@@ -1660,16 +1869,20 @@ ClientSynchronizer::ClientSynchronizer(SceneSynchronizer *p_node) :
 }
 
 void ClientSynchronizer::clear() {
+	player_controller_node_data = nullptr;
 	node_paths.clear();
 	last_received_snapshot.input_id = UINT32_MAX;
 	last_received_snapshot.node_vars.clear();
 	client_snapshots.clear();
 	server_snapshots.clear();
+	last_checked_input = 0;
+	enabled = true;
+	need_full_snapshot_notified = false;
 }
 
 void ClientSynchronizer::process() {
-	if (player_controller_node_data == nullptr) {
-		// No player controller, nothing to do.
+	if (unlikely(player_controller_node_data == nullptr || enabled == false)) {
+		// No player controller or disabled so nothing to do.
 		return;
 	}
 
@@ -1768,15 +1981,6 @@ void ClientSynchronizer::receive_snapshot(Variant p_snapshot) {
 }
 
 void ClientSynchronizer::on_node_added(NetUtility::NodeData *p_node_data) {
-	if (p_node_data->is_controller == false) {
-		// Nothing to do.
-		return;
-	}
-	ERR_FAIL_COND_MSG(player_controller_node_data != nullptr, "Only one player controller is supported, at the moment.");
-	if (static_cast<NetworkedController *>(p_node_data->node)->is_player_controller()) {
-		player_controller_node_data = p_node_data;
-		client_snapshots.clear();
-	}
 }
 
 void ClientSynchronizer::on_node_removed(NetUtility::NodeData *p_node_data) {
@@ -1793,6 +1997,28 @@ void ClientSynchronizer::on_variable_changed(NetUtility::NodeData *p_node_data, 
 						p_node_data,
 						p_var_id,
 						p_old_value });
+	}
+}
+
+void ClientSynchronizer::on_controller_reset(NetUtility::NodeData *p_node_data) {
+#ifdef DEBUG_ENABLED
+	CRASH_COND(p_node_data->is_controller == false);
+#endif
+
+	if (player_controller_node_data == p_node_data) {
+		// Reset the node_data.
+		player_controller_node_data = nullptr;
+		client_snapshots.clear();
+	}
+
+	if (player_controller_node_data != nullptr) {
+		NET_DEBUG_ERR("Only one player controller is supported, at the moment. Make sure this is the case.");
+	}
+
+	if (static_cast<NetworkedController *>(p_node_data->node)->is_player_controller()) {
+		// Set this player controller as active.
+		player_controller_node_data = p_node_data;
+		client_snapshots.clear();
 	}
 }
 
@@ -2484,6 +2710,21 @@ bool ClientSynchronizer::parse_sync_data(
 	}
 
 	return true;
+}
+
+void ClientSynchronizer::set_enable(bool p_enabled) {
+	if (enabled == p_enabled) {
+		// Nothing to do.
+		return;
+       }
+
+	enabled = p_enabled;
+
+	if (enabled) {
+		scene_synchronizer->emit_signal("sync_started");
+	} else {
+		scene_synchronizer->emit_signal("sync_paused");
+	}
 }
 
 bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {

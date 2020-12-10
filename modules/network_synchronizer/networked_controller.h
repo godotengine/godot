@@ -73,6 +73,8 @@ struct NoNetController;
 class NetworkedController : public Node {
 	GDCLASS(NetworkedController, Node);
 
+	friend class SceneSynchronizer;
+
 public:
 	enum ControllerType {
 		CONTROLLER_TYPE_NULL,
@@ -186,7 +188,6 @@ private:
 
 	SceneSynchronizer *scene_synchronizer = nullptr;
 
-	bool enabled = true;
 	bool packet_missing = false;
 	bool has_player_new_input = false;
 
@@ -261,8 +262,7 @@ public:
 
 	void set_doll_collect_rate_factor(int p_peer, real_t p_factor);
 	void set_doll_peer_active(int p_peer_id, bool p_active);
-
-	void _on_peer_connection_change(int p_peer_id);
+	void pause_notify_dolls();
 
 	bool process_instant(int p_i, real_t p_delta);
 
@@ -284,10 +284,6 @@ public:
 	bool is_doll_controller() const;
 	bool is_nonet_controller() const;
 
-	/// Active / Disactive the controller.
-	void set_enabled(bool p_enabled);
-	bool is_enabled() const;
-
 public:
 	void set_inputs_buffer(const BitArray &p_new_buffer, uint32_t p_metadata_size_in_bit, uint32_t p_size_in_bit);
 
@@ -300,7 +296,6 @@ public:
 
 	/* On client rpc functions. */
 	void _rpc_send_tick_additional_speed(Vector<uint8_t> p_data);
-	void _rpc_set_client_enabled(bool p_enabled);
 
 	/* On puppet rpc functions. */
 	void _rpc_doll_notify_sync_pause(uint32_t p_epoch);
@@ -310,8 +305,6 @@ public:
 
 	void player_set_has_new_input(bool p_has);
 	bool player_has_new_input() const;
-
-	void reset();
 
 private:
 	virtual void _notification(int p_what);
@@ -338,6 +331,10 @@ struct Controller {
 
 	virtual void ready() {}
 	virtual uint32_t get_current_input_id() const = 0;
+
+	virtual void clear_peers() {}
+	virtual void activate_peer(int p_peer) {}
+	virtual void deactivate_peer(int p_peer) {}
 };
 
 struct ServerController : public Controller {
@@ -369,6 +366,7 @@ struct ServerController : public Controller {
 	NetUtility::StatisticalRingBuffer<real_t> missing_inputs_stats;
 	std::deque<FrameSnapshot> snapshots;
 	bool streaming_paused = false;
+	bool enabled = true;
 
 	/// Used to sync the dolls.
 	LocalVector<Peer> peers;
@@ -381,10 +379,15 @@ struct ServerController : public Controller {
 			NetworkedController *p_node,
 			int p_traced_frames);
 
-	void update_peers();
 	void process(real_t p_delta);
 	uint32_t last_known_input() const;
 	virtual uint32_t get_current_input_id() const override;
+
+	void set_enabled(bool p_enable);
+
+	virtual void clear_peers() override;
+	virtual void activate_peer(int p_peer) override;
+	virtual void deactivate_peer(int p_peer) override;
 
 	void receive_inputs(Vector<uint8_t> p_data);
 	int get_inputs_count() const;
