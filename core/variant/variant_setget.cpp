@@ -1128,8 +1128,12 @@ struct VariantKeyedSetGetDictionary {
 		PtrToArg<Variant>::encode(*ptr, value);
 	}
 	static void set(Variant *base, const Variant *key, const Variant *value, bool &r_valid) {
-		(*VariantGetInternalPtr<Dictionary>::get_ptr(base))[*key] = *value;
-		r_valid = true;
+		if (*key != *base) {
+			(*VariantGetInternalPtr<Dictionary>::get_ptr(base))[*key] = *value;
+			r_valid = true;
+		} else {
+			r_valid = false;
+		}
 	}
 	static void ptr_set(void *base, const void *key, const void *value) {
 		Dictionary &v = *reinterpret_cast<Dictionary *>(base);
