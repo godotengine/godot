@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  image_compress_pvrtc.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef IMAGE_COMPRESS_PVRTC_H
+#define IMAGE_COMPRESS_PVRTC_H
 
-#include "image_compress_pvrtc.h"
-#include "texture_loader_pvr.h"
+void _register_pvrtc_compress_func();
 
-static Ref<ResourceFormatPVR> resource_loader_pvr;
-
-void register_pvr_types() {
-
-	resource_loader_pvr.instance();
-	ResourceLoader::add_resource_format_loader(resource_loader_pvr);
-
-	_register_pvrtc_compress_func();
-}
-
-void unregister_pvr_types() {
-
-	ResourceLoader::remove_resource_format_loader(resource_loader_pvr);
-	resource_loader_pvr.unref();
-}
+#endif // IMAGE_COMPRESS_PVRTC_H

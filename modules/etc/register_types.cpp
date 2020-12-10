@@ -30,7 +30,7 @@
 
 #include "register_types.h"
 
-#include "image_etc.h"
+#include "image_compress_etc.h"
 #include "texture_loader_pkm.h"
 
 static Ref<ResourceFormatPKM> resource_loader_pkm;
