@@ -452,6 +452,13 @@ Vector2 TextServerFallback::font_draw_glyph_outline(RID p_font, RID p_canvas, in
 	return fd->draw_glyph_outline(p_canvas, p_size, p_outline_size, p_pos, p_index, p_color);
 }
 
+bool TextServerFallback::font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, false);
+	return fd->get_glyph_contours(p_size, p_index, r_points, r_contours, r_orientation);
+}
+
 float TextServerFallback::font_get_oversampling() const {
 	return oversampling;
 }

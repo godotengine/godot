@@ -188,6 +188,8 @@ public:
 	virtual Vector2 font_draw_glyph(RID p_font, RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color = Color(1, 1, 1)) const override;
 	virtual Vector2 font_draw_glyph_outline(RID p_font, RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color = Color(1, 1, 1)) const override;
 
+	virtual bool font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const override;
+
 	virtual float font_get_oversampling() const override;
 	virtual void font_set_oversampling(float p_oversampling) override;
 

@@ -359,6 +359,12 @@ Vector2 TextServerGDNative::font_draw_glyph_outline(RID p_font, RID p_canvas, in
 	return advance;
 }
 
+bool TextServerGDNative::font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const {
+	ERR_FAIL_COND_V(interface == nullptr, false);
+	ERR_FAIL_COND_V(interface->font_get_glyph_contours == nullptr, false);
+	return interface->font_get_glyph_contours(data, (godot_rid *)&p_font, p_size, p_index, (godot_packed_vector3_array *)&r_points, (godot_packed_int32_array *)&r_contours, (bool *)&r_orientation);
+}
+
 float TextServerGDNative::font_get_oversampling() const {
 	ERR_FAIL_COND_V(interface == nullptr, 1.f);
 	return interface->font_get_oversampling(data);

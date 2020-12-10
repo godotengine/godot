@@ -291,6 +291,8 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_hex_code_box_size", "size", "index"), &TextServer::get_hex_code_box_size);
 	ClassDB::bind_method(D_METHOD("draw_hex_code_box", "canvas", "size", "pos", "index", "color"), &TextServer::draw_hex_code_box);
 
+	ClassDB::bind_method(D_METHOD("font_get_glyph_contours", "font", "size", "index"), &TextServer::_font_get_glyph_contours);
+
 	/* Shaped text buffer interface */
 
 	ClassDB::bind_method(D_METHOD("create_shaped_text", "direction", "orientation"), &TextServer::create_shaped_text, DEFVAL(DIRECTION_AUTO), DEFVAL(ORIENTATION_HORIZONTAL));
@@ -403,6 +405,11 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_FONT_SYSTEM);
 	BIND_ENUM_CONSTANT(FEATURE_FONT_VARIABLE);
 	BIND_ENUM_CONSTANT(FEATURE_USE_SUPPORT_DATA);
+
+	/* FT Contour Point Types */
+	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_ON);
+	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_OFF_CONIC);
+	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_OFF_CUBIC);
 }
 
 Vector3 TextServer::hex_code_box_font_size[2] = { Vector3(5, 5, 1), Vector3(10, 10, 2) };
@@ -1210,6 +1217,21 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 
 RID TextServer::_create_font_memory(const PackedByteArray &p_data, const String &p_type, int p_base_size) {
 	return create_font_memory(p_data.ptr(), p_data.size(), p_type, p_base_size);
+}
+
+Dictionary TextServer::_font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index) const {
+	Vector<Vector3> points;
+	Vector<int32_t> contours;
+	bool orientation;
+	bool ok = font_get_glyph_contours(p_font, p_size, p_index, points, contours, orientation);
+	Dictionary out;
+
+	if (ok) {
+		out["points"] = points;
+		out["contours"] = contours;
+		out["orientation"] = orientation;
+	}
+	return out;
 }
 
 void TextServer::_shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) {

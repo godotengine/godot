@@ -92,8 +92,8 @@ struct FontDataAdvanced {
 	virtual bool has_outline() const = 0;
 	virtual float get_base_size() const = 0;
 
-	virtual bool is_lang_supported(const String &p_lang) const { return false; };
-	virtual bool is_script_supported(uint32_t p_script) const { return false; };
+	virtual bool is_lang_supported(const String &p_lang) const { return true; };
+	virtual bool is_script_supported(uint32_t p_script) const { return true; };
 
 	virtual bool has_char(char32_t p_char) const = 0;
 	virtual String get_supported_chars() const = 0;
@@ -106,6 +106,8 @@ struct FontDataAdvanced {
 
 	virtual Vector2 draw_glyph(RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const = 0;
 	virtual Vector2 draw_glyph_outline(RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const = 0;
+
+	virtual bool get_glyph_contours(int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const { return false; };
 
 	virtual ~FontDataAdvanced(){};
 };

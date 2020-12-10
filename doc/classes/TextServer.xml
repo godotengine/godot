@@ -258,6 +258,22 @@
 				Returns advance of the glyph.
 			</description>
 		</method>
+		<method name="font_get_glyph_contours" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<argument index="1" name="size" type="int">
+			</argument>
+			<argument index="2" name="index" type="int">
+			</argument>
+			<description>
+				Returns outline contours of the glyph in a Dictionary.
+				[code]points[/code]         - [PackedVector3Array], containing outline points. [code]x[/code] and [code]y[/code] are point coordinates. [code]z[/code] is the type of the point, using the [enum ContourPointTag] values.
+				[code]contours[/code]       - [PackedInt32Array], containing indices the end points of each contour.
+				[code]orientation[/code]    - [bool], contour orientation. If [code]true[/code], clockwise contours must be filled.
+			</description>
+		</method>
 		<method name="font_get_glyph_index" qualifiers="const">
 			<return type="int">
 			</return>
@@ -1300,6 +1316,15 @@
 		</constant>
 		<constant name="FEATURE_USE_SUPPORT_DATA" value="128" enum="Feature">
 			TextServer require external data file for some features.
+		</constant>
+		<constant name="CONTOUR_CURVE_TAG_ON" value="1" enum="ContourPointTag">
+			Contour point is on the curve.
+		</constant>
+		<constant name="CONTOUR_CURVE_TAG_OFF_CONIC" value="0" enum="ContourPointTag">
+			Contour point isn't on the curve, but serves as a control point for a conic (quadratic) Bézier arc.
+		</constant>
+		<constant name="CONTOUR_CURVE_TAG_OFF_CUBIC" value="2" enum="ContourPointTag">
+			Contour point isn't on the curve, but serves as a control point for a cubic Bézier arc.
 		</constant>
 	</constants>
 </class>
