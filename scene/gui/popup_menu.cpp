@@ -221,6 +221,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		if (search_from >= items.size())
 			search_from = 0;
 
+		bool match_found = false;
 		for (int i = search_from; i < items.size(); i++) {
 
 			if (i < 0 || i >= items.size())
@@ -232,7 +233,21 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 				emit_signal("id_focused", i);
 				update();
 				accept_event();
+				match_found = true;
 				break;
+			}
+		}
+
+		if (!match_found) {
+			// If the last item is not selectable, try re-searching from the start.
+			for (int i = 0; i < search_from; i++) {
+				if (!items[i].separator && !items[i].disabled) {
+					mouse_over = i;
+					emit_signal("id_focused", i);
+					update();
+					accept_event();
+					break;
+				}
 			}
 		}
 	} else if (p_event->is_action("ui_up") && p_event->is_pressed()) {
@@ -241,6 +256,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		if (search_from < 0)
 			search_from = items.size() - 1;
 
+		bool match_found = false;
 		for (int i = search_from; i >= 0; i--) {
 
 			if (i >= items.size())
@@ -252,7 +268,21 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 				emit_signal("id_focused", i);
 				update();
 				accept_event();
+				match_found = true;
 				break;
+			}
+		}
+
+		if (!match_found) {
+			// If the first item is not selectable, try re-searching from the end.
+			for (int i = items.size() - 1; i >= search_from; i--) {
+				if (!items[i].separator && !items[i].disabled) {
+					mouse_over = i;
+					emit_signal("id_focused", i);
+					update();
+					accept_event();
+					break;
+				}
 			}
 		}
 	} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
