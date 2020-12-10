@@ -88,11 +88,12 @@
 # NeoLan Qu <it.bulla@mail.ru>, 2020.
 # Nikita Epifanov <nikgreens@protonmail.com>, 2020.
 # Cube Show <griiv.06@gmail.com>, 2020.
+# Roman Tolkachyov <roman@tolkachyov.name>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-20 23:08+0000\n"
+"PO-Revision-Date: 2020-12-01 20:29+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -1172,7 +1173,7 @@ msgstr "Обзор подключённых ресурсов"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -3786,6 +3787,16 @@ msgid "Name contains invalid characters."
 msgstr "Имя содержит недопустимые символы."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr "Переименование файла:"
 
@@ -3833,21 +3844,9 @@ msgstr "Редактировать зависимости..."
 msgid "View Owners..."
 msgstr "Просмотреть владельцев..."
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "Переименовать..."
-
-#: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "Дублировать..."
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Переместить в..."
-
-#: editor/filesystem_dock.cpp
-msgid "Move to Trash"
-msgstr "Удалить в Корзину"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -3872,11 +3871,16 @@ msgid "Collapse All"
 msgstr "Свернуть все"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
-msgstr "Переименовать"
+msgid "Duplicate..."
+msgstr "Дублировать..."
+
+#: editor/filesystem_dock.cpp
+msgid "Move to Trash"
+msgstr "Удалить в Корзину"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "Переименовать..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -3911,8 +3915,11 @@ msgid "Move"
 msgstr "Переместить"
 
 #: editor/filesystem_dock.cpp
-msgid "There is already file or folder with the same name in this location."
-msgstr "По этому пути уже существует файл или папка с указанным именем."
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "Переименовать"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -8395,23 +8402,20 @@ msgid "Create a new rectangle."
 msgstr "Создать новый прямоугольник."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Rectangle"
-msgstr "Прямоугольная покраска"
+msgstr "Новый прямоугольник"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Создать новый полигон."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Polygon"
-msgstr "Передвинуть полигон"
+msgstr "Новый полигон"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Selected Shape"
-msgstr "Удалить выделенное"
+msgstr "Удалить выбранную форму"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -9884,6 +9888,10 @@ msgstr "Отрисовщик:"
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
 msgstr "OpenGL ES 3.0"
+
+#: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12459,6 +12467,26 @@ msgstr ""
 "Анимация CPUParticles2D требует использования CanvasItemMaterial с "
 "включённой опцией «Particles Animation»."
 
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr ""
+
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
@@ -12785,6 +12813,26 @@ msgstr ""
 "переопределены движком при запуске.\n"
 "Измените размер дочерней формы коллизии."
 
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
@@ -13026,6 +13074,9 @@ msgstr "Изменения могут быть назначены только �
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
+
+#~ msgid "There is already file or folder with the same name in this location."
+#~ msgstr "По этому пути уже существует файл или папка с указанным именем."
 
 #~ msgid "Missing 'build-tools' directory!"
 #~ msgstr "Директория «build-tools» отсутствует!"

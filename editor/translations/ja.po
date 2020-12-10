@@ -36,7 +36,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-24 16:44+0000\n"
+"PO-Revision-Date: 2020-12-01 20:29+0000\n"
 "Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -1116,7 +1116,7 @@ msgstr "孤立リソース エクスプローラー"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -3728,6 +3728,16 @@ msgid "Name contains invalid characters."
 msgstr "名前に使用できない文字が含まれています。"
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr "ファイル名を変更:"
 
@@ -3775,21 +3785,9 @@ msgstr "依存関係の編集..."
 msgid "View Owners..."
 msgstr "オーナーを見る..."
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "名前を変更..."
-
-#: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "複製..."
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "移動..."
-
-#: editor/filesystem_dock.cpp
-msgid "Move to Trash"
-msgstr "ごみ箱へ移動"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -3814,11 +3812,16 @@ msgid "Collapse All"
 msgstr "すべて折りたたむ"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
-msgstr "名前の変更"
+msgid "Duplicate..."
+msgstr "複製..."
+
+#: editor/filesystem_dock.cpp
+msgid "Move to Trash"
+msgstr "ごみ箱へ移動"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "名前を変更..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -3853,8 +3856,11 @@ msgid "Move"
 msgstr "移動"
 
 #: editor/filesystem_dock.cpp
-msgid "There is already file or folder with the same name in this location."
-msgstr "このパスには、既に同名のファイルかフォルダがあります。"
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "名前の変更"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -8333,27 +8339,24 @@ msgid "Create a new rectangle."
 msgstr "新しく長方形を作成。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Rectangle"
-msgstr "長方形ペイント"
+msgstr "新規長方形"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "新規ポリゴンを生成。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Polygon"
-msgstr "ポリゴンを移動"
+msgstr "新規ポリゴン"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Selected Shape"
-msgstr "選択対象を削除"
+msgstr "選択したシェイプを削除"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
-msgstr "領域Rect内のポリゴンを保持します。"
+msgstr "領域 Rect 内のポリゴンを保持します。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Enable snap and show grid (configurable via the Inspector)."
@@ -9819,6 +9822,10 @@ msgstr "レンダラー:"
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
 msgstr "OpenGL ES 3.0"
+
+#: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12370,8 +12377,8 @@ msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
-"関数に対して CollisionShape2D の形状(シェイプ)を指定する必要があります。その"
-"ためのシェイプリソースを作成してください!"
+"関数に対して CollisionShape2D の形状 (シェイプ) を指定する必要があります。そ"
+"のためのシェイプリソースを作成してください！"
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -12388,6 +12395,26 @@ msgid ""
 msgstr ""
 "CPUParticles2Dアニメーションでは、 \"Particles Animation\" を有効にした"
 "CanvasItemMaterialを使用する必要があります。"
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr ""
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12412,8 +12439,8 @@ msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
-"NavigationPolygon リソースを設定または動作するようにこのノード用に作成する必"
-"要があります。プロパティを設定するか、ポリゴンを描画してください。"
+"このノード用に NavigationPolygon リソースを設定または作成する必要があります。"
+"プロパティを設定するか、ポリゴンを描画してください。"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -12717,6 +12744,26 @@ msgstr ""
 "物理エンジンによってオーバーライドされます。\n"
 "代わりに、子の衝突シェイプのサイズを変更してください。"
 
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
@@ -12957,6 +13004,9 @@ msgstr "Varying変数は頂点関数にのみ割り当てることができま�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#~ msgid "There is already file or folder with the same name in this location."
+#~ msgstr "このパスには、既に同名のファイルかフォルダがあります。"
 
 #~ msgid "Missing 'build-tools' directory!"
 #~ msgstr "'build-tools' ディレクトリがありません！"

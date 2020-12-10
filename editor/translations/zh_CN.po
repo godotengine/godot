@@ -72,11 +72,12 @@
 # Gardner Belgrade <hapenia@sina.com>, 2020.
 # godhidden <z2zz2zz@yahoo.com>, 2020.
 # BinotaLIU <me@binota.org>, 2020.
+# TakWolf <takwolf@foxmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-11-20 23:08+0000\n"
+"PO-Revision-Date: 2020-11-29 08:29+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -1144,7 +1145,7 @@ msgstr "孤立资源浏览器"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -3689,6 +3690,16 @@ msgid "Name contains invalid characters."
 msgstr "名称包含无效字符。"
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr "重命名文件："
 
@@ -3736,21 +3747,9 @@ msgstr "编辑依赖..."
 msgid "View Owners..."
 msgstr "查看所有者..."
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "重命名为..."
-
-#: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "重复..."
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "移动..."
-
-#: editor/filesystem_dock.cpp
-msgid "Move to Trash"
-msgstr "移动至回收站"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -3775,11 +3774,16 @@ msgid "Collapse All"
 msgstr "全部折叠"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
-msgstr "重命名"
+msgid "Duplicate..."
+msgstr "重复..."
+
+#: editor/filesystem_dock.cpp
+msgid "Move to Trash"
+msgstr "移动至回收站"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "重命名为..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -3814,8 +3818,11 @@ msgid "Move"
 msgstr "移动"
 
 #: editor/filesystem_dock.cpp
-msgid "There is already file or folder with the same name in this location."
-msgstr "当前位置已存在同名文件或文件夹。"
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "重命名"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -7326,7 +7333,7 @@ msgstr "锁定视角旋转"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
-msgstr "显示法线"
+msgstr "显示标准"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Wireframe"
@@ -8254,23 +8261,20 @@ msgid "Create a new rectangle."
 msgstr "创建新矩形。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Rectangle"
-msgstr "绘制矩形"
+msgstr "新建矩形"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "创建新多边形。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Polygon"
-msgstr "移动多边形"
+msgstr "新建多边形"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Selected Shape"
-msgstr "删除选中项"
+msgstr "删除所选形状"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -9698,6 +9702,10 @@ msgstr "渲染器："
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
 msgstr "OpenGL ES 3.0"
+
+#: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12201,6 +12209,26 @@ msgstr ""
 "CPUParticles2D 动画需要使用启用了 “Particles Animation” 的 "
 "CanvasItemMaterial。"
 
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr ""
+
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
@@ -12497,6 +12525,26 @@ msgstr ""
 "的覆盖。\n"
 "建议您修改子节点的碰撞形状。"
 
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
@@ -12726,6 +12774,9 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid "There is already file or folder with the same name in this location."
+#~ msgstr "当前位置已存在同名文件或文件夹。"
 
 #~ msgid "Missing 'build-tools' directory!"
 #~ msgstr "缺失“build-tools”目录！"

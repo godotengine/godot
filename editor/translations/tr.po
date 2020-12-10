@@ -59,7 +59,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-25 14:10+0000\n"
+"PO-Revision-Date: 2020-11-29 08:29+0000\n"
 "Last-Translator: Zsosu Ktosu <zktosu@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
@@ -1140,7 +1140,7 @@ msgstr "Orphan Kaynak Araştırıcı"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -2150,7 +2150,7 @@ msgstr "Metot"
 
 #: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
 msgid "Signal"
-msgstr "Sinyaller"
+msgstr "Sinyal"
 
 #: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
@@ -3753,6 +3753,16 @@ msgid "Name contains invalid characters."
 msgstr "İsim geçersiz karkterler içeriyor."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr "Dosya yeniden-adlandırma:"
 
@@ -3800,21 +3810,9 @@ msgstr "Bağımlılıkları Düzenle..."
 msgid "View Owners..."
 msgstr "Sahipleri Görüntüle..."
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "Yeniden Adlandır..."
-
-#: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "Çoğalt..."
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Şuraya Taşı..."
-
-#: editor/filesystem_dock.cpp
-msgid "Move to Trash"
-msgstr "Çöpe At"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -3839,11 +3837,16 @@ msgid "Collapse All"
 msgstr "Hepsini Daralt"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
-msgstr "Yeniden Adlandır"
+msgid "Duplicate..."
+msgstr "Çoğalt..."
+
+#: editor/filesystem_dock.cpp
+msgid "Move to Trash"
+msgstr "Çöpe At"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "Yeniden Adlandır..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -3878,8 +3881,11 @@ msgid "Move"
 msgstr "Taşı"
 
 #: editor/filesystem_dock.cpp
-msgid "There is already file or folder with the same name in this location."
-msgstr "Bu konumda zaten aynı ada sahip bir dosya veya klasör var."
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "Yeniden Adlandır"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -8361,23 +8367,20 @@ msgid "Create a new rectangle."
 msgstr "Yeni dikdörtgen oluştur."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Rectangle"
-msgstr "Dikdörtgen Boya"
+msgstr "Dolu Dikdörtgen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Yeni bir çokgen oluşturun."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Polygon"
-msgstr "Çokgeni Taşı"
+msgstr "Yeni Çokgen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Selected Shape"
-msgstr "Seçilenleri Sil"
+msgstr "Seçilen Şekli Sil"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -9847,6 +9850,10 @@ msgstr "Oluşturucu:"
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
 msgstr "OpenGL ES 3"
+
+#: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12415,6 +12422,26 @@ msgstr ""
 "CPUParçacık2B animasyonu \"Parçacık Animasyonu\" seçimi etkin olarak "
 "CanvasÖgesiMalzemesi kullanımı gerektirir."
 
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr ""
+
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
@@ -12746,6 +12773,26 @@ msgstr ""
 "çalıştığında geçersiz kılınacak.\n"
 "Boyu değişikliğini bunun yerine çocuk çarpışma şekilleri içinden yapın."
 
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
@@ -12987,6 +13034,9 @@ msgstr "varyings yalnızca vertex işlevinde atanabilir."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Sabit değerler değiştirilemez."
+
+#~ msgid "There is already file or folder with the same name in this location."
+#~ msgstr "Bu konumda zaten aynı ada sahip bir dosya veya klasör var."
 
 #~ msgid "Missing 'build-tools' directory!"
 #~ msgstr "Eksik 'inşa-araçları' dizini!"

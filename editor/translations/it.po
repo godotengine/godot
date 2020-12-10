@@ -59,8 +59,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-23 21:42+0000\n"
-"Last-Translator: Lorenzo Cerqua <lorenzocerqua@tutanota.com>\n"
+"PO-Revision-Date: 2020-12-07 08:11+0000\n"
+"Last-Translator: Mirko <miknsop@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -72,9 +72,8 @@ msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
-#, fuzzy
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Argomento tipo non valido per convert(), usare le costanti TYPE_*."
+msgstr "Tipo argomento non valido per convert(), usa le costanti TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
@@ -83,11 +82,10 @@ msgstr "Prevista una stringa di lunghezza 1 (un singolo carattere)."
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
-#, fuzzy
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr ""
-"Non ci sono abbastanza byte per riuscire a decodificarli, oppure il formato "
-"non è valido."
+"Non ci sono abbastanza byte per decodificarli, oppure il formato non è "
+"valido."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -178,14 +176,12 @@ msgid "Delete Selected Key(s)"
 msgstr "Elimina le chiavi selezionate"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Add Bezier Point"
-msgstr "Aggiungi punto Bézier"
+msgstr "Aggiungi Punto Bezier"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Sposta punto Bézier"
+msgstr "Sposta Punti Bezier"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -1092,16 +1088,16 @@ msgstr ""
 "Puoi trovare i file rimossi nel cestino di sistema per ripristinarli."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
 "Remove them anyway? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
 msgstr ""
-"I file che stanno per essere rimossi sono richiesti da altre risorse perché "
-"esse funzionino.\n"
-"Rimuoverli comunque? (non annullabile)"
+"I file che stanno per essere rimossi sono richiesti per il funzionamento di "
+"altre risorse.\n"
+"Rimuoverli comunque? (non annullabile)\n"
+"Puoi trovare i file rimossi nel cestino di sistema per ripristinarli."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1145,7 +1141,7 @@ msgstr "Esplora risorse orfane"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -2178,6 +2174,7 @@ msgid "Property:"
 msgstr "Proprietà:"
 
 #: editor/editor_inspector.cpp
+#, fuzzy
 msgid "Set"
 msgstr "Imposta"
 
@@ -2370,6 +2367,9 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"Si è verificato un errore mentre si stava provando a salvare il layout "
+"dell'editor.\n"
+"Assicurati che il percorso dati dell'editor dell'utente sia scrivibile."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2386,9 +2386,8 @@ msgid "Layout name not found!"
 msgstr "Nome della disposizione non trovato!"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
-msgstr "Ripristinata la disposizione predefinita alle impostazioni originali."
+msgstr "Ripristinato il layout default alle impostazioni base."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3777,6 +3776,16 @@ msgid "Name contains invalid characters."
 msgstr "Il nome contiene caratteri non validi."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr "Rinomina file:"
 
@@ -3824,21 +3833,9 @@ msgstr "Modifica Dipendenze..."
 msgid "View Owners..."
 msgstr "Vedi Proprietari..."
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "Rinomina..."
-
-#: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "Duplica..."
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Sposta in..."
-
-#: editor/filesystem_dock.cpp
-msgid "Move to Trash"
-msgstr "Sposta nel cestino"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -3863,11 +3860,16 @@ msgid "Collapse All"
 msgstr "Comprimi Tutto"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
-msgstr "Rinomina"
+msgid "Duplicate..."
+msgstr "Duplica..."
+
+#: editor/filesystem_dock.cpp
+msgid "Move to Trash"
+msgstr "Sposta nel cestino"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "Rinomina..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -3902,8 +3904,11 @@ msgid "Move"
 msgstr "Sposta"
 
 #: editor/filesystem_dock.cpp
-msgid "There is already file or folder with the same name in this location."
-msgstr "C'è già un file o una cartella con lo stesso nome in questo percorso."
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "Rinomina"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -6608,14 +6613,12 @@ msgid "Paint Bone Weights"
 msgstr "Dipingi peso delle ossa"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Open Polygon 2D UV editor."
-msgstr "Apri editor Poligono 2D UV."
+msgstr "Apri l'editor UV di Polygon2D."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Polygon 2D UV Editor"
-msgstr "Polygon 2D UV Editor"
+msgstr "Editor UV Polygon 2D"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "UV"
@@ -6712,14 +6715,12 @@ msgid "Grid Settings"
 msgstr "Impostazioni griglia"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Snap"
 msgstr "Snap"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Enable Snap"
-msgstr "Abilita snap"
+msgstr "Abilita Snap"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid"
@@ -6771,9 +6772,8 @@ msgid "Delete Resource"
 msgstr "Elimina risorsa"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#, fuzzy
 msgid "Resource clipboard is empty!"
-msgstr "Gli appunti risorse sono vuoti!"
+msgstr "La clipboard delle risorse è vuota!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Paste Resource"
@@ -6915,9 +6915,8 @@ msgid "Filter scripts"
 msgstr "Filtra gli script"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle alphabetical sorting of the method list."
-msgstr "Attiva/Disattiva l'ordinazione alfabetica della lista dei metodi."
+msgstr "Abilita/Disabilita l'ordinamento alfabetico della lista dei metodi."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Filter methods"
@@ -7084,7 +7083,6 @@ msgid "Clear Recent Scripts"
 msgstr "Rimuovi Script Recenti"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Connections to method:"
 msgstr "Connessioni al metodo:"
 
@@ -7097,7 +7095,6 @@ msgid "Target"
 msgstr "Target"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
 msgstr ""
@@ -7135,9 +7132,8 @@ msgid "Pick Color"
 msgstr "Scegli un colore"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
-#, fuzzy
 msgid "Convert Case"
-msgstr "Converti capitalizzazione"
+msgstr "Converti Maiuscole/Minuscole"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Uppercase"
@@ -7192,9 +7188,8 @@ msgid "Indent Right"
 msgstr "Indenta a destra"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Toggle Comment"
-msgstr "Attiva/Disattiva commento"
+msgstr "Attiva/Disattiva Commento"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
@@ -7270,9 +7265,8 @@ msgstr "Vai alla linea..."
 
 #: editor/plugins/script_text_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Toggle Breakpoint"
-msgstr "Attiva/Disattiva punti di interruzione"
+msgstr "Attiva/Disattiva Punto D'Interruzione"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Remove All Breakpoints"
@@ -7303,12 +7297,10 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Questo scheletro non ha ossa, crea dei nodi figlio Bone2D."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Create Rest Pose from Bones"
 msgstr "Crea Posizione di Riposo dalle Ossa"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Set Rest Pose to Bones"
 msgstr "Imposta Ossa in Posizione di Riposo"
 
@@ -7317,12 +7309,10 @@ msgid "Skeleton2D"
 msgstr "Skeleton2D"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Make Rest Pose (From Bones)"
 msgstr "Crea Posizione di Riposo (Dalle Ossa)"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Set Bones to Rest Pose"
 msgstr "Imposta Ossa in Posizione di Riposo"
 
@@ -7331,6 +7321,7 @@ msgid "Create physical bones"
 msgstr "Crea ossa fisiche"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
+#, fuzzy
 msgid "Skeleton"
 msgstr "Scheletro"
 
@@ -7678,6 +7669,7 @@ msgstr "Abilita/Disabilita Vista libera"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Transform"
 msgstr "Trasforma"
 
@@ -8425,23 +8417,20 @@ msgid "Create a new rectangle."
 msgstr "Crea un nuovo rettangolo."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Rectangle"
-msgstr "Riempi Rettangolo"
+msgstr "Nuovo Rettangolo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Crea un nuovo poligono."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Polygon"
-msgstr "Sposta poligono"
+msgstr "Nuovo Poligono"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Selected Shape"
-msgstr "Elimina selezionati"
+msgstr "Elimina Forma Selezionata"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -8752,8 +8741,9 @@ msgid "Scalar"
 msgstr "Scalare"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Vector"
-msgstr "Vettore"
+msgstr "Vector"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
@@ -9927,6 +9917,10 @@ msgstr "Renderer:"
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
 msgstr "OpenGL ES 3.0"
+
+#: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -11282,6 +11276,7 @@ msgid "Value"
 msgstr "Valore"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
 msgid "Monitors"
 msgstr "Monitor"
 
@@ -12206,7 +12201,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
-msgstr ""
+msgstr "Cartella 'platform-tools' inesistente!"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12522,6 +12517,26 @@ msgid ""
 msgstr ""
 "L'animazione CPUParticles2D richiede l'utilizzo di un CanvasItemMaterial con "
 "\"Animazione Particelle\" abilitata."
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr ""
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12856,6 +12871,26 @@ msgstr ""
 "rigide) saranno sovrascritti dal motore fisico quando in esecuzione.\n"
 "Modifica invece la dimensione in sagome di collisione figlie."
 
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
@@ -13091,13 +13126,17 @@ msgid "Assignment to uniform."
 msgstr "Assegnazione all'uniforme."
 
 #: servers/visual/shader_language.cpp
-#, fuzzy
 msgid "Varyings can only be assigned in vertex function."
-msgstr "Varyings può essere assegnato soltanto nella funzione del vertice."
+msgstr ""
+"Le variabili possono essere assegnate soltanto in funzione del vertice."
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Le constanti non possono essere modificate."
+
+#~ msgid "There is already file or folder with the same name in this location."
+#~ msgstr ""
+#~ "C'è già un file o una cartella con lo stesso nome in questo percorso."
 
 #~ msgid "Error trying to save layout!"
 #~ msgstr "Errore nel salvataggio della disposizione!"
