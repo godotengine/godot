@@ -5880,17 +5880,20 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 			// Priorities for snapping to floor are CollisionShapes, VisualInstances and then origin
 			Set<VisualInstance3D *> vi = _get_child_nodes<VisualInstance3D>(sp);
 			Set<CollisionShape3D *> cs = _get_child_nodes<CollisionShape3D>(sp);
+			bool found_valid_shape = false;
 
 			if (cs.size()) {
 				AABB aabb;
-				bool found_valid_shape = false;
-				if (cs.front()->get()->get_shape().is_valid()) {
-					aabb = sp->get_global_transform().xform(cs.front()->get()->get_shape()->get_debug_mesh()->get_aabb());
+				Set<CollisionShape3D *>::Element *I = cs.front();
+				if (I->get()->get_shape().is_valid()) {
+					CollisionShape3D *collision_shape = cs.front()->get();
+					aabb = collision_shape->get_global_transform().xform(collision_shape->get_shape()->get_debug_mesh()->get_aabb());
 					found_valid_shape = true;
 				}
-				for (Set<CollisionShape3D *>::Element *I = cs.front(); I; I = I->next()) {
-					if (I->get()->get_shape().is_valid()) {
-						aabb.merge_with(sp->get_global_transform().xform(I->get()->get_shape()->get_debug_mesh()->get_aabb()));
+				for (I = I->next(); I; I = I->next()) {
+					CollisionShape3D *col_shape = I->get();
+					if (col_shape->get_shape().is_valid()) {
+						aabb.merge_with(col_shape->get_global_transform().xform(col_shape->get_shape()->get_debug_mesh()->get_aabb()));
 						found_valid_shape = true;
 					}
 				}
@@ -5898,10 +5901,9 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 					Vector3 size = aabb.size * Vector3(0.5, 0.0, 0.5);
 					from = aabb.position + size;
 					position_offset.y = from.y - sp->get_global_transform().origin.y;
-				} else {
-					from = sp->get_global_transform().origin;
 				}
-			} else if (vi.size()) {
+			}
+			if (!found_valid_shape && vi.size()) {
 				AABB aabb = vi.front()->get()->get_transformed_aabb();
 				for (Set<VisualInstance3D *>::Element *I = vi.front(); I; I = I->next()) {
 					aabb.merge_with(I->get()->get_transformed_aabb());
@@ -5909,7 +5911,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 				Vector3 size = aabb.size * Vector3(0.5, 0.0, 0.5);
 				from = aabb.position + size;
 				position_offset.y = from.y - sp->get_global_transform().origin.y;
-			} else {
+			} else if (!found_valid_shape) {
 				from = sp->get_global_transform().origin;
 			}
 
