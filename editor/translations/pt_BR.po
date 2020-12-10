@@ -101,12 +101,15 @@
 # Jairo Tuboi <tuboi.jairo@gmail.com>, 2020.
 # Felipe Fetter <felipetfetter@gmail.com>, 2020.
 # Rafael Henrique Capati <rhcapati@gmail.com>, 2020.
+# NogardRyuu <nogardryuu@gmail.com>, 2020.
+# Elton <eltondeoliveira@outlook.com>, 2020.
+# ThiagoCTN <thiagocampostn@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2020-10-05 01:02+0000\n"
-"Last-Translator: Rafael Henrique Capati <rhcapati@gmail.com>\n"
+"PO-Revision-Date: 2020-12-07 08:11+0000\n"
+"Last-Translator: ThiagoCTN <thiagocampostn@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -114,7 +117,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1123,14 +1126,15 @@ msgid "Owners Of:"
 msgstr "Donos De:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
-msgstr "Remover arquivos selecionados do projeto? (irreversível)"
+msgstr ""
+"Remover arquivos selecionados do projeto? (irreversível)\n"
+"Você pode encontrar os arquivos removidos na lixeira e restaurá-los caso "
+"seja necessário."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1139,7 +1143,9 @@ msgid ""
 msgstr ""
 "Os arquivos sendo removidos são requeridos por outros recursos para que "
 "funcionem.\n"
-"Removê-los mesmo assim? (irreversível)"
+"Removê-los mesmo assim? (irreversível)\n"
+"Você pode encontrar os arquivos removidos na lixeira e restaurá-los caso "
+"necessário."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1167,7 +1173,7 @@ msgstr "Consertar Dependências"
 
 #: editor/dependency_editor.cpp
 msgid "Errors loading!"
-msgstr "Erros ao carregar!"
+msgstr "Erro ao carregar!"
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
@@ -1183,7 +1189,7 @@ msgstr "Explorador de Recursos Órfãos"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -1692,35 +1698,33 @@ msgstr ""
 "Fallback Enabled' (Recuperação de driver ativada)."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for GLES2. Enable "
 "'Import Pvrtc' in Project Settings."
 msgstr ""
-"A plataforma alvo requer compressão de texturas 'ETC' para GLES2. Habilite "
-"'Import Etc' nas Configurações de Projeto."
+"A plataforma alvo requer compressão de texturas 'PVRTC' para GLES2. Habilite "
+"'Importar Pvrtc' nas Configurações de Projeto."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
 msgstr ""
-"A plataforma de destino requer compactação de textura 'ETC2' para GLES3. "
-"Ativar 'Importar Etc 2' nas Configurações do Projeto."
+"A plataforma de destino requer compactação de textura 'ETC2' ou 'PVRTC' para "
+"GLES3. Ativar 'Importar Etc 2' ou 'Importar Pvrtc' nas Configurações do "
+"Projeto."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"A plataforma de destino requer compactação de textura 'ETC' para o driver "
+"A plataforma de destino requer compressão de textura 'PVRTC' para o driver "
 "retornar ao GLES2.\n"
-"Ativar 'Importar Etc' em Configurações do Projeto ou desabilitar 'Driver "
-"Fallback Enabled' (Recuperação de driver ativada)."
+"Habilite 'Importar Pvrtc' em Configurações do Projeto ou desabilite 'Driver "
+"Reserva Ativado'."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -2405,6 +2409,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"Ocorreu um erro ao tentar salvar o layout do editor.\n"
+"Certifique-se de que o caminho de dados do usuário do editor seja gravável."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2412,15 +2418,17 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"Layout do editor padrão substituído.\n"
+"Para restaurar o layout padrão para suas configurações básicas, use a opção "
+"Excluir layout e exclua o layout padrão."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Nome do layout não encontrado!"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
-msgstr "Layout padrão restaurado às configurações base."
+msgstr "Layout padrão restaurado às configurações básicas."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3802,6 +3810,16 @@ msgid "Name contains invalid characters."
 msgstr "Nome contém caracteres inválidos."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr "Renomear arquivo:"
 
@@ -3849,22 +3867,9 @@ msgstr "Editar Dependências..."
 msgid "View Owners..."
 msgstr "Visualizar Proprietários..."
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "Renomear..."
-
-#: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "Duplicar..."
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Mover Para..."
-
-#: editor/filesystem_dock.cpp
-#, fuzzy
-msgid "Move to Trash"
-msgstr "Mover Autoload"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -3889,11 +3894,16 @@ msgid "Collapse All"
 msgstr "Recolher Tudo"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
-msgstr "Renomear"
+msgid "Duplicate..."
+msgstr "Duplicar..."
+
+#: editor/filesystem_dock.cpp
+msgid "Move to Trash"
+msgstr "Mover para o Lixo"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "Renomear..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -3928,8 +3938,11 @@ msgid "Move"
 msgstr "Mover"
 
 #: editor/filesystem_dock.cpp
-msgid "There is already file or folder with the same name in this location."
-msgstr "Já há uma pasta ou arquivo neste caminho com o nome especificado."
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "Renomear"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -5333,50 +5346,43 @@ msgstr "Criar Guias Horizontais e Verticais"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr ""
+msgstr "Definir Deslocamento do Pivô do CanvasItem \"%s\" para (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate %d CanvasItems"
-msgstr "Rotacionar CanvasItem"
+msgstr "Rotacionar %d CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate CanvasItem \"%s\" to %d degrees"
-msgstr "Rotacionar CanvasItem"
+msgstr "Rotacionar CanvasItem \"%s\" para %d graus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" Anchor"
-msgstr "Mover CanvaItem"
+msgstr "Mover Âncora do CanvaItem \"%s\""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr ""
+msgstr "Dimensionar Node2D \"%s\" para (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr ""
+msgstr "Redimensinar Controle \"%s\" para (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale %d CanvasItems"
-msgstr "Tamanho CanvasItem"
+msgstr "Dimensionar %d CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "Tamanho CanvasItem"
+msgstr "Redimensionar CanvasItem \"%s\" para (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move %d CanvasItems"
-msgstr "Mover CanvaItem"
+msgstr "Mover %d CanvaItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "Mover CanvaItem"
+msgstr "Mover CanvaItem \"%s\" para (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -6657,18 +6663,16 @@ msgid "Move Points"
 msgstr "Mover pontos"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Command: Rotate"
-msgstr "Arrastar: Rotacionar"
+msgstr "Command: Rotacionar"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: Mover Todos"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Shift+Command: Scale"
-msgstr "Shift+Ctrl: Escala"
+msgstr "Shift+Command: Redimensionar"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Ctrl: Rotate"
@@ -6717,14 +6721,12 @@ msgid "Radius:"
 msgstr "Raio:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Polygon to UV"
-msgstr "Criar Polígono & UV"
+msgstr "Copiar Polígono para UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy UV to Polygon"
-msgstr "Converter para Polígono2D"
+msgstr "Copiar UV para Polígono"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -8269,13 +8271,12 @@ msgid "Paint Tile"
 msgstr "Pintar Tile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Shift+LMB: Line Draw\n"
 "Shift+Command+LMB: Rectangle Paint"
 msgstr ""
 "Shift+LMB: Desenhar Linha\n"
-"Shift+Ctrl+LMB: Pintar Retângulo"
+"Shift+Command+LMB: Pintar Retângulo"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8287,7 +8288,7 @@ msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
-msgstr "Pegar Tile"
+msgstr "Escolher Tile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate Left"
@@ -8430,23 +8431,20 @@ msgid "Create a new rectangle."
 msgstr "Criar um novo retângulo."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Rectangle"
-msgstr "Pintura Retângular"
+msgstr "Novo Retângulo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Criar um novo polígono."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Polygon"
-msgstr "Mover Polígono"
+msgstr "Novo Polígono"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Selected Shape"
-msgstr "Excluir Selecionados"
+msgstr "Excluir Formas Selecionados"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -8815,9 +8813,8 @@ msgid "Add Node to Visual Shader"
 msgstr "Adicionar Nó ao Visual Shader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Node(s) Moved"
-msgstr "Nó Movido"
+msgstr "Node(s) Movidos"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
@@ -9554,8 +9551,9 @@ msgstr ""
 "uniformes e constantes."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "A reference to an existing uniform."
-msgstr ""
+msgstr "Uma referência a um uniforme existente."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
@@ -9920,6 +9918,10 @@ msgstr "Renderizador:"
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
 msgstr "OpenGL ES 3.0"
+
+#: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12497,6 +12499,26 @@ msgstr ""
 "A animação CPUParticles2D requer o uso de um CanvasItemMaterial com "
 "\"Animação de partículas\" ativada."
 
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr ""
+
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
@@ -12825,6 +12847,26 @@ msgstr ""
 "sobrescritas pelo motor de física ao executar.\n"
 "Ao invés disso, altere o tamanho nas formas de colisão filhas."
 
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
@@ -13067,6 +13109,9 @@ msgstr "Variáveis só podem ser atribuídas na função de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constantes não podem serem modificadas."
+
+#~ msgid "There is already file or folder with the same name in this location."
+#~ msgstr "Já há uma pasta ou arquivo neste caminho com o nome especificado."
 
 #~ msgid "Error trying to save layout!"
 #~ msgstr "Erro ao salvar o layout!"

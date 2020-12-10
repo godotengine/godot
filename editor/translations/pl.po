@@ -44,12 +44,13 @@
 # Roman Skiba <romanskiba0@gmail.com>, 2020.
 # Piotr Grodzki <ziemniakglados@gmail.com>, 2020.
 # Dzejkop <jakubtrad@gmail.com>, 2020.
+# Mateusz Grzonka <alpinus4@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-20 23:08+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2020-12-01 20:29+0000\n"
+"Last-Translator: Mateusz Grzonka <alpinus4@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -1127,7 +1128,7 @@ msgstr "Eksplorator osieroconych zasobów"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -3733,6 +3734,16 @@ msgid "Name contains invalid characters."
 msgstr "Nazwa zawiera niedozwolone znaki."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr "Zmiana nazwy pliku:"
 
@@ -3780,21 +3791,9 @@ msgstr "Edytuj zależności..."
 msgid "View Owners..."
 msgstr "Pokaż właścicieli..."
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "Zmień nazwę..."
-
-#: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "Duplikuj..."
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Przenieś do..."
-
-#: editor/filesystem_dock.cpp
-msgid "Move to Trash"
-msgstr "Przenieś do kosza"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -3819,11 +3818,16 @@ msgid "Collapse All"
 msgstr "Zwiń wszystko"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
-msgstr "Zmień nazwę"
+msgid "Duplicate..."
+msgstr "Duplikuj..."
+
+#: editor/filesystem_dock.cpp
+msgid "Move to Trash"
+msgstr "Przenieś do kosza"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "Zmień nazwę..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -3858,8 +3862,11 @@ msgid "Move"
 msgstr "Przenieś"
 
 #: editor/filesystem_dock.cpp
-msgid "There is already file or folder with the same name in this location."
-msgstr "W tej lokalizacji istnieje już plik lub folder o podanej nazwie."
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "Zmień nazwę"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -8348,23 +8355,20 @@ msgid "Create a new rectangle."
 msgstr "Utwórz nowy prostokąt."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Rectangle"
-msgstr "Malowanie prostokątne"
+msgstr "Nowy prostokąt"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Utwórz nowy wielokąt."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Polygon"
-msgstr "Przesuń Wielokąt"
+msgstr "Nowy Wielokąt"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Selected Shape"
-msgstr "Usuń zaznaczone"
+msgstr "Usuń Zaznaczony Kształt"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -9838,6 +9842,10 @@ msgstr "Renderer:"
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
 msgstr "OpenGL ES 3.0"
+
+#: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12420,6 +12428,26 @@ msgstr ""
 "Animacja CPUParticles2D wymaga użycia CanvasItemMaterial z włączonym "
 "\"Particles Animation\"."
 
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr ""
+
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
@@ -12751,6 +12779,26 @@ msgstr ""
 "nadpisane przez silnik fizyki podczas działania.\n"
 "Zamiast tego, zmień rozmiary kształtów kolizji w węzłach podrzędnych."
 
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
@@ -12989,6 +13037,9 @@ msgstr "Varying może być przypisane tylko w funkcji wierzchołków."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Stałe nie mogą być modyfikowane."
+
+#~ msgid "There is already file or folder with the same name in this location."
+#~ msgstr "W tej lokalizacji istnieje już plik lub folder o podanej nazwie."
 
 #~ msgid "Missing 'build-tools' directory!"
 #~ msgstr "Brakuje folderu \"build-tools\"!"

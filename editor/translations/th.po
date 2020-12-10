@@ -7,12 +7,13 @@
 # Thanachart Monpassorn <nunf_2539@hotmail.com>, 2020.
 # Anonymous <noreply@weblate.org>, 2020.
 # Lon3r <mptube.p@gmail.com>, 2020.
+# Kongfa Warorot <gongpha@hotmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-20 23:08+0000\n"
-"Last-Translator: Thanachart Monpassorn <nunf_2539@hotmail.com>\n"
+"PO-Revision-Date: 2020-12-01 20:29+0000\n"
+"Last-Translator: Kongfa Warorot <gongpha@hotmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -1080,7 +1081,7 @@ msgstr "ทรัพยากรที่ไม่ได้ใช้"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -1171,7 +1172,7 @@ msgstr "ผู้บริจาค"
 
 #: editor/editor_about.cpp
 msgid "License"
-msgstr "สัญญาอนุญาต"
+msgstr "ลิขสิทธิ์"
 
 #: editor/editor_about.cpp
 msgid "Third-party Licenses"
@@ -3634,6 +3635,16 @@ msgid "Name contains invalid characters."
 msgstr "อักษรบางตัวใช้ไม่ได้"
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr "เปลี่ยนชื่อไฟล์:"
 
@@ -3681,21 +3692,9 @@ msgstr "แก้ไขการอ้างอิง..."
 msgid "View Owners..."
 msgstr "ดูเจ้าของ..."
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "เปลี่ยนชื่อ..."
-
-#: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "ทำซ้ำ..."
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "ย้ายไป..."
-
-#: editor/filesystem_dock.cpp
-msgid "Move to Trash"
-msgstr "ย้ายไปถังขยะ"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -3720,11 +3719,16 @@ msgid "Collapse All"
 msgstr "ยุบเข้า"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
-msgstr "เปลี่ยนชื่อ"
+msgid "Duplicate..."
+msgstr "ทำซ้ำ..."
+
+#: editor/filesystem_dock.cpp
+msgid "Move to Trash"
+msgstr "ย้ายไปถังขยะ"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "เปลี่ยนชื่อ..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -3759,8 +3763,11 @@ msgid "Move"
 msgstr "ย้าย"
 
 #: editor/filesystem_dock.cpp
-msgid "There is already file or folder with the same name in this location."
-msgstr "มีไฟล์หรือโฟลเดอร์ชื่อเดียวกันอยู่แล้ว"
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "เปลี่ยนชื่อ"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -7173,7 +7180,7 @@ msgstr "แทรกคีย์แอนิเมชัน"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Pitch"
-msgstr "เสียงสูงต่ำ"
+msgstr "Pitch"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
@@ -8201,23 +8208,20 @@ msgid "Create a new rectangle."
 msgstr "สร้างสี่เหลี่ยมใหม่"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Rectangle"
-msgstr "วาดสี่เหลี่ยม"
+msgstr "สี่เหลี่ยมใหม่"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "สร้างรูปหลายเหลี่ยมใหม่"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Polygon"
-msgstr "ย้ายรูปหลายเหลี่ยม"
+msgstr "รูปหลายเหลี่ยมใหม่"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Selected Shape"
-msgstr "ลบสิ่งที่เลือก"
+msgstr "ลบรูปร่างที่เลือก"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -9652,6 +9656,10 @@ msgstr "ตัวเรนเดอร์:"
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
 msgstr "OpenGL ES 3.0"
+
+#: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12161,6 +12169,26 @@ msgstr ""
 "แอนิเมชัน CPUParticles2D จำเป็นต้องใช้ CanvasItemMaterial โดยเปิดการทำงาน "
 "\"Particles Animation\""
 
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr ""
+
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
@@ -12455,6 +12483,26 @@ msgstr ""
 "จะถูกแทนที่โดยเอ็นจิ้นฟิสิกส์เมื่อทำงาน\n"
 "เปลี่ยนขนาดในขอบเขตการชนลูกแทน"
 
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
@@ -12680,6 +12728,9 @@ msgstr "Varyings สามารถกำหนดในังก์ชันเ
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "ค่าคงที่ไม่สามารถแก้ไขได้"
+
+#~ msgid "There is already file or folder with the same name in this location."
+#~ msgstr "มีไฟล์หรือโฟลเดอร์ชื่อเดียวกันอยู่แล้ว"
 
 #~ msgid "Missing 'build-tools' directory!"
 #~ msgstr "ไดเร็กทอรี 'build-tools' หายไป!"

@@ -54,12 +54,13 @@
 # José Manuel Jurado Bujalance <darkbird@vivaldi.net>, 2020.
 # Skarline <lihue-molina@hotmail.com>, 2020.
 # Oxixes <oxixes@protonmail.com>, 2020.
+# David Aroca Rojas <arocarojasdavid@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-24 16:44+0000\n"
-"Last-Translator: Skarline <lihue-molina@hotmail.com>\n"
+"PO-Revision-Date: 2020-12-07 08:11+0000\n"
+"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -1150,7 +1151,7 @@ msgstr "Explorador de Recursos Huérfanos"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -2384,6 +2385,9 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"Layout por defecto del editor sobreescrita.\n"
+"Para recuperar el layout por defecto, utiliza la opción Eliminar Layout y "
+"borra el Layout por defecto."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
@@ -3784,6 +3788,16 @@ msgid "Name contains invalid characters."
 msgstr "El nombre contiene caracteres inválidos."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr "Renombrar archivo:"
 
@@ -3831,21 +3845,9 @@ msgstr "Editar Dependencias..."
 msgid "View Owners..."
 msgstr "Ver Propietarios..."
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "Renombrar..."
-
-#: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "Duplicar..."
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Mover a..."
-
-#: editor/filesystem_dock.cpp
-msgid "Move to Trash"
-msgstr "Mover a la papelera"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -3870,11 +3872,16 @@ msgid "Collapse All"
 msgstr "Colapsar Todo"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
-msgstr "Renombrar"
+msgid "Duplicate..."
+msgstr "Duplicar..."
+
+#: editor/filesystem_dock.cpp
+msgid "Move to Trash"
+msgstr "Mover a la papelera"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "Renombrar..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -3909,8 +3916,11 @@ msgid "Move"
 msgstr "Mover"
 
 #: editor/filesystem_dock.cpp
-msgid "There is already file or folder with the same name in this location."
-msgstr "Ya hay un archivo o carpeta con el mismo nombre en esta ubicación."
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "Renombrar"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -6641,7 +6651,7 @@ msgstr "Mover Puntos"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Command: Rotate"
-msgstr "Comando: Rotar"
+msgstr "Command: Rotar"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
@@ -8410,23 +8420,20 @@ msgid "Create a new rectangle."
 msgstr "Cree un nuevo rectángulo."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Rectangle"
-msgstr "Dibujar Rectángulo"
+msgstr "Nuevo Rectángulo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Crear un nuevo polígono."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Polygon"
-msgstr "Mover Polígono"
+msgstr "Nuevo Polígono"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Selected Shape"
-msgstr "Eliminar Seleccionados"
+msgstr "Eliminar Formas Seleccionadas"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -9907,6 +9914,10 @@ msgstr "Renderizador:"
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
 msgstr "OpenGL ES 3.0"
+
+#: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12308,7 +12319,7 @@ msgid ""
 "outputs."
 msgstr ""
 "No se puede copiar y renombrar el archivo de exportación, comprueba el "
-"directorio del proyecto de graduación para ver los resultados."
+"directorio del proyecto de gradle para ver los resultados."
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -12509,6 +12520,26 @@ msgid ""
 msgstr ""
 "La animación CPUParticles2D requiere el uso de un CanvasItemMaterial con "
 "\"Particles Animation\" activado."
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr ""
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12844,6 +12875,26 @@ msgstr ""
 "anulado por el motor de la física cuando esté ejecutándose.\n"
 "En su lugar, cambia el tamaño en las formas de colisión de los hijos."
 
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
@@ -13088,6 +13139,9 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "There is already file or folder with the same name in this location."
+#~ msgstr "Ya hay un archivo o carpeta con el mismo nombre en esta ubicación."
 
 #~ msgid "Missing 'build-tools' directory!"
 #~ msgstr "¡No se encontró el directorio 'build-tools'!"

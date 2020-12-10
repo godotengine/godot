@@ -81,7 +81,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-26 08:43+0000\n"
+"PO-Revision-Date: 2020-12-10 14:11+0100\n"
 "Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
@@ -90,7 +90,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Poedit 2.4.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1172,7 +1172,7 @@ msgstr "Explorateur de ressources orphelines"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -3815,6 +3815,22 @@ msgid "Name contains invalid characters."
 msgstr "Le nom contient des caractères invalides."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+"Les fichiers ou dossiers suivants entrent en conflit avec des éléments de la "
+"destination '%s' :\n"
+"\n"
+"%s\n"
+"\n"
+"Souhaitez-vous les écraser ?"
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr "Renommer le fichier :"
 
@@ -3862,21 +3878,9 @@ msgstr "Modifier les dépendances…"
 msgid "View Owners..."
 msgstr "Voir les propriétaires…"
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "Renommer..."
-
-#: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "Dupliquer…"
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Déplacer vers…"
-
-#: editor/filesystem_dock.cpp
-msgid "Move to Trash"
-msgstr "Déplacer vers la corbeille"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -3901,11 +3905,16 @@ msgid "Collapse All"
 msgstr "Réduire tout"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
-msgstr "Renommer"
+msgid "Duplicate..."
+msgstr "Dupliquer…"
+
+#: editor/filesystem_dock.cpp
+msgid "Move to Trash"
+msgstr "Déplacer vers la corbeille"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "Renommer..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -3940,9 +3949,11 @@ msgid "Move"
 msgstr "Déplacer"
 
 #: editor/filesystem_dock.cpp
-msgid "There is already file or folder with the same name in this location."
-msgstr ""
-"Il existe déjà un fichier ou un dossier ayant le même nom à cet emplacement."
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "Renommer"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -9959,6 +9970,10 @@ msgid "OpenGL ES 3.0"
 msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
+msgstr "Non supporté par les drivers de votre carte graphique."
+
+#: editor/project_manager.cpp
 msgid ""
 "Higher visual quality\n"
 "All features available\n"
@@ -12569,6 +12584,26 @@ msgstr ""
 "L'animation de CPUParticles2D a besoin d'un CanvasItemMaterial avec "
 "« Particles Animation » activé."
 
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr "Node A et Node B doivent être des PhysicsBody2D"
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr "Node A doit être un PhysicsBody2D"
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr "Node B doit être un PhysicsBody2D"
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr ""
+
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
@@ -12909,6 +12944,26 @@ msgstr ""
 "rigide) seront remplacées par le moteur physique lors de l'exécution.\n"
 "Modifiez la taille dans les formes de collision enfant à la place."
 
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr "Node A et Node B doivent être des PhysicsBody"
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr "Node A doit être un PhysicsBody"
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr "Node B doit être un PhysicsBody"
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr "Le joint n'est connecté à aucun PhysicsBody"
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
+msgstr "Node A et Node B doivent être des PhysicsBody différents"
+
 #: scene/3d/remote_transform.cpp
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
@@ -13155,6 +13210,11 @@ msgstr "Les variations ne peuvent être affectées que dans la fonction vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constantes ne peuvent être modifiées."
+
+#~ msgid "There is already file or folder with the same name in this location."
+#~ msgstr ""
+#~ "Il existe déjà un fichier ou un dossier ayant le même nom à cet "
+#~ "emplacement."
 
 #~ msgid "Missing 'build-tools' directory!"
 #~ msgstr "Dossier « build-tools » manquant !"

@@ -5,12 +5,13 @@
 # Ray West <the.raxar@gmail.com>, 2017.
 # Julius Stopforth <jjstopforth@gmail.com>, 2018.
 # Isa Tippens <isatippens2@gmail.com>, 2019.
+# Henry Geyser <thegoat187@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-28 09:36+0000\n"
-"Last-Translator: Isa Tippens <isatippens2@gmail.com>\n"
+"PO-Revision-Date: 2020-12-01 20:29+0000\n"
+"Last-Translator: Henry Geyser <thegoat187@gmail.com>\n"
 "Language-Team: Afrikaans <https://hosted.weblate.org/projects/godot-engine/"
 "godot/af/>\n"
 "Language: af\n"
@@ -18,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -27,7 +28,7 @@ msgstr "Ongeldige tiepe argument om te omskep(), gebruik TYPE_* konstante"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "Verwag 'n string van lengte 1 ('n karakter)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -50,72 +51,71 @@ msgstr "Ongeldige operande vir operateur %s, %s en %s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr ""
+msgstr "Ongeldige indeks van tipe %s vir basiese tipe %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "Ongeldige benaming van indeks '%s' vir basiese tipe %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr ""
+msgstr "Ongeldige argument om '%s' te genereer"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "Aan roep tot '%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr ""
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Bevry"
+msgstr "Bevry / Verniet"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Gebalanseer"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr ""
+msgstr "Spieel"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr ""
+msgstr "Tyd:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr ""
+msgstr "Waarde:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "Anim Voeg Sleutel by"
+msgstr "Voeg Sleutel Hier"
 
 #: editor/animation_bezier_editor.cpp
 #, fuzzy
@@ -123,18 +123,16 @@ msgid "Duplicate Selected Key(s)"
 msgstr "Dupliseer Seleksie"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "Skrap gekose lêers?"
+msgstr "Skrap gekose sleutels"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr ""
+msgstr "Voeg Bezier Punt By"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Skuif Gunsteling Op"
+msgstr "Verskuif Bezier Punte"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -145,9 +143,8 @@ msgid "Anim Delete Keys"
 msgstr "Anim Skrap Sleutels"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "Anim Verander Waarde"
+msgstr "Anim Verander Sleutelraam Tyd"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
@@ -155,51 +152,44 @@ msgstr "Anim Verander Oorgang"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
-msgstr "Anim Verander Transform"
+msgstr "Anim Verander Transformasie"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "Anim Verander Waarde"
+msgstr "Anim Verander Sleutelraam Waarde"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
 msgstr "Anim Verander Roep"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Anim Verander Waarde"
+msgstr "Anim Herhaalde Verandering Van Sleutelraam Tye"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Anim Verander Oorgang"
+msgstr "Anim Herhaalde Veranderinde Transisie"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Anim Verander Transform"
+msgstr "Anim Herhaalde Verandering van Transformasie"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Anim Verander Waarde"
+msgstr "Anim Herhaalde Verandering Van Sleutelraam Waarde"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Anim Verander Roep"
+msgstr "Anim Herhaalde Verandering van Roep"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "Verander Anim Lente"
+msgstr "Verander Animasie Lente"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "Verander Animasie Omloop"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -1136,7 +1126,7 @@ msgstr "Verweerde Hulpbron Verkenner"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -3716,6 +3706,16 @@ msgid "Name contains invalid characters."
 msgstr ""
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr ""
 
@@ -3770,23 +3770,9 @@ msgstr ""
 msgid "View Owners..."
 msgstr ""
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr ""
-
-#: editor/filesystem_dock.cpp
-#, fuzzy
-msgid "Duplicate..."
-msgstr "Dupliseer"
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr ""
-
-#: editor/filesystem_dock.cpp
-#, fuzzy
-msgid "Move to Trash"
-msgstr "Skuif AutoLaai"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -3814,10 +3800,17 @@ msgid "Collapse All"
 msgstr "Vervang Alles"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
+#, fuzzy
+msgid "Duplicate..."
+msgstr "Dupliseer"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Move to Trash"
+msgstr "Skuif AutoLaai"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
 msgstr ""
 
 #: editor/filesystem_dock.cpp
@@ -3855,7 +3848,10 @@ msgid "Move"
 msgstr ""
 
 #: editor/filesystem_dock.cpp
-msgid "There is already file or folder with the same name in this location."
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
 msgstr ""
 
 #: editor/filesystem_dock.cpp
@@ -9870,6 +9866,10 @@ msgid "OpenGL ES 3.0"
 msgstr ""
 
 #: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
+msgstr ""
+
+#: editor/project_manager.cpp
 msgid ""
 "Higher visual quality\n"
 "All features available\n"
@@ -12366,6 +12366,26 @@ msgid ""
 "\"Particles Animation\" enabled."
 msgstr ""
 
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr ""
+
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
@@ -12624,6 +12644,26 @@ msgid ""
 "Size changes to RigidBody (in character or rigid modes) will be overridden "
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
 msgstr ""
 
 #: scene/3d/remote_transform.cpp
