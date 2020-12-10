@@ -728,9 +728,10 @@ void SceneSynchronizer::dirty_peers() {
 }
 
 void SceneSynchronizer::set_peer_networking_enable(int p_peer, bool p_enable) {
-	ERR_FAIL_COND_MSG(p_peer == 1, "Disable the server is not possible.");
 
 	if (synchronizer_type == SYNCHRONIZER_TYPE_SERVER) {
+		ERR_FAIL_COND_MSG(p_peer == 1, "Disable the server is not possible.");
+
 		NetUtility::PeerData *pd = peer_data.lookup_ptr(p_peer);
 		ERR_FAIL_COND_MSG(pd == nullptr, "The peer: " + itos(p_peer) + " is not know. [bug]");
 
@@ -752,12 +753,13 @@ void SceneSynchronizer::set_peer_networking_enable(int p_peer, bool p_enable) {
 }
 
 bool SceneSynchronizer::is_peer_networking_enable(int p_peer) const {
-	if (p_peer == 1) {
-		// Server is always enabled.
-		return true;
-	}
 
 	if (synchronizer_type == SYNCHRONIZER_TYPE_SERVER) {
+		if (p_peer == 1) {
+			// Server is always enabled.
+			return true;
+		}
+
 		NetUtility::PeerData *pd = peer_data.lookup_ptr(p_peer);
 		ERR_FAIL_COND_V_MSG(pd == nullptr, false, "The peer: " + itos(p_peer) + " is not know. [bug]");
 		return pd->enabled;
