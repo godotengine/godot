@@ -484,7 +484,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				if (area) {
 					if (area->is_overriding_audio_bus()) {
 						//override audio bus
-						StringName bus_name = area->get_audio_bus();
+						StringName bus_name = area->get_audio_bus_name();
 						output.bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus_name);
 					}
 
