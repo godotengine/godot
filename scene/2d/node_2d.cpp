@@ -475,12 +475,3 @@ void Node2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_index", "get_z_index");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "z_as_relative"), "set_z_as_relative", "is_z_relative");
 }
-
-Node2D::Node2D() {
-	angle = 0;
-	_scale = Vector2(1, 1);
-	skew = 0;
-	_xform_dirty = false;
-	z_index = 0;
-	z_relative = true;
-}

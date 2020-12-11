@@ -385,14 +385,3 @@ void PathFollow3D::set_loop(bool p_loop) {
 bool PathFollow3D::has_loop() const {
 	return loop;
 }
-
-PathFollow3D::PathFollow3D() {
-	offset = 0;
-	delta_offset = 0;
-	h_offset = 0;
-	v_offset = 0;
-	path = nullptr;
-	rotation_mode = ROTATION_XYZ;
-	cubic = true;
-	loop = true;
-}

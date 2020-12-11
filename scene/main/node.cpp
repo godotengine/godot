@@ -2925,35 +2925,6 @@ String Node::_get_name_num_separator() {
 }
 
 Node::Node() {
-	data.pos = -1;
-	data.depth = -1;
-	data.blocked = 0;
-	data.parent = nullptr;
-	data.tree = nullptr;
-	data.physics_process = false;
-	data.idle_process = false;
-	data.process_priority = 0;
-	data.physics_process_internal = false;
-	data.idle_process_internal = false;
-	data.inside_tree = false;
-	data.ready_notified = false;
-
-	data.owner = nullptr;
-	data.OW = nullptr;
-	data.input = false;
-	data.unhandled_input = false;
-	data.unhandled_key_input = false;
-	data.pause_mode = PAUSE_MODE_INHERIT;
-	data.pause_owner = nullptr;
-	data.network_master = 1; //server by default
-	data.path_cache = nullptr;
-	data.parent_owned = false;
-	data.in_constructor = true;
-	data.viewport = nullptr;
-	data.use_placeholder = false;
-	data.display_folded = false;
-	data.ready_first = true;
-
 	orphan_node_count++;
 }
 

@@ -65,14 +65,14 @@ public:
 	};
 
 private:
-	Path3D *path;
-	real_t delta_offset; // change in offset since last _update_transform
-	real_t offset;
-	real_t h_offset;
-	real_t v_offset;
-	bool cubic;
-	bool loop;
-	RotationMode rotation_mode;
+	Path3D *path = nullptr;
+	real_t delta_offset = 0; // Change in offset since last _update_transform.
+	real_t offset = 0;
+	real_t h_offset = 0;
+	real_t v_offset = 0;
+	bool cubic = true;
+	bool loop = true;
+	RotationMode rotation_mode = ROTATION_XYZ;
 
 	void _update_transform(bool p_update_xyz_rot = true);
 
@@ -106,7 +106,7 @@ public:
 
 	String get_configuration_warning() const override;
 
-	PathFollow3D();
+	PathFollow3D() {}
 };
 
 VARIANT_ENUM_CAST(PathFollow3D::RotationMode);

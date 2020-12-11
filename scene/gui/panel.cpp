@@ -63,6 +63,3 @@ Panel::Panel() {
 	// Has visible stylebox, so stop by default.
 	set_mouse_filter(MOUSE_FILTER_STOP);
 }
-
-Panel::~Panel() {
-}

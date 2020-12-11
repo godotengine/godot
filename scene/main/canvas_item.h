@@ -73,7 +73,7 @@ private:
 			uint32_t invalid_key : 1;
 		};
 
-		uint32_t key;
+		uint32_t key = 0;
 
 		bool operator<(const MaterialKey &p_key) const {
 			return key < p_key.key;
@@ -114,10 +114,11 @@ private:
 	_FORCE_INLINE_ void _queue_shader_change();
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
-	BlendMode blend_mode;
-	LightMode light_mode;
-	bool particles_animation;
+	BlendMode blend_mode = BLEND_MODE_MIX;
+	LightMode light_mode = LIGHT_MODE_NORMAL;
+	bool particles_animation = false;
 
+	// Initialized in the constructor.
 	int particles_anim_h_frames;
 	int particles_anim_v_frames;
 	bool particles_anim_loop;
@@ -188,39 +189,38 @@ private:
 	RID canvas_item;
 	String group;
 
-	CanvasLayer *canvas_layer;
+	CanvasLayer *canvas_layer = nullptr;
 
-	Color modulate;
-	Color self_modulate;
+	Color modulate = Color(1, 1, 1, 1);
+	Color self_modulate = Color(1, 1, 1, 1);
 
 	List<CanvasItem *> children_items;
-	List<CanvasItem *>::Element *C;
+	List<CanvasItem *>::Element *C = nullptr;
 
-	int light_mask;
+	int light_mask = 1;
 
-	Window *window;
-	bool first_draw;
-	bool visible;
-	bool clip_children;
-	bool pending_update;
-	bool top_level;
-	bool drawing;
-	bool block_transform_notify;
-	bool behind;
-	bool use_parent_material;
-	bool notify_local_transform;
-	bool notify_transform;
+	Window *window = nullptr;
+	bool first_draw = false;
+	bool visible = true;
+	bool clip_children = false;
+	bool pending_update = false;
+	bool top_level = false;
+	bool drawing = false;
+	bool block_transform_notify = false;
+	bool behind = false;
+	bool use_parent_material = false;
+	bool notify_local_transform = false;
+	bool notify_transform = false;
 
-	RS::CanvasItemTextureFilter texture_filter_cache;
-	RS::CanvasItemTextureRepeat texture_repeat_cache;
-
-	TextureFilter texture_filter;
-	TextureRepeat texture_repeat;
+	RS::CanvasItemTextureFilter texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+	RS::CanvasItemTextureRepeat texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+	TextureFilter texture_filter = TEXTURE_FILTER_PARENT_NODE;
+	TextureRepeat texture_repeat = TEXTURE_REPEAT_PARENT_NODE;
 
 	Ref<Material> material;
 
 	mutable Transform2D global_transform;
-	mutable bool global_invalid;
+	mutable bool global_invalid = true;
 
 	void _top_level_raise_self();
 

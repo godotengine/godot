@@ -1332,14 +1332,6 @@ SceneTree::SceneTree() {
 	if (singleton == nullptr) {
 		singleton = this;
 	}
-	_quit = false;
-	accept_quit = true;
-	quit_on_go_back = true;
-	initialized = false;
-#ifdef DEBUG_ENABLED
-	debug_collisions_hint = false;
-	debug_navigation_hint = false;
-#endif
 	debug_collisions_color = GLOBAL_DEF("debug/shapes/collision/shape_color", Color(0.0, 0.6, 0.7, 0.5));
 	debug_collision_contact_color = GLOBAL_DEF("debug/shapes/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
 	debug_navigation_color = GLOBAL_DEF("debug/shapes/navigation/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
@@ -1347,23 +1339,7 @@ SceneTree::SceneTree() {
 	collision_debug_contacts = GLOBAL_DEF("debug/shapes/collision/max_contacts_displayed", 10000);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/shapes/collision/max_contacts_displayed", PropertyInfo(Variant::INT, "debug/shapes/collision/max_contacts_displayed", PROPERTY_HINT_RANGE, "0,20000,1")); // No negative
 
-	tree_version = 1;
-	physics_process_time = 1;
-	idle_process_time = 1;
-
-	root = nullptr;
-	pause = false;
-	current_frame = 0;
-	tree_changed_name = "tree_changed";
-	node_added_name = "node_added";
-	node_removed_name = "node_removed";
-	node_renamed_name = "node_renamed";
-	ugc_locked = false;
-	call_lock = 0;
-	root_lock = 0;
-	node_count = 0;
-
-	//create with mainloop
+	// Create with mainloop.
 
 	root = memnew(Window);
 	root->set_name("root");
@@ -1371,8 +1347,7 @@ SceneTree::SceneTree() {
 		root->set_world_3d(Ref<World3D>(memnew(World3D)));
 	}
 
-	// Initialize network state
-	multiplayer_poll = true;
+	// Initialize network state.
 	set_multiplayer(Ref<MultiplayerAPI>(memnew(MultiplayerAPI)));
 
 	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
@@ -1405,8 +1380,8 @@ SceneTree::SceneTree() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/2d_sdf/oversize", PropertyInfo(Variant::INT, "rendering/quality/2d_sdf/oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"));
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/2d_sdf/scale", PropertyInfo(Variant::INT, "rendering/quality/2d_sdf/scale", PROPERTY_HINT_ENUM, "100%,50%,25%"));
 
-	{ //load default fallback environment
-		//get possible extensions
+	{ // Load default fallback environment.
+		// Get possible extensions.
 		List<String> exts;
 		ResourceLoader::get_recognized_extensions_for_type("Environment", &exts);
 		String ext_hint;
@@ -1416,9 +1391,9 @@ SceneTree::SceneTree() {
 			}
 			ext_hint += "*." + E->get();
 		}
-		//get path
+		// Get path.
 		String env_path = GLOBAL_DEF("rendering/environment/default_environment", "");
-		//setup property
+		// Setup property.
 		ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
 		env_path = env_path.strip_edges();
 		if (env_path != String()) {
@@ -1427,10 +1402,10 @@ SceneTree::SceneTree() {
 				root->get_world_3d()->set_fallback_environment(env);
 			} else {
 				if (Engine::get_singleton()->is_editor_hint()) {
-					//file was erased, clear the field.
+					// File was erased, clear the field.
 					ProjectSettings::get_singleton()->set("rendering/environment/default_environment", "");
 				} else {
-					//file was erased, notify user.
+					// File was erased, notify user.
 					ERR_PRINT(RTR("Default Environment as specified in Project Settings (Rendering -> Environment -> Default Environment) could not be loaded."));
 				}
 			}
