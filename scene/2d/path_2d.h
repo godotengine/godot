@@ -63,14 +63,14 @@ class PathFollow2D : public Node2D {
 
 public:
 private:
-	Path2D *path;
-	real_t offset;
-	real_t h_offset;
-	real_t v_offset;
-	real_t lookahead;
-	bool cubic;
-	bool loop;
-	bool rotates;
+	Path2D *path = nullptr;
+	real_t offset = 0;
+	real_t h_offset = 0;
+	real_t v_offset = 0;
+	real_t lookahead = 4;
+	bool cubic = true;
+	bool loop = true;
+	bool rotates = true;
 
 	void _update_transform();
 
@@ -107,7 +107,7 @@ public:
 
 	String get_configuration_warning() const override;
 
-	PathFollow2D();
+	PathFollow2D() {}
 };
 
 #endif // PATH_2D_H

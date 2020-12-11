@@ -387,14 +387,3 @@ void PathFollow2D::set_loop(bool p_loop) {
 bool PathFollow2D::has_loop() const {
 	return loop;
 }
-
-PathFollow2D::PathFollow2D() {
-	offset = 0;
-	h_offset = 0;
-	v_offset = 0;
-	path = nullptr;
-	rotates = true;
-	cubic = true;
-	loop = true;
-	lookahead = 4;
-}

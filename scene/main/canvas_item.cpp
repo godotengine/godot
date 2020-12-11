@@ -292,15 +292,10 @@ void CanvasItemMaterial::_bind_methods() {
 
 CanvasItemMaterial::CanvasItemMaterial() :
 		element(this) {
-	blend_mode = BLEND_MODE_MIX;
-	light_mode = LIGHT_MODE_NORMAL;
-	particles_animation = false;
-
 	set_particles_anim_h_frames(1);
 	set_particles_anim_v_frames(1);
 	set_particles_anim_loop(false);
 
-	current_key.key = 0;
 	current_key.invalid_key = 1;
 	_queue_shader_change();
 }
@@ -1411,30 +1406,7 @@ CanvasItem::TextureRepeat CanvasItem::get_texture_repeat() const {
 
 CanvasItem::CanvasItem() :
 		xform_change(this) {
-	window = nullptr;
 	canvas_item = RenderingServer::get_singleton()->canvas_item_create();
-	visible = true;
-	pending_update = false;
-	modulate = Color(1, 1, 1, 1);
-	self_modulate = Color(1, 1, 1, 1);
-	top_level = false;
-	first_draw = false;
-	drawing = false;
-	behind = false;
-	clip_children = false;
-	block_transform_notify = false;
-	canvas_layer = nullptr;
-	use_parent_material = false;
-	global_invalid = true;
-	notify_local_transform = false;
-	notify_transform = false;
-	light_mask = 1;
-	texture_repeat = TEXTURE_REPEAT_PARENT_NODE;
-	texture_filter = TEXTURE_FILTER_PARENT_NODE;
-	texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
-	texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
-
-	C = nullptr;
 }
 
 CanvasItem::~CanvasItem() {

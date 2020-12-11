@@ -54,7 +54,6 @@ public:
 	Mode get_mode() const;
 
 	Panel();
-	~Panel();
 };
 
 VARIANT_ENUM_CAST(Panel::Mode)

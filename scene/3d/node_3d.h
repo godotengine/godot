@@ -65,32 +65,32 @@ class Node3D : public Node {
 		mutable Transform global_transform;
 		mutable Transform local_transform;
 		mutable Vector3 rotation;
-		mutable Vector3 scale;
+		mutable Vector3 scale = Vector3(1, 1, 1);
 
-		mutable int dirty;
+		mutable int dirty = DIRTY_NONE;
 
-		Viewport *viewport;
+		Viewport *viewport = nullptr;
 
-		bool top_level_active;
-		bool top_level;
-		bool inside_world;
+		bool top_level_active = false;
+		bool top_level = false;
+		bool inside_world = false;
 
-		int children_lock;
-		Node3D *parent;
+		int children_lock = 0;
+		Node3D *parent = nullptr;
 		List<Node3D *> children;
-		List<Node3D *>::Element *C;
+		List<Node3D *>::Element *C = nullptr;
 
-		bool ignore_notification;
-		bool notify_local_transform;
-		bool notify_transform;
+		bool ignore_notification = false;
+		bool notify_local_transform = false;
+		bool notify_transform = false;
 
-		bool visible;
-		bool disable_scale;
+		bool visible = true;
+		bool disable_scale = false;
 
 #ifdef TOOLS_ENABLED
 		Ref<Node3DGizmo> gizmo;
-		bool gizmo_disabled;
-		bool gizmo_dirty;
+		bool gizmo_disabled = false;
+		bool gizmo_dirty = false;
 #endif
 
 	} data;
@@ -197,7 +197,6 @@ public:
 	void force_update_transform();
 
 	Node3D();
-	~Node3D();
 };
 
 #endif // NODE_3D_H

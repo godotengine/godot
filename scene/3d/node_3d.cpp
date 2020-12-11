@@ -784,28 +784,4 @@ void Node3D::_bind_methods() {
 }
 
 Node3D::Node3D() :
-		xform_change(this) {
-	data.dirty = DIRTY_NONE;
-	data.children_lock = 0;
-
-	data.ignore_notification = false;
-	data.top_level = false;
-	data.top_level_active = false;
-	data.scale = Vector3(1, 1, 1);
-	data.viewport = nullptr;
-	data.inside_world = false;
-	data.visible = true;
-	data.disable_scale = false;
-
-#ifdef TOOLS_ENABLED
-	data.gizmo_disabled = false;
-	data.gizmo_dirty = false;
-#endif
-	data.notify_local_transform = false;
-	data.notify_transform = false;
-	data.parent = nullptr;
-	data.C = nullptr;
-}
-
-Node3D::~Node3D() {
-}
+		xform_change(this) {}

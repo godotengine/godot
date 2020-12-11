@@ -3043,38 +3043,3 @@ void Control::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "has_point", PropertyInfo(Variant::VECTOR2, "point")));
 }
-
-Control::Control() {
-	data.parent = nullptr;
-
-	data.mouse_filter = MOUSE_FILTER_STOP;
-
-	data.RI = nullptr;
-	data.theme_owner = nullptr;
-	data.theme_owner_window = nullptr;
-	data.default_cursor = CURSOR_ARROW;
-	data.layout_dir = LAYOUT_DIRECTION_INHERITED;
-	data.h_size_flags = SIZE_FILL;
-	data.v_size_flags = SIZE_FILL;
-	data.expand = 1;
-	data.rotation = 0;
-	data.parent_canvas_item = nullptr;
-	data.scale = Vector2(1, 1);
-
-	data.block_minimum_size_adjust = false;
-	data.disable_visibility_clip = false;
-	data.h_grow = GROW_DIRECTION_END;
-	data.v_grow = GROW_DIRECTION_END;
-	data.minimum_size_valid = false;
-	data.updating_last_minimum_size = false;
-
-	data.clip_contents = false;
-	for (int i = 0; i < 4; i++) {
-		data.anchor[i] = ANCHOR_BEGIN;
-		data.margin[i] = 0;
-	}
-	data.focus_mode = FOCUS_NONE;
-}
-
-Control::~Control() {
-}

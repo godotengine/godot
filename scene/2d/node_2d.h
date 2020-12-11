@@ -37,15 +37,15 @@ class Node2D : public CanvasItem {
 	GDCLASS(Node2D, CanvasItem);
 
 	Point2 pos;
-	float angle;
-	Size2 _scale;
-	float skew;
-	int z_index;
-	bool z_relative;
+	float angle = 0;
+	Size2 _scale = Vector2(1, 1);
+	float skew = 0;
+	int z_index = 0;
+	bool z_relative = true;
 
 	Transform2D _mat;
 
-	bool _xform_dirty;
+	bool _xform_dirty = false;
 
 	void _update_transform();
 
@@ -121,7 +121,7 @@ public:
 
 	Transform2D get_transform() const override;
 
-	Node2D();
+	Node2D() {}
 };
 
 #endif // NODE2D_H
