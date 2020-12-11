@@ -14,7 +14,7 @@ layout(local_size_x = OCT_RES, local_size_y = OCT_RES, local_size_z = 1) in;
 layout(rgba16f, set = 0, binding = 1) uniform restrict image2DArray irradiance_texture;
 layout(rg16f, set = 0, binding = 2) uniform restrict image2DArray depth_texture;
 
-ayout(rgba32ui, set = 0, binding = 3) uniform restrict uimage2DArray irradiance_history_texture;
+layout(rgba32ui, set = 0, binding = 3) uniform restrict uimage2DArray irradiance_history_texture;
 layout(rg32ui, set = 0, binding = 4) uniform restrict uimage2DArray depth_history_texture;
 
 struct CascadeData {
