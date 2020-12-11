@@ -110,7 +110,8 @@
 	</methods>
 	<members>
 		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">
-			Number of particles emitted in one emission cycle.
+			The number of particles emitted in one emission cycle (corresponding to the [member lifetime]).
+			[b]Note:[/b] Changing [member amount] will reset the particle emission, therefore removing all particles that were already emitted before changing [member amount].
 		</member>
 		<member name="angle" type="float" setter="set_param" getter="get_param" default="0.0">
 			Initial rotation applied to each particle, in degrees.
@@ -221,7 +222,7 @@
 			Initial velocity randomness ratio.
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" default="1.0">
-			Amount of time each particle will exist.
+			The amount of time each particle will exist (in seconds).
 		</member>
 		<member name="lifetime_randomness" type="float" setter="set_lifetime_randomness" getter="get_lifetime_randomness" default="0.0">
 			Particle lifetime randomness ratio.
