@@ -49,7 +49,9 @@
 	</methods>
 	<members>
 		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">
-			Number of particles to emit.
+			The number of particles emitted in one emission cycle (corresponding to the [member lifetime]).
+			[b]Note:[/b] Changing [member amount] will reset the particle emission, therefore removing all particles that were already emitted before changing [member amount].
+
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="Particles.DrawOrder" default="0">
 			Particle draw order. Uses [enum DrawOrder] values.
@@ -82,7 +84,7 @@
 			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect.
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" default="1.0">
-			Amount of time each particle will exist.
+			The amount of time each particle will exist (in seconds).
 		</member>
 		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" default="true">
 			If [code]true[/code], particles use the parent node's coordinate space. If [code]false[/code], they use global coordinates.
