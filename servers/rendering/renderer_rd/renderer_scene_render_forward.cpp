@@ -2500,7 +2500,7 @@ RID RendererSceneRenderForward::_setup_render_pass_uniform_set(RID p_render_buff
 		RD::Uniform u;
 		u.binding = 4;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-		RID texture = false && rb && rb->depth.is_valid() ? rb->depth : storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+		RID texture = rb && rb->depth.is_valid() ? rb->depth : storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
 		u.ids.push_back(texture);
 		uniforms.push_back(u);
 	}
@@ -2578,7 +2578,7 @@ RID RendererSceneRenderForward::_setup_render_pass_uniform_set(RID p_render_buff
 			RD::Uniform u;
 			u.binding = 12;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-			u.ids.push_back(rb ? render_buffers_get_default_gi_probe_buffer() : render_buffers_get_gi_probe_buffer(p_render_buffers));
+			u.ids.push_back(rb ? render_buffers_get_gi_probe_buffer(p_render_buffers) : render_buffers_get_default_gi_probe_buffer());
 			uniforms.push_back(u);
 		}
 		{
