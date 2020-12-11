@@ -1650,7 +1650,7 @@ void TextEdit::_notification(int p_what) {
 
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID) {
 				DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + _get_cursor_pixel_pos(), get_viewport()->get_window_id());
+				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + _get_cursor_pixel_pos(false), get_viewport()->get_window_id());
 			}
 
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
@@ -2072,8 +2072,10 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 	r_col = col;
 }
 
-Vector2i TextEdit::_get_cursor_pixel_pos() {
-	adjust_viewport_to_cursor();
+Vector2i TextEdit::_get_cursor_pixel_pos(bool p_adjust_viewport) {
+	if (p_adjust_viewport) {
+		adjust_viewport_to_cursor();
+	}
 	int row = 1;
 	for (int i = get_first_visible_line(); i < cursor.line; i++) {
 		if (!is_line_hidden(i)) {
