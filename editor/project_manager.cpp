@@ -898,13 +898,16 @@ public:
 		rs_button->set_button_group(rasterizer_button_group);
 		rs_button->set_text(TTR("OpenGL ES 3.0"));
 		rs_button->set_meta("driver_name", "GLES3");
-		rs_button->set_pressed(gles3_viable);
-		// If GLES3 can't be used, don't let users shoot themselves in the foot.
-		rs_button->set_disabled(!gles3_viable);
 		rvb->add_child(rs_button);
-		l = memnew(Label);
-		l->set_text(TTR("Not supported by your GPU drivers."));
-		rvb->add_child(l);
+		if (gles3_viable) {
+			rs_button->set_pressed(true);
+		} else {
+			// If GLES3 can't be used, don't let users shoot themselves in the foot.
+			rs_button->set_disabled(true);
+			l = memnew(Label);
+			l->set_text(TTR("Not supported by your GPU drivers."));
+			rvb->add_child(l);
+		}
 		l = memnew(Label);
 		l->set_text(TTR("Higher visual quality\nAll features available\nIncompatible with older hardware\nNot recommended for web games"));
 		rvb->add_child(l);
