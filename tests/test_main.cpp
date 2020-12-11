@@ -42,6 +42,7 @@
 #include "test_crypto.h"
 #include "test_curve.h"
 #include "test_expression.h"
+#include "test_file_access.h"
 #include "test_gradient.h"
 #include "test_gui.h"
 #include "test_json.h"
