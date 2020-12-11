@@ -102,10 +102,6 @@ void PathFollow::_update_transform(bool p_update_xyz_rot) {
 	if (!c.is_valid())
 		return;
 
-	if (delta_offset == 0) {
-		return;
-	}
-
 	float bl = c->get_baked_length();
 	if (bl == 0.0) {
 		return;
@@ -163,7 +159,7 @@ void PathFollow::_update_transform(bool p_update_xyz_rot) {
 
 		t.origin = pos;
 
-		if (p_update_xyz_rot) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree
+		if (p_update_xyz_rot && delta_offset != 0) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree.
 			Vector3 t_prev = (pos - c->interpolate_baked(offset - delta_offset, cubic)).normalized();
 			Vector3 t_cur = (c->interpolate_baked(offset + delta_offset, cubic) - pos).normalized();
 
