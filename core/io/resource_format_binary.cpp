@@ -102,8 +102,8 @@ void ResourceLoaderBinary::_advance_padding(uint32_t p_len) {
 
 StringName ResourceLoaderBinary::_get_string() {
 	uint32_t id = f->get_32();
-	if (id & 0x80000000) {
-		uint32_t len = id & 0x7FFFFFFF;
+	if (id & 0x8000'0000) {
+		uint32_t len = id & 0x7fff'ffff;
 		if ((int)len > str_buf.size()) {
 			str_buf.resize(len);
 		}
@@ -281,7 +281,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			int name_count = f->get_16();
 			uint32_t subname_count = f->get_16();
 			absolute = subname_count & 0x8000;
-			subname_count &= 0x7FFF;
+			subname_count &= 0x7fff;
 			if (ver_format < FORMAT_VERSION_NO_NODEPATH_PROPERTY) {
 				subname_count += 1; // has a property field, so we should count it as well
 			}
@@ -395,7 +395,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 		case VARIANT_DICTIONARY: {
 			uint32_t len = f->get_32();
 			Dictionary d; //last bit means shared
-			len &= 0x7FFFFFFF;
+			len &= 0x7fff'ffff;
 			for (uint32_t i = 0; i < len; i++) {
 				Variant key;
 				Error err = parse_variant(key);
@@ -410,7 +410,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 		case VARIANT_ARRAY: {
 			uint32_t len = f->get_32();
 			Array a; //last bit means shared
-			len &= 0x7FFFFFFF;
+			len &= 0x7fff'ffff;
 			a.resize(len);
 			for (uint32_t i = 0; i < len; i++) {
 				Variant val;
@@ -1277,7 +1277,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 		} break;
 		case Variant::INT: {
 			int64_t val = p_property;
-			if (val > 0x7FFFFFFF || val < -(int64_t)0x80000000) {
+			if (val > 0x7fff'ffff || val < -(int64_t)0x8000'0000) {
 				f->store_32(VARIANT_INT64);
 				f->store_64(val);
 
@@ -1731,7 +1731,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 void ResourceFormatSaverBinaryInstance::save_unicode_string(FileAccess *f, const String &p_string, bool p_bit_on_len) {
 	CharString utf8 = p_string.utf8();
 	if (p_bit_on_len) {
-		f->store_32((utf8.length() + 1) | 0x80000000);
+		f->store_32((utf8.length() + 1) | 0x8000'0000);
 	} else {
 		f->store_32(utf8.length() + 1);
 	}

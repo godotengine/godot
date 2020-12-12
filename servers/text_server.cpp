@@ -480,7 +480,7 @@ void TextServer::finish_hex_code_box_fonts() {
 Vector2 TextServer::get_hex_code_box_size(int p_size, char32_t p_index) const {
 	int fnt = (p_size < 20) ? 0 : 1;
 
-	float w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3)) * hex_code_box_font_size[fnt].x;
+	float w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xffff) ? 2 : 3)) * hex_code_box_font_size[fnt].x;
 	float h = 2 * hex_code_box_font_size[fnt].y;
 	return Vector2(w + 4, h + 3 + 2 * hex_code_box_font_size[fnt].z);
 }
@@ -500,7 +500,7 @@ void TextServer::draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_po
 	Vector2 pos = p_pos;
 	Rect2 dest = Rect2(Vector2(), Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y));
 
-	float w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3)) * hex_code_box_font_size[fnt].x;
+	float w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xffff) ? 2 : 3)) * hex_code_box_font_size[fnt].x;
 	float h = 2 * hex_code_box_font_size[fnt].y;
 
 	pos.y -= Math::floor((h + 3 + hex_code_box_font_size[fnt].z) * 0.75);
@@ -516,7 +516,7 @@ void TextServer::draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_po
 		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, dest, hex_code_box_font_tex[fnt]->get_rid(), Rect2(Point2(b * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
 		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(0, 1) + Point2(0, hex_code_box_font_size[fnt].z);
 		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, dest, hex_code_box_font_tex[fnt]->get_rid(), Rect2(Point2(a * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
-	} else if (p_index <= 0xFFFF) {
+	} else if (p_index <= 0xffff) {
 		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(0, 0);
 		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, dest, hex_code_box_font_tex[fnt]->get_rid(), Rect2(Point2(d * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
 		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(1, 0);

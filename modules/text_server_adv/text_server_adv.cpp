@@ -867,7 +867,7 @@ int TextServerAdvanced::_convert_pos_inv(const ShapedTextDataAdvanced *p_sd, int
 	int32_t limit = p_pos;
 	if (p_sd->text.length() != p_sd->utf16.length()) {
 		for (int i = 0; i < p_pos; i++) {
-			if (p_sd->text[i] > 0xFFFF) {
+			if (p_sd->text[i] > 0xffff) {
 				limit++;
 			}
 		}

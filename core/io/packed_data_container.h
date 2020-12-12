@@ -37,8 +37,8 @@ class PackedDataContainer : public Resource {
 	GDCLASS(PackedDataContainer, Resource);
 
 	enum {
-		TYPE_DICT = 0xFFFFFFFF,
-		TYPE_ARRAY = 0xFFFFFFFE,
+		TYPE_DICT = 0xffff'ffff,
+		TYPE_ARRAY = 0xffff'fffe,
 	};
 
 	struct DictKey {

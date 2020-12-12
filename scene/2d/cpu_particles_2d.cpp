@@ -506,12 +506,12 @@ static float rand_from_seed(uint32_t &seed) {
 	int k;
 	int s = int(seed);
 	if (s == 0) {
-		s = 305420679;
+		s = 305'420'679;
 	}
 	k = s / 127773;
 	s = 16807 * (s - k * 127773) - 2836 * k;
 	if (s < 0) {
-		s += 2147483647;
+		s += 2'147'483'647;
 	}
 	seed = uint32_t(s);
 	return float(seed % uint32_t(65536)) / 65535.0;

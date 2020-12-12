@@ -527,7 +527,7 @@ NavigationMesh::NavigationMesh() {
 
 	partition_type = SAMPLE_PARTITION_WATERSHED;
 	parsed_geometry_type = PARSED_GEOMETRY_MESH_INSTANCES;
-	collision_mask = 0xFFFFFFFF;
+	collision_mask = 0xffff'ffff;
 	source_geometry_mode = SOURCE_GEOMETRY_NAVMESH_CHILDREN;
 	source_group_name = "navmesh";
 	filter_low_hanging_obstacles = false;

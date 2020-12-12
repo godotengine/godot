@@ -522,13 +522,13 @@ namespace Godot
         /// <param name="rgba">The ulong representing the color.</param>
         public Color(ulong rgba)
         {
-            a = (rgba & 0xFFFF) / 65535.0f;
+            a = (rgba & 0xffff) / 65535.0f;
             rgba >>= 16;
-            b = (rgba & 0xFFFF) / 65535.0f;
+            b = (rgba & 0xffff) / 65535.0f;
             rgba >>= 16;
-            g = (rgba & 0xFFFF) / 65535.0f;
+            g = (rgba & 0xffff) / 65535.0f;
             rgba >>= 16;
-            r = (rgba & 0xFFFF) / 65535.0f;
+            r = (rgba & 0xffff) / 65535.0f;
         }
 
         /// <summary>

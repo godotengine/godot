@@ -528,7 +528,7 @@ private:
 		enum {
 			QUADRANT_SHIFT = 27,
 			SHADOW_INDEX_MASK = (1 << QUADRANT_SHIFT) - 1,
-			SHADOW_INVALID = 0xFFFFFFFF
+			SHADOW_INVALID = 0xffff'ffff,
 		};
 
 		struct Quadrant {

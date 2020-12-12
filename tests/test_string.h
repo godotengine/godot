@@ -352,15 +352,15 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num(3.141593) == "3.141593");
 	CHECK(String::num(3.141593, 3) == "3.142");
 	CHECK(String::num_real(3.141593) == "3.141593");
-	CHECK(String::num_scientific(30000000) == "3e+07");
-	CHECK(String::num_int64(3141593) == "3141593");
-	CHECK(String::num_int64(0xA141593, 16) == "a141593");
-	CHECK(String::num_int64(0xA141593, 16, true) == "A141593");
+	CHECK(String::num_scientific(30'000'000) == "3e+07");
+	CHECK(String::num_int64(3'141'593) == "3141593");
+	CHECK(String::num_int64(0xa141593, 16) == "a141593");
+	CHECK(String::num_int64(0xa141593, 16, true) == "A141593");
 }
 
 TEST_CASE("[String] String to integer") {
 	static const char *nums[4] = { "1237461283", "- 22", "0", " - 1123412" };
-	static const int num[4] = { 1237461283, -22, 0, -1123412 };
+	static const int num[4] = { 1'237'461'283, -22, 0, -1'123'412 };
 
 	for (int i = 0; i < 4; i++) {
 		CHECK(String(nums[i]).to_int() == num[i]);
@@ -369,7 +369,7 @@ TEST_CASE("[String] String to integer") {
 
 TEST_CASE("[String] Hex to integer") {
 	static const char *nums[4] = { "0xFFAE", "22", "0", "AADDAD" };
-	static const int64_t num[4] = { 0xFFAE, 0x22, 0, 0xAADDAD };
+	static const int64_t num[4] = { 0xffae, 0x22, 0, 0xaaddad };
 	static const bool wo_prefix[4] = { false, true, true, true };
 	static const bool w_prefix[4] = { true, false, true, false };
 
@@ -1279,9 +1279,9 @@ TEST_CASE("[String] Is_*") {
 TEST_CASE("[String] humanize_size") {
 	CHECK(String::humanize_size(1000) == "1000 B");
 	CHECK(String::humanize_size(1025) == "1.00 KiB");
-	CHECK(String::humanize_size(1025300) == "1001.2 KiB");
-	CHECK(String::humanize_size(100523550) == "95.86 MiB");
-	CHECK(String::humanize_size(5345555000) == "4.97 GiB");
+	CHECK(String::humanize_size(1'025'300) == "1001.2 KiB");
+	CHECK(String::humanize_size(100'523'550) == "95.86 MiB");
+	CHECK(String::humanize_size(5'345'555'000) == "4.97 GiB");
 }
 } // namespace TestString
 

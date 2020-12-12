@@ -178,7 +178,7 @@ void main() {
 
 	// quickly ensure each probe has a different "offset" for the vogel function, based on integer world position
 	uvec3 h3 = hash3(uvec3(params.world_offset + probe_cell));
-	float offset = hashf3(vec3(h3 & uvec3(0xFFFFF)));
+	float offset = hashf3(vec3(h3 & uvec3(0xfffff)));
 
 	//for a more homogeneous hemisphere, alternate based on history frames
 	uint ray_offset = params.history_index;

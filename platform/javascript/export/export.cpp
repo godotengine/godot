@@ -169,7 +169,7 @@ public:
 			connection = server->take_connection();
 			time = OS::get_singleton()->get_ticks_usec();
 		}
-		if (OS::get_singleton()->get_ticks_usec() - time > 1000000) {
+		if (OS::get_singleton()->get_ticks_usec() - time > 1'000'000) {
 			_clear_client();
 			return;
 		}

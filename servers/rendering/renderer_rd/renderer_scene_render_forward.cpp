@@ -873,7 +873,7 @@ void RendererSceneRenderForward::_fill_instances(RenderList::Element **p_element
 		}
 
 		if (p_for_depth) {
-			id.gi_offset = 0xFFFFFFFF;
+			id.gi_offset = 0xffff'ffff;
 			continue;
 		}
 
@@ -892,7 +892,7 @@ void RendererSceneRenderForward::_fill_instances(RenderList::Element **p_element
 					id.flags |= INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP;
 				}
 			} else {
-				id.gi_offset = 0xFFFFFFFF;
+				id.gi_offset = 0xffff'ffff;
 			}
 		} else if (!e->instance->lightmap_sh.empty()) {
 			if (lightmap_captures_used < scene_state.max_lightmap_captures) {
@@ -932,15 +932,15 @@ void RendererSceneRenderForward::_fill_instances(RenderList::Element **p_element
 					}
 				}
 				if (written == 0) {
-					id.gi_offset = 0xFFFFFFFF;
+					id.gi_offset = 0xffff'ffff;
 				} else if (written == 1) {
-					id.gi_offset |= 0xFFFF0000;
+					id.gi_offset |= 0xffff'0000;
 				}
 			} else {
 				if (p_has_sdfgi && (e->instance->baked_light || e->instance->dynamic_gi)) {
 					id.flags |= INSTANCE_DATA_FLAG_USE_SDFGI;
 				}
-				id.gi_offset = 0xFFFFFFFF;
+				id.gi_offset = 0xffff'ffff;
 			}
 		}
 	}
@@ -1018,7 +1018,7 @@ void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw
 			case RS::INSTANCE_PARTICLES: {
 				RID mesh = storage->particles_get_draw_pass_mesh(e->instance->base, e->surface_index >> 16);
 				ERR_CONTINUE(!mesh.is_valid()); //should be a bug
-				primitive = storage->mesh_surface_get_primitive(mesh, e->surface_index & 0xFFFF);
+				primitive = storage->mesh_surface_get_primitive(mesh, e->surface_index & 0xffff);
 
 				xforms_uniform_set = storage->particles_get_instance_buffer_uniform_set(e->instance->base, default_shader_rd, TRANSFORMS_UNIFORM_SET);
 
@@ -1092,7 +1092,7 @@ void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw
 			case RS::INSTANCE_PARTICLES: {
 				RID mesh = storage->particles_get_draw_pass_mesh(e->instance->base, e->surface_index >> 16);
 				ERR_CONTINUE(!mesh.is_valid()); //should be a bug
-				storage->mesh_surface_get_arrays_and_format(mesh, e->surface_index & 0xFFFF, pipeline->get_vertex_input_mask(), vertex_array_rd, index_array_rd, vertex_format);
+				storage->mesh_surface_get_arrays_and_format(mesh, e->surface_index & 0xffff, pipeline->get_vertex_input_mask(), vertex_array_rd, index_array_rd, vertex_format);
 			} break;
 			default: {
 				ERR_CONTINUE(true); //should be a bug

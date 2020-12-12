@@ -426,18 +426,18 @@ TEST_CASE("[Expression] Unusual expressions") {
 	// The tests below currently crash the engine.
 	//
 	//CHECK_MESSAGE(
-	//		expression.parse("(-9223372036854775807 - 1) % -1") == OK,
+	//		expression.parse("(-9'223'372'036'854'775'807 - 1) % -1") == OK,
 	//		"The expression should parse successfully.");
 	//CHECK_MESSAGE(
 	//		int64_t(expression.execute()) == 0,
-	//		"`(-9223372036854775807 - 1) % -1` should return the expected result.");
+	//		"`(-9'223'372'036'854'775'807 - 1) % -1` should return the expected result.");
 	//
 	//CHECK_MESSAGE(
-	//		expression.parse("(-9223372036854775807 - 1) / -1") == OK,
+	//		expression.parse("(-9'223'372'036'854'775'807 - 1) / -1") == OK,
 	//		"The expression should parse successfully.");
 	//CHECK_MESSAGE(
 	//		int64_t(expression.execute()) == 0,
-	//		"`(-9223372036854775807 - 1) / -1` should return the expected result.");
+	//		"`(-9'223'372'036'854'775'807 - 1) / -1` should return the expected result.");
 }
 } // namespace TestExpression
 

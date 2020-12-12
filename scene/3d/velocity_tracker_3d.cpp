@@ -73,7 +73,7 @@ Vector3 VelocityTracker3D::get_tracked_linear_velocity() const {
 			base_time = float(base - position_history[0].frame) / Engine::get_singleton()->get_iterations_per_second();
 		} else {
 			uint64_t base = Engine::get_singleton()->get_idle_frame_ticks();
-			base_time = double(base - position_history[0].frame) / 1000000.0;
+			base_time = double(base - position_history[0].frame) / 1'000'000.0;
 		}
 	}
 
@@ -85,7 +85,7 @@ Vector3 VelocityTracker3D::get_tracked_linear_velocity() const {
 		if (physics_step) {
 			delta = float(diff) / Engine::get_singleton()->get_iterations_per_second();
 		} else {
-			delta = double(diff) / 1000000.0;
+			delta = double(diff) / 1'000'000.0;
 		}
 
 		if (base_time + time_accum + delta > max_time) {

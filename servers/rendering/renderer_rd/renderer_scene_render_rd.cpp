@@ -236,7 +236,7 @@ void RendererSceneRenderRD::_sdfgi_erase(RenderBuffers *rb) {
 	rb->sdfgi = nullptr;
 }
 
-const Vector3i RendererSceneRenderRD::SDFGI::Cascade::DIRTY_ALL = Vector3i(0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF);
+const Vector3i RendererSceneRenderRD::SDFGI::Cascade::DIRTY_ALL = Vector3i(0x7fff'ffff, 0x7fff'ffff, 0x7fff'ffff);
 
 void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment, const Vector3 &p_world_position) {
 	Environment *env = environment_owner.getornull(p_environment);
@@ -3543,7 +3543,7 @@ void RendererSceneRenderRD::shadow_atlas_set_quadrant_subdivision(RID p_atlas, i
 	ERR_FAIL_INDEX(p_subdivision, 16384);
 
 	uint32_t subdiv = next_power_of_2(p_subdivision);
-	if (subdiv & 0xaaaaaaaa) { //sqrt(subdiv) must be integer
+	if (subdiv & 0xaaaa'aaaa) { //sqrt(subdiv) must be integer
 		subdiv <<= 1;
 	}
 

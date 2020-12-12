@@ -218,25 +218,25 @@ void Color::invert() {
 }
 
 Color Color::hex(uint32_t p_hex) {
-	float a = (p_hex & 0xFF) / 255.0;
+	float a = (p_hex & 0xff) / 255.0;
 	p_hex >>= 8;
-	float b = (p_hex & 0xFF) / 255.0;
+	float b = (p_hex & 0xff) / 255.0;
 	p_hex >>= 8;
-	float g = (p_hex & 0xFF) / 255.0;
+	float g = (p_hex & 0xff) / 255.0;
 	p_hex >>= 8;
-	float r = (p_hex & 0xFF) / 255.0;
+	float r = (p_hex & 0xff) / 255.0;
 
 	return Color(r, g, b, a);
 }
 
 Color Color::hex64(uint64_t p_hex) {
-	float a = (p_hex & 0xFFFF) / 65535.0;
+	float a = (p_hex & 0xffff) / 65535.0;
 	p_hex >>= 16;
-	float b = (p_hex & 0xFFFF) / 65535.0;
+	float b = (p_hex & 0xffff) / 65535.0;
 	p_hex >>= 16;
-	float g = (p_hex & 0xFFFF) / 65535.0;
+	float g = (p_hex & 0xffff) / 65535.0;
 	p_hex >>= 16;
-	float r = (p_hex & 0xFFFF) / 65535.0;
+	float r = (p_hex & 0xffff) / 65535.0;
 
 	return Color(r, g, b, a);
 }

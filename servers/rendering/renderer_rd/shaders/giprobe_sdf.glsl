@@ -8,7 +8,7 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 #define MAX_DISTANCE 100000
 
-#define NO_CHILDREN 0xFFFFFFFF
+#define NO_CHILDREN 0xffffffff
 #define GREY_VEC vec3(0.33333, 0.33333, 0.33333)
 
 struct CellChildren {

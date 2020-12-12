@@ -74,7 +74,7 @@
 #endif
 
 #define MIN_Z 0.01
-#define MAX_Z 1000000.0
+#define MAX_Z 1'000'000.0
 
 #define MIN_FOV 0.01
 #define MAX_FOV 179
@@ -5160,12 +5160,12 @@ void Node3DEditor::_init_indicators() {
 			// To both allow having a large origin size and avoid jitter
 			// at small scales, we should segment the line into pieces.
 			// 3 pieces seems to do the trick, and let's use powers of 2.
-			origin_points.push_back(axis * 1048576);
+			origin_points.push_back(axis * 1'048'576);
 			origin_points.push_back(axis * 1024);
 			origin_points.push_back(axis * 1024);
 			origin_points.push_back(axis * -1024);
 			origin_points.push_back(axis * -1024);
-			origin_points.push_back(axis * -1048576);
+			origin_points.push_back(axis * -1'048'576);
 		}
 
 		grid_enable[0] = EditorSettings::get_singleton()->get("editors/3d/grid_xy_plane");

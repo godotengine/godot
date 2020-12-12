@@ -128,7 +128,7 @@ String EditorProfiler::_get_time_as_text(const Metric &m, float p_time, int p_ca
 
 Color EditorProfiler::_get_color_from_signature(const StringName &p_signature) const {
 	Color bc = get_theme_color("error_color", "Editor");
-	double rot = ABS(double(p_signature.hash()) / double(0x7FFFFFFF));
+	double rot = ABS(double(p_signature.hash()) / double(0x7fff'ffff));
 	Color c;
 	c.set_hsv(rot, bc.get_s(), bc.get_v());
 	return c.lerp(get_theme_color("base_color", "Editor"), 0.07);

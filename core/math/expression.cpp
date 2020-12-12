@@ -982,7 +982,7 @@ Expression::ENode *Expression::_parse_expression() {
 
 	while (expression.size() > 1) {
 		int next_op = -1;
-		int min_priority = 0xFFFFF;
+		int min_priority = 0xfffff;
 		bool is_unary = false;
 
 		for (int i = 0; i < expression.size(); i++) {

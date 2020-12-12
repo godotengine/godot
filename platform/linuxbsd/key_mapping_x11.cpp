@@ -1132,8 +1132,8 @@ unsigned int KeyMappingX11::get_unicode_from_keysym(KeySym p_keysym) {
 
 	/* Unicode (may be present)*/
 
-	if ((p_keysym & 0xff000000) == 0x01000000) {
-		return p_keysym & 0x00ffffff;
+	if ((p_keysym & 0xff00'0000) == 0x0100'0000) {
+		return p_keysym & 0x00ff'ffff;
 	}
 
 	int middle, low = 0, high = _KEYSYM_MAX - 1;
@@ -1939,5 +1939,5 @@ KeySym KeyMappingX11::get_keysym_from_unicode(unsigned int p_unicode) {
 	} while (high >= low);
 
 	// if not found, let's hope X understands it as unicode
-	return p_unicode | 0x01000000;
+	return p_unicode | 0x0100'0000;
 }

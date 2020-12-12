@@ -71,7 +71,7 @@ static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, 
 	// Read and check ELF magic number
 	{
 		uint32_t magic = f->get_32();
-		if (magic != 0x464c457f) { // 0x7F + "ELF"
+		if (magic != 0x46'4c'45'7f) { // 0x7F + "ELF"
 			f->close();
 			return ERR_FILE_CORRUPT;
 		}
@@ -81,7 +81,7 @@ static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, 
 
 	int bits = f->get_8() * 32;
 
-	if (bits == 32 && p_embedded_size >= 0x100000000) {
+	if (bits == 32 && p_embedded_size >= 0x1'0000'0000) {
 		f->close();
 		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "32-bit executables cannot have embedded data >= 4 GiB.");
 	}

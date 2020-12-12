@@ -795,7 +795,7 @@ private:
 
 	struct ParticlesCollision {
 		RS::ParticlesCollisionType type = RS::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT;
-		uint32_t cull_mask = 0xFFFFFFFF;
+		uint32_t cull_mask = 0xffff'ffff;
 		float radius = 1.0;
 		Vector3 extents = Vector3(1, 1, 1);
 		float attractor_strength = 1.0;
@@ -851,7 +851,7 @@ private:
 		bool reverse_cull = false;
 		RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DYNAMIC;
 		uint32_t max_sdfgi_cascade = 2;
-		uint32_t cull_mask = 0xFFFFFFFF;
+		uint32_t cull_mask = 0xffff'ffff;
 		RS::LightOmniShadowMode omni_shadow_mode = RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
 		RS::LightDirectionalShadowMode directional_shadow_mode = RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
 		RS::LightDirectionalShadowDepthRangeMode directional_range_mode = RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE;

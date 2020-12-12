@@ -257,7 +257,7 @@ void PhysicsShapeQueryParameters2D::_bind_methods() {
 
 PhysicsShapeQueryParameters2D::PhysicsShapeQueryParameters2D() {
 	margin = 0;
-	collision_mask = 0x7FFFFFFF;
+	collision_mask = 0x7fff'ffff;
 	collide_with_bodies = true;
 	collide_with_areas = false;
 }
@@ -409,9 +409,9 @@ PhysicsDirectSpaceState2D::PhysicsDirectSpaceState2D() {
 }
 
 void PhysicsDirectSpaceState2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("intersect_point", "point", "max_results", "exclude", "collision_layer", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState2D::_intersect_point, DEFVAL(32), DEFVAL(Array()), DEFVAL(0x7FFFFFFF), DEFVAL(true), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("intersect_point_on_canvas", "point", "canvas_instance_id", "max_results", "exclude", "collision_layer", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState2D::_intersect_point_on_canvas, DEFVAL(32), DEFVAL(Array()), DEFVAL(0x7FFFFFFF), DEFVAL(true), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("intersect_ray", "from", "to", "exclude", "collision_layer", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState2D::_intersect_ray, DEFVAL(Array()), DEFVAL(0x7FFFFFFF), DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("intersect_point", "point", "max_results", "exclude", "collision_layer", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState2D::_intersect_point, DEFVAL(32), DEFVAL(Array()), DEFVAL(0x7fff'ffff), DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("intersect_point_on_canvas", "point", "canvas_instance_id", "max_results", "exclude", "collision_layer", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState2D::_intersect_point_on_canvas, DEFVAL(32), DEFVAL(Array()), DEFVAL(0x7fff'ffff), DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("intersect_ray", "from", "to", "exclude", "collision_layer", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState2D::_intersect_ray, DEFVAL(Array()), DEFVAL(0x7fff'ffff), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("intersect_shape", "shape", "max_results"), &PhysicsDirectSpaceState2D::_intersect_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("cast_motion", "shape"), &PhysicsDirectSpaceState2D::_cast_motion);
 	ClassDB::bind_method(D_METHOD("collide_shape", "shape", "max_results"), &PhysicsDirectSpaceState2D::_collide_shape, DEFVAL(32));

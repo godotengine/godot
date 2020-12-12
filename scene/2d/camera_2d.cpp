@@ -753,10 +753,10 @@ Camera2D::Camera2D() {
 	anchor_mode = ANCHOR_MODE_DRAG_CENTER;
 	rotating = false;
 	current = false;
-	limit[MARGIN_LEFT] = -10000000;
-	limit[MARGIN_TOP] = -10000000;
-	limit[MARGIN_RIGHT] = 10000000;
-	limit[MARGIN_BOTTOM] = 10000000;
+	limit[MARGIN_LEFT] = -10'000'000;
+	limit[MARGIN_TOP] = -10'000'000;
+	limit[MARGIN_RIGHT] = 10'000'000;
+	limit[MARGIN_BOTTOM] = 10'000'000;
 
 	drag_margin[MARGIN_LEFT] = 0.2;
 	drag_margin[MARGIN_TOP] = 0.2;

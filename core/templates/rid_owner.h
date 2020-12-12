@@ -103,7 +103,7 @@ public:
 			//initialize
 			for (uint32_t i = 0; i < elements_in_chunk; i++) {
 				//dont initialize chunk
-				validator_chunks[chunk_count][i] = 0xFFFFFFFF;
+				validator_chunks[chunk_count][i] = 0xffff'ffff;
 				free_list_chunks[chunk_count][i] = alloc_count + i;
 			}
 
@@ -118,7 +118,7 @@ public:
 		T *ptr = &chunks[free_chunk][free_element];
 		memnew_placement(ptr, T(p_value));
 
-		uint32_t validator = (uint32_t)(_gen_id() & 0xFFFFFFFF);
+		uint32_t validator = (uint32_t)(_gen_id() & 0xffff'ffff);
 		uint64_t id = validator;
 		id <<= 32;
 		id |= free_index;
@@ -139,7 +139,7 @@ public:
 		}
 
 		uint64_t id = p_rid.get_id();
-		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
+		uint32_t idx = uint32_t(id & 0xffff'ffff);
 		if (unlikely(idx >= max_alloc)) {
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
@@ -173,7 +173,7 @@ public:
 		}
 
 		uint64_t id = p_rid.get_id();
-		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
+		uint32_t idx = uint32_t(id & 0xffff'ffff);
 		if (unlikely(idx >= max_alloc)) {
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
@@ -201,7 +201,7 @@ public:
 		}
 
 		uint64_t id = p_rid.get_id();
-		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
+		uint32_t idx = uint32_t(id & 0xffff'ffff);
 		if (unlikely(idx >= max_alloc)) {
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
@@ -221,7 +221,7 @@ public:
 		}
 
 		chunks[idx_chunk][idx_element].~T();
-		validator_chunks[idx_chunk][idx_element] = 0xFFFFFFFF; // go invalid
+		validator_chunks[idx_chunk][idx_element] = 0xffff'ffff; // go invalid
 
 		alloc_count--;
 		free_list_chunks[alloc_count / elements_in_chunk][alloc_count % elements_in_chunk] = idx;
@@ -269,7 +269,7 @@ public:
 		}
 		for (size_t i = 0; i < max_alloc; i++) {
 			uint64_t validator = validator_chunks[i / elements_in_chunk][i % elements_in_chunk];
-			if (validator != 0xFFFFFFFF) {
+			if (validator != 0xffff'ffff) {
 				p_owned->push_back(_make_from_id((validator << 32) | i));
 			}
 		}
@@ -300,7 +300,7 @@ public:
 
 			for (size_t i = 0; i < max_alloc; i++) {
 				uint64_t validator = validator_chunks[i / elements_in_chunk][i % elements_in_chunk];
-				if (validator != 0xFFFFFFFF) {
+				if (validator != 0xffff'ffff) {
 					chunks[i / elements_in_chunk][i % elements_in_chunk].~T();
 				}
 			}

@@ -150,8 +150,8 @@ void main() {
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_SKELETON)) {
 		//multimesh, instances are for it
 
-		uvec2 bones_01 = uvec2(bone_attrib.x & 0xFFFF, bone_attrib.x >> 16) * 3;
-		uvec2 bones_23 = uvec2(bone_attrib.y & 0xFFFF, bone_attrib.y >> 16) * 3;
+		uvec2 bones_01 = uvec2(bone_attrib.x & 0xffff, bone_attrib.x >> 16) * 3;
+		uvec2 bones_23 = uvec2(bone_attrib.y & 0xffff, bone_attrib.y >> 16) * 3;
 		vec2 weights_01 = unpackUnorm2x16(bone_attrib.z);
 		vec2 weights_23 = unpackUnorm2x16(bone_attrib.w);
 
@@ -2146,7 +2146,7 @@ FRAGMENT_SHADER_CODE
 
 		// helper constants, compute once
 
-		uint cascade = 0xFFFFFFFF;
+		uint cascade = 0xffffffff;
 		vec3 cascade_pos;
 		vec3 cascade_normal;
 
@@ -2195,7 +2195,7 @@ FRAGMENT_SHADER_CODE
 
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GIPROBE)) { // process giprobes
 
-		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
+		uint index1 = instances.data[instance_index].gi_offset & 0xffff;
 		vec3 ref_vec = normalize(reflect(normalize(vertex), normal));
 		//find arbitrary tangent and bitangent, then build a matrix
 		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
@@ -2209,7 +2209,7 @@ FRAGMENT_SHADER_CODE
 
 		uint index2 = instances.data[instance_index].gi_offset >> 16;
 
-		if (index2 != 0xFFFF) {
+		if (index2 != 0xffff) {
 			gi_probe_compute(index2, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
 		}
 
@@ -2788,7 +2788,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef MODE_RENDER_GIPROBE
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GIPROBE)) { // process giprobes
-		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
+		uint index1 = instances.data[instance_index].gi_offset & 0xffff;
 		uint index2 = instances.data[instance_index].gi_offset >> 16;
 		giprobe_buffer.x = index1 & 0xFF;
 		giprobe_buffer.y = index2 & 0xFF;

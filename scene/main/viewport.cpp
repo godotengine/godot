@@ -551,7 +551,7 @@ void Viewport::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (get_tree()->is_debugging_collisions_hint() && contact_2d_debug.is_valid()) {
 				RenderingServer::get_singleton()->canvas_item_clear(contact_2d_debug);
-				RenderingServer::get_singleton()->canvas_item_set_draw_index(contact_2d_debug, 0xFFFFF); //very high index
+				RenderingServer::get_singleton()->canvas_item_set_draw_index(contact_2d_debug, 0xfffff); //very high index
 
 				Vector<Vector2> points = PhysicsServer2D::get_singleton()->space_get_contacts(find_world_2d()->get_space());
 				int point_count = PhysicsServer2D::get_singleton()->space_get_contact_count(find_world_2d()->get_space());
@@ -696,7 +696,7 @@ void Viewport::_notification(int p_what) {
 
 							Vector2 point = canvas_transform.affine_inverse().xform(pos);
 
-							int rc = ss2d->intersect_point_on_canvas(point, canvas_layer_id, res, 64, Set<RID>(), 0xFFFFFFFF, true, true, true);
+							int rc = ss2d->intersect_point_on_canvas(point, canvas_layer_id, res, 64, Set<RID>(), 0xffff'ffff, true, true, true);
 							for (int i = 0; i < rc; i++) {
 								if (res[i].collider_id.is_valid() && res[i].collider) {
 									CollisionObject2D *co = Object::cast_to<CollisionObject2D>(res[i].collider);
@@ -784,7 +784,7 @@ void Viewport::_notification(int p_what) {
 
 							PhysicsDirectSpaceState3D *space = PhysicsServer3D::get_singleton()->space_get_direct_state(find_world_3d()->get_space());
 							if (space) {
-								bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true, true, true);
+								bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xffff'ffff, true, true, true);
 								ObjectID new_collider;
 								if (col) {
 									CollisionObject3D *co = Object::cast_to<CollisionObject3D>(result.collider);

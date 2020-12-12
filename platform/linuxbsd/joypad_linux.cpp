@@ -191,7 +191,7 @@ void JoypadLinux::monitor_joypads() {
 				}
 			}
 		}
-		usleep(1000000); // 1s
+		usleep(1'000'000); // 1s
 	}
 }
 

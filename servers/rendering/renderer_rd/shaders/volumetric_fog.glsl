@@ -166,7 +166,7 @@ vec3 hash3f(uvec3 x) {
 	x = ((x >> 16) ^ x) * 0x45d9f3b;
 	x = ((x >> 16) ^ x) * 0x45d9f3b;
 	x = (x >> 16) ^ x;
-	return vec3(x & 0xFFFFF) / vec3(float(0xFFFFF));
+	return vec3(x & 0xfffff) / vec3(float(0xfffff));
 }
 
 void main() {

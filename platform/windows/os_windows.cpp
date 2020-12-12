@@ -347,8 +347,8 @@ OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 
 double OS_Windows::get_unix_time() const {
 	// 1 Windows tick is 100ns
-	const uint64_t WINDOWS_TICKS_PER_SECOND = 10000000;
-	const uint64_t TICKS_TO_UNIX_EPOCH = 116444736000000000LL;
+	const uint64_t WINDOWS_TICKS_PER_SECOND = 10'000'000;
+	const uint64_t TICKS_TO_UNIX_EPOCH = 116'444'736'000'000'000LL;
 
 	SYSTEMTIME st;
 	GetSystemTime(&st);
@@ -379,7 +379,7 @@ uint64_t OS_Windows::get_ticks_usec() const {
 	// Divide by frequency to get the time in seconds
 	// original calculation shown below is subject to overflow
 	// with high ticks_per_second and a number of days since the last reboot.
-	// time = ticks * 1000000L / ticks_per_second;
+	// time = ticks * 1'000'000L / ticks_per_second;
 
 	// we can prevent this by either using 128 bit math
 	// or separating into a calculation for seconds, and the fraction
@@ -389,10 +389,10 @@ uint64_t OS_Windows::get_ticks_usec() const {
 	uint64_t leftover = ticks % ticks_per_second;
 
 	// remainder
-	uint64_t time = (leftover * 1000000L) / ticks_per_second;
+	uint64_t time = (leftover * 1'000'000L) / ticks_per_second;
 
 	// seconds
-	time += seconds * 1000000L;
+	time += seconds * 1'000'000L;
 
 	// Subtract the time at game start to get
 	// the time since the game started
