@@ -94,7 +94,7 @@ def build_res_file(target, source, env):
             out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
             if len(out[1]):
                 return 1
-        except:
+        except Exception:
             return 1
     return 0
 

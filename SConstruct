@@ -484,13 +484,13 @@ if selected_platform in platform_list:
                 doc_path = config.get_doc_path()
                 for c in doc_classes:
                     env.doc_class_path[c] = path + "/" + doc_path
-            except:
+            except Exception:
                 pass
             # Get icon paths (if present)
             try:
                 icons_path = config.get_icons_path()
                 env.module_icons_paths.append(path + "/" + icons_path)
-            except:
+            except Exception:
                 # Default path for module icons
                 env.module_icons_paths.append(path + "/" + "icons")
             modules_enabled[name] = path

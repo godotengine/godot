@@ -27,7 +27,7 @@ if "SCRIPT_AES256_ENCRYPTION_KEY" in os.environ:
             txts = "0x" + e[i * 2 : i * 2 + 2]
             try:
                 int(txts, 16)
-            except:
+            except Exception:
                 ec_valid = False
             txt += txts
     if not ec_valid:
