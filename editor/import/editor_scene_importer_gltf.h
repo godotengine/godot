@@ -38,7 +38,7 @@
 
 class AnimationPlayer;
 class BoneAttachment3D;
-class MeshInstance3D;
+class EditorSceneImporterMeshNode;
 
 class EditorSceneImporterGLTF : public EditorSceneImporter {
 	GDCLASS(EditorSceneImporterGLTF, EditorSceneImporter);
@@ -199,7 +199,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	};
 
 	struct GLTFMesh {
-		Ref<ArrayMesh> mesh;
+		Ref<EditorSceneImporterMesh> mesh;
 		Vector<float> blend_weights;
 	};
 
@@ -262,7 +262,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<GLTFAccessor> accessors;
 
 		Vector<GLTFMesh> meshes; //meshes are loaded directly, no reason not to.
-		Vector<Ref<Material>> materials;
+		Vector<Ref<StandardMaterial3D>> materials;
 
 		String scene_name;
 		Vector<int> root_nodes;
@@ -355,7 +355,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	Error _parse_animations(GLTFState &state);
 
 	BoneAttachment3D *_generate_bone_attachment(GLTFState &state, Skeleton3D *skeleton, const GLTFNodeIndex node_index);
-	MeshInstance3D *_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	EditorSceneImporterMeshNode *_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Camera3D *_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Light3D *_generate_light(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Node3D *_generate_spatial(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);

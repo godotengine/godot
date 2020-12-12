@@ -970,8 +970,6 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 		return OK;
 	}
 
-	uint32_t mesh_flags = 0;
-
 	Array meshes = state.json["meshes"];
 	for (GLTFMeshIndex i = 0; i < meshes.size(); i++) {
 		print_verbose("glTF: Parsing mesh: " + itos(i));
@@ -979,6 +977,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 
 		GLTFMesh mesh;
 		mesh.mesh.instance();
+		bool has_vertex_color = false;
 
 		ERR_FAIL_COND_V(!d.has("primitives"), ERR_PARSE_ERROR);
 
@@ -1034,6 +1033,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 			}
 			if (a.has("COLOR_0")) {
 				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(state, a["COLOR_0"], true);
+				has_vertex_color = true;
 			}
 			if (a.has("JOINTS_0")) {
 				array[Mesh::ARRAY_BONES] = _decode_accessor_as_ints(state, a["JOINTS_0"], true);
@@ -1112,7 +1112,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 
 				//ideally BLEND_SHAPE_MODE_RELATIVE since gltf2 stores in displacement
 				//but it could require a larger refactor?
-				mesh.mesh->set_blend_shape_mode(ArrayMesh::BLEND_SHAPE_MODE_NORMALIZED);
+				mesh.mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
 
 				if (j == 0) {
 					const Array &target_names = extras.has("targetNames") ? (Array)extras["targetNames"] : Array();
@@ -1226,21 +1226,25 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 			}
 
 			//just add it
-			mesh.mesh->add_surface_from_arrays(primitive, array, morphs, Dictionary(), mesh_flags);
 
+			Ref<Material> mat;
 			if (p.has("material")) {
 				const int material = p["material"];
 				ERR_FAIL_INDEX_V(material, state.materials.size(), ERR_FILE_CORRUPT);
-				const Ref<Material> &mat = state.materials[material];
+				Ref<StandardMaterial3D> mat3d = state.materials[material];
+				if (has_vertex_color) {
+					mat3d->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+				}
+				mat = mat3d;
 
-				mesh.mesh->surface_set_material(mesh.mesh->get_surface_count() - 1, mat);
-			} else {
-				Ref<StandardMaterial3D> mat;
-				mat.instance();
-				mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-
-				mesh.mesh->surface_set_material(mesh.mesh->get_surface_count() - 1, mat);
+			} else if (has_vertex_color) {
+				Ref<StandardMaterial3D> mat3d;
+				mat3d.instance();
+				mat3d->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+				mat = mat3d;
 			}
+
+			mesh.mesh->add_surface(primitive, array, morphs, Dictionary(), mat);
 		}
 
 		mesh.blend_weights.resize(mesh.mesh->get_blend_shape_count());
@@ -1440,7 +1444,8 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 		if (d.has("name")) {
 			material->set_name(d["name"]);
 		}
-		material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		//don't do this here only if vertex color exists
+		//material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 
 		if (d.has("pbrMetallicRoughness")) {
 			const Dictionary &mr = d["pbrMetallicRoughness"];
@@ -2586,12 +2591,12 @@ BoneAttachment3D *EditorSceneImporterGLTF::_generate_bone_attachment(GLTFState &
 	return bone_attachment;
 }
 
-MeshInstance3D *EditorSceneImporterGLTF::_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index) {
+EditorSceneImporterMeshNode *EditorSceneImporterGLTF::_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index) {
 	const GLTFNode *gltf_node = state.nodes[node_index];
 
 	ERR_FAIL_INDEX_V(gltf_node->mesh, state.meshes.size(), nullptr);
 
-	MeshInstance3D *mi = memnew(MeshInstance3D);
+	EditorSceneImporterMeshNode *mi = memnew(EditorSceneImporterMeshNode);
 	print_verbose("glTF: Creating mesh for: " + gltf_node->name);
 
 	GLTFMesh &mesh = state.meshes.write[gltf_node->mesh];
@@ -3058,7 +3063,7 @@ void EditorSceneImporterGLTF::_process_mesh_instances(GLTFState &state, Node3D *
 			const GLTFSkinIndex skin_i = node->skin;
 
 			Map<GLTFNodeIndex, Node *>::Element *mi_element = state.scene_nodes.find(node_i);
-			MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(mi_element->get());
+			EditorSceneImporterMeshNode *mi = Object::cast_to<EditorSceneImporterMeshNode>(mi_element->get());
 			ERR_FAIL_COND(mi == nullptr);
 
 			const GLTFSkeletonIndex skel_i = state.skins[node->skin].skeleton;
