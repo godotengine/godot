@@ -222,6 +222,8 @@ private:
 	void _animation_process(float p_delta);
 
 	void _node_removed(Node *p_node);
+	void _pause_playing_caches();
+	void _resume_playing_caches();
 	void _stop_playing_caches();
 
 	// bind helpers
@@ -243,6 +245,7 @@ private:
 	void _set_process(bool p_process, bool p_force = false);
 
 	bool playing = false;
+	bool paused = false;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -277,7 +280,9 @@ public:
 	void queue(const StringName &p_name);
 	Vector<String> get_queue();
 	void clear_queue();
-	void stop(bool p_reset = true);
+	void pause();
+	void resume();
+	void stop();
 	bool is_playing() const;
 	String get_current_animation() const;
 	void set_current_animation(const String &p_anim);

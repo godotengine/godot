@@ -1167,24 +1167,10 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 		}
 	}
 
-	if (get_current_animation() != p_name) {
-		_stop_playing_caches();
-	}
+	_stop_playing_caches();
 
 	c.current.from = &animation_set[name];
-
-	if (c.assigned != name) { // reset
-		c.current.pos = p_from_end ? c.current.from->animation->get_length() : 0;
-	} else {
-		if (p_from_end && c.current.pos == 0) {
-			// Animation reset BUT played backwards, set position to the end
-			c.current.pos = c.current.from->animation->get_length();
-		} else if (!p_from_end && c.current.pos == c.current.from->animation->get_length()) {
-			// Animation resumed but already ended, set position to the beginning
-			c.current.pos = 0;
-		}
-	}
-
+	c.current.pos = p_from_end ? c.current.from->animation->get_length() : 0;
 	c.current.speed_scale = p_custom_scale;
 	c.assigned = name;
 	c.seeked = false;
@@ -1195,6 +1181,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 	}
 	_set_process(true); // always process when starting an animation
 	playing = true;
+	paused = false;
 
 	emit_signal(SceneStringNames::get_singleton()->animation_started, c.assigned);
 
@@ -1241,18 +1228,37 @@ String AnimationPlayer::get_assigned_animation() const {
 	return playback.assigned;
 }
 
-void AnimationPlayer::stop(bool p_reset) {
-	_stop_playing_caches();
-	Playback &c = playback;
-	c.blend.clear();
-	if (p_reset) {
-		c.current.from = nullptr;
-		c.current.speed_scale = 1;
-		c.current.pos = 0;
+void AnimationPlayer::pause() {
+	if (!playing) {
+		return;
 	}
+	_pause_playing_caches();
+	_set_process(false);
+	playing = false;
+	paused = true;
+}
+
+void AnimationPlayer::resume() {
+	if (!paused) {
+		return;
+	}
+	_resume_playing_caches();
+	_set_process(true);
+	playing = true;
+	paused = false;
+}
+
+void AnimationPlayer::stop() {
+	playback.blend.clear();
+	playback.current.pos = 0;
+	_animation_process(0);
+	_stop_playing_caches();
+	playback.current.from = nullptr;
+	playback.current.speed_scale = 1;
 	_set_process(false);
 	queued.clear();
 	playing = false;
+	paused = false;
 }
 
 void AnimationPlayer::set_speed_scale(float p_speed) {
@@ -1322,6 +1328,36 @@ void AnimationPlayer::_animation_changed() {
 	emit_signal("caches_cleared");
 	if (is_playing()) {
 		playback.seeked = true; //need to restart stuff, like audio
+	}
+}
+
+void AnimationPlayer::_pause_playing_caches() {
+	for (Set<TrackNodeCache *>::Element *E = playing_caches.front(); E; E = E->next()) {
+		if (E->get()->node && E->get()->audio_playing) {
+			E->get()->node->call("stop");
+		}
+		if (E->get()->node && E->get()->animation_playing) {
+			AnimationPlayer *player = Object::cast_to<AnimationPlayer>(E->get()->node);
+			if (!player) {
+				continue;
+			}
+			player->pause();
+		}
+	}
+}
+
+void AnimationPlayer::_resume_playing_caches() {
+	for (Set<TrackNodeCache *>::Element *E = playing_caches.front(); E; E = E->next()) {
+		if (E->get()->node && E->get()->audio_playing) {
+			E->get()->node->call("play", playback.current.pos);
+		}
+		if (E->get()->node && E->get()->animation_playing) {
+			AnimationPlayer *player = Object::cast_to<AnimationPlayer>(E->get()->node);
+			if (!player) {
+				continue;
+			}
+			player->resume();
+		}
 	}
 }
 
@@ -1606,7 +1642,9 @@ void AnimationPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("play", "name", "custom_blend", "custom_speed", "from_end"), &AnimationPlayer::play, DEFVAL(""), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("play_backwards", "name", "custom_blend"), &AnimationPlayer::play_backwards, DEFVAL(""), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("stop", "reset"), &AnimationPlayer::stop, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("pause"), &AnimationPlayer::pause);
+	ClassDB::bind_method(D_METHOD("resume"), &AnimationPlayer::resume);
+	ClassDB::bind_method(D_METHOD("stop"), &AnimationPlayer::stop);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimationPlayer::is_playing);
 
 	ClassDB::bind_method(D_METHOD("set_current_animation", "anim"), &AnimationPlayer::set_current_animation);

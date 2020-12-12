@@ -131,7 +131,14 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if playing an animation.
+				Returns [code]true[/code] if an animation is playing. An animation is playing if it has started, but not finished or been paused.
+			</description>
+		</method>
+		<method name="pause">
+			<return type="void">
+			</return>
+			<description>
+				Pauses the currently playing animation. To resume the animation again use [method resume]. To stop and reset an animation use [method stop].
 			</description>
 		</method>
 		<method name="play">
@@ -146,8 +153,7 @@
 			<argument index="3" name="from_end" type="bool" default="false">
 			</argument>
 			<description>
-				Plays the animation with key [code]name[/code]. Custom blend times and speed can be set. If [code]custom_speed[/code] is negative and [code]from_end[/code] is [code]true[/code], the animation will play backwards (which is equivalent to calling [method play_backwards]).
-				The [AnimationPlayer] keeps track of its current or last played animation with [member assigned_animation]. If this method is called with that same animation [code]name[/code], or with no [code]name[/code] parameter, the assigned animation will resume playing if it was paused, or restart if it was stopped (see [method stop] for both pause and stop). If the animation was already playing, it will keep playing.
+				Plays the currently assigned animation or the animation with key [code]name[/code] from the beginning. Custom blend times and speed can be set. If [code]custom_speed[/code] is negative and [code]from_end[/code] is [code]true[/code], the animation will play backwards (which is equivalent to calling [method play_backwards]).
 				[b]Note:[/b] The animation will be updated the next time the [AnimationPlayer] is processed. If other variables are updated at the same time this is called, they may be updated too early. To perform the update immediately, call [code]advance(0)[/code].
 			</description>
 		</method>
@@ -193,6 +199,13 @@
 				Renames an existing animation with key [code]name[/code] to [code]newname[/code].
 			</description>
 		</method>
+		<method name="resume">
+			<return type="void">
+			</return>
+			<description>
+				Resumes an animation that was paused. See [method pause].
+			</description>
+		</method>
 		<method name="seek">
 			<return type="void">
 			</return>
@@ -220,11 +233,8 @@
 		<method name="stop">
 			<return type="void">
 			</return>
-			<argument index="0" name="reset" type="bool" default="true">
-			</argument>
 			<description>
-				Stops or pauses the currently playing animation. If [code]reset[/code] is [code]true[/code], the animation position is reset to [code]0[/code] and the playback speed is reset to [code]1.0[/code].
-				If [code]reset[/code] is [code]false[/code], the [member current_animation_position] will be kept and calling [method play] or [method play_backwards] without arguments or with the same animation name as [member assigned_animation] will resume the animation.
+				Stops and resets the currently playing animation. To keep the animation at its current position, use [method pause].
 			</description>
 		</method>
 	</methods>
