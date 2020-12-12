@@ -270,7 +270,7 @@ if webm_cpu_x86:
         try:
             yasm_found = True
             subprocess.Popen([yasm_path, "--version"], stdout=devnull, stderr=devnull).communicate()
-        except:
+        except Exception:
             yasm_found = False
         if yasm_found:
             break
