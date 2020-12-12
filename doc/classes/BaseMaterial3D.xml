@@ -224,6 +224,8 @@
 		<member name="heightmap_deep_parallax" type="bool" setter="set_heightmap_deep_parallax" getter="is_heightmap_deep_parallax_enabled">
 		</member>
 		<member name="heightmap_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], height mapping is enabled (also called "parallax mapping" or "depth mapping"). See also [member normal_enabled].
+			[b]Note:[/b] Height mapping is not supported if triplanar mapping is used on the same material. The value of [member heightmap_enabled] will be ignored if [member uv1_triplanar] is enabled.
 		</member>
 		<member name="heightmap_flip_binormal" type="bool" setter="set_heightmap_deep_parallax_flip_binormal" getter="get_heightmap_deep_parallax_flip_binormal">
 		</member>
