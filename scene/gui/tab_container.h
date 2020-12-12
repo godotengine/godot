@@ -73,12 +73,14 @@ private:
 	void _on_mouse_exited();
 	void _update_current_tab();
 	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x);
+	void _refresh_texts();
 
 protected:
 	void _child_renamed_callback();
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child) override;
+	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
 	Variant get_drag_data(const Point2 &p_point) override;
