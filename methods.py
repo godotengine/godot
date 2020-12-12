@@ -843,7 +843,7 @@ def show_progress(env):
     try:
         with open(node_count_fname) as f:
             node_count_max = int(f.readline())
-    except:
+    except Exception:
         pass
 
     cache_directory = os.environ.get("SCONS_CACHE")

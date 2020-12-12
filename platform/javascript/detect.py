@@ -50,9 +50,7 @@ def get_flags():
 
 
 def configure(env):
-    try:
-        env["initial_memory"] = int(env["initial_memory"])
-    except:
+    if not isinstance(env["initial_memory"], int):
         print("Initial memory must be a valid integer")
         sys.exit(255)
 
