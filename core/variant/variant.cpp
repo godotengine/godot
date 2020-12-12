@@ -3157,7 +3157,7 @@ uint32_t Variant::hash() const {
 	return true
 
 bool Variant::hash_compare(const Variant &p_variant) const {
-	if (type != p_variant.type) {
+	if (type != p_variant.type && !((type == STRING && p_variant.type == STRING_NAME) || (type == STRING_NAME && p_variant.type == STRING))) {
 		return false;
 	}
 
