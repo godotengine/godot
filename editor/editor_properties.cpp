@@ -64,7 +64,7 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 	if (updating)
 		return;
 
-	emit_changed(get_edited_property(), p_string, "", true);
+	emit_changed(get_edited_property(), p_string, "", false);
 }
 
 void EditorPropertyText::update_property() {
