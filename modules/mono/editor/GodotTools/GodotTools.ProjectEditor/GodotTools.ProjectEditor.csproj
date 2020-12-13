@@ -1,57 +1,32 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{A8CDAD94-C6D4-4B19-A7E7-76C53CC92984}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>GodotTools.ProjectEditor</RootNamespace>
-    <AssemblyName>GodotTools.ProjectEditor</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <BaseIntermediateOutputPath>obj</BaseIntermediateOutputPath>
-    <LangVersion>7</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>portable</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="Microsoft.Build" />
-    <Reference Include="DotNet.Glob, Version=2.1.1.0, Culture=neutral, PublicKeyToken=b68cc888b4f632d1, processorArchitecture=MSIL">
-      <HintPath>$(SolutionDir)\packages\DotNet.Glob.2.1.1\lib\net45\DotNet.Glob.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Microsoft.Build" Version="16.5.0" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiAssembliesInfo.cs" />
-    <Compile Include="DotNetSolution.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="IdentifierUtils.cs" />
-    <Compile Include="ProjectExtensions.cs" />
-    <Compile Include="ProjectGenerator.cs" />
-    <Compile Include="ProjectUtils.cs" />
+    <ProjectReference Include="..\GodotTools.Core\GodotTools.Core.csproj" />
+    <ProjectReference Include="..\GodotTools.Shared\GodotTools.Shared.csproj" />
   </ItemGroup>
+  <!--
+  The Microsoft.Build.Runtime package is too problematic so we create a MSBuild.exe stub. The workaround described
+  here doesn't work with Microsoft.NETFramework.ReferenceAssemblies: https://github.com/microsoft/msbuild/issues/3486
+  We need a MSBuild.exe file as there's an issue in Microsoft.Build where it executes platform dependent code when
+  searching for MSBuild.exe before the fallback to not using it. A stub is fine as it should never be executed.
+  -->
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="MSBuild.exe" CopyToOutputDirectory="Always" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GodotTools.Core\GodotTools.Core.csproj">
-      <Project>{639E48BD-44E5-4091-8EDD-22D36DC0768D}</Project>
-      <Name>GodotTools.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Target Name="CopyMSBuildStubWindows" AfterTargets="Build" Condition=" '$(GodotPlatform)' == 'windows' Or ( '$(GodotPlatform)' == '' And '$(OS)' == 'Windows_NT' ) ">
+    <PropertyGroup>
+      <GodotSourceRootPath>$(SolutionDir)/../../../../</GodotSourceRootPath>
+      <GodotOutputDataDir>$(GodotSourceRootPath)/bin/GodotSharp</GodotOutputDataDir>
+    </PropertyGroup>
+    <!-- Need to copy it here as well on Windows -->
+    <Copy SourceFiles="MSBuild.exe" DestinationFiles="$(GodotOutputDataDir)\Mono\lib\mono\v4.0\MSBuild.exe" />
+  </Target>
 </Project>

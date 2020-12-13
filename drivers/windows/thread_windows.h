@@ -33,17 +33,16 @@
 
 #ifdef WINDOWS_ENABLED
 
+#include "core/object/script_language.h"
 #include "core/os/thread.h"
-#include "core/script_language.h"
 
 #include <windows.h>
 
 class ThreadWindows : public Thread {
-
 	ThreadCreateCallback callback;
 	void *user;
 	ID id;
-	HANDLE handle;
+	HANDLE handle = nullptr;
 
 	static Thread *create_thread_windows();
 
@@ -53,14 +52,14 @@ class ThreadWindows : public Thread {
 	static ID get_thread_id_func_windows();
 	static void wait_to_finish_func_windows(Thread *p_thread);
 
-	ThreadWindows();
+	ThreadWindows() {}
 
 public:
 	virtual ID get_id() const;
 
 	static void make_default();
 
-	~ThreadWindows();
+	~ThreadWindows() {}
 };
 
 #endif

@@ -66,7 +66,7 @@ enet_peer_throttle (ENetPeer * peer, enet_uint32 rtt)
         peer -> packetThrottle = peer -> packetThrottleLimit;
     }
     else
-    if (rtt < peer -> lastRoundTripTime)
+    if (rtt <= peer -> lastRoundTripTime)
     {
         peer -> packetThrottle += peer -> packetThrottleAcceleration;
 
@@ -76,7 +76,7 @@ enet_peer_throttle (ENetPeer * peer, enet_uint32 rtt)
         return 1;
     }
     else
-    if (rtt > peer -> lastRoundTripTime + 2 * peer -> lastRoundTripTimeVariance)
+    if (rtt >= peer -> lastRoundTripTime + 2 * peer -> lastRoundTripTimeVariance)
     {
         if (peer -> packetThrottle > peer -> packetThrottleDeceleration)
           peer -> packetThrottle -= peer -> packetThrottleDeceleration;
@@ -306,11 +306,11 @@ enet_peer_reset_queues (ENetPeer * peer)
 {
     ENetChannel * channel;
 
-    if (peer -> needsDispatch)
+    if (peer -> flags & ENET_PEER_FLAG_NEEDS_DISPATCH)
     {
        enet_list_remove (& peer -> dispatchList);
 
-       peer -> needsDispatch = 0;
+       peer -> flags &= ~ ENET_PEER_FLAG_NEEDS_DISPATCH;
     }
 
     while (! enet_list_empty (& peer -> acknowledgements))
@@ -418,6 +418,9 @@ enet_peer_reset (ENetPeer * peer)
     peer -> outgoingUnsequencedGroup = 0;
     peer -> eventData = 0;
     peer -> totalWaitingData = 0;
+    peer -> flags = 0;
+    peer -> roundTripTimeRemainder = 0;
+    peer -> roundTripTimeVarianceRemainder = 0;
 
     memset (peer -> unsequencedWindow, 0, sizeof (peer -> unsequencedWindow));
     
@@ -724,11 +727,11 @@ enet_peer_dispatch_incoming_unreliable_commands (ENetPeer * peer, ENetChannel * 
           {
              enet_list_move (enet_list_end (& peer -> dispatchedCommands), startCommand, enet_list_previous (currentCommand));
 
-             if (! peer -> needsDispatch)
+             if (! (peer -> flags & ENET_PEER_FLAG_NEEDS_DISPATCH))
              {
                 enet_list_insert (enet_list_end (& peer -> host -> dispatchQueue), & peer -> dispatchList);
 
-                peer -> needsDispatch = 1;
+                peer -> flags |= ENET_PEER_FLAG_NEEDS_DISPATCH;
              }
 
              droppedCommand = currentCommand;
@@ -752,11 +755,11 @@ enet_peer_dispatch_incoming_unreliable_commands (ENetPeer * peer, ENetChannel * 
           {
              enet_list_move (enet_list_end (& peer -> dispatchedCommands), startCommand, enet_list_previous (currentCommand));
 
-             if (! peer -> needsDispatch)
+             if (! (peer -> flags & ENET_PEER_FLAG_NEEDS_DISPATCH))
              {
                 enet_list_insert (enet_list_end (& peer -> host -> dispatchQueue), & peer -> dispatchList);
 
-                peer -> needsDispatch = 1;
+                peer -> flags |= ENET_PEER_FLAG_NEEDS_DISPATCH;
              }
           }
        }
@@ -768,11 +771,11 @@ enet_peer_dispatch_incoming_unreliable_commands (ENetPeer * peer, ENetChannel * 
     {
        enet_list_move (enet_list_end (& peer -> dispatchedCommands), startCommand, enet_list_previous (currentCommand));
 
-       if (! peer -> needsDispatch)
+       if (! (peer -> flags & ENET_PEER_FLAG_NEEDS_DISPATCH))
        {
            enet_list_insert (enet_list_end (& peer -> host -> dispatchQueue), & peer -> dispatchList);
 
-           peer -> needsDispatch = 1;
+           peer -> flags |= ENET_PEER_FLAG_NEEDS_DISPATCH;
        }
 
        droppedCommand = currentCommand;
@@ -809,11 +812,11 @@ enet_peer_dispatch_incoming_reliable_commands (ENetPeer * peer, ENetChannel * ch
 
     enet_list_move (enet_list_end (& peer -> dispatchedCommands), enet_list_begin (& channel -> incomingReliableCommands), enet_list_previous (currentCommand));
 
-    if (! peer -> needsDispatch)
+    if (! (peer -> flags & ENET_PEER_FLAG_NEEDS_DISPATCH))
     {
        enet_list_insert (enet_list_end (& peer -> host -> dispatchQueue), & peer -> dispatchList);
 
-       peer -> needsDispatch = 1;
+       peer -> flags |= ENET_PEER_FLAG_NEEDS_DISPATCH;
     }
 
     if (! enet_list_empty (& channel -> incomingUnreliableCommands))

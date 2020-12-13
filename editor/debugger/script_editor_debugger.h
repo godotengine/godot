@@ -52,10 +52,11 @@ class ItemList;
 class EditorProfiler;
 class EditorVisualProfiler;
 class EditorNetworkProfiler;
+class EditorPerformanceProfiler;
 class SceneDebuggerTree;
+class EditorDebuggerPlugin;
 
 class ScriptEditorDebugger : public MarginContainer {
-
 	GDCLASS(ScriptEditorDebugger, MarginContainer);
 
 	friend class EditorDebuggerNode;
@@ -88,6 +89,11 @@ private:
 	PopupMenu *item_menu;
 
 	EditorFileDialog *file_dialog;
+	enum FileDialogPurpose {
+		SAVE_MONITORS_CSV,
+		SAVE_VRAM_CSV,
+	};
+	FileDialogPurpose file_dialog_purpose;
 
 	int error_count;
 	int warning_count;
@@ -107,20 +113,13 @@ private:
 	Button *docontinue;
 	// Reference to "Remote" tab in scene tree. Needed by _live_edit_set and buttons state.
 	// Each debugger should have it's tree in the future I guess.
-	const Tree *editor_remote_tree = NULL;
-
-	List<Vector<float> > perf_history;
-	Vector<float> perf_max;
-	Vector<TreeItem *> perf_items;
+	const Tree *editor_remote_tree = nullptr;
 
 	Map<int, String> profiler_signature;
 
-	Tree *perf_monitors;
-	Control *perf_draw;
-	Label *info_message;
-
 	Tree *vmem_tree;
 	Button *vmem_refresh;
+	Button *vmem_export;
 	LineEdit *vmem_total;
 
 	Tree *stack_dump;
@@ -136,6 +135,7 @@ private:
 	EditorProfiler *profiler;
 	EditorVisualProfiler *visual_profiler;
 	EditorNetworkProfiler *network_profiler;
+	EditorPerformanceProfiler *performance_profiler;
 
 	EditorNode *editor;
 
@@ -147,8 +147,10 @@ private:
 
 	EditorDebuggerNode::CameraOverride camera_override;
 
-	void _performance_draw();
-	void _performance_select();
+	Map<Ref<Script>, EditorDebuggerPlugin *> debugger_plugins;
+
+	Map<StringName, Callable> captures;
+
 	void _stack_dump_frame_selected();
 
 	void _file_selected(const String &p_file);
@@ -160,6 +162,7 @@ private:
 	void _remote_object_property_updated(ObjectID p_id, const String &p_property);
 
 	void _video_mem_request();
+	void _video_mem_export();
 
 	int _get_node_path_cache(const NodePath &p_path);
 
@@ -254,8 +257,18 @@ public:
 
 	bool is_skip_breakpoints();
 
-	virtual Size2 get_minimum_size() const;
-	ScriptEditorDebugger(EditorNode *p_editor = NULL);
+	virtual Size2 get_minimum_size() const override;
+
+	void add_debugger_plugin(const Ref<Script> &p_script);
+	void remove_debugger_plugin(const Ref<Script> &p_script);
+
+	void send_message(const String &p_message, const Array &p_args);
+
+	void register_message_capture(const StringName &p_name, const Callable &p_callable);
+	void unregister_message_capture(const StringName &p_name);
+	bool has_capture(const StringName &p_name);
+
+	ScriptEditorDebugger(EditorNode *p_editor = nullptr);
 	~ScriptEditorDebugger();
 };
 

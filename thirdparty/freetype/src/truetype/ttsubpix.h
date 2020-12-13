@@ -4,7 +4,7 @@
  *
  *   TrueType Subpixel Hinting.
  *
- * Copyright (C) 2010-2019 by
+ * Copyright (C) 2010-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,7 +19,6 @@
 #ifndef TTSUBPIX_H_
 #define TTSUBPIX_H_
 
-#include <ft2build.h>
 #include "ttobjs.h"
 #include "ttinterp.h"
 

@@ -31,7 +31,7 @@
 #ifndef RESOURCE_SAVER_H
 #define RESOURCE_SAVER_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 class ResourceFormatSaver : public Reference {
 	GDCLASS(ResourceFormatSaver, Reference);
@@ -50,7 +50,6 @@ public:
 typedef void (*ResourceSavedCallback)(Ref<Resource> p_resource, const String &p_path);
 
 class ResourceSaver {
-
 	enum {
 		MAX_SAVERS = 64
 	};
@@ -64,7 +63,6 @@ class ResourceSaver {
 
 public:
 	enum SaverFlags {
-
 		FLAG_RELATIVE_PATHS = 1,
 		FLAG_BUNDLE_RESOURCES = 2,
 		FLAG_CHANGE_PATH = 4,
@@ -90,4 +88,4 @@ public:
 	static void remove_custom_savers();
 };
 
-#endif
+#endif // RESOURCE_SAVER_H

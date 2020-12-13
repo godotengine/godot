@@ -7,7 +7,13 @@
 		Node for 2D tile-based maps. Tilemaps use a [TileSet] which contain a list of tiles (textures plus optional collision, navigation, and/or occluder shapes) which are used to create grid-based maps.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html</link>
+		<link title="Using Tilemaps">https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
+		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/112</link>
+		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/111</link>
+		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>
+		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 	</tutorials>
 	<methods>
 		<method name="clear">
@@ -43,7 +49,7 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
-				Returns the coordinate of the autotile variation in the tileset. Returns a zero vector if the cell doesn't have autotiling.
+				Returns the coordinate (subtile column and row) of the autotile variation in the tileset. Returns a zero vector if the cell doesn't have autotiling.
 			</description>
 		</method>
 		<method name="get_cellv" qualifiers="const">
@@ -74,19 +80,19 @@
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">
-			<return type="Array">
+			<return type="Vector2i[]">
 			</return>
 			<description>
 				Returns a [Vector2] array with the positions of all cells containing a tile from the tileset (i.e. a tile index different from [code]-1[/code]).
 			</description>
 		</method>
-		<method name="get_used_cells_by_id" qualifiers="const">
-			<return type="Array">
+		<method name="get_used_cells_by_index" qualifiers="const">
+			<return type="Vector2i[]">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Returns an array of all cells with the given tile [code]id[/code].
+				Returns an array of all cells with the given tile [code]index[/code].
 			</description>
 		</method>
 		<method name="get_used_rect">
@@ -161,12 +167,12 @@
 			<description>
 				Sets the tile index for the cell given by a Vector2.
 				An index of [code]-1[/code] clears the cell.
-				Optionally, the tile can also be flipped, transposed, or given autotile coordinates.
+				Optionally, the tile can also be flipped, transposed, or given autotile coordinates. The autotile coordinate refers to the column and row of the subtile.
 				[b]Note:[/b] Data such as navigation polygons and collision shapes are not immediately updated for performance reasons.
 				If you need these to be immediately updated, you can call [method update_dirty_quadrants].
 				Overriding this method also overrides it internally, allowing custom logic to be implemented when tiles are placed/removed:
 				[codeblock]
-				func set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord)
+				func set_cell(x, y, tile, flip_x=false, flip_y=false, transpose=false, autotile_coord=Vector2())
 				    # Write your custom logic here.
 				    # To call the default method:
 				    .set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord)
@@ -273,8 +279,8 @@
 		<member name="cell_tile_origin" type="int" setter="set_tile_origin" getter="get_tile_origin" enum="TileMap.TileOrigin" default="0">
 			Position for tile origin. See [enum TileOrigin] for possible values.
 		</member>
-		<member name="cell_y_sort" type="bool" setter="set_y_sort_mode" getter="is_y_sort_mode_enabled" default="false">
-			If [code]true[/code], the TileMap's children will be drawn in order of their Y coordinate.
+		<member name="cell_y_sort" type="bool" setter="set_y_sort_enabled" getter="is_y_sort_enabled" default="false">
+			If [code]true[/code], the TileMap's direct children will be drawn in order of their Y coordinate.
 		</member>
 		<member name="centered_textures" type="bool" setter="set_centered_textures" getter="is_centered_textures_enabled" default="false">
 			If [code]true[/code], the textures will be centered in the middle of each tile. This is useful for certain isometric or top-down modes when textures are made larger or smaller than the tiles (e.g. to avoid flickering on tile edges). The offset is still applied, but from the center of the tile. If used, [member compatibility_mode] is ignored.
@@ -287,10 +293,10 @@
 			Friction value for static body collisions (see [code]collision_use_kinematic[/code]).
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
-			The collision layer(s) for all colliders in the TileMap.
+			The collision layer(s) for all colliders in the TileMap. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The collision mask(s) for all colliders in the TileMap.
+			The collision mask(s) for all colliders in the TileMap. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="collision_use_kinematic" type="bool" setter="set_collision_use_kinematic" getter="get_collision_use_kinematic" default="false">
 			If [code]true[/code], TileMap collisions will be handled as a kinematic body. If [code]false[/code], collisions will be handled as static body.

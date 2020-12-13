@@ -33,7 +33,6 @@
 #include "core/core_string_names.h"
 
 OpenSimplexNoise::OpenSimplexNoise() {
-
 	seed = 0;
 	persistence = 0.5;
 	octaves = 3;
@@ -53,9 +52,9 @@ void OpenSimplexNoise::_init_seeds() {
 }
 
 void OpenSimplexNoise::set_seed(int p_seed) {
-
-	if (seed == p_seed)
+	if (seed == p_seed) {
 		return;
+	}
 
 	seed = p_seed;
 
@@ -64,13 +63,14 @@ void OpenSimplexNoise::set_seed(int p_seed) {
 	emit_changed();
 }
 
-int OpenSimplexNoise::get_seed() {
-
+int OpenSimplexNoise::get_seed() const {
 	return seed;
 }
 
 void OpenSimplexNoise::set_octaves(int p_octaves) {
-	if (p_octaves == octaves) return;
+	if (p_octaves == octaves) {
+		return;
+	}
 
 	ERR_FAIL_COND_MSG(p_octaves > MAX_OCTAVES, vformat("The number of OpenSimplexNoise octaves is limited to %d; ignoring the new value.", MAX_OCTAVES));
 
@@ -79,25 +79,30 @@ void OpenSimplexNoise::set_octaves(int p_octaves) {
 }
 
 void OpenSimplexNoise::set_period(float p_period) {
-	if (p_period == period) return;
+	if (p_period == period) {
+		return;
+	}
 	period = p_period;
 	emit_changed();
 }
 
 void OpenSimplexNoise::set_persistence(float p_persistence) {
-	if (p_persistence == persistence) return;
+	if (p_persistence == persistence) {
+		return;
+	}
 	persistence = p_persistence;
 	emit_changed();
 }
 
 void OpenSimplexNoise::set_lacunarity(float p_lacunarity) {
-	if (p_lacunarity == lacunarity) return;
+	if (p_lacunarity == lacunarity) {
+		return;
+	}
 	lacunarity = p_lacunarity;
 	emit_changed();
 }
 
-Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) {
-
+Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) const {
 	Vector<uint8_t> data;
 	data.resize(p_width * p_height * 4);
 
@@ -105,7 +110,7 @@ Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) {
 
 	for (int i = 0; i < p_height; i++) {
 		for (int j = 0; j < p_width; j++) {
-			float v = get_noise_2d(i, j);
+			float v = get_noise_2d(j, i);
 			v = v * 0.5 + 0.5; // Normalize [0..1]
 			uint8_t value = uint8_t(CLAMP(v * 255.0, 0, 255));
 			wd8[(i * p_width + j) * 4 + 0] = value;
@@ -119,8 +124,7 @@ Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) {
 	return image;
 }
 
-Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) {
-
+Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) const {
 	Vector<uint8_t> data;
 	data.resize(p_size * p_size * 4);
 
@@ -128,7 +132,6 @@ Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) {
 
 	for (int i = 0; i < p_size; i++) {
 		for (int j = 0; j < p_size; j++) {
-
 			float ii = (float)i / (float)p_size;
 			float jj = (float)j / (float)p_size;
 
@@ -157,7 +160,6 @@ Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) {
 }
 
 void OpenSimplexNoise::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_seed"), &OpenSimplexNoise::get_seed);
 	ClassDB::bind_method(D_METHOD("set_seed", "seed"), &OpenSimplexNoise::set_seed);
 
@@ -191,13 +193,11 @@ void OpenSimplexNoise::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lacunarity", PROPERTY_HINT_RANGE, "0.1,4.0,0.01"), "set_lacunarity", "get_lacunarity");
 }
 
-float OpenSimplexNoise::get_noise_1d(float x) {
-
+float OpenSimplexNoise::get_noise_1d(float x) const {
 	return get_noise_2d(x, 1.0);
 }
 
-float OpenSimplexNoise::get_noise_2d(float x, float y) {
-
+float OpenSimplexNoise::get_noise_2d(float x, float y) const {
 	x /= period;
 	y /= period;
 
@@ -217,8 +217,7 @@ float OpenSimplexNoise::get_noise_2d(float x, float y) {
 	return sum / max;
 }
 
-float OpenSimplexNoise::get_noise_3d(float x, float y, float z) {
-
+float OpenSimplexNoise::get_noise_3d(float x, float y, float z) const {
 	x /= period;
 	y /= period;
 	z /= period;
@@ -240,8 +239,7 @@ float OpenSimplexNoise::get_noise_3d(float x, float y, float z) {
 	return sum / max;
 }
 
-float OpenSimplexNoise::get_noise_4d(float x, float y, float z, float w) {
-
+float OpenSimplexNoise::get_noise_4d(float x, float y, float z, float w) const {
 	x /= period;
 	y /= period;
 	z /= period;

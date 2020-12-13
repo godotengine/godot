@@ -5,7 +5,7 @@
  *   PostScript name table processing for TrueType and OpenType fonts
  *   (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -25,10 +25,9 @@
    */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_TRUETYPE_TAGS_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/tttags.h>
 
 
 #ifdef TT_CONFIG_OPTION_POSTSCRIPT_NAMES
@@ -54,7 +53,7 @@
 #ifdef FT_CONFIG_OPTION_POSTSCRIPT_NAMES
 
 
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
+#include <freetype/internal/services/svpscmap.h>
 
 #define MAC_NAME( x )  (FT_String*)psnames->macintosh_name( (FT_UInt)(x) )
 
@@ -240,7 +239,7 @@
           break;
         else
         {
-          FT_TRACE6(( "load_format_20: %d byte left in post table\n",
+          FT_TRACE6(( "load_format_20: %ld byte left in post table\n",
                       post_limit - FT_STREAM_POS() ));
 
           if ( FT_READ_BYTE( len ) )

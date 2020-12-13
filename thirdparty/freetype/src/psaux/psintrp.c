@@ -37,8 +37,8 @@
 
 
 #include "psft.h"
-#include FT_INTERNAL_DEBUG_H
-#include FT_SERVICE_CFF_TABLE_LOAD_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/services/svcfftl.h>
 
 #include "psglue.h"
 #include "psfont.h"
@@ -1433,6 +1433,13 @@
                       lastError = error2; /* pass FreeType error through */
                       goto exit;
                     }
+
+                    /* save the left bearing and width of the SEAC   */
+                    /* glyph as they will be erased by the next load */
+
+                    left_bearing = *decoder->builder.left_bearing;
+                    advance      = *decoder->builder.advance;
+
                     cf2_interpT2CharString( font,
                                             &component,
                                             callbacks,
@@ -1443,11 +1450,14 @@
                                             &dummyWidth );
                     cf2_freeT1SeacComponent( decoder, &component );
 
-                    /* save the left bearing and width of the base       */
-                    /* character as they will be erased by the next load */
+                    /* If the SEAC glyph doesn't have a (H)SBW of its */
+                    /* own use the values from the base glyph.        */
 
-                    left_bearing = *decoder->builder.left_bearing;
-                    advance      = *decoder->builder.advance;
+                    if ( !haveWidth )
+                    {
+                      left_bearing = *decoder->builder.left_bearing;
+                      advance      = *decoder->builder.advance;
+                    }
 
                     decoder->builder.left_bearing->x = 0;
                     decoder->builder.left_bearing->y = 0;
@@ -1473,8 +1483,8 @@
                                             &dummyWidth );
                     cf2_freeT1SeacComponent( decoder, &component );
 
-                    /* restore the left side bearing and   */
-                    /* advance width of the base character */
+                    /* restore the left side bearing and advance width   */
+                    /* of the SEAC glyph or base character (saved above) */
 
                     *decoder->builder.left_bearing = left_bearing;
                     *decoder->builder.advance      = advance;

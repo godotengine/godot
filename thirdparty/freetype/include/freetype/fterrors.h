@@ -4,7 +4,7 @@
  *
  *   FreeType error code handling (specification).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -89,7 +89,7 @@
    *       const char*  err_msg;
    *     } ft_errors[] =
    *
-   *     #include FT_ERRORS_H
+   *     #include <freetype/fterrors.h>
    *   ```
    *
    *   An alternative to using an array is a switch statement.
@@ -124,7 +124,7 @@
 
 
   /* include module base error codes */
-#include FT_MODULE_ERRORS_H
+#include <freetype/ftmoderr.h>
 
 
   /*******************************************************************/
@@ -197,7 +197,7 @@
 
 
   /* now include the error codes */
-#include FT_ERROR_DEFINITIONS_H
+#include <freetype/fterrdef.h>
 
 
 #ifdef FT_ERROR_END_LIST
@@ -232,11 +232,16 @@
 #undef FT_ERR_PREFIX
 #endif
 
-  /* FT_INCLUDE_ERR_PROTOS:  Control if function prototypes should be       */
-  /*                         included with `#include FT_ERRORS_H'.  This is */
-  /*                         only true where `FT_ERRORDEF` is undefined.    */
-  /* FT_ERR_PROTOS_DEFINED:  Actual multiple-inclusion protection of        */
-  /*                         `fterrors.h`.                                  */
+  /* FT_INCLUDE_ERR_PROTOS: Control whether function prototypes should be */
+  /*                        included with                                 */
+  /*                                                                      */
+  /*                          #include <freetype/fterrors.h>              */
+  /*                                                                      */
+  /*                        This is only true where `FT_ERRORDEF` is      */
+  /*                        undefined.                                    */
+  /*                                                                      */
+  /* FT_ERR_PROTOS_DEFINED: Actual multiple-inclusion protection of       */
+  /*                        `fterrors.h`.                                 */
 #ifdef FT_INCLUDE_ERR_PROTOS
 #undef FT_INCLUDE_ERR_PROTOS
 

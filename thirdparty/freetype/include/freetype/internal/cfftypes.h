@@ -5,7 +5,7 @@
  *   Basic OpenType/CFF type definitions and interface (specification
  *   only).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -21,13 +21,12 @@
 #define CFFTYPES_H_
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_TYPE1_TABLES_H
-#include FT_INTERNAL_SERVICE_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
-#include FT_INTERNAL_TYPE1_TYPES_H
+#include <freetype/freetype.h>
+#include <freetype/t1tables.h>
+#include <freetype/internal/ftserv.h>
+#include <freetype/internal/services/svpscmap.h>
+#include <freetype/internal/pshints.h>
+#include <freetype/internal/t1types.h>
 
 
 FT_BEGIN_HEADER

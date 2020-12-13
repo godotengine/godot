@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeScalarInterp" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Linearly interpolates between two scalars within the visual shader graph.
 	</brief_description>
 	<description>
+		Translates to [code]mix(a, b, weight)[/code] in the shader language.
 	</description>
 	<tutorials>
 	</tutorials>

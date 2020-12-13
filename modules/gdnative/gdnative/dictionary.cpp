@@ -30,14 +30,16 @@
 
 #include "gdnative/dictionary.h"
 
-#include "core/variant.h"
-// core/variant.h before to avoid compile errors with MSVC
-#include "core/dictionary.h"
+#include "core/variant/variant.h"
+// core/variant/variant.h before to avoid compile errors with MSVC
 #include "core/io/json.h"
+#include "core/variant/dictionary.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static_assert(sizeof(godot_dictionary) == sizeof(Dictionary), "Dictionary size mismatch");
 
 void GDAPI godot_dictionary_new(godot_dictionary *r_dest) {
 	Dictionary *dest = (Dictionary *)r_dest;

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDSamplerState" inherits="Reference" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="anisotropy_max" type="float" setter="set_anisotropy_max" getter="get_anisotropy_max" default="1.0">
+		</member>
+		<member name="border_color" type="int" setter="set_border_color" getter="get_border_color" enum="RenderingDevice.SamplerBorderColor" default="2">
+		</member>
+		<member name="compare_op" type="int" setter="set_compare_op" getter="get_compare_op" enum="RenderingDevice.CompareOperator" default="7">
+		</member>
+		<member name="enable_compare" type="bool" setter="set_enable_compare" getter="get_enable_compare" default="false">
+		</member>
+		<member name="lod_bias" type="float" setter="set_lod_bias" getter="get_lod_bias" default="0.0">
+		</member>
+		<member name="mag_filter" type="int" setter="set_mag_filter" getter="get_mag_filter" enum="RenderingDevice.SamplerFilter" default="0">
+		</member>
+		<member name="max_lod" type="float" setter="set_max_lod" getter="get_max_lod" default="1e+20">
+		</member>
+		<member name="min_filter" type="int" setter="set_min_filter" getter="get_min_filter" enum="RenderingDevice.SamplerFilter" default="0">
+		</member>
+		<member name="min_lod" type="float" setter="set_min_lod" getter="get_min_lod" default="0.0">
+		</member>
+		<member name="mip_filter" type="int" setter="set_mip_filter" getter="get_mip_filter" enum="RenderingDevice.SamplerFilter" default="0">
+		</member>
+		<member name="repeat_u" type="int" setter="set_repeat_u" getter="get_repeat_u" enum="RenderingDevice.SamplerRepeatMode" default="2">
+		</member>
+		<member name="repeat_v" type="int" setter="set_repeat_v" getter="get_repeat_v" enum="RenderingDevice.SamplerRepeatMode" default="2">
+		</member>
+		<member name="repeat_w" type="int" setter="set_repeat_w" getter="get_repeat_w" enum="RenderingDevice.SamplerRepeatMode" default="2">
+		</member>
+		<member name="unnormalized_uvw" type="bool" setter="set_unnormalized_uvw" getter="get_unnormalized_uvw" default="false">
+		</member>
+		<member name="use_anisotropy" type="bool" setter="set_use_anisotropy" getter="get_use_anisotropy" default="false">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

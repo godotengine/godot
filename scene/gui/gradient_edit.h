@@ -37,7 +37,6 @@
 #include "scene/resources/gradient.h"
 
 class GradientEdit : public Control {
-
 	GDCLASS(GradientEdit, Control);
 
 	PopupPanel *popup;
@@ -65,7 +64,7 @@ public:
 	Vector<Color> get_colors() const;
 	void set_points(Vector<Gradient::Point> &p_points);
 	Vector<Gradient::Point> &get_points();
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	GradientEdit();
 	virtual ~GradientEdit();

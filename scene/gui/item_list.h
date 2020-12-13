@@ -33,9 +33,9 @@
 
 #include "scene/gui/control.h"
 #include "scene/gui/scroll_bar.h"
+#include "scene/resources/text_paragraph.h"
 
 class ItemList : public Control {
-
 	GDCLASS(ItemList, Control);
 
 public:
@@ -51,13 +51,17 @@ public:
 
 private:
 	struct Item {
-
 		Ref<Texture2D> icon;
 		bool icon_transposed;
 		Rect2i icon_region;
 		Color icon_modulate;
 		Ref<Texture2D> tag_icon;
 		String text;
+		Ref<TextParagraph> text_buf;
+		Dictionary opentype_features;
+		String language;
+		TextDirection text_direction = TEXT_DIRECTION_AUTO;
+
 		bool selectable;
 		bool selected;
 		bool disabled;
@@ -119,6 +123,7 @@ private:
 
 	void _scroll_changed(double);
 	void _gui_input(const Ref<InputEvent> &p_event);
+	void _shape(int p_idx);
 
 protected:
 	void _notification(int p_what);
@@ -130,6 +135,16 @@ public:
 
 	void set_item_text(int p_idx, const String &p_text);
 	String get_item_text(int p_idx) const;
+
+	void set_item_text_direction(int p_idx, TextDirection p_text_direction);
+	TextDirection get_item_text_direction(int p_idx) const;
+
+	void set_item_opentype_feature(int p_idx, const String &p_name, int p_value);
+	int get_item_opentype_feature(int p_idx, const String &p_name) const;
+	void clear_item_opentype_features(int p_idx);
+
+	void set_item_language(int p_idx, const String &p_language);
+	String get_item_language(int p_idx) const;
 
 	void set_item_icon(int p_idx, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_item_icon(int p_idx) const;
@@ -216,7 +231,7 @@ public:
 	void sort_items_by_text();
 	int find_metadata(const Variant &p_metadata) const;
 
-	virtual String get_tooltip(const Point2 &p_pos) const;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 	int get_item_at_position(const Point2 &p_pos, bool p_exact = false) const;
 	bool is_pos_at_end_of_items(const Point2 &p_pos) const;
 
@@ -226,7 +241,7 @@ public:
 	void set_auto_height(bool p_enable);
 	bool has_auto_height() const;
 
-	Size2 get_minimum_size() const;
+	Size2 get_minimum_size() const override;
 
 	void set_autoscroll_to_bottom(const bool p_enable);
 

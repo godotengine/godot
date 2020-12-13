@@ -7,6 +7,8 @@
 		A library of meshes. Contains a list of [Mesh] resources, each with a name and ID. Each item can also include collision and navigation shapes. This resource is used in [GridMap].
 	</description>
 	<tutorials>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
 	</tutorials>
 	<methods>
 		<method name="clear">
@@ -94,7 +96,7 @@
 			</argument>
 			<description>
 				Returns an item's collision shapes.
-				The array consists of each [Shape] followed by its [Transform].
+				The array consists of each [Shape3D] followed by its [Transform].
 			</description>
 		</method>
 		<method name="get_last_unused_item_id" qualifiers="const">
@@ -178,7 +180,7 @@
 			</argument>
 			<description>
 				Sets an item's collision shapes.
-				The array should consist of [Shape] objects, each followed by a [Transform] that will be applied to it. For shapes that should not have a transform, use [constant Transform.IDENTITY].
+				The array should consist of [Shape3D] objects, each followed by a [Transform] that will be applied to it. For shapes that should not have a transform, use [constant Transform.IDENTITY].
 			</description>
 		</method>
 	</methods>

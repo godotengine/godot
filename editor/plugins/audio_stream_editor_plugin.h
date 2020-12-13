@@ -38,7 +38,6 @@
 #include "scene/resources/texture.h"
 
 class AudioStreamEditor : public ColorRect {
-
 	GDCLASS(AudioStreamEditor, ColorRect);
 
 	Ref<AudioStream> stream;
@@ -48,8 +47,8 @@ class AudioStreamEditor : public ColorRect {
 	Label *_current_label;
 	Label *_duration_label;
 
-	ToolButton *_play_button;
-	ToolButton *_stop_button;
+	Button *_play_button;
+	Button *_stop_button;
 
 	float _current;
 	bool _dragging;
@@ -64,7 +63,7 @@ protected:
 	void _draw_indicator();
 	void _on_input_indicator(Ref<InputEvent> p_event);
 	void _seek_to(real_t p_x);
-	void _changed_callback(Object *p_changed, const char *p_prop);
+	void _changed_callback(Object *p_changed, const char *p_prop) override;
 	static void _bind_methods();
 
 public:
@@ -73,18 +72,17 @@ public:
 };
 
 class AudioStreamEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AudioStreamEditorPlugin, EditorPlugin);
 
 	AudioStreamEditor *audio_editor;
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "Audio"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "Audio"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	AudioStreamEditorPlugin(EditorNode *p_node);
 	~AudioStreamEditorPlugin();

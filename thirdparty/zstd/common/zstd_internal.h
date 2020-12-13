@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
+ * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -19,12 +19,15 @@
 /*-*************************************
 *  Dependencies
 ***************************************/
+#ifdef __aarch64__
+#include <arm_neon.h>
+#endif
 #include "compiler.h"
 #include "mem.h"
 #include "debug.h"                 /* assert, DEBUGLOG, RAWLOG, g_debuglevel */
 #include "error_private.h"
 #define ZSTD_STATIC_LINKING_ONLY
-#include "zstd.h"
+#include "../zstd.h"
 #define FSE_STATIC_LINKING_ONLY
 #include "fse.h"
 #define HUF_STATIC_LINKING_ONLY
@@ -54,6 +57,31 @@ extern "C" {
 #define MAX(a,b) ((a)>(b) ? (a) : (b))
 
 /**
+ * Ignore: this is an internal helper.
+ *
+ * This is a helper function to help force C99-correctness during compilation.
+ * Under strict compilation modes, variadic macro arguments can't be empty.
+ * However, variadic function arguments can be. Using a function therefore lets
+ * us statically check that at least one (string) argument was passed,
+ * independent of the compilation flags.
+ */
+static INLINE_KEYWORD UNUSED_ATTR
+void _force_has_format_string(const char *format, ...) {
+  (void)format;
+}
+
+/**
+ * Ignore: this is an internal helper.
+ *
+ * We want to force this function invocation to be syntactically correct, but
+ * we don't want to force runtime evaluation of its arguments.
+ */
+#define _FORCE_HAS_FORMAT_STRING(...) \
+  if (0) { \
+    _force_has_format_string(__VA_ARGS__); \
+  }
+
+/**
  * Return the specified error if the condition evaluates to true.
  *
  * In debug modes, prints additional information.
@@ -62,7 +90,9 @@ extern "C" {
  */
 #define RETURN_ERROR_IF(cond, err, ...) \
   if (cond) { \
-    RAWLOG(3, "%s:%d: ERROR!: check %s failed, returning %s", __FILE__, __LINE__, ZSTD_QUOTE(cond), ZSTD_QUOTE(ERROR(err))); \
+    RAWLOG(3, "%s:%d: ERROR!: check %s failed, returning %s", \
+           __FILE__, __LINE__, ZSTD_QUOTE(cond), ZSTD_QUOTE(ERROR(err))); \
+    _FORCE_HAS_FORMAT_STRING(__VA_ARGS__); \
     RAWLOG(3, ": " __VA_ARGS__); \
     RAWLOG(3, "\n"); \
     return ERROR(err); \
@@ -75,7 +105,9 @@ extern "C" {
  */
 #define RETURN_ERROR(err, ...) \
   do { \
-    RAWLOG(3, "%s:%d: ERROR!: unconditional check failed, returning %s", __FILE__, __LINE__, ZSTD_QUOTE(ERROR(err))); \
+    RAWLOG(3, "%s:%d: ERROR!: unconditional check failed, returning %s", \
+           __FILE__, __LINE__, ZSTD_QUOTE(ERROR(err))); \
+    _FORCE_HAS_FORMAT_STRING(__VA_ARGS__); \
     RAWLOG(3, ": " __VA_ARGS__); \
     RAWLOG(3, "\n"); \
     return ERROR(err); \
@@ -90,7 +122,9 @@ extern "C" {
   do { \
     size_t const err_code = (err); \
     if (ERR_isError(err_code)) { \
-      RAWLOG(3, "%s:%d: ERROR!: forwarding error in %s: %s", __FILE__, __LINE__, ZSTD_QUOTE(err), ERR_getErrorName(err_code)); \
+      RAWLOG(3, "%s:%d: ERROR!: forwarding error in %s: %s", \
+             __FILE__, __LINE__, ZSTD_QUOTE(err), ERR_getErrorName(err_code)); \
+      _FORCE_HAS_FORMAT_STRING(__VA_ARGS__); \
       RAWLOG(3, ": " __VA_ARGS__); \
       RAWLOG(3, "\n"); \
       return err_code; \
@@ -127,6 +161,8 @@ static const size_t ZSTD_did_fieldSize[4] = { 0, 1, 2, 4 };
 #define ZSTD_BLOCKHEADERSIZE 3   /* C standard doesn't allow `static const` variable to be init using another `static const` variable */
 static const size_t ZSTD_blockHeaderSize = ZSTD_BLOCKHEADERSIZE;
 typedef enum { bt_raw, bt_rle, bt_compressed, bt_reserved } blockType_e;
+
+#define ZSTD_FRAMECHECKSUMSIZE 4
 
 #define MIN_SEQUENCES_SIZE 1 /* nbSeq==0 */
 #define MIN_CBLOCK_SIZE (1 /*litCSize*/ + 1 /* RLE or RAW */ + MIN_SEQUENCES_SIZE /* nbSeq==0 */)   /* for a non-null block */
@@ -191,10 +227,22 @@ static const U32 OF_defaultNormLog = OF_DEFAULTNORMLOG;
 /*-*******************************************
 *  Shared functions to include for inlining
 *********************************************/
-static void ZSTD_copy8(void* dst, const void* src) { memcpy(dst, src, 8); }
+static void ZSTD_copy8(void* dst, const void* src) {
+#ifdef __aarch64__
+    vst1_u8((uint8_t*)dst, vld1_u8((const uint8_t*)src));
+#else
+    memcpy(dst, src, 8);
+#endif
+}
 
 #define COPY8(d,s) { ZSTD_copy8(d,s); d+=8; s+=8; }
-static void ZSTD_copy16(void* dst, const void* src) { memcpy(dst, src, 16); }
+static void ZSTD_copy16(void* dst, const void* src) {
+#ifdef __aarch64__
+    vst1q_u8((uint8_t*)dst, vld1q_u8((const uint8_t*)src));
+#else
+    memcpy(dst, src, 16);
+#endif
+}
 #define COPY16(d,s) { ZSTD_copy16(d,s); d+=16; s+=16; }
 
 #define WILDCOPY_OVERLENGTH 32
@@ -213,7 +261,7 @@ typedef enum {
  *         - ZSTD_overlap_src_before_dst: The src and dst may overlap, but they MUST be at least 8 bytes apart.
  *           The src buffer must be before the dst buffer.
  */
-MEM_STATIC FORCE_INLINE_ATTR DONT_VECTORIZE
+MEM_STATIC FORCE_INLINE_ATTR 
 void ZSTD_wildcopy(void* dst, const void* src, ptrdiff_t length, ZSTD_overlap_e const ovtype)
 {
     ptrdiff_t diff = (BYTE*)dst - (const BYTE*)src;
@@ -230,13 +278,18 @@ void ZSTD_wildcopy(void* dst, const void* src, ptrdiff_t length, ZSTD_overlap_e 
         } while (op < oend);
     } else {
         assert(diff >= WILDCOPY_VECLEN || diff <= -WILDCOPY_VECLEN);
-        /* Separate out the first two COPY16() calls because the copy length is
+        /* Separate out the first COPY16() call because the copy length is
          * almost certain to be short, so the branches have different
-         * probabilities.
-         * On gcc-9 unrolling once is +1.6%, twice is +2%, thrice is +1.8%.
-         * On clang-8 unrolling once is +1.4%, twice is +3.3%, thrice is +3%.
+         * probabilities. Since it is almost certain to be short, only do
+         * one COPY16() in the first call. Then, do two calls per loop since
+         * at that point it is more likely to have a high trip count.
          */
-        COPY16(op, ip);
+#ifndef __aarch64__
+        do {
+            COPY16(op, ip);
+        }
+        while (op < oend);
+#else
         COPY16(op, ip);
         if (op >= oend) return;
         do {
@@ -244,8 +297,28 @@ void ZSTD_wildcopy(void* dst, const void* src, ptrdiff_t length, ZSTD_overlap_e 
             COPY16(op, ip);
         }
         while (op < oend);
+#endif
     }
 }
+
+MEM_STATIC size_t ZSTD_limitCopy(void* dst, size_t dstCapacity, const void* src, size_t srcSize)
+{
+    size_t const length = MIN(dstCapacity, srcSize);
+    if (length > 0) {
+        memcpy(dst, src, length);
+    }
+    return length;
+}
+
+/* define "workspace is too large" as this number of times larger than needed */
+#define ZSTD_WORKSPACETOOLARGE_FACTOR 3
+
+/* when workspace is continuously too large
+ * during at least this number of times,
+ * context's memory usage is considered wasteful,
+ * because it's sized to handle a worst case scenario which rarely happens.
+ * In which case, resize it down to free some memory */
+#define ZSTD_WORKSPACETOOLARGE_MAXDURATION 128
 
 
 /*-*******************************************
@@ -270,6 +343,31 @@ typedef struct {
     U32   longLengthID;   /* 0 == no longLength; 1 == Lit.longLength; 2 == Match.longLength; */
     U32   longLengthPos;
 } seqStore_t;
+
+typedef struct {
+    U32 litLength;
+    U32 matchLength;
+} ZSTD_sequenceLength;
+
+/**
+ * Returns the ZSTD_sequenceLength for the given sequences. It handles the decoding of long sequences
+ * indicated by longLengthPos and longLengthID, and adds MINMATCH back to matchLength.
+ */
+MEM_STATIC ZSTD_sequenceLength ZSTD_getSequenceLength(seqStore_t const* seqStore, seqDef const* seq)
+{
+    ZSTD_sequenceLength seqLen;
+    seqLen.litLength = seq->litLength;
+    seqLen.matchLength = seq->matchLength + MINMATCH;
+    if (seqStore->longLengthPos == (U32)(seq - seqStore->sequencesStart)) {
+        if (seqStore->longLengthID == 1) {
+            seqLen.litLength += 0xFFFF;
+        }
+        if (seqStore->longLengthID == 2) {
+            seqLen.matchLength += 0xFFFF;
+        }
+    }
+    return seqLen;
+}
 
 /**
  * Contains the compressed frame size and an upper-bound for the decompressed frame size.
@@ -297,8 +395,7 @@ MEM_STATIC U32 ZSTD_highbit32(U32 val)   /* compress, dictBuilder, decodeCorpus 
     {
 #   if defined(_MSC_VER)   /* Visual */
         unsigned long r=0;
-        _BitScanReverse(&r, val);
-        return (unsigned)r;
+        return _BitScanReverse(&r, val) ? (unsigned)r : 0;
 #   elif defined(__GNUC__) && (__GNUC__ >= 3)   /* GCC Intrinsic */
         return __builtin_clz (val) ^ 31;
 #   elif defined(__ICCARM__)    /* IAR Intrinsic */

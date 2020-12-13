@@ -50,7 +50,9 @@ static void smbFft(float *fftBuffer, long fftFrameSize, long sign)
 
 	for (i = 2; i < 2 * fftFrameSize - 2; i += 2) {
 		for (bitm = 2, j = 0; bitm < 2 * fftFrameSize; bitm <<= 1) {
-			if (i & bitm) j++;
+			if (i & bitm) {
+				j++;
+			}
 			j <<= 1;
 		}
 		if (i < j) {
@@ -95,8 +97,8 @@ static void smbFft(float *fftBuffer, long fftFrameSize, long sign)
 		}
 	}
 }
-void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 
+void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	uint64_t time = OS::get_singleton()->get_ticks_usec();
 
 	//copy everything over first, since this only really does capture
@@ -111,15 +113,15 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 
 		float *fftw = temporal_fft.ptrw();
 		for (int i = 0; i < to_fill; i++) { //left and right buffers
-			float window = -0.5 * Math::cos(2.0 * Math_PI * (double)i / (double)to_fill) + 0.5;
-			fftw[(i + temporal_fft_pos) * 2] = window * p_src_frames[i].l;
-			fftw[(i + temporal_fft_pos) * 2 + 1] = 0;
-			fftw[(i + temporal_fft_pos + fft_size * 2) * 2] = window * p_src_frames[i].r;
-			fftw[(i + temporal_fft_pos + fft_size * 2) * 2 + 1] = 0;
+			float window = -0.5 * Math::cos(2.0 * Math_PI * (double)temporal_fft_pos / (double)fft_size) + 0.5;
+			fftw[temporal_fft_pos * 2] = window * p_src_frames->l;
+			fftw[temporal_fft_pos * 2 + 1] = 0;
+			fftw[(temporal_fft_pos + fft_size * 2) * 2] = window * p_src_frames->r;
+			fftw[(temporal_fft_pos + fft_size * 2) * 2 + 1] = 0;
+			++p_src_frames;
+			++temporal_fft_pos;
 		}
 
-		p_src_frames += to_fill;
-		temporal_fft_pos += to_fill;
 		p_frame_count -= to_fill;
 
 		if (temporal_fft_pos == fft_size * 2) {
@@ -132,9 +134,8 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 
 			for (int i = 0; i < fft_size; i++) {
 				//abs(vec)/fft_size normalizes each frequency
-				float window = 1.0; //-.5 * Math::cos(2. * Math_PI * (double)i / (double)fft_size) + .5;
-				hw[i].l = window * Vector2(fftw[i * 2], fftw[i * 2 + 1]).length() / float(fft_size);
-				hw[i].r = window * Vector2(fftw[fft_size * 4 + i * 2], fftw[fft_size * 4 + i * 2 + 1]).length() / float(fft_size);
+				hw[i].l = Vector2(fftw[i * 2], fftw[i * 2 + 1]).length() / float(fft_size);
+				hw[i].r = Vector2(fftw[fft_size * 4 + i * 2], fftw[fft_size * 4 + i * 2 + 1]).length() / float(fft_size);
 			}
 
 			fft_pos = next; //swap
@@ -148,14 +149,12 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 }
 
 void AudioEffectSpectrumAnalyzerInstance::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_magnitude_for_frequency_range", "from_hz", "to_hz", "mode"), &AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range, DEFVAL(MAGNITUDE_MAX));
 	BIND_ENUM_CONSTANT(MAGNITUDE_AVERAGE);
 	BIND_ENUM_CONSTANT(MAGNITUDE_MAX);
 }
 
 Vector2 AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range(float p_begin, float p_end, MagnitudeMode p_mode) const {
-
 	if (last_fft_time == 0) {
 		return Vector2();
 	}
@@ -196,7 +195,6 @@ Vector2 AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range(f
 
 		return avg;
 	} else {
-
 		Vector2 max;
 
 		for (int i = begin_pos; i <= end_pos; i++) {
@@ -209,7 +207,6 @@ Vector2 AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range(f
 }
 
 Ref<AudioEffectInstance> AudioEffectSpectrumAnalyzer::instance() {
-
 	Ref<AudioEffectSpectrumAnalyzerInstance> ins;
 	ins.instance();
 	ins->base = Ref<AudioEffectSpectrumAnalyzer>(this);
@@ -236,7 +233,6 @@ void AudioEffectSpectrumAnalyzer::set_buffer_length(float p_seconds) {
 }
 
 float AudioEffectSpectrumAnalyzer::get_buffer_length() const {
-
 	return buffer_length;
 }
 
@@ -258,7 +254,6 @@ AudioEffectSpectrumAnalyzer::FFT_Size AudioEffectSpectrumAnalyzer::get_fft_size(
 }
 
 void AudioEffectSpectrumAnalyzer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_buffer_length", "seconds"), &AudioEffectSpectrumAnalyzer::set_buffer_length);
 	ClassDB::bind_method(D_METHOD("get_buffer_length"), &AudioEffectSpectrumAnalyzer::get_buffer_length);
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-Import('env')
+Import("env")
 
 env_png = env.Clone()
 
 # Thirdparty source files
-if env['builtin_libpng']:
+if env["builtin_libpng"]:
     thirdparty_dir = "#thirdparty/libpng/"
     thirdparty_sources = [
         "png.c",
@@ -32,6 +32,7 @@ if env['builtin_libpng']:
 
     # Currently .ASM filter_neon.S does not compile on NT.
     import os
+
     use_neon = "neon_enabled" in env and env["neon_enabled"] and os.name != "nt"
     if use_neon:
         env_png.Append(CPPDEFINES=[("PNG_ARM_NEON_OPT", 2)])
@@ -45,7 +46,7 @@ if env['builtin_libpng']:
     if use_neon:
         env_neon = env_thirdparty.Clone()
         if "S_compiler" in env:
-            env_neon['CC'] = env['S_compiler']
+            env_neon["CC"] = env["S_compiler"]
         neon_sources = []
         neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/arm_init.c"))
         neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/filter_neon_intrinsics.c"))
@@ -56,4 +57,4 @@ if env['builtin_libpng']:
 # Godot source files
 env_png.add_source_files(env.drivers_sources, "*.cpp")
 
-Export('env')
+Export("env")

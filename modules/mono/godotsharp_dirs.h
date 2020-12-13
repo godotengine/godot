@@ -31,7 +31,7 @@
 #ifndef GODOTSHARP_DIRS_H
 #define GODOTSHARP_DIRS_H
 
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 namespace GodotSharpDirs {
 
@@ -66,7 +66,6 @@ String get_data_mono_lib_dir();
 #ifdef WINDOWS_ENABLED
 String get_data_mono_bin_dir();
 #endif
-
 } // namespace GodotSharpDirs
 
 #endif // GODOTSHARP_DIRS_H

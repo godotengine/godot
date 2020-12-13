@@ -36,7 +36,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor/scene_tree_editor.h"
 
 /**
@@ -44,11 +44,10 @@
 */
 
 class RenameDialog : public ConfirmationDialog {
-
 	GDCLASS(RenameDialog, ConfirmationDialog);
 
-	virtual void ok_pressed() { rename(); };
-	void _cancel_pressed(){};
+	virtual void ok_pressed() override { rename(); };
+	void _cancel_pressed() {}
 	void _features_toggled(bool pressed);
 	void _insert_text(String text);
 	void _update_substitute();
@@ -96,23 +95,22 @@ class RenameDialog : public ConfirmationDialog {
 	Label *lbl_preview_title;
 	Label *lbl_preview;
 
-	List<Pair<NodePath, String> > to_rename;
+	List<Pair<NodePath, String>> to_rename;
 	Node *preview_node;
 	bool lock_preview_update;
 	ErrorHandlerList eh;
 	bool has_errors;
 
 protected:
-	void _notification(int p_what){};
 	static void _bind_methods();
-	virtual void _post_popup();
+	virtual void _post_popup() override;
 
 public:
 	void reset();
 	void rename();
 
-	RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_undo_redo = NULL);
-	~RenameDialog(){};
+	RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_undo_redo = nullptr);
+	~RenameDialog() {}
 };
 
 #endif

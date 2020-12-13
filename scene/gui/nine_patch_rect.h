@@ -34,7 +34,6 @@
 #include "scene/gui/control.h"
 
 class NinePatchRect : public Control {
-
 	GDCLASS(NinePatchRect, Control);
 
 public:
@@ -53,7 +52,7 @@ public:
 
 protected:
 	void _notification(int p_what);
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	static void _bind_methods();
 
 public:
@@ -80,4 +79,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(NinePatchRect::AxisStretchMode)
+
 #endif // NINE_PATCH_RECT_H

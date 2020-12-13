@@ -73,22 +73,25 @@
 	</methods>
 	<members>
 		<member name="checkable" type="bool" setter="set_checkable" getter="is_checkable" default="false">
-			Used by the inspector, set when property is checkable.
+			Used by the inspector, set to [code]true[/code] when the property is checkable.
 		</member>
 		<member name="checked" type="bool" setter="set_checked" getter="is_checked" default="false">
-			Used by the inspector, when the property is checked.
+			Used by the inspector, set to [code]true[/code] when the property is checked.
+		</member>
+		<member name="deletable" type="bool" setter="set_deletable" getter="is_deletable" default="false">
+			Used by the inspector, set to [code]true[/code] when the property can be deleted by the user.
 		</member>
 		<member name="draw_red" type="bool" setter="set_draw_red" getter="is_draw_red" default="false">
-			Used by the inspector, when the property must draw with error color.
+			Used by the inspector, set to [code]true[/code] when the property must draw with error color. This is used for editable children's properties.
 		</member>
 		<member name="keying" type="bool" setter="set_keying" getter="is_keying" default="false">
-			Used by the inspector, when the property can add keys for animation.
+			Used by the inspector, set to [code]true[/code] when the property can add keys for animation.
 		</member>
 		<member name="label" type="String" setter="set_label" getter="get_label" default="&quot;&quot;">
-			Sets this property to change the label (if you want to show one).
+			Set this property to change the label (if you want to show one).
 		</member>
 		<member name="read_only" type="bool" setter="set_read_only" getter="is_read_only" default="false">
-			Used by the inspector, when the property is read-only.
+			Used by the inspector, set to [code]true[/code] when the property is read-only.
 		</member>
 	</members>
 	<signals>
@@ -126,6 +129,13 @@
 			</argument>
 			<description>
 				Emitted when a property was checked. Used internally.
+			</description>
+		</signal>
+		<signal name="property_deleted">
+			<argument index="0" name="property" type="StringName">
+			</argument>
+			<description>
+				Emitted when a property was deleted. Used internally.
 			</description>
 		</signal>
 		<signal name="property_keyed">

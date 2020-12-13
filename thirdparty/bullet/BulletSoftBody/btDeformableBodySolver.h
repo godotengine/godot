@@ -22,7 +22,8 @@
 #include "btDeformableMultiBodyDynamicsWorld.h"
 #include "BulletDynamics/Featherstone/btMultiBodyLinkCollider.h"
 #include "BulletDynamics/Featherstone/btMultiBodyConstraint.h"
-
+#include "btConjugateResidual.h"
+#include "btConjugateGradient.h"
 struct btCollisionObjectWrapper;
 class btDeformableBackwardEulerObjective;
 class btDeformableMultiBodyDynamicsWorld;
@@ -40,14 +41,15 @@ protected:
     TVStack m_backupVelocity;       // backed up v, equals v_n for implicit, equals v_{n+1}^* for explicit
     btScalar m_dt;                  // dt
     btConjugateGradient<btDeformableBackwardEulerObjective> m_cg;  // CG solver
+    btConjugateResidual<btDeformableBackwardEulerObjective> m_cr;  // CR solver
     bool m_implicit;                // use implicit scheme if true, explicit scheme if false
     int m_maxNewtonIterations;      // max number of newton iterations
     btScalar m_newtonTolerance;     // stop newton iterations if f(x) < m_newtonTolerance
     bool m_lineSearch;              // If true, use newton's method with line search under implicit scheme
-    
 public:
     // handles data related to objective function
     btDeformableBackwardEulerObjective* m_objective;
+    bool m_useProjection;
     
     btDeformableBodySolver();
     
@@ -61,14 +63,10 @@ public:
     // update soft body normals
     virtual void updateSoftBodies();
     
+    virtual btScalar solveContactConstraints(btCollisionObject** deformableBodies,int numDeformableBodies, const btContactSolverInfo& infoGlobal);
+    
     // solve the momentum equation
     virtual void solveDeformableConstraints(btScalar solverdt);
-    
-    // solve the contact between deformable and rigid as well as among deformables
-    btScalar solveContactConstraints(btCollisionObject** deformableBodies,int numDeformableBodies);
-    
-    // solve the position error  between deformable and rigid as well as among deformables;
-    btScalar solveSplitImpulse(const btContactSolverInfo& infoGlobal);
     
     // set up the position error in split impulse
     void splitImpulseSetup(const btContactSolverInfo& infoGlobal);
@@ -77,7 +75,7 @@ public:
     void reinitialize(const btAlignedObjectArray<btSoftBody *>& softBodies, btScalar dt);
     
     // set up contact constraints
-    void setConstraints();
+    void setConstraints(const btContactSolverInfo& infoGlobal);
     
     // add in elastic forces and gravity to obtain v_{n+1}^* and calls predictDeformableMotion
     virtual void predictMotion(btScalar solverdt);

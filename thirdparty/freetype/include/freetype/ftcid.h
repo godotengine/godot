@@ -4,7 +4,7 @@
  *
  *   FreeType API for accessing CID font information (specification).
  *
- * Copyright (C) 2007-2019 by
+ * Copyright (C) 2007-2020 by
  * Dereg Clegg and Michael Toftdal.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,8 +19,7 @@
 #ifndef FTCID_H_
 #define FTCID_H_
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"

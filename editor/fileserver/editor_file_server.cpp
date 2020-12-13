@@ -40,7 +40,6 @@
 #define DEBUG_TIME(m_what)
 
 void EditorFileServer::_close_client(ClientData *cd) {
-
 	cd->connection->disconnect_from_host();
 	{
 		MutexLock lock(cd->efs->wait_mutex);
@@ -54,7 +53,6 @@ void EditorFileServer::_close_client(ClientData *cd) {
 }
 
 void EditorFileServer::_subthread_start(void *s) {
-
 	ClientData *cd = (ClientData *)s;
 
 	cd->connection->set_no_delay(true);
@@ -68,11 +66,9 @@ void EditorFileServer::_subthread_start(void *s) {
 	int passlen = decode_uint32(buf4);
 
 	if (passlen > 512) {
-
 		_close_client(cd);
 		ERR_FAIL_COND(passlen > 512);
 	} else if (passlen > 0) {
-
 		Vector<char> passutf8;
 		passutf8.resize(passlen + 1);
 		err = cd->connection->get_data((uint8_t *)passutf8.ptr(), passlen);
@@ -106,7 +102,6 @@ void EditorFileServer::_subthread_start(void *s) {
 	cd->connection->put_data(buf4, 4);
 
 	while (!cd->quit) {
-
 		//wait for ID
 		err = cd->connection->get_data(buf4, 4);
 		DEBUG_TIME("get_data")
@@ -126,11 +121,9 @@ void EditorFileServer::_subthread_start(void *s) {
 		int cmd = decode_uint32(buf4);
 
 		switch (cmd) {
-
 			case FileAccessNetwork::COMMAND_FILE_EXISTS:
 			case FileAccessNetwork::COMMAND_GET_MODTIME:
 			case FileAccessNetwork::COMMAND_OPEN_FILE: {
-
 				DEBUG_TIME("open_file")
 				err = cd->connection->get_data(buf4, 4);
 				if (err != OK) {
@@ -161,14 +154,12 @@ void EditorFileServer::_subthread_start(void *s) {
 				}
 
 				if (!s2.begins_with("res://")) {
-
 					_close_client(cd);
 					ERR_FAIL_COND(!s2.begins_with("res://"));
 				}
 				ERR_CONTINUE(cd->files.has(id));
 
 				if (cmd == FileAccessNetwork::COMMAND_FILE_EXISTS) {
-
 					encode_uint32(id, buf4);
 					cd->connection->put_data(buf4, 4);
 					encode_uint32(FileAccessNetwork::RESPONSE_FILE_EXISTS, buf4);
@@ -180,7 +171,6 @@ void EditorFileServer::_subthread_start(void *s) {
 				}
 
 				if (cmd == FileAccessNetwork::COMMAND_GET_MODTIME) {
-
 					encode_uint32(id, buf4);
 					cd->connection->put_data(buf4, 4);
 					encode_uint32(FileAccessNetwork::RESPONSE_GET_MODTIME, buf4);
@@ -218,7 +208,6 @@ void EditorFileServer::_subthread_start(void *s) {
 
 			} break;
 			case FileAccessNetwork::COMMAND_READ_BLOCK: {
-
 				err = cd->connection->get_data(buf4, 8);
 				if (err != OK) {
 					_close_client(cd);
@@ -259,7 +248,6 @@ void EditorFileServer::_subthread_start(void *s) {
 
 			} break;
 			case FileAccessNetwork::COMMAND_CLOSE: {
-
 				print_verbose("CLOSED");
 				ERR_CONTINUE(!cd->files.has(id));
 				memdelete(cd->files[id]);
@@ -272,10 +260,8 @@ void EditorFileServer::_subthread_start(void *s) {
 }
 
 void EditorFileServer::_thread_start(void *s) {
-
 	EditorFileServer *self = (EditorFileServer *)s;
 	while (!self->quit) {
-
 		if (self->cmd == CMD_ACTIVATE) {
 			self->server->listen(self->port);
 			self->active = true;
@@ -312,7 +298,6 @@ void EditorFileServer::_thread_start(void *s) {
 }
 
 void EditorFileServer::start() {
-
 	stop();
 	port = EDITOR_DEF("filesystem/file_server/port", 6010);
 	password = EDITOR_DEF("filesystem/file_server/password", "");
@@ -320,17 +305,14 @@ void EditorFileServer::start() {
 }
 
 bool EditorFileServer::is_active() const {
-
 	return active;
 }
 
 void EditorFileServer::stop() {
-
 	cmd = CMD_STOP;
 }
 
 EditorFileServer::EditorFileServer() {
-
 	server.instance();
 	quit = false;
 	active = false;
@@ -342,7 +324,6 @@ EditorFileServer::EditorFileServer() {
 }
 
 EditorFileServer::~EditorFileServer() {
-
 	quit = true;
 	Thread::wait_to_finish(thread);
 	memdelete(thread);

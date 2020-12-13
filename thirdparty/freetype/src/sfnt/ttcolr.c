@@ -4,7 +4,7 @@
  *
  *   TrueType and OpenType colored glyph layer support (body).
  *
- * Copyright (C) 2018-2019 by
+ * Copyright (C) 2018-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Originally written by Shao Yu Zhang <shaozhang@fb.com>.
@@ -27,11 +27,10 @@
    */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_COLOR_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/tttags.h>
+#include <freetype/ftcolor.h>
 
 
 #ifdef TT_CONFIG_OPTION_COLOR_LAYERS
@@ -40,9 +39,9 @@
 
 
   /* NOTE: These are the table sizes calculated through the specs. */
-#define BASE_GLYPH_SIZE            6
-#define LAYER_SIZE                 4
-#define COLR_HEADER_SIZE          14
+#define BASE_GLYPH_SIZE            6U
+#define LAYER_SIZE                 4U
+#define COLR_HEADER_SIZE          14U
 
 
   typedef struct BaseGlyphRecord_

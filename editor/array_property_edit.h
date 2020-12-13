@@ -34,7 +34,6 @@
 #include "scene/main/node.h"
 
 class ArrayPropertyEdit : public Reference {
-
 	GDCLASS(ArrayPropertyEdit, Reference);
 
 	int page;

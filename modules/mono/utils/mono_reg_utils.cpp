@@ -58,7 +58,6 @@ REGSAM _get_bitness_sam() {
 }
 
 LONG _RegOpenKey(HKEY hKey, LPCWSTR lpSubKey, PHKEY phkResult) {
-
 	LONG res = RegOpenKeyExW(hKey, lpSubKey, 0, KEY_READ, phkResult);
 
 	if (res != ERROR_SUCCESS)
@@ -68,18 +67,16 @@ LONG _RegOpenKey(HKEY hKey, LPCWSTR lpSubKey, PHKEY phkResult) {
 }
 
 LONG _RegKeyQueryString(HKEY hKey, const String &p_value_name, String &r_value) {
-
 	Vector<WCHAR> buffer;
 	buffer.resize(512);
 	DWORD dwBufferSize = buffer.size();
 
-	LONG res = RegQueryValueExW(hKey, p_value_name.c_str(), 0, NULL, (LPBYTE)buffer.ptr(), &dwBufferSize);
+	LONG res = RegQueryValueExW(hKey, (LPCWSTR)(p_value_name.utf16().get_data()), 0, nullptr, (LPBYTE)buffer.ptr(), &dwBufferSize);
 
 	if (res == ERROR_MORE_DATA) {
 		// dwBufferSize now contains the actual size
-		Vector<WCHAR> buffer;
 		buffer.resize(dwBufferSize);
-		res = RegQueryValueExW(hKey, p_value_name.c_str(), 0, NULL, (LPBYTE)buffer.ptr(), &dwBufferSize);
+		res = RegQueryValueExW(hKey, (LPCWSTR)(p_value_name.utf16().get_data()), 0, nullptr, (LPBYTE)buffer.ptr(), &dwBufferSize);
 	}
 
 	if (res == ERROR_SUCCESS) {
@@ -92,9 +89,8 @@ LONG _RegKeyQueryString(HKEY hKey, const String &p_value_name, String &r_value) 
 }
 
 LONG _find_mono_in_reg(const String &p_subkey, MonoRegInfo &r_info, bool p_old_reg = false) {
-
 	HKEY hKey;
-	LONG res = _RegOpenKey(HKEY_LOCAL_MACHINE, p_subkey.c_str(), &hKey);
+	LONG res = _RegOpenKey(HKEY_LOCAL_MACHINE, (LPCWSTR)(p_subkey.utf16().get_data()), &hKey);
 
 	if (res != ERROR_SUCCESS)
 		goto cleanup;
@@ -128,11 +124,10 @@ cleanup:
 }
 
 LONG _find_mono_in_reg_old(const String &p_subkey, MonoRegInfo &r_info) {
-
 	String default_clr;
 
 	HKEY hKey;
-	LONG res = _RegOpenKey(HKEY_LOCAL_MACHINE, p_subkey.c_str(), &hKey);
+	LONG res = _RegOpenKey(HKEY_LOCAL_MACHINE, (LPCWSTR)(p_subkey.utf16().get_data()), &hKey);
 
 	if (res != ERROR_SUCCESS)
 		goto cleanup;
@@ -150,7 +145,6 @@ cleanup:
 }
 
 MonoRegInfo find_mono() {
-
 	MonoRegInfo info;
 
 	if (_find_mono_in_reg("Software\\Mono", info) == ERROR_SUCCESS)
@@ -163,7 +157,6 @@ MonoRegInfo find_mono() {
 }
 
 String find_msbuild_tools_path() {
-
 	String msbuild_tools_path;
 
 	// Try to find 15.0 with vswhere
@@ -180,7 +173,7 @@ String find_msbuild_tools_path() {
 
 	String output;
 	int exit_code;
-	OS::get_singleton()->execute(vswhere_path, vswhere_args, true, NULL, &output, &exit_code);
+	OS::get_singleton()->execute(vswhere_path, vswhere_args, true, nullptr, &output, &exit_code);
 
 	if (exit_code == 0) {
 		Vector<String> lines = output.split("\n");

@@ -31,16 +31,15 @@
 #ifndef AUDIO_STREAM_PLAYER_3D_H
 #define AUDIO_STREAM_PLAYER_3D_H
 
-#include "scene/3d/spatial.h"
-#include "scene/3d/spatial_velocity_tracker.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/velocity_tracker_3d.h"
 #include "servers/audio/audio_filter_sw.h"
 #include "servers/audio/audio_stream.h"
 #include "servers/audio_server.h"
 
-class Camera;
-class AudioStreamPlayer3D : public Spatial {
-
-	GDCLASS(AudioStreamPlayer3D, Spatial);
+class Camera3D;
+class AudioStreamPlayer3D : public Node3D {
+	GDCLASS(AudioStreamPlayer3D, Node3D);
 
 public:
 	enum AttenuationModel {
@@ -69,7 +68,6 @@ private:
 	};
 
 	struct Output {
-
 		AudioFilterSW filter;
 		AudioFilterSW::Processor filter_process[8];
 		AudioFrame vol[4];
@@ -82,7 +80,7 @@ private:
 
 		Output() {
 			filter_gain = 0;
-			viewport = NULL;
+			viewport = nullptr;
 			reverb_bus_index = -1;
 			bus_index = -1;
 		}
@@ -134,7 +132,7 @@ private:
 
 	float max_distance;
 
-	Ref<SpatialVelocityTracker> velocity_tracker;
+	Ref<VelocityTracker3D> velocity_tracker;
 
 	DopplerTracking doppler_tracking;
 
@@ -143,7 +141,7 @@ private:
 	float _get_attenuation_db(float p_distance) const;
 
 protected:
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
 	static void _bind_methods();
 

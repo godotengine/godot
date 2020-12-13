@@ -46,18 +46,15 @@
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup_menu.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene_tree_editor.h"
 
 class EditorNode;
 
 class SceneTreeDock : public VBoxContainer {
-
 	GDCLASS(SceneTreeDock, VBoxContainer);
 
 	enum Tool {
-
 		TOOL_NEW,
 		TOOL_INSTANCE,
 		TOOL_EXPAND_COLLAPSE,
@@ -66,7 +63,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_REPLACE,
 		TOOL_EXTEND_SCRIPT,
 		TOOL_ATTACH_SCRIPT,
-		TOOL_CLEAR_SCRIPT,
+		TOOL_DETACH_SCRIPT,
 		TOOL_MOVE_UP,
 		TOOL_MOVE_DOWN,
 		TOOL_DUPLICATE,
@@ -107,15 +104,18 @@ class SceneTreeDock : public VBoxContainer {
 	CreateDialog *create_dialog;
 	RenameDialog *rename_dialog;
 
-	ToolButton *button_add;
-	ToolButton *button_instance;
-	ToolButton *button_create_script;
-	ToolButton *button_clear_script;
+	Button *button_add;
+	Button *button_instance;
+	Button *button_create_script;
+	Button *button_detach_script;
 
+	Button *button_2d;
 	Button *button_3d;
+	Button *button_ui;
+	Button *button_custom;
 
 	HBoxContainer *button_hb;
-	ToolButton *edit_local, *edit_remote;
+	Button *edit_local, *edit_remote;
 	SceneTreeEditor *scene_tree;
 	Control *remote_tree;
 
@@ -203,9 +203,8 @@ class SceneTreeDock : public VBoxContainer {
 	bool _validate_no_foreign();
 	void _selection_changed();
 	void _update_script_button();
-	Node *_get_selection_group_tail(Node *p_node, List<Node *> p_list);
 
-	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, List<Pair<NodePath, NodePath> > *p_renames);
+	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, List<Pair<NodePath, NodePath>> *p_renames);
 
 	void _normalize_drop(Node *&to_node, int &to_pos, int p_type);
 
@@ -247,10 +246,10 @@ public:
 	void import_subscene();
 	void set_edited_scene(Node *p_scene);
 	void instance(const String &p_file);
-	void instance_scenes(const Vector<String> &p_files, Node *p_parent = NULL);
+	void instance_scenes(const Vector<String> &p_files, Node *p_parent = nullptr);
 	void set_selected(Node *p_node, bool p_emit_selected = false);
-	void fill_path_renames(Node *p_node, Node *p_new_parent, List<Pair<NodePath, NodePath> > *p_renames);
-	void perform_node_renames(Node *p_base, List<Pair<NodePath, NodePath> > *p_renames, Map<Ref<Animation>, Set<int> > *r_rem_anims = NULL);
+	void fill_path_renames(Node *p_node, Node *p_new_parent, List<Pair<NodePath, NodePath>> *p_renames);
+	void perform_node_renames(Node *p_base, List<Pair<NodePath, NodePath>> *p_renames, Map<Ref<Animation>, Set<int>> *r_rem_anims = nullptr);
 	SceneTreeEditor *get_tree_editor() { return scene_tree; }
 	EditorData *get_editor_data() { return editor_data; }
 

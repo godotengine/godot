@@ -37,7 +37,6 @@
 class CollisionObject2D;
 
 class CollisionPolygon2D : public Node2D {
-
 	GDCLASS(CollisionPolygon2D, Node2D);
 
 public:
@@ -56,7 +55,7 @@ protected:
 	bool one_way_collision;
 	float one_way_collision_margin;
 
-	Vector<Vector<Vector2> > _decompose_in_convex();
+	Vector<Vector<Vector2>> _decompose_in_convex();
 
 	void _build_polygon();
 
@@ -68,9 +67,9 @@ protected:
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_use_rect() const override;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 #endif
 
 	void set_build_mode(BuildMode p_mode);
@@ -79,7 +78,7 @@ public:
 	void set_polygon(const Vector<Point2> &p_polygon);
 	Vector<Point2> get_polygon() const;
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;

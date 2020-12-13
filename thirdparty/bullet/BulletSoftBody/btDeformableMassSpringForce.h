@@ -149,6 +149,52 @@ public:
         }
     }
     
+    virtual void buildDampingForceDifferentialDiagonal(btScalar scale, TVStack& diagA)
+    {
+        // implicit damping force differential
+        for (int i = 0; i < m_softBodies.size(); ++i)
+        {
+            btSoftBody* psb = m_softBodies[i];
+            if (!psb->isActive())
+            {
+                continue;
+            }
+            btScalar scaled_k_damp = m_dampingStiffness * scale;
+            for (int j = 0; j < psb->m_links.size(); ++j)
+            {
+                const btSoftBody::Link& link = psb->m_links[j];
+                btSoftBody::Node* node1 = link.m_n[0];
+                btSoftBody::Node* node2 = link.m_n[1];
+                size_t id1 = node1->index;
+                size_t id2 = node2->index;
+                if (m_momentum_conserving)
+                {
+                    if ((node2->m_x - node1->m_x).norm() > SIMD_EPSILON)
+                    {
+                        btVector3 dir = (node2->m_x - node1->m_x).normalized();
+                        for (int d = 0; d < 3; ++d)
+                        {
+                            if (node1->m_im > 0)
+                                diagA[id1][d] -= scaled_k_damp * dir[d] * dir[d];
+                            if (node2->m_im > 0)
+                                diagA[id2][d] -= scaled_k_damp * dir[d] * dir[d];
+                        }
+                    }
+                }
+                else
+                {
+                    for (int d = 0; d < 3; ++d)
+                    {
+                        if (node1->m_im > 0)
+                            diagA[id1][d] -= scaled_k_damp;
+                        if (node2->m_im > 0)
+                            diagA[id2][d] -= scaled_k_damp;
+                    }
+                }
+            }
+        }
+    }
+    
     virtual double totalElasticEnergy(btScalar dt)
     {
         double energy = 0;

@@ -30,16 +30,18 @@
 
 #include "gdnative/array.h"
 
-#include "core/array.h"
 #include "core/os/memory.h"
+#include "core/variant/array.h"
 
-#include "core/color.h"
+#include "core/math/color.h"
 
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static_assert(sizeof(godot_array) == sizeof(Array), "Array size mismatch");
 
 void GDAPI godot_array_new(godot_array *r_dest) {
 	Array *dest = (Array *)r_dest;
@@ -88,6 +90,18 @@ void GDAPI godot_array_new_packed_vector2_array(godot_array *r_dest, const godot
 	}
 }
 
+void GDAPI godot_array_new_packed_vector2i_array(godot_array *r_dest, const godot_packed_vector2i_array *p_pv2a) {
+	Array *dest = (Array *)r_dest;
+	Vector<Vector2i> *pca = (Vector<Vector2i> *)p_pv2a;
+	memnew_placement(dest, Array);
+	dest->resize(pca->size());
+
+	for (int i = 0; i < dest->size(); i++) {
+		Variant v = pca->operator[](i);
+		dest->operator[](i) = v;
+	}
+}
+
 void GDAPI godot_array_new_packed_string_array(godot_array *r_dest, const godot_packed_string_array *p_psa) {
 	Array *dest = (Array *)r_dest;
 	Vector<String> *pca = (Vector<String> *)p_psa;
@@ -100,9 +114,9 @@ void GDAPI godot_array_new_packed_string_array(godot_array *r_dest, const godot_
 	}
 }
 
-void GDAPI godot_array_new_packed_real_array(godot_array *r_dest, const godot_packed_real_array *p_pra) {
+void GDAPI godot_array_new_packed_float32_array(godot_array *r_dest, const godot_packed_float32_array *p_pra) {
 	Array *dest = (Array *)r_dest;
-	Vector<godot_real> *pca = (Vector<godot_real> *)p_pra;
+	Vector<float> *pca = (Vector<float> *)p_pra;
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
@@ -112,9 +126,33 @@ void GDAPI godot_array_new_packed_real_array(godot_array *r_dest, const godot_pa
 	}
 }
 
-void GDAPI godot_array_new_packed_int_array(godot_array *r_dest, const godot_packed_int_array *p_pia) {
+void GDAPI godot_array_new_packed_float64_array(godot_array *r_dest, const godot_packed_float64_array *p_pra) {
 	Array *dest = (Array *)r_dest;
-	Vector<godot_int> *pca = (Vector<godot_int> *)p_pia;
+	Vector<double> *pca = (Vector<double> *)p_pra;
+	memnew_placement(dest, Array);
+	dest->resize(pca->size());
+
+	for (int i = 0; i < dest->size(); i++) {
+		Variant v = pca->operator[](i);
+		dest->operator[](i) = v;
+	}
+}
+
+void GDAPI godot_array_new_packed_int32_array(godot_array *r_dest, const godot_packed_int32_array *p_pia) {
+	Array *dest = (Array *)r_dest;
+	Vector<int32_t> *pca = (Vector<int32_t> *)p_pia;
+	memnew_placement(dest, Array);
+	dest->resize(pca->size());
+
+	for (int i = 0; i < dest->size(); i++) {
+		Variant v = pca->operator[](i);
+		dest->operator[](i) = v;
+	}
+}
+
+void GDAPI godot_array_new_packed_int64_array(godot_array *r_dest, const godot_packed_int64_array *p_pia) {
+	Array *dest = (Array *)r_dest;
+	Vector<int64_t> *pca = (Vector<int64_t> *)p_pia;
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 

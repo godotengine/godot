@@ -54,7 +54,7 @@ class AudioEffectDelayInstance : public AudioEffectInstance {
 	void _process_chunk(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 
 public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 };
 
 class AudioEffectDelay : public AudioEffect {
@@ -62,7 +62,6 @@ class AudioEffectDelay : public AudioEffect {
 
 	friend class AudioEffectDelayInstance;
 	enum {
-
 		MAX_DELAY_MS = 3000,
 		MAX_TAPS = 2
 	};
@@ -127,7 +126,7 @@ public:
 	void set_feedback_lowpass(float p_lowpass);
 	float get_feedback_lowpass() const;
 
-	Ref<AudioEffectInstance> instance();
+	Ref<AudioEffectInstance> instance() override;
 
 	AudioEffectDelay();
 };

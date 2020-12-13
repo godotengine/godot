@@ -33,7 +33,7 @@
 
 #ifndef _3D_DISABLED
 
-#include "scene/3d/navigation_region.h"
+#include "scene/3d/navigation_region_3d.h"
 
 #include <Recast.h>
 

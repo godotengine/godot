@@ -29,9 +29,9 @@ import com.google.android.vending.expansion.downloader.IDownloaderClient;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.os.Build;
 import android.os.Messenger;
-import android.support.v4.app.NotificationCompat;
+
+import androidx.core.app.NotificationCompat;
 
 /**
  * This class handles displaying the notification associated with the download

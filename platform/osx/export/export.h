@@ -28,4 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef OSX_EXPORT_H
+#define OSX_EXPORT_H
+
 void register_osx_exporter();
+
+#endif // OSX_EXPORT_H

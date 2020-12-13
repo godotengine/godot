@@ -4,8 +4,10 @@
 		Represents the input shader parameter within the visual shader graph.
 	</brief_description>
 	<description>
+		Gives access to input variables (built-ins) available for the shader. See the shading reference for the list of available built-ins for each shader type (check [code]Tutorials[/code] section for link).
 	</description>
 	<tutorials>
+		<link title="Shading reference index">https://docs.godotengine.org/en/stable/tutorials/shading/shading_reference/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_input_real_name" qualifiers="const">
@@ -18,7 +20,7 @@
 	</methods>
 	<members>
 		<member name="input_name" type="String" setter="set_input_name" getter="get_input_name" default="&quot;[None]&quot;">
-			One of the several input constants in lower-case style like: "vertex"([/code]VERTEX[code]) or "point_size"([code]POINT_SIZE[/code]).
+			One of the several input constants in lower-case style like: "vertex"([code]VERTEX[/code]) or "point_size"([code]POINT_SIZE[/code]).
 		</member>
 	</members>
 	<signals>

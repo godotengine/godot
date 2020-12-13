@@ -31,10 +31,10 @@
 #ifndef ROOT_MOTION_VIEW_H
 #define ROOT_MOTION_VIEW_H
 
-#include "scene/3d/visual_instance.h"
+#include "scene/3d/visual_instance_3d.h"
 
-class RootMotionView : public VisualInstance {
-	GDCLASS(RootMotionView, VisualInstance);
+class RootMotionView : public VisualInstance3D {
+	GDCLASS(RootMotionView, VisualInstance3D);
 
 public:
 	RID immediate;
@@ -68,8 +68,8 @@ public:
 	void set_zero_y(bool p_zero_y);
 	bool get_zero_y() const;
 
-	virtual AABB get_aabb() const;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	RootMotionView();
 	~RootMotionView();

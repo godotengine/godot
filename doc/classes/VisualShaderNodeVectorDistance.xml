@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeVectorDistance" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Returns the distance between two points. To be used within the visual shader graph.
 	</brief_description>
 	<description>
+		Calculates distance from point represented by vector [code]p0[/code] to vector [code]p1[/code].
+		Translated to [code]distance(p0, p1)[/code] in the shader language.
 	</description>
 	<tutorials>
 	</tutorials>

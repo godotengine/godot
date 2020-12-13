@@ -35,13 +35,12 @@
 
 #include <EGL/egl.h>
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "core/os/os.h"
 
 using namespace Windows::UI::Core;
 
 class ContextEGL_UWP {
-
 public:
 	enum Driver {
 		GLES_2_0,

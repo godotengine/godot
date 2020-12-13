@@ -5,19 +5,30 @@
 	</brief_description>
 	<description>
 		An Animation resource contains data used to animate everything in the engine. Animations are divided into tracks, and each track must be linked to a node. The state of that node can be changed through time, by adding timed keys (events) to the track.
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		# This creates an animation that makes the node "Enemy" move to the right by
-		# 100 pixels in 1 second.
+		# 100 pixels in 0.5 seconds.
 		var animation = Animation.new()
 		var track_index = animation.add_track(Animation.TYPE_VALUE)
-		animation.track_set_path(track_index, "Enemy:position.x")
+		animation.track_set_path(track_index, "Enemy:position:x")
 		animation.track_insert_key(track_index, 0.0, 0)
 		animation.track_insert_key(track_index, 0.5, 100)
-		[/codeblock]
-		Animations are just data containers, and must be added to nodes such as an [AnimationPlayer] to be played back.
+		[/gdscript]
+		[csharp]
+		// This creates an animation that makes the node "Enemy" move to the right by
+		// 100 pixels in 0.5 seconds.
+		var animation = new Animation();
+		int trackIndex = animation.AddTrack(Animation.TrackType.Value);
+		animation.TrackSetPath(trackIndex, "Enemy:position:x");
+		animation.TrackInsertKey(trackIndex, 0.0f, 0);
+		animation.TrackInsertKey(trackIndex, 0.5f, 100);
+		[/csharp]
+		[/codeblocks]
+		Animations are just data containers, and must be added to nodes such as an [AnimationPlayer] to be played back. Animation tracks have different types, each with its own set of dedicated methods. Check [enum TrackType] to see available types.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/animation/index.html</link>
+		<link title="Animation tutorial index">https://docs.godotengine.org/en/latest/tutorials/animation/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_track">
@@ -39,6 +50,7 @@
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
+				Returns the animation name at the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Animation Track.
 			</description>
 		</method>
 		<method name="animation_track_insert_key">
@@ -51,6 +63,7 @@
 			<argument index="2" name="animation" type="StringName">
 			</argument>
 			<description>
+				Inserts a key with value [code]animation[/code] at the given [code]time[/code] (in seconds). The [code]track_idx[/code] must be the index of an Animation Track.
 			</description>
 		</method>
 		<method name="animation_track_set_key_animation">
@@ -63,6 +76,7 @@
 			<argument index="2" name="animation" type="StringName">
 			</argument>
 			<description>
+				Sets the key identified by [code]key_idx[/code] to value [code]animation[/code]. The [code]track_idx[/code] must be the index of an Animation Track.
 			</description>
 		</method>
 		<method name="audio_track_get_key_end_offset" qualifiers="const">
@@ -73,6 +87,8 @@
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
+				Returns the end offset of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
+				End offset is the number of seconds cut off at the ending of the audio stream.
 			</description>
 		</method>
 		<method name="audio_track_get_key_start_offset" qualifiers="const">
@@ -83,6 +99,8 @@
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
+				Returns the start offset of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
+				Start offset is the number of seconds cut off at the beginning of the audio stream.
 			</description>
 		</method>
 		<method name="audio_track_get_key_stream" qualifiers="const">
@@ -93,6 +111,7 @@
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
+				Returns the audio stream of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="audio_track_insert_key">
@@ -109,6 +128,8 @@
 			<argument index="4" name="end_offset" type="float" default="0">
 			</argument>
 			<description>
+				Inserts an Audio Track key at the given [code]time[/code] in seconds. The [code]track_idx[/code] must be the index of an Audio Track.
+				[code]stream[/code] is the [AudioStream] resource to play. [code]start_offset[/code] is the number of seconds cut off at the beginning of the audio stream, while [code]end_offset[/code] is at the ending.
 			</description>
 		</method>
 		<method name="audio_track_set_key_end_offset">
@@ -121,6 +142,7 @@
 			<argument index="2" name="offset" type="float">
 			</argument>
 			<description>
+				Sets the end offset of the key identified by [code]key_idx[/code] to value [code]offset[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="audio_track_set_key_start_offset">
@@ -133,6 +155,7 @@
 			<argument index="2" name="offset" type="float">
 			</argument>
 			<description>
+				Sets the start offset of the key identified by [code]key_idx[/code] to value [code]offset[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="audio_track_set_key_stream">
@@ -145,6 +168,7 @@
 			<argument index="2" name="stream" type="Resource">
 			</argument>
 			<description>
+				Sets the stream of the key identified by [code]key_idx[/code] to value [code]offset[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_in_handle" qualifiers="const">
@@ -155,6 +179,7 @@
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
+				Returns the in handle of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_out_handle" qualifiers="const">
@@ -165,6 +190,7 @@
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
+				Returns the out handle of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_value" qualifiers="const">
@@ -175,6 +201,7 @@
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
+				Returns the value of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_insert_key">
@@ -191,6 +218,8 @@
 			<argument index="4" name="out_handle" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
+				Inserts a Bezier Track key at the given [code]time[/code] in seconds. The [code]track_idx[/code] must be the index of a Bezier Track.
+				[code]in_handle[/code] is the left-side weight of the added Bezier curve point, [code]out_handle[/code] is the right-side one, while [code]value[/code] is the actual value at this point.
 			</description>
 		</method>
 		<method name="bezier_track_interpolate" qualifiers="const">
@@ -201,6 +230,7 @@
 			<argument index="1" name="time" type="float">
 			</argument>
 			<description>
+				Returns the interpolated value at the given [code]time[/code] (in seconds). The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_set_key_in_handle">
@@ -213,6 +243,7 @@
 			<argument index="2" name="in_handle" type="Vector2">
 			</argument>
 			<description>
+				Sets the in handle of the key identified by [code]key_idx[/code] to value [code]in_handle[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_set_key_out_handle">
@@ -225,6 +256,7 @@
 			<argument index="2" name="out_handle" type="Vector2">
 			</argument>
 			<description>
+				Sets the out handle of the key identified by [code]key_idx[/code] to value [code]out_handle[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_set_key_value">
@@ -237,6 +269,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
+				Sets the value of the key identified by [code]key_idx[/code] to the given value. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="clear">
@@ -648,6 +681,17 @@
 				Returns the update mode of a value track.
 			</description>
 		</method>
+		<method name="value_track_interpolate" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="track_idx" type="int">
+			</argument>
+			<argument index="1" name="time_sec" type="float">
+			</argument>
+			<description>
+				Returns the interpolated value at the given time (in seconds). The [code]track_idx[/code] must be the index of a value track.
+			</description>
+		</method>
 		<method name="value_track_set_update_mode">
 			<return type="void">
 			</return>
@@ -675,6 +719,7 @@
 	<signals>
 		<signal name="tracks_changed">
 			<description>
+				Emitted when there's a change in the list of tracks, e.g. tracks are added, moved or have changed paths.
 			</description>
 		</signal>
 	</signals>
@@ -689,10 +734,13 @@
 			Method tracks call functions with given arguments per key.
 		</constant>
 		<constant name="TYPE_BEZIER" value="3" enum="TrackType">
+			Bezier tracks are used to interpolate a value using custom curves. They can also be used to animate sub-properties of vectors and colors (e.g. alpha value of a [Color]).
 		</constant>
 		<constant name="TYPE_AUDIO" value="4" enum="TrackType">
+			Audio tracks are used to play an audio stream with either type of [AudioStreamPlayer]. The stream can be trimmed and previewed in the animation.
 		</constant>
 		<constant name="TYPE_ANIMATION" value="5" enum="TrackType">
+			Animation tracks play animations in other [AnimationPlayer] nodes.
 		</constant>
 		<constant name="INTERPOLATION_NEAREST" value="0" enum="InterpolationType">
 			No interpolation (nearest value).
@@ -713,6 +761,7 @@
 			Update at the keyframes.
 		</constant>
 		<constant name="UPDATE_CAPTURE" value="3" enum="UpdateMode">
+			Same as linear interpolation, but also interpolates from the current value (i.e. dynamically at runtime) if the first key isn't at 0 seconds.
 		</constant>
 	</constants>
 </class>

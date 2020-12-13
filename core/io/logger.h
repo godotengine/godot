@@ -32,8 +32,8 @@
 #define LOGGER_H
 
 #include "core/os/file_access.h"
-#include "core/ustring.h"
-#include "core/vector.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 
 #include <stdarg.h>
 
@@ -55,17 +55,16 @@ public:
 	void logf(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void logf_error(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 
-	virtual ~Logger();
+	virtual ~Logger() {}
 };
 
 /**
  * Writes messages to stdout/stderr.
  */
 class StdLogger : public Logger {
-
 public:
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) _PRINTF_FORMAT_ATTRIBUTE_2_0;
-	virtual ~StdLogger();
+	virtual ~StdLogger() {}
 };
 
 /**
@@ -78,7 +77,7 @@ class RotatedFileLogger : public Logger {
 	String base_path;
 	int max_files;
 
-	FileAccess *file;
+	FileAccess *file = nullptr;
 
 	void rotate_file_without_closing();
 	void close_file();
@@ -107,4 +106,4 @@ public:
 	virtual ~CompositeLogger();
 };
 
-#endif
+#endif // LOGGER_H

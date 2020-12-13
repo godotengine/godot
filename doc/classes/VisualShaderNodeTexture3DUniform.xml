@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeTexture3DUniform" inherits="VisualShaderNodeTextureUniform" version="4.0">
+	<brief_description>
+		Provides a 3D texture uniform within the visual shader graph.
+	</brief_description>
+	<description>
+		Translated to [code]uniform sampler3D[/code] in the shader language.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -8,6 +8,20 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    /// <summary>
+    /// 3×3 matrix used for 3D rotation and scale.
+    /// Almost always used as an orthogonal basis for a Transform.
+    ///
+    /// Contains 3 vector fields X, Y and Z as its columns, which are typically
+    /// interpreted as the local basis vectors of a 3D transformation. For such use,
+    /// it is composed of a scaling and a rotation matrix, in that order (M = R.S).
+    ///
+    /// Can also be accessed as array of 3D vectors. These vectors are normally
+    /// orthogonal to each other, but are not necessarily normalized (due to scaling).
+    ///
+    /// For more information, read this documentation article:
+    /// https://docs.godotengine.org/en/latest/tutorials/math/matrices_and_transforms.html
+    /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct Basis : IEquatable<Basis>
@@ -15,9 +29,9 @@ namespace Godot
         // NOTE: x, y and z are public-only. Use Column0, Column1 and Column2 internally.
 
         /// <summary>
-        /// Returns the basis matrix’s x vector.
-        /// This is equivalent to <see cref="Column0"/>.
+        /// The basis matrix's X vector (column 0).
         /// </summary>
+        /// <value>Equivalent to <see cref="Column0"/> and array index `[0]`.</value>
         public Vector3 x
         {
             get => Column0;
@@ -25,9 +39,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the basis matrix’s y vector.
-        /// This is equivalent to <see cref="Column1"/>.
+        /// The basis matrix's Y vector (column 1).
         /// </summary>
+        /// <value>Equivalent to <see cref="Column1"/> and array index `[1]`.</value>
         public Vector3 y
         {
             get => Column1;
@@ -35,19 +49,40 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the basis matrix’s z vector.
-        /// This is equivalent to <see cref="Column2"/>.
+        /// The basis matrix's Z vector (column 2).
         /// </summary>
+        /// <value>Equivalent to <see cref="Column2"/> and array index `[2]`.</value>
         public Vector3 z
         {
             get => Column2;
             set => Column2 = value;
         }
 
+        /// <summary>
+        /// Row 0 of the basis matrix. Shows which vectors contribute
+        /// to the X direction. Rows are not very useful for user code,
+        /// but are more efficient for some internal calculations.
+        /// </summary>
         public Vector3 Row0;
+
+        /// <summary>
+        /// Row 1 of the basis matrix. Shows which vectors contribute
+        /// to the Y direction. Rows are not very useful for user code,
+        /// but are more efficient for some internal calculations.
+        /// </summary>
         public Vector3 Row1;
+
+        /// <summary>
+        /// Row 2 of the basis matrix. Shows which vectors contribute
+        /// to the Z direction. Rows are not very useful for user code,
+        /// but are more efficient for some internal calculations.
+        /// </summary>
         public Vector3 Row2;
 
+        /// <summary>
+        /// Column 0 of the basis matrix (the X vector).
+        /// </summary>
+        /// <value>Equivalent to <see cref="x"/> and array index `[0]`.</value>
         public Vector3 Column0
         {
             get => new Vector3(Row0.x, Row1.x, Row2.x);
@@ -58,6 +93,11 @@ namespace Godot
                 this.Row2.x = value.z;
             }
         }
+
+        /// <summary>
+        /// Column 1 of the basis matrix (the Y vector).
+        /// </summary>
+        /// <value>Equivalent to <see cref="y"/> and array index `[1]`.</value>
         public Vector3 Column1
         {
             get => new Vector3(Row0.y, Row1.y, Row2.y);
@@ -68,6 +108,11 @@ namespace Godot
                 this.Row2.y = value.z;
             }
         }
+
+        /// <summary>
+        /// Column 2 of the basis matrix (the Z vector).
+        /// </summary>
+        /// <value>Equivalent to <see cref="z"/> and array index `[2]`.</value>
         public Vector3 Column2
         {
             get => new Vector3(Row0.z, Row1.z, Row2.z);
@@ -79,6 +124,10 @@ namespace Godot
             }
         }
 
+        /// <summary>
+        /// The scale of this basis.
+        /// </summary>
+        /// <value>Equivalent to the lengths of each column vector, but negative if the determinant is negative.</value>
         public Vector3 Scale
         {
             get
@@ -86,10 +135,17 @@ namespace Godot
                 real_t detSign = Mathf.Sign(Determinant());
                 return detSign * new Vector3
                 (
-                    new Vector3(this.Row0[0], this.Row1[0], this.Row2[0]).Length(),
-                    new Vector3(this.Row0[1], this.Row1[1], this.Row2[1]).Length(),
-                    new Vector3(this.Row0[2], this.Row1[2], this.Row2[2]).Length()
+                    Column0.Length(),
+                    Column1.Length(),
+                    Column2.Length()
                 );
+            }
+            set
+            {
+                value /= Scale; // Value becomes what's called "delta_scale" in core.
+                Column0 *= value.x;
+                Column1 *= value.y;
+                Column2 *= value.z;
             }
         }
 
@@ -151,14 +207,15 @@ namespace Godot
             }
         }
 
-        internal Quat RotationQuat()
+        public Quat RotationQuat()
         {
             Basis orthonormalizedBasis = Orthonormalized();
             real_t det = orthonormalizedBasis.Determinant();
             if (det < 0)
             {
-                // Ensure that the determinant is 1, such that result is a proper rotation matrix which can be represented by Euler angles.
-                orthonormalizedBasis = orthonormalizedBasis.Scaled(Vector3.NegOne);
+                // Ensure that the determinant is 1, such that result is a proper
+                // rotation matrix which can be represented by Euler angles.
+                orthonormalizedBasis = orthonormalizedBasis.Scaled(-Vector3.One);
             }
 
             return orthonormalizedBasis.Quat();
@@ -182,6 +239,15 @@ namespace Godot
             Row2 = new Vector3(0, 0, diagonal.z);
         }
 
+        /// <summary>
+        /// Returns the determinant of the basis matrix. If the basis is
+        /// uniformly scaled, its determinant is the square of the scale.
+        ///
+        /// A negative determinant means the basis has a negative scale.
+        /// A zero determinant means the basis isn't invertible,
+        /// and is usually considered invalid.
+        /// </summary>
+        /// <returns>The determinant of the basis matrix.</returns>
         public real_t Determinant()
         {
             real_t cofac00 = Row1[1] * Row2[2] - Row1[2] * Row2[1];
@@ -191,6 +257,16 @@ namespace Godot
             return Row0[0] * cofac00 + Row0[1] * cofac10 + Row0[2] * cofac20;
         }
 
+        /// <summary>
+        /// Returns the basis's rotation in the form of Euler angles
+        /// (in the YXZ convention: when *decomposing*, first Z, then X, and Y last).
+        /// The returned vector contains the rotation angles in
+        /// the format (X angle, Y angle, Z angle).
+        ///
+        /// Consider using the <see cref="Basis.Quat()"/> method instead, which
+        /// returns a <see cref="Godot.Quat"/> quaternion instead of Euler angles.
+        /// </summary>
+        /// <returns>A Vector3 representing the basis rotation in Euler angles.</returns>
         public Vector3 GetEuler()
         {
             Basis m = Orthonormalized();
@@ -223,6 +299,12 @@ namespace Godot
             return euler;
         }
 
+        /// <summary>
+        /// Get rows by index. Rows are not very useful for user code,
+        /// but are more efficient for some internal calculations.
+        /// </summary>
+        /// <param name="index">Which row.</param>
+        /// <returns>One of `Row0`, `Row1`, or `Row2`.</returns>
         public Vector3 GetRow(int index)
         {
             switch (index)
@@ -238,6 +320,12 @@ namespace Godot
             }
         }
 
+        /// <summary>
+        /// Sets rows by index. Rows are not very useful for user code,
+        /// but are more efficient for some internal calculations.
+        /// </summary>
+        /// <param name="index">Which row.</param>
+        /// <param name="value">The vector to set the row to.</param>
         public void SetRow(int index, Vector3 value)
         {
             switch (index)
@@ -256,16 +344,16 @@ namespace Godot
             }
         }
 
-        public Vector3 GetColumn(int index)
-        {
-            return this[index];
-        }
-
-        public void SetColumn(int index, Vector3 value)
-        {
-            this[index] = value;
-        }
-
+        /// <summary>
+        /// This function considers a discretization of rotations into
+        /// 24 points on unit sphere, lying along the vectors (x, y, z) with
+        /// each component being either -1, 0, or 1, and returns the index
+        /// of the point best representing the orientation of the object.
+        /// It is mainly used by the <see cref="GridMap"/> editor.
+        ///
+        /// For further details, refer to the Godot source code.
+        /// </summary>
+        /// <returns>The orthogonal index.</returns>
         public int GetOrthogonalIndex()
         {
             var orth = this;
@@ -279,11 +367,17 @@ namespace Godot
                     real_t v = row[j];
 
                     if (v > 0.5f)
+                    {
                         v = 1.0f;
+                    }
                     else if (v < -0.5f)
+                    {
                         v = -1.0f;
+                    }
                     else
+                    {
                         v = 0f;
+                    }
 
                     row[j] = v;
 
@@ -294,12 +388,18 @@ namespace Godot
             for (int i = 0; i < 24; i++)
             {
                 if (orth == _orthoBases[i])
+                {
                     return i;
+                }
             }
 
             return 0;
         }
 
+        /// <summary>
+        /// Returns the inverse of the matrix.
+        /// </summary>
+        /// <returns>The inverse matrix.</returns>
         public Basis Inverse()
         {
             real_t cofac00 = Row1[1] * Row2[2] - Row1[2] * Row2[1];
@@ -309,7 +409,9 @@ namespace Godot
             real_t det = Row0[0] * cofac00 + Row0[1] * cofac10 + Row0[2] * cofac20;
 
             if (det == 0)
+            {
                 throw new InvalidOperationException("Matrix determinant is zero and cannot be inverted.");
+            }
 
             real_t detInv = 1.0f / det;
 
@@ -328,11 +430,17 @@ namespace Godot
             );
         }
 
+        /// <summary>
+        /// Returns the orthonormalized version of the basis matrix (useful to
+        /// call occasionally to avoid rounding errors for orthogonal matrices).
+        /// This performs a Gram-Schmidt orthonormalization on the basis of the matrix.
+        /// </summary>
+        /// <returns>An orthonormalized basis matrix.</returns>
         public Basis Orthonormalized()
         {
-            Vector3 column0 = GetColumn(0);
-            Vector3 column1 = GetColumn(1);
-            Vector3 column2 = GetColumn(2);
+            Vector3 column0 = this[0];
+            Vector3 column1 = this[1];
+            Vector3 column2 = this[2];
 
             column0.Normalize();
             column1 = column1 - column0 * column0.Dot(column1);
@@ -343,48 +451,86 @@ namespace Godot
             return new Basis(column0, column1, column2);
         }
 
+        /// <summary>
+        /// Introduce an additional rotation around the given `axis`
+        /// by `phi` (in radians). The axis must be a normalized vector.
+        /// </summary>
+        /// <param name="axis">The axis to rotate around. Must be normalized.</param>
+        /// <param name="phi">The angle to rotate, in radians.</param>
+        /// <returns>The rotated basis matrix.</returns>
         public Basis Rotated(Vector3 axis, real_t phi)
         {
             return new Basis(axis, phi) * this;
         }
 
+        /// <summary>
+        /// Introduce an additional scaling specified by the given 3D scaling factor.
+        /// </summary>
+        /// <param name="scale">The scale to introduce.</param>
+        /// <returns>The scaled basis matrix.</returns>
         public Basis Scaled(Vector3 scale)
         {
-            var b = this;
+            Basis b = this;
             b.Row0 *= scale.x;
             b.Row1 *= scale.y;
             b.Row2 *= scale.z;
             return b;
         }
 
-        public Basis Slerp(Basis target, real_t t)
+        /// <summary>
+        /// Assuming that the matrix is a proper rotation matrix, slerp performs
+        /// a spherical-linear interpolation with another rotation matrix.
+        /// </summary>
+        /// <param name="target">The destination basis for interpolation.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <returns>The resulting basis matrix of the interpolation.</returns>
+        public Basis Slerp(Basis target, real_t weight)
         {
-            var from = new Quat(this);
-            var to = new Quat(target);
+            Quat from = new Quat(this);
+            Quat to = new Quat(target);
 
-            var b = new Basis(from.Slerp(to, t));
-            b.Row0 *= Mathf.Lerp(Row0.Length(), target.Row0.Length(), t);
-            b.Row1 *= Mathf.Lerp(Row1.Length(), target.Row1.Length(), t);
-            b.Row2 *= Mathf.Lerp(Row2.Length(), target.Row2.Length(), t);
+            Basis b = new Basis(from.Slerp(to, weight));
+            b.Row0 *= Mathf.Lerp(Row0.Length(), target.Row0.Length(), weight);
+            b.Row1 *= Mathf.Lerp(Row1.Length(), target.Row1.Length(), weight);
+            b.Row2 *= Mathf.Lerp(Row2.Length(), target.Row2.Length(), weight);
 
             return b;
         }
 
+        /// <summary>
+        /// Transposed dot product with the X axis of the matrix.
+        /// </summary>
+        /// <param name="with">A vector to calculate the dot product with.</param>
+        /// <returns>The resulting dot product.</returns>
         public real_t Tdotx(Vector3 with)
         {
             return this.Row0[0] * with[0] + this.Row1[0] * with[1] + this.Row2[0] * with[2];
         }
 
+        /// <summary>
+        /// Transposed dot product with the Y axis of the matrix.
+        /// </summary>
+        /// <param name="with">A vector to calculate the dot product with.</param>
+        /// <returns>The resulting dot product.</returns>
         public real_t Tdoty(Vector3 with)
         {
             return this.Row0[1] * with[0] + this.Row1[1] * with[1] + this.Row2[1] * with[2];
         }
 
+        /// <summary>
+        /// Transposed dot product with the Z axis of the matrix.
+        /// </summary>
+        /// <param name="with">A vector to calculate the dot product with.</param>
+        /// <returns>The resulting dot product.</returns>
         public real_t Tdotz(Vector3 with)
         {
             return this.Row0[2] * with[0] + this.Row1[2] * with[1] + this.Row2[2] * with[2];
         }
 
+        /// <summary>
+        /// Returns the transposed version of the basis matrix.
+        /// </summary>
+        /// <returns>The transposed basis matrix.</returns>
         public Basis Transposed()
         {
             var tr = this;
@@ -404,6 +550,11 @@ namespace Godot
             return tr;
         }
 
+        /// <summary>
+        /// Returns a vector transformed (multiplied) by the basis matrix.
+        /// </summary>
+        /// <param name="v">A vector to transform.</param>
+        /// <returns>The transformed vector.</returns>
         public Vector3 Xform(Vector3 v)
         {
             return new Vector3
@@ -414,6 +565,14 @@ namespace Godot
             );
         }
 
+        /// <summary>
+        /// Returns a vector transformed (multiplied) by the transposed basis matrix.
+        ///
+        /// Note: This results in a multiplication by the inverse of the
+        /// basis matrix only if it represents a rotation-reflection.
+        /// </summary>
+        /// <param name="v">A vector to inversely transform.</param>
+        /// <returns>The inversely transformed vector.</returns>
         public Vector3 XformInv(Vector3 v)
         {
             return new Vector3
@@ -424,6 +583,12 @@ namespace Godot
             );
         }
 
+        /// <summary>
+        /// Returns the basis's rotation in the form of a quaternion.
+        /// See <see cref="GetEuler()"/> if you need Euler angles, but keep in
+        /// mind that quaternions should generally be preferred to Euler angles.
+        /// </summary>
+        /// <returns>A <see cref="Godot.Quat"/> representing the basis's rotation.</returns>
         public Quat Quat()
         {
             real_t trace = Row0[0] + Row1[1] + Row2[2];
@@ -508,11 +673,33 @@ namespace Godot
         private static readonly Basis _flipY = new Basis(1, 0, 0, 0, -1, 0, 0, 0, 1);
         private static readonly Basis _flipZ = new Basis(1, 0, 0, 0, 1, 0, 0, 0, -1);
 
+        /// <summary>
+        /// The identity basis, with no rotation or scaling applied.
+        /// This is used as a replacement for `Basis()` in GDScript.
+        /// Do not use `new Basis()` with no arguments in C#, because it sets all values to zero.
+        /// </summary>
+        /// <value>Equivalent to `new Basis(Vector3.Right, Vector3.Up, Vector3.Back)`.</value>
         public static Basis Identity { get { return _identity; } }
+        /// <summary>
+        /// The basis that will flip something along the X axis when used in a transformation.
+        /// </summary>
+        /// <value>Equivalent to `new Basis(Vector3.Left, Vector3.Up, Vector3.Back)`.</value>
         public static Basis FlipX { get { return _flipX; } }
+        /// <summary>
+        /// The basis that will flip something along the Y axis when used in a transformation.
+        /// </summary>
+        /// <value>Equivalent to `new Basis(Vector3.Right, Vector3.Down, Vector3.Back)`.</value>
         public static Basis FlipY { get { return _flipY; } }
+        /// <summary>
+        /// The basis that will flip something along the Z axis when used in a transformation.
+        /// </summary>
+        /// <value>Equivalent to `new Basis(Vector3.Right, Vector3.Up, Vector3.Forward)`.</value>
         public static Basis FlipZ { get { return _flipZ; } }
 
+        /// <summary>
+        /// Constructs a pure rotation basis matrix from the given quaternion.
+        /// </summary>
+        /// <param name="quat">The quaternion to create the basis from.</param>
         public Basis(Quat quat)
         {
             real_t s = 2.0f / quat.LengthSquared;
@@ -535,26 +722,41 @@ namespace Godot
             Row2 = new Vector3(xz - wy, yz + wx, 1.0f - (xx + yy));
         }
 
-        public Basis(Vector3 euler)
+        /// <summary>
+        /// Constructs a pure rotation basis matrix from the given Euler angles
+        /// (in the YXZ convention: when *composing*, first Y, then X, and Z last),
+        /// given in the vector format as (X angle, Y angle, Z angle).
+        ///
+        /// Consider using the <see cref="Basis(Quat)"/> constructor instead, which
+        /// uses a <see cref="Godot.Quat"/> quaternion instead of Euler angles.
+        /// </summary>
+        /// <param name="eulerYXZ">The Euler angles to create the basis from.</param>
+        public Basis(Vector3 eulerYXZ)
         {
             real_t c;
             real_t s;
 
-            c = Mathf.Cos(euler.x);
-            s = Mathf.Sin(euler.x);
+            c = Mathf.Cos(eulerYXZ.x);
+            s = Mathf.Sin(eulerYXZ.x);
             var xmat = new Basis(1, 0, 0, 0, c, -s, 0, s, c);
 
-            c = Mathf.Cos(euler.y);
-            s = Mathf.Sin(euler.y);
+            c = Mathf.Cos(eulerYXZ.y);
+            s = Mathf.Sin(eulerYXZ.y);
             var ymat = new Basis(c, 0, s, 0, 1, 0, -s, 0, c);
 
-            c = Mathf.Cos(euler.z);
-            s = Mathf.Sin(euler.z);
+            c = Mathf.Cos(eulerYXZ.z);
+            s = Mathf.Sin(eulerYXZ.z);
             var zmat = new Basis(c, -s, 0, s, c, 0, 0, 0, 1);
 
             this = ymat * xmat * zmat;
         }
 
+        /// <summary>
+        /// Constructs a pure rotation basis matrix, rotated around the given `axis`
+        /// by `phi` (in radians). The axis must be a normalized vector.
+        /// </summary>
+        /// <param name="axis">The axis to rotate around. Must be normalized.</param>
+        /// <param name="phi">The angle to rotate, in radians.</param>
         public Basis(Vector3 axis, real_t phi)
         {
             Vector3 axisSq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
@@ -582,6 +784,12 @@ namespace Godot
             Row2.y = xyzt + zyxs;
         }
 
+        /// <summary>
+        /// Constructs a basis matrix from 3 axis vectors (matrix columns).
+        /// </summary>
+        /// <param name="column0">The X vector, or Column0.</param>
+        /// <param name="column1">The Y vector, or Column1.</param>
+        /// <param name="column2">The Z vector, or Column2.</param>
         public Basis(Vector3 column0, Vector3 column1, Vector3 column2)
         {
             Row0 = new Vector3(column0.x, column1.x, column2.x);
@@ -637,6 +845,12 @@ namespace Godot
             return Row0.Equals(other.Row0) && Row1.Equals(other.Row1) && Row2.Equals(other.Row2);
         }
 
+        /// <summary>
+        /// Returns true if this basis and `other` are approximately equal, by running
+        /// <see cref="Vector3.IsEqualApprox(Vector3)"/> on each component.
+        /// </summary>
+        /// <param name="other">The other basis to compare.</param>
+        /// <returns>Whether or not the matrices are approximately equal.</returns>
         public bool IsEqualApprox(Basis other)
         {
             return Row0.IsEqualApprox(other.Row0) && Row1.IsEqualApprox(other.Row1) && Row2.IsEqualApprox(other.Row2);

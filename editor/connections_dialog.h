@@ -35,7 +35,7 @@
 #ifndef CONNECTIONS_DIALOG_H
 #define CONNECTIONS_DIALOG_H
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor/editor_inspector.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
@@ -50,7 +50,6 @@ class PopupMenu;
 class ConnectDialogBinds;
 
 class ConnectDialog : public ConfirmationDialog {
-
 	GDCLASS(ConnectDialog, ConfirmationDialog);
 
 public:
@@ -103,7 +102,7 @@ private:
 
 	Label *error_label;
 
-	void ok_pressed();
+	void ok_pressed() override;
 	void _cancel_pressed();
 	void _item_activated();
 	void _text_entered(const String &_text);
@@ -142,12 +141,10 @@ public:
 // Custom Tree needed to use a RichTextLabel as tooltip control
 // when display signal documentation.
 class ConnectionsDockTree : public Tree {
-
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 };
 
 class ConnectionsDock : public VBoxContainer {
-
 	GDCLASS(ConnectionsDock, VBoxContainer);
 
 	//Right-click Pop-up Menu Options.
@@ -172,8 +169,11 @@ class ConnectionsDock : public VBoxContainer {
 	PopupMenu *signal_menu;
 	PopupMenu *slot_menu;
 	UndoRedo *undo_redo;
+	LineEdit *search_box;
 
-	Map<StringName, Map<StringName, String> > descr_cache;
+	Map<StringName, Map<StringName, String>> descr_cache;
+
+	void _filter_changed(const String &p_text);
 
 	void _make_or_edit_connection();
 	void _connect(ConnectDialog::ConnectionData cToMake);
@@ -203,7 +203,7 @@ public:
 	void set_node(Node *p_node);
 	void update_tree();
 
-	ConnectionsDock(EditorNode *p_editor = NULL);
+	ConnectionsDock(EditorNode *p_editor = nullptr);
 	~ConnectionsDock();
 };
 

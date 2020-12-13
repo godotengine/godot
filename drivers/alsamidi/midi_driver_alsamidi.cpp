@@ -33,7 +33,7 @@
 #include "midi_driver_alsamidi.h"
 
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #include <errno.h>
 
@@ -125,26 +125,27 @@ void MIDIDriverALSAMidi::thread_func(void *p_udata) {
 }
 
 Error MIDIDriverALSAMidi::open() {
-
 	void **hints;
 
-	if (snd_device_name_hint(-1, "rawmidi", &hints) < 0)
+	if (snd_device_name_hint(-1, "rawmidi", &hints) < 0) {
 		return ERR_CANT_OPEN;
+	}
 
 	int i = 0;
-	for (void **n = hints; *n != NULL; n++) {
+	for (void **n = hints; *n != nullptr; n++) {
 		char *name = snd_device_name_get_hint(*n, "NAME");
 
-		if (name != NULL) {
+		if (name != nullptr) {
 			snd_rawmidi_t *midi_in;
-			int ret = snd_rawmidi_open(&midi_in, NULL, name, SND_RAWMIDI_NONBLOCK);
+			int ret = snd_rawmidi_open(&midi_in, nullptr, name, SND_RAWMIDI_NONBLOCK);
 			if (ret >= 0) {
 				connected_inputs.insert(i++, midi_in);
 			}
 		}
 
-		if (name != NULL)
+		if (name != nullptr) {
 			free(name);
+		}
 	}
 	snd_device_name_free_hint(hints);
 
@@ -155,13 +156,12 @@ Error MIDIDriverALSAMidi::open() {
 }
 
 void MIDIDriverALSAMidi::close() {
-
 	if (thread) {
 		exit_thread = true;
 		Thread::wait_to_finish(thread);
 
 		memdelete(thread);
-		thread = NULL;
+		thread = nullptr;
 	}
 
 	for (int i = 0; i < connected_inputs.size(); i++) {
@@ -172,17 +172,14 @@ void MIDIDriverALSAMidi::close() {
 }
 
 void MIDIDriverALSAMidi::lock() const {
-
 	mutex.lock();
 }
 
 void MIDIDriverALSAMidi::unlock() const {
-
 	mutex.unlock();
 }
 
 PackedStringArray MIDIDriverALSAMidi::get_connected_inputs() {
-
 	PackedStringArray list;
 
 	lock();
@@ -201,14 +198,12 @@ PackedStringArray MIDIDriverALSAMidi::get_connected_inputs() {
 }
 
 MIDIDriverALSAMidi::MIDIDriverALSAMidi() {
-
-	thread = NULL;
+	thread = nullptr;
 
 	exit_thread = false;
 }
 
 MIDIDriverALSAMidi::~MIDIDriverALSAMidi() {
-
 	close();
 }
 

@@ -36,12 +36,11 @@
 @author Juan Linietsky <reduzio@gmail.com>
 */
 class CheckButton : public Button {
-
 	GDCLASS(CheckButton, Button);
 
 protected:
 	Size2 get_icon_size() const;
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	void _notification(int p_what);
 
 public:

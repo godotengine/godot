@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef BASIS_UNIVERSAL_TEXTURE_BASISU_H
+#define BASIS_UNIVERSAL_TEXTURE_BASISU_H
+
 #include "scene/resources/texture.h"
 
 #ifdef TOOLS_ENABLED
@@ -38,7 +41,6 @@
 
 #if 0
 class TextureBasisU : public Texture {
-
 	GDCLASS(TextureBasisU, Texture);
 	RES_BASE_EXTENSION("butex");
 
@@ -71,7 +73,8 @@ public:
 
 	TextureBasisU();
 	~TextureBasisU();
-
 };
 
 #endif
+
+#endif // BASIS_UNIVERSAL_TEXTURE_BASISU_H

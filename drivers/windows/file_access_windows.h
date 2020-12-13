@@ -39,12 +39,11 @@
 #include <stdio.h>
 
 class FileAccessWindows : public FileAccess {
-
-	FILE *f;
-	int flags;
+	FILE *f = nullptr;
+	int flags = 0;
 	void check_errors() const;
-	mutable int prev_op;
-	mutable Error last_error;
+	mutable int prev_op = 0;
+	mutable Error last_error = OK;
 	String path;
 	String path_src;
 	String save_path;
@@ -79,9 +78,10 @@ public:
 	virtual uint32_t _get_unix_permissions(const String &p_file);
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions);
 
-	FileAccessWindows();
+	FileAccessWindows() {}
 	virtual ~FileAccessWindows();
 };
 
-#endif
-#endif
+#endif // WINDOWS_ENABLED
+
+#endif // FILE_ACCESS_WINDOWS_H

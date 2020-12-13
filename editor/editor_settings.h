@@ -31,60 +31,48 @@
 #ifndef EDITOR_SETTINGS_H
 #define EDITOR_SETTINGS_H
 
-#include "core/object.h"
-
 #include "core/io/config_file.h"
+#include "core/io/resource.h"
+#include "core/object/class_db.h"
 #include "core/os/thread_safe.h"
-#include "core/resource.h"
-#include "core/translation.h"
+#include "core/string/translation.h"
 #include "scene/gui/shortcut.h"
 
 class EditorPlugin;
 
 class EditorSettings : public Resource {
-
 	GDCLASS(EditorSettings, Resource);
 
-private:
 	_THREAD_SAFE_CLASS_
 
 public:
 	struct Plugin {
-
-		EditorPlugin *instance;
+		EditorPlugin *instance = nullptr;
 		String path;
 		String name;
 		String author;
 		String version;
 		String description;
-		bool installs;
+		bool installs = false;
 		String script;
 		Vector<String> install_files;
 	};
 
 private:
 	struct VariantContainer {
-		int order;
+		int order = 0;
 		Variant variant;
 		Variant initial;
-		bool has_default_value;
-		bool hide_from_editor;
-		bool save;
-		bool restart_if_changed;
-		VariantContainer() :
-				order(0),
-				has_default_value(false),
-				hide_from_editor(false),
-				save(false),
-				restart_if_changed(false) {
-		}
+		bool has_default_value = false;
+		bool hide_from_editor = false;
+		bool save = false;
+		bool restart_if_changed = false;
+
+		VariantContainer() {}
+
 		VariantContainer(const Variant &p_variant, int p_order) :
 				order(p_order),
-				variant(p_variant),
-				has_default_value(false),
-				hide_from_editor(false),
-				save(false),
-				restart_if_changed(false) {
+				variant(p_variant) {
 		}
 	};
 
@@ -95,7 +83,7 @@ private:
 	int last_order;
 
 	Ref<Resource> clipboard;
-	Map<String, Ref<ShortCut> > shortcuts;
+	Map<String, Ref<Shortcut>> shortcuts;
 
 	String resource_path;
 	String settings_dir;
@@ -148,10 +136,11 @@ public:
 	void set_initial_value(const StringName &p_setting, const Variant &p_value, bool p_update_current = false);
 	void set_restart_if_changed(const StringName &p_setting, bool p_restart);
 	void set_manually(const StringName &p_setting, const Variant &p_value, bool p_emit_signal = false) {
-		if (p_emit_signal)
+		if (p_emit_signal) {
 			_set(p_setting, p_value);
-		else
+		} else {
 			_set_only(p_setting, p_value);
+		}
 	}
 	bool property_can_revert(const String &p_setting);
 	Variant property_get_revert(const String &p_setting);
@@ -191,9 +180,9 @@ public:
 	Vector<String> get_script_templates(const String &p_extension, const String &p_custom_path = String());
 	String get_editor_layouts_config() const;
 
-	void add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcut);
+	void add_shortcut(const String &p_name, Ref<Shortcut> &p_shortcut);
 	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
-	Ref<ShortCut> get_shortcut(const String &p_name) const;
+	Ref<Shortcut> get_shortcut(const String &p_name) const;
 	void get_shortcut_list(List<String> *r_shortcuts);
 
 	void notify_changes();
@@ -212,7 +201,7 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 Variant _EDITOR_GET(const String &p_setting);
 
 #define ED_IS_SHORTCUT(p_name, p_ev) (EditorSettings::get_singleton()->is_shortcut(p_name, p_ev))
-Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode = 0);
-Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path);
+Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode = 0);
+Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path);
 
 #endif // EDITOR_SETTINGS_H

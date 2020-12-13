@@ -39,44 +39,36 @@
 #include <transcoder/basisu_transcoder.h>
 
 void TextureBasisU::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_basisu_data", "data"), &TextureBasisU::set_basisu_data);
 	ClassDB::bind_method(D_METHOD("get_basisu_data"), &TextureBasisU::get_data);
 	ClassDB::bind_method(D_METHOD("import"), &TextureBasisU::import);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "basisu_data"), "set_basisu_data", "get_basisu_data");
-
 };
 
 int TextureBasisU::get_width() const {
-
 	return tex_size.x;
 };
 
 int TextureBasisU::get_height() const {
-
 	return tex_size.y;
 };
 
 RID TextureBasisU::get_rid() const {
-
 	return texture;
 };
 
 
 bool TextureBasisU::has_alpha() const {
-
 	return false;
 };
 
 void TextureBasisU::set_flags(uint32_t p_flags) {
-
 	flags = p_flags;
-	VisualServer::get_singleton()->texture_set_flags(texture, p_flags);
+	RenderingServer::get_singleton()->texture_set_flags(texture, p_flags);
 };
 
 uint32_t TextureBasisU::get_flags() const {
-
 	return flags;
 };
 
@@ -95,17 +87,15 @@ void TextureBasisU::set_basisu_data(const Vector<uint8_t>& p_data) {
 	Image::Format imgfmt;
 
 	if (OS::get_singleton()->has_feature("s3tc")) {
-
 		format = basist::cTFBC3; // get this from renderer
 		imgfmt = Image::FORMAT_DXT5;
 
 	} else if (OS::get_singleton()->has_feature("etc2")) {
-
 		format = basist::cTFETC2;
 		imgfmt = Image::FORMAT_ETC2_RGBA8;
 	};
 
-	basist::basisu_transcoder tr(NULL);
+	basist::basisu_transcoder tr(nullptr);
 
 	ERR_FAIL_COND(!tr.validate_header(ptr, size));
 
@@ -126,7 +116,6 @@ void TextureBasisU::set_basisu_data(const Vector<uint8_t>& p_data) {
 		int ofs = 0;
 		tr.start_transcoding(ptr, size);
 		for (int i=0; i<info.m_total_levels; i++) {
-
 			basist::basisu_image_level_info level;
 			tr.get_image_level_info(ptr, size, level, 0, i);
 
@@ -144,8 +133,8 @@ void TextureBasisU::set_basisu_data(const Vector<uint8_t>& p_data) {
 	img.instance();
 	img->create(info.m_width, info.m_height, info.m_total_levels > 1, imgfmt, gpudata);
 
-	VisualServer::get_singleton()->texture_allocate(texture, tex_size.x, tex_size.y, 0, img->get_format(), VS::TEXTURE_TYPE_2D, flags);
-	VisualServer::get_singleton()->texture_set_data(texture, img);
+	RenderingServer::get_singleton()->texture_allocate(texture, tex_size.x, tex_size.y, 0, img->get_format(), RS::TEXTURE_TYPE_2D, flags);
+	RenderingServer::get_singleton()->texture_set_data(texture, img);
 };
 
 Error TextureBasisU::import(const Ref<Image>& p_img) {
@@ -214,20 +203,17 @@ Error TextureBasisU::import(const Ref<Image>& p_img) {
 
 
 Vector<uint8_t> TextureBasisU::get_basisu_data() const {
-
 	return data;
 };
 
 TextureBasisU::TextureBasisU() {
-
 	flags = FLAGS_DEFAULT;
-	texture = VisualServer::get_singleton()->texture_create();
+	texture = RenderingServer::get_singleton()->texture_create();
 };
 
 
 TextureBasisU::~TextureBasisU() {
-
-	VisualServer::get_singleton()->free(texture);
+	RenderingServer::get_singleton()->free(texture);
 };
 
 #endif

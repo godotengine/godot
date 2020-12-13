@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  vulkan_context_osx.h                                                 */
+/*  vulkan_context_iphone.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -32,14 +32,14 @@
 #define VULKAN_CONTEXT_IPHONE_H
 
 #include "drivers/vulkan/vulkan_context.h"
-// #import <UIKit/UIKit.h>
+
+#import <UIKit/UIKit.h>
 
 class VulkanContextIPhone : public VulkanContext {
-
 	virtual const char *_get_platform_surface_extension() const;
 
 public:
-	int window_create(void *p_window, int p_width, int p_height);
+	Error window_create(DisplayServer::WindowID p_window_id, CALayer *p_metal_layer, int p_width, int p_height);
 
 	VulkanContextIPhone();
 	~VulkanContextIPhone();

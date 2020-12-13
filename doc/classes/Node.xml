@@ -17,7 +17,8 @@
 		[b]Networking with nodes:[/b] After connecting to a server (or making one, see [NetworkedMultiplayerENet]), it is possible to use the built-in RPC (remote procedure call) system to communicate over the network. By calling [method rpc] with a method name, it will be called locally and in all connected peers (peers = clients and the server that accepts connections). To identify which node receives the RPC call, Godot will use its [NodePath] (make sure node names are the same on all peers). Also, take a look at the high-level networking tutorial and corresponding demos.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/scenes_and_nodes.html</link>
+		<link title="Scenes and nodes">https://docs.godotengine.org/en/latest/getting_started/step_by_step/scenes_and_nodes.html</link>
+		<link title="All Demos">https://github.com/godotengine/godot-demo-projects/</link>
 	</tutorials>
 	<methods>
 		<method name="_enter_tree" qualifiers="virtual">
@@ -53,8 +54,9 @@
 			<description>
 				Called when there is an input event. The input event propagates up through the node tree until a node consumes it.
 				It is only called if input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_input].
-				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
+				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, [method _unhandled_input] and [method _unhandled_key_input] are usually a better fit as they allow the GUI to intercept the events first.
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_physics_process" qualifiers="virtual">
@@ -66,6 +68,7 @@
 				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant.
 				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
 				Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in [method Object._notification].
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
@@ -77,6 +80,7 @@
 				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [code]delta[/code] time since the previous frame is not constant.
 				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
 				Corresponds to the [constant NOTIFICATION_PROCESS] notification in [method Object._notification].
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_ready" qualifiers="virtual">
@@ -97,8 +101,9 @@
 			<description>
 				Called when an [InputEvent] hasn't been consumed by [method _input] or any GUI. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_input].
-				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
+				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_key_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_unhandled_key_input" qualifiers="virtual">
@@ -109,8 +114,9 @@
 			<description>
 				Called when an [InputEventKey] hasn't been consumed by [method _input] or any GUI. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled key input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_key_input].
-				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
+				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="add_child">
@@ -124,26 +130,35 @@
 				Adds a child node. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
 				[b]Note:[/b] If the child node already has a parent, the function will fail. Use [method remove_child] first to remove the node from its current parent. For example:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
+				var child_node = get_child(0)
 				if child_node.get_parent():
 				    child_node.get_parent().remove_child(child_node)
 				add_child(child_node)
-				[/codeblock]
-				If you need the child node to be added below a specific node in the list of children, use [method add_child_below_node] instead of this method.
+				[/gdscript]
+				[csharp]
+				Node childNode = GetChild(0);
+				if (childNode.GetParent() != null)
+				{
+				    childNode.GetParent().RemoveChild(childNode);
+				}
+				AddChild(childNode);
+				[/csharp]
+				[/codeblocks]
+				If you need the child node to be added below a specific node in the list of children, use [method add_sibling] instead of this method.
 				[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=https://godot.readthedocs.io/en/latest/tutorials/misc/running_code_in_the_editor.html]tool scripts[/url] and [url=https://godot.readthedocs.io/en/latest/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.
 			</description>
 		</method>
-		<method name="add_child_below_node">
+		<method name="add_sibling">
 			<return type="void">
 			</return>
-			<argument index="0" name="preceding_node" type="Node">
+			<argument index="0" name="sibling" type="Node">
 			</argument>
-			<argument index="1" name="node" type="Node">
-			</argument>
-			<argument index="2" name="legible_unique_name" type="bool" default="false">
+			<argument index="1" name="legible_unique_name" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a child node below the [code]preceding_node[/code].
+				Adds a [code]sibling[/code] node to current's node parent, at the the same level as that node, right below it.
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
 				Use [method add_child] instead of this method if you don't need the child node to be added below a specific node in the list of children.
 			</description>
@@ -191,6 +206,7 @@
 				Finds a descendant of this node whose name matches [code]mask[/code] as in [method String.match] (i.e. case-sensitive, but [code]"*"[/code] matches zero or more characters and [code]"?"[/code] matches any single character except [code]"."[/code]).
 				[b]Note:[/b] It does not match against the full path, just against individual node names.
 				If [code]owned[/code] is [code]true[/code], this method only finds nodes whose owner is this node. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
+				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get a reference to another node. Whenever possible, consider using [method get_node] instead. To avoid using [method find_node] too often, consider caching the node reference into a variable.
 			</description>
 		</method>
 		<method name="find_parent" qualifiers="const">
@@ -201,6 +217,7 @@
 			<description>
 				Finds the first parent of the current node whose name matches [code]mask[/code] as in [method String.match] (i.e. case-sensitive, but [code]"*"[/code] matches zero or more characters and [code]"?"[/code] matches any single character except [code]"."[/code]).
 				[b]Note:[/b] It does not match against the full path, just against individual node names.
+				[b]Note:[/b] As this method walks upwards in the scene tree, it can be slow in large, deeply nested scene trees. Whenever possible, consider using [method get_node] instead. To avoid using [method find_parent] too often, consider caching the node reference into a variable.
 			</description>
 		</method>
 		<method name="get_child" qualifiers="const">
@@ -210,6 +227,7 @@
 			</argument>
 			<description>
 				Returns a child node by its index (see [method get_child_count]). This method is often used for iterating all children of a node.
+				Negative indices access the children from the last one.
 				To access a child node via its name, use [method get_node].
 			</description>
 		</method>
@@ -221,7 +239,7 @@
 			</description>
 		</method>
 		<method name="get_children" qualifiers="const">
-			<return type="Array">
+			<return type="Node[]">
 			</return>
 			<description>
 				Returns an array of references to node's children.
@@ -238,7 +256,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the node's index, i.e. its position among the siblings of its parent.
+				Returns the node's order in the scene tree branch. For example, if called on the first child node the position is [code]0[/code].
 			</description>
 		</method>
 		<method name="get_network_master" qualifiers="const">
@@ -268,12 +286,20 @@
 				/root/Swamp/Goblin
 				[/codeblock]
 				Possible paths are:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				get_node("Sword")
 				get_node("Backpack/Dagger")
 				get_node("../Swamp/Alligator")
 				get_node("/root/MyGame")
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GetNode("Sword");
+				GetNode("Backpack/Dagger");
+				GetNode("../Swamp/Alligator");
+				GetNode("/root/MyGame");
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_node_and_resource">
@@ -285,11 +311,18 @@
 				Fetches a node and one of its resources as specified by the [NodePath]'s subname (e.g. [code]Area2D/CollisionShape2D:shape[/code]). If several nested resources are specified in the [NodePath], the last one will be fetched.
 				The return value is an array of size 3: the first index points to the [Node] (or [code]null[/code] if not found), the second index points to the [Resource] (or [code]null[/code] if not found), and the third index is the remaining [NodePath], if any.
 				For example, assuming that [code]Area2D/CollisionShape2D[/code] is a valid node and that its [code]shape[/code] property has been assigned a [RectangleShape2D] resource, one could have this kind of output:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				print(get_node_and_resource("Area2D/CollisionShape2D")) # [[CollisionShape2D:1161], Null, ]
 				print(get_node_and_resource("Area2D/CollisionShape2D:shape")) # [[CollisionShape2D:1161], [RectangleShape2D:1156], ]
 				print(get_node_and_resource("Area2D/CollisionShape2D:shape:extents")) # [[CollisionShape2D:1161], [RectangleShape2D:1156], :extents]
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.Print(GetNodeAndResource("Area2D/CollisionShape2D")); // [[CollisionShape2D:1161], Null, ]
+				GD.Print(GetNodeAndResource("Area2D/CollisionShape2D:shape")); // [[CollisionShape2D:1161], [RectangleShape2D:1156], ]
+				GD.Print(GetNodeAndResource("Area2D/CollisionShape2D:shape:extents")); // [[CollisionShape2D:1161], [RectangleShape2D:1156], :extents]
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_node_or_null" qualifiers="const">
@@ -305,7 +338,7 @@
 			<return type="Node">
 			</return>
 			<description>
-				Returns the parent node of the current node, or an empty [Node] if the node lacks a parent.
+				Returns the parent node of the current node, or a [code]null instance[/code] if the node lacks a parent.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">
@@ -329,13 +362,6 @@
 			</return>
 			<description>
 				Returns the time elapsed since the last physics-bound frame (see [method _physics_process]). This is always a constant value in physics processing unless the frames per second is changed via [member Engine.iterations_per_second].
-			</description>
-		</method>
-		<method name="get_position_in_parent" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the node's order in the scene tree branch. For example, if called on the first child node the position is [code]0[/code].
 			</description>
 		</method>
 		<method name="get_process_delta_time" qualifiers="const">
@@ -526,7 +552,7 @@
 				    ┠╴Menu
 				    ┃  ┠╴Label
 				    ┃  ┖╴Camera2D
-				    ┖-SplashScreen
+				    ┖╴SplashScreen
 				       ┖╴Camera2D
 				[/codeblock]
 			</description>
@@ -756,7 +782,8 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disables internal physics for this node. Internal physics processing happens in isolation from the normal [method _physics_process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or physics processing is disabled for scripting ([method set_physics_process]). Only useful for advanced uses to manipulate built-in nodes' behaviour.
+				Enables or disables internal physics for this node. Internal physics processing happens in isolation from the normal [method _physics_process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or physics processing is disabled for scripting ([method set_physics_process]). Only useful for advanced uses to manipulate built-in nodes' behavior.
+				[b]Warning:[/b] Built-in Nodes rely on the internal processing for their own logic, so changing this value from your code may lead to unexpected behavior. Script access to this internal logic is provided for specific advanced uses, but is unsafe and not supported.
 			</description>
 		</method>
 		<method name="set_process">
@@ -783,7 +810,8 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disabled internal processing for this node. Internal processing happens in isolation from the normal [method _process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or processing is disabled for scripting ([method set_process]). Only useful for advanced uses to manipulate built-in nodes' behaviour.
+				Enables or disabled internal processing for this node. Internal processing happens in isolation from the normal [method _process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or processing is disabled for scripting ([method set_process]). Only useful for advanced uses to manipulate built-in nodes' behavior.
+				[b]Warning:[/b] Built-in Nodes rely on the internal processing for their own logic, so changing this value from your code may lead to unexpected behavior. Script access to this internal logic is provided for specific advanced uses, but is unsafe and not supported.
 			</description>
 		</method>
 		<method name="set_process_unhandled_input">
@@ -834,6 +862,7 @@
 		</member>
 		<member name="name" type="StringName" setter="set_name" getter="get_name">
 			The name of the node. This name is unique among the siblings (other child nodes from the same parent). When set to an existing name, the node will be automatically renamed.
+			[b]Note:[/b] Auto-generated names might include the [code]@[/code] character, which is reserved for unique names when using [method add_child]. When setting the name manually, any [code]@[/code] will be removed.
 		</member>
 		<member name="owner" type="Node" setter="set_owner" getter="get_owner">
 			The node owner. A node can have any other node as owner (as long as it is a valid parent, grandparent, etc. ascending in the tree). When saving a node (using [PackedScene]), all the nodes it owns will be saved with it. This allows for the creation of complex [SceneTree]s, with instancing and subinstancing.
@@ -922,6 +951,9 @@
 		<constant name="NOTIFICATION_INTERNAL_PHYSICS_PROCESS" value="26">
 			Notification received every frame when the internal physics process flag is set (see [method set_physics_process_internal]).
 		</constant>
+		<constant name="NOTIFICATION_POST_ENTER_TREE" value="27">
+			Notification received when the node is ready, just before [constant NOTIFICATION_READY] is received. Unlike the latter, it's sent every time the node enters tree, instead of only once.
+		</constant>
 		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="1002">
 			Notification received from the OS when the mouse enters the game window.
 			Implemented on desktop and web platforms.
@@ -930,52 +962,59 @@
 			Notification received from the OS when the mouse leaves the game window.
 			Implemented on desktop and web platforms.
 		</constant>
-		<constant name="NOTIFICATION_WM_FOCUS_IN" value="1004">
-			Notification received from the OS when the game window is focused.
-			Implemented on all platforms.
+		<constant name="NOTIFICATION_WM_WINDOW_FOCUS_IN" value="1004">
+			Notification received from the OS when the node's parent [Window] is focused. This may be a change of focus between two windows of the same engine instance, or from the OS desktop or a third-party application to a window of the game (in which case [constant NOTIFICATION_APPLICATION_FOCUS_IN] is also emitted).
 		</constant>
-		<constant name="NOTIFICATION_WM_FOCUS_OUT" value="1005">
-			Notification received from the OS when the game window is unfocused.
-			Implemented on all platforms.
+		<constant name="NOTIFICATION_WM_WINDOW_FOCUS_OUT" value="1005">
+			Notification received from the OS when the node's parent [Window] is defocused. This may be a change of focus between two windows of the same engine instance, or from a window of the game to the OS desktop or a third-party application (in which case [constant NOTIFICATION_APPLICATION_FOCUS_OUT] is also emitted).
 		</constant>
-		<constant name="NOTIFICATION_WM_QUIT_REQUEST" value="1006">
-			Notification received from the OS when a quit request is sent (e.g. closing the window with a "Close" button or Alt+F4).
+		<constant name="NOTIFICATION_WM_CLOSE_REQUEST" value="1006">
+			Notification received from the OS when a close request is sent (e.g. closing the window with a "Close" button or [kbd]Alt + F4[/kbd]).
 			Implemented on desktop platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="1007">
 			Notification received from the OS when a go back request is sent (e.g. pressing the "Back" button on Android).
 			Specific to the Android platform.
 		</constant>
-		<constant name="NOTIFICATION_WM_UNFOCUS_REQUEST" value="1008">
-			Notification received from the OS when an unfocus request is sent (e.g. another OS window wants to take the focus).
-			No supported platforms currently send this notification.
+		<constant name="NOTIFICATION_WM_SIZE_CHANGED" value="1008">
 		</constant>
-		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="1009">
+		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="2009">
 			Notification received from the OS when the application is exceeding its allocated memory.
 			Specific to the iOS platform.
 		</constant>
-		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="1010">
+		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="2010">
 			Notification received when translations may have changed. Can be triggered by the user changing the locale. Can be used to respond to language changes, for example to change the UI strings on the fly. Useful when working with the built-in translation support, like [method Object.tr].
 		</constant>
-		<constant name="NOTIFICATION_WM_ABOUT" value="1011">
+		<constant name="NOTIFICATION_WM_ABOUT" value="2011">
 			Notification received from the OS when a request for "About" information is sent.
 			Specific to the macOS platform.
 		</constant>
-		<constant name="NOTIFICATION_CRASH" value="1012">
+		<constant name="NOTIFICATION_CRASH" value="2012">
 			Notification received from Godot's crash handler when the engine is about to crash.
 			Implemented on desktop platforms if the crash handler is enabled.
 		</constant>
-		<constant name="NOTIFICATION_OS_IME_UPDATE" value="1013">
+		<constant name="NOTIFICATION_OS_IME_UPDATE" value="2013">
 			Notification received from the OS when an update of the Input Method Engine occurs (e.g. change of IME cursor position or composition string).
 			Specific to the macOS platform.
 		</constant>
-		<constant name="NOTIFICATION_APP_RESUMED" value="1014">
-			Notification received from the OS when the app is resumed.
+		<constant name="NOTIFICATION_APPLICATION_RESUMED" value="2014">
+			Notification received from the OS when the application is resumed.
 			Specific to the Android platform.
 		</constant>
-		<constant name="NOTIFICATION_APP_PAUSED" value="1015">
-			Notification received from the OS when the app is paused.
+		<constant name="NOTIFICATION_APPLICATION_PAUSED" value="2015">
+			Notification received from the OS when the application is paused.
 			Specific to the Android platform.
+		</constant>
+		<constant name="NOTIFICATION_APPLICATION_FOCUS_IN" value="2016">
+			Notification received from the OS when the application is focused, i.e. when changing the focus from the OS desktop or a thirdparty application to any open window of the Godot instance.
+			Implemented on desktop platforms.
+		</constant>
+		<constant name="NOTIFICATION_APPLICATION_FOCUS_OUT" value="2017">
+			Notification received from the OS when the application is defocused, i.e. when changing the focus from any open window of the Godot instance to the OS desktop or a thirdparty application.
+			Implemented on desktop platforms.
+		</constant>
+		<constant name="NOTIFICATION_TEXT_SERVER_CHANGED" value="2018">
+			Notification received when text server is changed.
 		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0" enum="PauseMode">
 			Inherits pause mode from the node's parent. For the root node, it is equivalent to [constant PAUSE_MODE_STOP]. Default.

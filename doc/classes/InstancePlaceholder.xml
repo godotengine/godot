@@ -18,13 +18,14 @@
 			<argument index="1" name="custom_scene" type="PackedScene" default="null">
 			</argument>
 			<description>
+				Not thread-safe. Use [method Object.call_deferred] if calling from a thread.
 			</description>
 		</method>
 		<method name="get_instance_path" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Gets the path to the [PackedScene] resource file that is loaded by default when calling [method create_instance].
+				Gets the path to the [PackedScene] resource file that is loaded by default when calling [method create_instance]. Not thread-safe. Use [method Object.call_deferred] if calling from a thread.
 			</description>
 		</method>
 		<method name="get_stored_values">

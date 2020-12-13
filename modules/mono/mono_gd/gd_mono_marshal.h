@@ -31,8 +31,9 @@
 #ifndef GDMONOMARSHAL_H
 #define GDMONOMARSHAL_H
 
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
+#include "../managed_callable.h"
 #include "gd_mono.h"
 #include "gd_mono_utils.h"
 
@@ -62,56 +63,67 @@ T *unbox_addr(MonoObject *p_obj) {
 #define BOX_PTR(x) mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(IntPtr), x)
 #define BOX_ENUM(m_enum_class, x) mono_value_box(mono_domain_get(), m_enum_class, &x)
 
-Variant::Type managed_to_variant_type(const ManagedType &p_type);
+Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_variant = nullptr);
 
 bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_elem_type);
-bool try_get_dictionary_key_value_types(const ManagedType &p_dictionary_type, ManagedType &r_key_type, ManagedType &r_value_type);
 
 // String
 
-String mono_to_utf8_string(MonoString *p_mono_string);
-String mono_to_utf16_string(MonoString *p_mono_string);
-
 _FORCE_INLINE_ String mono_string_to_godot_not_null(MonoString *p_mono_string) {
-	if (sizeof(CharType) == 2)
-		return mono_to_utf16_string(p_mono_string);
-
-	return mono_to_utf8_string(p_mono_string);
+	char32_t *utf32 = (char32_t *)mono_string_to_utf32(p_mono_string);
+	String ret = String(utf32);
+	mono_free(utf32);
+	return ret;
 }
 
 _FORCE_INLINE_ String mono_string_to_godot(MonoString *p_mono_string) {
-	if (p_mono_string == NULL)
+	if (p_mono_string == nullptr) {
 		return String();
+	}
 
 	return mono_string_to_godot_not_null(p_mono_string);
 }
 
-_FORCE_INLINE_ MonoString *mono_from_utf8_string(const String &p_string) {
-	return mono_string_new(mono_domain_get(), p_string.utf8().get_data());
-}
-
-_FORCE_INLINE_ MonoString *mono_from_utf16_string(const String &p_string) {
-	return mono_string_from_utf16((mono_unichar2 *)p_string.c_str());
-}
-
 _FORCE_INLINE_ MonoString *mono_string_from_godot(const String &p_string) {
-	if (sizeof(CharType) == 2)
-		return mono_from_utf16_string(p_string);
-
-	return mono_from_utf8_string(p_string);
+	return mono_string_from_utf32((mono_unichar4 *)(p_string.get_data()));
 }
 
 // Variant
 
-MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_type);
-MonoObject *variant_to_mono_object(const Variant *p_var);
+size_t variant_get_managed_unboxed_size(const ManagedType &p_type);
+void *variant_to_managed_unboxed(const Variant &p_var, const ManagedType &p_type, void *r_buffer, unsigned int &r_offset);
+MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_type);
 
-_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant &p_var) {
-	return variant_to_mono_object(&p_var);
+MonoObject *variant_to_mono_object(const Variant &p_var);
+MonoArray *variant_to_mono_array(const Variant &p_var, GDMonoClass *p_type_class);
+MonoObject *variant_to_mono_object_of_class(const Variant &p_var, GDMonoClass *p_type_class);
+MonoObject *variant_to_mono_object_of_genericinst(const Variant &p_var, GDMonoClass *p_type_class);
+MonoString *variant_to_mono_string(const Variant &p_var);
+
+// These overloads were added to avoid passing a `const Variant *` to the `const Variant &`
+// parameter. That would result in the `Variant(bool)` copy constructor being called as
+// pointers are implicitly converted to bool. Implicit conversions are f-ing evil.
+
+_FORCE_INLINE_ void *variant_to_managed_unboxed(const Variant *p_var, const ManagedType &p_type, void *r_buffer, unsigned int &r_offset) {
+	return variant_to_managed_unboxed(*p_var, p_type, r_buffer, r_offset);
 }
-
-_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_type) {
-	return variant_to_mono_object(&p_var, p_type);
+_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_type) {
+	return variant_to_mono_object(*p_var, p_type);
+}
+_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant *p_var) {
+	return variant_to_mono_object(*p_var);
+}
+_FORCE_INLINE_ MonoArray *variant_to_mono_array(const Variant *p_var, GDMonoClass *p_type_class) {
+	return variant_to_mono_array(*p_var, p_type_class);
+}
+_FORCE_INLINE_ MonoObject *variant_to_mono_object_of_class(const Variant *p_var, GDMonoClass *p_type_class) {
+	return variant_to_mono_object_of_class(*p_var, p_type_class);
+}
+_FORCE_INLINE_ MonoObject *variant_to_mono_object_of_genericinst(const Variant *p_var, GDMonoClass *p_type_class) {
+	return variant_to_mono_object_of_genericinst(*p_var, p_type_class);
+}
+_FORCE_INLINE_ MonoString *variant_to_mono_string(const Variant *p_var) {
+	return variant_to_mono_string(*p_var);
 }
 
 Variant mono_object_to_variant(MonoObject *p_obj);
@@ -122,15 +134,29 @@ Variant mono_object_to_variant_no_err(MonoObject *p_obj, const ManagedType &p_ty
 /// If the MonoObject* cannot be converted to Variant, then 'ToString()' is called instead.
 String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc);
 
+// System.Collections.Generic
+
+MonoObject *Dictionary_to_system_generic_dict(const Dictionary &p_dict, GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
+Dictionary system_generic_dict_to_Dictionary(MonoObject *p_obj, GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
+
+MonoObject *Array_to_system_generic_list(const Array &p_array, GDMonoClass *p_class, MonoReflectionType *p_elem_reftype);
+Array system_generic_list_to_Array(MonoObject *p_obj, GDMonoClass *p_class, MonoReflectionType *p_elem_reftype);
+
 // Array
 
 MonoArray *Array_to_mono_array(const Array &p_array);
+MonoArray *Array_to_mono_array(const Array &p_array, MonoClass *p_array_type_class);
 Array mono_array_to_Array(MonoArray *p_array);
 
 // PackedInt32Array
 
 MonoArray *PackedInt32Array_to_mono_array(const PackedInt32Array &p_array);
 PackedInt32Array mono_array_to_PackedInt32Array(MonoArray *p_array);
+
+// PackedInt64Array
+
+MonoArray *PackedInt64Array_to_mono_array(const PackedInt64Array &p_array);
+PackedInt64Array mono_array_to_PackedInt64Array(MonoArray *p_array);
 
 // PackedByteArray
 
@@ -141,6 +167,11 @@ PackedByteArray mono_array_to_PackedByteArray(MonoArray *p_array);
 
 MonoArray *PackedFloat32Array_to_mono_array(const PackedFloat32Array &p_array);
 PackedFloat32Array mono_array_to_PackedFloat32Array(MonoArray *p_array);
+
+// PackedFloat64Array
+
+MonoArray *PackedFloat64Array_to_mono_array(const PackedFloat64Array &p_array);
+PackedFloat64Array mono_array_to_PackedFloat64Array(MonoArray *p_array);
 
 // PackedStringArray
 
@@ -162,11 +193,36 @@ PackedVector2Array mono_array_to_PackedVector2Array(MonoArray *p_array);
 MonoArray *PackedVector3Array_to_mono_array(const PackedVector3Array &p_array);
 PackedVector3Array mono_array_to_PackedVector3Array(MonoArray *p_array);
 
+#pragma pack(push, 1)
+
+struct M_Callable {
+	MonoObject *target;
+	MonoObject *method_string_name;
+	MonoDelegate *delegate;
+};
+
+struct M_SignalInfo {
+	MonoObject *owner;
+	MonoObject *name_string_name;
+};
+
+#pragma pack(pop)
+
+// Callable
+Callable managed_to_callable(const M_Callable &p_managed_callable);
+M_Callable callable_to_managed(const Callable &p_callable);
+
+// SignalInfo
+Signal managed_to_signal_info(const M_SignalInfo &p_managed_signal);
+M_SignalInfo signal_info_to_managed(const Signal &p_signal);
+
 // Structures
 
 namespace InteropLayout {
 
 enum {
+	MATCHES_int = (sizeof(int32_t) == sizeof(uint32_t)),
+
 	MATCHES_float = (sizeof(float) == sizeof(uint32_t)),
 
 	MATCHES_double = (sizeof(double) == sizeof(uint64_t)),
@@ -181,9 +237,17 @@ enum {
 					   offsetof(Vector2, x) == (sizeof(real_t) * 0) &&
 					   offsetof(Vector2, y) == (sizeof(real_t) * 1)),
 
+	MATCHES_Vector2i = (MATCHES_int && (sizeof(Vector2i) == (sizeof(int32_t) * 2)) &&
+						offsetof(Vector2i, x) == (sizeof(int32_t) * 0) &&
+						offsetof(Vector2i, y) == (sizeof(int32_t) * 1)),
+
 	MATCHES_Rect2 = (MATCHES_Vector2 && (sizeof(Rect2) == (sizeof(Vector2) * 2)) &&
 					 offsetof(Rect2, position) == (sizeof(Vector2) * 0) &&
 					 offsetof(Rect2, size) == (sizeof(Vector2) * 1)),
+
+	MATCHES_Rect2i = (MATCHES_Vector2i && (sizeof(Rect2i) == (sizeof(Vector2i) * 2)) &&
+					  offsetof(Rect2i, position) == (sizeof(Vector2i) * 0) &&
+					  offsetof(Rect2i, size) == (sizeof(Vector2i) * 1)),
 
 	MATCHES_Transform2D = (MATCHES_Vector2 && (sizeof(Transform2D) == (sizeof(Vector2) * 3))), // No field offset required, it stores an array
 
@@ -191,6 +255,11 @@ enum {
 					   offsetof(Vector3, x) == (sizeof(real_t) * 0) &&
 					   offsetof(Vector3, y) == (sizeof(real_t) * 1) &&
 					   offsetof(Vector3, z) == (sizeof(real_t) * 2)),
+
+	MATCHES_Vector3i = (MATCHES_int && (sizeof(Vector3i) == (sizeof(int32_t) * 3)) &&
+						offsetof(Vector3i, x) == (sizeof(int32_t) * 0) &&
+						offsetof(Vector3i, y) == (sizeof(int32_t) * 1) &&
+						offsetof(Vector3i, z) == (sizeof(int32_t) * 2)),
 
 	MATCHES_Basis = (MATCHES_Vector3 && (sizeof(Basis) == (sizeof(Vector3) * 3))), // No field offset required, it stores an array
 
@@ -222,11 +291,11 @@ enum {
 // In the future we may force this if we want to ref return these structs
 #ifdef GD_MONO_FORCE_INTEROP_STRUCT_COPY
 /* clang-format off */
-GD_STATIC_ASSERT(MATCHES_Vector2 && MATCHES_Rect2 && MATCHES_Transform2D && MATCHES_Vector3 &&
-				MATCHES_Basis && MATCHES_Quat && MATCHES_Transform && MATCHES_AABB && MATCHES_Color &&MATCHES_Plane);
+static_assert(MATCHES_Vector2 && MATCHES_Rect2 && MATCHES_Transform2D && MATCHES_Vector3 &&
+				MATCHES_Basis && MATCHES_Quat && MATCHES_Transform && MATCHES_AABB && MATCHES_Color &&
+				MATCHES_Plane && MATCHES_Vector2i && MATCHES_Rect2i && MATCHES_Vector3i);
 /* clang-format on */
 #endif
-
 } // namespace InteropLayout
 
 #pragma pack(push, 1)
@@ -244,6 +313,19 @@ struct M_Vector2 {
 	}
 };
 
+struct M_Vector2i {
+	int32_t x, y;
+
+	static _FORCE_INLINE_ Vector2i convert_to(const M_Vector2i &p_from) {
+		return Vector2i(p_from.x, p_from.y);
+	}
+
+	static _FORCE_INLINE_ M_Vector2i convert_from(const Vector2i &p_from) {
+		M_Vector2i ret = { p_from.x, p_from.y };
+		return ret;
+	}
+};
+
 struct M_Rect2 {
 	M_Vector2 position;
 	M_Vector2 size;
@@ -255,6 +337,21 @@ struct M_Rect2 {
 
 	static _FORCE_INLINE_ M_Rect2 convert_from(const Rect2 &p_from) {
 		M_Rect2 ret = { M_Vector2::convert_from(p_from.position), M_Vector2::convert_from(p_from.size) };
+		return ret;
+	}
+};
+
+struct M_Rect2i {
+	M_Vector2i position;
+	M_Vector2i size;
+
+	static _FORCE_INLINE_ Rect2i convert_to(const M_Rect2i &p_from) {
+		return Rect2i(M_Vector2i::convert_to(p_from.position),
+				M_Vector2i::convert_to(p_from.size));
+	}
+
+	static _FORCE_INLINE_ M_Rect2i convert_from(const Rect2i &p_from) {
+		M_Rect2i ret = { M_Vector2i::convert_from(p_from.position), M_Vector2i::convert_from(p_from.size) };
 		return ret;
 	}
 };
@@ -287,6 +384,19 @@ struct M_Vector3 {
 
 	static _FORCE_INLINE_ M_Vector3 convert_from(const Vector3 &p_from) {
 		M_Vector3 ret = { p_from.x, p_from.y, p_from.z };
+		return ret;
+	}
+};
+
+struct M_Vector3i {
+	int32_t x, y, z;
+
+	static _FORCE_INLINE_ Vector3i convert_to(const M_Vector3i &p_from) {
+		return Vector3i(p_from.x, p_from.y, p_from.z);
+	}
+
+	static _FORCE_INLINE_ M_Vector3i convert_from(const Vector3i &p_from) {
+		M_Vector3i ret = { p_from.x, p_from.y, p_from.z };
 		return ret;
 	}
 };
@@ -416,9 +526,12 @@ struct M_Plane {
 	}
 
 DECL_TYPE_MARSHAL_TEMPLATES(Vector2)
+DECL_TYPE_MARSHAL_TEMPLATES(Vector2i)
 DECL_TYPE_MARSHAL_TEMPLATES(Rect2)
+DECL_TYPE_MARSHAL_TEMPLATES(Rect2i)
 DECL_TYPE_MARSHAL_TEMPLATES(Transform2D)
 DECL_TYPE_MARSHAL_TEMPLATES(Vector3)
+DECL_TYPE_MARSHAL_TEMPLATES(Vector3i)
 DECL_TYPE_MARSHAL_TEMPLATES(Basis)
 DECL_TYPE_MARSHAL_TEMPLATES(Quat)
 DECL_TYPE_MARSHAL_TEMPLATES(Transform)
@@ -428,7 +541,6 @@ DECL_TYPE_MARSHAL_TEMPLATES(Plane)
 
 #define MARSHALLED_IN(m_type, m_from_ptr) (GDMonoMarshal::marshalled_in_##m_type(m_from_ptr))
 #define MARSHALLED_OUT(m_type, m_from) (GDMonoMarshal::marshalled_out_##m_type(m_from))
-
 } // namespace GDMonoMarshal
 
 #endif // GDMONOMARSHAL_H

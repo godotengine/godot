@@ -4,7 +4,7 @@
  *
  *   FreeType PFR cmap handling (specification).
  *
- * Copyright (C) 2002-2019 by
+ * Copyright (C) 2002-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,8 +19,7 @@
 #ifndef PFRCMAP_H_
 #define PFRCMAP_H_
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/internal/ftobjs.h>
 #include "pfrtypes.h"
 
 

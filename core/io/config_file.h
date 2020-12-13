@@ -31,16 +31,15 @@
 #ifndef CONFIG_FILE_H
 #define CONFIG_FILE_H
 
-#include "core/ordered_hash_map.h"
+#include "core/object/reference.h"
 #include "core/os/file_access.h"
-#include "core/reference.h"
-#include "core/variant_parser.h"
+#include "core/templates/ordered_hash_map.h"
+#include "core/variant/variant_parser.h"
 
 class ConfigFile : public Reference {
-
 	GDCLASS(ConfigFile, Reference);
 
-	OrderedHashMap<String, OrderedHashMap<String, Variant> > values;
+	OrderedHashMap<String, OrderedHashMap<String, Variant>> values;
 
 	PackedStringArray _get_sections() const;
 	PackedStringArray _get_section_keys(const String &p_section) const;

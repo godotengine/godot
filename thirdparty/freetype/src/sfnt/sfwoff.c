@@ -4,7 +4,7 @@
  *
  *   WOFF format management (base).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,12 +16,11 @@
  */
 
 
-#include <ft2build.h>
 #include "sfwoff.h"
-#include FT_TRUETYPE_TAGS_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_GZIP_H
+#include <freetype/tttags.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/ftgzip.h>
 
 
   /**************************************************************************
@@ -371,18 +370,18 @@
                                     sfnt + table->OrigOffset, &output_len,
                                     stream->cursor, table->CompLength );
         if ( error )
-          goto Exit;
+          goto Exit1;
         if ( output_len != table->OrigLength )
         {
           FT_ERROR(( "woff_font_open: compressed table length mismatch\n" ));
           error = FT_THROW( Invalid_Table );
-          goto Exit;
+          goto Exit1;
         }
 
 #else /* !FT_CONFIG_OPTION_USE_ZLIB */
 
         error = FT_THROW( Unimplemented_Feature );
-        goto Exit;
+        goto Exit1;
 
 #endif /* !FT_CONFIG_OPTION_USE_ZLIB */
       }
@@ -424,6 +423,10 @@
     }
 
     return error;
+
+  Exit1:
+    FT_FRAME_EXIT();
+    goto Exit;
   }
 
 

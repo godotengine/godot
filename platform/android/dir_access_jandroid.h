@@ -36,7 +36,6 @@
 #include <stdio.h>
 
 class DirAccessJAndroid : public DirAccess {
-
 	//AAssetDir* aad;
 
 	static jobject io;

@@ -39,9 +39,9 @@ class EditorTexturePreviewPlugin : public EditorResourcePreviewGenerator {
 	GDCLASS(EditorTexturePreviewPlugin, EditorResourcePreviewGenerator);
 
 public:
-	virtual bool handles(const String &p_type) const;
-	virtual bool generate_small_preview_automatically() const;
-	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const;
+	virtual bool handles(const String &p_type) const override;
+	virtual bool generate_small_preview_automatically() const override;
+	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const override;
 
 	EditorTexturePreviewPlugin();
 };
@@ -50,9 +50,9 @@ class EditorImagePreviewPlugin : public EditorResourcePreviewGenerator {
 	GDCLASS(EditorImagePreviewPlugin, EditorResourcePreviewGenerator);
 
 public:
-	virtual bool handles(const String &p_type) const;
-	virtual bool generate_small_preview_automatically() const;
-	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const;
+	virtual bool handles(const String &p_type) const override;
+	virtual bool generate_small_preview_automatically() const override;
+	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const override;
 
 	EditorImagePreviewPlugin();
 };
@@ -61,15 +61,14 @@ class EditorBitmapPreviewPlugin : public EditorResourcePreviewGenerator {
 	GDCLASS(EditorBitmapPreviewPlugin, EditorResourcePreviewGenerator);
 
 public:
-	virtual bool handles(const String &p_type) const;
-	virtual bool generate_small_preview_automatically() const;
-	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const;
+	virtual bool handles(const String &p_type) const override;
+	virtual bool generate_small_preview_automatically() const override;
+	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const override;
 
 	EditorBitmapPreviewPlugin();
 };
 
 class EditorPackedScenePreviewPlugin : public EditorResourcePreviewGenerator {
-
 public:
 	virtual bool handles(const String &p_type) const;
 	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const;
@@ -79,7 +78,6 @@ public:
 };
 
 class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
-
 	GDCLASS(EditorMaterialPreviewPlugin, EditorResourcePreviewGenerator);
 
 	RID scenario;
@@ -92,7 +90,7 @@ class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light2;
 	RID light_instance2;
 	RID camera;
-	mutable volatile bool preview_done;
+	mutable volatile bool preview_done = false;
 
 	void _preview_done(const Variant &p_udata);
 
@@ -100,9 +98,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual bool handles(const String &p_type) const;
-	virtual bool generate_small_preview_automatically() const;
-	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const;
+	virtual bool handles(const String &p_type) const override;
+	virtual bool generate_small_preview_automatically() const override;
+	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const override;
 
 	EditorMaterialPreviewPlugin();
 	~EditorMaterialPreviewPlugin();
@@ -125,7 +123,6 @@ public:
 };
 
 class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
-
 	GDCLASS(EditorMeshPreviewPlugin, EditorResourcePreviewGenerator);
 
 	RID scenario;
@@ -137,7 +134,7 @@ class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light2;
 	RID light_instance2;
 	RID camera;
-	mutable volatile bool preview_done;
+	mutable volatile bool preview_done = false;
 
 	void _preview_done(const Variant &p_udata);
 
@@ -145,22 +142,21 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual bool handles(const String &p_type) const;
-	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const;
+	virtual bool handles(const String &p_type) const override;
+	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const override;
 
 	EditorMeshPreviewPlugin();
 	~EditorMeshPreviewPlugin();
 };
 
 class EditorFontPreviewPlugin : public EditorResourcePreviewGenerator {
-
 	GDCLASS(EditorFontPreviewPlugin, EditorResourcePreviewGenerator);
 
 	RID viewport;
 	RID viewport_texture;
 	RID canvas;
 	RID canvas_item;
-	mutable volatile bool preview_done;
+	mutable volatile bool preview_done = false;
 
 	void _preview_done(const Variant &p_udata);
 
@@ -168,9 +164,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual bool handles(const String &p_type) const;
-	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const;
-	virtual Ref<Texture2D> generate_from_path(const String &p_path, const Size2 &p_size) const;
+	virtual bool handles(const String &p_type) const override;
+	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const override;
+	virtual Ref<Texture2D> generate_from_path(const String &p_path, const Size2 &p_size) const override;
 
 	EditorFontPreviewPlugin();
 	~EditorFontPreviewPlugin();

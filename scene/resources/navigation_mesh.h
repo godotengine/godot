@@ -36,7 +36,6 @@
 class Mesh;
 
 class NavigationMesh : public Resource {
-
 	GDCLASS(NavigationMesh, Resource);
 
 	Vector<Vector3> vertices;
@@ -47,7 +46,6 @@ class NavigationMesh : public Resource {
 	Ref<ArrayMesh> debug_mesh;
 
 	struct _EdgeKey {
-
 		Vector3 from;
 		Vector3 to;
 
@@ -56,7 +54,7 @@ class NavigationMesh : public Resource {
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 	void _set_polygons(const Array &p_array);
 	Array _get_polygons() const;

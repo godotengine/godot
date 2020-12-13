@@ -33,13 +33,11 @@
 #include <stdio.h>
 
 struct _WinTranslatePair {
-
 	unsigned int keysym;
 	unsigned int keycode;
 };
 
 static _WinTranslatePair _vk_to_keycode[] = {
-
 	{ KEY_BACKSPACE, VK_BACK }, // (0x08) // backspace
 	{ KEY_TAB, VK_TAB }, //(0x09)
 
@@ -130,7 +128,7 @@ static _WinTranslatePair _vk_to_keycode[] = {
 
 	{ KEY_MASK_META, VK_LWIN }, //(0x5B)
 	{ KEY_MASK_META, VK_RWIN }, //(0x5C)
-	//VK_APPS (0x5D)
+	{ KEY_MENU, VK_APPS }, //(0x5D)
 	{ KEY_STANDBY, VK_SLEEP }, //(0x5F)
 	{ KEY_KP_0, VK_NUMPAD0 }, //(0x60)
 	{ KEY_KP_1, VK_NUMPAD1 }, //(0x61)
@@ -239,7 +237,6 @@ VK_OEM_CLEAR (0xFE)
 */
 
 static _WinTranslatePair _scancode_to_keycode[] = {
-
 	{ KEY_ESCAPE, 0x01 },
 	{ KEY_1, 0x02 },
 	{ KEY_2, 0x03 },
@@ -337,9 +334,7 @@ static _WinTranslatePair _scancode_to_keycode[] = {
 };
 
 unsigned int KeyMappingWindows::get_keysym(unsigned int p_code) {
-
 	for (int i = 0; _vk_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
-
 		if (_vk_to_keycode[i].keycode == p_code) {
 			//printf("outcode: %x\n",_vk_to_keycode[i].keysym);
 
@@ -353,7 +348,6 @@ unsigned int KeyMappingWindows::get_keysym(unsigned int p_code) {
 unsigned int KeyMappingWindows::get_scansym(unsigned int p_code, bool p_extended) {
 	unsigned int keycode = KEY_UNKNOWN;
 	for (int i = 0; _scancode_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
-
 		if (_scancode_to_keycode[i].keycode == p_code) {
 			keycode = _scancode_to_keycode[i].keysym;
 			break;
@@ -414,4 +408,17 @@ unsigned int KeyMappingWindows::get_scansym(unsigned int p_code, bool p_extended
 	}
 
 	return keycode;
+}
+
+bool KeyMappingWindows::is_extended_key(unsigned int p_code) {
+	return p_code == VK_INSERT ||
+		   p_code == VK_DELETE ||
+		   p_code == VK_HOME ||
+		   p_code == VK_END ||
+		   p_code == VK_PRIOR ||
+		   p_code == VK_NEXT ||
+		   p_code == VK_LEFT ||
+		   p_code == VK_UP ||
+		   p_code == VK_RIGHT ||
+		   p_code == VK_DOWN;
 }

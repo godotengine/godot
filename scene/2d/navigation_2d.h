@@ -31,11 +31,10 @@
 #ifndef NAVIGATION_2D_H
 #define NAVIGATION_2D_H
 
-#include "scene/2d/navigation_polygon.h"
+#include "scene/2d/navigation_region_2d.h"
 #include "scene/2d/node_2d.h"
 
 class Navigation2D : public Node2D {
-
 	GDCLASS(Navigation2D, Node2D);
 
 	RID map;

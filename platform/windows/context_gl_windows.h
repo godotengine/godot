@@ -35,7 +35,7 @@
 #ifndef CONTEXT_GL_WIN_H
 #define CONTEXT_GL_WIN_H
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "core/os/os.h"
 
 #include <windows.h>
@@ -44,7 +44,6 @@ typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
 typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
 
 class ContextGL_Windows {
-
 	HDC hDC;
 	HGLRC hRC;
 	unsigned int pixel_format;

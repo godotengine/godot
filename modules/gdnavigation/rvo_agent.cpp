@@ -36,8 +36,7 @@
 	@author AndreaCatania
 */
 
-RvoAgent::RvoAgent() :
-		map(NULL) {
+RvoAgent::RvoAgent() {
 	callback.id = ObjectID();
 }
 
@@ -70,7 +69,7 @@ void RvoAgent::dispatch_callback() {
 		return;
 	}
 	Object *obj = ObjectDB::get_instance(callback.id);
-	if (obj == NULL) {
+	if (obj == nullptr) {
 		callback.id = ObjectID();
 	}
 

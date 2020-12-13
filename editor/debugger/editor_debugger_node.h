@@ -42,7 +42,6 @@ class ScriptEditorDebugger;
 class TabContainer;
 
 class EditorDebuggerNode : public MarginContainer {
-
 	GDCLASS(EditorDebuggerNode, MarginContainer);
 
 public:
@@ -61,7 +60,7 @@ private:
 		DEBUG_STEP,
 		DEBUG_BREAK,
 		DEBUG_CONTINUE,
-		DEBUG_SHOW_KEEP_OPEN,
+		DEBUG_KEEP_DEBUGGER_OPEN,
 		DEBUG_WITH_EXTERNAL_EDITOR,
 	};
 
@@ -71,12 +70,13 @@ private:
 		int line = 0;
 
 		bool operator<(const Breakpoint &p_b) const {
-			if (line == p_b.line)
+			if (line == p_b.line) {
 				return source < p_b.source;
+			}
 			return line < p_b.line;
 		}
 
-		Breakpoint(){};
+		Breakpoint() {}
 
 		Breakpoint(const String &p_source, int p_line) {
 			line = p_line;
@@ -85,9 +85,9 @@ private:
 	};
 
 	Ref<EditorDebuggerServer> server;
-	TabContainer *tabs = NULL;
-	Button *debugger_button = NULL;
-	MenuButton *script_menu = NULL;
+	TabContainer *tabs = nullptr;
+	Button *debugger_button = nullptr;
+	MenuButton *script_menu = nullptr;
 
 	Ref<Script> stack_script; // Why?!?
 
@@ -95,13 +95,15 @@ private:
 	int last_warning_count = 0;
 
 	float inspect_edited_object_timeout = 0;
-	EditorDebuggerTree *remote_scene_tree = NULL;
+	EditorDebuggerTree *remote_scene_tree = nullptr;
 	float remote_scene_tree_timeout = 0.0;
 	bool auto_switch_remote_scene_tree = false;
 	bool debug_with_external_editor = false;
 	bool hide_on_stop = true;
 	CameraOverride camera_override = OVERRIDE_NONE;
 	Map<Breakpoint, bool> breakpoints;
+
+	Set<Ref<Script>> debugger_plugins;
 
 	ScriptEditorDebugger *_add_debugger();
 	EditorDebuggerRemoteObject *get_inspected_remote_object();
@@ -131,6 +133,7 @@ protected:
 	void _paused();
 	void _break_state_changed();
 	void _menu_option(int p_id);
+	void _update_debug_options();
 
 protected:
 	void _notification(int p_what);
@@ -183,8 +186,11 @@ public:
 	void set_camera_override(CameraOverride p_override) { camera_override = p_override; }
 	CameraOverride get_camera_override() { return camera_override; }
 
-	Error start();
+	Error start(const String &p_protocol = "tcp://");
 
 	void stop();
+
+	void add_debugger_plugin(const Ref<Script> &p_script);
+	void remove_debugger_plugin(const Ref<Script> &p_script);
 };
 #endif // EDITOR_DEBUGGER_NODE_H

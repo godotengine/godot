@@ -32,7 +32,7 @@
 #define IMAGE_LOADER_SVG_H
 
 #include "core/io/image_loader.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 /**
 	@author Daniel Ramirez <djrmuv@gmail.com>
@@ -43,7 +43,6 @@ struct NSVGrasterizer;
 struct NSVGimage;
 
 class SVGRasterizer {
-
 	NSVGrasterizer *rasterizer;
 
 public:
@@ -63,7 +62,7 @@ class ImageLoaderSVG : public ImageFormatLoader {
 	static Error _create_image(Ref<Image> p_image, const Vector<uint8_t> *p_data, float p_scale, bool upsample, bool convert_colors = false);
 
 public:
-	static void set_convert_colors(Dictionary *p_replace_color = NULL);
+	static void set_convert_colors(Dictionary *p_replace_color = nullptr);
 	static Error create_image_from_string(Ref<Image> p_image, const char *p_svg_str, float p_scale, bool upsample, bool convert_colors = false);
 
 	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);

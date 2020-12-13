@@ -4,7 +4,7 @@
  *
  *   Access of TrueType's `gasp' table (body).
  *
- * Copyright (C) 2007-2019 by
+ * Copyright (C) 2007-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,9 +16,8 @@
  */
 
 
-#include <ft2build.h>
-#include FT_GASP_H
-#include FT_INTERNAL_TRUETYPE_TYPES_H
+#include <freetype/ftgasp.h>
+#include <freetype/internal/tttypes.h>
 
 
   FT_EXPORT_DEF( FT_Int )

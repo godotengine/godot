@@ -31,11 +31,10 @@
 #ifndef EDITOR_RUN_SCRIPT_H
 #define EDITOR_RUN_SCRIPT_H
 
-#include "core/reference.h"
+#include "core/object/reference.h"
 #include "editor_plugin.h"
 class EditorNode;
 class EditorScript : public Reference {
-
 	GDCLASS(EditorScript, Reference);
 
 	EditorNode *editor;

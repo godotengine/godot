@@ -4,7 +4,7 @@
  *
  *   Type 1 Glyph Loader (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,15 +16,14 @@
  */
 
 
-#include <ft2build.h>
 #include "t1gload.h"
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_OUTLINE_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_INTERNAL_CFF_TYPES_H
-#include FT_DRIVER_H
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/ftoutln.h>
+#include <freetype/internal/psaux.h>
+#include <freetype/internal/cfftypes.h>
+#include <freetype/ftdriver.h>
 
 #include "t1errors.h"
 
@@ -334,7 +333,7 @@
       else
         advances[nn] = 0;
 
-      FT_TRACE5(( "  idx %d: advance width %d font unit%s\n",
+      FT_TRACE5(( "  idx %d: advance width %ld font unit%s\n",
                   first + nn,
                   advances[nn],
                   advances[nn] == 1 ? "" : "s" ));

@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 
 class BoxContainer : public Container {
-
 	GDCLASS(BoxContainer, Container);
 
 public:
@@ -61,13 +60,12 @@ public:
 	void set_alignment(AlignMode p_align);
 	AlignMode get_alignment() const;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	BoxContainer(bool p_vertical = false);
 };
 
 class HBoxContainer : public BoxContainer {
-
 	GDCLASS(HBoxContainer, BoxContainer);
 
 public:
@@ -77,7 +75,6 @@ public:
 
 class MarginContainer;
 class VBoxContainer : public BoxContainer {
-
 	GDCLASS(VBoxContainer, BoxContainer);
 
 public:

@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 // Godot imports
+#include "core/config/project_settings.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 // PluginScript imports
 #include "pluginscript_language.h"
 #include "pluginscript_script.h"
@@ -142,6 +142,10 @@ bool PluginScriptLanguage::supports_builtin_mode() const {
 	return _desc.supports_builtin_mode;
 }
 
+bool PluginScriptLanguage::can_inherit_from_file() const {
+	return _desc.can_inherit_from_file;
+}
+
 int PluginScriptLanguage::find_function(const String &p_function, const String &p_code) const {
 	if (_desc.find_function) {
 		return _desc.find_function(_data, (godot_string *)&p_function, (godot_string *)&p_code);
@@ -210,7 +214,7 @@ void PluginScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) c
 	}
 }
 
-void PluginScriptLanguage::get_public_constants(List<Pair<String, Variant> > *p_constants) const {
+void PluginScriptLanguage::get_public_constants(List<Pair<String, Variant>> *p_constants) const {
 	// TODO: provide this statically in `godot_pluginscript_language_desc` ?
 	if (_desc.get_public_constants) {
 		Dictionary constants;
@@ -396,6 +400,32 @@ void PluginScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool 
 	// TODO
 	unlock();
 #endif
+}
+
+bool PluginScriptLanguage::handles_global_class_type(const String &p_type) const {
+	return p_type == "PluginScript";
+}
+
+String PluginScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
+	if (!p_path.empty()) {
+		Ref<PluginScript> script = ResourceLoader::load(p_path, "PluginScript");
+		if (script.is_valid()) {
+			if (r_base_type) {
+				*r_base_type = script->get_instance_base_type();
+			}
+			if (r_icon_path) {
+				*r_icon_path = script->get_script_class_icon_path();
+			}
+			return script->get_script_class_name();
+		}
+		if (r_base_type) {
+			*r_base_type = String();
+		}
+		if (r_icon_path) {
+			*r_icon_path = String();
+		}
+	}
+	return String();
 }
 
 void PluginScriptLanguage::lock() {

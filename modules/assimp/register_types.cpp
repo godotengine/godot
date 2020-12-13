@@ -42,7 +42,6 @@ static void _editor_init() {
 #endif
 
 void register_assimp_types() {
-
 #ifdef TOOLS_ENABLED
 	ClassDB::APIType prev_api = ClassDB::get_current_api();
 	ClassDB::set_current_api(ClassDB::API_EDITOR);

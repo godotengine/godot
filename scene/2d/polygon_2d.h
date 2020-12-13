@@ -34,7 +34,6 @@
 #include "scene/2d/node_2d.h"
 
 class Polygon2D : public Node2D {
-
 	GDCLASS(Polygon2D, Node2D);
 
 	Vector<Vector2> polygon;
@@ -52,10 +51,6 @@ class Polygon2D : public Node2D {
 
 	Color color;
 	Ref<Texture2D> texture;
-	Ref<Texture2D> normal_map;
-	Ref<Texture2D> specular_map;
-	Color specular_color;
-	float shininess;
 
 	Size2 tex_scale;
 	Vector2 tex_ofs;
@@ -83,16 +78,16 @@ protected:
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual Dictionary _edit_get_state() const;
-	virtual void _edit_set_state(const Dictionary &p_state);
+	virtual Dictionary _edit_get_state() const override;
+	virtual void _edit_set_state(const Dictionary &p_state) override;
 
-	virtual void _edit_set_pivot(const Point2 &p_pivot);
-	virtual Point2 _edit_get_pivot() const;
-	virtual bool _edit_use_pivot() const;
-	virtual Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
+	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
+	virtual Point2 _edit_get_pivot() const override;
+	virtual bool _edit_use_pivot() const override;
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_use_rect() const override;
 
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 #endif
 
 	void set_polygon(const Vector<Vector2> &p_polygon);
@@ -115,18 +110,6 @@ public:
 
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
-
-	void set_normal_map(const Ref<Texture2D> &p_normal_map);
-	Ref<Texture2D> get_normal_map() const;
-
-	void set_specular_map(const Ref<Texture2D> &p_specular_map);
-	Ref<Texture2D> get_specular_map() const;
-
-	void set_specular_color(const Color &p_specular_color);
-	Color get_specular_color() const;
-
-	void set_shininess(float p_shininess);
-	float get_shininess() const;
 
 	void set_texture_offset(const Vector2 &p_offset);
 	Vector2 get_texture_offset() const;

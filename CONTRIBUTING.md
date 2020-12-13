@@ -119,6 +119,45 @@ for an introduction to developing on Godot.
 The [Contributing docs](https://docs.godotengine.org/en/latest/community/contributing/index.html)
 also have important information on the PR workflow and the code style we use.
 
+### Document your changes
+
+If your pull request adds methods, properties or signals that are exposed to
+scripting APIs, you **must** update the class reference to document those.
+This is to ensure the documentation coverage doesn't decrease as contributions
+are merged.
+
+[Update the documentation template](https://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html#updating-the-documentation-template)
+using your compiled binary, then fill in the descriptions.
+Follow the style guide described in the
+[Docs writing guidelines](https://docs.godotengine.org/en/latest/community/contributing/docs_writing_guidelines.html).
+
+If your pull request modifies parts of the code in a non-obvious way, make sure
+to add comments in the code as well. This helps other people understand the
+change without having to look at `git blame`.
+
+### Write unit tests
+
+When fixing a bug or contributing a new feature, we recommend including unit
+tests in the same commit as the rest of the pull request. Unit tests are pieces
+of code that compare the output to a predetermined *expected result* to detect
+regressions. Tests are compiled and run on GitHub Actions for every commit and
+pull request.
+
+Pull requests that include tests are more likely to be merged, since we can have
+greater confidence in them not being the target of regressions in the future.
+
+For bugs, the unit tests should cover the functionality that was previously
+broken. If done well, this ensures regressions won't appear in the future
+again. For new features, the unit tests should cover the newly added
+functionality, testing both the "success" and "expected failure" cases if
+applicable.
+
+Feel free to contribute standalone pull requests to add new tests or improve
+existing tests as well.
+
+See [Unit testing](https://docs.godotengine.org/en/latest/development/cpp/unit_testing.html)
+for information on writing tests in Godot's C++ codebase.
+
 ### Be nice to the Git history
 
 Try to make simple PRs that handle one specific topic. Just like for reporting

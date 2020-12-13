@@ -31,19 +31,18 @@
 #ifndef RESOURCE_LOADER_H
 #define RESOURCE_LOADER_H
 
+#include "core/io/resource.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
-#include "core/resource.h"
 
 class ResourceFormatLoader : public Reference {
-
 	GDCLASS(ResourceFormatLoader, Reference);
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL, bool p_use_sub_threads = false, float *r_progress = nullptr);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual bool exists(const String &p_path) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
@@ -67,7 +66,6 @@ typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(RES p_resource, const String &p_path);
 
 class ResourceLoader {
-
 	enum {
 		MAX_LOADERS = 64
 	};
@@ -90,10 +88,10 @@ private:
 	static void *dep_err_notify_ud;
 	static DependencyErrorNotify dep_err_notify;
 	static bool abort_on_missing_resource;
-	static HashMap<String, Vector<String> > translation_remaps;
+	static HashMap<String, Vector<String>> translation_remaps;
 	static HashMap<String, String> path_remaps;
 
-	static String _path_remap(const String &p_path, bool *r_translation_remapped = NULL);
+	static String _path_remap(const String &p_path, bool *r_translation_remapped = nullptr);
 	friend class Resource;
 
 	static SelfList<Resource>::List remapped_list;
@@ -140,9 +138,9 @@ private:
 public:
 	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, const String &p_source_resource = String());
 	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
-	static RES load_threaded_get(const String &p_path, Error *r_error = NULL);
+	static RES load_threaded_get(const String &p_path, Error *r_error = nullptr);
 
-	static RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = NULL);
+	static RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = nullptr);
 	static bool exists(const String &p_path, const String &p_type_hint = "");
 
 	static void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions);
@@ -160,7 +158,9 @@ public:
 	static bool get_timestamp_on_load() { return timestamp_on_load; }
 
 	static void notify_load_error(const String &p_err) {
-		if (err_notify) err_notify(err_notify_ud, p_err);
+		if (err_notify) {
+			err_notify(err_notify_ud, p_err);
+		}
 	}
 	static void set_error_notify_func(void *p_ud, ResourceLoadErrorNotify p_err_notify) {
 		err_notify = p_err_notify;
@@ -168,7 +168,9 @@ public:
 	}
 
 	static void notify_dependency_error(const String &p_path, const String &p_dependency, const String &p_type) {
-		if (dep_err_notify) dep_err_notify(dep_err_notify_ud, p_path, p_dependency, p_type);
+		if (dep_err_notify) {
+			dep_err_notify(dep_err_notify_ud, p_path, p_dependency, p_type);
+		}
 	}
 	static void set_dependency_error_notify_func(void *p_ud, DependencyErrorNotify p_err_notify) {
 		dep_err_notify = p_err_notify;
@@ -200,4 +202,4 @@ public:
 	static void finalize();
 };
 
-#endif
+#endif // RESOURCE_LOADER_H

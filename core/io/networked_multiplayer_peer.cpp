@@ -31,7 +31,6 @@
 #include "networked_multiplayer_peer.h"
 
 void NetworkedMultiplayerPeer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_transfer_mode", "mode"), &NetworkedMultiplayerPeer::set_transfer_mode);
 	ClassDB::bind_method(D_METHOD("get_transfer_mode"), &NetworkedMultiplayerPeer::get_transfer_mode);
 	ClassDB::bind_method(D_METHOD("set_target_peer", "id"), &NetworkedMultiplayerPeer::set_target_peer);
@@ -65,7 +64,4 @@ void NetworkedMultiplayerPeer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("server_disconnected"));
 	ADD_SIGNAL(MethodInfo("connection_succeeded"));
 	ADD_SIGNAL(MethodInfo("connection_failed"));
-}
-
-NetworkedMultiplayerPeer::NetworkedMultiplayerPeer() {
 }

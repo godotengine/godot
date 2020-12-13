@@ -32,7 +32,7 @@
 #define VOXEL_LIGHT_BAKER_H
 
 #include "core/math/vector3i.h"
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/multimesh.h"
 
 class Voxelizer {
@@ -43,7 +43,6 @@ private:
 	};
 
 	struct Cell {
-
 		uint32_t children[8];
 		float albedo[3]; //albedo in RGB24
 		float emission[3]; //accumulated light in 16:16 fixed point (needs to be integer for moving lights fast)
@@ -125,7 +124,7 @@ private:
 
 public:
 	void begin_bake(int p_subdiv, const AABB &p_bounds);
-	void plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material> > &p_materials, const Ref<Material> &p_override_material);
+	void plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material);
 	void end_bake();
 
 	int get_gi_probe_octree_depth() const;

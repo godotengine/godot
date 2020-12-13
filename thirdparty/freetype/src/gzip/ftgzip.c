@@ -8,7 +8,7 @@
  * parse compressed PCF fonts, as found with many X11 server
  * distributions.
  *
- * Copyright (C) 2002-2019 by
+ * Copyright (C) 2002-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,15 +20,14 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_MEMORY_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_GZIP_H
+#include <freetype/internal/ftmemory.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/ftgzip.h>
 #include FT_CONFIG_STANDARD_LIBRARY_H
 
 
-#include FT_MODULE_ERRORS_H
+#include <freetype/ftmoderr.h>
 
 #undef FTERRORS_H_
 
@@ -36,7 +35,7 @@
 #define FT_ERR_PREFIX  Gzip_Err_
 #define FT_ERR_BASE    FT_Mod_Err_Gzip
 
-#include FT_ERRORS_H
+#include <freetype/fterrors.h>
 
 
 #ifdef FT_CONFIG_OPTION_USE_ZLIB
@@ -746,7 +745,17 @@
     stream.zfree  = (free_func) ft_gzip_free;
     stream.opaque = memory;
 
+    /* This is a temporary fix and will be removed once the internal
+     * copy of zlib is updated to the newest version. The `|32' flag
+     * is only supported in the new versions of zlib to enable gzip
+     * encoded header.
+     */
+#ifdef FT_CONFIG_OPTION_SYSTEM_ZLIB
     err = inflateInit2( &stream, MAX_WBITS|32 );
+#else
+    err = inflateInit2( &stream, MAX_WBITS );
+#endif
+
     if ( err != Z_OK )
       return FT_THROW( Invalid_Argument );
 

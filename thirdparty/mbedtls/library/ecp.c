@@ -1,8 +1,14 @@
 /*
  *  Elliptic curves over GF(p): generic functions
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 /*
@@ -104,6 +129,20 @@
 
 #include "mbedtls/ecp_internal.h"
 
+#if !defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
+#if defined(MBEDTLS_HMAC_DRBG_C)
+#include "mbedtls/hmac_drbg.h"
+#elif defined(MBEDTLS_CTR_DRBG_C)
+#include "mbedtls/ctr_drbg.h"
+#elif defined(MBEDTLS_SHA512_C)
+#include "mbedtls/sha512.h"
+#elif defined(MBEDTLS_SHA256_C)
+#include "mbedtls/sha256.h"
+#else
+#error "Invalid configuration detected. Include check_config.h to ensure that the configuration is valid."
+#endif
+#endif /* MBEDTLS_ECP_NO_INTERNAL_RNG */
+
 #if ( defined(__ARMCC_VERSION) || defined(_MSC_VER) ) && \
     !defined(inline) && !defined(__cplusplus)
 #define inline __inline
@@ -116,6 +155,233 @@
  */
 static unsigned long add_count, dbl_count, mul_count;
 #endif
+
+#if !defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
+/*
+ * Currently ecp_mul() takes a RNG function as an argument, used for
+ * side-channel protection, but it can be NULL. The initial reasoning was
+ * that people will pass non-NULL RNG when they care about side-channels, but
+ * unfortunately we have some APIs that call ecp_mul() with a NULL RNG, with
+ * no opportunity for the user to do anything about it.
+ *
+ * The obvious strategies for addressing that include:
+ * - change those APIs so that they take RNG arguments;
+ * - require a global RNG to be available to all crypto modules.
+ *
+ * Unfortunately those would break compatibility. So what we do instead is
+ * have our own internal DRBG instance, seeded from the secret scalar.
+ *
+ * The following is a light-weight abstraction layer for doing that with
+ * HMAC_DRBG (first choice) or CTR_DRBG.
+ */
+
+#if defined(MBEDTLS_HMAC_DRBG_C)
+
+/* DRBG context type */
+typedef mbedtls_hmac_drbg_context ecp_drbg_context;
+
+/* DRBG context init */
+static inline void ecp_drbg_init( ecp_drbg_context *ctx )
+{
+    mbedtls_hmac_drbg_init( ctx );
+}
+
+/* DRBG context free */
+static inline void ecp_drbg_free( ecp_drbg_context *ctx )
+{
+    mbedtls_hmac_drbg_free( ctx );
+}
+
+/* DRBG function */
+static inline int ecp_drbg_random( void *p_rng,
+                                   unsigned char *output, size_t output_len )
+{
+    return( mbedtls_hmac_drbg_random( p_rng, output, output_len ) );
+}
+
+/* DRBG context seeding */
+static int ecp_drbg_seed( ecp_drbg_context *ctx,
+                   const mbedtls_mpi *secret, size_t secret_len )
+{
+    int ret;
+    unsigned char secret_bytes[MBEDTLS_ECP_MAX_BYTES];
+    /* The list starts with strong hashes */
+    const mbedtls_md_type_t md_type = mbedtls_md_list()[0];
+    const mbedtls_md_info_t *md_info = mbedtls_md_info_from_type( md_type );
+
+    MBEDTLS_MPI_CHK( mbedtls_mpi_write_binary( secret,
+                                               secret_bytes, secret_len ) );
+
+    ret = mbedtls_hmac_drbg_seed_buf( ctx, md_info, secret_bytes, secret_len );
+
+cleanup:
+    mbedtls_platform_zeroize( secret_bytes, secret_len );
+
+    return( ret );
+}
+
+#elif defined(MBEDTLS_CTR_DRBG_C)
+
+/* DRBG context type */
+typedef mbedtls_ctr_drbg_context ecp_drbg_context;
+
+/* DRBG context init */
+static inline void ecp_drbg_init( ecp_drbg_context *ctx )
+{
+    mbedtls_ctr_drbg_init( ctx );
+}
+
+/* DRBG context free */
+static inline void ecp_drbg_free( ecp_drbg_context *ctx )
+{
+    mbedtls_ctr_drbg_free( ctx );
+}
+
+/* DRBG function */
+static inline int ecp_drbg_random( void *p_rng,
+                                   unsigned char *output, size_t output_len )
+{
+    return( mbedtls_ctr_drbg_random( p_rng, output, output_len ) );
+}
+
+/*
+ * Since CTR_DRBG doesn't have a seed_buf() function the way HMAC_DRBG does,
+ * we need to pass an entropy function when seeding. So we use a dummy
+ * function for that, and pass the actual entropy as customisation string.
+ * (During seeding of CTR_DRBG the entropy input and customisation string are
+ * concatenated before being used to update the secret state.)
+ */
+static int ecp_ctr_drbg_null_entropy(void *ctx, unsigned char *out, size_t len)
+{
+    (void) ctx;
+    memset( out, 0, len );
+    return( 0 );
+}
+
+/* DRBG context seeding */
+static int ecp_drbg_seed( ecp_drbg_context *ctx,
+                   const mbedtls_mpi *secret, size_t secret_len )
+{
+    int ret;
+    unsigned char secret_bytes[MBEDTLS_ECP_MAX_BYTES];
+
+    MBEDTLS_MPI_CHK( mbedtls_mpi_write_binary( secret,
+                                               secret_bytes, secret_len ) );
+
+    ret = mbedtls_ctr_drbg_seed( ctx, ecp_ctr_drbg_null_entropy, NULL,
+                                 secret_bytes, secret_len );
+
+cleanup:
+    mbedtls_platform_zeroize( secret_bytes, secret_len );
+
+    return( ret );
+}
+
+#elif defined(MBEDTLS_SHA512_C) || defined(MBEDTLS_SHA256_C)
+
+/* This will be used in the self-test function */
+#define ECP_ONE_STEP_KDF
+
+/*
+ * We need to expand secret data (the scalar) into a longer stream of bytes.
+ *
+ * We'll use the One-Step KDF from NIST SP 800-56C, with option 1 (H is a hash
+ * function) and empty FixedInfo. (Though we'll make it fit the DRBG API for
+ * convenience, this is not a full-fledged DRBG, but we don't need one here.)
+ *
+ * We need a basic hash abstraction layer to use whatever SHA-2 is available.
+ */
+#if defined(MBEDTLS_SHA512_C)
+
+#define HASH_FUNC( in, ilen, out )  mbedtls_sha512_ret( in, ilen, out, 0 );
+#define HASH_BLOCK_BYTES            ( 512 / 8 )
+
+#elif defined(MBEDTLS_SHA256_C)
+
+#define HASH_FUNC( in, ilen, out )  mbedtls_sha256_ret( in, ilen, out, 0 );
+#define HASH_BLOCK_BYTES            ( 256 / 8 )
+
+#endif /* SHA512/SHA256 abstraction */
+
+/*
+ * State consists of a 32-bit counter plus the secret value.
+ *
+ * We stored them concatenated in a single buffer as that's what will get
+ * passed to the hash function.
+ */
+typedef struct {
+    size_t total_len;
+    uint8_t buf[4 + MBEDTLS_ECP_MAX_BYTES];
+} ecp_drbg_context;
+
+static void ecp_drbg_init( ecp_drbg_context *ctx )
+{
+    memset( ctx, 0, sizeof( ecp_drbg_context ) );
+}
+
+static void ecp_drbg_free( ecp_drbg_context *ctx )
+{
+    mbedtls_platform_zeroize( ctx, sizeof( ecp_drbg_context ) );
+}
+
+static int ecp_drbg_seed( ecp_drbg_context *ctx,
+                   const mbedtls_mpi *secret, size_t secret_len )
+{
+    ctx->total_len = 4 + secret_len;
+    memset( ctx->buf, 0, 4);
+    return( mbedtls_mpi_write_binary( secret, ctx->buf + 4, secret_len ) );
+}
+
+static int ecp_drbg_random( void *p_rng, unsigned char *output, size_t output_len )
+{
+    ecp_drbg_context *ctx = p_rng;
+    int ret;
+    size_t len_done = 0;
+    uint8_t tmp[HASH_BLOCK_BYTES];
+
+    while( len_done < output_len )
+    {
+        uint8_t use_len;
+
+        /* This function is only called for coordinate randomisation, which
+         * happens only twice in a scalar multiplication. Each time needs a
+         * random value in the range [2, p-1], and gets it by drawing len(p)
+         * bytes from this function, and retrying up to 10 times if unlucky.
+         *
+         * So for the largest curve, each scalar multiplication draws at most
+         * 20 * 66 bytes. The minimum block size is 32 (SHA-256), so with
+         * rounding that means a most 20 * 3 blocks.
+         *
+         * Since we don't need to draw more that 255 blocks, don't bother
+         * with carry propagation and just return an error instead. We can
+         * change that it we even need to draw more blinding values.
+         */
+        ctx->buf[3] += 1;
+        if( ctx->buf[3] == 0 )
+            return( MBEDTLS_ERR_ECP_RANDOM_FAILED );
+
+        ret = HASH_FUNC( ctx->buf, ctx->total_len, tmp );
+        if( ret != 0 )
+            return( ret );
+
+        if( output_len - len_done > HASH_BLOCK_BYTES )
+            use_len = HASH_BLOCK_BYTES;
+        else
+            use_len = output_len - len_done;
+
+        memcpy( output + len_done, tmp, use_len );
+        len_done += use_len;
+    }
+
+    mbedtls_platform_zeroize( tmp, sizeof( tmp ) );
+
+    return( 0 );
+}
+
+#else /* DRBG/SHA modules */
+#error "Invalid configuration detected. Include check_config.h to ensure that the configuration is valid."
+#endif /* DRBG/SHA modules */
+#endif /* MBEDTLS_ECP_NO_INTERNAL_RNG */
 
 #if defined(MBEDTLS_ECP_RESTARTABLE)
 /*
@@ -164,6 +430,10 @@ struct mbedtls_ecp_restart_mul
         ecp_rsm_comb_core,      /* ecp_mul_comb_core()                      */
         ecp_rsm_final_norm,     /* do the final normalization               */
     } state;
+#if !defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
+    ecp_drbg_context drbg_ctx;
+    unsigned char drbg_seeded;
+#endif
 };
 
 /*
@@ -176,6 +446,10 @@ static void ecp_restart_rsm_init( mbedtls_ecp_restart_mul_ctx *ctx )
     ctx->T = NULL;
     ctx->T_size = 0;
     ctx->state = ecp_rsm_init;
+#if !defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
+    ecp_drbg_init( &ctx->drbg_ctx );
+    ctx->drbg_seeded = 0;
+#endif
 }
 
 /*
@@ -196,6 +470,10 @@ static void ecp_restart_rsm_free( mbedtls_ecp_restart_mul_ctx *ctx )
             mbedtls_ecp_point_free( ctx->T + i );
         mbedtls_free( ctx->T );
     }
+
+#if !defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
+    ecp_drbg_free( &ctx->drbg_ctx );
+#endif
 
     ecp_restart_rsm_init( ctx );
 }
@@ -1466,7 +1744,10 @@ static int ecp_randomize_jac( const mbedtls_ecp_group *grp, mbedtls_ecp_point *p
             MBEDTLS_MPI_CHK( mbedtls_mpi_shift_r( &l, 1 ) );
 
         if( count++ > 10 )
-            return( MBEDTLS_ERR_ECP_RANDOM_FAILED );
+        {
+            ret = MBEDTLS_ERR_ECP_RANDOM_FAILED;
+            goto cleanup;
+        }
     }
     while( mbedtls_mpi_cmp_int( &l, 1 ) <= 0 );
 
@@ -1816,7 +2097,9 @@ static int ecp_mul_comb_core( const mbedtls_ecp_group *grp, mbedtls_ecp_point *R
         i = d;
         MBEDTLS_MPI_CHK( ecp_select_comb( grp, R, T, T_size, x[i] ) );
         MBEDTLS_MPI_CHK( mbedtls_mpi_lset( &R->Z, 1 ) );
+#if defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
         if( f_rng != 0 )
+#endif
             MBEDTLS_MPI_CHK( ecp_randomize_jac( grp, R, f_rng, p_rng ) );
     }
 
@@ -1937,8 +2220,24 @@ static int ecp_mul_comb_after_precomp( const mbedtls_ecp_group *grp,
         rs_ctx->rsm->state = ecp_rsm_final_norm;
 
 final_norm:
-#endif
     MBEDTLS_ECP_BUDGET( MBEDTLS_ECP_OPS_INV );
+#endif
+    /*
+     * Knowledge of the jacobian coordinates may leak the last few bits of the
+     * scalar [1], and since our MPI implementation isn't constant-flow,
+     * inversion (used for coordinate normalization) may leak the full value
+     * of its input via side-channels [2].
+     *
+     * [1] https://eprint.iacr.org/2003/191
+     * [2] https://eprint.iacr.org/2020/055
+     *
+     * Avoid the leak by randomizing coordinates before we normalize them.
+     */
+#if defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
+    if( f_rng != 0 )
+#endif
+        MBEDTLS_MPI_CHK( ecp_randomize_jac( grp, RR, f_rng, p_rng ) );
+
     MBEDTLS_MPI_CHK( ecp_normalize_jac( grp, RR ) );
 
 #if defined(MBEDTLS_ECP_RESTARTABLE)
@@ -2007,10 +2306,43 @@ static int ecp_mul_comb( mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
     int ret;
     unsigned char w, p_eq_g, i;
     size_t d;
-    unsigned char T_size, T_ok;
-    mbedtls_ecp_point *T;
+    unsigned char T_size = 0, T_ok = 0;
+    mbedtls_ecp_point *T = NULL;
+#if !defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
+    ecp_drbg_context drbg_ctx;
+
+    ecp_drbg_init( &drbg_ctx );
+#endif
 
     ECP_RS_ENTER( rsm );
+
+#if !defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
+    if( f_rng == NULL )
+    {
+        /* Adjust pointers */
+        f_rng = &ecp_drbg_random;
+#if defined(MBEDTLS_ECP_RESTARTABLE)
+        if( rs_ctx != NULL && rs_ctx->rsm != NULL )
+            p_rng = &rs_ctx->rsm->drbg_ctx;
+        else
+#endif
+            p_rng = &drbg_ctx;
+
+        /* Initialize internal DRBG if necessary */
+#if defined(MBEDTLS_ECP_RESTARTABLE)
+        if( rs_ctx == NULL || rs_ctx->rsm == NULL ||
+            rs_ctx->rsm->drbg_seeded == 0 )
+#endif
+        {
+            const size_t m_len = ( grp->nbits + 7 ) / 8;
+            MBEDTLS_MPI_CHK( ecp_drbg_seed( p_rng, m, m_len ) );
+        }
+#if defined(MBEDTLS_ECP_RESTARTABLE)
+        if( rs_ctx != NULL && rs_ctx->rsm != NULL )
+            rs_ctx->rsm->drbg_seeded = 1;
+#endif
+    }
+#endif /* !MBEDTLS_ECP_NO_INTERNAL_RNG */
 
     /* Is P the base point ? */
 #if MBEDTLS_ECP_FIXED_POINT_OPTIM == 1
@@ -2082,6 +2414,10 @@ static int ecp_mul_comb( mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                                                  f_rng, p_rng, rs_ctx ) );
 
 cleanup:
+
+#if !defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
+    ecp_drbg_free( &drbg_ctx );
+#endif
 
     /* does T belong to the group? */
     if( T == grp->T )
@@ -2184,7 +2520,10 @@ static int ecp_randomize_mxz( const mbedtls_ecp_group *grp, mbedtls_ecp_point *P
             MBEDTLS_MPI_CHK( mbedtls_mpi_shift_r( &l, 1 ) );
 
         if( count++ > 10 )
-            return( MBEDTLS_ERR_ECP_RANDOM_FAILED );
+        {
+            ret = MBEDTLS_ERR_ECP_RANDOM_FAILED;
+            goto cleanup;
+        }
     }
     while( mbedtls_mpi_cmp_int( &l, 1 ) <= 0 );
 
@@ -2270,8 +2609,22 @@ static int ecp_mul_mxz( mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
     unsigned char b;
     mbedtls_ecp_point RP;
     mbedtls_mpi PX;
+#if !defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
+    ecp_drbg_context drbg_ctx;
 
+    ecp_drbg_init( &drbg_ctx );
+#endif
     mbedtls_ecp_point_init( &RP ); mbedtls_mpi_init( &PX );
+
+#if !defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
+    if( f_rng == NULL )
+    {
+        const size_t m_len = ( grp->nbits + 7 ) / 8;
+        MBEDTLS_MPI_CHK( ecp_drbg_seed( &drbg_ctx, m, m_len ) );
+        f_rng = &ecp_drbg_random;
+        p_rng = &drbg_ctx;
+    }
+#endif /* !MBEDTLS_ECP_NO_INTERNAL_RNG */
 
     /* Save PX and read from P before writing to R, in case P == R */
     MBEDTLS_MPI_CHK( mbedtls_mpi_copy( &PX, &P->X ) );
@@ -2286,7 +2639,9 @@ static int ecp_mul_mxz( mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
     MOD_ADD( RP.X );
 
     /* Randomize coordinates of the starting point */
+#if defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
     if( f_rng != NULL )
+#endif
         MBEDTLS_MPI_CHK( ecp_randomize_mxz( grp, &RP, f_rng, p_rng ) );
 
     /* Loop invariant: R = result so far, RP = R + P */
@@ -2308,9 +2663,29 @@ static int ecp_mul_mxz( mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
         MBEDTLS_MPI_CHK( mbedtls_mpi_safe_cond_swap( &R->Z, &RP.Z, b ) );
     }
 
+    /*
+     * Knowledge of the projective coordinates may leak the last few bits of the
+     * scalar [1], and since our MPI implementation isn't constant-flow,
+     * inversion (used for coordinate normalization) may leak the full value
+     * of its input via side-channels [2].
+     *
+     * [1] https://eprint.iacr.org/2003/191
+     * [2] https://eprint.iacr.org/2020/055
+     *
+     * Avoid the leak by randomizing coordinates before we normalize them.
+     */
+#if defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
+    if( f_rng != NULL )
+#endif
+        MBEDTLS_MPI_CHK( ecp_randomize_mxz( grp, R, f_rng, p_rng ) );
+
     MBEDTLS_MPI_CHK( ecp_normalize_mxz( grp, R ) );
 
 cleanup:
+#if !defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
+    ecp_drbg_free( &drbg_ctx );
+#endif
+
     mbedtls_ecp_point_free( &RP ); mbedtls_mpi_free( &PX );
 
     return( ret );
@@ -2865,6 +3240,76 @@ cleanup:
 
 #if defined(MBEDTLS_SELF_TEST)
 
+#if defined(ECP_ONE_STEP_KDF)
+/*
+ * There are no test vectors from NIST for the One-Step KDF in SP 800-56C,
+ * but unofficial ones can be found at:
+ * https://github.com/patrickfav/singlestep-kdf/wiki/NIST-SP-800-56C-Rev1:-Non-Official-Test-Vectors
+ *
+ * We only use the ones with empty fixedInfo, and for brevity's sake, only
+ * 40-bytes output (with SHA-256 that's more than one block, and with SHA-512
+ * less than one block).
+ */
+#if defined(MBEDTLS_SHA512_C)
+
+static const uint8_t test_kdf_z[16] = {
+    0x3b, 0xa9, 0x79, 0xe9, 0xbc, 0x5e, 0x3e, 0xc7,
+    0x61, 0x30, 0x36, 0xb6, 0xf5, 0x1c, 0xd5, 0xaa,
+};
+static const uint8_t test_kdf_out[40] = {
+    0x3e, 0xf6, 0xda, 0xf9, 0x51, 0x60, 0x70, 0x5f,
+    0xdf, 0x21, 0xcd, 0xab, 0xac, 0x25, 0x7b, 0x05,
+    0xfe, 0xc1, 0xab, 0x7c, 0xc9, 0x68, 0x43, 0x25,
+    0x8a, 0xfc, 0x40, 0x6e, 0x5b, 0xf7, 0x98, 0x27,
+    0x10, 0xfa, 0x7b, 0x93, 0x52, 0xd4, 0x16, 0xaa,
+};
+
+#elif defined(MBEDTLS_SHA256_C)
+
+static const uint8_t test_kdf_z[16] = {
+    0xc8, 0x3e, 0x35, 0x8e, 0x99, 0xa6, 0x89, 0xc6,
+    0x7d, 0xb4, 0xfe, 0x39, 0xcf, 0x8f, 0x26, 0xe1,
+};
+static const uint8_t test_kdf_out[40] = {
+    0x7d, 0xf6, 0x41, 0xf8, 0x3c, 0x47, 0xdc, 0x28,
+    0x5f, 0x7f, 0xaa, 0xde, 0x05, 0x64, 0xd6, 0x25,
+    0x00, 0x6a, 0x47, 0xd9, 0x1e, 0xa4, 0xa0, 0x8c,
+    0xd7, 0xf7, 0x0c, 0x99, 0xaa, 0xa0, 0x72, 0x66,
+    0x69, 0x0e, 0x25, 0xaa, 0xa1, 0x63, 0x14, 0x79,
+};
+
+#endif
+
+static int ecp_kdf_self_test( void )
+{
+    int ret;
+    ecp_drbg_context kdf_ctx;
+    mbedtls_mpi scalar;
+    uint8_t out[sizeof( test_kdf_out )];
+
+    ecp_drbg_init( &kdf_ctx );
+    mbedtls_mpi_init( &scalar );
+    memset( out, 0, sizeof( out ) );
+
+    MBEDTLS_MPI_CHK( mbedtls_mpi_read_binary( &scalar,
+                        test_kdf_z, sizeof( test_kdf_z ) ) );
+
+    MBEDTLS_MPI_CHK( ecp_drbg_seed( &kdf_ctx,
+                                    &scalar, sizeof( test_kdf_z ) ) );
+
+    MBEDTLS_MPI_CHK( ecp_drbg_random( &kdf_ctx, out, sizeof( out ) ) );
+
+    if( memcmp( out, test_kdf_out, sizeof( out ) ) != 0 )
+        ret = -1;
+
+cleanup:
+    ecp_drbg_free( &kdf_ctx );
+    mbedtls_mpi_free( &scalar );
+
+    return( ret );
+}
+#endif /* ECP_ONE_STEP_KDF */
+
 /*
  * Checkup routine
  */
@@ -2975,6 +3420,24 @@ int mbedtls_ecp_self_test( int verbose )
 
     if( verbose != 0 )
         mbedtls_printf( "passed\n" );
+
+#if defined(ECP_ONE_STEP_KDF)
+    if( verbose != 0 )
+        mbedtls_printf( "  ECP test #3 (internal KDF): " );
+
+    ret = ecp_kdf_self_test();
+    if( ret != 0 )
+    {
+        if( verbose != 0 )
+            mbedtls_printf( "failed\n" );
+
+        ret = 1;
+        goto cleanup;
+    }
+
+    if( verbose != 0 )
+        mbedtls_printf( "passed\n" );
+#endif /* ECP_ONE_STEP_KDF */
 
 cleanup:
 

@@ -4,7 +4,7 @@
  *
  *   TrueType bytecode interpreter (specification).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,7 +19,6 @@
 #ifndef TTINTERP_H_
 #define TTINTERP_H_
 
-#include <ft2build.h>
 #include "ttobjs.h"
 
 
@@ -52,7 +51,7 @@ FT_BEGIN_HEADER
   typedef FT_F26Dot6
   (*TT_Round_Func)( TT_ExecContext  exc,
                     FT_F26Dot6      distance,
-                    FT_F26Dot6      compensation );
+                    FT_Int          color );
 
   /* Point displacement along the freedom vector routine */
   typedef void

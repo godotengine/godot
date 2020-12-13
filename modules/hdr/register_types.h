@@ -28,5 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef HDR_REGISTER_TYPES_H
+#define HDR_REGISTER_TYPES_H
+
 void register_hdr_types();
 void unregister_hdr_types();
+
+#endif // HDR_REGISTER_TYPES_H

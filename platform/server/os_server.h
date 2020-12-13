@@ -31,39 +31,38 @@
 #ifndef OS_SERVER_H
 #define OS_SERVER_H
 
+#include "core/input/input.h"
 #include "drivers/dummy/texture_loader_dummy.h"
 #include "drivers/unix/os_unix.h"
-#include "main/input_default.h"
 #ifdef __APPLE__
 #include "platform/osx/crash_handler_osx.h"
 #include "platform/osx/semaphore_osx.h"
 #else
-#include "platform/x11/crash_handler_x11.h"
+#include "platform/x11/crash_handler_linuxbsd.h"
 #endif
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
-#include "servers/visual_server.h"
+#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering_server.h"
 
 #undef CursorShape
 
 class OS_Server : public OS_Unix {
-
-	VisualServer *visual_server;
+	RenderingServer *rendering_server = nullptr;
 	VideoMode current_videomode;
 	List<String> args;
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
-	bool grab;
+	bool grab = false;
 
 	virtual void delete_main_loop();
 
-	bool force_quit;
+	bool force_quit = false;
 
-	InputDefault *input;
+	InputDefault *input = nullptr;
 
 	CrashHandler crash_handler;
 
-	int video_driver_index;
+	int video_driver_index = 0;
 
 	Ref<ResourceFormatDummyTexture> resource_loader_dummy;
 
@@ -71,8 +70,6 @@ protected:
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
 	virtual int get_current_video_driver() const;
-	virtual int get_audio_driver_count() const;
-	virtual const char *get_audio_driver_name(int p_driver) const;
 
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);

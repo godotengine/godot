@@ -38,7 +38,6 @@
 #include <sys/types.h>
 
 class ThreadPosix : public Thread {
-
 	static pthread_key_t thread_id_key;
 	static ID next_thread_id;
 

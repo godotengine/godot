@@ -33,25 +33,24 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/3d/camera.h"
-#include "scene/3d/light.h"
-#include "scene/3d/mesh_instance.h"
-#include "scene/gui/viewport_container.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/subviewport_container.h"
 #include "scene/resources/material.h"
 
-class MeshEditor : public ViewportContainer {
-
-	GDCLASS(MeshEditor, ViewportContainer);
+class MeshEditor : public SubViewportContainer {
+	GDCLASS(MeshEditor, SubViewportContainer);
 
 	float rot_x;
 	float rot_y;
 
-	Viewport *viewport;
-	MeshInstance *mesh_instance;
-	Spatial *rotation;
-	DirectionalLight *light1;
-	DirectionalLight *light2;
-	Camera *camera;
+	SubViewport *viewport;
+	MeshInstance3D *mesh_instance;
+	Node3D *rotation;
+	DirectionalLight3D *light1;
+	DirectionalLight3D *light2;
+	Camera3D *camera;
 
 	Ref<Mesh> mesh;
 
@@ -77,16 +76,15 @@ class EditorInspectorPluginMesh : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginMesh, EditorInspectorPlugin);
 
 public:
-	virtual bool can_handle(Object *p_object);
-	virtual void parse_begin(Object *p_object);
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
 };
 
 class MeshEditorPlugin : public EditorPlugin {
-
 	GDCLASS(MeshEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const { return "Mesh"; }
+	virtual String get_name() const override { return "Mesh"; }
 
 	MeshEditorPlugin(EditorNode *p_node);
 };

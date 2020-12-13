@@ -35,7 +35,7 @@
 #include "core/os/os.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
-#include "core/safe_refcount.h"
+#include "core/templates/safe_refcount.h"
 
 template <class C, class U>
 struct ThreadArrayProcessData {
@@ -54,19 +54,18 @@ struct ThreadArrayProcessData {
 
 template <class T>
 void process_array_thread(void *ud) {
-
 	T &data = *(T *)ud;
 	while (true) {
 		uint32_t index = atomic_increment(&data.index);
-		if (index >= data.elements)
+		if (index >= data.elements) {
 			break;
+		}
 		data.process(index);
 	}
 }
 
 template <class C, class M, class U>
 void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_userdata) {
-
 	ThreadArrayProcessData<C, U> data;
 	data.method = p_method;
 	data.instance = p_instance;
@@ -80,7 +79,7 @@ void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_us
 	threads.resize(OS::get_singleton()->get_processor_count());
 
 	for (int i = 0; i < threads.size(); i++) {
-		threads.write[i] = Thread::create(process_array_thread<ThreadArrayProcessData<C, U> >, &data);
+		threads.write[i] = Thread::create(process_array_thread<ThreadArrayProcessData<C, U>>, &data);
 	}
 
 	for (int i = 0; i < threads.size(); i++) {
@@ -93,7 +92,6 @@ void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_us
 
 template <class C, class M, class U>
 void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_userdata) {
-
 	ThreadArrayProcessData<C, U> data;
 	data.method = p_method;
 	data.instance = p_instance;

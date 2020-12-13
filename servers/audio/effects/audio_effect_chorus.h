@@ -50,7 +50,7 @@ class AudioEffectChorusInstance : public AudioEffectInstance {
 	void _process_chunk(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 
 public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 };
 
 class AudioEffectChorus : public AudioEffect {
@@ -60,7 +60,6 @@ class AudioEffectChorus : public AudioEffect {
 
 public:
 	enum {
-
 		MAX_DELAY_MS = 50,
 		MAX_DEPTH_MS = 20,
 		MAX_WIDTH_MS = 50,
@@ -73,7 +72,6 @@ public:
 
 private:
 	struct Voice {
-
 		float delay;
 		float rate;
 		float depth;
@@ -82,7 +80,6 @@ private:
 		float pan;
 
 		Voice() {
-
 			delay = 12.0;
 			rate = 1;
 			depth = 0;
@@ -99,7 +96,7 @@ private:
 	float dry;
 
 protected:
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 
 	static void _bind_methods();
 
@@ -131,7 +128,7 @@ public:
 	void set_dry(float amount);
 	float get_dry() const;
 
-	Ref<AudioEffectInstance> instance();
+	Ref<AudioEffectInstance> instance() override;
 
 	AudioEffectChorus();
 };

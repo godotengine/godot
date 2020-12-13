@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-Import('env')
+Import("env")
 
 env_crypto = env.Clone()
 
@@ -22,7 +22,9 @@ if not has_module:
     env_thirdparty = env_crypto.Clone()
     env_thirdparty.disable_warnings()
     # Custom config file
-    env_thirdparty.Append(CPPDEFINES=[('MBEDTLS_CONFIG_FILE', '\\"thirdparty/mbedtls/include/godot_core_mbedtls_config.h\\"')])
+    env_thirdparty.Append(
+        CPPDEFINES=[("MBEDTLS_CONFIG_FILE", '\\"thirdparty/mbedtls/include/godot_core_mbedtls_config.h\\"')]
+    )
     thirdparty_mbedtls_dir = "#thirdparty/mbedtls/library/"
     thirdparty_mbedtls_sources = [
         "aes.c",
@@ -30,7 +32,7 @@ if not has_module:
         "md5.c",
         "sha1.c",
         "sha256.c",
-        "godot_core_mbedtls_platform.c"
+        "godot_core_mbedtls_platform.c",
     ]
     thirdparty_mbedtls_sources = [thirdparty_mbedtls_dir + file for file in thirdparty_mbedtls_sources]
     env_thirdparty.add_source_files(env.core_sources, thirdparty_mbedtls_sources)

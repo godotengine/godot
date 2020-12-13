@@ -29,15 +29,17 @@
 /*************************************************************************/
 
 #include "packet_peer_dtls.h"
+#include "core/config/project_settings.h"
 #include "core/os/file_access.h"
-#include "core/project_settings.h"
 
-PacketPeerDTLS *(*PacketPeerDTLS::_create)() = NULL;
+PacketPeerDTLS *(*PacketPeerDTLS::_create)() = nullptr;
 bool PacketPeerDTLS::available = false;
 
 PacketPeerDTLS *PacketPeerDTLS::create() {
-
-	return _create();
+	if (_create) {
+		return _create();
+	}
+	return nullptr;
 }
 
 bool PacketPeerDTLS::is_available() {
@@ -45,7 +47,6 @@ bool PacketPeerDTLS::is_available() {
 }
 
 void PacketPeerDTLS::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("poll"), &PacketPeerDTLS::poll);
 	ClassDB::bind_method(D_METHOD("connect_to_peer", "packet_peer", "validate_certs", "for_hostname", "valid_certificate"), &PacketPeerDTLS::connect_to_peer, DEFVAL(true), DEFVAL(String()), DEFVAL(Ref<X509Certificate>()));
 	ClassDB::bind_method(D_METHOD("get_status"), &PacketPeerDTLS::get_status);
@@ -56,7 +57,4 @@ void PacketPeerDTLS::_bind_methods() {
 	BIND_ENUM_CONSTANT(STATUS_CONNECTED);
 	BIND_ENUM_CONSTANT(STATUS_ERROR);
 	BIND_ENUM_CONSTANT(STATUS_ERROR_HOSTNAME_MISMATCH);
-}
-
-PacketPeerDTLS::PacketPeerDTLS() {
 }

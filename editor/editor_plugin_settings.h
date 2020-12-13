@@ -31,14 +31,13 @@
 #ifndef EDITORPLUGINSETTINGS_H
 #define EDITORPLUGINSETTINGS_H
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor/plugin_config_dialog.h"
 #include "editor_data.h"
 #include "property_editor.h"
 #include "scene/gui/dialogs.h"
 
 class EditorPluginSettings : public VBoxContainer {
-
 	GDCLASS(EditorPluginSettings, VBoxContainer);
 
 	enum {

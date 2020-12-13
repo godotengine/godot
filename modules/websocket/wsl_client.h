@@ -33,7 +33,7 @@
 
 #ifndef JAVASCRIPT_ENABLED
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/stream_peer_tcp.h"
 #include "websocket_client.h"
@@ -41,7 +41,6 @@
 #include "wslay/wslay.h"
 
 class WSLClient : public WebSocketClient {
-
 	GDCIIMPL(WSLClient, WebSocketClient);
 
 private:

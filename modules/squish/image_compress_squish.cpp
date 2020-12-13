@@ -78,21 +78,21 @@ void image_decompress_squish(Image *p_image) {
 }
 
 void image_compress_squish(Image *p_image, float p_lossy_quality, Image::UsedChannels p_channels) {
-
-	if (p_image->get_format() >= Image::FORMAT_DXT1)
+	if (p_image->get_format() >= Image::FORMAT_DXT1) {
 		return; //do not compress, already compressed
+	}
 
 	int w = p_image->get_width();
 	int h = p_image->get_height();
 
 	if (p_image->get_format() <= Image::FORMAT_RGBA8) {
-
 		int squish_comp = squish::kColourRangeFit;
 
-		if (p_lossy_quality > 0.85)
+		if (p_lossy_quality > 0.85) {
 			squish_comp = squish::kColourIterativeClusterFit;
-		else if (p_lossy_quality > 0.75)
+		} else if (p_lossy_quality > 0.75) {
 			squish_comp = squish::kColourClusterFit;
+		}
 
 		Image::Format target_format = Image::FORMAT_RGBA8;
 
@@ -100,32 +100,26 @@ void image_compress_squish(Image *p_image, float p_lossy_quality, Image::UsedCha
 
 		switch (p_channels) {
 			case Image::USED_CHANNELS_L: {
-
 				target_format = Image::FORMAT_DXT1;
 				squish_comp |= squish::kDxt1;
 			} break;
 			case Image::USED_CHANNELS_LA: {
-
 				target_format = Image::FORMAT_DXT5;
 				squish_comp |= squish::kDxt5;
 			} break;
 			case Image::USED_CHANNELS_R: {
-
 				target_format = Image::FORMAT_RGTC_R;
 				squish_comp |= squish::kBc4;
 			} break;
 			case Image::USED_CHANNELS_RG: {
-
 				target_format = Image::FORMAT_RGTC_RG;
 				squish_comp |= squish::kBc5;
 			} break;
 			case Image::USED_CHANNELS_RGB: {
-
 				target_format = Image::FORMAT_DXT1;
 				squish_comp |= squish::kDxt1;
 			} break;
 			case Image::USED_CHANNELS_RGBA: {
-
 				//TODO, should convert both, then measure which one does a better job
 				target_format = Image::FORMAT_DXT5;
 				squish_comp |= squish::kDxt5;
@@ -149,7 +143,6 @@ void image_compress_squish(Image *p_image, float p_lossy_quality, Image::UsedCha
 		int dst_ofs = 0;
 
 		for (int i = 0; i <= mm_count; i++) {
-
 			int bw = w % 4 != 0 ? w + (4 - w % 4) : w;
 			int bh = h % 4 != 0 ? h + (4 - h % 4) : h;
 

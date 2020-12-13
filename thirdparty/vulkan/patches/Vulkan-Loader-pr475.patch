@@ -1,0 +1,37 @@
+From e1c938170bba5879d95bf2d7b57b4d1d68557cd5 Mon Sep 17 00:00:00 2001
+From: Brecht Sanders <brecht@sanders.org>
+Date: Tue, 29 Sep 2020 18:14:55 +0200
+Subject: [PATCH] loader: Fixes build with MinGW-w64 8.0.0.
+
+See http://winlibs.com for a release of such GCC compiler
+See issue https://github.com/KhronosGroup/Vulkan-Loader/issues/474
+---
+ loader/loader.c       |  7 +++++++
+ 1 file changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/loader/loader.c b/loader/loader.c
+index 4d8865e13..509f2f420 100644
+--- a/loader/loader.c
++++ b/loader/loader.c
+@@ -71,6 +71,9 @@
+ #include <devpkey.h>
+ #include <winternl.h>
+ #include <strsafe.h>
++#ifdef __MINGW32__
++#undef strcpy  // fix error with redfined strcpy when building with MinGW-w64
++#endif
+ #include <dxgi1_6.h>
+ #include "adapters.h"
+ 
+@@ -695,7 +698,11 @@ VkResult loaderGetDeviceRegistryFiles(const struct loader_instance *inst, char *
+                                       LPCSTR value_name) {
+     static const wchar_t *softwareComponentGUID = L"{5c4c3332-344d-483c-8739-259e934c9cc8}";
+     static const wchar_t *displayGUID = L"{4d36e968-e325-11ce-bfc1-08002be10318}";
++#ifdef CM_GETIDLIST_FILTER_PRESENT
+     const ULONG flags = CM_GETIDLIST_FILTER_CLASS | CM_GETIDLIST_FILTER_PRESENT;
++#else
++    const ULONG flags = 0x300;
++#endif
+ 
+     wchar_t childGuid[MAX_GUID_STRING_LEN + 2];  // +2 for brackets {}
+     ULONG childGuidSize = sizeof(childGuid);

@@ -31,7 +31,7 @@
 #ifndef EDITOR_HELP_SEARCH_H
 #define EDITOR_HELP_SEARCH_H
 
-#include "core/ordered_hash_map.h"
+#include "core/templates/ordered_hash_map.h"
 #include "editor/code_editor.h"
 #include "editor/editor_help.h"
 #include "editor/editor_plugin.h"
@@ -54,8 +54,8 @@ class EditorHelpSearch : public ConfirmationDialog {
 	};
 
 	LineEdit *search_box;
-	ToolButton *case_sensitive_button;
-	ToolButton *hierarchy_button;
+	Button *case_sensitive_button;
+	Button *hierarchy_button;
 	OptionButton *filter_combo;
 	Tree *results_tree;
 	bool old_search;
@@ -84,7 +84,6 @@ public:
 };
 
 class EditorHelpSearch::Runner : public Reference {
-
 	enum Phase {
 		PHASE_MATCH_CLASSES_INIT,
 		PHASE_MATCH_CLASSES,
@@ -95,11 +94,11 @@ class EditorHelpSearch::Runner : public Reference {
 		PHASE_SELECT_MATCH,
 		PHASE_MAX
 	};
-	int phase;
+	int phase = 0;
 
 	struct ClassMatch {
 		DocData::ClassDoc *doc;
-		bool name;
+		bool name = false;
 		Vector<DocData::MethodDoc *> methods;
 		Vector<DocData::MethodDoc *> signals;
 		Vector<DocData::ConstantDoc *> constants;
@@ -119,12 +118,12 @@ class EditorHelpSearch::Runner : public Reference {
 	Ref<Texture2D> empty_icon;
 	Color disabled_color;
 
-	Map<String, DocData::ClassDoc>::Element *iterator_doc;
+	Map<String, DocData::ClassDoc>::Element *iterator_doc = nullptr;
 	Map<String, ClassMatch> matches;
-	Map<String, ClassMatch>::Element *iterator_match;
-	TreeItem *root_item;
+	Map<String, ClassMatch>::Element *iterator_match = nullptr;
+	TreeItem *root_item = nullptr;
 	Map<String, TreeItem *> class_items;
-	TreeItem *matched_item;
+	TreeItem *matched_item = nullptr;
 
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
 

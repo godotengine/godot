@@ -22,6 +22,7 @@
 #include <functional>
 #include <thread>
 #include <unordered_map>
+#include <ostream>
 
 #if !defined(_WIN32) || defined(__MINGW32__)
 #include <libgen.h>

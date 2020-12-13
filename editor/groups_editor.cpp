@@ -68,7 +68,7 @@ void GroupDialog::_load_nodes(Node *p_current) {
 		keep = false;
 	}
 
-	TreeItem *node = NULL;
+	TreeItem *node = nullptr;
 	NodePath path = scene_tree->get_edited_scene_root()->get_path_to(p_current);
 	if (keep && p_current->is_in_group(selected_group)) {
 		if (remove_filter->get_text().is_subsequence_ofi(String(p_current->get_name()))) {
@@ -94,7 +94,7 @@ void GroupDialog::_load_nodes(Node *p_current) {
 
 		if (!_can_edit(p_current, selected_group)) {
 			node->set_selectable(0, false);
-			node->set_custom_color(0, get_color("disabled_font_color", "Editor"));
+			node->set_custom_color(0, groups->get_theme_color("disabled_font_color", "Editor"));
 		}
 	}
 
@@ -122,7 +122,7 @@ bool GroupDialog::_can_edit(Node *p_node, String p_group) {
 }
 
 void GroupDialog::_add_pressed() {
-	TreeItem *selected = nodes_to_add->get_next_selected(NULL);
+	TreeItem *selected = nodes_to_add->get_next_selected(nullptr);
 
 	if (!selected) {
 		return;
@@ -151,7 +151,7 @@ void GroupDialog::_add_pressed() {
 }
 
 void GroupDialog::_removed_pressed() {
-	TreeItem *selected = nodes_to_remove->get_next_selected(NULL);
+	TreeItem *selected = nodes_to_remove->get_next_selected(nullptr);
 
 	if (!selected) {
 		return;
@@ -204,7 +204,7 @@ void GroupDialog::_add_group(String p_name) {
 
 	TreeItem *new_group = groups->create_item(groups_root);
 	new_group->set_text(0, name);
-	new_group->add_button(0, get_icon("Remove", "EditorIcons"), 0);
+	new_group->add_button(0, groups->get_theme_icon("Remove", "EditorIcons"), 0);
 	new_group->set_editable(0, true);
 	new_group->select(0);
 	groups->ensure_cursor_is_visible();
@@ -300,8 +300,9 @@ void GroupDialog::_load_groups(Node *p_current) {
 
 void GroupDialog::_delete_group_pressed(Object *p_item, int p_column, int p_id) {
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	String name = ti->get_text(0);
 
@@ -360,13 +361,20 @@ void GroupDialog::_delete_group_item(const String &p_name) {
 
 void GroupDialog::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
-			add_button->set_icon(get_icon("Forward", "EditorIcons"));
-			remove_button->set_icon(get_icon("Back", "EditorIcons"));
+			if (is_layout_rtl()) {
+				add_button->set_icon(groups->get_theme_icon("Back", "EditorIcons"));
+				remove_button->set_icon(groups->get_theme_icon("Forward", "EditorIcons"));
+			} else {
+				add_button->set_icon(groups->get_theme_icon("Forward", "EditorIcons"));
+				remove_button->set_icon(groups->get_theme_icon("Back", "EditorIcons"));
+			}
 
-			add_filter->set_right_icon(get_icon("Search", "EditorIcons"));
+			add_filter->set_right_icon(groups->get_theme_icon("Search", "EditorIcons"));
 			add_filter->set_clear_button_enabled(true);
-			remove_filter->set_right_icon(get_icon("Search", "EditorIcons"));
+			remove_filter->set_right_icon(groups->get_theme_icon("Search", "EditorIcons"));
 			remove_filter->set_clear_button_enabled(true);
 		} break;
 	}
@@ -399,21 +407,21 @@ void GroupDialog::_bind_methods() {
 }
 
 GroupDialog::GroupDialog() {
-	set_custom_minimum_size(Size2(600, 400) * EDSCALE);
+	set_min_size(Size2(600, 400) * EDSCALE);
 
 	scene_tree = SceneTree::get_singleton();
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
-	vbc->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	vbc->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	vbc->add_child(hbc);
-	hbc->set_v_size_flags(SIZE_EXPAND_FILL);
+	hbc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	VBoxContainer *vbc_left = memnew(VBoxContainer);
 	hbc->add_child(vbc_left);
-	vbc_left->set_h_size_flags(SIZE_EXPAND_FILL);
+	vbc_left->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	Label *group_title = memnew(Label);
 	group_title->set_text(TTR("Groups"));
@@ -425,19 +433,19 @@ GroupDialog::GroupDialog() {
 	groups->set_select_mode(Tree::SELECT_SINGLE);
 	groups->set_allow_reselect(true);
 	groups->set_allow_rmb_select(true);
-	groups->set_v_size_flags(SIZE_EXPAND_FILL);
-	groups->add_constant_override("draw_guides", 1);
+	groups->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	groups->add_theme_constant_override("draw_guides", 1);
 	groups->connect("item_selected", callable_mp(this, &GroupDialog::_group_selected));
 	groups->connect("button_pressed", callable_mp(this, &GroupDialog::_delete_group_pressed));
 	groups->connect("item_edited", callable_mp(this, &GroupDialog::_group_renamed));
 
 	HBoxContainer *chbc = memnew(HBoxContainer);
 	vbc_left->add_child(chbc);
-	chbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	chbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	add_group_text = memnew(LineEdit);
 	chbc->add_child(add_group_text);
-	add_group_text->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_group_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_group_text->connect("text_entered", callable_mp(this, &GroupDialog::_add_group_pressed));
 
 	Button *add_group_button = memnew(Button);
@@ -447,7 +455,7 @@ GroupDialog::GroupDialog() {
 
 	VBoxContainer *vbc_add = memnew(VBoxContainer);
 	hbc->add_child(vbc_add);
-	vbc_add->set_h_size_flags(SIZE_EXPAND_FILL);
+	vbc_add->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	Label *out_of_group_title = memnew(Label);
 	out_of_group_title->set_text(TTR("Nodes Not in Group"));
@@ -458,25 +466,26 @@ GroupDialog::GroupDialog() {
 	nodes_to_add->set_hide_root(true);
 	nodes_to_add->set_hide_folding(true);
 	nodes_to_add->set_select_mode(Tree::SELECT_MULTI);
-	nodes_to_add->set_v_size_flags(SIZE_EXPAND_FILL);
-	nodes_to_add->add_constant_override("draw_guides", 1);
+	nodes_to_add->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	nodes_to_add->add_theme_constant_override("draw_guides", 1);
 
 	HBoxContainer *add_filter_hbc = memnew(HBoxContainer);
-	add_filter_hbc->add_constant_override("separate", 0);
+	add_filter_hbc->add_theme_constant_override("separate", 0);
 	vbc_add->add_child(add_filter_hbc);
 
 	add_filter = memnew(LineEdit);
-	add_filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_filter->set_placeholder(TTR("Filter nodes"));
 	add_filter_hbc->add_child(add_filter);
 	add_filter->connect("text_changed", callable_mp(this, &GroupDialog::_add_filter_changed));
 
 	VBoxContainer *vbc_buttons = memnew(VBoxContainer);
 	hbc->add_child(vbc_buttons);
-	vbc_buttons->set_h_size_flags(SIZE_SHRINK_CENTER);
-	vbc_buttons->set_v_size_flags(SIZE_SHRINK_CENTER);
+	vbc_buttons->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	vbc_buttons->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 
-	add_button = memnew(ToolButton);
+	add_button = memnew(Button);
+	add_button->set_flat(true);
 	add_button->set_text(TTR("Add"));
 	add_button->connect("pressed", callable_mp(this, &GroupDialog::_add_pressed));
 
@@ -485,7 +494,8 @@ GroupDialog::GroupDialog() {
 	vbc_buttons->add_spacer();
 	vbc_buttons->add_spacer();
 
-	remove_button = memnew(ToolButton);
+	remove_button = memnew(Button);
+	remove_button->set_flat(true);
 	remove_button->set_text(TTR("Remove"));
 	remove_button->connect("pressed", callable_mp(this, &GroupDialog::_removed_pressed));
 
@@ -493,7 +503,7 @@ GroupDialog::GroupDialog() {
 
 	VBoxContainer *vbc_remove = memnew(VBoxContainer);
 	hbc->add_child(vbc_remove);
-	vbc_remove->set_h_size_flags(SIZE_EXPAND_FILL);
+	vbc_remove->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	Label *in_group_title = memnew(Label);
 	in_group_title->set_text(TTR("Nodes in Group"));
@@ -501,18 +511,18 @@ GroupDialog::GroupDialog() {
 
 	nodes_to_remove = memnew(Tree);
 	vbc_remove->add_child(nodes_to_remove);
-	nodes_to_remove->set_v_size_flags(SIZE_EXPAND_FILL);
+	nodes_to_remove->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	nodes_to_remove->set_hide_root(true);
 	nodes_to_remove->set_hide_folding(true);
 	nodes_to_remove->set_select_mode(Tree::SELECT_MULTI);
-	nodes_to_remove->add_constant_override("draw_guides", 1);
+	nodes_to_remove->add_theme_constant_override("draw_guides", 1);
 
 	HBoxContainer *remove_filter_hbc = memnew(HBoxContainer);
-	remove_filter_hbc->add_constant_override("separate", 0);
+	remove_filter_hbc->add_theme_constant_override("separate", 0);
 	vbc_remove->add_child(remove_filter_hbc);
 
 	remove_filter = memnew(LineEdit);
-	remove_filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	remove_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	remove_filter->set_placeholder(TTR("Filter nodes"));
 	remove_filter_hbc->add_child(remove_filter);
 	remove_filter->connect("text_changed", callable_mp(this, &GroupDialog::_remove_filter_changed));
@@ -524,11 +534,9 @@ GroupDialog::GroupDialog() {
 	group_empty->set_autowrap(true);
 	group_empty->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	nodes_to_remove->add_child(group_empty);
-	group_empty->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	group_empty->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 
 	set_title(TTR("Group Editor"));
-	set_as_toplevel(true);
-	set_resizable(true);
 
 	error = memnew(ConfirmationDialog);
 	add_child(error);
@@ -538,16 +546,18 @@ GroupDialog::GroupDialog() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void GroupsEditor::_add_group(const String &p_group) {
-
-	if (!node)
+	if (!node) {
 		return;
+	}
 
 	const String name = group_name->get_text().strip_edges();
-	if (name.empty())
+	if (name.empty()) {
 		return;
+	}
 
-	if (node->is_in_group(name))
+	if (node->is_in_group(name)) {
 		return;
+	}
 
 	undo_redo->create_action(TTR("Add to Group"));
 
@@ -566,13 +576,14 @@ void GroupsEditor::_add_group(const String &p_group) {
 }
 
 void GroupsEditor::_remove_group(Object *p_item, int p_column, int p_id) {
-
-	if (!node)
+	if (!node) {
 		return;
+	}
 
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	String name = ti->get_text(0);
 
@@ -591,18 +602,17 @@ void GroupsEditor::_remove_group(Object *p_item, int p_column, int p_id) {
 }
 
 struct _GroupInfoComparator {
-
 	bool operator()(const Node::GroupInfo &p_a, const Node::GroupInfo &p_b) const {
 		return p_a.name.operator String() < p_b.name.operator String();
 	}
 };
 
 void GroupsEditor::update_tree() {
-
 	tree->clear();
 
-	if (!node)
+	if (!node) {
 		return;
+	}
 
 	List<Node::GroupInfo> groups;
 	node->get_groups(&groups);
@@ -611,20 +621,18 @@ void GroupsEditor::update_tree() {
 	TreeItem *root = tree->create_item();
 
 	for (List<GroupInfo>::Element *E = groups.front(); E; E = E->next()) {
-
 		Node::GroupInfo gi = E->get();
-		if (!gi.persistent)
+		if (!gi.persistent) {
 			continue;
+		}
 
 		Node *n = node;
 		bool can_be_deleted = true;
 
 		while (n) {
-
 			Ref<SceneState> ss = (n == EditorNode::get_singleton()->get_edited_scene()) ? n->get_scene_inherited_state() : n->get_scene_instance_state();
 
 			if (ss.is_valid()) {
-
 				int path = ss->find_node_by_path(n->get_path_to(node));
 				if (path != -1) {
 					if (ss->is_node_in_group(path, gi.name)) {
@@ -639,7 +647,7 @@ void GroupsEditor::update_tree() {
 		TreeItem *item = tree->create_item(root);
 		item->set_text(0, gi.name);
 		if (can_be_deleted) {
-			item->add_button(0, get_icon("Remove", "EditorIcons"), 0);
+			item->add_button(0, get_theme_icon("Remove", "EditorIcons"), 0);
 		} else {
 			item->set_selectable(0, false);
 		}
@@ -647,13 +655,11 @@ void GroupsEditor::update_tree() {
 }
 
 void GroupsEditor::set_current(Node *p_node) {
-
 	node = p_node;
 	update_tree();
 }
 
 void GroupsEditor::_show_group_dialog() {
-
 	group_dialog->edit();
 	group_dialog->set_undo_redo(undo_redo);
 }
@@ -663,13 +669,12 @@ void GroupsEditor::_bind_methods() {
 }
 
 GroupsEditor::GroupsEditor() {
-
-	node = NULL;
+	node = nullptr;
 
 	VBoxContainer *vbc = this;
 
 	group_dialog = memnew(GroupDialog);
-	group_dialog->set_as_toplevel(true);
+
 	add_child(group_dialog);
 	group_dialog->connect("group_edited", callable_mp(this, &GroupsEditor::update_tree));
 
@@ -682,7 +687,7 @@ GroupsEditor::GroupsEditor() {
 	vbc->add_child(hbc);
 
 	group_name = memnew(LineEdit);
-	group_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	group_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(group_name);
 	group_name->connect("text_entered", callable_mp(this, &GroupsEditor::_add_group));
 
@@ -693,11 +698,11 @@ GroupsEditor::GroupsEditor() {
 
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(tree);
 	tree->connect("button_pressed", callable_mp(this, &GroupsEditor::_remove_group));
-	tree->add_constant_override("draw_guides", 1);
-	add_constant_override("separation", 3 * EDSCALE);
+	tree->add_theme_constant_override("draw_guides", 1);
+	add_theme_constant_override("separation", 3 * EDSCALE);
 }
 
 GroupsEditor::~GroupsEditor() {

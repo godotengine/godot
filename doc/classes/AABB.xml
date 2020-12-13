@@ -4,13 +4,33 @@
 		Axis-Aligned Bounding Box.
 	</brief_description>
 	<description>
-		AABB consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
+		[AABB] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
+		It uses floating-point coordinates. The 2D counterpart to [AABB] is [Rect2].
+		[b]Note:[/b] Unlike [Rect2], [AABB] does not have a variant that uses integer coordinates.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+		<link title="Math tutorial index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+		<link title="Vector math">https://docs.godotengine.org/en/latest/tutorials/math/vector_math.html</link>
+		<link title="Advanced vector math">https://docs.godotengine.org/en/latest/tutorials/math/vectors_advanced.html</link>
 	</tutorials>
 	<methods>
-		<method name="AABB">
+		<method name="AABB" qualifiers="constructor">
+			<return type="AABB">
+			</return>
+			<description>
+				Constructs a default-initialized [AABB] with default (zero) values of [member position] and [member size].
+			</description>
+		</method>
+		<method name="AABB" qualifiers="constructor">
+			<return type="AABB">
+			</return>
+			<argument index="0" name="from" type="AABB">
+			</argument>
+			<description>
+				Constructs an [AABB] as a copy of the given [AABB].
+			</description>
+		</method>
+		<method name="AABB" qualifiers="constructor">
 			<return type="AABB">
 			</return>
 			<argument index="0" name="position" type="Vector3">
@@ -18,7 +38,14 @@
 			<argument index="1" name="size" type="Vector3">
 			</argument>
 			<description>
-				Optional constructor, accepts position and size.
+				Constructs an [AABB] from a position and size.
+			</description>
+		</method>
+		<method name="abs">
+			<return type="AABB">
+			</return>
+			<description>
+				Returns an AABB with equivalent position and size, modified so that the most-negative corner is the origin and the size is positive.
 			</description>
 		</method>
 		<method name="encloses">
@@ -165,8 +192,18 @@
 				Returns [code]true[/code] if the [AABB] is on both sides of a plane.
 			</description>
 		</method>
+		<method name="intersects_ray">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="dir" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="intersects_segment">
-			<return type="bool">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="from" type="Vector3">
 			</argument>
@@ -194,16 +231,41 @@
 				Returns a larger [AABB] that contains both this [AABB] and [code]with[/code].
 			</description>
 		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="AABB">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="AABB">
+			</return>
+			<argument index="0" name="right" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="AABB">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="end" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
-			Ending corner. This is calculated as [code]position + size[/code]. Changing this property changes [member size] accordingly.
+			Ending corner. This is calculated as [code]position + size[/code]. Setting this value will change the size.
 		</member>
 		<member name="position" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
-			Beginning corner.
+			Beginning corner. Typically has values lower than [member end].
 		</member>
 		<member name="size" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
-			Size from position to end.
+			Size from [member position] to [member end]. Typically all components are positive.
+			If the size is negative, you can use [method abs] to fix it.
 		</member>
 	</members>
 	<constants>

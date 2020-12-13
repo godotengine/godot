@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
-
-# Thirdparty source files
+Import("env")
+Import("env_modules")
 
 env_ws = env_modules.Clone()
 
-if env['builtin_wslay'] and not env["platform"] == "javascript": # already builtin for javascript
+if env["platform"] == "javascript":
+    # Our JavaScript/C++ interface.
+    env.AddJSLibraries(["library_godot_websocket.js"])
+elif env["builtin_wslay"]:
+    # Thirdparty source files
     wslay_dir = "#thirdparty/wslay/"
     wslay_sources = [
         "wslay_net.c",

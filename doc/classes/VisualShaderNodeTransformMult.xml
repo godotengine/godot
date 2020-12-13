@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeTransformMult" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Multiplies [Transform] by [Transform] within the visual shader graph.
 	</brief_description>
 	<description>
+		A multiplication operation on two transforms (4x4 matrices), with support for different multiplication operators.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,16 +12,21 @@
 	</methods>
 	<members>
 		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeTransformMult.Operator" default="0">
+			The multiplication type to be performed on the transforms. See [enum Operator] for options.
 		</member>
 	</members>
 	<constants>
 		<constant name="OP_AxB" value="0" enum="Operator">
+			Multiplies transform [code]a[/code] by the transform [code]b[/code].
 		</constant>
 		<constant name="OP_BxA" value="1" enum="Operator">
+			Multiplies transform [code]b[/code] by the transform [code]a[/code].
 		</constant>
 		<constant name="OP_AxB_COMP" value="2" enum="Operator">
+			Performs a component-wise multiplication of transform [code]a[/code] by the transform [code]b[/code].
 		</constant>
 		<constant name="OP_BxA_COMP" value="3" enum="Operator">
+			Performs a component-wise multiplication of transform [code]b[/code] by the transform [code]a[/code].
 		</constant>
 	</constants>
 </class>

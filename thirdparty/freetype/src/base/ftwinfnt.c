@@ -4,7 +4,7 @@
  *
  *   FreeType API for accessing Windows FNT specific info (body).
  *
- * Copyright (C) 2003-2019 by
+ * Copyright (C) 2003-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,11 +16,10 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_WINFONTS_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_SERVICE_WINFNT_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/ftwinfnt.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/services/svwinfnt.h>
 
 
   /* documentation is in ftwinfnt.h */

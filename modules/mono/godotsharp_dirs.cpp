@@ -30,9 +30,9 @@
 
 #include "godotsharp_dirs.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/version.h"
@@ -40,7 +40,7 @@
 #endif
 
 #ifdef ANDROID_ENABLED
-#include "mono_gd/gd_mono_android.h"
+#include "mono_gd/support/android_support.h"
 #endif
 
 #include "mono_gd/gd_mono.h"
@@ -49,13 +49,13 @@ namespace GodotSharpDirs {
 
 String _get_expected_build_config() {
 #ifdef TOOLS_ENABLED
-	return "Tools";
+	return "Debug";
 #else
 
 #ifdef DEBUG_ENABLED
-	return "Debug";
+	return "ExportDebug";
 #else
-	return "Release";
+	return "ExportRelease";
 #endif
 
 #endif
@@ -86,7 +86,6 @@ String _get_mono_user_dir() {
 }
 
 class _GodotSharpDirs {
-
 public:
 	String res_data_dir;
 	String res_metadata_dir;
@@ -123,7 +122,7 @@ public:
 
 private:
 	_GodotSharpDirs() {
-		res_data_dir = "res://.mono";
+		res_data_dir = "res://.godot/mono";
 		res_metadata_dir = res_data_dir.plus_file("metadata");
 		res_assemblies_base_dir = res_data_dir.plus_file("assemblies");
 		res_assemblies_dir = res_assemblies_base_dir.plus_file(GDMono::get_expected_api_build_config());
@@ -169,7 +168,7 @@ private:
 		data_mono_etc_dir = data_mono_root_dir.plus_file("etc");
 
 #ifdef ANDROID_ENABLED
-		data_mono_lib_dir = GDMonoAndroid::get_app_native_lib_dir();
+		data_mono_lib_dir = gdmono::android::support::get_app_native_lib_dir();
 #else
 		data_mono_lib_dir = data_mono_root_dir.plus_file("lib");
 #endif
@@ -206,7 +205,7 @@ private:
 		data_mono_etc_dir = data_mono_root_dir.plus_file("etc");
 
 #ifdef ANDROID_ENABLED
-		data_mono_lib_dir = GDMonoAndroid::get_app_native_lib_dir();
+		data_mono_lib_dir = gdmono::android::support::get_app_native_lib_dir();
 #else
 		data_mono_lib_dir = data_mono_root_dir.plus_file("lib");
 		data_game_assemblies_dir = data_dir_root.plus_file("Assemblies");
@@ -323,5 +322,4 @@ String get_data_mono_bin_dir() {
 	return _GodotSharpDirs::get_singleton().data_mono_bin_dir;
 }
 #endif
-
 } // namespace GodotSharpDirs

@@ -58,7 +58,6 @@ void register_nativescript_types() {
 }
 
 void unregister_nativescript_types() {
-
 	ResourceLoader::remove_resource_format_loader(resource_loader_gdns);
 	resource_loader_gdns.unref();
 

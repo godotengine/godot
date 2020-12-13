@@ -32,16 +32,15 @@
 #define OS_UWP_H
 
 #include "context_egl_uwp.h"
+#include "core/input/input.h"
 #include "core/math/transform_2d.h"
-#include "core/os/input.h"
 #include "core/os/os.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #include "joypad_uwp.h"
-#include "main/input_default.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
-#include "servers/visual_server.h"
+#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering_server.h"
 
 #include <fcntl.h>
 #include <io.h>
@@ -49,22 +48,20 @@
 #include <windows.h>
 
 class OS_UWP : public OS {
-
 public:
 	struct KeyEvent {
-
 		enum MessageType {
 			KEY_EVENT_MESSAGE,
 			CHAR_EVENT_MESSAGE
 		};
 
-		bool alt, shift, control;
-		MessageType type;
-		bool pressed;
-		unsigned int keycode;
-		unsigned int physical_keycode;
-		unsigned int unicode;
-		bool echo;
+		bool alt = false, shift = false, control = false;
+		MessageType type = KEY_EVENT_MESSAGE;
+		bool pressed = false;
+		unsigned int keycode = 0;
+		unsigned int physical_keycode = 0;
+		unsigned int unicode = 0;
+		bool echo = false;
 		CorePhysicalKeyStatus status;
 	};
 
@@ -89,7 +86,7 @@ private:
 	bool outside;
 	int old_x, old_y;
 	Point2i center;
-	VisualServer *visual_server;
+	RenderingServer *rendering_server;
 	int pressrc;
 
 	ContextEGL_UWP *gl_context;
@@ -203,7 +200,7 @@ public:
 	virtual void delay_usec(uint32_t p_usec) const;
 	virtual uint64_t get_ticks_usec() const;
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL);
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr);
 	virtual Error kill(const ProcessID &p_pid);
 
 	virtual bool has_environment(const String &p_var) const;
@@ -237,7 +234,7 @@ public:
 	virtual bool has_touchscreen_ui_hint() const;
 
 	virtual bool has_virtual_keyboard() const;
-	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), int p_max_input_length = -1);
+	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
 	virtual void hide_virtual_keyboard();
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
@@ -248,7 +245,7 @@ public:
 
 	void run();
 
-	virtual bool get_swap_ok_cancel() { return true; }
+	virtual bool get_swap_cancel_ok() { return true; }
 
 	void input_event(const Ref<InputEvent> &p_event);
 

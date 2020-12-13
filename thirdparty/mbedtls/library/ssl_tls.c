@@ -1,8 +1,14 @@
 /*
  *  SSLv3/TLSv1 shared functions
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 /*
  *  The SSL 3.0 specification was drafted by Netscape in 1996,
@@ -1004,8 +1029,6 @@ int mbedtls_ssl_derive_keys( mbedtls_ssl_context *ssl )
 #if defined(MBEDTLS_SSL_HW_RECORD_ACCEL)
     if( mbedtls_ssl_hw_record_init != NULL )
     {
-        int ret = 0;
-
         MBEDTLS_SSL_DEBUG_MSG( 2, ( "going for mbedtls_ssl_hw_record_init()" ) );
 
         if( ( ret = mbedtls_ssl_hw_record_init( ssl, key1, key2, transform->keylen,
@@ -1408,31 +1431,9 @@ static void ssl_mac( mbedtls_md_context_t *md_ctx,
 #endif /* MBEDTLS_SSL_PROTO_SSL3 */
 
 #if defined(MBEDTLS_ARC4_C) || defined(MBEDTLS_CIPHER_NULL_CIPHER) ||     \
-    ( defined(MBEDTLS_CIPHER_MODE_CBC) &&                                  \
-      ( defined(MBEDTLS_AES_C) || defined(MBEDTLS_CAMELLIA_C) || defined(MBEDTLS_ARIA_C)) )
+    defined(MBEDTLS_SSL_SOME_SUITES_USE_CBC)
 #define SSL_SOME_MODES_USE_MAC
 #endif
-
-/* The function below is only used in the Lucky 13 counter-measure in
- * ssl_decrypt_buf(). These are the defines that guard the call site. */
-#if defined(SSL_SOME_MODES_USE_MAC) && \
-    ( defined(MBEDTLS_SSL_PROTO_TLS1) || \
-      defined(MBEDTLS_SSL_PROTO_TLS1_1) || \
-      defined(MBEDTLS_SSL_PROTO_TLS1_2) )
-/* This function makes sure every byte in the memory region is accessed
- * (in ascending addresses order) */
-static void ssl_read_memory( unsigned char *p, size_t len )
-{
-    unsigned char acc = 0;
-    volatile unsigned char force;
-
-    for( ; len != 0; p++, len-- )
-        acc ^= *p;
-
-    force = acc;
-    (void) force;
-}
-#endif /* SSL_SOME_MODES_USE_MAC && ( TLS1 || TLS1_1 || TLS1_2 ) */
 
 /*
  * Encryption/decryption functions
@@ -1644,8 +1645,7 @@ static int ssl_encrypt_buf( mbedtls_ssl_context *ssl )
     }
     else
 #endif /* MBEDTLS_GCM_C || MBEDTLS_CCM_C */
-#if defined(MBEDTLS_CIPHER_MODE_CBC) &&                                    \
-    ( defined(MBEDTLS_AES_C) || defined(MBEDTLS_CAMELLIA_C) || defined(MBEDTLS_ARIA_C) )
+#if defined(MBEDTLS_SSL_SOME_SUITES_USE_CBC)
     if( mode == MBEDTLS_MODE_CBC )
     {
         int ret;
@@ -1764,8 +1764,7 @@ static int ssl_encrypt_buf( mbedtls_ssl_context *ssl )
 #endif /* MBEDTLS_SSL_ENCRYPT_THEN_MAC */
     }
     else
-#endif /* MBEDTLS_CIPHER_MODE_CBC &&
-          ( MBEDTLS_AES_C || MBEDTLS_CAMELLIA_C || MBEDTLS_ARIA_C ) */
+#endif /* MBEDTLS_SSL_SOME_SUITES_USE_CBC */
     {
         MBEDTLS_SSL_DEBUG_MSG( 1, ( "should never happen" ) );
         return( MBEDTLS_ERR_SSL_INTERNAL_ERROR );
@@ -1782,6 +1781,156 @@ static int ssl_encrypt_buf( mbedtls_ssl_context *ssl )
 
     return( 0 );
 }
+
+#if defined(MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC)
+/*
+ * Constant-flow conditional memcpy:
+ *  - if c1 == c2, equivalent to memcpy(dst, src, len),
+ *  - otherwise, a no-op,
+ * but with execution flow independent of the values of c1 and c2.
+ *
+ * Use only bit operations to avoid branches that could be used by some
+ * compilers on some platforms to translate comparison operators.
+ */
+static void mbedtls_ssl_cf_memcpy_if_eq( unsigned char *dst,
+                                         const unsigned char *src,
+                                         size_t len,
+                                         size_t c1, size_t c2 )
+{
+    /* diff = 0 if c1 == c2, non-zero otherwise */
+    const size_t diff = c1 ^ c2;
+
+    /* MSVC has a warning about unary minus on unsigned integer types,
+     * but this is well-defined and precisely what we want to do here. */
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 4146 )
+#endif
+
+    /* diff_msb's most significant bit is equal to c1 != c2 */
+    const size_t diff_msb = ( diff | -diff );
+
+    /* diff1 = c1 != c2 */
+    const size_t diff1 = diff_msb >> ( sizeof( diff_msb ) * 8 - 1 );
+
+    /* mask = c1 != c2 ? 0xff : 0x00 */
+    const unsigned char mask = (unsigned char) -diff1;
+
+#if defined(_MSC_VER)
+#pragma warning( pop )
+#endif
+
+    /* dst[i] = c1 != c2 ? dst[i] : src[i] */
+    size_t i;
+    for( i = 0; i < len; i++ )
+        dst[i] = ( dst[i] & mask ) | ( src[i] & ~mask );
+}
+
+/*
+ * Compute HMAC of variable-length data with constant flow.
+ *
+ * Only works with MD-5, SHA-1, SHA-256 and SHA-384.
+ * (Otherwise, computation of block_size needs to be adapted.)
+ */
+int mbedtls_ssl_cf_hmac(
+        mbedtls_md_context_t *ctx,
+        const unsigned char *add_data, size_t add_data_len,
+        const unsigned char *data, size_t data_len_secret,
+        size_t min_data_len, size_t max_data_len,
+        unsigned char *output )
+{
+    /*
+     * This function breaks the HMAC abstraction and uses the md_clone()
+     * extension to the MD API in order to get constant-flow behaviour.
+     *
+     * HMAC(msg) is defined as HASH(okey + HASH(ikey + msg)) where + means
+     * concatenation, and okey/ikey are the XOR of the key with some fixed bit
+     * patterns (see RFC 2104, sec. 2), which are stored in ctx->hmac_ctx.
+     *
+     * We'll first compute inner_hash = HASH(ikey + msg) by hashing up to
+     * minlen, then cloning the context, and for each byte up to maxlen
+     * finishing up the hash computation, keeping only the correct result.
+     *
+     * Then we only need to compute HASH(okey + inner_hash) and we're done.
+     */
+    const mbedtls_md_type_t md_alg = mbedtls_md_get_type( ctx->md_info );
+    /* TLS 1.0-1.2 only support SHA-384, SHA-256, SHA-1, MD-5,
+     * all of which have the same block size except SHA-384. */
+    const size_t block_size = md_alg == MBEDTLS_MD_SHA384 ? 128 : 64;
+    const unsigned char * const ikey = ctx->hmac_ctx;
+    const unsigned char * const okey = ikey + block_size;
+    const size_t hash_size = mbedtls_md_get_size( ctx->md_info );
+
+    unsigned char aux_out[MBEDTLS_MD_MAX_SIZE];
+    mbedtls_md_context_t aux;
+    size_t offset;
+    int ret;
+
+    mbedtls_md_init( &aux );
+
+#define MD_CHK( func_call ) \
+    do {                    \
+        ret = (func_call);  \
+        if( ret != 0 )      \
+            goto cleanup;   \
+    } while( 0 )
+
+    MD_CHK( mbedtls_md_setup( &aux, ctx->md_info, 0 ) );
+
+    /* After hmac_start() of hmac_reset(), ikey has already been hashed,
+     * so we can start directly with the message */
+    MD_CHK( mbedtls_md_update( ctx, add_data, add_data_len ) );
+    MD_CHK( mbedtls_md_update( ctx, data, min_data_len ) );
+
+    /* For each possible length, compute the hash up to that point */
+    for( offset = min_data_len; offset <= max_data_len; offset++ )
+    {
+        MD_CHK( mbedtls_md_clone( &aux, ctx ) );
+        MD_CHK( mbedtls_md_finish( &aux, aux_out ) );
+        /* Keep only the correct inner_hash in the output buffer */
+        mbedtls_ssl_cf_memcpy_if_eq( output, aux_out, hash_size,
+                                     offset, data_len_secret );
+
+        if( offset < max_data_len )
+            MD_CHK( mbedtls_md_update( ctx, data + offset, 1 ) );
+    }
+
+    /* Now compute HASH(okey + inner_hash) */
+    MD_CHK( mbedtls_md_starts( ctx ) );
+    MD_CHK( mbedtls_md_update( ctx, okey, block_size ) );
+    MD_CHK( mbedtls_md_update( ctx, output, hash_size ) );
+    MD_CHK( mbedtls_md_finish( ctx, output ) );
+
+    /* Done, get ready for next time */
+    MD_CHK( mbedtls_md_hmac_reset( ctx ) );
+
+#undef MD_CHK
+
+cleanup:
+    mbedtls_md_free( &aux );
+    return( ret );
+}
+
+/*
+ * Constant-flow memcpy from variable position in buffer.
+ * - functionally equivalent to memcpy(dst, src + offset_secret, len)
+ * - but with execution flow independent from the value of offset_secret.
+ */
+void mbedtls_ssl_cf_memcpy_offset( unsigned char *dst,
+                                   const unsigned char *src_base,
+                                   size_t offset_secret,
+                                   size_t offset_min, size_t offset_max,
+                                   size_t len )
+{
+    size_t offset;
+
+    for( offset = offset_min; offset <= offset_max; offset++ )
+    {
+        mbedtls_ssl_cf_memcpy_if_eq( dst, src_base + offset, len,
+                                     offset, offset_secret );
+    }
+}
+#endif /* MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC */
 
 static int ssl_decrypt_buf( mbedtls_ssl_context *ssl )
 {
@@ -1937,8 +2086,7 @@ static int ssl_decrypt_buf( mbedtls_ssl_context *ssl )
     }
     else
 #endif /* MBEDTLS_GCM_C || MBEDTLS_CCM_C */
-#if defined(MBEDTLS_CIPHER_MODE_CBC) &&                                    \
-    ( defined(MBEDTLS_AES_C) || defined(MBEDTLS_CAMELLIA_C) || defined(MBEDTLS_ARIA_C) )
+#if defined(MBEDTLS_SSL_SOME_SUITES_USE_CBC)
     if( mode == MBEDTLS_MODE_CBC )
     {
         /*
@@ -2151,8 +2299,7 @@ static int ssl_decrypt_buf( mbedtls_ssl_context *ssl )
         ssl->in_msglen -= padlen;
     }
     else
-#endif /* MBEDTLS_CIPHER_MODE_CBC &&
-          ( MBEDTLS_AES_C || MBEDTLS_CAMELLIA_C || MBEDTLS_ARIA_C ) */
+#endif /* MBEDTLS_SSL_SOME_SUITES_USE_CBC) */
     {
         MBEDTLS_SSL_DEBUG_MSG( 1, ( "should never happen" ) );
         return( MBEDTLS_ERR_SSL_INTERNAL_ERROR );
@@ -2171,6 +2318,7 @@ static int ssl_decrypt_buf( mbedtls_ssl_context *ssl )
     if( auth_done == 0 )
     {
         unsigned char mac_expect[MBEDTLS_SSL_MAC_ADD];
+        unsigned char mac_peer[MBEDTLS_SSL_MAC_ADD];
 
         ssl->in_msglen -= ssl->transform_in->maclen;
 
@@ -2185,6 +2333,8 @@ static int ssl_decrypt_buf( mbedtls_ssl_context *ssl )
                       ssl->in_msg, ssl->in_msglen,
                       ssl->in_ctr, ssl->in_msgtype,
                       mac_expect );
+            memcpy( mac_peer, ssl->in_msg + ssl->in_msglen,
+                              ssl->transform_in->maclen );
         }
         else
 #endif /* MBEDTLS_SSL_PROTO_SSL3 */
@@ -2192,34 +2342,8 @@ static int ssl_decrypt_buf( mbedtls_ssl_context *ssl )
         defined(MBEDTLS_SSL_PROTO_TLS1_2)
         if( ssl->minor_ver > MBEDTLS_SSL_MINOR_VERSION_0 )
         {
-            /*
-             * Process MAC and always update for padlen afterwards to make
-             * total time independent of padlen.
-             *
-             * Known timing attacks:
-             *  - Lucky Thirteen (http://www.isg.rhul.ac.uk/tls/TLStiming.pdf)
-             *
-             * To compensate for different timings for the MAC calculation
-             * depending on how much padding was removed (which is determined
-             * by padlen), process extra_run more blocks through the hash
-             * function.
-             *
-             * The formula in the paper is
-             *   extra_run = ceil( (L1-55) / 64 ) - ceil( (L2-55) / 64 )
-             * where L1 is the size of the header plus the decrypted message
-             * plus CBC padding and L2 is the size of the header plus the
-             * decrypted message. This is for an underlying hash function
-             * with 64-byte blocks.
-             * We use ( (Lx+8) / 64 ) to handle 'negative Lx' values
-             * correctly. We round down instead of up, so -56 is the correct
-             * value for our calculations instead of -55.
-             *
-             * Repeat the formula rather than defining a block_size variable.
-             * This avoids requiring division by a variable at runtime
-             * (which would be marginally less efficient and would require
-             * linking an extra division function in some builds).
-             */
-            size_t j, extra_run = 0;
+            int ret;
+            unsigned char add_data[13];
 
             /*
              * The next two sizes are the minimum and maximum values of
@@ -2234,56 +2358,25 @@ static int ssl_decrypt_buf( mbedtls_ssl_context *ssl )
             const size_t max_len = ssl->in_msglen + padlen;
             const size_t min_len = ( max_len > 256 ) ? max_len - 256 : 0;
 
-            switch( ssl->transform_in->ciphersuite_info->mac )
+            memcpy( add_data +  0, ssl->in_ctr, 8 );
+            memcpy( add_data +  8, ssl->in_hdr, 3 );
+            memcpy( add_data + 11, ssl->in_len, 2 );
+
+            ret = mbedtls_ssl_cf_hmac( &ssl->transform_in->md_ctx_dec,
+                                       add_data, sizeof( add_data ),
+                                       ssl->in_msg, ssl->in_msglen,
+                                       min_len, max_len,
+                                       mac_expect );
+            if( ret != 0 )
             {
-#if defined(MBEDTLS_MD5_C) || defined(MBEDTLS_SHA1_C) || \
-    defined(MBEDTLS_SHA256_C)
-                case MBEDTLS_MD_MD5:
-                case MBEDTLS_MD_SHA1:
-                case MBEDTLS_MD_SHA256:
-                    /* 8 bytes of message size, 64-byte compression blocks */
-                    extra_run = ( 13 + ssl->in_msglen + padlen + 8 ) / 64 -
-                                ( 13 + ssl->in_msglen          + 8 ) / 64;
-                    break;
-#endif
-#if defined(MBEDTLS_SHA512_C)
-                case MBEDTLS_MD_SHA384:
-                    /* 16 bytes of message size, 128-byte compression blocks */
-                    extra_run = ( 13 + ssl->in_msglen + padlen + 16 ) / 128 -
-                                ( 13 + ssl->in_msglen          + 16 ) / 128;
-                    break;
-#endif
-                default:
-                    MBEDTLS_SSL_DEBUG_MSG( 1, ( "should never happen" ) );
-                    return( MBEDTLS_ERR_SSL_INTERNAL_ERROR );
+                MBEDTLS_SSL_DEBUG_RET( 1, "mbedtls_ssl_cf_hmac", ret );
+                return( ret );
             }
 
-            extra_run &= correct * 0xFF;
-
-            mbedtls_md_hmac_update( &ssl->transform_in->md_ctx_dec, ssl->in_ctr, 8 );
-            mbedtls_md_hmac_update( &ssl->transform_in->md_ctx_dec, ssl->in_hdr, 3 );
-            mbedtls_md_hmac_update( &ssl->transform_in->md_ctx_dec, ssl->in_len, 2 );
-            mbedtls_md_hmac_update( &ssl->transform_in->md_ctx_dec, ssl->in_msg,
-                             ssl->in_msglen );
-            /* Make sure we access everything even when padlen > 0. This
-             * makes the synchronisation requirements for just-in-time
-             * Prime+Probe attacks much tighter and hopefully impractical. */
-            ssl_read_memory( ssl->in_msg + ssl->in_msglen, padlen );
-            mbedtls_md_hmac_finish( &ssl->transform_in->md_ctx_dec, mac_expect );
-
-            /* Call mbedtls_md_process at least once due to cache attacks
-             * that observe whether md_process() was called of not */
-            for( j = 0; j < extra_run + 1; j++ )
-                mbedtls_md_process( &ssl->transform_in->md_ctx_dec, ssl->in_msg );
-
-            mbedtls_md_hmac_reset( &ssl->transform_in->md_ctx_dec );
-
-            /* Make sure we access all the memory that could contain the MAC,
-             * before we check it in the next code block. This makes the
-             * synchronisation requirements for just-in-time Prime+Probe
-             * attacks much tighter and hopefully impractical. */
-            ssl_read_memory( ssl->in_msg + min_len,
-                                 max_len - min_len + ssl->transform_in->maclen );
+            mbedtls_ssl_cf_memcpy_offset( mac_peer, ssl->in_msg,
+                                          ssl->in_msglen,
+                                          min_len, max_len,
+                                          ssl->transform_in->maclen );
         }
         else
 #endif /* MBEDTLS_SSL_PROTO_TLS1 || MBEDTLS_SSL_PROTO_TLS1_1 || \
@@ -2295,11 +2388,10 @@ static int ssl_decrypt_buf( mbedtls_ssl_context *ssl )
 
 #if defined(MBEDTLS_SSL_DEBUG_ALL)
         MBEDTLS_SSL_DEBUG_BUF( 4, "expected mac", mac_expect, ssl->transform_in->maclen );
-        MBEDTLS_SSL_DEBUG_BUF( 4, "message  mac", ssl->in_msg + ssl->in_msglen,
-                               ssl->transform_in->maclen );
+        MBEDTLS_SSL_DEBUG_BUF( 4, "message  mac", mac_peer, ssl->transform_in->maclen );
 #endif
 
-        if( mbedtls_ssl_safer_memcmp( ssl->in_msg + ssl->in_msglen, mac_expect,
+        if( mbedtls_ssl_safer_memcmp( mac_peer, mac_expect,
                                       ssl->transform_in->maclen ) != 0 )
         {
 #if defined(MBEDTLS_SSL_DEBUG_ALL)
@@ -2727,7 +2819,7 @@ int mbedtls_ssl_fetch_input( mbedtls_ssl_context *ssl, size_t nb_want )
             if( ret < 0 )
                 return( ret );
 
-            if ( (size_t)ret > len || ( INT_MAX > SIZE_MAX && ret > SIZE_MAX ) )
+            if ( (size_t)ret > len || ( INT_MAX > SIZE_MAX && ret > (int)SIZE_MAX ) )
             {
                 MBEDTLS_SSL_DEBUG_MSG( 1,
                     ( "f_recv returned %d bytes but only %lu were requested",
@@ -2781,7 +2873,7 @@ int mbedtls_ssl_flush_output( mbedtls_ssl_context *ssl )
         if( ret <= 0 )
             return( ret );
 
-        if( (size_t)ret > ssl->out_left || ( INT_MAX > SIZE_MAX && ret > SIZE_MAX ) )
+        if( (size_t)ret > ssl->out_left || ( INT_MAX > SIZE_MAX && ret > (int)SIZE_MAX ) )
         {
             MBEDTLS_SSL_DEBUG_MSG( 1,
                 ( "f_send returned %d bytes but only %lu bytes were sent",
@@ -2885,15 +2977,18 @@ static void ssl_dtls_replay_reset( mbedtls_ssl_context *ssl );
 /*
  * Swap transform_out and out_ctr with the alternative ones
  */
-static void ssl_swap_epochs( mbedtls_ssl_context *ssl )
+static int ssl_swap_epochs( mbedtls_ssl_context *ssl )
 {
     mbedtls_ssl_transform *tmp_transform;
     unsigned char tmp_out_ctr[8];
+#if defined(MBEDTLS_SSL_HW_RECORD_ACCEL)
+    int ret;
+#endif /* MBEDTLS_SSL_HW_RECORD_ACCEL */
 
     if( ssl->transform_out == ssl->handshake->alt_transform_out )
     {
         MBEDTLS_SSL_DEBUG_MSG( 3, ( "skip swap epochs" ) );
-        return;
+        return( 0 );
     }
 
     MBEDTLS_SSL_DEBUG_MSG( 3, ( "swap epochs" ) );
@@ -2920,7 +3015,9 @@ static void ssl_swap_epochs( mbedtls_ssl_context *ssl )
             return( MBEDTLS_ERR_SSL_HW_ACCEL_FAILED );
         }
     }
-#endif
+#endif /* MBEDTLS_SSL_HW_RECORD_ACCEL */
+
+    return( 0 );
 }
 
 /*
@@ -2957,7 +3054,8 @@ int mbedtls_ssl_flight_transmit( mbedtls_ssl_context *ssl )
 
         ssl->handshake->cur_msg = ssl->handshake->flight;
         ssl->handshake->cur_msg_p = ssl->handshake->flight->p + 12;
-        ssl_swap_epochs( ssl );
+        if( ( ret = ssl_swap_epochs( ssl ) ) != 0 )
+            return( ret );
 
         ssl->handshake->retransmit_state = MBEDTLS_SSL_RETRANS_SENDING;
     }
@@ -2980,7 +3078,8 @@ int mbedtls_ssl_flight_transmit( mbedtls_ssl_context *ssl )
         if( is_finished && ssl->handshake->cur_msg_p == ( cur->p + 12 ) )
         {
             MBEDTLS_SSL_DEBUG_MSG( 2, ( "swap epochs to send finished message" ) );
-            ssl_swap_epochs( ssl );
+            if( ( ret = ssl_swap_epochs( ssl ) ) != 0 )
+                return( ret );
         }
 
         ret = ssl_get_remaining_payload_in_datagram( ssl );
@@ -3017,7 +3116,10 @@ int mbedtls_ssl_flight_transmit( mbedtls_ssl_context *ssl )
             if( ( max_frag_len < 12 ) || ( max_frag_len == 12 && hs_len != 0 ) )
             {
                 if( is_finished )
-                    ssl_swap_epochs( ssl );
+                {
+                    if( ( ret = ssl_swap_epochs( ssl ) ) != 0 )
+                        return( ret );
+                }
 
                 if( ( ret = mbedtls_ssl_flush_output( ssl ) ) != 0 )
                     return( ret );
@@ -3997,17 +4099,23 @@ static int ssl_handle_possible_reconnect( mbedtls_ssl_context *ssl )
 
     if( ret == MBEDTLS_ERR_SSL_HELLO_VERIFY_REQUIRED )
     {
+        int send_ret;
+        MBEDTLS_SSL_DEBUG_MSG( 1, ( "sending HelloVerifyRequest" ) );
+        MBEDTLS_SSL_DEBUG_BUF( 4, "output record sent to network",
+                                  ssl->out_buf, len );
         /* Don't check write errors as we can't do anything here.
          * If the error is permanent we'll catch it later,
          * if it's not, then hopefully it'll work next time. */
-        (void) ssl->f_send( ssl->p_bio, ssl->out_buf, len );
+        send_ret = ssl->f_send( ssl->p_bio, ssl->out_buf, len );
+        MBEDTLS_SSL_DEBUG_RET( 2, "ssl->f_send", send_ret );
+        (void) send_ret;
 
         return( MBEDTLS_ERR_SSL_HELLO_VERIFY_REQUIRED );
     }
 
     if( ret == 0 )
     {
-        /* Got a valid cookie, partially reset context */
+        MBEDTLS_SSL_DEBUG_MSG( 1, ( "cookie is valid, resetting context" ) );
         if( ( ret = ssl_session_reset_int( ssl, 1 ) ) != 0 )
         {
             MBEDTLS_SSL_DEBUG_RET( 1, "reset", ret );
@@ -7575,7 +7683,9 @@ int mbedtls_ssl_conf_alpn_protocols( mbedtls_ssl_config *conf, const char **prot
         cur_len = strlen( *p );
         tot_len += cur_len;
 
-        if( cur_len == 0 || cur_len > 255 || tot_len > 65535 )
+        if( ( cur_len == 0 ) ||
+            ( cur_len > MBEDTLS_SSL_MAX_ALPN_NAME_LEN ) ||
+            ( tot_len > MBEDTLS_SSL_MAX_ALPN_LIST_LEN ) )
             return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
     }
 
@@ -8542,6 +8652,10 @@ int mbedtls_ssl_read( mbedtls_ssl_context *ssl, unsigned char *buf, size_t len )
 
     memcpy( buf, ssl->in_offt, n );
     ssl->in_msglen -= n;
+
+    /* Zeroising the plaintext buffer to erase unused application data
+       from the memory. */
+    mbedtls_platform_zeroize( ssl->in_offt, n );
 
     if( ssl->in_msglen == 0 )
     {

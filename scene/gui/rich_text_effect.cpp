@@ -30,7 +30,7 @@
 
 #include "rich_text_effect.h"
 
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 
 void RichTextEffect::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_process_custom_fx", PropertyInfo(Variant::OBJECT, "char_fx", PROPERTY_HINT_RESOURCE_TYPE, "CharFXTransform")));
@@ -64,7 +64,6 @@ RichTextEffect::RichTextEffect() {
 }
 
 void CharFXTransform::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_relative_index"), &CharFXTransform::get_relative_index);
 	ClassDB::bind_method(D_METHOD("set_relative_index", "index"), &CharFXTransform::set_relative_index);
 

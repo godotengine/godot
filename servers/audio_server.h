@@ -32,9 +32,9 @@
 #define AUDIO_SERVER_H
 
 #include "core/math/audio_frame.h"
-#include "core/object.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 #include "servers/audio/audio_effect.h"
 
 class AudioDriverDummy;
@@ -42,7 +42,6 @@ class AudioStream;
 class AudioStreamSample;
 
 class AudioDriver {
-
 	static AudioDriver *singleton;
 	uint64_t _last_mix_time;
 	uint64_t _last_mix_frames;
@@ -80,9 +79,6 @@ public:
 		SPEAKER_SURROUND_51,
 		SPEAKER_SURROUND_71,
 	};
-
-	static const int DEFAULT_MIX_RATE = 44100;
-	static const int DEFAULT_OUTPUT_LATENCY = 15;
 
 	static AudioDriver *get_singleton();
 	void set_singleton();
@@ -125,11 +121,12 @@ public:
 };
 
 class AudioDriverManager {
-
 	enum {
-
 		MAX_DRIVERS = 10
 	};
+
+	static const int DEFAULT_MIX_RATE = 44100;
+	static const int DEFAULT_OUTPUT_LATENCY = 15;
 
 	static AudioDriver *drivers[MAX_DRIVERS];
 	static int driver_count;
@@ -146,7 +143,6 @@ public:
 class AudioBusLayout;
 
 class AudioServer : public Object {
-
 	GDCLASS(AudioServer, Object);
 
 public:
@@ -184,7 +180,6 @@ private:
 	float global_rate_scale;
 
 	struct Bus {
-
 		StringName name;
 		bool solo;
 		bool mute;
@@ -198,7 +193,7 @@ private:
 			bool active;
 			AudioFrame peak_volume;
 			Vector<AudioFrame> buffer;
-			Vector<Ref<AudioEffectInstance> > effect_instances;
+			Vector<Ref<AudioEffectInstance>> effect_instances;
 			uint64_t last_mix_with_audio;
 			Channel() {
 				last_mix_with_audio = 0;
@@ -224,7 +219,7 @@ private:
 		int index_cache;
 	};
 
-	Vector<Vector<AudioFrame> > temp_buffer; //temp_buffer for each level
+	Vector<Vector<AudioFrame>> temp_buffer; //temp_buffer for each level
 	Vector<Bus *> buses;
 	Map<StringName, Bus *> bus_map;
 
@@ -232,20 +227,11 @@ private:
 
 	static AudioServer *singleton;
 
-	// TODO create an audiodata pool to optimize memory
-
-	Map<void *, uint32_t> audio_data;
-	size_t audio_data_total_mem;
-	size_t audio_data_max_mem;
-
-	Mutex audio_data_lock;
-
 	void init_channels_and_buffers();
 
 	void _mix_step();
 
 	struct CallbackItem {
-
 		AudioCallback callback;
 		void *userdata;
 
@@ -266,10 +252,14 @@ protected:
 public:
 	_FORCE_INLINE_ int get_channel_count() const {
 		switch (get_speaker_mode()) {
-			case SPEAKER_MODE_STEREO: return 1;
-			case SPEAKER_SURROUND_31: return 2;
-			case SPEAKER_SURROUND_51: return 3;
-			case SPEAKER_SURROUND_71: return 4;
+			case SPEAKER_MODE_STEREO:
+				return 1;
+			case SPEAKER_SURROUND_31:
+				return 2;
+			case SPEAKER_SURROUND_51:
+				return 3;
+			case SPEAKER_SURROUND_71:
+				return 4;
 		}
 		ERR_FAIL_V(1);
 	}
@@ -350,12 +340,6 @@ public:
 	virtual double get_time_to_next_mix() const;
 	virtual double get_time_since_last_mix() const;
 
-	void *audio_data_alloc(uint32_t p_data_len, const uint8_t *p_from_data = NULL);
-	void audio_data_free(void *p_data);
-
-	size_t audio_data_get_total_memory_usage() const;
-	size_t audio_data_get_max_memory_usage() const;
-
 	void add_callback(AudioCallback p_callback, void *p_userdata);
 	void remove_callback(AudioCallback p_callback, void *p_userdata);
 
@@ -380,13 +364,11 @@ public:
 VARIANT_ENUM_CAST(AudioServer::SpeakerMode)
 
 class AudioBusLayout : public Resource {
-
 	GDCLASS(AudioBusLayout, Resource);
 
 	friend class AudioServer;
 
 	struct Bus {
-
 		StringName name;
 		bool solo;
 		bool mute;

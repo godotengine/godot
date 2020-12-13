@@ -31,12 +31,11 @@
 #ifndef SCRIPT_CLASS_PARSER_H
 #define SCRIPT_CLASS_PARSER_H
 
-#include "core/ustring.h"
-#include "core/variant.h"
-#include "core/vector.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 
 class ScriptClassParser {
-
 public:
 	struct NameDecl {
 		enum Type {
@@ -46,23 +45,22 @@ public:
 		};
 
 		String name;
-		Type type;
+		Type type = NAMESPACE_DECL;
 	};
 
 	struct ClassDecl {
 		String name;
 		String namespace_;
 		Vector<String> base;
-		bool nested;
-		bool has_script_attr;
+		bool nested = false;
 	};
 
 private:
 	String code;
-	int idx;
-	int line;
+	int idx = 0;
+	int line = 0;
 	String error_str;
-	bool error;
+	bool error = false;
 	Variant value;
 
 	Vector<ClassDecl> classes;

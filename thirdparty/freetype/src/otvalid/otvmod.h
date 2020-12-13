@@ -5,7 +5,7 @@
  *   FreeType's OpenType validation module implementation
  *   (specification).
  *
- * Copyright (C) 2004-2019 by
+ * Copyright (C) 2004-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -21,8 +21,7 @@
 #define OTVMOD_H_
 
 
-#include <ft2build.h>
-#include FT_MODULE_H
+#include <freetype/ftmodapi.h>
 
 
 FT_BEGIN_HEADER

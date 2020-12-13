@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT common tables validation (specification).
  *
- * Copyright (C) 2004-2019 by
+ * Copyright (C) 2004-2020 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -43,10 +43,9 @@
 #define GXVCOMMN_H_
 
 
-#include <ft2build.h>
 #include "gxvalid.h"
-#include FT_INTERNAL_DEBUG_H
-#include FT_SFNT_NAMES_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/ftsnames.h>
 
 
 FT_BEGIN_HEADER

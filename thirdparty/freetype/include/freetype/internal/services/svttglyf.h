@@ -4,7 +4,7 @@
  *
  *   The FreeType TrueType glyph service.
  *
- * Copyright (C) 2007-2019 by
+ * Copyright (C) 2007-2020 by
  * David Turner.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -18,8 +18,8 @@
 #ifndef SVTTGLYF_H_
 #define SVTTGLYF_H_
 
-#include FT_INTERNAL_SERVICE_H
-#include FT_TRUETYPE_TABLES_H
+#include <freetype/internal/ftserv.h>
+#include <freetype/tttables.h>
 
 
 FT_BEGIN_HEADER

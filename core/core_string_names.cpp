@@ -30,7 +30,7 @@
 
 #include "core_string_names.h"
 
-CoreStringNames *CoreStringNames::singleton = NULL;
+CoreStringNames *CoreStringNames::singleton = nullptr;
 
 CoreStringNames::CoreStringNames() :
 		_free(StaticCString::create("free")),
@@ -73,6 +73,8 @@ CoreStringNames::CoreStringNames() :
 		a8(StaticCString::create("a8")),
 		call(StaticCString::create("call")),
 		call_deferred(StaticCString::create("call_deferred")),
+		bind(StaticCString::create("bind")),
+		unbind(StaticCString::create("unbind")),
 		emit(StaticCString::create("emit")),
 		notification(StaticCString::create("notification")) {
 }

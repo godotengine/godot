@@ -33,10 +33,12 @@
 
 #include "core/math/vector3.h"
 
+class Variant;
+
 class Plane {
 public:
 	Vector3 normal;
-	real_t d;
+	real_t d = 0;
 
 	void set_normal(const Vector3 &p_normal);
 	_FORCE_INLINE_ Vector3 get_normal() const { return normal; }; ///Point is coplanar, CMP_EPSILON for precision
@@ -47,7 +49,6 @@ public:
 	/* Plane-Point operations */
 
 	_FORCE_INLINE_ Vector3 center() const { return normal * d; }
-	Vector3 get_any_point() const;
 	Vector3 get_any_perpendicular_normal() const;
 
 	_FORCE_INLINE_ bool is_point_over(const Vector3 &p_point) const; ///< Point is over plane
@@ -56,12 +57,16 @@ public:
 
 	/* intersections */
 
-	bool intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r_result = 0) const;
+	bool intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r_result = nullptr) const;
 	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection) const;
 	bool intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 *p_intersection) const;
 
-	_FORCE_INLINE_ Vector3 project(const Vector3 &p_point) const {
+	// For Variant bindings.
+	Variant intersect_3_bind(const Plane &p_plane1, const Plane &p_plane2) const;
+	Variant intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) const;
+	Variant intersects_segment_bind(const Vector3 &p_begin, const Vector3 &p_end) const;
 
+	_FORCE_INLINE_ Vector3 project(const Vector3 &p_point) const {
 		return p_point - normal * distance_to(p_point);
 	}
 
@@ -69,13 +74,13 @@ public:
 
 	Plane operator-() const { return Plane(-normal, -d); }
 	bool is_equal_approx(const Plane &p_plane) const;
+	bool is_equal_approx_any_side(const Plane &p_plane) const;
 
 	_FORCE_INLINE_ bool operator==(const Plane &p_plane) const;
 	_FORCE_INLINE_ bool operator!=(const Plane &p_plane) const;
 	operator String() const;
 
-	_FORCE_INLINE_ Plane() :
-			d(0) {}
+	_FORCE_INLINE_ Plane() {}
 	_FORCE_INLINE_ Plane(real_t p_a, real_t p_b, real_t p_c, real_t p_d) :
 			normal(p_a, p_b, p_c),
 			d(p_d) {}
@@ -86,17 +91,14 @@ public:
 };
 
 bool Plane::is_point_over(const Vector3 &p_point) const {
-
 	return (normal.dot(p_point) > d);
 }
 
 real_t Plane::distance_to(const Vector3 &p_point) const {
-
 	return (normal.dot(p_point) - d);
 }
 
 bool Plane::has_point(const Vector3 &p_point, real_t _epsilon) const {
-
 	real_t dist = normal.dot(p_point) - d;
 	dist = ABS(dist);
 	return (dist <= _epsilon);
@@ -113,23 +115,21 @@ Plane::Plane(const Vector3 &p_point, const Vector3 &p_normal) :
 }
 
 Plane::Plane(const Vector3 &p_point1, const Vector3 &p_point2, const Vector3 &p_point3, ClockDirection p_dir) {
-
-	if (p_dir == CLOCKWISE)
+	if (p_dir == CLOCKWISE) {
 		normal = (p_point1 - p_point3).cross(p_point1 - p_point2);
-	else
+	} else {
 		normal = (p_point1 - p_point2).cross(p_point1 - p_point3);
+	}
 
 	normal.normalize();
 	d = normal.dot(p_point1);
 }
 
 bool Plane::operator==(const Plane &p_plane) const {
-
 	return normal == p_plane.normal && d == p_plane.d;
 }
 
 bool Plane::operator!=(const Plane &p_plane) const {
-
 	return normal != p_plane.normal || d != p_plane.d;
 }
 

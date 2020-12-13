@@ -49,8 +49,7 @@ import android.view.SurfaceView
  * UI thread.
  * </ul>
  */
-internal class VkSurfaceView(context: Context) : SurfaceView(context), SurfaceHolder.Callback {
-
+open internal class VkSurfaceView(context: Context) : SurfaceView(context), SurfaceHolder.Callback {
 	companion object {
 		fun checkState(expression: Boolean, errorMessage: Any) {
 			check(expression) { errorMessage.toString() }
@@ -100,7 +99,7 @@ internal class VkSurfaceView(context: Context) : SurfaceView(context), SurfaceHo
 	 *
 	 * Must not be called before a [VkRenderer] has been set.
 	 */
-	fun onResume() {
+	open fun onResume() {
 		vkThread.onResume()
 	}
 
@@ -109,7 +108,7 @@ internal class VkSurfaceView(context: Context) : SurfaceView(context), SurfaceHo
 	 *
 	 * Must not be called before a [VkRenderer] has been set.
 	 */
-	fun onPause() {
+	open fun onPause() {
 		vkThread.onPause()
 	}
 

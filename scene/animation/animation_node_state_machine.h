@@ -134,7 +134,6 @@ public:
 };
 
 class AnimationNodeStateMachine : public AnimationRootNode {
-
 	GDCLASS(AnimationNodeStateMachine, AnimationRootNode);
 
 private:
@@ -148,7 +147,6 @@ private:
 	Map<StringName, State> states;
 
 	struct Transition {
-
 		StringName from;
 		StringName to;
 		Ref<AnimationNodeStateMachineTransition> transition;
@@ -174,10 +172,11 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
-	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	void add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position = Vector2());
+	void replace_node(const StringName &p_name, Ref<AnimationNode> p_node);
 	Ref<AnimationNode> get_node(const StringName &p_name) const;
 	void remove_node(const StringName &p_name);
 	void rename_node(const StringName &p_name, const StringName &p_new_name);
@@ -188,7 +187,7 @@ public:
 	void set_node_position(const StringName &p_name, const Vector2 &p_position);
 	Vector2 get_node_position(const StringName &p_name) const;
 
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
+	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
 
 	bool has_transition(const StringName &p_from, const StringName &p_to) const;
 	int find_transition(const StringName &p_from, const StringName &p_to) const;
@@ -209,10 +208,10 @@ public:
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;
 
-	virtual float process(float p_time, bool p_seek);
-	virtual String get_caption() const;
+	virtual float process(float p_time, bool p_seek) override;
+	virtual String get_caption() const override;
 
-	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name);
+	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;
 
 	AnimationNodeStateMachine();
 };

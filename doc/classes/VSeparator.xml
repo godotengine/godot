@@ -14,8 +14,10 @@
 	</constants>
 	<theme_items>
 		<theme_item name="separation" type="int" default="4">
+			The width of the area covered by the separator. Effectively works like a minimum width.
 		</theme_item>
 		<theme_item name="separator" type="StyleBox">
+			The style for the separator line. Works best with [StyleBoxLine] (remember to enable [member StyleBoxLine.vertical]).
 		</theme_item>
 	</theme_items>
 </class>

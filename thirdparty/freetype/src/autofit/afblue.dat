@@ -2,7 +2,7 @@
 //
 //   Auto-fitter data for blue strings.
 //
-// Copyright (C) 2013-2019 by
+// Copyright (C) 2013-2020 by
 // David Turner, Robert Wilhelm, and Werner Lemberg.
 //
 // This file is part of the FreeType project, and may only be used,
@@ -203,7 +203,7 @@ AF_BLUE_STRING_ENUM AF_BLUE_STRINGS_ARRAY AF_BLUE_STRING_MAX_LEN:
     "𐐨 𐐪 𐐬 𐐿 𐑃"
 
   AF_BLUE_STRING_DEVANAGARI_BASE
-    "क म अ आ थ ध भ श"
+    "क न म उ छ ट ठ ड"
   AF_BLUE_STRING_DEVANAGARI_TOP
     "ई ऐ ओ औ ि ी ो ौ"
   // note that some fonts have extreme variation in the height of the
@@ -392,6 +392,21 @@ AF_BLUE_STRING_ENUM AF_BLUE_STRINGS_ARRAY AF_BLUE_STRING_MAX_LEN:
   AF_BLUE_STRING_MALAYALAM_BOTTOM
     "ട ഠ ധ ശ ഘ ച ഥ ല"
 
+  AF_BLUE_STRING_MEDEFAIDRIN_CAPITAL_TOP
+    "𖹀 𖹁 𖹂 𖹃 𖹏 𖹚 𖹟"
+  AF_BLUE_STRING_MEDEFAIDRIN_CAPITAL_BOTTOM
+    "𖹀 𖹁 𖹂 𖹃 𖹏 𖹚 𖹒 𖹓"
+  AF_BLUE_STRING_MEDEFAIDRIN_SMALL_F_TOP
+    "𖹤 𖹬 𖹧 𖹴 𖹶 𖹾"
+  AF_BLUE_STRING_MEDEFAIDRIN_SMALL_TOP
+    "𖹠 𖹡 𖹢 𖹹 𖹳 𖹮"
+  AF_BLUE_STRING_MEDEFAIDRIN_SMALL_BOTTOM
+    "𖹠 𖹡 𖹢 𖹳 𖹭 𖹽"
+  AF_BLUE_STRING_MEDEFAIDRIN_SMALL_DESCENDER
+    "𖹥 𖹨 𖹩"
+  AF_BLUE_STRING_MEDEFAIDRIN_DIGIT_TOP
+    "𖺀 𖺅 𖺈 𖺄 𖺍"
+
   AF_BLUE_STRING_MONGOLIAN_TOP_BASE
     "ᠳ ᠴ ᠶ ᠽ ᡂ ᡊ ‍ᡡ‍ ‍ᡳ‍"
   AF_BLUE_STRING_MONGOLIAN_BOTTOM_BASE
@@ -442,6 +457,13 @@ AF_BLUE_STRING_ENUM AF_BLUE_STRINGS_ARRAY AF_BLUE_STRING_MAX_LEN:
     "𐒆 𐒉 𐒐 𐒒 𐒘 𐒛 𐒠 𐒣"
   AF_BLUE_STRING_OSMANYA_BOTTOM
     "𐒀 𐒂 𐒆 𐒈 𐒊 𐒒 𐒠 𐒩"
+
+  AF_BLUE_STRING_ROHINGYA_TOP
+    "𐴃 𐴀 𐴆 𐴖 𐴕"
+  AF_BLUE_STRING_ROHINGYA_BOTTOM
+    "𐴔 𐴖 𐴕 𐴑 𐴐"
+  AF_BLUE_STRING_ROHINGYA_JOIN
+    "ـ"
 
   AF_BLUE_STRING_SAURASHTRA_TOP
     "ꢜ ꢞ ꢳ ꢂ ꢖ ꢒ ꢝ ꢛ"
@@ -734,14 +756,14 @@ AF_BLUE_STRINGSET_ENUM AF_BLUE_STRINGSETS_ARRAY AF_BLUE_STRINGSET_MAX_LEN:
     { AF_BLUE_STRING_MAX,              0                          }
 
   AF_BLUE_STRINGSET_CANS
-    { AF_BLUE_STRING_CANADIAN_SYLLABICS_TOP,             AF_BLUE_PROPERTY_LATIN_TOP        }
-    { AF_BLUE_STRING_CANADIAN_SYLLABICS_BOTTOM,          0                                 }
-    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SMALL_TOP,       AF_BLUE_PROPERTY_LATIN_TOP      |
-                                                         AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
-    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SMALL_BOTTOM,    0                                 }
-    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SUPS_TOP,        AF_BLUE_PROPERTY_LATIN_TOP        }
-    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SUPS_BOTTOM,     0                                 }
-    { AF_BLUE_STRING_MAX,                                0                                 }
+    { AF_BLUE_STRING_CANADIAN_SYLLABICS_TOP,          AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_CANADIAN_SYLLABICS_BOTTOM,       0                                 }
+    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SMALL_TOP,    AF_BLUE_PROPERTY_LATIN_TOP      |
+                                                      AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SMALL_BOTTOM, 0                                 }
+    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SUPS_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SUPS_BOTTOM,  0                                 }
+    { AF_BLUE_STRING_MAX,                             0                                 }
 
   AF_BLUE_STRINGSET_CARI
     { AF_BLUE_STRING_CARIAN_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }
@@ -874,6 +896,11 @@ AF_BLUE_STRINGSET_ENUM AF_BLUE_STRINGSETS_ARRAY AF_BLUE_STRINGSET_MAX_LEN:
     { AF_BLUE_STRING_HEBREW_DESCENDER, 0                             }
     { AF_BLUE_STRING_MAX,              0                             }
 
+  AF_BLUE_STRINGSET_KNDA
+    { AF_BLUE_STRING_KANNADA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }
+    { AF_BLUE_STRING_KANNADA_BOTTOM, 0                          }
+    { AF_BLUE_STRING_MAX,            0                          }
+
   AF_BLUE_STRINGSET_KALI
     { AF_BLUE_STRING_KAYAH_LI_TOP,             AF_BLUE_PROPERTY_LATIN_TOP      |
                                                AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
@@ -897,11 +924,6 @@ AF_BLUE_STRINGSET_ENUM AF_BLUE_STRINGSETS_ARRAY AF_BLUE_STRINGSET_MAX_LEN:
                                                   AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
     { AF_BLUE_STRING_KHMER_SYMBOLS_WANING_BOTTOM, 0                                 }
     { AF_BLUE_STRING_MAX,                         0                                 }
-
-  AF_BLUE_STRINGSET_KNDA
-    { AF_BLUE_STRING_KANNADA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }
-    { AF_BLUE_STRING_KANNADA_BOTTOM, 0                          }
-    { AF_BLUE_STRING_MAX,            0                          }
 
   AF_BLUE_STRINGSET_LAO
     { AF_BLUE_STRING_LAO_TOP,            AF_BLUE_PROPERTY_LATIN_TOP      |
@@ -951,6 +973,17 @@ AF_BLUE_STRINGSET_ENUM AF_BLUE_STRINGSETS_ARRAY AF_BLUE_STRINGSET_MAX_LEN:
     { AF_BLUE_STRING_MALAYALAM_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }
     { AF_BLUE_STRING_MALAYALAM_BOTTOM, 0                          }
     { AF_BLUE_STRING_MAX,              0                          }
+
+  AF_BLUE_STRINGSET_MEDF
+    { AF_BLUE_STRING_MEDEFAIDRIN_CAPITAL_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_MEDEFAIDRIN_CAPITAL_BOTTOM,  0                                 }
+    { AF_BLUE_STRING_MEDEFAIDRIN_SMALL_F_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_MEDEFAIDRIN_SMALL_TOP,       AF_BLUE_PROPERTY_LATIN_TOP      |
+                                                  AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_MEDEFAIDRIN_SMALL_BOTTOM,    0                                 }
+    { AF_BLUE_STRING_MEDEFAIDRIN_SMALL_DESCENDER, 0                                 }
+    { AF_BLUE_STRING_MEDEFAIDRIN_DIGIT_TOP,       AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_MAX,                         0                                 }
 
   AF_BLUE_STRINGSET_MONG
     { AF_BLUE_STRING_MONGOLIAN_TOP_BASE,    AF_BLUE_PROPERTY_LATIN_TOP }
@@ -1002,6 +1035,12 @@ AF_BLUE_STRINGSET_ENUM AF_BLUE_STRINGSETS_ARRAY AF_BLUE_STRINGSET_MAX_LEN:
     { AF_BLUE_STRING_OSMANYA_BOTTOM, 0                          }
     { AF_BLUE_STRING_MAX,            0                          }
 
+  AF_BLUE_STRINGSET_ROHG
+    { AF_BLUE_STRING_ROHINGYA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP     }
+    { AF_BLUE_STRING_ROHINGYA_BOTTOM, 0                              }
+    { AF_BLUE_STRING_ROHINGYA_JOIN,   AF_BLUE_PROPERTY_LATIN_NEUTRAL }
+    { AF_BLUE_STRING_MAX,             0                              }
+
   AF_BLUE_STRINGSET_SAUR
     { AF_BLUE_STRING_SAURASHTRA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }
     { AF_BLUE_STRING_SAURASHTRA_BOTTOM, 0                          }
@@ -1043,11 +1082,6 @@ AF_BLUE_STRINGSET_ENUM AF_BLUE_STRINGSETS_ARRAY AF_BLUE_STRINGSET_MAX_LEN:
     { AF_BLUE_STRING_TELUGU_BOTTOM, 0                          }
     { AF_BLUE_STRING_MAX,           0                          }
 
-  AF_BLUE_STRINGSET_TFNG
-    { AF_BLUE_STRING_TIFINAGH, AF_BLUE_PROPERTY_LATIN_TOP }
-    { AF_BLUE_STRING_TIFINAGH, 0                          }
-    { AF_BLUE_STRING_MAX,      0                          }
-
   AF_BLUE_STRINGSET_THAI
     { AF_BLUE_STRING_THAI_TOP,             AF_BLUE_PROPERTY_LATIN_TOP      |
                                            AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
@@ -1058,6 +1092,11 @@ AF_BLUE_STRINGSET_ENUM AF_BLUE_STRINGSETS_ARRAY AF_BLUE_STRINGSET_MAX_LEN:
     { AF_BLUE_STRING_THAI_LARGE_DESCENDER, 0                                 }
     { AF_BLUE_STRING_THAI_DIGIT_TOP,       0                                 }
     { AF_BLUE_STRING_MAX,                  0                                 }
+
+  AF_BLUE_STRINGSET_TFNG
+    { AF_BLUE_STRING_TIFINAGH, AF_BLUE_PROPERTY_LATIN_TOP }
+    { AF_BLUE_STRING_TIFINAGH, 0                          }
+    { AF_BLUE_STRING_MAX,      0                          }
 
   AF_BLUE_STRINGSET_VAII
     { AF_BLUE_STRING_VAI_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }

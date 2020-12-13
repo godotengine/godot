@@ -5,12 +5,94 @@
 	</brief_description>
 	<description>
 		This class provides access to a number of different monitors related to performance, such as memory usage, draw calls, and FPS. These are the same as the values displayed in the [b]Monitor[/b] tab in the editor's [b]Debugger[/b] panel. By using the [method get_monitor] method of this class, you can access this data from your code.
+		You can add custom monitors using the [method add_custom_monitor] method. Custom monitors are available in [b]Monitor[/b] tab in the editor's [b]Debugger[/b] panel together with built-in monitors.
 		[b]Note:[/b] A few of these monitors are only available in debug mode and will always return 0 when used in a release build.
 		[b]Note:[/b] Many of these monitors are not updated in real-time, so there may be a short delay between changes.
+		[b]Note:[/b] Custom monitors do not support negative values. Negative values are clamped to 0.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_custom_monitor">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="StringName">
+			</argument>
+			<argument index="1" name="callable" type="Callable">
+			</argument>
+			<argument index="2" name="arguments" type="Array" default="[  ]">
+			</argument>
+			<description>
+				Adds a custom monitor with name same as id. You can specify the category of monitor using '/' in id. If there are more than one '/' then default category is used. Default category is "Custom".
+				[codeblocks]
+				[gdscript]
+				func _ready():
+				    var monitor_value = Callable(self, "get_monitor_value")
+
+				    # Adds monitor with name "MyName" to category "MyCategory".
+				    Performance.add_custom_monitor("MyCategory/MyMonitor", monitor_value)
+
+				    # Adds monitor with name "MyName" to category "Custom".
+				    # Note: "MyCategory/MyMonitor" and "MyMonitor" have same name but different ids so the code is valid.
+				    Performance.add_custom_monitor("MyMonitor", monitor_value)
+
+				    # Adds monitor with name "MyName" to category "Custom".
+				    # Note: "MyMonitor" and "Custom/MyMonitor" have same name and same category but different ids so the code is valid.
+				    Performance.add_custom_monitor("Custom/MyMonitor", monitor_value)
+
+				    # Adds monitor with name "MyCategoryOne/MyCategoryTwo/MyMonitor" to category "Custom".
+				    Performance.add_custom_monitor("MyCategoryOne/MyCategoryTwo/MyMonitor", monitor_value)
+
+				func get_monitor_value():
+				    return randi() % 25
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    var monitorValue = new Callable(this, nameof(GetMonitorValue));
+
+				    // Adds monitor with name "MyName" to category "MyCategory".
+				    Performance.AddCustomMonitor("MyCategory/MyMonitor", monitorValue);
+				    // Adds monitor with name "MyName" to category "Custom".
+				    // Note: "MyCategory/MyMonitor" and "MyMonitor" have same name but different ids so the code is valid.
+				    Performance.AddCustomMonitor("MyMonitor", monitorValue);
+
+				    // Adds monitor with name "MyName" to category "Custom".
+				    // Note: "MyMonitor" and "Custom/MyMonitor" have same name and same category but different ids so the code is valid.
+				    Performance.AddCustomMonitor("Custom/MyMonitor", monitorValue);
+
+				    // Adds monitor with name "MyCategoryOne/MyCategoryTwo/MyMonitor" to category "Custom".
+				    Performance.AddCustomMonitor("MyCategoryOne/MyCategoryTwo/MyMonitor", monitorValue);
+				}
+
+				public int GetMonitorValue()
+				{
+				    return GD.Randi() % 25;
+				}
+				[/csharp]
+				[/codeblocks]
+				The debugger calls the callable to get the value of custom monitor. The callable must return a number.
+				Callables are called with arguments supplied in argument array.
+				[b]Note:[/b] It throws an error if given id is already present.
+			</description>
+		</method>
+		<method name="get_custom_monitor">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="id" type="StringName">
+			</argument>
+			<description>
+				Returns the value of custom monitor with given id. The callable is called to get the value of custom monitor.
+				[b]Note:[/b] It throws an error if the given id is absent.
+			</description>
+		</method>
+		<method name="get_custom_monitor_names">
+			<return type="Array">
+			</return>
+			<description>
+				Returns the names of active custom monitors in an array.
+			</description>
+		</method>
 		<method name="get_monitor" qualifiers="const">
 			<return type="float">
 			</return>
@@ -18,9 +100,40 @@
 			</argument>
 			<description>
 				Returns the value of one of the available monitors. You should provide one of the [enum Monitor] constants as the argument, like this:
-				[codeblock]
-				print(Performance.get_monitor(Performance.TIME_FPS)) # Prints the FPS to the console
-				[/codeblock]
+				[codeblocks]
+				[gdscript]
+				print(Performance.get_monitor(Performance.TIME_FPS)) # Prints the FPS to the console.
+				[/gdscript]
+				[csharp]
+				GD.Print(Performance.GetMonitor(Performance.Monitor.TimeFps)); // Prints the FPS to the console.
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="get_monitor_modification_time">
+			<return type="int">
+			</return>
+			<description>
+				Returns the last tick in which custom monitor was added/removed.
+			</description>
+		</method>
+		<method name="has_custom_monitor">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="StringName">
+			</argument>
+			<description>
+				Returns true if custom monitor with the given id is present otherwise returns false.
+			</description>
+		</method>
+		<method name="remove_custom_monitor">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="StringName">
+			</argument>
+			<description>
+				Removes the custom monitor with given id.
+				[b]Note:[/b] It throws an error if the given id is already absent.
 			</description>
 		</method>
 	</methods>
@@ -95,7 +208,7 @@
 			Number of islands in the 2D physics engine.
 		</constant>
 		<constant name="PHYSICS_3D_ACTIVE_OBJECTS" value="23" enum="Monitor">
-			Number of active [RigidBody] and [VehicleBody] nodes in the game.
+			Number of active [RigidBody3D] and [VehicleBody3D] nodes in the game.
 		</constant>
 		<constant name="PHYSICS_3D_COLLISION_PAIRS" value="24" enum="Monitor">
 			Number of collision pairs in the 3D physics engine.

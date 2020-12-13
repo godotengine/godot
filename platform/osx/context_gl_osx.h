@@ -33,7 +33,7 @@
 
 #if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "core/os/os.h"
 
 #include <AppKit/AppKit.h>
@@ -41,7 +41,6 @@
 #include <CoreVideo/CoreVideo.h>
 
 class ContextGL_OSX {
-
 	bool opengl_3_context;
 	bool use_vsync;
 

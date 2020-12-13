@@ -48,6 +48,7 @@
 #include "../mono_gd/gd_mono_marshal.h"
 #include "../utils/osx_utils.h"
 #include "bindings_generator.h"
+#include "code_completion.h"
 #include "godotsharp_export.h"
 #include "script_class_parser.h"
 
@@ -95,7 +96,7 @@ MonoString *godot_icall_GodotSharpDirs_MonoSolutionsDir() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_mono_solutions_dir());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -103,7 +104,7 @@ MonoString *godot_icall_GodotSharpDirs_BuildLogsDirs() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_build_logs_dir());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -111,7 +112,7 @@ MonoString *godot_icall_GodotSharpDirs_ProjectSlnPath() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_project_sln_path());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -119,7 +120,7 @@ MonoString *godot_icall_GodotSharpDirs_ProjectCsProjPath() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_project_csproj_path());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -127,7 +128,7 @@ MonoString *godot_icall_GodotSharpDirs_DataEditorToolsDir() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_data_editor_tools_dir());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -135,7 +136,7 @@ MonoString *godot_icall_GodotSharpDirs_DataEditorPrebuiltApiDir() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_data_editor_prebuilt_api_dir());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -151,7 +152,7 @@ MonoString *godot_icall_GodotSharpDirs_DataMonoBinDir() {
 #ifdef WINDOWS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_data_mono_bin_dir());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -202,7 +203,7 @@ uint32_t godot_icall_BindingsGenerator_CsGlueVersion() {
 }
 
 int32_t godot_icall_ScriptClassParser_ParseFile(MonoString *p_filepath, MonoObject *p_classes, MonoString **r_error_str) {
-	*r_error_str = NULL;
+	*r_error_str = nullptr;
 
 	String filepath = GDMonoMarshal::mono_string_to_godot(p_filepath);
 
@@ -231,14 +232,14 @@ int32_t godot_icall_ScriptClassParser_ParseFile(MonoString *p_filepath, MonoObje
 	return err;
 }
 
-uint32_t godot_icall_ExportPlugin_GetExportedAssemblyDependencies(MonoObject *p_initial_dependencies,
-		MonoString *p_build_config, MonoString *p_custom_bcl_dir, MonoObject *r_dependencies) {
-	Dictionary initial_dependencies = GDMonoMarshal::mono_object_to_variant(p_initial_dependencies);
+uint32_t godot_icall_ExportPlugin_GetExportedAssemblyDependencies(MonoObject *p_initial_assemblies,
+		MonoString *p_build_config, MonoString *p_custom_bcl_dir, MonoObject *r_assembly_dependencies) {
+	Dictionary initial_dependencies = GDMonoMarshal::mono_object_to_variant(p_initial_assemblies);
 	String build_config = GDMonoMarshal::mono_string_to_godot(p_build_config);
 	String custom_bcl_dir = GDMonoMarshal::mono_string_to_godot(p_custom_bcl_dir);
-	Dictionary dependencies = GDMonoMarshal::mono_object_to_variant(r_dependencies);
+	Dictionary assembly_dependencies = GDMonoMarshal::mono_object_to_variant(r_assembly_dependencies);
 
-	return GodotSharpExport::get_exported_assembly_dependencies(initial_dependencies, build_config, custom_bcl_dir, dependencies);
+	return GodotSharpExport::get_exported_assembly_dependencies(initial_dependencies, build_config, custom_bcl_dir, assembly_dependencies);
 }
 
 MonoString *godot_icall_Internal_UpdateApiAssembliesFromPrebuilt(MonoString *p_config) {
@@ -323,7 +324,7 @@ MonoObject *godot_icall_Internal_GetScriptsMetadataOrNothing(MonoReflectionType 
 
 	MonoType *dict_type = mono_reflection_type_get_type(p_dict_reftype);
 
-	uint32_t type_encoding = mono_type_get_type(dict_type);
+	int type_encoding = mono_type_get_type(dict_type);
 	MonoClass *type_class_raw = mono_class_from_mono_type(dict_type);
 	GDMonoClass *type_class = GDMono::get_singleton()->get_class(type_class_raw);
 
@@ -335,7 +336,7 @@ MonoString *godot_icall_Internal_MonoWindowsInstallRoot() {
 	String install_root_dir = GDMono::get_singleton()->get_mono_reg_info().install_root_dir;
 	return GDMonoMarshal::mono_string_from_godot(install_root_dir);
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -352,6 +353,12 @@ void godot_icall_Internal_ScriptEditorDebugger_ReloadScripts() {
 	if (ed) {
 		ed->reload_scripts();
 	}
+}
+
+MonoArray *godot_icall_Internal_CodeCompletionRequest(int32_t p_kind, MonoString *p_script_file) {
+	String script_file = GDMonoMarshal::mono_string_to_godot(p_script_file);
+	PackedStringArray suggestions = gdmono::get_code_completion((gdmono::CompletionKind)p_kind, script_file);
+	return GDMonoMarshal::PackedStringArray_to_mono_array(suggestions);
 }
 
 float godot_icall_Globals_EditorScale() {
@@ -392,7 +399,6 @@ MonoBoolean godot_icall_Utils_OS_UnixFileHasExecutableAccess(MonoString *p_file_
 }
 
 void register_editor_internal_calls() {
-
 	// GodotSharpDirs
 	mono_add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_ResDataDir", (void *)godot_icall_GodotSharpDirs_ResDataDir);
 	mono_add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_ResMetadataDir", (void *)godot_icall_GodotSharpDirs_ResMetadataDir);
@@ -454,6 +460,7 @@ void register_editor_internal_calls() {
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorRunPlay", (void *)godot_icall_Internal_EditorRunPlay);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorRunStop", (void *)godot_icall_Internal_EditorRunStop);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_ScriptEditorDebugger_ReloadScripts", (void *)godot_icall_Internal_ScriptEditorDebugger_ReloadScripts);
+	mono_add_internal_call("GodotTools.Internals.Internal::internal_CodeCompletionRequest", (void *)godot_icall_Internal_CodeCompletionRequest);
 
 	// Globals
 	mono_add_internal_call("GodotTools.Internals.Globals::internal_EditorScale", (void *)godot_icall_Globals_EditorScale);

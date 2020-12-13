@@ -35,7 +35,7 @@
 
 #include "core/os/file_access.h"
 
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 #include <mbedtls/config.h>
 #include <mbedtls/ctr_drbg.h>
@@ -47,7 +47,6 @@
 class SSLContextMbedTLS;
 
 class CookieContextMbedTLS : public Reference {
-
 	friend class SSLContextMbedTLS;
 
 protected:
@@ -65,7 +64,6 @@ public:
 };
 
 class SSLContextMbedTLS : public Reference {
-
 protected:
 	bool inited;
 

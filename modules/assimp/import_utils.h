@@ -162,7 +162,6 @@ public:
 	}
 
 	static String get_anim_string_from_assimp(const aiString &p_string) {
-
 		String name;
 		name.parse_utf8(p_string.C_Str() /*,p_string.length*/);
 		if (name.find(":") != -1) {
@@ -202,20 +201,34 @@ public:
      */
 	static float get_fbx_fps(int32_t time_mode, const aiScene *p_scene) {
 		switch (time_mode) {
-			case AssetImportFbx::TIME_MODE_DEFAULT: return 24; //hack
-			case AssetImportFbx::TIME_MODE_120: return 120;
-			case AssetImportFbx::TIME_MODE_100: return 100;
-			case AssetImportFbx::TIME_MODE_60: return 60;
-			case AssetImportFbx::TIME_MODE_50: return 50;
-			case AssetImportFbx::TIME_MODE_48: return 48;
-			case AssetImportFbx::TIME_MODE_30: return 30;
-			case AssetImportFbx::TIME_MODE_30_DROP: return 30;
-			case AssetImportFbx::TIME_MODE_NTSC_DROP_FRAME: return 29.9700262f;
-			case AssetImportFbx::TIME_MODE_NTSC_FULL_FRAME: return 29.9700262f;
-			case AssetImportFbx::TIME_MODE_PAL: return 25;
-			case AssetImportFbx::TIME_MODE_CINEMA: return 24;
-			case AssetImportFbx::TIME_MODE_1000: return 1000;
-			case AssetImportFbx::TIME_MODE_CINEMA_ND: return 23.976f;
+			case AssetImportFbx::TIME_MODE_DEFAULT:
+				return 24; //hack
+			case AssetImportFbx::TIME_MODE_120:
+				return 120;
+			case AssetImportFbx::TIME_MODE_100:
+				return 100;
+			case AssetImportFbx::TIME_MODE_60:
+				return 60;
+			case AssetImportFbx::TIME_MODE_50:
+				return 50;
+			case AssetImportFbx::TIME_MODE_48:
+				return 48;
+			case AssetImportFbx::TIME_MODE_30:
+				return 30;
+			case AssetImportFbx::TIME_MODE_30_DROP:
+				return 30;
+			case AssetImportFbx::TIME_MODE_NTSC_DROP_FRAME:
+				return 29.9700262f;
+			case AssetImportFbx::TIME_MODE_NTSC_FULL_FRAME:
+				return 29.9700262f;
+			case AssetImportFbx::TIME_MODE_PAL:
+				return 25;
+			case AssetImportFbx::TIME_MODE_CINEMA:
+				return 24;
+			case AssetImportFbx::TIME_MODE_1000:
+				return 1000;
+			case AssetImportFbx::TIME_MODE_CINEMA_ND:
+				return 23.976f;
 			case AssetImportFbx::TIME_MODE_CUSTOM:
 				int32_t frame_rate = -1;
 				p_scene->mMetaData->Get("FrameRate", frame_rate);
@@ -233,7 +246,7 @@ public:
 	static Transform _get_global_assimp_node_transform(const aiNode *p_current_node) {
 		aiNode const *current_node = p_current_node;
 		Transform xform;
-		while (current_node != NULL) {
+		while (current_node != nullptr) {
 			xform = assimp_matrix_transform(current_node->mTransformation) * xform;
 			current_node = current_node->mParent;
 		}
@@ -319,7 +332,7 @@ public:
 	  */
 	static void set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<ImageTexture> texture) {
 		ERR_FAIL_COND(texture.is_null());
-		ERR_FAIL_COND(map_mode == NULL);
+		ERR_FAIL_COND(map_mode == nullptr);
 		// FIXME: Commented out during Vulkan port.
 		/*
 		aiTextureMapMode tex_mode = map_mode[0];
@@ -340,8 +353,7 @@ public:
 	  * Load or load from cache image :)
 	  */
 	static Ref<Image> load_image(ImportState &state, const aiScene *p_scene, String p_path) {
-
-		Map<String, Ref<Image> >::Element *match = state.path_to_image_cache.find(p_path);
+		Map<String, Ref<Image>>::Element *match = state.path_to_image_cache.find(p_path);
 
 		// if our cache contains this image then don't bother
 		if (match) {
@@ -358,13 +370,13 @@ public:
 			print_verbose("Open Asset Import: Loading embedded texture " + filename);
 			if (tex->mHeight == 0) {
 				if (tex->CheckFormat("png")) {
-					ERR_FAIL_COND_V(Image::_png_mem_loader_func == NULL, Ref<Image>());
+					ERR_FAIL_COND_V(Image::_png_mem_loader_func == nullptr, Ref<Image>());
 					Ref<Image> img = Image::_png_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
 					ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
 					state.path_to_image_cache.insert(p_path, img);
 					return img;
 				} else if (tex->CheckFormat("jpg")) {
-					ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == NULL, Ref<Image>());
+					ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == nullptr, Ref<Image>());
 					Ref<Image> img = Image::_jpg_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
 					ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
 					state.path_to_image_cache.insert(p_path, img);
@@ -440,7 +452,7 @@ public:
 			String &path,
 			AssimpImageData &image_state) {
 		aiString ai_filename = aiString();
-		if (AI_SUCCESS == ai_material->GetTexture(texture_type, 0, &ai_filename, NULL, NULL, NULL, NULL, image_state.map_mode)) {
+		if (AI_SUCCESS == ai_material->GetTexture(texture_type, 0, &ai_filename, nullptr, nullptr, nullptr, nullptr, image_state.map_mode)) {
 			return CreateAssimpTexture(state, ai_filename, filename, path, image_state);
 		}
 

@@ -5,7 +5,7 @@
  *   TrueTypeGX/AAT mort table validation
  *   body for type2 (Ligature Substitution) subtable.
  *
- * Copyright (C) 2005-2019 by
+ * Copyright (C) 2005-2020 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *

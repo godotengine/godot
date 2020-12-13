@@ -30,233 +30,182 @@
 
 #include "popup.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "core/os/keyboard.h"
+#include "scene/gui/panel.h"
 
-void Popup::_gui_input(Ref<InputEvent> p_event) {
+void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid() && key->is_pressed() && key->get_keycode() == KEY_ESCAPE) {
+		_close_pressed();
+	}
+}
+
+void Popup::_initialize_visible_parents() {
+	visible_parents.clear();
+
+	Window *parent_window = this;
+	while (parent_window) {
+		parent_window = parent_window->get_parent_visible_window();
+		if (parent_window) {
+			visible_parents.push_back(parent_window);
+			parent_window->connect("focus_entered", callable_mp(this, &Popup::_parent_focused));
+			parent_window->connect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
+		}
+	}
+}
+
+void Popup::_deinitialize_visible_parents() {
+	for (uint32_t i = 0; i < visible_parents.size(); ++i) {
+		visible_parents[i]->disconnect("focus_entered", callable_mp(this, &Popup::_parent_focused));
+		visible_parents[i]->disconnect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
+	}
+
+	visible_parents.clear();
 }
 
 void Popup::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				_initialize_visible_parents();
+			} else {
+				_deinitialize_visible_parents();
+				emit_signal("popup_hide");
+			}
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (popped_up && !is_visible_in_tree()) {
-			popped_up = false;
-			notification(NOTIFICATION_POPUP_HIDE);
-			emit_signal("popup_hide");
-		}
-
-		update_configuration_warning();
-	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (popped_up) {
-			popped_up = false;
-			notification(NOTIFICATION_POPUP_HIDE);
-			emit_signal("popup_hide");
-		}
-	}
-
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-//small helper to make editing of these easier in editor
-#ifdef TOOLS_ENABLED
-		if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
-			//edited on editor
-			set_as_toplevel(false);
-		} else
-#endif
-				if (is_visible()) {
-			hide();
-		}
+		} break;
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+			if (has_focus()) {
+				popped_up = true;
+			}
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			_deinitialize_visible_parents();
+		} break;
+		case NOTIFICATION_WM_CLOSE_REQUEST: {
+			_close_pressed();
+		} break;
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			_close_pressed();
+		} break;
 	}
 }
 
-void Popup::_fix_size() {
+void Popup::_parent_focused() {
+	if (popped_up && close_on_parent_focus) {
+		_close_pressed();
+	}
+}
 
-	Point2 pos = get_global_position();
-	Size2 size = get_size() * get_scale();
-	Point2 window_size = get_viewport_rect().size - get_viewport_transform().get_origin();
+void Popup::_close_pressed() {
+	popped_up = false;
 
-	if (pos.x + size.width > window_size.width)
-		pos.x = window_size.width - size.width;
-	if (pos.x < 0)
-		pos.x = 0;
+	_deinitialize_visible_parents();
 
-	if (pos.y + size.height > window_size.height)
-		pos.y = window_size.height - size.height;
-	if (pos.y < 0)
-		pos.y = 0;
-	if (pos != get_position())
-		set_global_position(pos);
+	call_deferred("hide");
+
+	emit_signal("cancelled");
 }
 
 void Popup::set_as_minsize() {
-
-	Size2 total_minsize;
-
-	for (int i = 0; i < get_child_count(); i++) {
-
-		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
-			continue;
-		if (!c->is_visible())
-			continue;
-
-		Size2 minsize = c->get_combined_minimum_size();
-
-		for (int j = 0; j < 2; j++) {
-
-			Margin m_beg = Margin(0 + j);
-			Margin m_end = Margin(2 + j);
-
-			float margin_begin = c->get_margin(m_beg);
-			float margin_end = c->get_margin(m_end);
-			float anchor_begin = c->get_anchor(m_beg);
-			float anchor_end = c->get_anchor(m_end);
-
-			minsize[j] += margin_begin * (ANCHOR_END - anchor_begin) + margin_end * anchor_end;
-		}
-
-		total_minsize.width = MAX(total_minsize.width, minsize.width);
-		total_minsize.height = MAX(total_minsize.height, minsize.height);
-	}
-
-	set_size(total_minsize);
+	set_size(get_contents_minimum_size());
 }
 
-void Popup::popup_centered_clamped(const Size2 &p_size, float p_fallback_ratio) {
-
-	Size2 popup_size = p_size;
-	Size2 window_size = get_viewport_rect().size;
-
-	// clamp popup size in each dimension if window size is too small (using fallback ratio)
-	popup_size.x = MIN(window_size.x * p_fallback_ratio, popup_size.x);
-	popup_size.y = MIN(window_size.y * p_fallback_ratio, popup_size.y);
-
-	popup_centered(popup_size);
+void Popup::set_close_on_parent_focus(bool p_close) {
+	close_on_parent_focus = p_close;
 }
 
-void Popup::popup_centered_minsize(const Size2 &p_minsize) {
-
-	set_custom_minimum_size(p_minsize);
-	_fix_size();
-	popup_centered();
-}
-
-void Popup::popup_centered(const Size2 &p_size) {
-
-	Rect2 rect;
-	Size2 window_size = get_viewport_rect().size;
-	rect.size = p_size == Size2() ? get_size() : p_size;
-	rect.position = ((window_size - rect.size) / 2.0).floor();
-
-	_popup(rect, true);
-}
-
-void Popup::popup_centered_ratio(float p_screen_ratio) {
-
-	Rect2 rect;
-	Size2 window_size = get_viewport_rect().size;
-	rect.size = (window_size * p_screen_ratio).floor();
-	rect.position = ((window_size - rect.size) / 2.0).floor();
-
-	_popup(rect, true);
-}
-
-void Popup::popup(const Rect2 &p_bounds) {
-
-	_popup(p_bounds);
-}
-
-void Popup::_popup(const Rect2 &p_bounds, const bool p_centered) {
-
-	emit_signal("about_to_show");
-	show_modal(exclusive);
-
-	// Fit the popup into the optionally provided bounds.
-	if (!p_bounds.has_no_area()) {
-		set_size(p_bounds.size);
-
-		// check if p_bounds.size was using an outdated cached values
-		if (p_centered && p_bounds.size != get_size()) {
-			set_position(p_bounds.position - ((get_size() - p_bounds.size) / 2.0).floor());
-		} else {
-			set_position(p_bounds.position);
-		}
-	}
-	_fix_size();
-
-	Control *focusable = find_next_valid_focus();
-
-	if (focusable)
-		focusable->grab_focus();
-
-	_post_popup();
-	notification(NOTIFICATION_POST_POPUP);
-	popped_up = true;
-}
-
-void Popup::set_exclusive(bool p_exclusive) {
-
-	exclusive = p_exclusive;
-}
-
-bool Popup::is_exclusive() const {
-
-	return exclusive;
+bool Popup::get_close_on_parent_focus() {
+	return close_on_parent_focus;
 }
 
 void Popup::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_close_on_parent_focus", "close"), &Popup::set_close_on_parent_focus);
+	ClassDB::bind_method(D_METHOD("get_close_on_parent_focus"), &Popup::get_close_on_parent_focus);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "close_on_parent_focus"), "set_close_on_parent_focus", "get_close_on_parent_focus");
 
-	ClassDB::bind_method(D_METHOD("set_as_minsize"), &Popup::set_as_minsize);
-	ClassDB::bind_method(D_METHOD("popup_centered", "size"), &Popup::popup_centered, DEFVAL(Size2()));
-	ClassDB::bind_method(D_METHOD("popup_centered_ratio", "ratio"), &Popup::popup_centered_ratio, DEFVAL(0.75));
-	ClassDB::bind_method(D_METHOD("popup_centered_minsize", "minsize"), &Popup::popup_centered_minsize, DEFVAL(Size2()));
-	ClassDB::bind_method(D_METHOD("popup_centered_clamped", "size", "fallback_ratio"), &Popup::popup_centered_clamped, DEFVAL(Size2()), DEFVAL(0.75));
-	ClassDB::bind_method(D_METHOD("popup", "bounds"), &Popup::popup, DEFVAL(Rect2()));
-	ClassDB::bind_method(D_METHOD("set_exclusive", "enable"), &Popup::set_exclusive);
-	ClassDB::bind_method(D_METHOD("is_exclusive"), &Popup::is_exclusive);
-	ADD_SIGNAL(MethodInfo("about_to_show"));
 	ADD_SIGNAL(MethodInfo("popup_hide"));
-	ADD_GROUP("Popup", "popup_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "popup_exclusive"), "set_exclusive", "is_exclusive");
+}
 
-	BIND_CONSTANT(NOTIFICATION_POST_POPUP);
-	BIND_CONSTANT(NOTIFICATION_POPUP_HIDE);
+Rect2i Popup::_popup_adjust_rect() const {
+	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
+	Rect2i parent = get_usable_parent_rect();
+
+	if (parent == Rect2i()) {
+		return Rect2i();
+	}
+
+	Rect2i current(get_position(), get_size());
+
+	if (current.position.x + current.size.x > parent.position.x + parent.size.x) {
+		current.position.x = parent.position.x + parent.size.x - current.size.x;
+	}
+
+	if (current.position.x < parent.position.x) {
+		current.position.x = parent.position.x;
+	}
+
+	if (current.position.y + current.size.y > parent.position.y + parent.size.y) {
+		current.position.y = parent.position.y + parent.size.y - current.size.y;
+	}
+
+	if (current.position.y < parent.position.y) {
+		current.position.y = parent.position.y;
+	}
+
+	if (current.size.y > parent.size.y) {
+		current.size.y = parent.size.y;
+	}
+
+	if (current.size.x > parent.size.x) {
+		current.size.x = parent.size.x;
+	}
+
+	// Early out if max size not set.
+	Size2i max_size = get_max_size();
+	if (max_size <= Size2()) {
+		return current;
+	}
+
+	if (current.size.x > max_size.x) {
+		current.size.x = max_size.x;
+	}
+
+	if (current.size.y > max_size.y) {
+		current.size.y = max_size.y;
+	}
+
+	return current;
 }
 
 Popup::Popup() {
+	set_wrap_controls(true);
+	set_visible(false);
+	set_transient(true);
+	set_flag(FLAG_BORDERLESS, true);
+	set_flag(FLAG_RESIZE_DISABLED, true);
 
-	set_as_toplevel(true);
-	exclusive = false;
-	popped_up = false;
-	hide();
-}
-
-String Popup::get_configuration_warning() const {
-
-	if (is_visible_in_tree()) {
-		return TTR("Popups will hide by default unless you call popup() or any of the popup*() functions. Making them visible for editing is fine, but they will hide upon running.");
-	}
-
-	return String();
+	connect("window_input", callable_mp(this, &Popup::_input_from_window));
 }
 
 Popup::~Popup() {
 }
 
-Size2 PopupPanel::get_minimum_size() const {
-
-	Ref<StyleBox> p = get_stylebox("panel");
+Size2 PopupPanel::_get_contents_minimum_size() const {
+	Ref<StyleBox> p = get_theme_stylebox("panel", get_class_name());
 
 	Size2 ms;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c || c == panel) {
 			continue;
+		}
 
-		if (c->is_set_as_toplevel())
+		if (c->is_set_as_top_level()) {
 			continue;
+		}
 
 		Size2 cms = c->get_combined_minimum_size();
 		ms.x = MAX(cms.x, ms.x);
@@ -267,38 +216,43 @@ Size2 PopupPanel::get_minimum_size() const {
 }
 
 void PopupPanel::_update_child_rects() {
-
-	Ref<StyleBox> p = get_stylebox("panel");
+	Ref<StyleBox> p = get_theme_stylebox("panel", get_class_name());
 
 	Vector2 cpos(p->get_offset());
 	Vector2 csize(get_size() - p->get_minimum_size());
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
+		}
 
-		if (c->is_set_as_toplevel())
+		if (c->is_set_as_top_level()) {
 			continue;
+		}
 
-		c->set_position(cpos);
-		c->set_size(csize);
+		if (c == panel) {
+			c->set_position(Vector2());
+			c->set_size(get_size());
+		} else {
+			c->set_position(cpos);
+			c->set_size(csize);
+		}
 	}
 }
 
 void PopupPanel::_notification(int p_what) {
-
-	if (p_what == NOTIFICATION_DRAW) {
-
-		get_stylebox("panel")->draw(get_canvas_item(), Rect2(Point2(), get_size()));
-	} else if (p_what == NOTIFICATION_READY) {
-
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+		panel->add_theme_style_override("panel", get_theme_stylebox("panel", get_class_name()));
+	} else if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_ENTER_TREE) {
+		panel->add_theme_style_override("panel", get_theme_stylebox("panel", get_class_name()));
 		_update_child_rects();
-	} else if (p_what == NOTIFICATION_RESIZED) {
-
+	} else if (p_what == NOTIFICATION_WM_SIZE_CHANGED) {
 		_update_child_rects();
 	}
 }
 
 PopupPanel::PopupPanel() {
+	panel = memnew(Panel);
+	add_child(panel);
 }

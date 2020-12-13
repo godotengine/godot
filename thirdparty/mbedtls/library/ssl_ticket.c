@@ -1,8 +1,14 @@
 /*
  *  TLS server tickets callbacks implementation
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -35,6 +60,7 @@
 #define mbedtls_free      free
 #endif
 
+#include "mbedtls/ssl_internal.h"
 #include "mbedtls/ssl_ticket.h"
 #include "mbedtls/platform_util.h"
 
@@ -53,6 +79,19 @@ void mbedtls_ssl_ticket_init( mbedtls_ssl_ticket_context *ctx )
 }
 
 #define MAX_KEY_BYTES 32    /* 256 bits */
+
+#define TICKET_KEY_NAME_BYTES    4
+#define TICKET_IV_BYTES         12
+#define TICKET_CRYPT_LEN_BYTES   2
+#define TICKET_AUTH_TAG_BYTES   16
+
+#define TICKET_MIN_LEN ( TICKET_KEY_NAME_BYTES  +        \
+                         TICKET_IV_BYTES        +        \
+                         TICKET_CRYPT_LEN_BYTES +        \
+                         TICKET_AUTH_TAG_BYTES )
+#define TICKET_ADD_DATA_LEN ( TICKET_KEY_NAME_BYTES  +        \
+                              TICKET_IV_BYTES        +        \
+                              TICKET_CRYPT_LEN_BYTES )
 
 /*
  * Generate/update a key
@@ -278,6 +317,7 @@ static int ssl_load_session( mbedtls_ssl_session *session,
  * The key_name, iv, and length of encrypted_state are the additional
  * authenticated data.
  */
+
 int mbedtls_ssl_ticket_write( void *p_ticket,
                               const mbedtls_ssl_session *session,
                               unsigned char *start,
@@ -289,9 +329,9 @@ int mbedtls_ssl_ticket_write( void *p_ticket,
     mbedtls_ssl_ticket_context *ctx = p_ticket;
     mbedtls_ssl_ticket_key *key;
     unsigned char *key_name = start;
-    unsigned char *iv = start + 4;
-    unsigned char *state_len_bytes = iv + 12;
-    unsigned char *state = state_len_bytes + 2;
+    unsigned char *iv = start + TICKET_KEY_NAME_BYTES;
+    unsigned char *state_len_bytes = iv + TICKET_IV_BYTES;
+    unsigned char *state = state_len_bytes + TICKET_CRYPT_LEN_BYTES;
     unsigned char *tag;
     size_t clear_len, ciph_len;
 
@@ -302,8 +342,7 @@ int mbedtls_ssl_ticket_write( void *p_ticket,
 
     /* We need at least 4 bytes for key_name, 12 for IV, 2 for len 16 for tag,
      * in addition to session itself, that will be checked when writing it. */
-    if( end - start < 4 + 12 + 2 + 16 )
-        return( MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL );
+    MBEDTLS_SSL_CHK_BUF_PTR( start, end, TICKET_MIN_LEN );
 
 #if defined(MBEDTLS_THREADING_C)
     if( ( ret = mbedtls_mutex_lock( &ctx->mutex ) ) != 0 )
@@ -317,9 +356,9 @@ int mbedtls_ssl_ticket_write( void *p_ticket,
 
     *ticket_lifetime = ctx->ticket_lifetime;
 
-    memcpy( key_name, key->name, 4 );
+    memcpy( key_name, key->name, TICKET_KEY_NAME_BYTES );
 
-    if( ( ret = ctx->f_rng( ctx->p_rng, iv, 12 ) ) != 0 )
+    if( ( ret = ctx->f_rng( ctx->p_rng, iv, TICKET_IV_BYTES ) ) != 0 )
         goto cleanup;
 
     /* Dump session state */
@@ -335,8 +374,11 @@ int mbedtls_ssl_ticket_write( void *p_ticket,
     /* Encrypt and authenticate */
     tag = state + clear_len;
     if( ( ret = mbedtls_cipher_auth_encrypt( &key->ctx,
-                    iv, 12, key_name, 4 + 12 + 2,
-                    state, clear_len, state, &ciph_len, tag, 16 ) ) != 0 )
+                    iv, TICKET_IV_BYTES,
+                    /* Additional data: key name, IV and length */
+                    key_name, TICKET_ADD_DATA_LEN,
+                    state, clear_len, state, &ciph_len,
+                    tag, TICKET_AUTH_TAG_BYTES ) ) != 0 )
     {
         goto cleanup;
     }
@@ -346,7 +388,7 @@ int mbedtls_ssl_ticket_write( void *p_ticket,
         goto cleanup;
     }
 
-    *tlen = 4 + 12 + 2 + 16 + ciph_len;
+    *tlen = TICKET_MIN_LEN + ciph_len;
 
 cleanup:
 #if defined(MBEDTLS_THREADING_C)
@@ -385,17 +427,16 @@ int mbedtls_ssl_ticket_parse( void *p_ticket,
     mbedtls_ssl_ticket_context *ctx = p_ticket;
     mbedtls_ssl_ticket_key *key;
     unsigned char *key_name = buf;
-    unsigned char *iv = buf + 4;
-    unsigned char *enc_len_p = iv + 12;
-    unsigned char *ticket = enc_len_p + 2;
+    unsigned char *iv = buf + TICKET_KEY_NAME_BYTES;
+    unsigned char *enc_len_p = iv + TICKET_IV_BYTES;
+    unsigned char *ticket = enc_len_p + TICKET_CRYPT_LEN_BYTES;
     unsigned char *tag;
     size_t enc_len, clear_len;
 
     if( ctx == NULL || ctx->f_rng == NULL )
         return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
 
-    /* See mbedtls_ssl_ticket_write() */
-    if( len < 4 + 12 + 2 + 16 )
+    if( len < TICKET_MIN_LEN )
         return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
 
 #if defined(MBEDTLS_THREADING_C)
@@ -409,7 +450,7 @@ int mbedtls_ssl_ticket_parse( void *p_ticket,
     enc_len = ( enc_len_p[0] << 8 ) | enc_len_p[1];
     tag = ticket + enc_len;
 
-    if( len != 4 + 12 + 2 + enc_len + 16 )
+    if( len != TICKET_MIN_LEN + enc_len )
     {
         ret = MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
         goto cleanup;
@@ -425,9 +466,13 @@ int mbedtls_ssl_ticket_parse( void *p_ticket,
     }
 
     /* Decrypt and authenticate */
-    if( ( ret = mbedtls_cipher_auth_decrypt( &key->ctx, iv, 12,
-                    key_name, 4 + 12 + 2, ticket, enc_len,
-                    ticket, &clear_len, tag, 16 ) ) != 0 )
+    if( ( ret = mbedtls_cipher_auth_decrypt( &key->ctx,
+                    iv, TICKET_IV_BYTES,
+                    /* Additional data: key name, IV and length */
+                    key_name, TICKET_ADD_DATA_LEN,
+                    ticket, enc_len,
+                    ticket, &clear_len,
+                    tag, TICKET_AUTH_TAG_BYTES ) ) != 0 )
     {
         if( ret == MBEDTLS_ERR_CIPHER_AUTH_FAILED )
             ret = MBEDTLS_ERR_SSL_INVALID_MAC;

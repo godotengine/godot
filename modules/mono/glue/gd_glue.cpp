@@ -28,24 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gd_glue.h"
-
 #ifdef MONO_GLUE_ENABLED
 
-#include "core/array.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
-#include "core/ustring.h"
-#include "core/variant.h"
-#include "core/variant_parser.h"
+#include "core/string/ustring.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
+#include "core/variant/variant_parser.h"
 
 #include "../mono_gd/gd_mono_cache.h"
+#include "../mono_gd/gd_mono_marshal.h"
 #include "../mono_gd/gd_mono_utils.h"
 
 MonoObject *godot_icall_GD_bytes2var(MonoArray *p_bytes, MonoBoolean p_allow_objects) {
 	Variant ret;
 	PackedByteArray varr = GDMonoMarshal::mono_array_to_PackedByteArray(p_bytes);
-	Error err = decode_variant(ret, varr.ptr(), varr.size(), NULL, p_allow_objects);
+	Error err = decode_variant(ret, varr.ptr(), varr.size(), nullptr, p_allow_objects);
 	if (err != OK) {
 		ret = RTR("Not enough bytes for decoding bytes, or invalid format.");
 	}
@@ -56,8 +55,9 @@ MonoObject *godot_icall_GD_convert(MonoObject *p_what, int32_t p_type) {
 	Variant what = GDMonoMarshal::mono_object_to_variant(p_what);
 	const Variant *args[1] = { &what };
 	Callable::CallError ce;
-	Variant ret = Variant::construct(Variant::Type(p_type), args, 1, ce);
-	ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, NULL);
+	Variant ret;
+	Variant::construct(Variant::Type(p_type), ret, args, 1, ce);
+	ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, nullptr);
 	return GDMonoMarshal::variant_to_mono_object(ret);
 }
 
@@ -76,7 +76,7 @@ void godot_icall_GD_print(MonoArray *p_what) {
 	for (int i = 0; i < length; i++) {
 		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
 
-		MonoException *exc = NULL;
+		MonoException *exc = nullptr;
 		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
 
 		if (exc) {
@@ -91,14 +91,13 @@ void godot_icall_GD_print(MonoArray *p_what) {
 }
 
 void godot_icall_GD_printerr(MonoArray *p_what) {
-
 	String str;
 	int length = mono_array_length(p_what);
 
 	for (int i = 0; i < length; i++) {
 		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
 
-		MonoException *exc = NULL;
+		MonoException *exc = nullptr;
 		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
 
 		if (exc) {
@@ -119,7 +118,7 @@ void godot_icall_GD_printraw(MonoArray *p_what) {
 	for (int i = 0; i < length; i++) {
 		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
 
-		MonoException *exc = NULL;
+		MonoException *exc = nullptr;
 		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
 
 		if (exc) {
@@ -140,7 +139,7 @@ void godot_icall_GD_prints(MonoArray *p_what) {
 	for (int i = 0; i < length; i++) {
 		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
 
-		MonoException *exc = NULL;
+		MonoException *exc = nullptr;
 		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
 
 		if (exc) {
@@ -148,8 +147,9 @@ void godot_icall_GD_prints(MonoArray *p_what) {
 			return;
 		}
 
-		if (i)
+		if (i) {
 			str += " ";
+		}
 
 		str += elem_str;
 	}
@@ -164,7 +164,7 @@ void godot_icall_GD_printt(MonoArray *p_what) {
 	for (int i = 0; i < length; i++) {
 		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
 
-		MonoException *exc = NULL;
+		MonoException *exc = nullptr;
 		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
 
 		if (exc) {
@@ -172,8 +172,9 @@ void godot_icall_GD_printt(MonoArray *p_what) {
 			return;
 		}
 
-		if (i)
+		if (i) {
 			str += "\t";
+		}
 
 		str += elem_str;
 	}
@@ -193,12 +194,16 @@ void godot_icall_GD_randomize() {
 	Math::randomize();
 }
 
-double godot_icall_GD_rand_range(double from, double to) {
+double godot_icall_GD_randf_range(double from, double to) {
+	return Math::random(from, to);
+}
+
+int32_t godot_icall_GD_randi_range(int32_t from, int32_t to) {
 	return Math::random(from, to);
 }
 
 uint32_t godot_icall_GD_rand_seed(uint64_t seed, uint64_t *newSeed) {
-	int ret = Math::rand_from_seed(&seed);
+	uint32_t ret = Math::rand_from_seed(&seed);
 	*newSeed = seed;
 	return ret;
 }
@@ -214,10 +219,11 @@ MonoString *godot_icall_GD_str(MonoArray *p_what) {
 	for (int i = 0; i < what.size(); i++) {
 		String os = what[i].operator String();
 
-		if (i == 0)
+		if (i == 0) {
 			str = os;
-		else
+		} else {
 			str += os;
+		}
 	}
 
 	return GDMonoMarshal::mono_string_from_godot(str);
@@ -241,8 +247,9 @@ MonoObject *godot_icall_GD_str2var(MonoString *p_str) {
 	return GDMonoMarshal::variant_to_mono_object(ret);
 }
 
-MonoBoolean godot_icall_GD_type_exists(MonoString *p_type) {
-	return ClassDB::class_exists(GDMonoMarshal::mono_string_to_godot(p_type));
+MonoBoolean godot_icall_GD_type_exists(StringName *p_type) {
+	StringName type = p_type ? *p_type : StringName();
+	return ClassDB::class_exists(type);
 }
 
 void godot_icall_GD_pusherror(MonoString *p_str) {
@@ -258,8 +265,8 @@ MonoArray *godot_icall_GD_var2bytes(MonoObject *p_var, MonoBoolean p_full_object
 
 	PackedByteArray barr;
 	int len;
-	Error err = encode_variant(var, NULL, len, p_full_objects);
-	ERR_FAIL_COND_V_MSG(err != OK, NULL, "Unexpected error encoding variable to bytes, likely unserializable type found (Object or RID).");
+	Error err = encode_variant(var, nullptr, len, p_full_objects);
+	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "Unexpected error encoding variable to bytes, likely unserializable type found (Object or RID).");
 
 	barr.resize(len);
 	encode_variant(var, barr.ptrw(), len, p_full_objects);
@@ -271,6 +278,10 @@ MonoString *godot_icall_GD_var2str(MonoObject *p_var) {
 	String vars;
 	VariantWriter::write_to_string(GDMonoMarshal::mono_object_to_variant(p_var), vars);
 	return GDMonoMarshal::mono_string_from_godot(vars);
+}
+
+uint32_t godot_icall_TypeToVariantType(MonoReflectionType *p_refl_type) {
+	return (uint32_t)GDMonoMarshal::managed_to_variant_type(ManagedType::from_reftype(p_refl_type));
 }
 
 MonoObject *godot_icall_DefaultGodotTaskScheduler() {
@@ -292,7 +303,8 @@ void godot_register_gd_icalls() {
 	mono_add_internal_call("Godot.GD::godot_icall_GD_randf", (void *)godot_icall_GD_randf);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_randi", (void *)godot_icall_GD_randi);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_randomize", (void *)godot_icall_GD_randomize);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_rand_range", (void *)godot_icall_GD_rand_range);
+	mono_add_internal_call("Godot.GD::godot_icall_GD_randf_range", (void *)godot_icall_GD_randf_range);
+	mono_add_internal_call("Godot.GD::godot_icall_GD_randi_range", (void *)godot_icall_GD_randi_range);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_rand_seed", (void *)godot_icall_GD_rand_seed);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_seed", (void *)godot_icall_GD_seed);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_str", (void *)godot_icall_GD_str);
@@ -300,6 +312,7 @@ void godot_register_gd_icalls() {
 	mono_add_internal_call("Godot.GD::godot_icall_GD_type_exists", (void *)godot_icall_GD_type_exists);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_var2bytes", (void *)godot_icall_GD_var2bytes);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_var2str", (void *)godot_icall_GD_var2str);
+	mono_add_internal_call("Godot.GD::godot_icall_TypeToVariantType", (void *)godot_icall_TypeToVariantType);
 
 	// Dispatcher
 	mono_add_internal_call("Godot.Dispatcher::godot_icall_DefaultGodotTaskScheduler", (void *)godot_icall_DefaultGodotTaskScheduler);

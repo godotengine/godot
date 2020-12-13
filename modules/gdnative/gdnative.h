@@ -31,10 +31,10 @@
 #ifndef GDNATIVE_H
 #define GDNATIVE_H
 
+#include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/os/thread_safe.h"
-#include "core/resource.h"
 
 #include "gdnative/gdnative.h"
 #include "gdnative_api_struct.gen.h"
@@ -47,7 +47,7 @@ class GDNative;
 class GDNativeLibrary : public Resource {
 	GDCLASS(GDNativeLibrary, Resource);
 
-	static Map<String, Vector<Ref<GDNative> > > loaded_libraries;
+	static Map<String, Vector<Ref<GDNative>>> loaded_libraries;
 
 	friend class GDNativeLibraryResourceLoader;
 	friend class GDNative;
@@ -166,7 +166,7 @@ public:
 
 class GDNativeLibraryResourceLoader : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads = false, float *r_progress = nullptr);
+	virtual RES load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

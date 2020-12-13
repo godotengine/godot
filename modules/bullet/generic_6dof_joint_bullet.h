@@ -45,12 +45,12 @@ class Generic6DOFJointBullet : public JointBullet {
 	// First is linear second is angular
 	Vector3 limits_lower[2];
 	Vector3 limits_upper[2];
-	bool flags[3][PhysicsServer::G6DOF_JOINT_FLAG_MAX];
+	bool flags[3][PhysicsServer3D::G6DOF_JOINT_FLAG_MAX];
 
 public:
 	Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB);
 
-	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_6DOF; }
+	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_6DOF; }
 
 	Transform getFrameOffsetA() const;
 	Transform getFrameOffsetB() const;
@@ -63,11 +63,11 @@ public:
 	void set_angular_lower_limit(const Vector3 &angularLower);
 	void set_angular_upper_limit(const Vector3 &angularUpper);
 
-	void set_param(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisParam p_param, real_t p_value);
-	real_t get_param(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisParam p_param) const;
+	void set_param(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param, real_t p_value);
+	real_t get_param(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param) const;
 
-	void set_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag, bool p_value);
-	bool get_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag) const;
+	void set_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag, bool p_value);
+	bool get_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag) const;
 
 	void set_precision(int p_precision);
 	int get_precision() const;

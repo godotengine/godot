@@ -4,7 +4,7 @@
  *
  *   FreeType convenience functions to handle glyphs (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -28,13 +28,14 @@
    */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 
-#include FT_GLYPH_H
-#include FT_OUTLINE_H
-#include FT_BITMAP_H
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/ftglyph.h>
+#include <freetype/ftoutln.h>
+#include <freetype/ftbitmap.h>
+#include <freetype/internal/ftobjs.h>
+
+#include "ftbase.h"
 
 
   /**************************************************************************

@@ -38,7 +38,6 @@
 #include <windows.h>
 
 class RWLockWindows : public RWLock {
-
 	SRWLOCK lock;
 
 	static RWLock *create_func_windows();

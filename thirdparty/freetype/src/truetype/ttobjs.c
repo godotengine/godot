@@ -4,7 +4,7 @@
  *
  *   Objects manager (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,12 +16,11 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_INTERNAL_SFNT_H
-#include FT_DRIVER_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/tttags.h>
+#include <freetype/internal/sfnt.h>
+#include <freetype/ftdriver.h>
 
 #include "ttgload.h"
 #include "ttpload.h"
@@ -1116,10 +1115,10 @@
       /* The Apple specification says that the compensation for     */
       /* `gray' is always zero.  FreeType doesn't do any            */
       /* compensation at all.                                       */
-      tt_metrics->compensations[0] = 0;   /* gray             */
-      tt_metrics->compensations[1] = 0;   /* black            */
-      tt_metrics->compensations[2] = 0;   /* white            */
-      tt_metrics->compensations[3] = 0;   /* the same as gray */
+      tt_metrics->compensations[0] = 0;   /* gray  */
+      tt_metrics->compensations[1] = 0;   /* black */
+      tt_metrics->compensations[2] = 0;   /* white */
+      tt_metrics->compensations[3] = 0;   /* zero  */
     }
 
     /* allocate function defs, instruction defs, cvt, and storage area */

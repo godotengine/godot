@@ -4,7 +4,7 @@
  *
  *   FreeType high-level API and common types (specification only).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,19 +20,10 @@
 #define FREETYPE_H_
 
 
-#ifndef FT_FREETYPE_H
-#error "`ft2build.h' hasn't been included yet!"
-#error "Please always use macros to include FreeType header files."
-#error "Example:"
-#error "  #include <ft2build.h>"
-#error "  #include FT_FREETYPE_H"
-#endif
-
-
 #include <ft2build.h>
 #include FT_CONFIG_CONFIG_H
-#include FT_TYPES_H
-#include FT_ERRORS_H
+#include <freetype/fttypes.h>
+#include <freetype/fterrors.h>
 
 
 FT_BEGIN_HEADER
@@ -51,22 +42,15 @@ FT_BEGIN_HEADER
    *   How client applications should include FreeType header files.
    *
    * @description:
-   *   To be as flexible as possible (and for historical reasons), FreeType
-   *   uses a very special inclusion scheme to load header files, for example
+   *   To be as flexible as possible (and for historical reasons), you must
+   *   load file `ft2build.h` first before other header files, for example
    *
    *   ```
    *     #include <ft2build.h>
    *
-   *     #include FT_FREETYPE_H
-   *     #include FT_OUTLINE_H
+   *     #include <freetype/freetype.h>
+   *     #include <freetype/ftoutln.h>
    *   ```
-   *
-   *   A compiler and its preprocessor only needs an include path to find the
-   *   file `ft2build.h`; the exact locations and names of the other FreeType
-   *   header files are hidden by @header_file_macros, loaded by
-   *   `ft2build.h`.  The API documentation always gives the header macro
-   *   name needed for a particular function.
-   *
    */
 
 
@@ -974,6 +958,9 @@ FT_BEGIN_HEADER
    *     Note that the bounding box might be off by (at least) one pixel for
    *     hinted fonts.  See @FT_Size_Metrics for further discussion.
    *
+   *     Note that the bounding box does not vary in OpenType variable fonts
+   *     and should only be used in relation to the default instance.
+   *
    *   units_per_EM ::
    *     The number of font units per EM square for this face.  This is
    *     typically 2048 for TrueType fonts, and 1000 for Type~1 fonts.  Only
@@ -1239,7 +1226,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_HAS_HORIZONTAL( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_HORIZONTAL )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_HORIZONTAL ) )
 
 
   /**************************************************************************
@@ -1253,7 +1240,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_HAS_VERTICAL( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_VERTICAL )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_VERTICAL ) )
 
 
   /**************************************************************************
@@ -1267,7 +1254,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_HAS_KERNING( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_KERNING )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_KERNING ) )
 
 
   /**************************************************************************
@@ -1282,7 +1269,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_IS_SCALABLE( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_SCALABLE )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_SCALABLE ) )
 
 
   /**************************************************************************
@@ -1301,7 +1288,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_IS_SFNT( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_SFNT )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_SFNT ) )
 
 
   /**************************************************************************
@@ -1316,7 +1303,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_IS_FIXED_WIDTH( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_FIXED_WIDTH )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_FIXED_WIDTH ) )
 
 
   /**************************************************************************
@@ -1331,7 +1318,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_HAS_FIXED_SIZES( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_FIXED_SIZES )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_FIXED_SIZES ) )
 
 
   /**************************************************************************
@@ -1357,7 +1344,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_HAS_GLYPH_NAMES( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_GLYPH_NAMES )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_GLYPH_NAMES ) )
 
 
   /**************************************************************************
@@ -1372,7 +1359,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_HAS_MULTIPLE_MASTERS( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS ) )
 
 
   /**************************************************************************
@@ -1394,7 +1381,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_IS_NAMED_INSTANCE( face ) \
-          ( (face)->face_index & 0x7FFF0000L )
+          ( !!( (face)->face_index & 0x7FFF0000L ) )
 
 
   /**************************************************************************
@@ -1412,7 +1399,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_IS_VARIATION( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_VARIATION )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_VARIATION ) )
 
 
   /**************************************************************************
@@ -1429,7 +1416,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_IS_CID_KEYED( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_CID_KEYED )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_CID_KEYED ) )
 
 
   /**************************************************************************
@@ -1443,7 +1430,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_IS_TRICKY( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_TRICKY )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_TRICKY ) )
 
 
   /**************************************************************************
@@ -1460,7 +1447,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_HAS_COLOR( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_COLOR )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_COLOR ) )
 
 
   /**************************************************************************
@@ -2078,7 +2065,8 @@ FT_BEGIN_HEADER
    *     The size in bytes of the file in memory.
    *
    *   pathname ::
-   *     A pointer to an 8-bit file pathname.
+   *     A pointer to an 8-bit file pathname.  The pointer is not owned by
+   *     FreeType.
    *
    *   stream ::
    *     A handle to a source stream object.
@@ -3187,6 +3175,12 @@ FT_BEGIN_HEADER
    *     A pointer to the translation vector.  Use `NULL` for the null vector.
    *
    * @note:
+   *   This function is provided as a convenience, but keep in mind that
+   *   @FT_Matrix coefficients are only 16.16 fixed point values, which can
+   *   limit the accuracy of the results.  Using floating-point computations
+   *   to perform the transform directly in client code instead will always
+   *   yield better numbers.
+   *
    *   The transformation is only applied to scalable image formats after the
    *   glyph has been loaded.  It means that hinting is unaltered by the
    *   transformation and is performed on the character size given in the
@@ -3245,14 +3239,6 @@ FT_BEGIN_HEADER
    *     pixels and use the @FT_PIXEL_MODE_LCD_V mode.
    *
    * @note:
-   *   Should you define `FT_CONFIG_OPTION_SUBPIXEL_RENDERING` in your
-   *   `ftoption.h`, which enables patented ClearType-style rendering, the
-   *   LCD-optimized glyph bitmaps should be filtered to reduce color fringes
-   *   inherent to this technology.  You can either set up LCD filtering with
-   *   @FT_Library_SetLcdFilter or @FT_Face_Properties, or do the filtering
-   *   yourself.  The default FreeType LCD rendering technology does not
-   *   require filtering.
-   *
    *   The selected render mode only affects vector glyphs of a font.
    *   Embedded bitmaps often have a different pixel mode like
    *   @FT_PIXEL_MODE_MONO.  You can use @FT_Bitmap_Convert to transform them
@@ -4088,7 +4074,7 @@ FT_BEGIN_HEADER
    *     https://docs.microsoft.com/en-us/typography/opentype/spec/colr
    *
    *   The glyph layer data for a given glyph index, if present, provides an
-   *   alternative, multi-colour glyph representation: Instead of rendering
+   *   alternative, multi-color glyph representation: Instead of rendering
    *   the outline or bitmap with the given glyph index, glyphs with the
    *   indices and colors returned by this function are rendered layer by
    *   layer.
@@ -4781,7 +4767,7 @@ FT_BEGIN_HEADER
    */
 #define FREETYPE_MAJOR  2
 #define FREETYPE_MINOR  10
-#define FREETYPE_PATCH  1
+#define FREETYPE_PATCH  4
 
 
   /**************************************************************************

@@ -7,7 +7,7 @@
 		Base class for all 2D shapes. All 2D shape types inherit from this.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
+		<link title="Physics introduction">https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
 	<methods>
 		<method name="collide">
@@ -72,6 +72,17 @@
 			<description>
 				Returns a list of the points where this shape would touch another, if a given movement was applied. If there are no collisions the list is empty.
 				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
+			</description>
+		</method>
+		<method name="draw">
+			<return type="void">
+			</return>
+			<argument index="0" name="canvas_item" type="RID">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+				Draws a solid shape onto a [CanvasItem] with the [RenderingServer] API filled with the specified [code]color[/code]. The exact drawing method is specific for each shape and cannot be configured.
 			</description>
 		</method>
 	</methods>

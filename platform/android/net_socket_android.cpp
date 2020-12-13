@@ -38,7 +38,6 @@ jmethodID NetSocketAndroid::_multicast_lock_acquire = 0;
 jmethodID NetSocketAndroid::_multicast_lock_release = 0;
 
 void NetSocketAndroid::setup(jobject p_net_utils) {
-
 	JNIEnv *env = ThreadAndroid::get_env();
 
 	net_utils = env->NewGlobalRef(p_net_utils);
@@ -70,11 +69,6 @@ NetSocket *NetSocketAndroid::_create_func() {
 
 void NetSocketAndroid::make_default() {
 	_create = _create_func;
-}
-
-NetSocketAndroid::NetSocketAndroid() :
-		wants_broadcast(false),
-		multicast_groups(0) {
 }
 
 NetSocketAndroid::~NetSocketAndroid() {

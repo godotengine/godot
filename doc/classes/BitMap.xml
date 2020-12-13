@@ -60,6 +60,7 @@
 			<argument index="1" name="rect" type="Rect2">
 			</argument>
 			<description>
+				Applies morphological dilation to the bitmap. The first argument is the dilation amount, Rect2 is the area where the dilation will be applied.
 			</description>
 		</method>
 		<method name="opaque_to_polygons" qualifiers="const">

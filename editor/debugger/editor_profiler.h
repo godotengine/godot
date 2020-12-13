@@ -41,35 +41,31 @@
 #include "scene/gui/tree.h"
 
 class EditorProfiler : public VBoxContainer {
-
 	GDCLASS(EditorProfiler, VBoxContainer);
 
 public:
 	struct Metric {
+		bool valid = false;
 
-		bool valid;
-
-		int frame_number;
-		float frame_time;
-		float idle_time;
-		float physics_time;
-		float physics_frame_time;
+		int frame_number = 0;
+		float frame_time = 0;
+		float idle_time = 0;
+		float physics_time = 0;
+		float physics_frame_time = 0;
 
 		struct Category {
-
 			StringName signature;
 			String name;
-			float total_time; //total for category
+			float total_time = 0; //total for category
 
 			struct Item {
-
 				StringName signature;
 				String name;
 				String script;
-				int line;
-				float self;
-				float total;
-				int calls;
+				int line = 0;
+				float self = 0;
+				float total = 0;
+				int calls = 0;
 			};
 
 			Vector<Item> items;
@@ -79,11 +75,6 @@ public:
 
 		Map<StringName, Category *> category_ptrs;
 		Map<StringName, Category::Item *> item_ptrs;
-
-		Metric() {
-			valid = false;
-			frame_number = 0;
-		}
 	};
 
 	enum DisplayMode {
@@ -169,7 +160,7 @@ public:
 
 	void clear();
 
-	Vector<Vector<String> > get_data_as_csv() const;
+	Vector<Vector<String>> get_data_as_csv() const;
 
 	EditorProfiler();
 };

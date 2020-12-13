@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorExportPlugin" inherits="Reference" version="4.0">
 	<brief_description>
+		A script that is executed when exporting projects.
 	</brief_description>
 	<description>
 	</description>
@@ -19,12 +20,14 @@
 			<argument index="3" name="flags" type="int">
 			</argument>
 			<description>
+				Virtual method to be overridden by the user. It is called when the export starts and provides all information about the export.
 			</description>
 		</method>
 		<method name="_export_end" qualifiers="virtual">
 			<return type="void">
 			</return>
 			<description>
+				Virtual method to be overridden by the user. Called when the export is finished.
 			</description>
 		</method>
 		<method name="_export_file" qualifiers="virtual">
@@ -67,12 +70,24 @@
 			<description>
 			</description>
 		</method>
+		<method name="add_ios_embedded_framework">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Adds a dynamic library (*.dylib, *.framework) to Linking Phase in iOS's Xcode project and embeds it into resulting binary.
+				[b]Note:[/b] For static libraries (*.a) works in same way as [code]add_ios_framework[/code].
+				This method should not be used for System libraries as they are already present on the device.
+			</description>
+		</method>
 		<method name="add_ios_framework">
 			<return type="void">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+				Adds a static library (*.a) or dynamic library (*.dylib, *.framework) to Linking Phase in iOS's Xcode project.
 			</description>
 		</method>
 		<method name="add_ios_linker_flags">
@@ -87,6 +102,14 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="plist_content" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_ios_project_static_lib">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
 			</description>

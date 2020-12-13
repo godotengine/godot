@@ -4,7 +4,7 @@
  *
  *   FreeType's glyph color management (specification).
  *
- * Copyright (C) 2018-2019 by
+ * Copyright (C) 2018-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,8 +19,7 @@
 #ifndef FTCOLOR_H_
 #define FTCOLOR_H_
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"
@@ -125,9 +124,9 @@ FT_BEGIN_HEADER
    *     The number of palettes.
    *
    *   palette_name_ids ::
-   *     A read-only array of palette name IDs with `num_palettes` elements,
-   *     corresponding to entries like 'dark' or 'light' in the font's 'name'
-   *     table.
+   *     An optional read-only array of palette name IDs with `num_palettes`
+   *     elements, corresponding to entries like 'dark' or 'light' in the
+   *     font's 'name' table.
    *
    *     An empty name ID in the 'CPAL' table gets represented as value
    *     0xFFFF.
@@ -135,8 +134,8 @@ FT_BEGIN_HEADER
    *     `NULL` if the font's 'CPAL' table doesn't contain appropriate data.
    *
    *   palette_flags ::
-   *     A read-only array of palette flags with `num_palettes` elements.
-   *     Possible values are an ORed combination of
+   *     An optional read-only array of palette flags with `num_palettes`
+   *     elements.  Possible values are an ORed combination of
    *     @FT_PALETTE_FOR_LIGHT_BACKGROUND and
    *     @FT_PALETTE_FOR_DARK_BACKGROUND.
    *
@@ -147,7 +146,7 @@ FT_BEGIN_HEADER
    *     same size.
    *
    *   palette_entry_name_ids ::
-   *     A read-only array of palette entry name IDs with
+   *     An optional read-only array of palette entry name IDs with
    *     `num_palette_entries`.  In each palette, entries with the same index
    *     have the same function.  For example, index~0 might correspond to
    *     string 'outline' in the font's 'name' table to indicate that this
@@ -162,6 +161,9 @@ FT_BEGIN_HEADER
    * @note:
    *   Use function @FT_Get_Sfnt_Name to map name IDs and entry name IDs to
    *   name strings.
+   *
+   *   Use function @FT_Palette_Select to get the colors associated with a
+   *   palette entry.
    *
    * @since:
    *   2.10

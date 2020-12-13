@@ -31,32 +31,28 @@
 #ifndef EDITOR_DATA_H
 #define EDITOR_DATA_H
 
-#include "core/list.h"
-#include "core/pair.h"
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
+#include "core/templates/list.h"
+#include "core/templates/pair.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/texture.h"
 
 class EditorHistory {
-
 	enum {
-
 		HISTORY_MAX = 64
 	};
 
 	struct Obj {
-
 		REF ref;
 		ObjectID object;
 		String property;
-		bool inspector_only;
+		bool inspector_only = false;
 	};
 
 	struct History {
-
 		Vector<Obj> path;
-		int level;
+		int level = 0;
 	};
 	friend class EditorData;
 
@@ -66,7 +62,6 @@ class EditorHistory {
 	//Vector<EditorPlugin*> editor_plugins;
 
 	struct PropertyData {
-
 		String name;
 		Variant value;
 	};
@@ -106,24 +101,22 @@ public:
 class EditorSelection;
 
 class EditorData {
-
 public:
 	struct CustomType {
-
 		String name;
 		Ref<Script> script;
 		Ref<Texture2D> icon;
 	};
 
 	struct EditedScene {
-		Node *root;
+		Node *root = nullptr;
 		String path;
 		Dictionary editor_states;
 		List<Node *> selection;
 		Vector<EditorHistory::History> history_stored;
-		int history_current;
+		int history_current = 0;
 		Dictionary custom_state;
-		uint64_t version;
+		uint64_t version = 0;
 		NodePath live_edit_root;
 	};
 
@@ -131,11 +124,10 @@ private:
 	Vector<EditorPlugin *> editor_plugins;
 
 	struct PropertyData {
-
 		String name;
 		Variant value;
 	};
-	Map<String, Vector<CustomType> > custom_types;
+	Map<String, Vector<CustomType>> custom_types;
 
 	List<PropertyData> clipboard;
 	UndoRedo undo_redo;
@@ -181,7 +173,7 @@ public:
 	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	Object *instance_custom_type(const String &p_type, const String &p_inherits);
 	void remove_custom_type(const String &p_type);
-	const Map<String, Vector<CustomType> > &get_custom_types() const { return custom_types; }
+	const Map<String, Vector<CustomType>> &get_custom_types() const { return custom_types; }
 
 	int add_edited_scene(int p_at_pos);
 	void move_edited_scene_index(int p_idx, int p_to_idx);
@@ -198,7 +190,6 @@ public:
 	void set_scene_path(int p_idx, const String &p_path);
 	Ref<Script> get_scene_root_script(int p_idx) const;
 	void set_edited_scene_version(uint64_t version, int p_scene_idx = -1);
-	uint64_t get_edited_scene_version() const;
 	uint64_t get_scene_version(int p_idx) const;
 	void clear_edited_scenes();
 	void set_edited_scene_live_edit_root(const NodePath &p_root);
@@ -234,7 +225,6 @@ public:
 };
 
 class EditorSelection : public Object {
-
 	GDCLASS(EditorSelection, Object);
 
 private:
@@ -257,15 +247,16 @@ protected:
 	static void _bind_methods();
 
 public:
-	Array get_selected_nodes();
+	TypedArray<Node> get_selected_nodes();
 	void add_node(Node *p_node);
 	void remove_node(Node *p_node);
 	bool is_selected(Node *) const;
 
 	template <class T>
 	T *get_node_editor_data(Node *p_node) {
-		if (!selection.has(p_node))
-			return NULL;
+		if (!selection.has(p_node)) {
+			return nullptr;
+		}
 		return Object::cast_to<T>(selection[p_node]);
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
+ * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -47,6 +47,7 @@ const char* ERR_getErrorString(ERR_enum code)
         /* following error codes are not stable and may be removed or changed in a future version */
     case PREFIX(frameIndex_tooLarge): return "Frame index is too large";
     case PREFIX(seekableIO): return "An I/O error occurred when reading/seeking";
+    case PREFIX(dstBuffer_wrong): return "Destination buffer is wrong";
     case PREFIX(maxCode):
     default: return notErrorCode;
     }

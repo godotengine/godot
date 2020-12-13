@@ -42,15 +42,13 @@
 #include "scene/gui/tree.h"
 
 class EditorVisualProfiler : public VBoxContainer {
-
 	GDCLASS(EditorVisualProfiler, VBoxContainer);
 
 public:
 	struct Metric {
+		bool valid = false;
 
-		bool valid;
-
-		uint64_t frame_number;
+		uint64_t frame_number = 0;
 
 		struct Area {
 			String name;
@@ -61,10 +59,6 @@ public:
 		};
 
 		Vector<Area> areas;
-
-		Metric() {
-			valid = false;
-		}
 	};
 
 	enum DisplayTimeMode {
@@ -146,7 +140,7 @@ public:
 
 	void clear();
 
-	Vector<Vector<String> > get_data_as_csv() const;
+	Vector<Vector<String>> get_data_as_csv() const;
 
 	EditorVisualProfiler();
 };

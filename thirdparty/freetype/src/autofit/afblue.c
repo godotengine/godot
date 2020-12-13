@@ -7,7 +7,7 @@
  *
  *   Auto-fitter data for blue strings (body).
  *
- * Copyright (C) 2013-2019 by
+ * Copyright (C) 2013-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -134,7 +134,7 @@
     '\0',
     '\xF0', '\x90', '\x90', '\xA8', ' ', '\xF0', '\x90', '\x90', '\xAA', ' ', '\xF0', '\x90', '\x90', '\xAC', ' ', '\xF0', '\x90', '\x90', '\xBF', ' ', '\xF0', '\x90', '\x91', '\x83',  /* 𐐨 𐐪 𐐬 𐐿 𐑃 */
     '\0',
-    '\xE0', '\xA4', '\x95', ' ', '\xE0', '\xA4', '\xAE', ' ', '\xE0', '\xA4', '\x85', ' ', '\xE0', '\xA4', '\x86', ' ', '\xE0', '\xA4', '\xA5', ' ', '\xE0', '\xA4', '\xA7', ' ', '\xE0', '\xA4', '\xAD', ' ', '\xE0', '\xA4', '\xB6',  /* क म अ आ थ ध भ श */
+    '\xE0', '\xA4', '\x95', ' ', '\xE0', '\xA4', '\xA8', ' ', '\xE0', '\xA4', '\xAE', ' ', '\xE0', '\xA4', '\x89', ' ', '\xE0', '\xA4', '\x9B', ' ', '\xE0', '\xA4', '\x9F', ' ', '\xE0', '\xA4', '\xA0', ' ', '\xE0', '\xA4', '\xA1',  /* क न म उ छ ट ठ ड */
     '\0',
     '\xE0', '\xA4', '\x88', ' ', '\xE0', '\xA4', '\x90', ' ', '\xE0', '\xA4', '\x93', ' ', '\xE0', '\xA4', '\x94', ' ', '\xE0', '\xA4', '\xBF', ' ', '\xE0', '\xA5', '\x80', ' ', '\xE0', '\xA5', '\x8B', ' ', '\xE0', '\xA5', '\x8C',  /* ई ऐ ओ औ ि ी ो ौ */
     '\0',
@@ -296,6 +296,20 @@
     '\0',
     '\xE0', '\xB4', '\x9F', ' ', '\xE0', '\xB4', '\xA0', ' ', '\xE0', '\xB4', '\xA7', ' ', '\xE0', '\xB4', '\xB6', ' ', '\xE0', '\xB4', '\x98', ' ', '\xE0', '\xB4', '\x9A', ' ', '\xE0', '\xB4', '\xA5', ' ', '\xE0', '\xB4', '\xB2',  /* ട ഠ ധ ശ ഘ ച ഥ ല */
     '\0',
+    '\xF0', '\x96', '\xB9', '\x80', ' ', '\xF0', '\x96', '\xB9', '\x81', ' ', '\xF0', '\x96', '\xB9', '\x82', ' ', '\xF0', '\x96', '\xB9', '\x83', ' ', '\xF0', '\x96', '\xB9', '\x8F', ' ', '\xF0', '\x96', '\xB9', '\x9A', ' ', '\xF0', '\x96', '\xB9', '\x9F',  /* 𖹀 𖹁 𖹂 𖹃 𖹏 𖹚 𖹟 */
+    '\0',
+    '\xF0', '\x96', '\xB9', '\x80', ' ', '\xF0', '\x96', '\xB9', '\x81', ' ', '\xF0', '\x96', '\xB9', '\x82', ' ', '\xF0', '\x96', '\xB9', '\x83', ' ', '\xF0', '\x96', '\xB9', '\x8F', ' ', '\xF0', '\x96', '\xB9', '\x9A', ' ', '\xF0', '\x96', '\xB9', '\x92', ' ', '\xF0', '\x96', '\xB9', '\x93',  /* 𖹀 𖹁 𖹂 𖹃 𖹏 𖹚 𖹒 𖹓 */
+    '\0',
+    '\xF0', '\x96', '\xB9', '\xA4', ' ', '\xF0', '\x96', '\xB9', '\xAC', ' ', '\xF0', '\x96', '\xB9', '\xA7', ' ', '\xF0', '\x96', '\xB9', '\xB4', ' ', '\xF0', '\x96', '\xB9', '\xB6', ' ', '\xF0', '\x96', '\xB9', '\xBE',  /* 𖹤 𖹬 𖹧 𖹴 𖹶 𖹾 */
+    '\0',
+    '\xF0', '\x96', '\xB9', '\xA0', ' ', '\xF0', '\x96', '\xB9', '\xA1', ' ', '\xF0', '\x96', '\xB9', '\xA2', ' ', '\xF0', '\x96', '\xB9', '\xB9', ' ', '\xF0', '\x96', '\xB9', '\xB3', ' ', '\xF0', '\x96', '\xB9', '\xAE',  /* 𖹠 𖹡 𖹢 𖹹 𖹳 𖹮 */
+    '\0',
+    '\xF0', '\x96', '\xB9', '\xA0', ' ', '\xF0', '\x96', '\xB9', '\xA1', ' ', '\xF0', '\x96', '\xB9', '\xA2', ' ', '\xF0', '\x96', '\xB9', '\xB3', ' ', '\xF0', '\x96', '\xB9', '\xAD', ' ', '\xF0', '\x96', '\xB9', '\xBD',  /* 𖹠 𖹡 𖹢 𖹳 𖹭 𖹽 */
+    '\0',
+    '\xF0', '\x96', '\xB9', '\xA5', ' ', '\xF0', '\x96', '\xB9', '\xA8', ' ', '\xF0', '\x96', '\xB9', '\xA9',  /* 𖹥 𖹨 𖹩 */
+    '\0',
+    '\xF0', '\x96', '\xBA', '\x80', ' ', '\xF0', '\x96', '\xBA', '\x85', ' ', '\xF0', '\x96', '\xBA', '\x88', ' ', '\xF0', '\x96', '\xBA', '\x84', ' ', '\xF0', '\x96', '\xBA', '\x8D',  /* 𖺀 𖺅 𖺈 𖺄 𖺍 */
+    '\0',
     '\xE1', '\xA0', '\xB3', ' ', '\xE1', '\xA0', '\xB4', ' ', '\xE1', '\xA0', '\xB6', ' ', '\xE1', '\xA0', '\xBD', ' ', '\xE1', '\xA1', '\x82', ' ', '\xE1', '\xA1', '\x8A', ' ', '\xE2', '\x80', '\x8D', '\xE1', '\xA1', '\xA1', '\xE2', '\x80', '\x8D', ' ', '\xE2', '\x80', '\x8D', '\xE1', '\xA1', '\xB3', '\xE2', '\x80', '\x8D',  /* ᠳ ᠴ ᠶ ᠽ ᡂ ᡊ ‍ᡡ‍ ‍ᡳ‍ */
     '\0',
     '\xE1', '\xA1', '\x83',  /* ᡃ */
@@ -339,6 +353,12 @@
     '\xF0', '\x90', '\x92', '\x86', ' ', '\xF0', '\x90', '\x92', '\x89', ' ', '\xF0', '\x90', '\x92', '\x90', ' ', '\xF0', '\x90', '\x92', '\x92', ' ', '\xF0', '\x90', '\x92', '\x98', ' ', '\xF0', '\x90', '\x92', '\x9B', ' ', '\xF0', '\x90', '\x92', '\xA0', ' ', '\xF0', '\x90', '\x92', '\xA3',  /* 𐒆 𐒉 𐒐 𐒒 𐒘 𐒛 𐒠 𐒣 */
     '\0',
     '\xF0', '\x90', '\x92', '\x80', ' ', '\xF0', '\x90', '\x92', '\x82', ' ', '\xF0', '\x90', '\x92', '\x86', ' ', '\xF0', '\x90', '\x92', '\x88', ' ', '\xF0', '\x90', '\x92', '\x8A', ' ', '\xF0', '\x90', '\x92', '\x92', ' ', '\xF0', '\x90', '\x92', '\xA0', ' ', '\xF0', '\x90', '\x92', '\xA9',  /* 𐒀 𐒂 𐒆 𐒈 𐒊 𐒒 𐒠 𐒩 */
+    '\0',
+    '\xF0', '\x90', '\xB4', '\x83', ' ', '\xF0', '\x90', '\xB4', '\x80', ' ', '\xF0', '\x90', '\xB4', '\x86', ' ', '\xF0', '\x90', '\xB4', '\x96', ' ', '\xF0', '\x90', '\xB4', '\x95',  /* 𐴃 𐴀 𐴆 𐴖 𐴕 */
+    '\0',
+    '\xF0', '\x90', '\xB4', '\x94', ' ', '\xF0', '\x90', '\xB4', '\x96', ' ', '\xF0', '\x90', '\xB4', '\x95', ' ', '\xF0', '\x90', '\xB4', '\x91', ' ', '\xF0', '\x90', '\xB4', '\x90',  /* 𐴔 𐴖 𐴕 𐴑 𐴐 */
+    '\0',
+    '\xD9', '\x80',  /* ـ */
     '\0',
     '\xEA', '\xA2', '\x9C', ' ', '\xEA', '\xA2', '\x9E', ' ', '\xEA', '\xA2', '\xB3', ' ', '\xEA', '\xA2', '\x82', ' ', '\xEA', '\xA2', '\x96', ' ', '\xEA', '\xA2', '\x92', ' ', '\xEA', '\xA2', '\x9D', ' ', '\xEA', '\xA2', '\x9B',  /* ꢜ ꢞ ꢳ ꢂ ꢖ ꢒ ꢝ ꢛ */
     '\0',
@@ -488,14 +508,14 @@
     { AF_BLUE_STRING_CHAKMA_BOTTOM,    0                          },
     { AF_BLUE_STRING_CHAKMA_DESCENDER, 0                          },
     { AF_BLUE_STRING_MAX,              0                          },
-    { AF_BLUE_STRING_CANADIAN_SYLLABICS_TOP,             AF_BLUE_PROPERTY_LATIN_TOP        },
-    { AF_BLUE_STRING_CANADIAN_SYLLABICS_BOTTOM,          0                                 },
-    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SMALL_TOP,       AF_BLUE_PROPERTY_LATIN_TOP      |
-                                                         AF_BLUE_PROPERTY_LATIN_X_HEIGHT   },
-    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SMALL_BOTTOM,    0                                 },
-    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SUPS_TOP,        AF_BLUE_PROPERTY_LATIN_TOP        },
-    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SUPS_BOTTOM,     0                                 },
-    { AF_BLUE_STRING_MAX,                                0                                 },
+    { AF_BLUE_STRING_CANADIAN_SYLLABICS_TOP,          AF_BLUE_PROPERTY_LATIN_TOP        },
+    { AF_BLUE_STRING_CANADIAN_SYLLABICS_BOTTOM,       0                                 },
+    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SMALL_TOP,    AF_BLUE_PROPERTY_LATIN_TOP      |
+                                                      AF_BLUE_PROPERTY_LATIN_X_HEIGHT   },
+    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SMALL_BOTTOM, 0                                 },
+    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SUPS_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        },
+    { AF_BLUE_STRING_CANADIAN_SYLLABICS_SUPS_BOTTOM,  0                                 },
+    { AF_BLUE_STRING_MAX,                             0                                 },
     { AF_BLUE_STRING_CARIAN_TOP,    AF_BLUE_PROPERTY_LATIN_TOP },
     { AF_BLUE_STRING_CARIAN_BOTTOM, 0                          },
     { AF_BLUE_STRING_MAX,           0                          },
@@ -595,6 +615,9 @@
     { AF_BLUE_STRING_HEBREW_BOTTOM,    0                             },
     { AF_BLUE_STRING_HEBREW_DESCENDER, 0                             },
     { AF_BLUE_STRING_MAX,              0                             },
+    { AF_BLUE_STRING_KANNADA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP },
+    { AF_BLUE_STRING_KANNADA_BOTTOM, 0                          },
+    { AF_BLUE_STRING_MAX,            0                          },
     { AF_BLUE_STRING_KAYAH_LI_TOP,             AF_BLUE_PROPERTY_LATIN_TOP      |
                                                AF_BLUE_PROPERTY_LATIN_X_HEIGHT   },
     { AF_BLUE_STRING_KAYAH_LI_BOTTOM,          0                                 },
@@ -613,9 +636,6 @@
                                                   AF_BLUE_PROPERTY_LATIN_X_HEIGHT   },
     { AF_BLUE_STRING_KHMER_SYMBOLS_WANING_BOTTOM, 0                                 },
     { AF_BLUE_STRING_MAX,                         0                                 },
-    { AF_BLUE_STRING_KANNADA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP },
-    { AF_BLUE_STRING_KANNADA_BOTTOM, 0                          },
-    { AF_BLUE_STRING_MAX,            0                          },
     { AF_BLUE_STRING_LAO_TOP,            AF_BLUE_PROPERTY_LATIN_TOP      |
                                          AF_BLUE_PROPERTY_LATIN_X_HEIGHT   },
     { AF_BLUE_STRING_LAO_BOTTOM,         0                                 },
@@ -653,6 +673,15 @@
     { AF_BLUE_STRING_MALAYALAM_TOP,    AF_BLUE_PROPERTY_LATIN_TOP },
     { AF_BLUE_STRING_MALAYALAM_BOTTOM, 0                          },
     { AF_BLUE_STRING_MAX,              0                          },
+    { AF_BLUE_STRING_MEDEFAIDRIN_CAPITAL_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        },
+    { AF_BLUE_STRING_MEDEFAIDRIN_CAPITAL_BOTTOM,  0                                 },
+    { AF_BLUE_STRING_MEDEFAIDRIN_SMALL_F_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        },
+    { AF_BLUE_STRING_MEDEFAIDRIN_SMALL_TOP,       AF_BLUE_PROPERTY_LATIN_TOP      |
+                                                  AF_BLUE_PROPERTY_LATIN_X_HEIGHT   },
+    { AF_BLUE_STRING_MEDEFAIDRIN_SMALL_BOTTOM,    0                                 },
+    { AF_BLUE_STRING_MEDEFAIDRIN_SMALL_DESCENDER, 0                                 },
+    { AF_BLUE_STRING_MEDEFAIDRIN_DIGIT_TOP,       AF_BLUE_PROPERTY_LATIN_TOP        },
+    { AF_BLUE_STRING_MAX,                         0                                 },
     { AF_BLUE_STRING_MONGOLIAN_TOP_BASE,    AF_BLUE_PROPERTY_LATIN_TOP },
     { AF_BLUE_STRING_MONGOLIAN_BOTTOM_BASE, 0                          },
     { AF_BLUE_STRING_MAX,                   0                          },
@@ -687,6 +716,10 @@
     { AF_BLUE_STRING_OSMANYA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP },
     { AF_BLUE_STRING_OSMANYA_BOTTOM, 0                          },
     { AF_BLUE_STRING_MAX,            0                          },
+    { AF_BLUE_STRING_ROHINGYA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP     },
+    { AF_BLUE_STRING_ROHINGYA_BOTTOM, 0                              },
+    { AF_BLUE_STRING_ROHINGYA_JOIN,   AF_BLUE_PROPERTY_LATIN_NEUTRAL },
+    { AF_BLUE_STRING_MAX,             0                              },
     { AF_BLUE_STRING_SAURASHTRA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP },
     { AF_BLUE_STRING_SAURASHTRA_BOTTOM, 0                          },
     { AF_BLUE_STRING_MAX,               0                          },
@@ -714,9 +747,6 @@
     { AF_BLUE_STRING_TELUGU_TOP,    AF_BLUE_PROPERTY_LATIN_TOP },
     { AF_BLUE_STRING_TELUGU_BOTTOM, 0                          },
     { AF_BLUE_STRING_MAX,           0                          },
-    { AF_BLUE_STRING_TIFINAGH, AF_BLUE_PROPERTY_LATIN_TOP },
-    { AF_BLUE_STRING_TIFINAGH, 0                          },
-    { AF_BLUE_STRING_MAX,      0                          },
     { AF_BLUE_STRING_THAI_TOP,             AF_BLUE_PROPERTY_LATIN_TOP      |
                                            AF_BLUE_PROPERTY_LATIN_X_HEIGHT   },
     { AF_BLUE_STRING_THAI_BOTTOM,          0                                 },
@@ -726,6 +756,9 @@
     { AF_BLUE_STRING_THAI_LARGE_DESCENDER, 0                                 },
     { AF_BLUE_STRING_THAI_DIGIT_TOP,       0                                 },
     { AF_BLUE_STRING_MAX,                  0                                 },
+    { AF_BLUE_STRING_TIFINAGH, AF_BLUE_PROPERTY_LATIN_TOP },
+    { AF_BLUE_STRING_TIFINAGH, 0                          },
+    { AF_BLUE_STRING_MAX,      0                          },
     { AF_BLUE_STRING_VAI_TOP,    AF_BLUE_PROPERTY_LATIN_TOP },
     { AF_BLUE_STRING_VAI_BOTTOM, 0                          },
     { AF_BLUE_STRING_MAX,        0                          },

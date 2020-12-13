@@ -4,7 +4,7 @@
  *
  *   PostScript Type 1 decoding routines (body).
  *
- * Copyright (C) 2000-2019 by
+ * Copyright (C) 2000-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,12 +16,11 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
-#include FT_INTERNAL_HASH_H
-#include FT_OUTLINE_H
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/pshints.h>
+#include <freetype/internal/fthash.h>
+#include <freetype/ftoutln.h>
 
 #include "t1decode.h"
 #include "psobjs.h"
@@ -367,6 +366,12 @@
 
     FT_GlyphLoader_Prepare( decoder->builder.loader );  /* prepare loader */
 
+    /* save the left bearing and width of the SEAC   */
+    /* glyph as they will be erased by the next load */
+
+    left_bearing = decoder->builder.left_bearing;
+    advance      = decoder->builder.advance;
+
     /* the seac operator must not be nested */
     decoder->seac = TRUE;
     error = t1_decoder_parse_glyph( decoder, (FT_UInt)bchar_index );
@@ -374,11 +379,14 @@
     if ( error )
       goto Exit;
 
-    /* save the left bearing and width of the base character */
-    /* as they will be erased by the next load.              */
+    /* If the SEAC glyph doesn't have a (H)SBW of its */
+    /* own use the values from the base glyph.        */
 
-    left_bearing = decoder->builder.left_bearing;
-    advance      = decoder->builder.advance;
+    if ( decoder->builder.parse_state != T1_Parse_Have_Width )
+    {
+      left_bearing = decoder->builder.left_bearing;
+      advance      = decoder->builder.advance;
+    }
 
     decoder->builder.left_bearing.x = 0;
     decoder->builder.left_bearing.y = 0;
@@ -396,8 +404,8 @@
     if ( error )
       goto Exit;
 
-    /* restore the left side bearing and   */
-    /* advance width of the base character */
+    /* restore the left side bearing and advance width   */
+    /* of the SEAC glyph or base character (saved above) */
 
     decoder->builder.left_bearing = left_bearing;
     decoder->builder.advance      = advance;
@@ -650,10 +658,8 @@
         if ( value > 32000 || value < -32000 )
         {
           if ( large_int )
-          {
             FT_ERROR(( "t1_decoder_parse_charstrings:"
                        " no `div' after large integer\n" ));
-          }
           else
             large_int = TRUE;
         }
@@ -1231,8 +1237,8 @@
 
           FT_UNUSED( orig_y );
 
-          /* the `metrics_only' indicates that we only want to compute */
-          /* the glyph's metrics (lsb + advance width), not load the   */
+          /* `metrics_only' indicates that we only want to compute the */
+          /* glyph's metrics (lsb + advance width) without loading the */
           /* rest of it; so exit immediately                           */
           if ( builder->metrics_only )
           {
@@ -1266,8 +1272,8 @@
           x = ADD_LONG( builder->pos_x, top[0] );
           y = ADD_LONG( builder->pos_y, top[1] );
 
-          /* the `metrics_only' indicates that we only want to compute */
-          /* the glyph's metrics (lsb + advance width), not load the   */
+          /* `metrics_only' indicates that we only want to compute the */
+          /* glyph's metrics (lsb + advance width) without loading the */
           /* rest of it; so exit immediately                           */
           if ( builder->metrics_only )
           {
@@ -1690,6 +1696,7 @@
     FT_Byte*         ip;
     FT_Byte*         limit;
     T1_Builder       builder = &decoder->builder;
+    FT_Bool          large_int;
 
 #ifdef FT_DEBUG_LEVEL_TRACE
     FT_Bool          bol = TRUE;
@@ -1707,6 +1714,8 @@
     limit = zone->limit  = charstring_base + charstring_len;
     ip    = zone->cursor = zone->base;
 
+    large_int = FALSE;
+
     /* now, execute loop */
     while ( ip < limit )
     {
@@ -1718,7 +1727,7 @@
 #ifdef FT_DEBUG_LEVEL_TRACE
       if ( bol )
       {
-        FT_TRACE5(( " (%d)", decoder->top - decoder->stack ));
+        FT_TRACE5(( " (%ld)", decoder->top - decoder->stack ));
         bol = FALSE;
       }
 #endif
@@ -1740,8 +1749,6 @@
       case 7:
       case 8:
       case 9:
-      case 10:
-      case 11:
       case 14:
       case 15:
       case 21:
@@ -1749,6 +1756,13 @@
       case 30:
       case 31:
         goto No_Width;
+
+      case 10:
+        op = op_callsubr;
+        break;
+      case 11:
+        op = op_return;
+        break;
 
       case 13:
         op = op_hsbw;
@@ -1766,6 +1780,9 @@
         {
         case 7:
           op = op_sbw;
+          break;
+        case 12:
+          op = op_div;
           break;
 
         default:
@@ -1796,13 +1813,19 @@
         /* anyway.                                                         */
         if ( value > 32000 || value < -32000 )
         {
-          FT_ERROR(( "t1_decoder_parse_metrics:"
-                     " large integer found for width\n" ));
-          goto Syntax_Error;
+          if ( large_int )
+          {
+            FT_ERROR(( "t1_decoder_parse_metrics:"
+                       " no `div' after large integer\n" ));
+            goto Syntax_Error;
+          }
+          else
+            large_int = TRUE;
         }
         else
         {
-          value = (FT_Int32)( (FT_UInt32)value << 16 );
+          if ( !large_int )
+            value = (FT_Int32)( (FT_UInt32)value << 16 );
         }
 
         break;
@@ -1827,7 +1850,8 @@
               value = -( ( ( ip[-2] - 251 ) * 256 ) + ip[-1] + 108 );
           }
 
-          value = (FT_Int32)( (FT_UInt32)value << 16 );
+          if ( !large_int )
+            value = (FT_Int32)( (FT_UInt32)value << 16 );
         }
         else
         {
@@ -1835,6 +1859,13 @@
                      " invalid byte (%d)\n", ip[-1] ));
           goto Syntax_Error;
         }
+      }
+
+      if ( large_int && !( op == op_none || op == op_div ) )
+      {
+        FT_ERROR(( "t1_decoder_parse_metrics:"
+                   " no `div' after large integer\n" ));
+        goto Syntax_Error;
       }
 
       /**********************************************************************
@@ -1851,6 +1882,9 @@
         }
 
 #ifdef FT_DEBUG_LEVEL_TRACE
+        if ( large_int )
+          FT_TRACE4(( " %d", value ));
+        else
           FT_TRACE4(( " %d", value / 65536 ));
 #endif
 
@@ -1869,11 +1903,21 @@
 
 #ifdef FT_DEBUG_LEVEL_TRACE
 
-        if ( top - decoder->stack != num_args )
-          FT_TRACE0(( "t1_decoder_parse_metrics:"
-                      " too much operands on the stack"
-                      " (seen %d, expected %d)\n",
-                      top - decoder->stack, num_args ));
+        switch ( op )
+        {
+        case op_callsubr:
+        case op_div:
+        case op_return:
+          break;
+
+        default:
+          if ( top - decoder->stack != num_args )
+            FT_TRACE0(( "t1_decoder_parse_metrics:"
+                        " too much operands on the stack"
+                        " (seen %ld, expected %d)\n",
+                        top - decoder->stack, num_args ));
+          break;
+        }
 
 #endif /* FT_DEBUG_LEVEL_TRACE */
 
@@ -1893,8 +1937,8 @@
           builder->advance.y = 0;
 
           /* we only want to compute the glyph's metrics */
-          /* (lsb + advance width), not load the rest of */
-          /* it; so exit immediately                     */
+          /* (lsb + advance width) without loading the   */
+          /* rest of it; so exit immediately             */
           FT_TRACE4(( "\n" ));
           return FT_Err_Ok;
 
@@ -1912,16 +1956,115 @@
           builder->advance.y = top[3];
 
           /* we only want to compute the glyph's metrics */
-          /* (lsb + advance width), not load the rest of */
-          /* it; so exit immediately                     */
+          /* (lsb + advance width), without loading the  */
+          /* rest of it; so exit immediately             */
           FT_TRACE4(( "\n" ));
           return FT_Err_Ok;
+
+        case op_div:
+          FT_TRACE4(( " div" ));
+
+          /* if `large_int' is set, we divide unscaled numbers; */
+          /* otherwise, we divide numbers in 16.16 format --    */
+          /* in both cases, it is the same operation            */
+          *top = FT_DivFix( top[0], top[1] );
+          top++;
+
+          large_int = FALSE;
+          break;
+
+        case op_callsubr:
+          {
+            FT_Int  idx;
+
+
+            FT_TRACE4(( " callsubr" ));
+
+            idx = Fix2Int( top[0] );
+
+            if ( decoder->subrs_hash )
+            {
+              size_t*  val = ft_hash_num_lookup( idx,
+                                                 decoder->subrs_hash );
+
+
+              if ( val )
+                idx = *val;
+              else
+                idx = -1;
+            }
+
+            if ( idx < 0 || idx >= decoder->num_subrs )
+            {
+              FT_ERROR(( "t1_decoder_parse_metrics:"
+                         " invalid subrs index\n" ));
+              goto Syntax_Error;
+            }
+
+            if ( zone - decoder->zones >= T1_MAX_SUBRS_CALLS )
+            {
+              FT_ERROR(( "t1_decoder_parse_metrics:"
+                         " too many nested subrs\n" ));
+              goto Syntax_Error;
+            }
+
+            zone->cursor = ip;  /* save current instruction pointer */
+
+            zone++;
+
+            /* The Type 1 driver stores subroutines without the seed bytes. */
+            /* The CID driver stores subroutines with seed bytes.  This     */
+            /* case is taken care of when decoder->subrs_len == 0.          */
+            zone->base = decoder->subrs[idx];
+
+            if ( decoder->subrs_len )
+              zone->limit = zone->base + decoder->subrs_len[idx];
+            else
+            {
+              /* We are using subroutines from a CID font.  We must adjust */
+              /* for the seed bytes.                                       */
+              zone->base  += ( decoder->lenIV >= 0 ? decoder->lenIV : 0 );
+              zone->limit  = decoder->subrs[idx + 1];
+            }
+
+            zone->cursor = zone->base;
+
+            if ( !zone->base )
+            {
+              FT_ERROR(( "t1_decoder_parse_metrics:"
+                         " invoking empty subrs\n" ));
+              goto Syntax_Error;
+            }
+
+            decoder->zone = zone;
+            ip            = zone->base;
+            limit         = zone->limit;
+            break;
+          }
+
+        case op_return:
+          FT_TRACE4(( " return" ));
+
+          if ( zone <= decoder->zones )
+          {
+            FT_ERROR(( "t1_decoder_parse_metrics:"
+                       " unexpected return\n" ));
+            goto Syntax_Error;
+          }
+
+          zone--;
+          ip            = zone->cursor;
+          limit         = zone->limit;
+          decoder->zone = zone;
+          break;
 
         default:
           FT_ERROR(( "t1_decoder_parse_metrics:"
                      " unhandled opcode %d\n", op ));
           goto Syntax_Error;
         }
+
+        decoder->top = top;
 
       } /* general operator processing */
 

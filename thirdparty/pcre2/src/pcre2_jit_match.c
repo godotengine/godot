@@ -74,7 +74,6 @@ Arguments:
   options         option bits
   match_data      points to a match_data block
   mcontext        points to a match context
-  jit_stack       points to a JIT stack
 
 Returns:          > 0 => success; value is the number of ovector pairs filled
                   = 0 => success, but ovector is not big enough

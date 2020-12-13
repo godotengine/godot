@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 env_xatlas_unwrap = env_modules.Clone()
 
 # Thirdparty source files
-if env['builtin_xatlas']:
+if env["builtin_xatlas"]:
     thirdparty_dir = "#thirdparty/xatlas/"
     thirdparty_sources = [
         "xatlas.cpp",

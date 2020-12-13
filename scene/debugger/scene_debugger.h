@@ -31,15 +31,14 @@
 #ifndef SCENE_DEBUGGER_H
 #define SCENE_DEBUGGER_H
 
-#include "core/array.h"
-#include "core/object.h"
-#include "core/pair.h"
-#include "core/ustring.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/templates/pair.h"
+#include "core/variant/array.h"
 
 class Script;
 
 class SceneDebugger {
-
 public:
 	static void initialize();
 	static void deinitialize();
@@ -59,7 +58,6 @@ public:
 
 #ifdef DEBUG_ENABLED
 class SceneDebuggerObject {
-
 private:
 	void _parse_script_properties(Script *p_script, ScriptInstance *p_instance);
 
@@ -77,7 +75,6 @@ public:
 };
 
 class SceneDebuggerTree {
-
 public:
 	struct RemoteNode {
 		int child_count;
@@ -100,11 +97,10 @@ public:
 	void serialize(Array &r_arr);
 	void deserialize(const Array &p_arr);
 	SceneDebuggerTree(Node *p_root);
-	SceneDebuggerTree(){};
+	SceneDebuggerTree() {}
 };
 
 class LiveEditor {
-
 private:
 	friend class SceneDebugger;
 	Map<int, NodePath> live_edit_node_path_cache;
@@ -113,8 +109,8 @@ private:
 	NodePath live_edit_root;
 	String live_edit_scene;
 
-	Map<String, Set<Node *> > live_scene_edit_cache;
-	Map<Node *, Map<ObjectID, Node *> > live_edit_remove_list;
+	Map<String, Set<Node *>> live_scene_edit_cache;
+	Map<Node *, Map<ObjectID, Node *>> live_edit_remove_list;
 
 	void _send_tree();
 

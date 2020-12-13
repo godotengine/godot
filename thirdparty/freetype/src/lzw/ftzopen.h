@@ -8,7 +8,7 @@
  * be used to parse compressed PCF fonts, as found with many X11 server
  * distributions.
  *
- * Copyright (C) 2005-2019 by
+ * Copyright (C) 2005-2020 by
  * David Turner.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -22,9 +22,9 @@
 #ifndef FTZOPEN_H_
 #define FTZOPEN_H_
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
+FT_BEGIN_HEADER
 
   /*
    * This is a complete re-implementation of the LZW file reader,
@@ -165,6 +165,8 @@
                   FT_ULong     out_size );
 
 /* */
+
+FT_END_HEADER
 
 #endif /* FTZOPEN_H_ */
 

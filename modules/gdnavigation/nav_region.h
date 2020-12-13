@@ -34,7 +34,7 @@
 #include "nav_rid.h"
 
 #include "nav_utils.h"
-#include "scene/3d/navigation.h"
+#include "scene/3d/navigation_3d.h"
 #include <vector>
 
 /**
@@ -45,17 +45,17 @@ class NavMap;
 class NavRegion;
 
 class NavRegion : public NavRid {
-	NavMap *map;
+	NavMap *map = nullptr;
 	Transform transform;
 	Ref<NavigationMesh> mesh;
 
-	bool polygons_dirty;
+	bool polygons_dirty = true;
 
 	/// Cache
 	std::vector<gd::Polygon> polygons;
 
 public:
-	NavRegion();
+	NavRegion() {}
 
 	void scratch_polygons() {
 		polygons_dirty = true;

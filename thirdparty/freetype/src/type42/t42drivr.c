@@ -4,7 +4,7 @@
  *
  *   High-level Type 42 driver interface (body).
  *
- * Copyright (C) 2002-2019 by
+ * Copyright (C) 2002-2020 by
  * Roberto Alameda.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -39,12 +39,12 @@
 #include "t42drivr.h"
 #include "t42objs.h"
 #include "t42error.h"
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 
-#include FT_SERVICE_FONT_FORMAT_H
-#include FT_SERVICE_GLYPH_DICT_H
-#include FT_SERVICE_POSTSCRIPT_NAME_H
-#include FT_SERVICE_POSTSCRIPT_INFO_H
+#include <freetype/internal/services/svfntfmt.h>
+#include <freetype/internal/services/svgldict.h>
+#include <freetype/internal/services/svpostnm.h>
+#include <freetype/internal/services/svpsinfo.h>
 
 #undef  FT_COMPONENT
 #define FT_COMPONENT  t42

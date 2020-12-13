@@ -37,7 +37,6 @@ class SceneDebuggerTree;
 class EditorFileDialog;
 
 class EditorDebuggerTree : public Tree {
-
 	GDCLASS(EditorDebuggerTree, Tree);
 
 private:
@@ -50,8 +49,8 @@ private:
 	int debugger_id = 0;
 	bool updating_scene_tree = false;
 	Set<ObjectID> unfold_cache;
-	PopupMenu *item_menu = NULL;
-	EditorFileDialog *file_dialog = NULL;
+	PopupMenu *item_menu = nullptr;
+	EditorFileDialog *file_dialog = nullptr;
 
 	String _get_path(TreeItem *p_item);
 	void _scene_tree_folded(Object *p_obj);

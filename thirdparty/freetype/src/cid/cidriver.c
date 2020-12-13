@@ -4,7 +4,7 @@
  *
  *   CID driver interface (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,22 +16,21 @@
  */
 
 
-#include <ft2build.h>
 #include "cidriver.h"
 #include "cidgload.h"
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_POSTSCRIPT_PROPS_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftpsprop.h>
 
 #include "ciderrs.h"
 
-#include FT_SERVICE_POSTSCRIPT_NAME_H
-#include FT_SERVICE_FONT_FORMAT_H
-#include FT_SERVICE_POSTSCRIPT_INFO_H
-#include FT_SERVICE_CID_H
-#include FT_SERVICE_PROPERTIES_H
-#include FT_DRIVER_H
+#include <freetype/internal/services/svpostnm.h>
+#include <freetype/internal/services/svfntfmt.h>
+#include <freetype/internal/services/svpsinfo.h>
+#include <freetype/internal/services/svcid.h>
+#include <freetype/internal/services/svprop.h>
+#include <freetype/ftdriver.h>
 
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
+#include <freetype/internal/psaux.h>
 
 
   /**************************************************************************

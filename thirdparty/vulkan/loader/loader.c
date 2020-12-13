@@ -70,8 +70,15 @@
 #include <initguid.h>
 #include <devpkey.h>
 #include <winternl.h>
+#include <strsafe.h>
+#ifdef __MINGW32__
+#undef strcpy  // fix error with redfined strcpy when building with MinGW-w64
+#endif
+#include <dxgi1_6.h>
 #include "adapters.h"
-#include "dxgi_loader.h"
+
+typedef HRESULT (APIENTRY *PFN_CreateDXGIFactory1)(REFIID riid, void **ppFactory);
+static PFN_CreateDXGIFactory1 fpCreateDXGIFactory1;
 #endif
 
 // This is a CMake generated file with #defines for any functions/includes
@@ -83,6 +90,10 @@
 
 // Generated file containing all the extension data
 #include "vk_loader_extensions.c"
+
+// Environment Variable information
+#define VK_ICD_FILENAMES_ENV_VAR "VK_ICD_FILENAMES"
+#define VK_LAYER_PATH_ENV_VAR "VK_LAYER_PATH"
 
 // Override layer information
 #define VK_OVERRIDE_LAYER_NAME "VK_LAYER_LUNARG_override"
@@ -121,12 +132,16 @@ enum loader_data_files_type {
 // additionally CreateDevice and DestroyDevice needs to be locked
 loader_platform_thread_mutex loader_lock;
 loader_platform_thread_mutex loader_json_lock;
+loader_platform_thread_mutex loader_preload_icd_lock;
+
+// A list of ICDs that gets initialized when the loader does its global initialization. This list should never be used by anything
+// other than EnumerateInstanceExtensionProperties(), vkDestroyInstance, and loader_release(). This list does not change
+// functionality, but the fact that the libraries already been loaded causes any call that needs to load ICD libraries to speed up
+// significantly. This can have a huge impact when making repeated calls to vkEnumerateInstanceExtensionProperties and
+// vkCreateInstance.
+static struct loader_icd_tramp_list scanned_icds;
 
 LOADER_PLATFORM_THREAD_ONCE_DECLARATION(once_init);
-
-// This loader supports Vulkan API version 1.1
-uint32_t loader_major_version = 1;
-uint32_t loader_minor_version = 2;
 
 void *loader_instance_heap_alloc(const struct loader_instance *instance, size_t size, VkSystemAllocationScope alloc_scope) {
     void *pMemory = NULL;
@@ -400,7 +415,7 @@ void loader_log(const struct loader_instance *inst, VkFlags msg_type, int32_t ms
         } else if ((msg_type & LOADER_ERROR_BIT) != 0) {
             severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
         } else if ((msg_type & LOADER_DEBUG_BIT) != 0) {
-            severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+            severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
         }
 
         if ((msg_type & LOADER_PERF_BIT) != 0) {
@@ -683,7 +698,11 @@ VkResult loaderGetDeviceRegistryFiles(const struct loader_instance *inst, char *
                                       LPCSTR value_name) {
     static const wchar_t *softwareComponentGUID = L"{5c4c3332-344d-483c-8739-259e934c9cc8}";
     static const wchar_t *displayGUID = L"{4d36e968-e325-11ce-bfc1-08002be10318}";
+#ifdef CM_GETIDLIST_FILTER_PRESENT
     const ULONG flags = CM_GETIDLIST_FILTER_CLASS | CM_GETIDLIST_FILTER_PRESENT;
+#else
+    const ULONG flags = 0x300;
+#endif
 
     wchar_t childGuid[MAX_GUID_STRING_LEN + 2];  // +2 for brackets {}
     ULONG childGuidSize = sizeof(childGuid);
@@ -876,7 +895,7 @@ VkResult loaderGetRegistryFiles(const struct loader_instance *inst, char *locati
     }
 
     if (is_driver) {
-        HRESULT hres = dyn_CreateDXGIFactory1(&IID_IDXGIFactory1, &dxgi_factory);
+        HRESULT hres = fpCreateDXGIFactory1(&IID_IDXGIFactory1, (void **)&dxgi_factory);
         if (hres != S_OK) {
             loader_log(
                 inst, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0,
@@ -1078,11 +1097,11 @@ static size_t loader_platform_combine_path(char *dest, size_t len, ...) {
 
 // Given string of three part form "maj.min.pat" convert to a vulkan version number.
 static uint32_t loader_make_version(char *vers_str) {
-    uint32_t vers = 0, major = 0, minor = 0, patch = 0;
+    uint32_t major = 0, minor = 0, patch = 0;
     char *vers_tok;
 
     if (!vers_str) {
-        return vers;
+        return 0;
     }
 
     vers_tok = strtok(vers_str, ".\"\n\r");
@@ -1230,6 +1249,10 @@ void loaderDeleteLayerListAndProperties(const struct loader_instance *inst, stru
             loader_instance_heap_free(inst, layer_list->list[i].override_paths);
             layer_list->list[i].override_paths = NULL;
         }
+        if (NULL != layer_list->list[i].app_key_paths) {
+            loader_instance_heap_free(inst, layer_list->list[i].app_key_paths);
+            layer_list->list[i].app_key_paths = NULL;
+        }
         loader_destroy_generic_list(inst, (struct loader_generic_list *)&layer_list->list[i].instance_extension_list);
         dev_ext_list = &layer_list->list[i].device_extension_list;
         if (dev_ext_list->capacity > 0 && NULL != dev_ext_list->list) {
@@ -1251,6 +1274,31 @@ void loaderDeleteLayerListAndProperties(const struct loader_instance *inst, stru
         layer_list->capacity = 0;
         loader_instance_heap_free(inst, layer_list->list);
     }
+}
+
+void loaderRemoveLayerInList(const struct loader_instance *inst, struct loader_layer_list *layer_list, uint32_t layer_to_remove) {
+    if (layer_list == NULL || layer_to_remove >= layer_list->count) {
+        return;
+    }
+    if (layer_list->list[layer_to_remove].type_flags & VK_LAYER_TYPE_FLAG_META_LAYER) {
+        // Delete the component layers
+        loader_instance_heap_free(inst, layer_list->list[layer_to_remove].component_layer_names);
+        loader_instance_heap_free(inst, layer_list->list[layer_to_remove].override_paths);
+        loader_instance_heap_free(inst, layer_list->list[layer_to_remove].blacklist_layer_names);
+        loader_instance_heap_free(inst, layer_list->list[layer_to_remove].app_key_paths);
+    }
+
+    // Remove the current invalid meta-layer from the layer list.  Use memmove since we are
+    // overlapping the source and destination addresses.
+    memmove(&layer_list->list[layer_to_remove], &layer_list->list[layer_to_remove + 1],
+            sizeof(struct loader_layer_properties) * (layer_list->count - 1 - layer_to_remove));
+
+    // Make sure to clear out the removed layer, in case new layers are added in the previous location
+    memset(&layer_list->list[layer_list->count - 1], 0, sizeof(struct loader_layer_properties));
+
+    // Decrement the count (because we now have one less) and decrement the loop index since we need to
+    // re-check this index.
+    layer_list->count--;
 }
 
 // Remove all layers in the layer list that are blacklisted by the override layer.
@@ -1925,9 +1973,10 @@ bool loaderAddMetaLayer(const struct loader_instance *inst, const struct loader_
 // Search the source_list for any layer with a name that matches the given name and a type
 // that matches the given type.  Add all matching layers to the target_list.
 // Do not add if found loader_layer_properties is already on the target_list.
-void loaderAddLayerNameToList(const struct loader_instance *inst, const char *name, const enum layer_type_flags type_flags,
-                              const struct loader_layer_list *source_list, struct loader_layer_list *target_list,
-                              struct loader_layer_list *expanded_target_list) {
+VkResult loaderAddLayerNameToList(const struct loader_instance *inst, const char *name, const enum layer_type_flags type_flags,
+                                  const struct loader_layer_list *source_list, struct loader_layer_list *target_list,
+                                  struct loader_layer_list *expanded_target_list) {
+    VkResult res = VK_SUCCESS;
     bool found = false;
     for (uint32_t i = 0; i < source_list->count; i++) {
         struct loader_layer_properties *source_prop = &source_list->list[i];
@@ -1948,9 +1997,17 @@ void loaderAddLayerNameToList(const struct loader_instance *inst, const char *na
         }
     }
     if (!found) {
-        loader_log(inst, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0, "loaderAddLayerNameToList: Failed to find layer name %s to activate",
-                   name);
+        if (strcmp(name, "VK_LAYER_LUNARG_standard_validation")) {
+            loader_log(inst, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0,
+                       "loaderAddLayerNameToList: Failed to find layer name %s to activate", name);
+        } else {
+            res = VK_ERROR_LAYER_NOT_PRESENT;
+            loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+                       "Layer VK_LAYER_LUNARG_standard_validation has been changed to VK_LAYER_KHRONOS_validation. Please use the "
+                       "new version of the layer.");
+        }
     }
+    return res;
 }
 
 static VkExtensionProperties *get_extension_property(const char *name, const struct loader_extension_list *list) {
@@ -2251,6 +2308,9 @@ static VkResult loader_scanned_icd_add(const struct loader_instance *inst, struc
     PFN_vkGetInstanceProcAddr fp_get_proc_addr;
     PFN_GetPhysicalDeviceProcAddr fp_get_phys_dev_proc_addr = NULL;
     PFN_vkNegotiateLoaderICDInterfaceVersion fp_negotiate_icd_version;
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    PFN_vk_icdEnumerateAdapterPhysicalDevices fp_enum_dxgi_adapter_phys_devs = NULL;
+#endif
     struct loader_scanned_icd *new_scanned_icd;
     uint32_t interface_vers;
     VkResult res = VK_SUCCESS;
@@ -2337,6 +2397,11 @@ static VkResult loader_scanned_icd_add(const struct loader_instance *inst, struc
             goto out;
         }
         fp_get_phys_dev_proc_addr = loader_platform_get_proc_address(handle, "vk_icdGetPhysicalDeviceProcAddr");
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+        if (interface_vers >= 6) {
+            fp_enum_dxgi_adapter_phys_devs = loader_platform_get_proc_address(handle, "vk_icdEnumerateAdapterPhysicalDevices");
+        }
+#endif
     }
 
     // check for enough capacity
@@ -2362,6 +2427,9 @@ static VkResult loader_scanned_icd_add(const struct loader_instance *inst, struc
     new_scanned_icd->GetPhysicalDeviceProcAddr = fp_get_phys_dev_proc_addr;
     new_scanned_icd->EnumerateInstanceExtensionProperties = fp_get_inst_ext_props;
     new_scanned_icd->CreateInstance = fp_create_inst;
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    new_scanned_icd->EnumerateAdapterPhysicalDevices = fp_enum_dxgi_adapter_phys_devs;
+#endif
     new_scanned_icd->interface_version = interface_vers;
 
     new_scanned_icd->lib_name = (char *)loader_instance_heap_alloc(inst, strlen(filename) + 1, VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE);
@@ -2430,7 +2498,7 @@ void loader_initialize(void) {
     // initialize mutexes
     loader_platform_thread_create_mutex(&loader_lock);
     loader_platform_thread_create_mutex(&loader_json_lock);
-
+    loader_platform_thread_create_mutex(&loader_preload_icd_lock);
     // initialize logging
     loader_debug_init();
 
@@ -2444,6 +2512,13 @@ void loader_initialize(void) {
     // This is needed to ensure that newer APIs are available right away
     // and not after the first call that has been statically linked
     LoadLibrary("gdi32.dll");
+
+    TCHAR systemPath[MAX_PATH] = "";
+    GetSystemDirectory(systemPath, MAX_PATH);
+    StringCchCat(systemPath, MAX_PATH, TEXT("\\dxgi.dll"));
+    HMODULE dxgi_module = LoadLibrary(systemPath);
+    fpCreateDXGIFactory1 = dxgi_module == NULL ? NULL :
+        (PFN_CreateDXGIFactory1)GetProcAddress(dxgi_module, "CreateDXGIFactory1");
 #endif
 }
 
@@ -2454,9 +2529,38 @@ struct loader_data_files {
 };
 
 void loader_release() {
+    // Guarantee release of the preloaded ICD libraries. This may have already been called in vkDestroyInstance.
+    loader_unload_preloaded_icds();
+
     // release mutexes
     loader_platform_thread_delete_mutex(&loader_lock);
     loader_platform_thread_delete_mutex(&loader_json_lock);
+    loader_platform_thread_delete_mutex(&loader_preload_icd_lock);
+}
+
+// Preload the ICD libraries that are likely to be needed so we don't repeatedly load/unload them later
+void loader_preload_icds(void) {
+    loader_platform_thread_lock_mutex(&loader_preload_icd_lock);
+
+    // Already preloaded, skip loading again.
+    if (scanned_icds.scanned_list != NULL) {
+        loader_platform_thread_unlock_mutex(&loader_preload_icd_lock);
+        return;
+    }
+
+    memset(&scanned_icds, 0, sizeof(scanned_icds));
+    VkResult result = loader_icd_scan(NULL, &scanned_icds);
+    if (result != VK_SUCCESS) {
+        loader_scanned_icd_clear(NULL, &scanned_icds);
+    }
+    loader_platform_thread_unlock_mutex(&loader_preload_icd_lock);
+}
+
+// Release the ICD libraries that were preloaded
+void loader_unload_preloaded_icds(void) {
+    loader_platform_thread_lock_mutex(&loader_preload_icd_lock);
+    loader_scanned_icd_clear(NULL, &scanned_icds);
+    loader_platform_thread_unlock_mutex(&loader_preload_icd_lock);
 }
 
 // Get next file or dirname given a string list or registry key path
@@ -2562,6 +2666,11 @@ static VkResult loader_get_json(const struct loader_instance *inst, const char *
     }
     json_buf[len] = '\0';
 
+    // Can't be a valid json if the string is of length zero
+    if (len == 0) {
+        res = VK_ERROR_INITIALIZATION_FAILED;
+        goto out;
+    }
     // Parse text from file
     *json = cJSON_Parse(json_buf);
     if (*json == NULL) {
@@ -2711,6 +2820,9 @@ static void VerifyAllMetaLayers(struct loader_instance *inst, struct loader_laye
             if (prop->blacklist_layer_names != NULL) {
                 loader_instance_heap_free(inst, prop->blacklist_layer_names);
             }
+            if (prop->override_paths != NULL) {
+                loader_instance_heap_free(inst, prop->override_paths);
+            }
 
             // Remove the current invalid meta-layer from the layer list.  Use memmove since we are
             // overlapping the source and destination addresses.
@@ -2724,6 +2836,75 @@ static void VerifyAllMetaLayers(struct loader_instance *inst, struct loader_laye
         } else if (prop->is_override && loaderImplicitLayerIsEnabled(inst, prop)) {
             *override_layer_present = true;
         }
+    }
+}
+
+// If the current working directory matches any app_key_path of the layers, remove all other override layers.
+// Otherwise if no matching app_key was found, remove all but the global override layer, which has no app_key_path.
+static void RemoveAllNonValidOverrideLayers(struct loader_instance *inst, struct loader_layer_list *instance_layers) {
+    if (instance_layers == NULL) {
+        return;
+    }
+
+    char cur_path[MAX_STRING_SIZE];
+    char *ret = loader_platform_executable_path(cur_path, sizeof(cur_path));
+    if (ret == NULL) {
+        loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+                   "RemoveAllNonValidOverrideLayers: Failed to get executable path and name");
+        return;
+    }
+
+    // Find out if there is an override layer with same the app_key_path as the path to the current executable.
+    // If more than one is found, remove it and use the first layer
+    // Remove any layers which aren't global and do not have the same app_key_path as the path to the current executable.
+    bool found_active_override_layer = false;
+    int global_layer_index = -1;
+    for (uint32_t i = 0; i < instance_layers->count; i++) {
+        struct loader_layer_properties *props = &instance_layers->list[i];
+        if (strcmp(props->info.layerName, VK_OVERRIDE_LAYER_NAME) == 0) {
+            if (props->num_app_key_paths > 0) {  // not the global layer
+                for (uint32_t j = 0; j < props->num_app_key_paths; j++) {
+                    if (strcmp(props->app_key_paths[j], cur_path) == 0) {
+                        if (!found_active_override_layer) {
+                            found_active_override_layer = true;
+                        } else {
+                            loader_log(inst, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0,
+                                       "RemoveAllNonValidOverrideLayers: Multiple override layers where the same"
+                                       "path in app_keys was found. Using the first layer found");
+
+                            // Remove duplicate active override layers that have the same app_key_path
+                            loaderRemoveLayerInList(inst, instance_layers, i);
+                            i--;
+                        }
+                    }
+                }
+                if (!found_active_override_layer) {
+                    // Remove non-global override layers that don't have an app_key that matches cur_path
+                    loaderRemoveLayerInList(inst, instance_layers, i);
+                    i--;
+                }
+            } else {
+                if (global_layer_index == -1) {
+                    global_layer_index = i;
+                } else {
+                    loader_log(inst, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0,
+                               "RemoveAllNonValidOverrideLayers: Multiple global override layers "
+                               "found. Using the first global layer found");
+                    loaderRemoveLayerInList(inst, instance_layers, i);
+                    i--;
+                }
+            }
+        }
+    }
+    // Remove global layer if layer with same the app_key_path as the path to the current executable is found
+    if (found_active_override_layer && global_layer_index >= 0) {
+        loaderRemoveLayerInList(inst, instance_layers, global_layer_index);
+    }
+    // Should be at most 1 override layer in the list now.
+    if (found_active_override_layer) {
+        loader_log(inst, VK_DEBUG_REPORT_INFORMATION_BIT_EXT, 0, "Using the override layer for app key %s", cur_path);
+    } else if (global_layer_index >= 0) {
+        loader_log(inst, VK_DEBUG_REPORT_INFORMATION_BIT_EXT, 0, "Using the global override layer");
     }
 }
 
@@ -3128,6 +3309,7 @@ static VkResult loaderReadLayerJson(const struct loader_instance *inst, struct l
     char *vkNegotiateLoaderLayerInterfaceVersion = NULL;
     char *spec_version = NULL;
     char **entry_array = NULL;
+    cJSON *app_keys = NULL;
 
     // Layer interface functions
     //    vkGetInstanceProcAddr
@@ -3316,6 +3498,45 @@ static VkResult loaderReadLayerJson(const struct loader_instance *inst, struct l
         }
     }
 
+    props->num_app_key_paths = 0;
+    props->app_key_paths = NULL;
+    app_keys = cJSON_GetObjectItem(layer_node, "app_keys");
+    if (app_keys != NULL) {
+        if (strcmp(name, VK_OVERRIDE_LAYER_NAME)) {
+            loader_log(inst, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0,
+                       "Layer %s contains app_keys, but any app_keys can only be provided by the override metalayer. "
+                       "These will be ignored.",
+                       name);
+        } else {
+            props->num_app_key_paths = cJSON_GetArraySize(app_keys);
+
+            // Allocate the blacklist array
+            props->app_key_paths = loader_instance_heap_alloc(inst, sizeof(char[MAX_STRING_SIZE]) * props->num_app_key_paths,
+                                                              VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE);
+            if (props->app_key_paths == NULL) {
+                result = VK_ERROR_OUT_OF_HOST_MEMORY;
+                goto out;
+            }
+
+            // Copy the app_key_paths into the array
+            for (i = 0; i < (int)props->num_app_key_paths; ++i) {
+                cJSON *app_key_path = cJSON_GetArrayItem(app_keys, i);
+                if (app_key_path == NULL) {
+                    continue;
+                }
+                temp = cJSON_Print(app_key_path);
+                if (temp == NULL) {
+                    result = VK_ERROR_OUT_OF_HOST_MEMORY;
+                    goto out;
+                }
+                temp[strlen(temp) - 1] = '\0';
+                strncpy(props->app_key_paths[i], temp + 1, MAX_STRING_SIZE - 1);
+                props->app_key_paths[i][MAX_STRING_SIZE - 1] = '\0';
+                cJSON_Free(temp);
+            }
+        }
+    }
+
     result = VK_SUCCESS;
 
 out:
@@ -3332,12 +3553,17 @@ out:
         if (NULL != props->override_paths) {
             loader_instance_heap_free(inst, props->override_paths);
         }
+        if (NULL != props->app_key_paths) {
+            loader_instance_heap_free(inst, props->app_key_paths);
+        }
         props->num_blacklist_layers = 0;
         props->blacklist_layer_names = NULL;
         props->num_component_layers = 0;
         props->component_layer_names = NULL;
         props->num_override_paths = 0;
         props->override_paths = NULL;
+        props->num_app_key_paths = 0;
+        props->app_key_paths = NULL;
     }
 
     return result;
@@ -3380,6 +3606,10 @@ static VkResult loaderAddLayerProperties(const struct loader_instance *inst, str
     layer_json_version json_version = {0, 0, 0};
     char *vers_tok;
     cJSON *disable_environment = NULL;
+    // Make sure sure the top level json value is an object
+    if (!json || json->type != 6) {
+        goto out;
+    }
     item = cJSON_GetObjectItem(json, "file_format_version");
     if (item == NULL) {
         goto out;
@@ -3596,7 +3826,7 @@ out:
 }
 
 static VkResult AddDataFilesInPath(const struct loader_instance *inst, char *search_path, bool is_directory_list,
-                                   struct loader_data_files *out_files) {
+                                   struct loader_data_files *out_files, bool use_first_found_manifest) {
     VkResult vk_result = VK_SUCCESS;
     DIR *dir_stream = NULL;
     struct dirent *dir_entry;
@@ -3678,6 +3908,9 @@ static VkResult AddDataFilesInPath(const struct loader_instance *inst, char *sea
                 break;
             }
         }
+        if (use_first_found_manifest && out_files->count > 0) {
+            break;
+        }
     }
 
 out:
@@ -3699,6 +3932,7 @@ static VkResult ReadDataFilesInSearchPaths(const struct loader_instance *inst, e
     char *search_path = NULL;
     char *cur_path_ptr = NULL;
     size_t rel_size = 0;
+    bool use_first_found_manifest = false;
 #ifndef _WIN32
     bool xdgconfig_alloc = true;
     bool xdgdata_alloc = true;
@@ -3828,6 +4062,10 @@ static VkResult ReadDataFilesInSearchPaths(const struct loader_instance *inst, e
                         memcpy(cur_path_ptr, relative_location, rel_size);
                         cur_path_ptr += rel_size;
                         *cur_path_ptr++ = PATH_SEPARATOR;
+                        // only for ICD manifests
+                        if (env_override != NULL && strcmp(VK_ICD_FILENAMES_ENV_VAR, env_override) == 0) {
+                            use_first_found_manifest = true;
+                        }
                     }
                     CFRelease(ref);
                 }
@@ -3853,6 +4091,39 @@ static VkResult ReadDataFilesInSearchPaths(const struct loader_instance *inst, e
 #endif
     }
 
+    // Remove duplicate paths, or it would result in duplicate extensions, duplicate devices, etc.
+    // This uses minimal memory, but is O(N^2) on the number of paths. Expect only a few paths.
+    char path_sep_str[2] = {PATH_SEPARATOR, '\0'};
+    size_t search_path_updated_size = strlen(search_path);
+    for (size_t first = 0; first < search_path_updated_size;) {
+        // If this is an empty path, erase it
+        if (search_path[first] == PATH_SEPARATOR) {
+            memmove(&search_path[first], &search_path[first + 1], search_path_updated_size - first + 1);
+            search_path_updated_size -= 1;
+            continue;
+        }
+
+        size_t first_end = first + 1;
+        first_end += strcspn(&search_path[first_end], path_sep_str);
+        for (size_t second = first_end + 1; second < search_path_updated_size;) {
+            size_t second_end = second + 1;
+            second_end += strcspn(&search_path[second_end], path_sep_str);
+            if (first_end - first == second_end - second &&
+                !strncmp(&search_path[first], &search_path[second], second_end - second)) {
+                // Found duplicate. Include PATH_SEPARATOR in second_end, then erase it from search_path.
+                if (search_path[second_end] == PATH_SEPARATOR) {
+                    second_end++;
+                }
+                memmove(&search_path[second], &search_path[second_end], search_path_updated_size - second_end + 1);
+                search_path_updated_size -= second_end - second;
+            } else {
+                second = second_end + 1;
+            }
+        }
+        first = first_end + 1;
+    }
+    search_path_size = search_path_updated_size;
+
     // Print out the paths being searched if debugging is enabled
     if (search_path_size > 0) {
         loader_log(inst, VK_DEBUG_REPORT_DEBUG_BIT_EXT, 0,
@@ -3860,7 +4131,7 @@ static VkResult ReadDataFilesInSearchPaths(const struct loader_instance *inst, e
     }
 
     // Now, parse the paths and add any manifest files found in them.
-    vk_result = AddDataFilesInPath(inst, search_path, is_directory_list, out_files);
+    vk_result = AddDataFilesInPath(inst, search_path, is_directory_list, out_files, use_first_found_manifest);
 
     if (NULL != override_path) {
         *override_active = true;
@@ -4096,7 +4367,7 @@ static VkResult ReadDataFilesInRegistry(const struct loader_instance *inst, enum
     }
 
     // Now, parse the paths and add any manifest files found in them.
-    vk_result = AddDataFilesInPath(inst, search_path, false, out_files);
+    vk_result = AddDataFilesInPath(inst, search_path, false, out_files, false);
 
 out:
 
@@ -4216,14 +4487,12 @@ VkResult loader_icd_scan(const struct loader_instance *inst, struct loader_icd_t
     if (VK_SUCCESS != res) {
         goto out;
     }
-
     // Get a list of manifest files for ICDs
-    res = loaderGetDataFiles(inst, LOADER_DATA_FILE_MANIFEST_ICD, true, "VK_ICD_FILENAMES", NULL, VK_DRIVERS_INFO_REGISTRY_LOC,
-                             VK_DRIVERS_INFO_RELATIVE_DIR, &manifest_files);
+    res = loaderGetDataFiles(inst, LOADER_DATA_FILE_MANIFEST_ICD, true, VK_ICD_FILENAMES_ENV_VAR, NULL,
+                             VK_DRIVERS_INFO_REGISTRY_LOC, VK_DRIVERS_INFO_RELATIVE_DIR, &manifest_files);
     if (VK_SUCCESS != res || manifest_files.count == 0) {
         goto out;
     }
-
     loader_platform_thread_lock_mutex(&loader_json_lock);
     lockedMutex = true;
     for (uint32_t i = 0; i < manifest_files.count; i++) {
@@ -4244,6 +4513,7 @@ VkResult loader_icd_scan(const struct loader_instance *inst, struct loader_icd_t
                 res = temp_res;
             }
             if (temp_res == VK_ERROR_OUT_OF_HOST_MEMORY) {
+                res = VK_ERROR_OUT_OF_HOST_MEMORY;
                 break;
             } else {
                 continue;
@@ -4486,11 +4756,15 @@ void loaderScanForLayers(struct loader_instance *inst, struct loader_layer_list 
             VkResult local_res = loaderAddLayerProperties(inst, instance_layers, json, true, file_str);
             cJSON_Delete(json);
 
-            if (VK_SUCCESS != local_res) {
+            // If the error is anything other than out of memory we still want to try to load the other layers
+            if (VK_ERROR_OUT_OF_HOST_MEMORY == local_res) {
                 goto out;
             }
         }
     }
+
+    // Remove any extraneous override layers.
+    RemoveAllNonValidOverrideLayers(inst, instance_layers);
 
     // Check to see if the override layer is present, and use it's override paths.
     for (int32_t i = 0; i < (int32_t)instance_layers->count; i++) {
@@ -4519,7 +4793,7 @@ void loaderScanForLayers(struct loader_instance *inst, struct loader_layer_list 
     }
 
     // Get a list of manifest files for explicit layers
-    if (VK_SUCCESS != loaderGetDataFiles(inst, LOADER_DATA_FILE_MANIFEST_LAYER, true, "VK_LAYER_PATH", override_paths,
+    if (VK_SUCCESS != loaderGetDataFiles(inst, LOADER_DATA_FILE_MANIFEST_LAYER, true, VK_LAYER_PATH_ENV_VAR, override_paths,
                                          VK_ELAYERS_INFO_REGISTRY_LOC, VK_ELAYERS_INFO_RELATIVE_DIR, &manifest_files)) {
         goto out;
     }
@@ -4631,6 +4905,9 @@ void loaderScanForImplicitLayers(struct loader_instance *inst, struct loader_lay
         }
     }
 
+    // Remove any extraneous override layers.
+    RemoveAllNonValidOverrideLayers(inst, instance_layers);
+
     // Check to see if either the override layer is present, or another implicit meta-layer.
     // Each of these may require explicit layers to be enabled at this time.
     for (int32_t i = 0; i < (int32_t)instance_layers->count; i++) {
@@ -4667,7 +4944,7 @@ void loaderScanForImplicitLayers(struct loader_instance *inst, struct loader_lay
     // explicit layer info as well.  Not to worry, though, all explicit layers not included
     // in the override layer will be removed below in loaderRemoveLayersInBlacklist().
     if (override_layer_valid || implicit_metalayer_present) {
-        if (VK_SUCCESS != loaderGetDataFiles(inst, LOADER_DATA_FILE_MANIFEST_LAYER, true, "VK_LAYER_PATH", override_paths,
+        if (VK_SUCCESS != loaderGetDataFiles(inst, LOADER_DATA_FILE_MANIFEST_LAYER, true, VK_LAYER_PATH_ENV_VAR, override_paths,
                                              VK_ELAYERS_INFO_REGISTRY_LOC, VK_ELAYERS_INFO_RELATIVE_DIR, &manifest_files)) {
             goto out;
         }
@@ -4689,6 +4966,7 @@ void loaderScanForImplicitLayers(struct loader_instance *inst, struct loader_lay
             res = loaderAddLayerProperties(inst, instance_layers, json, true, file_str);
 
             loader_instance_heap_free(inst, file_str);
+            manifest_files.filename_list[i] = NULL;
             cJSON_Delete(json);
 
             if (VK_ERROR_OUT_OF_HOST_MEMORY == res) {
@@ -4712,6 +4990,11 @@ out:
 
     if (NULL != override_paths) {
         loader_instance_heap_free(inst, override_paths);
+    }
+    for (uint32_t i = 0; i < manifest_files.count; i++) {
+        if (NULL != manifest_files.filename_list[i]) {
+            loader_instance_heap_free(inst, manifest_files.filename_list[i]);
+        }
     }
     if (NULL != manifest_files.filename_list) {
         loader_instance_heap_free(inst, manifest_files.filename_list);
@@ -5349,9 +5632,11 @@ static void loaderAddImplicitLayers(const struct loader_instance *inst, struct l
 
 // Get the layer name(s) from the env_name environment variable. If layer is found in
 // search_list then add it to layer_list.  But only add it to layer_list if type_flags matches.
-static void loaderAddEnvironmentLayers(struct loader_instance *inst, const enum layer_type_flags type_flags, const char *env_name,
-                                       struct loader_layer_list *target_list, struct loader_layer_list *expanded_target_list,
-                                       const struct loader_layer_list *source_list) {
+static VkResult loaderAddEnvironmentLayers(struct loader_instance *inst, const enum layer_type_flags type_flags,
+                                           const char *env_name, struct loader_layer_list *target_list,
+                                           struct loader_layer_list *expanded_target_list,
+                                           const struct loader_layer_list *source_list) {
+    VkResult res = VK_SUCCESS;
     char *next, *name;
     char *layer_env = loader_getenv(env_name, inst);
     if (layer_env == NULL) {
@@ -5365,7 +5650,10 @@ static void loaderAddEnvironmentLayers(struct loader_instance *inst, const enum 
 
     while (name && *name) {
         next = loader_get_next_path(name);
-        loaderAddLayerNameToList(inst, name, type_flags, source_list, target_list, expanded_target_list);
+        res = loaderAddLayerNameToList(inst, name, type_flags, source_list, target_list, expanded_target_list);
+        if (res != VK_SUCCESS) {
+            goto out;
+        }
         name = next;
     }
 
@@ -5375,7 +5663,7 @@ out:
         loader_free_getenv(layer_env, inst);
     }
 
-    return;
+    return res;
 }
 
 VkResult loaderEnableInstanceLayers(struct loader_instance *inst, const VkInstanceCreateInfo *pCreateInfo,
@@ -5404,8 +5692,11 @@ VkResult loaderEnableInstanceLayers(struct loader_instance *inst, const VkInstan
     loaderAddImplicitLayers(inst, &inst->app_activated_layer_list, &inst->expanded_activated_layer_list, instance_layers);
 
     // Add any layers specified via environment variable next
-    loaderAddEnvironmentLayers(inst, VK_LAYER_TYPE_FLAG_EXPLICIT_LAYER, "VK_INSTANCE_LAYERS", &inst->app_activated_layer_list,
-                               &inst->expanded_activated_layer_list, instance_layers);
+    err = loaderAddEnvironmentLayers(inst, VK_LAYER_TYPE_FLAG_EXPLICIT_LAYER, "VK_INSTANCE_LAYERS", &inst->app_activated_layer_list,
+                                     &inst->expanded_activated_layer_list, instance_layers);
+    if (err != VK_SUCCESS) {
+        goto out;
+    }
 
     // Add layers specified by the application
     err = loaderAddLayerNamesToList(inst, &inst->app_activated_layer_list, &inst->expanded_activated_layer_list,
@@ -5427,6 +5718,7 @@ VkResult loaderEnableInstanceLayers(struct loader_instance *inst, const VkInstan
         }
     }
 
+out:
     return err;
 }
 
@@ -5749,28 +6041,46 @@ VkResult loader_create_instance_chain(const VkInstanceCreateInfo *pCreateInfo, c
         }
     }
 
+    VkLoaderFeatureFlags feature_flags = 0;
+#if defined(_WIN32)
+    IDXGIFactory6* dxgi_factory = NULL;
+    HRESULT hres = fpCreateDXGIFactory1(&IID_IDXGIFactory6, &dxgi_factory);
+    if (hres == S_OK) {
+        feature_flags |= VK_LOADER_FEATURE_PHYSICAL_DEVICE_SORTING;
+        dxgi_factory->lpVtbl->Release(dxgi_factory);
+    }
+#endif
+
     PFN_vkCreateInstance fpCreateInstance = (PFN_vkCreateInstance)next_gipa(*created_instance, "vkCreateInstance");
     if (fpCreateInstance) {
-        VkLayerInstanceCreateInfo create_info_disp;
-
-        create_info_disp.sType = VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO;
-        create_info_disp.function = VK_LOADER_DATA_CALLBACK;
-
-        create_info_disp.u.pfnSetInstanceLoaderData = vkSetInstanceDispatch;
-
-        create_info_disp.pNext = loader_create_info.pNext;
-        loader_create_info.pNext = &create_info_disp;
-
-        VkLayerInstanceCreateInfo create_info_disp2;
-
-        create_info_disp2.sType = VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO;
-        create_info_disp2.function = VK_LOADER_LAYER_CREATE_DEVICE_CALLBACK;
-
-        create_info_disp2.u.layerDevice.pfnLayerCreateDevice = loader_layer_create_device;
-        create_info_disp2.u.layerDevice.pfnLayerDestroyDevice = loader_layer_destroy_device;
-
-        create_info_disp2.pNext = loader_create_info.pNext;
-        loader_create_info.pNext = &create_info_disp2;
+        const VkLayerInstanceCreateInfo instance_dispatch = {
+            .sType = VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO,
+            .pNext = loader_create_info.pNext,
+            .function = VK_LOADER_DATA_CALLBACK,
+            .u = {
+                .pfnSetInstanceLoaderData = vkSetInstanceDispatch,
+            },
+        };
+        const VkLayerInstanceCreateInfo device_callback = {
+            .sType = VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO,
+            .pNext = &instance_dispatch,
+            .function = VK_LOADER_LAYER_CREATE_DEVICE_CALLBACK,
+            .u = {
+                .layerDevice = {
+                    .pfnLayerCreateDevice = loader_layer_create_device,
+                    .pfnLayerDestroyDevice = loader_layer_destroy_device,
+                },
+            },
+        };
+        const VkLayerInstanceCreateInfo loader_features = {
+            .sType = VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO,
+            .pNext = &device_callback,
+            .function = VK_LOADER_FEATURES,
+            .u = {
+                .loaderFeatures = feature_flags,
+            },
+        };
+        loader_create_info.pNext = &loader_features;
 
         res = fpCreateInstance(&loader_create_info, pAllocator, created_instance);
     } else {
@@ -6011,8 +6321,11 @@ VkResult loader_validate_instance_extensions(struct loader_instance *inst, const
 
     // Build the lists of active layers (including metalayers) and expanded layers (with metalayers resolved to their components)
     loaderAddImplicitLayers(inst, &active_layers, &expanded_layers, instance_layers);
-    loaderAddEnvironmentLayers(inst, VK_LAYER_TYPE_FLAG_EXPLICIT_LAYER, ENABLED_LAYERS_ENV, &active_layers, &expanded_layers,
-                               instance_layers);
+    res = loaderAddEnvironmentLayers(inst, VK_LAYER_TYPE_FLAG_EXPLICIT_LAYER, ENABLED_LAYERS_ENV, &active_layers, &expanded_layers,
+                                     instance_layers);
+    if (res != VK_SUCCESS) {
+        goto out;
+    }
     res = loaderAddLayerNamesToList(inst, &active_layers, &expanded_layers, pCreateInfo->enabledLayerCount,
                                     pCreateInfo->ppEnabledLayerNames, instance_layers);
     if (VK_SUCCESS != res) {
@@ -6579,7 +6892,7 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateDevice(VkPhysicalDevice physical
     if (!dev->extensions.khr_device_group_enabled) {
         VkPhysicalDeviceProperties properties;
         icd_term->dispatch.GetPhysicalDeviceProperties(phys_dev_term->phys_dev, &properties);
-        if (properties.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
+        if (properties.apiVersion >= VK_API_VERSION_1_1) {
             dev->extensions.khr_device_group_enabled = true;
         }
     }
@@ -6744,11 +7057,143 @@ out:
     return res;
 }
 
+struct LoaderSortedPhysicalDevice {
+    uint32_t device_count;
+    VkPhysicalDevice* physical_devices;
+    uint32_t icd_index;
+    struct loader_icd_term* icd_term;
+};
+
+// This function allocates an array in sorted_devices which must be freed by the caller if not null
+VkResult ReadSortedPhysicalDevices(struct loader_instance *inst, struct LoaderSortedPhysicalDevice **sorted_devices, uint32_t* sorted_count)
+{
+    VkResult res = VK_SUCCESS;
+
+#if defined(_WIN32)
+    uint32_t sorted_alloc = 0;
+    struct loader_icd_term *icd_term = NULL;
+    IDXGIFactory6* dxgi_factory = NULL;
+    HRESULT hres = fpCreateDXGIFactory1(&IID_IDXGIFactory6, &dxgi_factory);
+    if (hres != S_OK) {
+        loader_log(inst, VK_DEBUG_REPORT_INFORMATION_BIT_EXT, 0, "Failed to create DXGI factory 6. Physical devices will not be sorted");
+    }
+    else {
+        sorted_alloc = 16;
+        *sorted_devices = loader_instance_heap_alloc(inst, sorted_alloc * sizeof(struct LoaderSortedPhysicalDevice), VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
+        if (*sorted_devices == NULL) {
+            res = VK_ERROR_OUT_OF_HOST_MEMORY;
+            goto out;
+        }
+
+        memset(*sorted_devices, 0, sorted_alloc * sizeof(struct LoaderSortedPhysicalDevice));
+
+        *sorted_count = 0;
+        for (uint32_t i = 0; ; ++i) {
+            IDXGIAdapter1* adapter;
+            hres = dxgi_factory->lpVtbl->EnumAdapterByGpuPreference(dxgi_factory, i, DXGI_GPU_PREFERENCE_UNSPECIFIED, &IID_IDXGIAdapter1, &adapter);
+            if (hres == DXGI_ERROR_NOT_FOUND) {
+                break; // No more adapters
+            }
+            else if (hres != S_OK) {
+                loader_log(inst, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0, "Failed to enumerate adapters by GPU preference at index %u. This adapter will not be sorted", i);
+                break;
+            }
+
+            DXGI_ADAPTER_DESC1 description;
+            hres = adapter->lpVtbl->GetDesc1(adapter, &description);
+            if (hres != S_OK) {
+                loader_log(inst, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0, "Failed to get adapter LUID index %u. This adapter will not be sorted", i);
+                continue;
+            }
+
+            if (sorted_alloc <= i) {
+                uint32_t old_size = sorted_alloc * sizeof(struct LoaderSortedPhysicalDevice);
+                *sorted_devices = loader_instance_heap_realloc(inst, *sorted_devices, old_size, 2 * old_size, VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
+                if (*sorted_devices == NULL) {
+                    adapter->lpVtbl->Release(adapter);
+                    res = VK_ERROR_OUT_OF_HOST_MEMORY;
+                    goto out;
+                }
+                sorted_alloc *= 2;
+            }
+            struct LoaderSortedPhysicalDevice *sorted_array = *sorted_devices;
+            sorted_array[*sorted_count].device_count = 0;
+            sorted_array[*sorted_count].physical_devices = NULL;
+            //*sorted_count = i;
+
+            icd_term = inst->icd_terms;
+            for (uint32_t icd_idx = 0; NULL != icd_term; icd_term = icd_term->next, icd_idx++) {
+                // This is the new behavior, which cannot be run unless the ICD provides EnumerateAdapterPhysicalDevices
+                if (icd_term->scanned_icd->EnumerateAdapterPhysicalDevices == NULL) {
+                    continue;
+                }
+
+                uint32_t count;
+                VkResult vkres = icd_term->scanned_icd->EnumerateAdapterPhysicalDevices(icd_term->instance, description.AdapterLuid, &count, NULL);
+                if (vkres == VK_ERROR_INCOMPATIBLE_DRIVER) {
+                    continue; // This driver doesn't support the adapter
+                } else if (vkres == VK_ERROR_OUT_OF_HOST_MEMORY) {
+                    res = VK_ERROR_OUT_OF_HOST_MEMORY;
+                    goto out;
+                } else if (vkres != VK_SUCCESS) {
+                    loader_log(inst, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0, "Failed to convert DXGI adapter into Vulkan physical device with unexpected error code");
+                    continue;
+                }
+
+                // Get the actual physical devices
+                if (0 != count)
+                {
+                    do {
+                        sorted_array[*sorted_count].physical_devices = loader_instance_heap_realloc(inst, sorted_array[*sorted_count].physical_devices, sorted_array[*sorted_count].device_count * sizeof(VkPhysicalDevice), count * sizeof(VkPhysicalDevice), VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
+                        if (sorted_array[*sorted_count].physical_devices == NULL) {
+                            res = VK_ERROR_OUT_OF_HOST_MEMORY;
+                            break;
+                        }
+                        sorted_array[*sorted_count].device_count = count;
+                    } while ((vkres = icd_term->scanned_icd->EnumerateAdapterPhysicalDevices(icd_term->instance, description.AdapterLuid, &count, sorted_array[*sorted_count].physical_devices)) == VK_INCOMPLETE);
+                }
+
+                if (vkres != VK_SUCCESS) {
+                    loader_instance_heap_free(inst, sorted_array[*sorted_count].physical_devices);
+                    sorted_array[*sorted_count].physical_devices = NULL;
+                    if (vkres == VK_ERROR_OUT_OF_HOST_MEMORY) {
+                        res = VK_ERROR_OUT_OF_HOST_MEMORY;
+                        goto out;
+                    } else {
+                        loader_log(inst, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0,
+                                   "Failed to convert DXGI adapter into Vulkan physical device");
+                        continue;
+                    }
+                }
+                inst->total_gpu_count += (sorted_array[*sorted_count].device_count = count);
+                sorted_array[*sorted_count].icd_index = icd_idx;
+                sorted_array[*sorted_count].icd_term = icd_term;
+                ++(*sorted_count);
+            }
+
+            adapter->lpVtbl->Release(adapter);
+        }
+
+        dxgi_factory->lpVtbl->Release(dxgi_factory);
+    }
+
+out:
+#endif
+
+    if (*sorted_count == 0 && *sorted_devices != NULL) {
+        loader_instance_heap_free(inst, *sorted_devices);
+        *sorted_devices = NULL;
+    }
+    return res;
+}
+
 VkResult setupLoaderTermPhysDevs(struct loader_instance *inst) {
     VkResult res = VK_SUCCESS;
     struct loader_icd_term *icd_term;
     struct loader_phys_dev_per_icd *icd_phys_dev_array = NULL;
     struct loader_physical_device_term **new_phys_devs = NULL;
+    struct LoaderSortedPhysicalDevice *sorted_phys_dev_array = NULL;
+    uint32_t sorted_count = 0;
 
     inst->total_gpu_count = 0;
 
@@ -6765,11 +7210,29 @@ VkResult setupLoaderTermPhysDevs(struct loader_instance *inst) {
         goto out;
     }
     memset(icd_phys_dev_array, 0, sizeof(struct loader_phys_dev_per_icd) * inst->total_icd_count);
-    icd_term = inst->icd_terms;
+
+    // Get the physical devices supported by platform sorting mechanism into a separate list
+    res = ReadSortedPhysicalDevices(inst, &sorted_phys_dev_array, &sorted_count);
+    if (VK_SUCCESS != res) {
+        goto out;
+    }
 
     // For each ICD, query the number of physical devices, and then get an
     // internal value for those physical devices.
+    icd_term = inst->icd_terms;
     for (uint32_t icd_idx = 0; NULL != icd_term; icd_term = icd_term->next, icd_idx++) {
+        icd_phys_dev_array[icd_idx].count = 0;
+        icd_phys_dev_array[icd_idx].phys_devs = NULL;
+        icd_phys_dev_array[icd_idx].this_icd_term = NULL;
+
+        // This is the legacy behavior which should be skipped if EnumerateAdapterPhysicalDevices is available
+        // and we successfully enumerated sorted adapters using ReadSortedPhysicalDevices.
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+        if (sorted_count && icd_term->scanned_icd->EnumerateAdapterPhysicalDevices != NULL) {
+            continue;
+        }
+#endif
+
         res = icd_term->dispatch.EnumeratePhysicalDevices(icd_term->instance, &icd_phys_dev_array[icd_idx].count, NULL);
         if (VK_SUCCESS != res) {
             loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
@@ -6822,6 +7285,48 @@ VkResult setupLoaderTermPhysDevs(struct loader_instance *inst) {
 
     // Copy or create everything to fill the new array of physical devices
     uint32_t idx = 0;
+
+#if defined(_WIN32)
+    // Copy over everything found through sorted enumeration
+    for (uint32_t i = 0; i < sorted_count; ++i) {
+        for (uint32_t j = 0; j < sorted_phys_dev_array[i].device_count; ++j) {
+            // Check if this physical device is already in the old buffer
+            if (NULL != inst->phys_devs_term) {
+                for (uint32_t old_idx = 0; old_idx < inst->phys_dev_count_term; old_idx++) {
+                    if (sorted_phys_dev_array[i].physical_devices[j] == inst->phys_devs_term[old_idx]->phys_dev) {
+                        new_phys_devs[idx] = inst->phys_devs_term[old_idx];
+                        break;
+                    }
+                }
+            }
+
+            // If this physical device isn't in the old buffer, then we need to create it.
+            if (NULL == new_phys_devs[idx]) {
+                new_phys_devs[idx] = loader_instance_heap_alloc(inst, sizeof(struct loader_physical_device_term),
+                    VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE);
+                if (NULL == new_phys_devs[idx]) {
+                    loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+                        "setupLoaderTermPhysDevs:  Failed to allocate "
+                        "physical device terminator object %d",
+                        idx);
+                    inst->total_gpu_count = idx;
+                    res = VK_ERROR_OUT_OF_HOST_MEMORY;
+                    goto out;
+                }
+
+                loader_set_dispatch((void *)new_phys_devs[idx], inst->disp);
+                new_phys_devs[idx]->this_icd_term = sorted_phys_dev_array[i].icd_term;
+                new_phys_devs[idx]->icd_index = (uint8_t)(sorted_phys_dev_array[i].icd_index);
+                new_phys_devs[idx]->phys_dev = sorted_phys_dev_array[i].physical_devices[j];
+            }
+
+            // Increment the count of new physical devices
+            idx++;
+        }
+    }
+#endif
+
+    // Copy over everything found through EnumeratePhysicalDevices
     for (uint32_t icd_idx = 0; icd_idx < inst->total_icd_count; icd_idx++) {
         for (uint32_t pd_idx = 0; pd_idx < icd_phys_dev_array[icd_idx].count; pd_idx++) {
             // Check if this physical device is already in the old buffer
@@ -6891,6 +7396,15 @@ out:
         // Swap out old and new devices list
         inst->phys_dev_count_term = inst->total_gpu_count;
         inst->phys_devs_term = new_phys_devs;
+    }
+
+    if (sorted_phys_dev_array != NULL) {
+        for (uint32_t i = 0; i < sorted_count; ++i) {
+            if (sorted_phys_dev_array[i].device_count > 0 && sorted_phys_dev_array[i].physical_devices != NULL) {
+                loader_instance_heap_free(inst, sorted_phys_dev_array[i].physical_devices);
+            }
+        }
+        loader_instance_heap_free(inst, sorted_phys_dev_array);
     }
 
     return res;
@@ -7036,7 +7550,6 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_EnumerateDeviceExtensionProperties(VkP
             if (pProperties == NULL) {
                 *pPropertyCount = count;
                 loader_destroy_generic_list(inst, (struct loader_generic_list *)&local_ext_list);
-                loader_platform_thread_unlock_mutex(&loader_lock);
                 return VK_SUCCESS;
             }
 
@@ -7048,14 +7561,12 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_EnumerateDeviceExtensionProperties(VkP
 
             loader_destroy_generic_list(inst, (struct loader_generic_list *)&local_ext_list);
             if (copy_size < count) {
-                loader_platform_thread_unlock_mutex(&loader_lock);
                 return VK_INCOMPLETE;
             }
         } else {
             loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
                        "vkEnumerateDeviceExtensionProperties:  pLayerName "
                        "is too long or is badly formed");
-            loader_platform_thread_unlock_mutex(&loader_lock);
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         }
 
@@ -7065,10 +7576,26 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_EnumerateDeviceExtensionProperties(VkP
     // This case is during the call down the instance chain with pLayerName == NULL
     struct loader_icd_term *icd_term = phys_dev_term->this_icd_term;
     uint32_t icd_ext_count = *pPropertyCount;
+    VkExtensionProperties *icd_props_list = pProperties;
     VkResult res;
 
-    // Get the available device extensions
-    res = icd_term->dispatch.EnumerateDeviceExtensionProperties(phys_dev_term->phys_dev, NULL, &icd_ext_count, pProperties);
+    if (NULL == icd_props_list) {
+        // We need to find the count without duplicates. This requires querying the driver for the names of the extensions.
+        // A small amount of storage is then needed to facilitate the de-duplication.
+        res = icd_term->dispatch.EnumerateDeviceExtensionProperties(phys_dev_term->phys_dev, NULL, &icd_ext_count, NULL);
+        if (res != VK_SUCCESS) {
+            goto out;
+        }
+        icd_props_list = loader_instance_heap_alloc(icd_term->this_instance, sizeof(VkExtensionProperties) * icd_ext_count,
+                                                    VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
+        if (NULL == icd_props_list) {
+            res = VK_ERROR_OUT_OF_HOST_MEMORY;
+            goto out;
+        }
+    }
+
+    // Get the available device extension count, and if pProperties is not NULL, the extensions as well
+    res = icd_term->dispatch.EnumerateDeviceExtensionProperties(phys_dev_term->phys_dev, NULL, &icd_ext_count, icd_props_list);
     if (res != VK_SUCCESS) {
         goto out;
     }
@@ -7079,36 +7606,36 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_EnumerateDeviceExtensionProperties(VkP
     }
 
     loaderAddImplicitLayers(icd_term->this_instance, &implicit_layer_list, NULL, &icd_term->this_instance->instance_layer_list);
+
+    // Initialize dev_extension list within the physicalDevice object
+    res = loader_init_device_extensions(icd_term->this_instance, phys_dev_term, icd_ext_count, icd_props_list, &icd_exts);
+    if (res != VK_SUCCESS) {
+        goto out;
+    }
+
     // We need to determine which implicit layers are active, and then add their extensions. This can't be cached as
     // it depends on results of environment variables (which can change).
-    if (pProperties != NULL) {
-        // Initialize dev_extension list within the physicalDevice object
-        res = loader_init_device_extensions(icd_term->this_instance, phys_dev_term, icd_ext_count, pProperties, &icd_exts);
-        if (res != VK_SUCCESS) {
-            goto out;
-        }
+    res = loader_add_to_ext_list(icd_term->this_instance, &all_exts, icd_exts.count, icd_exts.list);
+    if (res != VK_SUCCESS) {
+        goto out;
+    }
 
-        // We need to determine which implicit layers are active, and then add their extensions. This can't be cached as
-        // it depends on results of environment variables (which can change).
-        res = loader_add_to_ext_list(icd_term->this_instance, &all_exts, icd_exts.count, icd_exts.list);
-        if (res != VK_SUCCESS) {
-            goto out;
-        }
+    loaderAddImplicitLayers(icd_term->this_instance, &implicit_layer_list, NULL, &icd_term->this_instance->instance_layer_list);
 
-        loaderAddImplicitLayers(icd_term->this_instance, &implicit_layer_list, NULL, &icd_term->this_instance->instance_layer_list);
-
-        for (uint32_t i = 0; i < implicit_layer_list.count; i++) {
-            for (uint32_t j = 0; j < implicit_layer_list.list[i].device_extension_list.count; j++) {
-                res = loader_add_to_ext_list(icd_term->this_instance, &all_exts, 1,
-                                             &implicit_layer_list.list[i].device_extension_list.list[j].props);
-                if (res != VK_SUCCESS) {
-                    goto out;
-                }
+    for (uint32_t i = 0; i < implicit_layer_list.count; i++) {
+        for (uint32_t j = 0; j < implicit_layer_list.list[i].device_extension_list.count; j++) {
+            res = loader_add_to_ext_list(icd_term->this_instance, &all_exts, 1,
+                                         &implicit_layer_list.list[i].device_extension_list.list[j].props);
+            if (res != VK_SUCCESS) {
+                goto out;
             }
         }
-        uint32_t capacity = *pPropertyCount;
-        VkExtensionProperties *props = pProperties;
+    }
+    uint32_t capacity = *pPropertyCount;
+    VkExtensionProperties *props = pProperties;
 
+    res = VK_SUCCESS;
+    if (NULL != pProperties) {
         for (uint32_t i = 0; i < all_exts.count && i < capacity; i++) {
             props[i] = all_exts.list[i];
         }
@@ -7120,14 +7647,7 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_EnumerateDeviceExtensionProperties(VkP
             *pPropertyCount = all_exts.count;
         }
     } else {
-        // Just return the count; need to add in the count of implicit layer extensions
-        // don't worry about duplicates being added in the count
-        *pPropertyCount = icd_ext_count;
-
-        for (uint32_t i = 0; i < implicit_layer_list.count; i++) {
-            *pPropertyCount += implicit_layer_list.list[i].device_extension_list.count;
-        }
-        res = VK_SUCCESS;
+        *pPropertyCount = all_exts.count;
     }
 
 out:
@@ -7141,7 +7661,9 @@ out:
     if (NULL != icd_exts.list) {
         loader_destroy_generic_list(icd_term->this_instance, (struct loader_generic_list *)&icd_exts);
     }
-
+    if (NULL == pProperties && NULL != icd_props_list) {
+        loader_instance_heap_free(icd_term->this_instance, icd_props_list);
+    }
     return res;
 }
 
@@ -7201,7 +7723,7 @@ VKAPI_ATTR VkResult VKAPI_CALL
 terminator_EnumerateInstanceVersion(const VkEnumerateInstanceVersionChain *chain, uint32_t* pApiVersion) {
     // NOTE: The Vulkan WG doesn't want us checking pApiVersion for NULL, but instead
     // prefers us crashing.
-    *pApiVersion = VK_MAKE_VERSION(loader_major_version, loader_minor_version, VK_HEADER_VERSION);
+    *pApiVersion = VK_HEADER_VERSION_COMPLETE;
     return VK_SUCCESS;
 }
 
@@ -7238,10 +7760,14 @@ terminator_EnumerateInstanceExtensionProperties(const VkEnumerateInstanceExtensi
             }
         }
     } else {
+        // Preload ICD libraries so subsequent calls to EnumerateInstanceExtensionProperties don't have to load them
+        loader_preload_icds();
+
         // Scan/discover all ICD libraries
         memset(&icd_tramp_list, 0, sizeof(icd_tramp_list));
         res = loader_icd_scan(NULL, &icd_tramp_list);
-        if (VK_SUCCESS != res) {
+        // EnumerateInstanceExtensionProperties can't return anything other than OOM or VK_ERROR_LAYER_NOT_PRESENT
+        if ((VK_SUCCESS != res && icd_tramp_list.count > 0) || res == VK_ERROR_OUT_OF_HOST_MEMORY) {
             goto out;
         }
         // Get extensions from all ICD's, merge so no duplicates
@@ -7362,7 +7888,10 @@ VkResult setupLoaderTermPhysDevGroups(struct loader_instance *inst) {
     uint32_t cur_icd_group_count = 0;
     VkPhysicalDeviceGroupPropertiesKHR **new_phys_dev_groups = NULL;
     VkPhysicalDeviceGroupPropertiesKHR *local_phys_dev_groups = NULL;
+    bool *local_phys_dev_group_sorted = NULL;
     PFN_vkEnumeratePhysicalDeviceGroups fpEnumeratePhysicalDeviceGroups = NULL;
+    struct LoaderSortedPhysicalDevice* sorted_phys_dev_array = NULL;
+    uint32_t sorted_count = 0;
 
     if (0 == inst->phys_dev_count_term) {
         loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
@@ -7426,7 +7955,8 @@ VkResult setupLoaderTermPhysDevGroups(struct loader_instance *inst) {
     // Create a temporary array (on the stack) to keep track of the
     // returned VkPhysicalDevice values.
     local_phys_dev_groups = loader_stack_alloc(sizeof(VkPhysicalDeviceGroupProperties) * total_count);
-    if (NULL == local_phys_dev_groups) {
+    local_phys_dev_group_sorted = loader_stack_alloc(sizeof(bool) * total_count);
+    if (NULL == local_phys_dev_groups || NULL == local_phys_dev_group_sorted) {
         loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
             "setupLoaderTermPhysDevGroups:  Failed to allocate local "
             "physical device group array of size %d",
@@ -7436,16 +7966,30 @@ VkResult setupLoaderTermPhysDevGroups(struct loader_instance *inst) {
     }
     // Initialize the memory to something valid
     memset(local_phys_dev_groups, 0, sizeof(VkPhysicalDeviceGroupProperties) * total_count);
+    memset(local_phys_dev_group_sorted, 0, sizeof(bool) * total_count);
     for (uint32_t group = 0; group < total_count; group++) {
         local_phys_dev_groups[group].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES_KHR;
         local_phys_dev_groups[group].pNext = NULL;
         local_phys_dev_groups[group].subsetAllocation = false;
     }
 
+    // Get the physical devices supported by platform sorting mechanism into a separate list
+    res = ReadSortedPhysicalDevices(inst, &sorted_phys_dev_array, &sorted_count);
+    if (VK_SUCCESS != res) {
+        goto out;
+    }
+
     cur_icd_group_count = 0;
     icd_term = inst->icd_terms;
     for (uint32_t icd_idx = 0; NULL != icd_term; icd_term = icd_term->next, icd_idx++) {
         uint32_t count_this_time = total_count - cur_icd_group_count;
+
+        // Check if this group can be sorted
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+        bool icd_sorted = sorted_count && (icd_term->scanned_icd->EnumerateAdapterPhysicalDevices != NULL);
+#else
+        bool icd_sorted = false;
+#endif
 
         // Get the function pointer to use to call into the ICD. This could be the core or KHR version
         if (inst->enabled_known_extensions.khr_device_group_creation) {
@@ -7478,10 +8022,14 @@ VkResult setupLoaderTermPhysDevGroups(struct loader_instance *inst) {
             for (uint32_t indiv_gpu = 0; indiv_gpu < count_this_time; indiv_gpu++) {
                 local_phys_dev_groups[indiv_gpu + cur_icd_group_count].physicalDeviceCount = 1;
                 local_phys_dev_groups[indiv_gpu + cur_icd_group_count].physicalDevices[0] = phys_dev_array[indiv_gpu];
+                local_phys_dev_group_sorted[indiv_gpu + cur_icd_group_count] = icd_sorted;
             }
 
         } else {
             res = fpEnumeratePhysicalDeviceGroups(icd_term->instance, &count_this_time, &local_phys_dev_groups[cur_icd_group_count]);
+            for (uint32_t group = 0; group < count_this_time; ++group) {
+                local_phys_dev_group_sorted[group + cur_icd_group_count] = icd_sorted;
+            }
             if (VK_SUCCESS != res) {
                 loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
                     "setupLoaderTermPhysDevGroups:  Failed during dispatch call of "
@@ -7516,8 +8064,87 @@ VkResult setupLoaderTermPhysDevGroups(struct loader_instance *inst) {
         }
     }
 
+    uint32_t idx = 0;
+
+#if defined(_WIN32)
+    // Copy over everything found through sorted enumeration
+    for (uint32_t i = 0; i < sorted_count; ++i) {
+
+        // Find the VkPhysicalDeviceGroupProperties object in local_phys_dev_groups
+        VkPhysicalDeviceGroupProperties *group_properties = NULL;
+        for (uint32_t group = 0; group < total_count; group++) {
+            if (sorted_phys_dev_array[i].device_count != local_phys_dev_groups[group].physicalDeviceCount) {
+                continue;
+            }
+
+            bool match = true;
+            for (uint32_t group_gpu = 0; group_gpu < local_phys_dev_groups[group].physicalDeviceCount; group_gpu++) {
+                if (sorted_phys_dev_array[i].physical_devices[group_gpu] != ((struct loader_physical_device_term*) local_phys_dev_groups[group].physicalDevices[group_gpu])->phys_dev) {
+                    match = false;
+                    break;
+                }
+            }
+
+            if (match) {
+                group_properties = &local_phys_dev_groups[group];
+            }
+        }
+
+        // Check if this physical device group with the same contents is already in the old buffer
+        for (uint32_t old_idx = 0; old_idx < inst->phys_dev_group_count_term; old_idx++) {
+            if (NULL != group_properties && group_properties->physicalDeviceCount == inst->phys_dev_groups_term[old_idx]->physicalDeviceCount) {
+                bool found_all_gpus = true;
+                for (uint32_t old_gpu = 0; old_gpu < inst->phys_dev_groups_term[old_idx]->physicalDeviceCount; old_gpu++) {
+                    bool found_gpu = false;
+                    for (uint32_t new_gpu = 0; new_gpu < group_properties->physicalDeviceCount; new_gpu++) {
+                        if (group_properties->physicalDevices[new_gpu] == inst->phys_dev_groups_term[old_idx]->physicalDevices[old_gpu]) {
+                            found_gpu = true;
+                            break;
+                        }
+                    }
+
+                    if (!found_gpu) {
+                        found_all_gpus = false;
+                        break;
+                    }
+                }
+                if (!found_all_gpus) {
+                    continue;
+                }
+                else {
+                    new_phys_dev_groups[idx] = inst->phys_dev_groups_term[old_idx];
+                    break;
+                }
+            }
+        }
+
+        // If this physical device group isn't in the old buffer, create it
+        if (group_properties != NULL && NULL == new_phys_dev_groups[idx]) {
+            new_phys_dev_groups[idx] = (VkPhysicalDeviceGroupPropertiesKHR*)loader_instance_heap_alloc(
+                inst, sizeof(VkPhysicalDeviceGroupPropertiesKHR), VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE);
+            if (NULL == new_phys_dev_groups[idx]) {
+                loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+                    "setupLoaderTermPhysDevGroups:  Failed to allocate "
+                    "physical device group Terminator object %d",
+                    idx);
+                total_count = idx;
+                res = VK_ERROR_OUT_OF_HOST_MEMORY;
+                goto out;
+            }
+            memcpy(new_phys_dev_groups[idx], group_properties, sizeof(VkPhysicalDeviceGroupPropertiesKHR));
+        }
+
+        ++idx;
+    }
+#endif
+
     // Copy or create everything to fill the new array of physical device groups
     for (uint32_t new_idx = 0; new_idx < total_count; new_idx++) {
+        // Skip groups which have been included through sorting
+        if (local_phys_dev_group_sorted[new_idx] || local_phys_dev_groups[new_idx].physicalDeviceCount == 0) {
+            continue;
+        }
+
         // Check if this physical device group with the same contents is already in the old buffer
         for (uint32_t old_idx = 0; old_idx < inst->phys_dev_group_count_term; old_idx++) {
             if (local_phys_dev_groups[new_idx].physicalDeviceCount == inst->phys_dev_groups_term[old_idx]->physicalDeviceCount) {
@@ -7539,28 +8166,30 @@ VkResult setupLoaderTermPhysDevGroups(struct loader_instance *inst) {
                 if (!found_all_gpus) {
                     continue;
                 } else {
-                    new_phys_dev_groups[new_idx] = inst->phys_dev_groups_term[old_idx];
+                    new_phys_dev_groups[idx] = inst->phys_dev_groups_term[old_idx];
                     break;
                 }
             }
         }
 
         // If this physical device group isn't in the old buffer, create it
-        if (NULL == new_phys_dev_groups[new_idx]) {
-            new_phys_dev_groups[new_idx] = (VkPhysicalDeviceGroupPropertiesKHR *)loader_instance_heap_alloc(
+        if (NULL == new_phys_dev_groups[idx]) {
+            new_phys_dev_groups[idx] = (VkPhysicalDeviceGroupPropertiesKHR *)loader_instance_heap_alloc(
                 inst, sizeof(VkPhysicalDeviceGroupPropertiesKHR), VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE);
-            if (NULL == new_phys_dev_groups[new_idx]) {
+            if (NULL == new_phys_dev_groups[idx]) {
                 loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
                     "setupLoaderTermPhysDevGroups:  Failed to allocate "
                     "physical device group Terminator object %d",
-                    new_idx);
-                total_count = new_idx;
+                    idx);
+                total_count = idx;
                 res = VK_ERROR_OUT_OF_HOST_MEMORY;
                 goto out;
             }
-            memcpy(new_phys_dev_groups[new_idx], &local_phys_dev_groups[new_idx],
+            memcpy(new_phys_dev_groups[idx], &local_phys_dev_groups[new_idx],
                 sizeof(VkPhysicalDeviceGroupPropertiesKHR));
         }
+
+        ++idx;
     }
 
 out:
@@ -7595,6 +8224,15 @@ out:
         // Swap in the new physical device group list
         inst->phys_dev_group_count_term = total_count;
         inst->phys_dev_groups_term = new_phys_dev_groups;
+    }
+
+    if (sorted_phys_dev_array != NULL) {
+        for (uint32_t i = 0; i < sorted_count; ++i) {
+            if (sorted_phys_dev_array[i].device_count > 0 && sorted_phys_dev_array[i].physical_devices != NULL) {
+                loader_instance_heap_free(inst, sorted_phys_dev_array[i].physical_devices);
+            }
+        }
+        loader_instance_heap_free(inst, sorted_phys_dev_array);
     }
 
     return res;

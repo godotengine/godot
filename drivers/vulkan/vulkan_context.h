@@ -31,42 +31,47 @@
 #ifndef VULKAN_CONTEXT_H
 #define VULKAN_CONTEXT_H
 
-#include "core/error_list.h"
-#include "core/map.h"
-#include "core/ustring.h"
+#include "core/error/error_list.h"
+#include "core/os/mutex.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/rid_owner.h"
+#include "servers/display_server.h"
+
 #include <vulkan/vulkan.h>
 
 class VulkanContext {
-
 	enum {
 		MAX_EXTENSIONS = 128,
 		MAX_LAYERS = 64,
 		FRAME_LAG = 2
 	};
 
-	bool use_validation_layers;
-
-	VkInstance inst;
-	VkSurfaceKHR surface;
-	VkPhysicalDevice gpu;
+	VkInstance inst = VK_NULL_HANDLE;
+	VkSurfaceKHR surface = VK_NULL_HANDLE;
+	VkPhysicalDevice gpu = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties gpu_props;
-	uint32_t queue_family_count;
-	VkQueueFamilyProperties *queue_props;
-	VkDevice device;
+	uint32_t queue_family_count = 0;
+	VkQueueFamilyProperties *queue_props = nullptr;
+	VkDevice device = VK_NULL_HANDLE;
+	bool device_initialized = false;
+	bool inst_initialized = false;
 
-	//present
-	bool queues_initialized;
-	uint32_t graphics_queue_family_index;
-	uint32_t present_queue_family_index;
-	bool separate_present_queue;
-	VkQueue graphics_queue;
-	VkQueue present_queue;
+	bool buffers_prepared = false;
+
+	// Present queue.
+	bool queues_initialized = false;
+	uint32_t graphics_queue_family_index = 0;
+	uint32_t present_queue_family_index = 0;
+	bool separate_present_queue = false;
+	VkQueue graphics_queue = VK_NULL_HANDLE;
+	VkQueue present_queue = VK_NULL_HANDLE;
 	VkColorSpaceKHR color_space;
 	VkFormat format;
 	VkSemaphore image_acquired_semaphores[FRAME_LAG];
 	VkSemaphore draw_complete_semaphores[FRAME_LAG];
 	VkSemaphore image_ownership_semaphores[FRAME_LAG];
-	int frame_index;
+	int frame_index = 0;
 	VkFence fences[FRAME_LAG];
 	VkPhysicalDeviceMemoryProperties memory_properties;
 	VkPhysicalDeviceFeatures physical_device_features;
@@ -76,51 +81,46 @@ class VulkanContext {
 		VkCommandBuffer graphics_to_present_cmd;
 		VkImageView view;
 		VkFramebuffer framebuffer;
-
 	} SwapchainImageResources;
 
 	struct Window {
-
-		bool is_minimzed;
-		VkSurfaceKHR surface;
-		VkSwapchainKHR swapchain;
-		SwapchainImageResources *swapchain_image_resources;
-		VkPresentModeKHR presentMode;
-		uint32_t current_buffer;
-		int width;
-		int height;
-		VkCommandPool present_cmd_pool; //for separate present queue
-
-		VkRenderPass render_pass;
-
-		Window() {
-			width = 0;
-			height = 0;
-			render_pass = VK_NULL_HANDLE;
-			current_buffer = 0;
-			surface = VK_NULL_HANDLE;
-			swapchain_image_resources = VK_NULL_HANDLE;
-			swapchain = VK_NULL_HANDLE;
-			is_minimzed = false;
-			presentMode = VK_PRESENT_MODE_FIFO_KHR;
-		}
+		VkSurfaceKHR surface = VK_NULL_HANDLE;
+		VkSwapchainKHR swapchain = VK_NULL_HANDLE;
+		SwapchainImageResources *swapchain_image_resources = VK_NULL_HANDLE;
+		VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
+		uint32_t current_buffer = 0;
+		int width = 0;
+		int height = 0;
+		VkCommandPool present_cmd_pool = VK_NULL_HANDLE; // For separate present queue.
+		VkRenderPass render_pass = VK_NULL_HANDLE;
 	};
 
-	Map<int, Window> windows;
-	int last_window_id;
-	uint32_t swapchainImageCount;
+	struct LocalDevice {
+		bool waiting = false;
+		VkDevice device = VK_NULL_HANDLE;
+		VkQueue queue = VK_NULL_HANDLE;
+	};
 
-	//commands
+	RID_Owner<LocalDevice, true> local_device_owner;
 
-	bool prepared;
+	Map<DisplayServer::WindowID, Window> windows;
+	uint32_t swapchainImageCount = 0;
 
-	//extensions
-	bool VK_KHR_incremental_present_enabled;
-	bool VK_GOOGLE_display_timing_enabled;
-	const char **instance_validation_layers;
-	uint32_t enabled_extension_count;
-	uint32_t enabled_layer_count;
+	// Commands.
+
+	bool prepared = false;
+
+	Vector<VkCommandBuffer> command_buffer_queue;
+	int command_buffer_count = 1;
+
+	// Extensions.
+
+	bool VK_KHR_incremental_present_enabled = true;
+	bool VK_GOOGLE_display_timing_enabled = true;
+	uint32_t enabled_extension_count = 0;
 	const char *extension_names[MAX_EXTENSIONS];
+
+	uint32_t enabled_layer_count = 0;
 	const char *enabled_layers[MAX_LAYERS];
 
 	PFN_vkCreateDebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT;
@@ -142,13 +142,14 @@ class VulkanContext {
 	PFN_vkGetRefreshCycleDurationGOOGLE fpGetRefreshCycleDurationGOOGLE;
 	PFN_vkGetPastPresentationTimingGOOGLE fpGetPastPresentationTimingGOOGLE;
 
-	VkDebugUtilsMessengerEXT dbg_messenger;
+	VkDebugUtilsMessengerEXT dbg_messenger = VK_NULL_HANDLE;
 
 	Error _create_validation_layers();
 	Error _initialize_extensions();
 
 	VkBool32 _check_layers(uint32_t check_count, const char **check_names, uint32_t layer_count, VkLayerProperties *layers);
-	static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_messenger_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+	static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_messenger_callback(
+			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 			VkDebugUtilsMessageTypeFlagsEXT messageType,
 			const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
 			void *pUserData);
@@ -166,20 +167,17 @@ class VulkanContext {
 	Error _create_swap_chain();
 	Error _create_semaphores();
 
-	Vector<VkCommandBuffer> command_buffer_queue;
-	int command_buffer_count;
-
 protected:
 	virtual const char *_get_platform_surface_extension() const = 0;
-	//	virtual VkResult _create_surface(VkSurfaceKHR *surface, VkInstance p_instance) = 0;
 
-	virtual int _window_create(VkSurfaceKHR p_surface, int p_width, int p_height);
+	// Enabled via command line argument.
+	bool use_validation_layers = false;
+
+	virtual Error _window_create(DisplayServer::WindowID p_window_id, VkSurfaceKHR p_surface, int p_width, int p_height);
 
 	VkInstance _get_instance() {
 		return inst;
 	}
-
-	bool buffers_prepared;
 
 public:
 	VkDevice get_device();
@@ -187,12 +185,18 @@ public:
 	int get_swapchain_image_count() const;
 	uint32_t get_graphics_queue() const;
 
-	void window_resize(int p_window_id, int p_width, int p_height);
-	int window_get_width(int p_window = 0);
-	int window_get_height(int p_window = 0);
-	void window_destroy(int p_window_id);
-	VkFramebuffer window_get_framebuffer(int p_window = 0);
-	VkRenderPass window_get_render_pass(int p_window = 0);
+	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
+	int window_get_width(DisplayServer::WindowID p_window = 0);
+	int window_get_height(DisplayServer::WindowID p_window = 0);
+	void window_destroy(DisplayServer::WindowID p_window_id);
+	VkFramebuffer window_get_framebuffer(DisplayServer::WindowID p_window = 0);
+	VkRenderPass window_get_render_pass(DisplayServer::WindowID p_window = 0);
+
+	RID local_device_create();
+	VkDevice local_device_get_vk_device(RID p_local_device);
+	void local_device_push_command_buffers(RID p_local_device, const VkCommandBuffer *p_buffers, int p_count);
+	void local_device_sync(RID p_local_device);
+	void local_device_free(RID p_local_device);
 
 	VkFormat get_screen_format() const;
 	VkPhysicalDeviceLimits get_device_limits() const;

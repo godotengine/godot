@@ -4,7 +4,7 @@
  *
  *   HarfBuzz interface for accessing OpenType features (body).
  *
- * Copyright (C) 2013-2019 by
+ * Copyright (C) 2013-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,9 +16,8 @@
  */
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_ADVANCES_H
+#include <freetype/freetype.h>
+#include <freetype/ftadvanc.h>
 #include "afglobal.h"
 #include "aftypes.h"
 #include "afshaper.h"

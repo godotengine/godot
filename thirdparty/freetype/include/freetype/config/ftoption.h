@@ -4,7 +4,7 @@
  *
  *   User-selectable configuration macros (specification only).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -42,7 +42,7 @@ FT_BEGIN_HEADER
    *   the name of a directory that is included _before_ the FreeType include
    *   path during compilation.
    *
-   *   The default FreeType Makefiles and Jamfiles use the build directory
+   *   The default FreeType Makefiles use the build directory
    *   `builds/<system>` by default, but you can easily change that for your
    *   own projects.
    *
@@ -121,10 +121,8 @@ FT_BEGIN_HEADER
    * mitigate color fringes inherent to this technology, you also need to
    * explicitly set up LCD filtering.
    *
-   * Note that this feature is covered by several Microsoft patents and
-   * should not be activated in any default build of the library.  When this
-   * macro is not defined, FreeType offers alternative LCD rendering
-   * technology that produces excellent output without LCD filtering.
+   * When this macro is not defined, FreeType offers alternative LCD
+   * rendering technology that produces excellent output.
    */
 /* #define FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
 
@@ -290,6 +288,22 @@ FT_BEGIN_HEADER
    *   here with the configured one.
    */
 /* #define FT_CONFIG_OPTION_USE_HARFBUZZ */
+
+
+  /**************************************************************************
+   *
+   * Brotli support.
+   *
+   *   FreeType uses the Brotli library to provide support for decompressing
+   *   WOFF2 streams.
+   *
+   *   Define this macro if you want to enable this 'feature'.
+   *
+   *   If you use a build system like cmake or the `configure` script,
+   *   options set by those programs have precedence, overwriting the value
+   *   here with the configured one.
+   */
+/* #define FT_CONFIG_OPTION_USE_BROTLI */
 
 
   /**************************************************************************
@@ -526,7 +540,7 @@ FT_BEGIN_HEADER
 
   /**************************************************************************
    *
-   * Define `TT_CONFIG_OPTION_COLOR_LAYERS` if you want to support coloured
+   * Define `TT_CONFIG_OPTION_COLOR_LAYERS` if you want to support colored
    * outlines (from the 'COLR'/'CPAL' tables) in all formats using the 'sfnt'
    * module (namely TrueType~& OpenType).
    */
@@ -871,9 +885,11 @@ FT_BEGIN_HEADER
    *
    * Compile 'autofit' module with fallback Indic script support, covering
    * some scripts that the 'latin' submodule of the 'autofit' module doesn't
-   * (yet) handle.
+   * (yet) handle.  Currently, this needs option `AF_CONFIG_OPTION_CJK`.
    */
+#ifdef AF_CONFIG_OPTION_CJK
 #define AF_CONFIG_OPTION_INDIC
+#endif
 
 
   /**************************************************************************

@@ -4,7 +4,7 @@
  *
  *   Type 1 driver interface (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,7 +16,6 @@
  */
 
 
-#include <ft2build.h>
 #include "t1driver.h"
 #include "t1gload.h"
 #include "t1load.h"
@@ -27,20 +26,20 @@
 #include "t1afm.h"
 #endif
 
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_HASH_H
-#include FT_INTERNAL_POSTSCRIPT_PROPS_H
-#include FT_DRIVER_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/fthash.h>
+#include <freetype/internal/ftpsprop.h>
+#include <freetype/ftdriver.h>
 
-#include FT_SERVICE_MULTIPLE_MASTERS_H
-#include FT_SERVICE_GLYPH_DICT_H
-#include FT_SERVICE_FONT_FORMAT_H
-#include FT_SERVICE_POSTSCRIPT_NAME_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
-#include FT_SERVICE_POSTSCRIPT_INFO_H
-#include FT_SERVICE_PROPERTIES_H
-#include FT_SERVICE_KERNING_H
+#include <freetype/internal/services/svmm.h>
+#include <freetype/internal/services/svgldict.h>
+#include <freetype/internal/services/svfntfmt.h>
+#include <freetype/internal/services/svpostnm.h>
+#include <freetype/internal/services/svpscmap.h>
+#include <freetype/internal/services/svpsinfo.h>
+#include <freetype/internal/services/svprop.h>
+#include <freetype/internal/services/svkern.h>
 
 
   /**************************************************************************

@@ -35,11 +35,10 @@
 #include <AppKit/AppKit.h>
 
 class VulkanContextOSX : public VulkanContext {
-
 	virtual const char *_get_platform_surface_extension() const;
 
 public:
-	int window_create(id p_window, int p_width, int p_height);
+	Error window_create(DisplayServer::WindowID p_window_id, id p_window, int p_width, int p_height);
 
 	VulkanContextOSX();
 	~VulkanContextOSX();

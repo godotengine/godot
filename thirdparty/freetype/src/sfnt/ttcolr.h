@@ -4,7 +4,7 @@
  *
  *   TrueType and OpenType colored glyph layer support (specification).
  *
- * Copyright (C) 2018-2019 by
+ * Copyright (C) 2018-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Originally written by Shao Yu Zhang <shaozhang@fb.com>.
@@ -22,7 +22,6 @@
 #define __TTCOLR_H__
 
 
-#include <ft2build.h>
 #include "ttload.h"
 
 

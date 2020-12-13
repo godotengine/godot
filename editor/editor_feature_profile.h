@@ -31,8 +31,8 @@
 #ifndef EDITOR_FEATURE_PROFILE_H
 #define EDITOR_FEATURE_PROFILE_H
 
+#include "core/object/reference.h"
 #include "core/os/file_access.h"
-#include "core/reference.h"
 #include "editor/editor_file_dialog.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
@@ -49,16 +49,16 @@ public:
 		FEATURE_SCRIPT,
 		FEATURE_ASSET_LIB,
 		FEATURE_SCENE_TREE,
-		FEATURE_IMPORT_DOCK,
 		FEATURE_NODE_DOCK,
 		FEATURE_FILESYSTEM_DOCK,
+		FEATURE_IMPORT_DOCK,
 		FEATURE_MAX
 	};
 
 private:
 	Set<StringName> disabled_classes;
 	Set<StringName> disabled_editors;
-	Map<StringName, Set<StringName> > disabled_properties;
+	Map<StringName, Set<StringName>> disabled_properties;
 
 	bool features_disabled[FEATURE_MAX];
 	static const char *feature_names[FEATURE_MAX];
@@ -94,7 +94,6 @@ public:
 VARIANT_ENUM_CAST(EditorFeatureProfile::Feature)
 
 class EditorFeatureProfileManager : public AcceptDialog {
-
 	GDCLASS(EditorFeatureProfileManager, AcceptDialog);
 
 	enum Action {
@@ -121,8 +120,11 @@ class EditorFeatureProfileManager : public AcceptDialog {
 
 	HSplitContainer *h_split;
 
+	VBoxContainer *class_list_vbc;
 	Tree *class_list;
+	VBoxContainer *property_list_vbc;
 	Tree *property_list;
+	Label *no_profile_selected_help;
 
 	EditorFileDialog *import_profiles;
 	EditorFileDialog *export_profile;

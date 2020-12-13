@@ -35,7 +35,6 @@
 #include "scene/resources/mesh_library.h"
 
 class MeshLibraryEditor : public Control {
-
 	GDCLASS(MeshLibraryEditor, Control);
 
 	Ref<MeshLibrary> mesh_library;
@@ -47,7 +46,6 @@ class MeshLibraryEditor : public Control {
 	int to_erase;
 
 	enum {
-
 		MENU_OPTION_ADD_ITEM,
 		MENU_OPTION_REMOVE_ITEM,
 		MENU_OPTION_UPDATE_FROM_SCENE,
@@ -74,18 +72,17 @@ public:
 };
 
 class MeshLibraryEditorPlugin : public EditorPlugin {
-
 	GDCLASS(MeshLibraryEditorPlugin, EditorPlugin);
 
 	MeshLibraryEditor *mesh_library_editor;
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "MeshLibrary"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "MeshLibrary"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_node) override;
+	virtual bool handles(Object *p_node) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	MeshLibraryEditorPlugin(EditorNode *p_node);
 };

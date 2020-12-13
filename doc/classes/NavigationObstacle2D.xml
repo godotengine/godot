@@ -4,7 +4,7 @@
 		2D Obstacle used in navigation for collision avoidance.
 	</brief_description>
 	<description>
-		2D Obstacle used in navigation for collision avoidance. The obstacle needs navigation data to work correctly. This can be done by having the obstacle as a child of a [Navigation2D] node, or using [method set_navigation]. [NavigationObstacle] is physics safe.
+		2D Obstacle used in navigation for collision avoidance. The obstacle needs navigation data to work correctly. This can be done by having the obstacle as a child of a [Navigation2D] node, or using [method set_navigation]. [NavigationObstacle2D] is physics safe.
 	</description>
 	<tutorials>
 	</tutorials>

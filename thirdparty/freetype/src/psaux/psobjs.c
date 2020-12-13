@@ -4,7 +4,7 @@
  *
  *   Auxiliary functions for PostScript fonts (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,11 +16,10 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_CALC_H
-#include FT_DRIVER_H
+#include <freetype/internal/psaux.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftcalc.h>
+#include <freetype/ftdriver.h>
 
 #include "psobjs.h"
 #include "psconv.h"
@@ -214,7 +213,7 @@
     }
 
     /* add the object to the base block and adjust offset */
-    table->elements[idx] = table->block + table->cursor;
+    table->elements[idx] = FT_OFFSET( table->block, table->cursor );
     table->lengths [idx] = length;
     FT_MEM_COPY( table->block + table->cursor, object, length );
 
@@ -1233,7 +1232,7 @@
           bbox->xMax = FT_RoundFix( temp[2] );
           bbox->yMax = FT_RoundFix( temp[3] );
 
-          FT_TRACE4(( " [%d %d %d %d]",
+          FT_TRACE4(( " [%ld %ld %ld %ld]",
                       bbox->xMin / 65536,
                       bbox->yMin / 65536,
                       bbox->xMax / 65536,
@@ -1287,7 +1286,7 @@
             bbox->xMax = FT_RoundFix( temp[i + 2 * max_objects] );
             bbox->yMax = FT_RoundFix( temp[i + 3 * max_objects] );
 
-            FT_TRACE4(( " [%d %d %d %d]",
+            FT_TRACE4(( " [%ld %ld %ld %ld]",
                         bbox->xMin / 65536,
                         bbox->yMin / 65536,
                         bbox->xMax / 65536,
@@ -2577,7 +2576,7 @@
               FT_UShort  seed )
   {
     PS_Conv_EexecDecode( &buffer,
-                         buffer + length,
+                         FT_OFFSET( buffer, length ),
                          buffer,
                          length,
                          &seed );

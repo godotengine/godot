@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Position3D" inherits="Spatial" version="4.0">
+<class name="Position3D" inherits="Node3D" version="4.0">
 	<brief_description>
 		Generic 3D position hint for editing.
 	</brief_description>
 	<description>
-		Generic 3D position hint for editing. It's just like a plain [Spatial], but it displays as a cross in the 3D editor at all times.
+		Generic 3D position hint for editing. It's just like a plain [Node3D], but it displays as a cross in the 3D editor at all times.
 	</description>
 	<tutorials>
 	</tutorials>

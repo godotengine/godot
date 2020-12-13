@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorFileDialog" inherits="ConfirmationDialog" version="4.0">
 	<brief_description>
+		A modified version of [FileDialog] used by the editor.
 	</brief_description>
 	<description>
 	</description>
@@ -59,14 +60,13 @@
 		<member name="display_mode" type="int" setter="set_display_mode" getter="get_display_mode" enum="EditorFileDialog.DisplayMode" default="0">
 			The view format in which the [EditorFileDialog] displays resources to the user.
 		</member>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="EditorFileDialog.Mode" default="4">
-			The purpose of the [EditorFileDialog], which defines the allowed behaviors.
+		<member name="file_mode" type="int" setter="set_file_mode" getter="get_file_mode" enum="EditorFileDialog.FileMode" default="4">
+			The dialog's open or save mode, which affects the selection behavior. See [enum FileMode]
 		</member>
-		<member name="resizable" type="bool" setter="set_resizable" getter="get_resizable" override="true" default="true" />
 		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files" default="false">
 			If [code]true[/code], hidden files and directories will be visible in the [EditorFileDialog].
 		</member>
-		<member name="window_title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Save a File&quot;" />
+		<member name="title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Save a File&quot;" />
 	</members>
 	<signals>
 		<signal name="dir_selected">
@@ -92,19 +92,19 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MODE_OPEN_FILE" value="0" enum="Mode">
+		<constant name="FILE_MODE_OPEN_FILE" value="0" enum="FileMode">
 			The [EditorFileDialog] can select only one file. Accepting the window will open the file.
 		</constant>
-		<constant name="MODE_OPEN_FILES" value="1" enum="Mode">
+		<constant name="FILE_MODE_OPEN_FILES" value="1" enum="FileMode">
 			The [EditorFileDialog] can select multiple files. Accepting the window will open all files.
 		</constant>
-		<constant name="MODE_OPEN_DIR" value="2" enum="Mode">
+		<constant name="FILE_MODE_OPEN_DIR" value="2" enum="FileMode">
 			The [EditorFileDialog] can select only one directory. Accepting the window will open the directory.
 		</constant>
-		<constant name="MODE_OPEN_ANY" value="3" enum="Mode">
+		<constant name="FILE_MODE_OPEN_ANY" value="3" enum="FileMode">
 			The [EditorFileDialog] can select a file or directory. Accepting the window will open it.
 		</constant>
-		<constant name="MODE_SAVE_FILE" value="4" enum="Mode">
+		<constant name="FILE_MODE_SAVE_FILE" value="4" enum="FileMode">
 			The [EditorFileDialog] can select only one file. Accepting the window will save the file.
 		</constant>
 		<constant name="ACCESS_RESOURCES" value="0" enum="Access">

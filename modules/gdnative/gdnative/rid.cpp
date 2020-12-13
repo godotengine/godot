@@ -30,13 +30,15 @@
 
 #include "gdnative/rid.h"
 
-#include "core/resource.h"
-#include "core/rid.h"
-#include "core/variant.h"
+#include "core/io/resource.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static_assert(sizeof(godot_rid) == sizeof(RID), "RID size mismatch");
 
 void GDAPI godot_rid_new(godot_rid *r_dest) {
 	RID *dest = (RID *)r_dest;

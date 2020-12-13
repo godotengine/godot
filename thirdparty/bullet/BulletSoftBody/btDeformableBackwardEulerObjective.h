@@ -15,11 +15,12 @@
 
 #ifndef BT_BACKWARD_EULER_OBJECTIVE_H
 #define BT_BACKWARD_EULER_OBJECTIVE_H
-#include "btConjugateGradient.h"
+//#include "btConjugateGradient.h"
 #include "btDeformableLagrangianForce.h"
 #include "btDeformableMassSpringForce.h"
 #include "btDeformableGravityForce.h"
 #include "btDeformableCorotatedForce.h"
+#include "btDeformableMousePickingForce.h"
 #include "btDeformableLinearElasticityForce.h"
 #include "btDeformableNeoHookeanForce.h"
 #include "btDeformableContactProjection.h"
@@ -39,6 +40,8 @@ public:
     const TVStack& m_backupVelocity;
     btAlignedObjectArray<btSoftBody::Node* > m_nodes;
     bool m_implicit;
+    MassPreconditioner* m_massPreconditioner;
+    KKTPreconditioner* m_KKTPreconditioner;
 
     btDeformableBackwardEulerObjective(btAlignedObjectArray<btSoftBody *>& softBodies, const TVStack& backup_v);
     
@@ -79,7 +82,7 @@ public:
     void updateVelocity(const TVStack& dv);
     
     //set constraints as projections
-    void setConstraints();
+    void setConstraints(const btContactSolverInfo& infoGlobal);
     
     // update the projections and project the residual
     void project(TVStack& r)
@@ -129,6 +132,42 @@ public:
 
     // Calculate the total potential energy in the system
     btScalar totalEnergy(btScalar dt);
+    
+    void addLagrangeMultiplier(const TVStack& vec, TVStack& extended_vec)
+    {
+        extended_vec.resize(vec.size() + m_projection.m_lagrangeMultipliers.size());
+        for (int i = 0; i < vec.size(); ++i)
+        {
+            extended_vec[i] = vec[i];
+        }
+        int offset = vec.size();
+        for (int i = 0; i < m_projection.m_lagrangeMultipliers.size(); ++i)
+        {
+            extended_vec[offset + i].setZero();
+        }
+    }
+    
+    void addLagrangeMultiplierRHS(const TVStack& residual, const TVStack& m_dv, TVStack& extended_residual)
+    {
+        extended_residual.resize(residual.size() + m_projection.m_lagrangeMultipliers.size());
+        for (int i = 0; i < residual.size(); ++i)
+        {
+            extended_residual[i] = residual[i];
+        }
+        int offset = residual.size();
+        for (int i = 0; i < m_projection.m_lagrangeMultipliers.size(); ++i)
+        {
+            const LagrangeMultiplier& lm = m_projection.m_lagrangeMultipliers[i];
+            extended_residual[offset + i].setZero();
+            for (int d = 0; d < lm.m_num_constraints; ++d)
+            {
+                for (int n = 0; n < lm.m_num_nodes; ++n)
+                {
+                    extended_residual[offset + i][d] += lm.m_weights[n] * m_dv[lm.m_indices[n]].dot(lm.m_dirs[d]);
+                }
+            }
+        }
+    }
 };
 
 #endif /* btBackwardEulerObjective_h */

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ImageTexture3D" inherits="Texture3D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="format" type="int" enum="Image.Format">
+			</argument>
+			<argument index="1" name="width" type="int">
+			</argument>
+			<argument index="2" name="height" type="int">
+			</argument>
+			<argument index="3" name="depth" type="int">
+			</argument>
+			<argument index="4" name="use_mipmaps" type="bool">
+			</argument>
+			<argument index="5" name="data" type="Image[]">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="update">
+			<return type="void">
+			</return>
+			<argument index="0" name="data" type="Image[]">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

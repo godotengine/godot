@@ -42,24 +42,23 @@
 #include "scene/gui/tree.h"
 
 class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
-
 	GDCLASS(AnimationNodeBlendSpace2DEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeBlendSpace2D> blend_space;
 
 	PanelContainer *panel;
-	ToolButton *tool_blend;
-	ToolButton *tool_select;
-	ToolButton *tool_create;
-	ToolButton *tool_triangle;
+	Button *tool_blend;
+	Button *tool_select;
+	Button *tool_create;
+	Button *tool_triangle;
 	VSeparator *tool_erase_sep;
-	ToolButton *tool_erase;
-	ToolButton *snap;
+	Button *tool_erase;
+	Button *snap;
 	SpinBox *snap_x;
 	SpinBox *snap_y;
 	OptionButton *interpolation;
 
-	ToolButton *auto_triangles;
+	Button *auto_triangles;
 
 	LineEdit *label_x;
 	LineEdit *label_y;
@@ -143,8 +142,8 @@ protected:
 
 public:
 	static AnimationNodeBlendSpace2DEditor *get_singleton() { return singleton; }
-	virtual bool can_edit(const Ref<AnimationNode> &p_node);
-	virtual void edit(const Ref<AnimationNode> &p_node);
+	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
+	virtual void edit(const Ref<AnimationNode> &p_node) override;
 	AnimationNodeBlendSpace2DEditor();
 };
 

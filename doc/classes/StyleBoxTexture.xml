@@ -119,9 +119,6 @@
 		<member name="modulate_color" type="Color" setter="set_modulate" getter="get_modulate" default="Color( 1, 1, 1, 1 )">
 			Modulates the color of the texture when this style box is drawn.
 		</member>
-		<member name="normal_map" type="Texture2D" setter="set_normal_map" getter="get_normal_map">
-			The normal map to use when drawing this style box.
-		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2( 0, 0, 0, 0 )">
 			Species a sub-region of the texture to use.
 			This is equivalent to first wrapping the texture in an [AtlasTexture] with the same region.

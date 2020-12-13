@@ -4,7 +4,7 @@
 		Describes a Bézier curve in 3D space.
 	</brief_description>
 	<description>
-		This class describes a Bézier curve in 3D space. It is mainly used to give a shape to a [Path], but can be manually sampled for other purposes.
+		This class describes a Bézier curve in 3D space. It is mainly used to give a shape to a [Path3D], but can be manually sampled for other purposes.
 		It keeps a cache of precalculated points along the curve, to speed up further calculations.
 	</description>
 	<tutorials>
@@ -95,7 +95,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the position of the control point leading to the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console, and returns [code](0, 0, 0)[/code].
+				Returns the position of the control point leading to the vertex [code]idx[/code]. The returned position is relative to the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console, and returns [code](0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_point_out" qualifiers="const">
@@ -104,7 +104,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the position of the control point leading out of the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console, and returns [code](0, 0, 0)[/code].
+				Returns the position of the control point leading out of the vertex [code]idx[/code]. The returned position is relative to the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console, and returns [code](0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
@@ -145,7 +145,7 @@
 			<argument index="1" name="cubic" type="bool" default="false">
 			</argument>
 			<description>
-				Returns a point within the curve at position [code]offset[/code], where [code]offset[/code] is measured as a pixel distance along the curve.
+				Returns a point within the curve at position [code]offset[/code], where [code]offset[/code] is measured as a distance in 3D units along the curve.
 				To do that, it finds the two cached points where the [code]offset[/code] lies between, then interpolates the values. This interpolation is cubic if [code]cubic[/code] is set to [code]true[/code], or linear if set to [code]false[/code].
 				Cubic interpolation tends to follow the curves better, but linear is faster (and often, precise enough).
 			</description>
@@ -189,7 +189,7 @@
 			<argument index="1" name="position" type="Vector3">
 			</argument>
 			<description>
-				Sets the position of the control point leading to the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console.
+				Sets the position of the control point leading to the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console. The position is relative to the vertex.
 			</description>
 		</method>
 		<method name="set_point_out">
@@ -200,7 +200,7 @@
 			<argument index="1" name="position" type="Vector3">
 			</argument>
 			<description>
-				Sets the position of the control point leading out of the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console.
+				Sets the position of the control point leading out of the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console. The position is relative to the vertex.
 			</description>
 		</method>
 		<method name="set_point_position">
@@ -223,7 +223,7 @@
 			</argument>
 			<description>
 				Sets the tilt angle in radians for the point [code]idx[/code]. If the index is out of bounds, the function sends an error to the console.
-				The tilt controls the rotation along the look-at axis an object traveling the path would have. In the case of a curve controlling a [PathFollow], this tilt is an offset over the natural tilt the [PathFollow] calculates.
+				The tilt controls the rotation along the look-at axis an object traveling the path would have. In the case of a curve controlling a [PathFollow3D], this tilt is an offset over the natural tilt the [PathFollow3D] calculates.
 			</description>
 		</method>
 		<method name="tessellate" qualifiers="const">
@@ -246,7 +246,7 @@
 			The distance in meters between two adjacent cached points. Changing it forces the cache to be recomputed the next time the [method get_baked_points] or [method get_baked_length] function is called. The smaller the distance, the more points in the cache and the more memory it will consume, so use with care.
 		</member>
 		<member name="up_vector_enabled" type="bool" setter="set_up_vector_enabled" getter="is_up_vector_enabled" default="true">
-			If [code]true[/code], the curve will bake up vectors used for orientation. This is used when [member PathFollow.rotation_mode] is set to [constant PathFollow.ROTATION_ORIENTED]. Changing it forces the cache to be recomputed.
+			If [code]true[/code], the curve will bake up vectors used for orientation. This is used when [member PathFollow3D.rotation_mode] is set to [constant PathFollow3D.ROTATION_ORIENTED]. Changing it forces the cache to be recomputed.
 		</member>
 	</members>
 	<constants>

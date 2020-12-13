@@ -32,8 +32,8 @@
 #define COLLISION_OBJECT_2D_SW_H
 
 #include "broad_phase_2d_sw.h"
-#include "core/self_list.h"
-#include "servers/physics_2d_server.h"
+#include "core/templates/self_list.h"
+#include "servers/physics_server_2d.h"
 #include "shape_2d_sw.h"
 
 class Space2DSW;
@@ -53,7 +53,6 @@ private:
 	bool pickable;
 
 	struct Shape {
-
 		Transform2D xform;
 		Transform2D xform_inv;
 		BroadPhase2DSW::ID bpid;
@@ -169,10 +168,16 @@ public:
 		return shapes[p_idx].one_way_collision_margin;
 	}
 
-	void set_collision_mask(uint32_t p_mask) { collision_mask = p_mask; }
+	void set_collision_mask(uint32_t p_mask) {
+		collision_mask = p_mask;
+		_shape_changed();
+	}
 	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collision_mask; }
 
-	void set_collision_layer(uint32_t p_layer) { collision_layer = p_layer; }
+	void set_collision_layer(uint32_t p_layer) {
+		collision_layer = p_layer;
+		_shape_changed();
+	}
 	_FORCE_INLINE_ uint32_t get_collision_layer() const { return collision_layer; }
 
 	void remove_shape(Shape2DSW *p_shape);
@@ -186,7 +191,6 @@ public:
 	_FORCE_INLINE_ bool is_pickable() const { return pickable; }
 
 	_FORCE_INLINE_ bool test_collision_mask(CollisionObject2DSW *p_other) const {
-
 		return collision_layer & p_other->collision_mask || p_other->collision_layer & collision_mask;
 	}
 

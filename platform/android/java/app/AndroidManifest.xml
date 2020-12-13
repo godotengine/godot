@@ -32,18 +32,21 @@
 
         <!-- Metadata populated at export time and used by Godot to figure out which plugins must be enabled. -->
         <meta-data
-            android:name="custom_template_plugins"
-            android:value="custom_template_plugins_value"/>
+            android:name="plugins"
+            android:value="plugins_value"/>
 
         <activity
             android:name=".GodotApp"
             android:label="@string/godot_project_name_string"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+            android:theme="@style/GodotAppSplashTheme"
             android:launchMode="singleTask"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:resizeableActivity="false"
             tools:ignore="UnusedAttribute" >
+
+            <!-- Focus awareness metadata is updated at export time if the user enables it in the 'Xr Features' section. -->
+            <meta-data android:name="com.oculus.vr.focusaware" android:value="false" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

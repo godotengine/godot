@@ -3,4 +3,4 @@ rootProject.name = "Godot"
 
 include ':app'
 include ':lib'
-include ':plugins:godotpayment'
+include ':nativeSrcsConfigs'

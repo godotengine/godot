@@ -62,6 +62,7 @@ class EditorSpinSlider : public Range {
 	Vector2 grabbing_spinner_mouse_pos;
 	double pre_grab_value;
 
+	Popup *value_input_popup;
 	LineEdit *value_input;
 	bool value_input_just_closed;
 
@@ -86,7 +87,7 @@ protected:
 	void _focus_entered();
 
 public:
-	String get_tooltip(const Point2 &p_pos) const;
+	String get_tooltip(const Point2 &p_pos) const override;
 
 	String get_text_value() const;
 	void set_label(const String &p_label);
@@ -106,7 +107,7 @@ public:
 	void setup_and_show() { _focus_entered(); }
 	LineEdit *get_line_edit() { return value_input; }
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	EditorSpinSlider();
 };
 

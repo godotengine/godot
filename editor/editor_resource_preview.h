@@ -37,7 +37,6 @@
 #include "scene/resources/texture.h"
 
 class EditorResourcePreviewGenerator : public Reference {
-
 	GDCLASS(EditorResourcePreviewGenerator, Reference);
 
 protected:
@@ -55,7 +54,6 @@ public:
 };
 
 class EditorResourcePreview : public Node {
-
 	GDCLASS(EditorResourcePreview, Node);
 
 	static EditorResourcePreview *singleton;
@@ -79,9 +77,9 @@ class EditorResourcePreview : public Node {
 	struct Item {
 		Ref<Texture2D> preview;
 		Ref<Texture2D> small_preview;
-		int order;
-		uint32_t last_hash;
-		uint64_t modified_time;
+		int order = 0;
+		uint32_t last_hash = 0;
+		uint64_t modified_time = 0;
 	};
 
 	int order;
@@ -94,7 +92,7 @@ class EditorResourcePreview : public Node {
 	static void _thread_func(void *ud);
 	void _thread();
 
-	Vector<Ref<EditorResourcePreviewGenerator> > preview_generators;
+	Vector<Ref<EditorResourcePreviewGenerator>> preview_generators;
 
 protected:
 	static void _bind_methods();

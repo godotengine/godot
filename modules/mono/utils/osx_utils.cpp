@@ -32,31 +32,27 @@
 
 #ifdef OSX_ENABLED
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
 
 bool osx_is_app_bundle_installed(const String &p_bundle_id) {
-
-	CFURLRef app_url = NULL;
-	CFStringRef bundle_id = CFStringCreateWithCString(NULL, p_bundle_id.utf8(), kCFStringEncodingUTF8);
-	OSStatus result = LSFindApplicationForInfo(kLSUnknownCreator, bundle_id, NULL, NULL, &app_url);
+	CFStringRef bundle_id = CFStringCreateWithCString(nullptr, p_bundle_id.utf8(), kCFStringEncodingUTF8);
+	CFArrayRef result = LSCopyApplicationURLsForBundleIdentifier(bundle_id, nullptr);
 	CFRelease(bundle_id);
 
-	if (app_url)
-		CFRelease(app_url);
-
-	switch (result) {
-		case noErr:
+	if (result) {
+		if (CFArrayGetCount(result) > 0) {
+			CFRelease(result);
 			return true;
-		case kLSApplicationNotFoundErr:
-			break;
-		default:
-			break;
+		} else {
+			CFRelease(result);
+			return false;
+		}
+	} else {
+		return false;
 	}
-
-	return false;
 }
 
 #endif

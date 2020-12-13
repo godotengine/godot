@@ -4,7 +4,7 @@
  *
  *   PostScript CFF (Type 2) decoding routines (body).
  *
- * Copyright (C) 2017-2019 by
+ * Copyright (C) 2017-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,11 +16,10 @@
  */
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_SERVICE_H
-#include FT_SERVICE_CFF_TABLE_LOAD_H
+#include <freetype/freetype.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftserv.h>
+#include <freetype/internal/services/svcfftl.h>
 
 #include "cffdecode.h"
 #include "psobjs.h"
@@ -330,7 +329,7 @@
     builder->left_bearing.x = 0;
     builder->left_bearing.y = 0;
 
-    builder->pos_x = adx - asb;
+    builder->pos_x = SUB_LONG( adx, asb );
     builder->pos_y = ady;
 
     /* Now load `achar' on top of the base outline. */
@@ -529,6 +528,9 @@
     hinter = (T2_Hints_Funcs)builder->hints_funcs;
 
     builder->path_begun = 0;
+
+    if ( !charstring_base )
+      return FT_Err_Ok;
 
     zone->base           = charstring_base;
     limit = zone->limit  = charstring_base + charstring_len;

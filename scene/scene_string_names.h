@@ -31,11 +31,10 @@
 #ifndef SCENE_STRING_NAMES_H
 #define SCENE_STRING_NAMES_H
 
-#include "core/node_path.h"
-#include "core/string_name.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
 
 class SceneStringNames {
-
 	friend void register_scene_types();
 	friend void unregister_scene_types();
 
@@ -44,7 +43,7 @@ class SceneStringNames {
 	static void create() { singleton = memnew(SceneStringNames); }
 	static void free() {
 		memdelete(singleton);
-		singleton = NULL;
+		singleton = nullptr;
 	}
 
 	SceneStringNames();
@@ -59,7 +58,7 @@ public:
 	StringName dot;
 	StringName doubledot;
 	StringName draw;
-	StringName hide;
+	StringName hidden;
 	StringName visibility_changed;
 	StringName input_event;
 	StringName _input_event;
@@ -96,6 +95,8 @@ public:
 	StringName animation_changed;
 	StringName animation_started;
 
+	StringName pose_updated;
+
 	StringName body_shape_entered;
 	StringName body_entered;
 	StringName body_shape_exited;
@@ -129,6 +130,7 @@ public:
 	StringName _update_xform;
 
 	StringName _clips_input;
+	StringName _structured_text_parser;
 
 	StringName _proxgroup_add;
 	StringName _proxgroup_remove;
@@ -201,6 +203,19 @@ public:
 
 	StringName tracks_changed;
 
+	StringName _window_group;
+	StringName _window_input;
+	StringName _window_unhandled_input;
+	StringName window_input;
+
+	StringName theme_changed;
+	StringName shader_overrides_group;
+	StringName shader_overrides_group_active;
+
+#ifndef DISABLE_DEPRECATED
+	StringName use_in_baked_light;
+	StringName use_dynamic_gi;
+#endif
 	enum {
 		MAX_MATERIALS = 32
 	};

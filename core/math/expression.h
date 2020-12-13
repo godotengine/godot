@@ -31,110 +31,27 @@
 #ifndef EXPRESSION_H
 #define EXPRESSION_H
 
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 class Expression : public Reference {
 	GDCLASS(Expression, Reference);
 
-public:
-	enum BuiltinFunc {
-		MATH_SIN,
-		MATH_COS,
-		MATH_TAN,
-		MATH_SINH,
-		MATH_COSH,
-		MATH_TANH,
-		MATH_ASIN,
-		MATH_ACOS,
-		MATH_ATAN,
-		MATH_ATAN2,
-		MATH_SQRT,
-		MATH_FMOD,
-		MATH_FPOSMOD,
-		MATH_POSMOD,
-		MATH_FLOOR,
-		MATH_CEIL,
-		MATH_ROUND,
-		MATH_ABS,
-		MATH_SIGN,
-		MATH_POW,
-		MATH_LOG,
-		MATH_EXP,
-		MATH_ISNAN,
-		MATH_ISINF,
-		MATH_EASE,
-		MATH_STEP_DECIMALS,
-		MATH_STEPIFY,
-		MATH_LERP,
-		MATH_LERP_ANGLE,
-		MATH_INVERSE_LERP,
-		MATH_RANGE_LERP,
-		MATH_SMOOTHSTEP,
-		MATH_MOVE_TOWARD,
-		MATH_DECTIME,
-		MATH_RANDOMIZE,
-		MATH_RAND,
-		MATH_RANDF,
-		MATH_RANDOM,
-		MATH_SEED,
-		MATH_RANDSEED,
-		MATH_DEG2RAD,
-		MATH_RAD2DEG,
-		MATH_LINEAR2DB,
-		MATH_DB2LINEAR,
-		MATH_POLAR2CARTESIAN,
-		MATH_CARTESIAN2POLAR,
-		MATH_WRAP,
-		MATH_WRAPF,
-		LOGIC_MAX,
-		LOGIC_MIN,
-		LOGIC_CLAMP,
-		LOGIC_NEAREST_PO2,
-		OBJ_WEAKREF,
-		FUNC_FUNCREF,
-		TYPE_CONVERT,
-		TYPE_OF,
-		TYPE_EXISTS,
-		TEXT_CHAR,
-		TEXT_ORD,
-		TEXT_STR,
-		TEXT_PRINT,
-		TEXT_PRINTERR,
-		TEXT_PRINTRAW,
-		VAR_TO_STR,
-		STR_TO_VAR,
-		VAR_TO_BYTES,
-		BYTES_TO_VAR,
-		COLORN,
-		FUNC_MAX
-	};
-
-	static int get_func_argument_count(BuiltinFunc p_func);
-	static String get_func_name(BuiltinFunc p_func);
-	static void exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant *r_return, Callable::CallError &r_error, String &r_error_str);
-	static BuiltinFunc find_function(const String &p_string);
-
 private:
-	static const char *func_name[FUNC_MAX];
-
 	struct Input {
-
-		Variant::Type type;
+		Variant::Type type = Variant::NIL;
 		String name;
 
-		Input() :
-				type(Variant::NIL) {
-		}
+		Input() {}
 	};
 
 	Vector<Input> inputs;
-	Variant::Type output_type;
+	Variant::Type output_type = Variant::NIL;
 
 	String expression;
 
-	bool sequenced;
-	int str_ofs;
-	bool expression_dirty;
+	bool sequenced = false;
+	int str_ofs = 0;
+	bool expression_dirty = false;
 
 	bool _compile_expression();
 
@@ -182,14 +99,14 @@ private:
 
 	static const char *token_name[TK_MAX];
 	struct Token {
-
 		TokenType type;
 		Variant value;
 	};
 
 	void _set_error(const String &p_err) {
-		if (error_set)
+		if (error_set) {
 			return;
+		}
 		error_str = p_err;
 		error_set = true;
 	}
@@ -197,10 +114,9 @@ private:
 	Error _get_token(Token &r_token);
 
 	String error_str;
-	bool error_set;
+	bool error_set = true;
 
 	struct ENode {
-
 		enum Type {
 			TYPE_INPUT,
 			TYPE_CONSTANT,
@@ -215,11 +131,11 @@ private:
 			TYPE_CALL
 		};
 
-		ENode *next;
+		ENode *next = nullptr;
 
-		Type type;
+		Type type = TYPE_INPUT;
 
-		ENode() { next = NULL; }
+		ENode() {}
 		virtual ~ENode() {
 			if (next) {
 				memdelete(next);
@@ -228,8 +144,7 @@ private:
 	};
 
 	struct ExpressionNode {
-
-		bool is_op;
+		bool is_op = false;
 		union {
 			Variant::Operator op;
 			ENode *node;
@@ -239,26 +154,23 @@ private:
 	ENode *_parse_expression();
 
 	struct InputNode : public ENode {
-
-		int index;
+		int index = 0;
 		InputNode() {
 			type = TYPE_INPUT;
 		}
 	};
 
 	struct ConstantNode : public ENode {
-
-		Variant value;
+		Variant value = Variant::NIL;
 		ConstantNode() {
 			type = TYPE_CONSTANT;
 		}
 	};
 
 	struct OperatorNode : public ENode {
+		Variant::Operator op = Variant::Operator::OP_ADD;
 
-		Variant::Operator op;
-
-		ENode *nodes[2];
+		ENode *nodes[2] = { nullptr, nullptr };
 
 		OperatorNode() {
 			type = TYPE_OPERATOR;
@@ -266,15 +178,14 @@ private:
 	};
 
 	struct SelfNode : public ENode {
-
 		SelfNode() {
 			type = TYPE_SELF;
 		}
 	};
 
 	struct IndexNode : public ENode {
-		ENode *base;
-		ENode *index;
+		ENode *base = nullptr;
+		ENode *index = nullptr;
 
 		IndexNode() {
 			type = TYPE_INDEX;
@@ -282,7 +193,7 @@ private:
 	};
 
 	struct NamedIndexNode : public ENode {
-		ENode *base;
+		ENode *base = nullptr;
 		StringName name;
 
 		NamedIndexNode() {
@@ -291,7 +202,7 @@ private:
 	};
 
 	struct ConstructorNode : public ENode {
-		Variant::Type data_type;
+		Variant::Type data_type = Variant::Type::NIL;
 		Vector<ENode *> arguments;
 
 		ConstructorNode() {
@@ -300,7 +211,7 @@ private:
 	};
 
 	struct CallNode : public ENode {
-		ENode *base;
+		ENode *base = nullptr;
 		StringName method;
 		Vector<ENode *> arguments;
 
@@ -324,7 +235,7 @@ private:
 	};
 
 	struct BuiltinFuncNode : public ENode {
-		BuiltinFunc func;
+		StringName func;
 		Vector<ENode *> arguments;
 		BuiltinFuncNode() {
 			type = TYPE_BUILTIN_FUNC;
@@ -339,12 +250,12 @@ private:
 		return node;
 	}
 
-	ENode *root;
-	ENode *nodes;
+	ENode *root = nullptr;
+	ENode *nodes = nullptr;
 
 	Vector<String> input_names;
 
-	bool execution_error;
+	bool execution_error = false;
 	bool _execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, String &r_error_str);
 
 protected:
@@ -352,11 +263,11 @@ protected:
 
 public:
 	Error parse(const String &p_expression, const Vector<String> &p_input_names = Vector<String>());
-	Variant execute(Array p_inputs, Object *p_base = NULL, bool p_show_error = true);
+	Variant execute(Array p_inputs = Array(), Object *p_base = nullptr, bool p_show_error = true);
 	bool has_execute_failed() const;
 	String get_error_text() const;
 
-	Expression();
+	Expression() {}
 	~Expression();
 };
 

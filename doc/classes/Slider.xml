@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Base class for GUI sliders.
+		[b]Note:[/b] The [signal Range.changed] and [signal Range.value_changed] signals are part of the [Range] class which this class inherits from.
 	</description>
 	<tutorials>
 	</tutorials>

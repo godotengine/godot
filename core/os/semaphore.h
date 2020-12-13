@@ -31,7 +31,7 @@
 #ifndef SEMAPHORE_H
 #define SEMAPHORE_H
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "core/typedefs.h"
 
 #if !defined(NO_THREADS)
@@ -54,8 +54,9 @@ public:
 
 	_ALWAYS_INLINE_ void wait() const {
 		std::unique_lock<decltype(mutex_)> lock(mutex_);
-		while (!count_) // Handle spurious wake-ups.
+		while (!count_) { // Handle spurious wake-ups.
 			condition_.wait(lock);
+		}
 		--count_;
 	}
 
@@ -80,4 +81,4 @@ public:
 
 #endif
 
-#endif
+#endif // SEMAPHORE_H

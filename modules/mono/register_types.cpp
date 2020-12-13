@@ -30,15 +30,15 @@
 
 #include "register_types.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 
 #include "csharp_script.h"
 
-CSharpLanguage *script_language_cs = NULL;
+CSharpLanguage *script_language_cs = nullptr;
 Ref<ResourceFormatLoaderCSharpScript> resource_loader_cs;
 Ref<ResourceFormatSaverCSharpScript> resource_saver_cs;
 
-_GodotSharp *_godotsharp = NULL;
+_GodotSharp *_godotsharp = nullptr;
 
 void register_mono_types() {
 	ClassDB::register_class<CSharpScript>();
@@ -62,8 +62,9 @@ void register_mono_types() {
 void unregister_mono_types() {
 	ScriptServer::unregister_language(script_language_cs);
 
-	if (script_language_cs)
+	if (script_language_cs) {
 		memdelete(script_language_cs);
+	}
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_cs);
 	resource_loader_cs.unref();
@@ -71,6 +72,7 @@ void unregister_mono_types() {
 	ResourceSaver::remove_resource_format_saver(resource_saver_cs);
 	resource_saver_cs.unref();
 
-	if (_godotsharp)
+	if (_godotsharp) {
 		memdelete(_godotsharp);
+	}
 }

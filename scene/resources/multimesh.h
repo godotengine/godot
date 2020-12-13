@@ -32,17 +32,16 @@
 #define MULTIMESH_H
 
 #include "scene/resources/mesh.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 class MultiMesh : public Resource {
-
 	GDCLASS(MultiMesh, Resource);
 	RES_BASE_EXTENSION("multimesh");
 
 public:
 	enum TransformFormat {
-		TRANSFORM_2D = VS::MULTIMESH_TRANSFORM_2D,
-		TRANSFORM_3D = VS::MULTIMESH_TRANSFORM_3D
+		TRANSFORM_2D = RS::MULTIMESH_TRANSFORM_2D,
+		TRANSFORM_3D = RS::MULTIMESH_TRANSFORM_3D
 	};
 
 private:
@@ -106,7 +105,7 @@ public:
 
 	virtual AABB get_aabb() const;
 
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override;
 
 	MultiMesh();
 	~MultiMesh();

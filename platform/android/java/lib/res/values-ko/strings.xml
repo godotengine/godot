@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="godot_project_name_string">godot-project-name-ko</string>
     <string name="text_paused_cellular">모바일 네트워크를 사용하여 다운로드 하시겠습니까? 남은 데이터 사용량에 따라, 요금이 부과될 수 있습니다.</string>
     <string name="text_paused_cellular_2">모바일 네트워크를 사용하여 다운로드 하지 않을 경우, 와이파이 연결이 가능할 때 자동적으로 다운로드가 이루어집니다.</string>
     <string name="text_button_resume_cellular">다운로드 계속하기</string>

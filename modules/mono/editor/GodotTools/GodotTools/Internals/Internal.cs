@@ -2,13 +2,14 @@ using System;
 using System.Runtime.CompilerServices;
 using Godot;
 using Godot.Collections;
+using GodotTools.IdeMessaging.Requests;
 
 namespace GodotTools.Internals
 {
     public static class Internal
     {
         public const string CSharpLanguageType = "CSharpScript";
-        public const string CSharpLanguageExtension = "cs";
+        public const string CSharpLanguageExtension = ".cs";
 
         public static string UpdateApiAssembliesFromPrebuilt(string config) =>
             internal_UpdateApiAssembliesFromPrebuilt(config);
@@ -51,6 +52,9 @@ namespace GodotTools.Internals
         public static void EditorRunStop() => internal_EditorRunStop();
 
         public static void ScriptEditorDebugger_ReloadScripts() => internal_ScriptEditorDebugger_ReloadScripts();
+
+        public static string[] CodeCompletionRequest(CodeCompletionRequest.CompletionKind kind, string scriptFile) =>
+            internal_CodeCompletionRequest((int)kind, scriptFile);
 
         #region Internal
 
@@ -110,6 +114,9 @@ namespace GodotTools.Internals
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern void internal_ScriptEditorDebugger_ReloadScripts();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern string[] internal_CodeCompletionRequest(int kind, string scriptFile);
 
         #endregion
     }

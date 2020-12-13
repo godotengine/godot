@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MULTIPLAYER_PROTOCOL_H
-#define MULTIPLAYER_PROTOCOL_H
+#ifndef MULTIPLAYER_API_H
+#define MULTIPLAYER_API_H
 
 #include "core/io/networked_multiplayer_peer.h"
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 class MultiplayerAPI : public Reference {
-
 	GDCLASS(MultiplayerAPI, Reference);
 
 private:
@@ -56,14 +55,14 @@ private:
 	};
 
 	Ref<NetworkedMultiplayerPeer> network_peer;
-	int rpc_sender_id;
+	int rpc_sender_id = 0;
 	Set<int> connected_peers;
 	HashMap<NodePath, PathSentCache> path_send_cache;
 	Map<int, PathGetCache> path_get_cache;
 	int last_send_cache_id;
 	Vector<uint8_t> packet_cache;
-	Node *root_node;
-	bool allow_object_decoding;
+	Node *root_node = nullptr;
+	bool allow_object_decoding = false;
 
 protected:
 	static void _bind_methods();
@@ -103,7 +102,6 @@ public:
 	};
 
 	enum RPCMode {
-
 		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
 		RPC_MODE_REMOTE, // Using rpc() on it will call method / set property in all remote peers
 		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
@@ -116,6 +114,7 @@ public:
 	void poll();
 	void clear();
 	void set_root_node(Node *p_node);
+	Node *get_root_node();
 	void set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_peer);
 	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
 	Error send_bytes(Vector<uint8_t> p_data, int p_to = NetworkedMultiplayerPeer::TARGET_PEER_BROADCAST, NetworkedMultiplayerPeer::TransferMode p_mode = NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
@@ -148,4 +147,4 @@ public:
 
 VARIANT_ENUM_CAST(MultiplayerAPI::RPCMode);
 
-#endif // MULTIPLAYER_PROTOCOL_H
+#endif // MULTIPLAYER_API_H

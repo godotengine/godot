@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ASTAR_H
-#define ASTAR_H
+#ifndef A_STAR_H
+#define A_STAR_H
 
-#include "core/oa_hash_map.h"
-#include "core/reference.h"
+#include "core/object/reference.h"
+#include "core/templates/oa_hash_map.h"
 
 /**
 	A* pathfinding algorithm
@@ -41,29 +41,26 @@
 */
 
 class AStar : public Reference {
-
 	GDCLASS(AStar, Reference);
+	friend class AStar2D;
 
 	struct Point {
+		Point() {}
 
-		Point() :
-				neighbours(4u),
-				unlinked_neighbours(4u) {}
-
-		int id;
+		int id = 0;
 		Vector3 pos;
-		real_t weight_scale;
-		bool enabled;
+		real_t weight_scale = 0;
+		bool enabled = false;
 
-		OAHashMap<int, Point *> neighbours;
-		OAHashMap<int, Point *> unlinked_neighbours;
+		OAHashMap<int, Point *> neighbours = 4u;
+		OAHashMap<int, Point *> unlinked_neighbours = 4u;
 
 		// Used for pathfinding.
-		Point *prev_point;
-		real_t g_score;
-		real_t f_score;
-		uint64_t open_pass;
-		uint64_t closed_pass;
+		Point *prev_point = nullptr;
+		real_t g_score = 0;
+		real_t f_score = 0;
+		uint64_t open_pass = 0;
+		uint64_t closed_pass = 0;
 	};
 
 	struct SortPoints {
@@ -84,7 +81,7 @@ class AStar : public Reference {
 				int32_t u;
 				int32_t v;
 			};
-			uint64_t key;
+			uint64_t key = 0;
 		};
 
 		enum {
@@ -93,13 +90,11 @@ class AStar : public Reference {
 			BACKWARD = 2,
 			BIDIRECTIONAL = FORWARD | BACKWARD
 		};
-		unsigned char direction;
+		unsigned char direction = NONE;
 
 		bool operator<(const Segment &p_s) const { return key < p_s.key; }
-		Segment() {
-			key = 0;
-			direction = NONE;
-		}
+
+		Segment() {}
 		Segment(int p_from, int p_to) {
 			if (p_from < p_to) {
 				u = p_from;
@@ -113,8 +108,8 @@ class AStar : public Reference {
 		}
 	};
 
-	int last_free_id;
-	uint64_t pass;
+	int last_free_id = 0;
+	uint64_t pass = 1;
 
 	OAHashMap<int, Point *> points;
 	Set<Segment> segments;
@@ -124,8 +119,8 @@ class AStar : public Reference {
 protected:
 	static void _bind_methods();
 
-	virtual float _estimate_cost(int p_from_id, int p_to_id);
-	virtual float _compute_cost(int p_from_id, int p_to_id);
+	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
+	virtual real_t _compute_cost(int p_from_id, int p_to_id);
 
 public:
 	int get_available_point_id() const;
@@ -158,7 +153,7 @@ public:
 	Vector<Vector3> get_point_path(int p_from_id, int p_to_id);
 	Vector<int> get_id_path(int p_from_id, int p_to_id);
 
-	AStar();
+	AStar() {}
 	~AStar();
 };
 
@@ -166,8 +161,13 @@ class AStar2D : public Reference {
 	GDCLASS(AStar2D, Reference);
 	AStar astar;
 
+	bool _solve(AStar::Point *begin_point, AStar::Point *end_point);
+
 protected:
 	static void _bind_methods();
+
+	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
+	virtual real_t _compute_cost(int p_from_id, int p_to_id);
 
 public:
 	int get_available_point_id() const;
@@ -200,8 +200,8 @@ public:
 	Vector<Vector2> get_point_path(int p_from_id, int p_to_id);
 	Vector<int> get_id_path(int p_from_id, int p_to_id);
 
-	AStar2D();
-	~AStar2D();
+	AStar2D() {}
+	~AStar2D() {}
 };
 
-#endif // ASTAR_H
+#endif // A_STAR_H

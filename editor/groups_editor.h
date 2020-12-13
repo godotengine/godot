@@ -31,19 +31,17 @@
 #ifndef GROUPS_EDITOR_H
 #define GROUPS_EDITOR_H
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/popup.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 
-class GroupDialog : public WindowDialog {
-
-	GDCLASS(GroupDialog, WindowDialog);
+class GroupDialog : public AcceptDialog {
+	GDCLASS(GroupDialog, AcceptDialog);
 
 	ConfirmationDialog *error;
 
@@ -64,8 +62,8 @@ class GroupDialog : public WindowDialog {
 
 	Label *group_empty;
 
-	ToolButton *add_button;
-	ToolButton *remove_button;
+	Button *add_button;
+	Button *remove_button;
 
 	String selected_group;
 
@@ -104,7 +102,6 @@ public:
 };
 
 class GroupsEditor : public VBoxContainer {
-
 	GDCLASS(GroupsEditor, VBoxContainer);
 
 	Node *node;

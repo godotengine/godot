@@ -44,7 +44,6 @@
 class ProgressBar;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
-
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeBlendTree> blend_tree;
@@ -130,10 +129,10 @@ public:
 	void add_custom_type(const String &p_name, const Ref<Script> &p_script);
 	void remove_custom_type(const Ref<Script> &p_script);
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
-	virtual bool can_edit(const Ref<AnimationNode> &p_node);
-	virtual void edit(const Ref<AnimationNode> &p_node);
+	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
+	virtual void edit(const Ref<AnimationNode> &p_node) override;
 
 	AnimationNodeBlendTreeEditor();
 };

@@ -47,7 +47,7 @@ protected:
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual Rect2 _edit_get_rect() const;
+	virtual Rect2 _edit_get_rect() const override;
 #endif
 
 	void set_mesh(const Ref<Mesh> &p_mesh);

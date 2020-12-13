@@ -35,8 +35,11 @@
 #include "packet_peer_mbed_dtls.h"
 #include "stream_peer_mbedtls.h"
 
-void register_mbedtls_types() {
+#ifdef TESTS_ENABLED
+#include "tests/test_crypto_mbedtls.h"
+#endif
 
+void register_mbedtls_types() {
 	CryptoMbedTLS::initialize_crypto();
 	StreamPeerMbedTLS::initialize_ssl();
 	PacketPeerMbedDTLS::initialize_dtls();
@@ -44,7 +47,6 @@ void register_mbedtls_types() {
 }
 
 void unregister_mbedtls_types() {
-
 	DTLSServerMbedTLS::finalize();
 	PacketPeerMbedDTLS::finalize_dtls();
 	StreamPeerMbedTLS::finalize_ssl();

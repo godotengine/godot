@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_lightmapper_rd = env_modules.Clone()
+env_lightmapper_rd.GLSL_HEADER("lm_raster.glsl")
+env_lightmapper_rd.GLSL_HEADER("lm_compute.glsl")
+env_lightmapper_rd.GLSL_HEADER("lm_blendseams.glsl")
+
+# Godot source files
+env_lightmapper_rd.add_source_files(env.modules_sources, "*.cpp")

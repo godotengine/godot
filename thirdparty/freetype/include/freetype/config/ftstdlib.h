@@ -5,7 +5,7 @@
  *   ANSI-specific library and header configuration file (specification
  *   only).
  *
- * Copyright (C) 2002-2019 by
+ * Copyright (C) 2002-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,

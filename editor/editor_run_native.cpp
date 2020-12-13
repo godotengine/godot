@@ -35,21 +35,18 @@
 #include "editor_scale.h"
 
 void EditorRunNative::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
-
 			Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(i);
-			if (eep.is_null())
+			if (eep.is_null()) {
 				continue;
+			}
 			Ref<ImageTexture> icon = eep->get_run_icon();
 			if (!icon.is_null()) {
 				Ref<Image> im = icon->get_data();
 				im = im->duplicate();
 				im->clear_mipmaps();
 				if (!im->empty()) {
-
 					im->resize(16 * EDSCALE, 16 * EDSCALE);
 					Ref<ImageTexture> small_icon;
 					small_icon.instance();
@@ -66,13 +63,10 @@ void EditorRunNative::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_PROCESS) {
-
 		bool changed = EditorExport::get_singleton()->poll_export_platforms() || first;
 
 		if (changed) {
-
 			for (Map<int, MenuButton *>::Element *E = menus.front(); E; E = E->next()) {
-
 				Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(E->key());
 				MenuButton *mb = E->get();
 				int dc = eep->get_options_count();
@@ -82,8 +76,10 @@ void EditorRunNative::_notification(int p_what) {
 				} else {
 					mb->get_popup()->clear();
 					mb->show();
-					mb->set_tooltip(eep->get_options_tooltip());
-					if (dc > 1) {
+					if (dc == 1) {
+						mb->set_tooltip(eep->get_option_tooltip(0));
+					} else {
+						mb->set_tooltip(eep->get_options_tooltip());
 						for (int i = 0; i < dc; i++) {
 							mb->get_popup()->add_icon_item(eep->get_option_icon(i), eep->get_option_label(i));
 							mb->get_popup()->set_item_tooltip(mb->get_popup()->get_item_count() - 1, eep->get_option_tooltip(i));
@@ -98,7 +94,6 @@ void EditorRunNative::_notification(int p_what) {
 }
 
 void EditorRunNative::_run_native(int p_idx, int p_platform) {
-
 	if (!EditorNode::get_singleton()->ensure_main_scene(true)) {
 		resume_idx = p_idx;
 		resume_platform = p_platform;
@@ -120,7 +115,6 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 	Ref<EditorExportPreset> preset;
 
 	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-
 		Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
 		if (ep->is_runnable() && ep->get_platform() == eep) {
 			preset = ep;
@@ -129,11 +123,11 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 	}
 
 	if (preset.is_null()) {
-		EditorNode::get_singleton()->show_warning(TTR("No runnable export preset found for this platform.\nPlease add a runnable preset in the export menu."));
+		EditorNode::get_singleton()->show_warning(TTR("No runnable export preset found for this platform.\nPlease add a runnable preset in the Export menu or define an existing preset as runnable."));
 		return;
 	}
 
-	emit_signal("native_run");
+	emit_signal("native_run", preset);
 
 	int flags = 0;
 
@@ -142,14 +136,18 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 	bool debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
 	bool debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
 
-	if (deploy_debug_remote)
+	if (deploy_debug_remote) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_REMOTE_DEBUG;
-	if (deploy_dumb)
+	}
+	if (deploy_dumb) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_DUMB_CLIENT;
-	if (debug_collisions)
+	}
+	if (debug_collisions) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_VIEW_COLLISONS;
-	if (debug_navigation)
+	}
+	if (debug_navigation) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_VIEW_NAVIGATION;
+	}
 
 	eep->run(preset, p_idx, flags);
 }
@@ -159,12 +157,10 @@ void EditorRunNative::resume_run_native() {
 }
 
 void EditorRunNative::_bind_methods() {
-
-	ADD_SIGNAL(MethodInfo("native_run"));
+	ADD_SIGNAL(MethodInfo("native_run", PropertyInfo(Variant::OBJECT, "preset", PROPERTY_HINT_RESOURCE_TYPE, "EditorExportPreset")));
 }
 
 bool EditorRunNative::is_deploy_debug_remote_enabled() const {
-
 	return EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", false);
 }
 

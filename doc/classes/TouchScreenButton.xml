@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TouchScreenButton" inherits="Node2D" version="4.0">
 	<brief_description>
-		Button for touch screen devices.
+		Button for touch screen devices for gameplay use.
 	</brief_description>
 	<description>
-		Button for touch screen devices. You can set it to be visible on all screens, or only on touch devices.
+		TouchScreenButton allows you to create on-screen buttons for touch devices. It's intended for gameplay use, such as a unit you have to touch to move.
+		This node inherits from [Node2D]. Unlike with [Control] nodes, you cannot set anchors on it. If you want to create menus or user interfaces, you may want to use [Button] nodes instead. To make button nodes react to touch events, you can enable the Emulate Mouse option in the Project Settings.
+		You can configure TouchScreenButton to be visible only on touch devices, helping you develop your game both for desktop and mobile devices.
 	</description>
 	<tutorials>
 	</tutorials>

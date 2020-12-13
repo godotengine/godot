@@ -35,7 +35,6 @@
 #include "scene/gui/menu_button.h"
 
 class EditorRunNative : public HBoxContainer {
-
 	GDCLASS(EditorRunNative, HBoxContainer);
 
 	Map<int, MenuButton *> menus;

@@ -4,7 +4,7 @@
  *
  *   FreeType PostScript hinter module implementation (body).
  *
- * Copyright (C) 2001-2019 by
+ * Copyright (C) 2001-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,10 +16,10 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/internal/ftobjs.h>
 #include "pshrec.h"
 #include "pshalgo.h"
+#include "pshmod.h"
 
 
   /* the Postscript Hinter module structure */

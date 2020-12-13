@@ -31,15 +31,13 @@
 #ifndef CRYPTO_CORE_H
 #define CRYPTO_CORE_H
 
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 class CryptoCore {
-
 public:
 	class MD5Context {
-
 	private:
-		void *ctx; // To include, or not to include...
+		void *ctx = nullptr; // To include, or not to include...
 
 	public:
 		MD5Context();
@@ -51,9 +49,8 @@ public:
 	};
 
 	class SHA1Context {
-
 	private:
-		void *ctx; // To include, or not to include...
+		void *ctx = nullptr; // To include, or not to include...
 
 	public:
 		SHA1Context();
@@ -65,9 +62,8 @@ public:
 	};
 
 	class SHA256Context {
-
 	private:
-		void *ctx; // To include, or not to include...
+		void *ctx = nullptr; // To include, or not to include...
 
 	public:
 		SHA256Context();
@@ -79,9 +75,8 @@ public:
 	};
 
 	class AESContext {
-
 	private:
-		void *ctx; // To include, or not to include...
+		void *ctx = nullptr; // To include, or not to include...
 
 	public:
 		AESContext();
@@ -91,6 +86,10 @@ public:
 		Error set_decode_key(const uint8_t *p_key, size_t p_bits);
 		Error encrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]);
 		Error decrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]);
+		Error encrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst);
+		Error decrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst);
+		Error encrypt_cfb(size_t p_length, uint8_t p_iv[16], const uint8_t *p_src, uint8_t *r_dst);
+		Error decrypt_cfb(size_t p_length, uint8_t p_iv[16], const uint8_t *p_src, uint8_t *r_dst);
 	};
 
 	static String b64_encode_str(const uint8_t *p_src, int p_src_len);

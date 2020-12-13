@@ -52,7 +52,7 @@ class DependencyEditor : public AcceptDialog {
 	String editing;
 	List<String> missing;
 
-	void _fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String> > &candidates);
+	void _fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String>> &candidates);
 
 	void _searched(const String &p_path);
 	void _load_pressed(Object *p_item, int p_cell, int p_button);
@@ -123,7 +123,7 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 	void _find_all_removed_dependencies(EditorFileSystemDirectory *efsd, Vector<RemovedDependency> &p_removed);
 	void _build_removed_dependency_tree(const Vector<RemovedDependency> &p_removed);
 
-	void ok_pressed();
+	void ok_pressed() override;
 
 	static void _bind_methods();
 
@@ -147,8 +147,8 @@ private:
 	Button *fdep;
 	Label *text;
 	Tree *files;
-	void ok_pressed();
-	void custom_action(const String &);
+	void ok_pressed() override;
+	void custom_action(const String &) override;
 
 public:
 	void show(Mode p_mode, const String &p_for_file, const Vector<String> &report);
@@ -161,7 +161,7 @@ class OrphanResourcesDialog : public ConfirmationDialog {
 	DependencyEditor *dep_edit;
 	Tree *files;
 	ConfirmationDialog *delete_confirm;
-	void ok_pressed();
+	void ok_pressed() override;
 
 	bool _fill_owners(EditorFileSystemDirectory *efsd, HashMap<String, int> &refs, TreeItem *p_parent);
 

@@ -69,8 +69,8 @@ public:
 	Vector3 get_median_point() const;
 	Vector3 get_closest_point_to(const Vector3 &p_point) const;
 
-	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection = 0) const;
-	bool intersects_segment(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection = 0) const;
+	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection = nullptr) const;
+	bool intersects_segment(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection = nullptr) const;
 
 	ClockDirection get_clock_dir() const; ///< todo, test if this is returning the proper clockwisity
 
@@ -78,7 +78,6 @@ public:
 	void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const;
 
 	AABB get_aabb() const {
-
 		AABB aabb(vertex[0], Vector3());
 		aabb.expand_to(vertex[1]);
 		aabb.expand_to(vertex[2]);
@@ -98,7 +97,6 @@ public:
 };
 
 bool Face3::intersects_aabb2(const AABB &p_aabb) const {
-
 	Vector3 perp = (vertex[0] - vertex[2]).cross(vertex[0] - vertex[1]);
 
 	Vector3 half_extents = p_aabb.size * 0.5;
@@ -113,8 +111,9 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 	real_t dist_a = perp.dot(ofs + sup) - d;
 	real_t dist_b = perp.dot(ofs - sup) - d;
 
-	if (dist_a * dist_b > 0)
+	if (dist_a * dist_b > 0) {
 		return false; //does not intersect the plane
+	}
 
 #define TEST_AXIS(m_ax)                                            \
 	{                                                              \
@@ -145,17 +144,13 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 	};
 
 	for (int i = 0; i < 12; i++) {
-
 		Vector3 from, to;
 		switch (i) {
-
 			case 0: {
-
 				from = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z);
 				to = Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z);
 			} break;
 			case 1: {
-
 				from = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z);
 				to = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z);
 			} break;
@@ -165,18 +160,15 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 
 			} break;
 			case 3: {
-
 				from = Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z);
 				to = Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z);
 
 			} break;
 			case 4: {
-
 				from = Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z);
 				to = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z);
 			} break;
 			case 5: {
-
 				from = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z);
 				to = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z);
 			} break;
@@ -186,31 +178,26 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 
 			} break;
 			case 7: {
-
 				from = Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z);
 				to = Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z);
 
 			} break;
 			case 8: {
-
 				from = Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z);
 				to = Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z);
 
 			} break;
 			case 9: {
-
 				from = Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z);
 				to = Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z);
 
 			} break;
 			case 10: {
-
 				from = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z);
 				to = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z);
 
 			} break;
 			case 11: {
-
 				from = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z);
 				to = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z);
 
@@ -223,8 +210,9 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 
 			Vector3 axis = vec3_cross(e1, e2);
 
-			if (axis.length_squared() < 0.0001)
+			if (axis.length_squared() < 0.0001) {
 				continue; // coplanar
+			}
 			//axis.normalize();
 
 			Vector3 sup2 = Vector3(
@@ -240,18 +228,20 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 
 			real_t minT = 1e20, maxT = -1e20;
 			for (int k = 0; k < 3; k++) {
-
 				real_t vert_d = axis.dot(vertex[k]);
 
-				if (vert_d > maxT)
+				if (vert_d > maxT) {
 					maxT = vert_d;
+				}
 
-				if (vert_d < minT)
+				if (vert_d < minT) {
 					minT = vert_d;
+				}
 			}
 
-			if (maxB < minT || maxT < minB)
+			if (maxB < minT || maxT < minB) {
 				return false;
+			}
 		}
 	}
 	return true;

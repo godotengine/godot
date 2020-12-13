@@ -33,10 +33,9 @@
 #include "scene/2d/collision_shape_2d.h"
 #include "scene/2d/navigation_2d.h"
 #include "scene/2d/physics_body_2d.h"
-#include "servers/navigation_2d_server.h"
+#include "servers/navigation_server_2d.h"
 
 void NavigationObstacle2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_navigation", "navigation"), &NavigationObstacle2D::set_navigation_node);
 	ClassDB::bind_method(D_METHOD("get_navigation"), &NavigationObstacle2D::get_navigation_node);
 }
@@ -44,19 +43,19 @@ void NavigationObstacle2D::_bind_methods() {
 void NavigationObstacle2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-
 			update_agent_shape();
 
 			// Search the navigation node and set it
 			{
-				Navigation2D *nav = NULL;
+				Navigation2D *nav = nullptr;
 				Node *p = get_parent();
-				while (p != NULL) {
+				while (p != nullptr) {
 					nav = Object::cast_to<Navigation2D>(p);
-					if (nav != NULL)
-						p = NULL;
-					else
+					if (nav != nullptr) {
+						p = nullptr;
+					} else {
 						p = p->get_parent();
+					}
 				}
 
 				set_navigation(nav);
@@ -65,41 +64,40 @@ void NavigationObstacle2D::_notification(int p_what) {
 			set_physics_process_internal(true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			set_navigation(NULL);
+			set_navigation(nullptr);
 			set_physics_process_internal(false);
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			Node2D *node = Object::cast_to<Node2D>(get_parent());
 			if (node) {
-				Navigation2DServer::get_singleton()->agent_set_position(agent, node->get_global_transform().get_origin());
+				NavigationServer2D::get_singleton()->agent_set_position(agent, node->get_global_transform().get_origin());
 			}
 
 		} break;
 	}
 }
 
-NavigationObstacle2D::NavigationObstacle2D() :
-		navigation(NULL),
-		agent(RID()) {
-	agent = Navigation2DServer::get_singleton()->agent_create();
+NavigationObstacle2D::NavigationObstacle2D() {
+	agent = NavigationServer2D::get_singleton()->agent_create();
 }
 
 NavigationObstacle2D::~NavigationObstacle2D() {
-	Navigation2DServer::get_singleton()->free(agent);
+	NavigationServer2D::get_singleton()->free(agent);
 	agent = RID(); // Pointless
 }
 
 void NavigationObstacle2D::set_navigation(Navigation2D *p_nav) {
-	if (navigation == p_nav)
+	if (navigation == p_nav) {
 		return; // Pointless
+	}
 
 	navigation = p_nav;
-	Navigation2DServer::get_singleton()->agent_set_map(agent, navigation == NULL ? RID() : navigation->get_rid());
+	NavigationServer2D::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
 }
 
 void NavigationObstacle2D::set_navigation_node(Node *p_nav) {
 	Navigation2D *nav = Object::cast_to<Navigation2D>(p_nav);
-	ERR_FAIL_COND(nav == NULL);
+	ERR_FAIL_COND(nav == nullptr);
 	set_navigation(nav);
 }
 
@@ -108,11 +106,16 @@ Node *NavigationObstacle2D::get_navigation_node() const {
 }
 
 String NavigationObstacle2D::get_configuration_warning() const {
+	String warning = Node::get_configuration_warning();
+
 	if (!Object::cast_to<Node2D>(get_parent())) {
-		return TTR("The NavigationObstacle2D only serves to provide collision avoidance to a Node2D object.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The NavigationObstacle2D only serves to provide collision avoidance to a Node2D object.");
 	}
 
-	return String();
+	return warning;
 }
 
 void NavigationObstacle2D::update_agent_shape() {
@@ -142,13 +145,14 @@ void NavigationObstacle2D::update_agent_shape() {
 		radius *= MAX(s.x, s.y);
 	}
 
-	if (radius == 0.0)
+	if (radius == 0.0) {
 		radius = 1.0; // Never a 0 radius
+	}
 
 	// Initialize the Agent as an object
-	Navigation2DServer::get_singleton()->agent_set_neighbor_dist(agent, 0.0);
-	Navigation2DServer::get_singleton()->agent_set_max_neighbors(agent, 0);
-	Navigation2DServer::get_singleton()->agent_set_time_horizon(agent, 0.0);
-	Navigation2DServer::get_singleton()->agent_set_radius(agent, radius);
-	Navigation2DServer::get_singleton()->agent_set_max_speed(agent, 0.0);
+	NavigationServer2D::get_singleton()->agent_set_neighbor_dist(agent, 0.0);
+	NavigationServer2D::get_singleton()->agent_set_max_neighbors(agent, 0);
+	NavigationServer2D::get_singleton()->agent_set_time_horizon(agent, 0.0);
+	NavigationServer2D::get_singleton()->agent_set_radius(agent, radius);
+	NavigationServer2D::get_singleton()->agent_set_max_speed(agent, 0.0);
 }

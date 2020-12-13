@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Engine" inherits="Object" version="4.0">
 	<brief_description>
-		Access to basic engine properties.
+		Access to engine properties.
 	</brief_description>
 	<description>
-		The [Engine] class allows you to query and modify the project's run-time parameters, such as frames per second, time scale, and others.
+		The [Engine] singleton allows you to query and modify the project's run-time parameters, such as frames per second, time scale, and others.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -34,7 +34,7 @@
 			</return>
 			<description>
 				Returns a Dictionary of Arrays of donor names.
-				{[code]platinum_sponsors[/code], [code]gold_sponsors[/code], [code]mini_sponsors[/code], [code]gold_donors[/code], [code]silver_donors[/code], [code]bronze_donors[/code]}
+				{[code]platinum_sponsors[/code], [code]gold_sponsors[/code], [code]silver_sponsors[/code], [code]bronze_sponsors[/code], [code]mini_sponsors[/code], [code]gold_donors[/code], [code]silver_donors[/code], [code]bronze_donors[/code]}
 			</description>
 		</method>
 		<method name="get_frames_drawn">
@@ -117,12 +117,24 @@
 				[code]year[/code]     - Holds the year the version was released in as an int
 				[code]string[/code]   - [code]major[/code] + [code]minor[/code] + [code]patch[/code] + [code]status[/code] + [code]build[/code] in a single String
 				The [code]hex[/code] value is encoded as follows, from left to right: one byte for the major, one byte for the minor, one byte for the patch version. For example, "3.1.12" would be [code]0x03010C[/code]. [b]Note:[/b] It's still an int internally, and printing it will give you its decimal representation, which is not particularly meaningful. Use hexadecimal literals for easy version comparisons from code:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				if Engine.get_version_info().hex &gt;= 0x030200:
 				    # Do things specific to version 3.2 or later
 				else:
 				    # Do things specific to versions before 3.2
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				if ((int)Engine.GetVersionInfo()["hex"] &gt;= 0x030200)
+				{
+				    // Do things specific to version 3.2 or later
+				}
+				else
+				{
+				    // Do things specific to versions before 3.2
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="has_singleton" qualifiers="const">

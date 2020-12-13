@@ -52,13 +52,13 @@ void PluginConfigDialog::_clear_fields() {
 }
 
 void PluginConfigDialog::_on_confirmed() {
-
 	String path = "res://addons/" + subfolder_edit->get_text();
 
 	if (!_edit_mode) {
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		if (!d || d->make_dir_recursive(path) != OK)
+		if (!d || d->make_dir_recursive(path) != OK) {
 			return;
+		}
 	}
 
 	Ref<ConfigFile> cf = memnew(ConfigFile);
@@ -131,13 +131,14 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 
 void PluginConfigDialog::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				name_edit->grab_focus();
+			}
+		} break;
 		case NOTIFICATION_READY: {
 			connect("confirmed", callable_mp(this, &PluginConfigDialog::_on_confirmed));
 			get_cancel()->connect("pressed", callable_mp(this, &PluginConfigDialog::_on_cancelled));
-		} break;
-
-		case NOTIFICATION_POST_POPUP: {
-			name_edit->grab_focus();
 		} break;
 	}
 }

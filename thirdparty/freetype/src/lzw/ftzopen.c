@@ -8,7 +8,7 @@
  * be used to parse compressed PCF fonts, as found with many X11 server
  * distributions.
  *
- * Copyright (C) 2005-2019 by
+ * Copyright (C) 2005-2020 by
  * David Turner.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,9 +20,9 @@
  */
 
 #include "ftzopen.h"
-#include FT_INTERNAL_MEMORY_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftmemory.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/ftdebug.h>
 
 
   static int

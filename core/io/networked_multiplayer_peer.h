@@ -34,7 +34,6 @@
 #include "core/io/packet_peer.h"
 
 class NetworkedMultiplayerPeer : public PacketPeer {
-
 	GDCLASS(NetworkedMultiplayerPeer, PacketPeer);
 
 protected:
@@ -74,10 +73,10 @@ public:
 
 	virtual ConnectionStatus get_connection_status() const = 0;
 
-	NetworkedMultiplayerPeer();
+	NetworkedMultiplayerPeer() {}
 };
 
 VARIANT_ENUM_CAST(NetworkedMultiplayerPeer::TransferMode)
 VARIANT_ENUM_CAST(NetworkedMultiplayerPeer::ConnectionStatus)
 
-#endif // NetworkedMultiplayerPeer_H
+#endif // NETWORKED_MULTIPLAYER_PEER_H

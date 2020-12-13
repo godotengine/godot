@@ -29,13 +29,12 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "core/error_macros.h"
+#include "core/error/error_macros.h"
 #include "networked_multiplayer_enet.h"
 
 static bool enet_ok = false;
 
 void register_enet_types() {
-
 	if (enet_initialize() != 0) {
 		ERR_PRINT("ENet initialization failure");
 	} else {
@@ -46,7 +45,7 @@ void register_enet_types() {
 }
 
 void unregister_enet_types() {
-
-	if (enet_ok)
+	if (enet_ok) {
 		enet_deinitialize();
+	}
 }

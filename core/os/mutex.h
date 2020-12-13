@@ -31,7 +31,7 @@
 #ifndef MUTEX_H
 #define MUTEX_H
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "core/typedefs.h"
 
 #if !defined(NO_THREADS)
@@ -76,14 +76,13 @@ using BinaryMutex = MutexImpl<std::mutex>; // Non-recursive, handle with care
 
 extern template class MutexImpl<std::recursive_mutex>;
 extern template class MutexImpl<std::mutex>;
-extern template class MutexLock<MutexImpl<std::recursive_mutex> >;
-extern template class MutexLock<MutexImpl<std::mutex> >;
+extern template class MutexLock<MutexImpl<std::recursive_mutex>>;
+extern template class MutexLock<MutexImpl<std::mutex>>;
 
 #else
 
 class FakeMutex {
-
-	FakeMutex(){};
+	FakeMutex() {}
 };
 
 template <class MutexT>
@@ -105,4 +104,4 @@ using BinaryMutex = MutexImpl<FakeMutex>; // Non-recursive, handle with care
 
 #endif // !NO_THREADS
 
-#endif
+#endif // MUTEX_H

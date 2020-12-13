@@ -4,7 +4,7 @@
  *
  *   Some convenience conversions (body).
  *
- * Copyright (C) 2006-2019 by
+ * Copyright (C) 2006-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,9 +16,8 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/psaux.h>
+#include <freetype/internal/ftdebug.h>
 
 #include "psconv.h"
 #include "psauxerr.h"

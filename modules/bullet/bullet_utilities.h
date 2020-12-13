@@ -41,6 +41,6 @@
 #define bulletdelete(cl) \
 	{                    \
 		delete cl;       \
-		cl = NULL;       \
+		cl = nullptr;    \
 	}
 #endif

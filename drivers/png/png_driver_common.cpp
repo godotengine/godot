@@ -58,8 +58,7 @@ static bool check_error(const png_image &image) {
 	return false;
 }
 
-Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image) {
-
+Error png_to_image(const uint8_t *p_source, size_t p_size, bool p_force_linear, Ref<Image> p_image) {
 	png_image png_img;
 	zeromem(&png_img, sizeof(png_img));
 	png_img.version = PNG_IMAGE_VERSION;
@@ -100,6 +99,11 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image) {
 			return ERR_UNAVAILABLE;
 	}
 
+	if (!p_force_linear) {
+		// assume 16 bit pngs without sRGB or gAMA chunks are in sRGB format
+		png_img.flags |= PNG_IMAGE_FLAG_16BIT_sRGB;
+	}
+
 	const png_uint_32 stride = PNG_IMAGE_ROW_STRIDE(png_img);
 	Vector<uint8_t> buffer;
 	Error err = buffer.resize(PNG_IMAGE_BUFFER_SIZE(png_img, stride));
@@ -110,22 +114,22 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image) {
 	uint8_t *writer = buffer.ptrw();
 
 	// read image data to buffer and release libpng resources
-	success = png_image_finish_read(&png_img, NULL, writer, stride, NULL);
+	success = png_image_finish_read(&png_img, nullptr, writer, stride, nullptr);
 	ERR_FAIL_COND_V_MSG(check_error(png_img), ERR_FILE_CORRUPT, png_img.message);
 	ERR_FAIL_COND_V(!success, ERR_FILE_CORRUPT);
 
 	//print_line("png width: "+itos(png_img.width)+" height: "+itos(png_img.height));
-	p_image->create(png_img.width, png_img.height, 0, dest_format, buffer);
+	p_image->create(png_img.width, png_img.height, false, dest_format, buffer);
 
 	return OK;
 }
 
 Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
-
 	Ref<Image> source_image = p_image->duplicate();
 
-	if (source_image->is_compressed())
+	if (source_image->is_compressed()) {
 		source_image->decompress();
+	}
 
 	ERR_FAIL_COND_V(source_image->is_compressed(), FAILED);
 
@@ -175,11 +179,10 @@ Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
 
 		uint8_t *writer = p_buffer.ptrw();
 		success = png_image_write_to_memory(&png_img, &writer[buffer_offset],
-				&compressed_size, 0, reader, 0, NULL);
+				&compressed_size, 0, reader, 0, nullptr);
 		ERR_FAIL_COND_V_MSG(check_error(png_img), FAILED, png_img.message);
 	}
 	if (!success) {
-
 		// buffer was big enough, must be some other error
 		ERR_FAIL_COND_V(compressed_size <= png_size_estimate, FAILED);
 
@@ -189,7 +192,7 @@ Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
 
 		uint8_t *writer = p_buffer.ptrw();
 		success = png_image_write_to_memory(&png_img, &writer[buffer_offset],
-				&compressed_size, 0, reader, 0, NULL);
+				&compressed_size, 0, reader, 0, nullptr);
 		ERR_FAIL_COND_V_MSG(check_error(png_img), FAILED, png_img.message);
 		ERR_FAIL_COND_V(!success, FAILED);
 	}
@@ -200,5 +203,4 @@ Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
 
 	return OK;
 }
-
 } // namespace PNGDriverCommon

@@ -45,7 +45,6 @@
 #include "editor_scale.h"
 
 class EditorAbout : public AcceptDialog {
-
 	GDCLASS(EditorAbout, AcceptDialog);
 
 private:
@@ -56,6 +55,8 @@ private:
 	RichTextLabel *_license_text;
 	RichTextLabel *_tpl_text;
 	TextureRect *_logo;
+
+	void _theme_changed();
 
 protected:
 	void _notification(int p_what);

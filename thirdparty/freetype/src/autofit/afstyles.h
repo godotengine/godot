@@ -4,7 +4,7 @@
  *
  *   Auto-fitter styles (specification only).
  *
- * Copyright (C) 2013-2019 by
+ * Copyright (C) 2013-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -322,6 +322,13 @@
          AF_BLUE_STRINGSET_MLYM,
          AF_COVERAGE_DEFAULT )
 
+  STYLE( medf_dflt, MEDF_DFLT,
+         "Medefaidrin default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_MEDF,
+         AF_BLUE_STRINGSET_MEDF,
+         AF_COVERAGE_DEFAULT )
+
   STYLE( mong_dflt, MONG_DFLT,
          "Mongolian default style",
          AF_WRITING_SYSTEM_LATIN,
@@ -376,6 +383,13 @@
          AF_WRITING_SYSTEM_LATIN,
          AF_SCRIPT_OSMA,
          AF_BLUE_STRINGSET_OSMA,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( rohg_dflt, ROHG_DFLT,
+         "Hanifi Rohingya default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_ROHG,
+         AF_BLUE_STRINGSET_ROHG,
          AF_COVERAGE_DEFAULT )
 
   STYLE( saur_dflt, SAUR_DFLT,

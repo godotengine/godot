@@ -121,23 +121,22 @@ CommandLineToArgvA(
 		i++;
 	}
 	_argv[j] = '\0';
-	argv[argc] = NULL;
+	argv[argc] = nullptr;
 
 	(*_argc) = argc;
 	return argv;
 }
 
 char *wc_to_utf8(const wchar_t *wc) {
-	int ulen = WideCharToMultiByte(CP_UTF8, 0, wc, -1, NULL, 0, NULL, NULL);
+	int ulen = WideCharToMultiByte(CP_UTF8, 0, wc, -1, nullptr, 0, nullptr, nullptr);
 	char *ubuf = new char[ulen + 1];
-	WideCharToMultiByte(CP_UTF8, 0, wc, -1, ubuf, ulen, NULL, NULL);
+	WideCharToMultiByte(CP_UTF8, 0, wc, -1, ubuf, ulen, nullptr, nullptr);
 	ubuf[ulen] = 0;
 	return ubuf;
 }
 
 int widechar_main(int argc, wchar_t **argv) {
-
-	OS_Windows os(NULL);
+	OS_Windows os(nullptr);
 
 	setlocale(LC_CTYPE, "");
 
@@ -146,6 +145,8 @@ int widechar_main(int argc, wchar_t **argv) {
 	for (int i = 0; i < argc; ++i) {
 		argv_utf8[i] = wc_to_utf8(argv[i]);
 	}
+
+	TEST_MAIN_PARAM_OVERRIDE(argc, argv_utf8)
 
 	Error err = Main::setup(argv_utf8[0], argc - 1, &argv_utf8[1]);
 
@@ -176,7 +177,7 @@ int _main() {
 
 	wc_argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
-	if (NULL == wc_argv) {
+	if (nullptr == wc_argv) {
 		wprintf(L"CommandLineToArgvW failed\n");
 		return 0;
 	}
@@ -187,10 +188,12 @@ int _main() {
 	return result;
 }
 
-int main(int _argc, char **_argv) {
+int main(int argc, char **argv) {
+	// override the arguments for the test handler / if symbol is provided
+	// TEST_MAIN_OVERRIDE
+
 	// _argc and _argv are ignored
 	// we are going to use the WideChar version of them instead
-
 #ifdef CRASH_HANDLER_EXCEPTION
 	__try {
 		return _main();
@@ -202,9 +205,9 @@ int main(int _argc, char **_argv) {
 #endif
 }
 
-HINSTANCE godot_hinstance = NULL;
+HINSTANCE godot_hinstance = nullptr;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	godot_hinstance = hInstance;
-	return main(0, NULL);
+	return main(0, nullptr);
 }

@@ -4,7 +4,7 @@
  *
  *   FreeType Glyph Image (FT_Glyph) cache (body).
  *
- * Copyright (C) 2000-2019 by
+ * Copyright (C) 2000-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,11 +16,10 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_CACHE_H
+#include <freetype/internal/ftobjs.h>
+#include <freetype/ftcache.h>
 #include "ftcglyph.h"
-#include FT_ERRORS_H
+#include <freetype/fterrors.h>
 
 #include "ftccback.h"
 #include "ftcerror.h"

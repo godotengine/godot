@@ -7,7 +7,7 @@
 		Plays audio that dampens with distance from screen center.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html</link>
+		<link title="Audio streams">https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_playback_position">
@@ -67,7 +67,7 @@
 			Maximum distance from which audio is still hearable.
 		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
-			Changes the pitch and the tempo of the audio.
+			The pitch and the tempo of the audio, as a multiplier of the audio sample's sample rate.
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing" default="false">
 			If [code]true[/code], audio is playing.

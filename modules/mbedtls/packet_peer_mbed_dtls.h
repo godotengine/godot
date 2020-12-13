@@ -67,7 +67,7 @@ protected:
 public:
 	virtual void poll();
 	virtual Error accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert = Ref<X509Certificate>(), Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>(), Ref<CookieContextMbedTLS> p_cookies = Ref<CookieContextMbedTLS>());
-	virtual Error connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_ca_certs = Ref<X509Certificate>());
+	virtual Error connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_validate_certs = true, const String &p_for_hostname = String(), Ref<X509Certificate> p_ca_certs = Ref<X509Certificate>());
 	virtual Status get_status() const;
 
 	virtual void disconnect_from_peer();

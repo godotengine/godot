@@ -32,14 +32,13 @@
 #define MIDI_DRIVER_H
 
 #include "core/typedefs.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 /**
  * Multi-Platform abstraction for accessing to MIDI.
  */
 
 class MIDIDriver {
-
 	static MIDIDriver *singleton;
 	static uint8_t last_received_message;
 
@@ -58,4 +57,4 @@ public:
 	virtual ~MIDIDriver() {}
 };
 
-#endif
+#endif // MIDI_DRIVER_H

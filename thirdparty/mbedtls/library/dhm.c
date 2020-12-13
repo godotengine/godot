@@ -1,8 +1,14 @@
 /*
  *  Diffie-Hellman-Merkle key exchange
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 /*
  *  The following sources were referenced in the design of this implementation
@@ -324,6 +349,32 @@ cleanup:
 }
 
 /*
+ * Pick a random R in the range [2, M) for blinding purposes
+ */
+static int dhm_random_below( mbedtls_mpi *R, const mbedtls_mpi *M,
+                int (*f_rng)(void *, unsigned char *, size_t), void *p_rng )
+{
+    int ret, count;
+
+    count = 0;
+    do
+    {
+        MBEDTLS_MPI_CHK( mbedtls_mpi_fill_random( R, mbedtls_mpi_size( M ), f_rng, p_rng ) );
+
+        while( mbedtls_mpi_cmp_mpi( R, M ) >= 0 )
+            MBEDTLS_MPI_CHK( mbedtls_mpi_shift_r( R, 1 ) );
+
+        if( count++ > 10 )
+            return( MBEDTLS_ERR_MPI_NOT_ACCEPTABLE );
+    }
+    while( mbedtls_mpi_cmp_int( R, 1 ) <= 0 );
+
+cleanup:
+    return( ret );
+}
+
+
+/*
  * Use the blinding method and optimisation suggested in section 10 of:
  *  KOCHER, Paul C. Timing attacks on implementations of Diffie-Hellman, RSA,
  *  DSS, and other systems. In : Advances in Cryptology-CRYPTO'96. Springer
@@ -332,7 +383,10 @@ cleanup:
 static int dhm_update_blinding( mbedtls_dhm_context *ctx,
                     int (*f_rng)(void *, unsigned char *, size_t), void *p_rng )
 {
-    int ret, count;
+    int ret;
+    mbedtls_mpi R;
+
+    mbedtls_mpi_init( &R );
 
     /*
      * Don't use any blinding the first time a particular X is used,
@@ -367,24 +421,23 @@ static int dhm_update_blinding( mbedtls_dhm_context *ctx,
      */
 
     /* Vi = random( 2, P-1 ) */
-    count = 0;
-    do
-    {
-        MBEDTLS_MPI_CHK( mbedtls_mpi_fill_random( &ctx->Vi, mbedtls_mpi_size( &ctx->P ), f_rng, p_rng ) );
+    MBEDTLS_MPI_CHK( dhm_random_below( &ctx->Vi, &ctx->P, f_rng, p_rng ) );
 
-        while( mbedtls_mpi_cmp_mpi( &ctx->Vi, &ctx->P ) >= 0 )
-            MBEDTLS_MPI_CHK( mbedtls_mpi_shift_r( &ctx->Vi, 1 ) );
+    /* Vf = Vi^-X mod P
+     * First compute Vi^-1 = R * (R Vi)^-1, (avoiding leaks from inv_mod),
+     * then elevate to the Xth power. */
+    MBEDTLS_MPI_CHK( dhm_random_below( &R, &ctx->P, f_rng, p_rng ) );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( &ctx->Vf, &ctx->Vi, &R ) );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( &ctx->Vf, &ctx->Vf, &ctx->P ) );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_inv_mod( &ctx->Vf, &ctx->Vf, &ctx->P ) );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( &ctx->Vf, &ctx->Vf, &R ) );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( &ctx->Vf, &ctx->Vf, &ctx->P ) );
 
-        if( count++ > 10 )
-            return( MBEDTLS_ERR_MPI_NOT_ACCEPTABLE );
-    }
-    while( mbedtls_mpi_cmp_int( &ctx->Vi, 1 ) <= 0 );
-
-    /* Vf = Vi^-X mod P */
-    MBEDTLS_MPI_CHK( mbedtls_mpi_inv_mod( &ctx->Vf, &ctx->Vi, &ctx->P ) );
     MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &ctx->Vf, &ctx->Vf, &ctx->X, &ctx->P, &ctx->RP ) );
 
 cleanup:
+    mbedtls_mpi_free( &R );
+
     return( ret );
 }
 

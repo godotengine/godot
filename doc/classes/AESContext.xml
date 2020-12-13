@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AESContext" inherits="Reference" version="4.0">
+	<brief_description>
+		Interface to low level AES encryption features.
+	</brief_description>
+	<description>
+		This class provides access to AES encryption/decryption of raw data. Both AES-ECB and AES-CBC mode are supported.
+		[codeblocks]
+		[gdscript]
+		extends Node
+
+		var aes = AESContext.new()
+
+		func _ready():
+		    var key = "My secret key!!!" # Key must be either 16 or 32 bytes.
+		    var data = "My secret text!!" # Data size must be multiple of 16 bytes, apply padding if needed.
+		    # Encrypt ECB
+		    aes.start(AESContext.MODE_ECB_ENCRYPT, key.to_utf8())
+		    var encrypted = aes.update(data.to_utf8())
+		    aes.finish()
+		    # Decrypt ECB
+		    aes.start(AESContext.MODE_ECB_DECRYPT, key.to_utf8())
+		    var decrypted = aes.update(encrypted)
+		    aes.finish()
+		    # Check ECB
+		    assert(decrypted == data.to_utf8())
+
+		    var iv = "My secret iv!!!!" # IV must be of exactly 16 bytes.
+		    # Encrypt CBC
+		    aes.start(AESContext.MODE_CBC_ENCRYPT, key.to_utf8(), iv.to_utf8())
+		    encrypted = aes.update(data.to_utf8())
+		    aes.finish()
+		    # Decrypt CBC
+		    aes.start(AESContext.MODE_CBC_DECRYPT, key.to_utf8(), iv.to_utf8())
+		    decrypted = aes.update(encrypted)
+		    aes.finish()
+		    # Check CBC
+		    assert(decrypted == data.to_utf8())
+		[/gdscript]
+		[csharp]
+		using Godot;
+		using System;
+		using System.Diagnostics;
+
+		public class Example : Node
+		{
+		    public AESContext Aes = new AESContext();
+		    public override void _Ready()
+		    {
+		        string key = "My secret key!!!"; // Key must be either 16 or 32 bytes.
+		        string data = "My secret text!!"; // Data size must be multiple of 16 bytes, apply padding if needed.
+		        // Encrypt ECB
+		        Aes.Start(AESContext.Mode.EcbEncrypt, key.ToUTF8());
+		        byte[] encrypted = Aes.Update(data.ToUTF8());
+		        Aes.Finish();
+		        // Decrypt ECB
+		        Aes.Start(AESContext.Mode.EcbDecrypt, key.ToUTF8());
+		        byte[] decrypted = Aes.Update(encrypted);
+		        Aes.Finish();
+		        // Check ECB
+		        Debug.Assert(decrypted == data.ToUTF8());
+
+		        string iv = "My secret iv!!!!"; // IV must be of exactly 16 bytes.
+		        // Encrypt CBC
+		        Aes.Start(AESContext.Mode.EcbEncrypt, key.ToUTF8(), iv.ToUTF8());
+		        encrypted = Aes.Update(data.ToUTF8());
+		        Aes.Finish();
+		        // Decrypt CBC
+		        Aes.Start(AESContext.Mode.EcbDecrypt, key.ToUTF8(), iv.ToUTF8());
+		        decrypted = Aes.Update(encrypted);
+		        Aes.Finish();
+		        // Check CBC
+		        Debug.Assert(decrypted == data.ToUTF8());
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="finish">
+			<return type="void">
+			</return>
+			<description>
+				Close this AES context so it can be started again. See [method start].
+			</description>
+		</method>
+		<method name="get_iv_state">
+			<return type="PackedByteArray">
+			</return>
+			<description>
+				Get the current IV state for this context (IV gets updated when calling [method update]). You normally don't need this function.
+				Note: This function only makes sense when the context is started with [constant MODE_CBC_ENCRYPT] or [constant MODE_CBC_DECRYPT].
+			</description>
+		</method>
+		<method name="start">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="mode" type="int" enum="AESContext.Mode">
+			</argument>
+			<argument index="1" name="key" type="PackedByteArray">
+			</argument>
+			<argument index="2" name="iv" type="PackedByteArray" default="PackedByteArray(  )">
+			</argument>
+			<description>
+				Start the AES context in the given [code]mode[/code]. A [code]key[/code] of either 16 or 32 bytes must always be provided, while an [code]iv[/code] (initialization vector) of exactly 16 bytes, is only needed when [code]mode[/code] is either [constant MODE_CBC_ENCRYPT] or [constant MODE_CBC_DECRYPT].
+			</description>
+		</method>
+		<method name="update">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="src" type="PackedByteArray">
+			</argument>
+			<description>
+				Run the desired operation for this AES context. Will return a [PackedByteArray] containing the result of encrypting (or decrypting) the given [code]src[/code]. See [method start] for mode of operation.
+				Note: The size of [code]src[/code] must be a multiple of 16. Apply some padding if needed.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="MODE_ECB_ENCRYPT" value="0" enum="Mode">
+			AES electronic codebook encryption mode.
+		</constant>
+		<constant name="MODE_ECB_DECRYPT" value="1" enum="Mode">
+			AES electronic codebook decryption mode.
+		</constant>
+		<constant name="MODE_CBC_ENCRYPT" value="2" enum="Mode">
+			AES cipher blocker chaining encryption mode.
+		</constant>
+		<constant name="MODE_CBC_DECRYPT" value="3" enum="Mode">
+			AES cipher blocker chaining decryption mode.
+		</constant>
+		<constant name="MODE_MAX" value="4" enum="Mode">
+			Maximum value for the mode enum.
+		</constant>
+	</constants>
+</class>

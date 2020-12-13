@@ -29,18 +29,28 @@
 /*************************************************************************/
 
 #include "ios.h"
+#import "app_delegate.h"
+#import "view_controller.h"
+#import <UIKit/UIKit.h>
 #include <sys/sysctl.h>
 
-#import <UIKit/UIKit.h>
-
 void iOS::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_rate_url", "app_id"), &iOS::get_rate_url);
 };
 
 void iOS::alert(const char *p_alert, const char *p_title) {
-	UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:[NSString stringWithUTF8String:p_title] message:[NSString stringWithUTF8String:p_alert] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] autorelease];
-	[alert show];
+	NSString *title = [NSString stringWithUTF8String:p_title];
+	NSString *message = [NSString stringWithUTF8String:p_alert];
+
+	UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+	UIAlertAction *button = [UIAlertAction actionWithTitle:@"OK"
+													 style:UIAlertActionStyleCancel
+												   handler:^(id){
+												   }];
+
+	[alert addAction:button];
+
+	[AppDelegate.viewController presentViewController:alert animated:YES completion:nil];
 }
 
 String iOS::get_model() const {
@@ -59,26 +69,12 @@ String iOS::get_model() const {
 }
 
 String iOS::get_rate_url(int p_app_id) const {
-	String templ = "itms-apps://ax.itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?type=Purple+Software&id=APP_ID";
-	String templ_iOS7 = "itms-apps://itunes.apple.com/app/idAPP_ID";
-	String templ_iOS8 = "itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?id=APP_ID&onlyLatestVersion=true&pageNumber=0&sortOrdering=1&type=Purple+Software";
+	String app_url_path = "itms-apps://itunes.apple.com/app/idAPP_ID";
 
-	//ios7 before
-	String ret = templ;
+	String ret = app_url_path.replace("APP_ID", String::num(p_app_id));
 
-	if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0 && [[[UIDevice currentDevice] systemVersion] floatValue] < 7.1) {
-		// iOS 7 needs a different templateReviewURL @see https://github.com/arashpayan/appirater/issues/131
-		ret = templ_iOS7;
-	} else if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0) {
-		// iOS 8 needs a different templateReviewURL also @see https://github.com/arashpayan/appirater/issues/182
-		ret = templ_iOS8;
-	}
-
-	// ios7 for everything?
-	ret = templ_iOS7.replace("APP_ID", String::num(p_app_id));
-
-	printf("returning rate url %ls\n", ret.c_str());
+	printf("returning rate url %s\n", ret.utf8().get_data());
 	return ret;
 };
 
-iOS::iOS(){};
+iOS::iOS() {}

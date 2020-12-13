@@ -4,7 +4,7 @@
 		A color interpolator resource which can be used to generate colors between user-defined color points.
 	</brief_description>
 	<description>
-		Given a set of colors, this resource will interpolate them in order. This means that if you have color 1, color 2 and color 3, the ramp will interpolate from color 1 to color 2 and from color 2 to color 3. The ramp will initially have 2 colors (black and white), one (black) at ramp lower offset 0 and the other (white) at the ramp higher offset 1.
+		Given a set of colors, this resource will interpolate them in order. This means that if you have color 1, color 2 and color 3, the gradient will interpolate from color 1 to color 2 and from color 2 to color 3. The gradient will initially have 2 colors (black and white), one (black) at gradient lower offset 0 and the other (white) at the gradient higher offset 1.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,32 +17,32 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Adds the specified color to the end of the ramp, with the specified offset.
+				Adds the specified color to the end of the gradient, with the specified offset.
 			</description>
 		</method>
-		<method name="get_color" qualifiers="const">
+		<method name="get_color">
 			<return type="Color">
 			</return>
 			<argument index="0" name="point" type="int">
 			</argument>
 			<description>
-				Returns the color of the ramp color at index [code]point[/code].
+				Returns the color of the gradient color at index [code]point[/code].
 			</description>
 		</method>
-		<method name="get_offset" qualifiers="const">
+		<method name="get_offset">
 			<return type="float">
 			</return>
 			<argument index="0" name="point" type="int">
 			</argument>
 			<description>
-				Returns the offset of the ramp color at index [code]point[/code].
+				Returns the offset of the gradient color at index [code]point[/code].
 			</description>
 		</method>
 		<method name="get_point_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of colors in the ramp.
+				Returns the number of colors in the gradient.
 			</description>
 		</method>
 		<method name="interpolate">
@@ -71,7 +71,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the color of the ramp color at index [code]point[/code].
+				Sets the color of the gradient color at index [code]point[/code].
 			</description>
 		</method>
 		<method name="set_offset">
@@ -82,7 +82,7 @@
 			<argument index="1" name="offset" type="float">
 			</argument>
 			<description>
-				Sets the offset for the ramp color at index [code]point[/code].
+				Sets the offset for the gradient color at index [code]point[/code].
 			</description>
 		</method>
 	</methods>

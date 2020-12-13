@@ -33,10 +33,10 @@
 
 #ifndef JAVASCRIPT_ENABLED
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "core/io/packet_peer.h"
 #include "core/io/stream_peer_tcp.h"
-#include "core/ring_buffer.h"
+#include "core/templates/ring_buffer.h"
 #include "packet_buffer.h"
 #include "websocket_peer.h"
 #include "wslay/wslay.h"
@@ -44,7 +44,6 @@
 #define WSL_MAX_HEADER_SIZE 4096
 
 class WSLPeer : public WebSocketPeer {
-
 	GDCIIMPL(WSLPeer, WebSocketPeer);
 
 public:
@@ -67,10 +66,10 @@ public:
 			valid = false;
 			is_server = false;
 			id = 1;
-			ctx = NULL;
-			obj = NULL;
+			ctx = nullptr;
+			obj = nullptr;
 			closing = false;
-			peer = NULL;
+			peer = nullptr;
 		}
 	};
 

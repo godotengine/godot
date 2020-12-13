@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDShaderBytecode" inherits="Resource" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_stage_bytecode" qualifiers="const">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_stage_compile_error" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_stage_bytecode">
+			<return type="void">
+			</return>
+			<argument index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage">
+			</argument>
+			<argument index="1" name="bytecode" type="PackedByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_stage_compile_error">
+			<return type="void">
+			</return>
+			<argument index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage">
+			</argument>
+			<argument index="1" name="compile_error" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bytecode_compute" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray(  )">
+		</member>
+		<member name="bytecode_fragment" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray(  )">
+		</member>
+		<member name="bytecode_tesselation_control" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray(  )">
+		</member>
+		<member name="bytecode_tesselation_evaluation" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray(  )">
+		</member>
+		<member name="bytecode_vertex" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray(  )">
+		</member>
+		<member name="compile_error_compute" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
+		</member>
+		<member name="compile_error_fragment" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
+		</member>
+		<member name="compile_error_tesselation_control" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
+		</member>
+		<member name="compile_error_tesselation_evaluation" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
+		</member>
+		<member name="compile_error_vertex" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

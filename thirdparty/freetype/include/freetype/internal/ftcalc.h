@@ -4,7 +4,7 @@
  *
  *   Arithmetic computations (specification).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,9 +20,9 @@
 #define FTCALC_H_
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
+#include "compiler-macros.h"
 
 FT_BEGIN_HEADER
 
@@ -449,8 +449,7 @@ FT_BEGIN_HEADER
 #define F2DOT14_TO_FIXED( x )  ( (FT_Long)(x) * 4 )      /* << 2  */
 #define FIXED_TO_INT( x )      ( FT_RoundFix( x ) >> 16 )
 
-#define ROUND_F26DOT6( x )     ( x >= 0 ? (    ( (x) + 32 ) & -64 )     \
-                                        : ( -( ( 32 - (x) ) & -64 ) ) )
+#define ROUND_F26DOT6( x )     ( ( (x) + 32 - ( x < 0 ) ) & -64 )
 
   /*
    * The following macros have two purposes.

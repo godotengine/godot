@@ -22,6 +22,37 @@ namespace GodotTools.ProjectEditor
             return string.Join(".", identifiers);
         }
 
+        /// <summary>
+        /// Skips invalid identifier characters including decimal digit numbers at the start of the identifier.
+        /// </summary>
+        private static void SkipInvalidCharacters(string source, int startIndex, StringBuilder outputBuilder)
+        {
+            for (int i = startIndex; i < source.Length; i++)
+            {
+                char @char = source[i];
+
+                switch (char.GetUnicodeCategory(@char))
+                {
+                    case UnicodeCategory.UppercaseLetter:
+                    case UnicodeCategory.LowercaseLetter:
+                    case UnicodeCategory.TitlecaseLetter:
+                    case UnicodeCategory.ModifierLetter:
+                    case UnicodeCategory.LetterNumber:
+                    case UnicodeCategory.OtherLetter:
+                        outputBuilder.Append(@char);
+                        break;
+                    case UnicodeCategory.NonSpacingMark:
+                    case UnicodeCategory.SpacingCombiningMark:
+                    case UnicodeCategory.ConnectorPunctuation:
+                    case UnicodeCategory.DecimalDigitNumber:
+                        // Identifiers may start with underscore
+                        if (outputBuilder.Length > startIndex || @char == '_')
+                            outputBuilder.Append(@char);
+                        break;
+                }
+            }
+        }
+
         public static string SanitizeIdentifier(string identifier, bool allowEmpty)
         {
             if (string.IsNullOrEmpty(identifier))
@@ -44,30 +75,7 @@ namespace GodotTools.ProjectEditor
                 startIndex += 1;
             }
 
-            for (int i = startIndex; i < identifier.Length; i++)
-            {
-                char @char = identifier[i];
-
-                switch (Char.GetUnicodeCategory(@char))
-                {
-                    case UnicodeCategory.UppercaseLetter:
-                    case UnicodeCategory.LowercaseLetter:
-                    case UnicodeCategory.TitlecaseLetter:
-                    case UnicodeCategory.ModifierLetter:
-                    case UnicodeCategory.LetterNumber:
-                    case UnicodeCategory.OtherLetter:
-                        identifierBuilder.Append(@char);
-                        break;
-                    case UnicodeCategory.NonSpacingMark:
-                    case UnicodeCategory.SpacingCombiningMark:
-                    case UnicodeCategory.ConnectorPunctuation:
-                    case UnicodeCategory.DecimalDigitNumber:
-                        // Identifiers may start with underscore
-                        if (identifierBuilder.Length > startIndex || @char == '_')
-                            identifierBuilder.Append(@char);
-                        break;
-                }
-            }
+            SkipInvalidCharacters(identifier, startIndex, identifierBuilder);
 
             if (identifierBuilder.Length == startIndex)
             {

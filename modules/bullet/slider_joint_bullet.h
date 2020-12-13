@@ -46,7 +46,7 @@ public:
 	/// Reference frame is A
 	SliderJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB);
 
-	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_SLIDER; }
+	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_SLIDER; }
 
 	const RigidBodyBullet *getRigidBodyA() const;
 	const RigidBodyBullet *getRigidBodyB() const;
@@ -115,7 +115,7 @@ public:
 	real_t getMaxAngMotorForce();
 	real_t getLinearPos();
 
-	void set_param(PhysicsServer::SliderJointParam p_param, real_t p_value);
-	real_t get_param(PhysicsServer::SliderJointParam p_param) const;
+	void set_param(PhysicsServer3D::SliderJointParam p_param, real_t p_value);
+	real_t get_param(PhysicsServer3D::SliderJointParam p_param) const;
 };
 #endif

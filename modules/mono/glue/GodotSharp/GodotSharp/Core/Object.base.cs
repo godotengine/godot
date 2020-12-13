@@ -7,7 +7,7 @@ namespace Godot
     {
         private bool disposed = false;
 
-        private const string nativeName = "Object";
+        private static StringName nativeName = "Object";
 
         internal IntPtr ptr;
         internal bool memoryOwn;
@@ -16,6 +16,12 @@ namespace Godot
         {
             if (ptr == IntPtr.Zero)
                 ptr = godot_icall_Object_Ctor(this);
+            _InitializeGodotScriptInstanceInternals();
+        }
+
+        internal void _InitializeGodotScriptInstanceInternals()
+        {
+            godot_icall_Object_ConnectEventSignals(ptr);
         }
 
         internal Object(bool memoryOwn)
@@ -101,7 +107,7 @@ namespace Godot
         /// }
         /// </code>
         /// </example>
-        public SignalAwaiter ToSignal(Object source, string signal)
+        public SignalAwaiter ToSignal(Object source, StringName signal)
         {
             return new SignalAwaiter(source, signal, this);
         }
@@ -111,20 +117,28 @@ namespace Godot
         /// </summary>
         public dynamic DynamicObject => new DynamicGodotObject(this);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Object_Ctor(Object obj);
+        internal static IntPtr __ClassDB_get_method(StringName type, string method)
+        {
+            return godot_icall_Object_ClassDB_get_method(StringName.GetPtr(type), method);
+        }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Object_Disposed(Object obj, IntPtr ptr);
+        internal static extern IntPtr godot_icall_Object_Ctor(Object obj);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Reference_Disposed(Object obj, IntPtr ptr, bool isFinalizer);
+        internal static extern void godot_icall_Object_Disposed(Object obj, IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_Object_ToString(IntPtr ptr);
+        internal static extern void godot_icall_Reference_Disposed(Object obj, IntPtr ptr, bool isFinalizer);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void godot_icall_Object_ConnectEventSignals(IntPtr obj);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern string godot_icall_Object_ToString(IntPtr ptr);
 
         // Used by the generated API
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Object_ClassDB_get_method(string type, string method);
+        internal static extern IntPtr godot_icall_Object_ClassDB_get_method(IntPtr type, string method);
     }
 }

@@ -7,10 +7,26 @@
 		Plane represents a normalized plane equation. Basically, "normal" is the normal of the plane (a,b,c normalized), and "d" is the distance from the origin to the plane (in the direction of "normal"). "Over" or "Above" the plane is considered the side of the plane towards where the normal is pointing.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+		<link title="Math tutorial index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
 	</tutorials>
 	<methods>
-		<method name="Plane">
+		<method name="Plane" qualifiers="constructor">
+			<return type="Plane">
+			</return>
+			<description>
+				Constructs a default-initialized [Plane] with all components set to [code]0[/code].
+			</description>
+		</method>
+		<method name="Plane" qualifiers="constructor">
+			<return type="Plane">
+			</return>
+			<argument index="0" name="from" type="Plane">
+			</argument>
+			<description>
+				Constructs a [Plane] as a copy of the given [Plane].
+			</description>
+		</method>
+		<method name="Plane" qualifiers="constructor">
 			<return type="Plane">
 			</return>
 			<argument index="0" name="a" type="float">
@@ -25,20 +41,7 @@
 				Creates a plane from the four parameters. The three components of the resulting plane's [member normal] are [code]a[/code], [code]b[/code] and [code]c[/code], and the plane has a distance of [code]d[/code] from the origin.
 			</description>
 		</method>
-		<method name="Plane">
-			<return type="Plane">
-			</return>
-			<argument index="0" name="v1" type="Vector3">
-			</argument>
-			<argument index="1" name="v2" type="Vector3">
-			</argument>
-			<argument index="2" name="v3" type="Vector3">
-			</argument>
-			<description>
-				Creates a plane from the three points, given in clockwise order.
-			</description>
-		</method>
-		<method name="Plane">
+		<method name="Plane" qualifiers="constructor">
 			<return type="Plane">
 			</return>
 			<argument index="0" name="normal" type="Vector3">
@@ -47,6 +50,30 @@
 			</argument>
 			<description>
 				Creates a plane from the normal and the plane's distance to the origin.
+			</description>
+		</method>
+		<method name="Plane" qualifiers="constructor">
+			<return type="Plane">
+			</return>
+			<argument index="0" name="point" type="Vector3">
+			</argument>
+			<argument index="1" name="normal" type="Vector3">
+			</argument>
+			<description>
+				Creates a plane from the given position and a plane normal.
+			</description>
+		</method>
+		<method name="Plane" qualifiers="constructor">
+			<return type="Plane">
+			</return>
+			<argument index="0" name="point1" type="Vector3">
+			</argument>
+			<argument index="1" name="point2" type="Vector3">
+			</argument>
+			<argument index="2" name="point3" type="Vector3">
+			</argument>
+			<description>
+				Creates a plane from the three points, given in clockwise order.
 			</description>
 		</method>
 		<method name="center">
@@ -65,13 +92,6 @@
 				Returns the shortest distance from the plane to the position [code]point[/code].
 			</description>
 		</method>
-		<method name="get_any_point">
-			<return type="Vector3">
-			</return>
-			<description>
-				Returns a point on the plane.
-			</description>
-		</method>
 		<method name="has_point">
 			<return type="bool">
 			</return>
@@ -80,11 +100,11 @@
 			<argument index="1" name="epsilon" type="float" default="1e-05">
 			</argument>
 			<description>
-				Returns [code]true[/code] if [code]point[/code] is inside the plane (by a very minimum [code]epsilon[/code] threshold).
+				Returns [code]true[/code] if [code]point[/code] is inside the plane. Comparison uses a custom minimum [code]epsilon[/code] threshold.
 			</description>
 		</method>
 		<method name="intersect_3">
-			<return type="Vector3">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="b" type="Plane">
 			</argument>
@@ -95,7 +115,7 @@
 			</description>
 		</method>
 		<method name="intersects_ray">
-			<return type="Vector3">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="from" type="Vector3">
 			</argument>
@@ -106,11 +126,11 @@
 			</description>
 		</method>
 		<method name="intersects_segment">
-			<return type="Vector3">
+			<return type="Variant">
 			</return>
-			<argument index="0" name="begin" type="Vector3">
+			<argument index="0" name="from" type="Vector3">
 			</argument>
-			<argument index="1" name="end" type="Vector3">
+			<argument index="1" name="to" type="Vector3">
 			</argument>
 			<description>
 				Returns the intersection point of a segment from position [code]begin[/code] to position [code]end[/code] with this plane. If no intersection is found, [code]null[/code] is returned.
@@ -119,7 +139,7 @@
 		<method name="is_equal_approx">
 			<return type="bool">
 			</return>
-			<argument index="0" name="plane" type="Plane">
+			<argument index="0" name="to_plane" type="Plane">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this plane and [code]plane[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
@@ -128,7 +148,7 @@
 		<method name="is_point_over">
 			<return type="bool">
 			</return>
-			<argument index="0" name="point" type="Vector3">
+			<argument index="0" name="plane" type="Vector3">
 			</argument>
 			<description>
 				Returns [code]true[/code] if [code]point[/code] is located above the plane.
@@ -141,42 +161,72 @@
 				Returns a copy of the plane, normalized.
 			</description>
 		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Plane">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="Plane">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator -" qualifiers="operator">
+			<return type="Plane">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Plane">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="project">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="point" type="Vector3">
 			</argument>
 			<description>
-				Returns the orthogonal projection of point [code]p[/code] into a point in the plane.
+				Returns the orthogonal projection of [code]point[/code] into a point in the plane.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="d" type="float" setter="" getter="" default="0.0">
-			Distance from the origin to the plane, in the direction of [member normal].
+			The distance from the origin to the plane, in the direction of [member normal]. This value is typically non-negative.
+			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is [code]d[/code], while the [code](a, b, c)[/code] coordinates are represented by the [member normal] property.
 		</member>
 		<member name="normal" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
-			The normal of the plane. "Over" or "Above" the plane is considered the side of the plane towards where the normal is pointing.
+			The normal of the plane, which must be normalized.
+			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is the vector [code](a, b, c)[/code], where [code]d[/code] is the [member d] property.
 		</member>
 		<member name="x" type="float" setter="" getter="" default="0.0">
-			The [member normal]'s X component.
+			The X component of the plane's [member normal] vector.
 		</member>
 		<member name="y" type="float" setter="" getter="" default="0.0">
-			The [member normal]'s Y component.
+			The Y component of the plane's [member normal] vector.
 		</member>
 		<member name="z" type="float" setter="" getter="" default="0.0">
-			The [member normal]'s Z component.
+			The Z component of the plane's [member normal] vector.
 		</member>
 	</members>
 	<constants>
 		<constant name="PLANE_YZ" value="Plane( 1, 0, 0, 0 )">
-			A plane that extends in the Y and Z axes.
+			A plane that extends in the Y and Z axes (normal vector points +X).
 		</constant>
 		<constant name="PLANE_XZ" value="Plane( 0, 1, 0, 0 )">
-			A plane that extends in the X and Z axes.
+			A plane that extends in the X and Z axes (normal vector points +Y).
 		</constant>
 		<constant name="PLANE_XY" value="Plane( 0, 0, 1, 0 )">
-			A plane that extends in the X and Y axes.
+			A plane that extends in the X and Y axes (normal vector points +Z).
 		</constant>
 	</constants>
 </class>

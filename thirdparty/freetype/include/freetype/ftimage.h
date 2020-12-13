@@ -5,7 +5,7 @@
  *   FreeType glyph image formats and default raster interface
  *   (specification).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -30,7 +30,6 @@
 
   /* STANDALONE_ is from ftgrays.c */
 #ifndef STANDALONE_
-#include <ft2build.h>
 #endif
 
 
@@ -401,6 +400,13 @@ FT_BEGIN_HEADER
    *     if @FT_OUTLINE_IGNORE_DROPOUTS is set.  See below for more
    *     information.
    *
+   *   FT_OUTLINE_OVERLAP ::
+   *     This flag indicates that this outline contains overlapping contrours
+   *     and the anti-aliased renderer should perform oversampling to
+   *     mitigate possible artifacts.  This flag should _not_ be set for
+   *     well designed glyphs without overlaps because it quadruples the
+   *     rendering time.
+   *
    *   FT_OUTLINE_HIGH_PRECISION ::
    *     This flag indicates that the scan-line converter should try to
    *     convert this outline to bitmaps with the highest possible quality.
@@ -432,6 +438,7 @@ FT_BEGIN_HEADER
 #define FT_OUTLINE_IGNORE_DROPOUTS  0x8
 #define FT_OUTLINE_SMART_DROPOUTS   0x10
 #define FT_OUTLINE_INCLUDE_STUBS    0x20
+#define FT_OUTLINE_OVERLAP          0x40
 
 #define FT_OUTLINE_HIGH_PRECISION   0x100
 #define FT_OUTLINE_SINGLE_PASS      0x200
@@ -1004,20 +1011,26 @@ FT_BEGIN_HEADER
    *     User-supplied data that is passed to each drawing callback.
    *
    *   clip_box ::
-   *     An optional clipping box.  It is only used in direct rendering mode.
-   *     Note that coordinates here should be expressed in _integer_ pixels
-   *     (and not in 26.6 fixed-point units).
+   *     An optional span clipping box expressed in _integer_ pixels
+   *     (not in 26.6 fixed-point units).
    *
    * @note:
-   *   An anti-aliased glyph bitmap is drawn if the @FT_RASTER_FLAG_AA bit
-   *   flag is set in the `flags` field, otherwise a monochrome bitmap is
-   *   generated.
+   *   The @FT_RASTER_FLAG_AA bit flag must be set in the `flags` to
+   *   generate an anti-aliased glyph bitmap, otherwise a monochrome bitmap
+   *   is generated.  The `target` should have appropriate pixel mode and its
+   *   dimensions define the clipping region.
    *
-   *   If the @FT_RASTER_FLAG_DIRECT bit flag is set in `flags`, the raster
-   *   will call the `gray_spans` callback to draw gray pixel spans.  This
-   *   allows direct composition over a pre-existing bitmap through
-   *   user-provided callbacks to perform the span drawing and composition.
-   *   Not supported by the monochrome rasterizer.
+   *   If both @FT_RASTER_FLAG_AA and @FT_RASTER_FLAG_DIRECT bit flags
+   *   are set in `flags`, the raster calls an @FT_SpanFunc callback
+   *   `gray_spans` with `user` data as an argument ignoring `target`.  This
+   *   allows direct composition over a pre-existing user surface to perform
+   *   the span drawing and composition.  To optionally clip the spans, set
+   *   the @FT_RASTER_FLAG_CLIP flag and `clip_box`.  The monochrome raster
+   *   does not support the direct mode.
+   *
+   *   The gray-level rasterizer always uses 256 gray levels.  If you want
+   *   fewer gray levels, you have to use @FT_RASTER_FLAG_DIRECT and reduce
+   *   the levels in the callback function.
    */
   typedef struct  FT_Raster_Params_
   {

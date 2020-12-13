@@ -30,10 +30,10 @@
 
 #include "path_utils.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #ifdef WINDOWS_ENABLED
 #include <windows.h>
@@ -50,52 +50,30 @@
 
 namespace path {
 
-String find_executable(const String &p_name) {
-#ifdef WINDOWS_ENABLED
-	Vector<String> exts = OS::get_singleton()->get_environment("PATHEXT").split(ENV_PATH_SEP, false);
-#endif
-	Vector<String> env_path = OS::get_singleton()->get_environment("PATH").split(ENV_PATH_SEP, false);
-
-	if (env_path.empty())
-		return String();
-
-	for (int i = 0; i < env_path.size(); i++) {
-		String p = path::join(env_path[i], p_name);
-
-#ifdef WINDOWS_ENABLED
-		for (int j = 0; j < exts.size(); j++) {
-			String p2 = p + exts[j].to_lower(); // lowercase to reduce risk of case mismatch warning
-
-			if (FileAccess::exists(p2))
-				return p2;
-		}
-#else
-		if (FileAccess::exists(p))
-			return p;
-#endif
-	}
-
-	return String();
-}
-
 String cwd() {
 #ifdef WINDOWS_ENABLED
-	const DWORD expected_size = ::GetCurrentDirectoryW(0, NULL);
+	const DWORD expected_size = ::GetCurrentDirectoryW(0, nullptr);
 
-	String buffer;
+	Char16String buffer;
 	buffer.resize((int)expected_size);
-	if (::GetCurrentDirectoryW(expected_size, buffer.ptrw()) == 0)
-		return ".";
-
-	return buffer.simplify_path();
-#else
-	char buffer[PATH_MAX];
-	if (::getcwd(buffer, sizeof(buffer)) == NULL)
+	if (::GetCurrentDirectoryW(expected_size, (wchar_t *)buffer.ptrw()) == 0)
 		return ".";
 
 	String result;
-	if (result.parse_utf8(buffer))
+	if (result.parse_utf16(buffer.ptr())) {
 		return ".";
+	}
+	return result.simplify_path();
+#else
+	char buffer[PATH_MAX];
+	if (::getcwd(buffer, sizeof(buffer)) == nullptr) {
+		return ".";
+	}
+
+	String result;
+	if (result.parse_utf8(buffer)) {
+		return ".";
+	}
 
 	return result.simplify_path();
 #endif
@@ -112,48 +90,57 @@ String abspath(const String &p_path) {
 String realpath(const String &p_path) {
 #ifdef WINDOWS_ENABLED
 	// Open file without read/write access
-	HANDLE hFile = ::CreateFileW(p_path.c_str(), 0,
+	HANDLE hFile = ::CreateFileW((LPCWSTR)(p_path.utf16().get_data()), 0,
 			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 	if (hFile == INVALID_HANDLE_VALUE)
 		return p_path;
 
-	const DWORD expected_size = ::GetFinalPathNameByHandleW(hFile, NULL, 0, FILE_NAME_NORMALIZED);
+	const DWORD expected_size = ::GetFinalPathNameByHandleW(hFile, nullptr, 0, FILE_NAME_NORMALIZED);
 
 	if (expected_size == 0) {
 		::CloseHandle(hFile);
 		return p_path;
 	}
 
-	String buffer;
+	Char16String buffer;
 	buffer.resize((int)expected_size);
-	::GetFinalPathNameByHandleW(hFile, buffer.ptrw(), expected_size, FILE_NAME_NORMALIZED);
+	::GetFinalPathNameByHandleW(hFile, (wchar_t *)buffer.ptrw(), expected_size, FILE_NAME_NORMALIZED);
 
 	::CloseHandle(hFile);
-	return buffer.simplify_path();
-#elif UNIX_ENABLED
-	char *resolved_path = ::realpath(p_path.utf8().get_data(), NULL);
 
-	if (!resolved_path)
+	String result;
+	if (result.parse_utf16(buffer.ptr())) {
 		return p_path;
+	}
+
+	return result.simplify_path();
+#elif UNIX_ENABLED
+	char *resolved_path = ::realpath(p_path.utf8().get_data(), nullptr);
+
+	if (!resolved_path) {
+		return p_path;
+	}
 
 	String result;
 	bool parse_ok = result.parse_utf8(resolved_path);
 	::free(resolved_path);
 
-	if (parse_ok)
+	if (parse_ok) {
 		return p_path;
+	}
 
 	return result.simplify_path();
 #endif
 }
 
 String join(const String &p_a, const String &p_b) {
-	if (p_a.empty())
+	if (p_a.empty()) {
 		return p_b;
+	}
 
-	const CharType a_last = p_a[p_a.length() - 1];
+	const char32_t a_last = p_a[p_a.length() - 1];
 	if ((a_last == '/' || a_last == '\\') ||
 			(p_b.size() > 0 && (p_b[0] == '/' || p_b[0] == '\\'))) {
 		return p_a + p_b;
@@ -178,8 +165,9 @@ String relative_to_impl(const String &p_path, const String &p_relative_to) {
 	} else {
 		String base_dir = p_relative_to.get_base_dir();
 
-		if (base_dir.length() <= 2 && (base_dir.empty() || base_dir.ends_with(":")))
+		if (base_dir.length() <= 2 && (base_dir.empty() || base_dir.ends_with(":"))) {
 			return p_path;
+		}
 
 		return String("..").plus_file(relative_to_impl(p_path, base_dir));
 	}
@@ -206,5 +194,4 @@ String relative_to(const String &p_path, const String &p_relative_to) {
 
 	return relative_to_impl(path_abs_norm, relative_to_abs_norm);
 }
-
 } // namespace path

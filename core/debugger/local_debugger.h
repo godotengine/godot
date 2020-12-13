@@ -32,15 +32,14 @@
 #define LOCAL_DEBUGGER_H
 
 #include "core/debugger/engine_debugger.h"
-#include "core/list.h"
-#include "core/script_language.h"
+#include "core/object/script_language.h"
+#include "core/templates/list.h"
 
 class LocalDebugger : public EngineDebugger {
-
 private:
 	struct ScriptsProfiler;
 
-	ScriptsProfiler *scripts_profiler = NULL;
+	ScriptsProfiler *scripts_profiler = nullptr;
 
 	String target_function;
 	Map<String, String> options;

@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CSharpScript" inherits="Script" version="4.0">
 	<brief_description>
+		A script implemented in the C# programming language (Mono-enabled builds only).
 	</brief_description>
 	<description>
+		This class represents a C# script. It is the C# equivalent of the [GDScript] class and is only available in Mono-enabled Godot builds.
+		See also [GodotSharp].
 	</description>
 	<tutorials>
+		<link title="C# tutorial index">https://docs.godotengine.org/en/latest/getting_started/scripting/c_sharp/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="new" qualifiers="vararg">
 			<return type="Variant">
 			</return>
 			<description>
+				Returns a new instance of the script.
 			</description>
 		</method>
 	</methods>

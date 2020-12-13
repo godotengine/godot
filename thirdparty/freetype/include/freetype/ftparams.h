@@ -4,7 +4,7 @@
  *
  *   FreeType API for possible FT_Parameter tags (specification only).
  *
- * Copyright (C) 2017-2019 by
+ * Copyright (C) 2017-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,8 +19,7 @@
 #ifndef FTPARAMS_H_
 #define FTPARAMS_H_
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"

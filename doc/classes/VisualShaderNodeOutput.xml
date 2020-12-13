@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeOutput" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Represents the output shader parameters within the visual shader graph.
 	</brief_description>
 	<description>
+		This visual shader node is present in all shader graphs in form of "Output" block with multiple output value ports.
 	</description>
 	<tutorials>
 	</tutorials>

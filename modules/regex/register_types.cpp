@@ -29,11 +29,10 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "core/class_db.h"
+#include "core/object/class_db.h"
 #include "regex.h"
 
 void register_regex_types() {
-
 	ClassDB::register_class<RegExMatch>();
 	ClassDB::register_class<RegEx>();
 }

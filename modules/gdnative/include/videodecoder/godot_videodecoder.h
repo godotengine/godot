@@ -46,7 +46,7 @@ typedef struct
 	void *next;
 	void *(*constructor)(godot_object *);
 	void (*destructor)(void *);
-	const char *(*get_plugin_name)(void);
+	const char *(*get_plugin_name)();
 	const char **(*get_supported_extensions)(int *count);
 	godot_bool (*open_file)(void *, void *); // data struct, and a FileAccess pointer
 	godot_real (*get_length)(const void *);

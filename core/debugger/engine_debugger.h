@@ -31,13 +31,14 @@
 #ifndef ENGINE_DEBUGGER_H
 #define ENGINE_DEBUGGER_H
 
-#include "core/array.h"
-#include "core/map.h"
-#include "core/string_name.h"
-#include "core/ustring.h"
-#include "core/variant.h"
-#include "core/vector.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 
+class RemoteDebuggerPeer;
 class ScriptDebugger;
 
 class EngineDebugger {
@@ -45,15 +46,18 @@ public:
 	typedef void (*ProfilingToggle)(void *p_user, bool p_enable, const Array &p_opts);
 	typedef void (*ProfilingTick)(void *p_user, float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time);
 	typedef void (*ProfilingAdd)(void *p_user, const Array &p_arr);
+
 	typedef Error (*CaptureFunc)(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
+
+	typedef RemoteDebuggerPeer *(*CreatePeerFunc)(const String &p_uri);
 
 	class Profiler {
 		friend class EngineDebugger;
 
-		ProfilingToggle toggle = NULL;
-		ProfilingAdd add = NULL;
-		ProfilingTick tick = NULL;
-		void *data = NULL;
+		ProfilingToggle toggle = nullptr;
+		ProfilingAdd add = nullptr;
+		ProfilingTick tick = nullptr;
+		void *data = nullptr;
 		bool active = false;
 
 	public:
@@ -69,8 +73,8 @@ public:
 	class Capture {
 		friend class EngineDebugger;
 
-		CaptureFunc capture = NULL;
-		void *data = NULL;
+		CaptureFunc capture = nullptr;
+		void *data = nullptr;
 
 	public:
 		Capture() {}
@@ -94,10 +98,11 @@ protected:
 
 	static Map<StringName, Profiler> profilers;
 	static Map<StringName, Capture> captures;
+	static Map<String, CreatePeerFunc> protocols;
 
 public:
 	_FORCE_INLINE_ static EngineDebugger *get_singleton() { return singleton; }
-	_FORCE_INLINE_ static bool is_active() { return singleton != NULL && script_debugger != NULL; }
+	_FORCE_INLINE_ static bool is_active() { return singleton != nullptr && script_debugger != nullptr; }
 
 	_FORCE_INLINE_ static ScriptDebugger *get_script_debugger() { return script_debugger; };
 
@@ -112,6 +117,8 @@ public:
 	static void register_message_capture(const StringName &p_name, Capture p_func);
 	static void unregister_message_capture(const StringName &p_name);
 	static bool has_capture(const StringName &p_name);
+
+	static void register_uri_handler(const String &p_protocol, CreatePeerFunc p_func);
 
 	void iteration(uint64_t p_frame_ticks, uint64_t p_idle_ticks, uint64_t p_physics_ticks, float p_physics_frame_time);
 	void profiler_enable(const StringName &p_name, bool p_enabled, const Array &p_opts = Array());

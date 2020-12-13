@@ -4,7 +4,7 @@
  *
  *   Auto-fitter Unicode script ranges (body).
  *
- * Copyright (C) 2013-2019 by
+ * Copyright (C) 2013-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -664,6 +664,18 @@
   };
 
 
+  const AF_Script_UniRangeRec  af_medf_uniranges[] =
+  {
+    AF_UNIRANGE_REC( 0x16E40, 0x16E9F ),  /* Medefaidrin */
+    AF_UNIRANGE_REC(       0,       0 )
+  };
+
+  const AF_Script_UniRangeRec  af_medf_nonbase_uniranges[] =
+  {
+    AF_UNIRANGE_REC(       0,       0 )
+  };
+
+
   const AF_Script_UniRangeRec  af_mong_uniranges[] =
   {
     AF_UNIRANGE_REC(  0x1800,  0x18AF ),  /* Mongolian            */
@@ -773,6 +785,18 @@
   };
 
   const AF_Script_UniRangeRec  af_osma_nonbase_uniranges[] =
+  {
+    AF_UNIRANGE_REC( 0, 0 )
+  };
+
+
+  const AF_Script_UniRangeRec  af_rohg_uniranges[] =
+  {
+    AF_UNIRANGE_REC( 0x10D00, 0x10D3F ),   /* Hanifi Rohingya */
+    AF_UNIRANGE_REC(       0,       0 )
+  };
+
+  const AF_Script_UniRangeRec  af_rohg_nonbase_uniranges[] =
   {
     AF_UNIRANGE_REC( 0, 0 )
   };

@@ -31,11 +31,13 @@
 #include "gdnative/transform2d.h"
 
 #include "core/math/transform_2d.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static_assert(sizeof(godot_transform2d) == sizeof(Transform2D), "Transform2D size mismatch");
 
 void GDAPI godot_transform2d_new(godot_transform2d *r_dest, const godot_real p_rot, const godot_vector2 *p_pos) {
 	const Vector2 *pos = (const Vector2 *)p_pos;

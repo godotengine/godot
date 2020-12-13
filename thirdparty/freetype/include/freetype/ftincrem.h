@@ -4,7 +4,7 @@
  *
  *   FreeType incremental loading (specification).
  *
- * Copyright (C) 2002-2019 by
+ * Copyright (C) 2002-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,9 +19,8 @@
 #ifndef FTINCREM_H_
 #define FTINCREM_H_
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_PARAMETER_TAGS_H
+#include <freetype/freetype.h>
+#include <freetype/ftparams.h>
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"

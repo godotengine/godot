@@ -32,9 +32,9 @@
 #define GRAPH_NODE_H
 
 #include "scene/gui/container.h"
+#include "scene/resources/text_line.h"
 
 class GraphNode : public Container {
-
 	GDCLASS(GraphNode, Container);
 
 public:
@@ -66,6 +66,12 @@ private:
 	};
 
 	String title;
+	Ref<TextLine> title_buf;
+
+	Dictionary opentype_features;
+	String language;
+	TextDirection text_direction = TEXT_DIRECTION_AUTO;
+
 	bool show_close;
 	Vector2 offset;
 	bool comment;
@@ -94,6 +100,7 @@ private:
 
 	void _connpos_update();
 	void _resort();
+	void _shape();
 
 	Vector2 drag_from;
 	bool selected;
@@ -110,7 +117,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	bool has_point(const Point2 &p_point) const;
+	bool has_point(const Point2 &p_point) const override;
 
 	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left = Ref<Texture2D>(), const Ref<Texture2D> &p_custom_right = Ref<Texture2D>());
 	void clear_slot(int p_idx);
@@ -124,6 +131,16 @@ public:
 
 	void set_title(const String &p_title);
 	String get_title() const;
+
+	void set_text_direction(TextDirection p_text_direction);
+	TextDirection get_text_direction() const;
+
+	void set_opentype_feature(const String &p_name, int p_value);
+	int get_opentype_feature(const String &p_name) const;
+	void clear_opentype_features();
+
+	void set_language(const String &p_language);
+	String get_language() const;
 
 	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
@@ -155,7 +172,7 @@ public:
 	void set_resizable(bool p_enable);
 	bool is_resizable() const;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	bool is_resizing() const { return resizing; }
 

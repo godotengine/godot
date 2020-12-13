@@ -30,23 +30,22 @@
 
 #include "audio_stream_editor_plugin.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
-#include "core/project_settings.h"
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
 void AudioStreamEditor::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_READY) {
 		AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AudioStreamEditor::_preview_changed));
 	}
 
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-		_play_button->set_icon(get_icon("MainPlay", "EditorIcons"));
-		_stop_button->set_icon(get_icon("Stop", "EditorIcons"));
-		_preview->set_frame_color(get_color("dark_color_2", "Editor"));
-		set_frame_color(get_color("dark_color_1", "Editor"));
+		_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
+		_stop_button->set_icon(get_theme_icon("Stop", "EditorIcons"));
+		_preview->set_color(get_theme_color("dark_color_2", "Editor"));
+		set_color(get_theme_color("dark_color_1", "Editor"));
 
 		_indicator->update();
 		_preview->update();
@@ -75,7 +74,6 @@ void AudioStreamEditor::_draw_preview() {
 	lines.resize(size.width * 2);
 
 	for (int i = 0; i < size.width; i++) {
-
 		float ofs = i * preview_len / size.width;
 		float ofs_n = (i + 1) * preview_len / size.width;
 		float max = preview->get_max(ofs, ofs_n) * 0.5 + 0.5;
@@ -87,50 +85,46 @@ void AudioStreamEditor::_draw_preview() {
 	}
 
 	Vector<Color> color;
-	color.push_back(get_color("contrast_color_2", "Editor"));
+	color.push_back(get_theme_color("contrast_color_2", "Editor"));
 
-	VS::get_singleton()->canvas_item_add_multiline(_preview->get_canvas_item(), lines, color);
+	RS::get_singleton()->canvas_item_add_multiline(_preview->get_canvas_item(), lines, color);
 }
 
 void AudioStreamEditor::_preview_changed(ObjectID p_which) {
-
 	if (stream.is_valid() && stream->get_instance_id() == p_which) {
 		_preview->update();
 	}
 }
 
 void AudioStreamEditor::_changed_callback(Object *p_changed, const char *p_prop) {
-
-	if (!is_visible())
+	if (!is_visible()) {
 		return;
+	}
 	update();
 }
 
 void AudioStreamEditor::_play() {
-
 	if (_player->is_playing()) {
 		_player->stop();
-		_play_button->set_icon(get_icon("MainPlay", "EditorIcons"));
+		_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
 		set_process(false);
 	} else {
 		_player->play(_current);
-		_play_button->set_icon(get_icon("Pause", "EditorIcons"));
+		_play_button->set_icon(get_theme_icon("Pause", "EditorIcons"));
 		set_process(true);
 	}
 }
 
 void AudioStreamEditor::_stop() {
-
 	_player->stop();
-	_play_button->set_icon(get_icon("MainPlay", "EditorIcons"));
+	_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
 	_current = 0;
 	_indicator->update();
 	set_process(false);
 }
 
 void AudioStreamEditor::_on_finished() {
-
-	_play_button->set_icon(get_icon("MainPlay", "EditorIcons"));
+	_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
 	if (_current == _player->get_stream()->get_length()) {
 		_current = 0;
 		_indicator->update();
@@ -138,7 +132,6 @@ void AudioStreamEditor::_on_finished() {
 }
 
 void AudioStreamEditor::_draw_indicator() {
-
 	if (!stream.is_valid()) {
 		return;
 	}
@@ -146,7 +139,7 @@ void AudioStreamEditor::_draw_indicator() {
 	Rect2 rect = _preview->get_rect();
 	float len = stream->get_length();
 	float ofs_x = _current / len * rect.size.width;
-	_indicator->draw_line(Point2(ofs_x, 0), Point2(ofs_x, rect.size.height), get_color("accent_color", "Editor"), 1);
+	_indicator->draw_line(Point2(ofs_x, 0), Point2(ofs_x, rect.size.height), get_theme_color("accent_color", "Editor"), 1);
 
 	_current_label->set_text(String::num(_current, 2).pad_decimals(2) + " /");
 }
@@ -178,9 +171,9 @@ void AudioStreamEditor::_seek_to(real_t p_x) {
 }
 
 void AudioStreamEditor::edit(Ref<AudioStream> p_stream) {
-
-	if (!stream.is_null())
+	if (!stream.is_null()) {
 		stream->remove_change_receptor(this);
+	}
 
 	stream = p_stream;
 	_player->set_stream(stream);
@@ -200,7 +193,6 @@ void AudioStreamEditor::_bind_methods() {
 }
 
 AudioStreamEditor::AudioStreamEditor() {
-
 	set_custom_minimum_size(Size2(1, 100) * EDSCALE);
 	_current = 0;
 	_dragging = false;
@@ -225,15 +217,17 @@ AudioStreamEditor::AudioStreamEditor() {
 	_preview->add_child(_indicator);
 
 	HBoxContainer *hbox = memnew(HBoxContainer);
-	hbox->add_constant_override("separation", 0);
+	hbox->add_theme_constant_override("separation", 0);
 	vbox->add_child(hbox);
 
-	_play_button = memnew(ToolButton);
+	_play_button = memnew(Button);
+	_play_button->set_flat(true);
 	hbox->add_child(_play_button);
 	_play_button->set_focus_mode(Control::FOCUS_NONE);
 	_play_button->connect("pressed", callable_mp(this, &AudioStreamEditor::_play));
 
-	_stop_button = memnew(ToolButton);
+	_stop_button = memnew(Button);
+	_stop_button->set_flat(true);
 	hbox->add_child(_stop_button);
 	_stop_button->set_focus_mode(Control::FOCUS_NONE);
 	_stop_button->connect("pressed", callable_mp(this, &AudioStreamEditor::_stop));
@@ -241,36 +235,35 @@ AudioStreamEditor::AudioStreamEditor() {
 	_current_label = memnew(Label);
 	_current_label->set_align(Label::ALIGN_RIGHT);
 	_current_label->set_h_size_flags(SIZE_EXPAND_FILL);
-	_current_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
+	_current_label->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("status_source", "EditorFonts"));
+	_current_label->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("status_source_size", "EditorFonts"));
 	_current_label->set_modulate(Color(1, 1, 1, 0.5));
 	hbox->add_child(_current_label);
 
 	_duration_label = memnew(Label);
-	_duration_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
+	_duration_label->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("status_source", "EditorFonts"));
+	_duration_label->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("status_source_size", "EditorFonts"));
 	hbox->add_child(_duration_label);
 }
 
 void AudioStreamEditorPlugin::edit(Object *p_object) {
-
 	AudioStream *s = Object::cast_to<AudioStream>(p_object);
-	if (!s)
+	if (!s) {
 		return;
+	}
 
 	audio_editor->edit(Ref<AudioStream>(s));
 }
 
 bool AudioStreamEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("AudioStream");
 }
 
 void AudioStreamEditorPlugin::make_visible(bool p_visible) {
-
 	audio_editor->set_visible(p_visible);
 }
 
 AudioStreamEditorPlugin::AudioStreamEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	audio_editor = memnew(AudioStreamEditor);
 	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, audio_editor);

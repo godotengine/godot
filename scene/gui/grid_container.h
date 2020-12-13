@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 
 class GridContainer : public Container {
-
 	GDCLASS(GridContainer, Container);
 
 	int columns;
@@ -46,7 +45,7 @@ protected:
 public:
 	void set_columns(int p_columns);
 	int get_columns() const;
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	GridContainer();
 };

@@ -4,7 +4,7 @@
  *
  *   The FreeType PostScript info service (specification).
  *
- * Copyright (C) 2003-2019 by
+ * Copyright (C) 2003-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,8 +19,8 @@
 #ifndef SVPSINFO_H_
 #define SVPSINFO_H_
 
-#include FT_INTERNAL_SERVICE_H
-#include FT_INTERNAL_TYPE1_TYPES_H
+#include <freetype/internal/ftserv.h>
+#include <freetype/internal/t1types.h>
 
 
 FT_BEGIN_HEADER

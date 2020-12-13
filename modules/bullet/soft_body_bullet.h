@@ -43,7 +43,7 @@
 #include "BulletSoftBody/btSoftBodyHelpers.h"
 #include "collision_object_bullet.h"
 #include "scene/resources/mesh.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 #ifdef x11_None
 /// This is required to re add the macro None defined by x11 compiler
@@ -56,24 +56,23 @@
 */
 
 class SoftBodyBullet : public CollisionObjectBullet {
-
 private:
-	btSoftBody *bt_soft_body;
-	Vector<Vector<int> > indices_table;
+	btSoftBody *bt_soft_body = nullptr;
+	Vector<Vector<int>> indices_table;
 	btSoftBody::Material *mat0; // This is just a copy of pointer managed by btSoftBody
-	bool isScratched;
+	bool isScratched = false;
 
 	Ref<Mesh> soft_mesh;
 
-	int simulation_precision;
-	real_t total_mass;
-	real_t linear_stiffness; // [0,1]
-	real_t areaAngular_stiffness; // [0,1]
-	real_t volume_stiffness; // [0,1]
-	real_t pressure_coefficient; // [-inf,+inf]
-	real_t pose_matching_coefficient; // [0,1]
-	real_t damping_coefficient; // [0,1]
-	real_t drag_coefficient; // [0,1]
+	int simulation_precision = 5;
+	real_t total_mass = 1.;
+	real_t linear_stiffness = 0.5; // [0,1]
+	real_t areaAngular_stiffness = 0.5; // [0,1]
+	real_t volume_stiffness = 0.5; // [0,1]
+	real_t pressure_coefficient = 0.; // [-inf,+inf]
+	real_t pose_matching_coefficient = 0.; // [0,1]
+	real_t damping_coefficient = 0.01; // [0,1]
+	real_t drag_coefficient = 0.; // [0,1]
 	Vector<int> pinned_nodes;
 
 	// Other property to add
@@ -100,7 +99,7 @@ public:
 
 	_FORCE_INLINE_ btSoftBody *get_bt_soft_body() const { return bt_soft_body; }
 
-	void update_visual_server(class SoftBodyVisualServerHandler *p_visual_server_handler);
+	void update_rendering_server(class SoftBodyRenderingServerHandler *p_rendering_server_handler);
 
 	void set_soft_mesh(const Ref<Mesh> &p_mesh);
 	void destroy_soft_body();

@@ -38,12 +38,11 @@
 //#include <android_native_app_glue.h>
 
 class FileAccessAndroid : public FileAccess {
-
 	static FileAccess *create_android();
-	mutable AAsset *a;
-	mutable size_t len;
-	mutable size_t pos;
-	mutable bool eof;
+	mutable AAsset *a = nullptr;
+	mutable size_t len = 0;
+	mutable size_t pos = 0;
+	mutable bool eof = false;
 
 public:
 	static AAssetManager *asset_manager;
@@ -75,7 +74,6 @@ public:
 
 	//static void make_default();
 
-	FileAccessAndroid();
 	~FileAccessAndroid();
 };
 

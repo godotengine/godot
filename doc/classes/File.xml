@@ -6,7 +6,8 @@
 	<description>
 		File type. This is used to permanently store data into the user device's file system and to read from it. This can be used to store game save data or player configuration files, for example.
 		Here's a sample on how to write and read from a file:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		func save(content):
 		    var file = File.new()
 		    file.open("user://save_game.dat", File.WRITE)
@@ -19,10 +20,32 @@
 		    var content = file.get_as_text()
 		    file.close()
 		    return content
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		public void Save(string content)
+		{
+		    var file = new File();
+		    file.Open("user://save_game.dat", File.ModeFlags.Write);
+		    file.StoreString(content);
+		    file.Close();
+		}
+
+		public string Load()
+		{
+		    var file = new File();
+		    file.Open("user://save_game.dat", File.ModeFlags.Read);
+		    string content = file.GetAsText();
+		    file.Close();
+		    return content;
+		}
+		[/csharp]
+		[/codeblocks]
+		In the example above, the file will be saved in the user data folder as specified in the [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]Data paths[/url] documentation.
+		[b]Note:[/b] To access project resources once exported, it is recommended to use [ResourceLoader] instead of the [File] API, as some files are converted to engine-specific formats and their original source files might not be present in the exported PCK package.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/filesystem.html</link>
+		<link title="File system">https://docs.godotengine.org/en/latest/getting_started/step_by_step/filesystem.html</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
 		<method name="close">
@@ -47,35 +70,35 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the file exists in the given path.
-				[b]Note:[/b] Many resources types are imported (e.g. textures or sound files), and that their source asset will not be included in the exported game, as only the imported version is used (in the [code]res://.import[/code] folder). To check for the existence of such resources while taking into account the remapping to their imported location, use [method ResourceLoader.exists]. Typically, using [code]File.file_exists[/code] on an imported resource would work while you are developing in the editor (the source asset is present in [code]res://[/code], but fail when exported).
+				[b]Note:[/b] Many resources types are imported (e.g. textures or sound files), and their source asset will not be included in the exported game, as only the imported version is used. See [method ResourceLoader.exists] for an alternative approach that takes resource remapping into account.
 			</description>
 		</method>
 		<method name="get_16" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the next 16 bits from the file as an integer.
+				Returns the next 16 bits from the file as an integer. See [method store_16] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_32" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the next 32 bits from the file as an integer.
+				Returns the next 32 bits from the file as an integer. See [method store_32] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_64" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the next 64 bits from the file as an integer.
+				Returns the next 64 bits from the file as an integer. See [method store_64] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_8" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the next 8 bits from the file as an integer.
+				Returns the next 8 bits from the file as an integer. See [method store_8] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_as_text" qualifiers="const">
@@ -256,6 +279,7 @@
 			</argument>
 			<description>
 				Opens an encrypted file in write or read mode. You need to pass a binary key to encrypt/decrypt it.
+				[b]Note:[/b] The provided key must be 32 bytes long.
 			</description>
 		</method>
 		<method name="open_encrypted_with_pass">
@@ -297,6 +321,42 @@
 			</argument>
 			<description>
 				Stores an integer as 16 bits in the file.
+				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 2^16 - 1][/code]. Any other value will overflow and wrap around.
+				To store a signed integer, use [method store_64] or store a signed integer from the interval [code][-2^15, 2^15 - 1][/code] (i.e. keeping one bit for the signedness) and compute its sign manually when reading. For example:
+				[codeblocks]
+				[gdscript]
+				const MAX_15B = 1 &lt;&lt; 15
+				const MAX_16B = 1 &lt;&lt; 16
+
+				func unsigned16_to_signed(unsigned):
+				    return (unsigned + MAX_15B) % MAX_16B - MAX_15B
+
+				func _ready():
+				    var f = File.new()
+				    f.open("user://file.dat", File.WRITE_READ)
+				    f.store_16(-42) # This wraps around and stores 65494 (2^16 - 42).
+				    f.store_16(121) # In bounds, will store 121.
+				    f.seek(0) # Go back to start to read the stored value.
+				    var read1 = f.get_16() # 65494
+				    var read2 = f.get_16() # 121
+				    var converted1 = unsigned16_to_signed(read1) # -42
+				    var converted2 = unsigned16_to_signed(read2) # 121
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    var f = new File();
+				    f.Open("user://file.dat", File.ModeFlags.WriteRead);
+				    f.Store16(unchecked((ushort)-42)); // This wraps around and stores 65494 (2^16 - 42).
+				    f.Store16(121); // In bounds, will store 121.
+				    f.Seek(0); // Go back to start to read the stored value.
+				    ushort read1 = f.Get16(); // 65494
+				    ushort read2 = f.Get16(); // 121
+				    short converted1 = BitConverter.ToInt16(BitConverter.GetBytes(read1), 0); // -42
+				    short converted2 = BitConverter.ToInt16(BitConverter.GetBytes(read2), 0); // 121
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="store_32">
@@ -306,6 +366,8 @@
 			</argument>
 			<description>
 				Stores an integer as 32 bits in the file.
+				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 2^32 - 1][/code]. Any other value will overflow and wrap around.
+				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
 			</description>
 		</method>
 		<method name="store_64">
@@ -315,6 +377,7 @@
 			</argument>
 			<description>
 				Stores an integer as 64 bits in the file.
+				[b]Note:[/b] The [code]value[/code] must lie in the interval [code][-2^63, 2^63 - 1][/code] (i.e. be a valid [int] value).
 			</description>
 		</method>
 		<method name="store_8">
@@ -324,6 +387,8 @@
 			</argument>
 			<description>
 				Stores an integer as 8 bits in the file.
+				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 255][/code]. Any other value will overflow and wrap around.
+				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
 			</description>
 		</method>
 		<method name="store_buffer">
@@ -371,8 +436,7 @@
 			<argument index="0" name="line" type="String">
 			</argument>
 			<description>
-				Stores the given [String] as a line in the file.
-				Text will be encoded as UTF-8.
+				Appends [code]line[/code] to the file followed by a line return character ([code]\n[/code]), encoding the text as UTF-8.
 			</description>
 		</method>
 		<method name="store_pascal_string">
@@ -400,8 +464,7 @@
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
-				Stores the given [String] in the file.
-				Text will be encoded as UTF-8.
+				Appends [code]string[/code] to the file without a line return, encoding the text as UTF-8.
 			</description>
 		</method>
 		<method name="store_var">
@@ -424,16 +487,16 @@
 	</members>
 	<constants>
 		<constant name="READ" value="1" enum="ModeFlags">
-			Opens the file for read operations.
+			Opens the file for read operations. The cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="WRITE" value="2" enum="ModeFlags">
-			Opens the file for write operations. Create it if the file does not exist and truncate if it exists.
+			Opens the file for write operations. The file is created if it does not exist, and truncated if it does.
 		</constant>
 		<constant name="READ_WRITE" value="3" enum="ModeFlags">
-			Opens the file for read and write operations. Does not truncate the file.
+			Opens the file for read and write operations. Does not truncate the file. The cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="WRITE_READ" value="7" enum="ModeFlags">
-			Opens the file for read and write operations. Create it if the file does not exist and truncate if it exists.
+			Opens the file for read and write operations. The file is created if it does not exist, and truncated if it does. The cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0" enum="CompressionMode">
 			Uses the [url=http://fastlz.org/]FastLZ[/url] compression method.

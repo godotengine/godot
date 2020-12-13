@@ -31,15 +31,20 @@
 #ifndef REMOTE_DEBUGGER_H
 #define REMOTE_DEBUGGER_H
 
-#include "core/array.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/remote_debugger_peer.h"
-#include "core/object.h"
-#include "core/string_name.h"
-#include "core/ustring.h"
+#include "core/object/class_db.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/variant/array.h"
 
 class RemoteDebugger : public EngineDebugger {
+public:
+	enum MessageType {
+		MESSAGE_TYPE_LOG,
+		MESSAGE_TYPE_ERROR,
+	};
 
 private:
 	typedef DebuggerMarshalls::OutputError ErrorMessage;
@@ -50,14 +55,18 @@ private:
 	struct VisualProfiler;
 	struct PerformanceProfiler;
 
-	NetworkProfiler *network_profiler = NULL;
-	ServersProfiler *servers_profiler = NULL;
-	VisualProfiler *visual_profiler = NULL;
-	PerformanceProfiler *performance_profiler = NULL;
+	NetworkProfiler *network_profiler = nullptr;
+	ServersProfiler *servers_profiler = nullptr;
+	VisualProfiler *visual_profiler = nullptr;
+	PerformanceProfiler *performance_profiler = nullptr;
 
 	Ref<RemoteDebuggerPeer> peer;
 
-	List<String> output_strings;
+	struct OutputString {
+		String message;
+		MessageType type;
+	};
+	List<OutputString> output_strings;
 	List<ErrorMessage> errors;
 
 	int n_messages_dropped = 0;
@@ -99,8 +108,6 @@ private:
 	Error _try_capture(const String &p_name, const Array &p_data, bool &r_captured);
 
 public:
-	static RemoteDebugger *create_for_uri(const String &p_uri);
-
 	// Overrides
 	void poll_events(bool p_is_idle);
 	void send_message(const String &p_message, const Array &p_args);

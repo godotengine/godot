@@ -5,7 +5,7 @@
  *   Load the basic TrueType tables, i.e., tables that can be either in
  *   TTF or OTF fonts (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -17,10 +17,9 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_TRUETYPE_TAGS_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/tttags.h>
 #include "ttload.h"
 
 #include "sferrors.h"
@@ -65,8 +64,8 @@
 #endif
 
 
-    FT_TRACE4(( "tt_face_lookup_table: %08p, `%c%c%c%c' -- ",
-                face,
+    FT_TRACE4(( "tt_face_lookup_table: %p, `%c%c%c%c' -- ",
+                (void *)face,
                 (FT_Char)( tag >> 24 ),
                 (FT_Char)( tag >> 16 ),
                 (FT_Char)( tag >> 8  ),
@@ -363,7 +362,7 @@
     };
 
 
-    FT_TRACE2(( "tt_face_load_font_dir: %08p\n", face ));
+    FT_TRACE2(( "tt_face_load_font_dir: %p\n", (void *)face ));
 
     /* read the offset table */
 
@@ -397,7 +396,15 @@
       }
     }
     else
+    {
       valid_entries = sfnt.num_tables;
+      if ( !valid_entries )
+      {
+        FT_TRACE2(( "tt_face_load_font_dir: no valid tables found\n" ));
+        error = FT_THROW( Unknown_File_Format );
+        goto Exit;
+      }
+    }
 
     face->num_tables = valid_entries;
     face->format_tag = sfnt.format_tag;
@@ -916,7 +923,7 @@
       /* load language tags */
       {
         TT_LangTag  entry = table->langTags;
-        TT_LangTag  limit = entry + table->numLangTagRecords;
+        TT_LangTag  limit = FT_OFFSET( entry, table->numLangTagRecords );
 
 
         for ( ; entry < limit; entry++ )
@@ -1307,7 +1314,7 @@
     /* we don't load the glyph names, we do that in another */
     /* module (ttpost).                                     */
 
-    FT_TRACE3(( "FormatType:   0x%x\n", post->FormatType ));
+    FT_TRACE3(( "FormatType:   0x%lx\n", post->FormatType ));
     FT_TRACE3(( "isFixedPitch:   %s\n", post->isFixedPitch
                                         ? "  yes" : "   no" ));
 

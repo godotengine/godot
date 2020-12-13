@@ -34,7 +34,6 @@
 #include "scene/main/node.h"
 
 class EditorFolding {
-
 	Vector<String> _get_unfolds(const Object *p_object);
 	void _set_unfolds(Object *p_object, const Vector<String> &p_unfolds);
 

@@ -38,8 +38,10 @@ static sljit_s32 emit_do_imm(struct sljit_compiler *compiler, sljit_u8 opcode, s
 	return SLJIT_SUCCESS;
 }
 
-static sljit_u8* generate_far_jump_code(struct sljit_jump *jump, sljit_u8 *code_ptr, sljit_s32 type, sljit_sw executable_offset)
+static sljit_u8* generate_far_jump_code(struct sljit_jump *jump, sljit_u8 *code_ptr, sljit_sw executable_offset)
 {
+	sljit_s32 type = jump->flags >> TYPE_SHIFT;
+
 	if (type == SLJIT_JUMP) {
 		*code_ptr++ = JMP_i32;
 		jump->addr++;

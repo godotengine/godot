@@ -4,7 +4,7 @@
  *
  *   FreeType Image cache (body).
  *
- * Copyright (C) 2000-2019 by
+ * Copyright (C) 2000-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,11 +16,10 @@
  */
 
 
-#include <ft2build.h>
-#include FT_CACHE_H
+#include <freetype/ftcache.h>
 #include "ftcimage.h"
-#include FT_INTERNAL_MEMORY_H
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/internal/ftmemory.h>
+#include <freetype/internal/ftobjs.h>
 
 #include "ftccback.h"
 #include "ftcerror.h"

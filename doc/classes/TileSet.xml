@@ -8,6 +8,13 @@
 		Tiles are referenced by a unique integer ID.
 	</description>
 	<tutorials>
+		<link title="Using Tilemaps">https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
+		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/112</link>
+		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/111</link>
+		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>
+		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 	</tutorials>
 	<methods>
 		<method name="_forward_atlas_subtile_selection" qualifiers="virtual">
@@ -44,6 +51,8 @@
 			<argument index="1" name="neighbor_id" type="int">
 			</argument>
 			<description>
+				Determines when the auto-tiler should consider two different auto-tile IDs to be bound together.
+				[b]Note:[/b] [code]neighbor_id[/code] will be [code]-1[/code] ([constant TileMap.INVALID_CELL]) when checking a tile against an empty neighbor tile.
 			</description>
 		</method>
 		<method name="autotile_clear_bitmask_map">
@@ -380,15 +389,6 @@
 				Returns the offset of the tile's navigation polygon.
 			</description>
 		</method>
-		<method name="tile_get_normal_map" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the tile's normal map texture.
-			</description>
-		</method>
 		<method name="tile_get_occluder_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -476,7 +476,17 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Returns an array of the tile's shapes.
+				Returns an array of dictionaries describing the tile's shapes.
+				[b]Dictionary structure in the array returned by this method:[/b]
+				[codeblock]
+				{
+				    "autotile_coord": Vector2,
+				    "one_way": bool,
+				    "one_way_margin": int,
+				    "shape": CollisionShape2D,
+				    "shape_transform": Transform2D,
+				}
+				[/codeblock]
 			</description>
 		</method>
 		<method name="tile_get_texture" qualifiers="const">
@@ -579,17 +589,6 @@
 			</argument>
 			<description>
 				Sets an offset for the tile's navigation polygon.
-			</description>
-		</method>
-		<method name="tile_set_normal_map">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="normal_map" type="Texture2D">
-			</argument>
-			<description>
-				Sets the tile's normal map texture.
 			</description>
 		</method>
 		<method name="tile_set_occluder_offset">

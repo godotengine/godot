@@ -30,14 +30,16 @@
 
 #include "gdnative/string_name.h"
 
-#include "core/string_name.h"
-#include "core/ustring.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
 
 #include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static_assert(sizeof(godot_string_name) == sizeof(StringName), "StringName size mismatch");
 
 void GDAPI godot_string_name_new(godot_string_name *r_dest, const godot_string *p_name) {
 	StringName *dest = (StringName *)r_dest;

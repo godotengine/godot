@@ -34,14 +34,13 @@
 #include "scene/gui/container.h"
 
 class PanelContainer : public Container {
-
 	GDCLASS(PanelContainer, Container);
 
 protected:
 	void _notification(int p_what);
 
 public:
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	PanelContainer();
 };

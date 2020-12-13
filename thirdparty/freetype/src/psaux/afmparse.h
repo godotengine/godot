@@ -4,7 +4,7 @@
  *
  *   AFM parser (specification).
  *
- * Copyright (C) 2006-2019 by
+ * Copyright (C) 2006-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,8 +20,7 @@
 #define AFMPARSE_H_
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
+#include <freetype/internal/psaux.h>
 
 
 FT_BEGIN_HEADER

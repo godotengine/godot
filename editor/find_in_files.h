@@ -31,7 +31,7 @@
 #ifndef FIND_IN_FILES_H
 #define FIND_IN_FILES_H
 
-#include "core/hash_map.h"
+#include "core/templates/hash_map.h"
 #include "scene/gui/dialogs.h"
 
 // Performs the actual search
@@ -41,8 +41,6 @@ class FindInFiles : public Node {
 public:
 	static const char *SIGNAL_RESULT_FOUND;
 	static const char *SIGNAL_FINISHED;
-
-	FindInFiles();
 
 	void set_search_text(String p_pattern);
 	void set_whole_words(bool p_whole_word);
@@ -76,15 +74,15 @@ private:
 	String _pattern;
 	Set<String> _extension_filter;
 	String _root_dir;
-	bool _whole_words;
-	bool _match_case;
+	bool _whole_words = true;
+	bool _match_case = true;
 
 	// State
-	bool _searching;
+	bool _searching = false;
 	String _current_dir;
 	Vector<PackedStringArray> _folders_stack;
 	Vector<String> _files_to_scan;
-	int _initial_files_count;
+	int _initial_files_count = 0;
 };
 
 class LineEdit;
@@ -120,10 +118,11 @@ public:
 	Set<String> get_filter() const;
 
 protected:
-	static void _bind_methods();
-
 	void _notification(int p_what);
-	void custom_action(const String &p_action);
+
+	void _visibility_changed();
+	void custom_action(const String &p_action) override;
+	static void _bind_methods();
 
 private:
 	void _on_folder_button_pressed();
@@ -187,11 +186,10 @@ private:
 	void _on_replace_all_clicked();
 
 	struct Result {
-		int line_number;
-		int begin;
-		int end;
-		float draw_begin;
-		float draw_width;
+		int line_number = 0;
+		int begin = 0;
+		int end = 0;
+		int begin_trimmed = 0;
 	};
 
 	void apply_replaces_in_file(String fpath, const Vector<Result> &locations, String new_text);

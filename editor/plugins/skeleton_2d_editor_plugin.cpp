@@ -36,30 +36,26 @@
 #include "thirdparty/misc/clipper.hpp"
 
 void Skeleton2DEditor::_node_removed(Node *p_node) {
-
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 		options->hide();
 	}
 }
 
 void Skeleton2DEditor::edit(Skeleton2D *p_sprite) {
-
 	node = p_sprite;
 }
 
 void Skeleton2DEditor::_menu_option(int p_option) {
-
 	if (!node) {
 		return;
 	}
 
 	switch (p_option) {
 		case MENU_OPTION_MAKE_REST: {
-
 			if (node->get_bone_count() == 0) {
 				err_dialog->set_text(TTR("This skeleton has no bones, create some children Bone2D nodes."));
-				err_dialog->popup_centered_minsize();
+				err_dialog->popup_centered();
 				return;
 			}
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
@@ -75,7 +71,7 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 		case MENU_OPTION_SET_REST: {
 			if (node->get_bone_count() == 0) {
 				err_dialog->set_text(TTR("This skeleton has no bones, create some children Bone2D nodes."));
-				err_dialog->popup_centered_minsize();
+				err_dialog->popup_centered();
 				return;
 			}
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
@@ -95,13 +91,12 @@ void Skeleton2DEditor::_bind_methods() {
 }
 
 Skeleton2DEditor::Skeleton2DEditor() {
-
 	options = memnew(MenuButton);
 
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Skeleton2D"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Skeleton2D", "EditorIcons"));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Skeleton2D", "EditorIcons"));
 
 	options->get_popup()->add_item(TTR("Make Rest Pose (From Bones)"), MENU_OPTION_MAKE_REST);
 	options->get_popup()->add_separator();
@@ -115,28 +110,23 @@ Skeleton2DEditor::Skeleton2DEditor() {
 }
 
 void Skeleton2DEditorPlugin::edit(Object *p_object) {
-
 	sprite_editor->edit(Object::cast_to<Skeleton2D>(p_object));
 }
 
 bool Skeleton2DEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("Skeleton2D");
 }
 
 void Skeleton2DEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		sprite_editor->options->show();
 	} else {
-
 		sprite_editor->options->hide();
-		sprite_editor->edit(NULL);
+		sprite_editor->edit(nullptr);
 	}
 }
 
 Skeleton2DEditorPlugin::Skeleton2DEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	sprite_editor = memnew(Skeleton2DEditor);
 	editor->get_viewport()->add_child(sprite_editor);

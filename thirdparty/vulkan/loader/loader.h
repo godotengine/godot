@@ -156,6 +156,8 @@ struct loader_layer_properties {
     bool keep;
     uint32_t num_blacklist_layers;
     char (*blacklist_layer_names)[MAX_STRING_SIZE];
+    uint32_t num_app_key_paths;
+    char (*app_key_paths)[MAX_STRING_SIZE];
 };
 
 struct loader_layer_list {
@@ -324,6 +326,9 @@ struct loader_instance {
 #ifdef VK_USE_PLATFORM_XLIB_KHR
     bool wsi_xlib_surface_enabled;
 #endif
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+    bool wsi_directfb_surface_enabled;
+#endif
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
     bool wsi_android_surface_enabled;
 #endif
@@ -382,6 +387,9 @@ struct loader_scanned_icd {
     PFN_GetPhysicalDeviceProcAddr GetPhysicalDeviceProcAddr;
     PFN_vkCreateInstance CreateInstance;
     PFN_vkEnumerateInstanceExtensionProperties EnumerateInstanceExtensionProperties;
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    PFN_vk_icdEnumerateAdapterPhysicalDevices EnumerateAdapterPhysicalDevices;
+#endif
 };
 
 static inline struct loader_instance *loader_instance(VkInstance instance) { return (struct loader_instance *)instance; }
@@ -425,6 +433,7 @@ extern LOADER_PLATFORM_THREAD_ONCE_DEFINITION(once_init);
 #endif
 extern loader_platform_thread_mutex loader_lock;
 extern loader_platform_thread_mutex loader_json_lock;
+extern loader_platform_thread_mutex loader_preload_icd_lock;
 
 struct loader_msg_callback_map_entry {
     VkDebugReportCallbackEXT icd_obj;
@@ -455,6 +464,8 @@ VkResult loader_validate_instance_extensions(struct loader_instance *inst, const
                                              const VkInstanceCreateInfo *pCreateInfo);
 
 void loader_initialize(void);
+void loader_preload_icds(void);
+void loader_unload_preloaded_icds(void);
 bool has_vk_extension_property_array(const VkExtensionProperties *vk_ext_prop, const uint32_t count,
                                      const VkExtensionProperties *ext_array);
 bool has_vk_extension_property(const VkExtensionProperties *vk_ext_prop, const struct loader_extension_list *ext_list);
@@ -471,9 +482,9 @@ VkResult loader_init_generic_list(const struct loader_instance *inst, struct loa
 void loader_destroy_generic_list(const struct loader_instance *inst, struct loader_generic_list *list);
 void loaderDestroyLayerList(const struct loader_instance *inst, struct loader_device *device, struct loader_layer_list *layer_list);
 void loaderDeleteLayerListAndProperties(const struct loader_instance *inst, struct loader_layer_list *layer_list);
-void loaderAddLayerNameToList(const struct loader_instance *inst, const char *name, const enum layer_type_flags type_flags,
-                              const struct loader_layer_list *source_list, struct loader_layer_list *target_list,
-                              struct loader_layer_list *expanded_target_list);
+VkResult loaderAddLayerNameToList(const struct loader_instance *inst, const char *name, const enum layer_type_flags type_flags,
+                                  const struct loader_layer_list *source_list, struct loader_layer_list *target_list,
+                                  struct loader_layer_list *expanded_target_list);
 void loader_scanned_icd_clear(const struct loader_instance *inst, struct loader_icd_tramp_list *icd_tramp_list);
 VkResult loader_icd_scan(const struct loader_instance *inst, struct loader_icd_tramp_list *icd_tramp_list);
 void loaderScanForLayers(struct loader_instance *inst, struct loader_layer_list *instance_layers);

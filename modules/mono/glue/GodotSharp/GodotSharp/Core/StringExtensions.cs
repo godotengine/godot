@@ -12,7 +12,7 @@ namespace Godot
     {
         private static int GetSliceCount(this string instance, string splitter)
         {
-            if (instance.Empty() || splitter.Empty())
+            if (string.IsNullOrEmpty(instance) || string.IsNullOrEmpty(splitter))
                 return 0;
 
             int pos = 0;
@@ -29,7 +29,7 @@ namespace Godot
 
         private static string GetSliceCharacter(this string instance, char splitter, int slice)
         {
-            if (!instance.Empty() && slice >= 0)
+            if (!string.IsNullOrEmpty(instance) && slice >= 0)
             {
                 int i = 0;
                 int prev = 0;
@@ -237,10 +237,10 @@ namespace Godot
         // </summary>
         public static int CompareTo(this string instance, string to, bool caseSensitive = true)
         {
-            if (instance.Empty())
-                return to.Empty() ? 0 : -1;
+            if (string.IsNullOrEmpty(instance))
+                return string.IsNullOrEmpty(to) ? 0 : -1;
 
-            if (to.Empty())
+            if (string.IsNullOrEmpty(to))
                 return 1;
 
             int instanceIndex = 0;
@@ -287,14 +287,6 @@ namespace Godot
         }
 
         // <summary>
-        // Return true if the string is empty.
-        // </summary>
-        public static bool Empty(this string instance)
-        {
-            return string.IsNullOrEmpty(instance);
-        }
-
-        // <summary>
         // Return true if the strings ends with the given string.
         // </summary>
         public static bool EndsWith(this string instance, string text)
@@ -328,6 +320,15 @@ namespace Godot
         public static int Find(this string instance, string what, int from = 0, bool caseSensitive = true)
         {
             return instance.IndexOf(what, from, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>Find the first occurrence of a char. Optionally, the search starting position can be passed.</summary>
+        /// <returns>The first instance of the char, or -1 if not found.</returns>
+        public static int Find(this string instance, char what, int from = 0, bool caseSensitive = true)
+        {
+            // TODO: Could be more efficient if we get a char version of `IndexOf`.
+            // See https://github.com/dotnet/runtime/issues/44116
+            return instance.IndexOf(what.ToString(), from, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>Find the last occurrence of a substring.</summary>
@@ -401,6 +402,35 @@ namespace Godot
             return instance.Substring(sep + 1);
         }
 
+        /// <summary>
+        /// Converts the given byte array of ASCII encoded text to a string.
+        /// Faster alternative to <see cref="GetStringFromUTF8"/> if the
+        /// content is ASCII-only. Unlike the UTF-8 function this function
+        /// maps every byte to a character in the array. Multibyte sequences
+        /// will not be interpreted correctly. For parsing user input always
+        /// use <see cref="GetStringFromUTF8"/>.
+        /// </summary>
+        /// <param name="bytes">A byte array of ASCII characters (on the range of 0-127).</param>
+        /// <returns>A string created from the bytes.</returns>
+        public static string GetStringFromASCII(this byte[] bytes)
+        {
+            return Encoding.ASCII.GetString(bytes);
+        }
+
+        /// <summary>
+        /// Converts the given byte array of UTF-8 encoded text to a string.
+        /// Slower than <see cref="GetStringFromASCII"/> but supports UTF-8
+        /// encoded data. Use this function if you are unsure about the
+        /// source of the data. For user input this function
+        /// should always be preferred.
+        /// </summary>
+        /// <param name="bytes">A byte array of UTF-8 characters (a character may take up multiple bytes).</param>
+        /// <returns>A string created from the bytes.</returns>
+        public static string GetStringFromUTF8(this byte[] bytes)
+        {
+            return Encoding.UTF8.GetString(bytes);
+        }
+
         // <summary>
         // Hash the string and return a 32 bits integer.
         // </summary>
@@ -414,6 +444,53 @@ namespace Godot
                 hashv = (hashv << 5) + hashv + c; // hash * 33 + c
 
             return hashv;
+        }
+
+        /// <summary>
+        /// Returns a hexadecimal representation of this byte as a string.
+        /// </summary>
+        /// <param name="bytes">The byte to encode.</param>
+        /// <returns>The hexadecimal representation of this byte.</returns>
+        internal static string HexEncode(this byte b)
+        {
+            var ret = string.Empty;
+
+            for (int i = 0; i < 2; i++)
+            {
+                char c;
+                int lv = b & 0xF;
+
+                if (lv < 10)
+                {
+                    c = (char)('0' + lv);
+                }
+                else
+                {
+                    c = (char)('a' + lv - 10);
+                }
+
+                b >>= 4;
+                ret = c + ret;
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// Returns a hexadecimal representation of this byte array as a string.
+        /// </summary>
+        /// <param name="bytes">The byte array to encode.</param>
+        /// <returns>The hexadecimal representation of this byte array.</returns>
+        public static string HexEncode(this byte[] bytes)
+        {
+            var ret = string.Empty;
+
+            foreach (byte b in bytes)
+            {
+                ret += b.HexEncode();
+            }
+
+            return ret;
         }
 
         // <summary>
@@ -448,7 +525,12 @@ namespace Godot
         // </summary>
         public static bool IsAbsPath(this string instance)
         {
-            return System.IO.Path.IsPathRooted(instance);
+            if (string.IsNullOrEmpty(instance))
+                return false;
+            else if (instance.Length > 1)
+                return instance[0] == '/' || instance[0] == '\\' || instance.Contains(":/") || instance.Contains(":\\");
+            else
+                return instance[0] == '/' || instance[0] == '\\';
         }
 
         // <summary>
@@ -456,7 +538,7 @@ namespace Godot
         // </summary>
         public static bool IsRelPath(this string instance)
         {
-            return !System.IO.Path.IsPathRooted(instance);
+            return !IsAbsPath(instance);
         }
 
         // <summary>
@@ -632,41 +714,73 @@ namespace Godot
             return instance.Length;
         }
 
-        // <summary>
-        // Do a simple expression match, where '*' matches zero or more arbitrary characters and '?' matches any single character except '.'.
-        // </summary>
-        public static bool ExprMatch(this string instance, string expr, bool caseSensitive)
+        /// <summary>
+        /// Returns a copy of the string with characters removed from the left.
+        /// </summary>
+        /// <param name="instance">The string to remove characters from.</param>
+        /// <param name="chars">The characters to be removed.</param>
+        /// <returns>A copy of the string with characters removed from the left.</returns>
+        public static string LStrip(this string instance, string chars)
         {
-            if (expr.Length == 0 || instance.Length == 0)
-                return false;
+            int len = instance.Length;
+            int beg;
+
+            for (beg = 0; beg < len; beg++)
+            {
+                if (chars.Find(instance[beg]) == -1)
+                {
+                    break;
+                }
+            }
+
+            if (beg == 0)
+            {
+                return instance;
+            }
+
+            return instance.Substr(beg, len - beg);
+        }
+
+        /// <summary>
+        /// Do a simple expression match, where '*' matches zero or more arbitrary characters and '?' matches any single character except '.'.
+        /// </summary>
+        private static bool ExprMatch(this string instance, string expr, bool caseSensitive)
+        {
+            // case '\0':
+            if (expr.Length == 0)
+                return instance.Length == 0;
 
             switch (expr[0])
             {
-                case '\0':
-                    return instance[0] == 0;
                 case '*':
-                    return ExprMatch(expr + 1, instance, caseSensitive) || instance[0] != 0 && ExprMatch(expr, instance + 1, caseSensitive);
+                    return ExprMatch(instance, expr.Substring(1), caseSensitive) || (instance.Length > 0 && ExprMatch(instance.Substring(1), expr, caseSensitive));
                 case '?':
-                    return instance[0] != 0 && instance[0] != '.' && ExprMatch(expr + 1, instance + 1, caseSensitive);
+                    return instance.Length > 0 && instance[0] != '.' && ExprMatch(instance.Substring(1), expr.Substring(1), caseSensitive);
                 default:
-                    return (caseSensitive ? instance[0] == expr[0] : char.ToUpper(instance[0]) == char.ToUpper(expr[0])) &&
-                                ExprMatch(expr + 1, instance + 1, caseSensitive);
+                    if (instance.Length == 0) return false;
+                    return (caseSensitive ? instance[0] == expr[0] : char.ToUpper(instance[0]) == char.ToUpper(expr[0])) && ExprMatch(instance.Substring(1), expr.Substring(1), caseSensitive);
             }
         }
 
-        // <summary>
-        // Do a simple case sensitive expression match, using ? and * wildcards (see [method expr_match]).
-        // </summary>
+        /// <summary>
+        /// Do a simple case sensitive expression match, using ? and * wildcards (see [method expr_match]).
+        /// </summary>
         public static bool Match(this string instance, string expr, bool caseSensitive = true)
         {
+            if (instance.Length == 0 || expr.Length == 0)
+                return false;
+
             return instance.ExprMatch(expr, caseSensitive);
         }
 
-        // <summary>
-        // Do a simple case insensitive expression match, using ? and * wildcards (see [method expr_match]).
-        // </summary>
+        /// <summary>
+        /// Do a simple case insensitive expression match, using ? and * wildcards (see [method expr_match]).
+        /// </summary>
         public static bool MatchN(this string instance, string expr)
         {
+            if (instance.Length == 0 || expr.Length == 0)
+                return false;
+
             return instance.ExprMatch(expr, caseSensitive: false);
         }
 
@@ -853,6 +967,33 @@ namespace Godot
                 return string.Empty;
 
             return instance.Substring(pos, instance.Length - pos);
+        }
+
+        /// <summary>
+        /// Returns a copy of the string with characters removed from the right.
+        /// </summary>
+        /// <param name="instance">The string to remove characters from.</param>
+        /// <param name="chars">The characters to be removed.</param>
+        /// <returns>A copy of the string with characters removed from the right.</returns>
+        public static string RStrip(this string instance, string chars)
+        {
+            int len = instance.Length;
+            int end;
+
+            for (end = len - 1; end >= 0; end--)
+            {
+                if (chars.Find(instance[end]) == -1)
+                {
+                    break;
+                }
+            }
+
+            if (end == len - 1)
+            {
+                return instance;
+            }
+
+            return instance.Substr(0, end + 1);
         }
 
         public static byte[] SHA256Buffer(this string instance)

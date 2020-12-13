@@ -4,7 +4,7 @@
  *
  *   Type 1 font loader (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -61,12 +61,12 @@
 
 
 #include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 #include FT_CONFIG_CONFIG_H
-#include FT_MULTIPLE_MASTERS_H
-#include FT_INTERNAL_TYPE1_TYPES_H
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_HASH_H
+#include <freetype/ftmm.h>
+#include <freetype/internal/t1types.h>
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/fthash.h>
 
 #include "t1load.h"
 #include "t1errors.h"
@@ -309,31 +309,55 @@
     FT_UInt          i;
     FT_Fixed         axiscoords[T1_MAX_MM_AXIS];
     PS_Blend         blend = face->blend;
+    FT_UShort*       axis_flags;
+
+    FT_Offset  mmvar_size;
+    FT_Offset  axis_flags_size;
+    FT_Offset  axis_size;
 
 
     error = T1_Get_Multi_Master( face, &mmaster );
     if ( error )
       goto Exit;
-    if ( FT_ALLOC( mmvar,
-                   sizeof ( FT_MM_Var ) +
-                     mmaster.num_axis * sizeof ( FT_Var_Axis ) ) )
+
+    /* the various `*_size' variables, which we also use as     */
+    /* offsets into the `mmvar' array, must be multiples of the */
+    /* pointer size (except the last one); without such an      */
+    /* alignment there might be runtime errors due to           */
+    /* misaligned addresses                                     */
+#undef  ALIGN_SIZE
+#define ALIGN_SIZE( n ) \
+          ( ( (n) + sizeof (void*) - 1 ) & ~( sizeof (void*) - 1 ) )
+
+    mmvar_size      = ALIGN_SIZE( sizeof ( FT_MM_Var ) );
+    axis_flags_size = ALIGN_SIZE( mmaster.num_axis *
+                                  sizeof ( FT_UShort ) );
+    axis_size       = mmaster.num_axis * sizeof ( FT_Var_Axis );
+
+    if ( FT_ALLOC( mmvar, mmvar_size +
+                          axis_flags_size +
+                          axis_size ) )
       goto Exit;
 
     mmvar->num_axis        = mmaster.num_axis;
     mmvar->num_designs     = mmaster.num_designs;
     mmvar->num_namedstyles = 0;                           /* Not supported */
-    mmvar->axis            = (FT_Var_Axis*)&mmvar[1];
-                                      /* Point to axes after MM_Var struct */
-    mmvar->namedstyle      = NULL;
+
+    /* while axis flags are meaningless here, we have to provide the array */
+    /* to make `FT_Get_Var_Axis_Flags' work: the function expects that the */
+    /* values directly follow the data of `FT_MM_Var'                      */
+    axis_flags = (FT_UShort*)( (char*)mmvar + mmvar_size );
+    for ( i = 0; i < mmaster.num_axis; i++ )
+      axis_flags[i] = 0;
+
+    mmvar->axis       = (FT_Var_Axis*)( (char*)axis_flags + axis_flags_size );
+    mmvar->namedstyle = NULL;
 
     for ( i = 0; i < mmaster.num_axis; i++ )
     {
       mmvar->axis[i].name    = mmaster.axis[i].name;
       mmvar->axis[i].minimum = INT_TO_FIXED( mmaster.axis[i].minimum );
       mmvar->axis[i].maximum = INT_TO_FIXED( mmaster.axis[i].maximum );
-      mmvar->axis[i].def     = ( mmvar->axis[i].minimum +
-                                   mmvar->axis[i].maximum ) / 2;
-                            /* Does not apply.  But this value is in range */
       mmvar->axis[i].strid   = ~0U;                      /* Does not apply */
       mmvar->axis[i].tag     = ~0U;                      /* Does not apply */
 
@@ -1039,7 +1063,7 @@
         map->design_points[p] = T1_ToInt( parser );
         map->blend_points [p] = T1_ToFixed( parser, 0 );
 
-        FT_TRACE4(( " [%d %f]",
+        FT_TRACE4(( " [%ld %f]",
                     map->design_points[p],
                     (double)map->blend_points[p] / 65536 ));
       }
@@ -1731,7 +1755,7 @@
        */
 
       FT_TRACE0(( "parse_subrs: adjusting number of subroutines"
-                  " (from %d to %d)\n",
+                  " (from %d to %ld)\n",
                   num_subrs,
                   ( parser->root.limit - parser->root.cursor ) >> 3 ));
       num_subrs = ( parser->root.limit - parser->root.cursor ) >> 3;
@@ -1902,7 +1926,7 @@
     if ( num_glyphs > ( limit - cur ) >> 3 )
     {
       FT_TRACE0(( "parse_charstrings: adjusting number of glyphs"
-                  " (from %d to %d)\n",
+                  " (from %d to %ld)\n",
                   num_glyphs, ( limit - cur ) >> 3 ));
       num_glyphs = ( limit - cur ) >> 3;
     }

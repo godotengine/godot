@@ -4,7 +4,7 @@
  *
  *   FreeType utility functions for bitmaps (body).
  *
- * Copyright (C) 2004-2019 by
+ * Copyright (C) 2004-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,12 +16,11 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 
-#include FT_BITMAP_H
-#include FT_IMAGE_H
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/ftbitmap.h>
+#include <freetype/ftimage.h>
+#include <freetype/internal/ftobjs.h>
 
 
   /**************************************************************************
@@ -909,13 +908,13 @@
 
 #ifdef FT_DEBUG_LEVEL_TRACE
     FT_TRACE5(( "FT_Bitmap_Blend:\n"
-                "  source bitmap: (%d, %d) -- (%d, %d); %d x %d\n",
+                "  source bitmap: (%ld, %ld) -- (%ld, %ld); %d x %d\n",
       source_llx / 64, source_lly / 64,
       source_urx / 64, source_ury / 64,
       source_->width, source_->rows ));
 
     if ( target->width && target->rows )
-      FT_TRACE5(( "  target bitmap: (%d, %d) -- (%d, %d); %d x %d\n",
+      FT_TRACE5(( "  target bitmap: (%ld, %ld) -- (%ld, %ld); %d x %d\n",
         target_llx / 64, target_lly / 64,
         target_urx / 64, target_ury / 64,
         target->width, target->rows ));
@@ -923,7 +922,7 @@
       FT_TRACE5(( "  target bitmap: empty\n" ));
 
     if ( final_width && final_rows )
-      FT_TRACE5(( "  final bitmap: (%d, %d) -- (%d, %d); %d x %d\n",
+      FT_TRACE5(( "  final bitmap: (%ld, %ld) -- (%ld, %ld); %d x %d\n",
         final_llx / 64, final_lly / 64,
         final_urx / 64, final_ury / 64,
         final_width, final_rows ));

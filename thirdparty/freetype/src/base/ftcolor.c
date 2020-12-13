@@ -4,7 +4,7 @@
  *
  *   FreeType's glyph color management (body).
  *
- * Copyright (C) 2018-2019 by
+ * Copyright (C) 2018-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,11 +16,10 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_SFNT_H
-#include FT_INTERNAL_TRUETYPE_TYPES_H
-#include FT_COLOR_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/sfnt.h>
+#include <freetype/internal/tttypes.h>
+#include <freetype/ftcolor.h>
 
 
 #ifdef TT_CONFIG_OPTION_COLOR_LAYERS

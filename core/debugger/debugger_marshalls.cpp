@@ -171,7 +171,7 @@ bool DebuggerMarshalls::ServersProfilerFrame::deserialize(const Array &p_arr) {
 		}
 		servers.push_back(si);
 	}
-	CHECK_SIZE(p_arr, idx + 3, "ServersProfilerFrame");
+	CHECK_SIZE(p_arr, idx + 1, "ServersProfilerFrame");
 	int func_size = p_arr[idx];
 	idx += 1;
 	CHECK_SIZE(p_arr, idx + func_size, "ServersProfilerFrame");
@@ -227,9 +227,10 @@ Array DebuggerMarshalls::ScriptStackVariable::serialize(int max_size) {
 	}
 
 	int len = 0;
-	Error err = encode_variant(var, NULL, len, true);
-	if (err != OK)
+	Error err = encode_variant(var, nullptr, len, true);
+	if (err != OK) {
 		ERR_PRINT("Failed to encode variant.");
+	}
 
 	if (len > max_size) {
 		arr.push_back(Variant());
@@ -317,7 +318,7 @@ bool DebuggerMarshalls::VisualProfilerFrame::deserialize(const Array &p_arr) {
 	CHECK_SIZE(p_arr, size, "VisualProfilerFrame");
 	int idx = 2;
 	areas.resize(size / 3);
-	VS::FrameProfileArea *w = areas.ptrw();
+	RS::FrameProfileArea *w = areas.ptrw();
 	for (int i = 0; i < size / 3; i++) {
 		w[i].name = p_arr[idx];
 		w[i].cpu_msec = p_arr[idx + 1];
