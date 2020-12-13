@@ -109,9 +109,9 @@ bool Array::operator<(const Array &p_array) const {
 	int min_cmp = MIN(a_len, b_len);
 
 	for (int i = 0; i < min_cmp; i++) {
-		if (operator[](i) < p_array[i]) {
+		if (_p->array[i] < p_array[i]) {
 			return true;
-		} else if (p_array[i] < operator[](i)) {
+		} else if (p_array[i] < _p->array[i]) {
 			return false;
 		}
 	}
