@@ -326,6 +326,27 @@
 				Returns underline thickness in pixels.
 			</description>
 		</method>
+		<method name="font_get_variation" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<argument index="1" name="tag" type="String">
+			</argument>
+			<description>
+				Returns variation coordinate [code]tag[/code].
+			</description>
+		</method>
+		<method name="font_get_variation_list" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<description>
+				Returns list of supported [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]variation coordinates[/url], each coordinate is returned as [code]tag: Vector3i(min_value,max_value,default_value)[/code].
+				Font variations allow for continuous change of glyph characteristics along some given design axis, such as weight, width or slant.
+			</description>
+		</method>
 		<method name="font_has_char" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -467,6 +488,19 @@
 			</argument>
 			<description>
 				Adds override for [method font_is_script_supported].
+			</description>
+		</method>
+		<method name="font_set_variation">
+			<return type="void">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<argument index="1" name="tag" type="String">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
+				Sets variation coordinate [code]name[/code]. Unsupported coordinates will be silently ignored.
 			</description>
 		</method>
 		<method name="format_number" qualifiers="const">
@@ -1160,7 +1194,10 @@
 		<constant name="FEATURE_FONT_SYSTEM" value="32" enum="Feature">
 			TextServer supports loading system fonts.
 		</constant>
-		<constant name="FEATURE_USE_SUPPORT_DATA" value="64" enum="Feature">
+		<constant name="FEATURE_FONT_VARIABLE" value="64" enum="Feature">
+			TextServer supports variable fonts.
+		</constant>
+		<constant name="FEATURE_USE_SUPPORT_DATA" value="128" enum="Feature">
 			TextServer require external data file for some features.
 		</constant>
 	</constants>

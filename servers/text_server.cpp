@@ -231,6 +231,10 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_get_antialiased", "font"), &TextServer::font_get_antialiased);
 
 	ClassDB::bind_method(D_METHOD("font_get_feature_list", "font"), &TextServer::font_get_feature_list);
+	ClassDB::bind_method(D_METHOD("font_get_variation_list", "font"), &TextServer::font_get_variation_list);
+
+	ClassDB::bind_method(D_METHOD("font_set_variation", "font", "tag", "value"), &TextServer::font_set_variation);
+	ClassDB::bind_method(D_METHOD("font_get_variation", "font", "tag"), &TextServer::font_get_variation);
 
 	ClassDB::bind_method(D_METHOD("font_set_hinting", "font", "hinting"), &TextServer::font_set_hinting);
 	ClassDB::bind_method(D_METHOD("font_get_hinting", "font"), &TextServer::font_get_hinting);
@@ -385,6 +389,7 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_KASHIDA_JUSTIFICATION);
 	BIND_ENUM_CONSTANT(FEATURE_BREAK_ITERATORS);
 	BIND_ENUM_CONSTANT(FEATURE_FONT_SYSTEM);
+	BIND_ENUM_CONSTANT(FEATURE_FONT_VARIABLE);
 	BIND_ENUM_CONSTANT(FEATURE_USE_SUPPORT_DATA);
 }
 

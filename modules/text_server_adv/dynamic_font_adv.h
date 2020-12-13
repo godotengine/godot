@@ -118,6 +118,8 @@ private:
 	String font_path;
 	Vector<uint8_t> font_mem_cache;
 
+	Map<int32_t, double> variations;
+
 	float rect_margin = 1.f;
 	int base_size = 16;
 	float oversampling = 1.f;
@@ -146,6 +148,10 @@ public:
 	virtual float get_descent(int p_size) const override;
 
 	virtual Dictionary get_feature_list() const override;
+	virtual Dictionary get_variation_list() const override;
+
+	virtual void set_variation(const String &p_name, double p_value) override;
+	virtual double get_variation(const String &p_name) const override;
 
 	virtual float get_underline_position(int p_size) const override;
 	virtual float get_underline_thickness(int p_size) const override;

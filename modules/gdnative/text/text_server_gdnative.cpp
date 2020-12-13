@@ -148,6 +148,24 @@ bool TextServerGDNative::font_get_antialiased(RID p_font) const {
 	return interface->font_get_antialiased(data, (godot_rid *)&p_font);
 }
 
+Dictionary TextServerGDNative::font_get_variation_list(RID p_font) const {
+	ERR_FAIL_COND_V(interface == nullptr, Dictionary());
+	godot_dictionary result = interface->font_get_variation_list(data, (godot_rid *)&p_font);
+	Dictionary info = *(Dictionary *)&result;
+	godot_dictionary_destroy(&result);
+
+	return info;
+}
+
+void TextServerGDNative::font_set_variation(RID p_font, const String &p_name, double p_value) {
+	ERR_FAIL_COND(interface == nullptr);
+	interface->font_set_variation(data, (godot_rid *)&p_font, (godot_string *)&p_name, p_value);
+}
+
+double TextServerGDNative::font_get_variation(RID p_font, const String &p_name) const {
+	return interface->font_get_variation(data, (godot_rid *)&p_font, (godot_string *)&p_name);
+}
+
 void TextServerGDNative::font_set_hinting(RID p_font, TextServer::Hinting p_hinting) {
 	ERR_FAIL_COND(interface == nullptr);
 	interface->font_set_hinting(data, (godot_rid *)&p_font, (godot_int)p_hinting);
