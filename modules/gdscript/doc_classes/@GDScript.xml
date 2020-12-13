@@ -780,7 +780,7 @@
 			<argument index="1" name="exp" type="float">
 			</argument>
 			<description>
-				Returns the result of [code]x[/code] raised to the power of [code]y[/code].
+				Returns the result of [code]base[/code] raised to the power of [code]exp[/code].
 				[codeblock]
 				pow(2, 5) # Returns 32.0
 				[/codeblock]
