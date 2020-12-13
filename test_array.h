@@ -82,6 +82,6 @@ TEST_CASE("Array < Length") {
 			a1 < a2,
 			"Array with a shorter length should be smaller");
 }
-
 } // namespace TestArray
+
 #endif // TEST_Array_H
