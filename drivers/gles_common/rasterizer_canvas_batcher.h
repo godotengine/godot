@@ -1357,6 +1357,22 @@ template <bool SEND_LIGHT_ANGLES>
 bool C_PREAMBLE::_prefill_ninepatch(RasterizerCanvas::Item::CommandNinePatch *p_np, FillState &r_fill_state, int &r_command_start, int command_num, int command_count, RasterizerCanvas::Item *p_item, bool multiply_final_modulate) {
 	typename T_STORAGE::Texture *tex = get_storage()->texture_owner.getornull(p_np->texture);
 
+	if (!tex) {
+		// FIXME: Handle textureless ninepatch gracefully
+		WARN_PRINT("NinePatch without texture not supported yet, skipping.");
+		return false;
+	}
+	if (tex->width == 0 || tex->height == 0) {
+		WARN_PRINT("Cannot set empty texture to NinePatch.");
+		return false;
+	}
+
+	// cope with ninepatch of zero area. These cannot be created by the user interface or gdscript, but can
+	// be created programmatically from c++, e.g. by the Godot UI for sliders. We will just not draw these.
+	if ((p_np->rect.size.x * p_np->rect.size.y) <= 0.0f) {
+		return false;
+	}
+
 	// conditions for creating a new batch
 	if (r_fill_state.curr_batch->type != RasterizerStorageCommon::BT_RECT) {
 
@@ -1366,16 +1382,6 @@ bool C_PREAMBLE::_prefill_ninepatch(RasterizerCanvas::Item::CommandNinePatch *p_
 			r_command_start = command_num;
 			return true;
 		}
-	}
-
-	if (!tex) {
-		// FIXME: Handle textureless ninepatch gracefully
-		WARN_PRINT("NinePatch without texture not supported yet in GLES2 backend, skipping.");
-		return false;
-	}
-	if (tex->width == 0 || tex->height == 0) {
-		WARN_PRINT("Cannot set empty texture to NinePatch.");
-		return false;
 	}
 
 	// first check there are enough verts for this to complete successfully
@@ -1445,6 +1451,17 @@ bool C_PREAMBLE::_prefill_ninepatch(RasterizerCanvas::Item::CommandNinePatch *p_
 	v[1] = v[0] + tex_margin_top;
 	v[3] = v[0] + source.size.y;
 	v[2] = v[3] - tex_margin_bottom;
+
+	// Some protection for the use of ninepatches with rect size smaller than margin size.
+	// Note these cannot be produced by the UI, only programmatically, and the results
+	// are somewhat undefined, because the margins overlap.
+	// Ninepatch get_minimum_size()	forces minimum size to be the sum of the margins.
+	// So this should occur very rarely if ever. Consider commenting these 4 lines out for higher speed
+	// in ninepatches.
+	x[1] = MIN(x[1], x[3]);
+	x[2] = MIN(x[2], x[3]);
+	y[1] = MIN(y[1], y[3]);
+	y[2] = MIN(y[2], y[3]);
 
 	// temporarily override to prevent single rect fallback
 	bool single_rect_fallback = bdata.settings_use_single_rect_fallback;
