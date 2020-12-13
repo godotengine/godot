@@ -1089,13 +1089,23 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	file->clear_filters();
 
 	List<String> preferred;
-	for (int i = 0; i < extensions.size(); i++) {
-		if (p_resource->is_class("Script") && (extensions[i] == "tres" || extensions[i] == "res" || extensions[i] == "xml")) {
+	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
+		if (p_resource->is_class("Script") && (E->get() == "tres" || E->get() == "res")) {
 			//this serves no purpose and confused people
 			continue;
 		}
-		file->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
-		preferred.push_back(extensions[i]);
+		file->add_filter("*." + E->get() + " ; " + E->get().to_upper());
+		preferred.push_back(E->get());
+	}
+	// Lowest priority extension
+	List<String>::Element *res_element = preferred.find("res");
+	if (res_element) {
+		preferred.move_to_back(res_element);
+	}
+	// Highest priority extension
+	List<String>::Element *tres_element = preferred.find("tres");
+	if (tres_element) {
+		preferred.move_to_front(tres_element);
 	}
 
 	if (p_at_path != String()) {
