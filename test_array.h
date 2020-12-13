@@ -84,5 +84,4 @@ TEST_CASE("Array < Length") {
 }
 
 } // namespace TestArray
-
 #endif // TEST_Array_H
