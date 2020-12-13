@@ -620,6 +620,7 @@ public:
 
 	FUNC5(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float)
 	FUNC5(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
+	FUNC3(canvas_item_add_thin_polyline, RID, const Vector<Point2> &, const Vector<Color> &)
 	FUNC4(canvas_item_add_multiline, RID, const Vector<Point2> &, const Vector<Color> &, float)
 	FUNC3(canvas_item_add_rect, RID, const Rect2 &, const Color &)
 	FUNC4(canvas_item_add_circle, RID, const Point2 &, float, const Color &)

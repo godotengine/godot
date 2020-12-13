@@ -542,8 +542,13 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 
 void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width, bool p_antialiased) {
 	ERR_FAIL_COND(p_points.size() < 2);
+
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
+
+	if (p_width < 1.0) {
+		p_width = 1.0;
+	}
 
 	Color color = Color(1, 1, 1, 1);
 
@@ -677,6 +682,44 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 
 	pline->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
 	pline->polygon.create(indices, points, colors);
+}
+
+void RendererCanvasCull::canvas_item_add_thin_polyline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors) {
+	ERR_FAIL_COND(p_points.size() < 2);
+
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+
+	Item::CommandPolygon *pline = canvas_item->alloc_command<Item::CommandPolygon>();
+	ERR_FAIL_COND(!pline);
+	pline->primitive = RS::PRIMITIVE_LINES;
+
+	Vector<int> indices;
+	int pc = p_points.size();
+	indices.resize((pc - 1) * 2);
+	{
+		int *iptr = indices.ptrw();
+		for (int i = 0; i < (pc - 1); i++) {
+			iptr[i * 2 + 0] = i;
+			iptr[i * 2 + 1] = i + 1;
+		}
+	}
+
+	if (p_colors.size() != 1 && p_colors.size() != p_points.size()) {
+		Vector<Color> colors;
+		Color color = Color(1, 1, 1, 1);
+
+		for (int i = 0; i < pc; i++) {
+			if (i < p_colors.size()) {
+				color = p_colors[i];
+			}
+			colors.append(color);
+		}
+
+		pline->polygon.create(indices, p_points, colors);
+	} else {
+		pline->polygon.create(indices, p_points, p_colors);
+	}
 }
 
 void RendererCanvasCull::canvas_item_add_multiline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width) {
