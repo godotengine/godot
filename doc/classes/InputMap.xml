@@ -100,8 +100,11 @@
 			</argument>
 			<argument index="1" name="action" type="String">
 			</argument>
+			<argument index="2" name="exact_match" type="bool" default="false">
+			</argument>
 			<description>
 				Returns [code]true[/code] if the given event is part of an existing action. This method ignores keyboard modifiers if the given [InputEvent] is not pressed (for proper release detection). See [method action_has_event] if you don't want this behavior.
+				If [code]exact_match[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="get_action_list">

@@ -59,8 +59,11 @@
 			</return>
 			<argument index="0" name="action" type="String">
 			</argument>
+			<argument index="1" name="exact" type="bool" default="false">
+			</argument>
 			<description>
 				Returns a value between 0 and 1 representing the raw intensity of the given action, ignoring the action's deadzone. In most cases, you should use [method get_action_strength] instead.
+				If [code]exact[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="get_action_strength" qualifiers="const">
@@ -68,8 +71,11 @@
 			</return>
 			<argument index="0" name="action" type="String">
 			</argument>
+			<argument index="1" name="exact" type="bool" default="false">
+			</argument>
 			<description>
 				Returns a value between 0 and 1 representing the intensity of the given action. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to 1. If the action is mapped to a control that has no axis as the keyboard, the value returned will be 0 or 1.
+				If [code]exact[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="get_axis" qualifiers="const">
@@ -250,9 +256,12 @@
 			</return>
 			<argument index="0" name="action" type="String">
 			</argument>
+			<argument index="1" name="exact" type="bool" default="false">
+			</argument>
 			<description>
 				Returns [code]true[/code] when the user starts pressing the action event, meaning it's [code]true[/code] only on the frame that the user pressed down the button.
 				This is useful for code that needs to run only once when an action is pressed, instead of every frame while it's pressed.
+				If [code]exact[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="is_action_just_released" qualifiers="const">
@@ -260,8 +269,11 @@
 			</return>
 			<argument index="0" name="action" type="String">
 			</argument>
+			<argument index="1" name="exact" type="bool" default="false">
+			</argument>
 			<description>
 				Returns [code]true[/code] when the user stops pressing the action event, meaning it's [code]true[/code] only on the frame that the user released the button.
+				If [code]exact[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="is_action_pressed" qualifiers="const">
@@ -269,8 +281,11 @@
 			</return>
 			<argument index="0" name="action" type="String">
 			</argument>
+			<argument index="1" name="exact" type="bool" default="false">
+			</argument>
 			<description>
 				Returns [code]true[/code] if you are pressing the action event. Note that if an action has multiple buttons assigned and more than one of them is pressed, releasing one button will release the action, even if some other button assigned to this action is still pressed.
+				If [code]exact[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="is_joy_button_pressed" qualifiers="const">
