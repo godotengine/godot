@@ -138,8 +138,8 @@ TEST_CASE("[Dictionary] Keys and Values") {
 	CHECK(keys.empty());
 	CHECK(values.empty());
 	map[1] = 3;
-    keys = map.keys();
-    values = map.values();
+	keys = map.keys();
+	values = map.values();
 	CHECK(int(keys[0]) == 1);
 	CHECK(int(values[0]) == 3);
 }
