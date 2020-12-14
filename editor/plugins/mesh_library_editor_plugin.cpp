@@ -267,7 +267,7 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	editor = p_editor;
 	cd = memnew(ConfirmationDialog);
 	add_child(cd);
-	cd->get_ok()->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_confirm));
+	cd->get_ok_button()->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_confirm));
 }
 
 void MeshLibraryEditorPlugin::edit(Object *p_node) {

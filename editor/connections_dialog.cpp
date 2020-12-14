@@ -252,16 +252,16 @@ void ConnectDialog::_update_ok_enabled() {
 	Node *target = tree->get_selected();
 
 	if (target == nullptr) {
-		get_ok()->set_disabled(true);
+		get_ok_button()->set_disabled(true);
 		return;
 	}
 
 	if (!advanced->is_pressed() && target->get_script().is_null()) {
-		get_ok()->set_disabled(true);
+		get_ok_button()->set_disabled(true);
 		return;
 	}
 
-	get_ok()->set_disabled(false);
+	get_ok_button()->set_disabled(false);
 }
 
 void ConnectDialog::_notification(int p_what) {
@@ -496,8 +496,8 @@ ConnectDialog::ConnectDialog() {
 	error = memnew(AcceptDialog);
 	add_child(error);
 	error->set_title(TTR("Cannot connect signal"));
-	error->get_ok()->set_text(TTR("Close"));
-	get_ok()->set_text(TTR("Connect"));
+	error->get_ok_button()->set_text(TTR("Close"));
+	get_ok_button()->set_text(TTR("Connect"));
 }
 
 ConnectDialog::~ConnectDialog() {

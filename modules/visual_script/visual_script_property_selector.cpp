@@ -310,7 +310,7 @@ void VisualScriptPropertySelector::_update_search() {
 		found = true;
 	}
 
-	get_ok()->set_disabled(root->get_children() == nullptr);
+	get_ok_button()->set_disabled(root->get_children() == nullptr);
 }
 
 void VisualScriptPropertySelector::create_visualscript_item(const String &name, TreeItem *const root, const String &search_input, const String &text) {
@@ -705,8 +705,8 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	search_box->connect("gui_input", callable_mp(this, &VisualScriptPropertySelector::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
-	get_ok()->set_text(TTR("Open"));
-	get_ok()->set_disabled(true);
+	get_ok_button()->set_text(TTR("Open"));
+	get_ok_button()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	search_options->connect("item_activated", callable_mp(this, &VisualScriptPropertySelector::_confirmed));

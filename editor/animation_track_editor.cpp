@@ -3360,7 +3360,7 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 			}
 
 			insert_confirm_bezier->set_visible(all_bezier);
-			insert_confirm->get_ok()->set_text(TTR("Create"));
+			insert_confirm->get_ok_button()->set_text(TTR("Create"));
 			insert_confirm->popup_centered();
 			insert_query = true;
 		} else {
@@ -5789,7 +5789,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	optimize_max_angle->set_step(0.1);
 	optimize_max_angle->set_value(22);
 
-	optimize_dialog->get_ok()->set_text(TTR("Optimize"));
+	optimize_dialog->get_ok_button()->set_text(TTR("Optimize"));
 	optimize_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_CLEAN_UP_ANIMATION_CONFIRM));
 
 	//
@@ -5814,7 +5814,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	cleanup_vb->add_child(cleanup_all);
 
 	cleanup_dialog->set_title(TTR("Clean-Up Animation(s) (NO UNDO!)"));
-	cleanup_dialog->get_ok()->set_text(TTR("Clean-Up"));
+	cleanup_dialog->get_ok_button()->set_text(TTR("Clean-Up"));
 
 	cleanup_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_CLEAN_UP_ANIMATION_CONFIRM));
 
@@ -5834,7 +5834,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_copy_dialog = memnew(ConfirmationDialog);
 	add_child(track_copy_dialog);
 	track_copy_dialog->set_title(TTR("Select Tracks to Copy"));
-	track_copy_dialog->get_ok()->set_text(TTR("Copy"));
+	track_copy_dialog->get_ok_button()->set_text(TTR("Copy"));
 
 	VBoxContainer *track_vbox = memnew(VBoxContainer);
 	track_copy_dialog->add_child(track_vbox);

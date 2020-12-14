@@ -357,7 +357,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_dialog->set_min_size(Size2(400, 100));
 	version_control_actions->add_child(set_up_dialog);
 
-	set_up_ok_button = set_up_dialog->get_ok();
+	set_up_ok_button = set_up_dialog->get_ok_button();
 	set_up_ok_button->set_text(TTR("Close"));
 
 	set_up_vbc = memnew(VBoxContainer);

@@ -335,7 +335,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 
 	error = memnew(AcceptDialog);
 	add_child(error);
-	get_ok()->set_text(TTR("Install"));
+	get_ok_button()->set_text(TTR("Install"));
 	set_title(TTR("Package Installer"));
 
 	updating = false;

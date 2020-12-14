@@ -2837,7 +2837,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(remove_dialog);
 
 	move_dialog = memnew(EditorDirDialog);
-	move_dialog->get_ok()->set_text(TTR("Move"));
+	move_dialog->get_ok_button()->set_text(TTR("Move"));
 	add_child(move_dialog);
 	move_dialog->connect("dir_selected", callable_mp(this, &FileSystemDock::_move_operation_confirm), make_binds(false));
 
@@ -2847,13 +2847,13 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	rename_dialog_text = memnew(LineEdit);
 	rename_dialog_vb->add_margin_child(TTR("Name:"), rename_dialog_text);
-	rename_dialog->get_ok()->set_text(TTR("Rename"));
+	rename_dialog->get_ok_button()->set_text(TTR("Rename"));
 	add_child(rename_dialog);
 	rename_dialog->register_text_enter(rename_dialog_text);
 	rename_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
 
 	overwrite_dialog = memnew(ConfirmationDialog);
-	overwrite_dialog->get_ok()->set_text(TTR("Overwrite"));
+	overwrite_dialog->get_ok_button()->set_text(TTR("Overwrite"));
 	add_child(overwrite_dialog);
 	overwrite_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_move_with_overwrite));
 
@@ -2863,7 +2863,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	duplicate_dialog_text = memnew(LineEdit);
 	duplicate_dialog_vb->add_margin_child(TTR("Name:"), duplicate_dialog_text);
-	duplicate_dialog->get_ok()->set_text(TTR("Duplicate"));
+	duplicate_dialog->get_ok_button()->set_text(TTR("Duplicate"));
 	add_child(duplicate_dialog);
 	duplicate_dialog->register_text_enter(duplicate_dialog_text);
 	duplicate_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_duplicate_operation_confirm));

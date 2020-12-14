@@ -540,7 +540,7 @@ GroupDialog::GroupDialog() {
 
 	error = memnew(ConfirmationDialog);
 	add_child(error);
-	error->get_ok()->set_text(TTR("Close"));
+	error->get_ok_button()->set_text(TTR("Close"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -321,7 +321,7 @@ void PropertySelector::_update_search() {
 		}
 	}
 
-	get_ok()->set_disabled(root->get_children() == nullptr);
+	get_ok_button()->set_disabled(root->get_children() == nullptr);
 }
 
 void PropertySelector::_confirmed() {
@@ -553,8 +553,8 @@ PropertySelector::PropertySelector() {
 	search_box->connect("gui_input", callable_mp(this, &PropertySelector::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
-	get_ok()->set_text(TTR("Open"));
-	get_ok()->set_disabled(true);
+	get_ok_button()->set_text(TTR("Open"));
+	get_ok_button()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	search_options->connect("item_activated", callable_mp(this, &PropertySelector::_confirmed));

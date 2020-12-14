@@ -556,7 +556,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 	if (p_option == POPUP_ADD) { // Add.
 
 		add_del_dialog->set_title(TTR("Add Item"));
-		add_del_dialog->get_ok()->set_text(TTR("Add"));
+		add_del_dialog->get_ok_button()->set_text(TTR("Add"));
 		add_del_dialog->popup_centered(Size2(490, 85) * EDSCALE);
 
 		base_theme = Theme::get_default();
@@ -564,7 +564,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 	} else if (p_option == POPUP_CLASS_ADD) { // Add.
 
 		add_del_dialog->set_title(TTR("Add All Items"));
-		add_del_dialog->get_ok()->set_text(TTR("Add All"));
+		add_del_dialog->get_ok_button()->set_text(TTR("Add All"));
 		add_del_dialog->popup_centered(Size2(240, 85) * EDSCALE);
 
 		base_theme = Theme::get_default();
@@ -576,14 +576,14 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 	} else if (p_option == POPUP_REMOVE) {
 		add_del_dialog->set_title(TTR("Remove Item"));
-		add_del_dialog->get_ok()->set_text(TTR("Remove"));
+		add_del_dialog->get_ok_button()->set_text(TTR("Remove"));
 		add_del_dialog->popup_centered(Size2(490, 85) * EDSCALE);
 
 		base_theme = theme;
 
 	} else if (p_option == POPUP_CLASS_REMOVE) {
 		add_del_dialog->set_title(TTR("Remove All Items"));
-		add_del_dialog->get_ok()->set_text(TTR("Remove All"));
+		add_del_dialog->get_ok_button()->set_text(TTR("Remove All"));
 		add_del_dialog->popup_centered(Size2(240, 85) * EDSCALE);
 
 		base_theme = Theme::get_default();
@@ -908,7 +908,7 @@ ThemeEditor::ThemeEditor() {
 
 	dialog_vbc->add_child(type_select);
 
-	add_del_dialog->get_ok()->connect("pressed", callable_mp(this, &ThemeEditor::_dialog_cbk));
+	add_del_dialog->get_ok_button()->connect("pressed", callable_mp(this, &ThemeEditor::_dialog_cbk));
 
 	file_dialog = memnew(EditorFileDialog);
 	file_dialog->add_filter("*.theme ; " + TTR("Theme File"));

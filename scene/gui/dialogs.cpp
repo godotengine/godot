@@ -60,7 +60,7 @@ void AcceptDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				get_ok()->grab_focus();
+				get_ok_button()->grab_focus();
 				_update_child_rects();
 				parent_visible = get_parent_visible_window();
 				if (parent_visible) {
@@ -253,7 +253,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 	return button;
 }
 
-Button *AcceptDialog::add_cancel(const String &p_cancel) {
+Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 	String c = p_cancel;
 	if (p_cancel == "") {
 		c = RTR("Cancel");
@@ -264,12 +264,12 @@ Button *AcceptDialog::add_cancel(const String &p_cancel) {
 }
 
 void AcceptDialog::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_ok"), &AcceptDialog::get_ok);
+	ClassDB::bind_method(D_METHOD("get_ok_button"), &AcceptDialog::get_ok_button);
 	ClassDB::bind_method(D_METHOD("get_label"), &AcceptDialog::get_label);
 	ClassDB::bind_method(D_METHOD("set_hide_on_ok", "enabled"), &AcceptDialog::set_hide_on_ok);
 	ClassDB::bind_method(D_METHOD("get_hide_on_ok"), &AcceptDialog::get_hide_on_ok);
 	ClassDB::bind_method(D_METHOD("add_button", "text", "right", "action"), &AcceptDialog::add_button, DEFVAL(false), DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("add_cancel", "name"), &AcceptDialog::add_cancel);
+	ClassDB::bind_method(D_METHOD("add_cancel_button", "name"), &AcceptDialog::add_cancel_button);
 	ClassDB::bind_method(D_METHOD("register_text_enter", "line_edit"), &AcceptDialog::register_text_enter);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &AcceptDialog::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &AcceptDialog::get_text);
@@ -337,10 +337,10 @@ AcceptDialog::~AcceptDialog() {
 // ConfirmationDialog
 
 void ConfirmationDialog::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_cancel"), &ConfirmationDialog::get_cancel);
+	ClassDB::bind_method(D_METHOD("get_cancel_button"), &ConfirmationDialog::get_cancel_button);
 }
 
-Button *ConfirmationDialog::get_cancel() {
+Button *ConfirmationDialog::get_cancel_button() {
 	return cancel;
 }
 
@@ -349,5 +349,5 @@ ConfirmationDialog::ConfirmationDialog() {
 #ifdef TOOLS_ENABLED
 	set_min_size(Size2(200, 70) * EDSCALE);
 #endif
-	cancel = add_cancel();
+	cancel = add_cancel_button();
 }

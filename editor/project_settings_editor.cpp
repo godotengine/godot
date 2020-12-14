@@ -478,6 +478,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	del_confirmation->connect("confirmed", callable_mp(this, &ProjectSettingsEditor::_delete_setting), varray(true));
 	add_child(del_confirmation);
 
-	get_ok()->set_text(TTR("Close"));
+	get_ok_button()->set_text(TTR("Close"));
 	set_hide_on_ok(true);
 }

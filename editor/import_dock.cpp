@@ -536,7 +536,7 @@ ImportDock::ImportDock() {
 	hb->add_spacer();
 
 	reimport_confirm = memnew(ConfirmationDialog);
-	reimport_confirm->get_ok()->set_text(TTR("Save Scenes, Re-Import, and Restart"));
+	reimport_confirm->get_ok_button()->set_text(TTR("Save Scenes, Re-Import, and Restart"));
 	add_child(reimport_confirm);
 	reimport_confirm->connect("confirmed", callable_mp(this, &ImportDock::_reimport_and_restart));
 

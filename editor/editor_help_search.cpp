@@ -105,7 +105,7 @@ void EditorHelpSearch::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				results_tree->call_deferred("clear"); // Wait for the Tree's mouse event propagation.
-				get_ok()->set_disabled(true);
+				get_ok_button()->set_disabled(true);
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "search_help", Rect2(get_position(), get_size()));
 			}
 		} break;
@@ -130,7 +130,7 @@ void EditorHelpSearch::_notification(int p_what) {
 						old_search = false;
 					}
 
-					get_ok()->set_disabled(!results_tree->get_selected());
+					get_ok_button()->set_disabled(!results_tree->get_selected());
 
 					search = Ref<Runner>();
 					set_process(false);
@@ -182,8 +182,8 @@ EditorHelpSearch::EditorHelpSearch() {
 
 	set_title(TTR("Search Help"));
 
-	get_ok()->set_disabled(true);
-	get_ok()->set_text(TTR("Open"));
+	get_ok_button()->set_disabled(true);
+	get_ok_button()->set_text(TTR("Open"));
 
 	// Split search and results area.
 	VBoxContainer *vbox = memnew(VBoxContainer);
@@ -244,7 +244,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	results_tree->set_hide_root(true);
 	results_tree->set_select_mode(Tree::SELECT_ROW);
 	results_tree->connect("item_activated", callable_mp(this, &EditorHelpSearch::_confirmed));
-	results_tree->connect("item_selected", callable_mp((BaseButton *)get_ok(), &BaseButton::set_disabled), varray(false));
+	results_tree->connect("item_selected", callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled), varray(false));
 	vbox->add_child(results_tree, true);
 }
 

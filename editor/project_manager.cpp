@@ -160,7 +160,7 @@ private:
 		if (valid_path == "") {
 			set_message(TTR("The path specified doesn't exist."), MESSAGE_ERROR);
 			memdelete(d);
-			get_ok()->set_disabled(true);
+			get_ok_button()->set_disabled(true);
 			return "";
 		}
 
@@ -174,7 +174,7 @@ private:
 			if (valid_install_path == "") {
 				set_message(TTR("The path specified doesn't exist."), MESSAGE_ERROR, INSTALL_PATH);
 				memdelete(d);
-				get_ok()->set_disabled(true);
+				get_ok_button()->set_disabled(true);
 				return "";
 			}
 		}
@@ -189,7 +189,7 @@ private:
 					if (!pkg) {
 						set_message(TTR("Error opening package file (it's not in ZIP format)."), MESSAGE_ERROR);
 						memdelete(d);
-						get_ok()->set_disabled(true);
+						get_ok_button()->set_disabled(true);
 						unzClose(pkg);
 						return "";
 					}
@@ -210,7 +210,7 @@ private:
 					if (ret == UNZ_END_OF_LIST_OF_FILE) {
 						set_message(TTR("Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."), MESSAGE_ERROR);
 						memdelete(d);
-						get_ok()->set_disabled(true);
+						get_ok_button()->set_disabled(true);
 						unzClose(pkg);
 						return "";
 					}
@@ -237,7 +237,7 @@ private:
 					if (!is_folder_empty) {
 						set_message(TTR("Please choose an empty folder."), MESSAGE_WARNING, INSTALL_PATH);
 						memdelete(d);
-						get_ok()->set_disabled(true);
+						get_ok_button()->set_disabled(true);
 						return "";
 					}
 
@@ -245,14 +245,14 @@ private:
 					set_message(TTR("Please choose a \"project.godot\" or \".zip\" file."), MESSAGE_ERROR);
 					memdelete(d);
 					install_path_container->hide();
-					get_ok()->set_disabled(true);
+					get_ok_button()->set_disabled(true);
 					return "";
 				}
 
 			} else if (valid_path.ends_with("zip")) {
 				set_message(TTR("This directory already contains a Godot project."), MESSAGE_ERROR, INSTALL_PATH);
 				memdelete(d);
-				get_ok()->set_disabled(true);
+				get_ok_button()->set_disabled(true);
 				return "";
 			}
 
@@ -277,7 +277,7 @@ private:
 			if (!is_folder_empty) {
 				set_message(TTR("The selected path is not empty. Choosing an empty folder is highly recommended."), MESSAGE_WARNING);
 				memdelete(d);
-				get_ok()->set_disabled(false);
+				get_ok_button()->set_disabled(false);
 				return valid_path;
 			}
 		}
@@ -285,7 +285,7 @@ private:
 		set_message("");
 		set_message("", MESSAGE_SUCCESS, INSTALL_PATH);
 		memdelete(d);
-		get_ok()->set_disabled(false);
+		get_ok_button()->set_disabled(false);
 		return valid_path;
 	}
 
@@ -320,14 +320,14 @@ private:
 			if (p.ends_with("project.godot")) {
 				p = p.get_base_dir();
 				install_path_container->hide();
-				get_ok()->set_disabled(false);
+				get_ok_button()->set_disabled(false);
 			} else if (p.ends_with(".zip")) {
 				install_path->set_text(p.get_base_dir());
 				install_path_container->show();
-				get_ok()->set_disabled(false);
+				get_ok_button()->set_disabled(false);
 			} else {
 				set_message(TTR("Please choose a \"project.godot\" or \".zip\" file."), MESSAGE_ERROR);
-				get_ok()->set_disabled(true);
+				get_ok_button()->set_disabled(true);
 				return;
 			}
 		}
@@ -338,7 +338,7 @@ private:
 		if (p.ends_with(".zip")) {
 			install_path->call_deferred("grab_focus");
 		} else {
-			get_ok()->call_deferred("grab_focus");
+			get_ok_button()->call_deferred("grab_focus");
 		}
 	}
 
@@ -346,14 +346,14 @@ private:
 		String sp = p_path.simplify_path();
 		project_path->set_text(sp);
 		_path_text_changed(sp);
-		get_ok()->call_deferred("grab_focus");
+		get_ok_button()->call_deferred("grab_focus");
 	}
 
 	void _install_path_selected(const String &p_path) {
 		String sp = p_path.simplify_path();
 		install_path->set_text(sp);
 		_path_text_changed(sp);
-		get_ok()->call_deferred("grab_focus");
+		get_ok_button()->call_deferred("grab_focus");
 	}
 
 	void _browse_path() {
@@ -466,7 +466,7 @@ private:
 						ConfirmationDialog *cd = memnew(ConfirmationDialog);
 						cd->set_title(TTR("Warning: This folder is not empty"));
 						cd->set_text(TTR("You are about to create a Godot project in a non-empty folder.\nThe entire contents of this folder will be imported as project resources!\n\nAre you sure you wish to continue?"));
-						cd->get_ok()->connect("pressed", callable_mp(this, &ProjectDialog::_nonempty_confirmation_ok_pressed));
+						cd->get_ok_button()->connect("pressed", callable_mp(this, &ProjectDialog::_nonempty_confirmation_ok_pressed));
 						get_parent()->add_child(cd);
 						cd->popup_centered();
 						cd->grab_focus();
@@ -684,14 +684,14 @@ public:
 			install_browse->hide();
 
 			set_title(TTR("Rename Project"));
-			get_ok()->set_text(TTR("Rename"));
+			get_ok_button()->set_text(TTR("Rename"));
 			name_container->show();
 			status_rect->hide();
 			msg->hide();
 			install_path_container->hide();
 			install_status_rect->hide();
 			rasterizer_container->hide();
-			get_ok()->set_disabled(false);
+			get_ok_button()->set_disabled(false);
 
 			ProjectSettings *current = memnew(ProjectSettings);
 
@@ -700,7 +700,7 @@ public:
 				set_message(vformat(TTR("Couldn't load project.godot in project path (error %d). It may be missing or corrupted."), err), MESSAGE_ERROR);
 				status_rect->show();
 				msg->show();
-				get_ok()->set_disabled(true);
+				get_ok_button()->set_disabled(true);
 			} else if (current->has_setting("application/config/name")) {
 				String proj = current->get("application/config/name");
 				project_name->set_text(proj);
@@ -738,7 +738,7 @@ public:
 
 			if (mode == MODE_IMPORT) {
 				set_title(TTR("Import Existing Project"));
-				get_ok()->set_text(TTR("Import & Edit"));
+				get_ok_button()->set_text(TTR("Import & Edit"));
 				name_container->hide();
 				install_path_container->hide();
 				rasterizer_container->hide();
@@ -746,7 +746,7 @@ public:
 
 			} else if (mode == MODE_NEW) {
 				set_title(TTR("Create New Project"));
-				get_ok()->set_text(TTR("Create & Edit"));
+				get_ok_button()->set_text(TTR("Create & Edit"));
 				name_container->show();
 				install_path_container->hide();
 				rasterizer_container->show();
@@ -755,7 +755,7 @@ public:
 
 			} else if (mode == MODE_INSTALL) {
 				set_title(TTR("Install Project:") + " " + zip_title);
-				get_ok()->set_text(TTR("Install & Edit"));
+				get_ok_button()->set_text(TTR("Install & Edit"));
 				project_name->set_text(zip_title);
 				name_container->show();
 				install_path_container->hide();
@@ -2321,8 +2321,8 @@ void ProjectManager::_files_dropped(PackedStringArray p_files, int p_screen) {
 			memdelete(dir);
 		}
 		if (confirm) {
-			multi_scan_ask->get_ok()->disconnect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders));
-			multi_scan_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders), varray(folders));
+			multi_scan_ask->get_ok_button()->disconnect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders));
+			multi_scan_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders), varray(folders));
 			multi_scan_ask->set_text(
 					vformat(TTR("Are you sure to scan %s folders for existing Godot projects?\nThis could take a while."), folders.size()));
 			multi_scan_ask->popup_centered();
@@ -2629,9 +2629,9 @@ ProjectManager::ProjectManager() {
 	{
 		// Dialogs
 		language_restart_ask = memnew(ConfirmationDialog);
-		language_restart_ask->get_ok()->set_text(TTR("Restart Now"));
-		language_restart_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_restart_confirm));
-		language_restart_ask->get_cancel()->set_text(TTR("Continue"));
+		language_restart_ask->get_ok_button()->set_text(TTR("Restart Now"));
+		language_restart_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_restart_confirm));
+		language_restart_ask->get_cancel_button()->set_text(TTR("Continue"));
 		add_child(language_restart_ask);
 
 		scan_dir = memnew(FileDialog);
@@ -2643,31 +2643,31 @@ ProjectManager::ProjectManager() {
 		scan_dir->connect("dir_selected", callable_mp(this, &ProjectManager::_scan_begin));
 
 		erase_missing_ask = memnew(ConfirmationDialog);
-		erase_missing_ask->get_ok()->set_text(TTR("Remove All"));
-		erase_missing_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
+		erase_missing_ask->get_ok_button()->set_text(TTR("Remove All"));
+		erase_missing_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
 		add_child(erase_missing_ask);
 
 		erase_ask = memnew(ConfirmationDialog);
-		erase_ask->get_ok()->set_text(TTR("Remove"));
-		erase_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_erase_project_confirm));
+		erase_ask->get_ok_button()->set_text(TTR("Remove"));
+		erase_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_erase_project_confirm));
 		add_child(erase_ask);
 
 		multi_open_ask = memnew(ConfirmationDialog);
-		multi_open_ask->get_ok()->set_text(TTR("Edit"));
-		multi_open_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects));
+		multi_open_ask->get_ok_button()->set_text(TTR("Edit"));
+		multi_open_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects));
 		add_child(multi_open_ask);
 
 		multi_run_ask = memnew(ConfirmationDialog);
-		multi_run_ask->get_ok()->set_text(TTR("Run"));
-		multi_run_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_run_project_confirm));
+		multi_run_ask->get_ok_button()->set_text(TTR("Run"));
+		multi_run_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_run_project_confirm));
 		add_child(multi_run_ask);
 
 		multi_scan_ask = memnew(ConfirmationDialog);
-		multi_scan_ask->get_ok()->set_text(TTR("Scan"));
+		multi_scan_ask->get_ok_button()->set_text(TTR("Scan"));
 		add_child(multi_scan_ask);
 
 		ask_update_settings = memnew(ConfirmationDialog);
-		ask_update_settings->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_confirm_update_settings));
+		ask_update_settings->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_confirm_update_settings));
 		add_child(ask_update_settings);
 
 		npdialog = memnew(ProjectDialog);
@@ -2684,7 +2684,7 @@ ProjectManager::ProjectManager() {
 
 		open_templates = memnew(ConfirmationDialog);
 		open_templates->set_text(TTR("You currently don't have any projects.\nWould you like to explore official example projects in the Asset Library?"));
-		open_templates->get_ok()->set_text(TTR("Open Asset Library"));
+		open_templates->get_ok_button()->set_text(TTR("Open Asset Library"));
 		open_templates->connect("confirmed", callable_mp(this, &ProjectManager::_open_asset_library));
 		add_child(open_templates);
 	}

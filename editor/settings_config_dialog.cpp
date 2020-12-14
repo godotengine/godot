@@ -275,8 +275,8 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		last_wait_for_key = Ref<InputEventKey>();
 		press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 		//press_a_key->grab_focus();
-		press_a_key->get_ok()->set_focus_mode(Control::FOCUS_NONE);
-		press_a_key->get_cancel()->set_focus_mode(Control::FOCUS_NONE);
+		press_a_key->get_ok_button()->set_focus_mode(Control::FOCUS_NONE);
+		press_a_key->get_cancel_button()->set_focus_mode(Control::FOCUS_NONE);
 		shortcut_configured = item;
 
 	} else if (p_idx == 1) { //erase
@@ -488,7 +488,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	timer->set_one_shot(true);
 	add_child(timer);
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSettingsDialog::_settings_changed));
-	get_ok()->set_text(TTR("Close"));
+	get_ok_button()->set_text(TTR("Close"));
 
 	updating = false;
 }

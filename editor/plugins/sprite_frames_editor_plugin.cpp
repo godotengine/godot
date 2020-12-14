@@ -74,8 +74,8 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 	}
 
 	if (frames_selected.size() == 0) {
-		split_sheet_dialog->get_ok()->set_disabled(true);
-		split_sheet_dialog->get_ok()->set_text(TTR("No Frames Selected"));
+		split_sheet_dialog->get_ok_button()->set_disabled(true);
+		split_sheet_dialog->get_ok_button()->set_text(TTR("No Frames Selected"));
 		return;
 	}
 
@@ -97,8 +97,8 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 		split_sheet_preview->draw_rect(Rect2(x + 5, y + 5, width - 10, height - 10), Color(0, 0, 0, 1), false);
 	}
 
-	split_sheet_dialog->get_ok()->set_disabled(false);
-	split_sheet_dialog->get_ok()->set_text(vformat(TTR("Add %d Frame(s)"), frames_selected.size()));
+	split_sheet_dialog->get_ok_button()->set_disabled(false);
+	split_sheet_dialog->get_ok_button()->set_text(vformat(TTR("Add %d Frame(s)"), frames_selected.size()));
 }
 
 void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
@@ -310,7 +310,7 @@ void SpriteFramesEditor::_file_load_request(const Vector<String> &p_path, int p_
 			dialog->set_title(TTR("Error!"));
 
 			//dialog->get_cancel()->set_text("Close");
-			dialog->get_ok()->set_text(TTR("Close"));
+			dialog->get_ok_button()->set_text(TTR("Close"));
 			dialog->popup_centered();
 			return; ///beh should show an error i guess
 		}
@@ -361,7 +361,7 @@ void SpriteFramesEditor::_paste_pressed() {
 		dialog->set_text(TTR("Resource clipboard is empty or not a texture!"));
 		dialog->set_title(TTR("Error!"));
 		//dialog->get_cancel()->set_text("Close");
-		dialog->get_ok()->set_text(TTR("Close"));
+		dialog->get_ok_button()->set_text(TTR("Close"));
 		dialog->popup_centered();
 		return; ///beh should show an error i guess
 	}
