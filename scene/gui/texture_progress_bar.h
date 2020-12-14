@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  texture_progress.h                                                   */
+/*  texture_progress_bar.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXTURE_PROGRESS_H
-#define TEXTURE_PROGRESS_H
+#ifndef TEXTURE_PROGRESS_BAR_H
+#define TEXTURE_PROGRESS_BAR_H
 
 #include "scene/gui/range.h"
 
-class TextureProgress : public Range {
-	GDCLASS(TextureProgress, Range);
+class TextureProgressBar : public Range {
+	GDCLASS(TextureProgressBar, Range);
 
 	Ref<Texture2D> under;
 	Ref<Texture2D> progress;
@@ -95,7 +95,7 @@ public:
 
 	Size2 get_minimum_size() const override;
 
-	TextureProgress();
+	TextureProgressBar();
 
 private:
 	FillMode mode;
@@ -111,6 +111,6 @@ private:
 	void draw_nine_patch_stretched(const Ref<Texture2D> &p_texture, FillMode p_mode, double p_ratio, const Color &p_modulate);
 };
 
-VARIANT_ENUM_CAST(TextureProgress::FillMode);
+VARIANT_ENUM_CAST(TextureProgressBar::FillMode);
 
-#endif // TEXTURE_PROGRESS_H
+#endif // TEXTURE_PROGRESS_BAR_H

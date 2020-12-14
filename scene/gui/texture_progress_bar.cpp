@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  texture_progress.cpp                                                 */
+/*  texture_progress_bar.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,21 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "texture_progress.h"
+#include "texture_progress_bar.h"
 
 #include "core/config/engine.h"
 
-void TextureProgress::set_under_texture(const Ref<Texture2D> &p_texture) {
+void TextureProgressBar::set_under_texture(const Ref<Texture2D> &p_texture) {
 	under = p_texture;
 	update();
 	minimum_size_changed();
 }
 
-Ref<Texture2D> TextureProgress::get_under_texture() const {
+Ref<Texture2D> TextureProgressBar::get_under_texture() const {
 	return under;
 }
 
-void TextureProgress::set_over_texture(const Ref<Texture2D> &p_texture) {
+void TextureProgressBar::set_over_texture(const Ref<Texture2D> &p_texture) {
 	over = p_texture;
 	update();
 	if (under.is_null()) {
@@ -50,33 +50,33 @@ void TextureProgress::set_over_texture(const Ref<Texture2D> &p_texture) {
 	}
 }
 
-Ref<Texture2D> TextureProgress::get_over_texture() const {
+Ref<Texture2D> TextureProgressBar::get_over_texture() const {
 	return over;
 }
 
-void TextureProgress::set_stretch_margin(Margin p_margin, int p_size) {
+void TextureProgressBar::set_stretch_margin(Margin p_margin, int p_size) {
 	ERR_FAIL_INDEX((int)p_margin, 4);
 	stretch_margin[p_margin] = p_size;
 	update();
 	minimum_size_changed();
 }
 
-int TextureProgress::get_stretch_margin(Margin p_margin) const {
+int TextureProgressBar::get_stretch_margin(Margin p_margin) const {
 	ERR_FAIL_INDEX_V((int)p_margin, 4, 0);
 	return stretch_margin[p_margin];
 }
 
-void TextureProgress::set_nine_patch_stretch(bool p_stretch) {
+void TextureProgressBar::set_nine_patch_stretch(bool p_stretch) {
 	nine_patch_stretch = p_stretch;
 	update();
 	minimum_size_changed();
 }
 
-bool TextureProgress::get_nine_patch_stretch() const {
+bool TextureProgressBar::get_nine_patch_stretch() const {
 	return nine_patch_stretch;
 }
 
-Size2 TextureProgress::get_minimum_size() const {
+Size2 TextureProgressBar::get_minimum_size() const {
 	if (nine_patch_stretch) {
 		return Size2(stretch_margin[MARGIN_LEFT] + stretch_margin[MARGIN_RIGHT], stretch_margin[MARGIN_TOP] + stretch_margin[MARGIN_BOTTOM]);
 	} else if (under.is_valid()) {
@@ -90,44 +90,44 @@ Size2 TextureProgress::get_minimum_size() const {
 	return Size2(1, 1);
 }
 
-void TextureProgress::set_progress_texture(const Ref<Texture2D> &p_texture) {
+void TextureProgressBar::set_progress_texture(const Ref<Texture2D> &p_texture) {
 	progress = p_texture;
 	update();
 	minimum_size_changed();
 }
 
-Ref<Texture2D> TextureProgress::get_progress_texture() const {
+Ref<Texture2D> TextureProgressBar::get_progress_texture() const {
 	return progress;
 }
 
-void TextureProgress::set_tint_under(const Color &p_tint) {
+void TextureProgressBar::set_tint_under(const Color &p_tint) {
 	tint_under = p_tint;
 	update();
 }
 
-Color TextureProgress::get_tint_under() const {
+Color TextureProgressBar::get_tint_under() const {
 	return tint_under;
 }
 
-void TextureProgress::set_tint_progress(const Color &p_tint) {
+void TextureProgressBar::set_tint_progress(const Color &p_tint) {
 	tint_progress = p_tint;
 	update();
 }
 
-Color TextureProgress::get_tint_progress() const {
+Color TextureProgressBar::get_tint_progress() const {
 	return tint_progress;
 }
 
-void TextureProgress::set_tint_over(const Color &p_tint) {
+void TextureProgressBar::set_tint_over(const Color &p_tint) {
 	tint_over = p_tint;
 	update();
 }
 
-Color TextureProgress::get_tint_over() const {
+Color TextureProgressBar::get_tint_over() const {
 	return tint_over;
 }
 
-Point2 TextureProgress::unit_val_to_uv(float val) {
+Point2 TextureProgressBar::unit_val_to_uv(float val) {
 	if (progress.is_null()) {
 		return Point2();
 	}
@@ -191,7 +191,7 @@ Point2 TextureProgress::unit_val_to_uv(float val) {
 	return (p + t1 * dir);
 }
 
-Point2 TextureProgress::get_relative_center() {
+Point2 TextureProgressBar::get_relative_center() {
 	if (progress.is_null()) {
 		return Point2();
 	}
@@ -204,7 +204,7 @@ Point2 TextureProgress::get_relative_center() {
 	return p;
 }
 
-void TextureProgress::draw_nine_patch_stretched(const Ref<Texture2D> &p_texture, FillMode p_mode, double p_ratio, const Color &p_modulate) {
+void TextureProgressBar::draw_nine_patch_stretched(const Ref<Texture2D> &p_texture, FillMode p_mode, double p_ratio, const Color &p_modulate) {
 	Vector2 texture_size = p_texture->get_size();
 	Vector2 topleft = Vector2(stretch_margin[MARGIN_LEFT], stretch_margin[MARGIN_TOP]);
 	Vector2 bottomright = Vector2(stretch_margin[MARGIN_RIGHT], stretch_margin[MARGIN_BOTTOM]);
@@ -306,7 +306,7 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture2D> &p_texture,
 	RS::get_singleton()->canvas_item_add_nine_patch(ci, dst_rect, src_rect, p_texture->get_rid(), topleft, bottomright, RS::NINE_PATCH_STRETCH, RS::NINE_PATCH_STRETCH, true, p_modulate);
 }
 
-void TextureProgress::_notification(int p_what) {
+void TextureProgressBar::_notification(int p_what) {
 	const float corners[12] = { -0.125, -0.375, -0.625, -0.875, 0.125, 0.375, 0.625, 0.875, 1.125, 1.375, 1.625, 1.875 };
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
@@ -428,17 +428,17 @@ void TextureProgress::_notification(int p_what) {
 	}
 }
 
-void TextureProgress::set_fill_mode(int p_fill) {
+void TextureProgressBar::set_fill_mode(int p_fill) {
 	ERR_FAIL_INDEX(p_fill, 9);
 	mode = (FillMode)p_fill;
 	update();
 }
 
-int TextureProgress::get_fill_mode() {
+int TextureProgressBar::get_fill_mode() {
 	return mode;
 }
 
-void TextureProgress::set_radial_initial_angle(float p_angle) {
+void TextureProgressBar::set_radial_initial_angle(float p_angle) {
 	while (p_angle > 360) {
 		p_angle -= 360;
 	}
@@ -449,64 +449,64 @@ void TextureProgress::set_radial_initial_angle(float p_angle) {
 	update();
 }
 
-float TextureProgress::get_radial_initial_angle() {
+float TextureProgressBar::get_radial_initial_angle() {
 	return rad_init_angle;
 }
 
-void TextureProgress::set_fill_degrees(float p_angle) {
+void TextureProgressBar::set_fill_degrees(float p_angle) {
 	rad_max_degrees = CLAMP(p_angle, 0, 360);
 	update();
 }
 
-float TextureProgress::get_fill_degrees() {
+float TextureProgressBar::get_fill_degrees() {
 	return rad_max_degrees;
 }
 
-void TextureProgress::set_radial_center_offset(const Point2 &p_off) {
+void TextureProgressBar::set_radial_center_offset(const Point2 &p_off) {
 	rad_center_off = p_off;
 	update();
 }
 
-Point2 TextureProgress::get_radial_center_offset() {
+Point2 TextureProgressBar::get_radial_center_offset() {
 	return rad_center_off;
 }
 
-void TextureProgress::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_under_texture", "tex"), &TextureProgress::set_under_texture);
-	ClassDB::bind_method(D_METHOD("get_under_texture"), &TextureProgress::get_under_texture);
+void TextureProgressBar::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_under_texture", "tex"), &TextureProgressBar::set_under_texture);
+	ClassDB::bind_method(D_METHOD("get_under_texture"), &TextureProgressBar::get_under_texture);
 
-	ClassDB::bind_method(D_METHOD("set_progress_texture", "tex"), &TextureProgress::set_progress_texture);
-	ClassDB::bind_method(D_METHOD("get_progress_texture"), &TextureProgress::get_progress_texture);
+	ClassDB::bind_method(D_METHOD("set_progress_texture", "tex"), &TextureProgressBar::set_progress_texture);
+	ClassDB::bind_method(D_METHOD("get_progress_texture"), &TextureProgressBar::get_progress_texture);
 
-	ClassDB::bind_method(D_METHOD("set_over_texture", "tex"), &TextureProgress::set_over_texture);
-	ClassDB::bind_method(D_METHOD("get_over_texture"), &TextureProgress::get_over_texture);
+	ClassDB::bind_method(D_METHOD("set_over_texture", "tex"), &TextureProgressBar::set_over_texture);
+	ClassDB::bind_method(D_METHOD("get_over_texture"), &TextureProgressBar::get_over_texture);
 
-	ClassDB::bind_method(D_METHOD("set_fill_mode", "mode"), &TextureProgress::set_fill_mode);
-	ClassDB::bind_method(D_METHOD("get_fill_mode"), &TextureProgress::get_fill_mode);
+	ClassDB::bind_method(D_METHOD("set_fill_mode", "mode"), &TextureProgressBar::set_fill_mode);
+	ClassDB::bind_method(D_METHOD("get_fill_mode"), &TextureProgressBar::get_fill_mode);
 
-	ClassDB::bind_method(D_METHOD("set_tint_under", "tint"), &TextureProgress::set_tint_under);
-	ClassDB::bind_method(D_METHOD("get_tint_under"), &TextureProgress::get_tint_under);
+	ClassDB::bind_method(D_METHOD("set_tint_under", "tint"), &TextureProgressBar::set_tint_under);
+	ClassDB::bind_method(D_METHOD("get_tint_under"), &TextureProgressBar::get_tint_under);
 
-	ClassDB::bind_method(D_METHOD("set_tint_progress", "tint"), &TextureProgress::set_tint_progress);
-	ClassDB::bind_method(D_METHOD("get_tint_progress"), &TextureProgress::get_tint_progress);
+	ClassDB::bind_method(D_METHOD("set_tint_progress", "tint"), &TextureProgressBar::set_tint_progress);
+	ClassDB::bind_method(D_METHOD("get_tint_progress"), &TextureProgressBar::get_tint_progress);
 
-	ClassDB::bind_method(D_METHOD("set_tint_over", "tint"), &TextureProgress::set_tint_over);
-	ClassDB::bind_method(D_METHOD("get_tint_over"), &TextureProgress::get_tint_over);
+	ClassDB::bind_method(D_METHOD("set_tint_over", "tint"), &TextureProgressBar::set_tint_over);
+	ClassDB::bind_method(D_METHOD("get_tint_over"), &TextureProgressBar::get_tint_over);
 
-	ClassDB::bind_method(D_METHOD("set_radial_initial_angle", "mode"), &TextureProgress::set_radial_initial_angle);
-	ClassDB::bind_method(D_METHOD("get_radial_initial_angle"), &TextureProgress::get_radial_initial_angle);
+	ClassDB::bind_method(D_METHOD("set_radial_initial_angle", "mode"), &TextureProgressBar::set_radial_initial_angle);
+	ClassDB::bind_method(D_METHOD("get_radial_initial_angle"), &TextureProgressBar::get_radial_initial_angle);
 
-	ClassDB::bind_method(D_METHOD("set_radial_center_offset", "mode"), &TextureProgress::set_radial_center_offset);
-	ClassDB::bind_method(D_METHOD("get_radial_center_offset"), &TextureProgress::get_radial_center_offset);
+	ClassDB::bind_method(D_METHOD("set_radial_center_offset", "mode"), &TextureProgressBar::set_radial_center_offset);
+	ClassDB::bind_method(D_METHOD("get_radial_center_offset"), &TextureProgressBar::get_radial_center_offset);
 
-	ClassDB::bind_method(D_METHOD("set_fill_degrees", "mode"), &TextureProgress::set_fill_degrees);
-	ClassDB::bind_method(D_METHOD("get_fill_degrees"), &TextureProgress::get_fill_degrees);
+	ClassDB::bind_method(D_METHOD("set_fill_degrees", "mode"), &TextureProgressBar::set_fill_degrees);
+	ClassDB::bind_method(D_METHOD("get_fill_degrees"), &TextureProgressBar::get_fill_degrees);
 
-	ClassDB::bind_method(D_METHOD("set_stretch_margin", "margin", "value"), &TextureProgress::set_stretch_margin);
-	ClassDB::bind_method(D_METHOD("get_stretch_margin", "margin"), &TextureProgress::get_stretch_margin);
+	ClassDB::bind_method(D_METHOD("set_stretch_margin", "margin", "value"), &TextureProgressBar::set_stretch_margin);
+	ClassDB::bind_method(D_METHOD("get_stretch_margin", "margin"), &TextureProgressBar::get_stretch_margin);
 
-	ClassDB::bind_method(D_METHOD("set_nine_patch_stretch", "stretch"), &TextureProgress::set_nine_patch_stretch);
-	ClassDB::bind_method(D_METHOD("get_nine_patch_stretch"), &TextureProgress::get_nine_patch_stretch);
+	ClassDB::bind_method(D_METHOD("set_nine_patch_stretch", "stretch"), &TextureProgressBar::set_nine_patch_stretch);
+	ClassDB::bind_method(D_METHOD("get_nine_patch_stretch"), &TextureProgressBar::get_nine_patch_stretch);
 
 	ADD_GROUP("Textures", "texture_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_under", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_under_texture", "get_under_texture");
@@ -539,7 +539,7 @@ void TextureProgress::_bind_methods() {
 	BIND_ENUM_CONSTANT(FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE);
 }
 
-TextureProgress::TextureProgress() {
+TextureProgressBar::TextureProgressBar() {
 	mode = FILL_LEFT_TO_RIGHT;
 	rad_init_angle = 0;
 	rad_center_off = Point2();

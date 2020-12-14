@@ -851,15 +851,15 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 
 	cc = 0;
 	for (int i = 0; i < CHANNELS_MAX; i++) {
-		channel[i].vu_l = memnew(TextureProgress);
-		channel[i].vu_l->set_fill_mode(TextureProgress::FILL_BOTTOM_TO_TOP);
+		channel[i].vu_l = memnew(TextureProgressBar);
+		channel[i].vu_l->set_fill_mode(TextureProgressBar::FILL_BOTTOM_TO_TOP);
 		hb->add_child(channel[i].vu_l);
 		channel[i].vu_l->set_min(-80);
 		channel[i].vu_l->set_max(24);
 		channel[i].vu_l->set_step(0.1);
 
-		channel[i].vu_r = memnew(TextureProgress);
-		channel[i].vu_r->set_fill_mode(TextureProgress::FILL_BOTTOM_TO_TOP);
+		channel[i].vu_r = memnew(TextureProgressBar);
+		channel[i].vu_r->set_fill_mode(TextureProgressBar::FILL_BOTTOM_TO_TOP);
 		hb->add_child(channel[i].vu_r);
 		channel[i].vu_r->set_min(-80);
 		channel[i].vu_r->set_max(24);
