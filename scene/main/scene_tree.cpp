@@ -61,6 +61,11 @@ void SceneTreeTimer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_left"), "set_time_left", "get_time_left");
 
+	ClassDB::bind_method(D_METHOD("set_pause_mode_process", "pause_mode"), &SceneTreeTimer::set_pause_mode_process);
+	ClassDB::bind_method(D_METHOD("is_pause_mode_process"), &SceneTreeTimer::is_pause_mode_process);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pause_mode"), "set_pause_mode_process", "is_pause_mode_process");
+
 	ADD_SIGNAL(MethodInfo("timeout"));
 }
 

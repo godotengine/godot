@@ -18,6 +18,9 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="pause_mode" type="bool" setter="set_pause_mode_process" getter="is_pause_mode_process">
+			Set to [code]true[/code] to process the timer while the [SceneTree] is paused. If set to [code]false[/code], pausing the [SceneTree] will also pause the timer.
+		</member>
 		<member name="time_left" type="float" setter="set_time_left" getter="get_time_left">
 			The time remaining.
 		</member>
