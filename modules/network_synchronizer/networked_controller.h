@@ -154,33 +154,59 @@ private:
 	/// inputs.
 	real_t tick_acceleration = 2.0;
 
-	/// Collect rate (frames) used by the server to estabish when to collect
-	/// the controller state for a particular peer.
+	/// Collect rate (in frames) used by the server to estabish when to collect
+	/// the state for a particular peer.
 	/// It's possible to scale down this rate, for a particular peer,
 	/// using the function: set_doll_collect_rate_factor(peer, factor);
 	/// Current default is 10Hz.
 	///
-	/// If you set a rate higher than the actual physics frame, you will be
-	/// warned.
-	///
 	/// The collected state is not immediatelly sent to the clients, rather it's
 	/// delayed so to be sent in batch. The states marked as important are
 	/// always collected.
-	int doll_epoch_collect_rate = 10;
+	int doll_epoch_collect_rate = 1;
 
-	/// The batch size.
-	real_t doll_epoch_batch_sync_rate = 0.5;
+	/// The time rate at which a new batch is sent.
+	real_t doll_epoch_batch_sync_rate = 0.25;
 
-	/// To understand how the connection is performing, the doll looks how much
-	/// time a packet need to arrive. Then it averages this result with the time
-	/// of the previous arrived batches.
-	int doll_network_traced_batches = 5;
-
-	/// Used to control the doll sensibility on the network quality changes.
-	real_t doll_net_poorness_sentitivity = 2.0;
+	/// The doll interpolator will try to keep a margin of error, so that network
+	/// oscillations doesn't make the dolls freeze.
+	///
+	/// This margin of error is called `optimal_frame_delay` and it changes
+	/// depending on the connection health:
+	/// it can go from `doll_min_frames_delay` to `doll_max_frames_delay`.
+	int doll_min_frames_delay = 1;
+	int doll_max_frames_delay = 5;
 
 	/// Max speedup / slowdown the doll can apply to recover its epoch buffer size.
 	real_t doll_interpolation_max_speedup = 0.2;
+
+	/// The connection quality is established by watching the time passed
+	/// between each batch arrival.
+	/// The more this time is the same the more the connection health is good.
+	///
+	/// The `doll_connection_stats_frame_span` defines how many frames have
+	/// to be used to establish the connection quality.
+	/// - Big values make the mechanism too slow.
+	/// - Small values make the mechanism too sensible.
+	/// The correct value should be give considering the
+	/// `doll_epoch_batch_sync_rate`.
+	int doll_connection_stats_frame_span = 30;
+
+	/// Sensitivity to network oscillations. The value is in seconds and can be
+	/// used to establish the connection quality.
+	///
+	/// For each batch, the time needed for its arrival is traced; the standard
+	/// deviation of these is divided by `doll_net_sensitivity`: the result is
+	/// the connection quality.
+	///
+	/// The more the time needed for each batch to arrive is different the
+	/// bigger this value is: when this value approaches to
+	/// `doll_net_sensitivity` (or even surpasses it) the bad the connection is.
+	///
+	/// The result is the `connection_poorness` that goes from 0 to 1 and is
+	/// used to interpolate the `doll_min_frames_delay` and
+	/// `doll_max_frames_delay`.
+	real_t doll_net_sensitivity = 0.2;
 
 	ControllerType controller_type = CONTROLLER_TYPE_NULL;
 	Controller *controller = nullptr;
@@ -236,14 +262,20 @@ public:
 	void set_doll_epoch_batch_sync_rate(real_t p_rate);
 	real_t get_doll_epoch_batch_sync_rate() const;
 
-	void set_doll_network_traced_batches(int p_traced);
-	int get_doll_network_traced_batches() const;
+	void set_doll_min_frames_delay(int p_min);
+	int get_doll_min_frames_delay() const;
 
-	void set_doll_net_poorness_sentitivity(real_t p_sensitivity);
-	real_t get_doll_net_poorness_sentitivity() const;
+	void set_doll_max_frames_delay(int p_max);
+	int get_doll_max_frames_delay() const;
 
 	void set_doll_interpolation_max_speedup(real_t p_speedup);
 	real_t get_doll_interpolation_max_speedup() const;
+
+	void set_doll_connection_stats_frame_span(int p_span);
+	int get_doll_connection_stats_frame_span() const;
+
+	void set_doll_net_sensitivity(real_t p_sensitivity);
+	real_t get_doll_net_sensitivity() const;
 
 	uint32_t get_current_input_id() const;
 
@@ -463,11 +495,11 @@ struct DollController : public Controller {
 	uint32_t current_epoch = UINT32_MAX;
 	real_t advancing_epoch = 0.0;
 	uint32_t missing_epochs = 0;
-	real_t next_batch_expected_in = 0.0;
-	// Used to track the time taken for the next batch to arrive.
-	real_t batch_receiver_timer = 0.0;
 	// Any received epoch prior to this one is discarded.
 	uint32_t paused_epoch = 0;
+
+	// Used to track the time taken for the next batch to arrive.
+	real_t batch_receiver_timer = 0.0;
 	/// Used to track how network is performing.
 	NetUtility::StatisticalRingBuffer<real_t> network_watcher = NetUtility::StatisticalRingBuffer<real_t>(1, 0);
 

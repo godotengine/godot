@@ -84,14 +84,17 @@ void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_doll_epoch_batch_sync_rate", "rate"), &NetworkedController::set_doll_epoch_batch_sync_rate);
 	ClassDB::bind_method(D_METHOD("get_doll_epoch_batch_sync_rate"), &NetworkedController::get_doll_epoch_batch_sync_rate);
 
-	ClassDB::bind_method(D_METHOD("set_doll_network_traced_batches", "traced"), &NetworkedController::set_doll_network_traced_batches);
-	ClassDB::bind_method(D_METHOD("get_doll_network_traced_batches"), &NetworkedController::get_doll_network_traced_batches);
+	ClassDB::bind_method(D_METHOD("set_doll_min_frames_delay", "traced"), &NetworkedController::set_doll_min_frames_delay);
+	ClassDB::bind_method(D_METHOD("get_doll_min_frames_delay"), &NetworkedController::get_doll_min_frames_delay);
 
-	ClassDB::bind_method(D_METHOD("set_doll_net_poorness_sentitivity", "sensitivity"), &NetworkedController::set_doll_net_poorness_sentitivity);
-	ClassDB::bind_method(D_METHOD("get_doll_net_poorness_sentitivity"), &NetworkedController::get_doll_net_poorness_sentitivity);
+	ClassDB::bind_method(D_METHOD("set_doll_max_frames_delay", "sensitivity"), &NetworkedController::set_doll_max_frames_delay);
+	ClassDB::bind_method(D_METHOD("get_doll_max_frames_delay"), &NetworkedController::get_doll_max_frames_delay);
 
 	ClassDB::bind_method(D_METHOD("set_doll_interpolation_max_speedup", "speedup"), &NetworkedController::set_doll_interpolation_max_speedup);
 	ClassDB::bind_method(D_METHOD("get_doll_interpolation_max_speedup"), &NetworkedController::get_doll_interpolation_max_speedup);
+
+	ClassDB::bind_method(D_METHOD("set_doll_connection_stats_frame_span", "speedup"), &NetworkedController::set_doll_connection_stats_frame_span);
+	ClassDB::bind_method(D_METHOD("get_doll_connection_stats_frame_span"), &NetworkedController::get_doll_connection_stats_frame_span);
 
 	ClassDB::bind_method(D_METHOD("get_current_input_id"), &NetworkedController::get_current_input_id);
 
@@ -132,11 +135,12 @@ void NetworkedController::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "optimal_input_count_decreasing_delayer", PROPERTY_HINT_RANGE, "0.1,2,0.001"), "set_optimal_input_count_decreasing_delayer", "get_optimal_input_count_decreasing_delayer");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "optimal_input_count_decreasing_amount", PROPERTY_HINT_RANGE, "0.1,1.0,0.1"), "set_optimal_input_count_decreasing_amount", "get_optimal_input_count_decreasing_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tick_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_tick_acceleration", "get_tick_acceleration");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "doll_epoch_collect_rate", PROPERTY_HINT_RANGE, "1,500,1"), "set_doll_epoch_collect_rate", "get_doll_epoch_collect_rate");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "doll_epoch_collect_rate", PROPERTY_HINT_RANGE, "1,100,1"), "set_doll_epoch_collect_rate", "get_doll_epoch_collect_rate");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_epoch_batch_sync_rate", PROPERTY_HINT_RANGE, "0.01,5.0,0.01"), "set_doll_epoch_batch_sync_rate", "get_doll_epoch_batch_sync_rate");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "doll_network_traced_batches", PROPERTY_HINT_RANGE, "1,200,1"), "set_doll_network_traced_batches", "get_doll_network_traced_batches");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_net_poorness_sentitivity", PROPERTY_HINT_RANGE, "0.1,10.0,0.1"), "set_doll_net_poorness_sentitivity", "get_doll_net_poorness_sentitivity");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "doll_min_frames_delay", PROPERTY_HINT_RANGE, "0,10,1"), "set_doll_min_frames_delay", "get_doll_min_frames_delay");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "doll_max_frames_delay", PROPERTY_HINT_RANGE, "0,10,1"), "set_doll_max_frames_delay", "get_doll_max_frames_delay");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_interpolation_max_speedup", PROPERTY_HINT_RANGE, "0.01,5.0,0.01"), "set_doll_interpolation_max_speedup", "get_doll_interpolation_max_speedup");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "doll_connection_stats_frame_span", PROPERTY_HINT_RANGE, "0,1000,1"), "set_doll_connection_stats_frame_span", "get_doll_connection_stats_frame_span");
 
 	ADD_SIGNAL(MethodInfo("doll_sync_started"));
 	ADD_SIGNAL(MethodInfo("doll_sync_paused"));
@@ -247,20 +251,20 @@ real_t NetworkedController::get_doll_epoch_batch_sync_rate() const {
 	return doll_epoch_batch_sync_rate;
 }
 
-void NetworkedController::set_doll_network_traced_batches(int p_traced) {
-	doll_network_traced_batches = p_traced;
+void NetworkedController::set_doll_min_frames_delay(int p_min) {
+	doll_min_frames_delay = p_min;
 }
 
-int NetworkedController::get_doll_network_traced_batches() const {
-	return doll_network_traced_batches;
+int NetworkedController::get_doll_min_frames_delay() const {
+	return doll_min_frames_delay;
 }
 
-void NetworkedController::set_doll_net_poorness_sentitivity(real_t p_sensitivity) {
-	doll_net_poorness_sentitivity = p_sensitivity;
+void NetworkedController::set_doll_max_frames_delay(int p_max) {
+	doll_max_frames_delay = p_max;
 }
 
-real_t NetworkedController::get_doll_net_poorness_sentitivity() const {
-	return doll_net_poorness_sentitivity;
+int NetworkedController::get_doll_max_frames_delay() const {
+	return doll_max_frames_delay;
 }
 
 void NetworkedController::set_doll_interpolation_max_speedup(real_t p_speedup) {
@@ -269,6 +273,22 @@ void NetworkedController::set_doll_interpolation_max_speedup(real_t p_speedup) {
 
 real_t NetworkedController::get_doll_interpolation_max_speedup() const {
 	return doll_interpolation_max_speedup;
+}
+
+void NetworkedController::set_doll_connection_stats_frame_span(int p_span) {
+	doll_connection_stats_frame_span = p_span;
+}
+
+int NetworkedController::get_doll_connection_stats_frame_span() const {
+	return doll_connection_stats_frame_span;
+}
+
+void NetworkedController::set_doll_net_sensitivity(real_t p_sensitivity) {
+	doll_net_sensitivity = p_sensitivity;
+}
+
+real_t NetworkedController::get_doll_net_sensitivity() const {
+	return doll_net_sensitivity;
 }
 
 uint32_t NetworkedController::get_current_input_id() const {
@@ -890,7 +910,6 @@ void ServerController::doll_sync(real_t p_delta) {
 
 		// Send batch data.
 		if (send_batch) {
-
 			const uint8_t next_collect_rate =
 					MIN(node->get_doll_epoch_collect_rate() /
 									peers[i].update_rate_factor,
@@ -1330,7 +1349,7 @@ bool PlayerController::can_accept_new_inputs() const {
 DollController::DollController(NetworkedController *p_node) :
 		Controller(p_node) {
 
-	network_watcher.resize(p_node->get_doll_network_traced_batches(), 0.0);
+	network_watcher.resize(node->get_doll_connection_stats_frame_span(), 0.0);
 }
 
 DollController::~DollController() {
@@ -1401,44 +1420,37 @@ void DollController::receive_batch(Vector<uint8_t> p_data) {
 		return;
 	}
 
-	// TODO make this parameter?
-	const real_t doll_net_poorness_sentitivity = node->get_doll_net_poorness_sentitivity();
-	const real_t doll_interpolation_max_speedup = node->get_doll_interpolation_max_speedup();
+	const real_t net_sentitivity = node->get_doll_net_sensitivity();
 
-	const uint32_t frames_per_batch = node->get_doll_epoch_batch_sync_rate() * Engine::get_singleton()->get_iterations_per_second();
-
-	real_t net_poorness = 0.0; // Connection is assumed to be good.
-	if (next_batch_expected_in > CMP_EPSILON) {
-		// Establish the connection quality by checking if the batch was arrived
-		// when expected. If it arrives sooner, it's considered on time.
-		network_watcher.push((MAX(0.0, batch_receiver_timer - next_batch_expected_in) / next_batch_expected_in) * doll_net_poorness_sentitivity);
-
-		const real_t avg_receive_delta_expectation = network_watcher.average();
-		const real_t deviation_receive_delta_expectation = network_watcher.get_deviation(avg_receive_delta_expectation);
-
-		net_poorness = avg_receive_delta_expectation + deviation_receive_delta_expectation;
-	} else {
-		network_watcher.push(0.0);
-	}
-
-	next_batch_expected_in = Math::ceil(double(next_collect_rate) / double(frames_per_batch)) * node->get_doll_epoch_batch_sync_rate();
+	// Establish the connection quality by checking if the batch takes
+	// always the same time to arrive.
+	network_watcher.push(batch_receiver_timer);
 	batch_receiver_timer = 0.0;
 
-	const int additional_epochs = Math::lerp(
-			node->get_optimal_input_count_min(),
-			node->get_optimal_input_count_max(),
-			MIN(net_poorness, 1));
+	const real_t avg_receive_delta_expectation = network_watcher.average();
+	const real_t deviation_receive_delta_expectation = network_watcher.get_deviation(avg_receive_delta_expectation);
 
-	// Guess when the next batch of data will arrive.
-	const uint32_t next_batch_arrives_in = Math::ceil(double(next_collect_rate) / double(frames_per_batch)) * frames_per_batch;
-	const int optimal_stored_epochs = next_batch_arrives_in + additional_epochs;
+	// The network quality can be established just by checking the standard
+	// deviation. Stable connections have standard deviation that tend to 0.
+	const real_t net_poorness = MIN(
+			deviation_receive_delta_expectation / net_sentitivity,
+			1.0);
 
-	additional_speed = doll_interpolation_max_speedup * (real_t(initially_stored_epochs - optimal_stored_epochs) / real_t(next_batch_arrives_in));
+	const int optimal_frame_delay = Math::lerp(
+			node->get_doll_min_frames_delay(),
+			node->get_doll_max_frames_delay(),
+			net_poorness);
+
+	// TODO cache this?
+	const double frames_per_batch = node->get_doll_epoch_batch_sync_rate() * real_t(Engine::get_singleton()->get_iterations_per_second());
+	const double next_batch_arrives_in = Math::ceil(double(next_collect_rate) / frames_per_batch) * frames_per_batch;
+
+	const real_t doll_interpolation_max_speedup = node->get_doll_interpolation_max_speedup();
+	additional_speed = doll_interpolation_max_speedup * (real_t(initially_stored_epochs - optimal_frame_delay) / next_batch_arrives_in);
 	additional_speed = CLAMP(additional_speed, -doll_interpolation_max_speedup, doll_interpolation_max_speedup);
 
 	// TODO remove this.
-	//print_line("Network Poorness " + rtos(net_poorness) + " next_batch_arrive_in: " + itos(next_batch_arrives_in) + " additional: " + itos(additional_epochs));
-	//print_line("Network Poorness " + rtos(net_poorness) + " optimal stored epochs: " + rtos(optimal_stored_epochs) + " Initial stored epochs: " + itos(initially_stored_epochs) + " Additional speed: " + rtos(additional_speed));
+	//print_line("Net poorness: " + rtos(net_poorness) + " Optimal stored epochs: " + rtos(optimal_frame_delay) + " Initial stored epochs: " + itos(initially_stored_epochs) + " Additional speed: " + rtos(additional_speed));
 }
 
 uint32_t DollController::receive_epoch(Vector<uint8_t> p_data) {
@@ -1512,8 +1524,6 @@ uint32_t DollController::next_epoch(real_t p_delta) {
 		advancing_epoch += 1.0 + additional_speed;
 	}
 
-	//NET_DEBUG_PRINT("Advancing: " + rtos(advancing_epoch) + " - Epoch: " + itos(current_epoch) + " Epoch range: " + itos(oldest_epoch - current_epoch));
-
 	if (advancing_epoch > 0.0) {
 		// Advance the epoch by the the integral amount.
 		current_epoch += uint32_t(advancing_epoch);
@@ -1535,7 +1545,7 @@ void DollController::pause(uint32_t p_epoch) {
 	current_epoch = UINT32_MAX;
 	advancing_epoch = 0.0;
 	missing_epochs = 0;
-	network_watcher.resize(node->get_doll_network_traced_batches(), 0);
+	network_watcher.resize(node->get_doll_connection_stats_frame_span(), 0.0);
 
 	node->emit_signal("doll_sync_paused");
 }
