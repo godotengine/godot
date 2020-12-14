@@ -172,13 +172,14 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 			&collect_all,
 			HashMap<int, Vector2>());
 
-	HashMap<int, Color> colors = extract_per_vertex_data(
+	HashMap<int, Color> colors;
+	HashMap<int, HashMap<int, Color> > colors_raw = extract_per_vertex_data(
 			vertices.size(),
 			mesh_geometry->get_edge_map(),
 			polygon_indices,
 			mesh_geometry->get_colors(),
-			&collect_first,
-			Color());
+			&collect_all,
+			HashMap<int, Color>());
 
 	// TODO what about tangents?
 	// TODO what about bi-nomials?
@@ -209,14 +210,20 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 			colors,
 			morphs,
 			normals_raw,
+			colors_raw,
 			uvs_0_raw,
 			uvs_1_raw);
+
+	const int color_count = colors.size();
+	print_verbose("Vertex color count: " + itos(color_count));
 
 	// Make sure that from this moment on the mesh_geometry is no used anymore.
 	// This is a safety step, because the mesh_geometry data are no more valid
 	// at this point.
 
 	const int vertex_count = vertices.size();
+
+	print_verbose("Vertex count: " + itos(vertex_count));
 
 	// The map key is the material allocator id that is also used as surface id.
 	HashMap<SurfaceId, SurfaceData> surfaces;
@@ -267,7 +274,7 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 		for (size_t polygon_vertex = 0; polygon_vertex < polygon_indices.size(); polygon_vertex += 1) {
 			if (is_start_of_polygon(polygon_indices, polygon_vertex)) {
 				polygon_index += 1;
-				ERR_FAIL_COND_V_MSG(polygon_surfaces.has(polygon_index) == false, nullptr, "The FBX file is currupted, This surface_index is not expected.");
+				ERR_FAIL_COND_V_MSG(polygon_surfaces.has(polygon_index) == false, nullptr, "The FBX file is corrupted, This surface_index is not expected.");
 				surface_id = polygon_surfaces[polygon_index];
 				surface_data = surfaces.getptr(surface_id);
 				CRASH_COND(surface_data == nullptr); // Can't be null.
@@ -385,7 +392,10 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 	for (const SurfaceId *surface_id = surfaces.next(nullptr); surface_id != nullptr; surface_id = surfaces.next(surface_id)) {
 		SurfaceData *surface = surfaces.getptr(*surface_id);
 
-		surface->surface_tool->generate_tangents();
+		// you can't generate them without a valid uv map.
+		if (uvs_0_raw.size() > 0) {
+			surface->surface_tool->generate_tangents();
+		}
 
 		mesh->add_surface_from_arrays(
 				Mesh::PRIMITIVE_TRIANGLES,
@@ -496,6 +506,7 @@ void FBXMeshData::reorganize_vertices(
 		HashMap<int, Color> &r_color,
 		HashMap<String, MorphVertexData> &r_morphs,
 		HashMap<int, HashMap<int, Vector3> > &r_normals_raw,
+		HashMap<int, HashMap<int, Color> > &r_colors_raw,
 		HashMap<int, HashMap<int, Vector2> > &r_uv_1_raw,
 		HashMap<int, HashMap<int, Vector2> > &r_uv_2_raw) {
 
@@ -513,6 +524,7 @@ void FBXMeshData::reorganize_vertices(
 		Vector2 this_vert_poly_uv1 = Vector2();
 		Vector2 this_vert_poly_uv2 = Vector2();
 		Vector3 this_vert_poly_normal = Vector3();
+		Color this_vert_poly_color = Color();
 
 		// Take the normal and see if we need to duplicate this polygon.
 		if (r_normals_raw.has(index)) {
@@ -541,6 +553,41 @@ void FBXMeshData::reorganize_vertices(
 
 				const Vector3 vert_poly_normal = *nrml_arr->getptr(*pid);
 				if ((this_vert_poly_normal - vert_poly_normal).length_squared() > CMP_EPSILON) {
+					// Yes this polygon need duplication.
+					need_duplication = true;
+					break;
+				}
+			}
+		}
+
+		// TODO: make me vertex color
+		// Take the normal and see if we need to duplicate this polygon.
+		if (r_colors_raw.has(index)) {
+			const HashMap<PolygonId, Color> *color_arr = r_colors_raw.getptr(index);
+
+			if (color_arr->has(polygon_index)) {
+				this_vert_poly_color = color_arr->get(polygon_index);
+			} else if (color_arr->has(-1)) {
+				this_vert_poly_color = color_arr->get(-1);
+			} else {
+				print_error("invalid color detected: " + itos(index) + " polygon index: " + itos(polygon_index));
+				for (const PolygonId *pid = color_arr->next(nullptr); pid != nullptr; pid = color_arr->next(pid)) {
+					print_verbose("debug contents key: " + itos(*pid));
+
+					if (color_arr->has(*pid)) {
+						print_verbose("contents valid: " + color_arr->get(*pid));
+					}
+				}
+			}
+
+			// Now, check if we need to duplicate it.
+			for (const PolygonId *pid = color_arr->next(nullptr); pid != nullptr; pid = color_arr->next(pid)) {
+				if (*pid == polygon_index) {
+					continue;
+				}
+
+				const Color vert_poly_color = *color_arr->getptr(*pid);
+				if (!this_vert_poly_color.is_equal_approx(vert_poly_color)) {
 					// Yes this polygon need duplication.
 					need_duplication = true;
 					break;
@@ -599,6 +646,7 @@ void FBXMeshData::reorganize_vertices(
 					bool same_uv1 = false;
 					bool same_uv2 = false;
 					bool same_normal = false;
+					bool same_color = false;
 
 					if (r_uv_1.has(new_vertex)) {
 						if ((this_vert_poly_uv1 - (*r_uv_1.getptr(new_vertex))).length_squared() <= CMP_EPSILON) {
@@ -612,13 +660,19 @@ void FBXMeshData::reorganize_vertices(
 						}
 					}
 
+					if (r_color.has(new_vertex)) {
+						if (this_vert_poly_color.is_equal_approx((*r_color.getptr(new_vertex)))) {
+							same_color = true;
+						}
+					}
+
 					if (r_normals.has(new_vertex)) {
 						if ((this_vert_poly_normal - (*r_normals.getptr(new_vertex))).length_squared() <= CMP_EPSILON) {
 							same_uv2 = true;
 						}
 					}
 
-					if (same_uv1 && same_uv2 && same_normal) {
+					if (same_uv1 && same_uv2 && same_normal && same_color) {
 						similar_vertex = new_vertex;
 						break;
 					}
@@ -635,6 +689,8 @@ void FBXMeshData::reorganize_vertices(
 				}
 			}
 		}
+
+		need_duplication = false;
 
 		if (need_duplication) {
 			const Vertex old_index = index;
@@ -657,6 +713,13 @@ void FBXMeshData::reorganize_vertices(
 				r_normals_raw[new_index][polygon_index] = this_vert_poly_normal;
 			}
 
+			// Vertex Color
+			if (r_colors_raw.has(old_index)) {
+				r_color.set(new_index, this_vert_poly_color);
+				r_colors_raw.getptr(old_index)->erase(polygon_index);
+				r_colors_raw[new_index][polygon_index] = this_vert_poly_color;
+			}
+
 			// UV 0
 			if (r_uv_1_raw.has(old_index)) {
 				r_uv_1.set(new_index, this_vert_poly_uv1);
@@ -669,11 +732,6 @@ void FBXMeshData::reorganize_vertices(
 				r_uv_2.set(new_index, this_vert_poly_uv2);
 				r_uv_2_raw.getptr(old_index)->erase(polygon_index);
 				r_uv_2_raw[new_index][polygon_index] = this_vert_poly_uv2;
-			}
-
-			// Vertex color.
-			if (r_color.has(old_index)) {
-				r_color[new_index] = r_color[old_index];
 			}
 
 			// Morphs
@@ -698,6 +756,10 @@ void FBXMeshData::reorganize_vertices(
 			if (r_normals_raw.has(index) &&
 					r_normals.has(index) == false) {
 				r_normals.set(index, this_vert_poly_normal);
+			}
+
+			if (r_colors_raw.has(index) && r_color.has(index) == false) {
+				r_color.set(index, this_vert_poly_color);
 			}
 
 			if (r_uv_1_raw.has(index) &&
@@ -1010,8 +1072,14 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 	 * data size is 96 (contains uv coordinates)
 	 * this means index is simple data reduction basically
 	 */
+	////
+	if (p_mapping_data.ref_type == FBXDocParser::MeshGeometry::ReferenceType::index_to_direct && p_mapping_data.index.size() == 0) {
+		print_verbose("debug count: index size: " + itos(p_mapping_data.index.size()) + ", data size: " + itos(p_mapping_data.data.size()));
+		print_verbose("vertex indices count: " + itos(p_mesh_indices.size()));
+		print_verbose("Edge map size: " + itos(p_edge_map.size()));
+	}
 
-	ERR_FAIL_COND_V_MSG(p_mapping_data.ref_type == FBXDocParser::MeshGeometry::ReferenceType::index_to_direct && p_mapping_data.index.size() == 0, (HashMap<int, R>()), "FBX file is missing indexing array");
+	ERR_FAIL_COND_V_MSG(p_mapping_data.ref_type == FBXDocParser::MeshGeometry::ReferenceType::index_to_direct && p_mapping_data.index.size() == 0, (HashMap<int, R>()), "FBX importer needs to map correctly to this field, please specify the override index name to fix this problem!");
 	ERR_FAIL_COND_V_MSG(p_mapping_data.ref_type == FBXDocParser::MeshGeometry::ReferenceType::index && p_mapping_data.index.size() == 0, (HashMap<int, R>()), "The FBX seems corrupted");
 
 	// Aggregate vertex data.

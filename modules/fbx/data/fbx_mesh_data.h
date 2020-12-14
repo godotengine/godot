@@ -108,6 +108,7 @@ private:
 			HashMap<int, Color> &r_color,
 			HashMap<String, MorphVertexData> &r_morphs,
 			HashMap<int, HashMap<int, Vector3> > &r_normals_raw,
+			HashMap<int, HashMap<int, Color> > &r_colors_raw,
 			HashMap<int, HashMap<int, Vector2> > &r_uv_1_raw,
 			HashMap<int, HashMap<int, Vector2> > &r_uv_2_raw);
 
