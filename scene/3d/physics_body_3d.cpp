@@ -317,7 +317,7 @@ void RigidBody3D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody3D::_body_exit_tree));
 				if (in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->body_exited, node);
-			}
+				}
 			}
 
 			contact_monitor->body_map.erase(E);
@@ -849,7 +849,7 @@ RigidBody3D::RigidBody3D() :
 RigidBody3D::~RigidBody3D() {
 	if (contact_monitor) {
 		memdelete(contact_monitor);
-}
+	}
 }
 
 void RigidBody3D::_reload_physics_characteristics() {
@@ -2514,7 +2514,7 @@ PhysicalBone3D::PhysicalBone3D() :
 PhysicalBone3D::~PhysicalBone3D() {
 	if (joint_data) {
 		memdelete(joint_data);
-}
+	}
 }
 
 void PhysicalBone3D::update_bone_id() {
