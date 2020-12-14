@@ -174,6 +174,5 @@ TEST_CASE("[Array] Max and Min") {
 	CHECK(max == 5);
 	CHECK(min == 2);
 }
-
 } // namespace TestArray
 #endif // TEST_ARRAY_H
