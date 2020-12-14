@@ -57,14 +57,11 @@ MainLoop *test() {
         map[2] = 4;
         map.get_key_list(ptr);
         CHECK(keys.size() == 3);
-
-		
 	}
 
 	// test get_key_at_index
 	{
 		Dictionary map;
-        
         map[4] = 3;
         auto val = map.get_key_at_index(0);
         CHECK(int(val) == 4);
@@ -73,8 +70,6 @@ MainLoop *test() {
         CHECK(int(val) == 3);
         val = map.get_key_at_index(1);
         CHECK(int(val) == 4);
-		
-
 	}
 
 	// test [] assignment
@@ -97,7 +92,6 @@ MainLoop *test() {
         CHECK(int(*key) == 3);
         key = map.getptr(2);
         CHECK(key == nullptr);
-		
 	}
 
 	// test get_valid
