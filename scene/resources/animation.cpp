@@ -810,8 +810,8 @@ int Animation::transform_track_insert_key(int p_track, float p_time, const Vecto
 	return ret;
 }
 
-void Animation::track_remove_key_at_position(int p_track, float p_pos) {
-	int idx = track_find_key(p_track, p_pos, true);
+void Animation::track_remove_key_at_time(int p_track, float p_time) {
+	int idx = track_find_key(p_track, p_time, true);
 	ERR_FAIL_COND(idx < 0);
 	track_remove_key(p_track, idx);
 }
@@ -2608,7 +2608,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("transform_track_insert_key", "track_idx", "time", "location", "rotation", "scale"), &Animation::transform_track_insert_key);
 	ClassDB::bind_method(D_METHOD("track_insert_key", "track_idx", "time", "key", "transition"), &Animation::track_insert_key, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("track_remove_key", "track_idx", "key_idx"), &Animation::track_remove_key);
-	ClassDB::bind_method(D_METHOD("track_remove_key_at_position", "track_idx", "position"), &Animation::track_remove_key_at_position);
+	ClassDB::bind_method(D_METHOD("track_remove_key_at_time", "track_idx", "time"), &Animation::track_remove_key_at_time);
 	ClassDB::bind_method(D_METHOD("track_set_key_value", "track_idx", "key", "value"), &Animation::track_set_key_value);
 	ClassDB::bind_method(D_METHOD("track_set_key_transition", "track_idx", "key_idx", "transition"), &Animation::track_set_key_transition);
 	ClassDB::bind_method(D_METHOD("track_set_key_time", "track_idx", "key_idx", "time"), &Animation::track_set_key_time);
