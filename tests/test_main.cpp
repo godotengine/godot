@@ -41,6 +41,7 @@
 #include "test_config_file.h"
 #include "test_crypto.h"
 #include "test_curve.h"
+#include "test_dictionary.h"
 #include "test_expression.h"
 #include "test_file_access.h"
 #include "test_gradient.h"

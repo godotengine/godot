@@ -31,11 +31,115 @@
 #ifndef TEST_DICTIONARY_H
 #define TEST_DICTIONARY_H
 
-#include "core/os/main_loop.h"
+#include "core/templates/ordered_hash_map.h"
+#include "core/templates/safe_refcount.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
+#include "tests/test_macros.h"
 
 namespace TestDictionary {
 
-MainLoop *test();
+TEST_CASE("[Dictionary] get_key_lists") {
+	Dictionary map;
+	List<Variant> keys;
+	List<Variant> *ptr = &keys;
+	map.get_key_list(ptr);
+	CHECK(keys.empty());
+	map[1] = 3;
+	map.get_key_list(ptr);
+	CHECK(keys.size() == 1);
+	CHECK(int(keys[0]) == 1);
+	map[2] = 4;
+	map.get_key_list(ptr);
+	CHECK(keys.size() == 3);
 }
 
-#endif
+TEST_CASE("[Dictionary] get_key_at_index") {
+	Dictionary map;
+	map[4] = 3;
+	Variant val = map.get_key_at_index(0);
+	CHECK(int(val) == 4);
+	map[3] = 1;
+	val = map.get_key_at_index(0);
+	CHECK(int(val) == 4);
+	val = map.get_key_at_index(1);
+	CHECK(int(val) == 3);
+}
+
+TEST_CASE("[Dictionary] [] Assignment") {
+	Dictionary map;
+	map["Hello"] = 0;
+	CHECK(int(map["Hello"]) == 0);
+	map["Hello"] = 3;
+	CHECK(int(map["Hello"]) == 3);
+	map["World!"] = 4;
+	CHECK(int(map["World!"]) == 4);
+}
+
+TEST_CASE("[Dictionary] getptr") {
+	Dictionary map;
+	map[1] = 3;
+	Variant *key = map.getptr(1);
+	CHECK(int(*key) == 3);
+	key = map.getptr(2);
+	CHECK(key == nullptr);
+}
+
+TEST_CASE("[Dictionary] get_valid") {
+	Dictionary map;
+	map[1] = 3;
+	Variant val = map.get_valid(1);
+	CHECK(int(val) == 3);
+}
+TEST_CASE("[Dictionary] get") {
+	Dictionary map;
+	map[1] = 3;
+	Variant val = map.get(1, -1);
+	CHECK(int(val) == 3);
+}
+
+TEST_CASE("[Dictionary] Size, Empty, and Clear") {
+	Dictionary map;
+	CHECK(map.size() == 0);
+	CHECK(map.empty());
+	map[1] = 3;
+	CHECK(map.size() == 1);
+	CHECK(!map.empty());
+	map.clear();
+	CHECK(map.size() == 0);
+	CHECK(map.empty());
+}
+
+TEST_CASE("[Dictionary] Has and Has_all") {
+	Dictionary map;
+	CHECK(map.has(1) == false);
+	map[1] = 3;
+	CHECK(map.has(1));
+	Array keys;
+	keys.push_back(1);
+	CHECK(map.has_all(keys));
+	keys.push_back(2);
+	CHECK(map.has_all(keys) == false);
+}
+
+TEST_CASE("[Dictionary] == and != operators") {
+	Dictionary map1;
+	Dictionary map2;
+	CHECK(map1 != map2);
+	map1[1] = 3;
+	map2 = map1;
+	CHECK(map1 == map2);
+}
+
+TEST_CASE("[Dictionary] Keys and Values") {
+	Dictionary map;
+	Array keys = map.keys();
+	Array values = map.values();
+	CHECK(keys.empty());
+	CHECK(values.empty());
+	map[1] = 3;
+	CHECK(int(keys[0]) == 1);
+	CHECK(int(values[0]) == 3);
+}
+} // namespace TestDictionary
+#endif // TEST_DICTIONARY_H
