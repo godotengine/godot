@@ -514,15 +514,15 @@
 				Removes a key by index in a given track.
 			</description>
 		</method>
-		<method name="track_remove_key_at_position">
+		<method name="track_remove_key_at_time">
 			<return type="void">
 			</return>
 			<argument index="0" name="track_idx" type="int">
 			</argument>
-			<argument index="1" name="position" type="float">
+			<argument index="1" name="time" type="float">
 			</argument>
 			<description>
-				Removes a key by position (seconds) in a given track.
+				Removes a key at [code]time[/code] in a given track.
 			</description>
 		</method>
 		<method name="track_set_enabled">
