@@ -12,18 +12,30 @@
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>
-		<method name="play">
+		<method name="pause">
 			<return type="void" />
-			<argument index="0" name="anim" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Pauses the current animation (does not reset the frame counter). See [method stop] for stopping the animation and resetting the frame counter.
+			</description>
+		</method>
+		<method name="resume">
+			<return type="void" />
+			<description>
+				Resumes a paused animation. See [method pause].
+			</description>
+		</method>
+		<method name="start">
+			<return type="void" />
+			<argument index="0" name="animation" type="StringName" default="&amp;&quot;&quot;" />
 			<argument index="1" name="backwards" type="bool" default="false" />
 			<description>
-				Plays the animation named [code]anim[/code]. If no [code]anim[/code] is provided, the current animation is played. If [code]backwards[/code] is [code]true[/code], the animation will be played in reverse.
+				Starts playing the specified [code]animation[/code] or the current [member animation] if none is specified. Plays the animation from the beginning or the end if [code]backwards[/code] is [code]true[/code]. See [method resume] for resuming an animation from the current frame counter.
 			</description>
 		</method>
 		<method name="stop">
 			<return type="void" />
 			<description>
-				Stops the current animation (does not reset the frame counter).
+				Stops the current animation and resets the frame counter to [code]0[/code] or the last frame if the animation was playing backwards. See [method start] for playing an animation backwards. See [method pause] for pausing an animation without resetting the frame counter.
 			</description>
 		</method>
 	</methods>

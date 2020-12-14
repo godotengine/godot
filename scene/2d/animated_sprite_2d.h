@@ -81,7 +81,9 @@ public:
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
 	Ref<SpriteFrames> get_sprite_frames() const;
 
-	void play(const StringName &p_animation = StringName(), const bool p_backwards = false);
+	void start(const StringName &p_animation = StringName(), const bool p_backwards = false);
+	void pause();
+	void resume();
 	void stop();
 
 	void set_playing(bool p_playing);

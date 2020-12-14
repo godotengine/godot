@@ -10,23 +10,29 @@
 		<link title="2D Sprite animation (also applies to 3D)">$DOCS_URL/tutorials/2d/2d_sprite_animation.html</link>
 	</tutorials>
 	<methods>
-		<method name="is_playing" qualifiers="const">
-			<return type="bool" />
+		<method name="pause">
+			<return type="void" />
 			<description>
-				Returns [code]true[/code] if an animation is currently being played.
+				Pauses the current animation (does not reset the frame counter). See [method stop] for stopping the animation and resetting the frame counter.
 			</description>
 		</method>
-		<method name="play">
+		<method name="resume">
 			<return type="void" />
-			<argument index="0" name="anim" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Plays the animation named [code]anim[/code]. If no [code]anim[/code] is provided, the current animation is played.
+				Resumes a paused animation. See [method pause].
+			</description>
+		</method>
+		<method name="start">
+			<return type="void" />
+			<argument index="0" name="animation" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Starts playing the specified [code]animation[/code] or the current [member animation] if none is specified. Plays the animation from the beginning. See [method resume] for resuming an animation from the current frame counter.
 			</description>
 		</method>
 		<method name="stop">
 			<return type="void" />
 			<description>
-				Stops the current animation (does not reset the frame counter).
+				Stops the current animation and resets the frame counter to [code]0[/code]. See [method pause] for pausing an animation without resetting the frame counter.
 			</description>
 		</method>
 	</methods>
@@ -40,7 +46,7 @@
 		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
 			The [SpriteFrames] resource containing the animation(s).
 		</member>
-		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" default="false">
+		<member name="playing" type="bool" setter="set_playing" getter="is_playing" default="false">
 			If [code]true[/code], the [member animation] is currently playing.
 		</member>
 	</members>

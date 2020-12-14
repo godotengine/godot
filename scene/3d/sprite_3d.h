@@ -212,8 +212,6 @@ class AnimatedSprite3D : public SpriteBase3D {
 	void _res_changed();
 
 	void _reset_timeout();
-	void _set_playing(bool p_playing);
-	bool _is_playing() const;
 
 	RID last_shader;
 	RID last_texture;
@@ -228,8 +226,12 @@ public:
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
 	Ref<SpriteFrames> get_sprite_frames() const;
 
-	void play(const StringName &p_animation = StringName());
+	void start(const StringName &p_animation = StringName());
+	void pause();
+	void resume();
 	void stop();
+
+	void set_playing(bool p_playing);
 	bool is_playing() const;
 
 	void set_animation(const StringName &p_animation);

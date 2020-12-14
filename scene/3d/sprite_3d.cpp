@@ -1156,7 +1156,7 @@ void AnimatedSprite3D::_res_changed() {
 	_queue_update();
 }
 
-void AnimatedSprite3D::_set_playing(bool p_playing) {
+void AnimatedSprite3D::set_playing(bool p_playing) {
 	if (playing == p_playing) {
 		return;
 	}
@@ -1165,19 +1165,25 @@ void AnimatedSprite3D::_set_playing(bool p_playing) {
 	set_process_internal(playing);
 }
 
-bool AnimatedSprite3D::_is_playing() const {
-	return playing;
-}
-
-void AnimatedSprite3D::play(const StringName &p_animation) {
+void AnimatedSprite3D::start(const StringName &p_animation) {
 	if (p_animation) {
 		set_animation(p_animation);
 	}
-	_set_playing(true);
+	set_frame(0);
+	set_playing(true);
+}
+
+void AnimatedSprite3D::pause() {
+	set_playing(false);
+}
+
+void AnimatedSprite3D::resume() {
+	set_playing(true);
 }
 
 void AnimatedSprite3D::stop() {
-	_set_playing(false);
+	set_frame(0);
+	set_playing(false);
 }
 
 bool AnimatedSprite3D::is_playing() const {
@@ -1233,11 +1239,11 @@ void AnimatedSprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation", "animation"), &AnimatedSprite3D::set_animation);
 	ClassDB::bind_method(D_METHOD("get_animation"), &AnimatedSprite3D::get_animation);
 
-	ClassDB::bind_method(D_METHOD("_set_playing", "playing"), &AnimatedSprite3D::_set_playing);
-	ClassDB::bind_method(D_METHOD("_is_playing"), &AnimatedSprite3D::_is_playing);
-
-	ClassDB::bind_method(D_METHOD("play", "anim"), &AnimatedSprite3D::play, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("start", "animation"), &AnimatedSprite3D::start, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("pause"), &AnimatedSprite3D::pause);
+	ClassDB::bind_method(D_METHOD("resume"), &AnimatedSprite3D::resume);
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite3D::stop);
+	ClassDB::bind_method(D_METHOD("set_playing", "playing"), &AnimatedSprite3D::set_playing);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite3D::is_playing);
 
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &AnimatedSprite3D::set_frame);
@@ -1251,7 +1257,7 @@ void AnimatedSprite3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "set_playing", "is_playing");
 }
 
 AnimatedSprite3D::AnimatedSprite3D() {
