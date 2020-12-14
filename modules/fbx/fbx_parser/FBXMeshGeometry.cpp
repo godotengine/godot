@@ -182,7 +182,7 @@ MeshGeometry::MeshGeometry(uint64_t id, const ElementPtr element, const std::str
 
 		// This is stupid, because it means we select them ALL not just the one we want.
 		// but it's fine we can match by id.
-		GetRequiredElement(top, layer_type_name);
+
 		const ElementCollection &candidates = top->GetCollection(layer_type_name);
 
 		ElementMap::const_iterator iter;

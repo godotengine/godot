@@ -128,7 +128,7 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 			FBXDocParser::TokenizeBinary(tokens, (const char *)data.write().ptr(), (size_t)data.size());
 		} else {
 			print_verbose("[doc] is ascii");
-			FBXDocParser::Tokenize(tokens, (const char *)data.write().ptr());
+			FBXDocParser::Tokenize(tokens, (const char *)data.write().ptr(), (size_t)data.size());
 		}
 
 		// The import process explained:

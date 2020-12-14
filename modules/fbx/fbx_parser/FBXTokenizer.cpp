@@ -142,7 +142,7 @@ void ProcessDataToken(TokenList &output_tokens, const char *&start, const char *
 } // namespace
 
 // ------------------------------------------------------------------------------------------------
-void Tokenize(TokenList &output_tokens, const char *input) {
+void Tokenize(TokenList &output_tokens, const char *input, size_t length) {
 	// line and column numbers numbers are one-based
 	unsigned int line = 1;
 	unsigned int column = 1;
@@ -152,8 +152,13 @@ void Tokenize(TokenList &output_tokens, const char *input) {
 	bool pending_data_token = false;
 
 	const char *token_begin = nullptr, *token_end = nullptr;
-	for (const char *cur = input; *cur; column += (*cur == '\t' ? ASSIMP_FBX_TAB_WIDTH : 1), ++cur) {
-		const char c = *cur;
+
+	// input (starting string), *cur the current string, column +=
+	// modified to fix strlen() and stop buffer overflow
+	for (size_t x = 0; x < length; x++) {
+		const char c = input[x];
+		const char *cur = &input[x];
+		column += (c == '\t' ? ASSIMP_FBX_TAB_WIDTH : 1);
 
 		if (IsLineEnd(c)) {
 			comment = false;
