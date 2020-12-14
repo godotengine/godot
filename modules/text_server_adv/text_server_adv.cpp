@@ -1645,13 +1645,18 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 			if (c == 0x0009 || c == 0x000b) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_TAB;
 			}
+			if (is_whitespace(c)) {
+				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
+			}
+			if (u_ispunct(c)) {
+				sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
+			}
 			if (breaks.has(sd->glyphs[i].start)) {
 				if (breaks[sd->glyphs[i].start]) {
 					sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_HARD;
 				} else {
 					if (is_whitespace(c)) {
 						sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_SOFT;
-						sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
 					} else {
 						TextServer::Glyph gl;
 						gl.start = sd_glyphs[i].start;
@@ -1766,6 +1771,10 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 		shaped_text_update_breaks(p_shaped);
 	}
 
+	if (sd->justification_ops_valid) {
+		return true; // Noting to do.
+	}
+
 	const UChar *data = sd->utf16.ptr();
 	int32_t data_size = sd->utf16.length();
 
@@ -1796,9 +1805,9 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 			if (ubrk_getRuleStatus(bi) != UBRK_WORD_NONE) {
 				int i = _convert_pos(sd, ubrk_current(bi));
 				jstops[i + sd->start] = false;
-				int ks = _generate_kashida_justification_opportunies(sd->text, limit, i) + sd->start;
+				int ks = _generate_kashida_justification_opportunies(sd->text, limit, i);
 				if (ks != -1) {
-					jstops[ks] = true;
+					jstops[ks + sd->start] = true;
 				}
 				limit = i;
 			}

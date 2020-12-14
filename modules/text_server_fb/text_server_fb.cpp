@@ -45,6 +45,10 @@ _FORCE_INLINE_ bool is_linebreak(char32_t p_char) {
 	return (p_char >= 0x000a && p_char <= 0x000d) || (p_char == 0x0085) || (p_char == 0x2028) || (p_char == 0x2029);
 }
 
+_FORCE_INLINE_ bool is_punct(char32_t p_char) {
+	return (p_char >= 0x0020 && p_char <= 0x002F) || (p_char >= 0x003A && p_char <= 0x0040) || (p_char >= 0x005B && p_char <= 0x0060) || (p_char >= 0x007B && p_char <= 0x007E) || (p_char >= 0x2000 && p_char <= 0x206F) || (p_char >= 0x3000 && p_char <= 0x303F);
+}
+
 /*************************************************************************/
 
 String TextServerFallback::interface_name = "Fallback";
@@ -1029,6 +1033,9 @@ bool TextServerFallback::shaped_text_update_breaks(RID p_shaped) {
 	for (int i = 0; i < sd_size; i++) {
 		if (sd->glyphs[i].count > 0) {
 			char32_t c = sd->text[sd->glyphs[i].start];
+			if (is_punct(c)) {
+				sd->glyphs.write[i].flags |= GRAPHEME_IS_PUNCTUATION;
+			}
 			if (is_whitespace(c) && !is_linebreak(c)) {
 				sd->glyphs.write[i].flags |= GRAPHEME_IS_SPACE;
 				sd->glyphs.write[i].flags |= GRAPHEME_IS_BREAK_SOFT;

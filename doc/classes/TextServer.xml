@@ -1167,6 +1167,9 @@
 		<constant name="GRAPHEME_IS_ELONGATION" value="128" enum="GraphemeFlag">
 			Grapheme is kashida.
 		</constant>
+		<constant name="GRAPHEME_IS_PUNCTUATION" value="256" enum="GraphemeFlag">
+			Grapheme is punctuation character.
+		</constant>
 		<constant name="HINTING_NONE" value="0" enum="Hinting">
 			Disables font hinting (smoother but less crisp).
 		</constant>
