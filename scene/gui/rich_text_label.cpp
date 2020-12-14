@@ -3898,24 +3898,24 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 
 		for (int j = 0; j < values.size(); j++) {
 			if (!color.search(values[j]).is_null()) {
-				a.append(Color::html(values[j]));
+				a.push_back(Color::html(values[j]));
 			} else if (!nodepath.search(values[j]).is_null()) {
 				if (values[j].begins_with("$")) {
 					String v = values[j].substr(1, values[j].length());
-					a.append(NodePath(v));
+					a.push_back(NodePath(v));
 				}
 			} else if (!boolean.search(values[j]).is_null()) {
 				if (values[j] == "true") {
-					a.append(true);
+					a.push_back(true);
 				} else if (values[j] == "false") {
-					a.append(false);
+					a.push_back(false);
 				}
 			} else if (!decimal.search(values[j]).is_null()) {
-				a.append(values[j].to_float());
+				a.push_back(values[j].to_float());
 			} else if (!numerical.search(values[j]).is_null()) {
-				a.append(values[j].to_int());
+				a.push_back(values[j].to_int());
 			} else {
-				a.append(values[j]);
+				a.push_back(values[j]);
 			}
 		}
 #endif

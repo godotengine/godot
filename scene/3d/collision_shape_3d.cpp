@@ -63,7 +63,7 @@ void CollisionShape3D::make_convex_from_siblings() {
 					if (!a.empty()) {
 						Vector<Vector3> v = a[RenderingServer::ARRAY_VERTEX];
 						for (int k = 0; k < v.size(); k++) {
-							vertices.append(mi->get_transform().xform(v[k]));
+							vertices.push_back(mi->get_transform().xform(v[k]));
 						}
 					}
 				}

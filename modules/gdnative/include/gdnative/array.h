@@ -81,8 +81,6 @@ godot_variant GDAPI *godot_array_operator_index(godot_array *p_self, const godot
 
 const godot_variant GDAPI *godot_array_operator_index_const(const godot_array *p_self, const godot_int p_idx);
 
-void GDAPI godot_array_append(godot_array *p_self, const godot_variant *p_value);
-
 void GDAPI godot_array_clear(godot_array *p_self);
 
 godot_int GDAPI godot_array_count(const godot_array *p_self, const godot_variant *p_value);

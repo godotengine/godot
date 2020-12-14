@@ -80,7 +80,7 @@ void GDNativeLibrarySingletonEditor::_discover_singletons() {
 		if (!current_files.has(E->get())) {
 			changed = true;
 		}
-		files.append(E->get());
+		files.push_back(E->get());
 	}
 
 	// Check for removed files

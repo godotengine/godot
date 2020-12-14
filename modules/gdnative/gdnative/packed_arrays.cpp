@@ -89,11 +89,6 @@ uint8_t GDAPI *godot_packed_byte_array_ptrw(godot_packed_byte_array *p_self) {
 	return self->ptrw();
 }
 
-void GDAPI godot_packed_byte_array_append(godot_packed_byte_array *p_self, const uint8_t p_data) {
-	Vector<uint8_t> *self = (Vector<uint8_t> *)p_self;
-	self->push_back(p_data);
-}
-
 void GDAPI godot_packed_byte_array_append_array(godot_packed_byte_array *p_self, const godot_packed_byte_array *p_array) {
 	Vector<uint8_t> *self = (Vector<uint8_t> *)p_self;
 	Vector<uint8_t> *array = (Vector<uint8_t> *)p_array;
@@ -191,11 +186,6 @@ const int32_t GDAPI *godot_packed_int32_array_ptr(const godot_packed_int32_array
 int32_t GDAPI *godot_packed_int32_array_ptrw(godot_packed_int32_array *p_self) {
 	Vector<int32_t> *self = (Vector<int32_t> *)p_self;
 	return self->ptrw();
-}
-
-void GDAPI godot_packed_int32_array_append(godot_packed_int32_array *p_self, const int32_t p_data) {
-	Vector<int32_t> *self = (Vector<int32_t> *)p_self;
-	self->push_back(p_data);
 }
 
 void GDAPI godot_packed_int32_array_append_array(godot_packed_int32_array *p_self, const godot_packed_int32_array *p_array) {
@@ -297,11 +287,6 @@ int64_t GDAPI *godot_packed_int64_array_ptrw(godot_packed_int64_array *p_self) {
 	return self->ptrw();
 }
 
-void GDAPI godot_packed_int64_array_append(godot_packed_int64_array *p_self, const int64_t p_data) {
-	Vector<int64_t> *self = (Vector<int64_t> *)p_self;
-	self->push_back(p_data);
-}
-
 void GDAPI godot_packed_int64_array_append_array(godot_packed_int64_array *p_self, const godot_packed_int64_array *p_array) {
 	Vector<int64_t> *self = (Vector<int64_t> *)p_self;
 	Vector<int64_t> *array = (Vector<int64_t> *)p_array;
@@ -399,11 +384,6 @@ const float GDAPI *godot_packed_float32_array_ptr(const godot_packed_float32_arr
 float GDAPI *godot_packed_float32_array_ptrw(godot_packed_float32_array *p_self) {
 	Vector<float> *self = (Vector<float> *)p_self;
 	return self->ptrw();
-}
-
-void GDAPI godot_packed_float32_array_append(godot_packed_float32_array *p_self, const float p_data) {
-	Vector<float> *self = (Vector<float> *)p_self;
-	self->push_back(p_data);
 }
 
 void GDAPI godot_packed_float32_array_append_array(godot_packed_float32_array *p_self, const godot_packed_float32_array *p_array) {
@@ -505,11 +485,6 @@ double GDAPI *godot_packed_float64_array_ptrw(godot_packed_float64_array *p_self
 	return self->ptrw();
 }
 
-void GDAPI godot_packed_float64_array_append(godot_packed_float64_array *p_self, const double p_data) {
-	Vector<double> *self = (Vector<double> *)p_self;
-	self->push_back(p_data);
-}
-
 void GDAPI godot_packed_float64_array_append_array(godot_packed_float64_array *p_self, const godot_packed_float64_array *p_array) {
 	Vector<double> *self = (Vector<double> *)p_self;
 	Vector<double> *array = (Vector<double> *)p_array;
@@ -607,12 +582,6 @@ const godot_string GDAPI *godot_packed_string_array_ptr(const godot_packed_strin
 godot_string GDAPI *godot_packed_string_array_ptrw(godot_packed_string_array *p_self) {
 	Vector<String> *self = (Vector<String> *)p_self;
 	return (godot_string *)self->ptrw();
-}
-
-void GDAPI godot_packed_string_array_append(godot_packed_string_array *p_self, const godot_string *p_data) {
-	Vector<String> *self = (Vector<String> *)p_self;
-	String &s = *(String *)p_data;
-	self->push_back(s);
 }
 
 void GDAPI godot_packed_string_array_append_array(godot_packed_string_array *p_self, const godot_packed_string_array *p_array) {
@@ -722,12 +691,6 @@ godot_vector2 GDAPI *godot_packed_vector2_array_ptrw(godot_packed_vector2_array 
 	return (godot_vector2 *)self->ptrw();
 }
 
-void GDAPI godot_packed_vector2_array_append(godot_packed_vector2_array *p_self, const godot_vector2 *p_data) {
-	Vector<Vector2> *self = (Vector<Vector2> *)p_self;
-	Vector2 &s = *(Vector2 *)p_data;
-	self->push_back(s);
-}
-
 void GDAPI godot_packed_vector2_array_append_array(godot_packed_vector2_array *p_self, const godot_packed_vector2_array *p_array) {
 	Vector<Vector2> *self = (Vector<Vector2> *)p_self;
 	Vector<Vector2> *array = (Vector<Vector2> *)p_array;
@@ -832,12 +795,6 @@ const godot_vector2i GDAPI *godot_packed_vector2i_array_ptr(const godot_packed_v
 godot_vector2i GDAPI *godot_packed_vector2i_array_ptrw(godot_packed_vector2i_array *p_self) {
 	Vector<Vector2i> *self = (Vector<Vector2i> *)p_self;
 	return (godot_vector2i *)self->ptrw();
-}
-
-void GDAPI godot_packed_vector2i_array_append(godot_packed_vector2i_array *p_self, const godot_vector2i *p_data) {
-	Vector<Vector2i> *self = (Vector<Vector2i> *)p_self;
-	Vector2i &s = *(Vector2i *)p_data;
-	self->push_back(s);
 }
 
 void GDAPI godot_packed_vector2i_array_append_array(godot_packed_vector2i_array *p_self, const godot_packed_vector2i_array *p_array) {
@@ -946,12 +903,6 @@ godot_vector3 GDAPI *godot_packed_vector3_array_ptrw(godot_packed_vector3_array 
 	return (godot_vector3 *)self->ptrw();
 }
 
-void GDAPI godot_packed_vector3_array_append(godot_packed_vector3_array *p_self, const godot_vector3 *p_data) {
-	Vector<Vector3> *self = (Vector<Vector3> *)p_self;
-	Vector3 &s = *(Vector3 *)p_data;
-	self->push_back(s);
-}
-
 void GDAPI godot_packed_vector3_array_append_array(godot_packed_vector3_array *p_self, const godot_packed_vector3_array *p_array) {
 	Vector<Vector3> *self = (Vector<Vector3> *)p_self;
 	Vector<Vector3> *array = (Vector<Vector3> *)p_array;
@@ -1056,12 +1007,6 @@ const godot_color GDAPI *godot_packed_color_array_ptr(const godot_packed_color_a
 godot_color GDAPI *godot_packed_color_array_ptrw(godot_packed_color_array *p_self) {
 	Vector<Color> *self = (Vector<Color> *)p_self;
 	return (godot_color *)self->ptrw();
-}
-
-void GDAPI godot_packed_color_array_append(godot_packed_color_array *p_self, const godot_color *p_data) {
-	Vector<Color> *self = (Vector<Color> *)p_self;
-	Color &s = *(Color *)p_data;
-	self->push_back(s);
 }
 
 void GDAPI godot_packed_color_array_append_array(godot_packed_color_array *p_self, const godot_packed_color_array *p_array) {

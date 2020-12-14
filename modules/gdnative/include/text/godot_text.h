@@ -195,8 +195,6 @@ void GDAPI godot_packed_glyph_array_new_copy(godot_packed_glyph_array *r_dest, c
 const godot_glyph GDAPI *godot_packed_glyph_array_ptr(const godot_packed_glyph_array *p_self);
 godot_glyph GDAPI *godot_packed_glyph_array_ptrw(godot_packed_glyph_array *p_self);
 
-void GDAPI godot_packed_glyph_array_append(godot_packed_glyph_array *p_self, const godot_glyph *p_data);
-
 void GDAPI godot_packed_glyph_array_append_array(godot_packed_glyph_array *p_self, const godot_packed_glyph_array *p_array);
 
 godot_error GDAPI godot_packed_glyph_array_insert(godot_packed_glyph_array *p_self, const godot_int p_idx, const godot_glyph *p_data);

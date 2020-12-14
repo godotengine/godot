@@ -91,13 +91,13 @@ Array RegExMatch::get_strings() const {
 		int start = data[i].start;
 
 		if (start == -1) {
-			result.append(String());
+			result.push_back(String());
 			continue;
 		}
 
 		int length = data[i].end - start;
 
-		result.append(subject.substr(start, length));
+		result.push_back(subject.substr(start, length));
 	}
 
 	return result;
@@ -356,7 +356,7 @@ Array RegEx::get_names() const {
 	for (uint32_t i = 0; i < count; i++) {
 		String name = &table[i * entry_size + 1];
 		if (result.find(name) < 0) {
-			result.append(name);
+			result.push_back(name);
 		}
 	}
 

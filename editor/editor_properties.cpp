@@ -3016,11 +3016,11 @@ bool EditorPropertyResource::_is_drop_valid(const Dictionary &p_drag_data) const
 	for (int i = 0; i < size; i++) {
 		String at = allowed_types[i].strip_edges();
 		if (at == "StandardMaterial3D") {
-			allowed_types.append("Texture2D");
+			allowed_types.push_back("Texture2D");
 		} else if (at == "ShaderMaterial") {
-			allowed_types.append("Shader");
+			allowed_types.push_back("Shader");
 		} else if (at == "Font") {
-			allowed_types.append("FontData");
+			allowed_types.push_back("FontData");
 		}
 	}
 

@@ -316,12 +316,12 @@ void LocalizationEditor::_translation_filter_option_changed() {
 
 		if (f_locales_all.size() != 2) {
 			f_locales_all.clear();
-			f_locales_all.append(sel_id);
-			f_locales_all.append(Array());
+			f_locales_all.push_back(sel_id);
+			f_locales_all.push_back(Array());
 		}
 	} else {
-		f_locales_all.append(sel_id);
-		f_locales_all.append(Array());
+		f_locales_all.push_back(sel_id);
+		f_locales_all.push_back(Array());
 	}
 
 	Array f_locales = f_locales_all[1];
@@ -329,7 +329,7 @@ void LocalizationEditor::_translation_filter_option_changed() {
 
 	if (checked) {
 		if (l_idx == -1) {
-			f_locales.append(locale);
+			f_locales.push_back(locale);
 		}
 	} else {
 		if (l_idx != -1) {
@@ -361,14 +361,14 @@ void LocalizationEditor::_translation_filter_mode_changed(int p_mode) {
 
 		if (f_locales_all.size() != 2) {
 			f_locales_all.clear();
-			f_locales_all.append(sel_id);
-			f_locales_all.append(Array());
+			f_locales_all.push_back(sel_id);
+			f_locales_all.push_back(Array());
 		} else {
 			f_locales_all[0] = sel_id;
 		}
 	} else {
-		f_locales_all.append(sel_id);
-		f_locales_all.append(Array());
+		f_locales_all.push_back(sel_id);
+		f_locales_all.push_back(Array());
 	}
 
 	undo_redo->create_action(TTR("Changed Locale Filter Mode"));
@@ -482,8 +482,8 @@ void LocalizationEditor::update_translations() {
 		}
 	}
 	if (is_arr_empty) {
-		l_filter_all.append(0);
-		l_filter_all.append(Array());
+		l_filter_all.push_back(0);
+		l_filter_all.push_back(Array());
 		translation_locale_filter_mode->select(0);
 	}
 
