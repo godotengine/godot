@@ -890,7 +890,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	add_child(new_profile_dialog);
 	new_profile_dialog->connect("confirmed", callable_mp(this, &EditorFeatureProfileManager::_create_new_profile));
 	new_profile_dialog->register_text_enter(new_profile_name);
-	new_profile_dialog->get_ok()->set_text(TTR("Create"));
+	new_profile_dialog->get_ok_button()->set_text(TTR("Create"));
 
 	erase_profile_dialog = memnew(ConfirmationDialog);
 	add_child(erase_profile_dialog);

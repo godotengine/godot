@@ -1642,7 +1642,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	name_dialog->register_text_enter(name);
 
 	error_dialog = memnew(ConfirmationDialog);
-	error_dialog->get_ok()->set_text(TTR("Close"));
+	error_dialog->get_ok_button()->set_text(TTR("Close"));
 	error_dialog->set_title(TTR("Error!"));
 	add_child(error_dialog);
 
@@ -1650,7 +1650,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	blend_editor.dialog = memnew(AcceptDialog);
 	add_child(blend_editor.dialog);
-	blend_editor.dialog->get_ok()->set_text(TTR("Close"));
+	blend_editor.dialog->get_ok_button()->set_text(TTR("Close"));
 	blend_editor.dialog->set_hide_on_ok(true);
 	VBoxContainer *blend_vb = memnew(VBoxContainer);
 	blend_editor.dialog->add_child(blend_vb);

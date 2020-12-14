@@ -522,7 +522,7 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 	if (p_save) {
 		file_browse->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 		file_browse->set_title(TTR("Open Script / Choose Location"));
-		file_browse->get_ok()->set_text(TTR("Open"));
+		file_browse->get_ok_button()->set_text(TTR("Open"));
 	} else {
 		file_browse->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 		file_browse->set_title(TTR("Open Script"));
@@ -686,7 +686,7 @@ void ScriptCreateDialog::_update_dialog() {
 	builtin_warning_label->set_visible(is_built_in);
 
 	if (is_built_in) {
-		get_ok()->set_text(TTR("Create"));
+		get_ok_button()->set_text(TTR("Create"));
 		parent_name->set_editable(true);
 		parent_search_button->set_disabled(false);
 		parent_browse_button->set_disabled(!can_inherit_from_file);
@@ -694,7 +694,7 @@ void ScriptCreateDialog::_update_dialog() {
 	} else if (is_new_script_created) {
 		// New script created.
 
-		get_ok()->set_text(TTR("Create"));
+		get_ok_button()->set_text(TTR("Create"));
 		parent_name->set_editable(true);
 		parent_search_button->set_disabled(false);
 		parent_browse_button->set_disabled(!can_inherit_from_file);
@@ -704,7 +704,7 @@ void ScriptCreateDialog::_update_dialog() {
 	} else if (load_enabled) {
 		// Script loaded.
 
-		get_ok()->set_text(TTR("Load"));
+		get_ok_button()->set_text(TTR("Load"));
 		parent_name->set_editable(false);
 		parent_search_button->set_disabled(true);
 		parent_browse_button->set_disabled(true);
@@ -712,7 +712,7 @@ void ScriptCreateDialog::_update_dialog() {
 			_msg_path_valid(true, TTR("Will load an existing script file."));
 		}
 	} else {
-		get_ok()->set_text(TTR("Create"));
+		get_ok_button()->set_text(TTR("Create"));
 		parent_name->set_editable(true);
 		parent_search_button->set_disabled(false);
 		parent_browse_button->set_disabled(!can_inherit_from_file);
@@ -721,7 +721,7 @@ void ScriptCreateDialog::_update_dialog() {
 		script_ok = false;
 	}
 
-	get_ok()->set_disabled(!script_ok);
+	get_ok_button()->set_disabled(!script_ok);
 
 	Callable entered_call = callable_mp(this, &ScriptCreateDialog::_path_entered);
 	if (script_ok) {
@@ -878,7 +878,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	file_browse->connect("file_selected", callable_mp(this, &ScriptCreateDialog::_file_selected));
 	file_browse->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(file_browse);
-	get_ok()->set_text(TTR("Create"));
+	get_ok_button()->set_text(TTR("Create"));
 	alert = memnew(AcceptDialog);
 	alert->get_label()->set_autowrap(true);
 	alert->get_label()->set_align(Label::ALIGN_CENTER);

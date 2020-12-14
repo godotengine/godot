@@ -2271,7 +2271,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 				if (unsaved_cache || p_option == FILE_CLOSE_ALL_AND_QUIT || p_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER) {
 					String scene_filename = editor_data.get_edited_scene_root(tab_closing)->get_filename();
-					save_confirmation->get_ok()->set_text(TTR("Save & Close"));
+					save_confirmation->get_ok_button()->set_text(TTR("Save & Close"));
 					save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), scene_filename != "" ? scene_filename : "unsaved scene"));
 					save_confirmation->popup_centered();
 					break;
@@ -2362,8 +2362,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case FILE_SAVE_BEFORE_RUN: {
 			if (!p_confirmed) {
-				confirmation->get_cancel()->set_text(TTR("No"));
-				confirmation->get_ok()->set_text(TTR("Yes"));
+				confirmation->get_cancel_button()->set_text(TTR("No"));
+				confirmation->get_ok_button()->set_text(TTR("Yes"));
 				confirmation->set_text(TTR("This scene has never been saved. Save before running?"));
 				confirmation->popup_centered();
 				break;
@@ -2427,7 +2427,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case FILE_EXTERNAL_OPEN_SCENE: {
 			if (unsaved_cache && !p_confirmed) {
-				confirmation->get_ok()->set_text(TTR("Open"));
+				confirmation->get_ok_button()->set_text(TTR("Open"));
 				confirmation->set_text(TTR("Current scene not saved. Open anyway?"));
 				confirmation->popup_centered();
 				break;
@@ -2483,7 +2483,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 
 			if (unsaved_cache && !p_confirmed) {
-				confirmation->get_ok()->set_text(TTR("Reload Saved Scene"));
+				confirmation->get_ok_button()->set_text(TTR("Reload Saved Scene"));
 				confirmation->set_text(
 						TTR("The current scene has unsaved changes.\nReload the saved scene anyway? This action cannot be undone."));
 				confirmation->popup_centered();
@@ -2587,7 +2587,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				if (_next_unsaved_scene(!save_each) == -1) {
 					bool confirm = EDITOR_GET("interface/editor/quit_confirmation");
 					if (confirm) {
-						confirmation->get_ok()->set_text(p_option == FILE_QUIT ? TTR("Quit") : TTR("Yes"));
+						confirmation->get_ok_button()->set_text(p_option == FILE_QUIT ? TTR("Quit") : TTR("Yes"));
 						confirmation->set_text(p_option == FILE_QUIT ? TTR("Exit the editor?") : TTR("Open Project Manager?"));
 						confirmation->popup_centered();
 					} else {
@@ -2605,7 +2605,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 							i = _next_unsaved_scene(true, ++i);
 						}
 
-						save_confirmation->get_ok()->set_text(TTR("Save & Quit"));
+						save_confirmation->get_ok_button()->set_text(TTR("Save & Quit"));
 						save_confirmation->set_text((p_option == FILE_QUIT ? TTR("Save changes to the following scene(s) before quitting?") : TTR("Save changes the following scene(s) before opening Project Manager?")) + unsaved_scenes);
 						save_confirmation->popup_centered();
 					}
@@ -3948,7 +3948,7 @@ Error EditorNode::export_preset(const String &p_preset, const String &p_path, bo
 
 void EditorNode::show_accept(const String &p_text, const String &p_title) {
 	current_option = -1;
-	accept->get_ok()->set_text(p_title);
+	accept->get_ok_button()->set_text(p_title);
 	accept->set_text(p_text);
 	accept->popup_centered();
 }
@@ -4647,14 +4647,14 @@ void EditorNode::_layout_menu_option(int p_id) {
 		case SETTINGS_LAYOUT_SAVE: {
 			current_option = p_id;
 			layout_dialog->set_title(TTR("Save Layout"));
-			layout_dialog->get_ok()->set_text(TTR("Save"));
+			layout_dialog->get_ok_button()->set_text(TTR("Save"));
 			layout_dialog->popup_centered();
 			layout_dialog->set_name_line_enabled(true);
 		} break;
 		case SETTINGS_LAYOUT_DELETE: {
 			current_option = p_id;
 			layout_dialog->set_title(TTR("Delete Layout"));
-			layout_dialog->get_ok()->set_text(TTR("Delete"));
+			layout_dialog->get_ok_button()->set_text(TTR("Delete"));
 			layout_dialog->popup_centered();
 			layout_dialog->set_name_line_enabled(false);
 		} break;
@@ -4696,7 +4696,7 @@ void EditorNode::_scene_tab_closed(int p_tab, int option) {
 						   saved_version != editor_data.get_undo_redo().get_version() :
 						   editor_data.get_scene_version(p_tab) != 0;
 	if (unsaved) {
-		save_confirmation->get_ok()->set_text(TTR("Save & Close"));
+		save_confirmation->get_ok_button()->set_text(TTR("Save & Close"));
 		save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), scene->get_filename() != "" ? scene->get_filename() : "unsaved scene"));
 		save_confirmation->popup_centered();
 	} else {
@@ -5475,7 +5475,7 @@ static void _execute_thread(void *p_ud) {
 
 int EditorNode::execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok, bool p_close_on_errors) {
 	execute_output_dialog->set_title(p_title);
-	execute_output_dialog->get_ok()->set_disabled(true);
+	execute_output_dialog->get_ok_button()->set_disabled(true);
 	execute_outputs->clear();
 	execute_outputs->set_scroll_follow(true);
 	execute_output_dialog->popup_centered_ratio();
@@ -5516,7 +5516,7 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 		execute_output_dialog->hide();
 	}
 
-	execute_output_dialog->get_ok()->set_disabled(false);
+	execute_output_dialog->get_ok_button()->set_disabled(false);
 
 	return eta.exitcode;
 }
@@ -6388,7 +6388,7 @@ EditorNode::EditorNode() {
 #endif
 	video_restart_dialog = memnew(ConfirmationDialog);
 	video_restart_dialog->set_text(TTR("Changing the video driver requires restarting the editor."));
-	video_restart_dialog->get_ok()->set_text(TTR("Save & Restart"));
+	video_restart_dialog->get_ok_button()->set_text(TTR("Save & Restart"));
 	video_restart_dialog->connect("confirmed", callable_mp(this, &EditorNode::_menu_option), varray(SET_VIDEO_DRIVER_SAVE_AND_RESTART));
 	gui_base->add_child(video_restart_dialog);
 
@@ -6535,19 +6535,19 @@ EditorNode::EditorNode() {
 
 	custom_build_manage_templates = memnew(ConfirmationDialog);
 	custom_build_manage_templates->set_text(TTR("Android build template is missing, please install relevant templates."));
-	custom_build_manage_templates->get_ok()->set_text(TTR("Manage Templates"));
+	custom_build_manage_templates->get_ok_button()->set_text(TTR("Manage Templates"));
 	custom_build_manage_templates->connect("confirmed", callable_mp(this, &EditorNode::_menu_option), varray(SETTINGS_MANAGE_EXPORT_TEMPLATES));
 	gui_base->add_child(custom_build_manage_templates);
 
 	install_android_build_template = memnew(ConfirmationDialog);
 	install_android_build_template->set_text(TTR("This will set up your project for custom Android builds by installing the source template to \"res://android/build\".\nYou can then apply modifications and build your own custom APK on export (adding modules, changing the AndroidManifest.xml, etc.).\nNote that in order to make custom builds instead of using pre-built APKs, the \"Use Custom Build\" option should be enabled in the Android export preset."));
-	install_android_build_template->get_ok()->set_text(TTR("Install"));
+	install_android_build_template->get_ok_button()->set_text(TTR("Install"));
 	install_android_build_template->connect("confirmed", callable_mp(this, &EditorNode::_menu_confirm_current));
 	gui_base->add_child(install_android_build_template);
 
 	remove_android_build_template = memnew(ConfirmationDialog);
 	remove_android_build_template->set_text(TTR("The Android build template is already installed in this project and it won't be overwritten.\nRemove the \"res://android/build\" directory manually before attempting this operation again."));
-	remove_android_build_template->get_ok()->set_text(TTR("Show in File Manager"));
+	remove_android_build_template->get_ok_button()->set_text(TTR("Show in File Manager"));
 	remove_android_build_template->connect("confirmed", callable_mp(this, &EditorNode::_menu_option), varray(FILE_EXPLORE_ANDROID_BUILD_TEMPLATES));
 	gui_base->add_child(remove_android_build_template);
 
@@ -6750,7 +6750,7 @@ EditorNode::EditorNode() {
 	set_process(true);
 
 	open_imported = memnew(ConfirmationDialog);
-	open_imported->get_ok()->set_text(TTR("Open Anyway"));
+	open_imported->get_ok_button()->set_text(TTR("Open Anyway"));
 	new_inherited_button = open_imported->add_button(TTR("New Inherited"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "inherit");
 	open_imported->connect("confirmed", callable_mp(this, &EditorNode::_open_imported));
 	open_imported->connect("custom_action", callable_mp(this, &EditorNode::_inherit_imported));
@@ -6800,7 +6800,7 @@ EditorNode::EditorNode() {
 
 	pick_main_scene = memnew(ConfirmationDialog);
 	gui_base->add_child(pick_main_scene);
-	pick_main_scene->get_ok()->set_text(TTR("Select"));
+	pick_main_scene->get_ok_button()->set_text(TTR("Select"));
 	pick_main_scene->connect("confirmed", callable_mp(this, &EditorNode::_menu_option), varray(SETTINGS_PICK_MAIN_SCENE));
 
 	for (int i = 0; i < _init_callbacks.size(); i++) {

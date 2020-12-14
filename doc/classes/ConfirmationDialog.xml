@@ -18,7 +18,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_cancel">
+		<method name="get_cancel_button">
 			<return type="Button">
 			</return>
 			<description>

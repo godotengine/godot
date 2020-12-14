@@ -1009,7 +1009,7 @@ String VisualShaderEditor::_get_description(int p_idx) {
 
 void VisualShaderEditor::_update_options_menu() {
 	node_desc->set_text("");
-	members_dialog->get_ok()->set_disabled(true);
+	members_dialog->get_ok_button()->set_disabled(true);
 
 	members->clear();
 	TreeItem *root = members->create_item();
@@ -2613,12 +2613,12 @@ void VisualShaderEditor::_member_selected() {
 	TreeItem *item = members->get_selected();
 
 	if (item != nullptr && item->has_meta("id")) {
-		members_dialog->get_ok()->set_disabled(false);
+		members_dialog->get_ok_button()->set_disabled(false);
 		highend_label->set_visible(add_options[item->get_meta("id")].highend);
 		node_desc->set_text(_get_description(item->get_meta("id")));
 	} else {
 		highend_label->set_visible(false);
-		members_dialog->get_ok()->set_disabled(true);
+		members_dialog->get_ok_button()->set_disabled(true);
 		node_desc->set_text("");
 	}
 }
@@ -3068,9 +3068,9 @@ VisualShaderEditor::VisualShaderEditor() {
 	members_dialog->set_title(TTR("Create Shader Node"));
 	members_dialog->set_exclusive(false);
 	members_dialog->add_child(members_vb);
-	members_dialog->get_ok()->set_text(TTR("Create"));
-	members_dialog->get_ok()->connect("pressed", callable_mp(this, &VisualShaderEditor::_member_create));
-	members_dialog->get_ok()->set_disabled(true);
+	members_dialog->get_ok_button()->set_text(TTR("Create"));
+	members_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VisualShaderEditor::_member_create));
+	members_dialog->get_ok_button()->set_disabled(true);
 	members_dialog->connect("cancelled", callable_mp(this, &VisualShaderEditor::_member_cancel));
 	add_child(members_dialog);
 

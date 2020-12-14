@@ -4858,8 +4858,8 @@ VisualScriptEditor::VisualScriptEditor() {
 	function_create_dialog = memnew(ConfirmationDialog);
 	function_create_dialog->set_title(TTR("Create Function"));
 	function_create_dialog->add_child(function_vb);
-	function_create_dialog->get_ok()->set_text(TTR("Create"));
-	function_create_dialog->get_ok()->connect("pressed", callable_mp(this, &VisualScriptEditor::_create_function));
+	function_create_dialog->get_ok_button()->set_text(TTR("Create"));
+	function_create_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VisualScriptEditor::_create_function));
 	add_child(function_create_dialog);
 
 	select_func_text = memnew(Label);
@@ -4902,7 +4902,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph->connect("connection_to_empty", callable_mp(this, &VisualScriptEditor::_graph_connect_to_empty));
 
 	edit_signal_dialog = memnew(AcceptDialog);
-	edit_signal_dialog->get_ok()->set_text(TTR("Close"));
+	edit_signal_dialog->get_ok_button()->set_text(TTR("Close"));
 	add_child(edit_signal_dialog);
 
 	signal_editor = memnew(VisualScriptEditorSignalEdit);
@@ -4912,7 +4912,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_signal_edit->edit(signal_editor);
 
 	edit_variable_dialog = memnew(AcceptDialog);
-	edit_variable_dialog->get_ok()->set_text(TTR("Close"));
+	edit_variable_dialog->get_ok_button()->set_text(TTR("Close"));
 	add_child(edit_variable_dialog);
 
 	variable_editor = memnew(VisualScriptEditorVariableEdit);
@@ -4944,7 +4944,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	new_connect_node_select = memnew(VisualScriptPropertySelector);
 	add_child(new_connect_node_select);
 	new_connect_node_select->connect("selected", callable_mp(this, &VisualScriptEditor::_selected_connect_node));
-	new_connect_node_select->get_cancel()->connect("pressed", callable_mp(this, &VisualScriptEditor::_cancel_connect_node));
+	new_connect_node_select->get_cancel_button()->connect("pressed", callable_mp(this, &VisualScriptEditor::_cancel_connect_node));
 
 	new_virtual_method_select = memnew(VisualScriptPropertySelector);
 	add_child(new_virtual_method_select);
