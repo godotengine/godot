@@ -21,7 +21,8 @@
 			<argument index="1" name="method" type="String">
 			</argument>
 			<description>
-				Calls [code]method[/code] on each member of the given group.
+				Calls [code]method[/code] on each member of the given group. You can pass arguments to [code]method[/code] by specifying them at the end of the method call.
+				[b]Note:[/b] [code]method[/code] may only have 5 arguments at most (7 arguments passed to this method in total).
 			</description>
 		</method>
 		<method name="call_group_flags" qualifiers="vararg">
@@ -34,7 +35,8 @@
 			<argument index="2" name="method" type="String">
 			</argument>
 			<description>
-				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags].
+				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags]. You can pass arguments to [code]method[/code] by specifying them at the end of the method call.
+				[b]Note:[/b] [code]method[/code] may only have 5 arguments at most (8 arguments passed to this method in total).
 			</description>
 		</method>
 		<method name="change_scene">
