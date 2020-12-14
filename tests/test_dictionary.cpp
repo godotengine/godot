@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_oa_hash_map.cpp                                                 */
+/*  test_dictionary.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,8 +30,6 @@
 
 #include "test_dictionary.h"
 #include "tests/test_macros.h"
-
-
 #include "core/variant/dictionary.h"
 #include "core/templates/ordered_hash_map.h"
 #include "core/templates/safe_refcount.h"
