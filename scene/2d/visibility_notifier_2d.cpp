@@ -287,9 +287,9 @@ void VisibilityEnabler2D::_change_node_state(Node *p_node, bool p_enabled) {
 
 		if (as) {
 			if (p_enabled) {
-				as->play();
+				as->pause();
 			} else {
-				as->stop();
+				as->resume();
 			}
 		}
 	}
