@@ -376,6 +376,7 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(GRAPHEME_IS_BREAK_SOFT);
 	BIND_ENUM_CONSTANT(GRAPHEME_IS_TAB);
 	BIND_ENUM_CONSTANT(GRAPHEME_IS_ELONGATION);
+	BIND_ENUM_CONSTANT(GRAPHEME_IS_PUNCTUATION);
 
 	/* Hinting */
 	BIND_ENUM_CONSTANT(HINTING_NONE);
@@ -679,7 +680,7 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_w
 Vector<Vector2i> TextServer::shaped_text_get_word_breaks(RID p_shaped) const {
 	Vector<Vector2i> words;
 
-	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
+	const_cast<TextServer *>(this)->shaped_text_update_justification_ops(p_shaped);
 	const Vector<Glyph> &logical = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
 	const Vector2i &range = shaped_text_get_range(p_shaped);
 
@@ -690,8 +691,8 @@ Vector<Vector2i> TextServer::shaped_text_get_word_breaks(RID p_shaped) const {
 
 	for (int i = 0; i < l_size; i++) {
 		if (l_gl[i].count > 0) {
-			if ((l_gl[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
-				words.push_back(Vector2i(word_start, l_gl[i].end - 1));
+			if (((l_gl[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) || ((l_gl[i].flags & GRAPHEME_IS_PUNCTUATION) == GRAPHEME_IS_PUNCTUATION)) {
+				words.push_back(Vector2i(word_start, l_gl[i].start));
 				word_start = l_gl[i].end;
 			}
 		}

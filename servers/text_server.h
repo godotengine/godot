@@ -74,11 +74,12 @@ public:
 		GRAPHEME_IS_VALID = 1 << 0, // Glyph is valid.
 		GRAPHEME_IS_RTL = 1 << 1, // Glyph is right-to-left.
 		GRAPHEME_IS_VIRTUAL = 1 << 2, // Glyph is not part of source string (added by fit_to_width function, do not affect caret movement).
-		GRAPHEME_IS_SPACE = 1 << 3, // Is whitespace (for justification).
-		GRAPHEME_IS_BREAK_HARD = 1 << 4, // Is line break (mandatory break, e.g "\n")
-		GRAPHEME_IS_BREAK_SOFT = 1 << 5, // Is line break (optional break, e.g space)
-		GRAPHEME_IS_TAB = 1 << 6, // Is tab or vertical tab
-		GRAPHEME_IS_ELONGATION = 1 << 7 // Elongation (e.g kashida), glyph can be duplicated or truncated to fit line to width.
+		GRAPHEME_IS_SPACE = 1 << 3, // Is whitespace (for justification and word breaks).
+		GRAPHEME_IS_BREAK_HARD = 1 << 4, // Is line break (mandatory break, e.g. "\n").
+		GRAPHEME_IS_BREAK_SOFT = 1 << 5, // Is line break (optional break, e.g. space).
+		GRAPHEME_IS_TAB = 1 << 6, // Is tab or vertical tab.
+		GRAPHEME_IS_ELONGATION = 1 << 7, // Elongation (e.g. kashida), glyph can be duplicated or truncated to fit line to width.
+		GRAPHEME_IS_PUNCTUATION = 1 << 8 // Punctuation (can be used as word break, but not line break or justifiction).
 	};
 
 	enum Hinting {
@@ -104,7 +105,7 @@ public:
 
 		uint8_t count = 0; // Number of glyphs in the grapheme, set in the first glyph only.
 		uint8_t repeat = 1; // Draw multiple times in the row.
-		uint8_t flags = 0; // Grapheme flags (valid, rtl, virtual), set in the first glyph only.
+		uint16_t flags = 0; // Grapheme flags (valid, rtl, virtual), set in the first glyph only.
 
 		float x_off = 0.f; // Offset from the origin of the glyph on baseline.
 		float y_off = 0.f;
