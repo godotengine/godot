@@ -42,7 +42,6 @@ namespace TestDictionary {
 
 
 MainLoop *test() {
-
 	// test get_key_list.
 	{
 		Dictionary map;
@@ -58,7 +57,6 @@ MainLoop *test() {
         map.get_key_list(ptr);
         CHECK(keys.size() == 3);
 	}
-
 	// test get_key_at_index
 	{
 		Dictionary map;
@@ -71,7 +69,6 @@ MainLoop *test() {
         val = map.get_key_at_index(1);
         CHECK(int(val) == 4);
 	}
-
 	// test [] assignment
 	{
 		Dictionary map;
@@ -83,7 +80,6 @@ MainLoop *test() {
         map["World!"] = 4;
         CHECK(int(map["World"]) == 4);
 	}
-
 	// test getptr
 	{
 		Dictionary map;
@@ -93,7 +89,6 @@ MainLoop *test() {
         key = map.getptr(2);
         CHECK(key == nullptr);
 	}
-
 	// test get_valid
 	{
         Dictionary map;
@@ -101,7 +96,6 @@ MainLoop *test() {
         auto val = map.get_valid(1);
         CHECK(int(val) == 3);
 	}
-
 	// test get
 	{
 		Dictionary map;
@@ -109,7 +103,6 @@ MainLoop *test() {
         auto val = map.get(1, -1);
         CHECK(int(val) == 3);
 	}
-
 	// test size and empty and clear
 	{
         Dictionary map;
@@ -122,7 +115,6 @@ MainLoop *test() {
         CHECK(map.size() == 0);
         CHECK(map.empty());
 	}
-
 	// test has and has_all
 	{
 		Dictionary map;
@@ -135,7 +127,6 @@ MainLoop *test() {
         keys.push_back(2);
         CHECK(map.has_all(keys) == false);
 	}
-
 	// test == and !=
 	{
 		Dictionary map1;
@@ -145,9 +136,7 @@ MainLoop *test() {
         CHECK(map1 != map2);
         map2[1] = 3;
         CHECK(map1 == map2);
-		
 	}
-
 	// test keys and values
 	{
         Dictionary map;
@@ -159,10 +148,6 @@ MainLoop *test() {
         CHECK(int(keys[0]) == 1);
         CHECK(int(values[0]) == 3);
 	}
-    
-
-    
-
 	return nullptr;
 }
 } // namespace TestDictionary
