@@ -225,6 +225,8 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	String current_material_library;
 	String current_material;
 	String current_group;
+	uint32_t smooth_group = 0;
+	bool smoothing = true;
 
 	while (true) {
 		String l = f->get_line().strip_edges();
@@ -315,6 +317,10 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 					Vector3 vertex = vertices[vtx];
 					//if (weld_vertices)
 					//	vertex.snap(Vector3(weld_tolerance, weld_tolerance, weld_tolerance));
+					if (!smoothing) {
+						smooth_group++;
+					}
+					surf_tool->set_smooth_group(smooth_group);
 					surf_tool->add_vertex(vertex);
 				}
 
@@ -322,10 +328,15 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			}
 		} else if (l.begins_with("s ")) { //smoothing
 			String what = l.substr(2, l.length()).strip_edges();
+			bool do_smooth;
 			if (what == "off") {
-				surf_tool->add_smooth_group(false);
+				do_smooth = false;
 			} else {
-				surf_tool->add_smooth_group(true);
+				do_smooth = true;
+			}
+			if (do_smooth != smoothing) {
+				smooth_group++;
+				smoothing = do_smooth;
 			}
 		} else if (/*l.begins_with("g ") ||*/ l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { //commit group to mesh
 			//groups are too annoying
@@ -426,8 +437,15 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 	Node3D *scene = memnew(Node3D);
 
 	for (List<Ref<Mesh>>::Element *E = meshes.front(); E; E = E->next()) {
-		MeshInstance3D *mi = memnew(MeshInstance3D);
-		mi->set_mesh(E->get());
+		Ref<EditorSceneImporterMesh> mesh;
+		mesh.instance();
+		Ref<Mesh> m = E->get();
+		for (int i = 0; i < m->get_surface_count(); i++) {
+			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), m->surface_get_material(i));
+		}
+
+		EditorSceneImporterMeshNode *mi = memnew(EditorSceneImporterMeshNode);
+		mi->set_mesh(mesh);
 		mi->set_name(E->get()->get_name());
 		scene->add_child(mi);
 		mi->set_owner(scene);

@@ -533,6 +533,9 @@ void Mesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_2D_VERTICES);
 	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_DYNAMIC_UPDATE);
 	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_8_BONE_WEIGHTS);
+
+	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_NORMALIZED);
+	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_RELATIVE);
 }
 
 void Mesh::clear_cache() const {
@@ -1384,7 +1387,7 @@ bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const float *p_v
 
 struct ArrayMeshLightmapSurface {
 	Ref<Material> material;
-	Vector<SurfaceTool::Vertex> vertices;
+	LocalVector<SurfaceTool::Vertex> vertices;
 	Mesh::PrimitiveType primitive;
 	uint32_t format;
 };
@@ -1425,7 +1428,7 @@ Error ArrayMesh::lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cach
 
 		Array arrays = surface_get_arrays(i);
 		s.material = surface_get_material(i);
-		s.vertices = SurfaceTool::create_vertex_array_from_triangle_arrays(arrays);
+		SurfaceTool::create_vertex_array_from_triangle_arrays(arrays, s.vertices);
 
 		Vector<Vector3> rvertices = arrays[Mesh::ARRAY_VERTEX];
 		int vc = rvertices.size();
@@ -1612,9 +1615,6 @@ void ArrayMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_surfaces", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_surfaces", "_get_surfaces");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_shape_mode", PROPERTY_HINT_ENUM, "Normalized,Relative"), "set_blend_shape_mode", "get_blend_shape_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, ""), "set_custom_aabb", "get_custom_aabb");
-
-	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_NORMALIZED);
-	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_RELATIVE);
 }
 
 void ArrayMesh::reload_from_file() {

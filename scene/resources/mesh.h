@@ -53,7 +53,10 @@ public:
 		NO_INDEX_ARRAY = RenderingServer::NO_INDEX_ARRAY,
 		ARRAY_WEIGHTS_SIZE = RenderingServer::ARRAY_WEIGHTS_SIZE
 	};
-
+	enum BlendShapeMode {
+		BLEND_SHAPE_MODE_NORMALIZED = RS::BLEND_SHAPE_MODE_NORMALIZED,
+		BLEND_SHAPE_MODE_RELATIVE = RS::BLEND_SHAPE_MODE_RELATIVE,
+	};
 	enum ArrayType {
 		ARRAY_VERTEX = RenderingServer::ARRAY_VERTEX,
 		ARRAY_NORMAL = RenderingServer::ARRAY_NORMAL,
@@ -171,12 +174,6 @@ class ArrayMesh : public Mesh {
 	Array _get_surfaces() const;
 	void _set_surfaces(const Array &p_data);
 
-public:
-	enum BlendShapeMode {
-		BLEND_SHAPE_MODE_NORMALIZED = RS::BLEND_SHAPE_MODE_NORMALIZED,
-		BLEND_SHAPE_MODE_RELATIVE = RS::BLEND_SHAPE_MODE_RELATIVE,
-	};
-
 private:
 	struct Surface {
 		uint32_t format;
@@ -268,6 +265,6 @@ VARIANT_ENUM_CAST(Mesh::ArrayType);
 VARIANT_ENUM_CAST(Mesh::ArrayFormat);
 VARIANT_ENUM_CAST(Mesh::ArrayCustomFormat);
 VARIANT_ENUM_CAST(Mesh::PrimitiveType);
-VARIANT_ENUM_CAST(ArrayMesh::BlendShapeMode);
+VARIANT_ENUM_CAST(Mesh::BlendShapeMode);
 
 #endif
