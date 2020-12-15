@@ -233,9 +233,6 @@ public:
 	void set_network_traced_frames(int p_size);
 	int get_network_traced_frames() const;
 
-	void set_missing_snapshots_max_tolerance(int p_tolerance);
-	int get_missing_snapshots_max_tolerance() const;
-
 	void set_min_frames_delay(int p_val);
 	int get_min_frames_delay() const;
 
@@ -378,16 +375,9 @@ struct ServerController : public Controller {
 
 	uint32_t current_input_buffer_id = UINT32_MAX;
 	uint32_t ghost_input_count = 0;
-	uint32_t last_stream_paused_known_input_id = 0;
 	uint32_t last_sent_state_input_id = 0;
-	real_t optimal_snapshots_size = 0.0;
 	real_t client_tick_additional_speed = 0.0;
 	real_t additional_speed_notif_timer = 0.0;
-	real_t optimal_difference_amount = 2;
-	uint32_t missed_inputs = 0;
-	real_t optimal_input_count = 0.0;
-	real_t optimal_input_count_decreasing_timer = 0.0;
-	NetUtility::StatisticalRingBuffer<real_t> missing_inputs_stats;
 	NetUtility::StatisticalRingBuffer<real_t> network_watcher;
 	std::deque<FrameSnapshot> snapshots;
 	bool streaming_paused = false;

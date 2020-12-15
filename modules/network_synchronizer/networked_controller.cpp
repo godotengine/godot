@@ -481,7 +481,6 @@ ServerController::ServerController(
 		NetworkedController *p_node,
 		int p_traced_frames) :
 		Controller(p_node),
-		missing_inputs_stats(p_traced_frames, 0.0),
 		network_watcher(p_traced_frames, 0.0) {
 }
 
@@ -673,7 +672,6 @@ int ServerController::get_inputs_count() const {
 
 bool ServerController::fetch_next_input() {
 	bool is_new_input = true;
-	bool is_packet_missing = false;
 
 	if (unlikely(current_input_buffer_id == UINT32_MAX)) {
 		// As initial packet, anything is good.
@@ -683,12 +681,10 @@ bool ServerController::fetch_next_input() {
 			current_input_buffer_id = snapshots.front().id;
 			snapshots.pop_front();
 			// Start tracing the packets from this moment on.
-			missing_inputs_stats.reset(0.0);
+			network_watcher.reset(0.0);
 		} else {
 			is_new_input = false;
 		}
-		// Don't notify about missed packets until at least one packet has arrived.
-		is_packet_missing = false;
 	} else {
 		const uint32_t next_input_id = current_input_buffer_id + 1;
 
@@ -697,11 +693,13 @@ bool ServerController::fetch_next_input() {
 			if (snapshots.empty() == false &&
 					snapshots.front().id >= next_input_id) {
 				// A new input is arrived while the streaming is paused.
-				streaming_paused = (snapshots.front().buffer_size_bit - METADATA_SIZE) == 0;
+				const bool is_buffer_void = (snapshots.front().buffer_size_bit - METADATA_SIZE) == 0;
+				streaming_paused = is_buffer_void;
 				node->set_inputs_buffer(snapshots.front().inputs_buffer, METADATA_SIZE, snapshots.front().buffer_size_bit - METADATA_SIZE);
 				current_input_buffer_id = snapshots.front().id;
 				is_new_input = true;
 				snapshots.pop_front();
+				network_watcher.reset(0.0);
 			} else {
 				// No inputs, or we are not yet arrived to the client input,
 				// so just pretend the next input is void.
@@ -711,7 +709,6 @@ bool ServerController::fetch_next_input() {
 		} else if (unlikely(snapshots.empty() == true)) {
 			// The input buffer is empty; a packet is missing.
 			is_new_input = false;
-			is_packet_missing = true;
 			ghost_input_count += 1;
 			NET_DEBUG_PRINT("Input buffer is void, i'm using the previous one!");
 
@@ -724,7 +721,6 @@ bool ServerController::fetch_next_input() {
 				snapshots.pop_front();
 
 				ghost_input_count = 0;
-				is_packet_missing = false;
 			} else {
 				// The next packet is not here. This can happen when:
 				// - The packet is lost or not yet arrived.
@@ -761,7 +757,6 @@ bool ServerController::fetch_next_input() {
 				// For this reason we keep track the amount of missing packets
 				// using `ghost_input_count`.
 
-				is_packet_missing = true;
 				ghost_input_count += 1;
 
 				const int size = MIN(ghost_input_count, snapshots.size());
@@ -814,12 +809,6 @@ bool ServerController::fetch_next_input() {
 		}
 	}
 
-	if (is_packet_missing) {
-		missed_inputs += 1;
-	} else {
-		missed_inputs = 0;
-	}
-
 #ifdef DEBUG_ENABLED
 	if (snapshots.empty() == false && current_input_buffer_id != UINT32_MAX) {
 		// At this point is guaranteed that the current_input_buffer_id is never
@@ -836,13 +825,6 @@ void ServerController::notify_send_state() {
 	// the input streaming. So missing packets are just handled as void inputs.
 	if (node->get_inputs_buffer().size() == 0) {
 		streaming_paused = true;
-		const uint32_t lki = last_known_input();
-		if (lki == UINT32_MAX) {
-			// No data to establish the size.
-			optimal_difference_amount = 0;
-		} else {
-			optimal_difference_amount = lki - get_current_input_id();
-		}
 	}
 }
 
