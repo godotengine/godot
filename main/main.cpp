@@ -1121,6 +1121,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
+	// Only flush stdout in debug builds by default, as spamming `print()` will
+	// decrease performance if this is enabled.
+	GLOBAL_DEF("application/run/flush_stdout_on_print", false);
+	GLOBAL_DEF("application/run/flush_stdout_on_print.debug", true);
+
 	GLOBAL_DEF("logging/file_logging/enable_file_logging", false);
 	// Only file logging by default on desktop platforms as logs can't be
 	// accessed easily on mobile/Web platforms (if at all).
