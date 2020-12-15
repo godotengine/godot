@@ -207,7 +207,7 @@ private:
 
 		CanvasItem *parent_canvas_item;
 
-		NodePath focus_neighbour[4];
+		NodePath focus_neighbor[4];
 		NodePath focus_next;
 		NodePath focus_prev;
 
@@ -223,8 +223,8 @@ private:
 	// used internally
 	Control *_find_control_at_pos(CanvasItem *p_node, const Point2 &p_pos, const Transform2D &p_xform, Transform2D &r_inv_xform);
 
-	void _window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, float p_min, float &r_closest_dist, Control **r_closest);
-	Control *_get_focus_neighbour(Margin p_margin, int p_count = 0);
+	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, float p_min, float &r_closest_dist, Control **r_closest);
+	Control *_get_focus_neighbor(Margin p_margin, int p_count = 0);
 
 	void _set_anchor(Margin p_margin, float p_anchor);
 	void _set_position(const Point2 &p_point);
@@ -436,8 +436,8 @@ public:
 	Control *find_next_valid_focus() const;
 	Control *find_prev_valid_focus() const;
 
-	void set_focus_neighbour(Margin p_margin, const NodePath &p_neighbour);
-	NodePath get_focus_neighbour(Margin p_margin) const;
+	void set_focus_neighbor(Margin p_margin, const NodePath &p_neighbor);
+	NodePath get_focus_neighbor(Margin p_margin) const;
 
 	void set_focus_next(const NodePath &p_next);
 	NodePath get_focus_next() const;
