@@ -2743,16 +2743,13 @@ void EditorNode::_tool_menu_option(int p_idx) {
 		} break;
 		case TOOLS_CUSTOM: {
 			if (tool_menu->get_item_submenu(p_idx) == "") {
-				Array params = tool_menu->get_item_metadata(p_idx);
-
-				Object *handler = ObjectDB::get_instance(params[0]);
-				String callback = params[1];
-				Variant *ud = &params[2];
+				Callable callback = tool_menu->get_item_metadata(p_idx);
 				Callable::CallError ce;
+				Variant result;
+				callback.call(nullptr, 0, result, ce);
 
-				handler->call(callback, (const Variant **)&ud, 1, ce);
 				if (ce.error != Callable::CallError::CALL_OK) {
-					String err = Variant::get_call_error_text(handler, callback, (const Variant **)&ud, 1, ce);
+					String err = Variant::get_callable_error_text(callback, nullptr, 0, ce);
 					ERR_PRINT("Error calling function from tool menu: " + err);
 				}
 			} // else it's a submenu so don't do anything.
@@ -5086,17 +5083,10 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *
 	return drag_data;
 }
 
-void EditorNode::add_tool_menu_item(const String &p_name, Object *p_handler, const String &p_callback, const Variant &p_ud) {
-	ERR_FAIL_NULL(p_handler);
+void EditorNode::add_tool_menu_item(const String &p_name, const Callable &p_callback) {
 	int idx = tool_menu->get_item_count();
 	tool_menu->add_item(p_name, TOOLS_CUSTOM);
-
-	Array parameters;
-	parameters.push_back(p_handler->get_instance_id());
-	parameters.push_back(p_callback);
-	parameters.push_back(p_ud);
-
-	tool_menu->set_item_metadata(idx, parameters);
+	tool_menu->set_item_metadata(idx, p_callback);
 }
 
 void EditorNode::add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu) {

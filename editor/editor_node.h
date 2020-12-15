@@ -830,7 +830,7 @@ public:
 	Variant drag_resource(const Ref<Resource> &p_res, Control *p_from);
 	Variant drag_files_and_dirs(const Vector<String> &p_paths, Control *p_from);
 
-	void add_tool_menu_item(const String &p_name, Object *p_handler, const String &p_callback, const Variant &p_ud = Variant());
+	void add_tool_menu_item(const String &p_name, const Callable &p_callback);
 	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
 
