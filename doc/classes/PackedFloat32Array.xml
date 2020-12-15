@@ -36,15 +36,6 @@
 				Constructs a new [PackedFloat32Array]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
-		<method name="append">
-			<return type="bool">
-			</return>
-			<argument index="0" name="value" type="float">
-			</argument>
-			<description>
-				Appends an element at the end of the array (alias of [method push_back]).
-			</description>
-		</method>
 		<method name="append_array">
 			<return type="void">
 			</return>

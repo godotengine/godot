@@ -65,7 +65,6 @@ private:
 
 public:
 	bool push_back(T p_elem);
-	_FORCE_INLINE_ bool append(const T &p_elem) { return push_back(p_elem); } //alias
 
 	void remove(int p_index) { _cowdata.remove(p_index); }
 	void erase(const T &p_val) {

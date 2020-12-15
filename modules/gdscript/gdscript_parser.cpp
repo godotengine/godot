@@ -2886,7 +2886,7 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 				p_desc = (p_desc.length() == 0) ? doc_line : p_desc + line_join + doc_line;
 				break;
 			case TUTORIALS:
-				p_tutorials.append(Pair<String, String>(title, link));
+				p_tutorials.push_back(Pair<String, String>(title, link));
 				break;
 			case DONE:
 				return;

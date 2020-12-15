@@ -366,13 +366,13 @@ void TextureProgress::_notification(int p_what) {
 								}
 
 								float end = start + direction * val;
-								pts.append(start);
-								pts.append(end);
+								pts.push_back(start);
+								pts.push_back(end);
 								float from = MIN(start, end);
 								float to = MAX(start, end);
 								for (int i = 0; i < 12; i++) {
 									if (corners[i] > from && corners[i] < to) {
-										pts.append(corners[i]);
+										pts.push_back(corners[i]);
 									}
 								}
 								pts.sort();

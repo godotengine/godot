@@ -1025,7 +1025,7 @@ void TileSet::_decompose_convex_shape(Ref<Shape2D> p_shape) {
 		for (int i = 0; i < decomp.size(); i++) {
 			Ref<ConvexPolygonShape2D> _convex = memnew(ConvexPolygonShape2D);
 			_convex->set_points(decomp[i]);
-			sub_shapes.append(_convex);
+			sub_shapes.push_back(_convex);
 		}
 		convex->set_meta("decomposed", sub_shapes);
 	} else {

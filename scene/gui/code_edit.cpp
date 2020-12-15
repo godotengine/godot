@@ -151,7 +151,7 @@ Array CodeEdit::get_breakpointed_lines() const {
 	Array ret;
 	for (int i = 0; i < get_line_count(); i++) {
 		if (is_line_breakpointed(i)) {
-			ret.append(i);
+			ret.push_back(i);
 		}
 	}
 	return ret;
@@ -180,7 +180,7 @@ Array CodeEdit::get_bookmarked_lines() const {
 	Array ret;
 	for (int i = 0; i < get_line_count(); i++) {
 		if (is_line_bookmarked(i)) {
-			ret.append(i);
+			ret.push_back(i);
 		}
 	}
 	return ret;
@@ -209,7 +209,7 @@ Array CodeEdit::get_executing_lines() const {
 	Array ret;
 	for (int i = 0; i < get_line_count(); i++) {
 		if (is_line_executing(i)) {
-			ret.append(i);
+			ret.push_back(i);
 		}
 	}
 	return ret;

@@ -2026,7 +2026,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 		DocData::TutorialDoc td;
 		td.title = p_class->doc_tutorials[i].first;
 		td.link = p_class->doc_tutorials[i].second;
-		p_script->doc_tutorials.append(td);
+		p_script->doc_tutorials.push_back(td);
 	}
 #endif
 

@@ -412,7 +412,7 @@ void GDScript::_add_doc(const DocData::ClassDoc &p_inner_class) {
 				break;
 			}
 		}
-		docs.append(p_inner_class);
+		docs.push_back(p_inner_class);
 	}
 }
 
@@ -587,7 +587,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
 	if (!p_recursive_call) {
 		base_caches.clear();
 	}
-	base_caches.append(this);
+	base_caches.push_back(this);
 
 	bool changed = false;
 

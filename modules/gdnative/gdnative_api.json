@@ -349,14 +349,6 @@
         ]
       },
       {
-        "name": "godot_array_append",
-        "return_type": "void",
-        "arguments": [
-          ["godot_array *", "p_self"],
-          ["const godot_variant *", "p_value"]
-        ]
-      },
-      {
         "name": "godot_array_clear",
         "return_type": "void",
         "arguments": [
@@ -1654,14 +1646,6 @@
         ]
       },
       {
-        "name": "godot_packed_byte_array_append",
-        "return_type": "void",
-        "arguments": [
-          ["godot_packed_byte_array *", "p_self"],
-          ["const uint8_t", "p_data"]
-        ]
-      },
-      {
         "name": "godot_packed_byte_array_append_array",
         "return_type": "void",
         "arguments": [
@@ -1797,14 +1781,6 @@
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_packed_int32_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_packed_int32_array_append",
-        "return_type": "void",
-        "arguments": [
-          ["godot_packed_int32_array *", "p_self"],
-          ["const int32_t", "p_data"]
         ]
       },
       {
@@ -1946,14 +1922,6 @@
         ]
       },
       {
-        "name": "godot_packed_int64_array_append",
-        "return_type": "void",
-        "arguments": [
-          ["godot_packed_int64_array *", "p_self"],
-          ["const int64_t", "p_data"]
-        ]
-      },
-      {
         "name": "godot_packed_int64_array_append_array",
         "return_type": "void",
         "arguments": [
@@ -2089,14 +2057,6 @@
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_packed_float32_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_packed_float32_array_append",
-        "return_type": "void",
-        "arguments": [
-          ["godot_packed_float32_array *", "p_self"],
-          ["const float", "p_data"]
         ]
       },
       {
@@ -2238,14 +2198,6 @@
         ]
       },
       {
-        "name": "godot_packed_float64_array_append",
-        "return_type": "void",
-        "arguments": [
-          ["godot_packed_float64_array *", "p_self"],
-          ["const double", "p_data"]
-        ]
-      },
-      {
         "name": "godot_packed_float64_array_append_array",
         "return_type": "void",
         "arguments": [
@@ -2381,14 +2333,6 @@
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_packed_string_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_packed_string_array_append",
-        "return_type": "void",
-        "arguments": [
-          ["godot_packed_string_array *", "p_self"],
-          ["const godot_string *", "p_data"]
         ]
       },
       {
@@ -2530,14 +2474,6 @@
         ]
       },
       {
-        "name": "godot_packed_vector2_array_append",
-        "return_type": "void",
-        "arguments": [
-          ["godot_packed_vector2_array *", "p_self"],
-          ["const godot_vector2 *", "p_data"]
-        ]
-      },
-      {
         "name": "godot_packed_vector2_array_append_array",
         "return_type": "void",
         "arguments": [
@@ -2673,14 +2609,6 @@
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_packed_vector2i_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_packed_vector2i_array_append",
-        "return_type": "void",
-        "arguments": [
-          ["godot_packed_vector2i_array *", "p_self"],
-          ["const godot_vector2i *", "p_data"]
         ]
       },
       {
@@ -2822,14 +2750,6 @@
         ]
       },
       {
-        "name": "godot_packed_vector3_array_append",
-        "return_type": "void",
-        "arguments": [
-          ["godot_packed_vector3_array *", "p_self"],
-          ["const godot_vector3 *", "p_data"]
-        ]
-      },
-      {
         "name": "godot_packed_vector3_array_append_array",
         "return_type": "void",
         "arguments": [
@@ -2965,14 +2885,6 @@
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_packed_color_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_packed_color_array_append",
-        "return_type": "void",
-        "arguments": [
-          ["godot_packed_color_array *", "p_self"],
-          ["const godot_color *", "p_data"]
         ]
       },
       {
@@ -7950,14 +7862,6 @@
           "return_type": "godot_bool",
           "arguments": [
             ["const godot_packed_glyph_array *", "p_self"]
-          ]
-        },
-        {
-          "name": "godot_packed_glyph_array_append",
-          "return_type": "void",
-          "arguments": [
-            ["godot_packed_glyph_array *", "p_self"],
-            ["const godot_glyph *", "p_data"]
           ]
         },
         {

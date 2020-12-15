@@ -64,7 +64,7 @@ Array Script::_get_script_property_list() {
 	List<PropertyInfo> list;
 	get_script_property_list(&list);
 	for (List<PropertyInfo>::Element *E = list.front(); E; E = E->next()) {
-		ret.append(E->get().operator Dictionary());
+		ret.push_back(E->get().operator Dictionary());
 	}
 	return ret;
 }
@@ -74,7 +74,7 @@ Array Script::_get_script_method_list() {
 	List<MethodInfo> list;
 	get_script_method_list(&list);
 	for (List<MethodInfo>::Element *E = list.front(); E; E = E->next()) {
-		ret.append(E->get().operator Dictionary());
+		ret.push_back(E->get().operator Dictionary());
 	}
 	return ret;
 }
@@ -84,7 +84,7 @@ Array Script::_get_script_signal_list() {
 	List<MethodInfo> list;
 	get_script_signal_list(&list);
 	for (List<MethodInfo>::Element *E = list.front(); E; E = E->next()) {
-		ret.append(E->get().operator Dictionary());
+		ret.push_back(E->get().operator Dictionary());
 	}
 	return ret;
 }

@@ -675,7 +675,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 	class_api["path"] = path;
 	Array extends_class;
 	for (int i = 0; i < p_class->extends.size(); i++) {
-		extends_class.append(String(p_class->extends[i]));
+		extends_class.push_back(String(p_class->extends[i]));
 	}
 	class_api["extends_class"] = extends_class;
 	class_api["extends_file"] = String(p_class->extends_path);
@@ -756,7 +756,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 				api["name"] = m.signal->identifier->name;
 				Array pars;
 				for (int j = 0; j < m.signal->parameters.size(); j++) {
-					pars.append(String(m.signal->parameters[i]->identifier->name));
+					pars.push_back(String(m.signal->parameters[i]->identifier->name));
 				}
 				api["arguments"] = pars;
 				if (const lsp::DocumentSymbol *symbol = get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m.signal->start_line))) {
@@ -767,9 +767,9 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 			} break;
 			case ClassNode::Member::FUNCTION: {
 				if (m.function->is_static) {
-					static_functions.append(dump_function_api(m.function));
+					static_functions.push_back(dump_function_api(m.function));
 				} else {
-					methods.append(dump_function_api(m.function));
+					methods.push_back(dump_function_api(m.function));
 				}
 			} break;
 			case ClassNode::Member::UNDEFINED:

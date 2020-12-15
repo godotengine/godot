@@ -191,7 +191,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 	for (int i = 0; i < r_filenames.size(); i++) {
 		String scene_name = r_filenames[i];
 		if (!scene_name_to_set_index.has(scene_name)) {
-			index_sets.append(Set<int>());
+			index_sets.push_back(Set<int>());
 			scene_name_to_set_index.insert(r_filenames[i], index_sets.size() - 1);
 		}
 		index_sets.write[scene_name_to_set_index[scene_name]].insert(i);
@@ -299,8 +299,8 @@ void EditorNode::_update_scene_tabs() {
 	Vector<String> disambiguated_scene_names;
 	Vector<String> full_path_names;
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-		disambiguated_scene_names.append(editor_data.get_scene_title(i));
-		full_path_names.append(editor_data.get_scene_path(i));
+		disambiguated_scene_names.push_back(editor_data.get_scene_title(i));
+		full_path_names.push_back(editor_data.get_scene_path(i));
 	}
 
 	disambiguate_filenames(full_path_names, disambiguated_scene_names);

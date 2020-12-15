@@ -48,7 +48,7 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Str
 
 		// Add user's extracted translatable messages.
 		for (int i = 0; i < ids.size(); i++) {
-			r_ids->append(ids[i]);
+			r_ids->push_back(ids[i]);
 		}
 
 		// Add user's collected translatable messages with context or plurals.
@@ -60,7 +60,7 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Str
 			id_ctx_plural.push_back(arr[0]);
 			id_ctx_plural.push_back(arr[1]);
 			id_ctx_plural.push_back(arr[2]);
-			r_ids_ctx_plural->append(id_ctx_plural);
+			r_ids_ctx_plural->push_back(id_ctx_plural);
 		}
 		return OK;
 	} else {

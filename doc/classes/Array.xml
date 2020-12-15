@@ -142,15 +142,6 @@
 				Constructs an array from a [PackedVector3Array].
 			</description>
 		</method>
-		<method name="append">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
-			<description>
-				Appends an element at the end of the array (alias of [method push_back]).
-			</description>
-		</method>
 		<method name="append_array">
 			<return type="void">
 			</return>

@@ -770,12 +770,6 @@ godot_glyph GDAPI *godot_packed_glyph_array_ptrw(godot_packed_glyph_array *p_sel
 	return (godot_glyph *)self->ptrw();
 }
 
-void GDAPI godot_packed_glyph_array_append(godot_packed_glyph_array *p_self, const godot_glyph *p_data) {
-	Vector<TextServer::Glyph> *self = (Vector<TextServer::Glyph> *)p_self;
-	TextServer::Glyph &s = *(TextServer::Glyph *)p_data;
-	self->push_back(s);
-}
-
 void GDAPI godot_packed_glyph_array_append_array(godot_packed_glyph_array *p_self, const godot_packed_glyph_array *p_array) {
 	Vector<TextServer::Glyph> *self = (Vector<TextServer::Glyph> *)p_self;
 	Vector<TextServer::Glyph> *array = (Vector<TextServer::Glyph> *)p_array;
