@@ -22,6 +22,7 @@
 		[/codeblock]
 		In the example above, the file will be saved in the user data folder as specified in the [url=https://docs.godotengine.org/en/3.2/tutorials/io/data_paths.html]Data paths[/url] documentation.
 		[b]Note:[/b] To access project resources once exported, it is recommended to use [ResourceLoader] instead of the [File] API, as some files are converted to engine-specific formats and their original source files might not be present in the exported PCK package.
+		[b]Note:[/b] Files are automatically closed only if the process exits "normally" (such as by clicking the window manager's close button or pressing [b]Alt + F4[/b]). If you stop the project execution by pressing [b]F8[/b] while the project is running, the file won't be closed as the game process will be killed. You can work around this by calling [method flush] at regular intervals.
 	</description>
 	<tutorials>
 		<link title="File system">https://docs.godotengine.org/en/3.2/getting_started/step_by_step/filesystem.html</link>
@@ -32,7 +33,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Closes the currently opened file.
+				Closes the currently opened file and prevents subsequent read/write operations. Use [method flush] to persist the data to disk without closing the file.
 			</description>
 		</method>
 		<method name="eof_reached" qualifiers="const">
@@ -51,6 +52,14 @@
 			<description>
 				Returns [code]true[/code] if the file exists in the given path.
 				[b]Note:[/b] Many resources types are imported (e.g. textures or sound files), and their source asset will not be included in the exported game, as only the imported version is used. See [method ResourceLoader.exists] for an alternative approach that takes resource remapping into account.
+			</description>
+		</method>
+		<method name="flush">
+			<return type="void">
+			</return>
+			<description>
+				Writes the file's buffer to disk. Flushing is automatically performed when the file is closed. This means you don't need to call [method flush] manually before closing a file using [method close]. Still, calling [method flush] can be used to ensure the data is safe even if the project crashes instead of being closed gracefully.
+				[b]Note:[/b] Only call [method flush] when you actually need it. Otherwise, it will decrease performance due to constant disk writes.
 			</description>
 		</method>
 		<method name="get_16" qualifiers="const">
