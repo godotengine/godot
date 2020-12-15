@@ -110,7 +110,7 @@ TEST_CASE("[Array] Has and Count") {
 	arr.push_back(1);
 	arr.push_back(1);
 	CHECK(arr.has(1));
-	CHECK(arr.has(2) == false);
+	CHECK(!arr.has(2));
 	CHECK(arr.count(1) == 2);
 	CHECK(arr.count(2) == 0);
 }
