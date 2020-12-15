@@ -136,7 +136,7 @@ String realpath(const String &p_path) {
 }
 
 String join(const String &p_a, const String &p_b) {
-	if (p_a.empty()) {
+	if (p_a.is_empty()) {
 		return p_b;
 	}
 
@@ -165,7 +165,7 @@ String relative_to_impl(const String &p_path, const String &p_relative_to) {
 	} else {
 		String base_dir = p_relative_to.get_base_dir();
 
-		if (base_dir.length() <= 2 && (base_dir.empty() || base_dir.ends_with(":"))) {
+		if (base_dir.length() <= 2 && (base_dir.is_empty() || base_dir.ends_with(":"))) {
 			return p_path;
 		}
 

@@ -261,7 +261,7 @@ void BroadPhase2DHashGrid::_exit_grid(Element *p_elem, const Rect2 &p_rect, bool
 				}
 			}
 
-			if (pb->object_set.empty() && pb->static_object_set.empty()) {
+			if (pb->object_set.is_empty() && pb->static_object_set.is_empty()) {
 				if (hash_table[idx] == pb) {
 					hash_table[idx] = pb->next;
 				} else {

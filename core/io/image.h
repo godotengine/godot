@@ -285,7 +285,7 @@ public:
 	/**
 	 * returns true when the image is empty (0,0) in size
 	 */
-	bool empty() const;
+	bool is_empty() const;
 
 	Vector<uint8_t> get_data() const;
 

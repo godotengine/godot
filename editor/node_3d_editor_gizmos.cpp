@@ -198,7 +198,7 @@ void EditorNode3DGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard,
 }
 
 void EditorNode3DGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard, const Color &p_modulate) {
-	if (p_lines.empty()) {
+	if (p_lines.is_empty()) {
 		return;
 	}
 
@@ -4205,7 +4205,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 	}
 
-	if (faces.empty()) {
+	if (faces.is_empty()) {
 		return;
 	}
 
@@ -4521,7 +4521,7 @@ Joint3DGizmoPlugin::Joint3DGizmoPlugin() {
 }
 
 void Joint3DGizmoPlugin::incremental_update_gizmos() {
-	if (!current_gizmos.empty()) {
+	if (!current_gizmos.is_empty()) {
 		update_idx++;
 		update_idx = update_idx % current_gizmos.size();
 		redraw(current_gizmos[update_idx]);

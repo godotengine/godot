@@ -47,7 +47,7 @@
 
 static HashMap<StringName, Variant::Type> builtin_types;
 Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
-	if (builtin_types.empty()) {
+	if (builtin_types.is_empty()) {
 		builtin_types["bool"] = Variant::BOOL;
 		builtin_types["int"] = Variant::INT;
 		builtin_types["float"] = Variant::FLOAT;
@@ -177,16 +177,16 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const String &p_symbol1, const String &p_symbol2, const String &p_symbol3, const String &p_symbol4) {
 	ERR_FAIL_COND(p_source == nullptr);
 	Vector<String> symbols;
-	if (!p_symbol1.empty()) {
+	if (!p_symbol1.is_empty()) {
 		symbols.push_back(p_symbol1);
 	}
-	if (!p_symbol2.empty()) {
+	if (!p_symbol2.is_empty()) {
 		symbols.push_back(p_symbol2);
 	}
-	if (!p_symbol3.empty()) {
+	if (!p_symbol3.is_empty()) {
 		symbols.push_back(p_symbol3);
 	}
-	if (!p_symbol4.empty()) {
+	if (!p_symbol4.is_empty()) {
 		symbols.push_back(p_symbol4);
 	}
 	push_warning(p_source, p_code, symbols);
@@ -284,7 +284,7 @@ void GDScriptParser::pop_completion_call() {
 	if (!for_completion) {
 		return;
 	}
-	ERR_FAIL_COND_MSG(completion_call_stack.empty(), "Trying to pop empty completion call stack");
+	ERR_FAIL_COND_MSG(completion_call_stack.is_empty(), "Trying to pop empty completion call stack");
 	completion_call_stack.pop_back();
 }
 
@@ -292,7 +292,7 @@ void GDScriptParser::set_last_completion_call_arg(int p_argument) {
 	if (!for_completion || passed_cursor) {
 		return;
 	}
-	ERR_FAIL_COND_MSG(completion_call_stack.empty(), "Trying to set argument on empty completion call stack");
+	ERR_FAIL_COND_MSG(completion_call_stack.is_empty(), "Trying to set argument on empty completion call stack");
 	completion_call_stack.back()->get().argument = p_argument;
 }
 
@@ -358,7 +358,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 	}
 #endif
 
-	if (errors.empty()) {
+	if (errors.is_empty()) {
 		return OK;
 	} else {
 		return ERR_PARSE_ERROR;
@@ -369,7 +369,7 @@ GDScriptTokenizer::Token GDScriptParser::advance() {
 	if (current.type == GDScriptTokenizer::Token::TK_EOF) {
 		ERR_FAIL_COND_V_MSG(current.type == GDScriptTokenizer::Token::TK_EOF, current, "GDScript parser bug: Trying to advance past the end of stream.");
 	}
-	if (for_completion && !completion_call_stack.empty()) {
+	if (for_completion && !completion_call_stack.is_empty()) {
 		if (completion_call.call == nullptr && tokenizer.is_past_cursor()) {
 			completion_call = completion_call_stack.back()->get();
 			passed_cursor = true;
@@ -500,7 +500,7 @@ void GDScriptParser::parse_program() {
 		// Order here doesn't matter, but there should be only one of each at most.
 		switch (current.type) {
 			case GDScriptTokenizer::Token::CLASS_NAME:
-				if (!annotation_stack.empty()) {
+				if (!annotation_stack.is_empty()) {
 					push_error(R"("class_name" should be used before annotations.)");
 				}
 				advance();
@@ -511,7 +511,7 @@ void GDScriptParser::parse_program() {
 				}
 				break;
 			case GDScriptTokenizer::Token::EXTENDS:
-				if (!annotation_stack.empty()) {
+				if (!annotation_stack.is_empty()) {
 					push_error(R"("extends" should be used before annotations.)");
 				}
 				advance();
@@ -675,7 +675,7 @@ void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)()
 #endif // TOOLS_ENABLED
 
 	// Consume annotations.
-	while (!annotation_stack.empty()) {
+	while (!annotation_stack.is_empty()) {
 		AnnotationNode *last_annotation = annotation_stack.back()->get();
 		if (last_annotation->applies_to(p_target)) {
 			last_annotation->apply(this, member);
@@ -1698,7 +1698,7 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		branch->patterns.push_back(pattern);
 	} while (match(GDScriptTokenizer::Token::COMMA));
 
-	if (branch->patterns.empty()) {
+	if (branch->patterns.is_empty()) {
 		push_error(R"(No pattern found for "match" branch.)");
 	}
 
@@ -2751,7 +2751,7 @@ String GDScriptParser::get_doc_comment(int p_line, bool p_single_line) {
 		}
 		String line_join = (in_codeblock) ? "\n" : " ";
 
-		doc = (doc.empty()) ? doc_line : doc + line_join + doc_line;
+		doc = (doc.is_empty()) ? doc_line : doc + line_join + doc_line;
 		line++;
 	}
 
@@ -2845,7 +2845,7 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 
 			mode = TUTORIALS;
 			in_codeblock = false;
-		} else if (striped_line.empty()) {
+		} else if (striped_line.is_empty()) {
 			continue;
 		} else {
 			// Tutorial docs are single line, we need a @tag after it.
@@ -3280,11 +3280,11 @@ String GDScriptParser::DataType::to_string() const {
 				return script_type->get_class_name().operator String();
 			}
 			String name = script_type->get_name();
-			if (!name.empty()) {
+			if (!name.is_empty()) {
 				return name;
 			}
 			name = script_path;
-			if (!name.empty()) {
+			if (!name.is_empty()) {
 				return name;
 			}
 			return native_type.operator String();
@@ -3329,7 +3329,7 @@ void GDScriptParser::TreePrinter::decrease_indent() {
 }
 
 void GDScriptParser::TreePrinter::push_line(const String &p_line) {
-	if (!p_line.empty()) {
+	if (!p_line.is_empty()) {
 		push_text(p_line);
 	}
 	printed += "\n";
@@ -3538,7 +3538,7 @@ void GDScriptParser::TreePrinter::print_class(ClassNode *p_class) {
 	if (p_class->extends_used) {
 		bool first = true;
 		push_text(" Extends ");
-		if (!p_class->extends_path.empty()) {
+		if (!p_class->extends_path.is_empty()) {
 			push_text(vformat(R"("%s")", p_class->extends_path));
 			first = false;
 		}
@@ -4000,7 +4000,7 @@ void GDScriptParser::TreePrinter::print_ternary_op(TernaryOpNode *p_ternary_op) 
 }
 
 void GDScriptParser::TreePrinter::print_type(TypeNode *p_type) {
-	if (p_type->type_chain.empty()) {
+	if (p_type->type_chain.is_empty()) {
 		push_text("Void");
 	} else {
 		for (int i = 0; i < p_type->type_chain.size(); i++) {
@@ -4120,7 +4120,7 @@ void GDScriptParser::TreePrinter::print_tree(const GDScriptParser &p_parser) {
 	if (p_parser.is_tool()) {
 		push_line("@tool");
 	}
-	if (!p_parser.get_tree()->icon_path.empty()) {
+	if (!p_parser.get_tree()->icon_path.is_empty()) {
 		push_text(R"(@icon (")");
 		push_text(p_parser.get_tree()->icon_path);
 		push_line("\")");

@@ -903,7 +903,7 @@ public:
 	void add_plugin(EditorPlugin *p_plugin);
 	void remove_plugin(EditorPlugin *p_plugin);
 	void clear();
-	bool empty();
+	bool is_empty();
 
 	EditorPluginList();
 	~EditorPluginList();

@@ -416,7 +416,7 @@ void AnimationNodeBlendTreeEditor::_delete_nodes_request() {
 		}
 	}
 
-	if (to_erase.empty()) {
+	if (to_erase.is_empty()) {
 		return;
 	}
 
@@ -537,7 +537,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 					default: {
 					} break;
 				}
-				if (!track_type_name.empty()) {
+				if (!track_type_name.is_empty()) {
 					types[track_path].insert(track_type_name);
 				}
 			}

@@ -97,7 +97,7 @@ void TextLine::_bind_methods() {
 
 void TextLine::_shape() {
 	if (dirty) {
-		if (!tab_stops.empty()) {
+		if (!tab_stops.is_empty()) {
 			TS->shaped_text_tab_align(rid, tab_stops);
 		}
 		if (align == HALIGN_FILL) {

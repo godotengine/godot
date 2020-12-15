@@ -70,7 +70,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		is_eof = f->eof_reached();
 
 		// If we reached last line and it's not a content line, break, otherwise let processing that last loop
-		if (is_eof && l.empty()) {
+		if (is_eof && l.is_empty()) {
 			if (status == STATUS_READING_ID || status == STATUS_READING_CONTEXT || (status == STATUS_READING_PLURAL && plural_index != plural_forms - 1)) {
 				memdelete(f);
 				ERR_FAIL_V_MSG(RES(), "Unexpected EOF while reading PO file at: " + path + ":" + itos(line));

@@ -1008,7 +1008,7 @@ void ConnectionsDock::update_tree() {
 								break;
 							}
 						}
-						if (!F->get().inherits.empty()) {
+						if (!F->get().inherits.is_empty()) {
 							F = dd->class_list.find(F->get().inherits);
 						} else {
 							break;

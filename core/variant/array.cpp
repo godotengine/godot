@@ -86,8 +86,8 @@ int Array::size() const {
 	return _p->array.size();
 }
 
-bool Array::empty() const {
-	return _p->array.empty();
+bool Array::is_empty() const {
+	return _p->array.is_empty();
 }
 
 void Array::clear() {
@@ -318,7 +318,7 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // l
 
 	ERR_FAIL_COND_V_MSG(p_step == 0, new_arr, "Array slice step size cannot be zero.");
 
-	if (empty()) { // Don't try to slice empty arrays.
+	if (is_empty()) { // Don't try to slice empty arrays.
 		return new_arr;
 	}
 	if (p_step > 0) {
@@ -459,7 +459,7 @@ void Array::push_front(const Variant &p_value) {
 }
 
 Variant Array::pop_back() {
-	if (!_p->array.empty()) {
+	if (!_p->array.is_empty()) {
 		int n = _p->array.size() - 1;
 		Variant ret = _p->array.get(n);
 		_p->array.resize(n);
@@ -469,7 +469,7 @@ Variant Array::pop_back() {
 }
 
 Variant Array::pop_front() {
-	if (!_p->array.empty()) {
+	if (!_p->array.is_empty()) {
 		Variant ret = _p->array.get(0);
 		_p->array.remove(0);
 		return ret;

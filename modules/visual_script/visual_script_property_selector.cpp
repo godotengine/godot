@@ -358,7 +358,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 			continue;
 		}
 
-		bool in_modifier = p_modifiers.empty();
+		bool in_modifier = p_modifiers.is_empty();
 		for (Set<String>::Element *F = p_modifiers.front(); F && in_modifier; F = F->next()) {
 			if (E->get().findn(F->get()) != -1) {
 				in_modifier = true;

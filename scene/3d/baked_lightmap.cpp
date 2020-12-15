@@ -678,7 +678,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 			}
 			TypedArray<Image> images = RS::get_singleton()->bake_render_uv2(mf.mesh->get_rid(), overrides, lightmap_size);
 
-			ERR_FAIL_COND_V(images.empty(), BAKE_ERROR_CANT_CREATE_IMAGE);
+			ERR_FAIL_COND_V(images.is_empty(), BAKE_ERROR_CANT_CREATE_IMAGE);
 
 			Ref<Image> albedo = images[RS::BAKE_CHANNEL_ALBEDO_ALPHA];
 			Ref<Image> orm = images[RS::BAKE_CHANNEL_ORM];

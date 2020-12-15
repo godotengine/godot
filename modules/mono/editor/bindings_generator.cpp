@@ -181,7 +181,7 @@ static String snake_to_camel_case(const String &p_identifier, bool p_input_is_up
 String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype) {
 	// Based on the version in EditorHelp
 
-	if (p_bbcode.empty()) {
+	if (p_bbcode.is_empty()) {
 		return String();
 	}
 
@@ -644,7 +644,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 }
 
 int BindingsGenerator::_determine_enum_prefix(const EnumInterface &p_ienum) {
-	CRASH_COND(p_ienum.constants.empty());
+	CRASH_COND(p_ienum.constants.is_empty());
 
 	const ConstantInterface &front_iconstant = p_ienum.constants.front()->get();
 	Vector<String> front_parts = front_iconstant.name.split("_", /* p_allow_empty: */ true);
@@ -819,7 +819,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 		p_output.append(";");
 	}
 
-	if (!global_constants.empty()) {
+	if (!global_constants.is_empty()) {
 		p_output.append("\n");
 	}
 
@@ -830,7 +830,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 	for (List<EnumInterface>::Element *E = global_enums.front(); E; E = E->next()) {
 		const EnumInterface &ienum = E->get();
 
-		CRASH_COND(ienum.constants.empty());
+		CRASH_COND(ienum.constants.is_empty());
 
 		String enum_proxy_name = ienum.cname.operator String();
 
@@ -1283,7 +1283,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	for (const List<EnumInterface>::Element *E = itype.enums.front(); E; E = E->next()) {
 		const EnumInterface &ienum = E->get();
 
-		ERR_FAIL_COND_V(ienum.constants.empty(), ERR_BUG);
+		ERR_FAIL_COND_V(ienum.constants.is_empty(), ERR_BUG);
 
 		output.append(MEMBER_BEGIN "public enum ");
 		output.append(ienum.cname.operator String());
@@ -1661,14 +1661,14 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			cs_in_statements += def_arg;
 			cs_in_statements += ";\n" INDENT3;
 
-			icall_params += arg_type->cs_in.empty() ? arg_in : sformat(arg_type->cs_in, arg_in);
+			icall_params += arg_type->cs_in.is_empty() ? arg_in : sformat(arg_type->cs_in, arg_in);
 
 			// Apparently the name attribute must not include the @
 			String param_tag_name = iarg.name.begins_with("@") ? iarg.name.substr(1, iarg.name.length()) : iarg.name;
 
 			default_args_doc.append(MEMBER_BEGIN "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is " + def_arg + "</param>");
 		} else {
-			icall_params += arg_type->cs_in.empty() ? iarg.name : sformat(arg_type->cs_in, iarg.name);
+			icall_params += arg_type->cs_in.is_empty() ? iarg.name : sformat(arg_type->cs_in, iarg.name);
 		}
 	}
 
@@ -1714,7 +1714,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		}
 
 		if (p_imethod.is_deprecated) {
-			if (p_imethod.deprecation_message.empty()) {
+			if (p_imethod.deprecation_message.is_empty()) {
 				WARN_PRINT("An empty deprecation message is discouraged. Method: '" + p_imethod.proxy_name + "'.");
 			}
 
@@ -1782,7 +1782,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		if (return_type->cname == name_cache.type_void) {
 			p_output.append(im_call + "(" + icall_params + ");\n");
-		} else if (return_type->cs_out.empty()) {
+		} else if (return_type->cs_out.is_empty()) {
 			p_output.append("return " + im_call + "(" + icall_params + ");\n");
 		} else {
 			p_output.append(sformat(return_type->cs_out, im_call, icall_params, return_type->cs_type, return_type->im_type_out));
@@ -1839,7 +1839,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		}
 
 		if (p_isignal.is_deprecated) {
-			if (p_isignal.deprecation_message.empty()) {
+			if (p_isignal.deprecation_message.is_empty()) {
 				WARN_PRINT("An empty deprecation message is discouraged. Signal: '" + p_isignal.proxy_name + "'.");
 			}
 
@@ -2263,7 +2263,7 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 		}
 
 		if (!ret_void) {
-			if (return_type->c_out.empty()) {
+			if (return_type->c_out.is_empty()) {
 				p_output.append("\treturn " C_LOCAL_RET ";\n");
 			} else if (return_type->ret_as_byref_arg) {
 				p_output.append(sformat(return_type->c_out, return_type->c_type_out, C_LOCAL_RET, return_type->name, "arg_ret"));
@@ -2585,7 +2585,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			int argc = method_info.arguments.size();
 
-			if (method_info.name.empty()) {
+			if (method_info.name.is_empty()) {
 				continue;
 			}
 

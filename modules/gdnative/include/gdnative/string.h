@@ -256,7 +256,7 @@ godot_string GDAPI godot_string_sha1_text(const godot_string *p_self);
 godot_packed_byte_array GDAPI godot_string_sha256_buffer(const godot_string *p_self);
 godot_string GDAPI godot_string_sha256_text(const godot_string *p_self);
 
-godot_bool godot_string_empty(const godot_string *p_self);
+godot_bool godot_string_is_empty(const godot_string *p_self);
 
 // path functions
 godot_string GDAPI godot_string_get_base_dir(const godot_string *p_self);

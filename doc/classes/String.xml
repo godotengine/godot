@@ -135,7 +135,7 @@
 				Returns a copy of the string with indentation (leading tabs and spaces) removed.
 			</description>
 		</method>
-		<method name="empty">
+		<method name="is_empty">
 			<return type="bool">
 			</return>
 			<description>

@@ -176,8 +176,8 @@ bool Joint2D::get_exclude_nodes_from_collision() const {
 String Joint2D::get_configuration_warning() const {
 	String node_warning = Node2D::get_configuration_warning();
 
-	if (!warning.empty()) {
-		if (!node_warning.empty()) {
+	if (!warning.is_empty()) {
+		if (!node_warning.is_empty()) {
 			node_warning += "\n\n";
 		}
 		node_warning += warning;

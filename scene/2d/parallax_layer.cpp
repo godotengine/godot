@@ -139,7 +139,7 @@ String ParallaxLayer::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	if (!Object::cast_to<ParallaxBackground>(get_parent())) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("ParallaxLayer node only works when set as child of a ParallaxBackground node.");

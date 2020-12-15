@@ -717,7 +717,7 @@ String NativeScript::get_property_documentation(const StringName &p_path) const 
 }
 
 Variant NativeScript::_new(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	if (lib_path.empty() || class_name.empty() || library.is_null()) {
+	if (lib_path.is_empty() || class_name.is_empty() || library.is_null()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return Variant();
 	}
@@ -1800,7 +1800,7 @@ bool NativeScriptLanguage::handles_global_class_type(const String &p_type) const
 }
 
 String NativeScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
-	if (!p_path.empty()) {
+	if (!p_path.is_empty()) {
 		Ref<NativeScript> script = ResourceLoader::load(p_path, "NativeScript");
 		if (script.is_valid()) {
 			if (r_base_type) {

@@ -2723,7 +2723,7 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 		String bbcode_name;
 		typedef Map<String, String> OptionMap;
 		OptionMap bbcode_options;
-		if (!split_tag_block.empty()) {
+		if (!split_tag_block.is_empty()) {
 			bbcode_name = split_tag_block[0];
 			for (int i = 1; i < split_tag_block.size(); i++) {
 				const String &expr = split_tag_block[i];
@@ -3071,7 +3071,7 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 
 				int width = 0;
 				int height = 0;
-				if (!bbcode_value.empty()) {
+				if (!bbcode_value.is_empty()) {
 					int sep = bbcode_value.find("x");
 					if (sep == -1) {
 						width = bbcode_value.to_int();

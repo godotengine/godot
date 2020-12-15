@@ -839,9 +839,9 @@ godot_int GDAPI godot_packed_glyph_array_size(const godot_packed_glyph_array *p_
 	return self->size();
 }
 
-godot_bool GDAPI godot_packed_glyph_array_empty(const godot_packed_glyph_array *p_self) {
+godot_bool GDAPI godot_packed_glyph_array_is_empty(const godot_packed_glyph_array *p_self) {
 	const Vector<TextServer::Glyph> *self = (const Vector<TextServer::Glyph> *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_packed_glyph_array_destroy(godot_packed_glyph_array *p_self) {

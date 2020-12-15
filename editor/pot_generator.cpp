@@ -135,7 +135,7 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 			}
 
 			// Write context.
-			if (!context.empty()) {
+			if (!context.is_empty()) {
 				file->store_line("msgctxt \"" + context + "\"");
 			}
 
@@ -143,7 +143,7 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 			_write_msgid(file, msgid, false);
 
 			// Write msgid_plural
-			if (!plural.empty()) {
+			if (!plural.is_empty()) {
 				_write_msgid(file, plural, true);
 				file->store_line("msgstr[0] \"\"");
 				file->store_line("msgstr[1] \"\"\n");
@@ -185,7 +185,7 @@ void POTGenerator::_add_new_msgid(const String &p_msgid, const String &p_context
 		Vector<MsgidData> &v_mdata = all_translation_strings[p_msgid];
 		for (int i = 0; i < v_mdata.size(); i++) {
 			if (v_mdata[i].ctx == p_context) {
-				if (!v_mdata[i].plural.empty() && !p_plural.empty() && v_mdata[i].plural != p_plural) {
+				if (!v_mdata[i].plural.is_empty() && !p_plural.is_empty() && v_mdata[i].plural != p_plural) {
 					WARN_PRINT("Redefinition of plural message (msgid_plural), under the same message (msgid) and context (msgctxt)");
 				}
 				v_mdata.write[i].locations.insert(p_location);

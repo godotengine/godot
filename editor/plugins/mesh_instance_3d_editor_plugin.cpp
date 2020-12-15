@@ -63,7 +63,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
-			if (selection.empty()) {
+			if (selection.is_empty()) {
 				Ref<Shape3D> shape = mesh->create_trimesh_shape();
 				if (shape.is_null()) {
 					err_dialog->set_text(TTR("Couldn't create a Trimesh collision shape."));

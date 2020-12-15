@@ -244,11 +244,11 @@ TEST_CASE("[String] Testing size and length of string") {
 }
 
 TEST_CASE("[String] Testing for empty string") {
-	CHECK(!String("Mellon").empty());
+	CHECK(!String("Mellon").is_empty());
 	// do this more than once, to check for string corruption
-	CHECK(String("").empty());
-	CHECK(String("").empty());
-	CHECK(String("").empty());
+	CHECK(String("").is_empty());
+	CHECK(String("").is_empty());
+	CHECK(String("").is_empty());
 }
 
 TEST_CASE("[String] Test chr") {

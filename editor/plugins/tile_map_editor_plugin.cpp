@@ -449,7 +449,7 @@ void TileMapEditor::_update_palette() {
 
 	List<int> tiles;
 	tileset->get_tile_list(&tiles);
-	if (tiles.empty()) {
+	if (tiles.is_empty()) {
 		return;
 	}
 
@@ -1779,7 +1779,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 				return;
 			}
 
-			if (paint_undo.empty()) {
+			if (paint_undo.is_empty()) {
 				return;
 			}
 
@@ -1810,7 +1810,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 				}
 			}
 		} else if (tool == TOOL_PASTING) {
-			if (copydata.empty()) {
+			if (copydata.is_empty()) {
 				return;
 			}
 

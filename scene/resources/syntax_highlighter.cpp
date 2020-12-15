@@ -552,7 +552,7 @@ Dictionary CodeHighlighter::get_color_regions() const {
 	Dictionary r_color_regions;
 	for (int i = 0; i < color_regions.size(); i++) {
 		ColorRegion region = color_regions[i];
-		r_color_regions[region.start_key + (region.end_key.empty() ? "" : " " + region.end_key)] = region.color;
+		r_color_regions[region.start_key + (region.end_key.is_empty() ? "" : " " + region.end_key)] = region.color;
 	}
 	return r_color_regions;
 }

@@ -67,7 +67,7 @@ void ConfigFile::set_value(const String &p_section, const String &p_key, const V
 			return; // ?
 		}
 		values[p_section].erase(p_key);
-		if (values[p_section].empty()) {
+		if (values[p_section].is_empty()) {
 			values.erase(p_section);
 		}
 

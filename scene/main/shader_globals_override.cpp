@@ -264,7 +264,7 @@ String ShaderGlobalsOverride::get_configuration_warning() const {
 	String warning = Node::get_configuration_warning();
 
 	if (!active) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("ShaderGlobalsOverride is not active because another node of the same type is in the scene.");

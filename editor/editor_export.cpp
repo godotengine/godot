@@ -521,7 +521,7 @@ void EditorExportPlatform::_edit_filter_list(Set<String> &r_list, const String &
 	Vector<String> filters;
 	for (int i = 0; i < split.size(); i++) {
 		String f = split[i].strip_edges();
-		if (f.empty()) {
+		if (f.is_empty()) {
 			continue;
 		}
 		filters.push_back(f);
@@ -754,7 +754,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		Vector<String> enc_in_split = p_preset->get_enc_in_filter().split(",");
 		for (int i = 0; i < enc_in_split.size(); i++) {
 			String f = enc_in_split[i].strip_edges();
-			if (f.empty()) {
+			if (f.is_empty()) {
 				continue;
 			}
 			enc_in_filters.push_back(f);
@@ -763,7 +763,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		Vector<String> enc_ex_split = p_preset->get_enc_ex_filter().split(",");
 		for (int i = 0; i < enc_ex_split.size(); i++) {
 			String f = enc_ex_split[i].strip_edges();
-			if (f.empty()) {
+			if (f.is_empty()) {
 				continue;
 			}
 			enc_ex_filters.push_back(f);
@@ -1696,7 +1696,7 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
 
-	if (!err.empty()) {
+	if (!err.is_empty()) {
 		r_error = err;
 	}
 	return valid;
@@ -1783,7 +1783,7 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 			}
 		}
 
-		if (err == OK && !so_files.empty()) {
+		if (err == OK && !so_files.is_empty()) {
 			//if shared object files, copy them
 			da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < so_files.size() && err == OK; i++) {

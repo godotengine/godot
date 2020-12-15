@@ -1365,7 +1365,7 @@ Collada::Node *Collada::_parse_visual_instance_geometry(XMLParser &parser) {
 	}
 
 	if (geom->controller) {
-		if (geom->skeletons.empty()) {
+		if (geom->skeletons.is_empty()) {
 			//XSI style
 
 			if (state.skin_controller_data_map.has(geom->source)) {
@@ -2321,7 +2321,7 @@ void Collada::_optimize() {
 				i--;
 			}
 
-			while (!mgeom.empty()) {
+			while (!mgeom.is_empty()) {
 				Node *n = mgeom.front()->get();
 				n->parent->children.push_back(n);
 				mgeom.pop_front();

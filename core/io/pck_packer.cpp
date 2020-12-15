@@ -53,7 +53,7 @@ void PCKPacker::_bind_methods() {
 }
 
 Error PCKPacker::pck_start(const String &p_file, int p_alignment, const String &p_key, bool p_encrypt_directory) {
-	ERR_FAIL_COND_V_MSG((p_key.empty() || !p_key.is_valid_hex_number(false) || p_key.length() != 64), ERR_CANT_CREATE, "Invalid Encryption Key (must be 64 characters long).");
+	ERR_FAIL_COND_V_MSG((p_key.is_empty() || !p_key.is_valid_hex_number(false) || p_key.length() != 64), ERR_CANT_CREATE, "Invalid Encryption Key (must be 64 characters long).");
 
 	String _key = p_key.to_lower();
 	key.resize(32);

@@ -625,7 +625,7 @@ public:
 		return e;
 	}
 
-	inline bool empty() const { return _data.size_cache == 0; }
+	inline bool is_empty() const { return _data.size_cache == 0; }
 	inline int size() const { return _data.size_cache; }
 
 	int calculate_depth() const {

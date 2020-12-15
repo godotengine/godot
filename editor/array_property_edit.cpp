@@ -259,7 +259,7 @@ void ArrayPropertyEdit::edit(Object *p_obj, const StringName &p_prop, const Stri
 	obj = p_obj->get_instance_id();
 	default_type = p_deftype;
 
-	if (!p_hint_string.empty()) {
+	if (!p_hint_string.is_empty()) {
 		int hint_subtype_separator = p_hint_string.find(":");
 		if (hint_subtype_separator >= 0) {
 			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);

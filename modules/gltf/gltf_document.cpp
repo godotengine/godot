@@ -204,7 +204,7 @@ Error GLTFDocument::_serialize_scenes(Ref<GLTFState> state) {
 
 	if (state->nodes.size()) {
 		Dictionary s;
-		if (!state->scene_name.empty()) {
+		if (!state->scene_name.is_empty()) {
 			s["name"] = state->scene_name;
 		}
 
@@ -395,7 +395,7 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 		Ref<GLTFNode> n = state->nodes[i];
 		Dictionary extensions;
 		node["extensions"] = extensions;
-		if (!n->get_name().empty()) {
+		if (!n->get_name().is_empty()) {
 			node["name"] = n->get_name();
 		}
 		if (n->camera != -1) {
@@ -493,7 +493,7 @@ String GLTFDocument::_sanitize_bone_name(const String &name) {
 
 String GLTFDocument::_gen_unique_bone_name(Ref<GLTFState> state, const GLTFSkeletonIndex skel_i, const String &p_name) {
 	String s_name = _sanitize_bone_name(p_name);
-	if (s_name.empty()) {
+	if (s_name.is_empty()) {
 		s_name = "bone";
 	}
 	String name;
@@ -2703,7 +2703,7 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 			d["mimeType"] = "image/png";
 		} else {
 			String name = state->images[i]->get_name();
-			if (name.empty()) {
+			if (name.is_empty()) {
 				name = itos(i);
 			}
 			name = _gen_unique_name(state, name);
@@ -2785,7 +2785,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 				data_ptr = data.ptr();
 				data_size = data.size();
 				// mimeType is optional, but if we have it defined in the URI, let's use it.
-				if (mimetype.empty()) {
+				if (mimetype.is_empty()) {
 					if (uri.begins_with("data:image/png;base64")) {
 						mimetype = "image/png";
 					} else if (uri.begins_with("data:image/jpeg;base64")) {
@@ -2814,7 +2814,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 			}
 		} else if (d.has("bufferView")) {
 			// Handles the third bullet point from the spec (bufferView).
-			ERR_FAIL_COND_V_MSG(mimetype.empty(), ERR_FILE_CORRUPT,
+			ERR_FAIL_COND_V_MSG(mimetype.is_empty(), ERR_FILE_CORRUPT,
 					vformat("glTF: Image index '%d' specifies 'bufferView' but no 'mimeType', which is invalid.", i));
 
 			const GLTFBufferViewIndex bvi = d["bufferView"];
@@ -2936,7 +2936,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			materials.push_back(d);
 			continue;
 		}
-		if (!material->get_name().empty()) {
+		if (!material->get_name().is_empty()) {
 			d["name"] = _gen_unique_name(state, material->get_name());
 		}
 		{
@@ -4071,7 +4071,7 @@ Error GLTFDocument::_create_skeletons(Ref<GLTFState> state) {
 		// a sorted order, and DEPTH FIRST
 		bones.sort();
 
-		while (!bones.empty()) {
+		while (!bones.is_empty()) {
 			const GLTFNodeIndex node_i = bones.front()->get();
 			bones.pop_front();
 
@@ -4096,7 +4096,7 @@ Error GLTFDocument::_create_skeletons(Ref<GLTFState> state) {
 
 			const int bone_index = skeleton->get_bone_count();
 
-			if (node->get_name().empty()) {
+			if (node->get_name().is_empty()) {
 				node->set_name("bone");
 			}
 
@@ -4153,7 +4153,7 @@ Error GLTFDocument::_create_skins(Ref<GLTFState> state) {
 		skin.instance();
 
 		// Some skins don't have IBM's! What absolute monsters!
-		const bool has_ibms = !gltf_skin->inverse_binds.empty();
+		const bool has_ibms = !gltf_skin->inverse_binds.is_empty();
 
 		for (int joint_i = 0; joint_i < gltf_skin->joints_original.size(); ++joint_i) {
 			GLTFNodeIndex node = gltf_skin->joints_original[joint_i];
@@ -4181,7 +4181,7 @@ Error GLTFDocument::_create_skins(Ref<GLTFState> state) {
 	// Create unique names now, after removing duplicates
 	for (GLTFSkinIndex skin_i = 0; skin_i < state->skins.size(); ++skin_i) {
 		Ref<Skin> skin = state->skins.write[skin_i]->godot_skin;
-		if (skin->get_name().empty()) {
+		if (skin->get_name().is_empty()) {
 			// Make a unique name, no gltf node represents this skin
 			skin->set_name(_gen_unique_name(state, "Skin"));
 		}
@@ -4447,7 +4447,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 			continue;
 		}
 
-		if (!gltf_animation->get_name().empty()) {
+		if (!gltf_animation->get_name().is_empty()) {
 			d["name"] = gltf_animation->get_name();
 		}
 		Array channels;
@@ -4707,7 +4707,7 @@ void GLTFDocument::_assign_scene_names(Ref<GLTFState> state) {
 		if (n->skeleton >= 0)
 			continue;
 
-		if (n->get_name().empty()) {
+		if (n->get_name().is_empty()) {
 			if (n->mesh >= 0) {
 				n->set_name(_gen_unique_name(state, "Mesh"));
 			} else if (n->camera >= 0) {
@@ -5407,7 +5407,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 	Ref<GLTFAnimation> anim = state->animations[index];
 
 	String name = anim->get_name();
-	if (name.empty()) {
+	if (name.is_empty()) {
 		// No node represent these, and they are not in the hierarchy, so just make a unique name
 		name = _gen_unique_name(state, "Animation");
 	}
@@ -5652,7 +5652,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 		Ref<GLTFSkeleton> gltf_skeleton = state->skeletons.write[skeleton_gltf_i];
 		for (int32_t bind_i = 0; bind_i < skin->get_bind_count(); bind_i++) {
 			String godot_bone_name = skin->get_bind_name(bind_i);
-			if (godot_bone_name.empty()) {
+			if (godot_bone_name.is_empty()) {
 				int32_t bone = skin->get_bind_bone(bind_i);
 				godot_bone_name = skeleton->get_bone_name(bone);
 			}

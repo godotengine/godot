@@ -159,14 +159,14 @@ String CollisionPolygon3D::get_configuration_warning() const {
 	String warning = Node3D::get_configuration_warning();
 
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("CollisionPolygon3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, etc. to give them a shape.");
 	}
 
-	if (polygon.empty()) {
-		if (!warning.empty()) {
+	if (polygon.is_empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("An empty CollisionPolygon3D has no effect on collision.");

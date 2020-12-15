@@ -394,7 +394,7 @@ public:
 	Vector<uint8_t> sha1_buffer() const;
 	Vector<uint8_t> sha256_buffer() const;
 
-	_FORCE_INLINE_ bool empty() const { return length() == 0; }
+	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	// path functions
 	bool is_abs_path() const;

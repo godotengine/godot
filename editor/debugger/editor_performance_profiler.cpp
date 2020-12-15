@@ -102,7 +102,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 		}
 	}
 
-	if (active.empty()) {
+	if (active.is_empty()) {
 		info_message->show();
 		return;
 	}
@@ -217,7 +217,7 @@ void EditorPerformanceProfiler::_build_monitor_tree() {
 		TreeItem *item = _create_monitor_item(i.value().name, base);
 		item->set_checked(0, monitor_checked.has(i.key()));
 		i.value().item = item;
-		if (!i.value().history.empty()) {
+		if (!i.value().history.is_empty()) {
 			i.value().update_value(i.value().history.front()->get());
 		}
 	}

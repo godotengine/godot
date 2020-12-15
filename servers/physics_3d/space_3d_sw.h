@@ -182,7 +182,7 @@ public:
 	PhysicsDirectSpaceState3DSW *get_direct_state();
 
 	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
-	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.empty(); }
+	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.is_empty(); }
 	_FORCE_INLINE_ void add_debug_contact(const Vector3 &p_contact) {
 		if (contact_debug_count < contact_debug.size()) {
 			contact_debug.write[contact_debug_count++] = p_contact;

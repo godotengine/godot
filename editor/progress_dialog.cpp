@@ -111,7 +111,7 @@ void BackgroundProgress::task_step(const String &p_task, int p_step) {
 	bool no_updates = true;
 	{
 		_THREAD_SAFE_METHOD_
-		no_updates = updates.empty();
+		no_updates = updates.is_empty();
 	}
 
 	if (no_updates) {
@@ -218,7 +218,7 @@ void ProgressDialog::end_task(const String &p_task) {
 	memdelete(t.vb);
 	tasks.erase(p_task);
 
-	if (tasks.empty()) {
+	if (tasks.is_empty()) {
 		hide();
 	} else {
 		_popup();

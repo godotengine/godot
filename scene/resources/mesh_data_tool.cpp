@@ -43,7 +43,7 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 	ERR_FAIL_COND_V(p_mesh->surface_get_primitive_type(p_surface) != Mesh::PRIMITIVE_TRIANGLES, ERR_INVALID_PARAMETER);
 
 	Array arrays = p_mesh->surface_get_arrays(p_surface);
-	ERR_FAIL_COND_V(arrays.empty(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(arrays.is_empty(), ERR_INVALID_PARAMETER);
 
 	Vector<Vector3> varray = arrays[Mesh::ARRAY_VERTEX];
 

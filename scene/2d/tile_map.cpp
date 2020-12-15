@@ -1714,7 +1714,7 @@ String TileMap::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	if (use_parent && !collision_parent) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		return TTR("TileMap with Use Parent on needs a parent CollisionObject2D to give shapes to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");

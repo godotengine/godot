@@ -516,7 +516,7 @@ void ProjectExportDialog::_script_encryption_key_changed(const String &p_key) {
 bool ProjectExportDialog::_validate_script_encryption_key(const String &p_key) {
 	bool is_valid = false;
 
-	if (!p_key.empty() && p_key.is_valid_hex_number(false) && p_key.length() == 64) {
+	if (!p_key.is_empty() && p_key.is_valid_hex_number(false) && p_key.length() == 64) {
 		is_valid = true;
 	}
 	return is_valid;

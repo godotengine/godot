@@ -204,7 +204,7 @@ void FabrikInverseKinematic::solve_simple_forwards(Chain &r_chain, bool p_solve_
 	while (sub_chain_root) { // Reach the tip
 		sub_chain_root->current_pos = origin;
 
-		if (!sub_chain_root->children.empty()) {
+		if (!sub_chain_root->children.is_empty()) {
 			ChainItem &child(sub_chain_root->children.write[0]);
 
 			// Is not tip
@@ -301,7 +301,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		Transform new_bone_pose(ci->initial_transform);
 		new_bone_pose.origin = ci->current_pos;
 
-		if (!ci->children.empty()) {
+		if (!ci->children.is_empty()) {
 			/// Rotate basis
 			const Vector3 initial_ori((ci->children[0].initial_transform.origin - ci->initial_transform.origin).normalized());
 			const Vector3 rot_axis(initial_ori.cross(ci->current_ori).normalized());
@@ -321,7 +321,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 
 		p_task->skeleton->set_bone_global_pose_override(ci->bone, new_bone_pose, 1.0, true);
 
-		if (!ci->children.empty()) {
+		if (!ci->children.is_empty()) {
 			ci = &ci->children.write[0];
 		} else {
 			ci = nullptr;

@@ -518,7 +518,7 @@ void CanvasItemEditor::_keying_changed() {
 }
 
 Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(List<CanvasItem *> p_list) {
-	ERR_FAIL_COND_V(p_list.empty(), Rect2());
+	ERR_FAIL_COND_V(p_list.is_empty(), Rect2());
 
 	// Handles the first element
 	CanvasItem *canvas_item = p_list.front()->get();
@@ -1147,7 +1147,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 						if (dragged_guide_index >= 0) {
 							vguides.remove(dragged_guide_index);
 							undo_redo->create_action(TTR("Remove Vertical Guide"));
-							if (vguides.empty()) {
+							if (vguides.is_empty()) {
 								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_vertical_guides_");
 							} else {
 								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
@@ -1180,7 +1180,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 						if (dragged_guide_index >= 0) {
 							hguides.remove(dragged_guide_index);
 							undo_redo->create_action(TTR("Remove Horizontal Guide"));
-							if (hguides.empty()) {
+							if (hguides.is_empty()) {
 								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_horizontal_guides_");
 							} else {
 								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
@@ -2400,7 +2400,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				_select_click_on_item(item, click, b->get_shift());
 
 				return true;
-			} else if (!selection_results.empty()) {
+			} else if (!selection_results.is_empty()) {
 				// Sorts items according the their z-index
 				selection_results.sort();
 
@@ -2463,13 +2463,13 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			// Retrieve the bones
 			Vector<_SelectResult> selection = Vector<_SelectResult>();
 			_get_bones_at_pos(click, selection);
-			if (!selection.empty()) {
+			if (!selection.is_empty()) {
 				canvas_item = selection[0].item;
 			} else {
 				// Retrieve the canvas items
 				selection = Vector<_SelectResult>();
 				_get_canvas_items_at_pos(click, selection);
-				if (!selection.empty()) {
+				if (!selection.is_empty()) {
 					canvas_item = selection[0].item;
 				}
 			}
@@ -3916,7 +3916,7 @@ void CanvasItemEditor::_draw_viewport() {
 	bool all_locked = true;
 	bool all_group = true;
 	List<Node *> selection = editor_selection->get_selected_node_list();
-	if (selection.empty()) {
+	if (selection.is_empty()) {
 		all_locked = false;
 		all_group = false;
 	} else {
@@ -3935,10 +3935,10 @@ void CanvasItemEditor::_draw_viewport() {
 	}
 
 	lock_button->set_visible(!all_locked);
-	lock_button->set_disabled(selection.empty());
+	lock_button->set_disabled(selection.is_empty());
 	unlock_button->set_visible(all_locked);
 	group_button->set_visible(!all_group);
-	group_button->set_disabled(selection.empty());
+	group_button->set_disabled(selection.is_empty());
 	ungroup_button->set_visible(all_group);
 
 	info_overlay->set_offset(SIDE_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
@@ -3956,11 +3956,11 @@ void CanvasItemEditor::_draw_viewport() {
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(ci, Transform2D());
 
 	EditorPluginList *over_plugin_list = editor->get_editor_plugins_over();
-	if (!over_plugin_list->empty()) {
+	if (!over_plugin_list->is_empty()) {
 		over_plugin_list->forward_canvas_draw_over_viewport(viewport);
 	}
 	EditorPluginList *force_over_plugin_list = editor->get_editor_plugins_force_over();
-	if (!force_over_plugin_list->empty()) {
+	if (!force_over_plugin_list->is_empty()) {
 		force_over_plugin_list->forward_canvas_force_draw_over_viewport(viewport);
 	}
 

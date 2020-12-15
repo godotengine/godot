@@ -146,7 +146,7 @@ private:
 
 		String appname = ProjectSettings::get_singleton()->get("application/config/name");
 		String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-		if (appname_safe.empty()) {
+		if (appname_safe.is_empty()) {
 			appname_safe = "UnnamedProject";
 		}
 

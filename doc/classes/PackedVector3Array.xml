@@ -59,7 +59,7 @@
 				Creates a copy of the array, and returns it.
 			</description>
 		</method>
-		<method name="empty">
+		<method name="is_empty">
 			<return type="bool">
 			</return>
 			<description>

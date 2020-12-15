@@ -230,7 +230,7 @@ StringName TranslationPO::get_message(const StringName &p_src_text, const String
 	if (!translation_map.has(p_context) || !translation_map[p_context].has(p_src_text)) {
 		return StringName();
 	}
-	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].empty(), StringName(), "Source text \"" + String(p_src_text) + "\" is registered but doesn't have a translation. Please report this bug.");
+	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].is_empty(), StringName(), "Source text \"" + String(p_src_text) + "\" is registered but doesn't have a translation. Please report this bug.");
 
 	return translation_map[p_context][p_src_text][0];
 }
@@ -246,7 +246,7 @@ StringName TranslationPO::get_plural_message(const StringName &p_src_text, const
 	if (!translation_map.has(p_context) || !translation_map[p_context].has(p_src_text)) {
 		return StringName();
 	}
-	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].empty(), StringName(), "Source text \"" + String(p_src_text) + "\" is registered but doesn't have a translation. Please report this bug.");
+	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].is_empty(), StringName(), "Source text \"" + String(p_src_text) + "\" is registered but doesn't have a translation. Please report this bug.");
 
 	if (translation_map[p_context][p_src_text].size() == 1) {
 		WARN_PRINT("Source string \"" + String(p_src_text) + "\" doesn't have plural translations. Use singular translation API for such as tr(), TTR() to translate \"" + String(p_src_text) + "\"");

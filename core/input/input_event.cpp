@@ -210,7 +210,7 @@ String InputEventWithModifiers::as_text() const {
 		mod_names.push_back(find_keycode_name(KEY_META));
 	}
 
-	if (!mod_names.empty()) {
+	if (!mod_names.is_empty()) {
 		return String("+").join(mod_names);
 	} else {
 		return "";

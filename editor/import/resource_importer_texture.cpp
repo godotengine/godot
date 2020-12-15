@@ -82,7 +82,7 @@ void ResourceImporterTexture::update_imports() {
 	MutexLock lock(mutex);
 	Vector<String> to_reimport;
 	{
-		if (make_flags.empty()) {
+		if (make_flags.is_empty()) {
 			return;
 		}
 

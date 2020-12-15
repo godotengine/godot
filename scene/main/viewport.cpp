@@ -1505,7 +1505,7 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 		}
 
 		// If we found a tooltip, we stop here.
-		if (!tooltip.empty()) {
+		if (!tooltip.is_empty()) {
 			break;
 		}
 
@@ -1539,7 +1539,7 @@ void Viewport::_gui_show_tooltip() {
 			gui.tooltip_control->get_global_transform().xform_inv(gui.last_mouse_pos),
 			&tooltip_owner);
 	tooltip_text.strip_edges();
-	if (tooltip_text.empty()) {
+	if (tooltip_text.is_empty()) {
 		return; // Nothing to show.
 	}
 
@@ -3139,7 +3139,7 @@ String Viewport::get_configuration_warning() const {
 	String warning = Node::get_configuration_warning();
 
 	if (size.x == 0 || size.y == 0) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Viewport size must be greater than 0 to render anything.");

@@ -380,7 +380,7 @@ String SoftBody3D::get_configuration_warning() const {
 	String warning = MeshInstance3D::get_configuration_warning();
 
 	if (get_mesh().is_null()) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 
@@ -389,7 +389,7 @@ String SoftBody3D::get_configuration_warning() const {
 
 	Transform t = get_transform();
 	if ((ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 

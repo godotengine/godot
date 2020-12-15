@@ -2356,7 +2356,7 @@ void EditorPropertyResource::_file_selected(const String &p_path) {
 			property_types = E->get().hint_string;
 		}
 	}
-	if (!property_types.empty()) {
+	if (!property_types.is_empty()) {
 		bool any_type_matches = false;
 		const Vector<String> split_property_types = property_types.split(",");
 		for (int i = 0; i < split_property_types.size(); ++i) {
@@ -2514,7 +2514,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				update_property();
 				break;
 			}
-			ERR_FAIL_COND(inheritors_array.empty());
+			ERR_FAIL_COND(inheritors_array.is_empty());
 
 			String intype = inheritors_array[p_which - TYPE_BASE_ID];
 
@@ -2658,7 +2658,7 @@ void EditorPropertyResource::_update_menu_items() {
 
 				bool is_custom_resource = false;
 				Ref<Texture2D> icon;
-				if (!custom_resources.empty()) {
+				if (!custom_resources.is_empty()) {
 					for (int j = 0; j < custom_resources.size(); j++) {
 						if (custom_resources[j].name == t) {
 							is_custom_resource = true;

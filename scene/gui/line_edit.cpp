@@ -69,7 +69,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 		_reset_caret_blink_timer();
 		if (b->is_pressed()) {
 			accept_event(); //don't pass event further when clicked on text field
-			if (!text.empty() && is_editable() && _is_over_clear_button(b->get_position())) {
+			if (!text.is_empty() && is_editable() && _is_over_clear_button(b->get_position())) {
 				clear_button_status.press_attempt = true;
 				clear_button_status.pressing_inside = true;
 				update();
@@ -106,7 +106,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			update();
 
 		} else {
-			if (!text.empty() && is_editable() && clear_button_enabled) {
+			if (!text.is_empty() && is_editable() && clear_button_enabled) {
 				bool press_attempt = clear_button_status.press_attempt;
 				clear_button_status.press_attempt = false;
 				if (press_attempt && clear_button_status.pressing_inside && _is_over_clear_button(b->get_position())) {
@@ -136,7 +136,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (m.is_valid()) {
-		if (!text.empty() && is_editable() && clear_button_enabled) {
+		if (!text.is_empty() && is_editable() && clear_button_enabled) {
 			bool last_press_inside = clear_button_status.pressing_inside;
 			clear_button_status.pressing_inside = clear_button_status.press_attempt && _is_over_clear_button(m->get_position());
 			if (last_press_inside != clear_button_status.pressing_inside) {
@@ -653,7 +653,7 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 }
 
 Control::CursorShape LineEdit::get_cursor_shape(const Point2 &p_pos) const {
-	if (!text.empty() && is_editable() && _is_over_clear_button(p_pos)) {
+	if (!text.is_empty() && is_editable() && _is_over_clear_button(p_pos)) {
 		return CURSOR_ARROW;
 	}
 	return Control::get_cursor_shape(p_pos);
@@ -735,7 +735,7 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			int x_ofs = 0;
-			bool using_placeholder = text.empty() && ime_text.empty();
+			bool using_placeholder = text.is_empty() && ime_text.is_empty();
 			float text_width = TS->shaped_text_get_size(text_rid).x;
 			float text_height = TS->shaped_text_get_size(text_rid).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM);
 
@@ -1109,7 +1109,7 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 		} break;
 	}
 
-	bool using_placeholder = text.empty() && ime_text.empty();
+	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 	if (right_icon.is_valid() || display_clear_icon) {
 		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon("clear") : right_icon;
@@ -1157,7 +1157,7 @@ Vector2i LineEdit::get_cursor_pixel_pos() {
 		} break;
 	}
 
-	bool using_placeholder = text.empty() && ime_text.empty();
+	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 	if (right_icon.is_valid() || display_clear_icon) {
 		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon("clear") : right_icon;
@@ -1482,7 +1482,7 @@ void LineEdit::set_cursor_position(int p_pos) {
 	}
 
 	int ofs_max = get_size().width - style->get_margin(SIDE_RIGHT);
-	bool using_placeholder = text.empty() && ime_text.empty();
+	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 	if (right_icon.is_valid() || display_clear_icon) {
 		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon("clear") : right_icon;
@@ -1570,7 +1570,7 @@ Size2 LineEdit::get_minimum_size() const {
 	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM), font->get_height(font_size));
 
 	// Take icons into account.
-	bool using_placeholder = text.empty() && ime_text.empty();
+	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 	if (right_icon.is_valid() || display_clear_icon) {
 		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon("clear") : right_icon;
@@ -1995,7 +1995,7 @@ void LineEdit::_fit_to_width() {
 	if (align == ALIGN_FILL) {
 		Ref<StyleBox> style = get_theme_stylebox("normal");
 		int t_width = get_size().width - style->get_margin(SIDE_RIGHT) - style->get_margin(SIDE_LEFT);
-		bool using_placeholder = text.empty() && ime_text.empty();
+		bool using_placeholder = text.is_empty() && ime_text.is_empty();
 		bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 		if (right_icon.is_valid() || display_clear_icon) {
 			Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon("clear") : right_icon;

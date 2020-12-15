@@ -65,9 +65,9 @@ void OS_LinuxBSD::initialize_joypads() {
 
 String OS_LinuxBSD::get_unique_id() const {
 	static String machine_id;
-	if (machine_id.empty()) {
+	if (machine_id.is_empty()) {
 		if (FileAccess *f = FileAccess::open("/etc/machine-id", FileAccess::READ)) {
-			while (machine_id.empty() && !f->eof_reached()) {
+			while (machine_id.is_empty() && !f->eof_reached()) {
 				machine_id = f->get_line().strip_edges();
 			}
 			f->close();

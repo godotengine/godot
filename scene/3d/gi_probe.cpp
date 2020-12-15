@@ -516,7 +516,7 @@ String GIProbe::get_configuration_warning() const {
 	String warning = VisualInstance3D::get_configuration_warning();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");

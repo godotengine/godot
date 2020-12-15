@@ -205,7 +205,7 @@ Error HMACContextMbedTLS::start(HashingContext::HashType p_hash_type, PackedByte
 	ERR_FAIL_COND_V_MSG(ctx != nullptr, ERR_FILE_ALREADY_IN_USE, "HMACContext already started.");
 
 	// HMAC keys can be any size.
-	ERR_FAIL_COND_V_MSG(p_key.empty(), ERR_INVALID_PARAMETER, "Key must not be empty.");
+	ERR_FAIL_COND_V_MSG(p_key.is_empty(), ERR_INVALID_PARAMETER, "Key must not be empty.");
 
 	hash_type = p_hash_type;
 	mbedtls_md_type_t ht = CryptoMbedTLS::md_type_from_hashtype(p_hash_type, hash_len);
@@ -224,7 +224,7 @@ Error HMACContextMbedTLS::start(HashingContext::HashType p_hash_type, PackedByte
 Error HMACContextMbedTLS::update(PackedByteArray p_data) {
 	ERR_FAIL_COND_V_MSG(ctx == nullptr, ERR_INVALID_DATA, "Start must be called before update.");
 
-	ERR_FAIL_COND_V_MSG(p_data.empty(), ERR_INVALID_PARAMETER, "Src must not be empty.");
+	ERR_FAIL_COND_V_MSG(p_data.is_empty(), ERR_INVALID_PARAMETER, "Src must not be empty.");
 
 	int ret = mbedtls_md_hmac_update((mbedtls_md_context_t *)ctx, (const uint8_t *)p_data.ptr(), (size_t)p_data.size());
 	return ret ? FAILED : OK;

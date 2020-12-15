@@ -142,7 +142,7 @@ void gd_mono_debug_init() {
 	int da_timeout = GLOBAL_DEF("mono/debugger_agent/wait_timeout", 3000);
 
 	if (Engine::get_singleton()->is_editor_hint() ||
-			ProjectSettings::get_singleton()->get_resource_path().empty() ||
+			ProjectSettings::get_singleton()->get_resource_path().is_empty() ||
 			Main::is_project_manager()) {
 		if (da_args.size() == 0) {
 			return;
@@ -297,7 +297,7 @@ void GDMono::determine_mono_dirs(String &r_assembly_rootdir, String &r_config_di
 	}
 
 #ifdef WINDOWS_ENABLED
-	if (r_assembly_rootdir.empty() || r_config_dir.empty()) {
+	if (r_assembly_rootdir.is_empty() || r_config_dir.is_empty()) {
 		ERR_PRINT("Cannot find Mono in the registry.");
 		// Assertion: if they are not set, then they weren't found in the registry
 		CRASH_COND(mono_reg_info.assembly_dir.length() > 0 || mono_reg_info.config_dir.length() > 0);
@@ -360,7 +360,7 @@ void GDMono::initialize() {
 #ifndef TOOLS_ENABLED
 	// Exported games that don't use C# must still work. They likely don't ship with mscorlib.
 	// We only initialize the Mono runtime if we can find mscorlib. Otherwise it would crash.
-	if (GDMonoAssembly::find_assembly("mscorlib.dll").empty()) {
+	if (GDMonoAssembly::find_assembly("mscorlib.dll").is_empty()) {
 		print_verbose("Mono: Skipping runtime initialization because 'mscorlib.dll' could not be found");
 		return;
 	}
@@ -944,7 +944,7 @@ void GDMono::_load_api_assemblies() {
 
 		// 2. Update the API assemblies
 		String update_error = update_api_assemblies_from_prebuilt("Debug", &core_api_assembly.out_of_sync, &editor_api_assembly.out_of_sync);
-		CRASH_COND_MSG(!update_error.empty(), update_error);
+		CRASH_COND_MSG(!update_error.is_empty(), update_error);
 
 		// 3. Load the scripts domain again
 		Error domain_load_err = _load_scripts_domain();
@@ -998,7 +998,7 @@ bool GDMono::_load_project_assembly() {
 
 	String appname = ProjectSettings::get_singleton()->get("application/config/name");
 	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-	if (appname_safe.empty()) {
+	if (appname_safe.is_empty()) {
 		appname_safe = "UnnamedProject";
 	}
 

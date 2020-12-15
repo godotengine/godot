@@ -308,7 +308,7 @@ static Error recreate_code(void *p_str, SL::ShaderNode *p_program) {
 MainLoop *test() {
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
-	if (cmdlargs.empty()) {
+	if (cmdlargs.is_empty()) {
 		//try editor!
 		print_line("usage: godot -test shader_lang <shader>");
 		return nullptr;

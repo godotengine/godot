@@ -572,7 +572,7 @@ void RenameDialog::rename() {
 	// Forward recursive as opposed to the actual renaming.
 	_iterate_scene(root_node, selected_node_list, &global_count);
 
-	if (undo_redo && !to_rename.empty()) {
+	if (undo_redo && !to_rename.is_empty()) {
 		undo_redo->create_action(TTR("Batch Rename"));
 
 		// Make sure to iterate reversed so that child nodes will find parents.

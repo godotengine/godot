@@ -331,7 +331,7 @@ Dictionary EditorData::get_editor_states() const {
 	Dictionary metadata;
 	for (int i = 0; i < editor_plugins.size(); i++) {
 		Dictionary state = editor_plugins[i]->get_state();
-		if (state.empty()) {
+		if (state.is_empty()) {
 			continue;
 		}
 		metadata[editor_plugins[i]->get_name()] = state;
@@ -493,7 +493,7 @@ void EditorData::remove_custom_type(const String &p_type) {
 		for (int i = 0; i < E->get().size(); i++) {
 			if (E->get()[i].name == p_type) {
 				E->get().remove(i);
-				if (E->get().empty()) {
+				if (E->get().is_empty()) {
 					custom_types.erase(E->key());
 				}
 				return;
@@ -901,7 +901,7 @@ String EditorData::script_class_get_icon_path(const String &p_class) const {
 
 	String current = p_class;
 	String ret = _script_class_icon_paths[current];
-	while (ret.empty()) {
+	while (ret.is_empty()) {
 		current = script_class_get_base(current);
 		if (!ScriptServer::is_global_class(current)) {
 			return String();
@@ -931,7 +931,7 @@ void EditorData::script_class_save_icon_paths() {
 		}
 	}
 
-	if (d.empty()) {
+	if (d.is_empty()) {
 		if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
 			ProjectSettings::get_singleton()->clear("_global_script_class_icons");
 		}
@@ -1125,7 +1125,7 @@ List<Node *> EditorSelection::get_full_selected_node_list() {
 }
 
 void EditorSelection::clear() {
-	while (!selection.empty()) {
+	while (!selection.is_empty()) {
 		remove_node(selection.front()->key());
 	}
 

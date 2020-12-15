@@ -67,7 +67,7 @@ godot_dictionary GDAPI godot_dictionary_duplicate(const godot_dictionary *p_self
 
 godot_int GDAPI godot_dictionary_size(const godot_dictionary *p_self);
 
-godot_bool GDAPI godot_dictionary_empty(const godot_dictionary *p_self);
+godot_bool GDAPI godot_dictionary_is_empty(const godot_dictionary *p_self);
 
 void GDAPI godot_dictionary_clear(godot_dictionary *p_self);
 

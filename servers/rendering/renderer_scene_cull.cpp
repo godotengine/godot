@@ -255,7 +255,7 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 		if (A->dynamic_gi) {
 			geom->lightmap_captures.erase(B);
 
-			if (geom->lightmap_captures.empty() && A->scenario && A->array_index >= 0) {
+			if (geom->lightmap_captures.is_empty() && A->scenario && A->array_index >= 0) {
 				InstanceData &idata = A->scenario->instance_data[A->array_index];
 				idata.flags &= ~uint32_t(InstanceData::FLAG_LIGHTMAP_CAPTURE);
 			}
@@ -1134,7 +1134,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 			//affected by lightmap captures, must update capture info!
 			_update_instance_lightmap_captures(p_instance);
 		} else {
-			if (!p_instance->lightmap_sh.empty()) {
+			if (!p_instance->lightmap_sh.is_empty()) {
 				p_instance->lightmap_sh.clear(); //don't need SH
 				p_instance->lightmap_target_sh.clear(); //don't need SH
 			}
@@ -2382,7 +2382,7 @@ void RendererSceneCull::_prepare_scene(const Transform p_cam_transform, const Ca
 						idata.flags &= ~uint32_t(InstanceData::FLAG_GEOM_GI_PROBE_DIRTY);
 					}
 
-					if ((idata.flags & InstanceData::FLAG_LIGHTMAP_CAPTURE) && idata.instance->last_frame_pass != frame_number && !idata.instance->lightmap_target_sh.empty() && !idata.instance->lightmap_sh.empty()) {
+					if ((idata.flags & InstanceData::FLAG_LIGHTMAP_CAPTURE) && idata.instance->last_frame_pass != frame_number && !idata.instance->lightmap_target_sh.is_empty() && !idata.instance->lightmap_sh.is_empty()) {
 						Color *sh = idata.instance->lightmap_sh.ptrw();
 						const Color *target_sh = idata.instance->lightmap_target_sh.ptr();
 						for (uint32_t j = 0; j < 9; j++) {

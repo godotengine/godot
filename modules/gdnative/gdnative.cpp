@@ -286,7 +286,7 @@ bool GDNative::initialize() {
 	}
 
 	String lib_path = library->get_current_library_path();
-	if (lib_path.empty()) {
+	if (lib_path.is_empty()) {
 		ERR_PRINT("No library set for this platform");
 		return false;
 	}

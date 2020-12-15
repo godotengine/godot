@@ -380,7 +380,7 @@
         ]
       },
       {
-        "name": "godot_array_empty",
+        "name": "godot_array_is_empty",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_array *", "p_self"]
@@ -1388,7 +1388,7 @@
         ]
       },
       {
-        "name": "godot_dictionary_empty",
+        "name": "godot_dictionary_is_empty",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_dictionary *", "p_self"]
@@ -1647,7 +1647,7 @@
         ]
       },
       {
-        "name": "godot_packed_byte_array_empty",
+        "name": "godot_packed_byte_array_is_empty",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_packed_byte_array *", "p_self"]
@@ -1793,7 +1793,7 @@
         ]
       },
       {
-        "name": "godot_packed_int32_array_empty",
+        "name": "godot_packed_int32_array_is_empty",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_packed_int32_array *", "p_self"]
@@ -1939,7 +1939,7 @@
         ]
       },
       {
-        "name": "godot_packed_int64_array_empty",
+        "name": "godot_packed_int64_array_is_empty",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_packed_int64_array *", "p_self"]
@@ -2085,7 +2085,7 @@
         ]
       },
       {
-        "name": "godot_packed_float32_array_empty",
+        "name": "godot_packed_float32_array_is_empty",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_packed_float32_array *", "p_self"]
@@ -2231,7 +2231,7 @@
         ]
       },
       {
-        "name": "godot_packed_float64_array_empty",
+        "name": "godot_packed_float64_array_is_empty",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_packed_float64_array *", "p_self"]
@@ -2377,7 +2377,7 @@
         ]
       },
       {
-        "name": "godot_packed_string_array_empty",
+        "name": "godot_packed_string_array_is_empty",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_packed_string_array *", "p_self"]
@@ -2523,7 +2523,7 @@
         ]
       },
       {
-        "name": "godot_packed_vector2_array_empty",
+        "name": "godot_packed_vector2_array_is_empty",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_packed_vector2_array *", "p_self"]
@@ -2669,7 +2669,7 @@
         ]
       },
       {
-        "name": "godot_packed_vector2i_array_empty",
+        "name": "godot_packed_vector2i_array_is_empty",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_packed_vector2i_array *", "p_self"]
@@ -2815,7 +2815,7 @@
         ]
       },
       {
-        "name": "godot_packed_vector3_array_empty",
+        "name": "godot_packed_vector3_array_is_empty",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_packed_vector3_array *", "p_self"]
@@ -2961,7 +2961,7 @@
         ]
       },
       {
-        "name": "godot_packed_color_array_empty",
+        "name": "godot_packed_color_array_is_empty",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_packed_color_array *", "p_self"]
@@ -5005,7 +5005,7 @@
         ]
       },
       {
-        "name": "godot_string_empty",
+        "name": "godot_string_is_empty",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_string *", "p_self"]
@@ -7946,7 +7946,7 @@
           ]
         },
         {
-          "name": "godot_packed_glyph_array_empty",
+          "name": "godot_packed_glyph_array_is_empty",
           "return_type": "godot_bool",
           "arguments": [
             ["const godot_packed_glyph_array *", "p_self"]

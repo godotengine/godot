@@ -402,7 +402,7 @@ void EditorAutoloadSettings::update_autoload() {
 		String name = pi.name.get_slice("/", 1);
 		String path = ProjectSettings::get_singleton()->get(pi.name);
 
-		if (name.empty()) {
+		if (name.is_empty()) {
 			continue;
 		}
 
@@ -774,7 +774,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		String name = pi.name.get_slice("/", 1);
 		String path = ProjectSettings::get_singleton()->get(pi.name);
 
-		if (name.empty()) {
+		if (name.is_empty()) {
 			continue;
 		}
 

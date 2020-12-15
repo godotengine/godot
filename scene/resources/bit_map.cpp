@@ -43,7 +43,7 @@ void BitMap::create(const Size2 &p_size) {
 }
 
 void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshold) {
-	ERR_FAIL_COND(p_image.is_null() || p_image->empty());
+	ERR_FAIL_COND(p_image.is_null() || p_image->is_empty());
 	Ref<Image> img = p_image->duplicate();
 	img->convert(Image::FORMAT_LA8);
 	ERR_FAIL_COND(img->get_format() != Image::FORMAT_LA8);

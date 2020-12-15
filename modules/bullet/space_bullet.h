@@ -167,7 +167,7 @@ public:
 	BulletPhysicsDirectSpaceState *get_direct_state();
 
 	void set_debug_contacts(int p_amount) { contactDebug.resize(p_amount); }
-	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contactDebug.empty(); }
+	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contactDebug.is_empty(); }
 	_FORCE_INLINE_ void reset_debug_contact_count() {
 		contactDebugCount = 0;
 	}

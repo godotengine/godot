@@ -553,7 +553,7 @@ void RemoteDebugger::flush_output() {
 		for (int i = 0; i < output_strings.size(); i++) {
 			const OutputString &output_string = output_strings[i];
 			if (output_string.type == MESSAGE_TYPE_ERROR) {
-				if (!joined_log_strings.empty()) {
+				if (!joined_log_strings.is_empty()) {
 					strings.push_back(String("\n").join(joined_log_strings));
 					types.push_back(MESSAGE_TYPE_LOG);
 					joined_log_strings.clear();
@@ -565,7 +565,7 @@ void RemoteDebugger::flush_output() {
 			}
 		}
 
-		if (!joined_log_strings.empty()) {
+		if (!joined_log_strings.is_empty()) {
 			strings.push_back(String("\n").join(joined_log_strings));
 			types.push_back(MESSAGE_TYPE_LOG);
 		}

@@ -404,7 +404,7 @@ String PointLight2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	if (!texture.is_valid()) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("A texture with the shape of the light must be supplied to the \"Texture\" property.");

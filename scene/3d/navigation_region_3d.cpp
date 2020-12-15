@@ -193,7 +193,7 @@ String NavigationRegion3D::get_configuration_warning() const {
 	String warning = Node3D::get_configuration_warning();
 
 	if (!navmesh.is_valid()) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("A NavigationMesh resource must be set or created for this node to work.");
@@ -208,7 +208,7 @@ String NavigationRegion3D::get_configuration_warning() const {
 		c = Object::cast_to<Node3D>(c->get_parent());
 	}
 
-	if (!warning.empty()) {
+	if (!warning.is_empty()) {
 		warning += "\n\n";
 	}
 	return warning + TTR("NavigationRegion3D must be a child or grandchild to a Navigation3D node. It only provides navigation data.");

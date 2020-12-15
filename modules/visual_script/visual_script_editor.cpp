@@ -724,7 +724,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				line_edit->connect("text_changed", callable_mp(this, &VisualScriptEditor::_expression_text_changed), varray(E->get()));
 			} else {
 				String text = node->get_text();
-				if (!text.empty()) {
+				if (!text.is_empty()) {
 					has_gnode_text = true;
 					Label *label = memnew(Label);
 					label->set_text(text);
@@ -1723,7 +1723,7 @@ void VisualScriptEditor::_on_nodes_delete() {
 		}
 	}
 
-	if (to_erase.empty()) {
+	if (to_erase.is_empty()) {
 		return;
 	}
 
@@ -1776,7 +1776,7 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 		}
 	}
 
-	if (to_duplicate.empty()) {
+	if (to_duplicate.is_empty()) {
 		return;
 	}
 
@@ -2566,7 +2566,7 @@ String VisualScriptEditor::get_name() {
 	if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
 		name = script->get_path().get_file();
 		if (is_unsaved()) {
-			if (script->get_path().empty()) {
+			if (script->get_path().is_empty()) {
 				name = TTR("[unsaved]");
 			}
 			name += "(*)";
@@ -2588,7 +2588,7 @@ bool VisualScriptEditor::is_unsaved() {
 	bool unsaved =
 			script->is_edited() ||
 			script->are_subnodes_edited() ||
-			script->get_path().empty(); // In memory.
+			script->get_path().is_empty(); // In memory.
 	return unsaved;
 }
 
@@ -4183,7 +4183,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 				}
 			}
 
-			if (clipboard->nodes.empty()) {
+			if (clipboard->nodes.is_empty()) {
 				break;
 			}
 
@@ -4218,7 +4218,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 				break;
 			}
 
-			if (clipboard->nodes.empty()) {
+			if (clipboard->nodes.is_empty()) {
 				EditorNode::get_singleton()->show_warning(TTR("Clipboard is empty!"));
 				break;
 			}

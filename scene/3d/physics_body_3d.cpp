@@ -311,7 +311,7 @@ void RigidBody3D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 
 		bool in_tree = E->get().in_tree;
 
-		if (E->get().shapes.empty()) {
+		if (E->get().shapes.is_empty()) {
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody3D::_body_enter_tree));
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody3D::_body_exit_tree));
@@ -714,7 +714,7 @@ String RigidBody3D::get_configuration_warning() const {
 	String warning = CollisionObject3D::get_configuration_warning();
 
 	if ((get_mode() == MODE_RIGID || get_mode() == MODE_CHARACTER) && (ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Size changes to RigidBody3D (in character or rigid modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");

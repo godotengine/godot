@@ -647,7 +647,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		if (DirAccess::exists(plugins_dir)) {
 			Vector<String> plugins_filenames = list_gdap_files(plugins_dir);
 
-			if (!plugins_filenames.empty()) {
+			if (!plugins_filenames.is_empty()) {
 				Ref<ConfigFile> config_file = memnew(ConfigFile);
 				for (int i = 0; i < plugins_filenames.size(); i++) {
 					PluginConfig config = load_plugin_config(config_file, plugins_dir.plus_file(plugins_filenames[i]));
@@ -750,7 +750,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		PackedStringArray user_perms = p_preset->get("permissions/custom_permissions");
 		for (int i = 0; i < user_perms.size(); i++) {
 			String user_perm = user_perms[i].strip_edges();
-			if (!user_perm.empty()) {
+			if (!user_perm.is_empty()) {
 				r_permissions.push_back(user_perm);
 			}
 		}
@@ -975,7 +975,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							encode_uint32(xr_mode_index == /* XRMode.OVR */ 1 && focus_awareness ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
 						}
 
-						if (tname == "meta-data" && attrname == "value" && value == "plugins_value" && !plugins_names.empty()) {
+						if (tname == "meta-data" && attrname == "value" && value == "plugins_value" && !plugins_names.is_empty()) {
 							// Update the meta-data 'android:value' attribute with the list of enabled plugins.
 							string_table.write[attr_value] = plugins_names;
 						}
@@ -1471,7 +1471,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		// TODO: Figure out how to handle remaining boot splash parameters (e.g: fullsize, filter)
 		String project_splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
 
-		if (!project_splash_path.empty()) {
+		if (!project_splash_path.is_empty()) {
 			splash_image.instance();
 			const Error err = ImageLoader::load_image(project_splash_path, splash_image);
 			if (err) {
@@ -1505,19 +1505,19 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		// Regular icon: user selection -> project icon -> default.
 		String path = static_cast<String>(p_preset->get(launcher_icon_option)).strip_edges();
-		if (path.empty() || ImageLoader::load_image(path, icon) != OK) {
+		if (path.is_empty() || ImageLoader::load_image(path, icon) != OK) {
 			ImageLoader::load_image(project_icon_path, icon);
 		}
 
 		// Adaptive foreground: user selection -> regular icon (user selection -> project icon -> default).
 		path = static_cast<String>(p_preset->get(launcher_adaptive_icon_foreground_option)).strip_edges();
-		if (path.empty() || ImageLoader::load_image(path, foreground) != OK) {
+		if (path.is_empty() || ImageLoader::load_image(path, foreground) != OK) {
 			foreground = icon;
 		}
 
 		// Adaptive background: user selection -> default.
 		path = static_cast<String>(p_preset->get(launcher_adaptive_icon_background_option)).strip_edges();
-		if (!path.empty()) {
+		if (!path.is_empty()) {
 			ImageLoader::load_image(path, background);
 		}
 	}
@@ -1538,14 +1538,14 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			const Ref<Image> &foreground,
 			const Ref<Image> &background) {
 		// Store the splash image
-		if (splash_image.is_valid() && !splash_image->empty()) {
+		if (splash_image.is_valid() && !splash_image->is_empty()) {
 			Vector<uint8_t> data;
 			_load_image_data(splash_image, data);
 			store_image(SPLASH_IMAGE_EXPORT_PATH, data);
 		}
 
 		// Store the splash bg color image
-		if (splash_bg_color_image.is_valid() && !splash_bg_color_image->empty()) {
+		if (splash_bg_color_image.is_valid() && !splash_bg_color_image->is_empty()) {
 			Vector<uint8_t> data;
 			_load_image_data(splash_bg_color_image, data);
 			store_image(SPLASH_BG_COLOR_PATH, data);
@@ -1555,20 +1555,20 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		// the default image from the export template will be used.
 
 		for (int i = 0; i < icon_densities_count; ++i) {
-			if (main_image.is_valid() && !main_image->empty()) {
+			if (main_image.is_valid() && !main_image->is_empty()) {
 				Vector<uint8_t> data;
 				_process_launcher_icons(launcher_icons[i].export_path, main_image, launcher_icons[i].dimensions, data);
 				store_image(launcher_icons[i], data);
 			}
 
-			if (foreground.is_valid() && !foreground->empty()) {
+			if (foreground.is_valid() && !foreground->is_empty()) {
 				Vector<uint8_t> data;
 				_process_launcher_icons(launcher_adaptive_icon_foregrounds[i].export_path, foreground,
 						launcher_adaptive_icon_foregrounds[i].dimensions, data);
 				store_image(launcher_adaptive_icon_foregrounds[i], data);
 			}
 
-			if (background.is_valid() && !background->empty()) {
+			if (background.is_valid() && !background->is_empty()) {
 				Vector<uint8_t> data;
 				_process_launcher_icons(launcher_adaptive_icon_backgrounds[i].export_path, background,
 						launcher_adaptive_icon_backgrounds[i].dimensions, data);
@@ -1962,7 +1962,7 @@ public:
 
 		String rk = p_preset->get("keystore/release");
 
-		if (!rk.empty() && !FileAccess::exists(rk)) {
+		if (!rk.is_empty() && !FileAccess::exists(rk)) {
 			valid = false;
 			err += TTR("Release keystore incorrectly configured in the export preset.") + "\n";
 		}
@@ -2019,7 +2019,7 @@ public:
 		// Ensure that `Use Custom Build` is enabled if a plugin is selected.
 		String enabled_plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
 		bool custom_build_enabled = p_preset->get("custom_template/use_custom_build");
-		if (!enabled_plugins_names.empty() && !custom_build_enabled) {
+		if (!enabled_plugins_names.is_empty() && !custom_build_enabled) {
 			valid = false;
 			err += TTR("\"Use Custom Build\" must be enabled to use the plugins.");
 			err += "\n";
@@ -2189,7 +2189,7 @@ public:
 			password = p_preset->get("keystore/debug_password");
 			user = p_preset->get("keystore/debug_user");
 
-			if (keystore.empty()) {
+			if (keystore.is_empty()) {
 				keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
 				password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
 				user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
@@ -2549,27 +2549,27 @@ public:
 			}
 
 			// Process the splash image
-			if (file == SPLASH_IMAGE_EXPORT_PATH && splash_image.is_valid() && !splash_image->empty()) {
+			if (file == SPLASH_IMAGE_EXPORT_PATH && splash_image.is_valid() && !splash_image->is_empty()) {
 				_load_image_data(splash_image, data);
 			}
 
 			// Process the splash bg color image
-			if (file == SPLASH_BG_COLOR_PATH && splash_bg_color_image.is_valid() && !splash_bg_color_image->empty()) {
+			if (file == SPLASH_BG_COLOR_PATH && splash_bg_color_image.is_valid() && !splash_bg_color_image->is_empty()) {
 				_load_image_data(splash_bg_color_image, data);
 			}
 
 			for (int i = 0; i < icon_densities_count; ++i) {
-				if (main_image.is_valid() && !main_image->empty()) {
+				if (main_image.is_valid() && !main_image->is_empty()) {
 					if (file == launcher_icons[i].export_path) {
 						_process_launcher_icons(file, main_image, launcher_icons[i].dimensions, data);
 					}
 				}
-				if (foreground.is_valid() && !foreground->empty()) {
+				if (foreground.is_valid() && !foreground->is_empty()) {
 					if (file == launcher_adaptive_icon_foregrounds[i].export_path) {
 						_process_launcher_icons(file, foreground, launcher_adaptive_icon_foregrounds[i].dimensions, data);
 					}
 				}
-				if (background.is_valid() && !background->empty()) {
+				if (background.is_valid() && !background->is_empty()) {
 					if (file == launcher_adaptive_icon_backgrounds[i].export_path) {
 						_process_launcher_icons(file, background, launcher_adaptive_icon_backgrounds[i].dimensions, data);
 					}
@@ -2620,7 +2620,7 @@ public:
 			ret = unzGoToNextFile(pkg);
 		}
 
-		if (!invalid_abis.empty()) {
+		if (!invalid_abis.is_empty()) {
 			String unsupported_arch = String(", ").join(invalid_abis);
 			EditorNode::add_io_error("Missing libraries in the export template for the selected architectures: " + unsupported_arch + ".\n" +
 									 "Please build a template with all required libraries, or uncheck the missing architectures in the export preset.");

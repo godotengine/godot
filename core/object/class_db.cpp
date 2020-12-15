@@ -377,7 +377,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			while ((k = t->method_map.next(k))) {
 				String name = k->operator String();
 
-				ERR_CONTINUE(name.empty());
+				ERR_CONTINUE(name.is_empty());
 
 				if (name[0] == '_') {
 					continue; // Ignore non-virtual methods that start with an underscore

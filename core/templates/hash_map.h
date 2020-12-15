@@ -497,7 +497,7 @@ public:
 		return elements;
 	}
 
-	inline bool empty() const {
+	inline bool is_empty() const {
 		return elements == 0;
 	}
 

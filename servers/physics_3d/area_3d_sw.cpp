@@ -199,7 +199,7 @@ void Area3DSW::set_monitorable(bool p_monitorable) {
 }
 
 void Area3DSW::call_queries() {
-	if (monitor_callback_id.is_valid() && !monitored_bodies.empty()) {
+	if (monitor_callback_id.is_valid() && !monitored_bodies.is_empty()) {
 		Variant res[5];
 		Variant *resptr[5];
 		for (int i = 0; i < 5; i++) {
@@ -234,7 +234,7 @@ void Area3DSW::call_queries() {
 		}
 	}
 
-	if (area_monitor_callback_id.is_valid() && !monitored_areas.empty()) {
+	if (area_monitor_callback_id.is_valid() && !monitored_areas.is_empty()) {
 		Variant res[5];
 		Variant *resptr[5];
 		for (int i = 0; i < 5; i++) {

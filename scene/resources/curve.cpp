@@ -602,7 +602,7 @@ void Curve2D::remove_point(int p_index) {
 }
 
 void Curve2D::clear_points() {
-	if (!points.empty()) {
+	if (!points.is_empty()) {
 		points.clear();
 		baked_cache_dirty = true;
 		emit_signal(CoreStringNames::get_singleton()->changed);
@@ -1087,7 +1087,7 @@ void Curve3D::remove_point(int p_index) {
 }
 
 void Curve3D::clear_points() {
-	if (!points.empty()) {
+	if (!points.is_empty()) {
 		points.clear();
 		baked_cache_dirty = true;
 		emit_signal(CoreStringNames::get_singleton()->changed);

@@ -171,7 +171,7 @@ bool TextServerAdvanced::load_support_data(const String &p_filename) {
 	}
 #else
 	if (icu_data == nullptr) {
-		String filename = (p_filename.empty()) ? String("res://") + _MKSTR(ICU_DATA_NAME) : p_filename;
+		String filename = (p_filename.is_empty()) ? String("res://") + _MKSTR(ICU_DATA_NAME) : p_filename;
 
 		FileAccess *f = FileAccess::open(filename, FileAccess::READ);
 		if (!f) {
@@ -1061,7 +1061,7 @@ bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_te
 	ERR_FAIL_COND_V(!sd, false);
 	ERR_FAIL_COND_V(p_size <= 0, false);
 
-	if (p_text.empty()) {
+	if (p_text.is_empty()) {
 		return true;
 	}
 
@@ -1984,7 +1984,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 			ftrs.push_back(feature);
 		}
 	}
-	hb_shape(hb_font, p_sd->hb_buffer, ftrs.empty() ? nullptr : &ftrs[0], ftrs.size());
+	hb_shape(hb_font, p_sd->hb_buffer, ftrs.is_empty() ? nullptr : &ftrs[0], ftrs.size());
 
 	unsigned int glyph_count = 0;
 	hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(p_sd->hb_buffer, &glyph_count);
@@ -2131,7 +2131,7 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 		sd->script_iter = memnew(ScriptIterator(sd->text, 0, sd->text.length()));
 	}
 
-	if (sd->bidi_override.empty()) {
+	if (sd->bidi_override.is_empty()) {
 		sd->bidi_override.push_back(Vector2i(0, sd->end));
 	}
 

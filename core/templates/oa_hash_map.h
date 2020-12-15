@@ -190,7 +190,7 @@ public:
 	_FORCE_INLINE_ uint32_t get_capacity() const { return capacity; }
 	_FORCE_INLINE_ uint32_t get_num_elements() const { return num_elements; }
 
-	bool empty() const {
+	bool is_empty() const {
 		return num_elements == 0;
 	}
 

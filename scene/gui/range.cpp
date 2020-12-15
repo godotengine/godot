@@ -34,7 +34,7 @@ String Range::get_configuration_warning() const {
 	String warning = Control::get_configuration_warning();
 
 	if (shared->exp_ratio && shared->min <= 0) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0.");

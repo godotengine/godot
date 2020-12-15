@@ -116,7 +116,7 @@ String NavigationObstacle3D::get_configuration_warning() const {
 	String warning = Node::get_configuration_warning();
 
 	if (!Object::cast_to<Node3D>(get_parent())) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("The NavigationObstacle3D only serves to provide collision avoidance to a spatial object.");

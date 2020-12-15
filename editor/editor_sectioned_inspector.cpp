@@ -234,7 +234,7 @@ void SectionedInspector::update_category_list() {
 			continue;
 		}
 
-		if (!filter.empty() && pi.name.findn(filter) == -1 && pi.name.replace("/", " ").capitalize().findn(filter) == -1) {
+		if (!filter.is_empty() && pi.name.findn(filter) == -1 && pi.name.replace("/", " ").capitalize().findn(filter) == -1) {
 			continue;
 		}
 

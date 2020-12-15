@@ -361,7 +361,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (current_edited_scene_root) {
 				String root_class = current_edited_scene_root->get_class_name();
 				static Vector<String> preferred_types;
-				if (preferred_types.empty()) {
+				if (preferred_types.is_empty()) {
 					preferred_types.push_back("Control");
 					preferred_types.push_back("Node2D");
 					preferred_types.push_back("Node3D");
@@ -416,7 +416,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			Node *selected = scene_tree->get_selected();
-			if (!selected && !editor_selection->get_selected_node_list().empty()) {
+			if (!selected && !editor_selection->get_selected_node_list().is_empty()) {
 				selected = editor_selection->get_selected_node_list().front()->get();
 			}
 
@@ -438,7 +438,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			Array selection = editor_selection->get_selected_nodes();
 
-			if (selection.empty()) {
+			if (selection.is_empty()) {
 				return;
 			}
 
@@ -737,7 +737,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			List<Node *> remove_list = editor_selection->get_selected_node_list();
 
-			if (remove_list.empty()) {
+			if (remove_list.is_empty()) {
 				return;
 			}
 
@@ -1529,7 +1529,7 @@ void SceneTreeDock::_node_reparent(NodePath p_path, bool p_keep_global_xform) {
 
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
-	if (selection.empty()) {
+	if (selection.is_empty()) {
 		return; // Nothing to reparent.
 	}
 
@@ -1703,7 +1703,7 @@ bool SceneTreeDock::_is_collapsed_recursive(TreeItem *p_item) const {
 	List<TreeItem *> needs_check;
 	needs_check.push_back(p_item);
 
-	while (!needs_check.empty()) {
+	while (!needs_check.is_empty()) {
 		TreeItem *item = needs_check.back()->get();
 		needs_check.pop_back();
 
@@ -1725,7 +1725,7 @@ void SceneTreeDock::_set_collapsed_recursive(TreeItem *p_item, bool p_collapsed)
 	List<TreeItem *> to_collapse;
 	to_collapse.push_back(p_item);
 
-	while (!to_collapse.empty()) {
+	while (!to_collapse.is_empty()) {
 		TreeItem *item = to_collapse.back()->get();
 		to_collapse.pop_back();
 
@@ -1742,7 +1742,7 @@ void SceneTreeDock::_set_collapsed_recursive(TreeItem *p_item, bool p_collapsed)
 void SceneTreeDock::_script_created(Ref<Script> p_script) {
 	List<Node *> selected = editor_selection->get_selected_node_list();
 
-	if (selected.empty()) {
+	if (selected.is_empty()) {
 		return;
 	}
 
@@ -1811,7 +1811,7 @@ void SceneTreeDock::_toggle_editable_children(Node *p_node) {
 void SceneTreeDock::_delete_confirm() {
 	List<Node *> remove_list = editor_selection->get_selected_node_list();
 
-	if (remove_list.empty()) {
+	if (remove_list.is_empty()) {
 		return;
 	}
 
@@ -2349,7 +2349,7 @@ void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
 void SceneTreeDock::_nodes_dragged(Array p_nodes, NodePath p_to, int p_type) {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
-	if (selection.empty()) {
+	if (selection.is_empty()) {
 		return; //nothing to reparent
 	}
 
@@ -2601,7 +2601,7 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 	}
 
 	List<Node *> selection = editor_selection->get_selected_node_list();
-	if (selection.empty()) {
+	if (selection.is_empty()) {
 		return;
 	}
 

@@ -274,7 +274,7 @@ public:
 					if (normal == p_vert.normal) {
 						if (uv == p_vert.uv) {
 							if (uv2 == p_vert.uv2) {
-								if (!weights.empty() || !p_vert.weights.empty()) {
+								if (!weights.is_empty() || !p_vert.weights.is_empty()) {
 									if (weights.size() == p_vert.weights.size()) {
 										for (int i = 0; i < weights.size(); i++) {
 											if (weights[i].bone_idx != p_vert.weights[i].bone_idx) {

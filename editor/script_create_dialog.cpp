@@ -50,7 +50,7 @@ void ScriptCreateDialog::_theme_changed() {
 	}
 
 	String last_lang = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
-	if (!last_lang.empty()) {
+	if (!last_lang.is_empty()) {
 		for (int i = 0; i < language_menu->get_item_count(); i++) {
 			if (language_menu->get_item_text(i) == last_lang) {
 				language_menu->select(i);

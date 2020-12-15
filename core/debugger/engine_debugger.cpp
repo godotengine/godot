@@ -135,7 +135,7 @@ void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_idle_ticks, ui
 
 void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Vector<String> p_breakpoints) {
 	register_uri_handler("tcp://", RemoteDebuggerPeerTCP::create); // TCP is the default protocol. Platforms/modules can add more.
-	if (p_uri.empty()) {
+	if (p_uri.is_empty()) {
 		return;
 	}
 	if (p_uri == "local://") {

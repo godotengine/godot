@@ -36,7 +36,7 @@
 #include <stdlib.h>
 
 bool UPNP::is_common_device(const String &dev) const {
-	return dev.empty() ||
+	return dev.is_empty() ||
 		   dev.find("InternetGatewayDevice") >= 0 ||
 		   dev.find("WANIPConnection") >= 0 ||
 		   dev.find("WANPPPConnection") >= 0 ||
@@ -76,7 +76,7 @@ int UPNP::discover(int timeout, int ttl, const String &device_filter) {
 	struct UPNPDev *dev = devlist;
 
 	while (dev) {
-		if (device_filter.empty() || strstr(dev->st, device_filter.utf8().get_data())) {
+		if (device_filter.is_empty() || strstr(dev->st, device_filter.utf8().get_data())) {
 			add_device_to_list(dev, devlist);
 		}
 

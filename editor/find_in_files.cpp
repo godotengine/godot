@@ -499,8 +499,8 @@ void FindInFilesDialog::_on_search_text_modified(String text) {
 	ERR_FAIL_COND(!_find_button);
 	ERR_FAIL_COND(!_replace_button);
 
-	_find_button->set_disabled(get_search_text().empty());
-	_replace_button->set_disabled(get_search_text().empty());
+	_find_button->set_disabled(get_search_text().is_empty());
+	_replace_button->set_disabled(get_search_text().is_empty());
 }
 
 void FindInFilesDialog::_on_search_text_entered(String text) {

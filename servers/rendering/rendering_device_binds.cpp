@@ -163,7 +163,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 			ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "When writing compute shaders, [compute] mustbe the only stage present.");
 		}
 
-		if (version_texts.empty()) {
+		if (version_texts.is_empty()) {
 			version_texts[""] = ""; //make sure a default version exists
 		}
 

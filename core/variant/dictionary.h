@@ -60,7 +60,7 @@ public:
 	Variant get(const Variant &p_key, const Variant &p_default) const;
 
 	int size() const;
-	bool empty() const;
+	bool is_empty() const;
 	void clear();
 
 	bool has(const Variant &p_key) const;

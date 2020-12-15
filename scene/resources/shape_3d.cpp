@@ -66,7 +66,7 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 
 	debug_mesh_cache = Ref<ArrayMesh>(memnew(ArrayMesh));
 
-	if (!lines.empty()) {
+	if (!lines.is_empty()) {
 		//make mesh
 		Vector<Vector3> array;
 		array.resize(lines.size());

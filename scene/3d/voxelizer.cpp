@@ -294,7 +294,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 Vector<Color> Voxelizer::_get_bake_texture(Ref<Image> p_image, const Color &p_color_mul, const Color &p_color_add) {
 	Vector<Color> ret;
 
-	if (p_image.is_null() || p_image->empty()) {
+	if (p_image.is_null() || p_image->is_empty()) {
 		ret.resize(bake_texture_size * bake_texture_size);
 		for (int i = 0; i < bake_texture_size * bake_texture_size; i++) {
 			ret.write[i] = p_color_add;

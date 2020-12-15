@@ -1314,7 +1314,7 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 }
 
 bool ItemList::is_pos_at_end_of_items(const Point2 &p_pos) const {
-	if (items.empty()) {
+	if (items.is_empty()) {
 		return true;
 	}
 

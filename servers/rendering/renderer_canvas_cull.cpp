@@ -874,7 +874,7 @@ void RendererCanvasCull::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	ERR_FAIL_COND(uv_size != 0 && (uv_size != pointcount));
 #endif
 	Vector<int> indices = Geometry2D::triangulate_polygon(p_points);
-	ERR_FAIL_COND_MSG(indices.empty(), "Invalid polygon data, triangulation failed.");
+	ERR_FAIL_COND_MSG(indices.is_empty(), "Invalid polygon data, triangulation failed.");
 
 	Item::CommandPolygon *polygon = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_COND(!polygon);
@@ -889,10 +889,10 @@ void RendererCanvasCull::canvas_item_add_triangle_array(RID p_item, const Vector
 
 	int vertex_count = p_points.size();
 	ERR_FAIL_COND(vertex_count == 0);
-	ERR_FAIL_COND(!p_colors.empty() && p_colors.size() != vertex_count && p_colors.size() != 1);
-	ERR_FAIL_COND(!p_uvs.empty() && p_uvs.size() != vertex_count);
-	ERR_FAIL_COND(!p_bones.empty() && p_bones.size() != vertex_count * 4);
-	ERR_FAIL_COND(!p_weights.empty() && p_weights.size() != vertex_count * 4);
+	ERR_FAIL_COND(!p_colors.is_empty() && p_colors.size() != vertex_count && p_colors.size() != 1);
+	ERR_FAIL_COND(!p_uvs.is_empty() && p_uvs.size() != vertex_count);
+	ERR_FAIL_COND(!p_bones.is_empty() && p_bones.size() != vertex_count * 4);
+	ERR_FAIL_COND(!p_weights.is_empty() && p_weights.size() != vertex_count * 4);
 
 	Vector<int> indices = p_indices;
 

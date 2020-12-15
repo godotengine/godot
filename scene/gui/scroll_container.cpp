@@ -558,7 +558,7 @@ String ScrollContainer::get_configuration_warning() const {
 	}
 
 	if (found != 1) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox, HBox, etc.), or a Control and set the custom minimum size manually.");

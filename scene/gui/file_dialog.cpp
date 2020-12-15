@@ -434,7 +434,7 @@ void FileDialog::update_file_list() {
 	dirs.sort_custom<NaturalNoCaseComparator>();
 	files.sort_custom<NaturalNoCaseComparator>();
 
-	while (!dirs.empty()) {
+	while (!dirs.is_empty()) {
 		String &dir_name = dirs.front()->get();
 		TreeItem *ti = tree->create_item(root);
 		ti->set_text(0, dir_name);
@@ -478,8 +478,8 @@ void FileDialog::update_file_list() {
 
 	String base_dir = dir_access->get_current_dir();
 
-	while (!files.empty()) {
-		bool match = patterns.empty();
+	while (!files.is_empty()) {
+		bool match = patterns.is_empty();
 		String match_str;
 
 		for (List<String>::Element *E = patterns.front(); E; E = E->next()) {

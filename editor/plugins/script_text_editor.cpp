@@ -349,7 +349,7 @@ void ScriptTextEditor::update_settings() {
 bool ScriptTextEditor::is_unsaved() {
 	const bool unsaved =
 			code_editor->get_text_editor()->get_version() != code_editor->get_text_editor()->get_saved_version() ||
-			script->get_path().empty(); // In memory.
+			script->get_path().is_empty(); // In memory.
 	return unsaved;
 }
 
@@ -427,7 +427,7 @@ String ScriptTextEditor::get_name() {
 	if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
 		name = script->get_path().get_file();
 		if (is_unsaved()) {
-			if (script->get_path().empty()) {
+			if (script->get_path().is_empty()) {
 				name = TTR("[unsaved]");
 			}
 			name += "(*)";
@@ -551,7 +551,7 @@ void ScriptTextEditor::_validate_script() {
 			if (safe_lines.has(i + 1)) {
 				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
 				last_is_safe = true;
-			} else if (last_is_safe && (te->is_line_comment(i) || te->get_line(i).strip_edges().empty())) {
+			} else if (last_is_safe && (te->is_line_comment(i) || te->get_line(i).strip_edges().is_empty())) {
 				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
 			} else {
 				te->set_line_gutter_item_color(i, line_number_gutter, default_line_number_color);

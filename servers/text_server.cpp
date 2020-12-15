@@ -550,7 +550,7 @@ void TextServer::draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_po
 Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const Vector<float> &p_width, int p_start, bool p_once, uint8_t /*TextBreakFlag*/ p_break_flags) const {
 	Vector<Vector2i> lines;
 
-	ERR_FAIL_COND_V(p_width.empty(), lines);
+	ERR_FAIL_COND_V(p_width.is_empty(), lines);
 
 	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
 	const Vector<Glyph> &logical = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);

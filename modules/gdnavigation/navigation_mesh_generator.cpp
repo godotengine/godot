@@ -151,7 +151,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 	if (Object::cast_to<CSGShape3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 		CSGShape3D *csg_shape = Object::cast_to<CSGShape3D>(p_node);
 		Array meshes = csg_shape->get_meshes();
-		if (!meshes.empty()) {
+		if (!meshes.is_empty()) {
 			Ref<Mesh> mesh = meshes[1];
 			if (mesh.is_valid()) {
 				_add_mesh(mesh, p_accumulated_transform * csg_shape->get_transform(), p_verticies, p_indices);
