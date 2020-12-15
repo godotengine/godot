@@ -753,9 +753,6 @@ void Generic6DOFJoint::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flag_z", "flag", "value"), &Generic6DOFJoint::set_flag_z);
 	ClassDB::bind_method(D_METHOD("get_flag_z", "flag"), &Generic6DOFJoint::get_flag_z);
 
-	ClassDB::bind_method(D_METHOD("set_precision", "precision"), &Generic6DOFJoint::set_precision);
-	ClassDB::bind_method(D_METHOD("get_precision"), &Generic6DOFJoint::get_precision);
-
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "linear_limit_x/enabled"), "set_flag_x", "get_flag_x", FLAG_ENABLE_LINEAR_LIMIT);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "linear_limit_x/upper_distance"), "set_param_x", "get_param_x", PARAM_LINEAR_UPPER_LIMIT);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "linear_limit_x/lower_distance"), "set_param_x", "get_param_x", PARAM_LINEAR_LOWER_LIMIT);
@@ -843,8 +840,6 @@ void Generic6DOFJoint::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_spring_z/stiffness"), "set_param_z", "get_param_z", PARAM_ANGULAR_SPRING_STIFFNESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_spring_z/damping"), "set_param_z", "get_param_z", PARAM_ANGULAR_SPRING_DAMPING);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_spring_z/equilibrium_point"), "set_param_z", "get_param_z", PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT);
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "precision", PROPERTY_HINT_RANGE, "1,99999,1"), "set_precision", "get_precision");
 
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_LOWER_LIMIT);
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_UPPER_LIMIT);
@@ -964,14 +959,6 @@ bool Generic6DOFJoint::get_flag_z(Flag p_flag) const {
 	return flags_z[p_flag];
 }
 
-void Generic6DOFJoint::set_precision(int p_precision) {
-	precision = p_precision;
-
-	PhysicsServer::get_singleton()->generic_6dof_joint_set_precision(
-			get_joint(),
-			precision);
-}
-
 RID Generic6DOFJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 
 	Transform gt = get_global_transform();
@@ -1006,8 +993,7 @@ RID Generic6DOFJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b)
 	return j;
 }
 
-Generic6DOFJoint::Generic6DOFJoint() :
-		precision(1) {
+Generic6DOFJoint::Generic6DOFJoint() {
 
 	set_param_x(PARAM_LINEAR_LOWER_LIMIT, 0);
 	set_param_x(PARAM_LINEAR_UPPER_LIMIT, 0);
