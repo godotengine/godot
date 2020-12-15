@@ -80,7 +80,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 
 	Node **ret_nodes = (Node **)alloca(sizeof(Node *) * nc);
 
-	bool gen_node_path_cache = p_edit_state != GEN_EDIT_STATE_DISABLED && node_path_cache.empty();
+	bool gen_node_path_cache = p_edit_state != GEN_EDIT_STATE_DISABLED && node_path_cache.is_empty();
 
 	Map<Ref<Resource>, Ref<Resource>> resources_local_to_scene;
 
@@ -603,7 +603,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 
 	// Save the right type. If this node was created by an instance
 	// then flag that the node should not be created but reused
-	if (pack_state_stack.empty()) {
+	if (pack_state_stack.is_empty()) {
 		//this node is not part of an instancing process, so save the type
 		nd.type = _nm_get_string(p_node->get_class(), name_map);
 	} else {
@@ -1349,7 +1349,7 @@ NodePath SceneState::get_node_path(int p_idx, bool p_for_parent) const {
 		sub_path.insert(0, base_path.get_name(i));
 	}
 
-	if (sub_path.empty()) {
+	if (sub_path.is_empty()) {
 		return NodePath(".");
 	}
 

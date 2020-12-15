@@ -293,7 +293,7 @@ void BoneTransformEditor::_key_button_pressed() {
 	const BoneId bone_id = property.get_slicec('/', 1).to_int();
 	const String name = skeleton->get_bone_name(bone_id);
 
-	if (name.empty())
+	if (name.is_empty())
 		return;
 
 	// Need to normalize the basis before you key it

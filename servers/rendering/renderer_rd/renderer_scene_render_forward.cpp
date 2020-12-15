@@ -894,7 +894,7 @@ void RendererSceneRenderForward::_fill_instances(RenderList::Element **p_element
 			} else {
 				id.gi_offset = 0xFFFFFFFF;
 			}
-		} else if (!e->instance->lightmap_sh.empty()) {
+		} else if (!e->instance->lightmap_sh.is_empty()) {
 			if (lightmap_captures_used < scene_state.max_lightmap_captures) {
 				const Color *src_capture = e->instance->lightmap_sh.ptr();
 				LightmapCaptureData &lcd = scene_state.lightmap_captures[lightmap_captures_used];
@@ -914,7 +914,7 @@ void RendererSceneRenderForward::_fill_instances(RenderList::Element **p_element
 				id.flags |= INSTANCE_DATA_FLAG_USE_GI_BUFFERS;
 			}
 
-			if (!low_end && !e->instance->gi_probe_instances.empty()) {
+			if (!low_end && !e->instance->gi_probe_instances.is_empty()) {
 				uint32_t written = 0;
 				for (int j = 0; j < e->instance->gi_probe_instances.size(); j++) {
 					RID probe = e->instance->gi_probe_instances[j];
@@ -1521,7 +1521,7 @@ void RendererSceneRenderForward::_add_geometry_with_material(InstanceBase *p_ins
 	e->geometry_index = p_geometry_index;
 	e->material_index = e->material->index;
 	e->uses_instancing = e->instance->base_type == RS::INSTANCE_MULTIMESH;
-	e->uses_lightmap = e->instance->lightmap != nullptr || !e->instance->lightmap_sh.empty();
+	e->uses_lightmap = e->instance->lightmap != nullptr || !e->instance->lightmap_sh.is_empty();
 	e->uses_forward_gi = has_alpha && (e->instance->gi_probe_instances.size() || p_using_sdfgi);
 	e->shader_index = e->shader_index;
 	e->depth_layer = e->instance->depth_layer;

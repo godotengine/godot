@@ -349,8 +349,8 @@ bool CollisionObject3D::get_capture_input_on_drag() const {
 String CollisionObject3D::get_configuration_warning() const {
 	String warning = Node3D::get_configuration_warning();
 
-	if (shapes.empty()) {
-		if (!warning.empty()) {
+	if (shapes.is_empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape3D or CollisionPolygon3D as a child to define its shape.");

@@ -65,7 +65,7 @@ String XRCamera3D::get_configuration_warning() const {
 	// must be child node of XROrigin3D!
 	XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
 	if (origin == nullptr) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("XRCamera3D must have an XROrigin3D node as its parent.");
@@ -372,14 +372,14 @@ String XRController3D::get_configuration_warning() const {
 	// must be child node of XROrigin!
 	XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
 	if (origin == nullptr) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("XRController3D must have an XROrigin3D node as its parent.");
 	};
 
 	if (controller_id == 0) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("The controller ID must not be 0 or this controller won't be bound to an actual controller.");
@@ -497,14 +497,14 @@ String XRAnchor3D::get_configuration_warning() const {
 	// must be child node of XROrigin3D!
 	XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
 	if (origin == nullptr) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("XRAnchor3D must have an XROrigin3D node as its parent.");
 	};
 
 	if (anchor_id == 0) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("The anchor ID must not be 0 or this anchor won't be bound to an actual anchor.");
@@ -536,7 +536,7 @@ String XROrigin3D::get_configuration_warning() const {
 	String warning = Node3D::get_configuration_warning();
 
 	if (tracked_camera == nullptr) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("XROrigin3D requires an XRCamera3D child node.");

@@ -259,11 +259,11 @@ TEST_CASE("[GDNative String] Testing for empty string") {
 	godot_string s;
 
 	godot_string_new_with_latin1_chars(&s, "Mellon");
-	CHECK(!godot_string_empty(&s));
+	CHECK(!godot_string_is_empty(&s));
 	godot_string_destroy(&s);
 
 	godot_string_new_with_latin1_chars(&s, "");
-	CHECK(godot_string_empty(&s));
+	CHECK(godot_string_is_empty(&s));
 	godot_string_destroy(&s);
 }
 

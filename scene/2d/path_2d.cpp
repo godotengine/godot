@@ -257,7 +257,7 @@ String PathFollow2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	if (!Object::cast_to<Path2D>(get_parent())) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("PathFollow2D only works when set as a child of a Path2D node.");

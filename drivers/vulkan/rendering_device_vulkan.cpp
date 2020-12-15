@@ -4577,7 +4577,7 @@ void RenderingDeviceVulkan::_descriptor_pool_free(const DescriptorPoolKey &p_key
 		vkDestroyDescriptorPool(device, p_pool->pool, nullptr);
 		descriptor_pools[p_key].erase(p_pool);
 		memdelete(p_pool);
-		if (descriptor_pools[p_key].empty()) {
+		if (descriptor_pools[p_key].is_empty()) {
 			descriptor_pools.erase(p_key);
 		}
 	}

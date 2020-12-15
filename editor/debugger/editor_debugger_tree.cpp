@@ -242,7 +242,7 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 		} break;
 		case ITEM_MENU_COPY_NODE_PATH: {
 			String text = get_selected_path();
-			if (text.empty()) {
+			if (text.is_empty()) {
 				return;
 			} else if (text == "/root") {
 				text = ".";

@@ -350,7 +350,7 @@ void FileAccessNetwork::_queue_page(int p_page) const {
 	if (p_page >= pages.size()) {
 		return;
 	}
-	if (pages[p_page].buffer.empty() && !pages[p_page].queued) {
+	if (pages[p_page].buffer.is_empty() && !pages[p_page].queued) {
 		FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 		{
 			MutexLock lock(nc->blockrequest_mutex);
@@ -386,7 +386,7 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 
 		if (page != last_page) {
 			buffer_mutex.lock();
-			if (pages[page].buffer.empty()) {
+			if (pages[page].buffer.is_empty()) {
 				waiting_on_page = page;
 				for (int j = 0; j < read_ahead; j++) {
 					_queue_page(page + j);

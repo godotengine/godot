@@ -680,7 +680,7 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 
 			if (p_state.has("animation")) {
 				String anim = p_state["animation"];
-				if (!anim.empty() && player->has_animation(anim)) {
+				if (!anim.is_empty() && player->has_animation(anim)) {
 					_select_anim_by_name(anim);
 					_animation_edit();
 				}

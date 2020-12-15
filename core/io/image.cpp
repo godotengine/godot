@@ -375,7 +375,7 @@ Image::Image3DValidateError Image::validate_3d_image(Image::Format p_format, int
 			if (idx >= p_images.size()) {
 				return VALIDATE_3D_ERR_MISSING_IMAGES;
 			}
-			if (p_images[idx].is_null() || p_images[idx]->empty()) {
+			if (p_images[idx].is_null() || p_images[idx]->is_empty()) {
 				return VALIDATE_3D_ERR_IMAGE_EMPTY;
 			}
 			if (p_images[idx]->get_format() != p_format) {
@@ -1756,7 +1756,7 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 	double *normal_sat = nullptr; //summed area table for normalmap
 	int normal_w = 0, normal_h = 0;
 
-	ERR_FAIL_COND_V_MSG(p_normal_map.is_null() || p_normal_map->empty(), ERR_INVALID_PARAMETER, "Must provide a valid normalmap for roughness mipmaps");
+	ERR_FAIL_COND_V_MSG(p_normal_map.is_null() || p_normal_map->is_empty(), ERR_INVALID_PARAMETER, "Must provide a valid normalmap for roughness mipmaps");
 
 	Ref<Image> nm = p_normal_map->duplicate();
 	if (nm->is_compressed()) {
@@ -1950,7 +1950,7 @@ void Image::clear_mipmaps() {
 		return;
 	}
 
-	if (empty()) {
+	if (is_empty()) {
 		return;
 	}
 
@@ -1961,7 +1961,7 @@ void Image::clear_mipmaps() {
 	mipmaps = false;
 }
 
-bool Image::empty() const {
+bool Image::is_empty() const {
 	return (data.size() == 0);
 }
 
@@ -3090,7 +3090,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create", "width", "height", "use_mipmaps", "format"), &Image::_create_empty);
 	ClassDB::bind_method(D_METHOD("create_from_data", "width", "height", "use_mipmaps", "format", "data"), &Image::_create_from_data);
 
-	ClassDB::bind_method(D_METHOD("is_empty"), &Image::empty);
+	ClassDB::bind_method(D_METHOD("is_empty"), &Image::is_empty);
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &Image::load);
 	ClassDB::bind_method(D_METHOD("save_png", "path"), &Image::save_png);
@@ -3585,7 +3585,7 @@ Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
 		copy_internals_from(_png_mem_loader_func(p_mem_png_jpg, p_len));
 	}
 
-	if (empty() && _jpg_mem_loader_func) {
+	if (is_empty() && _jpg_mem_loader_func) {
 		copy_internals_from(_jpg_mem_loader_func(p_mem_png_jpg, p_len));
 	}
 }

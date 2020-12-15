@@ -810,7 +810,7 @@ void VisualScript::get_custom_signal_list(List<StringName> *r_custom_signals) co
 int VisualScript::get_available_id() const {
 	int max_id = 0;
 	for (Map<StringName, Function>::Element *E = functions.front(); E; E = E->next()) {
-		if (E->get().nodes.empty()) {
+		if (E->get().nodes.is_empty()) {
 			continue;
 		}
 
@@ -1401,7 +1401,7 @@ Set<int> VisualScript::get_output_sequence_ports_connected(const String &edited_
 }
 
 VisualScript::~VisualScript() {
-	while (!functions.empty()) {
+	while (!functions.is_empty()) {
 		remove_function(functions.front()->key());
 	}
 }
@@ -1506,7 +1506,7 @@ void VisualScriptInstance::_dependency_step(VisualScriptNodeInstance *node, int 
 
 	pass_stack[node->pass_idx] = p_pass;
 
-	if (!node->dependencies.empty()) {
+	if (!node->dependencies.is_empty()) {
 		int dc = node->dependencies.size();
 		VisualScriptNodeInstance **deps = node->dependencies.ptrw();
 
@@ -1593,7 +1593,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 		} else {
 			//run dependencies first
 
-			if (!node->dependencies.empty()) {
+			if (!node->dependencies.is_empty()) {
 				int dc = node->dependencies.size();
 				VisualScriptNodeInstance **deps = node->dependencies.ptrw();
 

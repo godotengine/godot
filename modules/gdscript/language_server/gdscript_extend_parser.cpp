@@ -147,7 +147,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 	r_symbol.script_path = path;
 	r_symbol.children.clear();
 	r_symbol.name = p_class->identifier != nullptr ? String(p_class->identifier->name) : String();
-	if (r_symbol.name.empty()) {
+	if (r_symbol.name.is_empty()) {
 		r_symbol.name = path.get_file();
 	}
 	r_symbol.kind = lsp::SymbolKind::Class;
@@ -215,9 +215,9 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				String value_text;
 				if (default_value.get_type() == Variant::OBJECT) {
 					RES res = default_value;
-					if (res.is_valid() && !res->get_path().empty()) {
+					if (res.is_valid() && !res->get_path().is_empty()) {
 						value_text = "preload(\"" + res->get_path() + "\")";
-						if (symbol.documentation.empty()) {
+						if (symbol.documentation.is_empty()) {
 							if (Map<String, ExtendGDScriptParser *>::Element *S = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(res->get_path())) {
 								symbol.documentation = S->get()->class_symbol.documentation;
 							}
@@ -228,7 +228,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				} else {
 					value_text = JSON::print(default_value);
 				}
-				if (!value_text.empty()) {
+				if (!value_text.is_empty()) {
 					symbol.detail += " = " + value_text;
 				}
 
@@ -453,7 +453,7 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_c
 			String line = lines[i];
 			String first_part = line.substr(0, p_cursor.character);
 			String last_part = line.substr(p_cursor.character + 1, lines[i].length());
-			if (!p_symbol.empty()) {
+			if (!p_symbol.is_empty()) {
 				String left_cursor_text;
 				for (int c = p_cursor.character - 1; c >= 0; c--) {
 					left_cursor_text = line.substr(c, p_cursor.character - c);
@@ -589,7 +589,7 @@ const lsp::DocumentSymbol *ExtendGDScriptParser::get_symbol_defined_at_line(int 
 }
 
 const lsp::DocumentSymbol *ExtendGDScriptParser::get_member_symbol(const String &p_name, const String &p_subclass) const {
-	if (p_subclass.empty()) {
+	if (p_subclass.is_empty()) {
 		const lsp::DocumentSymbol *const *ptr = members.getptr(p_name);
 		if (ptr) {
 			return *ptr;
@@ -611,7 +611,7 @@ const List<lsp::DocumentLink> &ExtendGDScriptParser::get_document_links() const 
 }
 
 const Array &ExtendGDScriptParser::get_member_completions() {
-	if (member_completions.empty()) {
+	if (member_completions.is_empty()) {
 		const String *name = members.next(nullptr);
 		while (name) {
 			const lsp::DocumentSymbol *symbol = members.get(*name);

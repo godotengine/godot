@@ -97,7 +97,7 @@ struct SpatialIndexer {
 			}
 		}
 
-		while (!removed.empty()) {
+		while (!removed.is_empty()) {
 			p_notifier->_exit_camera(removed.front()->get());
 			removed.pop_front();
 		}
@@ -125,7 +125,7 @@ struct SpatialIndexer {
 			removed.push_back(E->key());
 		}
 
-		while (!removed.empty()) {
+		while (!removed.is_empty()) {
 			removed.front()->get()->_exit_camera(p_camera);
 			removed.pop_front();
 		}
@@ -175,12 +175,12 @@ struct SpatialIndexer {
 				}
 			}
 
-			while (!added.empty()) {
+			while (!added.is_empty()) {
 				added.front()->get()->_enter_camera(E->key());
 				added.pop_front();
 			}
 
-			while (!removed.empty()) {
+			while (!removed.is_empty()) {
 				E->get().notifiers.erase(removed.front()->get());
 				removed.front()->get()->_exit_camera(E->key());
 				removed.pop_front();

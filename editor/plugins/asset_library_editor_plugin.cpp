@@ -702,7 +702,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 			}
 		}
 
-		if (!image->empty()) {
+		if (!image->is_empty()) {
 			switch (image_queue[p_queue_id].image_type) {
 				case IMAGE_QUEUE_ICON:
 
@@ -1151,7 +1151,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			asset_bottom_page = _make_pages(page, pages, page_len, total_items, result.size());
 			library_vb->add_child(asset_bottom_page);
 
-			if (result.empty()) {
+			if (result.is_empty()) {
 				if (filter->get_text() != String()) {
 					library_error->set_text(
 							vformat(TTR("No results for \"%s\"."), filter->get_text()));
@@ -1188,7 +1188,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				}
 			}
 
-			if (!result.empty()) {
+			if (!result.is_empty()) {
 				library_scroll->set_v_scroll(0);
 			}
 		} break;

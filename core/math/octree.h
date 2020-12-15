@@ -572,7 +572,7 @@ bool Octree<T, use_pairs, AL>::_remove_element_from_octant(Element *p_element, O
 
 		Octant *parent = p_octant->parent;
 
-		if (p_octant->children_count == 0 && p_octant->elements.empty() && p_octant->pairable_elements.empty()) {
+		if (p_octant->children_count == 0 && p_octant->elements.is_empty() && p_octant->pairable_elements.is_empty()) {
 			// erase octant
 
 			if (p_octant == root) { // won't have a parent, just erase
@@ -942,7 +942,7 @@ void Octree<T, use_pairs, AL>::_cull_convex(Octant *p_octant, _CullConvexData *p
 		return; //pointless
 	}
 
-	if (!p_octant->elements.empty()) {
+	if (!p_octant->elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->elements.front();
 
@@ -965,7 +965,7 @@ void Octree<T, use_pairs, AL>::_cull_convex(Octant *p_octant, _CullConvexData *p
 		}
 	}
 
-	if (use_pairs && !p_octant->pairable_elements.empty()) {
+	if (use_pairs && !p_octant->pairable_elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->pairable_elements.front();
 
@@ -1001,7 +1001,7 @@ void Octree<T, use_pairs, AL>::_cull_aabb(Octant *p_octant, const AABB &p_aabb, 
 		return; //pointless
 	}
 
-	if (!p_octant->elements.empty()) {
+	if (!p_octant->elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->elements.front();
 		for (; I; I = I->next()) {
@@ -1027,7 +1027,7 @@ void Octree<T, use_pairs, AL>::_cull_aabb(Octant *p_octant, const AABB &p_aabb, 
 		}
 	}
 
-	if (use_pairs && !p_octant->pairable_elements.empty()) {
+	if (use_pairs && !p_octant->pairable_elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->pairable_elements.front();
 		for (; I; I = I->next()) {
@@ -1065,7 +1065,7 @@ void Octree<T, use_pairs, AL>::_cull_segment(Octant *p_octant, const Vector3 &p_
 		return; //pointless
 	}
 
-	if (!p_octant->elements.empty()) {
+	if (!p_octant->elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->elements.front();
 		for (; I; I = I->next()) {
@@ -1091,7 +1091,7 @@ void Octree<T, use_pairs, AL>::_cull_segment(Octant *p_octant, const Vector3 &p_
 		}
 	}
 
-	if (use_pairs && !p_octant->pairable_elements.empty()) {
+	if (use_pairs && !p_octant->pairable_elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->pairable_elements.front();
 		for (; I; I = I->next()) {
@@ -1132,7 +1132,7 @@ void Octree<T, use_pairs, AL>::_cull_point(Octant *p_octant, const Vector3 &p_po
 		return; //pointless
 	}
 
-	if (!p_octant->elements.empty()) {
+	if (!p_octant->elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->elements.front();
 		for (; I; I = I->next()) {
@@ -1158,7 +1158,7 @@ void Octree<T, use_pairs, AL>::_cull_point(Octant *p_octant, const Vector3 &p_po
 		}
 	}
 
-	if (use_pairs && !p_octant->pairable_elements.empty()) {
+	if (use_pairs && !p_octant->pairable_elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->pairable_elements.front();
 		for (; I; I = I->next()) {

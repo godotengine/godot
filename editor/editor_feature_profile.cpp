@@ -96,7 +96,7 @@ void EditorFeatureProfile::set_disable_class_property(const StringName &p_class,
 	} else {
 		ERR_FAIL_COND(!disabled_properties.has(p_class));
 		disabled_properties[p_class].erase(p_property);
-		if (disabled_properties[p_class].empty()) {
+		if (disabled_properties[p_class].is_empty()) {
 			disabled_properties.erase(p_class);
 		}
 	}

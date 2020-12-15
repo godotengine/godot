@@ -71,9 +71,9 @@ godot_int GDAPI godot_dictionary_size(const godot_dictionary *p_self) {
 	return self->size();
 }
 
-godot_bool GDAPI godot_dictionary_empty(const godot_dictionary *p_self) {
+godot_bool GDAPI godot_dictionary_is_empty(const godot_dictionary *p_self) {
 	const Dictionary *self = (const Dictionary *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_dictionary_clear(godot_dictionary *p_self) {

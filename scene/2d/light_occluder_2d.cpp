@@ -249,14 +249,14 @@ String LightOccluder2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	if (!occluder_polygon.is_valid()) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("An occluder polygon must be set (or drawn) for this occluder to take effect.");
 	}
 
 	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().size() == 0) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("The occluder polygon for this occluder is empty. Please draw a polygon.");

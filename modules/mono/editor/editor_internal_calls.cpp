@@ -195,7 +195,7 @@ int32_t godot_icall_ScriptClassParser_ParseFile(MonoString *p_filepath, MonoObje
 		}
 	} else {
 		String error_str = scp.get_error();
-		if (!error_str.empty()) {
+		if (!error_str.is_empty()) {
 			*r_error_str = GDMonoMarshal::mono_string_from_godot(error_str);
 		}
 	}

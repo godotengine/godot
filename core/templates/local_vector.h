@@ -104,7 +104,7 @@ public:
 			capacity = 0;
 		}
 	}
-	_FORCE_INLINE_ bool empty() const { return count == 0; }
+	_FORCE_INLINE_ bool is_empty() const { return count == 0; }
 	_FORCE_INLINE_ void reserve(U p_size) {
 		p_size = nearest_power_of_2_templated(p_size);
 		if (p_size > capacity) {

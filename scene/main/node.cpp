@@ -1887,7 +1887,7 @@ void Node::remove_and_skip() {
 		}
 	}
 
-	while (!children.empty()) {
+	while (!children.is_empty()) {
 		Node *c_node = children.front()->get();
 		data.parent->add_child(c_node);
 		c_node->_propagate_replace_owner(nullptr, new_owner);
@@ -2245,7 +2245,7 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 
 	List<const Node *> process_list;
 	process_list.push_back(this);
-	while (!process_list.empty()) {
+	while (!process_list.is_empty()) {
 		const Node *n = process_list.front()->get();
 		process_list.pop_front();
 

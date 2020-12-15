@@ -47,7 +47,7 @@ const char *JSON::tk_name[TK_MAX] = {
 
 static String _make_indent(const String &p_indent, int p_size) {
 	String indent_text = "";
-	if (!p_indent.empty()) {
+	if (!p_indent.is_empty()) {
 		for (int i = 0; i < p_size; i++) {
 			indent_text += p_indent;
 		}
@@ -59,7 +59,7 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 	String colon = ":";
 	String end_statement = "";
 
-	if (!p_indent.empty()) {
+	if (!p_indent.is_empty()) {
 		colon += " ";
 		end_statement += "\n";
 	}

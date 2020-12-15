@@ -150,9 +150,9 @@ godot_int GDAPI godot_packed_byte_array_size(const godot_packed_byte_array *p_se
 	return self->size();
 }
 
-godot_bool GDAPI godot_packed_byte_array_empty(const godot_packed_byte_array *p_self) {
+godot_bool GDAPI godot_packed_byte_array_is_empty(const godot_packed_byte_array *p_self) {
 	const Vector<uint8_t> *self = (const Vector<uint8_t> *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_packed_byte_array_destroy(godot_packed_byte_array *p_self) {
@@ -254,9 +254,9 @@ godot_int GDAPI godot_packed_int32_array_size(const godot_packed_int32_array *p_
 	return self->size();
 }
 
-godot_bool GDAPI godot_packed_int32_array_empty(const godot_packed_int32_array *p_self) {
+godot_bool GDAPI godot_packed_int32_array_is_empty(const godot_packed_int32_array *p_self) {
 	const Vector<int32_t> *self = (const Vector<int32_t> *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_packed_int32_array_destroy(godot_packed_int32_array *p_self) {
@@ -358,9 +358,9 @@ godot_int GDAPI godot_packed_int64_array_size(const godot_packed_int64_array *p_
 	return self->size();
 }
 
-godot_bool GDAPI godot_packed_int64_array_empty(const godot_packed_int64_array *p_self) {
+godot_bool GDAPI godot_packed_int64_array_is_empty(const godot_packed_int64_array *p_self) {
 	const Vector<int64_t> *self = (const Vector<int64_t> *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_packed_int64_array_destroy(godot_packed_int64_array *p_self) {
@@ -462,9 +462,9 @@ godot_int GDAPI godot_packed_float32_array_size(const godot_packed_float32_array
 	return self->size();
 }
 
-godot_bool GDAPI godot_packed_float32_array_empty(const godot_packed_float32_array *p_self) {
+godot_bool GDAPI godot_packed_float32_array_is_empty(const godot_packed_float32_array *p_self) {
 	const Vector<float> *self = (const Vector<float> *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_packed_float32_array_destroy(godot_packed_float32_array *p_self) {
@@ -566,9 +566,9 @@ godot_int GDAPI godot_packed_float64_array_size(const godot_packed_float64_array
 	return self->size();
 }
 
-godot_bool GDAPI godot_packed_float64_array_empty(const godot_packed_float64_array *p_self) {
+godot_bool GDAPI godot_packed_float64_array_is_empty(const godot_packed_float64_array *p_self) {
 	const Vector<double> *self = (const Vector<double> *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_packed_float64_array_destroy(godot_packed_float64_array *p_self) {
@@ -679,9 +679,9 @@ godot_int GDAPI godot_packed_string_array_size(const godot_packed_string_array *
 	return self->size();
 }
 
-godot_bool GDAPI godot_packed_string_array_empty(const godot_packed_string_array *p_self) {
+godot_bool GDAPI godot_packed_string_array_is_empty(const godot_packed_string_array *p_self) {
 	const Vector<String> *self = (const Vector<String> *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_packed_string_array_destroy(godot_packed_string_array *p_self) {
@@ -791,9 +791,9 @@ godot_int GDAPI godot_packed_vector2_array_size(const godot_packed_vector2_array
 	return self->size();
 }
 
-godot_bool GDAPI godot_packed_vector2_array_empty(const godot_packed_vector2_array *p_self) {
+godot_bool GDAPI godot_packed_vector2_array_is_empty(const godot_packed_vector2_array *p_self) {
 	const Vector<Vector2> *self = (const Vector<Vector2> *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_packed_vector2_array_destroy(godot_packed_vector2_array *p_self) {
@@ -903,9 +903,9 @@ godot_int GDAPI godot_packed_vector2i_array_size(const godot_packed_vector2i_arr
 	return self->size();
 }
 
-godot_bool GDAPI godot_packed_vector2i_array_empty(const godot_packed_vector2i_array *p_self) {
+godot_bool GDAPI godot_packed_vector2i_array_is_empty(const godot_packed_vector2i_array *p_self) {
 	const Vector<Vector2i> *self = (const Vector<Vector2i> *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_packed_vector2i_array_destroy(godot_packed_vector2i_array *p_self) {
@@ -1015,9 +1015,9 @@ godot_int GDAPI godot_packed_vector3_array_size(const godot_packed_vector3_array
 	return self->size();
 }
 
-godot_bool GDAPI godot_packed_vector3_array_empty(const godot_packed_vector3_array *p_self) {
+godot_bool GDAPI godot_packed_vector3_array_is_empty(const godot_packed_vector3_array *p_self) {
 	const Vector<Vector3> *self = (const Vector<Vector3> *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_packed_vector3_array_destroy(godot_packed_vector3_array *p_self) {
@@ -1127,9 +1127,9 @@ godot_int GDAPI godot_packed_color_array_size(const godot_packed_color_array *p_
 	return self->size();
 }
 
-godot_bool GDAPI godot_packed_color_array_empty(const godot_packed_color_array *p_self) {
+godot_bool GDAPI godot_packed_color_array_is_empty(const godot_packed_color_array *p_self) {
 	const Vector<Color> *self = (const Vector<Color> *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_packed_color_array_destroy(godot_packed_color_array *p_self) {

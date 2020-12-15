@@ -251,7 +251,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						emit_signal("variant_changed");
 						break;
 					}
-					ERR_FAIL_COND(inheritors_array.empty());
+					ERR_FAIL_COND(inheritors_array.is_empty());
 
 					String intype = inheritors_array[p_which - TYPE_BASE_ID];
 
@@ -367,18 +367,18 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				int c = hint_text.get_slice_count(",");
 				float min = 0, max = 100, step = type == Variant::FLOAT ? .01 : 1;
 				if (c >= 1) {
-					if (!hint_text.get_slice(",", 0).empty()) {
+					if (!hint_text.get_slice(",", 0).is_empty()) {
 						min = hint_text.get_slice(",", 0).to_float();
 					}
 				}
 				if (c >= 2) {
-					if (!hint_text.get_slice(",", 1).empty()) {
+					if (!hint_text.get_slice(",", 1).is_empty()) {
 						max = hint_text.get_slice(",", 1).to_float();
 					}
 				}
 
 				if (c >= 3) {
-					if (!hint_text.get_slice(",", 2).empty()) {
+					if (!hint_text.get_slice(",", 2).is_empty()) {
 						step = hint_text.get_slice(",", 2).to_float();
 					}
 				}
@@ -882,7 +882,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 						bool is_custom_resource = false;
 						Ref<Texture2D> icon;
-						if (!custom_resources.empty()) {
+						if (!custom_resources.is_empty()) {
 							for (int k = 0; k < custom_resources.size(); k++) {
 								if (custom_resources[k].name == t) {
 									is_custom_resource = true;
@@ -1246,7 +1246,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 		} break;
 		case Variant::OBJECT: {
 			if (p_which == 0) {
-				ERR_FAIL_COND(inheritors_array.empty());
+				ERR_FAIL_COND(inheritors_array.is_empty());
 
 				String intype = inheritors_array[0];
 

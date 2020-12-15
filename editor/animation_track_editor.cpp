@@ -3779,7 +3779,7 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 		r_base_path = node->get_path();
 	}
 
-	if (leftover_path.empty()) {
+	if (leftover_path.is_empty()) {
 		if (r_current_val) {
 			if (res.is_valid()) {
 				*r_current_val = res;
@@ -4080,8 +4080,8 @@ void AnimationTrackEditor::_update_tracks() {
 					object = res.ptr();
 				}
 
-				if (object && !leftover_path.empty()) {
-					if (pinfo.name.empty()) {
+				if (object && !leftover_path.is_empty()) {
+					if (pinfo.name.is_empty()) {
 						pinfo.name = leftover_path[leftover_path.size() - 1];
 					}
 
@@ -5285,7 +5285,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			scale_dialog->popup_centered(Size2(200, 100) * EDSCALE);
 		} break;
 		case EDIT_SCALE_CONFIRM: {
-			if (selection.empty()) {
+			if (selection.is_empty()) {
 				return;
 			}
 

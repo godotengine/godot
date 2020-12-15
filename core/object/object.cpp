@@ -506,7 +506,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 }
 
 void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid) {
-	if (p_names.empty()) {
+	if (p_names.is_empty()) {
 		if (r_valid) {
 			*r_valid = false;
 		}
@@ -561,11 +561,11 @@ void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_val
 	set(p_names[0], value_stack.back()->get(), r_valid);
 	value_stack.pop_back();
 
-	ERR_FAIL_COND(!value_stack.empty());
+	ERR_FAIL_COND(!value_stack.is_empty());
 }
 
 Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) const {
-	if (p_names.empty()) {
+	if (p_names.is_empty()) {
 		if (r_valid) {
 			*r_valid = false;
 		}
@@ -599,7 +599,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	if (!is_class("Script")) { // can still be set, but this is for userfriendlyness
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT));
 	}
-	if (!metadata.empty()) {
+	if (!metadata.is_empty()) {
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "__meta__", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 	}
 	if (script_instance && !p_reversed) {
@@ -1089,7 +1089,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 		}
 	}
 
-	while (!disconnect_data.empty()) {
+	while (!disconnect_data.is_empty()) {
 		const _ObjectSignalDisconnectData &dd = disconnect_data.front()->get();
 
 		_disconnect(dd.signal, dd.callable);
@@ -1373,7 +1373,7 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	target_object->connections.erase(slot->cE);
 	s->slot_map.erase(*p_callable.get_base_comparator());
 
-	if (s->slot_map.empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
+	if (s->slot_map.is_empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
 		//not user signal, delete
 		signal_map.erase(p_signal);
 	}

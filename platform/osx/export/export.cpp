@@ -457,7 +457,7 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 	PackedStringArray user_args = p_preset->get("codesign/custom_options");
 	for (int i = 0; i < user_args.size(); i++) {
 		String user_arg = user_args[i].strip_edges();
-		if (!user_arg.empty()) {
+		if (!user_arg.is_empty()) {
 			args.push_back(user_arg);
 		}
 	}
@@ -665,7 +665,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					Ref<Image> icon;
 					icon.instance();
 					icon->load(iconpath);
-					if (!icon->empty()) {
+					if (!icon->is_empty()) {
 						_make_icon(icon, data);
 					}
 				}
@@ -927,7 +927,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 		}
 	}
 
-	if (!err.empty()) {
+	if (!err.is_empty()) {
 		r_error = err;
 	}
 	return valid;

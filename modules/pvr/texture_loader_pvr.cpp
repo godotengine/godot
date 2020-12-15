@@ -153,7 +153,7 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 	}
 
 	Ref<Image> image = memnew(Image(width, height, mipmaps, format, data));
-	ERR_FAIL_COND_V(image->empty(), RES());
+	ERR_FAIL_COND_V(image->is_empty(), RES());
 
 	Ref<ImageTexture> texture = memnew(ImageTexture);
 	texture->create_from_image(image);

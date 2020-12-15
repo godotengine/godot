@@ -218,7 +218,7 @@ godot_glyph GDAPI godot_packed_glyph_array_get(const godot_packed_glyph_array *p
 
 godot_int GDAPI godot_packed_glyph_array_size(const godot_packed_glyph_array *p_self);
 
-godot_bool GDAPI godot_packed_glyph_array_empty(const godot_packed_glyph_array *p_self);
+godot_bool GDAPI godot_packed_glyph_array_is_empty(const godot_packed_glyph_array *p_self);
 
 void GDAPI godot_packed_glyph_array_destroy(godot_packed_glyph_array *p_self);
 

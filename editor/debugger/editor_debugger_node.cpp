@@ -115,7 +115,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 		tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("DebuggerPanel", "EditorStyles"));
 	}
 
-	if (!debugger_plugins.empty()) {
+	if (!debugger_plugins.is_empty()) {
 		for (Set<Ref<Script>>::Element *i = debugger_plugins.front(); i; i = i->next()) {
 			node->add_debugger_plugin(i->get());
 		}
@@ -140,7 +140,7 @@ void EditorDebuggerNode::_error_selected(const String &p_file, int p_line, int p
 
 void EditorDebuggerNode::_text_editor_stack_goto(const ScriptEditorDebugger *p_debugger) {
 	const String file = p_debugger->get_stack_script_file();
-	if (file.empty()) {
+	if (file.is_empty()) {
 		return;
 	}
 	stack_script = ResourceLoader::load(file);

@@ -612,7 +612,7 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, bool &r_inclu
 		results.push_back(res);
 	}
 
-	if (results.empty()) {
+	if (results.is_empty()) {
 		return;
 	}
 
@@ -1045,7 +1045,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 			clicked = ObjectID();
 		}
 
-	} else if (!selection_results.empty()) {
+	} else if (!selection_results.is_empty()) {
 		NodePath root_path = get_tree()->get_edited_scene_root()->get_path();
 		StringName root_name = root_path.get_name(root_path.get_name_count() - 1);
 
@@ -1097,7 +1097,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	{
 		EditorNode *en = editor;
 		EditorPluginList *force_input_forwarding_list = en->get_editor_plugins_force_input_forwarding();
-		if (!force_input_forwarding_list->empty()) {
+		if (!force_input_forwarding_list->is_empty()) {
 			bool discard = force_input_forwarding_list->forward_spatial_gui_input(camera, p_event, true);
 			if (discard) {
 				return;
@@ -1107,7 +1107,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	{
 		EditorNode *en = editor;
 		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
-		if (!over_plugin_list->empty()) {
+		if (!over_plugin_list->is_empty()) {
 			bool discard = over_plugin_list->forward_spatial_gui_input(camera, p_event, false);
 			if (discard) {
 				return;
@@ -2615,12 +2615,12 @@ static void draw_indicator_bar(Control &surface, real_t fill, const Ref<Texture2
 
 void Node3DEditorViewport::_draw() {
 	EditorPluginList *over_plugin_list = EditorNode::get_singleton()->get_editor_plugins_over();
-	if (!over_plugin_list->empty()) {
+	if (!over_plugin_list->is_empty()) {
 		over_plugin_list->forward_spatial_draw_over_viewport(surface);
 	}
 
 	EditorPluginList *force_over_plugin_list = editor->get_editor_plugins_force_over();
-	if (!force_over_plugin_list->empty()) {
+	if (!force_over_plugin_list->is_empty()) {
 		force_over_plugin_list->forward_spatial_force_draw_over_viewport(surface);
 	}
 
@@ -5778,7 +5778,7 @@ void Node3DEditor::_refresh_menu_icons() {
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
-	if (selection.empty()) {
+	if (selection.is_empty()) {
 		all_locked = false;
 		all_grouped = false;
 	} else {
@@ -5797,11 +5797,11 @@ void Node3DEditor::_refresh_menu_icons() {
 	}
 
 	tool_button[TOOL_LOCK_SELECTED]->set_visible(!all_locked);
-	tool_button[TOOL_LOCK_SELECTED]->set_disabled(selection.empty());
+	tool_button[TOOL_LOCK_SELECTED]->set_disabled(selection.is_empty());
 	tool_button[TOOL_UNLOCK_SELECTED]->set_visible(all_locked);
 
 	tool_button[TOOL_GROUP_SELECTED]->set_visible(!all_grouped);
-	tool_button[TOOL_GROUP_SELECTED]->set_disabled(selection.empty());
+	tool_button[TOOL_GROUP_SELECTED]->set_disabled(selection.is_empty());
 	tool_button[TOOL_UNGROUP_SELECTED]->set_visible(all_grouped);
 }
 

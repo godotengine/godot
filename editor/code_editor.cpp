@@ -325,7 +325,7 @@ void FindReplaceBar::_update_results_count() {
 	results_count = 0;
 
 	String searched = get_search_text();
-	if (searched.empty()) {
+	if (searched.is_empty()) {
 		return;
 	}
 
@@ -356,7 +356,7 @@ void FindReplaceBar::_update_results_count() {
 }
 
 void FindReplaceBar::_update_matches_label() {
-	if (search_text->get_text().empty() || results_count == -1) {
+	if (search_text->get_text().is_empty() || results_count == -1) {
 		matches_label->hide();
 	} else {
 		matches_label->show();
@@ -483,7 +483,7 @@ void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
 		search_text->set_text(text_editor->get_selection_text());
 	}
 
-	if (!get_search_text().empty()) {
+	if (!get_search_text().is_empty()) {
 		if (p_focus_replace) {
 			replace_text->select_all();
 			replace_text->set_cursor_position(replace_text->get_text().length());
@@ -1309,7 +1309,7 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		for (int i = begin; i <= end; i++) {
 			String line_text = text_editor->get_line(i);
 
-			if (line_text.strip_edges().empty()) {
+			if (line_text.strip_edges().is_empty()) {
 				line_text = delimiter;
 			} else {
 				if (is_commented) {

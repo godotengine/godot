@@ -215,7 +215,7 @@
 				Creates a copy of the dictionary, and returns it. The [code]deep[/code] parameter causes inner dictionaries and arrays to be copied recursively, but does not apply to objects.
 			</description>
 		</method>
-		<method name="empty">
+		<method name="is_empty">
 			<return type="bool">
 			</return>
 			<description>

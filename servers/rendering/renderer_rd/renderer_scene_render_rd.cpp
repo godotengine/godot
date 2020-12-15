@@ -6681,7 +6681,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 	//update directional shadow
 
 	if (p_use_directional_shadows) {
-		if (directional_shadow.shrink_stages.empty()) {
+		if (directional_shadow.shrink_stages.is_empty()) {
 			if (rb->volumetric_fog->uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->uniform_set)) {
 				//invalidate uniform set, we will need a new one
 				RD::get_singleton()->free(rb->volumetric_fog->uniform_set);
@@ -6716,7 +6716,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		bool force_shrink_shadows = false;
 
-		if (shadow_atlas->shrink_stages.empty()) {
+		if (shadow_atlas->shrink_stages.is_empty()) {
 			if (rb->volumetric_fog->uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->uniform_set)) {
 				//invalidate uniform set, we will need a new one
 				RD::get_singleton()->free(rb->volumetric_fog->uniform_set);

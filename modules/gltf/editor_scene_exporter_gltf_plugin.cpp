@@ -82,7 +82,7 @@ void SceneExporterGLTFPlugin::convert_scene_to_gltf2() {
 		return;
 	}
 	String filename = String(root->get_filename().get_file().get_basename());
-	if (filename.empty()) {
+	if (filename.is_empty()) {
 		filename = root->get_name();
 	}
 	file_export_lib->set_current_file(filename + String(".gltf"));

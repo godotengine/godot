@@ -71,7 +71,7 @@ void InputMap::erase_action(const StringName &p_action) {
 Array InputMap::_get_actions() {
 	Array ret;
 	List<StringName> actions = get_actions();
-	if (actions.empty()) {
+	if (actions.is_empty()) {
 		return ret;
 	}
 
@@ -84,7 +84,7 @@ Array InputMap::_get_actions() {
 
 List<StringName> InputMap::get_actions() const {
 	List<StringName> actions = List<StringName>();
-	if (input_map.empty()) {
+	if (input_map.is_empty()) {
 		return actions;
 	}
 

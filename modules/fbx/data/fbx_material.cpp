@@ -42,7 +42,7 @@ void FBXMaterial::set_imported_material(FBXDocParser::Material *p_material) {
 }
 
 void FBXMaterial::add_search_string(String p_filename, String p_current_directory, String search_directory, Vector<String> &texture_search_paths) {
-	if (search_directory.empty()) {
+	if (search_directory.is_empty()) {
 		texture_search_paths.push_back(p_current_directory.get_base_dir().plus_file(p_filename));
 	} else {
 		texture_search_paths.push_back(p_current_directory.get_base_dir().plus_file(search_directory + "/" + p_filename));
@@ -188,7 +188,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 			spatial_material->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
 		}
 
-		ERR_CONTINUE_MSG(file_extension.empty(), "your texture has no file extension so we had to ignore it, let us know if you think this is wrong file an issue on github! " + debug_string);
+		ERR_CONTINUE_MSG(file_extension.is_empty(), "your texture has no file extension so we had to ignore it, let us know if you think this is wrong file an issue on github! " + debug_string);
 		ERR_CONTINUE_MSG(fbx_texture_map.count(fbx_mapping_name) <= 0, "This material has a texture with mapping name: " + String(fbx_mapping_name.c_str()) + " which is not yet supported by this importer. Consider opening an issue so we can support it.");
 		ERR_CONTINUE_MSG(
 				file_extension_uppercase != "PNG" &&
@@ -211,7 +211,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 			texture = state.cached_image_searches[texture_name];
 		} else {
 			String path = find_texture_path_by_filename(texture_name, p_fbx_current_directory);
-			if (!path.empty()) {
+			if (!path.is_empty()) {
 				Ref<Texture2D> image_texture = ResourceLoader::load(path);
 
 				ERR_CONTINUE(image_texture.is_null());

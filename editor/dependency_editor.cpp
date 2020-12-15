@@ -448,7 +448,7 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 	Vector<RemovedDependency> removed_deps;
 	_find_all_removed_dependencies(EditorFileSystem::get_singleton()->get_filesystem(), removed_deps);
 	removed_deps.sort();
-	if (removed_deps.empty()) {
+	if (removed_deps.is_empty()) {
 		owners->hide();
 		text->set_text(TTR("Remove selected files from the project? (no undo)\nYou can find the removed files in the system trash to restore them."));
 		set_size(Size2());
@@ -639,7 +639,7 @@ void OrphanResourcesDialog::ok_pressed() {
 	paths.clear();
 
 	_find_to_delete(files->get_root(), paths);
-	if (paths.empty()) {
+	if (paths.is_empty()) {
 		return;
 	}
 

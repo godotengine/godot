@@ -1468,7 +1468,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 				if (!ret_used_cache) {
 					// Cache was not used, add the generated entry to the current cache
-					if (cache_data.empty()) {
+					if (cache_data.is_empty()) {
 						cache_data.resize(4 + ret_cache_size);
 						int *data = (int *)cache_data.ptrw();
 						data[0] = 1;

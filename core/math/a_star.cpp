@@ -35,7 +35,7 @@
 #include "scene/scene_string_names.h"
 
 int AStar::get_available_point_id() const {
-	if (points.empty()) {
+	if (points.is_empty()) {
 		return 1;
 	}
 
@@ -341,7 +341,7 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 	begin_point->f_score = _estimate_cost(begin_point->id, end_point->id);
 	open_list.push_back(begin_point);
 
-	while (!open_list.empty()) {
+	while (!open_list.is_empty()) {
 		Point *p = open_list[0]; // The currently processed point
 
 		if (p == end_point) {
@@ -805,7 +805,7 @@ bool AStar2D::_solve(AStar::Point *begin_point, AStar::Point *end_point) {
 	begin_point->f_score = _estimate_cost(begin_point->id, end_point->id);
 	open_list.push_back(begin_point);
 
-	while (!open_list.empty()) {
+	while (!open_list.is_empty()) {
 		AStar::Point *p = open_list[0]; // The currently processed point
 
 		if (p == end_point) {

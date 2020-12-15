@@ -38,7 +38,7 @@
 
 template <class T>
 T collect_first(const Vector<VertexData<T>> *p_data, T p_fall_back) {
-	if (p_data->empty()) {
+	if (p_data->is_empty()) {
 		return p_fall_back;
 	}
 
@@ -47,7 +47,7 @@ T collect_first(const Vector<VertexData<T>> *p_data, T p_fall_back) {
 
 template <class T>
 HashMap<int, T> collect_all(const Vector<VertexData<T>> *p_data, HashMap<int, T> p_fall_back) {
-	if (p_data->empty()) {
+	if (p_data->is_empty()) {
 		return p_fall_back;
 	}
 
@@ -61,7 +61,7 @@ HashMap<int, T> collect_all(const Vector<VertexData<T>> *p_data, HashMap<int, T>
 
 template <class T>
 T collect_average(const Vector<VertexData<T>> *p_data, T p_fall_back) {
-	if (p_data->empty()) {
+	if (p_data->is_empty()) {
 		return p_fall_back;
 	}
 
@@ -76,7 +76,7 @@ T collect_average(const Vector<VertexData<T>> *p_data, T p_fall_back) {
 }
 
 HashMap<int, Vector3> collect_normal(const Vector<VertexData<Vector3>> *p_data, HashMap<int, Vector3> p_fall_back) {
-	if (p_data->empty()) {
+	if (p_data->is_empty()) {
 		return p_fall_back;
 	}
 
@@ -89,7 +89,7 @@ HashMap<int, Vector3> collect_normal(const Vector<VertexData<Vector3>> *p_data, 
 }
 
 HashMap<int, Vector2> collect_uv(const Vector<VertexData<Vector2>> *p_data, HashMap<int, Vector2> p_fall_back) {
-	if (p_data->empty()) {
+	if (p_data->is_empty()) {
 		return p_fall_back;
 	}
 
@@ -231,7 +231,7 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 
 	// Phase 2. For each material create a surface tool (So a different mesh).
 	{
-		if (polygon_surfaces.empty()) {
+		if (polygon_surfaces.is_empty()) {
 			// No material, just use the default one with index -1.
 			// Set -1 to all polygons.
 			const int polygon_count = count_polygons(polygon_indices);
@@ -990,7 +990,7 @@ void FBXMeshData::triangulate_polygon(Ref<SurfaceTool> st, Vector<int> p_polygon
 }
 
 void FBXMeshData::gen_weight_info(Ref<SurfaceTool> st, Vertex vertex_id) const {
-	if (vertex_weights.empty()) {
+	if (vertex_weights.is_empty()) {
 		return;
 	}
 
@@ -1417,7 +1417,7 @@ void FBXMeshData::extract_morphs(const FBXDocParser::MeshGeometry *mesh_geometry
 			const std::vector<const FBXDocParser::ShapeGeometry *> &shape_geometries = blend_shape_channel->GetShapeGeometries();
 			for (const FBXDocParser::ShapeGeometry *shape_geometry : shape_geometries) {
 				String morph_name = ImportUtils::FBXAnimMeshName(shape_geometry->Name()).c_str();
-				if (morph_name.empty()) {
+				if (morph_name.is_empty()) {
 					morph_name = "morph";
 				}
 

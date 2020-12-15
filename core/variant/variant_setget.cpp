@@ -1477,7 +1477,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 
 		case STRING: {
 			const String *str = reinterpret_cast<const String *>(_data._mem);
-			if (str->empty()) {
+			if (str->is_empty()) {
 				return false;
 			}
 			r_iter = 0;
@@ -1485,7 +1485,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 		} break;
 		case DICTIONARY: {
 			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
-			if (dic->empty()) {
+			if (dic->is_empty()) {
 				return false;
 			}
 
@@ -1496,7 +1496,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 		} break;
 		case ARRAY: {
 			const Array *arr = reinterpret_cast<const Array *>(_data._mem);
-			if (arr->empty()) {
+			if (arr->is_empty()) {
 				return false;
 			}
 			r_iter = 0;

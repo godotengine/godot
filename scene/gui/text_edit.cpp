@@ -189,12 +189,12 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, const String &p_
 	text.write[p_line].data_buf->set_preserve_control(draw_control_chars);
 	if (p_ime_text.length() > 0) {
 		text.write[p_line].data_buf->add_string(p_ime_text, font, font_size, opentype_features, language);
-		if (!p_bidi_override.empty()) {
+		if (!p_bidi_override.is_empty()) {
 			TS->shaped_text_set_bidi_override(text.write[p_line].data_buf->get_rid(), p_bidi_override);
 		}
 	} else {
 		text.write[p_line].data_buf->add_string(text[p_line].data, font, font_size, opentype_features, language);
-		if (!text[p_line].bidi_override.empty()) {
+		if (!text[p_line].bidi_override.is_empty()) {
 			TS->shaped_text_set_bidi_override(text.write[p_line].data_buf->get_rid(), text[p_line].bidi_override);
 		}
 	}
@@ -1167,7 +1167,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					int start = TS->shaped_text_get_range(rid).x;
-					if (!search_text.empty()) { // Search highhlight
+					if (!search_text.is_empty()) { // Search highhlight
 						int search_text_col = _get_column_pos_of_word(search_text, str, search_flags, 0);
 						while (search_text_col != -1) {
 							Vector<Vector2> sel = TS->shaped_text_get_selection(rid, search_text_col + start, search_text_col + search_text.length() + start);
@@ -1190,7 +1190,7 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					if (highlight_all_occurrences && !only_whitespaces_highlighted && !highlighted_text.empty()) { // Highlight
+					if (highlight_all_occurrences && !only_whitespaces_highlighted && !highlighted_text.is_empty()) { // Highlight
 						int highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
 						while (highlighted_text_col != -1) {
 							Vector<Vector2> sel = TS->shaped_text_get_selection(rid, highlighted_text_col + start, highlighted_text_col + highlighted_text.length() + start);
@@ -5197,7 +5197,7 @@ void TextEdit::paste() {
 		cursor_set_line(selection.from_line);
 		cursor_set_column(selection.from_column);
 
-	} else if (!cut_copy_line.empty() && cut_copy_line == clipboard) {
+	} else if (!cut_copy_line.is_empty() && cut_copy_line == clipboard) {
 		cursor_set_column(0);
 		String ins = "\n";
 		clipboard += ins;
@@ -6469,7 +6469,7 @@ void TextEdit::query_code_comple() {
 		c--;
 	}
 
-	bool ignored = completion_active && !completion_options.empty();
+	bool ignored = completion_active && !completion_options.is_empty();
 	if (ignored) {
 		ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_PLAIN_TEXT;
 		const ScriptCodeCompletionOption *previous_option = nullptr;

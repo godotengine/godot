@@ -587,7 +587,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 }
 
 void ScriptEditor::_add_recent_script(String p_path) {
-	if (p_path.empty()) {
+	if (p_path.is_empty()) {
 		return;
 	}
 
@@ -702,7 +702,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 			}
 		}
 		if (script.is_valid()) {
-			if (!script->get_path().empty()) {
+			if (!script->get_path().is_empty()) {
 				// Only saved scripts can be restored.
 				previous_scripts.push_back(script->get_path());
 			}
@@ -1129,7 +1129,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			return;
 		} break;
 		case FILE_REOPEN_CLOSED: {
-			if (previous_scripts.empty()) {
+			if (previous_scripts.is_empty()) {
 				return;
 			}
 
@@ -1381,7 +1381,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			case SHOW_IN_FILE_SYSTEM: {
 				const RES script = current->get_edited_resource();
 				const String path = script->get_path();
-				if (!path.empty()) {
+				if (!path.is_empty()) {
 					FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
 					file_system_dock->navigate_to_path(path);
 					// Ensure that the FileSystem dock is visible.
@@ -1887,7 +1887,7 @@ void ScriptEditor::_update_script_names() {
 		if (se) {
 			Ref<Texture2D> icon = se->get_theme_icon();
 			String path = se->get_edited_resource()->get_path();
-			bool saved = !path.empty();
+			bool saved = !path.is_empty();
 			if (saved) {
 				// The script might be deleted, moved, or renamed, so make sure
 				// to update original path to previously edited resource.
@@ -1934,7 +1934,7 @@ void ScriptEditor::_update_script_names() {
 					sd.name = name;
 				} break;
 				case DISPLAY_DIR_AND_NAME: {
-					if (!path.get_base_dir().get_file().empty()) {
+					if (!path.get_base_dir().get_file().is_empty()) {
 						sd.name = path.get_base_dir().get_file().plus_file(name);
 					} else {
 						sd.name = name;
@@ -1988,7 +1988,7 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
-	if (_sort_list_on_update && !sedata.empty()) {
+	if (_sort_list_on_update && !sedata.is_empty()) {
 		sedata.sort();
 
 		// change actual order of tab_container so that the order can be rearranged by user
@@ -2052,7 +2052,7 @@ void ScriptEditor::_update_script_names() {
 	_update_help_overview_visibility();
 	_update_script_colors();
 
-	file_menu->get_popup()->set_item_disabled(file_menu->get_popup()->get_item_index(FILE_REOPEN_CLOSED), previous_scripts.empty());
+	file_menu->get_popup()->set_item_disabled(file_menu->get_popup()->get_item_index(FILE_REOPEN_CLOSED), previous_scripts.is_empty());
 }
 
 void ScriptEditor::_update_script_connections() {
@@ -2806,7 +2806,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 		String path = scripts[i];
 
 		Dictionary script_info = scripts[i];
-		if (!script_info.empty()) {
+		if (!script_info.is_empty()) {
 			path = script_info["path"];
 		}
 
@@ -2833,7 +2833,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 			}
 		}
 
-		if (!script_info.empty()) {
+		if (!script_info.is_empty()) {
 			ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(tab_container->get_tab_count() - 1));
 			if (se) {
 				se->set_edit_state(script_info["state"]);

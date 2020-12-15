@@ -596,7 +596,7 @@ bool EditorProfiler::is_profiling() {
 Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 	Vector<Vector<String>> res;
 
-	if (frame_metrics.empty()) {
+	if (frame_metrics.is_empty()) {
 		return res;
 	}
 

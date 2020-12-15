@@ -65,7 +65,7 @@ void GDNativeLibraryEditor::_update_tree() {
 			continue;
 		}
 		Map<String, NativePlatformConfig>::Element *E = platforms.find(filter_list->get_item_metadata(i));
-		if (!text.empty()) {
+		if (!text.is_empty()) {
 			text += ", ";
 		}
 		text += E->get().name;
@@ -91,7 +91,7 @@ void GDNativeLibraryEditor::_update_tree() {
 
 			bit->add_button(1, get_theme_icon("Folder", "EditorIcons"), BUTTON_SELECT_LIBRARY, false, TTR("Select the dynamic library for this entry"));
 			String file = entry_configs[target].library;
-			if (!file.empty()) {
+			if (!file.is_empty()) {
 				bit->add_button(1, get_theme_icon("Clear", "EditorIcons"), BUTTON_CLEAR_LIBRARY, false, TTR("Clear"));
 			}
 			bit->set_text(1, file);
@@ -195,7 +195,7 @@ void GDNativeLibraryEditor::_on_item_activated() {
 void GDNativeLibraryEditor::_on_create_new_entry() {
 	String platform = new_architecture_dialog->get_meta("platform");
 	String entry = new_architecture_input->get_text().strip_edges();
-	if (!entry.empty()) {
+	if (!entry.is_empty()) {
 		platforms[platform].entries.push_back(entry);
 		_update_tree();
 	}
@@ -248,7 +248,7 @@ void GDNativeLibraryEditor::_translate_to_config_file() {
 		for (Map<String, NativePlatformConfig>::Element *E = platforms.front(); E; E = E->next()) {
 			for (List<String>::Element *it = E->value().entries.front(); it; it = it->next()) {
 				String target = E->key() + "." + it->get();
-				if (entry_configs[target].library.empty() && entry_configs[target].dependencies.empty()) {
+				if (entry_configs[target].library.is_empty() && entry_configs[target].dependencies.is_empty()) {
 					continue;
 				}
 

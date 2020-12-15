@@ -96,7 +96,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 
 		// Response
 		String output = GDScriptLanguageProtocol::get_singleton()->process_message(msg);
-		if (!output.empty()) {
+		if (!output.is_empty()) {
 			res_queue.push_back(output.utf8());
 		}
 	}
@@ -105,7 +105,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 
 Error GDScriptLanguageProtocol::LSPeer::send_data() {
 	int sent = 0;
-	if (!res_queue.empty()) {
+	if (!res_queue.is_empty()) {
 		CharString c_res = res_queue[0];
 		if (res_sent < c_res.size()) {
 			Error err = connection->put_partial_data((const uint8_t *)c_res.get_data() + res_sent, c_res.size() - res_sent - 1, sent);
@@ -141,7 +141,7 @@ void GDScriptLanguageProtocol::on_client_disconnected(const int &p_client_id) {
 
 String GDScriptLanguageProtocol::process_message(const String &p_text) {
 	String ret = process_string(p_text);
-	if (ret.empty()) {
+	if (ret.is_empty()) {
 		return ret;
 	} else {
 		return format_output(ret);

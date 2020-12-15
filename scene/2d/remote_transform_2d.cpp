@@ -189,7 +189,7 @@ String RemoteTransform2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	if (!has_node(remote_node) || !Object::cast_to<Node2D>(get_node(remote_node))) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Path property must point to a valid Node2D node to work.");

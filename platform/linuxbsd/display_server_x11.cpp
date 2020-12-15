@@ -622,7 +622,7 @@ String DisplayServerX11::_clipboard_get(Atom p_source, Window x11_window) const 
 	if (utf8_atom != None) {
 		ret = _clipboard_get_impl(p_source, x11_window, utf8_atom);
 	}
-	if (ret.empty()) {
+	if (ret.is_empty()) {
 		ret = _clipboard_get_impl(p_source, x11_window, XA_STRING);
 	}
 	return ret;
@@ -634,7 +634,7 @@ String DisplayServerX11::clipboard_get() const {
 	String ret;
 	ret = _clipboard_get(XInternAtom(x11_display, "CLIPBOARD", 0), windows[MAIN_WINDOW_ID].x11_window);
 
-	if (ret.empty()) {
+	if (ret.is_empty()) {
 		ret = _clipboard_get(XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window);
 	}
 

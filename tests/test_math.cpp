@@ -513,7 +513,7 @@ MainLoop *test() {
 
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
-	if (cmdlargs.empty()) {
+	if (cmdlargs.is_empty()) {
 		//try editor!
 		return nullptr;
 	}

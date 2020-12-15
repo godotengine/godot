@@ -813,7 +813,7 @@ void DocTools::generate(bool p_basic_types) {
 			}
 
 			// Skip adding the lang if it doesn't expose anything (e.g. C#).
-			if (c.methods.empty() && c.constants.empty()) {
+			if (c.methods.is_empty() && c.constants.is_empty()) {
 				continue;
 			}
 
@@ -1165,7 +1165,7 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 		_write_string(f, 1, "<tutorials>");
 		for (int i = 0; i < c.tutorials.size(); i++) {
 			DocData::TutorialDoc tutorial = c.tutorials.get(i);
-			String title_attribute = (!tutorial.title.empty()) ? " title=\"" + tutorial.title.xml_escape() + "\"" : "";
+			String title_attribute = (!tutorial.title.is_empty()) ? " title=\"" + tutorial.title.xml_escape() + "\"" : "";
 			_write_string(f, 2, "<link" + title_attribute + ">" + tutorial.link.xml_escape() + "</link>");
 		}
 		_write_string(f, 1, "</tutorials>");

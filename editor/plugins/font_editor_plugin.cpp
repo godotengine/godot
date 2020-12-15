@@ -216,7 +216,7 @@ void FontDataEditor::init_script_edit() {
 
 void FontDataEditor::add_lang() {
 	FontData *fd = Object::cast_to<FontData>(get_edited_object());
-	if (fd != nullptr && !le->get_text().empty()) {
+	if (fd != nullptr && !le->get_text().is_empty()) {
 		fd->set_language_support_override(le->get_text(), chk->is_pressed());
 		le->set_text("");
 		chk->set_pressed(false);

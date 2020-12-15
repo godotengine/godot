@@ -110,14 +110,14 @@ void TextParagraph::_shape_lines() {
 		}
 		lines.clear();
 
-		if (!tab_stops.empty()) {
+		if (!tab_stops.is_empty()) {
 			TS->shaped_text_tab_align(rid, tab_stops);
 		}
 
 		Vector<Vector2i> line_breaks = TS->shaped_text_get_line_breaks(rid, width, 0, flags);
 		for (int i = 0; i < line_breaks.size(); i++) {
 			RID line = TS->shaped_text_substr(rid, line_breaks[i].x, line_breaks[i].y - line_breaks[i].x);
-			if (!tab_stops.empty()) {
+			if (!tab_stops.is_empty()) {
 				TS->shaped_text_tab_align(line, tab_stops);
 			}
 			if (align == HALIGN_FILL && (line_breaks.size() == 1 || i < line_breaks.size() - 1)) {

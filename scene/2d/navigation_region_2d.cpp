@@ -503,7 +503,7 @@ String NavigationRegion2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	if (!navpoly.is_valid()) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon.");
@@ -516,7 +516,7 @@ String NavigationRegion2D::get_configuration_warning() const {
 
 		c = Object::cast_to<Node2D>(c->get_parent());
 	}
-	if (!warning.empty()) {
+	if (!warning.is_empty()) {
 		warning += "\n\n";
 	}
 	return warning + TTR("NavigationRegion2D must be a child or grandchild to a Navigation2D node. It only provides navigation data.");

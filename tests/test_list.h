@@ -57,7 +57,7 @@ TEST_CASE("[List] Push/pop back") {
 	CHECK(n->get() == "C");
 
 	CHECK(list.size() == 3);
-	CHECK(!list.empty());
+	CHECK(!list.is_empty());
 
 	String v;
 	v = list.back()->get();
@@ -71,7 +71,7 @@ TEST_CASE("[List] Push/pop back") {
 	CHECK(v == "A");
 
 	CHECK(list.size() == 0);
-	CHECK(list.empty());
+	CHECK(list.is_empty());
 
 	CHECK(list.back() == nullptr);
 	CHECK(list.front() == nullptr);
@@ -89,7 +89,7 @@ TEST_CASE("[List] Push/pop front") {
 	CHECK(n->get() == "C");
 
 	CHECK(list.size() == 3);
-	CHECK(!list.empty());
+	CHECK(!list.is_empty());
 
 	String v;
 	v = list.front()->get();
@@ -103,7 +103,7 @@ TEST_CASE("[List] Push/pop front") {
 	CHECK(v == "A");
 
 	CHECK(list.size() == 0);
-	CHECK(list.empty());
+	CHECK(list.is_empty());
 
 	CHECK(list.back() == nullptr);
 	CHECK(list.front() == nullptr);
@@ -252,7 +252,7 @@ TEST_CASE("[List] Clear") {
 	list.clear();
 
 	CHECK(list.size() == 0);
-	CHECK(list.empty());
+	CHECK(list.is_empty());
 }
 
 TEST_CASE("[List] Invert") {

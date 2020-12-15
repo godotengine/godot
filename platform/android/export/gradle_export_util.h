@@ -261,7 +261,7 @@ String _get_instrumentation_tag(const Ref<EditorExportPreset> &p_preset) {
 }
 
 String _get_plugins_tag(const String &plugins_names) {
-	if (!plugins_names.empty()) {
+	if (!plugins_names.is_empty()) {
 		return vformat("    <meta-data tools:node=\"replace\" android:name=\"plugins\" android:value=\"%s\" />\n", plugins_names);
 	} else {
 		return "    <meta-data tools:node=\"remove\" android:name=\"plugins\" />\n";

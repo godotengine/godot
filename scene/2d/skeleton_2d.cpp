@@ -136,7 +136,7 @@ int Bone2D::get_index_in_skeleton() const {
 String Bone2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 	if (!skeleton) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		if (parent_bone) {
@@ -147,7 +147,7 @@ String Bone2D::get_configuration_warning() const {
 	}
 
 	if (rest == Transform2D(0, 0, 0, 0, 0, 0)) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("This bone lacks a proper REST pose. Go to the Skeleton2D node and set one.");

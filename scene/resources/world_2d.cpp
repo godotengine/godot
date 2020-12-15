@@ -111,7 +111,7 @@ struct SpatialIndexer2D {
 					ERR_CONTINUE(!E);
 					if (E->get().notifiers[p_notifier].dec() == 0) {
 						E->get().notifiers.erase(p_notifier);
-						if (E->get().notifiers.empty()) {
+						if (E->get().notifiers.is_empty()) {
 							cells.erase(E);
 						}
 					}
@@ -156,7 +156,7 @@ struct SpatialIndexer2D {
 			}
 		}
 
-		while (!removed.empty()) {
+		while (!removed.is_empty()) {
 			p_notifier->_exit_viewport(removed.front()->get());
 			removed.pop_front();
 		}
@@ -189,7 +189,7 @@ struct SpatialIndexer2D {
 			removed.push_back(E->key());
 		}
 
-		while (!removed.empty()) {
+		while (!removed.is_empty()) {
 			removed.front()->get()->_exit_viewport(p_viewport);
 			removed.pop_front();
 		}
@@ -271,12 +271,12 @@ struct SpatialIndexer2D {
 				}
 			}
 
-			while (!added.empty()) {
+			while (!added.is_empty()) {
 				added.front()->get()->_enter_viewport(E->key());
 				added.pop_front();
 			}
 
-			while (!removed.empty()) {
+			while (!removed.is_empty()) {
 				E->get().notifiers.erase(removed.front()->get());
 				removed.front()->get()->_exit_viewport(E->key());
 				removed.pop_front();

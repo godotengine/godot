@@ -215,9 +215,9 @@ godot_int GDAPI godot_array_count(const godot_array *p_self, const godot_variant
 	return self->count(*val);
 }
 
-godot_bool GDAPI godot_array_empty(const godot_array *p_self) {
+godot_bool GDAPI godot_array_is_empty(const godot_array *p_self) {
 	const Array *self = (const Array *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_array_erase(godot_array *p_self, const godot_variant *p_value) {
