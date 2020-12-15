@@ -1,0 +1,24 @@
+[binaries]
+c = 'clang'
+cpp = 'clang++'
+objc = 'clang'
+objcpp = 'clang++'
+ar = 'ar'
+strip = 'strip'
+
+[built-in options]
+c_args = ['-arch', 'arm64', '-miphoneos-version-min=11.0', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk']
+cpp_args = ['-arch', 'arm64', '-miphoneos-version-min=11.0', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk']
+c_link_args = ['-arch', 'arm64', '-miphoneos-version-min=11.0', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk']
+cpp_link_args = ['-arch', 'arm64', '-miphoneos-version-min=11.0', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk']
+objc_args = ['-arch', 'arm64', '-miphoneos-version-min=11.0', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk']
+objcpp_args = ['-arch', 'arm64', '-miphoneos-version-min=11.0', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk']
+
+[properties]
+
+[host_machine]
+system = 'darwin'
+cpu_family = 'aarch64'
+cpu = 'aarch64'
+endian = 'little'
+

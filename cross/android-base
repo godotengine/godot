@@ -1,0 +1,32 @@
+[constants]
+sdk = '@NDK_PATH@'
+host_os = '@HOST_OS@'
+host_arch = '@HOST_ARCH@'
+arch = '@ANDROID_ARCH@'
+android_abi_name = '@ANDROID_ABI_NAME@'
+android_abi = '@ANDROID_ABI@'
+android_tools_prefix = '@ANDROID_AR_PREFIX@'
+
+toolchain = sdk / 'toolchains' / 'llvm' / 'prebuilt' / host_os + '-' + host_arch / 'bin'
+tools_triple = android_tools_prefix + '-' + host_os + '-' + android_abi_name
+compiler_triple = arch + '-' + host_os + '-' + android_abi_name + android_abi
+
+[binaries]
+c = toolchain / compiler_triple + '-clang'
+cpp = toolchain / compiler_triple + '-clang++'
+ar = toolchain / tools_triple + '-ar'
+strip = toolchain / tools_triple + '-strip'
+
+[built-in options]
+c_args = []
+cpp_args = []
+c_link_args = []
+cpp_link_args = []
+
+[properties]
+
+[host_machine]
+system = 'android'
+cpu_family = 'aarch64'
+cpu = 'aarch64'
+endian = 'little'
