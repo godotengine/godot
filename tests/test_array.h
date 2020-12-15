@@ -137,10 +137,10 @@ TEST_CASE("[Array] Get") {
 TEST_CASE("[Array] Sort") {
 	Array arr;
 
-	arr.push_back(1);
-	arr.push_back(2);
 	arr.push_back(3);
 	arr.push_back(4);
+	arr.push_back(2);
+	arr.push_back(1);
 	arr.sort();
 	int val = 1;
 	for (int i = 0; i < arr.size(); i++) {
