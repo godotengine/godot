@@ -1,0 +1,33 @@
+name: 🍏 iOS Meson Builds
+on: [push, pull_request]
+
+# Global Settings
+env:
+  GODOT_BASE_BRANCH: master
+  MESONFLAGS: --cross-file=cross/iphone.txt
+  # platform=iphone verbose=yes warnings=extra werror=yes debug_symbols=no --jobs=2 module_text_server_fb_enabled=yes
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-ios
+  cancel-in-progress: true
+
+jobs:
+  ios-template:
+    runs-on: "macos-latest"
+    name: Template (target=release, tools=no)
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup python and meson
+        uses: ./.github/actions/meson_install
+
+      - uses: ./.github/actions/meson_build
+        name: Compilation
+        with:
+          mesonflags: ${{ env.MESONFLAGS }}
+          buildtype: release
+          tools: false
+
+      - name: Upload Artifact
+        uses: ./.github/actions/upload-artifact
