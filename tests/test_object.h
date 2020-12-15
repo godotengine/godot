@@ -135,37 +135,37 @@ TEST_CASE("[Object] IAPI methods") {
 
     CHECK_MESSAGE(
 		object.has_method(StringName("free")) == true,
-		"has_method should return the expected value for StringName('free')");
+		"has_method() should return the expected value for StringName('free')");
 
     CHECK_MESSAGE(
 		object.has_method(StringName("_to_string")) == false,
-		"has_method should return the expected value for non-method");
+		"has_method() should return the expected value for non-method");
 
     CHECK_MESSAGE(
 		object.to_string() == "[Object:" + itos(object.get_instance_id()) + "]",
-		"to_string should return the expected value.");
+		"to_string() should return the expected value.");
 
     *rvalid = false;
     CHECK_MESSAGE(
 		object.getvar(StringName("script"), rvalid) == "indexed_script_source",
-		"getvar should return the expected value.");
+		"getvar() should return the expected value.");
     CHECK_MESSAGE(
 		*rvalid == true,
-		"getvar should update the passed bool to the expected value.");
+		"getvar() should update the passed bool to the expected value.");
 
     *rvalid = false;
     object.setvar(StringName("script"), "var_script", rvalid);
     CHECK_MESSAGE(
 		*rvalid == true,
-		"setvar should update the passed bool to the expected value.");
+		"setvar() should update the passed bool to the expected value.");
     CHECK_MESSAGE(
 		object.getvar(StringName("script"), rvalid) == "var_script",
-		"getvar should return the expected value.");
+		"getvar() should return the expected value.");
 
     object.setvar(StringName("non-CoreStringName"), "nonvalid_script", rvalid);
     CHECK_MESSAGE(
 		*rvalid == false,
-		"setvar should update the passed bool to the expected value.");
+		"setvar() should update the passed bool to the expected value.");
 
 	memdelete(rvalid);
 }
