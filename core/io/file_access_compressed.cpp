@@ -327,14 +327,14 @@ Error FileAccessCompressed::get_error() const {
 
 void FileAccessCompressed::flush() {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
-	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
 	// compressed files keep data in memory till close()
 }
 
 void FileAccessCompressed::store_8(uint8_t p_dest) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
-	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
 	WRITE_FIT(1);
 	write_ptr[write_pos++] = p_dest;
