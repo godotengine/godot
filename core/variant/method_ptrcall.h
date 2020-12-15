@@ -100,6 +100,7 @@ struct PtrToArg {};
 	}
 
 MAKE_PTRARG(bool);
+// Integer types.
 MAKE_PTRARGCONV(uint8_t, int64_t);
 MAKE_PTRARGCONV(int8_t, int64_t);
 MAKE_PTRARGCONV(uint16_t, int64_t);
@@ -108,15 +109,16 @@ MAKE_PTRARGCONV(uint32_t, int64_t);
 MAKE_PTRARGCONV(int32_t, int64_t);
 MAKE_PTRARG(int64_t);
 MAKE_PTRARG(uint64_t);
+// Float types
 MAKE_PTRARGCONV(float, double);
 MAKE_PTRARG(double);
 
 MAKE_PTRARG(String);
 MAKE_PTRARG(Vector2);
-MAKE_PTRARG(Rect2);
-MAKE_PTRARG_BY_REFERENCE(Vector3);
 MAKE_PTRARG(Vector2i);
+MAKE_PTRARG(Rect2);
 MAKE_PTRARG(Rect2i);
+MAKE_PTRARG_BY_REFERENCE(Vector3);
 MAKE_PTRARG_BY_REFERENCE(Vector3i);
 MAKE_PTRARG(Transform2D);
 MAKE_PTRARG_BY_REFERENCE(Plane);
@@ -128,9 +130,10 @@ MAKE_PTRARG_BY_REFERENCE(Color);
 MAKE_PTRARG(StringName);
 MAKE_PTRARG(NodePath);
 MAKE_PTRARG(RID);
-MAKE_PTRARG(Dictionary);
+// Object doesn't need this.
 MAKE_PTRARG(Callable);
 MAKE_PTRARG(Signal);
+MAKE_PTRARG(Dictionary);
 MAKE_PTRARG(Array);
 MAKE_PTRARG(PackedByteArray);
 MAKE_PTRARG(PackedInt32Array);
