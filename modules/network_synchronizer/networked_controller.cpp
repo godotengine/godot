@@ -1288,9 +1288,8 @@ bool PlayerController::can_accept_new_inputs() const {
 }
 
 DollController::DollController(NetworkedController *p_node) :
-		Controller(p_node) {
-
-	network_watcher.resize(node->get_doll_connection_stats_frame_span(), 0.0);
+		Controller(p_node),
+		network_watcher(node->get_doll_connection_stats_frame_span(), 0) {
 }
 
 DollController::~DollController() {
@@ -1303,8 +1302,6 @@ void DollController::ready() {
 }
 
 void DollController::process(real_t p_delta) {
-	batch_receiver_timer += p_delta;
-
 	const uint32_t frame_epoch = next_epoch(p_delta);
 
 	if (unlikely(frame_epoch == UINT32_MAX)) {
@@ -1365,11 +1362,13 @@ void DollController::receive_batch(Vector<uint8_t> p_data) {
 
 	// Establish the connection quality by checking if the batch takes
 	// always the same time to arrive.
-	network_watcher.push(batch_receiver_timer);
-	batch_receiver_timer = 0.0;
+	const uint32_t now = OS::get_singleton()->get_ticks_msec();
+	// If negative the timer was disabled, so just assume 0.
+	network_watcher.push(MAX(0, now - batch_receiver_timer));
+	batch_receiver_timer = now;
 
-	const real_t avg_receive_time = network_watcher.average();
-	const real_t deviation_receive_time = network_watcher.get_deviation(avg_receive_time);
+	const uint32_t avg_receive_time = network_watcher.average();
+	const real_t deviation_receive_time = real_t(network_watcher.get_deviation(avg_receive_time)) / 1000.0;
 
 	// The network quality can be established just by checking the standard
 	// deviation. Stable connections have standard deviation that tend to 0.
@@ -1393,7 +1392,7 @@ void DollController::receive_batch(Vector<uint8_t> p_data) {
 #ifdef DEBUG_ENABLED
 	const bool debug = ProjectSettings::get_singleton()->get_setting("NetworkSynchronizer/debug_doll_speedup");
 	if (debug) {
-		print_line("Net poorness: " + rtos(net_poorness) + " Optimal stored epochs: " + rtos(optimal_frame_delay));
+		print_line("Net poorness: " + rtos(net_poorness) + " Optimal stored epochs: " + rtos(optimal_frame_delay) + " Deviation: " + rtos(deviation_receive_time));
 	}
 #endif
 }
@@ -1490,7 +1489,8 @@ void DollController::pause(uint32_t p_epoch) {
 	current_epoch = UINT32_MAX;
 	advancing_epoch = 0.0;
 	missing_epochs = 0;
-	network_watcher.resize(node->get_doll_connection_stats_frame_span(), 0.0);
+	network_watcher.resize(node->get_doll_connection_stats_frame_span(), 0);
+	batch_receiver_timer = UINT32_MAX;
 
 	node->emit_signal("doll_sync_paused");
 }

@@ -484,9 +484,9 @@ struct DollController : public Controller {
 	uint32_t paused_epoch = 0;
 
 	// Used to track the time taken for the next batch to arrive.
-	real_t batch_receiver_timer = 0.0;
+	uint32_t batch_receiver_timer = UINT32_MAX;
 	/// Used to track how network is performing.
-	NetUtility::StatisticalRingBuffer<real_t> network_watcher = NetUtility::StatisticalRingBuffer<real_t>(1, 0);
+	NetUtility::StatisticalRingBuffer<uint32_t> network_watcher;
 
 	DollController(NetworkedController *p_node);
 	~DollController();
