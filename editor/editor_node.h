@@ -81,7 +81,7 @@ class RunSettingsDialog;
 class ScriptCreateDialog;
 class TabContainer;
 class Tabs;
-class TextureProgress;
+class TextureProgressBar;
 class Button;
 class VSplitContainer;
 class Window;
@@ -271,7 +271,7 @@ private:
 	Button *play_scene_button;
 	Button *play_custom_scene_button;
 	Button *search_button;
-	TextureProgress *audio_vu;
+	TextureProgressBar *audio_vu;
 
 	Timer *screenshot_timer;
 

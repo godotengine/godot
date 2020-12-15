@@ -43,7 +43,7 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/slider.h"
-#include "scene/gui/texture_progress.h"
+#include "scene/gui/texture_progress_bar.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
@@ -66,8 +66,8 @@ class EditorAudioBus : public PanelContainer {
 		float peak_l = 0;
 		float peak_r = 0;
 
-		TextureProgress *vu_l = nullptr;
-		TextureProgress *vu_r = nullptr;
+		TextureProgressBar *vu_l = nullptr;
+		TextureProgressBar *vu_r = nullptr;
 	} channel[CHANNELS_MAX];
 
 	OptionButton *send;
