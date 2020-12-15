@@ -1,0 +1,57 @@
+name: 🌐 JavaScript Meson Builds
+on: [push, pull_request]
+
+# Global Settings
+env:
+  GODOT_BASE_BRANCH: master
+  MESONFLAGS: --cross-file cross/emscripten -Dbuiltin_pcre2_with_jit=false -Ddisabled_modules=mono,text_server_adv,text_server_fb
+  EM_VERSION: 2.0.27
+  EM_CACHE_FOLDER: 'emsdk-cache'
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-javascript
+  cancel-in-progress: true
+
+jobs:
+  javascript-template:
+    runs-on: "ubuntu-20.04"
+    name: Template (buildtype=minsize, tools=false)
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Additional cache for Emscripten generated system libraries
+      - name: Load Emscripten cache
+        id: javascript-template-emscripten-cache
+        uses: actions/cache@v2
+        with:
+          path: ${{env.EM_CACHE_FOLDER}}
+          key: ${{env.EM_VERSION}}-${{github.job}}
+
+      - name: Set up Emscripten ${{env.EM_VERSION}}
+        uses: mymindstorm/setup-emsdk@v10
+        with:
+          version: ${{env.EM_VERSION}}
+          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
+
+      - name: Verify Emscripten setup
+        run: |
+          emcc -v
+
+      - name: "Setup python and meson"
+        uses: ./.github/actions/meson_install
+
+      # TODO remove once meson in pip is updated to master
+      - name: Download meson upstream branch (pip version does not support godot)
+        run: |
+          git clone https://github.com/mesonbuild/meson.git meson-upstream
+
+      - uses: ./.github/actions/meson_build
+        name: Build release (minsize)
+        with:
+          mesonflags: ${{ env.MESONFLAGS }}
+          meson: './meson-upstream/meson.py'
+          buildtype: minsize
+          tools: false
+
+      - uses: ./.github/actions/upload-artifact

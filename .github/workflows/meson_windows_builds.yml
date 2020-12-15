@@ -1,0 +1,62 @@
+name: 🏁 Windows Meson Builds
+on: [push, pull_request]
+
+# Global Settings
+# SCONS_CACHE for windows must be set in the build environment
+env:
+  GODOT_BASE_BRANCH: master
+  MESONFLAGS: ''
+  # platform=windows verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2 module_text_server_fb_enabled=yes
+  SCONS_CACHE_MSVC_CONFIG: true
+  SCONS_CACHE_LIMIT: 3072
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-windows
+  cancel-in-progress: true
+
+jobs:
+  windows-editor:
+    # Windows 10 with latest image
+    runs-on: "windows-latest"
+
+    # Windows Editor - checkout with the plugin
+    name: Editor (buildtype=debugoptimized, tools=yes, tests=yes)
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup python and meson
+      uses: ./.github/actions/meson_install
+
+    - uses: ./.github/actions/meson_build
+      name: Compilation
+      with:
+        mesonflags: ${{ env.MESONFLAGS }} -Dtests=true
+        buildtype: debugoptimized
+        tools: true
+
+    # Execute unit tests for the editor
+    - name: Unit Tests
+      run: |
+        ./builddir/godot.exe --test
+
+    - uses: ./.github/actions/upload-artifact
+
+  windows-template:
+    runs-on: "windows-latest"
+    name: Template (buildtype=release, tools=no)
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup python and meson
+      uses: ./.github/actions/meson_install
+
+    - uses: ./.github/actions/meson_build
+      name: Compilation
+      with:
+        mesonflags: ${{ env.MESONFLAGS }}
+        buildtype: release
+        tools: false
+
+    - uses: ./.github/actions/upload-artifact
