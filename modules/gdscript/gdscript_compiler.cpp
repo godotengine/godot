@@ -33,6 +33,7 @@
 #include "gdscript.h"
 #include "gdscript_byte_codegen.h"
 #include "gdscript_cache.h"
+#include "gdscript_utility_functions.h"
 
 bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringName &p_name) {
 	if (codegen.function_node && codegen.function_node->is_static) {
@@ -456,15 +457,17 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				arguments.push_back(arg);
 			}
 
-			if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(call->callee)->name) != Variant::VARIANT_MAX) {
+			if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_type(call->function_name) != Variant::VARIANT_MAX) {
 				// Construct a built-in type.
 				Variant::Type vtype = GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(call->callee)->name);
 
 				gen->write_construct(result, vtype, arguments);
-			} else if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_function(static_cast<GDScriptParser::IdentifierNode *>(call->callee)->name) != GDScriptFunctions::FUNC_MAX) {
-				// Built-in function.
-				GDScriptFunctions::Function func = GDScriptParser::get_builtin_function(static_cast<GDScriptParser::IdentifierNode *>(call->callee)->name);
-				gen->write_call_builtin(result, func, arguments);
+			} else if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && Variant::has_utility_function(call->function_name)) {
+				// Variant utility function.
+				gen->write_call_utility(result, call->function_name, arguments);
+			} else if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && GDScriptUtilityFunctions::function_exists(call->function_name)) {
+				// GDScript utility function.
+				gen->write_call_gdscript_utility(result, GDScriptUtilityFunctions::get_function(call->function_name), arguments);
 			} else {
 				// Regular function.
 				const GDScriptParser::ExpressionNode *callee = call->callee;
@@ -1135,7 +1138,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			// Evaluate expression type.
 			Vector<GDScriptCodeGenerator::Address> typeof_args;
 			typeof_args.push_back(expr_addr);
-			codegen.generator->write_call_builtin(result_addr, GDScriptFunctions::TYPE_OF, typeof_args);
+			codegen.generator->write_call_utility(result_addr, "typeof", typeof_args);
 
 			// Check type equality.
 			codegen.generator->write_binary_operator(result_addr, Variant::OP_EQUAL, p_type_addr, result_addr);
@@ -1199,7 +1202,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			GDScriptCodeGenerator::Address value_length_addr = codegen.add_temporary(temp_type);
 			Vector<GDScriptCodeGenerator::Address> len_args;
 			len_args.push_back(p_value_addr);
-			codegen.generator->write_call_builtin(value_length_addr, GDScriptFunctions::LEN, len_args);
+			codegen.generator->write_call_gdscript_utility(value_length_addr, GDScriptUtilityFunctions::get_function("len"), len_args);
 
 			// Test length compatibility.
 			temp_type.builtin_type = Variant::BOOL;
@@ -1253,7 +1256,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 				// Also get type of element.
 				Vector<GDScriptCodeGenerator::Address> typeof_args;
 				typeof_args.push_back(element_addr);
-				codegen.generator->write_call_builtin(element_type_addr, GDScriptFunctions::TYPE_OF, typeof_args);
+				codegen.generator->write_call_utility(element_type_addr, "typeof", typeof_args);
 
 				// Try the pattern inside the element.
 				test_addr = _parse_match_pattern(codegen, r_error, p_pattern->array[i], element_addr, element_type_addr, p_previous_test, false, true);
@@ -1298,7 +1301,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			GDScriptCodeGenerator::Address value_length_addr = codegen.add_temporary(temp_type);
 			Vector<GDScriptCodeGenerator::Address> func_args;
 			func_args.push_back(p_value_addr);
-			codegen.generator->write_call_builtin(value_length_addr, GDScriptFunctions::LEN, func_args);
+			codegen.generator->write_call_gdscript_utility(value_length_addr, GDScriptUtilityFunctions::get_function("len"), func_args);
 
 			// Test length compatibility.
 			temp_type.builtin_type = Variant::BOOL;
@@ -1367,7 +1370,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 					// Also get type of value.
 					func_args.clear();
 					func_args.push_back(element_addr);
-					codegen.generator->write_call_builtin(element_type_addr, GDScriptFunctions::TYPE_OF, func_args);
+					codegen.generator->write_call_utility(element_type_addr, "typeof", func_args);
 
 					// Try the pattern inside the value.
 					test_addr = _parse_match_pattern(codegen, r_error, element.value_pattern, element_addr, element_type_addr, test_addr, false, true);
@@ -1500,7 +1503,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 				Vector<GDScriptCodeGenerator::Address> typeof_args;
 				typeof_args.push_back(value);
-				gen->write_call_builtin(type, GDScriptFunctions::TYPE_OF, typeof_args);
+				gen->write_call_utility(type, "typeof", typeof_args);
 
 				// Now we can actually start testing.
 				// For each branch.

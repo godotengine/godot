@@ -34,7 +34,6 @@
 
 #include "core/string/string_builder.h"
 #include "gdscript.h"
-#include "gdscript_functions.h"
 
 static String _get_variant_string(const Variant &p_variant) {
 	String txt;
@@ -607,13 +606,49 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr = 5 + argc;
 			} break;
-			case OPCODE_CALL_BUILT_IN: {
-				text += "call-built-in ";
+			case OPCODE_CALL_UTILITY: {
+				text += "call-utility ";
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				text += DADDR(1 + argc) + " = ";
 
-				text += GDScriptFunctions::get_func_name(GDScriptFunctions::Function(_code_ptr[ip + 2 + instr_var_args]));
+				text += _global_names_ptr[_code_ptr[ip + 2 + instr_var_args]];
+				text += "(";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0)
+						text += ", ";
+					text += DADDR(1 + i);
+				}
+				text += ")";
+
+				incr = 4 + argc;
+			} break;
+			case OPCODE_CALL_UTILITY_VALIDATED: {
+				text += "call-utility ";
+
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+				text += DADDR(1 + argc) + " = ";
+
+				text += "<unkown function>";
+				text += "(";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0)
+						text += ", ";
+					text += DADDR(1 + i);
+				}
+				text += ")";
+
+				incr = 4 + argc;
+			} break;
+			case OPCODE_CALL_GDSCRIPT_UTILITY: {
+				text += "call-gscript-utility ";
+
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+				text += DADDR(1 + argc) + " = ";
+
+				text += "<unknown function>";
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {

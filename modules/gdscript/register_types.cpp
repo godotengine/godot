@@ -38,6 +38,7 @@
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_tokenizer.h"
+#include "gdscript_utility_functions.h"
 
 #ifdef TESTS_ENABLED
 #include "tests/test_gdscript.h"
@@ -130,6 +131,8 @@ void register_gdscript_types() {
 	gdscript_translation_parser_plugin.instance();
 	EditorTranslationParser::get_singleton()->add_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
 #endif // TOOLS_ENABLED
+
+	GDScriptUtilityFunctions::register_functions();
 }
 
 void unregister_gdscript_types() {
@@ -156,6 +159,7 @@ void unregister_gdscript_types() {
 
 	GDScriptParser::cleanup();
 	GDScriptAnalyzer::cleanup();
+	GDScriptUtilityFunctions::unregister_functions();
 }
 
 #ifdef TESTS_ENABLED

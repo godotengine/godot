@@ -98,15 +98,6 @@ void GDScriptParser::cleanup() {
 	builtin_types.clear();
 }
 
-GDScriptFunctions::Function GDScriptParser::get_builtin_function(const StringName &p_name) {
-	for (int i = 0; i < GDScriptFunctions::FUNC_MAX; i++) {
-		if (p_name == GDScriptFunctions::get_func_name(GDScriptFunctions::Function(i))) {
-			return GDScriptFunctions::Function(i);
-		}
-	}
-	return GDScriptFunctions::FUNC_MAX;
-}
-
 void GDScriptParser::get_annotation_list(List<MethodInfo> *r_annotations) const {
 	List<StringName> keys;
 	valid_annotations.get_key_list(&keys);
@@ -2553,7 +2544,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 
 	// Arguments.
 	CompletionType ct = COMPLETION_CALL_ARGUMENTS;
-	if (get_builtin_function(call->function_name) == GDScriptFunctions::RESOURCE_LOAD) {
+	if (call->function_name == "load") {
 		ct = COMPLETION_RESOURCE_PATH;
 	}
 	push_completion_call(call);

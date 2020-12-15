@@ -33,7 +33,6 @@
 #include "core/core_string_names.h"
 #include "core/os/os.h"
 #include "gdscript.h"
-#include "gdscript_functions.h"
 
 Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_instance, GDScript *p_script, Variant &self, Variant &static_ref, Variant *p_stack, String &r_error) const {
 	int address = p_address & ADDR_MASK;
@@ -220,7 +219,9 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		&&OPCODE_CALL,                               \
 		&&OPCODE_CALL_RETURN,                        \
 		&&OPCODE_CALL_ASYNC,                         \
-		&&OPCODE_CALL_BUILT_IN,                      \
+		&&OPCODE_CALL_UTILITY,                       \
+		&&OPCODE_CALL_UTILITY_VALIDATED,             \
+		&&OPCODE_CALL_GDSCRIPT_UTILITY,              \
 		&&OPCODE_CALL_BUILTIN_TYPE_VALIDATED,        \
 		&&OPCODE_CALL_SELF_BASE,                     \
 		&&OPCODE_CALL_METHOD_BIND,                   \
@@ -1749,7 +1750,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
-			OPCODE(OPCODE_CALL_BUILT_IN) {
+			OPCODE(OPCODE_CALL_UTILITY) {
 				CHECK_SPACE(3 + instr_arg_count);
 
 				ip += instr_arg_count;
@@ -1757,22 +1758,80 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int argc = _code_ptr[ip + 1];
 				GD_ERR_BREAK(argc < 0);
 
-				GDScriptFunctions::Function func = GDScriptFunctions::Function(_code_ptr[ip + 2]);
+				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _global_names_count);
+				StringName function = _global_names_ptr[_code_ptr[ip + 2]];
+
 				Variant **argptrs = instruction_args;
 
 				GET_INSTRUCTION_ARG(dst, argc);
 
 				Callable::CallError err;
-				GDScriptFunctions::call(func, (const Variant **)argptrs, argc, *dst, err);
+				Variant::call_utility_function(function, dst, (const Variant **)argptrs, argc, err);
 
 #ifdef DEBUG_ENABLED
 				if (err.error != Callable::CallError::CALL_OK) {
-					String methodstr = GDScriptFunctions::get_func_name(func);
+					String methodstr = function;
 					if (dst->get_type() == Variant::STRING) {
-						//call provided error string
-						err_text = "Error calling built-in function '" + methodstr + "': " + String(*dst);
+						// Call provided error string.
+						err_text = "Error calling utility function '" + methodstr + "': " + String(*dst);
 					} else {
-						err_text = _get_call_error(err, "built-in function '" + methodstr + "'", (const Variant **)argptrs);
+						err_text = _get_call_error(err, "utility function '" + methodstr + "'", (const Variant **)argptrs);
+					}
+					OPCODE_BREAK;
+				}
+#endif
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CALL_UTILITY_VALIDATED) {
+				CHECK_SPACE(3 + instr_arg_count);
+
+				ip += instr_arg_count;
+
+				int argc = _code_ptr[ip + 1];
+				GD_ERR_BREAK(argc < 0);
+
+				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _utilities_count);
+				Variant::ValidatedUtilityFunction function = _utilities_ptr[_code_ptr[ip + 2]];
+
+				Variant **argptrs = instruction_args;
+
+				GET_INSTRUCTION_ARG(dst, argc);
+
+				function(dst, (const Variant **)argptrs, argc);
+
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CALL_GDSCRIPT_UTILITY) {
+				CHECK_SPACE(3 + instr_arg_count);
+
+				ip += instr_arg_count;
+
+				int argc = _code_ptr[ip + 1];
+				GD_ERR_BREAK(argc < 0);
+
+				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _gds_utilities_count);
+				GDScriptUtilityFunctions::FunctionPtr function = _gds_utilities_ptr[_code_ptr[ip + 2]];
+
+				Variant **argptrs = instruction_args;
+
+				GET_INSTRUCTION_ARG(dst, argc);
+
+				Callable::CallError err;
+				function(dst, (const Variant **)argptrs, argc, err);
+
+#ifdef DEBUG_ENABLED
+				if (err.error != Callable::CallError::CALL_OK) {
+					// TODO: Add this information in debug.
+					String methodstr = "<unkown function>";
+					if (dst->get_type() == Variant::STRING) {
+						// Call provided error string.
+						err_text = "Error calling GDScript utility function '" + methodstr + "': " + String(*dst);
+					} else {
+						err_text = _get_call_error(err, "GDScript utility function '" + methodstr + "'", (const Variant **)argptrs);
 					}
 					OPCODE_BREAK;
 				}
