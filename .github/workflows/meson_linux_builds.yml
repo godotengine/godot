@@ -1,0 +1,173 @@
+name: 🐧 Linux Meson Builds
+on: [push, pull_request]
+
+# Global Settings
+env:
+  GODOT_BASE_BRANCH: master
+  MESONFLAGS: ''
+  # platform=linuxbsd verbose=yes warnings=extra werror=yes debug_symbols=no --jobs=2 module_text_server_fb_enabled=yes
+  SCONS_CACHE_LIMIT: 4096
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-linux
+  cancel-in-progress: true
+
+jobs:
+  linux-editor:
+    runs-on: "ubuntu-20.04"
+    name: Editor (buildtype=debugoptimized, tools=yes, tests=yes)
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Azure repositories are not reliable, we need to prevent azure giving us packages.
+      - name: Make apt sources.list use the default Ubuntu repositories
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/*
+          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
+          sudo apt-get update
+
+      # Install all packages (except scons)
+      - name: Configure dependencies
+        run: |
+          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
+            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm
+
+      - name: Setup python and meson
+        uses: ./.github/actions/meson_install
+
+      - uses: ./.github/actions/meson_build
+        name: Compilation
+        with:
+          mesonflags: ${{ env.MESONFLAGS }} -Dtests=true
+          buildtype: debugoptimized
+          tools: true
+
+      # Execute unit tests for the editor
+      - name: Unit Tests
+        run: |
+          ./builddir/godot --headless --test
+
+      # Download, unzip and setup SwiftShader library [4466040]
+      - name: Download SwiftShader
+        run: |
+          wget https://github.com/qarmin/gtk_library_store/releases/download/3.24.0/swiftshader2.zip
+          unzip swiftshader2.zip
+          rm swiftshader2.zip
+          curr="$(pwd)/libvk_swiftshader.so"
+          sed -i "s|PATH_TO_CHANGE|$curr|" vk_swiftshader_icd.json
+
+      # Check class reference
+      - name: Check for class reference updates
+        run: |
+          echo "Running --doctool to see if this changes the public API without updating the documentation."
+          echo -e "If a diff is shown, it means that your code/doc changes are incomplete and you should update the class reference with --doctool.\n\n"
+          #VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run builddir/godot --doctool . 2>&1 > /dev/null || true
+          builddir/godot --headless --doctool . 2>&1 > /dev/null || true
+          echo "Skipping test on meson builds"
+          #git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact
+
+  linux-editor-sanitizers:
+    runs-on: "ubuntu-20.04"
+    name: Editor and sanitizers (buildtype=debug, tools=yes, tests=yes, use_asan=yes, use_ubsan=yes)
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Azure repositories are not reliable, we need to prevent azure giving us packages.
+      - name: Make apt sources.list use the default Ubuntu repositories
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/*
+          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
+          sudo apt-get update
+
+      # Install all packages (except scons)
+      - name: Configure dependencies
+        run: |
+          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
+            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm \
+            xvfb wget unzip
+
+      - name: Setup python and meson
+        uses: ./.github/actions/meson_install
+
+      - uses: ./.github/actions/meson_build
+        name: Compilation
+        with:
+          mesonflags: ${{ env.MESONFLAGS }} -Duse_asan=true -Duse_ubsan=true -Dtests=true
+          buildtype: debug
+          tools: true
+
+      # Execute unit tests for the editor
+      - name: Unit Tests
+        run: |
+          ./builddir/godot --headless --test
+
+      # Download, unzip and setup SwiftShader library [4466040]
+      - name: Download SwiftShader
+        run: |
+          wget https://github.com/qarmin/gtk_library_store/releases/download/3.24.0/swiftshader2.zip
+          unzip swiftshader2.zip
+          rm swiftshader2.zip
+          curr="$(pwd)/libvk_swiftshader.so"
+          sed -i "s|PATH_TO_CHANGE|$curr|" vk_swiftshader_icd.json
+
+      # Download and extract zip archive with project, folder is renamed to be able to easy change used project
+      - name: Download test project
+        run: |
+          wget https://github.com/qarmin/RegressionTestProject/archive/4.0.zip
+          unzip 4.0.zip
+          mv "RegressionTestProject-4.0" "test_project"
+
+      # Editor is quite complicated piece of software, so it is easy to introduce bug here
+      - name: Open and close editor
+        run: |
+          echo "Disabled"
+          #VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run builddir/godot --audio-driver Dummy -e -q --path test_project 2>&1 | tee sanitizers_log.txt || true
+          #misc/scripts/check_ci_log.py sanitizers_log.txt
+
+      # Run test project
+      - name: Run project
+        run: |
+          echo "Disabled"
+          #VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run builddir/godot 40 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
+          #misc/scripts/check_ci_log.py sanitizers_log.txt
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact
+
+  linux-template-mono:
+    runs-on: "ubuntu-20.04"
+    name: Template w/ Mono (target=release, tools=no)
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Azure repositories are not reliable, we need to prevent azure giving us packages.
+      - name: Make apt sources.list use the default Ubuntu repositories
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/*
+          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
+          sudo apt-get update
+
+      # Install all packages (except scons)
+      - name: Configure dependencies
+        run: |
+          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
+            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm
+
+      - name: Setup python and meson
+        uses: ./.github/actions/meson_install
+
+      - uses: ./.github/actions/meson_build
+        name: Compilation
+        with:
+          mesonflags: ${{ env.MESONFLAGS }} -Dmodules_disabled="" -Dmono_glue=false
+          buildtype: release
+          tools: false
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact
