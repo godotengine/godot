@@ -378,12 +378,12 @@ struct ServerController : public Controller {
 	uint32_t last_sent_state_input_id = 0;
 	real_t client_tick_additional_speed = 0.0;
 	real_t additional_speed_notif_timer = 0.0;
-	NetUtility::StatisticalRingBuffer<real_t> network_watcher;
 	std::deque<FrameSnapshot> snapshots;
 	bool streaming_paused = false;
 	bool enabled = true;
 
-	real_t input_arrival_time = 0.0;
+	uint32_t input_arrival_time = UINT32_MAX;
+	NetUtility::StatisticalRingBuffer<uint32_t> network_watcher;
 
 	/// Used to sync the dolls.
 	LocalVector<Peer> peers;

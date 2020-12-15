@@ -36,6 +36,7 @@
 
 #include "core/engine.h"
 #include "core/io/marshalls.h"
+#include "core/os/os.h"
 #include "scene_synchronizer.h"
 #include <stdint.h>
 #include <algorithm>
@@ -481,7 +482,7 @@ ServerController::ServerController(
 		NetworkedController *p_node,
 		int p_traced_frames) :
 		Controller(p_node),
-		network_watcher(p_traced_frames, 0.0) {
+		network_watcher(p_traced_frames, 0) {
 }
 
 void ServerController::process(real_t p_delta) {
@@ -489,8 +490,6 @@ void ServerController::process(real_t p_delta) {
 		// Disabled by the SceneSynchronizer.
 		return;
 	}
-
-	input_arrival_time += p_delta;
 
 	fetch_next_input();
 
@@ -573,8 +572,10 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 	//
 	// Let's decode it!
 
-	network_watcher.push(input_arrival_time);
-	input_arrival_time = 0.0;
+	const uint32_t now = OS::get_singleton()->get_ticks_msec();
+	// If negative the timer was disabled, so just assume 0.
+	network_watcher.push(MAX(0, now - input_arrival_time));
+	input_arrival_time = now;
 
 	const int data_len = p_data.size();
 
@@ -681,7 +682,8 @@ bool ServerController::fetch_next_input() {
 			current_input_buffer_id = snapshots.front().id;
 			snapshots.pop_front();
 			// Start tracing the packets from this moment on.
-			network_watcher.reset(0.0);
+			network_watcher.reset(0);
+			input_arrival_time = UINT32_MAX;
 		} else {
 			is_new_input = false;
 		}
@@ -699,7 +701,8 @@ bool ServerController::fetch_next_input() {
 				current_input_buffer_id = snapshots.front().id;
 				is_new_input = true;
 				snapshots.pop_front();
-				network_watcher.reset(0.0);
+				network_watcher.reset(0);
+				input_arrival_time = UINT32_MAX;
 			} else {
 				// No inputs, or we are not yet arrived to the client input,
 				// so just pretend the next input is void.
@@ -938,8 +941,8 @@ void ServerController::calculates_player_tick_rate(real_t p_delta) {
 	const real_t max_frames_delay = node->get_max_frames_delay();
 	const real_t net_sensitivity = node->get_net_sensitivity();
 
-	const real_t avg_receive_time = network_watcher.average();
-	const real_t deviation_receive_time = network_watcher.get_deviation(avg_receive_time);
+	const uint32_t avg_receive_time = network_watcher.average();
+	const real_t deviation_receive_time = real_t(network_watcher.get_deviation(avg_receive_time)) / 1000.0;
 
 	// The network quality can be established just by checking the standard
 	// deviation. Stable connections have standard deviation that tend to 0.
@@ -951,13 +954,6 @@ void ServerController::calculates_player_tick_rate(real_t p_delta) {
 			min_frames_delay,
 			max_frames_delay,
 			net_poorness);
-
-#ifdef DEBUG_ENABLED
-	const bool debug = ProjectSettings::get_singleton()->get_setting("NetworkSynchronizer/debug_server_speedup");
-	if (debug) {
-		print_line("Network poorness: " + rtos(net_poorness) + " optimal frame delay: " + itos(optimal_frame_delay));
-	}
-#endif
 
 	int consecutive_inputs = 0;
 	for (uint32_t i = 0; i < snapshots.size(); i += 1) {
@@ -973,6 +969,13 @@ void ServerController::calculates_player_tick_rate(real_t p_delta) {
 	const real_t damp = -(client_tick_additional_speed * 0.95);
 	client_tick_additional_speed += acc + damp * ((SGN(acc) * SGN(damp) + 1) / 2.0);
 	client_tick_additional_speed = CLAMP(client_tick_additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
+
+#ifdef DEBUG_ENABLED
+	const bool debug = ProjectSettings::get_singleton()->get_setting("NetworkSynchronizer/debug_server_speedup");
+	if (debug) {
+		print_line("Network poorness: " + rtos(net_poorness) + " optimal frame delay: " + itos(optimal_frame_delay) + " Deviation: " + rtos(deviation_receive_time));
+	}
+#endif
 }
 
 void ServerController::adjust_player_tick_rate(real_t p_delta) {
