@@ -346,9 +346,6 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) override;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) override;
 
-	virtual void generic_6dof_joint_set_precision(RID p_joint, int precision) override {}
-	virtual int generic_6dof_joint_get_precision(RID p_joint) override { return 0; }
-
 	virtual JointType joint_get_type(RID p_joint) const override;
 
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority) override;
