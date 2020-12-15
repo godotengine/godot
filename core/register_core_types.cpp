@@ -69,7 +69,7 @@
 #include "core/object/script_language.h"
 #include "core/object/undo_redo.h"
 #include "core/os/main_loop.h"
-#include "core/string/translation.h"
+#include "core/string/compressed_translation.h"
 
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
