@@ -890,16 +890,16 @@ Ref<Script> EditorData::script_class_load_script(const String &p_class) const {
 	return ResourceLoader::load(path, "Script");
 }
 
-void EditorData::script_class_set_icon_path(const String &p_class, const String &p_icon_path) {
+void EditorData::script_class_set_icon_path(const StringName &p_class, const String &p_icon_path) {
 	_script_class_icon_paths[p_class] = p_icon_path;
 }
 
-String EditorData::script_class_get_icon_path(const String &p_class) const {
+String EditorData::script_class_get_icon_path(const StringName &p_class) const {
 	if (!ScriptServer::is_global_class(p_class)) {
 		return String();
 	}
 
-	String current = p_class;
+	StringName current = p_class;
 	String ret = _script_class_icon_paths[current];
 	while (ret.empty()) {
 		current = script_class_get_base(current);
@@ -968,7 +968,7 @@ void EditorData::script_class_load_icon_paths() {
 		d.get_key_list(&keys);
 
 		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-			String name = E->get().operator String();
+			StringName name = E->get().operator StringName();
 			_script_class_icon_paths[name] = d[name];
 
 			String path = ScriptServer::get_global_class_path(name);

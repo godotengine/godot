@@ -154,6 +154,10 @@ Ref<GDNativeLibrary> NativeScript::get_library() const {
 
 void NativeScript::set_script_class_name(String p_type) {
 	script_class_name = p_type;
+#ifdef TOOLS_ENABLED
+	// Force file cache update for compiled languages to update script class metadata
+	EditorFileSystem::get_singleton()->update_file(get_path());
+#endif
 }
 
 String NativeScript::get_script_class_name() const {
@@ -162,6 +166,10 @@ String NativeScript::get_script_class_name() const {
 
 void NativeScript::set_script_class_icon_path(String p_icon_path) {
 	script_class_icon_path = p_icon_path;
+#ifdef TOOLS_ENABLED
+	// Force file cache update for compiled languages to update script class metadata
+	EditorFileSystem::get_singleton()->update_file(get_path());
+#endif
 }
 
 String NativeScript::get_script_class_icon_path() const {
