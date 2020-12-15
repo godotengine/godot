@@ -56,7 +56,6 @@ TEST_CASE("[RandomNumberGenerator] Restore state") {
 	rng->randomize();
 	uint64_t last_seed = rng->get_seed();
 	INFO("Current seed: " << last_seed);
-
 	rng->randi();
 	rng->randi();
 
@@ -105,6 +104,115 @@ TEST_CASE("[RandomNumberGenerator] Restore from seed") {
 	String msg = "Should restore the sequence of numbers after resetting the seed";
 	CHECK_MESSAGE(s0_1_before == s0_1_after, msg);
 	CHECK_MESSAGE(s0_2_before == s0_2_after, msg);
+}
+
+TEST_CASE("[RandomNumberGenerator] Check rand_range for expected functionality") {
+	Ref<RandomNumberGenerator> rng = memnew(RandomNumberGenerator);
+	rng->set_seed(0);
+	uint64_t prev_state = rng->get_state();
+	uint32_t seed_before = rng->get_seed();
+
+	INFO("randf_range should give float between -100 and 100, base test.");
+	float num_before;
+	for (int i = 0; i < 1000; i++) {
+		num_before = rng->randf_range(-100, 100);
+		CHECK(num_before >= -100);
+		CHECK(num_before <= 100);
+	}
+
+	float num_after1;
+	rng->randomize();
+	INFO("randf_range should give float between -75 and 75.");
+	INFO("Shouldn't be affected by randomize.");
+	for (int i = 0; i < 1000; i++) {
+		num_after1 = rng->randf_range(-75, 75);
+		CHECK(num_after1 >= -75);
+		CHECK(num_after1 <= 75);
+	}
+
+	rng->set_state(prev_state);
+	int num_after2;
+	INFO("randi_range should give int between -50 and 50.");
+	INFO("Shouldn't be affected by set_state.");
+	for (int i = 0; i < 1000; i++) {
+		num_after2 = rng->randi_range(-50, 50);
+		CHECK(num_after2 >= -50);
+		CHECK(num_after2 <= 50);
+	}
+
+	rng->set_seed(seed_before);
+	int num_after3;
+	INFO("randi_range should give int between -25 and 25.");
+	INFO("Shouldn't be affected by set_seed.");
+	for (int i = 0; i < 1000; i++) {
+		num_after3 = rng->randi_range(-25, 25);
+		CHECK(num_after3 >= -25);
+		CHECK(num_after3 <= 25);
+	}
+
+	rng->randf();
+	rng->randf();
+	float num_after4;
+
+	INFO("randf_range should give float between -10 and 10.");
+	INFO("Shouldn't be affected after generating new numbers.");
+	for (int i = 0; i < 1000; i++) {
+		num_after4 = rng->randf_range(-10, 10);
+		CHECK(num_after4 >= -10);
+		CHECK(num_after4 <= 10);
+	}
+
+	rng->randi();
+	rng->randi();
+	int num_after5;
+
+	INFO("randi_range should give int between -5 and 5.");
+	INFO("Shouldn't be affected after generating new numbers.");
+	for (int i = 0; i < 1000; i++) {
+		num_after5 = rng->randf_range(-5, 5);
+		CHECK(num_after5 >= -5);
+		CHECK(num_after5 <= 5);
+	}
+}
+
+TEST_CASE("[RandomNumberGenerator] Check randfn for expected functionality") {
+	Ref<RandomNumberGenerator> rng = memnew(RandomNumberGenerator);
+	rng->set_seed(1);
+	INFO("randfn should give a number between -5 to 5 (5 std deviations away; above 99.7% chance it will be in this range).");
+	INFO("Standard randfn function call.");
+	float temp_check;
+	for (int i = 0; i < 100; i++) {
+		temp_check = rng->randfn();
+		CHECK(temp_check >= -5);
+		CHECK(temp_check <= 5);
+	}
+
+	INFO("Checks if randfn produces number between -5 to 5 after multiple randi/randf calls.");
+	INFO("5 std deviations away; above 99.7% chance it will be in this range.");
+	rng->randf();
+	rng->randi();
+	for (int i = 0; i < 100; i++) {
+		temp_check = rng->randfn();
+		CHECK(temp_check >= -5);
+		CHECK(temp_check <= 5);
+	}
+
+	INFO("Checks if user defined mean and deviation work properly.");
+	INFO("5 std deviations away; above 99.7% chance it will be in this range.");
+	for (int i = 0; i < 100; i++) {
+		temp_check = rng->randfn(5, 10);
+		CHECK(temp_check >= -45);
+		CHECK(temp_check <= 55);
+	}
+
+	INFO("Checks if randfn works with changed seeds.");
+	INFO("5 std deviations away; above 99.7% chance it will be in this range.");
+	rng->randomize();
+	for (int i = 0; i < 100; i++) {
+		temp_check = rng->randfn(3, 3);
+		CHECK(temp_check >= -12);
+		CHECK(temp_check <= 18);
+	}
 }
 } // namespace TestRandomNumberGenerator
 
