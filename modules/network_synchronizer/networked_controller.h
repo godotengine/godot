@@ -86,20 +86,22 @@ public:
 
 private:
 	/// The input storage size is used to cap the amount of inputs collected by
-	/// the `Master`.
+	/// the `PlayerController`.
 	///
 	/// The server sends a message, to all the connected peers, notifing its
 	/// status at a fixed interval.
 	/// The peers, after receiving this update, removes all the old inputs until
 	/// that moment.
 	///
-	/// If the `input_storage_size` is too small, the clients will collect inputs
-	/// intermittently, but on the other side, a too large value may introduce
-	/// virtual delay.
+	/// `input_storage_size`: is too small, the player may stop collect
+	/// - Too small value makes the `PlayerController` stop collecting inputs
+	///   too early, in case of lag.
+	/// - Too big values may introduce too much latency, because the player keep
+	///   pushing new inputs without receiving the server snapshot.
 	///
-	/// With 60 iteration per seconds a good value is `300`, but is adviced to
-	/// perform some tests until you find a better suitable value for your needs.
-	int player_input_storage_size = 300;
+	/// With 60 iteration per seconds a good value is `180` (60 * 3) so the
+	/// `PlayerController` can be at max 3 seconds ahead the `ServerController`.
+	int player_input_storage_size = 180;
 
 	/// Amount of time an inputs is re-sent to each peer.
 	/// Resenging inputs is necessary because the packets may be lost since as
@@ -110,48 +112,44 @@ private:
 	/// client.
 	real_t tick_speedup_notification_delay = 0.33;
 
-	/// Used to set the amount of traced frames to determine the connection
-	/// health trend.
+	/// The connection quality is established by watching the time passed
+	/// between each input is received.
+	/// The more this time is the same the more the connection health is good.
 	///
-	/// This parameter depends a lot on the physics iteration per second, and
-	/// an optimal parameter, with 60 physics iteration per second, is 120;
-	/// that is equivalent of the latest 2 seconds frames.
-	///
-	/// A smaller value will make the recovery mechanism too noisy and so useless,
-	/// on the other hand a too big value will make the recovery mechanism too
-	/// slow.
+	/// The `network_traced_frames` defines how many frames have
+	/// to be used to establish the connection quality.
+	/// - Big values make the mechanism too slow.
+	/// - Small values make the mechanism too sensible.
 	int network_traced_frames = 120;
 
-	/// Minimal input count on server. This allows to keep the server a bit more
-	/// behind the client even when the internet connection is good. This allows
-	/// to amortize any oscillation and give the server a bit of room to recover
-	/// in case of failure.
-	real_t optimal_input_count_min = 2;
-
-	/// Max input count the server can add to amortize for bad internet
-	/// connection. This introduces virtual latency, that is added on top of the
-	/// connection latency, so a too big value can be bad.
-	real_t optimal_input_count_max = 60;
-
-	/// Factor used to change the severity of a missing input. This allows to
-	/// make the controller more or less susceptible to input missing.
-	real_t missing_input_factor = 2.0;
-
-	/// On the server the controller increases and decreases the amount of input
-	/// stored (and not yet processed) so to amortize the connection problems.
-	/// With bad connections, the virtual latency increases so to give much more
-	/// chances that a missing input is received before it's processed.
+	/// Sensitivity to network oscillations. The value is in seconds and can be
+	/// used to establish the connection quality.
 	///
-	/// The virtual lag can increase at any moment, but it decreases with a
-	/// constant time and a constant ratio. This parameter controls the time for
-	/// which each slice of virtual lag is decreased (in seconds).
-	real_t optimal_input_count_decreasing_delayer = 0.5;
+	/// For each input, the time needed for its arrival is traced; the standard
+	/// deviation of these is divided by `net_sensitivity`: the result is
+	/// the connection quality.
+	///
+	/// The more the time needed for each batch to arrive is different the
+	/// bigger this value is: when this value approaches to
+	/// `net_sensitivity` (or even surpasses it) the bad the connection is.
+	///
+	/// The result is the `connection_poorness` that goes from 0 to 1 and is
+	/// used to decide the `optimal_frame_delay` that is interpolated between
+	/// `min_frames_delay` and `max_frames_delay`.
+	real_t net_sensitivity = 0.1;
 
-	/// This parameter controls the amount of virtual lag removed.
-	real_t optimal_input_count_decreasing_amount = 0.34;
-
-	/// Used to control the `player` tick acceleration, so to produce more
+	/// The `ServerController` will try to keep a margin of error, so that
+	/// network oscillations doesn't leave the `ServerController` without
 	/// inputs.
+	///
+	/// This margin of error is called `optimal_frame_delay` and it changes
+	/// depending on the connection health:
+	/// it can go from `min_frames_delay` to `max_frames_delay`.
+	int min_frames_delay = 1;
+	int max_frames_delay = 6;
+
+	/// Rate at which the tick speed changes, so the `optimal_frame_delay` is
+	/// matched.
 	real_t tick_acceleration = 2.0;
 
 	/// Collect rate (in frames) used by the server to estabish when to collect
@@ -204,8 +202,8 @@ private:
 	/// `doll_net_sensitivity` (or even surpasses it) the bad the connection is.
 	///
 	/// The result is the `connection_poorness` that goes from 0 to 1 and is
-	/// used to interpolate the `doll_min_frames_delay` and
-	/// `doll_max_frames_delay`.
+	/// used to decide the `optimal_frames_delay` that is interpolated between
+	/// `doll_min_frames_delay` and `doll_max_frames_delay`.
 	real_t doll_net_sensitivity = 0.2;
 
 	ControllerType controller_type = CONTROLLER_TYPE_NULL;
@@ -238,20 +236,14 @@ public:
 	void set_missing_snapshots_max_tolerance(int p_tolerance);
 	int get_missing_snapshots_max_tolerance() const;
 
-	void set_optimal_input_count_min(real_t p_val);
-	real_t get_optimal_input_count_min() const;
+	void set_min_frames_delay(int p_val);
+	int get_min_frames_delay() const;
 
-	void set_optimal_input_count_max(real_t p_val);
-	real_t get_optimal_input_count_max() const;
+	void set_max_frames_delay(int p_val);
+	int get_max_frames_delay() const;
 
-	void set_missing_input_factor(real_t p_val);
-	real_t get_missing_input_factor() const;
-
-	void set_optimal_input_count_decreasing_delayer(real_t p_val);
-	real_t get_optimal_input_count_decreasing_delayer() const;
-
-	void set_optimal_input_count_decreasing_amount(real_t p_val);
-	real_t get_optimal_input_count_decreasing_amount() const;
+	void set_net_sensitivity(real_t p_val);
+	real_t get_net_sensitivity() const;
 
 	void set_tick_acceleration(real_t p_acceleration);
 	real_t get_tick_acceleration() const;
@@ -396,9 +388,12 @@ struct ServerController : public Controller {
 	real_t optimal_input_count = 0.0;
 	real_t optimal_input_count_decreasing_timer = 0.0;
 	NetUtility::StatisticalRingBuffer<real_t> missing_inputs_stats;
+	NetUtility::StatisticalRingBuffer<real_t> network_watcher;
 	std::deque<FrameSnapshot> snapshots;
 	bool streaming_paused = false;
 	bool enabled = true;
+
+	real_t input_arrival_time = 0.0;
 
 	/// Used to sync the dolls.
 	LocalVector<Peer> peers;

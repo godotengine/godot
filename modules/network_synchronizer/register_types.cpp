@@ -46,6 +46,9 @@ void register_network_synchronizer_types() {
 	ClassDB::register_class<Interpolator>();
 	ClassDB::register_class<NetworkedController>();
 	ClassDB::register_class<SceneSynchronizer>();
+
+	GLOBAL_DEF("NetworkSynchronizer/debug_server_speedup", false);
+	GLOBAL_DEF("NetworkSynchronizer/debug_doll_speedup", false);
 }
 
 void unregister_network_synchronizer_types() {
