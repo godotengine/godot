@@ -386,6 +386,7 @@ public:
 	Error open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode = COMPRESSION_FASTLZ);
 
 	Error open(const String &p_path, ModeFlags p_mode_flags); // open a file.
+	void flush(); // Flush a file (write its buffer to disk).
 	void close(); // Close a file.
 	bool is_open() const; // True when file is open.
 
