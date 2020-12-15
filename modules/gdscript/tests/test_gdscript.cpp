@@ -118,10 +118,10 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 			print_line(vformat("%02d:%02d: %s", error.line, error.column, error.message));
 		}
 	}
-
+#ifdef TOOLS_ENABLED
 	GDScriptParser::TreePrinter printer;
-
 	printer.print_tree(parser);
+#endif
 }
 
 static void test_compiler(const String &p_code, const String &p_script_path, const Vector<String> &p_lines) {
@@ -175,8 +175,9 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 			signature += func->get_argument_name(i);
 		}
 		print_line(signature + ")");
-
+#ifdef TOOLS_ENABLED
 		func->disassemble(p_lines);
+#endif
 		print_line("");
 		print_line("");
 	}
