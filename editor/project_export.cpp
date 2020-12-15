@@ -262,13 +262,13 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		}
 
 		export_button->set_disabled(true);
-		get_ok()->set_disabled(true);
+		get_ok_button()->set_disabled(true);
 
 	} else {
 		export_error->hide();
 		export_templates_error->hide();
 		export_button->set_disabled(false);
-		get_ok()->set_disabled(false);
+		get_ok_button()->set_disabled(false);
 	}
 
 	custom_features->set_text(current->get_custom_features());
@@ -586,7 +586,7 @@ void ProjectExportDialog::_delete_preset_confirm() {
 	int idx = presets->get_current();
 	_edit_preset(-1);
 	export_button->set_disabled(true);
-	get_ok()->set_disabled(true);
+	get_ok_button()->set_disabled(true);
 	EditorExport::get_singleton()->remove_export_preset(idx);
 	_update_presets();
 }
@@ -856,18 +856,18 @@ void ProjectExportDialog::_validate_export_path(const String &p_path) {
 	bool invalid_path = (p_path.get_file().get_basename() == "");
 
 	// Check if state change before needlessly messing with signals
-	if (invalid_path && export_project->get_ok()->is_disabled()) {
+	if (invalid_path && export_project->get_ok_button()->is_disabled()) {
 		return;
 	}
-	if (!invalid_path && !export_project->get_ok()->is_disabled()) {
+	if (!invalid_path && !export_project->get_ok_button()->is_disabled()) {
 		return;
 	}
 
 	if (invalid_path) {
-		export_project->get_ok()->set_disabled(true);
+		export_project->get_ok_button()->set_disabled(true);
 		export_project->get_line_edit()->disconnect("text_entered", Callable(export_project, "_file_entered"));
 	} else {
-		export_project->get_ok()->set_disabled(false);
+		export_project->get_ok_button()->set_disabled(false);
 		export_project->get_line_edit()->connect("text_entered", Callable(export_project, "_file_entered"));
 	}
 }
@@ -901,7 +901,7 @@ void ProjectExportDialog::_export_project() {
 	// FIXME: This is a hack, we should instead change EditorFileDialog to allow
 	// disabling validation by the "text_entered" signal.
 	if (!export_project->get_line_edit()->is_connected("text_entered", Callable(export_project, "_file_entered"))) {
-		export_project->get_ok()->set_disabled(false);
+		export_project->get_ok_button()->set_disabled(false);
 		export_project->get_line_edit()->connect("text_entered", Callable(export_project, "_file_entered"));
 	}
 
@@ -1184,26 +1184,26 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	delete_confirm = memnew(ConfirmationDialog);
 	add_child(delete_confirm);
-	delete_confirm->get_ok()->set_text(TTR("Delete"));
+	delete_confirm->get_ok_button()->set_text(TTR("Delete"));
 	delete_confirm->connect("confirmed", callable_mp(this, &ProjectExportDialog::_delete_preset_confirm));
 
 	// Export buttons, dialogs and errors.
 
 	updating = false;
 
-	get_cancel()->set_text(TTR("Close"));
-	get_ok()->set_text(TTR("Export PCK/Zip"));
+	get_cancel_button()->set_text(TTR("Close"));
+	get_ok_button()->set_text(TTR("Export PCK/Zip"));
 	export_button = add_button(TTR("Export Project"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 	export_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_project));
 	// Disable initially before we select a valid preset
 	export_button->set_disabled(true);
-	get_ok()->set_disabled(true);
+	get_ok_button()->set_disabled(true);
 
 	export_all_dialog = memnew(ConfirmationDialog);
 	add_child(export_all_dialog);
 	export_all_dialog->set_title("Export All");
 	export_all_dialog->set_text(TTR("Export mode?"));
-	export_all_dialog->get_ok()->hide();
+	export_all_dialog->get_ok_button()->hide();
 	export_all_dialog->add_button(TTR("Debug"), true, "debug");
 	export_all_dialog->add_button(TTR("Release"), true, "release");
 	export_all_dialog->connect("custom_action", callable_mp(this, &ProjectExportDialog::_export_all_dialog_action));

@@ -383,7 +383,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	_replace_button = add_button(TTR("Replace..."), false, "replace");
 	_replace_button->set_disabled(true);
 
-	Button *cancel_button = get_ok();
+	Button *cancel_button = get_ok_button();
 	cancel_button->set_text(TTR("Cancel"));
 
 	_mode = SEARCH_MODE;

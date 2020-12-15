@@ -126,7 +126,7 @@ void PluginConfigDialog::_on_cancelled() {
 void PluginConfigDialog::_on_required_text_changed(const String &) {
 	int lang_idx = script_option_edit->get_selected();
 	String ext = ScriptServer::get_language(lang_idx)->get_extension();
-	get_ok()->set_disabled(script_edit->get_text().get_basename().empty() || script_edit->get_text().get_extension() != ext || name_edit->get_text().empty());
+	get_ok_button()->set_disabled(script_edit->get_text().get_basename().empty() || script_edit->get_text().get_extension() != ext || name_edit->get_text().empty());
 }
 
 void PluginConfigDialog::_notification(int p_what) {
@@ -138,7 +138,7 @@ void PluginConfigDialog::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_READY: {
 			connect("confirmed", callable_mp(this, &PluginConfigDialog::_on_confirmed));
-			get_cancel()->connect("pressed", callable_mp(this, &PluginConfigDialog::_on_cancelled));
+			get_cancel_button()->connect("pressed", callable_mp(this, &PluginConfigDialog::_on_cancelled));
 		} break;
 	}
 }
@@ -171,8 +171,8 @@ void PluginConfigDialog::config(const String &p_config_path) {
 		Object::cast_to<Label>(subfolder_edit->get_parent()->get_child(subfolder_edit->get_index() - 1))->show();
 		set_title(TTR("Create a Plugin"));
 	}
-	get_ok()->set_disabled(!_edit_mode);
-	get_ok()->set_text(_edit_mode ? TTR("Update") : TTR("Create"));
+	get_ok_button()->set_disabled(!_edit_mode);
+	get_ok_button()->set_text(_edit_mode ? TTR("Update") : TTR("Create"));
 }
 
 void PluginConfigDialog::_bind_methods() {
@@ -180,7 +180,7 @@ void PluginConfigDialog::_bind_methods() {
 }
 
 PluginConfigDialog::PluginConfigDialog() {
-	get_ok()->set_disabled(true);
+	get_ok_button()->set_disabled(true);
 	set_hide_on_ok(true);
 
 	GridContainer *grid = memnew(GridContainer);

@@ -724,7 +724,7 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 
 	create_resource = memnew(ConfirmationDialog);
 	add_child(create_resource);
-	create_resource->get_ok()->set_text(TTR("Create"));
+	create_resource->get_ok_button()->set_text(TTR("Create"));
 
 	mode = MODE_EDIT;
 }

@@ -79,9 +79,9 @@ public:
 
 	void register_text_enter(Node *p_line_edit);
 
-	Button *get_ok() { return ok; }
+	Button *get_ok_button() { return ok; }
 	Button *add_button(const String &p_text, bool p_right = false, const String &p_action = "");
-	Button *add_cancel(const String &p_cancel = "");
+	Button *add_cancel_button(const String &p_cancel = "");
 
 	void set_hide_on_ok(bool p_hide);
 	bool get_hide_on_ok() const;
@@ -104,7 +104,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Button *get_cancel();
+	Button *get_cancel_button();
 	ConfirmationDialog();
 };
 

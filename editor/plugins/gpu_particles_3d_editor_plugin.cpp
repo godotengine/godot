@@ -213,7 +213,7 @@ GPUParticles3DEditorBase::GPUParticles3DEditorBase() {
 	emission_fill->add_item(TTR("Volume"));
 	emd_vb->add_margin_child(TTR("Emission Source: "), emission_fill);
 
-	emission_dialog->get_ok()->set_text(TTR("Create"));
+	emission_dialog->get_ok_button()->set_text(TTR("Create"));
 	emission_dialog->connect("confirmed", callable_mp(this, &GPUParticles3DEditorBase::_generate_emission_points));
 
 	emission_tree_dialog = memnew(SceneTreeDialog);
