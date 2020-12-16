@@ -1654,16 +1654,19 @@ void TextEdit::_notification(int p_what) {
 			}
 
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
-				String text = _base_get_text(0, 0, selection.selecting_line, selection.selecting_column);
-				int cursor_start = text.length();
+				int cursor_start = -1;
 				int cursor_end = -1;
 
-				if (selection.active) {
-					String selected_text = _base_get_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
+				if (!selection.active) {
+					String full_text = _base_get_text(0, 0, cursor.line, cursor.column);
 
-					if (selected_text.length() > 0) {
-						cursor_end = cursor_start + selected_text.length();
-					}
+					cursor_start = full_text.length();
+				} else {
+					String pre_text = _base_get_text(0, 0, selection.from_line, selection.from_column);
+					String post_text = _base_get_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
+
+					cursor_start = pre_text.length();
+					cursor_end = cursor_start + post_text.length();
 				}
 
 				DisplayServer::get_singleton()->virtual_keyboard_show(get_text(), get_global_rect(), true, -1, cursor_start, cursor_end);
