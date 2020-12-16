@@ -57,7 +57,8 @@ private:
 	bool menu_hovered = false;
 	int highlight_arrow = -1;
 	TabAlign align = ALIGN_CENTER;
-	int _get_top_margin() const;
+	bool tabs_at_bottom = false;
+	int _get_tabs_margin() const;
 	mutable ObjectID popup_obj_id;
 	bool drag_to_rearrange_enabled = false;
 	bool use_hidden_tabs_for_min_size = false;
@@ -110,6 +111,9 @@ public:
 
 	void set_tab_hidden(int p_tab, bool p_hidden);
 	bool get_tab_hidden(int p_tab) const;
+
+	void set_tabs_at_bottom(bool p_at_bottom);
+	bool is_tabs_at_bottom() const;
 
 	int get_tab_count() const;
 	void set_current_tab(int p_current);

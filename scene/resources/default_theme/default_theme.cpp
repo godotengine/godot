@@ -757,14 +757,23 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// TabContainer
 
 	Ref<StyleBoxTexture> tc_sb = sb_expand(make_stylebox(tab_container_bg_png, 4, 4, 4, 4, 4, 4, 4, 4), 3, 3, 3, 3);
+	Ref<StyleBoxTexture> tc_sb_bottom = tc_sb->duplicate();
 
 	tc_sb->set_expand_margin_size(SIDE_TOP, 2 * scale);
 	tc_sb->set_default_margin(SIDE_TOP, 8 * scale);
 
+	tc_sb_bottom->set_expand_margin_size(SIDE_BOTTOM, 2 * scale);
+	tc_sb_bottom->set_default_margin(SIDE_BOTTOM, 8 * scale);
+
 	theme->set_stylebox("tab_selected", "TabContainer", sb_expand(make_stylebox(tab_current_png, 4, 4, 4, 1, 16, 4, 16, 4), 2, 2, 2, 2));
 	theme->set_stylebox("tab_unselected", "TabContainer", sb_expand(make_stylebox(tab_behind_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
 	theme->set_stylebox("tab_disabled", "TabContainer", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
+
+	theme->set_stylebox("tab_selected_bottom", "TabContainer", sb_expand(make_stylebox(tab_current_bottom_png, 4, 1, 4, 4, 16, 4, 16, 4), 2, 2, 2, 2));
+	theme->set_stylebox("tab_unselected_bottom", "TabContainer", sb_expand(make_stylebox(tab_behind_bottom_png, 5, 1, 5, 5, 16, 4, 16, 6), 3, 3, 3, 0));
+	theme->set_stylebox("tab_disabled_bottom", "TabContainer", sb_expand(make_stylebox(tab_disabled_bottom_png, 5, 1, 5, 5, 16, 4, 16, 6), 3, 3, 3, 0));
 	theme->set_stylebox("panel", "TabContainer", tc_sb);
+	theme->set_stylebox("panel_bottom", "TabContainer", tc_sb_bottom);
 
 	theme->set_icon("increment", "TabContainer", make_icon(scroll_button_right_png));
 	theme->set_icon("increment_highlight", "TabContainer", make_icon(scroll_button_right_hl_png));

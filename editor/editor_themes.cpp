@@ -546,7 +546,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxEmpty> style_empty = make_empty_stylebox(default_margin_size, default_margin_size, default_margin_size, default_margin_size);
 
 	// Tabs
-
 	Ref<StyleBoxFlat> style_tab_selected = style_widget->duplicate();
 
 	// Add a highlight line at the top of the selected tab.
@@ -568,6 +567,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tab_selected->set_default_margin(SIDE_TOP, widget_default_margin.y);
 	style_tab_selected->set_bg_color(base_color);
 
+	Ref<StyleBoxFlat> style_tab_selected_bottom = style_tab_selected->duplicate();
+	style_tab_selected_bottom->set_border_width(SIDE_TOP, 0);
+	style_tab_selected_bottom->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
+	style_tab_selected_bottom->set_expand_margin_size(SIDE_TOP, border_width);
+
 	Ref<StyleBoxFlat> style_tab_unselected = style_tab_selected->duplicate();
 	style_tab_unselected->set_bg_color(dark_color_1);
 	style_tab_unselected->set_expand_margin_size(SIDE_BOTTOM, 0);
@@ -578,10 +582,18 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tab_unselected->set_default_margin(SIDE_LEFT, widget_default_margin.x + 2 * EDSCALE);
 	style_tab_unselected->set_default_margin(SIDE_RIGHT, widget_default_margin.x + 2 * EDSCALE);
 
+	Ref<StyleBoxFlat> style_tab_unselected_bottom = style_tab_unselected->duplicate();
+	style_tab_unselected_bottom->set_border_width(SIDE_TOP, 0);
+	style_tab_unselected_bottom->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
+
 	Ref<StyleBoxFlat> style_tab_disabled = style_tab_selected->duplicate();
+	style_tab_disabled->set_border_color(Color(0, 0, 0, 0));
 	style_tab_disabled->set_bg_color(disabled_bg_color);
 	style_tab_disabled->set_expand_margin_size(SIDE_BOTTOM, 0);
-	style_tab_disabled->set_border_color(disabled_bg_color);
+
+	Ref<StyleBoxFlat> style_tab_disabled_bottom = style_tab_disabled->duplicate();
+	style_tab_disabled_bottom->set_border_width(SIDE_TOP, 0);
+	style_tab_disabled_bottom->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
 
 	// Editor background
 	Color background_color_opaque = background_color;
@@ -948,8 +960,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Tabs & TabContainer
 	theme->set_stylebox("tab_selected", "TabContainer", style_tab_selected);
+	theme->set_stylebox("tab_selected_bottom", "TabContainer", style_tab_selected_bottom);
 	theme->set_stylebox("tab_unselected", "TabContainer", style_tab_unselected);
+	theme->set_stylebox("tab_unselected_bottom", "TabContainer", style_tab_unselected_bottom);
 	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
+	theme->set_stylebox("tab_disabled_bottom", "TabContainer", style_tab_disabled_bottom);
 	theme->set_stylebox("tab_selected", "Tabs", style_tab_selected);
 	theme->set_stylebox("tab_unselected", "Tabs", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "Tabs", style_tab_disabled);
@@ -979,14 +994,22 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel->set_border_color(dark_color_3);
 	style_content_panel->set_border_width_all(border_width);
 	// compensate the border
-	style_content_panel->set_default_margin(SIDE_TOP, (2 + margin_size_extra) * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_RIGHT, margin_size_extra * EDSCALE);
-	style_content_panel->set_default_margin(SIDE_BOTTOM, margin_size_extra * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_LEFT, margin_size_extra * EDSCALE);
+	Ref<StyleBoxFlat> style_content_panel_bottom = style_content_panel->duplicate();
+	style_content_panel->set_default_margin(SIDE_TOP, (2 + margin_size_extra) * EDSCALE);
+	style_content_panel->set_default_margin(SIDE_BOTTOM, margin_size_extra * EDSCALE);
 	// Display border to visually split the body of the container from its possible backgrounds.
-	style_content_panel->set_border_width(Side::SIDE_TOP, Math::round(2 * EDSCALE));
+	style_content_panel->set_border_width(SIDE_TOP, Math::round(2 * EDSCALE));
 	style_content_panel->set_border_color(dark_color_2);
+
+	style_content_panel_bottom->set_default_margin(SIDE_BOTTOM, (2 + margin_size_extra) * EDSCALE);
+	style_content_panel_bottom->set_default_margin(SIDE_TOP, margin_size_extra * EDSCALE);
+	style_content_panel_bottom->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
+	style_content_panel_bottom->set_border_color(dark_color_2);
+
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
+	theme->set_stylebox("panel_bottom", "TabContainer", style_content_panel_bottom);
 
 	// These styleboxes can be used on tabs against the base color background (e.g. nested tabs).
 	Ref<StyleBoxFlat> style_tab_selected_odd = style_tab_selected->duplicate();
