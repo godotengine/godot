@@ -428,7 +428,7 @@ void GDScriptByteCodeGenerator::write_end_and(const Address &p_target) {
 	patch_jump(logic_op_jump_pos2.back()->get());
 	logic_op_jump_pos1.pop_back();
 	logic_op_jump_pos2.pop_back();
-	append(GDScriptFunction::OPCODE_ASSIGN_FALSE, 0);
+	append(GDScriptFunction::OPCODE_ASSIGN_FALSE, 1);
 	append(p_target);
 }
 
@@ -453,7 +453,7 @@ void GDScriptByteCodeGenerator::write_end_or(const Address &p_target) {
 	// Jump away from the success condition.
 	append(GDScriptFunction::OPCODE_JUMP, 0);
 	append(opcodes.size() + 3);
-	// Here it means one of operands is false.
+	// Here it means one of operands is true.
 	patch_jump(logic_op_jump_pos1.back()->get());
 	patch_jump(logic_op_jump_pos2.back()->get());
 	logic_op_jump_pos1.pop_back();
