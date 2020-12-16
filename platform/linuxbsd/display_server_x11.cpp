@@ -95,6 +95,15 @@
 static const double abs_resolution_mult = 10000.0;
 static const double abs_resolution_range_mult = 10.0;
 
+// Hints for X11 fullscreen
+struct Hints {
+	unsigned long flags = 0;
+	unsigned long functions = 0;
+	unsigned long decorations = 0;
+	long inputMode = 0;
+	unsigned long status = 0;
+};
+
 bool DisplayServerX11::has_feature(Feature p_feature) const {
 	switch (p_feature) {
 		case FEATURE_SUBWINDOWS:
