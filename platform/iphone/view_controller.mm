@@ -33,6 +33,7 @@
 #include "core/project_settings.h"
 #import "godot_view.h"
 #import "godot_view_renderer.h"
+#import "keyboard_input_view.h"
 #import "native_video_view.h"
 #include "os_iphone.h"
 
@@ -40,6 +41,7 @@
 
 @property(strong, nonatomic) GodotViewRenderer *renderer;
 @property(strong, nonatomic) GodotNativeVideoView *videoView;
+@property(strong, nonatomic) GodotKeyboardInputView *keyboardView;
 
 @end
 
@@ -101,6 +103,10 @@
 }
 
 - (void)observeKeyboard {
+	printf("******** setting up keyboard input view\n");
+	self.keyboardView = [GodotKeyboardInputView new];
+	[self.view addSubview:self.keyboardView];
+
 	printf("******** adding observer for keyboard show/hide\n");
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
@@ -118,7 +124,8 @@
 	[self.videoView stopVideo];
 	self.videoView = nil;
 
-	self.videoView = nil;
+	self.keyboardView = nil;
+
 	self.renderer = nil;
 
 	[[NSNotificationCenter defaultCenter] removeObserver:self];

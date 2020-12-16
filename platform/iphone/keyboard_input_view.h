@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  view_controller.h                                                    */
+/*  keyboard_input_view.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,21 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <GameKit/GameKit.h>
 #import <UIKit/UIKit.h>
 
-@class GodotView;
-@class GodotNativeVideoView;
-@class GodotKeyboardInputView;
+@interface GodotKeyboardInputView : UITextView
 
-@interface ViewController : UIViewController <GKGameCenterControllerDelegate>
-
-@property(nonatomic, readonly, strong) GodotView *godotView;
-@property(nonatomic, readonly, strong) GodotNativeVideoView *videoView;
-@property(nonatomic, readonly, strong) GodotKeyboardInputView *keyboardView;
-
-// MARK: Native Video Player
-
-- (BOOL)playVideoAtPath:(NSString *)filePath volume:(float)videoVolume audio:(NSString *)audioTrack subtitle:(NSString *)subtitleTrack;
+- (BOOL)becomeFirstResponderWithString:(NSString *)existingString multiline:(BOOL)flag cursorStart:(NSInteger)start cursorEnd:(NSInteger)end;
 
 @end
