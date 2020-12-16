@@ -2657,11 +2657,30 @@ void Node3DEditorViewport::_draw() {
 
 	if (_edit.mode == TRANSFORM_ROTATE) {
 		Point2 center = _point_to_screen(_edit.center);
+
+		Color handle_color;
+		switch (_edit.plane) {
+			case TRANSFORM_X_AXIS:
+				handle_color = get_theme_color("axis_x_color", "Editor");
+				break;
+			case TRANSFORM_Y_AXIS:
+				handle_color = get_theme_color("axis_y_color", "Editor");
+				break;
+			case TRANSFORM_Z_AXIS:
+				handle_color = get_theme_color("axis_z_color", "Editor");
+				break;
+			default:
+				handle_color = get_theme_color("accent_color", "Editor");
+				break;
+		}
+		handle_color.a = 1.0;
+		handle_color *= Color(1.3, 1.3, 1.3, 1.0);
+
 		RenderingServer::get_singleton()->canvas_item_add_line(
 				ci,
 				_edit.mouse_pos,
 				center,
-				get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.6),
+				handle_color,
 				Math::round(2 * EDSCALE));
 	}
 	if (previewing) {
