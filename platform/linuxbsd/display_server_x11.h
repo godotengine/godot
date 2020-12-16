@@ -61,15 +61,6 @@
 #include <X11/extensions/Xrandr.h>
 #include <X11/keysym.h>
 
-// Hints for X11 fullscreen
-typedef struct {
-	unsigned long flags = 0;
-	unsigned long functions = 0;
-	unsigned long decorations = 0;
-	long inputMode = 0;
-	unsigned long status = 0;
-} Hints;
-
 typedef struct _xrr_monitor_info {
 	Atom name;
 	Bool primary = false;
