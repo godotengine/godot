@@ -1714,6 +1714,8 @@ void Node::add_to_group(const StringName &p_identifier, bool p_persistent) {
 	gd.persistent = p_persistent;
 
 	data.grouped[p_identifier] = gd;
+
+	emit_signal(SceneStringNames::get_singleton()->grouped, this, p_identifier);
 }
 
 void Node::remove_from_group(const StringName &p_identifier) {
@@ -1728,6 +1730,8 @@ void Node::remove_from_group(const StringName &p_identifier) {
 	}
 
 	data.grouped.erase(E);
+
+	emit_signal(SceneStringNames::get_singleton()->ungrouped, this, p_identifier);
 }
 
 Array Node::_get_groups() const {
@@ -2889,6 +2893,8 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_entered"));
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
 	ADD_SIGNAL(MethodInfo("tree_exited"));
+	ADD_SIGNAL(MethodInfo("grouped", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::STRING_NAME, "group")));
+	ADD_SIGNAL(MethodInfo("ungrouped", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::STRING_NAME, "group")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pause_mode", PROPERTY_HINT_ENUM, "Inherit,Stop,Process"), "set_pause_mode", "get_pause_mode");
 
