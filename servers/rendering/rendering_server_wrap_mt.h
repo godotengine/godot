@@ -143,9 +143,11 @@ public:
 
 	/* MESH API */
 
-	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces) {
-		return rendering_server->mesh_create_from_surfaces(p_surfaces);
+	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces, int p_blend_shape_count = 0) {
+		return rendering_server->mesh_create_from_surfaces(p_surfaces, p_blend_shape_count);
 	}
+
+	FUNC2(mesh_set_blend_shape_count, RID, int)
 
 	FUNCRID(mesh)
 

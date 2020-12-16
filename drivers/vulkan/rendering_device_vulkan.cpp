@@ -1362,6 +1362,7 @@ Error RenderingDeviceVulkan::_buffer_allocate(Buffer *p_buffer, uint32_t p_size,
 	p_buffer->buffer_info.buffer = p_buffer->buffer;
 	p_buffer->buffer_info.offset = 0;
 	p_buffer->buffer_info.range = p_size;
+	p_buffer->usage = p_usage;
 
 	return OK;
 }
@@ -3485,7 +3486,7 @@ RID RenderingDeviceVulkan::sampler_create(const SamplerState &p_state) {
 /**** VERTEX ARRAY ****/
 /**********************/
 
-RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data) {
+RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, bool p_use_as_storage) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
@@ -3494,8 +3495,12 @@ RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Vec
 	ERR_FAIL_COND_V_MSG(compute_list != nullptr && p_data.size(), RID(),
 			"Creating buffers with data is forbidden during creation of a draw list");
 
+	uint32_t usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	if (p_use_as_storage) {
+		usage |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+	}
 	Buffer buffer;
-	_buffer_allocate(&buffer, p_size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+	_buffer_allocate(&buffer, p_size_bytes, usage, VMA_MEMORY_USAGE_GPU_ONLY);
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
@@ -4911,7 +4916,15 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				ERR_FAIL_COND_V_MSG(uniform.ids.size() != 1, RID(),
 						"Storage buffer supplied (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.ids.size()) + " provided).");
 
-				Buffer *buffer = storage_buffer_owner.getornull(uniform.ids[0]);
+				Buffer *buffer = nullptr;
+
+				if (storage_buffer_owner.owns(uniform.ids[0])) {
+					buffer = storage_buffer_owner.getornull(uniform.ids[0]);
+				} else if (vertex_buffer_owner.owns(uniform.ids[0])) {
+					buffer = vertex_buffer_owner.getornull(uniform.ids[0]);
+
+					ERR_FAIL_COND_V_MSG(!(buffer->usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT), RID(), "Vertex buffer supplied (binding: " + itos(uniform.binding) + ") was not created with storage flag.");
+				}
 				ERR_FAIL_COND_V_MSG(!buffer, RID(), "Storage buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
 
 				//if 0, then its sized on link time

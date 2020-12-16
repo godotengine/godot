@@ -620,6 +620,8 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 		r_bone_aabb.resize(total_bones);
 
+		int weight_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+
 		if (first) {
 			for (int i = 0; i < total_bones; i++) {
 				r_bone_aabb.write[i].size = Vector3(-1, -1, -1); //negative means unused
@@ -632,7 +634,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 		bool any_valid = false;
 
-		if (vertices.size() && bones.size() == vertices.size() * 4 && weights.size() == bones.size()) {
+		if (vertices.size() && bones.size() == vertices.size() * weight_count && weights.size() == bones.size()) {
 			int vs = vertices.size();
 			const Vector3 *rv = vertices.ptr();
 			const int *rb = bones.ptr();
@@ -642,9 +644,9 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 			for (int i = 0; i < vs; i++) {
 				Vector3 v = rv[i];
-				for (int j = 0; j < 4; j++) {
-					int idx = rb[i * 4 + j];
-					float w = rw[i * 4 + j];
+				for (int j = 0; j < weight_count; j++) {
+					int idx = rb[i * weight_count + j];
+					float w = rw[i * weight_count + j];
 					if (w == 0) {
 						continue; //break;
 					}
@@ -992,7 +994,6 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	surface_data.vertex_count = array_len;
 	surface_data.index_data = index_array;
 	surface_data.index_count = index_array_len;
-	surface_data.blend_shape_count = blend_shape_count;
 	surface_data.blend_shape_data = blend_shape_data;
 	surface_data.bone_aabbs = bone_aabb;
 	surface_data.lods = lods;
@@ -1311,10 +1312,10 @@ Array RenderingServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_sur
 
 		uint32_t blend_shape_count = blend_shape_data.size() / divisor;
 
-		ERR_FAIL_COND_V(blend_shape_count != sd.blend_shape_count, Array());
+		ERR_FAIL_COND_V(blend_shape_count != (uint32_t)mesh_get_blend_shape_count(p_mesh), Array());
 
 		Array blend_shape_array;
-		blend_shape_array.resize(blend_shape_count);
+		blend_shape_array.resize(mesh_get_blend_shape_count(p_mesh));
 		for (uint32_t i = 0; i < blend_shape_count; i++) {
 			Vector<uint8_t> bs_data = blend_shape_data.subarray(i * divisor, (i + 1) * divisor - 1);
 			Vector<uint8_t> unused;

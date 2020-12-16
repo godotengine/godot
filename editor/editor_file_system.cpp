@@ -1586,7 +1586,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		f->store_line("importer=\"" + importer->get_importer_name() + "\"");
 		int version = importer->get_format_version();
 		if (version > 0) {
-			f->store_line("importer_version=" + itos(importer->get_format_version()));
+			f->store_line("importer_version=" + itos(version));
 		}
 		if (importer->get_resource_type() != "") {
 			f->store_line("type=\"" + importer->get_resource_type() + "\"");
@@ -1725,7 +1725,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 		importer = ResourceFormatImporter::get_singleton()->get_importer_by_extension(p_file.get_extension());
 		load_default = true;
 		if (importer.is_null()) {
-			ERR_PRINT("BUG: File queued for import, but can't be imported!");
+			ERR_PRINT("BUG: File queued for import, but can't be imported, importer for type '" + importer_name + "' not found.");
 			ERR_FAIL();
 		}
 	}
@@ -1772,6 +1772,10 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	f->store_line("[remap]");
 	f->store_line("");
 	f->store_line("importer=\"" + importer->get_importer_name() + "\"");
+	int version = importer->get_format_version();
+	if (version > 0) {
+		f->store_line("importer_version=" + itos(version));
+	}
 	if (importer->get_resource_type() != "") {
 		f->store_line("type=\"" + importer->get_resource_type() + "\"");
 	}

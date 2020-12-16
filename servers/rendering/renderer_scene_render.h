@@ -135,7 +135,7 @@ public:
 		RID skeleton;
 		RID material_override;
 
-		RID instance_data;
+		RID mesh_instance; //only used for meshes and when skeleton/blendshapes exist
 
 		Transform transform;
 
@@ -148,8 +148,6 @@ public:
 		Vector<RID> light_instances;
 		Vector<RID> reflection_probe_instances;
 		Vector<RID> gi_probe_instances;
-
-		Vector<float> blend_values;
 
 		RS::ShadowCastingSetting cast_shadows;
 
