@@ -1902,7 +1902,7 @@ void GradientTexture::_update() {
 
 	Ref<Image> image = memnew(Image(width, height, false, Image::FORMAT_RGBA8, data));
 
-	VS::get_singleton()->texture_allocate(texture, width, 1, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER);
+	VS::get_singleton()->texture_allocate(texture, width, height, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER);
 	VS::get_singleton()->texture_set_data(texture, image);
 
 	emit_changed();
