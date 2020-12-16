@@ -318,6 +318,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) & *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
