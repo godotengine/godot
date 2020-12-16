@@ -1082,13 +1082,13 @@
 			Max number of lights renderable per object. This is further limited by hardware support. Most devices only support 409 lights, while many devices (especially mobile) only support 102. Setting this low will slightly reduce memory usage and may decrease shader compile times.
 		</member>
 		<member name="rendering/limits/rendering/max_renderable_elements" type="int" setter="" getter="" default="65536">
-			Max amount of elements renderable in a frame. If more than this are visible per frame, they will be dropped. Keep in mind elements refer to mesh surfaces and not meshes themselves.
+			Max amount of elements renderable in a frame. If more elements than this are visible per frame, they will not be drawn. Keep in mind elements refer to mesh surfaces and not meshes themselves. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
 		</member>
 		<member name="rendering/limits/rendering/max_renderable_lights" type="int" setter="" getter="" default="4096">
-			Max number of lights renderable in a frame. If more than this number are used, they will be ignored. On some systems (particularly web) setting this number as low as possible can increase the speed of shader compilation.
+			Max number of lights renderable in a frame. If more lights than this number are used, they will be ignored. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
 		</member>
 		<member name="rendering/limits/rendering/max_renderable_reflections" type="int" setter="" getter="" default="1024">
-			Max number of reflection probes renderable in a frame. If more than this number are used, they will be ignored. On some systems (particularly web) setting this number as low as possible can increase the speed of shader compilation.
+			Max number of reflection probes renderable in a frame. If more reflection probes than this number are used, they will be ignored. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
 		</member>
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
 			Shaders have a time variable that constantly increases. At some point, it needs to be rolled back to zero to avoid precision errors on shader animations. This setting specifies when (in seconds).

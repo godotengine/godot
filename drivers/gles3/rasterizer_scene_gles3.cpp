@@ -5048,7 +5048,7 @@ void RasterizerSceneGLES3::initialize() {
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	render_list.max_elements = GLOBAL_DEF_RST("rendering/limits/rendering/max_renderable_elements", (int)RenderList::DEFAULT_MAX_ELEMENTS);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/rendering/max_renderable_elements", PropertyInfo(Variant::INT, "rendering/limits/rendering/max_renderable_elements", PROPERTY_HINT_RANGE, "1024,1000000,1"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/rendering/max_renderable_elements", PropertyInfo(Variant::INT, "rendering/limits/rendering/max_renderable_elements", PROPERTY_HINT_RANGE, "1024,65536,1"));
 	render_list.max_lights = GLOBAL_DEF("rendering/limits/rendering/max_renderable_lights", (int)RenderList::DEFAULT_MAX_LIGHTS);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/rendering/max_renderable_lights", PropertyInfo(Variant::INT, "rendering/limits/rendering/max_renderable_lights", PROPERTY_HINT_RANGE, "16,4096,1"));
 	render_list.max_reflections = GLOBAL_DEF("rendering/limits/rendering/max_renderable_reflections", (int)RenderList::DEFAULT_MAX_REFLECTIONS);
