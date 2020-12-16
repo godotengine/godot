@@ -12,7 +12,6 @@ def get_name():
 
 
 def can_build():
-
     if sys.platform == "darwin" or ("OSXCROSS_IOS" in os.environ):
         return True
 
@@ -41,14 +40,12 @@ def get_opts():
 
 
 def get_flags():
-
     return [
         ("tools", False),
     ]
 
 
 def configure(env):
-
     ## Build type
 
     if env["target"].startswith("release"):
