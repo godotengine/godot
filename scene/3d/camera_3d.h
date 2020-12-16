@@ -121,16 +121,16 @@ public:
 
 	float get_fov() const;
 	float get_size() const;
-	float get_zfar() const;
-	float get_znear() const;
+	float get_far() const;
+	float get_near() const;
 	Vector2 get_frustum_offset() const;
 
 	Projection get_projection() const;
 
 	void set_fov(float p_fov);
 	void set_size(float p_size);
-	void set_zfar(float p_zfar);
-	void set_znear(float p_znear);
+	void set_far(float p_far);
+	void set_near(float p_near);
 	void set_frustum_offset(Vector2 p_offset);
 
 	virtual Transform get_camera_transform() const;
