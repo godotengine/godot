@@ -17,7 +17,6 @@ import glsl_builders
 # Scan possible build platforms
 
 platform_list = []  # list of platforms
-platform_opts = {}  # options for each platform
 platform_flags = {}  # flags for each platform
 
 active_platforms = []
@@ -44,7 +43,6 @@ for x in sorted(glob.glob("platform/*")):
         x = x.replace("platform/", "")  # rest of world
         x = x.replace("platform\\", "")  # win32
         platform_list += [x]
-        platform_opts[x] = detect.get_opts()
         platform_flags[x] = detect.get_flags()
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
@@ -115,7 +113,6 @@ opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size"
 opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True))
 opts.Add(BoolVariable("tests", "Build the unit tests", False))
 opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
-opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable deprecated features", True))
@@ -131,14 +128,13 @@ opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
-opts.Add(EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")))
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", False))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
+opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 
 # Thirdparty libraries
-# opts.Add(BoolVariable('builtin_assimp', "Use the built-in Assimp library", True))
 opts.Add(BoolVariable("builtin_bullet", "Use the built-in Bullet library", True))
 opts.Add(BoolVariable("builtin_certs", "Use the built-in SSL certificates bundles", True))
 opts.Add(BoolVariable("builtin_enet", "Use the built-in ENet library", True))
@@ -175,13 +171,6 @@ opts.Add("CCFLAGS", "Custom flags for both the C and C++ compilers")
 opts.Add("CFLAGS", "Custom flags for the C compiler")
 opts.Add("CXXFLAGS", "Custom flags for the C++ compiler")
 opts.Add("LINKFLAGS", "Custom flags for the linker")
-
-# add platform specific options
-
-for k in platform_opts.keys():
-    opt_list = platform_opts[k]
-    for o in opt_list:
-        opts.Add(o)
 
 # Update the environment now as the "custom_modules" option may be
 # defined in a file rather than specified via the command line.
@@ -225,7 +214,6 @@ methods.write_modules(modules_detected)
 
 # Update the environment again after all the module options are added.
 opts.Update(env_base)
-Help(opts.GenerateHelpText(env_base))
 
 # add default include paths
 
@@ -300,6 +288,12 @@ if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform
     sys.path.insert(0, tmppath)
     import detect
+
+    # Add platform-specific options.
+    for opt in detect.get_opts():
+        opts.Add(opt)
+    opts.Update(env_base)
+    Help(opts.GenerateHelpText(env_base))
 
     if "create" in dir(detect):
         env = detect.create(env_base)
@@ -669,6 +663,10 @@ elif selected_platform != "":
         Exit()
     else:
         Exit(255)
+
+else:
+    # Update help to include options.
+    Help(opts.GenerateHelpText(env_base))
 
 # The following only makes sense when the 'env' is defined, and assumes it is.
 if "env" in locals():

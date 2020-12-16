@@ -21,7 +21,6 @@ def get_program_suffix():
 
 
 def can_build():
-
     if os.name != "posix":
         return False
 
@@ -46,7 +45,6 @@ def get_opts():
 
 
 def get_flags():
-
     return []
 
 

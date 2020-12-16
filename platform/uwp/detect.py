@@ -30,7 +30,6 @@ def get_opts():
 
 
 def get_flags():
-
     return [
         ("tools", False),
         ("xaudio2", True),
@@ -39,7 +38,6 @@ def get_flags():
 
 
 def configure(env):
-
     env.msvc = True
 
     if env["bits"] != "default":
