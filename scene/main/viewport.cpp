@@ -2392,19 +2392,19 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 
 			if (!mods && p_event->is_action_pressed("ui_up") && input->is_action_just_pressed("ui_up")) {
-				next = from->_get_focus_neighbour(MARGIN_TOP);
+				next = from->_get_focus_neighbor(MARGIN_TOP);
 			}
 
 			if (!mods && p_event->is_action_pressed("ui_left") && input->is_action_just_pressed("ui_left")) {
-				next = from->_get_focus_neighbour(MARGIN_LEFT);
+				next = from->_get_focus_neighbor(MARGIN_LEFT);
 			}
 
 			if (!mods && p_event->is_action_pressed("ui_right") && input->is_action_just_pressed("ui_right")) {
-				next = from->_get_focus_neighbour(MARGIN_RIGHT);
+				next = from->_get_focus_neighbor(MARGIN_RIGHT);
 			}
 
 			if (!mods && p_event->is_action_pressed("ui_down") && input->is_action_just_pressed("ui_down")) {
-				next = from->_get_focus_neighbour(MARGIN_BOTTOM);
+				next = from->_get_focus_neighbor(MARGIN_BOTTOM);
 			}
 
 			if (next) {
