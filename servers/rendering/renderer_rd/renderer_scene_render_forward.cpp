@@ -1079,7 +1079,11 @@ void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw
 
 		switch (e->instance->base_type) {
 			case RS::INSTANCE_MESH: {
-				storage->mesh_surface_get_arrays_and_format(e->instance->base, e->surface_index, pipeline->get_vertex_input_mask(), vertex_array_rd, index_array_rd, vertex_format);
+				if (e->instance->mesh_instance.is_valid()) { //skeleton and blend shape
+					storage->mesh_instance_surface_get_arrays_and_format(e->instance->mesh_instance, e->surface_index, pipeline->get_vertex_input_mask(), vertex_array_rd, index_array_rd, vertex_format);
+				} else {
+					storage->mesh_surface_get_arrays_and_format(e->instance->base, e->surface_index, pipeline->get_vertex_input_mask(), vertex_array_rd, index_array_rd, vertex_format);
+				}
 			} break;
 			case RS::INSTANCE_MULTIMESH: {
 				RID mesh = storage->multimesh_get_mesh(e->instance->base);

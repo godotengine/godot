@@ -951,7 +951,7 @@ public:
 	/**** VERTEX ARRAY ****/
 	/**********************/
 
-	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
+	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_as_storage = false);
 
 	// Internally reference counted, this ID is warranted to be unique for the same description, but needs to be freed as many times as it was allocated
 	virtual VertexFormatID vertex_format_create(const Vector<VertexAttribute> &p_vertex_formats);
