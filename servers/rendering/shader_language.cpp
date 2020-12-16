@@ -920,7 +920,7 @@ void ShaderLanguage::clear() {
 	}
 }
 
-bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type, IdentifierType *r_type, bool *r_is_const, int *r_array_size, StringName *r_struct_name) {
+bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type, IdentifierType *r_type, bool *r_is_const, int *r_array_size, StringName *r_struct_name, ConstantNode::Value *r_constant_value) {
 	if (p_function_info.built_ins.has(p_identifier)) {
 		if (r_data_type) {
 			*r_data_type = p_function_info.built_ins[p_identifier].type;
@@ -967,6 +967,9 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 			}
 			if (r_struct_name) {
 				*r_struct_name = p_block->variables[p_identifier].struct_name;
+			}
+			if (r_constant_value) {
+				*r_constant_value = p_block->variables[p_identifier].value;
 			}
 
 			return true;
@@ -1028,6 +1031,9 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 	}
 
 	if (shader->constants.has(p_identifier)) {
+		if (r_is_const) {
+			*r_is_const = true;
+		}
 		if (r_data_type) {
 			*r_data_type = shader->constants[p_identifier].type;
 		}
@@ -1039,6 +1045,11 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 		}
 		if (r_struct_name) {
 			*r_struct_name = shader->constants[p_identifier].type_str;
+		}
+		if (r_constant_value) {
+			if (shader->constants[p_identifier].initializer && shader->constants[p_identifier].initializer->values.size() == 1) {
+				*r_constant_value = shader->constants[p_identifier].initializer->values[0];
+			}
 		}
 		return true;
 	}
@@ -5010,17 +5021,53 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					decl.name = name;
 					decl.size = 0U;
 
+					pos = _get_tkpos();
 					tk = _get_token();
 
 					if (tk.type == TK_BRACKET_CLOSE) {
 						unknown_size = true;
 					} else {
 						if (tk.type != TK_INT_CONSTANT || ((int)tk.constant) <= 0) {
+							_set_tkpos(pos);
+							Node *n = _parse_and_reduce_expression(p_block, p_function_info);
+							if (n) {
+								if (n->type == Node::TYPE_VARIABLE) {
+									VariableNode *vn = static_cast<VariableNode *>(n);
+									if (vn) {
+										ConstantNode::Value v;
+										DataType data_type;
+
+										_find_identifier(p_block, false, p_function_info, vn->name, &data_type, nullptr, &is_const, nullptr, nullptr, &v);
+
+										if (is_const) {
+											if (data_type == TYPE_INT) {
+												int32_t value = v.sint;
+												if (value > 0) {
+													node->size_expression = n;
+													decl.size = (uint32_t)value;
+												}
+											} else if (data_type == TYPE_UINT) {
+												uint32_t value = v.uint;
+												if (value > 0U) {
+													node->size_expression = n;
+													decl.size = value;
+												}
+											}
+										}
+									}
+								} else if (n->type == Node::TYPE_OPERATOR) {
+									_set_error("Array size expressions are not yet implemented.");
+									return ERR_PARSE_ERROR;
+								}
+							}
+						} else if (((int)tk.constant) > 0) {
+							decl.size = (uint32_t)tk.constant;
+						}
+
+						if (decl.size == 0U) {
 							_set_error("Expected integer constant > 0 or ']'");
 							return ERR_PARSE_ERROR;
 						}
-
-						decl.size = ((uint32_t)tk.constant);
 						tk = _get_token();
 
 						if (tk.type != TK_BRACKET_CLOSE) {
@@ -5218,7 +5265,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 							_set_error("Expected array initialization");
 							return ERR_PARSE_ERROR;
 						}
-						if (is_const) {
+						if (node->is_const) {
 							_set_error("Expected initialization of constant");
 							return ERR_PARSE_ERROR;
 						}
@@ -5251,6 +5298,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 						return ERR_PARSE_ERROR;
 					}
 					decl.initializer = n;
+
+					if (n->type == Node::TYPE_CONSTANT) {
+						ConstantNode *const_node = static_cast<ConstantNode *>(n);
+						if (const_node && const_node->values.size() == 1) {
+							var.value = const_node->values[0];
+						}
+					}
 
 					if (var.type == TYPE_STRUCT ? (var.struct_name != n->get_datatype_name()) : (var.type != n->get_datatype())) {
 						_set_error("Invalid assignment of '" + (n->get_datatype() == TYPE_STRUCT ? n->get_datatype_name() : get_datatype_name(n->get_datatype())) + "' to '" + (var.type == TYPE_STRUCT ? String(var.struct_name) : get_datatype_name(var.type)) + "'");
@@ -5420,18 +5474,29 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 						ControlFlowNode *flow = (ControlFlowNode *)switch_block->statements[i];
 						if (flow) {
 							if (flow->flow_op == FLOW_OP_CASE) {
-								ConstantNode *n2 = static_cast<ConstantNode *>(flow->expressions[0]);
-								if (!n2) {
-									return ERR_PARSE_ERROR;
+								if (flow->expressions[0]->type == Node::TYPE_CONSTANT) {
+									ConstantNode *cn = static_cast<ConstantNode *>(flow->expressions[0]);
+									if (!cn || cn->values.empty()) {
+										return ERR_PARSE_ERROR;
+									}
+									if (constants.has(cn->values[0].sint)) {
+										_set_error("Duplicated case label: '" + itos(cn->values[0].sint) + "'");
+										return ERR_PARSE_ERROR;
+									}
+									constants.insert(cn->values[0].sint);
+								} else if (flow->expressions[0]->type == Node::TYPE_VARIABLE) {
+									VariableNode *vn = static_cast<VariableNode *>(flow->expressions[0]);
+									if (!vn) {
+										return ERR_PARSE_ERROR;
+									}
+									ConstantNode::Value v;
+									_find_identifier(p_block, false, p_function_info, vn->name, nullptr, nullptr, nullptr, nullptr, nullptr, &v);
+									if (constants.has(v.sint)) {
+										_set_error("Duplicated case label: '" + itos(v.sint) + "'");
+										return ERR_PARSE_ERROR;
+									}
+									constants.insert(v.sint);
 								}
-								if (n2->values.empty()) {
-									return ERR_PARSE_ERROR;
-								}
-								if (constants.has(n2->values[0].sint)) {
-									_set_error("Duplicated case label: '" + itos(n2->values[0].sint) + "'");
-									return ERR_PARSE_ERROR;
-								}
-								constants.insert(n2->values[0].sint);
 							} else if (flow->flow_op == FLOW_OP_DEFAULT) {
 								continue;
 							} else {
@@ -5467,12 +5532,38 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				tk = _get_token();
 			}
 
-			if (tk.type != TK_INT_CONSTANT) {
-				_set_error("Expected integer constant");
-				return ERR_PARSE_ERROR;
-			}
+			Node *n = nullptr;
 
-			int constant = (int)tk.constant * sign;
+			if (tk.type != TK_INT_CONSTANT) {
+				bool correct_constant_expression = false;
+				DataType data_type;
+
+				if (tk.type == TK_IDENTIFIER) {
+					bool is_const;
+					_find_identifier(p_block, false, p_function_info, tk.text, &data_type, nullptr, &is_const);
+					if (is_const) {
+						if (data_type == TYPE_INT) {
+							correct_constant_expression = true;
+						}
+					}
+				}
+				if (!correct_constant_expression) {
+					_set_error("Expected integer constant");
+					return ERR_PARSE_ERROR;
+				}
+
+				VariableNode *vn = alloc_node<VariableNode>();
+				vn->name = tk.text;
+				n = vn;
+			} else {
+				ConstantNode::Value v;
+				v.sint = (int)tk.constant * sign;
+
+				ConstantNode *cn = alloc_node<ConstantNode>();
+				cn->values.push_back(v);
+				cn->datatype = TYPE_INT;
+				n = cn;
+			}
 
 			tk = _get_token();
 
@@ -5483,12 +5574,6 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 			ControlFlowNode *cf = alloc_node<ControlFlowNode>();
 			cf->flow_op = FLOW_OP_CASE;
-
-			ConstantNode *n = alloc_node<ConstantNode>();
-			ConstantNode::Value v;
-			v.sint = constant;
-			n->values.push_back(v);
-			n->datatype = TYPE_INT;
 
 			BlockNode *case_block = alloc_node<BlockNode>();
 			case_block->block_type = BlockNode::BLOCK_TYPE_CASE;
