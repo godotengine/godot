@@ -231,13 +231,16 @@ public:
 
 	/* MESH API */
 
-	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces) {
+	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces, int p_blend_shape_count = 0) {
 		RID mesh = mesh_create();
+		mesh_set_blend_shape_count(mesh, p_blend_shape_count);
 		for (int i = 0; i < p_surfaces.size(); i++) {
 			mesh_add_surface(mesh, p_surfaces[i]);
 		}
 		return mesh;
 	}
+
+	BIND2(mesh_set_blend_shape_count, RID, int)
 
 	BIND0R(RID, mesh_create)
 

@@ -2392,13 +2392,23 @@ RID RendererStorageRD::mesh_create() {
 	return mesh_owner.make_rid(Mesh());
 }
 
+void RendererStorageRD::mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) {
+	ERR_FAIL_COND(p_blend_shape_count < 0);
+
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+
+	ERR_FAIL_COND(mesh->surface_count > 0); //surfaces already exist
+
+	mesh->blend_shape_count = p_blend_shape_count;
+}
+
 /// Returns stride
 void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 
 	//ensure blend shape consistency
-	ERR_FAIL_COND(mesh->blend_shape_count && p_surface.blend_shape_count != mesh->blend_shape_count);
 	ERR_FAIL_COND(mesh->blend_shape_count && p_surface.bone_aabbs.size() != mesh->bone_aabbs.size());
 
 #ifdef DEBUG_ENABLED
@@ -2453,7 +2463,7 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 					case RS::ARRAY_BONES: {
 						//uses a separate array
 						bool use_8 = p_surface.format & RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
-						skin_stride += sizeof(int16_t) * (use_8 ? 8 : 4);
+						skin_stride += sizeof(int16_t) * (use_8 ? 16 : 8);
 					} break;
 				}
 			}
@@ -2461,6 +2471,11 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 
 		int expected_size = stride * p_surface.vertex_count;
 		ERR_FAIL_COND_MSG(expected_size != p_surface.vertex_data.size(), "Size of vertex data provided (" + itos(p_surface.vertex_data.size()) + ") does not match expected (" + itos(expected_size) + ")");
+
+		int bs_expected_size = expected_size * mesh->blend_shape_count;
+
+		ERR_FAIL_COND_MSG(bs_expected_size != p_surface.blend_shape_data.size(), "Size of blend shape data provided (" + itos(p_surface.blend_shape_data.size()) + ") does not match expected (" + itos(bs_expected_size) + ")");
+
 		int expected_attrib_size = attrib_stride * p_surface.vertex_count;
 		ERR_FAIL_COND_MSG(expected_attrib_size != p_surface.attribute_data.size(), "Size of attribute data provided (" + itos(p_surface.attribute_data.size()) + ") does not match expected (" + itos(expected_attrib_size) + ")");
 
@@ -2477,14 +2492,24 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 	s->format = p_surface.format;
 	s->primitive = p_surface.primitive;
 
-	s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_surface.vertex_data.size(), p_surface.vertex_data);
+	bool use_as_storage = (p_surface.skin_data.size() || mesh->blend_shape_count > 0);
+
+	s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_surface.vertex_data.size(), p_surface.vertex_data, use_as_storage);
+	s->vertex_buffer_size = p_surface.vertex_data.size();
+
 	if (p_surface.attribute_data.size()) {
 		s->attribute_buffer = RD::get_singleton()->vertex_buffer_create(p_surface.attribute_data.size(), p_surface.attribute_data);
 	}
 	if (p_surface.skin_data.size()) {
-		s->skin_buffer = RD::get_singleton()->vertex_buffer_create(p_surface.skin_data.size(), p_surface.skin_data);
+		s->skin_buffer = RD::get_singleton()->vertex_buffer_create(p_surface.skin_data.size(), p_surface.skin_data, use_as_storage);
+		s->skin_buffer_size = p_surface.skin_data.size();
 	}
+
 	s->vertex_count = p_surface.vertex_count;
+
+	if (p_surface.format & RS::ARRAY_FORMAT_BONES) {
+		mesh->has_bone_weights = true;
+	}
 
 	if (p_surface.index_count) {
 		bool is_index_16 = p_surface.vertex_count <= 65536;
@@ -2507,17 +2532,45 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 
 	s->aabb = p_surface.aabb;
 	s->bone_aabbs = p_surface.bone_aabbs; //only really useful for returning them.
-#if 0
-	for (int i = 0; i < p_surface.blend_shapes.size(); i++) {
-		if (p_surface.blend_shapes[i].size() != p_surface.vertex_data.size()) {
-			memdelete(s);
-			ERR_FAIL_COND(p_surface.blend_shapes[i].size() != p_surface.vertex_data.size());
-		}
-		RID vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_surface.blend_shapes[i].size(), p_surface.blend_shapes[i]);
-		s->blend_shapes.push_back(vertex_buffer);
+
+	if (mesh->blend_shape_count > 0) {
+		s->blend_shape_buffer = RD::get_singleton()->storage_buffer_create(p_surface.blend_shape_data.size(), p_surface.blend_shape_data);
 	}
-#endif
-	mesh->blend_shape_count = p_surface.blend_shape_count;
+
+	if (use_as_storage) {
+		Vector<RD::Uniform> uniforms;
+		{
+			RD::Uniform u;
+			u.binding = 0;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.ids.push_back(s->vertex_buffer);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 1;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			if (s->skin_buffer.is_valid()) {
+				u.ids.push_back(s->skin_buffer);
+			} else {
+				u.ids.push_back(default_rd_storage_buffer);
+			}
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 2;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			if (s->blend_shape_buffer.is_valid()) {
+				u.ids.push_back(s->blend_shape_buffer);
+			} else {
+				u.ids.push_back(default_rd_storage_buffer);
+			}
+			uniforms.push_back(u);
+		}
+
+		s->uniform_set = RD::get_singleton()->uniform_set_create(uniforms, skeleton_shader.version_shader[0], SkeletonShader::UNIFORM_SET_SURFACE);
+	}
 
 	if (mesh->surface_count == 0) {
 		mesh->bone_aabbs = p_surface.bone_aabbs;
@@ -2534,6 +2587,12 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 	mesh->surfaces = (Mesh::Surface **)memrealloc(mesh->surfaces, sizeof(Mesh::Surface *) * (mesh->surface_count + 1));
 	mesh->surfaces[mesh->surface_count] = s;
 	mesh->surface_count++;
+
+	for (List<MeshInstance *>::Element *E = mesh->instances.front(); E; E = E->next()) {
+		//update instances
+		MeshInstance *mi = E->get();
+		_mesh_instance_add_surface(mi, mesh, mesh->surface_count - 1);
+	}
 
 	mesh->instance_dependency.instance_notify_changed(true, true);
 
@@ -2792,16 +2851,223 @@ void RendererStorageRD::mesh_clear(RID p_mesh) {
 	mesh->surfaces = nullptr;
 	mesh->surface_count = 0;
 	mesh->material_cache.clear();
+	//clear instance data
+	for (List<MeshInstance *>::Element *E = mesh->instances.front(); E; E = E->next()) {
+		MeshInstance *mi = E->get();
+		_mesh_instance_clear(mi);
+	}
 	mesh->instance_dependency.instance_notify_changed(true, true);
+	mesh->has_bone_weights = false;
 }
 
-void RendererStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Surface *s, uint32_t p_input_mask) {
-	uint32_t version = s->version_count;
-	s->version_count++;
-	s->versions = (Mesh::Surface::Version *)memrealloc(s->versions, sizeof(Mesh::Surface::Version) * s->version_count);
+bool RendererStorageRD::mesh_needs_instance(RID p_mesh, bool p_has_skeleton) {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, false);
 
-	Mesh::Surface::Version &v = s->versions[version];
+	return mesh->blend_shape_count > 0 || (mesh->has_bone_weights && p_has_skeleton);
+}
 
+/* MESH INSTANCE */
+
+RID RendererStorageRD::mesh_instance_create(RID p_base) {
+	Mesh *mesh = mesh_owner.getornull(p_base);
+	ERR_FAIL_COND_V(!mesh, RID());
+
+	MeshInstance *mi = memnew(MeshInstance);
+
+	mi->mesh = mesh;
+
+	for (uint32_t i = 0; i < mesh->surface_count; i++) {
+		_mesh_instance_add_surface(mi, mesh, i);
+	}
+
+	mi->I = mesh->instances.push_back(mi);
+
+	mi->dirty = true;
+
+	return mesh_instance_owner.make_rid(mi);
+}
+void RendererStorageRD::mesh_instance_set_skeleton(RID p_mesh_instance, RID p_skeleton) {
+	MeshInstance *mi = mesh_instance_owner.getornull(p_mesh_instance);
+	if (mi->skeleton == p_skeleton) {
+		return;
+	}
+	mi->skeleton = p_skeleton;
+	mi->skeleton_version = 0;
+	mi->dirty = true;
+}
+
+void RendererStorageRD::mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) {
+	MeshInstance *mi = mesh_instance_owner.getornull(p_mesh_instance);
+	ERR_FAIL_COND(!mi);
+	ERR_FAIL_INDEX(p_shape, (int)mi->blend_weights.size());
+	mi->blend_weights[p_shape] = p_weight;
+	mi->weights_dirty = true;
+	//will be eventually updated
+}
+
+void RendererStorageRD::_mesh_instance_clear(MeshInstance *mi) {
+	for (uint32_t i = 0; i < mi->surfaces.size(); i++) {
+		if (mi->surfaces[i].vertex_buffer.is_valid()) {
+			RD::get_singleton()->free(mi->surfaces[i].vertex_buffer);
+		}
+		if (mi->surfaces[i].versions) {
+			for (uint32_t j = 0; j < mi->surfaces[i].version_count; j++) {
+				RD::get_singleton()->free(mi->surfaces[i].versions[j].vertex_array);
+			}
+			memfree(mi->surfaces[i].versions);
+		}
+	}
+	mi->surfaces.clear();
+
+	if (mi->blend_weights_buffer.is_valid()) {
+		RD::get_singleton()->free(mi->blend_weights_buffer);
+	}
+	mi->blend_weights.clear();
+	mi->weights_dirty = false;
+	mi->skeleton_version = 0;
+}
+
+void RendererStorageRD::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint32_t p_surface) {
+	if (mesh->blend_shape_count > 0 && mi->blend_weights_buffer.is_null()) {
+		mi->blend_weights.resize(mesh->blend_shape_count);
+		for (uint32_t i = 0; i < mi->blend_weights.size(); i++) {
+			mi->blend_weights[i] = 0;
+		}
+		mi->blend_weights_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * mi->blend_weights.size(), mi->blend_weights.to_byte_array());
+		mi->weights_dirty = true;
+	}
+
+	MeshInstance::Surface s;
+	if (mesh->blend_shape_count > 0 || (mesh->surfaces[p_surface]->format & RS::ARRAY_FORMAT_BONES)) {
+		//surface warrants transform
+		s.vertex_buffer = RD::get_singleton()->vertex_buffer_create(mesh->surfaces[p_surface]->vertex_buffer_size, Vector<uint8_t>(), true);
+
+		Vector<RD::Uniform> uniforms;
+		{
+			RD::Uniform u;
+			u.binding = 1;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.ids.push_back(s.vertex_buffer);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 2;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			if (mi->blend_weights_buffer.is_valid()) {
+				u.ids.push_back(mi->blend_weights_buffer);
+			} else {
+				u.ids.push_back(default_rd_storage_buffer);
+			}
+			uniforms.push_back(u);
+		}
+		s.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, skeleton_shader.version_shader[0], SkeletonShader::UNIFORM_SET_INSTANCE);
+	}
+
+	mi->surfaces.push_back(s);
+	mi->dirty = true;
+}
+
+void RendererStorageRD::mesh_instance_check_for_update(RID p_mesh_instance) {
+	MeshInstance *mi = mesh_instance_owner.getornull(p_mesh_instance);
+
+	bool needs_update = mi->dirty;
+
+	if (mi->weights_dirty && !mi->weight_update_list.in_list()) {
+		dirty_mesh_instance_weights.add(&mi->weight_update_list);
+		needs_update = true;
+	}
+
+	if (mi->array_update_list.in_list()) {
+		return;
+	}
+
+	if (!needs_update && mi->skeleton.is_valid()) {
+		Skeleton *sk = skeleton_owner.getornull(mi->skeleton);
+		if (sk && sk->version != mi->skeleton_version) {
+			needs_update = true;
+		}
+	}
+
+	if (needs_update) {
+		dirty_mesh_instance_arrays.add(&mi->array_update_list);
+	}
+}
+
+void RendererStorageRD::update_mesh_instances() {
+	while (dirty_mesh_instance_weights.first()) {
+		MeshInstance *mi = dirty_mesh_instance_weights.first()->self();
+
+		if (mi->blend_weights_buffer.is_valid()) {
+			RD::get_singleton()->buffer_update(mi->blend_weights_buffer, 0, mi->blend_weights.size() * sizeof(float), mi->blend_weights.ptr(), true);
+		}
+		dirty_mesh_instance_weights.remove(&mi->weight_update_list);
+		mi->weights_dirty = false;
+	}
+	if (dirty_mesh_instance_arrays.first() == nullptr) {
+		return; //nothing to do
+	}
+
+	//process skeletons and blend shapes
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+	while (dirty_mesh_instance_arrays.first()) {
+		MeshInstance *mi = dirty_mesh_instance_arrays.first()->self();
+
+		Skeleton *sk = skeleton_owner.getornull(mi->skeleton);
+
+		for (uint32_t i = 0; i < mi->surfaces.size(); i++) {
+			if (mi->surfaces[i].uniform_set == RID() || mi->mesh->surfaces[i]->uniform_set == RID()) {
+				continue;
+			}
+
+			bool array_is_2d = mi->mesh->surfaces[i]->format & RS::ARRAY_FLAG_USE_2D_VERTICES;
+
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, skeleton_shader.pipeline[array_is_2d ? SkeletonShader::SHADER_MODE_2D : SkeletonShader::SHADER_MODE_3D]);
+
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, mi->surfaces[i].uniform_set, SkeletonShader::UNIFORM_SET_INSTANCE);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, mi->mesh->surfaces[i]->uniform_set, SkeletonShader::UNIFORM_SET_SURFACE);
+			if (sk && sk->uniform_set_mi.is_valid()) {
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sk->uniform_set_mi, SkeletonShader::UNIFORM_SET_SKELETON);
+			} else {
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, skeleton_shader.default_skeleton_uniform_set, SkeletonShader::UNIFORM_SET_SKELETON);
+			}
+
+			SkeletonShader::PushConstant push_constant;
+
+			push_constant.has_normal = mi->mesh->surfaces[i]->format & RS::ARRAY_FORMAT_NORMAL;
+			push_constant.has_tangent = mi->mesh->surfaces[i]->format & RS::ARRAY_FORMAT_TANGENT;
+			push_constant.has_skeleton = sk != nullptr && sk->use_2d == array_is_2d && (mi->mesh->surfaces[i]->format & RS::ARRAY_FORMAT_BONES);
+			push_constant.has_blend_shape = mi->mesh->blend_shape_count > 0;
+
+			push_constant.vertex_count = mi->mesh->surfaces[i]->vertex_count;
+			push_constant.vertex_stride = (mi->mesh->surfaces[i]->vertex_buffer_size / mi->mesh->surfaces[i]->vertex_count) / 4;
+			push_constant.skin_stride = (mi->mesh->surfaces[i]->skin_buffer_size / mi->mesh->surfaces[i]->vertex_count) / 4;
+			push_constant.skin_weight_offset = (mi->mesh->surfaces[i]->format & RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 4 : 2;
+
+			push_constant.blend_shape_count = mi->mesh->blend_shape_count;
+			push_constant.normalized_blend_shapes = mi->mesh->blend_shape_mode == RS::BLEND_SHAPE_MODE_NORMALIZED;
+			push_constant.pad0 = 0;
+			push_constant.pad1 = 0;
+
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SkeletonShader::PushConstant));
+
+			//dispatch without barrier, so all is done at the same time
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.vertex_count, 1, 1, 64, 1, 1);
+		}
+
+		mi->dirty = false;
+		if (sk) {
+			mi->skeleton_version = sk->version;
+		}
+		dirty_mesh_instance_arrays.remove(&mi->array_update_list);
+	}
+
+	RD::get_singleton()->compute_list_end();
+}
+
+void RendererStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint32_t p_input_mask, MeshInstance::Surface *mis) {
 	Vector<RD::VertexAttribute> attributes;
 	Vector<RID> buffers;
 
@@ -2873,7 +3139,11 @@ void RendererStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Surf
 						stride += sizeof(float) * 3;
 					}
 
-					buffer = s->vertex_buffer;
+					if (mis) {
+						buffer = mis->vertex_buffer;
+					} else {
+						buffer = s->vertex_buffer;
+					}
 
 				} break;
 				case RS::ARRAY_NORMAL: {
@@ -2882,14 +3152,22 @@ void RendererStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Surf
 					vd.format = RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
 
 					stride += sizeof(uint32_t);
-					buffer = s->vertex_buffer;
+					if (mis) {
+						buffer = mis->vertex_buffer;
+					} else {
+						buffer = s->vertex_buffer;
+					}
 				} break;
 				case RS::ARRAY_TANGENT: {
 					vd.offset = stride;
 
 					vd.format = RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
 					stride += sizeof(uint32_t);
-					buffer = s->vertex_buffer;
+					if (mis) {
+						buffer = mis->vertex_buffer;
+					} else {
+						buffer = s->vertex_buffer;
+					}
 				} break;
 				case RS::ARRAY_COLOR: {
 					vd.offset = attribute_stride;
@@ -4847,6 +5125,7 @@ void RendererStorageRD::skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d
 		RD::get_singleton()->free(skeleton->buffer);
 		skeleton->buffer = RID();
 		skeleton->data.resize(0);
+		skeleton->uniform_set_mi = RID();
 	}
 
 	if (skeleton->size) {
@@ -4855,6 +5134,18 @@ void RendererStorageRD::skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d
 		zeromem(skeleton->data.ptrw(), skeleton->data.size() * sizeof(float));
 
 		_skeleton_make_dirty(skeleton);
+
+		{
+			Vector<RD::Uniform> uniforms;
+			{
+				RD::Uniform u;
+				u.binding = 0;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.ids.push_back(skeleton->buffer);
+				uniforms.push_back(u);
+			}
+			skeleton->uniform_set_mi = RD::get_singleton()->uniform_set_create(uniforms, skeleton_shader.version_shader[0], SkeletonShader::UNIFORM_SET_SKELETON);
+		}
 	}
 }
 
@@ -4977,6 +5268,7 @@ void RendererStorageRD::_update_dirty_skeletons() {
 		skeleton_dirty_list = skeleton->dirty_list;
 
 		skeleton->instance_dependency.instance_notify_changed(true, false);
+		skeleton->version++;
 
 		skeleton->dirty = false;
 		skeleton->dirty_list = nullptr;
@@ -7810,7 +8102,18 @@ bool RendererStorageRD::free(RID p_rid) {
 		mesh_clear(p_rid);
 		Mesh *mesh = mesh_owner.getornull(p_rid);
 		mesh->instance_dependency.instance_notify_deleted(p_rid);
+		if (mesh->instances.size()) {
+			ERR_PRINT("deleting mesh with active instances");
+		}
 		mesh_owner.free(p_rid);
+	} else if (mesh_instance_owner.owns(p_rid)) {
+		MeshInstance *mi = mesh_instance_owner.getornull(p_rid);
+		_mesh_instance_clear(mi);
+		mi->mesh->instances.erase(mi->I);
+		mi->I = nullptr;
+		mesh_instance_owner.free(p_rid);
+		memdelete(mi);
+
 	} else if (multimesh_owner.owns(p_rid)) {
 		_update_dirty_multimeshes();
 		multimesh_allocate(p_rid, 0, RS::MULTIMESH_TRANSFORM_2D);
@@ -8517,6 +8820,30 @@ RendererStorageRD::RendererStorageRD() {
 			rt_sdf.pipelines[i] = RD::get_singleton()->compute_pipeline_create(rt_sdf.shader.version_get_shader(rt_sdf.shader_version, i));
 		}
 	}
+	{
+		Vector<String> skeleton_modes;
+		skeleton_modes.push_back("\n#define MODE_2D\n");
+		skeleton_modes.push_back("");
+
+		skeleton_shader.shader.initialize(skeleton_modes);
+		skeleton_shader.version = skeleton_shader.shader.version_create();
+		for (int i = 0; i < SkeletonShader::SHADER_MODE_MAX; i++) {
+			skeleton_shader.version_shader[i] = skeleton_shader.shader.version_get_shader(skeleton_shader.version, i);
+			skeleton_shader.pipeline[i] = RD::get_singleton()->compute_pipeline_create(skeleton_shader.version_shader[i]);
+		}
+
+		{
+			Vector<RD::Uniform> uniforms;
+			{
+				RD::Uniform u;
+				u.binding = 0;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.ids.push_back(default_rd_storage_buffer);
+				uniforms.push_back(u);
+			}
+			skeleton_shader.default_skeleton_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, skeleton_shader.version_shader[0], SkeletonShader::UNIFORM_SET_SKELETON);
+		}
+	}
 }
 
 RendererStorageRD::~RendererStorageRD() {
@@ -8545,6 +8872,8 @@ RendererStorageRD::~RendererStorageRD() {
 	giprobe_sdf_shader.version_free(giprobe_sdf_shader_version);
 	particles_shader.copy_shader.version_free(particles_shader.copy_shader_version);
 	rt_sdf.shader.version_free(rt_sdf.shader_version);
+
+	skeleton_shader.shader.version_free(skeleton_shader.version);
 
 	RenderingServer::get_singleton()->free(particles_shader.default_material);
 	RenderingServer::get_singleton()->free(particles_shader.default_shader);

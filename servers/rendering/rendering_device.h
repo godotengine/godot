@@ -564,7 +564,7 @@ public:
 			frequency = VERTEX_FREQUENCY_VERTEX;
 		}
 	};
-	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>()) = 0;
+	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_as_storage = false) = 0;
 
 	typedef int64_t VertexFormatID;
 

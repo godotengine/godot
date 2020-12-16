@@ -138,6 +138,8 @@ public:
 	static void *_instance_pair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int);
 	static void _instance_unpair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int, void *);
 
+	static void _instance_update_mesh_instance(Instance *p_instance);
+
 	virtual RID scenario_create();
 
 	virtual void scenario_set_debug(RID p_scenario, RS::ScenarioDebugMode p_debug_mode);

@@ -541,7 +541,7 @@ Array SurfaceTool::commit_to_arrays() {
 					ERR_CONTINUE(v.bones.size() != count);
 
 					for (int j = 0; j < count; j++) {
-						w[idx + j] = v.bones[j];
+						w[idx * count + j] = v.bones[j];
 					}
 				}
 
@@ -561,7 +561,7 @@ Array SurfaceTool::commit_to_arrays() {
 					ERR_CONTINUE(v.weights.size() != count);
 
 					for (int j = 0; j < count; j++) {
-						w[idx + j] = v.weights[j];
+						w[idx * count + j] = v.weights[j];
 					}
 				}
 

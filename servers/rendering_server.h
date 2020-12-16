@@ -282,8 +282,6 @@ public:
 		Vector<uint8_t> index_data;
 		uint32_t index_count = 0;
 
-		uint32_t blend_shape_count = 0;
-
 		AABB aabb;
 		struct LOD {
 			float edge_length;
@@ -297,8 +295,10 @@ public:
 		RID material;
 	};
 
-	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces) = 0;
+	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces, int p_blend_shape_count = 0) = 0;
 	virtual RID mesh_create() = 0;
+
+	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) = 0;
 
 	virtual uint32_t mesh_surface_get_format_offset(uint32_t p_format, int p_vertex_len, int p_array_index) const;
 	virtual uint32_t mesh_surface_get_format_vertex_stride(uint32_t p_format, int p_vertex_len) const;
