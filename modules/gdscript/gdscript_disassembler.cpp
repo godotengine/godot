@@ -323,11 +323,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 4;
 			} break;
 			case OPCODE_ASSIGN_TYPED_NATIVE: {
-				Variant class_name = _constants_ptr[_code_ptr[ip + 3]];
-				GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(class_name.operator Object *());
-
 				text += "assign typed native (";
-				text += nc->get_name().operator String();
+				text += DADDR(3);
 				text += ") ";
 				text += DADDR(1);
 				text += " = ";
