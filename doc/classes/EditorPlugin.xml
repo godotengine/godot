@@ -130,14 +130,10 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="handler" type="Object">
-			</argument>
-			<argument index="2" name="callback" type="String">
-			</argument>
-			<argument index="3" name="ud" type="Variant" default="null">
+			<argument index="1" name="callable" type="Callable">
 			</argument>
 			<description>
-				Adds a custom menu item to [b]Project &gt; Tools[/b] as [code]name[/code] that calls [code]callback[/code] on an instance of [code]handler[/code] with a parameter [code]ud[/code] when user activates it.
+				Adds a custom menu item to [b]Project &gt; Tools[/b] named [code]name[/code]. When clicked, the provided [code]callable[/code] will be called.
 			</description>
 		</method>
 		<method name="add_tool_submenu_item">
@@ -148,7 +144,7 @@
 			<argument index="1" name="submenu" type="Object">
 			</argument>
 			<description>
-				Adds a custom submenu under [b]Project &gt; Tools &gt;[/b] [code]name[/code]. [code]submenu[/code] should be an object of class [PopupMenu]. This submenu should be cleaned up using [code]remove_tool_menu_item(name)[/code].
+				Adds a custom submenu under [b]Project &gt; Tools &gt;[/b] [code]name[/code]. [code]submenu[/code] should be an object of class [PopupMenu]. Use [code]remove_tool_menu_item(name)[/code] on plugin clean up to remove the menu.
 			</description>
 		</method>
 		<method name="add_translation_parser_plugin">

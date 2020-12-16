@@ -53,8 +53,7 @@ void JavaScriptToolsEditorPlugin::initialize() {
 }
 
 JavaScriptToolsEditorPlugin::JavaScriptToolsEditorPlugin(EditorNode *p_editor) {
-	Variant v;
-	add_tool_menu_item("Download Project Source", this, "_download_zip", v);
+	add_tool_menu_item("Download Project Source", callable_mp(this, &JavaScriptToolsEditorPlugin::_download_zip));
 }
 
 void JavaScriptToolsEditorPlugin::_download_zip(Variant p_v) {
@@ -71,10 +70,6 @@ void JavaScriptToolsEditorPlugin::_download_zip(Variant p_v) {
 	_zip_recursive(resource_path, base_path, zip);
 	zipClose(zip, NULL);
 	godot_js_editor_download_file("/tmp/project.zip", "project.zip", "application/zip");
-}
-
-void JavaScriptToolsEditorPlugin::_bind_methods() {
-	ClassDB::bind_method("_download_zip", &JavaScriptToolsEditorPlugin::_download_zip);
 }
 
 void JavaScriptToolsEditorPlugin::_zip_file(String p_path, String p_base_path, zipFile p_zip) {
