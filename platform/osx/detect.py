@@ -12,7 +12,6 @@ def get_name():
 
 
 def can_build():
-
     if sys.platform == "darwin" or ("OSXCROSS_ROOT" in os.environ):
         return True
 
@@ -25,6 +24,7 @@ def get_opts():
     return [
         ("osxcross_sdk", "OSXCross SDK version", "darwin14"),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
+        EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")),
         EnumVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", "yes", ("yes", "no")),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
@@ -34,12 +34,10 @@ def get_opts():
 
 
 def get_flags():
-
     return []
 
 
 def configure(env):
-
     ## Build type
 
     if env["target"] == "release":

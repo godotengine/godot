@@ -67,7 +67,7 @@ def get_opts():
         EnumVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", "yes", ("yes", "no")),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         ("msvc_version", "MSVC version to use. Ignored if VCINSTALLDIR is set in shell env.", None),
-        BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed. Only used on Windows.", False),
+        BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_thinlto", "Use ThinLTO", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
@@ -75,12 +75,10 @@ def get_opts():
 
 
 def get_flags():
-
     return []
 
 
 def build_res_file(target, source, env):
-
     if env["bits"] == "32":
         cmdbase = env["mingw_prefix_32"]
     else:

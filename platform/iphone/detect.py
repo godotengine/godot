@@ -12,7 +12,6 @@ def get_name():
 
 
 def can_build():
-
     if sys.platform == "darwin":
         if get_darwin_sdk_version("iphone") < 13.0:
             print("Detected iOS SDK version older than 13")
@@ -43,14 +42,12 @@ def get_opts():
 
 
 def get_flags():
-
     return [
         ("tools", False),
     ]
 
 
 def configure(env):
-
     ## Build type
 
     if env["target"].startswith("release"):
