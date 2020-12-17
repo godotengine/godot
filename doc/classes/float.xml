@@ -83,33 +83,12 @@
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="right" type="Vector2i">
-			</argument>
-			<description>
-				Multiplies each component of the [Vector2i] by the given [float].
-				[codeblock]
-				print(2.0 * Vector2i(1, 1)) # Vector2i(2.0, 2.0)
-				[/codeblock]
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="right" type="Vector3">
 			</argument>
 			<description>
 				Multiplies each component of the [Vector3] by the given [float].
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="right" type="Vector3i">
-			</argument>
-			<description>
-				Multiplies each component of the [Vector3i] by the given [float].
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">

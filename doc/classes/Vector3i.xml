@@ -118,14 +118,6 @@
 		<method name="operator *" qualifiers="operator">
 			<return type="Vector3i">
 			</return>
-			<argument index="0" name="right" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector3i">
-			</return>
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
@@ -163,14 +155,6 @@
 			<return type="Vector3i">
 			</return>
 			<argument index="0" name="right" type="Vector3i">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="operator /" qualifiers="operator">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="right" type="float">
 			</argument>
 			<description>
 			</description>
