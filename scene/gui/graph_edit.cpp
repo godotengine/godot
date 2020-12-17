@@ -392,6 +392,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		gn->connect("offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved), varray(gn));
 		gn->connect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised), varray(gn));
 		gn->connect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::update));
+		gn->connect("item_rect_changed", callable_mp((CanvasItem *)minimap, &GraphEditMinimap::update));
 		_graph_node_moved(gn);
 		gn->set_mouse_filter(MOUSE_FILTER_PASS);
 	}
@@ -409,6 +410,7 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 		gn->disconnect("offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved));
 		gn->disconnect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised));
 		gn->disconnect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::update));
+		gn->disconnect("item_rect_changed", callable_mp((CanvasItem *)minimap, &GraphEditMinimap::update));
 	}
 }
 
@@ -782,7 +784,7 @@ void GraphEdit::_bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, 
 	}
 }
 
-void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_bezier_ratio) {
+void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width = 2.0, float p_bezier_ratio = 1.0) {
 	//cubic bezier code
 	float diff = p_to.x - p_from.x;
 	float cp_offset;
@@ -809,9 +811,9 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 	colors.push_back(p_to_color);
 
 #ifdef TOOLS_ENABLED
-	p_where->draw_polyline_colors(points, colors, Math::floor(2 * EDSCALE), true);
+	p_where->draw_polyline_colors(points, colors, Math::floor(p_width * EDSCALE), true);
 #else
-	p_where->draw_polyline_colors(points, colors, 2, true);
+	p_where->draw_polyline_colors(points, colors, p_width, true);
 #endif
 }
 
@@ -858,7 +860,7 @@ void GraphEdit::_connections_layer_draw() {
 			color = color.lerp(activity_color, E->get().activity);
 			tocolor = tocolor.lerp(activity_color, E->get().activity);
 		}
-		_draw_cos_line(connections_layer, frompos, topos, color, tocolor, 1.0);
+		_draw_cos_line(connections_layer, frompos, topos, color, tocolor);
 	}
 
 	while (to_erase.size()) {
@@ -897,7 +899,7 @@ void GraphEdit::_top_layer_draw() {
 		if (!connecting_out) {
 			SWAP(pos, topos);
 		}
-		_draw_cos_line(top_layer, pos, topos, col, col, 1.0);
+		_draw_cos_line(top_layer, pos, topos, col, col);
 	}
 
 	if (box_selecting) {
@@ -990,18 +992,18 @@ void GraphEdit::_minimap_draw() {
 			continue;
 		}
 
-		Vector2 from_slot_position = gfrom->get_offset() + gfrom->get_connection_output_position(E->get().from_port);
-		Vector2 from_position = minimap->_convert_from_graph_position(from_slot_position * zoom - graph_offset) + minimap_offset;
+		Vector2 from_slot_position = gfrom->get_offset() * zoom + gfrom->get_connection_output_position(E->get().from_port);
+		Vector2 from_position = minimap->_convert_from_graph_position(from_slot_position - graph_offset) + minimap_offset;
 		Color from_color = gfrom->get_connection_output_color(E->get().from_port);
-		Vector2 to_slot_position = gto->get_offset() + gto->get_connection_input_position(E->get().to_port);
-		Vector2 to_position = minimap->_convert_from_graph_position(to_slot_position * zoom - graph_offset) + minimap_offset;
+		Vector2 to_slot_position = gto->get_offset() * zoom + gto->get_connection_input_position(E->get().to_port);
+		Vector2 to_position = minimap->_convert_from_graph_position(to_slot_position - graph_offset) + minimap_offset;
 		Color to_color = gto->get_connection_input_color(E->get().to_port);
 
 		if (E->get().activity > 0) {
 			from_color = from_color.lerp(activity_color, E->get().activity);
 			to_color = to_color.lerp(activity_color, E->get().activity);
 		}
-		_draw_cos_line(minimap, from_position, to_position, from_color, to_color, 0.5);
+		_draw_cos_line(minimap, from_position, to_position, from_color, to_color, 1.0, 0.5);
 	}
 
 	// Draw the "camera" viewport.
@@ -1495,8 +1497,6 @@ void GraphEdit::_snap_value_changed(double) {
 	update();
 }
 
-// _minimap_toggled
-
 void GraphEdit::set_minimap_size(Vector2 p_size) {
 	minimap->set_size(p_size);
 	Vector2 minimap_size = minimap->get_size(); // The size might've been adjusted by the minimum size.
@@ -1709,7 +1709,7 @@ GraphEdit::GraphEdit() {
 	zoom_hb->add_child(minimap_button);
 
 	Vector2 minimap_size = Vector2(240, 160);
-	float minimap_opacity = 0.45;
+	float minimap_opacity = 0.65;
 
 	minimap = memnew(GraphEditMinimap(this));
 	top_layer->add_child(minimap);
