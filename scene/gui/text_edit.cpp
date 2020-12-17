@@ -1245,7 +1245,7 @@ void TextEdit::_notification(int p_what) {
 					int gl_size = visual.size();
 
 					ofs_y += ldata->get_line_ascent(line_wrap_index);
-					float char_ofs = 0.f;
+					int char_ofs = 0;
 					for (int j = 0; j < gl_size; j++) {
 						if (color_map.has(glyphs[j].start)) {
 							current_color = color_map[glyphs[j].start].get("color");
