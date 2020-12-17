@@ -93,7 +93,7 @@ struct btSoftBodyHelpers
 								   int resy,
 								   int fixeds,
 								   bool gendiags,
-                                   btScalar perturbation = 0.);
+								   btScalar perturbation = 0.);
 	/* Create a patch with UV Texture Coordinates	*/
 	static btSoftBody* CreatePatchUV(btSoftBodyWorldInfo& worldInfo,
 									 const btVector3& corner00,
@@ -142,21 +142,21 @@ struct btSoftBodyHelpers
 											bool bfacelinks,
 											bool btetralinks,
 											bool bfacesfromtetras);
-    static btSoftBody* CreateFromVtkFile(btSoftBodyWorldInfo& worldInfo, const char* vtk_file);
+	static btSoftBody* CreateFromVtkFile(btSoftBodyWorldInfo& worldInfo, const char* vtk_file);
 
-    static void writeObj(const char* file, const btSoftBody* psb);
-    
-    static void getBarycentricWeights(const btVector3& a, const btVector3& b, const btVector3& c, const btVector3& d, const btVector3& p, btVector4& bary);
-    
-    static void getBarycentricWeights(const btVector3& a, const btVector3& b, const btVector3& c, const btVector3& p, btVector4& bary);
-    
-    static void interpolateBarycentricWeights(btSoftBody* psb);
-    
-    static void extrapolateBarycentricWeights(btSoftBody* psb);
-    
-    static void generateBoundaryFaces(btSoftBody* psb);
-    
-    static void duplicateFaces(const char* filename, const btSoftBody* psb);
+	static void writeObj(const char* file, const btSoftBody* psb);
+
+	static void getBarycentricWeights(const btVector3& a, const btVector3& b, const btVector3& c, const btVector3& d, const btVector3& p, btVector4& bary);
+
+	static void getBarycentricWeights(const btVector3& a, const btVector3& b, const btVector3& c, const btVector3& p, btVector4& bary);
+
+	static void interpolateBarycentricWeights(btSoftBody* psb);
+
+	static void extrapolateBarycentricWeights(btSoftBody* psb);
+
+	static void generateBoundaryFaces(btSoftBody* psb);
+
+	static void duplicateFaces(const char* filename, const btSoftBody* psb);
 	/// Sort the list of links to move link calculations that are dependent upon earlier
 	/// ones as far as possible away from the calculation of those values
 	/// This tends to make adjacent loop iterations not dependent upon one another,

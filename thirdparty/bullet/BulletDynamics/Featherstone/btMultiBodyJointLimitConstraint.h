@@ -42,6 +42,22 @@ public:
 	{
 		//todo(erwincoumans)
 	}
+	btScalar getLowerBound() const
+	{
+		return m_lowerBound;
+	}
+	btScalar getUpperBound() const
+	{
+		return m_upperBound;
+	}
+	void setLowerBound(btScalar lower)
+	{
+		m_lowerBound = lower;
+	}
+	void setUpperBound(btScalar upper)
+	{
+		m_upperBound = upper;
+	}
 };
 
 #endif  //BT_MULTIBODY_JOINT_LIMIT_CONSTRAINT_H

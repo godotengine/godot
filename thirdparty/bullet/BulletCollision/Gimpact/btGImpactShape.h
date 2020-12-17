@@ -623,9 +623,17 @@ public:
 				i1 = s_indices[1];
 				i2 = s_indices[2];
 			}
-			else
+			else if (indicestype == PHY_INTEGER)
 			{
 				unsigned int* i_indices = (unsigned int*)(indexbase + face_index * indexstride);
+				i0 = i_indices[0];
+				i1 = i_indices[1];
+				i2 = i_indices[2];
+			}
+			else
+			{
+				btAssert(indicestype == PHY_UCHAR);
+				unsigned char* i_indices = (unsigned char*)(indexbase + face_index * indexstride);
 				i0 = i_indices[0];
 				i1 = i_indices[1];
 				i2 = i_indices[2];

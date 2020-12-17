@@ -25,7 +25,7 @@ subject to the following restrictions:
 #define EPSILON 0.000001
 
 btMultiBodySliderConstraint::btMultiBodySliderConstraint(btMultiBody* body, int link, btRigidBody* bodyB, const btVector3& pivotInA, const btVector3& pivotInB, const btMatrix3x3& frameInA, const btMatrix3x3& frameInB, const btVector3& jointAxis)
-	: btMultiBodyConstraint(body, 0, link, -1, BTMBSLIDERCONSTRAINT_DIM, false),
+	: btMultiBodyConstraint(body, 0, link, -1, BTMBSLIDERCONSTRAINT_DIM, false, MULTIBODY_CONSTRAINT_SLIDER),
 	  m_rigidBodyA(0),
 	  m_rigidBodyB(bodyB),
 	  m_pivotInA(pivotInA),
@@ -38,7 +38,7 @@ btMultiBodySliderConstraint::btMultiBodySliderConstraint(btMultiBody* body, int 
 }
 
 btMultiBodySliderConstraint::btMultiBodySliderConstraint(btMultiBody* bodyA, int linkA, btMultiBody* bodyB, int linkB, const btVector3& pivotInA, const btVector3& pivotInB, const btMatrix3x3& frameInA, const btMatrix3x3& frameInB, const btVector3& jointAxis)
-	: btMultiBodyConstraint(bodyA, bodyB, linkA, linkB, BTMBSLIDERCONSTRAINT_DIM, false),
+	: btMultiBodyConstraint(bodyA, bodyB, linkA, linkB, BTMBSLIDERCONSTRAINT_DIM, false, MULTIBODY_CONSTRAINT_SLIDER),
 	  m_rigidBodyA(0),
 	  m_rigidBodyB(0),
 	  m_pivotInA(pivotInA),
