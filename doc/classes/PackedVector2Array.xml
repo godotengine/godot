@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		An [Array] specifically designed to hold [Vector2]. Packs data tightly, so it saves memory for large array sizes.
-		[b]Note:[/b] This type is passed by value and not by reference.
 	</description>
 	<tutorials>
 		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>
@@ -52,6 +51,13 @@
 			</argument>
 			<description>
 				Appends a [PackedVector2Array] at the end of this array.
+			</description>
+		</method>
+		<method name="duplicate">
+			<return type="PackedVector2Array">
+			</return>
+			<description>
+				Creates a copy of the array, and returns it.
 			</description>
 		</method>
 		<method name="empty">

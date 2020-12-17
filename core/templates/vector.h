@@ -112,6 +112,10 @@ public:
 		sort_custom<_DefaultComparator<T>>();
 	}
 
+	Vector<T> duplicate() {
+		return *this;
+	}
+
 	void ordered_insert(const T &p_val) {
 		int i;
 		for (i = 0; i < _cowdata.size(); i++) {
