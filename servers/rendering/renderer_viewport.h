@@ -84,6 +84,8 @@ public:
 
 		bool sdf_active;
 
+		float lod_threshold = 1.0;
+
 		uint64_t last_pass = 0;
 
 		int render_info[RS::VIEWPORT_RENDER_INFO_MAX];
@@ -221,6 +223,8 @@ public:
 	void viewport_set_msaa(RID p_viewport, RS::ViewportMSAA p_msaa);
 	void viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode);
 	void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding);
+
+	void viewport_set_lod_threshold(RID p_viewport, float p_pixels);
 
 	virtual int viewport_get_render_info(RID p_viewport, RS::ViewportRenderInfo p_info);
 	virtual void viewport_set_debug_draw(RID p_viewport, RS::ViewportDebugDraw p_draw);

@@ -1391,6 +1391,10 @@ SceneTree::SceneTree() {
 	const bool use_debanding = GLOBAL_DEF("rendering/quality/screen_filters/use_debanding", false);
 	root->set_use_debanding(use_debanding);
 
+	float lod_threshold = GLOBAL_DEF("rendering/quality/mesh_lod/threshold_pixels", 1.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/mesh_lod/threshold_pixels", PropertyInfo(Variant::FLOAT, "rendering/quality/mesh_lod/threshold_pixels", PROPERTY_HINT_RANGE, "0,1024,0.1"));
+	root->set_lod_threshold(lod_threshold);
+
 	bool snap_2d_transforms = GLOBAL_DEF("rendering/quality/2d/snap_2d_transforms_to_pixel", false);
 	root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
 

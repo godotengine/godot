@@ -964,6 +964,7 @@ private:
 		bool box_projection = false;
 		bool enable_shadows = false;
 		uint32_t cull_mask = (1 << 20) - 1;
+		float lod_threshold = 0.01;
 
 		RendererStorage::InstanceDependency instance_dependency;
 	};
@@ -1417,22 +1418,50 @@ public:
 		return mesh->material_cache.ptr();
 	}
 
-	_FORCE_INLINE_ RS::PrimitiveType mesh_surface_get_primitive(RID p_mesh, uint32_t p_surface_index) {
+	_FORCE_INLINE_ void *mesh_get_surface(RID p_mesh, uint32_t p_surface_index) {
 		Mesh *mesh = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!mesh, RS::PRIMITIVE_MAX);
-		ERR_FAIL_UNSIGNED_INDEX_V(p_surface_index, mesh->surface_count, RS::PRIMITIVE_MAX);
+		ERR_FAIL_COND_V(!mesh, nullptr);
+		ERR_FAIL_UNSIGNED_INDEX_V(p_surface_index, mesh->surface_count, nullptr);
 
-		return mesh->surfaces[p_surface_index]->primitive;
+		return mesh->surfaces[p_surface_index];
 	}
 
-	_FORCE_INLINE_ void mesh_surface_get_arrays_and_format(RID p_mesh, uint32_t p_surface_index, uint32_t p_input_mask, RID &r_vertex_array_rd, RID &r_index_array_rd, RD::VertexFormatID &r_vertex_format) {
-		Mesh *mesh = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!mesh);
-		ERR_FAIL_UNSIGNED_INDEX(p_surface_index, mesh->surface_count);
+	_FORCE_INLINE_ RS::PrimitiveType mesh_surface_get_primitive(void *p_surface) {
+		Mesh::Surface *surface = reinterpret_cast<Mesh::Surface *>(p_surface);
+		return surface->primitive;
+	}
 
-		Mesh::Surface *s = mesh->surfaces[p_surface_index];
+	_FORCE_INLINE_ bool mesh_surface_has_lod(void *p_surface) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+		return s->lod_count > 0;
+	}
 
-		r_index_array_rd = s->index_array;
+	_FORCE_INLINE_ RID mesh_surface_get_index_array(void *p_surface) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+
+		return s->index_array;
+	}
+
+	_FORCE_INLINE_ RID mesh_surface_get_index_array_with_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_lod_threshold) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+
+		int32_t current_lod = -1;
+		for (uint32_t i = 0; i < s->lod_count; i++) {
+			float screen_size = s->lods[i].edge_length * p_model_scale / p_distance_threshold;
+			if (screen_size > p_lod_threshold) {
+				break;
+			}
+			current_lod = i;
+		}
+		if (current_lod == -1) {
+			return s->index_array;
+		} else {
+			return s->lods[current_lod].index_array;
+		}
+	}
+
+	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint32_t p_input_mask, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		s->version_lock.lock();
 
@@ -1461,7 +1490,7 @@ public:
 		s->version_lock.unlock();
 	}
 
-	_FORCE_INLINE_ void mesh_instance_surface_get_arrays_and_format(RID p_mesh_instance, uint32_t p_surface_index, uint32_t p_input_mask, RID &r_vertex_array_rd, RID &r_index_array_rd, RD::VertexFormatID &r_vertex_format) {
+	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint32_t p_surface_index, uint32_t p_input_mask, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
 		MeshInstance *mi = mesh_instance_owner.getornull(p_mesh_instance);
 		ERR_FAIL_COND(!mi);
 		Mesh *mesh = mi->mesh;
@@ -1469,8 +1498,6 @@ public:
 
 		MeshInstance::Surface *mis = &mi->surfaces[p_surface_index];
 		Mesh::Surface *s = mesh->surfaces[p_surface_index];
-
-		r_index_array_rd = s->index_array;
 
 		s->version_lock.lock();
 
@@ -1780,6 +1807,7 @@ public:
 	void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable);
 	void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers);
 	void reflection_probe_set_resolution(RID p_probe, int p_resolution);
+	void reflection_probe_set_lod_threshold(RID p_probe, float p_ratio);
 
 	AABB reflection_probe_get_aabb(RID p_probe) const;
 	RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const;
@@ -1787,6 +1815,8 @@ public:
 	Vector3 reflection_probe_get_extents(RID p_probe) const;
 	Vector3 reflection_probe_get_origin_offset(RID p_probe) const;
 	float reflection_probe_get_origin_max_distance(RID p_probe) const;
+	float reflection_probe_get_lod_threshold(RID p_probe) const;
+
 	int reflection_probe_get_resolution(RID p_probe) const;
 	bool reflection_probe_renders_shadows(RID p_probe) const;
 

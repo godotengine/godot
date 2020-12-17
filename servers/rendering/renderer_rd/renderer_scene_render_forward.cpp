@@ -953,7 +953,7 @@ void RendererSceneRenderForward::_fill_instances(RenderList::Element **p_element
 
 /// RENDERING ///
 
-void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe, const Vector2 &p_uv_offset) {
+void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe, const Vector2 &p_uv_offset, const Plane &p_lod_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold) {
 	RD::DrawListID draw_list = p_draw_list;
 	RD::FramebufferFormatID framebuffer_format = p_framebuffer_Format;
 
@@ -996,10 +996,13 @@ void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw
 
 		//find primitive and vertex format
 		RS::PrimitiveType primitive;
+		void *mesh_surface = nullptr;
 
 		switch (e->instance->base_type) {
 			case RS::INSTANCE_MESH: {
-				primitive = storage->mesh_surface_get_primitive(e->instance->base, e->surface_index);
+				mesh_surface = storage->mesh_get_surface(e->instance->base, e->surface_index);
+
+				primitive = storage->mesh_surface_get_primitive(mesh_surface);
 				if (e->instance->skeleton.is_valid()) {
 					xforms_uniform_set = storage->skeleton_get_3d_uniform_set(e->instance->skeleton, default_shader_rd, TRANSFORMS_UNIFORM_SET);
 				}
@@ -1007,7 +1010,10 @@ void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw
 			case RS::INSTANCE_MULTIMESH: {
 				RID mesh = storage->multimesh_get_mesh(e->instance->base);
 				ERR_CONTINUE(!mesh.is_valid()); //should be a bug
-				primitive = storage->mesh_surface_get_primitive(mesh, e->surface_index);
+
+				mesh_surface = storage->mesh_get_surface(e->instance->base, e->surface_index);
+
+				primitive = storage->mesh_surface_get_primitive(mesh_surface);
 
 				xforms_uniform_set = storage->multimesh_get_3d_uniform_set(e->instance->base, default_shader_rd, TRANSFORMS_UNIFORM_SET);
 
@@ -1018,7 +1024,10 @@ void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw
 			case RS::INSTANCE_PARTICLES: {
 				RID mesh = storage->particles_get_draw_pass_mesh(e->instance->base, e->surface_index >> 16);
 				ERR_CONTINUE(!mesh.is_valid()); //should be a bug
-				primitive = storage->mesh_surface_get_primitive(mesh, e->surface_index & 0xFFFF);
+
+				mesh_surface = storage->mesh_get_surface(e->instance->base, e->surface_index & 0xFFFF);
+
+				primitive = storage->mesh_surface_get_primitive(mesh_surface);
 
 				xforms_uniform_set = storage->particles_get_instance_buffer_uniform_set(e->instance->base, default_shader_rd, TRANSFORMS_UNIFORM_SET);
 
@@ -1077,29 +1086,39 @@ void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw
 		RID vertex_array_rd;
 		RID index_array_rd;
 
-		switch (e->instance->base_type) {
-			case RS::INSTANCE_MESH: {
-				if (e->instance->mesh_instance.is_valid()) { //skeleton and blend shape
-					storage->mesh_instance_surface_get_arrays_and_format(e->instance->mesh_instance, e->surface_index, pipeline->get_vertex_input_mask(), vertex_array_rd, index_array_rd, vertex_format);
-				} else {
-					storage->mesh_surface_get_arrays_and_format(e->instance->base, e->surface_index, pipeline->get_vertex_input_mask(), vertex_array_rd, index_array_rd, vertex_format);
+		if (mesh_surface) {
+			if (e->instance->mesh_instance.is_valid()) { //skeleton and blend shape
+				storage->mesh_instance_surface_get_vertex_arrays_and_format(e->instance->mesh_instance, e->surface_index, pipeline->get_vertex_input_mask(), vertex_array_rd, vertex_format);
+			} else {
+				storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, pipeline->get_vertex_input_mask(), vertex_array_rd, vertex_format);
+			}
+
+			if (p_screen_lod_threshold > 0.0 && storage->mesh_surface_has_lod(mesh_surface)) {
+				Vector3 support_min = e->instance->transformed_aabb.get_support(-p_lod_plane.normal);
+				Vector3 support_max = e->instance->transformed_aabb.get_support(p_lod_plane.normal);
+
+				float distance_min = p_lod_plane.distance_to(support_min);
+				float distance_max = p_lod_plane.distance_to(support_max);
+
+				float distance = 0.0;
+
+				if (distance_min * distance_max < 0.0) {
+					//crossing plane
+					distance = 0.0;
+				} else if (distance_min >= 0.0) {
+					distance = distance_min;
+				} else if (distance_max <= 0.0) {
+					distance = -distance_max;
 				}
-			} break;
-			case RS::INSTANCE_MULTIMESH: {
-				RID mesh = storage->multimesh_get_mesh(e->instance->base);
-				ERR_CONTINUE(!mesh.is_valid()); //should be a bug
-				storage->mesh_surface_get_arrays_and_format(mesh, e->surface_index, pipeline->get_vertex_input_mask(), vertex_array_rd, index_array_rd, vertex_format);
-			} break;
-			case RS::INSTANCE_IMMEDIATE: {
-				ERR_CONTINUE(true); //should be a bug
-			} break;
-			case RS::INSTANCE_PARTICLES: {
-				RID mesh = storage->particles_get_draw_pass_mesh(e->instance->base, e->surface_index >> 16);
-				ERR_CONTINUE(!mesh.is_valid()); //should be a bug
-				storage->mesh_surface_get_arrays_and_format(mesh, e->surface_index & 0xFFFF, pipeline->get_vertex_input_mask(), vertex_array_rd, index_array_rd, vertex_format);
-			} break;
-			default: {
-				ERR_CONTINUE(true); //should be a bug
+
+				Vector3 model_scale_vec = e->instance->transform.basis.get_scale_abs();
+
+				float model_scale = MAX(model_scale_vec.x, MAX(model_scale_vec.y, model_scale_vec.z));
+
+				index_array_rd = storage->mesh_surface_get_index_array_with_lod(mesh_surface, model_scale * e->instance->lod_bias, distance * p_lod_distance_multiplier, p_screen_lod_threshold);
+
+			} else {
+				index_array_rd = storage->mesh_surface_get_index_array(mesh_surface);
 			}
 		}
 
@@ -1635,7 +1654,7 @@ void RendererSceneRenderForward::_setup_lightmaps(InstanceBase **p_lightmap_cull
 	}
 }
 
-void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, int p_directional_light_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color) {
+void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, int p_directional_light_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color, float p_screen_lod_threshold) {
 	RenderBufferDataForward *render_buffer = nullptr;
 	if (p_render_buffer.is_valid()) {
 		render_buffer = (RenderBufferDataForward *)render_buffers_get_data(p_render_buffer);
@@ -1652,6 +1671,13 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 		scene_state.ubo.reflection_multiplier = 0.0;
 	} else {
 		scene_state.ubo.reflection_multiplier = 1.0;
+	}
+
+	float lod_distance_multiplier = p_cam_projection.get_lod_multiplier();
+	Plane lod_camera_plane(p_cam_transform.get_origin(), -p_cam_transform.basis.get_axis(Vector3::AXIS_Z));
+
+	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
+		p_screen_lod_threshold = 0.0;
 	}
 
 	//scene_state.ubo.subsurface_scatter_width = subsurface_scatter_size;
@@ -1856,7 +1882,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 
 		bool finish_depth = using_ssao || using_sdfgi || using_giprobe;
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(depth_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, finish_depth ? RD::FINAL_ACTION_READ : RD::FINAL_ACTION_CONTINUE, depth_pass_clear);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(depth_framebuffer), render_list.elements, render_list.element_count, false, depth_pass_mode, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME);
+		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(depth_framebuffer), render_list.elements, render_list.element_count, false, depth_pass_mode, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
 		RD::get_singleton()->draw_list_end();
 
 		if (render_buffer && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
@@ -1904,7 +1930,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 
 		RID framebuffer = using_separate_specular ? opaque_specular_framebuffer : opaque_framebuffer;
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, depth_pre_pass ? (continue_depth ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CONTINUE) : RD::INITIAL_ACTION_CLEAR, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(framebuffer), render_list.elements, render_list.element_count, false, using_separate_specular ? PASS_MODE_COLOR_SPECULAR : PASS_MODE_COLOR, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME);
+		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(framebuffer), render_list.elements, render_list.element_count, false, using_separate_specular ? PASS_MODE_COLOR_SPECULAR : PASS_MODE_COLOR, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
 		RD::get_singleton()->draw_list_end();
 
 		if (will_continue_color && using_separate_specular) {
@@ -1992,7 +2018,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 
 	{
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(alpha_framebuffer, can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(alpha_framebuffer), &render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, false, PASS_MODE_COLOR, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME);
+		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(alpha_framebuffer), &render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, false, PASS_MODE_COLOR, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
 		RD::get_singleton()->draw_list_end();
 	}
 
@@ -2001,7 +2027,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 	}
 }
 
-void RendererSceneRenderForward::_render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake) {
+void RendererSceneRenderForward::_render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold) {
 	RENDER_TIMESTAMP("Setup Rendering Shadow");
 
 	_update_render_base_uniform_set();
@@ -2011,6 +2037,10 @@ void RendererSceneRenderForward::_render_shadow(RID p_framebuffer, InstanceBase 
 	scene_state.ubo.dual_paraboloid_side = p_use_dp_flip ? -1 : 1;
 
 	_setup_environment(RID(), RID(), p_projection, p_transform, RID(), true, Vector2(1, 1), RID(), true, Color(), 0, p_zfar, false, p_use_pancake);
+
+	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
+		p_screen_lod_threshold = 0.0;
+	}
 
 	render_list.clear();
 
@@ -2029,7 +2059,7 @@ void RendererSceneRenderForward::_render_shadow(RID p_framebuffer, InstanceBase 
 	{
 		//regular forward for now
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), render_list.elements, render_list.element_count, p_use_dp_flip, pass_mode, true, rp_uniform_set);
+		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), render_list.elements, render_list.element_count, p_use_dp_flip, pass_mode, true, rp_uniform_set, false, Vector2(), p_camera_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
 		RD::get_singleton()->draw_list_end();
 	}
 }

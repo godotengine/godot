@@ -525,6 +525,9 @@ void EditorNode::_notification(int p_what) {
 				scene_root->set_sdf_oversize(sdf_oversize);
 				Viewport::SDFScale sdf_scale = Viewport::SDFScale(int(GLOBAL_GET("rendering/quality/2d_sdf/scale")));
 				scene_root->set_sdf_scale(sdf_scale);
+
+				float lod_threshold = GLOBAL_GET("rendering/quality/mesh_lod/threshold_pixels");
+				scene_root->set_lod_threshold(lod_threshold);
 			}
 
 			ResourceImporterTexture::get_singleton()->update_imports();

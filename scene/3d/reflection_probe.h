@@ -63,6 +63,7 @@ private:
 	AmbientMode ambient_mode;
 	Color ambient_color;
 	float ambient_color_energy;
+	float lod_threshold;
 
 	uint32_t cull_mask;
 	UpdateMode update_mode;
@@ -89,6 +90,9 @@ public:
 
 	void set_max_distance(float p_distance);
 	float get_max_distance() const;
+
+	void set_lod_threshold(float p_pixels);
+	float get_lod_threshold() const;
 
 	void set_extents(const Vector3 &p_extents);
 	Vector3 get_extents() const;

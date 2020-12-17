@@ -507,6 +507,7 @@ public:
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) = 0;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) = 0;
+	virtual void reflection_probe_set_lod_threshold(RID p_probe, float p_pixels) = 0;
 
 	/* DECAL API */
 
@@ -805,6 +806,8 @@ public:
 
 	virtual void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding) = 0;
 
+	virtual void viewport_set_lod_threshold(RID p_viewport, float p_pixels) = 0;
+
 	enum ViewportRenderInfo {
 		VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME,
 		VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME,
@@ -836,6 +839,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_SDFGI,
 		VIEWPORT_DEBUG_DRAW_SDFGI_PROBES,
 		VIEWPORT_DEBUG_DRAW_GI_BUFFER,
+		VIEWPORT_DEBUG_DRAW_DISABLE_LOD,
 
 	};
 
@@ -1142,6 +1146,7 @@ public:
 	virtual void instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) = 0;
 	virtual void instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance) = 0;
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice) = 0;
+	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias) = 0;
 
 	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &, const Variant &p_value) = 0;
 	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &) const = 0;

@@ -44,6 +44,7 @@
 #include "scene/resources/ray_shape_3d.h"
 #include "scene/resources/resource_format_text.h"
 #include "scene/resources/sphere_shape_3d.h"
+#include "scene/resources/surface_tool.h"
 #include "scene/resources/world_margin_shape_3d.h"
 
 uint32_t EditorSceneImporter::get_import_flags() const {
@@ -215,6 +216,59 @@ float EditorSceneImporterMesh::get_surface_lod_size(int p_surface, int p_lod) co
 Ref<Material> EditorSceneImporterMesh::get_surface_material(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Ref<Material>());
 	return surfaces[p_surface].material;
+}
+
+void EditorSceneImporterMesh::generate_lods() {
+	if (!SurfaceTool::simplify_func) {
+		return;
+	}
+
+	for (int i = 0; i < surfaces.size(); i++) {
+		if (surfaces[i].primitive != Mesh::PRIMITIVE_TRIANGLES) {
+			continue;
+		}
+
+		surfaces.write[i].lods.clear();
+		Vector<Vector3> vertices = surfaces[i].arrays[RS::ARRAY_VERTEX];
+		Vector<int> indices = surfaces[i].arrays[RS::ARRAY_INDEX];
+		if (indices.size() == 0) {
+			continue; //no lods if no indices
+		}
+		uint32_t vertex_count = vertices.size();
+		const Vector3 *vertices_ptr = vertices.ptr();
+		AABB aabb;
+		{
+			for (uint32_t j = 0; j < vertex_count; j++) {
+				if (j == 0) {
+					aabb.position = vertices_ptr[j];
+				} else {
+					aabb.expand_to(vertices_ptr[j]);
+				}
+			}
+		}
+
+		float longest_axis_size = aabb.get_longest_axis_size();
+
+		int min_indices = 10;
+		int index_target = indices.size() / 2;
+		print_line("total: " + itos(indices.size()));
+		while (index_target > min_indices) {
+			float error;
+			Vector<int> new_indices;
+			new_indices.resize(indices.size());
+			size_t new_len = SurfaceTool::simplify_func((unsigned int *)new_indices.ptrw(), (const unsigned int *)indices.ptr(), indices.size(), (const float *)vertices_ptr, vertex_count, sizeof(Vector3), index_target, 1e20, &error);
+			print_line("shoot for " + itos(index_target) + ", got " + itos(new_len) + " distance " + rtos(error));
+			if ((int)new_len > (index_target * 120 / 100)) {
+				break; // 20 percent tolerance
+			}
+			new_indices.resize(new_len);
+			Surface::LOD lod;
+			lod.distance = error * longest_axis_size;
+			lod.indices = new_indices;
+			surfaces.write[i].lods.push_back(lod);
+			index_target /= 2;
+		}
+	}
 }
 
 bool EditorSceneImporterMesh::has_mesh() const {
@@ -1422,9 +1476,9 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/location", PROPERTY_HINT_ENUM, "Node,Mesh"), (meshes_out || materials_out) ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/storage", PROPERTY_HINT_ENUM, "Built-In,Files (.material),Files (.tres)", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), materials_out ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "materials/keep_on_reimport"), materials_out));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/compress"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/storage", PROPERTY_HINT_ENUM, "Built-In,Files (.mesh),Files (.tres)"), meshes_out ? 1 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/generate_lods"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Enable,Gen Lightmaps", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/lightmap_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "skins/use_named_skins"), true));
@@ -1517,7 +1571,7 @@ Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(Edito
 	return importer->import_animation(p_path, p_flags, p_bake_fps);
 }
 
-void ResourceImporterScene::_generate_meshes(Node *p_node) {
+void ResourceImporterScene::_generate_meshes(Node *p_node, bool p_generate_lods) {
 	EditorSceneImporterMeshNode *src_mesh = Object::cast_to<EditorSceneImporterMeshNode>(p_node);
 	if (src_mesh != nullptr) {
 		//is mesh
@@ -1528,6 +1582,9 @@ void ResourceImporterScene::_generate_meshes(Node *p_node) {
 
 		Ref<ArrayMesh> mesh;
 		if (!src_mesh->get_mesh()->has_mesh()) {
+			if (p_generate_lods) {
+				src_mesh->get_mesh()->generate_lods();
+			}
 			//do mesh processing
 		}
 		mesh = src_mesh->get_mesh()->get_mesh();
@@ -1542,7 +1599,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node) {
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_generate_meshes(p_node->get_child(i));
+		_generate_meshes(p_node->get_child(i), p_generate_lods);
 	}
 }
 Error ResourceImporterScene::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
@@ -1581,10 +1638,6 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	if (bool(p_options["animation/import"])) {
 		import_flags |= EditorSceneImporter::IMPORT_ANIMATION;
-	}
-
-	if (int(p_options["meshes/compress"])) {
-		import_flags |= EditorSceneImporter::IMPORT_USE_COMPRESSION;
 	}
 
 	if (bool(p_options["meshes/ensure_tangents"])) {
@@ -1641,7 +1694,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		scene->set_name(p_save_path.get_file().get_basename());
 	}
 
-	_generate_meshes(scene);
+	bool gen_lods = bool(p_options["meshes/generate_lods"]);
+
+	_generate_meshes(scene, gen_lods);
 
 	err = OK;
 

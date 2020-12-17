@@ -359,6 +359,7 @@ public:
 	BIND2(reflection_probe_set_enable_shadows, RID, bool)
 	BIND2(reflection_probe_set_cull_mask, RID, uint32_t)
 	BIND2(reflection_probe_set_resolution, RID, int)
+	BIND2(reflection_probe_set_lod_threshold, RID, float)
 
 	/* DECAL API */
 
@@ -545,6 +546,7 @@ public:
 	BIND2(viewport_set_msaa, RID, ViewportMSAA)
 	BIND2(viewport_set_screen_space_aa, RID, ViewportScreenSpaceAA)
 	BIND2(viewport_set_use_debanding, RID, bool)
+	BIND2(viewport_set_lod_threshold, RID, float)
 
 	BIND2R(int, viewport_get_render_info, RID, ViewportRenderInfo)
 	BIND2(viewport_set_debug_draw, RID, ViewportDebugDraw)
@@ -673,6 +675,7 @@ public:
 	BIND5(instance_geometry_set_draw_range, RID, float, float, float, float)
 	BIND2(instance_geometry_set_as_instance_lod, RID, RID)
 	BIND4(instance_geometry_set_lightmap, RID, RID, const Rect2 &, int)
+	BIND2(instance_geometry_set_lod_bias, RID, float)
 
 	BIND3(instance_geometry_set_shader_parameter, RID, const StringName &, const Variant &)
 	BIND2RC(Variant, instance_geometry_get_shader_parameter, RID, const StringName &)
