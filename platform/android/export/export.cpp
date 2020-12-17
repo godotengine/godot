@@ -2726,7 +2726,7 @@ public:
 			// read
 			int method, level;
 			unzOpenCurrentFile2(tmp_unaligned, &method, &level, 1); // raw read
-			long file_offset = unzGetCurrentFileZStreamPos64(tmp_unaligned);
+			int64_t file_offset = unzGetCurrentFileZStreamPos64(tmp_unaligned);
 			unzReadCurrentFile(tmp_unaligned, data.ptrw(), data.size());
 			unzCloseCurrentFile(tmp_unaligned);
 
@@ -2734,7 +2734,7 @@ public:
 			int padding = 0;
 			if (!info.compression_method) {
 				// Uncompressed file => Align
-				long new_offset = file_offset + bias;
+				int64_t new_offset = file_offset + bias;
 				padding = (ZIP_ALIGNMENT - (new_offset % ZIP_ALIGNMENT)) % ZIP_ALIGNMENT;
 			}
 

@@ -41,7 +41,7 @@
 #include <libudev.h>
 #endif
 
-#define LONG_BITS (sizeof(long) * 8)
+#define LONG_BITS (sizeof(int64_t) * 8)
 #define test_bit(nr, addr) (((1UL << ((nr) % LONG_BITS)) & ((addr)[(nr) / LONG_BITS])) != 0)
 #define NBITS(x) ((((x)-1) / LONG_BITS) + 1)
 

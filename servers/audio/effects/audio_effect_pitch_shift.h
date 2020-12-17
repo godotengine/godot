@@ -48,7 +48,7 @@ class SMBPitchShift {
 	float gAnaMagn[MAX_FRAME_LENGTH];
 	float gSynFreq[MAX_FRAME_LENGTH];
 	float gSynMagn[MAX_FRAME_LENGTH];
-	long gRover;
+	int64_t gRover;
 
 	void smbFft(float *fftBuffer, long fftFrameSize, long sign);
 

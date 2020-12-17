@@ -204,7 +204,7 @@ void FileAccessUnix::seek_end(int64_t p_position) {
 size_t FileAccessUnix::get_position() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 
-	long pos = ftell(f);
+	int64_t pos = ftell(f);
 	if (pos < 0) {
 		check_errors();
 		ERR_FAIL_V(0);
@@ -215,10 +215,10 @@ size_t FileAccessUnix::get_position() const {
 size_t FileAccessUnix::get_len() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 
-	long pos = ftell(f);
+	int64_t pos = ftell(f);
 	ERR_FAIL_COND_V(pos < 0, 0);
 	ERR_FAIL_COND_V(fseek(f, 0, SEEK_END), 0);
-	long size = ftell(f);
+	int64_t size = ftell(f);
 	ERR_FAIL_COND_V(size < 0, 0);
 	ERR_FAIL_COND_V(fseek(f, pos, SEEK_SET), 0);
 

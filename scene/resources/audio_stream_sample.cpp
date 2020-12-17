@@ -533,7 +533,7 @@ Error AudioStreamSample::save_to_wav(const String &p_path) {
 
 	int n_channels = stereo ? 2 : 1;
 
-	long sample_rate = mix_rate;
+	int64_t sample_rate = mix_rate;
 
 	int byte_pr_sample = 0;
 	switch (format) {

@@ -100,7 +100,7 @@ struct Hints {
 	unsigned long flags = 0;
 	unsigned long functions = 0;
 	unsigned long decorations = 0;
-	long inputMode = 0;
+	int64_t inputMode = 0;
 	unsigned long status = 0;
 };
 
@@ -1173,7 +1173,7 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 			unsigned char *data = nullptr;
 			if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
 				if (format == 32 && len == 4 && data) {
-					long *extents = (long *)data;
+					int64_t *extents = (int64_t *)data;
 					x = extents[0];
 					y = extents[2];
 				}
@@ -1305,7 +1305,7 @@ Size2i DisplayServerX11::window_get_real_size(WindowID p_window) const {
 		unsigned char *data = nullptr;
 		if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
 			if (format == 32 && len == 4 && data) {
-				long *extents = (long *)data;
+				int64_t *extents = (int64_t *)data;
 				w += extents[0] + extents[1]; // left, right
 				h += extents[2] + extents[3]; // top, bottom
 			}
@@ -1628,7 +1628,7 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 				&data);
 
 		if (result == Success && data) {
-			long *state = (long *)data;
+			int64_t *state = (int64_t *)data;
 			if (state[0] == WM_IconicState) {
 				XFree(data);
 				return WINDOW_MODE_MINIMIZED;
@@ -3590,11 +3590,11 @@ void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 
 			const uint8_t *r = img->get_data().ptr();
 
-			long *wr = &pd.write[2];
+			int64_t *wr = &pd.write[2];
 			uint8_t const *pr = r;
 
 			for (int i = 0; i < w * h; i++) {
-				long v = 0;
+				int64_t v = 0;
 				//    A             R             G            B
 				v |= pr[3] << 24 | pr[0] << 16 | pr[1] << 8 | pr[2];
 				*wr++ = v;
@@ -3643,7 +3643,7 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, W
 DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	//Create window
 
-	long visualMask = VisualScreenMask;
+	int64_t visualMask = VisualScreenMask;
 	int numberOfVisuals;
 	XVisualInfo vInfoTemplate = {};
 	vInfoTemplate.screen = DefaultScreen(x11_display);
@@ -3701,7 +3701,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 			}
 		}
 
-		long im_event_mask = 0;
+		int64_t im_event_mask = 0;
 
 		{
 			XIEventMask all_event_mask;

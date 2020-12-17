@@ -47,7 +47,7 @@ godot_int GDAPI godot_videodecoder_file_read(void *ptr, uint8_t *buf, int buf_si
 
 	// if file exists
 	if (file) {
-		long bytes_read = file->get_buffer(buf, buf_size);
+		int64_t bytes_read = file->get_buffer(buf, buf_size);
 		// No bytes to read => EOF
 		if (bytes_read == 0) {
 			return 0;
