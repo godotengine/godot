@@ -2,4 +2,23 @@
 
 Import("env")
 
-env.add_source_files(env.scene_sources, "*.cpp")
+# Thirdparty code
+
+thirdparty_obj = []
+
+thirdparty_sources = "#thirdparty/misc/easing_equations.cpp"
+
+env_thirdparty = env.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.scene_sources += thirdparty_obj
+
+# Godot source files
+
+scene_obj = []
+
+env.add_source_files(scene_obj, "*.cpp")
+env.scene_sources += scene_obj
+
+# Needed to force rebuilding the scene files when the thirdparty code is updated.
+env.Depends(scene_obj, thirdparty_obj)

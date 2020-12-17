@@ -6,6 +6,9 @@ Import("env_modules")
 env_svg = env_modules.Clone()
 
 # Thirdparty source files
+
+thirdparty_obj = []
+
 thirdparty_dir = "#thirdparty/nanosvg/"
 thirdparty_sources = [
     "nanosvg.cc",
@@ -16,7 +19,15 @@ env_svg.Prepend(CPPPATH=[thirdparty_dir])
 
 env_thirdparty = env_svg.Clone()
 env_thirdparty.disable_warnings()
-env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
 
-# Godot's own source files
-env_svg.add_source_files(env.modules_sources, "*.cpp")
+# Godot source files
+
+module_obj = []
+
+env_svg.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

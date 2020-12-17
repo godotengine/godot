@@ -6,6 +6,9 @@ Import("env_modules")
 env_freetype = env_modules.Clone()
 
 # Thirdparty source files
+
+thirdparty_obj = []
+
 if env["builtin_freetype"]:
     thirdparty_dir = "#thirdparty/freetype/"
     thirdparty_sources = [
@@ -84,6 +87,7 @@ if env["builtin_freetype"]:
     env_thirdparty = env_freetype.Clone()
     env_thirdparty.disable_warnings()
     lib = env_thirdparty.add_library("freetype_builtin", thirdparty_sources)
+    thirdparty_obj += lib
 
     # Needs to be appended to arrive after libscene in the linker call,
     # but we don't want it to arrive *after* system libs, so manual hack
@@ -98,5 +102,13 @@ if env["builtin_freetype"]:
     if not inserted:
         env.Append(LIBS=[lib])
 
+
 # Godot source files
-env_freetype.add_source_files(env.modules_sources, "*.cpp")
+
+module_obj = []
+
+env_freetype.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

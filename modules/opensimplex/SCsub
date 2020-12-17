@@ -6,6 +6,9 @@ Import("env_modules")
 env_opensimplex = env_modules.Clone()
 
 # Thirdparty source files
+
+thirdparty_obj = []
+
 thirdparty_dir = "#thirdparty/misc/"
 thirdparty_sources = [
     "open-simplex-noise.c",
@@ -16,7 +19,15 @@ env_opensimplex.Prepend(CPPPATH=[thirdparty_dir])
 
 env_thirdparty = env_opensimplex.Clone()
 env_thirdparty.disable_warnings()
-env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
 
-# Godot's own source files
-env_opensimplex.add_source_files(env.modules_sources, "*.cpp")
+# Godot source files
+
+module_obj = []
+
+env_opensimplex.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

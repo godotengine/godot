@@ -35,10 +35,14 @@ def make_icu_data(target, source, env):
     g.write("#endif")
 
 
+# Thirdparty source files
+
+thirdparty_obj = []
+
 if env["builtin_harfbuzz"]:
     env_harfbuzz = env_modules.Clone()
+    env_harfbuzz.disable_warnings()
 
-    # Thirdparty source files
     thirdparty_dir = "#thirdparty/harfbuzz/"
     thirdparty_sources = [
         "src/hb-aat-layout.cc",
@@ -107,6 +111,15 @@ if env["builtin_harfbuzz"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
+    env_harfbuzz.Append(
+        CPPPATH=[
+            "#thirdparty/harfbuzz/src",
+            "#thirdparty/freetype/include",
+            "#thirdparty/graphite/include",
+            "#thirdparty/icu4c/common/",
+        ]
+    )
+
     if env["platform"] == "android" or env["platform"] == "linuxbsd" or env["platform"] == "server":
         env_harfbuzz.Append(CCFLAGS=["-DHAVE_PTHREAD"])
 
@@ -117,14 +130,6 @@ if env["builtin_harfbuzz"]:
             env_harfbuzz.Append(CCFLAGS=["-DHB_NO_MT"])
 
     env_harfbuzz.Append(
-        CPPPATH=[
-            "#thirdparty/harfbuzz/src",
-            "#thirdparty/freetype/include",
-            "#thirdparty/graphite/include",
-            "#thirdparty/icu4c/common/",
-        ]
-    )
-    env_harfbuzz.Append(
         CCFLAGS=[
             "-DHAVE_ICU_BUILTIN",
             "-DHAVE_ICU",
@@ -133,10 +138,9 @@ if env["builtin_harfbuzz"]:
             "-DGRAPHITE2_STATIC",
         ]
     )
-    env_harfbuzz.disable_warnings()
-    env_thirdparty = env_harfbuzz.Clone()
-    env_thirdparty.disable_warnings()
-    lib = env_thirdparty.add_library("harfbuzz_builtin", thirdparty_sources)
+
+    lib = env_harfbuzz.add_library("harfbuzz_builtin", thirdparty_sources)
+    thirdparty_obj += lib
 
     # Needs to be appended to arrive after libscene in the linker call,
     # but we don't want it to arrive *after* system libs, so manual hack
@@ -151,10 +155,11 @@ if env["builtin_harfbuzz"]:
     if not inserted:
         env.Append(LIBS=[lib])
 
+
 if env["builtin_graphite"]:
     env_graphite = env_modules.Clone()
+    env_graphite.disable_warnings()
 
-    # Thirdparty source files
     thirdparty_dir = "#thirdparty/graphite/"
     thirdparty_sources = [
         "src/gr_char_info.cpp",
@@ -203,10 +208,9 @@ if env["builtin_graphite"]:
             "-DGRAPHITE2_NFILEFACE",
         ]
     )
-    env_graphite.disable_warnings()
-    env_thirdparty = env_graphite.Clone()
-    env_thirdparty.disable_warnings()
-    lib = env_thirdparty.add_library("graphite_builtin", thirdparty_sources)
+
+    lib = env_graphite.add_library("graphite_builtin", thirdparty_sources)
+    thirdparty_obj += lib
 
     # Needs to be appended to arrive after libscene in the linker call,
     # but we don't want it to arrive *after* system libs, so manual hack
@@ -221,12 +225,12 @@ if env["builtin_graphite"]:
     if not inserted:
         env.Append(LIBS=[lib])
 
+
 if env["builtin_icu"]:
     env_icu = env_modules.Clone()
+    env_icu.disable_warnings()
 
-    # Thirdparty source files
     thirdparty_dir = "#thirdparty/icu4c/"
-    # Thirdparty source files
     thirdparty_sources = [
         "common/appendable.cpp",
         "common/bmpset.cpp",
@@ -457,10 +461,8 @@ if env["builtin_icu"]:
         ]
     )
 
-    env_icu.disable_warnings()
-    env_thirdparty = env_icu.Clone()
-    env_thirdparty.disable_warnings()
-    lib = env_thirdparty.add_library("icu_builtin", thirdparty_sources)
+    lib = env_icu.add_library("icu_builtin", thirdparty_sources)
+    thirdparty_obj += lib
 
     # Needs to be appended to arrive after libscene in the linker call,
     # but we don't want it to arrive *after* system libs, so manual hack
@@ -475,6 +477,11 @@ if env["builtin_icu"]:
     if not inserted:
         env.Append(LIBS=[lib])
 
+
+# Godot source files
+
+module_obj = []
+
 if env_text_server_adv["tools"]:
     env_text_server_adv.Append(CXXFLAGS=["-DICU_STATIC_DATA"])
 
@@ -486,4 +493,9 @@ env_text_server_adv.Append(
         "#thirdparty/icu4c/common/",
     ]
 )
-env_text_server_adv.add_source_files(env.modules_sources, "*.cpp")
+
+env_text_server_adv.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

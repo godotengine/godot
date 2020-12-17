@@ -8,9 +8,10 @@ Import("env_modules")
 
 env_vorbis = env_modules.Clone()
 
-stub = True
-
 # Thirdparty source files
+
+thirdparty_obj = []
+
 if env["builtin_libvorbis"]:
     thirdparty_dir = "#thirdparty/libvorbis/"
     thirdparty_sources = [
@@ -51,7 +52,16 @@ if env["builtin_libvorbis"]:
 
     env_thirdparty = env_vorbis.Clone()
     env_thirdparty.disable_warnings()
-    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env.modules_sources += thirdparty_obj
 
-# Module files
-env_vorbis.add_source_files(env.modules_sources, "register_types.cpp")
+
+# Godot source files
+
+module_obj = []
+
+env_vorbis.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

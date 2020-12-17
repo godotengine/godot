@@ -5,6 +5,10 @@ Import("env_modules")
 
 env_regex = env_modules.Clone()
 
+# Thirdparty source files
+
+thirdparty_obj = []
+
 if env["builtin_pcre2"]:
     thirdparty_dir = "#thirdparty/pcre2/src/"
     thirdparty_flags = ["PCRE2_STATIC", "HAVE_CONFIG_H", "SUPPORT_UNICODE"]
@@ -52,11 +56,21 @@ if env["builtin_pcre2"]:
         env_pcre2 = env_regex.Clone()
         env_pcre2.disable_warnings()
         env_pcre2["OBJSUFFIX"] = "_" + width + env_pcre2["OBJSUFFIX"]
-        env_pcre2.add_source_files(env.modules_sources, thirdparty_sources)
         env_pcre2.Append(CPPDEFINES=[("PCRE2_CODE_UNIT_WIDTH", width)])
+        env_pcre2.add_source_files(thirdparty_obj, thirdparty_sources)
+        env.modules_sources += thirdparty_obj
 
     pcre2_builtin("16")
     pcre2_builtin("32")
 
+
+# Godot source files
+
+module_obj = []
+
 env_regex.Append(CPPDEFINES=[("PCRE2_CODE_UNIT_WIDTH", 0)])
-env_regex.add_source_files(env.modules_sources, "*.cpp")
+env_regex.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)
