@@ -156,10 +156,6 @@ void OS_UWP::initialize_core() {
 	cursor_shape = CURSOR_ARROW;
 }
 
-bool OS_UWP::can_draw() const {
-	return !minimized;
-};
-
 void OS_UWP::set_window(Windows::UI::Core::CoreWindow ^ p_window) {
 	window = p_window;
 }
