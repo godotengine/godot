@@ -178,7 +178,7 @@
 		<member name="minimap_enabled" type="bool" setter="set_minimap_enabled" getter="is_minimap_enabled" default="true">
 			If [code]true[/code], the minimap is visible.
 		</member>
-		<member name="minimap_opacity" type="float" setter="set_minimap_opacity" getter="get_minimap_opacity" default="0.45">
+		<member name="minimap_opacity" type="float" setter="set_minimap_opacity" getter="get_minimap_opacity" default="0.65">
 			The opacity of the minimap rectangle.
 		</member>
 		<member name="minimap_size" type="Vector2" setter="set_minimap_size" getter="get_minimap_size" default="Vector2(240, 160)">
