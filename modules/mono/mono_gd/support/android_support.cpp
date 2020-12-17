@@ -355,8 +355,8 @@ MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 }
 
 void register_internal_calls() {
-	mono_add_internal_call("Android.Runtime.AndroidEnvironment::_gd_mono_init_cert_store", (void *)_gd_mono_init_cert_store);
-	mono_add_internal_call("Android.Runtime.AndroidEnvironment::_gd_mono_android_cert_store_lookup", (void *)_gd_mono_android_cert_store_lookup);
+	GDMonoUtils::add_internal_call("Android.Runtime.AndroidEnvironment::_gd_mono_init_cert_store", _gd_mono_init_cert_store);
+	GDMonoUtils::add_internal_call("Android.Runtime.AndroidEnvironment::_gd_mono_android_cert_store_lookup", _gd_mono_android_cert_store_lookup);
 }
 
 void initialize() {

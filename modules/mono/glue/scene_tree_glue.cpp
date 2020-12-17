@@ -80,7 +80,7 @@ Array *godot_icall_SceneTree_get_nodes_in_group_Generic(SceneTree *ptr, StringNa
 }
 
 void godot_register_scene_tree_icalls() {
-	mono_add_internal_call("Godot.SceneTree::godot_icall_SceneTree_get_nodes_in_group_Generic", (void *)godot_icall_SceneTree_get_nodes_in_group_Generic);
+	GDMonoUtils::add_internal_call("Godot.SceneTree::godot_icall_SceneTree_get_nodes_in_group_Generic", godot_icall_SceneTree_get_nodes_in_group_Generic);
 }
 
 #endif // MONO_GLUE_ENABLED
