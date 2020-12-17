@@ -18,6 +18,7 @@
 		The [code]in[/code] operator will evaluate to [code]true[/code] as long as the key exists, even if the value is [code]null[/code].
 		Objects also receive notifications. Notifications are a simple way to notify the object about different events, so they can all be handled together. See [method _notification].
 		[b]Note:[/b] Unlike references to a [Reference], references to an Object stored in a variable can become invalid without warning. Therefore, it's recommended to use [Reference] for data classes instead of [Object].
+		[b]Note:[/b] Due to a bug, you can't create a "plain" Object using [code]Object.new()[/code]. Instead, use [code]ClassDB.instance("Object")[/code]. This bug only applies to Object itself, not any of its descendents like [Reference].
 	</description>
 	<tutorials>
 		<link title="When and how to avoid using nodes for everything">https://docs.godotengine.org/en/3.2/getting_started/workflow/best_practices/node_alternatives.html</link>
