@@ -150,10 +150,6 @@ void OS_Server::set_main_loop(MainLoop *p_main_loop) {
 	input->set_main_loop(p_main_loop);
 }
 
-bool OS_Server::can_draw() const {
-	return false; //can never draw
-};
-
 String OS_Server::get_name() const {
 	return "Server";
 }

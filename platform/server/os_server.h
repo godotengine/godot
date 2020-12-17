@@ -89,8 +89,6 @@ public:
 
 	virtual MainLoop *get_main_loop() const;
 
-	virtual bool can_draw() const;
-
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
