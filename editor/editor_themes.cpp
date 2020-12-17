@@ -84,6 +84,25 @@ static Ref<StyleBoxLine> make_line_stylebox(Color p_color, int p_thickness = 1, 
 	return style;
 }
 
+static Ref<Texture> flip_icon(Ref<Texture> p_texture, bool p_flip_y = false, bool p_flip_x = false) {
+	if (!p_flip_y && !p_flip_x) {
+		return p_texture;
+	}
+
+	Ref<ImageTexture> texture(memnew(ImageTexture));
+	Ref<Image> img = p_texture->get_data();
+
+	if (p_flip_y) {
+		img->flip_y();
+	}
+	if (p_flip_x) {
+		img->flip_x();
+	}
+
+	texture->create_from_image(img);
+	return texture;
+}
+
 #ifdef SVG_ENABLED
 static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float p_scale = EDSCALE, bool p_force_filter = false) {
 
@@ -1052,11 +1071,33 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("more", "GraphEdit", theme->get_icon("ZoomMore", "EditorIcons"));
 	theme->set_icon("reset", "GraphEdit", theme->get_icon("ZoomReset", "EditorIcons"));
 	theme->set_icon("snap", "GraphEdit", theme->get_icon("SnapGrid", "EditorIcons"));
+	theme->set_icon("minimap", "GraphEdit", theme->get_icon("GridMinimap", "EditorIcons"));
 	theme->set_constant("bezier_len_pos", "GraphEdit", 80 * EDSCALE);
 	theme->set_constant("bezier_len_neg", "GraphEdit", 160 * EDSCALE);
 
-	// GraphNode
+	// GraphEditMinimap
+	theme->set_stylebox("bg", "GraphEditMinimap", make_flat_stylebox(dark_color_1, 0, 0, 0, 0));
+	Ref<StyleBoxFlat> style_minimap_camera;
+	Ref<StyleBoxFlat> style_minimap_node;
+	if (dark_theme) {
+		style_minimap_camera = make_flat_stylebox(Color(0.65, 0.65, 0.65, 0.2), 0, 0, 0, 0);
+		style_minimap_camera->set_border_color(Color(0.65, 0.65, 0.65, 0.45));
+		style_minimap_node = make_flat_stylebox(Color(1, 1, 1), 0, 0, 0, 0);
+	} else {
+		style_minimap_camera = make_flat_stylebox(Color(0.38, 0.38, 0.38, 0.2), 0, 0, 0, 0);
+		style_minimap_camera->set_border_color(Color(0.38, 0.38, 0.38, 0.45));
+		style_minimap_node = make_flat_stylebox(Color(0, 0, 0), 0, 0, 0, 0);
+	}
+	style_minimap_camera->set_border_width_all(1);
+	style_minimap_node->set_corner_radius_all(1);
+	theme->set_stylebox("camera", "GraphEditMinimap", style_minimap_camera);
+	theme->set_stylebox("node", "GraphEditMinimap", style_minimap_node);
 
+	Ref<Texture> resizer_icon = theme->get_icon("GuiResizer", "EditorIcons");
+	theme->set_icon("resizer", "GraphEditMinimap", flip_icon(resizer_icon, true, true));
+	theme->set_color("resizer_color", "GraphEditMinimap", Color(1, 1, 1, 0.65));
+
+	// GraphNode
 	const float mv = dark_theme ? 0.0 : 1.0;
 	const float mv2 = 1.0 - mv;
 	const int gn_margin_side = 28;
