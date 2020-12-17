@@ -5,8 +5,13 @@ Import("env_modules")
 
 env_assimp = env_modules.Clone()
 
+# Thirdparty source files
+
+thirdparty_obj = []
+
 # Force bundled version for now, there's no released version of Assimp with
 # support for ArmaturePopulate which we use from their master branch.
+
 if True:  # env['builtin_assimp']:
     thirdparty_dir = "#thirdparty/assimp"
 
@@ -84,11 +89,20 @@ if True:  # env['builtin_assimp']:
 
     env_thirdparty = env_assimp.Clone()
     env_thirdparty.disable_warnings()
-    env_thirdparty.add_source_files(env.modules_sources, Glob("#thirdparty/assimp/code/CApi/*.cpp"))
-    env_thirdparty.add_source_files(env.modules_sources, Glob("#thirdparty/assimp/code/Common/*.cpp"))
-    env_thirdparty.add_source_files(env.modules_sources, Glob("#thirdparty/assimp/code/PostProcessing/*.cpp"))
-    env_thirdparty.add_source_files(env.modules_sources, Glob("#thirdparty/assimp/code/Material/*.cpp"))
-    env_thirdparty.add_source_files(env.modules_sources, Glob("#thirdparty/assimp/code/FBX/*.cpp"))
+    env_thirdparty.add_source_files(thirdparty_obj, Glob("#thirdparty/assimp/code/CApi/*.cpp"))
+    env_thirdparty.add_source_files(thirdparty_obj, Glob("#thirdparty/assimp/code/Common/*.cpp"))
+    env_thirdparty.add_source_files(thirdparty_obj, Glob("#thirdparty/assimp/code/PostProcessing/*.cpp"))
+    env_thirdparty.add_source_files(thirdparty_obj, Glob("#thirdparty/assimp/code/Material/*.cpp"))
+    env_thirdparty.add_source_files(thirdparty_obj, Glob("#thirdparty/assimp/code/FBX/*.cpp"))
+    env.modules_sources += thirdparty_obj
 
-# Godot's own source files
-env_assimp.add_source_files(env.modules_sources, "*.cpp")
+
+# Godot source files
+
+module_obj = []
+
+env_assimp.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

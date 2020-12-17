@@ -6,6 +6,9 @@ Import("env_modules")
 env_meshoptimizer = env_modules.Clone()
 
 # Thirdparty source files
+
+thirdparty_obj = []
+
 thirdparty_dir = "#thirdparty/meshoptimizer/"
 thirdparty_sources = [
     "allocator.cpp",
@@ -26,9 +29,17 @@ thirdparty_sources = [
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-
 env_thirdparty = env_meshoptimizer.Clone()
 env_thirdparty.disable_warnings()
-env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
 
-env_modules.add_source_files(env.modules_sources, ["register_types.cpp"])
+# Godot source files
+
+module_obj = []
+
+env_meshoptimizer.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

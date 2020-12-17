@@ -38,6 +38,9 @@ with open("script_encryption_key.gen.cpp", "w") as f:
 
 
 # Add required thirdparty code.
+
+thirdparty_obj = []
+
 env_thirdparty = env.Clone()
 env_thirdparty.disable_warnings()
 
@@ -55,7 +58,7 @@ thirdparty_misc_sources = [
     "clipper.cpp",
 ]
 thirdparty_misc_sources = [thirdparty_misc_dir + file for file in thirdparty_misc_sources]
-env_thirdparty.add_source_files(env.core_sources, thirdparty_misc_sources)
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_misc_sources)
 
 # Zlib library, can be unbundled
 if env["builtin_zlib"]:
@@ -81,14 +84,14 @@ if env["builtin_zlib"]:
     if env["target"] == "debug":
         env_thirdparty.Append(CPPDEFINES=["ZLIB_DEBUG"])
 
-    env_thirdparty.add_source_files(env.core_sources, thirdparty_zlib_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_zlib_sources)
 
 # Minizip library, could be unbundled in theory
 # However, our version has some custom modifications, so it won't compile with the system one
 thirdparty_minizip_dir = "#thirdparty/minizip/"
 thirdparty_minizip_sources = ["ioapi.c", "unzip.c", "zip.c"]
 thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
-env_thirdparty.add_source_files(env.core_sources, thirdparty_minizip_sources)
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_minizip_sources)
 
 # Zstd library, can be unbundled in theory
 # though we currently use some private symbols
@@ -130,10 +133,14 @@ if env["builtin_zstd"]:
     # Also needed in main env includes will trigger warnings
     env.Append(CPPDEFINES=["ZSTD_STATIC_LINKING_ONLY"])
 
-    env_thirdparty.add_source_files(env.core_sources, thirdparty_zstd_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_zstd_sources)
 
 
-# Godot's own sources
+env.core_sources += thirdparty_obj
+
+
+# Godot source files
+
 env.add_source_files(env.core_sources, "*.cpp")
 
 # Certificates
@@ -185,3 +192,6 @@ SConscript("error/SCsub")
 # Build it all as a library
 lib = env.add_library("core", env.core_sources)
 env.Prepend(LIBS=[lib])
+
+# Needed to force rebuilding the core files when the thirdparty code is updated.
+env.Depends(lib, thirdparty_obj)
