@@ -48,7 +48,7 @@ MethodBind *godot_icall_Object_ClassDB_get_method(MonoString *p_type, MonoString
 
 MonoObject *godot_icall_Object_weakref(Object *p_obj);
 
-Error godot_icall_SignalAwaiter_connect(Object *p_source, MonoString *p_signal, Object *p_target, MonoObject *p_awaiter);
+int32_t godot_icall_SignalAwaiter_connect(Object *p_source, MonoString *p_signal, Object *p_target, MonoObject *p_awaiter);
 
 // DynamicGodotObject
 

@@ -282,31 +282,31 @@ MonoObject *godot_icall_DefaultGodotTaskScheduler() {
 }
 
 void godot_register_gd_icalls() {
-	mono_add_internal_call("Godot.GD::godot_icall_GD_bytes2var", (void *)godot_icall_GD_bytes2var);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_convert", (void *)godot_icall_GD_convert);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_hash", (void *)godot_icall_GD_hash);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_instance_from_id", (void *)godot_icall_GD_instance_from_id);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_pusherror", (void *)godot_icall_GD_pusherror);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_pushwarning", (void *)godot_icall_GD_pushwarning);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_print", (void *)godot_icall_GD_print);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_printerr", (void *)godot_icall_GD_printerr);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_printraw", (void *)godot_icall_GD_printraw);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_prints", (void *)godot_icall_GD_prints);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_printt", (void *)godot_icall_GD_printt);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_randf", (void *)godot_icall_GD_randf);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_randi", (void *)godot_icall_GD_randi);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_randomize", (void *)godot_icall_GD_randomize);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_rand_range", (void *)godot_icall_GD_rand_range);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_rand_seed", (void *)godot_icall_GD_rand_seed);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_seed", (void *)godot_icall_GD_seed);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_str", (void *)godot_icall_GD_str);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_str2var", (void *)godot_icall_GD_str2var);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_type_exists", (void *)godot_icall_GD_type_exists);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_var2bytes", (void *)godot_icall_GD_var2bytes);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_var2str", (void *)godot_icall_GD_var2str);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_bytes2var", godot_icall_GD_bytes2var);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_convert", godot_icall_GD_convert);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_hash", godot_icall_GD_hash);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_instance_from_id", godot_icall_GD_instance_from_id);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_pusherror", godot_icall_GD_pusherror);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_pushwarning", godot_icall_GD_pushwarning);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_print", godot_icall_GD_print);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_printerr", godot_icall_GD_printerr);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_printraw", godot_icall_GD_printraw);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_prints", godot_icall_GD_prints);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_printt", godot_icall_GD_printt);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randf", godot_icall_GD_randf);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randi", godot_icall_GD_randi);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randomize", godot_icall_GD_randomize);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_rand_range", godot_icall_GD_rand_range);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_rand_seed", godot_icall_GD_rand_seed);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_seed", godot_icall_GD_seed);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_str", godot_icall_GD_str);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_str2var", godot_icall_GD_str2var);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_type_exists", godot_icall_GD_type_exists);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_var2bytes", godot_icall_GD_var2bytes);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_var2str", godot_icall_GD_var2str);
 
 	// Dispatcher
-	mono_add_internal_call("Godot.Dispatcher::godot_icall_DefaultGodotTaskScheduler", (void *)godot_icall_DefaultGodotTaskScheduler);
+	GDMonoUtils::add_internal_call("Godot.Dispatcher::godot_icall_DefaultGodotTaskScheduler", godot_icall_DefaultGodotTaskScheduler);
 }
 
 #endif // MONO_GLUE_ENABLED
