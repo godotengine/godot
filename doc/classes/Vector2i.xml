@@ -175,16 +175,6 @@
 		</operator>
 		<operator name="operator *">
 			<return type="Vector2i" />
-			<argument index="0" name="right" type="float" />
-			<description>
-				Multiplies each component of the [Vector2i] by the given [float] truncated to an integer.
-				[codeblock]
-				print(Vector2i(10, 20) * 0.9) # Prints "(0, 0)"
-				[/codeblock]
-			</description>
-		</operator>
-		<operator name="operator *">
-			<return type="Vector2i" />
 			<argument index="0" name="right" type="int" />
 			<description>
 				Multiplies each component of the [Vector2i] by the given [int].
@@ -217,16 +207,6 @@
 				Divides each component of the [Vector2i] by the components of the given [Vector2i].
 				[codeblock]
 				print(Vector2i(10, 20) / Vector2i(2, 5)) # Prints "(5, 4)"
-				[/codeblock]
-			</description>
-		</operator>
-		<operator name="operator /">
-			<return type="Vector2i" />
-			<argument index="0" name="right" type="float" />
-			<description>
-				Divides each component of the [Vector2i] by the given [float] truncated to an integer.
-				[codeblock]
-				print(Vector2i(10, 20) / 2.9) # Prints "(5, 10)"
 				[/codeblock]
 			</description>
 		</operator>
