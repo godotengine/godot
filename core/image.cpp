@@ -867,7 +867,7 @@ bool Image::is_size_po2() const {
 	return uint32_t(width) == next_power_of_2(width) && uint32_t(height) == next_power_of_2(height);
 }
 
-void Image::resize_to_po2(bool p_square) {
+void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in compressed or custom image formats.");
 
@@ -883,7 +883,7 @@ void Image::resize_to_po2(bool p_square) {
 			return; //nothing to do
 	}
 
-	resize(w, h);
+	resize(w, h, p_interpolation);
 }
 
 void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
@@ -2725,7 +2725,7 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_mipmap_offset", "mipmap"), &Image::get_mipmap_offset);
 
-	ClassDB::bind_method(D_METHOD("resize_to_po2", "square"), &Image::resize_to_po2, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("resize_to_po2", "square", "interpolation"), &Image::resize_to_po2, DEFVAL(false), DEFVAL(INTERPOLATE_BILINEAR));
 	ClassDB::bind_method(D_METHOD("resize", "width", "height", "interpolation"), &Image::resize, DEFVAL(INTERPOLATE_BILINEAR));
 	ClassDB::bind_method(D_METHOD("shrink_x2"), &Image::shrink_x2);
 	ClassDB::bind_method(D_METHOD("expand_x2_hq2x"), &Image::expand_x2_hq2x);
