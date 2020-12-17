@@ -207,7 +207,8 @@ private:
 			const ScopePtr source,
 			const std::string &MappingInformationType,
 			const std::string &ReferenceInformationType,
-			const std::string &dataElementName);
+			const std::string &dataElementName,
+			const std::string &indexOverride = "");
 };
 
 /*
