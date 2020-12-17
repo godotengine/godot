@@ -17,6 +17,7 @@ import glsl_builders
 # Scan possible build platforms
 
 platform_list = []  # list of platforms
+platform_opts = {}  # options for each platform
 platform_flags = {}  # flags for each platform
 
 active_platforms = []
@@ -43,6 +44,7 @@ for x in sorted(glob.glob("platform/*")):
         x = x.replace("platform/", "")  # rest of world
         x = x.replace("platform\\", "")  # win32
         platform_list += [x]
+        platform_opts[x] = detect.get_opts()
         platform_flags[x] = detect.get_flags()
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
@@ -172,9 +174,54 @@ opts.Add("CFLAGS", "Custom flags for the C compiler")
 opts.Add("CXXFLAGS", "Custom flags for the C++ compiler")
 opts.Add("LINKFLAGS", "Custom flags for the linker")
 
-# Update the environment now as the "custom_modules" option may be
-# defined in a file rather than specified via the command line.
+# Update the environment to have all above options defined
+# in following code (especially platform and custom_modules).
 opts.Update(env_base)
+
+# Platform selection: validate input, and add options.
+
+selected_platform = ""
+
+if env_base["platform"] != "":
+    selected_platform = env_base["platform"]
+elif env_base["p"] != "":
+    selected_platform = env_base["p"]
+else:
+    # Missing `platform` argument, try to detect platform automatically
+    if sys.platform.startswith("linux"):
+        selected_platform = "linuxbsd"
+    elif sys.platform == "darwin":
+        selected_platform = "osx"
+    elif sys.platform == "win32":
+        selected_platform = "windows"
+    else:
+        print("Could not detect platform automatically. Supported platforms:")
+        for x in platform_list:
+            print("\t" + x)
+        print("\nPlease run SCons again and select a valid platform: platform=<string>")
+
+    if selected_platform != "":
+        print("Automatically detected platform: " + selected_platform)
+
+if selected_platform in ["linux", "bsd", "x11"]:
+    if selected_platform == "x11":
+        # Deprecated alias kept for compatibility.
+        print('Platform "x11" has been renamed to "linuxbsd" in Godot 4.0. Building for platform "linuxbsd".')
+    # Alias for convenience.
+    selected_platform = "linuxbsd"
+
+# Make sure to update this to the found, valid platform as it's used through the buildsystem as the reference.
+# It should always be re-set after calling `opts.Update()` otherwise it uses the original input value.
+env_base["platform"] = selected_platform
+
+# Add platform-specific options.
+if selected_platform in platform_opts:
+    for opt in platform_opts[selected_platform]:
+        opts.Add(opt)
+
+# Update the environment to take platform-specific options into account.
+opts.Update(env_base)
+env_base["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
 
 # Detect modules.
 modules_detected = OrderedDict()
@@ -214,6 +261,8 @@ methods.write_modules(modules_detected)
 
 # Update the environment again after all the module options are added.
 opts.Update(env_base)
+env_base["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
+Help(opts.GenerateHelpText(env_base))
 
 # add default include paths
 
@@ -249,51 +298,10 @@ if env_base["no_editor_splash"]:
 if not env_base["deprecated"]:
     env_base.Append(CPPDEFINES=["DISABLE_DEPRECATED"])
 
-env_base.platforms = {}
-
-selected_platform = ""
-
-if env_base["platform"] != "":
-    selected_platform = env_base["platform"]
-elif env_base["p"] != "":
-    selected_platform = env_base["p"]
-    env_base["platform"] = selected_platform
-else:
-    # Missing `platform` argument, try to detect platform automatically
-    if sys.platform.startswith("linux"):
-        selected_platform = "linuxbsd"
-    elif sys.platform == "darwin":
-        selected_platform = "osx"
-    elif sys.platform == "win32":
-        selected_platform = "windows"
-    else:
-        print("Could not detect platform automatically. Supported platforms:")
-        for x in platform_list:
-            print("\t" + x)
-        print("\nPlease run SCons again and select a valid platform: platform=<string>")
-
-    if selected_platform != "":
-        print("Automatically detected platform: " + selected_platform)
-        env_base["platform"] = selected_platform
-
-if selected_platform in ["linux", "bsd", "x11"]:
-    if selected_platform == "x11":
-        # Deprecated alias kept for compatibility.
-        print('Platform "x11" has been renamed to "linuxbsd" in Godot 4.0. Building for platform "linuxbsd".')
-    # Alias for convenience.
-    selected_platform = "linuxbsd"
-    env_base["platform"] = selected_platform
-
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform
     sys.path.insert(0, tmppath)
     import detect
-
-    # Add platform-specific options.
-    for opt in detect.get_opts():
-        opts.Add(opt)
-    opts.Update(env_base)
-    Help(opts.GenerateHelpText(env_base))
 
     if "create" in dir(detect):
         env = detect.create(env_base)
@@ -663,10 +671,6 @@ elif selected_platform != "":
         Exit()
     else:
         Exit(255)
-
-else:
-    # Update help to include options.
-    Help(opts.GenerateHelpText(env_base))
 
 # The following only makes sense when the 'env' is defined, and assumes it is.
 if "env" in locals():
