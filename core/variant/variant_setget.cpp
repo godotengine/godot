@@ -2023,6 +2023,24 @@ Variant Variant::duplicate(bool deep) const {
 			return operator Dictionary().duplicate(deep);
 		case ARRAY:
 			return operator Array().duplicate(deep);
+		case PACKED_BYTE_ARRAY:
+			return operator Vector<uint8_t>().duplicate();
+		case PACKED_INT32_ARRAY:
+			return operator Vector<int32_t>().duplicate();
+		case PACKED_INT64_ARRAY:
+			return operator Vector<int64_t>().duplicate();
+		case PACKED_FLOAT32_ARRAY:
+			return operator Vector<float>().duplicate();
+		case PACKED_FLOAT64_ARRAY:
+			return operator Vector<double>().duplicate();
+		case PACKED_STRING_ARRAY:
+			return operator Vector<String>().duplicate();
+		case PACKED_VECTOR2_ARRAY:
+			return operator Vector<Vector2>().duplicate();
+		case PACKED_VECTOR3_ARRAY:
+			return operator Vector<Vector3>().duplicate();
+		case PACKED_COLOR_ARRAY:
+			return operator Vector<Color>().duplicate();
 		default:
 			return *this;
 	}

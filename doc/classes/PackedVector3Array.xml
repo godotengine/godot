@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		An [Array] specifically designed to hold [Vector3]. Packs data tightly, so it saves memory for large array sizes.
-		[b]Note:[/b] This type is passed by value and not by reference.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -51,6 +50,13 @@
 			</argument>
 			<description>
 				Appends a [PackedVector3Array] at the end of this array.
+			</description>
+		</method>
+		<method name="duplicate">
+			<return type="PackedVector3Array">
+			</return>
+			<description>
+				Creates a copy of the array, and returns it.
 			</description>
 		</method>
 		<method name="empty">
