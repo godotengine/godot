@@ -517,23 +517,64 @@ void RendererCanvasCull::canvas_item_set_update_when_visible(RID p_item, bool p_
 	canvas_item->update_when_visible = p_update;
 }
 
-void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width) {
+void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, bool p_antialiased) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
 	Item::CommandPrimitive *line = canvas_item->alloc_command<Item::CommandPrimitive>();
 	ERR_FAIL_COND(!line);
-	if (p_width > 1.001) {
+
+	if (p_width <= 0.0) {
+		line->point_count = 2;
+		line->points[0] = p_from;
+		line->points[1] = p_to;
+	} else {
+		if (p_width < 1.0) {
+			p_width = 1.0;
+		}
+
 		Vector2 t = (p_from - p_to).tangent().normalized();
 		line->points[0] = p_from + t * p_width;
 		line->points[1] = p_from - t * p_width;
 		line->points[2] = p_to - t * p_width;
 		line->points[3] = p_to + t * p_width;
 		line->point_count = 4;
-	} else {
-		line->point_count = 2;
-		line->points[0] = p_from;
-		line->points[1] = p_to;
+
+		if (p_antialiased) {
+			Color color2 = Color(p_color.r, p_color.g, p_color.b, 0.0);
+
+			// top line
+
+			Item::CommandPrimitive *top_line = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!top_line);
+
+			top_line->points[0] = line->points[0];
+			top_line->points[1] = p_from + (t * 2) * p_width;
+			top_line->points[2] = p_to + (t * 2) * p_width;
+			top_line->points[3] = line->points[3];
+			top_line->point_count = 4;
+
+			top_line->colors[0] = p_color;
+			top_line->colors[1] = color2;
+			top_line->colors[2] = color2;
+			top_line->colors[3] = p_color;
+
+			// bottom line
+
+			Item::CommandPrimitive *bottom_line = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!bottom_line);
+
+			bottom_line->points[0] = line->points[1];
+			bottom_line->points[1] = p_from - (t * 2) * p_width;
+			bottom_line->points[2] = p_to - (t * 2) * p_width;
+			bottom_line->points[3] = line->points[2];
+			bottom_line->point_count = 4;
+
+			bottom_line->colors[0] = p_color;
+			bottom_line->colors[1] = color2;
+			bottom_line->colors[2] = color2;
+			bottom_line->colors[3] = p_color;
+		}
 	}
 	for (uint32_t i = 0; i < line->point_count; i++) {
 		line->colors[i] = p_color;

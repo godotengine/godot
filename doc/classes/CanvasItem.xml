@@ -109,6 +109,8 @@
 			</argument>
 			<argument index="3" name="width" type="float" default="1.0">
 			</argument>
+			<argument index="4" name="antialiased" type="bool" default="false">
+			</argument>
 			<description>
 				Draws a line from a 2D point to another, with a given color and width.
 			</description>
