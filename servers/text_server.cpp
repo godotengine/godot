@@ -905,7 +905,7 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 	float off = 0.0f;
 	for (int i = 0; i < v_size; i++) {
 		for (int k = 0; k < glyphs[i].repeat; k++) {
-			if (glyphs[i].count > 0 && glyphs[i].index != 0) {
+			if ((glyphs[i].count > 0) && ((glyphs[i].index != 0) || ((glyphs[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE))) {
 				if (glyphs[i].start < end && glyphs[i].end > start) {
 					// Grapheme fully in selection range.
 					if (glyphs[i].start >= start && glyphs[i].end <= end) {
@@ -962,6 +962,10 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 
 	// Merge intersecting ranges.
 	int i = 0;
+	while (i < ranges.size()) {
+		i++;
+	}
+	i = 0;
 	while (i < ranges.size()) {
 		int j = i + 1;
 		while (j < ranges.size()) {
