@@ -712,6 +712,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
+			REF ref = REF(Object::cast_to<Reference>(obj));
+
 			get_token(p_stream, token, line, r_err_str);
 			if (token.type != TK_COMMA) {
 				r_err_str = "Expected ',' after object type";
@@ -737,12 +739,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 						return err;
 
 					if (token2.type == TK_PARENTHESIS_CLOSE) {
-						Reference *reference = Object::cast_to<Reference>(obj);
-						if (reference) {
-							value = REF(reference);
-						} else {
-							value = obj;
-						}
+						value = ref.is_valid() ? Variant(ref) : Variant(obj);
 						return OK;
 					}
 
