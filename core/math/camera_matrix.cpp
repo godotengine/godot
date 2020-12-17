@@ -655,6 +655,17 @@ real_t CameraMatrix::get_fov() const {
 	}
 }
 
+float CameraMatrix::get_lod_multiplier() const {
+	if (is_orthogonal()) {
+		return get_viewport_half_extents().x;
+	} else {
+		float zn = get_z_near();
+		float width = get_viewport_half_extents().x * 2.0;
+		return 1.0 / (zn / width);
+	}
+
+	//usage is lod_size / (lod_distance * multiplier) < threshold
+}
 void CameraMatrix::make_scale(const Vector3 &p_scale) {
 	set_identity();
 	matrix[0][0] = p_scale.x;

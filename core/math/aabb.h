@@ -190,9 +190,9 @@ Vector3 AABB::get_support(const Vector3 &p_normal) const {
 	Vector3 ofs = position + half_extents;
 
 	return Vector3(
-				   (p_normal.x > 0) ? -half_extents.x : half_extents.x,
-				   (p_normal.y > 0) ? -half_extents.y : half_extents.y,
-				   (p_normal.z > 0) ? -half_extents.z : half_extents.z) +
+				   (p_normal.x > 0) ? half_extents.x : -half_extents.x,
+				   (p_normal.y > 0) ? half_extents.y : -half_extents.y,
+				   (p_normal.z > 0) ? half_extents.z : -half_extents.z) +
 		   ofs;
 }
 

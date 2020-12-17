@@ -142,6 +142,7 @@ public:
 		DEBUG_DRAW_SDFGI,
 		DEBUG_DRAW_SDFGI_PROBES,
 		DEBUG_DRAW_GI_BUFFER,
+		DEBUG_DRAW_DISABLE_LOD,
 	};
 
 	enum DefaultCanvasItemTextureFilter {
@@ -297,6 +298,8 @@ private:
 	MSAA msaa;
 	ScreenSpaceAA screen_space_aa;
 	bool use_debanding = false;
+	float lod_threshold = 1.0;
+
 	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture *> viewport_textures;
 
@@ -541,6 +544,9 @@ public:
 
 	void set_use_debanding(bool p_use_debanding);
 	bool is_using_debanding() const;
+
+	void set_lod_threshold(float p_pixels);
+	float get_lod_threshold() const;
 
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;

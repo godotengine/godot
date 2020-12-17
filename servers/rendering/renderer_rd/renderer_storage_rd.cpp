@@ -5645,6 +5645,15 @@ void RendererStorageRD::reflection_probe_set_resolution(RID p_probe, int p_resol
 	reflection_probe->resolution = p_resolution;
 }
 
+void RendererStorageRD::reflection_probe_set_lod_threshold(RID p_probe, float p_ratio) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->lod_threshold = p_ratio;
+
+	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+}
+
 AABB RendererStorageRD::reflection_probe_get_aabb(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, AABB());
@@ -5696,6 +5705,13 @@ float RendererStorageRD::reflection_probe_get_origin_max_distance(RID p_probe) c
 	ERR_FAIL_COND_V(!reflection_probe, 0);
 
 	return reflection_probe->max_distance;
+}
+
+float RendererStorageRD::reflection_probe_get_lod_threshold(RID p_probe) const {
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, 0);
+
+	return reflection_probe->lod_threshold;
 }
 
 int RendererStorageRD::reflection_probe_get_resolution(RID p_probe) const {
