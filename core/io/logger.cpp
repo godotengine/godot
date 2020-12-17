@@ -30,6 +30,7 @@
 
 #include "logger.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
@@ -201,15 +202,14 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		}
 		va_end(list_copy);
 		file->store_buffer((uint8_t *)buf, len);
+
 		if (len >= static_buf_size) {
 			Memory::free_static(buf);
 		}
-#ifdef DEBUG_ENABLED
-		const bool need_flush = true;
-#else
-		bool need_flush = p_err;
-#endif
-		if (need_flush) {
+
+		if (p_err || GLOBAL_GET("application/run/flush_stdout_on_print")) {
+			// Don't always flush when printing stdout to avoid performance
+			// issues when `print()` is spammed in release builds.
 			file->flush();
 		}
 	}
@@ -228,9 +228,11 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		vfprintf(stderr, p_format, p_list);
 	} else {
 		vprintf(p_format, p_list);
-#ifdef DEBUG_ENABLED
-		fflush(stdout);
-#endif
+		if (GLOBAL_GET("application/run/flush_stdout_on_print")) {
+			// Don't always flush when printing stdout to avoid performance
+			// issues when `print()` is spammed in release builds.
+			fflush(stdout);
+		}
 	}
 }
 
