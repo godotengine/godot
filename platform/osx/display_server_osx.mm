@@ -256,9 +256,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		List<String> args;
 		args.push_back(((OS_OSX *)(OS_OSX::get_singleton()))->open_with_filename);
 		String exec = OS::get_singleton()->get_executable_path();
-
-		OS::ProcessID pid = 0;
-		OS::get_singleton()->execute(exec, args, false, &pid);
+		OS::get_singleton()->create_process(exec, args);
 	}
 #endif
 	return YES;

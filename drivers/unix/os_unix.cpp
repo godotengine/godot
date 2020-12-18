@@ -254,31 +254,26 @@ uint64_t OS_Unix::get_ticks_usec() const {
 	return longtime;
 }
 
-Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_JavaScript.
 	ERR_FAIL_V(ERR_BUG);
 #else
-	if (p_blocking && r_pipe) {
-		String argss;
-		argss = "\"" + p_path + "\"";
-
+	if (r_pipe) {
+		String command = "\"" + p_path + "\"";
 		for (int i = 0; i < p_arguments.size(); i++) {
-			argss += String(" \"") + p_arguments[i] + "\"";
+			command += String(" \"") + p_arguments[i] + "\"";
 		}
-
 		if (read_stderr) {
-			argss += " 2>&1"; // Read stderr too
+			command += " 2>&1"; // Include stderr
 		} else {
-			argss += " 2>/dev/null"; //silence stderr
+			command += " 2>/dev/null"; // Silence stderr
 		}
-		FILE *f = popen(argss.utf8().get_data(), "r");
 
-		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot pipe stream from process running with following arguments '" + argss + "'.");
-
+		FILE *f = popen(command.utf8().get_data(), "r");
+		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command);
 		char buf[65535];
-
 		while (fgets(buf, 65535, f)) {
 			if (p_pipe_mutex) {
 				p_pipe_mutex->lock();
@@ -289,10 +284,10 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 			}
 		}
 		int rv = pclose(f);
+
 		if (r_exitcode) {
 			*r_exitcode = WEXITSTATUS(rv);
 		}
-
 		return OK;
 	}
 
@@ -300,45 +295,58 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
 
 	if (pid == 0) {
-		// is child
-
-		if (!p_blocking) {
-			// For non blocking calls, create a new session-ID so parent won't wait for it.
-			// This ensures the process won't go zombie at end.
-			setsid();
-		}
-
-		Vector<CharString> cs;
-		cs.push_back(p_path.utf8());
-		for (int i = 0; i < p_arguments.size(); i++) {
-			cs.push_back(p_arguments[i].utf8());
-		}
-
+		// The child process
 		Vector<char *> args;
-		for (int i = 0; i < cs.size(); i++) {
-			args.push_back((char *)cs[i].get_data());
+		args.push_back((char *)p_path.utf8().get_data());
+		for (int i = 0; i < p_arguments.size(); i++) {
+			args.push_back((char *)p_arguments[i].utf8().get_data());
 		}
 		args.push_back(0);
 
 		execvp(p_path.utf8().get_data(), &args[0]);
-		// still alive? something failed..
-		fprintf(stderr, "**ERROR** OS_Unix::execute - Could not create child process while executing: %s\n", p_path.utf8().get_data());
-		raise(SIGKILL);
+		// The execvp() function only returns if an error occurs.
+		CRASH_NOW_MSG("Could not create child process: " + p_path);
 	}
 
-	if (p_blocking) {
-		int status;
-		waitpid(pid, &status, 0);
-		if (r_exitcode) {
-			*r_exitcode = WIFEXITED(status) ? WEXITSTATUS(status) : status;
-		}
+	int status;
+	waitpid(pid, &status, 0);
+	if (r_exitcode) {
+		*r_exitcode = WIFEXITED(status) ? WEXITSTATUS(status) : status;
+	}
+	return OK;
+#endif
+}
 
-	} else {
-		if (r_child_id) {
-			*r_child_id = pid;
+Error OS_Unix::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+#ifdef __EMSCRIPTEN__
+	// Don't compile this code at all to avoid undefined references.
+	// Actual virtual call goes to OS_JavaScript.
+	ERR_FAIL_V(ERR_BUG);
+#else
+	pid_t pid = fork();
+	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
+
+	if (pid == 0) {
+		// The new process
+		// Create a new session-ID so parent won't wait for it.
+		// This ensures the process won't go zombie at the end.
+		setsid();
+
+		Vector<char *> args;
+		args.push_back((char *)p_path.utf8().get_data());
+		for (int i = 0; i < p_arguments.size(); i++) {
+			args.push_back((char *)p_arguments[i].utf8().get_data());
 		}
+		args.push_back(0);
+
+		execvp(p_path.utf8().get_data(), &args[0]);
+		// The execvp() function only returns if an error occurs.
+		CRASH_NOW_MSG("Could not create child process: " + p_path);
 	}
 
+	if (r_child_id) {
+		*r_child_id = pid;
+	}
 	return OK;
 #endif
 }
