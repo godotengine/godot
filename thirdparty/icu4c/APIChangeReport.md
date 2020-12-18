@@ -23,8 +23,10 @@ Removed from ICU 67
   
 | File | API | ICU 67 | ICU 68 |
 |---|---|---|---|
+| fmtable.h | const UFormattable* icu::Formattable::toUFormattable() |  StableICU 52 | (missing)
 | measunit.h | LocalArray&lt;MeasureUnit&gt; icu::MeasureUnit::splitToSingleUnits(int32_t&amp;, UErrorCode&amp;) const |  InternalICU 67 | (missing)
 | measunit.h | int32_t icu::MeasureUnit::getIndex() const |  Internal | (missing)
+| measunit.h | <tt>static</tt> MeasureUnit icu::MeasureUnit::resolveUnitPerUnit(const MeasureUnit&amp;, const MeasureUnit&amp;, bool*) |  Internal | (missing)
 | measunit.h | <tt>static</tt> int32_t icu::MeasureUnit::getIndexCount() |  Internal | (missing)
 | measunit.h | <tt>static</tt> int32_t icu::MeasureUnit::internalGetIndexForTypeAndSubtype(const char*, const char*) |  Internal | (missing)
 | nounit.h | UClassID icu::NoUnit::getDynamicClassID() const |  DraftICU 60 | (missing)
@@ -35,6 +37,7 @@ Removed from ICU 67
 | nounit.h | <tt>static</tt> NoUnit icu::NoUnit::permille() |  DraftICU 60 | (missing)
 | nounit.h | <tt>static</tt> UClassID icu::NoUnit::getStaticClassID() |  DraftICU 60 | (missing)
 | nounit.h | void* icu::NoUnit::clone() const |  DraftICU 60 | (missing)
+| uniset.h | const USet* icu::UnicodeSet::toUSet() |  StableICU 4.2 | (missing)
 
 ## Deprecated
 
@@ -57,6 +60,7 @@ Changed in  ICU 68 (old, new)
 |---|---|---|---|
 | bytestrie.h | BytesTrie&amp; icu::BytesTrie::resetToState64(uint64_t) |  Draft→StableICU 65
 | bytestrie.h | uint64_t icu::BytesTrie::getState64() const |  Draft→StableICU 65
+| listformatter.h | <tt>static</tt> ListFormatter* icu::ListFormatter::createInstance(const Locale&amp;, UListFormatterType, UListFormatterWidth, UErrorCode&amp;) |  Draft→StableICU 67
 | localebuilder.h | UBool icu::LocaleBuilder::copyErrorTo(UErrorCode&amp;) const |  Draft→StableICU 65
 | localematcher.h | Builder&amp; icu::LocaleMatcher::Builder::addSupportedLocale(const Locale&amp;) |  Draft→StableICU 65
 | localematcher.h | Builder&amp; icu::LocaleMatcher::Builder::operator=(Builder&amp;&amp;) |  Draft→StableICU 65
@@ -132,6 +136,13 @@ Changed in  ICU 68 (old, new)
 | ucal.h | int32_t ucal_getHostTimeZone(UChar*, int32_t, UErrorCode*) |  Draft→StableICU 65
 | ucharstrie.h | UCharsTrie&amp; icu::UCharsTrie::resetToState64(uint64_t) |  Draft→StableICU 65
 | ucharstrie.h | uint64_t icu::UCharsTrie::getState64() const |  Draft→StableICU 65
+| ulistformatter.h | UListFormatter* ulistfmt_openForType(const char*, UListFormatterType, UListFormatterWidth, UErrorCode*) |  Draft→StableICU 67
+| ulistformatter.h | <tt>enum</tt> UListFormatterType::ULISTFMT_TYPE_AND |  Draft→StableICU 67
+| ulistformatter.h | <tt>enum</tt> UListFormatterType::ULISTFMT_TYPE_OR |  Draft→StableICU 67
+| ulistformatter.h | <tt>enum</tt> UListFormatterType::ULISTFMT_TYPE_UNITS |  Draft→StableICU 67
+| ulistformatter.h | <tt>enum</tt> UListFormatterWidth::ULISTFMT_WIDTH_NARROW |  Draft→StableICU 67
+| ulistformatter.h | <tt>enum</tt> UListFormatterWidth::ULISTFMT_WIDTH_SHORT |  Draft→StableICU 67
+| ulistformatter.h | <tt>enum</tt> UListFormatterWidth::ULISTFMT_WIDTH_WIDE |  Draft→StableICU 67
 | uloc.h | UEnumeration* uloc_openAvailableByType(ULocAvailableType, UErrorCode*) |  Draft→StableICU 65
 | uloc.h | <tt>enum</tt> ULocAvailableType::ULOC_AVAILABLE_DEFAULT |  Draft→StableICU 65
 | uloc.h | <tt>enum</tt> ULocAvailableType::ULOC_AVAILABLE_ONLY_LEGACY_ALIASES |  Draft→StableICU 65
@@ -151,6 +162,8 @@ Promoted to stable in ICU 68
 |---|---|---|---|
 | bytestrie.h | BytesTrie&amp; icu::BytesTrie::resetToState64(uint64_t) |  Draft→StableICU 65
 | bytestrie.h | uint64_t icu::BytesTrie::getState64() const |  Draft→StableICU 65
+| fmtable.h | UFormattable* icu::Formattable::toUFormattable() |  (missing) | StableICU 52
+| listformatter.h | <tt>static</tt> ListFormatter* icu::ListFormatter::createInstance(const Locale&amp;, UListFormatterType, UListFormatterWidth, UErrorCode&amp;) |  Draft→StableICU 67
 | localebuilder.h | UBool icu::LocaleBuilder::copyErrorTo(UErrorCode&amp;) const |  Draft→StableICU 65
 | localematcher.h | Builder&amp; icu::LocaleMatcher::Builder::addSupportedLocale(const Locale&amp;) |  Draft→StableICU 65
 | localematcher.h | Builder&amp; icu::LocaleMatcher::Builder::operator=(Builder&amp;&amp;) |  Draft→StableICU 65
@@ -224,10 +237,18 @@ Promoted to stable in ICU 68
 | ucal.h | int32_t ucal_getHostTimeZone(UChar*, int32_t, UErrorCode*) |  Draft→StableICU 65
 | ucharstrie.h | UCharsTrie&amp; icu::UCharsTrie::resetToState64(uint64_t) |  Draft→StableICU 65
 | ucharstrie.h | uint64_t icu::UCharsTrie::getState64() const |  Draft→StableICU 65
+| ulistformatter.h | UListFormatter* ulistfmt_openForType(const char*, UListFormatterType, UListFormatterWidth, UErrorCode*) |  Draft→StableICU 67
+| ulistformatter.h | <tt>enum</tt> UListFormatterType::ULISTFMT_TYPE_AND |  Draft→StableICU 67
+| ulistformatter.h | <tt>enum</tt> UListFormatterType::ULISTFMT_TYPE_OR |  Draft→StableICU 67
+| ulistformatter.h | <tt>enum</tt> UListFormatterType::ULISTFMT_TYPE_UNITS |  Draft→StableICU 67
+| ulistformatter.h | <tt>enum</tt> UListFormatterWidth::ULISTFMT_WIDTH_NARROW |  Draft→StableICU 67
+| ulistformatter.h | <tt>enum</tt> UListFormatterWidth::ULISTFMT_WIDTH_SHORT |  Draft→StableICU 67
+| ulistformatter.h | <tt>enum</tt> UListFormatterWidth::ULISTFMT_WIDTH_WIDE |  Draft→StableICU 67
 | uloc.h | UEnumeration* uloc_openAvailableByType(ULocAvailableType, UErrorCode*) |  Draft→StableICU 65
 | uloc.h | <tt>enum</tt> ULocAvailableType::ULOC_AVAILABLE_DEFAULT |  Draft→StableICU 65
 | uloc.h | <tt>enum</tt> ULocAvailableType::ULOC_AVAILABLE_ONLY_LEGACY_ALIASES |  Draft→StableICU 65
 | uloc.h | <tt>enum</tt> ULocAvailableType::ULOC_AVAILABLE_WITH_LEGACY_ALIASES |  Draft→StableICU 65
+| uniset.h | USet* icu::UnicodeSet::toUSet() |  (missing) | StableICU 4.2
 | utrace.h | <tt>enum</tt> UTraceFunctionNumber::UTRACE_UDATA_BUNDLE |  Draft→StableICU 65
 | utrace.h | <tt>enum</tt> UTraceFunctionNumber::UTRACE_UDATA_DATA_FILE |  Draft→StableICU 65
 | utrace.h | <tt>enum</tt> UTraceFunctionNumber::UTRACE_UDATA_RES_FILE |  Draft→StableICU 65
@@ -242,6 +263,7 @@ Added in ICU 68
 | dtitvfmt.h | UDisplayContext icu::DateIntervalFormat::getContext(UDisplayContextType, UErrorCode&amp;) const |  (missing) | DraftICU 68
 | dtitvfmt.h | void icu::DateIntervalFormat::setContext(UDisplayContext, UErrorCode&amp;) |  (missing) | DraftICU 68
 | dtptngen.h | <tt>static</tt> DateTimePatternGenerator* icu::DateTimePatternGenerator::createInstanceNoStdPat(const Locale&amp;, UErrorCode&amp;) |  (missing) | Internal
+| fmtable.h | UFormattable* icu::Formattable::toUFormattable() |  (missing) | StableICU 52
 | localematcher.h | Builder&amp; icu::LocaleMatcher::Builder::setMaxDistance(const Locale&amp;, const Locale&amp;) |  (missing) | DraftICU 68
 | localematcher.h | Builder&amp; icu::LocaleMatcher::Builder::setNoDefaultLocale() |  (missing) | DraftICU 68
 | localematcher.h | UBool icu::LocaleMatcher::isMatch(const Locale&amp;, const Locale&amp;, UErrorCode&amp;) const |  (missing) | DraftICU 68
@@ -285,12 +307,14 @@ Added in ICU 68
 | numberrangeformatter.h | std::pair&lt; StringClass, StringClass &gt; icu::number::FormattedNumberRange::getDecimalNumbers(UErrorCode&amp;) const |  (missing) | DraftICU 68
 | plurrule.h | UnicodeString icu::PluralRules::select(const number::FormattedNumberRange&amp;, UErrorCode&amp;) const |  (missing) | DraftICU 68
 | plurrule.h | UnicodeString icu::PluralRules::select(const number::impl::UFormattedNumberRangeData*, UErrorCode&amp;) const |  (missing) | Internal
+| plurrule.h | int32_t icu::PluralRules::getSamples(const UnicodeString&amp;, FixedDecimal*, int32_t, UErrorCode&amp;) |  (missing) | Internal
 | timezone.h | <tt>static</tt> TimeZone* icu::TimeZone::forLocaleOrDefault(const Locale&amp;) |  (missing) | Internal
 | ucurr.h | <tt>enum</tt> UCurrNameStyle::UCURR_FORMAL_SYMBOL_NAME |  (missing) | DraftICU 68
 | ucurr.h | <tt>enum</tt> UCurrNameStyle::UCURR_VARIANT_SYMBOL_NAME |  (missing) | DraftICU 68
 | udateintervalformat.h | UDisplayContext udtitvfmt_getContext(const UDateIntervalFormat*, UDisplayContextType, UErrorCode*) |  (missing) | DraftICU 68
 | udateintervalformat.h | void udtitvfmt_setContext(UDateIntervalFormat*, UDisplayContext, UErrorCode*) |  (missing) | DraftICU 68
 | umachine.h | <tt>#define</tt> U_DEFINE_FALSE_AND_TRUE |  (missing) | InternalICU 68
+| uniset.h | USet* icu::UnicodeSet::toUSet() |  (missing) | StableICU 4.2
 | unum.h | <tt>enum</tt> UNumberFormatMinimumGroupingDigits::UNUM_MINIMUM_GROUPING_DIGITS_AUTO |  (missing) | DraftICU 68
 | unum.h | <tt>enum</tt> UNumberFormatMinimumGroupingDigits::UNUM_MINIMUM_GROUPING_DIGITS_MIN2 |  (missing) | DraftICU 68
 | unumberformatter.h | <tt>enum</tt> UNumberUnitWidth::UNUM_UNIT_WIDTH_FORMAL |  (missing) | DraftICU 68
@@ -317,7 +341,6 @@ Other existing drafts in ICU 68
 | bytestream.h |  void icu::ByteSink::AppendU8(const char*, int32_t) | DraftICU 67 | 
 | bytestream.h |  void icu::ByteSink::AppendU8(const char8_t*, int32_t) | DraftICU 67 | 
 | dtptngen.h |  UDateFormatHourCycle icu::DateTimePatternGenerator::getDefaultHourCycle(UErrorCode&amp;) const | DraftICU 67 | 
-| listformatter.h |  <tt>static</tt> ListFormatter* icu::ListFormatter::createInstance(const Locale&amp;, UListFormatterType, UListFormatterWidth, UErrorCode&amp;) | DraftICU 67 | 
 | localematcher.h |  Builder&amp; icu::LocaleMatcher::Builder::setDirection(ULocMatchDirection) | DraftICU 67 | 
 | localematcher.h |  <tt>enum</tt> ULocMatchDirection::ULOCMATCH_DIRECTION_ONLY_TWO_WAY | DraftICU 67 | 
 | localematcher.h |  <tt>enum</tt> ULocMatchDirection::ULOCMATCH_DIRECTION_WITH_ONE_WAY | DraftICU 67 | 
@@ -349,13 +372,6 @@ Other existing drafts in ICU 68
 | udateintervalformat.h |  void udtitvfmt_formatCalendarToResult(const UDateIntervalFormat*, UCalendar*, UCalendar*, UFormattedDateInterval*, UErrorCode*) | DraftICU 67 | 
 | udateintervalformat.h |  void udtitvfmt_formatToResult(const UDateIntervalFormat*, UDate, UDate, UFormattedDateInterval*, UErrorCode*) | DraftICU 67 | 
 | udatpg.h |  UDateFormatHourCycle udatpg_getDefaultHourCycle(const UDateTimePatternGenerator*, UErrorCode*) | DraftICU 67 | 
-| ulistformatter.h |  UListFormatter* ulistfmt_openForType(const char*, UListFormatterType, UListFormatterWidth, UErrorCode*) | DraftICU 67 | 
-| ulistformatter.h |  <tt>enum</tt> UListFormatterType::ULISTFMT_TYPE_AND | DraftICU 67 | 
-| ulistformatter.h |  <tt>enum</tt> UListFormatterType::ULISTFMT_TYPE_OR | DraftICU 67 | 
-| ulistformatter.h |  <tt>enum</tt> UListFormatterType::ULISTFMT_TYPE_UNITS | DraftICU 67 | 
-| ulistformatter.h |  <tt>enum</tt> UListFormatterWidth::ULISTFMT_WIDTH_NARROW | DraftICU 67 | 
-| ulistformatter.h |  <tt>enum</tt> UListFormatterWidth::ULISTFMT_WIDTH_SHORT | DraftICU 67 | 
-| ulistformatter.h |  <tt>enum</tt> UListFormatterWidth::ULISTFMT_WIDTH_WIDE | DraftICU 67 | 
 | uregex.h |  <tt>enum</tt> URegexpFlag::UREGEX_CANON_EQ | DraftICU 2.4 | 
 | utrace.h |  <tt>enum</tt> UTraceFunctionNumber::UTRACE_UBRK_CREATE_BREAK_ENGINE | DraftICU 67 | 
 | utrace.h |  <tt>enum</tt> UTraceFunctionNumber::UTRACE_UBRK_CREATE_CHARACTER | DraftICU 67 | 
@@ -373,7 +389,7 @@ This section shows cases where the signature was "simplified" for the sake of co
 
 ## Colophon
 
-Contents generated by StableAPI tool on Wed Sep 30 17:44:26 PDT 2020
+Contents generated by StableAPI tool on Fri Oct 23 11:32:42 PDT 2020
 
 Copyright © 2019 and later: Unicode, Inc. and others.
 License & terms of use: http://www.unicode.org/copyright.html
