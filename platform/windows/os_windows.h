@@ -166,8 +166,8 @@ public:
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
-	void disable_crash_handler();
-	bool is_disable_crash_handler() const;
+	virtual void disable_crash_handler() override;
+	virtual bool is_disable_crash_handler() const override;
 	virtual void initialize_debugging() override;
 
 	virtual Error move_to_trash(const String &p_path) override;
