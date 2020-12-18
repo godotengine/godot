@@ -969,7 +969,7 @@ RES ResourceFormatLoaderFont::load(const String &p_path, const String &p_origina
 
 void ResourceFormatLoaderFont::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
 #ifndef DISABLE_DEPRECATED
-	if (p_type == "DynacmicFontData") {
+	if (p_type == "DynamicFontData") {
 		p_extensions->push_back("ttf");
 		p_extensions->push_back("otf");
 		p_extensions->push_back("woff");
