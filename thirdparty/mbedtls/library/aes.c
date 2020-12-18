@@ -760,6 +760,7 @@ exit:
 
     return( ret );
 }
+#endif /* !MBEDTLS_AES_SETKEY_DEC_ALT */
 
 #if defined(MBEDTLS_CIPHER_MODE_XTS)
 static int mbedtls_aes_xts_decode_keys( const unsigned char *key,
@@ -838,8 +839,6 @@ int mbedtls_aes_xts_setkey_dec( mbedtls_aes_xts_context *ctx,
 }
 #endif /* MBEDTLS_CIPHER_MODE_XTS */
 
-#endif /* !MBEDTLS_AES_SETKEY_DEC_ALT */
-
 #define AES_FROUND(X0,X1,X2,X3,Y0,Y1,Y2,Y3)                     \
     do                                                          \
     {                                                           \
@@ -897,63 +896,56 @@ int mbedtls_internal_aes_encrypt( mbedtls_aes_context *ctx,
                                   unsigned char output[16] )
 {
     int i;
-    uint32_t *RK, X0, X1, X2, X3, Y0, Y1, Y2, Y3;
+    uint32_t *RK = ctx->rk;
+    struct
+    {
+        uint32_t X[4];
+        uint32_t Y[4];
+    } t;
 
-    RK = ctx->rk;
-
-    GET_UINT32_LE( X0, input,  0 ); X0 ^= *RK++;
-    GET_UINT32_LE( X1, input,  4 ); X1 ^= *RK++;
-    GET_UINT32_LE( X2, input,  8 ); X2 ^= *RK++;
-    GET_UINT32_LE( X3, input, 12 ); X3 ^= *RK++;
+    GET_UINT32_LE( t.X[0], input,  0 ); t.X[0] ^= *RK++;
+    GET_UINT32_LE( t.X[1], input,  4 ); t.X[1] ^= *RK++;
+    GET_UINT32_LE( t.X[2], input,  8 ); t.X[2] ^= *RK++;
+    GET_UINT32_LE( t.X[3], input, 12 ); t.X[3] ^= *RK++;
 
     for( i = ( ctx->nr >> 1 ) - 1; i > 0; i-- )
     {
-        AES_FROUND( Y0, Y1, Y2, Y3, X0, X1, X2, X3 );
-        AES_FROUND( X0, X1, X2, X3, Y0, Y1, Y2, Y3 );
+        AES_FROUND( t.Y[0], t.Y[1], t.Y[2], t.Y[3], t.X[0], t.X[1], t.X[2], t.X[3] );
+        AES_FROUND( t.X[0], t.X[1], t.X[2], t.X[3], t.Y[0], t.Y[1], t.Y[2], t.Y[3] );
     }
 
-    AES_FROUND( Y0, Y1, Y2, Y3, X0, X1, X2, X3 );
+    AES_FROUND( t.Y[0], t.Y[1], t.Y[2], t.Y[3], t.X[0], t.X[1], t.X[2], t.X[3] );
 
-    X0 = *RK++ ^ \
-            ( (uint32_t) FSb[ ( Y0       ) & 0xFF ]       ) ^
-            ( (uint32_t) FSb[ ( Y1 >>  8 ) & 0xFF ] <<  8 ) ^
-            ( (uint32_t) FSb[ ( Y2 >> 16 ) & 0xFF ] << 16 ) ^
-            ( (uint32_t) FSb[ ( Y3 >> 24 ) & 0xFF ] << 24 );
+    t.X[0] = *RK++ ^ \
+            ( (uint32_t) FSb[ ( t.Y[0]       ) & 0xFF ]       ) ^
+            ( (uint32_t) FSb[ ( t.Y[1] >>  8 ) & 0xFF ] <<  8 ) ^
+            ( (uint32_t) FSb[ ( t.Y[2] >> 16 ) & 0xFF ] << 16 ) ^
+            ( (uint32_t) FSb[ ( t.Y[3] >> 24 ) & 0xFF ] << 24 );
 
-    X1 = *RK++ ^ \
-            ( (uint32_t) FSb[ ( Y1       ) & 0xFF ]       ) ^
-            ( (uint32_t) FSb[ ( Y2 >>  8 ) & 0xFF ] <<  8 ) ^
-            ( (uint32_t) FSb[ ( Y3 >> 16 ) & 0xFF ] << 16 ) ^
-            ( (uint32_t) FSb[ ( Y0 >> 24 ) & 0xFF ] << 24 );
+    t.X[1] = *RK++ ^ \
+            ( (uint32_t) FSb[ ( t.Y[1]       ) & 0xFF ]       ) ^
+            ( (uint32_t) FSb[ ( t.Y[2] >>  8 ) & 0xFF ] <<  8 ) ^
+            ( (uint32_t) FSb[ ( t.Y[3] >> 16 ) & 0xFF ] << 16 ) ^
+            ( (uint32_t) FSb[ ( t.Y[0] >> 24 ) & 0xFF ] << 24 );
 
-    X2 = *RK++ ^ \
-            ( (uint32_t) FSb[ ( Y2       ) & 0xFF ]       ) ^
-            ( (uint32_t) FSb[ ( Y3 >>  8 ) & 0xFF ] <<  8 ) ^
-            ( (uint32_t) FSb[ ( Y0 >> 16 ) & 0xFF ] << 16 ) ^
-            ( (uint32_t) FSb[ ( Y1 >> 24 ) & 0xFF ] << 24 );
+    t.X[2] = *RK++ ^ \
+            ( (uint32_t) FSb[ ( t.Y[2]       ) & 0xFF ]       ) ^
+            ( (uint32_t) FSb[ ( t.Y[3] >>  8 ) & 0xFF ] <<  8 ) ^
+            ( (uint32_t) FSb[ ( t.Y[0] >> 16 ) & 0xFF ] << 16 ) ^
+            ( (uint32_t) FSb[ ( t.Y[1] >> 24 ) & 0xFF ] << 24 );
 
-    X3 = *RK++ ^ \
-            ( (uint32_t) FSb[ ( Y3       ) & 0xFF ]       ) ^
-            ( (uint32_t) FSb[ ( Y0 >>  8 ) & 0xFF ] <<  8 ) ^
-            ( (uint32_t) FSb[ ( Y1 >> 16 ) & 0xFF ] << 16 ) ^
-            ( (uint32_t) FSb[ ( Y2 >> 24 ) & 0xFF ] << 24 );
+    t.X[3] = *RK++ ^ \
+            ( (uint32_t) FSb[ ( t.Y[3]       ) & 0xFF ]       ) ^
+            ( (uint32_t) FSb[ ( t.Y[0] >>  8 ) & 0xFF ] <<  8 ) ^
+            ( (uint32_t) FSb[ ( t.Y[1] >> 16 ) & 0xFF ] << 16 ) ^
+            ( (uint32_t) FSb[ ( t.Y[2] >> 24 ) & 0xFF ] << 24 );
 
-    PUT_UINT32_LE( X0, output,  0 );
-    PUT_UINT32_LE( X1, output,  4 );
-    PUT_UINT32_LE( X2, output,  8 );
-    PUT_UINT32_LE( X3, output, 12 );
+    PUT_UINT32_LE( t.X[0], output,  0 );
+    PUT_UINT32_LE( t.X[1], output,  4 );
+    PUT_UINT32_LE( t.X[2], output,  8 );
+    PUT_UINT32_LE( t.X[3], output, 12 );
 
-    mbedtls_platform_zeroize( &X0, sizeof( X0 ) );
-    mbedtls_platform_zeroize( &X1, sizeof( X1 ) );
-    mbedtls_platform_zeroize( &X2, sizeof( X2 ) );
-    mbedtls_platform_zeroize( &X3, sizeof( X3 ) );
-
-    mbedtls_platform_zeroize( &Y0, sizeof( Y0 ) );
-    mbedtls_platform_zeroize( &Y1, sizeof( Y1 ) );
-    mbedtls_platform_zeroize( &Y2, sizeof( Y2 ) );
-    mbedtls_platform_zeroize( &Y3, sizeof( Y3 ) );
-
-    mbedtls_platform_zeroize( &RK, sizeof( RK ) );
+    mbedtls_platform_zeroize( &t, sizeof( t ) );
 
     return( 0 );
 }
@@ -977,63 +969,56 @@ int mbedtls_internal_aes_decrypt( mbedtls_aes_context *ctx,
                                   unsigned char output[16] )
 {
     int i;
-    uint32_t *RK, X0, X1, X2, X3, Y0, Y1, Y2, Y3;
+    uint32_t *RK = ctx->rk;
+    struct
+    {
+        uint32_t X[4];
+        uint32_t Y[4];
+    } t;
 
-    RK = ctx->rk;
-
-    GET_UINT32_LE( X0, input,  0 ); X0 ^= *RK++;
-    GET_UINT32_LE( X1, input,  4 ); X1 ^= *RK++;
-    GET_UINT32_LE( X2, input,  8 ); X2 ^= *RK++;
-    GET_UINT32_LE( X3, input, 12 ); X3 ^= *RK++;
+    GET_UINT32_LE( t.X[0], input,  0 ); t.X[0] ^= *RK++;
+    GET_UINT32_LE( t.X[1], input,  4 ); t.X[1] ^= *RK++;
+    GET_UINT32_LE( t.X[2], input,  8 ); t.X[2] ^= *RK++;
+    GET_UINT32_LE( t.X[3], input, 12 ); t.X[3] ^= *RK++;
 
     for( i = ( ctx->nr >> 1 ) - 1; i > 0; i-- )
     {
-        AES_RROUND( Y0, Y1, Y2, Y3, X0, X1, X2, X3 );
-        AES_RROUND( X0, X1, X2, X3, Y0, Y1, Y2, Y3 );
+        AES_RROUND( t.Y[0], t.Y[1], t.Y[2], t.Y[3], t.X[0], t.X[1], t.X[2], t.X[3] );
+        AES_RROUND( t.X[0], t.X[1], t.X[2], t.X[3], t.Y[0], t.Y[1], t.Y[2], t.Y[3] );
     }
 
-    AES_RROUND( Y0, Y1, Y2, Y3, X0, X1, X2, X3 );
+    AES_RROUND( t.Y[0], t.Y[1], t.Y[2], t.Y[3], t.X[0], t.X[1], t.X[2], t.X[3] );
 
-    X0 = *RK++ ^ \
-            ( (uint32_t) RSb[ ( Y0       ) & 0xFF ]       ) ^
-            ( (uint32_t) RSb[ ( Y3 >>  8 ) & 0xFF ] <<  8 ) ^
-            ( (uint32_t) RSb[ ( Y2 >> 16 ) & 0xFF ] << 16 ) ^
-            ( (uint32_t) RSb[ ( Y1 >> 24 ) & 0xFF ] << 24 );
+    t.X[0] = *RK++ ^ \
+            ( (uint32_t) RSb[ ( t.Y[0]       ) & 0xFF ]       ) ^
+            ( (uint32_t) RSb[ ( t.Y[3] >>  8 ) & 0xFF ] <<  8 ) ^
+            ( (uint32_t) RSb[ ( t.Y[2] >> 16 ) & 0xFF ] << 16 ) ^
+            ( (uint32_t) RSb[ ( t.Y[1] >> 24 ) & 0xFF ] << 24 );
 
-    X1 = *RK++ ^ \
-            ( (uint32_t) RSb[ ( Y1       ) & 0xFF ]       ) ^
-            ( (uint32_t) RSb[ ( Y0 >>  8 ) & 0xFF ] <<  8 ) ^
-            ( (uint32_t) RSb[ ( Y3 >> 16 ) & 0xFF ] << 16 ) ^
-            ( (uint32_t) RSb[ ( Y2 >> 24 ) & 0xFF ] << 24 );
+    t.X[1] = *RK++ ^ \
+            ( (uint32_t) RSb[ ( t.Y[1]       ) & 0xFF ]       ) ^
+            ( (uint32_t) RSb[ ( t.Y[0] >>  8 ) & 0xFF ] <<  8 ) ^
+            ( (uint32_t) RSb[ ( t.Y[3] >> 16 ) & 0xFF ] << 16 ) ^
+            ( (uint32_t) RSb[ ( t.Y[2] >> 24 ) & 0xFF ] << 24 );
 
-    X2 = *RK++ ^ \
-            ( (uint32_t) RSb[ ( Y2       ) & 0xFF ]       ) ^
-            ( (uint32_t) RSb[ ( Y1 >>  8 ) & 0xFF ] <<  8 ) ^
-            ( (uint32_t) RSb[ ( Y0 >> 16 ) & 0xFF ] << 16 ) ^
-            ( (uint32_t) RSb[ ( Y3 >> 24 ) & 0xFF ] << 24 );
+    t.X[2] = *RK++ ^ \
+            ( (uint32_t) RSb[ ( t.Y[2]       ) & 0xFF ]       ) ^
+            ( (uint32_t) RSb[ ( t.Y[1] >>  8 ) & 0xFF ] <<  8 ) ^
+            ( (uint32_t) RSb[ ( t.Y[0] >> 16 ) & 0xFF ] << 16 ) ^
+            ( (uint32_t) RSb[ ( t.Y[3] >> 24 ) & 0xFF ] << 24 );
 
-    X3 = *RK++ ^ \
-            ( (uint32_t) RSb[ ( Y3       ) & 0xFF ]       ) ^
-            ( (uint32_t) RSb[ ( Y2 >>  8 ) & 0xFF ] <<  8 ) ^
-            ( (uint32_t) RSb[ ( Y1 >> 16 ) & 0xFF ] << 16 ) ^
-            ( (uint32_t) RSb[ ( Y0 >> 24 ) & 0xFF ] << 24 );
+    t.X[3] = *RK++ ^ \
+            ( (uint32_t) RSb[ ( t.Y[3]       ) & 0xFF ]       ) ^
+            ( (uint32_t) RSb[ ( t.Y[2] >>  8 ) & 0xFF ] <<  8 ) ^
+            ( (uint32_t) RSb[ ( t.Y[1] >> 16 ) & 0xFF ] << 16 ) ^
+            ( (uint32_t) RSb[ ( t.Y[0] >> 24 ) & 0xFF ] << 24 );
 
-    PUT_UINT32_LE( X0, output,  0 );
-    PUT_UINT32_LE( X1, output,  4 );
-    PUT_UINT32_LE( X2, output,  8 );
-    PUT_UINT32_LE( X3, output, 12 );
+    PUT_UINT32_LE( t.X[0], output,  0 );
+    PUT_UINT32_LE( t.X[1], output,  4 );
+    PUT_UINT32_LE( t.X[2], output,  8 );
+    PUT_UINT32_LE( t.X[3], output, 12 );
 
-    mbedtls_platform_zeroize( &X0, sizeof( X0 ) );
-    mbedtls_platform_zeroize( &X1, sizeof( X1 ) );
-    mbedtls_platform_zeroize( &X2, sizeof( X2 ) );
-    mbedtls_platform_zeroize( &X3, sizeof( X3 ) );
-
-    mbedtls_platform_zeroize( &Y0, sizeof( Y0 ) );
-    mbedtls_platform_zeroize( &Y1, sizeof( Y1 ) );
-    mbedtls_platform_zeroize( &Y2, sizeof( Y2 ) );
-    mbedtls_platform_zeroize( &Y3, sizeof( Y3 ) );
-
-    mbedtls_platform_zeroize( &RK, sizeof( RK ) );
+    mbedtls_platform_zeroize( &t, sizeof( t ) );
 
     return( 0 );
 }

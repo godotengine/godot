@@ -1101,6 +1101,7 @@ static int x509_crt_parse_der_core( mbedtls_x509_crt *crt, const unsigned char *
 
     if( crt->sig_oid.len != sig_oid2.len ||
         memcmp( crt->sig_oid.p, sig_oid2.p, crt->sig_oid.len ) != 0 ||
+        sig_params1.tag != sig_params2.tag ||
         sig_params1.len != sig_params2.len ||
         ( sig_params1.len != 0 &&
           memcmp( sig_params1.p, sig_params2.p, sig_params1.len ) != 0 ) )
