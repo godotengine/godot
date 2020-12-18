@@ -6,6 +6,7 @@
 #include <math.h>
 #include <string.h>
 
+
 #ifndef TRACE
 #define TRACE 0
 #endif
@@ -332,8 +333,11 @@ struct Vector3
 {
 	float x, y, z;
 };
+// -- GODOT start --
+//static void rescalePositions(Vector3* result, const float* vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride)
+static float rescalePositions(Vector3* result, const float* vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride)
+// -- GODOT end --
 
-static void rescalePositions(Vector3* result, const float* vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride)
 {
 	size_t vertex_stride_float = vertex_positions_stride / sizeof(float);
 
@@ -371,6 +375,10 @@ static void rescalePositions(Vector3* result, const float* vertex_positions_data
 		result[i].y = (result[i].y - minv[1]) * scale;
 		result[i].z = (result[i].z - minv[2]) * scale;
 	}
+// -- GODOT start --	
+	return extent;
+// -- GODOT end --
+
 }
 
 struct Quadric
@@ -1190,7 +1198,10 @@ size_t meshopt_simplify(unsigned int *destination, const unsigned int *indices, 
 #endif
 
 	Vector3* vertex_positions = allocator.allocate<Vector3>(vertex_count);
-	rescalePositions(vertex_positions, vertex_positions_data, vertex_count, vertex_positions_stride);
+// -- GODOT start --
+	//rescalePositions(vertex_positions, vertex_positions_data, vertex_count, vertex_positions_stride);	
+	float extent = rescalePositions(vertex_positions, vertex_positions_data, vertex_count, vertex_positions_stride);
+// -- GODOT end --
 
 	Quadric* vertex_quadrics = allocator.allocate<Quadric>(vertex_count);
 	memset(vertex_quadrics, 0, vertex_count * sizeof(Quadric));
@@ -1294,7 +1305,7 @@ size_t meshopt_simplify(unsigned int *destination, const unsigned int *indices, 
 
 // -- GODOT start --
 	if (r_resulting_error) {
-		*r_resulting_error = sqrt(worst_error);
+		*r_resulting_error = sqrt(worst_error) * extent;
 	}
 // -- GODOT end --
 
