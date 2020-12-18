@@ -1726,9 +1726,8 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 	{
 		const char *ptrtmp = p_utf8;
-		const char *ptrtmp_limit = &p_utf8[p_len];
 		int skip = 0;
-		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
+		while (p_len < 0 ? *ptrtmp : ptrtmp < p_utf8 + p_len) {
 			if (skip == 0) {
 				uint8_t c = *ptrtmp >= 0 ? *ptrtmp : uint8_t(256 + *ptrtmp);
 
@@ -1941,9 +1940,8 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 
 	{
 		const char16_t *ptrtmp = p_utf16;
-		const char16_t *ptrtmp_limit = &p_utf16[p_len];
 		int skip = 0;
-		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
+		while (p_len < 0 ? *ptrtmp : ptrtmp < p_utf16 + p_len) {
 			uint32_t c = (byteswap) ? BSWAP16(*ptrtmp) : *ptrtmp;
 			if (skip == 0) {
 				if ((c & 0xfffffc00) == 0xd800) {
