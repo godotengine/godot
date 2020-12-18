@@ -2432,7 +2432,7 @@ void VisualScriptEditor::set_edited_resource(const RES &p_res) {
 	}
 
 	_update_graph();
-	_update_members();
+	call_deferred("_update_members");
 }
 
 void VisualScriptEditor::enable_editor() {
