@@ -2674,7 +2674,8 @@ void Node3DEditorViewport::_draw() {
 				break;
 		}
 		handle_color.a = 1.0;
-		handle_color *= Color(1.3, 1.3, 1.3, 1.0);
+		const float brightness = 1.3;
+		handle_color *= Color(brightness, brightness, brightness);
 
 		RenderingServer::get_singleton()->canvas_item_add_line(
 				ci,
@@ -5252,7 +5253,9 @@ void Node3DEditor::_init_indicators() {
 			gizmo_color[i] = mat;
 
 			Ref<StandardMaterial3D> mat_hl = mat->duplicate();
-			mat_hl->set_albedo(Color(col.r * 1.3, col.g * 1.3, col.b * 1.3, 1.0));
+			const float brightness = 1.3;
+			const Color albedo = Color(col.r * brightness, col.g * brightness, col.b * brightness);
+			mat_hl->set_albedo(albedo);
 			gizmo_color_hl[i] = mat_hl;
 
 			Vector3 ivec;
@@ -5347,7 +5350,7 @@ void Node3DEditor::_init_indicators() {
 				surftool->commit(move_plane_gizmo[i]);
 
 				Ref<StandardMaterial3D> plane_mat_hl = plane_mat->duplicate();
-				plane_mat_hl->set_albedo(Color(col.r * 1.3, col.g * 1.3, col.b * 1.3, 1.0));
+				plane_mat_hl->set_albedo(albedo);
 				plane_gizmo_color_hl[i] = plane_mat_hl; // needed, so we can draw planes from both sides
 			}
 
@@ -5430,7 +5433,7 @@ void Node3DEditor::_init_indicators() {
 				rotate_gizmo[i]->surface_set_material(0, rotate_mat);
 
 				Ref<ShaderMaterial> rotate_mat_hl = rotate_mat->duplicate();
-				rotate_mat_hl->set_shader_param("albedo", Color(col.r * 1.3, col.g * 1.3, col.b * 1.3, 1.0));
+				rotate_mat_hl->set_shader_param("albedo", albedo);
 				rotate_gizmo_color_hl[i] = rotate_mat_hl;
 
 				if (i == 2) { // Rotation white outline
@@ -5557,7 +5560,7 @@ void Node3DEditor::_init_indicators() {
 				surftool->commit(scale_plane_gizmo[i]);
 
 				Ref<StandardMaterial3D> plane_mat_hl = plane_mat->duplicate();
-				plane_mat_hl->set_albedo(Color(col.r * 1.3, col.g * 1.3, col.b * 1.3, 1.0));
+				plane_mat_hl->set_albedo(Color(col.r * 1.3, col.g * 1.3, col.b * 1.3));
 				plane_gizmo_color_hl[i] = plane_mat_hl; // needed, so we can draw planes from both sides
 			}
 		}
