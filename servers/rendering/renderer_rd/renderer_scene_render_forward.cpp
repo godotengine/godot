@@ -2718,7 +2718,7 @@ RID RendererSceneRenderForward::_setup_sdfgi_render_pass_uniform_set(RID p_albed
 		uniforms.push_back(u);
 	}
 
-	sdfgi_pass_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, default_shader_rd, RENDER_PASS_UNIFORM_SET);
+	sdfgi_pass_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, default_shader_sdfgi_rd, RENDER_PASS_UNIFORM_SET);
 	return sdfgi_pass_uniform_set;
 }
 
@@ -2909,6 +2909,7 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light";
 		actions.renames["SPECULAR_LIGHT"] = "specular_light";
 
+		actions.usage_defines["NORMAL"] = "#define NORMAL_USED\n";
 		actions.usage_defines["TANGENT"] = "#define TANGENT_USED\n";
 		actions.usage_defines["BINORMAL"] = "@TANGENT";
 		actions.usage_defines["RIM"] = "#define LIGHT_RIM_USED\n";

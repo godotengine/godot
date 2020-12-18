@@ -5,6 +5,12 @@
 
 #include "cluster_data_inc.glsl"
 
+#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(MODE_RENDER_SDF) || defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_GIPROBE) || defined(TANGENT_USED) || defined(NORMALMAP_USED)
+#ifndef NORMAL_USED
+#define NORMAL_USED
+#endif
+#endif
+
 layout(push_constant, binding = 0, std430) uniform DrawCall {
 	uint instance_index;
 	uint pad; //16 bits minimum size
