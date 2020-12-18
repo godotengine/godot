@@ -692,7 +692,7 @@ int mbedtls_pk_parse_subpubkey( unsigned char **p, const unsigned char *end,
         ret = MBEDTLS_ERR_PK_UNKNOWN_PK_ALG;
 
     if( ret == 0 && *p != end )
-        ret = MBEDTLS_ERR_PK_INVALID_PUBKEY
+        ret = MBEDTLS_ERR_PK_INVALID_PUBKEY +
               MBEDTLS_ERR_ASN1_LENGTH_MISMATCH;
 
     if( ret != 0 )

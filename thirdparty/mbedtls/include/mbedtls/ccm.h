@@ -175,7 +175,7 @@ void mbedtls_ccm_free( mbedtls_ccm_context *ctx );
  *                  than zero, \p output must be a writable buffer of at least
  *                  that length.
  * \param tag       The buffer holding the authentication field. This must be a
- *                  readable buffer of at least \p tag_len Bytes.
+ *                  writable buffer of at least \p tag_len Bytes.
  * \param tag_len   The length of the authentication field to generate in Bytes:
  *                  4, 6, 8, 10, 12, 14 or 16.
  *
@@ -220,7 +220,7 @@ int mbedtls_ccm_encrypt_and_tag( mbedtls_ccm_context *ctx, size_t length,
  *                  than zero, \p output must be a writable buffer of at least
  *                  that length.
  * \param tag       The buffer holding the authentication field. This must be a
- *                  readable buffer of at least \p tag_len Bytes.
+ *                  writable buffer of at least \p tag_len Bytes.
  * \param tag_len   The length of the authentication field to generate in Bytes:
  *                  0, 4, 6, 8, 10, 12, 14 or 16.
  *
