@@ -108,6 +108,8 @@ struct CameraMatrix {
 		return !(*this == p_cam);
 	}
 
+	float get_lod_multiplier() const;
+
 	CameraMatrix();
 	CameraMatrix(const Transform &p_transform);
 	~CameraMatrix();

@@ -266,6 +266,7 @@ public:
 	FUNC2(reflection_probe_set_enable_shadows, RID, bool)
 	FUNC2(reflection_probe_set_cull_mask, RID, uint32_t)
 	FUNC2(reflection_probe_set_resolution, RID, int)
+	FUNC2(reflection_probe_set_lod_threshold, RID, float)
 
 	/* DECAL API */
 
@@ -450,6 +451,8 @@ public:
 	FUNC2(viewport_set_screen_space_aa, RID, ViewportScreenSpaceAA)
 	FUNC2(viewport_set_use_debanding, RID, bool)
 
+	FUNC2(viewport_set_lod_threshold, RID, float)
+
 	//this passes directly to avoid stalling, but it's pretty dangerous, so don't call after freeing a viewport
 	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfo p_info) {
 		return rendering_server->viewport_get_render_info(p_viewport, p_info);
@@ -575,6 +578,7 @@ public:
 	FUNC5(instance_geometry_set_draw_range, RID, float, float, float, float)
 	FUNC2(instance_geometry_set_as_instance_lod, RID, RID)
 	FUNC4(instance_geometry_set_lightmap, RID, RID, const Rect2 &, int)
+	FUNC2(instance_geometry_set_lod_bias, RID, float)
 
 	FUNC3(instance_geometry_set_shader_parameter, RID, const StringName &, const Variant &)
 	FUNC2RC(Variant, instance_geometry_get_shader_parameter, RID, const StringName &)

@@ -144,6 +144,8 @@ public:
 	float get_surface_lod_size(int p_surface, int p_lod) const;
 	Ref<Material> get_surface_material(int p_surface) const;
 
+	void generate_lods();
+
 	bool has_mesh() const;
 	Ref<ArrayMesh> get_mesh();
 	void clear();
@@ -205,7 +207,7 @@ class ResourceImporterScene : public ResourceImporter {
 	};
 
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
-	void _generate_meshes(Node *p_node);
+	void _generate_meshes(Node *p_node, bool p_generate_lods);
 
 public:
 	static ResourceImporterScene *get_singleton() { return singleton; }

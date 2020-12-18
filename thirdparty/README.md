@@ -355,15 +355,20 @@ File extracted from upstream release tarball:
 - Added 2 files `godot_core_mbedtls_platform.{c,h}` providing configuration
   for light bundling with core.
 
+
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 0.15(2020)
+- Version: 0.15 (2020)
 - License: MIT
 
 File extracted from upstream release tarball:
 
-- Files in src/ go to thirdparty/meshoptimizer
+- All files in `src/`.
+
+Important: Some files have Godot-made changes.
+They can be applied with the patch in the `patches` folder, but are meant to be superseded
+by upstream API changes.
 
 
 ## miniupnpc

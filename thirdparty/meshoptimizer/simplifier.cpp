@@ -1143,7 +1143,10 @@ unsigned int* meshopt_simplifyDebugLoop = 0;
 unsigned int* meshopt_simplifyDebugLoopBack = 0;
 #endif
 
-size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error)
+// -- GODOT start --
+//size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error)
+size_t meshopt_simplify(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *r_resulting_error)
+// -- GODOT end --
 {
 	using namespace meshopt;
 
@@ -1198,10 +1201,13 @@ size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices, 
 	if (result != indices)
 		memcpy(result, indices, index_count * sizeof(unsigned int));
 
+// -- GODOT start --
 #if TRACE
 	size_t pass_count = 0;
-	float worst_error = 0;
+	//float worst_error = 0;
 #endif
+	float worst_error = 0;
+// -- GODOT end --
 
 	Collapse* edge_collapses = allocator.allocate<Collapse>(index_count);
 	unsigned int* collapse_order = allocator.allocate<unsigned int>(index_count);
@@ -1212,6 +1218,12 @@ size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices, 
 
 	// target_error input is linear; we need to adjust it to match quadricError units
 	float error_limit = target_error * target_error;
+
+// -- GODOT start --
+	if (r_resulting_error) {
+		*r_resulting_error = 1.0;
+	}
+// -- GODOT end --
 
 	while (result_count > target_index_count)
 	{
@@ -1257,7 +1269,8 @@ size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices, 
 		size_t new_count = remapIndexBuffer(result, result_count, collapse_remap);
 		assert(new_count < result_count);
 
-#if TRACE
+// -- GODOT start --
+//#if TRACE
 		float pass_error = 0.f;
 		for (size_t i = 0; i < edge_collapse_count; ++i)
 		{
@@ -1267,14 +1280,23 @@ size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices, 
 				pass_error = c.error;
 		}
 
-		pass_count++;
+		//pass_count++;
 		worst_error = (worst_error < pass_error) ? pass_error : worst_error;
 
+#if TRACE
+		pass_count++;
 		printf("pass %d: triangles: %d -> %d, collapses: %d/%d (goal: %d), error: %e (limit %e goal %e)\n", int(pass_count), int(result_count / 3), int(new_count / 3), int(collapses), int(edge_collapse_count), int(edge_collapse_goal), pass_error, error_limit, error_goal);
 #endif
+// -- GODOT end --
 
 		result_count = new_count;
 	}
+
+// -- GODOT start --
+	if (r_resulting_error) {
+		*r_resulting_error = sqrt(worst_error);
+	}
+// -- GODOT end --
 
 #if TRACE
 	printf("passes: %d, worst error: %e\n", int(pass_count), worst_error);
