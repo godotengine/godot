@@ -784,7 +784,7 @@ void GraphEdit::_bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, 
 	}
 }
 
-void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width = 2.0, float p_bezier_ratio = 1.0) {
+void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_bezier_ratio = 1.0) {
 	//cubic bezier code
 	float diff = p_to.x - p_from.x;
 	float cp_offset;
@@ -811,9 +811,9 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 	colors.push_back(p_to_color);
 
 #ifdef TOOLS_ENABLED
-	p_where->draw_polyline_colors(points, colors, Math::floor(p_width * EDSCALE), true);
+	p_where->draw_polyline_colors(points, colors, Math::floor(p_width * EDSCALE), lines_antialiased);
 #else
-	p_where->draw_polyline_colors(points, colors, p_width, true);
+	p_where->draw_polyline_colors(points, colors, p_width, lines_antialiased);
 #endif
 }
 
@@ -860,7 +860,7 @@ void GraphEdit::_connections_layer_draw() {
 			color = color.lerp(activity_color, E->get().activity);
 			tocolor = tocolor.lerp(activity_color, E->get().activity);
 		}
-		_draw_cos_line(connections_layer, frompos, topos, color, tocolor);
+		_draw_cos_line(connections_layer, frompos, topos, color, tocolor, lines_thickness);
 	}
 
 	while (to_erase.size()) {
@@ -899,7 +899,7 @@ void GraphEdit::_top_layer_draw() {
 		if (!connecting_out) {
 			SWAP(pos, topos);
 		}
-		_draw_cos_line(top_layer, pos, topos, col, col);
+		_draw_cos_line(top_layer, pos, topos, col, col, lines_thickness);
 	}
 
 	if (box_selecting) {
@@ -1536,6 +1536,24 @@ void GraphEdit::_minimap_toggled() {
 	minimap->update();
 }
 
+void GraphEdit::set_connection_lines_thickness(float p_thickness) {
+	lines_thickness = p_thickness;
+	update();
+}
+
+float GraphEdit::get_connection_lines_thickness() const {
+	return lines_thickness;
+}
+
+void GraphEdit::set_connection_lines_antialiased(bool p_antialiased) {
+	lines_antialiased = p_antialiased;
+	update();
+}
+
+bool GraphEdit::is_connection_lines_antialiased() const {
+	return lines_antialiased;
+}
+
 HBoxContainer *GraphEdit::get_zoom_hbox() {
 	return zoom_hb;
 }
@@ -1567,6 +1585,12 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_snap", "enable"), &GraphEdit::set_use_snap);
 	ClassDB::bind_method(D_METHOD("is_using_snap"), &GraphEdit::is_using_snap);
 
+	ClassDB::bind_method(D_METHOD("set_connection_lines_thickness", "pixels"), &GraphEdit::set_connection_lines_thickness);
+	ClassDB::bind_method(D_METHOD("get_connection_lines_thickness"), &GraphEdit::get_connection_lines_thickness);
+
+	ClassDB::bind_method(D_METHOD("set_connection_lines_antialiased", "pixels"), &GraphEdit::set_connection_lines_antialiased);
+	ClassDB::bind_method(D_METHOD("is_connection_lines_antialiased"), &GraphEdit::is_connection_lines_antialiased);
+
 	ClassDB::bind_method(D_METHOD("set_minimap_size", "p_size"), &GraphEdit::set_minimap_size);
 	ClassDB::bind_method(D_METHOD("get_minimap_size"), &GraphEdit::get_minimap_size);
 	ClassDB::bind_method(D_METHOD("set_minimap_opacity", "p_opacity"), &GraphEdit::set_minimap_opacity);
@@ -1590,6 +1614,8 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "snap_distance"), "set_snap", "get_snap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_snap"), "set_use_snap", "is_using_snap");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom"), "set_zoom", "get_zoom");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "connection_lines_thickness"), "set_connection_lines_thickness", "get_connection_lines_thickness");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "connection_lines_antialiased"), "set_connection_lines_antialiased", "is_connection_lines_antialiased");
 	ADD_GROUP("Minimap", "minimap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_enabled"), "set_minimap_enabled", "is_minimap_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "minimap_size"), "set_minimap_size", "get_minimap_size");

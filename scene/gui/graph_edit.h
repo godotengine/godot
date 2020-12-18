@@ -158,6 +158,9 @@ private:
 	bool awaiting_scroll_offset_update;
 	List<Connection> connections;
 
+	float lines_thickness = 2.0f;
+	bool lines_antialiased = true;
+
 	void _bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_min_depth, int p_max_depth, float p_tol, const Color &p_color, const Color &p_to_color, int &lines) const;
 
 	void _draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_bezier_ratio);
@@ -274,6 +277,12 @@ public:
 
 	int get_snap() const;
 	void set_snap(int p_snap);
+
+	void set_connection_lines_thickness(float p_thickness);
+	float get_connection_lines_thickness() const;
+
+	void set_connection_lines_antialiased(bool p_antialiased);
+	bool is_connection_lines_antialiased() const;
 
 	HBoxContainer *get_zoom_hbox();
 
