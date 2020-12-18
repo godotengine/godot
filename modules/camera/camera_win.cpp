@@ -154,7 +154,6 @@ private:
 	BOOL m_bLocked;
 };
 
-
 __forceinline BYTE Clip(int clr) {
 	return (BYTE)(clr < 0 ? 0 : (clr > 255 ? 255 : clr));
 }
@@ -219,6 +218,7 @@ private:
 	MFVideoInterlaceMode m_interlace;
 
 	PoolVector<uint8_t> img_data;
+
 protected:
 	void NotifyError(HRESULT hr);
 	long m_nRefCount; // Reference count.
@@ -261,14 +261,13 @@ public:
 	STDMETHODIMP OnFlush(DWORD) {
 		return S_OK;
 	}
-
 };
 
 void CameraFeedWindows::NotifyError(HRESULT hr) {
 	printf("NotifyError: %d\n", hr);
 	//{ PostMessage(m_hwndEvent, WM_APP_PREVIEW_ERROR, (WPARAM)hr, 0L); }
 }
-	
+
 //-------------------------------------------------------------------
 //  AddRef
 //-------------------------------------------------------------------
@@ -340,18 +339,16 @@ HRESULT CameraFeedWindows::OnReadSample(
 				VideoBufferLock buffer(pBuffer);
 
 				hr = buffer.LockBuffer(m_lDefaultStride, m_height, &pbScanline0, &lStride);
-				
 
 				PoolVector<uint8_t>::Write w = img_data.write();
 
 				TransformImage_YUY2(
 						(BYTE *)w.ptr(), //(BYTE *)lr.pBits,
-						m_width*m_depth, //lr.Pitch, //?
+						m_width * m_depth, //lr.Pitch, //?
 						pbScanline0,
 						lStride,
 						m_width,
 						m_height);
-
 
 				img.instance();
 
@@ -404,9 +401,9 @@ CameraFeedWindows::CameraFeedWindows() :
 		m_cchSymbolicLink(0),
 		pActivate(NULL),
 		m_height(0),
-		m_width(0){
+		m_width(0) {
 	///@TODO implement this, should store information about our available camera
-	
+
 	InitializeCriticalSection(&m_critsec);
 };
 
@@ -425,7 +422,7 @@ bool CameraFeedWindows::activate_feed() {
 	IMFMediaSource *pSource = NULL;
 	IMFAttributes *pAttributes = NULL;
 	IMFMediaType *pType = NULL;
-	UINT32 p_type_str_len=0;
+	UINT32 p_type_str_len = 0;
 	_Post_ _Notnull_ LPWSTR p_type_str = NULL;
 
 	GUID subtype = { 0 };
@@ -534,8 +531,8 @@ bool CameraFeedWindows::activate_feed() {
 				}
 			}
 
-//			SafeRelease(&pType); // ?????
-		
+			//			SafeRelease(&pType); // ?????
+
 			if (SUCCEEDED(hr)) {
 				//hr = m_draw.SetVideoType(pType);
 
@@ -545,7 +542,7 @@ bool CameraFeedWindows::activate_feed() {
 				hr = MFGetAttributeSize(pType, MF_MT_FRAME_SIZE, &m_width, &m_height);
 
 				printf("width: %d, height: %d\n", m_width, m_height);
-		
+
 				// Get the interlace mode. Default: assume progressive.
 				m_interlace = (MFVideoInterlaceMode)MFGetAttributeUINT32(
 						pType,
@@ -573,15 +570,12 @@ bool CameraFeedWindows::activate_feed() {
 					m_PixelAR.Numerator = m_PixelAR.Denominator = 1;
 				}
 				printf("Pixel Aspect Ratio: %d/%d\n", m_PixelAR.Numerator, m_PixelAR.Denominator);
-
 			}
 			if (SUCCEEDED(hr)) {
 				img_data.resize(m_width * m_height * m_depth); // RGB8
 				printf("camera configured\n");
 				break;
 			}
-
-
 		}
 	}
 
@@ -622,7 +616,7 @@ bool CameraFeedWindows::activate_feed() {
 		return false;
 };
 
-void CameraFeedWindows::deactivate_feed(){
+void CameraFeedWindows::deactivate_feed() {
 	printf("deactivate_feed\n");
 	CloseDevice();
 };
@@ -649,7 +643,7 @@ void CameraFeedWindows::set_device(IMFActivate *p_device) {
 // CameraWindows - Subclass for our camera server on windows
 
 // update_feeds on OSX version
-void CameraWindows::add_active_cameras(){
+void CameraWindows::add_active_cameras() {
 	///@TODO scan through any active cameras and create CameraFeedWindows objects for them
 	printf("CameraWindows::add_active_cameras()\n");
 	HRESULT hr = S_OK;
@@ -658,12 +652,16 @@ void CameraWindows::add_active_cameras(){
 	IMFAttributes *pAttributes = NULL;
 
 	hr = MFCreateAttributes(&pAttributes, 1);
-	if (FAILED(hr)) {goto done;}
+	if (FAILED(hr)) {
+		goto done;
+	}
 
 	hr = pAttributes->SetGUID(
-		MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
-		MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
-	if (FAILED(hr)) {goto done;}
+			MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+			MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
+	if (FAILED(hr)) {
+		goto done;
+	}
 
 	hr = MFEnumDeviceSources(pAttributes, &param.ppDevices, &param.count);
 
@@ -676,7 +674,7 @@ void CameraWindows::add_active_cameras(){
 		param.ppDevices[i]->GetStringLength(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &cam_str_len);
 		//printf("%d" , cam_str_len);
 		cam_str = (wchar_t *)malloc(cam_str_len * sizeof(wchar_t) + 1);
-		hr = param.ppDevices[i]->GetString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, cam_str, cam_str_len+1, NULL);
+		hr = param.ppDevices[i]->GetString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, cam_str, cam_str_len + 1, NULL);
 		if (FAILED(hr)) {
 			wprintf(L"can't get string\n");
 			free(cam_str);
@@ -689,7 +687,7 @@ void CameraWindows::add_active_cameras(){
 		newfeed.instance();
 		newfeed->set_device(param.ppDevices[i]);
 		add_feed(newfeed);
-	}	
+	}
 
 done:
 	SafeRelease(&pAttributes);
@@ -703,8 +701,6 @@ CameraWindows::CameraWindows() {
 	// need to add something that will react to devices being connected/removed...
 };
 
-CameraWindows::~CameraWindows(){
+CameraWindows::~CameraWindows() {
 	MFShutdown();
 };
-
-
