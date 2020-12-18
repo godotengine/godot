@@ -191,7 +191,7 @@ void DisplayServerX11::alert(const String &p_alert, const String &p_title) {
 	}
 
 	if (program.length()) {
-		OS::get_singleton()->execute(program, args, true);
+		OS::get_singleton()->execute(program, args);
 	} else {
 		print_line(p_alert);
 	}

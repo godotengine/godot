@@ -128,7 +128,7 @@ Error OS_LinuxBSD::shell_open(String p_uri) {
 	args.push_back(p_uri);
 
 	// Agnostic
-	ok = execute("xdg-open", args, true, nullptr, nullptr, &err_code);
+	ok = execute("xdg-open", args, nullptr, &err_code);
 	if (ok == OK && !err_code) {
 		return OK;
 	} else if (err_code == 2) {
@@ -136,25 +136,25 @@ Error OS_LinuxBSD::shell_open(String p_uri) {
 	}
 	// GNOME
 	args.push_front("open"); // The command is `gio open`, so we need to add it to args
-	ok = execute("gio", args, true, nullptr, nullptr, &err_code);
+	ok = execute("gio", args, nullptr, &err_code);
 	if (ok == OK && !err_code) {
 		return OK;
 	} else if (err_code == 2) {
 		return ERR_FILE_NOT_FOUND;
 	}
 	args.pop_front();
-	ok = execute("gvfs-open", args, true, nullptr, nullptr, &err_code);
+	ok = execute("gvfs-open", args, nullptr, &err_code);
 	if (ok == OK && !err_code) {
 		return OK;
 	} else if (err_code == 2) {
 		return ERR_FILE_NOT_FOUND;
 	}
 	// KDE
-	ok = execute("kde-open5", args, true, nullptr, nullptr, &err_code);
+	ok = execute("kde-open5", args, nullptr, &err_code);
 	if (ok == OK && !err_code) {
 		return OK;
 	}
-	ok = execute("kde-open", args, true, nullptr, nullptr, &err_code);
+	ok = execute("kde-open", args, nullptr, &err_code);
 	return !err_code ? ok : FAILED;
 }
 
@@ -232,7 +232,7 @@ String OS_LinuxBSD::get_system_dir(SystemDir p_dir) const {
 	String pipe;
 	List<String> arg;
 	arg.push_back(xdgparam);
-	Error err = const_cast<OS_LinuxBSD *>(this)->execute("xdg-user-dir", arg, true, nullptr, &pipe);
+	Error err = const_cast<OS_LinuxBSD *>(this)->execute("xdg-user-dir", arg, &pipe);
 	if (err != OK) {
 		return ".";
 	}
@@ -307,7 +307,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	List<String> args;
 	args.push_back(p_path);
 	args.push_front("trash"); // The command is `gio trash <file_name>` so we need to add it to args.
-	Error result = execute("gio", args, true, nullptr, nullptr, &err_code); // For GNOME based machines.
+	Error result = execute("gio", args, nullptr, &err_code); // For GNOME based machines.
 	if (result == OK && !err_code) {
 		return OK;
 	} else if (err_code == 2) {
@@ -317,7 +317,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	args.pop_front();
 	args.push_front("move");
 	args.push_back("trash:/"); // The command is `kioclient5 move <file_name> trash:/`.
-	result = execute("kioclient5", args, true, nullptr, nullptr, &err_code); // For KDE based machines.
+	result = execute("kioclient5", args, nullptr, &err_code); // For KDE based machines.
 	if (result == OK && !err_code) {
 		return OK;
 	} else if (err_code == 2) {
@@ -326,7 +326,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 
 	args.pop_front();
 	args.pop_back();
-	result = execute("gvfs-trash", args, true, nullptr, nullptr, &err_code); // For older Linux machines.
+	result = execute("gvfs-trash", args, nullptr, &err_code); // For older Linux machines.
 	if (result == OK && !err_code) {
 		return OK;
 	} else if (err_code == 2) {
@@ -432,7 +432,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	mv_args.push_back(trash_path + "/files");
 	{
 		int retval;
-		Error err = execute("mv", mv_args, true, nullptr, nullptr, &retval);
+		Error err = execute("mv", mv_args, nullptr, &retval);
 
 		// Issue an error if "mv" failed to move the given resource to the trash can.
 		if (err != OK || retval != 0) {

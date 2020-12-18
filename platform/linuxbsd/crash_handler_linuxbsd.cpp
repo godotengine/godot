@@ -104,7 +104,7 @@ static void handle_crash(int sig) {
 
 			// Try to get the file/line number using addr2line
 			int ret;
-			Error err = OS::get_singleton()->execute(String("addr2line"), args, true, nullptr, &output, &ret);
+			Error err = OS::get_singleton()->execute(String("addr2line"), args, &output, &ret);
 			if (err == OK) {
 				output.erase(output.length() - 1, 1);
 			}

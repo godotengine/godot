@@ -617,7 +617,7 @@ MainLoop *test() {
 
 	List<String> args;
 	args.push_back("-l");
-	Error err = OS::get_singleton()->execute("/bin/ls", args, true, nullptr, &ret);
+	Error err = OS::get_singleton()->execute("/bin/ls", args, &ret);
 	print_line("error: " + itos(err));
 	print_line(ret);
 

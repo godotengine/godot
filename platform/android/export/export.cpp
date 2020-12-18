@@ -308,7 +308,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				List<String> args;
 				args.push_back("devices");
 				int ec;
-				OS::get_singleton()->execute(adb, args, true, nullptr, &devices, &ec);
+				OS::get_singleton()->execute(adb, args, &devices, &ec);
 
 				Vector<String> ds = devices.split("\n");
 				Vector<String> ldevices;
@@ -361,7 +361,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							int ec2;
 							String dp;
 
-							OS::get_singleton()->execute(adb, args, true, nullptr, &dp, &ec2);
+							OS::get_singleton()->execute(adb, args, &dp, &ec2);
 
 							Vector<String> props = dp.split("\n");
 							String vendor;
@@ -432,7 +432,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 			List<String> args;
 			args.push_back("kill-server");
-			OS::get_singleton()->execute(adb, args, true);
+			OS::get_singleton()->execute(adb, args);
 		};
 	}
 
@@ -1800,7 +1800,7 @@ public:
 			args.push_back("uninstall");
 			args.push_back(get_package_name(package_name));
 
-			err = OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
+			err = OS::get_singleton()->execute(adb, args, nullptr, &rv);
 		}
 
 		print_line("Installing to device (please wait...): " + devices[p_device].name);
@@ -1815,7 +1815,7 @@ public:
 		args.push_back("-r");
 		args.push_back(tmp_export_path);
 
-		err = OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
+		err = OS::get_singleton()->execute(adb, args, nullptr, &rv);
 		if (err || rv != 0) {
 			EditorNode::add_io_error("Could not install to device.");
 			CLEANUP_AND_RETURN(ERR_CANT_CREATE);
@@ -1832,7 +1832,7 @@ public:
 				args.push_back(devices[p_device].id);
 				args.push_back("reverse");
 				args.push_back("--remove-all");
-				OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
+				OS::get_singleton()->execute(adb, args, nullptr, &rv);
 
 				if (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) {
 					int dbg_port = EditorSettings::get_singleton()->get("network/debug/remote_port");
@@ -1843,7 +1843,7 @@ public:
 					args.push_back("tcp:" + itos(dbg_port));
 					args.push_back("tcp:" + itos(dbg_port));
 
-					OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
+					OS::get_singleton()->execute(adb, args, nullptr, &rv);
 					print_line("Reverse result: " + itos(rv));
 				}
 
@@ -1857,7 +1857,7 @@ public:
 					args.push_back("tcp:" + itos(fs_port));
 					args.push_back("tcp:" + itos(fs_port));
 
-					err = OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
+					err = OS::get_singleton()->execute(adb, args, nullptr, &rv);
 					print_line("Reverse result2: " + itos(rv));
 				}
 			} else {
@@ -1885,7 +1885,7 @@ public:
 		args.push_back("-n");
 		args.push_back(get_package_name(package_name) + "/com.godot.game.GodotApp");
 
-		err = OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
+		err = OS::get_singleton()->execute(adb, args, nullptr, &rv);
 		if (err || rv != 0) {
 			EditorNode::add_io_error("Could not execute on device.");
 			CLEANUP_AND_RETURN(ERR_CANT_CREATE);
@@ -2288,7 +2288,7 @@ public:
 		args.push_back(user);
 		args.push_back(export_path);
 		int retval;
-		OS::get_singleton()->execute(apksigner, args, true, NULL, NULL, &retval);
+		OS::get_singleton()->execute(apksigner, args, nullptr, &retval);
 		if (retval) {
 			EditorNode::add_io_error("'apksigner' returned with error #" + itos(retval));
 			return ERR_CANT_CREATE;
@@ -2303,7 +2303,7 @@ public:
 		args.push_back("--verbose");
 		args.push_back(export_path);
 
-		OS::get_singleton()->execute(apksigner, args, true, NULL, NULL, &retval);
+		OS::get_singleton()->execute(apksigner, args, nullptr, &retval);
 		if (retval) {
 			EditorNode::add_io_error("'apksigner' verification of " + export_label + " failed.");
 			return ERR_CANT_CREATE;

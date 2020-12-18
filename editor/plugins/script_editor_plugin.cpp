@@ -2211,7 +2211,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 			args.push_back(script_path);
 		}
 
-		Error err = OS::get_singleton()->execute(path, args, false);
+		Error err = OS::get_singleton()->create_process(path, args);
 		if (err == OK) {
 			return false;
 		}

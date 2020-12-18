@@ -979,7 +979,7 @@ Error EditorExportPlatformIOS::_codesign(String p_file, void *p_userdata) {
 		codesign_args.push_back("-s");
 		codesign_args.push_back(data->preset->get(data->debug ? "application/code_sign_identity_debug" : "application/code_sign_identity_release"));
 		codesign_args.push_back(p_file);
-		return OS::get_singleton()->execute("codesign", codesign_args, true);
+		return OS::get_singleton()->execute("codesign", codesign_args);
 	}
 	return OK;
 }
@@ -1229,7 +1229,7 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 			install_name_args.push_back(String("@rpath").plus_file(framework_name).plus_file(file_name));
 			install_name_args.push_back(destination);
 
-			OS::get_singleton()->execute("install_name_tool", install_name_args, true);
+			OS::get_singleton()->execute("install_name_tool", install_name_args);
 		}
 
 		// Creating Info.plist
@@ -1848,7 +1848,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	archive_args.push_back("archive");
 	archive_args.push_back("-archivePath");
 	archive_args.push_back(archive_path);
-	err = OS::get_singleton()->execute("xcodebuild", archive_args, true);
+	err = OS::get_singleton()->execute("xcodebuild", archive_args);
 	ERR_FAIL_COND_V(err, err);
 
 	if (ep.step("Making .ipa", 4)) {
@@ -1863,7 +1863,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	export_args.push_back("-allowProvisioningUpdates");
 	export_args.push_back("-exportPath");
 	export_args.push_back(dest_dir);
-	err = OS::get_singleton()->execute("xcodebuild", export_args, true);
+	err = OS::get_singleton()->execute("xcodebuild", export_args);
 	ERR_FAIL_COND_V(err, err);
 #else
 	print_line(".ipa can only be built on macOS. Leaving Xcode project without building the package.");

@@ -1411,7 +1411,7 @@ public:
 		args.push_back(cert_pass);
 		args.push_back(p_path);
 
-		OS::get_singleton()->execute(signtool_path, args, true);
+		OS::get_singleton()->execute(signtool_path, args);
 #endif // WINDOWS_ENABLED
 
 		return OK;

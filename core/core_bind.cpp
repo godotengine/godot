@@ -228,24 +228,32 @@ Error _OS::shell_open(String p_uri) {
 	return OS::get_singleton()->shell_open(p_uri);
 }
 
-int _OS::execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking, Array p_output, bool p_read_stderr) {
-	OS::ProcessID pid = -2;
-	int exitcode = 0;
+int _OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr) {
 	List<String> args;
 	for (int i = 0; i < p_arguments.size(); i++) {
 		args.push_back(p_arguments[i]);
 	}
 	String pipe;
-	Error err = OS::get_singleton()->execute(p_path, args, p_blocking, &pid, &pipe, &exitcode, p_read_stderr);
-	p_output.clear();
-	p_output.push_back(pipe);
+	int exitcode = 0;
+	Error err = OS::get_singleton()->execute(p_path, args, &pipe, &exitcode, p_read_stderr);
+	r_output.push_back(pipe);
 	if (err != OK) {
 		return -1;
-	} else if (p_blocking) {
-		return exitcode;
-	} else {
-		return pid;
 	}
+	return exitcode;
+}
+
+int _OS::create_process(const String &p_path, const Vector<String> &p_arguments) {
+	List<String> args;
+	for (int i = 0; i < p_arguments.size(); i++) {
+		args.push_back(p_arguments[i]);
+	}
+	OS::ProcessID pid = 0;
+	Error err = OS::get_singleton()->create_process(p_path, args, &pid);
+	if (err != OK) {
+		return -1;
+	}
+	return pid;
 }
 
 Error _OS::kill(int p_pid) {
@@ -697,7 +705,8 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &_OS::get_processor_count);
 
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &_OS::get_executable_path);
-	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "blocking", "output", "read_stderr"), &_OS::execute, DEFVAL(true), DEFVAL(Array()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr"), &_OS::execute, DEFVAL(Array()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments"), &_OS::create_process);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &_OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &_OS::shell_open);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &_OS::get_process_id);

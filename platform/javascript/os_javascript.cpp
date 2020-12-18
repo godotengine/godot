@@ -106,14 +106,18 @@ void OS_JavaScript::finalize() {
 
 // Miscellaneous
 
-Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+	return create_process(p_path, p_arguments);
+}
+
+Error OS_JavaScript::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
 	Array args;
 	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
 		args.push_back(E->get());
 	}
 	String json_args = JSON::print(args);
 	int failed = godot_js_os_execute(json_args.utf8().get_data());
-	ERR_FAIL_COND_V_MSG(failed, ERR_UNAVAILABLE, "OS::execute() must be implemented in JavaScript via 'engine.setOnExecute' if required.");
+	ERR_FAIL_COND_V_MSG(failed, ERR_UNAVAILABLE, "OS::execute() or create_process() must be implemented in JavaScript via 'engine.setOnExecute' if required.");
 	return OK;
 }
 
