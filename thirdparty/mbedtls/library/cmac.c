@@ -450,7 +450,7 @@ exit:
  */
 int mbedtls_aes_cmac_prf_128( const unsigned char *key, size_t key_length,
                               const unsigned char *input, size_t in_len,
-                              unsigned char *output )
+                              unsigned char output[16] )
 {
     int ret;
     const mbedtls_cipher_info_t *cipher_info;
