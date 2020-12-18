@@ -236,18 +236,6 @@ void EditorSceneImporterMesh::generate_lods() {
 		}
 		uint32_t vertex_count = vertices.size();
 		const Vector3 *vertices_ptr = vertices.ptr();
-		AABB aabb;
-		{
-			for (uint32_t j = 0; j < vertex_count; j++) {
-				if (j == 0) {
-					aabb.position = vertices_ptr[j];
-				} else {
-					aabb.expand_to(vertices_ptr[j]);
-				}
-			}
-		}
-
-		float longest_axis_size = aabb.get_longest_axis_size();
 
 		int min_indices = 10;
 		int index_target = indices.size() / 2;
@@ -263,7 +251,7 @@ void EditorSceneImporterMesh::generate_lods() {
 			}
 			new_indices.resize(new_len);
 			Surface::LOD lod;
-			lod.distance = error * longest_axis_size;
+			lod.distance = error;
 			lod.indices = new_indices;
 			surfaces.write[i].lods.push_back(lod);
 			index_target /= 2;
