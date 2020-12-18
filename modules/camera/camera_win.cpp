@@ -40,6 +40,8 @@
 
 /// @TODO need to implement this
 
+#include <comdef.h>
+
 // Media Foundation Includes
 #include <mfapi.h>
 #include <mfidl.h>
@@ -395,13 +397,14 @@ HRESULT CameraFeedWindows::CloseDevice() {
 	return S_OK;
 }
 
-CameraFeedWindows::CameraFeedWindows():
+CameraFeedWindows::CameraFeedWindows() :
 		m_pReader(NULL),
 		m_nRefCount(1),
 		m_pwszSymbolicLink(NULL),
 		m_cchSymbolicLink(0),
-		pActivate(NULL)
-{
+		pActivate(NULL),
+		m_height(0),
+		m_width(0){
 	///@TODO implement this, should store information about our available camera
 	
 	InitializeCriticalSection(&m_critsec);
@@ -422,7 +425,7 @@ bool CameraFeedWindows::activate_feed() {
 	IMFMediaSource *pSource = NULL;
 	IMFAttributes *pAttributes = NULL;
 	IMFMediaType *pType = NULL;
-	UINT32 p_type_str_len;
+	UINT32 p_type_str_len=0;
 	_Post_ _Notnull_ LPWSTR p_type_str = NULL;
 
 	GUID subtype = { 0 };
@@ -440,6 +443,10 @@ bool CameraFeedWindows::activate_feed() {
 		hr = pActivate->ActivateObject(
 				__uuidof(IMFMediaSource),
 				(void **)&pSource);
+
+		if (FAILED(hr)) {
+			printf("ActivateObject Failed\n");
+		}
 	}
 
 	// Get the symbolic link
@@ -448,14 +455,32 @@ bool CameraFeedWindows::activate_feed() {
 				MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK,
 				&m_pwszSymbolicLink,
 				&m_cchSymbolicLink);
+		if (FAILED(hr)) {
+			printf("Getting Symbolic Link Failed\n");
+		}
 	}
 
 	// Create an attribute store to hold initialization settings.
 	if (SUCCEEDED(hr)) {
 		hr = MFCreateAttributes(&pAttributes, 2);
+		if (FAILED(hr)) {
+			printf("Attribute creation failed\n");
+		}
 	}
+
 	if (SUCCEEDED(hr)) {
 		hr = pAttributes->SetUINT32(MF_READWRITE_DISABLE_CONVERTERS, TRUE);
+		if (FAILED(hr)) {
+			printf("Set attribute (disable converter) failed\n");
+		}
+	}
+
+	//trying to stop shutdown() so that we can reactivate feed
+	if (SUCCEEDED(hr)) {
+		hr = pAttributes->SetUINT32(MF_SOURCE_READER_DISCONNECT_MEDIASOURCE_ON_SHUTDOWN, TRUE);
+		if (FAILED(hr)) {
+			printf("Set attribute (disable shutdown on disconnect) failed\n");
+		}
 	}
 
 	// Set the callback pointer.
@@ -463,6 +488,9 @@ bool CameraFeedWindows::activate_feed() {
 		hr = pAttributes->SetUnknown(
 				MF_SOURCE_READER_ASYNC_CALLBACK,
 				this);
+		if (FAILED(hr)) {
+			printf("Unable to set callback pointer \n");
+		}
 	}
 
 	if (SUCCEEDED(hr)) {
@@ -470,6 +498,10 @@ bool CameraFeedWindows::activate_feed() {
 				pSource,
 				pAttributes,
 				&m_pReader);
+		if (FAILED(hr)) {
+			_com_error err(hr);
+			printf("Unable to create source reader, %x, %s\n", hr, err.ErrorMessage());
+		}
 	}
 
 	// Try to find a suitable output type.
@@ -481,6 +513,7 @@ bool CameraFeedWindows::activate_feed() {
 					&pType);
 
 			if (FAILED(hr)) {
+				// reached end of list.
 				break;
 			}
 
@@ -561,10 +594,13 @@ bool CameraFeedWindows::activate_feed() {
 				NULL,
 				NULL,
 				NULL);
+		if (FAILED(hr)) {
+			printf("first sample failed\n");
+		}
 	}
 
 	if (FAILED(hr)) {
-		printf("first sample failed\n");
+		printf("failed to activate feed\n");
 		if (pSource) {
 			pSource->Shutdown();
 
@@ -661,13 +697,14 @@ done:
 
 CameraWindows::CameraWindows() {
 	// Find cameras active right now
+	HRESULT hr = MFStartup(MF_VERSION);
 	add_active_cameras();
 
 	// need to add something that will react to devices being connected/removed...
 };
 
 CameraWindows::~CameraWindows(){
-
+	MFShutdown();
 };
 
 
