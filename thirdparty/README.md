@@ -40,10 +40,8 @@ Files extracted from upstream source:
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
-- Version: git pre-2.90 (cd8cf7521cbb8b7808126a6adebd47bb83ea166a, 2020)
+- Version: 3.07 (e32fc59c88a3908876949c6f2665e8d091d987fa, 2020)
 - License: zlib
-
-Important: Synced with a pre-release version of bullet 2.90 from the master branch.
 
 Files extracted from upstream source:
 
