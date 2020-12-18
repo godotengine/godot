@@ -206,7 +206,7 @@ Files extracted from upstream source:
 ## International Components for Unicode
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 68.1
+- Version: 68.2
 - License: Unicode
 
 Files extracted from upstream source:
