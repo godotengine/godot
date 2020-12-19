@@ -463,7 +463,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_message->set_v_grow_direction(Control::GrowDirection::GROW_DIRECTION_END);
 	commit_message->set_custom_minimum_size(Size2(200, 100));
 	commit_message->set_wrap_enabled(true);
-	commit_message->set_text(TTR("Add a commit message"));
 	commit_box_vbc->add_child(commit_message);
 
 	commit_button = memnew(Button);
