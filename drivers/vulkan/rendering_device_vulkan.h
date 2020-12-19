@@ -32,6 +32,7 @@
 #define RENDERING_DEVICE_VULKAN_H
 
 #include "core/os/thread_safe.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/rendering_device.h"
@@ -44,11 +45,6 @@
 #include "vk_mem_alloc.h"
 
 #include <vulkan/vulkan.h>
-
-//todo:
-//compute
-//push constants
-//views of texture slices
 
 class VulkanContext;
 
@@ -638,7 +634,12 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		DescriptorPoolKey pool_key;
 		VkDescriptorSet descriptor_set = VK_NULL_HANDLE;
 		//VkPipelineLayout pipeline_layout; //not owned, inherited from shader
-		Vector<RID> attachable_textures; //used for validation
+		struct AttachableTexture {
+			uint32_t bind;
+			RID texture;
+		};
+
+		LocalVector<AttachableTexture> attachable_textures; //used for validation
 		Vector<Texture *> mutable_sampled_textures; //used for layout change
 		Vector<Texture *> mutable_storage_textures; //used for layout change
 	};
