@@ -47,7 +47,7 @@
 				Returns the editor's [EditorSettings] instance.
 			</description>
 		</method>
-		<method name="get_editor_viewport">
+		<method name="get_editor_main_control">
 			<return type="Control">
 			</return>
 			<description>
