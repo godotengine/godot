@@ -144,29 +144,29 @@ TEST_CASE("[Rect2] Absolute coordinates") {
 			"abs() should return the expected Rect2.");
 }
 
-TEST_CASE("[Rect2] Clipping") {
+TEST_CASE("[Rect2] Intersecton") {
 	CHECK_MESSAGE(
-			Rect2(0, 100, 1280, 720).clip(Rect2(0, 300, 100, 100)).is_equal_approx(Rect2(0, 300, 100, 100)),
-			"clip() with fully enclosed Rect2 should return the expected result.");
+			Rect2(0, 100, 1280, 720).intersection(Rect2(0, 300, 100, 100)).is_equal_approx(Rect2(0, 300, 100, 100)),
+			"intersection() with fully enclosed Rect2 should return the expected result.");
 	// The resulting Rect2 is 100 pixels high because the first Rect2 is vertically offset by 100 pixels.
 	CHECK_MESSAGE(
-			Rect2(0, 100, 1280, 720).clip(Rect2(1200, 700, 100, 100)).is_equal_approx(Rect2(1200, 700, 80, 100)),
-			"clip() with partially enclosed Rect2 should return the expected result.");
+			Rect2(0, 100, 1280, 720).intersection(Rect2(1200, 700, 100, 100)).is_equal_approx(Rect2(1200, 700, 80, 100)),
+			"intersection() with partially enclosed Rect2 should return the expected result.");
 	CHECK_MESSAGE(
-			Rect2(0, 100, 1280, 720).clip(Rect2(-4000, -4000, 100, 100)).is_equal_approx(Rect2()),
-			"clip() with non-enclosed Rect2 should return the expected result.");
+			Rect2(0, 100, 1280, 720).intersection(Rect2(-4000, -4000, 100, 100)).is_equal_approx(Rect2()),
+			"intersection() with non-enclosed Rect2 should return the expected result.");
 }
 
 TEST_CASE("[Rect2] Enclosing") {
 	CHECK_MESSAGE(
 			Rect2(0, 100, 1280, 720).encloses(Rect2(0, 300, 100, 100)),
-			"clip() with fully contained Rect2 should return the expected result.");
+			"encloses() with fully contained Rect2 should return the expected result.");
 	CHECK_MESSAGE(
 			!Rect2(0, 100, 1280, 720).encloses(Rect2(1200, 700, 100, 100)),
-			"clip() with partially contained Rect2 should return the expected result.");
+			"encloses() with partially contained Rect2 should return the expected result.");
 	CHECK_MESSAGE(
 			!Rect2(0, 100, 1280, 720).encloses(Rect2(-4000, -4000, 100, 100)),
-			"clip() with non-contained Rect2 should return the expected result.");
+			"encloses() with non-contained Rect2 should return the expected result.");
 }
 
 TEST_CASE("[Rect2] Expanding") {
@@ -356,29 +356,29 @@ TEST_CASE("[Rect2i] Absolute coordinates") {
 			"abs() should return the expected Rect2i.");
 }
 
-TEST_CASE("[Rect2i] Clipping") {
+TEST_CASE("[Rect2i] Intersection") {
 	CHECK_MESSAGE(
-			Rect2i(0, 100, 1280, 720).clip(Rect2i(0, 300, 100, 100)) == Rect2i(0, 300, 100, 100),
-			"clip() with fully enclosed Rect2i should return the expected result.");
+			Rect2i(0, 100, 1280, 720).intersection(Rect2i(0, 300, 100, 100)) == Rect2i(0, 300, 100, 100),
+			"intersection() with fully enclosed Rect2i should return the expected result.");
 	// The resulting Rect2i is 100 pixels high because the first Rect2i is vertically offset by 100 pixels.
 	CHECK_MESSAGE(
-			Rect2i(0, 100, 1280, 720).clip(Rect2i(1200, 700, 100, 100)) == Rect2i(1200, 700, 80, 100),
-			"clip() with partially enclosed Rect2i should return the expected result.");
+			Rect2i(0, 100, 1280, 720).intersection(Rect2i(1200, 700, 100, 100)) == Rect2i(1200, 700, 80, 100),
+			"intersection() with partially enclosed Rect2i should return the expected result.");
 	CHECK_MESSAGE(
-			Rect2i(0, 100, 1280, 720).clip(Rect2i(-4000, -4000, 100, 100)) == Rect2i(),
-			"clip() with non-enclosed Rect2i should return the expected result.");
+			Rect2i(0, 100, 1280, 720).intersection(Rect2i(-4000, -4000, 100, 100)) == Rect2i(),
+			"intersection() with non-enclosed Rect2i should return the expected result.");
 }
 
 TEST_CASE("[Rect2i] Enclosing") {
 	CHECK_MESSAGE(
 			Rect2i(0, 100, 1280, 720).encloses(Rect2i(0, 300, 100, 100)),
-			"clip() with fully contained Rect2i should return the expected result.");
+			"encloses() with fully contained Rect2i should return the expected result.");
 	CHECK_MESSAGE(
 			!Rect2i(0, 100, 1280, 720).encloses(Rect2i(1200, 700, 100, 100)),
-			"clip() with partially contained Rect2i should return the expected result.");
+			"encloses() with partially contained Rect2i should return the expected result.");
 	CHECK_MESSAGE(
 			!Rect2i(0, 100, 1280, 720).encloses(Rect2i(-4000, -4000, 100, 100)),
-			"clip() with non-contained Rect2i should return the expected result.");
+			"encloses() with non-contained Rect2i should return the expected result.");
 }
 
 TEST_CASE("[Rect2i] Expanding") {

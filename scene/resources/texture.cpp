@@ -1253,7 +1253,7 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 	Vector2 scale = p_rect.size / src.size;
 
 	src.position += (rc.position - margin.position);
-	Rect2 src_c = rc.clip(src);
+	Rect2 src_c = rc.intersection(src);
 	if (src_c.size == Size2()) {
 		return false;
 	}
@@ -1575,7 +1575,7 @@ void LargeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 		if (!p_src_rect.intersects(rect)) {
 			continue;
 		}
-		Rect2 local = p_src_rect.clip(rect);
+		Rect2 local = p_src_rect.intersection(rect);
 		Rect2 target = local;
 		target.size *= scale;
 		target.position = p_rect.position + (p_src_rect.position + rect.position) * scale;

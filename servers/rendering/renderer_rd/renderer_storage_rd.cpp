@@ -6949,7 +6949,7 @@ void RendererStorageRD::render_target_copy_to_back_buffer(RID p_render_target, c
 	if (p_region == Rect2i()) {
 		region.size = rt->size;
 	} else {
-		region = Rect2i(Size2i(), rt->size).clip(p_region);
+		region = Rect2i(Size2i(), rt->size).intersection(p_region);
 		if (region.size == Size2i()) {
 			return; //nothing to do
 		}
@@ -6989,7 +6989,7 @@ void RendererStorageRD::render_target_clear_back_buffer(RID p_render_target, con
 	if (p_region == Rect2i()) {
 		region.size = rt->size;
 	} else {
-		region = Rect2i(Size2i(), rt->size).clip(p_region);
+		region = Rect2i(Size2i(), rt->size).intersection(p_region);
 		if (region.size == Size2i()) {
 			return; //nothing to do
 		}
@@ -7010,7 +7010,7 @@ void RendererStorageRD::render_target_gen_back_buffer_mipmaps(RID p_render_targe
 	if (p_region == Rect2i()) {
 		region.size = rt->size;
 	} else {
-		region = Rect2i(Size2i(), rt->size).clip(p_region);
+		region = Rect2i(Size2i(), rt->size).intersection(p_region);
 		if (region.size == Size2i()) {
 			return; //nothing to do
 		}

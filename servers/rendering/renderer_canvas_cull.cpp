@@ -144,7 +144,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 
 	if (ci->clip) {
 		if (p_canvas_clip != nullptr) {
-			ci->final_clip_rect = p_canvas_clip->final_clip_rect.clip(global_rect);
+			ci->final_clip_rect = p_canvas_clip->final_clip_rect.intersection(global_rect);
 		} else {
 			ci->final_clip_rect = global_rect;
 		}
@@ -195,7 +195,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	}
 
 	if (ci->copy_back_buffer) {
-		ci->copy_back_buffer->screen_rect = xform.xform(ci->copy_back_buffer->rect).clip(p_clip_rect);
+		ci->copy_back_buffer->screen_rect = xform.xform(ci->copy_back_buffer->rect).intersection(p_clip_rect);
 	}
 
 	if (use_canvas_group) {

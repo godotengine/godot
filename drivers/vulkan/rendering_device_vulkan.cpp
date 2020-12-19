@@ -6384,7 +6384,7 @@ void RenderingDeviceVulkan::draw_list_enable_scissor(DrawListID p_list, const Re
 	Rect2i rect = p_rect;
 	rect.position += dl->viewport.position;
 
-	rect = dl->viewport.clip(rect);
+	rect = dl->viewport.intersection(rect);
 
 	if (rect.get_area() == 0) {
 		return;

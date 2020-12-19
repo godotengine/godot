@@ -2956,7 +2956,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			Rect2i r;
 			r.position = screen_get_position(i);
 			r.size = screen_get_size(i);
-			Rect2 inters = r.clip(p_rect);
+			Rect2 inters = r.intersection(p_rect);
 			int area = inters.size.width * inters.size.height;
 			if (area >= nearest_area) {
 				screen_rect = r;
