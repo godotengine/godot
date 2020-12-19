@@ -1,0 +1,91 @@
+diff --git a/common/math/math.h b/common/math/math.h
+index 5af0691a2..1982c27c1 100644
+--- a/common/math/math.h
++++ b/common/math/math.h
+@@ -12,7 +12,7 @@
+ #include <xmmintrin.h>
+ #include <immintrin.h>
+ 
+-#if defined(__WIN32__)
++#if defined(__WIN32__) && !defined(__MINGW32__)
+ #if (__MSV_VER <= 1700)
+ namespace std
+ {
+diff --git a/common/sys/intrinsics.h b/common/sys/intrinsics.h
+index 3f0619cac..6948e4a74 100644
+--- a/common/sys/intrinsics.h
++++ b/common/sys/intrinsics.h
+@@ -30,8 +30,14 @@
+ #endif
+ 
+ #if defined(__WIN32__)
+-#  define NOMINMAX
+-#  include <windows.h>
++// -- GODOT start --
++#if !defined(NOMINMAX)
++// -- GODOT end --
++#define NOMINMAX
++// -- GODOT start --
++#endif
++#include "windows.h"
++// -- GODOT end --
+ #endif
+ 
+ /* normally defined in pmmintrin.h, but we always need this */
+diff --git a/common/sys/library.cpp b/common/sys/library.cpp
+index e448b195d..8ec918660 100644
+--- a/common/sys/library.cpp
++++ b/common/sys/library.cpp
+@@ -27,7 +27,9 @@ namespace embree
+ 
+   /* returns address of a symbol from the library */
+   void* getSymbol(lib_t lib, const std::string& sym) {
+-    return GetProcAddress(HMODULE(lib),sym.c_str());
++    // -- GODOT start --
++    return (void*) GetProcAddress(HMODULE(lib),sym.c_str());
++    // -- GODOT end --
+   }
+ 
+   /* closes the shared library */
+diff --git a/common/sys/platform.h b/common/sys/platform.h
+index 96f9aab01..08617452f 100644
+--- a/common/sys/platform.h
++++ b/common/sys/platform.h
+@@ -141,6 +141,9 @@
+   #define DELETED  = delete
+ #endif
+ 
++// -- GODOT start --
++#if !defined(likely)
++// -- GODOT end --
+ #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+ #define   likely(expr) (expr)
+ #define unlikely(expr) (expr)
+@@ -148,6 +151,9 @@
+ #define   likely(expr) __builtin_expect((bool)(expr),true )
+ #define unlikely(expr) __builtin_expect((bool)(expr),false)
+ #endif
++// -- GODOT start --
++#endif
++// -- GODOT end --
+ 
+ ////////////////////////////////////////////////////////////////////////////////
+ /// Error handling and debugging
+diff --git a/common/tasking/taskschedulertbb.h b/common/tasking/taskschedulertbb.h
+index 98dba2687..369e5edf0 100644
+--- a/common/tasking/taskschedulertbb.h
++++ b/common/tasking/taskschedulertbb.h
+@@ -12,7 +12,13 @@
+ #include "../sys/ref.h"
+ 
+ #if defined(__WIN32__)
++// -- GODOT start --
++#if !defined(NOMINMAX)
++// -- GODOT end --
+ #  define NOMINMAX
++// -- GODOT start --
++#endif
++// -- GODOT end --
+ #endif
+ 
+ // We need to define these to avoid implicit linkage against
