@@ -65,6 +65,10 @@ void Node::_notification(int p_notification) {
 			}
 
 		} break;
+		case NOTIFICATION_PARENTED: {
+			set_time_scale_inherit(is_time_scale_inheriting());
+			set_time_scale_value(get_time_scale_value());
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_FAIL_COND(!get_viewport());
 			ERR_FAIL_COND(!get_tree());
@@ -837,18 +841,61 @@ bool Node::can_process() const {
 
 float Node::get_physics_process_delta_time() const {
 	if (data.tree) {
-		return data.tree->get_physics_process_time();
-	} else {
+		if (data.time_scale_inherit && data.parent)
+			return data.tree->get_physics_process_time() * data.time_scale_value * data.time_scale_inherit_value;
+		else
+			return data.tree->get_physics_process_time() * data.time_scale_value;
+	} else
 		return 0;
-	}
 }
 
 float Node::get_process_delta_time() const {
-	if (data.tree) {
-		return data.tree->get_idle_process_time();
-	} else {
+	if (data.tree)
+		if (data.time_scale_inherit && data.parent)
+			return data.tree->get_idle_process_time() * data.time_scale_value * data.time_scale_inherit_value;
+		else
+			return data.tree->get_idle_process_time() * data.time_scale_value;
+	else
 		return 0;
+}
+
+void Node::set_time_scale_value(float p_time_scale) {
+	data.time_scale_value = p_time_scale;
+
+	Node **children = data.children.ptrw();
+	int cc = data.children.size();
+
+	for (int i = 0; i < cc; i++) {
+		if (children[i]->data.time_scale_inherit) {
+			children[i]->set_time_scale_inherit(true);
+		}
 	}
+}
+
+float Node::get_time_scale_calculated_value() const {
+	if (!data.time_scale_inherit) {
+		return data.time_scale_value;
+	}
+
+	return data.time_scale_value * data.time_scale_inherit_value;
+}
+
+float Node::get_time_scale_value() const {
+	return data.time_scale_value;
+}
+
+void Node::set_time_scale_inherit(bool p_time_scale_inherit) {
+	data.time_scale_inherit = p_time_scale_inherit;
+
+	if (p_time_scale_inherit && data.parent) {
+		data.time_scale_inherit_value = data.parent->get_time_scale_calculated_value();
+	} else {
+		data.time_scale_inherit_value = 1.0f;
+	}
+}
+
+bool Node::is_time_scale_inheriting() const {
+	return data.time_scale_inherit;
 }
 
 void Node::set_process(bool p_idle_process) {
@@ -2756,6 +2803,11 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_process", "enable"), &Node::set_physics_process);
 	ClassDB::bind_method(D_METHOD("get_physics_process_delta_time"), &Node::get_physics_process_delta_time);
 	ClassDB::bind_method(D_METHOD("is_physics_processing"), &Node::is_physics_processing);
+	ClassDB::bind_method(D_METHOD("set_time_scale_value"), &Node::set_time_scale_value);
+	ClassDB::bind_method(D_METHOD("get_time_scale_calculated_value"), &Node::get_time_scale_calculated_value);
+	ClassDB::bind_method(D_METHOD("get_time_scale_value"), &Node::get_time_scale_value);
+	ClassDB::bind_method(D_METHOD("is_time_scale_inheriting"), &Node::is_time_scale_inheriting);
+	ClassDB::bind_method(D_METHOD("set_time_scale_inherit"), &Node::set_time_scale_inherit);
 	ClassDB::bind_method(D_METHOD("get_process_delta_time"), &Node::get_process_delta_time);
 	ClassDB::bind_method(D_METHOD("set_process", "enable"), &Node::set_process);
 	ClassDB::bind_method(D_METHOD("set_process_priority", "priority"), &Node::set_process_priority);
@@ -2892,7 +2944,11 @@ void Node::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pause_mode", PROPERTY_HINT_ENUM, "Inherit,Stop,Process"), "set_pause_mode", "get_pause_mode");
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", 0), "set_name", "get_name");
+	ADD_GROUP("Time Scale", "time_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale_value", PROPERTY_HINT_NONE, ""), "set_time_scale_value", "get_time_scale_value");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "time_scale_inherit", PROPERTY_HINT_NONE, ""), "set_time_scale_inherit", "is_time_scale_inheriting");
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, "", 0), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "filename", PROPERTY_HINT_NONE, "", 0), "set_filename", "get_filename");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "", "get_multiplayer");
@@ -2945,6 +3001,9 @@ Node::Node() {
 	data.unhandled_key_input = false;
 	data.pause_mode = PAUSE_MODE_INHERIT;
 	data.pause_owner = nullptr;
+	data.time_scale_value = 1.0f;
+	data.time_scale_inherit = false;
+	data.time_scale_inherit_value = 1.0f;
 	data.network_master = 1; //server by default
 	data.path_cache = nullptr;
 	data.parent_owned = false;
