@@ -4600,7 +4600,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 	List<Vector<VkBufferView>> buffer_views;
 	List<Vector<VkDescriptorImageInfo>> image_infos;
 	//used for verification to make sure a uniform set does not use a framebuffer bound texture
-	Vector<RID> attachable_textures;
+	LocalVector<UniformSet::AttachableTexture> attachable_textures;
 	Vector<Texture *> mutable_sampled_textures;
 	Vector<Texture *> mutable_storage_textures;
 
@@ -4693,7 +4693,10 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 					img_info.imageView = texture->view;
 
 					if (texture->usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT)) {
-						attachable_textures.push_back(texture->owner.is_valid() ? texture->owner : uniform.ids[j + 1]);
+						UniformSet::AttachableTexture attachable_texture;
+						attachable_texture.bind = set_uniform.binding;
+						attachable_texture.texture = texture->owner.is_valid() ? texture->owner : uniform.ids[j + 1];
+						attachable_textures.push_back(attachable_texture);
 					}
 
 					if (texture->usage_flags & TEXTURE_USAGE_STORAGE_BIT) {
@@ -4743,7 +4746,10 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 					img_info.imageView = texture->view;
 
 					if (texture->usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT)) {
-						attachable_textures.push_back(texture->owner.is_valid() ? texture->owner : uniform.ids[j]);
+						UniformSet::AttachableTexture attachable_texture;
+						attachable_texture.bind = set_uniform.binding;
+						attachable_texture.texture = texture->owner.is_valid() ? texture->owner : uniform.ids[j];
+						attachable_textures.push_back(attachable_texture);
 					}
 
 					if (texture->usage_flags & TEXTURE_USAGE_STORAGE_BIT) {
@@ -6168,13 +6174,13 @@ void RenderingDeviceVulkan::draw_list_bind_uniform_set(DrawListID p_list, RID p_
 #ifdef DEBUG_ENABLED
 	{ //validate that textures bound are not attached as framebuffer bindings
 		uint32_t attachable_count = uniform_set->attachable_textures.size();
-		const RID *attachable_ptr = uniform_set->attachable_textures.ptr();
+		const UniformSet::AttachableTexture *attachable_ptr = uniform_set->attachable_textures.ptr();
 		uint32_t bound_count = draw_list_bound_textures.size();
 		const RID *bound_ptr = draw_list_bound_textures.ptr();
 		for (uint32_t i = 0; i < attachable_count; i++) {
 			for (uint32_t j = 0; j < bound_count; j++) {
-				ERR_FAIL_COND_MSG(attachable_ptr[i] == bound_ptr[j],
-						"Attempted to use the same texture in framebuffer attachment and a uniform set, this is not allowed.");
+				ERR_FAIL_COND_MSG(attachable_ptr[i].texture == bound_ptr[j],
+						"Attempted to use the same texture in framebuffer attachment and a uniform (set: " + itos(p_index) + ", binding: " + itos(attachable_ptr[i].bind) + "), this is not allowed.");
 			}
 		}
 	}
