@@ -255,7 +255,7 @@ private:
 	Control *vp_base;
 
 	HBoxContainer *menu_hb;
-	Control *viewport;
+	Control *main_control;
 	MenuButton *file_menu;
 	MenuButton *project_menu;
 	MenuButton *debug_menu;
@@ -728,7 +728,7 @@ public:
 	bool is_changing_scene() const;
 
 	static EditorLog *get_log() { return singleton->log; }
-	Control *get_viewport();
+	Control *get_main_control();
 
 	void set_edited_scene(Node *p_scene);
 

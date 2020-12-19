@@ -2727,14 +2727,14 @@ void EditorNode::_screenshot(bool p_use_utc) {
 }
 
 void EditorNode::_save_screenshot(NodePath p_path) {
-	Control *editor_viewport = EditorInterface::get_singleton()->get_editor_viewport();
-	ERR_FAIL_COND_MSG(!editor_viewport, "Cannot get editor viewport.");
-	Viewport *viewport = editor_viewport->get_viewport();
-	ERR_FAIL_COND_MSG(!viewport, "Cannot get editor viewport.");
+	Control *editor_main_control = EditorInterface::get_singleton()->get_editor_main_control();
+	ERR_FAIL_COND_MSG(!editor_main_control, "Cannot get editor main control.");
+	Viewport *viewport = editor_main_control->get_viewport();
+	ERR_FAIL_COND_MSG(!viewport, "Cannot get editor main control viewport.");
 	Ref<ViewportTexture> texture = viewport->get_texture();
-	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get editor viewport texture.");
+	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get editor main control viewport texture.");
 	Ref<Image> img = texture->get_data();
-	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get editor viewport texture image.");
+	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get editor main control viewport texture image.");
 	Error error = img->save_png(p_path);
 	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
 }
@@ -2866,8 +2866,8 @@ void EditorNode::_update_file_menu_closed() {
 	pop->set_item_disabled(pop->get_item_index(FILE_OPEN_PREV), false);
 }
 
-Control *EditorNode::get_viewport() {
-	return viewport;
+Control *EditorNode::get_main_control() {
+	return main_control;
 }
 
 void EditorNode::_editor_select(int p_which) {
@@ -6027,10 +6027,10 @@ EditorNode::EditorNode() {
 	scene_root->set_disable_input(true);
 	scene_root->set_as_audio_listener_2d(true);
 
-	viewport = memnew(VBoxContainer);
-	viewport->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	viewport->add_theme_constant_override("separation", 0);
-	scene_root_parent->add_child(viewport);
+	main_control = memnew(VBoxContainer);
+	main_control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	main_control->add_theme_constant_override("separation", 0);
+	scene_root_parent->add_child(main_control);
 
 	HBoxContainer *left_menu_hb = memnew(HBoxContainer);
 	menu_hb->add_child(left_menu_hb);

@@ -69,7 +69,7 @@ protected:
 public:
 	static EditorInterface *get_singleton() { return singleton; }
 
-	Control *get_editor_viewport();
+	Control *get_editor_main_control();
 	void edit_resource(const Ref<Resource> &p_resource);
 	void open_scene_from_path(const String &scene_path);
 	void reload_scene_from_path(const String &scene_path);
