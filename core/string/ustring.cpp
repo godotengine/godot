@@ -3290,7 +3290,7 @@ bool String::matchn(const String &p_wildcard) const {
 }
 
 String String::format(const Variant &values, String placeholder) const {
-	String new_string = String(this->ptr());
+	String new_string = String(*this);
 
 	if (values.get_type() == Variant::ARRAY) {
 		Array values_arr = values;
