@@ -63,7 +63,7 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshol
 }
 
 void BitMap::set_bit_rect(const Rect2 &p_rect, bool p_value) {
-	Rect2i current = Rect2i(0, 0, width, height).clip(p_rect);
+	Rect2i current = Rect2i(0, 0, width, height).intersection(p_rect);
 	uint8_t *data = bitmask.ptrw();
 
 	for (int i = current.position.x; i < current.position.x + current.size.x; i++) {
@@ -482,7 +482,7 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 }
 
 Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, float p_epsilon) const {
-	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect);
+	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
 	print_verbose("BitMap: Rect: " + r);
 
 	Point2i from;
@@ -522,7 +522,7 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 	bool bit_value = p_pixels > 0;
 	p_pixels = Math::abs(p_pixels);
 
-	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect);
+	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
 
 	Ref<BitMap> copy;
 	copy.instance();

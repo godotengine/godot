@@ -3573,7 +3573,7 @@
         ]
       },
       {
-        "name": "godot_rect2_clip",
+        "name": "godot_rect2_intersection",
         "return_type": "godot_rect2",
         "arguments": [
           ["const godot_rect2 *", "p_self"],
@@ -3715,7 +3715,7 @@
         ]
       },
       {
-        "name": "godot_rect2i_clip",
+        "name": "godot_rect2i_intersection",
         "return_type": "godot_rect2i",
         "arguments": [
           ["const godot_rect2i *", "p_self"],

@@ -123,8 +123,9 @@ struct Rect2 {
 	_FORCE_INLINE_ bool has_no_area() const {
 		return (size.x <= 0 || size.y <= 0);
 	}
-	inline Rect2 clip(const Rect2 &p_rect) const { /// return a clipped rect
 
+	// Returns the instersection between two Rect2s or an empty Rect2 if there is no intersection
+	inline Rect2 intersection(const Rect2 &p_rect) const {
 		Rect2 new_rect = p_rect;
 
 		if (!intersects(new_rect)) {
@@ -365,8 +366,9 @@ struct Rect2i {
 	_FORCE_INLINE_ bool has_no_area() const {
 		return (size.x <= 0 || size.y <= 0);
 	}
-	inline Rect2i clip(const Rect2i &p_rect) const { /// return a clipped rect
 
+	// Returns the instersection between two Rect2is or an empty Rect2i if there is no intersection
+	inline Rect2i intersection(const Rect2i &p_rect) const {
 		Rect2i new_rect = p_rect;
 
 		if (!intersects(new_rect)) {

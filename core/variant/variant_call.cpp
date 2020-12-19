@@ -1021,7 +1021,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Rect2, is_equal_approx, sarray("rect"), varray());
 	bind_method(Rect2, intersects, sarray("b", "include_borders"), varray(false));
 	bind_method(Rect2, encloses, sarray("b"), varray());
-	bind_method(Rect2, clip, sarray("b"), varray());
+	bind_method(Rect2, intersection, sarray("b"), varray());
 	bind_method(Rect2, merge, sarray("b"), varray());
 	bind_method(Rect2, expand, sarray("to"), varray());
 	bind_method(Rect2, grow, sarray("by"), varray());
@@ -1036,7 +1036,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Rect2i, has_point, sarray("point"), varray());
 	bind_method(Rect2i, intersects, sarray("b"), varray());
 	bind_method(Rect2i, encloses, sarray("b"), varray());
-	bind_method(Rect2i, clip, sarray("b"), varray());
+	bind_method(Rect2i, intersection, sarray("b"), varray());
 	bind_method(Rect2i, merge, sarray("b"), varray());
 	bind_method(Rect2i, expand, sarray("to"), varray());
 	bind_method(Rect2i, grow, sarray("by"), varray());

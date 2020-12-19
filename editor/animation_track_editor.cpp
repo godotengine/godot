@@ -2208,7 +2208,7 @@ void AnimationTrackEdit::draw_rect_clipped(const Rect2 &p_rect, const Color &p_c
 		return;
 	}
 	Rect2 clip = Rect2(clip_left, 0, clip_right - clip_left, get_size().height);
-	draw_rect(clip.clip(p_rect), p_color, p_filled);
+	draw_rect(clip.intersection(p_rect), p_color, p_filled);
 }
 
 void AnimationTrackEdit::draw_bg(int p_clip_left, int p_clip_right) {
@@ -2912,7 +2912,7 @@ void AnimationTrackEdit::append_to_selection(const Rect2 &p_box, bool p_deselect
 	// Left Border including space occupied by keyframes on t=0.
 	int limit_start_hitbox = timeline->get_name_limit() - type_icon->get_width();
 	Rect2 select_rect(limit_start_hitbox, 0, get_size().width - timeline->get_name_limit() - timeline->get_buttons_width(), get_size().height);
-	select_rect = select_rect.clip(p_box);
+	select_rect = select_rect.intersection(p_box);
 
 	// Select should happen in the opposite order of drawing for more accurate overlap select.
 	for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
@@ -4947,7 +4947,7 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 
 		Rect2 rect(from, to - from);
 		Rect2 scroll_rect = Rect2(scroll->get_global_position(), scroll->get_size());
-		rect = scroll_rect.clip(rect);
+		rect = scroll_rect.intersection(rect);
 		box_selection->set_position(rect.position);
 		box_selection->set_size(rect.size);
 

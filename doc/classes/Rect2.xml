@@ -72,7 +72,7 @@
 				Returns a [Rect2] with equivalent position and area, modified so that the top-left corner is the origin and [code]width[/code] and [code]height[/code] are positive.
 			</description>
 		</method>
-		<method name="clip">
+		<method name="intersection">
 			<return type="Rect2">
 			</return>
 			<argument index="0" name="b" type="Rect2">
