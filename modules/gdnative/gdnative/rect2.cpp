@@ -90,11 +90,11 @@ godot_bool GDAPI godot_rect2_has_no_area(const godot_rect2 *p_self) {
 	return self->has_no_area();
 }
 
-godot_rect2 GDAPI godot_rect2_clip(const godot_rect2 *p_self, const godot_rect2 *p_b) {
+godot_rect2 GDAPI godot_rect2_intersection(const godot_rect2 *p_self, const godot_rect2 *p_b) {
 	godot_rect2 dest;
 	const Rect2 *self = (const Rect2 *)p_self;
 	const Rect2 *b = (const Rect2 *)p_b;
-	*((Rect2 *)&dest) = self->clip(*b);
+	*((Rect2 *)&dest) = self->intersection(*b);
 	return dest;
 }
 
@@ -233,11 +233,11 @@ godot_bool GDAPI godot_rect2i_has_no_area(const godot_rect2i *p_self) {
 	return self->has_no_area();
 }
 
-godot_rect2i GDAPI godot_rect2i_clip(const godot_rect2i *p_self, const godot_rect2i *p_b) {
+godot_rect2i GDAPI godot_rect2i_intersection(const godot_rect2i *p_self, const godot_rect2i *p_b) {
 	godot_rect2i dest;
 	const Rect2i *self = (const Rect2i *)p_self;
 	const Rect2i *b = (const Rect2i *)p_b;
-	*((Rect2i *)&dest) = self->clip(*b);
+	*((Rect2i *)&dest) = self->intersection(*b);
 	return dest;
 }
 

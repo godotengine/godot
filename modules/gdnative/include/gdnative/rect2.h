@@ -80,7 +80,7 @@ godot_bool GDAPI godot_rect2_encloses(const godot_rect2 *p_self, const godot_rec
 
 godot_bool GDAPI godot_rect2_has_no_area(const godot_rect2 *p_self);
 
-godot_rect2 GDAPI godot_rect2_clip(const godot_rect2 *p_self, const godot_rect2 *p_b);
+godot_rect2 GDAPI godot_rect2_intersection(const godot_rect2 *p_self, const godot_rect2 *p_b);
 
 godot_rect2 GDAPI godot_rect2_merge(const godot_rect2 *p_self, const godot_rect2 *p_b);
 
@@ -123,7 +123,7 @@ godot_bool GDAPI godot_rect2i_encloses(const godot_rect2i *p_self, const godot_r
 
 godot_bool GDAPI godot_rect2i_has_no_area(const godot_rect2i *p_self);
 
-godot_rect2i GDAPI godot_rect2i_clip(const godot_rect2i *p_self, const godot_rect2i *p_b);
+godot_rect2i GDAPI godot_rect2i_intersection(const godot_rect2i *p_self, const godot_rect2i *p_b);
 
 godot_rect2i GDAPI godot_rect2i_merge(const godot_rect2i *p_self, const godot_rect2i *p_b);
 
