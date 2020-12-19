@@ -4387,7 +4387,7 @@ String String::percent_decode() const {
 		pe += c;
 	}
 
-	return String::utf8(pe.ptr());
+	return String::utf8(pe.ptr(), pe.length());
 }
 
 String String::property_name_encode() const {
