@@ -1453,7 +1453,19 @@ void RendererStorageRD::shader_get_param_list(RID p_shader, List<PropertyInfo> *
 	Shader *shader = shader_owner.getornull(p_shader);
 	ERR_FAIL_COND(!shader);
 	if (shader->data) {
-		return shader->data->get_param_list(p_param_list);
+		shader->data->get_param_list(p_param_list);
+
+		// Assign default values.
+		for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
+			Material *material = E->get();
+			for (List<PropertyInfo>::Element *P = p_param_list->front(); P; P = P->next()) {
+				if (!material->params.has(P->get().name) || material->params[P->get().name].get_type() != P->get().type) {
+					Callable::CallError ce;
+					Variant::construct(P->get().type, material->params[P->get().name], nullptr, 0, ce);
+					ERR_FAIL_COND(ce.error != Callable::CallError::CALL_OK);
+				}
+			}
+		}
 	}
 }
 
