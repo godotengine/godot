@@ -2116,7 +2116,7 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 
 	int64_t hex = 0;
 
-	for ( ; i < length(); i++) {
+	for (; i < length(); i++) {
 		char32_t c = LOWERCASE(this->ptr()[i]);
 		int64_t n;
 		if (c >= '0' && c <= '9') {
@@ -2158,7 +2158,7 @@ int64_t String::bin_to_int(bool p_with_prefix) const {
 
 	int64_t binary = 0;
 
-	for ( ; i < length(); i++) {
+	for (; i < length(); i++) {
 		char32_t c = LOWERCASE(this->ptr()[i]);
 		int64_t n;
 		if (c == '0' || c == '1') {
