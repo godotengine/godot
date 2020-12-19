@@ -345,14 +345,18 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 							 "//  }\n"
 							 "}\n";
 
-	String base_class_name = get_base_class_name(p_base_class_name, p_class_name);
+	// Replaces all spaces in p_class_name with underscores to prevent
+	// erronous C# Script templates from being generated when the object name
+	// has spaces in it.
+	String class_name_no_spaces = p_class_name.replace(" ", "_");
+	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);
 	script_template = script_template.replace("%BASE%", base_class_name)
-							  .replace("%CLASS%", p_class_name);
+							  .replace("%CLASS%", class_name_no_spaces);
 
 	Ref<CSharpScript> script;
 	script.instance();
 	script->set_source_code(script_template);
-	script->set_name(p_class_name);
+	script->set_name(class_name_no_spaces);
 
 	return script;
 }
@@ -365,9 +369,10 @@ bool CSharpLanguage::is_using_templates() {
 void CSharpLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
 
 	String src = p_script->get_source_code();
-	String base_class_name = get_base_class_name(p_base_class_name, p_class_name);
+	String class_name_no_spaces = p_class_name.replace(" ", "_");
+	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);
 	src = src.replace("%BASE%", base_class_name)
-				  .replace("%CLASS%", p_class_name)
+				  .replace("%CLASS%", class_name_no_spaces)
 				  .replace("%TS%", _get_indentation());
 	p_script->set_source_code(src);
 }
