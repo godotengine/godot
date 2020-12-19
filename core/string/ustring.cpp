@@ -2099,25 +2099,25 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 		return 0;
 	}
 
-	const char32_t *s = ptr();
+	size_t i = 0;
 
-	int64_t sign = s[0] == '-' ? -1 : 1;
+	int64_t sign = this->ptr()[i] == '-' ? -1 : 1;
 
 	if (sign < 0) {
-		s++;
+		i++;
 	}
 
 	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'x') {
+		if (this->ptr()[i] != '0' || this->ptr()[i + 1] != 'x') {
 			return 0;
 		}
-		s += 2;
+		i += 2;
 	}
 
 	int64_t hex = 0;
 
-	while (*s) {
-		char32_t c = LOWERCASE(*s);
+	for ( ; i < length(); i++) {
+		char32_t c = LOWERCASE(this->ptr()[i]);
 		int64_t n;
 		if (c >= '0' && c <= '9') {
 			n = c - '0';
@@ -2131,7 +2131,6 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 		hex *= 16;
 		hex += n;
-		s++;
 	}
 
 	return hex * sign;
@@ -2142,25 +2141,25 @@ int64_t String::bin_to_int(bool p_with_prefix) const {
 		return 0;
 	}
 
-	const char32_t *s = ptr();
+	size_t i = 0;
 
-	int64_t sign = s[0] == '-' ? -1 : 1;
+	int64_t sign = this->ptr()[i] == '-' ? -1 : 1;
 
 	if (sign < 0) {
-		s++;
+		i++;
 	}
 
 	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'b') {
+		if (this->ptr()[i] != '0' || this->ptr()[i + 1] != 'b') {
 			return 0;
 		}
-		s += 2;
+		i += 2;
 	}
 
 	int64_t binary = 0;
 
-	while (*s) {
-		char32_t c = LOWERCASE(*s);
+	for ( ; i < length(); i++) {
+		char32_t c = LOWERCASE(this->ptr()[i]);
 		int64_t n;
 		if (c == '0' || c == '1') {
 			n = c - '0';
@@ -2172,7 +2171,6 @@ int64_t String::bin_to_int(bool p_with_prefix) const {
 		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 		binary *= 2;
 		binary += n;
-		s++;
 	}
 
 	return binary * sign;
