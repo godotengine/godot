@@ -493,6 +493,8 @@ Error VulkanContext::_create_physical_device() {
 	//  features based on this query
 	vkGetPhysicalDeviceFeatures(gpu, &physical_device_features);
 
+	physical_device_features.robustBufferAccess = false; //turn off robust buffer access, which can hamper performance on some hardware
+
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                                            \
 	{                                                                                       \
 		fp##entrypoint = (PFN_vk##entrypoint)vkGetInstanceProcAddr(inst, "vk" #entrypoint); \
