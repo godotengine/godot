@@ -1016,22 +1016,20 @@ String String::get_slicec(char32_t p_splitter, int p_slice) const {
 		return String();
 	}
 
-	const char32_t *c = this->ptr();
 	int i = 0;
 	int prev = 0;
 	int count = 0;
 	while (true) {
-		if (c[i] == 0 || c[i] == p_splitter) {
+		if (i == length() || this->ptr()[i] == p_splitter) {
 			if (p_slice == count) {
 				return substr(prev, i - prev);
-			} else if (c[i] == 0) {
+			} else if (i == length()) {
 				return String();
 			} else {
 				count++;
 				prev = i + 1;
 			}
 		}
-
 		i++;
 	}
 }
