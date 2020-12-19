@@ -414,7 +414,7 @@
 			<argument index="2" name="interpolation" type="int" enum="Image.Interpolation" default="1">
 			</argument>
 			<description>
-				Resizes the image to the given [code]width[/code] and [code]height[/code]. New pixels are calculated using [code]interpolation[/code]. See [code]interpolation[/code] constants.
+				Resizes the image to the given [code]width[/code] and [code]height[/code]. New pixels are calculated using the [code]interpolation[/code] mode defined via [enum Interpolation] constants.
 			</description>
 		</method>
 		<method name="resize_to_po2">
@@ -422,8 +422,10 @@
 			</return>
 			<argument index="0" name="square" type="bool" default="false">
 			</argument>
+			<argument index="1" name="interpolation" type="int" enum="Image.Interpolation" default="1">
+			</argument>
 			<description>
-				Resizes the image to the nearest power of 2 for the width and height. If [code]square[/code] is [code]true[/code] then set width and height to be the same.
+				Resizes the image to the nearest power of 2 for the width and height. If [code]square[/code] is [code]true[/code] then set width and height to be the same. New pixels are calculated using the [code]interpolation[/code] mode defined via [enum Interpolation] constants.
 			</description>
 		</method>
 		<method name="rgbe_to_srgb">
