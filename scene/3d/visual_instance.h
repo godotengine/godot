@@ -91,6 +91,14 @@ public:
 		FLAG_MAX = VS::INSTANCE_FLAG_MAX,
 	};
 
+	enum LightmapScale {
+		LIGHTMAP_SCALE_1X,
+		LIGHTMAP_SCALE_2X,
+		LIGHTMAP_SCALE_4X,
+		LIGHTMAP_SCALE_8X,
+		LIGHTMAP_SCALE_MAX,
+	};
+
 	enum ShadowCastingSetting {
 		SHADOW_CASTING_SETTING_OFF = VS::SHADOW_CASTING_SETTING_OFF,
 		SHADOW_CASTING_SETTING_ON = VS::SHADOW_CASTING_SETTING_ON,
@@ -100,6 +108,8 @@ public:
 
 private:
 	bool flags[FLAG_MAX];
+	bool generate_lightmap;
+	LightmapScale lightmap_scale;
 	ShadowCastingSetting shadow_casting_setting;
 	Ref<Material> material_override;
 	float lod_min_distance;
@@ -119,6 +129,15 @@ public:
 
 	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
 	ShadowCastingSetting get_cast_shadows_setting() const;
+
+	void set_bake_cast_shadows(bool p_enabled);
+	bool get_bake_cast_shadows();
+
+	void set_generate_lightmap(bool p_enabled);
+	bool get_generate_lightmap();
+
+	void set_lightmap_scale(LightmapScale p_scale);
+	LightmapScale get_lightmap_scale() const;
 
 	void set_lod_min_distance(float p_dist);
 	float get_lod_min_distance() const;
@@ -144,6 +163,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(GeometryInstance::Flags);
+VARIANT_ENUM_CAST(GeometryInstance::LightmapScale);
 VARIANT_ENUM_CAST(GeometryInstance::ShadowCastingSetting);
 
 #endif

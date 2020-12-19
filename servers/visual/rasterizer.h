@@ -120,6 +120,8 @@ public:
 		InstanceBase *lightmap_capture;
 		RID lightmap;
 		Vector<Color> lightmap_capture_data; //in a array (12 values) to avoid wasting space if unused. Alpha is unused, but needed to send to shader
+		int lightmap_slice;
+		Rect2 lightmap_uv_rect;
 
 		virtual void base_removed() = 0;
 		virtual void base_changed(bool p_aabb, bool p_materials) = 0;
@@ -135,6 +137,8 @@ public:
 			baked_light = false;
 			redraw_if_visible = false;
 			lightmap_capture = NULL;
+			lightmap_slice = -1;
+			lightmap_uv_rect = Rect2(0, 0, 1, 1);
 		}
 	};
 

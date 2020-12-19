@@ -1949,7 +1949,17 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 
 		if (lightmap && capture) {
 			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 9);
-			glBindTexture(GL_TEXTURE_2D, lightmap->tex_id);
+			if (e->instance->lightmap_slice == -1) {
+				glBindTexture(GL_TEXTURE_2D, lightmap->tex_id);
+			} else {
+				glBindTexture(GL_TEXTURE_2D_ARRAY, lightmap->tex_id);
+				state.scene_shader.set_uniform(SceneShaderGLES3::LIGHTMAP_LAYER, e->instance->lightmap_slice);
+			}
+			const Rect2 &uvr = e->instance->lightmap_uv_rect;
+			state.scene_shader.set_uniform(SceneShaderGLES3::LIGHTMAP_UV_RECT, Color(uvr.get_position().x, uvr.get_position().y, uvr.get_size().x, uvr.get_size().y));
+			if (storage->config.use_lightmap_filter_bicubic) {
+				state.scene_shader.set_uniform(SceneShaderGLES3::LIGHTMAP_TEXTURE_SIZE, Vector2(lightmap->width, lightmap->height));
+			}
 			state.scene_shader.set_uniform(SceneShaderGLES3::LIGHTMAP_ENERGY, capture->energy);
 		}
 	}
@@ -2080,6 +2090,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_GI_PROBES, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHTMAP_CAPTURE, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHTMAP, false);
+					state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHTMAP_LAYERED, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_CONTACT_SHADOWS, false);
 
@@ -2088,6 +2099,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_GI_PROBES, e->instance->gi_probe_instances.size() > 0);
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHTMAP, e->instance->lightmap.is_valid() && e->instance->gi_probe_instances.size() == 0);
+					state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHTMAP_LAYERED, e->instance->lightmap_slice != -1);
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHTMAP_CAPTURE, !e->instance->lightmap_capture_data.empty() && !e->instance->lightmap.is_valid() && e->instance->gi_probe_instances.size() == 0);
 
 					state.scene_shader.set_conditional(SceneShaderGLES3::SHADELESS, false);
@@ -2258,6 +2270,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	state.scene_shader.set_conditional(SceneShaderGLES3::SHADOW_MODE_PCF_13, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_GI_PROBES, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHTMAP, false);
+	state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHTMAP_LAYERED, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHTMAP_CAPTURE, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_CONTACT_SHADOWS, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_VERTEX_LIGHTING, false);
@@ -2392,6 +2405,9 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 
 		if (e->instance->lightmap.is_valid()) {
 			e->sort_key |= SORT_KEY_LIGHTMAP_FLAG;
+			if (e->instance->lightmap_slice != -1) {
+				e->sort_key |= SORT_KEY_LIGHTMAP_LAYERED_FLAG;
+			}
 		}
 
 		if (!e->instance->lightmap_capture_data.empty()) {
@@ -5337,6 +5353,8 @@ void RasterizerSceneGLES3::iteration() {
 	subsurface_scatter_quality = SubSurfaceScatterQuality(int(GLOBAL_GET("rendering/quality/subsurface_scattering/quality")));
 	subsurface_scatter_size = GLOBAL_GET("rendering/quality/subsurface_scattering/scale");
 
+	storage->config.use_lightmap_filter_bicubic = GLOBAL_GET("rendering/quality/lightmapping/use_bicubic_sampling");
+	state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHTMAP_FILTER_BICUBIC, storage->config.use_lightmap_filter_bicubic);
 	state.scene_shader.set_conditional(SceneShaderGLES3::VCT_QUALITY_HIGH, GLOBAL_GET("rendering/quality/voxel_cone_tracing/high_quality"));
 }
 

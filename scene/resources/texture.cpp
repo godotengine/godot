@@ -2250,6 +2250,143 @@ Image::Format TextureLayered::get_format() const {
 	return format;
 }
 
+Error TextureLayered::load(const String &p_path) {
+
+	Error error;
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &error);
+	ERR_FAIL_COND_V(error, error);
+
+	uint8_t header[5] = { 0, 0, 0, 0, 0 };
+	f->get_buffer(header, 4);
+
+	if (header[0] == 'G' && header[1] == 'D' && header[2] == '3' && header[3] == 'T') {
+		if (!Object::cast_to<Texture3D>(this)) {
+			f->close();
+			memdelete(f);
+			ERR_FAIL_V(ERR_INVALID_DATA);
+		}
+	} else if (header[0] == 'G' && header[1] == 'D' && header[2] == 'A' && header[3] == 'T') {
+		if (!Object::cast_to<TextureArray>(this)) {
+			f->close();
+			memdelete(f);
+			ERR_FAIL_V(ERR_INVALID_DATA);
+		}
+	} else {
+
+		f->close();
+		memdelete(f);
+		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Unrecognized layered texture file format: " + String((const char *)header));
+	}
+
+	int tw = f->get_32();
+	int th = f->get_32();
+	int td = f->get_32();
+	int flags = f->get_32(); //texture flags!
+	Image::Format format = Image::Format(f->get_32());
+	uint32_t compression = f->get_32(); // 0 - lossless (PNG), 1 - vram, 2 - uncompressed
+
+	create(tw, th, td, format, flags);
+
+	for (int layer = 0; layer < td; layer++) {
+
+		Ref<Image> image;
+		image.instance();
+
+		if (compression == COMPRESS_LOSSLESS) {
+			//look for a PNG file inside
+
+			int mipmaps = f->get_32();
+			Vector<Ref<Image> > mipmap_images;
+
+			for (int i = 0; i < mipmaps; i++) {
+				uint32_t size = f->get_32();
+
+				PoolVector<uint8_t> pv;
+				pv.resize(size);
+				{
+					PoolVector<uint8_t>::Write w = pv.write();
+					f->get_buffer(w.ptr(), size);
+				}
+
+				Ref<Image> img = Image::lossless_unpacker(pv);
+
+				if (img.is_null() || img->empty() || format != img->get_format()) {
+					f->close();
+					memdelete(f);
+					ERR_FAIL_V(ERR_FILE_CORRUPT);
+				}
+
+				mipmap_images.push_back(img);
+			}
+
+			if (mipmap_images.size() == 1) {
+
+				image = mipmap_images[0];
+
+			} else {
+				int total_size = Image::get_image_data_size(tw, th, format, true);
+				PoolVector<uint8_t> img_data;
+				img_data.resize(total_size);
+
+				{
+					PoolVector<uint8_t>::Write w = img_data.write();
+
+					int ofs = 0;
+					for (int i = 0; i < mipmap_images.size(); i++) {
+
+						PoolVector<uint8_t> id = mipmap_images[i]->get_data();
+						int len = id.size();
+						PoolVector<uint8_t>::Read r = id.read();
+						copymem(&w[ofs], r.ptr(), len);
+						ofs += len;
+					}
+				}
+
+				image->create(tw, th, true, format, img_data);
+				if (image->empty()) {
+					f->close();
+					memdelete(f);
+					ERR_FAIL_V(ERR_FILE_CORRUPT);
+				}
+			}
+
+		} else {
+
+			//look for regular format
+			bool mipmaps = (flags & Texture::FLAG_MIPMAPS);
+			int total_size = Image::get_image_data_size(tw, th, format, mipmaps);
+
+			PoolVector<uint8_t> img_data;
+			img_data.resize(total_size);
+
+			{
+				PoolVector<uint8_t>::Write w = img_data.write();
+				int bytes = f->get_buffer(w.ptr(), total_size);
+				if (bytes != total_size) {
+					f->close();
+					memdelete(f);
+					ERR_FAIL_V(ERR_FILE_CORRUPT);
+				}
+			}
+
+			image->create(tw, th, mipmaps, format, img_data);
+		}
+
+		set_layer_data(image, layer);
+	}
+
+	memdelete(f);
+
+	path_to_file = p_path;
+	_change_notify();
+	return OK;
+}
+
+String TextureLayered::get_load_path() const {
+
+	return path_to_file;
+}
+
 uint32_t TextureLayered::get_width() const {
 	return width;
 }
@@ -2260,6 +2397,20 @@ uint32_t TextureLayered::get_height() const {
 
 uint32_t TextureLayered::get_depth() const {
 	return depth;
+}
+
+void TextureLayered::reload_from_file() {
+
+	String path = get_path();
+	if (!path.is_resource_file())
+		return;
+
+	path = ResourceLoader::path_remap(path); //remap for translation
+	path = ResourceLoader::import_remap(path); //remap for import
+	if (!path.is_resource_file())
+		return;
+
+	load(path);
 }
 
 void TextureLayered::_set_data(const Dictionary &p_data) {
@@ -2410,139 +2561,11 @@ RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String 
 		ERR_FAIL_V_MSG(RES(), "Unrecognized layered texture extension.");
 	}
 
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, RES(), "Cannot open file '" + p_path + "'.");
-
-	uint8_t header[5] = { 0, 0, 0, 0, 0 };
-	f->get_buffer(header, 4);
-
-	if (header[0] == 'G' && header[1] == 'D' && header[2] == '3' && header[3] == 'T') {
-		if (tex3d.is_null()) {
-			f->close();
-			memdelete(f);
-			ERR_FAIL_COND_V(tex3d.is_null(), RES())
-		}
-	} else if (header[0] == 'G' && header[1] == 'D' && header[2] == 'A' && header[3] == 'T') {
-		if (texarr.is_null()) {
-			f->close();
-			memdelete(f);
-			ERR_FAIL_COND_V(texarr.is_null(), RES())
-		}
-	} else {
-
-		f->close();
-		memdelete(f);
-		ERR_FAIL_V_MSG(RES(), "Unrecognized layered texture file format '" + String((const char *)header) + "'.");
-	}
-
-	int tw = f->get_32();
-	int th = f->get_32();
-	int td = f->get_32();
-	int flags = f->get_32(); //texture flags!
-	Image::Format format = Image::Format(f->get_32());
-	uint32_t compression = f->get_32(); // 0 - lossless (PNG), 1 - vram, 2 - uncompressed
-
-	lt->create(tw, th, td, format, flags);
-
-	for (int layer = 0; layer < td; layer++) {
-
-		Ref<Image> image;
-		image.instance();
-
-		if (compression == COMPRESSION_LOSSLESS) {
-			//look for a PNG file inside
-
-			int mipmaps = f->get_32();
-			Vector<Ref<Image> > mipmap_images;
-
-			for (int i = 0; i < mipmaps; i++) {
-				uint32_t size = f->get_32();
-
-				PoolVector<uint8_t> pv;
-				pv.resize(size);
-				{
-					PoolVector<uint8_t>::Write w = pv.write();
-					f->get_buffer(w.ptr(), size);
-				}
-
-				Ref<Image> img = Image::lossless_unpacker(pv);
-
-				if (img.is_null() || img->empty() || format != img->get_format()) {
-					if (r_error) {
-						*r_error = ERR_FILE_CORRUPT;
-					}
-					f->close();
-					memdelete(f);
-					ERR_FAIL_V(RES());
-				}
-
-				mipmap_images.push_back(img);
-			}
-
-			if (mipmap_images.size() == 1) {
-
-				image = mipmap_images[0];
-
-			} else {
-				int total_size = Image::get_image_data_size(tw, th, format, true);
-				PoolVector<uint8_t> img_data;
-				img_data.resize(total_size);
-
-				{
-					PoolVector<uint8_t>::Write w = img_data.write();
-
-					int ofs = 0;
-					for (int i = 0; i < mipmap_images.size(); i++) {
-
-						PoolVector<uint8_t> id = mipmap_images[i]->get_data();
-						int len = id.size();
-						PoolVector<uint8_t>::Read r = id.read();
-						copymem(&w[ofs], r.ptr(), len);
-						ofs += len;
-					}
-				}
-
-				image->create(tw, th, true, format, img_data);
-				if (image->empty()) {
-					if (r_error) {
-						*r_error = ERR_FILE_CORRUPT;
-					}
-					f->close();
-					memdelete(f);
-					ERR_FAIL_V(RES());
-				}
-			}
-
-		} else {
-
-			//look for regular format
-			bool mipmaps = (flags & Texture::FLAG_MIPMAPS);
-			int total_size = Image::get_image_data_size(tw, th, format, mipmaps);
-
-			PoolVector<uint8_t> img_data;
-			img_data.resize(total_size);
-
-			{
-				PoolVector<uint8_t>::Write w = img_data.write();
-				int bytes = f->get_buffer(w.ptr(), total_size);
-				if (bytes != total_size) {
-					if (r_error) {
-						*r_error = ERR_FILE_CORRUPT;
-					}
-					f->close();
-					memdelete(f);
-					ERR_FAIL_V(RES());
-				}
-			}
-
-			image->create(tw, th, mipmaps, format, img_data);
-		}
-
-		lt->set_layer_data(image, layer);
-	}
-
+	Error err = lt->load(p_path);
 	if (r_error)
 		*r_error = OK;
+	if (err != OK)
+		return RES();
 
 	return lt;
 }

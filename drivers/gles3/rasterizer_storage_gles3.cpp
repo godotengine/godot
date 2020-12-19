@@ -8555,6 +8555,8 @@ void RasterizerStorageGLES3::initialize() {
 
 	String renderer = (const char *)glGetString(GL_RENDERER);
 
+	config.use_lightmap_filter_bicubic = GLOBAL_GET("rendering/quality/lightmapping/use_bicubic_sampling");
+
 	config.use_depth_prepass = bool(GLOBAL_GET("rendering/quality/depth_prepass/enable"));
 	if (config.use_depth_prepass) {
 

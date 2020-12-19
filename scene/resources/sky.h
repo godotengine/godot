@@ -122,6 +122,7 @@ private:
 
 	RID sky;
 	RID texture;
+	Ref<Image> panorama;
 
 	bool update_queued;
 	bool regen_queued;
@@ -188,6 +189,8 @@ public:
 
 	void set_texture_size(TextureSize p_size);
 	TextureSize get_texture_size() const;
+
+	Ref<Image> get_panorama() const;
 
 	virtual RID get_rid() const;
 

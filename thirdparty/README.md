@@ -350,6 +350,10 @@ Collection of single-file libraries used in Godot components.
   * Version: git (2f625846a775501fb69456567409a8b12f10ea25, 2012)
   * License: BSD-3-Clause
   * Modifications: use `const char*` instead of `char*` for input string
+- `stb_rect_pack.h`
+  * Upstream: https://github.com/nothings/stb
+  * Version: 1.00
+  * License: Public Domain (Unlicense) or MIT
 - `stb_vorbis.c`
   * Upstream: https://github.com/nothings/stb
   * Version: 1.20 (314d0a6f9af5af27e585336eecea333e95c5a2d8, 2020)

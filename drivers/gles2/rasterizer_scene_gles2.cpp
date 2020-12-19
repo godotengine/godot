@@ -2572,6 +2572,9 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 		if (rebind_lightmap && lightmap) {
 			state.scene_shader.set_uniform(SceneShaderGLES2::LIGHTMAP_ENERGY, lightmap_energy);
+			if (storage->config.use_lightmap_filter_bicubic) {
+				state.scene_shader.set_uniform(SceneShaderGLES2::LIGHTMAP_TEXTURE_SIZE, Vector2(lightmap->width, lightmap->height));
+			}
 		}
 
 		state.scene_shader.set_uniform(SceneShaderGLES2::WORLD_TRANSFORM, e->instance->transform);
@@ -4053,6 +4056,8 @@ void RasterizerSceneGLES2::initialize() {
 }
 
 void RasterizerSceneGLES2::iteration() {
+	storage->config.use_lightmap_filter_bicubic = GLOBAL_GET("rendering/quality/lightmapping/use_bicubic_sampling");
+	state.scene_shader.set_conditional(SceneShaderGLES2::USE_LIGHTMAP_FILTER_BICUBIC, storage->config.use_lightmap_filter_bicubic);
 	shadow_filter_mode = ShadowFilterMode(int(GLOBAL_GET("rendering/quality/shadows/filter_mode")));
 }
 

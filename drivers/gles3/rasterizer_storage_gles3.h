@@ -74,6 +74,7 @@ public:
 		bool shrink_textures_x2;
 		bool use_fast_texture_filter;
 		bool use_anisotropic_filter;
+		bool use_lightmap_filter_bicubic;
 
 		bool s3tc_supported;
 		bool latc_supported;

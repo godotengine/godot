@@ -45,11 +45,15 @@ class BakedLightmapEditorPlugin : public EditorPlugin {
 	ToolButton *bake;
 	EditorNode *editor;
 
+	EditorFileDialog *file_dialog;
 	static EditorProgress *tmp_progress;
-	static void bake_func_begin(int p_steps);
-	static bool bake_func_step(int p_step, const String &p_description);
+	static EditorProgress *tmp_subprogress;
+
+	static bool bake_func_step(float p_progress, const String &p_description, void *, bool p_force_refresh);
+	static bool bake_func_substep(float p_progress, const String &p_description, void *, bool p_force_refresh);
 	static void bake_func_end();
 
+	void _bake_select_file(const String &p_file);
 	void _bake();
 
 protected:

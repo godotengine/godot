@@ -1938,7 +1938,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("instance_set_blend_shape_weight", "instance", "shape", "weight"), &VisualServer::instance_set_blend_shape_weight);
 	ClassDB::bind_method(D_METHOD("instance_set_surface_material", "instance", "surface", "material"), &VisualServer::instance_set_surface_material);
 	ClassDB::bind_method(D_METHOD("instance_set_visible", "instance", "visible"), &VisualServer::instance_set_visible);
-	ClassDB::bind_method(D_METHOD("instance_set_use_lightmap", "instance", "lightmap_instance", "lightmap"), &VisualServer::instance_set_use_lightmap);
+	ClassDB::bind_method(D_METHOD("instance_set_use_lightmap", "instance", "lightmap_instance", "lightmap", "lightmap_slice", "lightmap_uv_rect"), &VisualServer::instance_set_use_lightmap, DEFVAL(-1), DEFVAL(Rect2(0, 0, 1, 1)));
 	ClassDB::bind_method(D_METHOD("instance_set_custom_aabb", "instance", "aabb"), &VisualServer::instance_set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("instance_attach_skeleton", "instance", "skeleton"), &VisualServer::instance_attach_skeleton);
 	ClassDB::bind_method(D_METHOD("instance_set_exterior", "instance", "enabled"), &VisualServer::instance_set_exterior);
@@ -2445,6 +2445,9 @@ VisualServer::VisualServer() {
 	const char *sz_balance_render_tree = "rendering/quality/spatial_partitioning/render_tree_balance";
 	GLOBAL_DEF(sz_balance_render_tree, 0.0f);
 	ProjectSettings::get_singleton()->set_custom_property_info(sz_balance_render_tree, PropertyInfo(Variant::REAL, sz_balance_render_tree, PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
+
+	GLOBAL_DEF("rendering/quality/lightmapping/use_bicubic_sampling", true);
+	GLOBAL_DEF("rendering/quality/lightmapping/use_bicubic_sampling.mobile", false);
 
 	GLOBAL_DEF("rendering/quality/2d/use_software_skinning", true);
 	GLOBAL_DEF("rendering/quality/2d/ninepatch_mode", 0);
