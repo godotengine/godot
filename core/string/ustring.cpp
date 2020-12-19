@@ -2099,7 +2099,7 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 		return 0;
 	}
 
-	size_t i = 0;
+	int i = 0;
 
 	int64_t sign = this->ptr()[i] == '-' ? -1 : 1;
 
@@ -2141,7 +2141,7 @@ int64_t String::bin_to_int(bool p_with_prefix) const {
 		return 0;
 	}
 
-	size_t i = 0;
+	int i = 0;
 
 	int64_t sign = this->ptr()[i] == '-' ? -1 : 1;
 
