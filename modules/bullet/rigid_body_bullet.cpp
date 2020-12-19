@@ -339,9 +339,6 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 		can_integrate_forces = false;
 		isScratchedSpaceOverrideModificator = false;
 
-		// Remove all eventual constraints
-		assert_no_constraints();
-
 		// Remove this object form the physics world
 		space->remove_rigid_body(this);
 	}
@@ -459,17 +456,6 @@ bool RigidBodyBullet::was_colliding(RigidBodyBullet *p_other_object) {
 			return true;
 	}
 	return false;
-}
-
-void RigidBodyBullet::assert_no_constraints() {
-	if (btBody->getNumConstraintRefs()) {
-		WARN_PRINT("A body with a joints is destroyed. Please check the implementation in order to destroy the joint before the body.");
-	}
-	/*for(int i = btBody->getNumConstraintRefs()-1; 0<=i; --i){
-        btTypedConstraint* btConst = btBody->getConstraintRef(i);
-        JointBullet* joint = static_cast<JointBullet*>( btConst->getUserConstraintPtr() );
-        space->removeConstraint(joint);
-    }*/
 }
 
 void RigidBodyBullet::set_activation_state(bool p_active) {
