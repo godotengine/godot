@@ -621,13 +621,13 @@ Id Builder::makeAccelerationStructureType()
 Id Builder::makeRayQueryType()
 {
     Instruction *type;
-    if (groupedTypes[OpTypeRayQueryProvisionalKHR].size() == 0) {
-        type = new Instruction(getUniqueId(), NoType, OpTypeRayQueryProvisionalKHR);
-        groupedTypes[OpTypeRayQueryProvisionalKHR].push_back(type);
+    if (groupedTypes[OpTypeRayQueryKHR].size() == 0) {
+        type = new Instruction(getUniqueId(), NoType, OpTypeRayQueryKHR);
+        groupedTypes[OpTypeRayQueryKHR].push_back(type);
         constantsTypesGlobals.push_back(std::unique_ptr<Instruction>(type));
         module.mapInstruction(type);
     } else {
-        type = groupedTypes[OpTypeRayQueryProvisionalKHR].back();
+        type = groupedTypes[OpTypeRayQueryKHR].back();
     }
 
     return type->getResultId();
@@ -1447,10 +1447,10 @@ void Builder::leaveFunction()
 }
 
 // Comments in header
-void Builder::makeDiscard()
+void Builder::makeStatementTerminator(spv::Op opcode, const char *name)
 {
-    buildPoint->addInstruction(std::unique_ptr<Instruction>(new Instruction(OpKill)));
-    createAndSetNoPredecessorBlock("post-discard");
+    buildPoint->addInstruction(std::unique_ptr<Instruction>(new Instruction(opcode)));
+    createAndSetNoPredecessorBlock(name);
 }
 
 // Comments in header
@@ -2761,12 +2761,14 @@ void Builder::accessChainPushSwizzle(std::vector<unsigned>& swizzle, Id preSwizz
 }
 
 // Comments in header
-void Builder::accessChainStore(Id rvalue, spv::MemoryAccessMask memoryAccess, spv::Scope scope, unsigned int alignment)
+void Builder::accessChainStore(Id rvalue, Decoration nonUniform, spv::MemoryAccessMask memoryAccess, spv::Scope scope, unsigned int alignment)
 {
     assert(accessChain.isRValue == false);
 
     transferAccessChainSwizzle(true);
     Id base = collapseAccessChain();
+    addDecoration(base, nonUniform);
+
     Id source = rvalue;
 
     // dynamic component should be gone
@@ -2789,8 +2791,9 @@ void Builder::accessChainStore(Id rvalue, spv::MemoryAccessMask memoryAccess, sp
 }
 
 // Comments in header
-Id Builder::accessChainLoad(Decoration precision, Decoration nonUniform, Id resultType,
-    spv::MemoryAccessMask memoryAccess, spv::Scope scope, unsigned int alignment)
+Id Builder::accessChainLoad(Decoration precision, Decoration l_nonUniform,
+    Decoration r_nonUniform, Id resultType, spv::MemoryAccessMask memoryAccess,
+    spv::Scope scope, unsigned int alignment)
 {
     Id id;
 
@@ -2854,9 +2857,9 @@ Id Builder::accessChainLoad(Decoration precision, Decoration nonUniform, Id resu
         // Buffer accesses need the access chain decorated, and this is where
         // loaded image types get decorated. TODO: This should maybe move to
         // createImageTextureFunctionCall.
-        addDecoration(id, nonUniform);
+        addDecoration(id, l_nonUniform);
         id = createLoad(id, precision, memoryAccess, scope, alignment);
-        addDecoration(id, nonUniform);
+        addDecoration(id, r_nonUniform);
     }
 
     // Done, unless there are swizzles to do
@@ -2877,7 +2880,7 @@ Id Builder::accessChainLoad(Decoration precision, Decoration nonUniform, Id resu
     if (accessChain.component != NoResult)
         id = setPrecision(createVectorExtractDynamic(id, resultType, accessChain.component), precision);
 
-    addDecoration(id, nonUniform);
+    addDecoration(id, r_nonUniform);
     return id;
 }
 

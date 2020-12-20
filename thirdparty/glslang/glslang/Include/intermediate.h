@@ -280,6 +280,12 @@ enum TOperator {
     EOpConvUvec2ToPtr,
     EOpConvPtrToUvec2,
 
+    // uint64_t -> accelerationStructureEXT
+    EOpConvUint64ToAccStruct,
+
+    // uvec2 -> accelerationStructureEXT
+    EOpConvUvec2ToAccStruct,
+
     //
     // binary operations
     //
@@ -628,13 +634,16 @@ enum TOperator {
     // Branch
     //
 
-    EOpKill,            // Fragment only
+    EOpKill,                // Fragment only
+    EOpTerminateInvocation, // Fragment only
+    EOpDemote,              // Fragment only
+    EOpTerminateRayKHR,         // Any-hit only
+    EOpIgnoreIntersectionKHR,   // Any-hit only
     EOpReturn,
     EOpBreak,
     EOpContinue,
     EOpCase,
     EOpDefault,
-    EOpDemote,          // Fragment only
 
     //
     // Constructors
@@ -751,6 +760,7 @@ enum TOperator {
     EOpConstructNonuniform,     // expected to be transformed away, not present in final AST
     EOpConstructReference,
     EOpConstructCooperativeMatrix,
+    EOpConstructAccStruct,
     EOpConstructGuardEnd,
 
     //
@@ -911,11 +921,13 @@ enum TOperator {
     EOpAverageRounded,
     EOpMul32x16,
 
-    EOpTrace,
+    EOpTraceNV,
+    EOpTraceKHR,
     EOpReportIntersection,
-    EOpIgnoreIntersection,
-    EOpTerminateRay,
-    EOpExecuteCallable,
+    EOpIgnoreIntersectionNV,
+    EOpTerminateRayNV,
+    EOpExecuteCallableNV,
+    EOpExecuteCallableKHR,
     EOpWritePackedPrimitiveIndices4x8NV,
 
     //
@@ -1282,6 +1294,8 @@ public:
     TIntermTyped* getConstSubtree() const { return constSubtree; }
 #ifndef GLSLANG_WEB
     void setFlattenSubset(int subset) { flattenSubset = subset; }
+    virtual const TString& getAccessName() const;
+
     int getFlattenSubset() const { return flattenSubset; } // -1 means full object
 #endif
 

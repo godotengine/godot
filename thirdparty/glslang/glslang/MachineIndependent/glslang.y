@@ -242,6 +242,18 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> F16IMAGECUBE F16IMAGE1DARRAY F16IMAGE2DARRAY F16IMAGECUBEARRAY
 %token <lex> F16IMAGEBUFFER F16IMAGE2DMS F16IMAGE2DMSARRAY
 
+%token <lex> I64IMAGE1D U64IMAGE1D
+%token <lex> I64IMAGE2D U64IMAGE2D
+%token <lex> I64IMAGE3D U64IMAGE3D
+%token <lex> I64IMAGE2DRECT U64IMAGE2DRECT
+%token <lex> I64IMAGECUBE U64IMAGECUBE
+%token <lex> I64IMAGEBUFFER U64IMAGEBUFFER
+%token <lex> I64IMAGE1DARRAY U64IMAGE1DARRAY
+%token <lex> I64IMAGE2DARRAY U64IMAGE2DARRAY
+%token <lex> I64IMAGECUBEARRAY U64IMAGECUBEARRAY
+%token <lex> I64IMAGE2DMS U64IMAGE2DMS
+%token <lex> I64IMAGE2DMSARRAY U64IMAGE2DMSARRAY
+
 // texture without sampler
 %token <lex> TEXTURECUBEARRAY ITEXTURECUBEARRAY UTEXTURECUBEARRAY
 %token <lex> TEXTURE1D ITEXTURE1D UTEXTURE1D
@@ -281,6 +293,8 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> CENTROID IN OUT INOUT
 %token <lex> STRUCT VOID WHILE
 %token <lex> BREAK CONTINUE DO ELSE FOR IF DISCARD RETURN SWITCH CASE DEFAULT
+%token <lex> TERMINATE_INVOCATION
+%token <lex> TERMINATE_RAY IGNORE_INTERSECTION
 %token <lex> UNIFORM SHARED BUFFER
 %token <lex> FLAT SMOOTH LAYOUT
 
@@ -905,7 +919,7 @@ declaration
 
 block_structure
     : type_qualifier IDENTIFIER LEFT_BRACE { parseContext.nestedBlockCheck($1.loc); } struct_declaration_list RIGHT_BRACE {
-        --parseContext.structNestingLevel;
+        --parseContext.blockNestingLevel;
         parseContext.blockName = $2.string;
         parseContext.globalQualifierFixCheck($1.loc, $1.qualifier);
         parseContext.checkNoShaderLayouts($1.loc, $1.shaderQualifiers);
@@ -3203,6 +3217,116 @@ type_specifier_nonarray
         $$.basicType = EbtSampler;
         $$.sampler.setImage(EbtUint, Esd2D, true, false, true);
     }
+    | I64IMAGE1D {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtInt64, Esd1D);
+    }
+    | U64IMAGE1D {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtUint64, Esd1D);
+    }
+    | I64IMAGE2D {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtInt64, Esd2D);
+    }
+    | U64IMAGE2D {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtUint64, Esd2D);
+    }
+    | I64IMAGE3D {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtInt64, Esd3D);
+    }
+    | U64IMAGE3D {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtUint64, Esd3D);
+    }
+    | I64IMAGE2DRECT {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtInt64, EsdRect);
+    }
+    | U64IMAGE2DRECT {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtUint64, EsdRect);
+    }
+    | I64IMAGECUBE {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtInt64, EsdCube);
+    }
+    | U64IMAGECUBE {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtUint64, EsdCube);
+    }
+    | I64IMAGEBUFFER {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtInt64, EsdBuffer);
+    }
+    | U64IMAGEBUFFER {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtUint64, EsdBuffer);
+    }
+    | I64IMAGE1DARRAY {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtInt64, Esd1D, true);
+    }
+    | U64IMAGE1DARRAY {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtUint64, Esd1D, true);
+    }
+    | I64IMAGE2DARRAY {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtInt64, Esd2D, true);
+    }
+    | U64IMAGE2DARRAY {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtUint64, Esd2D, true);
+    }
+    | I64IMAGECUBEARRAY {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtInt64, EsdCube, true);
+    }
+    | U64IMAGECUBEARRAY {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtUint64, EsdCube, true);
+    }
+    | I64IMAGE2DMS {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtInt64, Esd2D, false, false, true);
+    }
+    | U64IMAGE2DMS {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtUint64, Esd2D, false, false, true);
+    }
+    | I64IMAGE2DMSARRAY {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtInt64, Esd2D, true, false, true);
+    }
+    | U64IMAGE2DMSARRAY {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtSampler;
+        $$.sampler.setImage(EbtUint64, Esd2D, true, false, true);
+    }
     | SAMPLEREXTERNALOES {  // GL_OES_EGL_image_external
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtSampler;
@@ -3805,6 +3929,20 @@ jump_statement
         parseContext.requireStage($1.loc, EShLangFragment, "discard");
         $$ = parseContext.intermediate.addBranch(EOpKill, $1.loc);
     }
+    | TERMINATE_INVOCATION SEMICOLON {
+        parseContext.requireStage($1.loc, EShLangFragment, "terminateInvocation");
+        $$ = parseContext.intermediate.addBranch(EOpTerminateInvocation, $1.loc);
+    }
+
+    | TERMINATE_RAY SEMICOLON {
+        parseContext.requireStage($1.loc, EShLangAnyHit, "terminateRayEXT");
+        $$ = parseContext.intermediate.addBranch(EOpTerminateRayKHR, $1.loc);
+    }
+    | IGNORE_INTERSECTION SEMICOLON {
+        parseContext.requireStage($1.loc, EShLangAnyHit, "ignoreIntersectionEXT");
+        $$ = parseContext.intermediate.addBranch(EOpIgnoreIntersectionKHR, $1.loc);
+    }
+
     ;
 
 // Grammar Note:  No 'goto'.  Gotos are not supported.

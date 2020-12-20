@@ -36,5 +36,6 @@ static const char* const E_SPV_EXT_fragment_fully_covered = "SPV_EXT_fragment_fu
 static const char* const E_SPV_EXT_fragment_invocation_density = "SPV_EXT_fragment_invocation_density";
 static const char* const E_SPV_EXT_demote_to_helper_invocation = "SPV_EXT_demote_to_helper_invocation";
 static const char* const E_SPV_EXT_shader_atomic_float_add = "SPV_EXT_shader_atomic_float_add";
+static const char* const E_SPV_EXT_shader_image_int64 = "SPV_EXT_shader_image_int64";
 
 #endif  // #ifndef GLSLextEXT_H

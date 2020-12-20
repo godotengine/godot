@@ -357,8 +357,9 @@ public:
     // Generate all the code needed to finish up a function.
     void leaveFunction();
 
-    // Create a discard.
-    void makeDiscard();
+    // Create block terminator instruction for certain statements like
+    // discard, terminate-invocation, terminateRayEXT, or ignoreIntersectionEXT
+    void makeStatementTerminator(spv::Op opcode, const char *name);
 
     // Create a global or function local or IO variable.
     Id createVariable(Decoration precision, StorageClass, Id type, const char* name = nullptr,
@@ -624,6 +625,7 @@ public:
             CoherentFlags operator |=(const CoherentFlags &other) { return *this; }
 #else
             bool isVolatile() const { return volatil; }
+            bool isNonUniform() const { return nonUniform; }
             bool anyCoherent() const {
                 return coherent || devicecoherent || queuefamilycoherent || workgroupcoherent ||
                     subgroupcoherent || shadercallcoherent;
@@ -638,6 +640,7 @@ public:
             unsigned nonprivate : 1;
             unsigned volatil : 1;
             unsigned isImage : 1;
+            unsigned nonUniform : 1;
 
             void clear() {
                 coherent = 0;
@@ -649,6 +652,7 @@ public:
                 nonprivate = 0;
                 volatil = 0;
                 isImage = 0;
+                nonUniform = 0;
             }
 
             CoherentFlags operator |=(const CoherentFlags &other) {
@@ -661,6 +665,7 @@ public:
                 nonprivate |= other.nonprivate;
                 volatil |= other.volatil;
                 isImage |= other.isImage;
+                nonUniform |= other.nonUniform;
                 return *this;
             }
 #endif
@@ -721,11 +726,12 @@ public:
     }
 
     // use accessChain and swizzle to store value
-    void accessChainStore(Id rvalue, spv::MemoryAccessMask memoryAccess = spv::MemoryAccessMaskNone,
+    void accessChainStore(Id rvalue, Decoration nonUniform,
+        spv::MemoryAccessMask memoryAccess = spv::MemoryAccessMaskNone,
         spv::Scope scope = spv::ScopeMax, unsigned int alignment = 0);
 
     // use accessChain and swizzle to load an r-value
-    Id accessChainLoad(Decoration precision, Decoration nonUniform, Id ResultType,
+    Id accessChainLoad(Decoration precision, Decoration l_nonUniform, Decoration r_nonUniform, Id ResultType,
         spv::MemoryAccessMask memoryAccess = spv::MemoryAccessMaskNone, spv::Scope scope = spv::ScopeMax,
             unsigned int alignment = 0);
 
