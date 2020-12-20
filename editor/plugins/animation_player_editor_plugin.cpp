@@ -116,6 +116,19 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			play_bw_from->set_icon(get_theme_icon("PlayBackwards", "EditorIcons"));
 
 			autoplay_icon = get_theme_icon("AutoPlay", "EditorIcons");
+			reset_icon = get_theme_icon("Reload", "EditorIcons");
+			{
+				Ref<Image> autoplay_img = autoplay_icon->get_data();
+				Ref<Image> reset_img = reset_icon->get_data();
+				Ref<Image> autoplay_reset_img;
+				Size2 icon_size = Size2(autoplay_img->get_width(), autoplay_img->get_height());
+				autoplay_reset_img.instance();
+				autoplay_reset_img->create(icon_size.x * 2, icon_size.y, false, autoplay_img->get_format());
+				autoplay_reset_img->blit_rect(autoplay_img, Rect2(Point2(), icon_size), Point2());
+				autoplay_reset_img->blit_rect(reset_img, Rect2(Point2(), icon_size), Point2(icon_size.x, 0));
+				autoplay_reset_icon.instance();
+				autoplay_reset_icon->create_from_image(autoplay_reset_img);
+			}
 			stop->set_icon(get_theme_icon("Stop", "EditorIcons"));
 
 			onion_toggle->set_icon(get_theme_icon("Onion", "EditorIcons"));
@@ -817,11 +830,17 @@ void AnimationPlayerEditor::_update_player() {
 
 	int active_idx = -1;
 	for (List<StringName>::Element *E = animlist.front(); E; E = E->next()) {
-		if (player->get_autoplay() == E->get()) {
-			animation->add_icon_item(autoplay_icon, E->get());
-		} else {
-			animation->add_item(E->get());
+		Ref<Texture2D> icon;
+		if (E->get() == player->get_autoplay()) {
+			if (E->get() == "RESET") {
+				icon = autoplay_reset_icon;
+			} else {
+				icon = autoplay_icon;
+			}
+		} else if (E->get() == "RESET") {
+			icon = reset_icon;
 		}
+		animation->add_icon_item(icon, E->get());
 
 		if (player->get_assigned_animation() == E->get()) {
 			active_idx = animation->get_item_count() - 1;
@@ -1375,7 +1394,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	}
 
 	// Backup current animation state.
-	AnimatedValuesBackup values_backup = player->backup_animated_values();
+	Ref<AnimatedValuesBackup> values_backup = player->backup_animated_values();
 	float cpos = player->get_current_animation_position();
 
 	// Render every past/future step with the capture shader.
@@ -1405,7 +1424,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 		if (valid) {
 			player->seek(pos, true);
 			get_tree()->flush_transform_notifications(); // Needed for transforms of Node3Ds.
-			values_backup.update_skeletons(); // Needed for Skeletons (2D & 3D).
+			values_backup->update_skeletons(); // Needed for Skeletons (2D & 3D).
 
 			RS::get_singleton()->viewport_set_active(onion.captures[cidx], true);
 			RS::get_singleton()->viewport_set_parent_viewport(root_vp, onion.captures[cidx]);
@@ -1425,7 +1444,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	// (Seeking with update=true wouldn't do the trick because the current value of the properties
 	// may not match their value for the current point in the animation).
 	player->seek(cpos, false);
-	player->restore_animated_values(values_backup);
+	values_backup->restore();
 
 	// Restore state of main editors.
 	if (Node3DEditor::get_singleton()->is_visible()) {

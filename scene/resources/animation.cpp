@@ -33,8 +33,6 @@
 
 #include "core/math/geometry_3d.h"
 
-#define ANIM_MIN_LENGTH 0.001
-
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
 

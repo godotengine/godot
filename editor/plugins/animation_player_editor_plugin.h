@@ -105,6 +105,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Label *name_title;
 	UndoRedo *undo_redo;
 	Ref<Texture2D> autoplay_icon;
+	Ref<Texture2D> reset_icon;
+	Ref<ImageTexture> autoplay_reset_icon;
 	bool last_active;
 	float timeline_position;
 

@@ -30,8 +30,8 @@
 
 #include "undo_redo.h"
 
+#include "core/io/resource.h"
 #include "core/os/os.h"
-#include "core/resource.h"
 
 void UndoRedo::_discard_redo() {
 	if (current_action == actions.size() - 1) {

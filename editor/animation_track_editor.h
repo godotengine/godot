@@ -47,6 +47,8 @@
 #include "scene/resources/animation.h"
 #include "scene_tree_editor.h"
 
+class AnimationPlayer;
+
 class AnimationTimelineEdit : public Range {
 	GDCLASS(AnimationTimelineEdit, Range);
 
@@ -285,6 +287,7 @@ class AnimationTrackEditor : public VBoxContainer {
 		EDIT_DELETE_SELECTION,
 		EDIT_GOTO_NEXT_STEP,
 		EDIT_GOTO_PREV_STEP,
+		EDIT_APPLY_RESET,
 		EDIT_OPTIMIZE_ANIMATION,
 		EDIT_OPTIMIZE_ANIMATION_CONFIRM,
 		EDIT_CLEAN_UP_ANIMATION,
@@ -361,6 +364,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	Label *insert_confirm_text;
 	CheckBox *insert_confirm_bezier;
+	CheckBox *insert_confirm_reset;
 	ConfirmationDialog *insert_confirm;
 	bool insert_queue;
 	bool inserting;
@@ -369,9 +373,19 @@ class AnimationTrackEditor : public VBoxContainer {
 	uint64_t insert_frame;
 
 	void _query_insert(const InsertData &p_id);
+	Ref<Animation> _create_and_get_reset_animation();
 	void _confirm_insert_list();
-	int _confirm_insert(InsertData p_id, int p_last_track, bool p_create_beziers = false);
-	void _insert_delay();
+	struct TrackIndices {
+		int normal;
+		int reset;
+
+		TrackIndices(const Animation *p_anim = nullptr, const Animation *p_reset_anim = nullptr) {
+			normal = p_anim ? p_anim->get_track_count() : 0;
+			reset = p_reset_anim ? p_reset_anim->get_track_count() : 0;
+		}
+	};
+	TrackIndices _confirm_insert(InsertData p_id, TrackIndices p_next_tracks, bool p_create_reset, bool p_create_beziers);
+	void _insert_delay(bool p_create_reset, bool p_create_beziers);
 
 	void _root_removed(Node *p_root);
 
@@ -447,6 +461,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _select_all_tracks_for_copy();
 
+	void _edit_menu_about_to_popup();
 	void _edit_menu_pressed(int p_option);
 	int last_menu_track_opt;
 

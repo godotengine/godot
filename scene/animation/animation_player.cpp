@@ -36,6 +36,7 @@
 #include "servers/audio/audio_stream.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "scene/2d/skeleton_2d.h"
 
@@ -52,6 +53,21 @@ void AnimatedValuesBackup::update_skeletons() {
 			}
 		}
 	}
+}
+
+void AnimatedValuesBackup::restore() const {
+	for (int i = 0; i < entries.size(); i++) {
+		const AnimatedValuesBackup::Entry *entry = &entries[i];
+		if (entry->bone_idx == -1) {
+			entry->object->set_indexed(entry->subpath, entry->value);
+		} else {
+			Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose(entry->bone_idx, entry->value);
+		}
+	}
+}
+
+void AnimatedValuesBackup::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("restore"), &AnimatedValuesBackup::restore);
 }
 #endif
 
@@ -1379,6 +1395,14 @@ String AnimationPlayer::get_autoplay() const {
 	return autoplay;
 }
 
+void AnimationPlayer::set_reset_on_save_enabled(bool p_enabled) {
+	reset_on_save = p_enabled;
+}
+
+bool AnimationPlayer::is_reset_on_save_enabled() const {
+	return reset_on_save;
+}
+
 void AnimationPlayer::set_animation_process_mode(AnimationProcessMode p_mode) {
 	if (animation_process_mode == p_mode) {
 		return;
@@ -1473,15 +1497,15 @@ void AnimationPlayer::get_argument_options(const StringName &p_function, int p_i
 }
 
 #ifdef TOOLS_ENABLED
-AnimatedValuesBackup AnimationPlayer::backup_animated_values() {
+Ref<AnimatedValuesBackup> AnimationPlayer::backup_animated_values() {
+	Ref<AnimatedValuesBackup> backup;
 	if (!playback.current.from) {
-		return AnimatedValuesBackup();
+		return backup;
 	}
 
 	_ensure_node_caches(playback.current.from);
 
-	AnimatedValuesBackup backup;
-
+	backup.instance();
 	for (int i = 0; i < playback.current.from->node_cache.size(); i++) {
 		TrackNodeCache *nc = playback.current.from->node_cache[i];
 		if (!nc) {
@@ -1497,7 +1521,7 @@ AnimatedValuesBackup AnimationPlayer::backup_animated_values() {
 			entry.object = nc->skeleton;
 			entry.bone_idx = nc->bone_idx;
 			entry.value = nc->skeleton->get_bone_pose(nc->bone_idx);
-			backup.entries.push_back(entry);
+			backup->entries.push_back(entry);
 		} else {
 			if (nc->spatial) {
 				AnimatedValuesBackup::Entry entry;
@@ -1505,7 +1529,7 @@ AnimatedValuesBackup AnimationPlayer::backup_animated_values() {
 				entry.subpath.push_back("transform");
 				entry.value = nc->spatial->get_transform();
 				entry.bone_idx = -1;
-				backup.entries.push_back(entry);
+				backup->entries.push_back(entry);
 			} else {
 				for (Map<StringName, TrackNodeCache::PropertyAnim>::Element *E = nc->property_anim.front(); E; E = E->next()) {
 					AnimatedValuesBackup::Entry entry;
@@ -1515,7 +1539,7 @@ AnimatedValuesBackup AnimationPlayer::backup_animated_values() {
 					entry.value = E->value().object->get_indexed(E->value().subpath, &valid);
 					entry.bone_idx = -1;
 					if (valid) {
-						backup.entries.push_back(entry);
+						backup->entries.push_back(entry);
 					}
 				}
 			}
@@ -1525,15 +1549,40 @@ AnimatedValuesBackup AnimationPlayer::backup_animated_values() {
 	return backup;
 }
 
-void AnimationPlayer::restore_animated_values(const AnimatedValuesBackup &p_backup) {
-	for (int i = 0; i < p_backup.entries.size(); i++) {
-		const AnimatedValuesBackup::Entry *entry = &p_backup.entries[i];
-		if (entry->bone_idx == -1) {
-			entry->object->set_indexed(entry->subpath, entry->value);
-		} else {
-			Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose(entry->bone_idx, entry->value);
-		}
+Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
+	ERR_FAIL_COND_V(!can_apply_reset(), Ref<AnimatedValuesBackup>());
+
+	Ref<Animation> reset_anim = animation_set["RESET"].animation;
+	ERR_FAIL_COND_V(reset_anim.is_null(), Ref<AnimatedValuesBackup>());
+
+	Node *root_node = get_node_or_null(root);
+	ERR_FAIL_COND_V(!root_node, Ref<AnimatedValuesBackup>());
+
+	AnimationPlayer *aux_player = memnew(AnimationPlayer);
+	EditorNode::get_singleton()->add_child(aux_player);
+	aux_player->set_root(aux_player->get_path_to(root_node));
+	aux_player->add_animation("RESET", reset_anim);
+	aux_player->set_assigned_animation("RESET");
+	Ref<AnimatedValuesBackup> old_values = aux_player->backup_animated_values();
+	aux_player->seek(0.0f, true);
+	aux_player->queue_delete();
+
+	if (p_user_initiated) {
+		Ref<AnimatedValuesBackup> new_values = aux_player->backup_animated_values();
+		old_values->restore();
+
+		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+		ur->create_action(TTR("Anim Apply Reset"));
+		ur->add_do_method(new_values.ptr(), "restore");
+		ur->add_undo_method(old_values.ptr(), "restore");
+		ur->commit_action();
 	}
+
+	return old_values;
+}
+
+bool AnimationPlayer::can_apply_reset() const {
+	return has_animation("RESET") && playback.assigned != StringName("RESET");
 }
 #endif
 
@@ -1577,6 +1626,9 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autoplay", "name"), &AnimationPlayer::set_autoplay);
 	ClassDB::bind_method(D_METHOD("get_autoplay"), &AnimationPlayer::get_autoplay);
 
+	ClassDB::bind_method(D_METHOD("set_reset_on_save_enabled", "enabled"), &AnimationPlayer::set_reset_on_save_enabled);
+	ClassDB::bind_method(D_METHOD("is_reset_on_save_enabled"), &AnimationPlayer::is_reset_on_save_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_root", "path"), &AnimationPlayer::set_root);
 	ClassDB::bind_method(D_METHOD("get_root"), &AnimationPlayer::get_root);
 
@@ -1600,6 +1652,7 @@ void AnimationPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "current_animation", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ANIMATE_AS_TRIGGER), "set_current_animation", "get_current_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "assigned_animation", PROPERTY_HINT_NONE, "", 0), "set_assigned_animation", "get_assigned_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_autoplay", "get_autoplay");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_on_save", PROPERTY_HINT_NONE, ""), "set_reset_on_save_enabled", "is_reset_on_save_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "current_animation_length", PROPERTY_HINT_NONE, "", 0), "", "get_current_animation_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "current_animation_position", PROPERTY_HINT_NONE, "", 0), "", "get_current_animation_position");
 
@@ -1631,6 +1684,7 @@ AnimationPlayer::AnimationPlayer() {
 	speed_scale = 1;
 	end_reached = false;
 	end_notify = false;
+	reset_on_save = true;
 	animation_process_mode = ANIMATION_PROCESS_IDLE;
 	method_call_mode = ANIMATION_METHOD_CALL_DEFERRED;
 	processing = false;

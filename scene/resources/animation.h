@@ -33,6 +33,8 @@
 
 #include "core/io/resource.h"
 
+#define ANIM_MIN_LENGTH 0.001
+
 class Animation : public Resource {
 	GDCLASS(Animation, Resource);
 	RES_BASE_EXTENSION("anim");
