@@ -367,8 +367,8 @@ void BodyPair3DSW::solve(real_t p_step) {
 
 			Vector3 jb = c.normal * (c.acc_bias_impulse - jbnOld);
 
-			A->apply_bias_impulse(c.rA + A->get_center_of_mass(), -jb, MAX_BIAS_ROTATION / p_step);
-			B->apply_bias_impulse(c.rB + B->get_center_of_mass(), jb, MAX_BIAS_ROTATION / p_step);
+			A->apply_bias_impulse(-jb, c.rA + A->get_center_of_mass(), MAX_BIAS_ROTATION / p_step);
+			B->apply_bias_impulse(jb, c.rB + B->get_center_of_mass(), MAX_BIAS_ROTATION / p_step);
 
 			crbA = A->get_biased_angular_velocity().cross(c.rA);
 			crbB = B->get_biased_angular_velocity().cross(c.rB);
@@ -383,8 +383,8 @@ void BodyPair3DSW::solve(real_t p_step) {
 
 				Vector3 jb_com = c.normal * (c.acc_bias_impulse_center_of_mass - jbnOld_com);
 
-				A->apply_bias_impulse(A->get_center_of_mass(), -jb_com, 0.0f);
-				B->apply_bias_impulse(B->get_center_of_mass(), jb_com, 0.0f);
+				A->apply_bias_impulse(-jb_com, A->get_center_of_mass(), 0.0f);
+				B->apply_bias_impulse(jb_com, B->get_center_of_mass(), 0.0f);
 			}
 
 			c.active = true;
