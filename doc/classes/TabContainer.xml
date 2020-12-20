@@ -137,6 +137,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="all_tabs_in_front" type="bool" setter="set_all_tabs_in_front" getter="is_all_tabs_in_front" default="false">
+			If [code]true[/code], all tabs are drawn in front of the panel. If [code]false[/code], inactive tabs are drawn behind the panel.
+		</member>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="0">
 			The current tab index. When set, this index's [Control] node's [code]visible[/code] property is set to [code]true[/code] and all others are set to [code]false[/code].
 		</member>
@@ -146,11 +149,12 @@
 		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="TabContainer.TabAlign" default="1">
 			The alignment of all tabs in the tab container. See the [enum TabAlign] constants for details.
 		</member>
+		<member name="tabs_at_bottom" type="bool" setter="set_tabs_at_bottom" getter="is_tabs_at_bottom" default="false">
+			If [code]true[/code], tabs will be displayed at the bottom of the container. If [code]false[/code], tabs are displayed at the top (default).
+			Different styles can be set for tabs being displayed at the bottom and the top. This allows setting of different border radius, for example, depeding on where tabs are displayed.
+		</member>
 		<member name="tabs_visible" type="bool" setter="set_tabs_visible" getter="are_tabs_visible" default="true">
 			If [code]true[/code], tabs are visible. If [code]false[/code], tabs' content and titles are hidden.
-		</member>
-		<member name="all_tabs_in_front" type="bool" setter="set_all_tabs_in_front" getter="is_all_tabs_in_front" default="false">
-			If [code]true[/code], all tabs are drawn in front of the panel. If [code]false[/code], inactive tabs are drawn behind the panel.
 		</member>
 		<member name="use_hidden_tabs_for_min_size" type="bool" setter="set_use_hidden_tabs_for_min_size" getter="get_use_hidden_tabs_for_min_size" default="false">
 			If [code]true[/code], children [Control] nodes that are hidden have their minimum size take into account in the total, instead of only the currently visible one.
@@ -231,14 +235,23 @@
 		<theme_item name="side_margin" type="int" default="8">
 			The space at the left and right edges of the tab bar.
 		</theme_item>
-		<theme_item name="tab_bg" type="StyleBox">
-			The style of inactive tabs.
+		<theme_item name="tab_bg_bottom" type="StyleBox">
+			The style of inactive tabs when displaying at the bottom.
 		</theme_item>
-		<theme_item name="tab_disabled" type="StyleBox">
-			The style of disabled tabs.
+		<theme_item name="tab_bg_top" type="StyleBox">
+			The style of inactive tabs when displaying at the top.
 		</theme_item>
-		<theme_item name="tab_fg" type="StyleBox">
-			The style of the currently selected tab.
+		<theme_item name="tab_disabled_bottom" type="StyleBox">
+			The style of disabled tabs when displaying at the bottom.
+		</theme_item>
+		<theme_item name="tab_disabled_top" type="StyleBox">
+			The style of disabled tabs when displaying at the top.
+		</theme_item>
+		<theme_item name="tab_fg_bottom" type="StyleBox">
+			The style of the currently selected tab when displaying at the bottom.
+		</theme_item>
+		<theme_item name="tab_fg_top" type="StyleBox">
+			The style of the currently selected tab when displaying at the top.
 		</theme_item>
 	</theme_items>
 </class>

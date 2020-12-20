@@ -533,23 +533,29 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const int tab_default_margin_side = 10 * EDSCALE + extra_spacing * EDSCALE;
 	const int tab_default_margin_vertical = 5 * EDSCALE + extra_spacing * EDSCALE;
 
-	Ref<StyleBoxFlat> style_tab_selected = style_widget->duplicate();
+	Ref<StyleBoxFlat> style_tab_base = style_widget->duplicate();
 
-	style_tab_selected->set_border_width_all(border_width);
-	style_tab_selected->set_border_width(MARGIN_BOTTOM, 0);
-	style_tab_selected->set_border_color(dark_color_3);
-	style_tab_selected->set_expand_margin_size(MARGIN_BOTTOM, border_width);
-	style_tab_selected->set_default_margin(MARGIN_LEFT, tab_default_margin_side);
-	style_tab_selected->set_default_margin(MARGIN_RIGHT, tab_default_margin_side);
-	style_tab_selected->set_default_margin(MARGIN_BOTTOM, tab_default_margin_vertical);
-	style_tab_selected->set_default_margin(MARGIN_TOP, tab_default_margin_vertical);
-	style_tab_selected->set_bg_color(tab_color);
+	style_tab_base->set_border_width_all(border_width);
+	style_tab_base->set_border_color(dark_color_3);
+	style_tab_base->set_default_margin(MARGIN_LEFT, tab_default_margin_side);
+	style_tab_base->set_default_margin(MARGIN_RIGHT, tab_default_margin_side);
+	style_tab_base->set_default_margin(MARGIN_BOTTOM, tab_default_margin_vertical);
+	style_tab_base->set_default_margin(MARGIN_TOP, tab_default_margin_vertical);
+	style_tab_base->set_bg_color(tab_color);
 
-	Ref<StyleBoxFlat> style_tab_unselected = style_tab_selected->duplicate();
+	Ref<StyleBoxFlat> style_tab_selected_top = style_tab_base->duplicate();
+	style_tab_selected_top->set_border_width(MARGIN_BOTTOM, 0);
+	style_tab_selected_top->set_expand_margin_size(MARGIN_BOTTOM, border_width);
+
+	Ref<StyleBoxFlat> style_tab_selected_bottom = style_tab_base->duplicate();
+	style_tab_selected_bottom->set_border_width(MARGIN_TOP, 0);
+	style_tab_selected_bottom->set_expand_margin_size(MARGIN_TOP, border_width);
+
+	Ref<StyleBoxFlat> style_tab_unselected = style_tab_base->duplicate();
 	style_tab_unselected->set_bg_color(dark_color_1);
 	style_tab_unselected->set_border_color(dark_color_2);
 
-	Ref<StyleBoxFlat> style_tab_disabled = style_tab_selected->duplicate();
+	Ref<StyleBoxFlat> style_tab_disabled = style_tab_base->duplicate();
 	style_tab_disabled->set_bg_color(color_disabled_bg);
 	style_tab_disabled->set_border_color(color_disabled);
 
@@ -834,10 +840,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("line_separation", "ItemList", 3 * EDSCALE);
 
 	// Tabs & TabContainer
-	theme->set_stylebox("tab_fg", "TabContainer", style_tab_selected);
-	theme->set_stylebox("tab_bg", "TabContainer", style_tab_unselected);
-	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
-	theme->set_stylebox("tab_fg", "Tabs", style_tab_selected);
+	theme->set_stylebox("tab_fg_top", "TabContainer", style_tab_selected_top);
+	theme->set_stylebox("tab_bg_top", "TabContainer", style_tab_unselected);
+	theme->set_stylebox("tab_disabled_top", "TabContainer", style_tab_disabled);
+	theme->set_stylebox("tab_fg_bottom", "TabContainer", style_tab_selected_bottom);
+	theme->set_stylebox("tab_bg_bottom", "TabContainer", style_tab_unselected);
+	theme->set_stylebox("tab_disabled_bottom", "TabContainer", style_tab_disabled);
+
+	theme->set_stylebox("tab_fg", "Tabs", style_tab_selected_top);
 	theme->set_stylebox("tab_bg", "Tabs", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "Tabs", style_tab_disabled);
 	theme->set_color("font_color_fg", "TabContainer", font_color);
@@ -846,7 +856,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color_bg", "Tabs", font_color_disabled);
 	theme->set_icon("menu", "TabContainer", theme->get_icon("GuiTabMenu", "EditorIcons"));
 	theme->set_icon("menu_highlight", "TabContainer", theme->get_icon("GuiTabMenuHl", "EditorIcons"));
-	theme->set_stylebox("SceneTabFG", "EditorStyles", style_tab_selected);
+	theme->set_stylebox("SceneTabFG", "EditorStyles", style_tab_selected_top);
 	theme->set_stylebox("SceneTabBG", "EditorStyles", style_tab_unselected);
 	theme->set_icon("close", "Tabs", theme->get_icon("GuiClose", "EditorIcons"));
 	theme->set_stylebox("button_pressed", "Tabs", style_menu);
