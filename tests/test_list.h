@@ -45,6 +45,276 @@ static void populate_integers(List<int> &p_list, List<int>::Element *r_elements[
 	}
 }
 
+TEST_CASE("[List] Push/pop back") {
+	List<String> list;
+
+	List<String>::Element *n;
+	n = list.push_back("A");
+	CHECK(n->get() == "A");
+	n = list.push_back("B");
+	CHECK(n->get() == "B");
+	n = list.push_back("C");
+	CHECK(n->get() == "C");
+
+	CHECK(list.size() == 3);
+	CHECK(!list.empty());
+
+	String v;
+	v = list.back()->get();
+	list.pop_back();
+	CHECK(v == "C");
+	v = list.back()->get();
+	list.pop_back();
+	CHECK(v == "B");
+	v = list.back()->get();
+	list.pop_back();
+	CHECK(v == "A");
+
+	CHECK(list.size() == 0);
+	CHECK(list.empty());
+
+	CHECK(list.back() == nullptr);
+	CHECK(list.front() == nullptr);
+}
+
+TEST_CASE("[List] Push/pop front") {
+	List<String> list;
+
+	List<String>::Element *n;
+	n = list.push_front("A");
+	CHECK(n->get() == "A");
+	n = list.push_front("B");
+	CHECK(n->get() == "B");
+	n = list.push_front("C");
+	CHECK(n->get() == "C");
+
+	CHECK(list.size() == 3);
+	CHECK(!list.empty());
+
+	String v;
+	v = list.front()->get();
+	list.pop_front();
+	CHECK(v == "C");
+	v = list.front()->get();
+	list.pop_front();
+	CHECK(v == "B");
+	v = list.front()->get();
+	list.pop_front();
+	CHECK(v == "A");
+
+	CHECK(list.size() == 0);
+	CHECK(list.empty());
+
+	CHECK(list.back() == nullptr);
+	CHECK(list.front() == nullptr);
+}
+
+TEST_CASE("[List] Set and get") {
+	List<String> list;
+	list.push_back("A");
+
+	List<String>::Element *n = list.front();
+	CHECK(n->get() == "A");
+
+	n->set("X");
+	CHECK(n->get() == "X");
+}
+
+TEST_CASE("[List] Insert before") {
+	List<String> list;
+	List<String>::Element *a = list.push_back("A");
+	List<String>::Element *b = list.push_back("B");
+	List<String>::Element *c = list.push_back("C");
+
+	list.insert_before(b, "I");
+
+	CHECK(a->next()->get() == "I");
+	CHECK(c->prev()->prev()->get() == "I");
+	CHECK(list.front()->next()->get() == "I");
+	CHECK(list.back()->prev()->prev()->get() == "I");
+}
+
+TEST_CASE("[List] Insert after") {
+	List<String> list;
+	List<String>::Element *a = list.push_back("A");
+	List<String>::Element *b = list.push_back("B");
+	List<String>::Element *c = list.push_back("C");
+
+	list.insert_after(b, "I");
+
+	CHECK(a->next()->next()->get() == "I");
+	CHECK(c->prev()->get() == "I");
+	CHECK(list.front()->next()->next()->get() == "I");
+	CHECK(list.back()->prev()->get() == "I");
+}
+
+TEST_CASE("[List] Insert before null") {
+	List<String> list;
+	List<String>::Element *a = list.push_back("A");
+	List<String>::Element *b = list.push_back("B");
+	List<String>::Element *c = list.push_back("C");
+
+	list.insert_before(nullptr, "I");
+
+	CHECK(a->next()->get() == "B");
+	CHECK(b->get() == "B");
+	CHECK(c->prev()->prev()->get() == "A");
+	CHECK(list.front()->next()->get() == "B");
+	CHECK(list.back()->prev()->prev()->get() == "B");
+	CHECK(list.back()->get() == "I");
+}
+
+TEST_CASE("[List] Insert after null") {
+	List<String> list;
+	List<String>::Element *a = list.push_back("A");
+	List<String>::Element *b = list.push_back("B");
+	List<String>::Element *c = list.push_back("C");
+
+	list.insert_after(nullptr, "I");
+
+	CHECK(a->next()->get() == "B");
+	CHECK(b->get() == "B");
+	CHECK(c->prev()->prev()->get() == "A");
+	CHECK(list.front()->next()->get() == "B");
+	CHECK(list.back()->prev()->prev()->get() == "B");
+	CHECK(list.back()->get() == "I");
+}
+
+TEST_CASE("[List] Find") {
+	List<int> list;
+	List<int>::Element *n[10];
+	// Indices match values.
+	populate_integers(list, n, 10);
+
+	for (int i = 0; i < 10; ++i) {
+		CHECK(n[i]->get() == list.find(i)->get());
+	}
+}
+
+TEST_CASE("[List] Erase (by value)") {
+	List<int> list;
+	List<int>::Element *n[4];
+	// Indices match values.
+	populate_integers(list, n, 4);
+
+	CHECK(list.front()->next()->next()->get() == 2);
+	bool erased = list.erase(2); // 0, 1, 3.
+	CHECK(erased);
+	CHECK(list.size() == 3);
+
+	// The pointer n[2] points to the freed memory which is not reset to zero,
+	// so the below assertion may pass, but this relies on undefined behavior.
+	// CHECK(n[2]->get() == 2);
+
+	CHECK(list.front()->get() == 0);
+	CHECK(list.front()->next()->next()->get() == 3);
+	CHECK(list.back()->get() == 3);
+	CHECK(list.back()->prev()->get() == 1);
+
+	CHECK(n[1]->next()->get() == 3);
+	CHECK(n[3]->prev()->get() == 1);
+
+	erased = list.erase(9000); // Doesn't exist.
+	CHECK(!erased);
+}
+
+TEST_CASE("[List] Erase (by element)") {
+	List<int> list;
+	List<int>::Element *n[4];
+	// Indices match values.
+	populate_integers(list, n, 4);
+
+	bool erased = list.erase(n[2]);
+	CHECK(erased);
+	CHECK(list.size() == 3);
+	CHECK(n[1]->next()->get() == 3);
+	CHECK(n[3]->prev()->get() == 1);
+}
+
+TEST_CASE("[List] Element erase") {
+	List<int> list;
+	List<int>::Element *n[4];
+	// Indices match values.
+	populate_integers(list, n, 4);
+
+	n[2]->erase();
+
+	CHECK(list.size() == 3);
+	CHECK(n[1]->next()->get() == 3);
+	CHECK(n[3]->prev()->get() == 1);
+}
+
+TEST_CASE("[List] Clear") {
+	List<int> list;
+	List<int>::Element *n[100];
+	populate_integers(list, n, 100);
+
+	list.clear();
+
+	CHECK(list.size() == 0);
+	CHECK(list.empty());
+}
+
+TEST_CASE("[List] Invert") {
+	List<int> list;
+	List<int>::Element *n[4];
+	populate_integers(list, n, 4);
+
+	list.invert();
+
+	CHECK(list.front()->get() == 3);
+	CHECK(list.front()->next()->get() == 2);
+	CHECK(list.back()->prev()->get() == 1);
+	CHECK(list.back()->get() == 0);
+}
+
+TEST_CASE("[List] Move to front") {
+	List<int> list;
+	List<int>::Element *n[4];
+	populate_integers(list, n, 4);
+
+	list.move_to_front(n[3]);
+
+	CHECK(list.front()->get() == 3);
+	CHECK(list.back()->get() == 2);
+}
+
+TEST_CASE("[List] Move to back") {
+	List<int> list;
+	List<int>::Element *n[4];
+	populate_integers(list, n, 4);
+
+	list.move_to_back(n[0]);
+
+	CHECK(list.back()->get() == 0);
+	CHECK(list.front()->get() == 1);
+}
+
+TEST_CASE("[List] Move before") {
+	List<int> list;
+	List<int>::Element *n[4];
+	populate_integers(list, n, 4);
+
+	list.move_before(n[3], n[1]);
+
+	CHECK(list.front()->next()->get() == n[3]->get());
+}
+
+TEST_CASE("[List] Sort") {
+	List<String> list;
+	list.push_back("D");
+	list.push_back("B");
+	list.push_back("A");
+	list.push_back("C");
+
+	list.sort();
+
+	CHECK(list.front()->get() == "A");
+	CHECK(list.front()->next()->get() == "B");
+	CHECK(list.back()->prev()->get() == "C");
+	CHECK(list.back()->get() == "D");
+}
+
 TEST_CASE("[List] Swap adjacent front and back") {
 	List<int> list;
 	List<int>::Element *n[2];
