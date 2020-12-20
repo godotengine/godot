@@ -2298,6 +2298,10 @@ TOperator TIntermediate::mapTypeToConstructorOp(const TType& type) const
     case EbtReference:
         op = EOpConstructReference;
         break;
+
+    case EbtAccStruct:
+        op = EOpConstructAccStruct;
+        break;
 #endif
     default:
         break;
