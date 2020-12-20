@@ -34,8 +34,8 @@
 
 void XRPositionalTracker::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRACKER_HAND_UNKNOWN);
-	BIND_ENUM_CONSTANT(TRACKER_LEFT_HAND);
-	BIND_ENUM_CONSTANT(TRACKER_RIGHT_HAND);
+	BIND_ENUM_CONSTANT(TRACKER_HAND_LEFT);
+	BIND_ENUM_CONSTANT(TRACKER_HAND_RIGHT);
 
 	// this class is read only from GDScript, so we only have access to getters..
 	ClassDB::bind_method(D_METHOD("get_tracker_type"), &XRPositionalTracker::get_tracker_type);
@@ -182,11 +182,11 @@ void XRPositionalTracker::set_hand(const XRPositionalTracker::TrackerHand p_hand
 		ERR_FAIL_COND((type != XRServer::TRACKER_CONTROLLER) && (p_hand != XRPositionalTracker::TRACKER_HAND_UNKNOWN));
 
 		hand = p_hand;
-		if (hand == XRPositionalTracker::TRACKER_LEFT_HAND) {
+		if (hand == XRPositionalTracker::TRACKER_HAND_LEFT) {
 			if (!xr_server->is_tracker_id_in_use_for_type(type, 1)) {
 				tracker_id = 1;
 			};
-		} else if (hand == XRPositionalTracker::TRACKER_RIGHT_HAND) {
+		} else if (hand == XRPositionalTracker::TRACKER_HAND_RIGHT) {
 			if (!xr_server->is_tracker_id_in_use_for_type(type, 2)) {
 				tracker_id = 2;
 			};

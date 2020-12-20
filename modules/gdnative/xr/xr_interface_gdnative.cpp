@@ -305,9 +305,9 @@ godot_int GDAPI godot_xr_add_controller(char *p_device_name, godot_int p_hand, g
 	new_tracker->set_name(p_device_name);
 	new_tracker->set_type(XRServer::TRACKER_CONTROLLER);
 	if (p_hand == 1) {
-		new_tracker->set_hand(XRPositionalTracker::TRACKER_LEFT_HAND);
+		new_tracker->set_hand(XRPositionalTracker::TRACKER_HAND_LEFT);
 	} else if (p_hand == 2) {
-		new_tracker->set_hand(XRPositionalTracker::TRACKER_RIGHT_HAND);
+		new_tracker->set_hand(XRPositionalTracker::TRACKER_HAND_RIGHT);
 	}
 
 	// also register as joystick...
