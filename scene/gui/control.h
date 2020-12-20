@@ -166,46 +166,46 @@ private:
 		Point2 pos_cache;
 		Size2 size_cache;
 		Size2 minimum_size_cache;
-		bool minimum_size_valid;
+		bool minimum_size_valid = false;
 
 		Size2 last_minimum_size;
-		bool updating_last_minimum_size;
+		bool updating_last_minimum_size = false;
 
-		float margin[4];
-		float anchor[4];
-		FocusMode focus_mode;
-		GrowDirection h_grow;
-		GrowDirection v_grow;
+		float margin[4] = { 0.0, 0.0, 0.0, 0.0 };
+		float anchor[4] = { ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN };
+		FocusMode focus_mode = FOCUS_NONE;
+		GrowDirection h_grow = GROW_DIRECTION_END;
+		GrowDirection v_grow = GROW_DIRECTION_END;
 
-		LayoutDirection layout_dir;
+		LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
 
-		float rotation;
-		Vector2 scale;
+		float rotation = 0;
+		Vector2 scale = Vector2(1, 1);
 		Vector2 pivot_offset;
 
-		int h_size_flags;
-		int v_size_flags;
-		float expand;
+		int h_size_flags = SIZE_FILL;
+		int v_size_flags = SIZE_FILL;
+		float expand = 1;
 		Point2 custom_minimum_size;
 
-		MouseFilter mouse_filter;
+		MouseFilter mouse_filter = MOUSE_FILTER_STOP;
 
-		bool clip_contents;
+		bool clip_contents = false;
 
-		bool block_minimum_size_adjust;
-		bool disable_visibility_clip;
+		bool block_minimum_size_adjust = false;
+		bool disable_visibility_clip = false;
 
-		Control *parent;
+		Control *parent = nullptr;
 		ObjectID drag_owner;
 		Ref<Theme> theme;
-		Control *theme_owner;
-		Window *theme_owner_window;
+		Control *theme_owner = nullptr;
+		Window *theme_owner_window = nullptr;
 		String tooltip;
-		CursorShape default_cursor;
+		CursorShape default_cursor = CURSOR_ARROW;
 
-		List<Control *>::Element *RI;
+		List<Control *>::Element *RI = nullptr;
 
-		CanvasItem *parent_canvas_item;
+		CanvasItem *parent_canvas_item = nullptr;
 
 		NodePath focus_neighbor[4];
 		NodePath focus_next;
@@ -518,8 +518,7 @@ public:
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 	virtual String get_configuration_warning() const override;
 
-	Control();
-	~Control();
+	Control() {}
 };
 
 VARIANT_ENUM_CAST(Control::FocusMode);
