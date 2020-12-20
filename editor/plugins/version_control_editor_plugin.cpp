@@ -119,19 +119,13 @@ void VersionControlEditorPlugin::_initialize_vcs() {
 }
 
 void VersionControlEditorPlugin::_send_commit_msg() {
-	String msg = commit_message->get_text();
-	if (msg == "") {
-		commit_status->set_text(TTR("No commit message was provided"));
-		return;
-	}
-
 	if (EditorVCSInterface::get_singleton()) {
 		if (staged_files_count == 0) {
 			commit_status->set_text(TTR("No files added to stage"));
 			return;
 		}
 
-		EditorVCSInterface::get_singleton()->commit(msg);
+		EditorVCSInterface::get_singleton()->commit(commit_message->get_text());
 
 		commit_message->set_text("");
 		version_control_dock_button->set_pressed(false);
@@ -292,6 +286,10 @@ void VersionControlEditorPlugin::_update_commit_status() {
 	}
 	commit_status->set_text(status);
 	staged_files_count = 0;
+}
+
+void VersionControlEditorPlugin::_update_commit_button() {
+	commit_button->set_disabled(commit_message->get_text().strip_edges() == "");
 }
 
 void VersionControlEditorPlugin::register_editor() {
@@ -463,10 +461,12 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_message->set_v_grow_direction(Control::GrowDirection::GROW_DIRECTION_END);
 	commit_message->set_custom_minimum_size(Size2(200, 100));
 	commit_message->set_wrap_enabled(true);
+	commit_message->connect("text_changed", callable_mp(this, &VersionControlEditorPlugin::_update_commit_button));
 	commit_box_vbc->add_child(commit_message);
 
 	commit_button = memnew(Button);
 	commit_button->set_text(TTR("Commit Changes"));
+	commit_button->set_disabled(true);
 	commit_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_send_commit_msg));
 	commit_box_vbc->add_child(commit_button);
 
