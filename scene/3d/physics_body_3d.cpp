@@ -1971,7 +1971,7 @@ bool PhysicalBone3D::_set(const StringName &p_name, const Variant &p_value) {
 	}
 
 	if (joint_data) {
-		if (joint_data->_set(p_name, p_value)) {
+		if (joint_data->_set(p_name, p_value, joint)) {
 #ifdef TOOLS_ENABLED
 			if (get_gizmo().is_valid()) {
 				get_gizmo()->redraw();
