@@ -71,6 +71,27 @@ void ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, b
 	shape_changed = true;
 }
 
+void ItemList::re_add_item(const String &text, const unsigned int &position, const bool &is_enabled, const Ref<Texture2D> &texture, bool p_selectable) {
+	Item item;
+	item.icon = texture;
+	item.icon_transposed = false;
+	item.icon_region = Rect2i();
+	item.icon_modulate = Color(1, 1, 1, 1);
+	item.text = text;
+	item.text_buf.instance();
+	item.selectable = p_selectable;
+	item.selected = false;
+	item.disabled = !is_enabled;
+	item.tooltip_enabled = true;
+	item.custom_bg = Color(0, 0, 0, 0);
+	items.insert(position, item);
+
+	_shape(position);
+
+	update();
+	shape_changed = true;
+}
+
 void ItemList::add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable) {
 	Item item;
 	item.icon = p_item;

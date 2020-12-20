@@ -127,6 +127,13 @@ void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+void ItemListPlugin::_bind_methods() {
+	// These are used to bind the function handles used in the undo_redo methods to object methods for the plugins
+	ClassDB::bind_method(D_METHOD("undoRedo_add_new_item", "idx"), &ItemListPlugin::undoRedo_add_new_item);
+	ClassDB::bind_method(D_METHOD("undoRedo_re_add_item", "name", "position", "icon", "is_enabled"), &ItemListPlugin::undoRedo_re_add_item);
+	ClassDB::bind_method(D_METHOD("undoRedo_erase", "p_idx"), &ItemListPlugin::undoRedo_erase); 
+}
+
 ///////////////////////////////////////////////////////////////
 ///////////////////////// PLUGINS /////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -143,9 +150,27 @@ int ItemListOptionButtonPlugin::get_flags() const {
 	return FLAG_ICON | FLAG_ID | FLAG_ENABLE;
 }
 
-void ItemListOptionButtonPlugin::add_item() {
-	ob->add_item(vformat(TTR("Item %d"), ob->get_item_count()));
+void ItemListOptionButtonPlugin::undoRedo_add_new_item(int item_idx) {
+	ob->add_item(vformat(TTR("Item %d"), item_idx));
 	_change_notify();
+}
+
+void ItemListOptionButtonPlugin::undoRedo_re_add_item(unsigned int position, String name, Ref<Texture2D> icon, bool enabled){
+	ob->add_item(name);
+	_change_notify();
+}
+
+void ItemListOptionButtonPlugin::undoRedo_erase(int item_idx){
+	ob->remove_item(item_idx);
+	_change_notify();
+}
+
+void ItemListOptionButtonPlugin::add_item() {
+	undo_redo->create_action(TTR("ItemListOptionButtonPlugin Add Element"));
+	int item_idx = ob->get_item_count();
+    undo_redo->add_do_method(this, "undoRedo_add_new_item", item_idx);
+    undo_redo->add_undo_method(this, "undoRedo_erase", item_idx);
+    undo_redo->commit_action();
 }
 
 int ItemListOptionButtonPlugin::get_item_count() const {
@@ -153,12 +178,18 @@ int ItemListOptionButtonPlugin::get_item_count() const {
 }
 
 void ItemListOptionButtonPlugin::erase(int p_idx) {
-	ob->remove_item(p_idx);
-	_change_notify();
+	String name = get_item_text(p_idx);
+	Ref<Texture2D> icon = get_item_icon(p_idx);
+	bool is_enabled = is_item_enabled(p_idx);
+	undo_redo->create_action(TTR("ItemListItemListPlugin Remove Element"));
+    undo_redo->add_do_method(this, "undoRedo_erase", p_idx);
+    undo_redo->add_undo_method(this, "undoRedo_re_add_item", p_idx, name, icon, is_enabled);
+    undo_redo->commit_action();
 }
 
 ItemListOptionButtonPlugin::ItemListOptionButtonPlugin() {
 	ob = nullptr;
+	undo_redo = EditorNode::get_undo_redo();
 }
 
 ///////////////////////////////////////////////////////////////
@@ -195,7 +226,25 @@ void ItemListPopupMenuPlugin::erase(int p_idx) {
 
 ItemListPopupMenuPlugin::ItemListPopupMenuPlugin() {
 	pp = nullptr;
+	undo_redo = EditorNode::get_undo_redo();
+
 }
+
+// The following helper functions could be modified and called to enable undo redo functionality
+void ItemListPopupMenuPlugin::undoRedo_add_new_item(int idx){
+	pp->add_item(vformat(TTR("Item %d"), idx));
+}
+
+void ItemListPopupMenuPlugin::undoRedo_re_add_item(unsigned int position, String name, Ref<Texture2D> icon, bool enabled){
+	pp->add_item(name);
+	_change_notify();
+}
+
+
+void ItemListPopupMenuPlugin::undoRedo_erase(int idx) {
+	pp->remove_item(idx);
+}
+
 
 ///////////////////////////////////////////////////////////////
 
@@ -211,9 +260,28 @@ int ItemListItemListPlugin::get_flags() const {
 	return FLAG_ICON | FLAG_ENABLE;
 }
 
-void ItemListItemListPlugin::add_item() {
-	pp->add_item(vformat(TTR("Item %d"), pp->get_item_count()));
+void ItemListItemListPlugin::undoRedo_add_new_item(int idx){
+	pp->add_item(vformat(TTR("Item %d"), idx));
 	_change_notify();
+}
+
+// Used to add item in specific position in list (if undoing a delete)
+void ItemListItemListPlugin::undoRedo_re_add_item(unsigned int position, String name, Ref<Texture2D> icon, bool enabled){
+	pp->re_add_item(name, position, enabled, icon);
+	_change_notify();
+}
+
+void ItemListItemListPlugin::undoRedo_erase(int idx) {
+	pp->remove_item(idx);
+	_change_notify();
+}
+
+void ItemListItemListPlugin::add_item() {
+	undo_redo->create_action(TTR("ItemListItemListPlugin Add Element"));
+	int idx = pp->get_item_count();
+    undo_redo->add_do_method(this, "undoRedo_add_new_item", idx);
+    undo_redo->add_undo_method(this, "undoRedo_erase", idx);
+    undo_redo->commit_action();
 }
 
 int ItemListItemListPlugin::get_item_count() const {
@@ -221,12 +289,20 @@ int ItemListItemListPlugin::get_item_count() const {
 }
 
 void ItemListItemListPlugin::erase(int p_idx) {
-	pp->remove_item(p_idx);
-	_change_notify();
+	// Save item information in case of deletion
+	String name = get_item_text(p_idx);
+	Ref<Texture2D> icon = get_item_icon(p_idx);
+	bool is_enabled = is_item_enabled(p_idx);
+	undo_redo->create_action(TTR("ItemListItemListPlugin Remove Element"));
+    undo_redo->add_do_method(this, "undoRedo_erase", p_idx);
+    undo_redo->add_undo_method(this, "undoRedo_re_add_item", p_idx, name, icon, is_enabled);
+    undo_redo->commit_action();
 }
 
 ItemListItemListPlugin::ItemListItemListPlugin() {
 	pp = nullptr;
+	undo_redo = EditorNode::get_undo_redo();
+
 }
 
 ///////////////////////////////////////////////////////////////
@@ -391,7 +467,7 @@ ItemListEditorPlugin::ItemListEditorPlugin(EditorNode *p_node) {
 	item_list_editor->hide();
 	item_list_editor->add_plugin(memnew(ItemListOptionButtonPlugin));
 	item_list_editor->add_plugin(memnew(ItemListPopupMenuPlugin));
-	item_list_editor->add_plugin(memnew(ItemListItemListPlugin));
+	item_list_editor->add_plugin(memnew(ItemListItemListPlugin));	
 }
 
 ItemListEditorPlugin::~ItemListEditorPlugin() {

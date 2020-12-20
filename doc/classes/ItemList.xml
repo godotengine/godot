@@ -36,6 +36,25 @@
 				If selectable is [code]true[/code], the list item will be selectable.
 			</description>
 		</method>
+		</method>
+		<method name="re_add_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<argument index="1" name="position" type="unsigned int">
+			</argument>
+			<argument index="2" name="enabled" type="bool">
+			</argument>
+			<argument index="3" name="icon" type="Texture2D" default="null">
+			</argument>
+			<argument index="4" name="selectable" type="bool" default="true">
+			</argument>
+			<description>
+				Adds an item to the item list with specified text, [code]position[/code], and [code]enabled[/code] status. Set the [code]position[/code] to the desired index in the item list. Specify an [code]icon[/code], or use [code]null[/code] as the [code]icon[/code] for a list item with no icon.
+				If selectable is [code]true[/code], the list item will be selectable. If [code]enabled[/code] is [code]true[/code], the list item will be initialized as being enabled.
+			</description>
+		</method>		
 		<method name="clear">
 			<return type="void">
 			</return>

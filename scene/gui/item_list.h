@@ -131,6 +131,7 @@ protected:
 
 public:
 	void add_item(const String &p_item, const Ref<Texture2D> &p_texture = Ref<Texture2D>(), bool p_selectable = true);
+	void re_add_item(const String &text, const unsigned int &position, const bool &is_enabled, const Ref<Texture2D> &texture, bool p_selectable = true);
 	void add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable = true);
 
 	void set_item_text(int p_idx, const String &p_text);

@@ -46,6 +46,7 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	static void _bind_methods();
 
 public:
 	enum Flags {
@@ -55,6 +56,7 @@ public:
 		FLAG_ENABLE = 8,
 		FLAG_SEPARATOR = 16
 	};
+	UndoRedo *undo_redo;
 
 	virtual void set_object(Object *p_object) = 0;
 	virtual bool handles(Object *p_object) const = 0;
@@ -87,6 +89,9 @@ public:
 	virtual void add_item() = 0;
 	virtual int get_item_count() const = 0;
 	virtual void erase(int p_idx) = 0;
+	virtual void undoRedo_add_new_item(int idx)= 0;
+	virtual void undoRedo_re_add_item(unsigned int position, String name, Ref<Texture2D> icon, bool enabled) = 0;
+	virtual void undoRedo_erase(int p_pdx) = 0;
 
 	ItemListPlugin() {}
 };
@@ -118,6 +123,9 @@ public:
 	virtual void add_item() override;
 	virtual int get_item_count() const override;
 	virtual void erase(int p_idx) override;
+	virtual void undoRedo_add_new_item(int idx) override;
+	virtual void undoRedo_re_add_item(unsigned int position, String name, Ref<Texture2D> icon, bool enabled) override;
+	virtual void undoRedo_erase(int p_idx) override;
 
 	ItemListOptionButtonPlugin();
 };
@@ -158,6 +166,9 @@ public:
 	virtual void add_item() override;
 	virtual int get_item_count() const override;
 	virtual void erase(int p_idx) override;
+	virtual void undoRedo_add_new_item(int idx) override;
+	virtual void undoRedo_re_add_item(unsigned int position, String name, Ref<Texture2D> icon, bool enabled) override;
+	virtual void undoRedo_erase(int p_idx) override;
 
 	ItemListPopupMenuPlugin();
 };
@@ -186,6 +197,9 @@ public:
 	virtual void add_item() override;
 	virtual int get_item_count() const override;
 	virtual void erase(int p_idx) override;
+	virtual void undoRedo_add_new_item(int idx) override;
+	virtual void undoRedo_re_add_item(unsigned int position, String name, Ref<Texture2D> icon, bool enabled) override;
+	virtual void undoRedo_erase(int p_idx) override;
 
 	ItemListItemListPlugin();
 };
@@ -240,7 +254,7 @@ public:
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
-
+	
 	ItemListEditorPlugin(EditorNode *p_node);
 	~ItemListEditorPlugin();
 };
