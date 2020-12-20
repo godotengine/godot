@@ -1419,6 +1419,17 @@ int EditorNode::_save_external_resources() {
 	return saved;
 }
 
+static void _reset_animation_players(Node *p_node, List<Ref<AnimatedValuesBackup>> *r_anim_backups) {
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		AnimationPlayer *player = Object::cast_to<AnimationPlayer>(p_node->get_child(i));
+		if (player && player->is_reset_on_save_enabled() && player->can_apply_reset()) {
+			Ref<AnimatedValuesBackup> old_values = player->apply_reset();
+			r_anim_backups->push_back(old_values);
+		}
+		_reset_animation_players(p_node->get_child(i), r_anim_backups);
+	}
+}
+
 void EditorNode::_save_scene(String p_file, int idx) {
 	Node *scene = editor_data.get_edited_scene_root(idx);
 
@@ -1433,6 +1444,8 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	}
 
 	editor_data.apply_changes_in_editors();
+	List<Ref<AnimatedValuesBackup>> anim_backups;
+	_reset_animation_players(scene, &anim_backups);
 	_save_default_environment();
 
 	_set_scene_metadata(p_file, idx);
@@ -1480,6 +1493,11 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	_save_external_resources();
 
 	editor_data.save_editor_external_data();
+
+	for (List<Ref<AnimatedValuesBackup>>::Element *E = anim_backups.front(); E; E = E->next()) {
+		E->get()->restore();
+	}
+
 	if (err == OK) {
 		scene->set_filename(ProjectSettings::get_singleton()->localize_path(p_file));
 		if (idx < 0 || idx == editor_data.get_edited_scene()) {
