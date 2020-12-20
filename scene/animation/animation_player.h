@@ -37,8 +37,9 @@
 #include "scene/resources/animation.h"
 
 #ifdef TOOLS_ENABLED
-// To save/restore animated values
-class AnimatedValuesBackup {
+class AnimatedValuesBackup : public Reference {
+	GDCLASS(AnimatedValuesBackup, Reference);
+
 	struct Entry {
 		Object *object;
 		Vector<StringName> subpath; // Unused if bone
@@ -49,8 +50,12 @@ class AnimatedValuesBackup {
 
 	friend class AnimationPlayer;
 
+protected:
+	static void _bind_methods();
+
 public:
 	void update_skeletons();
+	void restore() const;
 };
 #endif
 
@@ -215,6 +220,7 @@ private:
 	bool end_notify;
 
 	String autoplay;
+	bool reset_on_save;
 	AnimationProcessMode animation_process_mode;
 	AnimationMethodCallMode method_call_mode;
 	bool processing;
@@ -304,6 +310,9 @@ public:
 	void set_autoplay(const String &p_name);
 	String get_autoplay() const;
 
+	void set_reset_on_save_enabled(bool p_enabled);
+	bool is_reset_on_save_enabled() const;
+
 	void set_animation_process_mode(AnimationProcessMode p_mode);
 	AnimationProcessMode get_animation_process_mode() const;
 
@@ -325,9 +334,9 @@ public:
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 #ifdef TOOLS_ENABLED
-	// These may be interesting for games, but are too dangerous for general use
-	AnimatedValuesBackup backup_animated_values();
-	void restore_animated_values(const AnimatedValuesBackup &p_backup);
+	Ref<AnimatedValuesBackup> backup_animated_values();
+	Ref<AnimatedValuesBackup> apply_reset(bool p_user_initiated = false);
+	bool can_apply_reset() const;
 #endif
 
 	AnimationPlayer();
