@@ -242,6 +242,13 @@ String VisualShaderNodeColorConstant::get_output_port_name(int p_port) const {
 	return p_port == 0 ? "" : "alpha"; //no output port means the editor will be used as port
 }
 
+bool VisualShaderNodeColorConstant::is_output_port_expandable(int p_port) const {
+	if (p_port == 0) {
+		return true;
+	}
+	return false;
+}
+
 String VisualShaderNodeColorConstant::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
 	code += "\t" + p_output_vars[0] + " = " + vformat("vec3(%.6f, %.6f, %.6f)", constant.r, constant.g, constant.b) + ";\n";
@@ -453,6 +460,13 @@ String VisualShaderNodeTexture::get_output_port_name(int p_port) const {
 		return "depth";
 	}
 	return p_port == 0 ? "rgb" : "alpha";
+}
+
+bool VisualShaderNodeTexture::is_output_port_expandable(int p_port) const {
+	if (p_port == 0) {
+		return true;
+	}
+	return false;
 }
 
 String VisualShaderNodeTexture::get_input_port_default_hint(int p_port) const {
@@ -917,6 +931,13 @@ String VisualShaderNodeSample3D::get_output_port_name(int p_port) const {
 	return p_port == 0 ? "rgb" : "alpha";
 }
 
+bool VisualShaderNodeSample3D::is_output_port_expandable(int p_port) const {
+	if (p_port == 0) {
+		return true;
+	}
+	return false;
+}
+
 String VisualShaderNodeSample3D::get_input_port_default_hint(int p_port) const {
 	if (p_port == 0) {
 		return "default";
@@ -1166,6 +1187,13 @@ VisualShaderNodeCubemap::PortType VisualShaderNodeCubemap::get_output_port_type(
 
 String VisualShaderNodeCubemap::get_output_port_name(int p_port) const {
 	return p_port == 0 ? "rgb" : "alpha";
+}
+
+bool VisualShaderNodeCubemap::is_output_port_expandable(int p_port) const {
+	if (p_port == 0) {
+		return true;
+	}
+	return false;
 }
 
 Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCubemap::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
