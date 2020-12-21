@@ -50,7 +50,7 @@ void Step2DSW::_populate_island(Body2DSW *p_body, Body2DSW **p_island, Constrain
 				continue;
 			}
 			Body2DSW *b = c->get_body_ptr()[i];
-			if (b->get_island_step() == _step || b->get_mode() == PhysicsServer2D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) {
+			if (b->get_space() != p_body->get_space() || b->get_island_step() == _step || b->get_mode() == PhysicsServer2D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) {
 				continue; //no go
 			}
 			_populate_island(c->get_body_ptr()[i], p_island, p_constraint_island);
