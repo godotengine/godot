@@ -319,6 +319,10 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 					Vector3 vertex = vertices[vtx];
 					//if (weld_vertices)
 					//	vertex.snap(Vector3(weld_tolerance, weld_tolerance, weld_tolerance));
+					if (!smoothing) {
+						smooth_group++;
+					}
+					surf_tool->set_smooth_group(smooth_group);
 					surf_tool->add_vertex(vertex);
 				}
 
@@ -326,10 +330,16 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 			}
 		} else if (l.begins_with("s ")) { //smoothing
 			String what = l.substr(2, l.length()).strip_edges();
-			if (what == "off")
-				surf_tool->add_smooth_group(false);
-			else
-				surf_tool->add_smooth_group(true);
+			bool do_smooth;
+			if (what == "off") {
+				do_smooth = false;
+			} else {
+				do_smooth = true;
+			}
+			if (do_smooth != smoothing) {
+				smooth_group++;
+				smoothing = do_smooth;
+			}
 		} else if (/*l.begins_with("g ") ||*/ l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { //commit group to mesh
 			//groups are too annoying
 			if (surf_tool->get_vertex_array().size()) {
@@ -433,7 +443,13 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 
 	Spatial *scene = memnew(Spatial);
 
-	for (List<Ref<Mesh> >::Element *E = meshes.front(); E; E = E->next()) {
+	for (List<Ref<Mesh>>::Element *E = meshes.front(); E; E = E->next()) {
+		Ref<EditorSceneImporterMesh> mesh;
+		mesh.instance();
+		Ref<Mesh> m = E->get();
+		for (int i = 0; i < m->get_surface_count(); i++) {
+			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), m->surface_get_material(i));
+		}
 
 		MeshInstance *mi = memnew(MeshInstance);
 		mi->set_mesh(E->get());
