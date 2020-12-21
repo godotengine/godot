@@ -2438,12 +2438,12 @@ Variant JSONParseResult::get_result() const {
 }
 
 void _JSON::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("print", "value", "indent", "sort_keys"), &_JSON::print, DEFVAL(String()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("to_json", "value", "indent", "sort_keys"), &_JSON::to_json, DEFVAL(String()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("parse", "json"), &_JSON::parse);
 }
 
-String _JSON::print(const Variant &p_value, const String &p_indent, bool p_sort_keys) {
-	return JSON::print(p_value, p_indent, p_sort_keys);
+String _JSON::to_json(const Variant &p_value, const String &p_indent, bool p_sort_keys) {
+	return JSON::to_json(p_value, p_indent, p_sort_keys);
 }
 
 Ref<JSONParseResult> _JSON::parse(const String &p_json) {

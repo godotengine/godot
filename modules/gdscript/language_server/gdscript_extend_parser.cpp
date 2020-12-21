@@ -182,7 +182,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					symbol.detail += ": " + m.get_datatype().to_string();
 				}
 				if (m.variable->initializer != nullptr && m.variable->initializer->is_constant) {
-					symbol.detail += " = " + JSON::print(m.variable->initializer->reduced_value);
+					symbol.detail += " = " + JSON::to_json(m.variable->initializer->reduced_value);
 				}
 
 				symbol.documentation = parse_documentation(LINE_NUMBER_TO_INDEX(m.variable->start_line));
@@ -223,10 +223,10 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 							}
 						}
 					} else {
-						value_text = JSON::print(default_value);
+						value_text = JSON::to_json(default_value);
 					}
 				} else {
-					value_text = JSON::print(default_value);
+					value_text = JSON::to_json(default_value);
 				}
 				if (!value_text.empty()) {
 					symbol.detail += " = " + value_text;
@@ -352,7 +352,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 			parameters += ": " + parameter->get_datatype().to_string();
 		}
 		if (parameter->default_value != nullptr) {
-			String value = JSON::print(parameter->default_value->reduced_value);
+			String value = JSON::to_json(parameter->default_value->reduced_value);
 			parameters += " = " + value;
 		}
 	}

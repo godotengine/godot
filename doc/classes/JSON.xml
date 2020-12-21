@@ -18,7 +18,7 @@
 				Parses a JSON-encoded string and returns a [JSONParseResult] containing the result.
 			</description>
 		</method>
-		<method name="print">
+		<method name="to_json">
 			<return type="String">
 			</return>
 			<argument index="0" name="value" type="Variant">
@@ -28,9 +28,9 @@
 			<argument index="2" name="sort_keys" type="bool" default="false">
 			</argument>
 			<description>
-				Converts a [Variant] var to JSON text and returns the result. Useful for serializing data to store or send over the network.
+				Converts the [Variant] value to JSON text and returns the result as a [String]. Useful for serializing data to store or send over the network.
 				[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, converting a Variant to JSON text will convert all numerical values to [float] types.
-				Use [code]indent[/code] parameter to pretty print the output.
+				Use the [code]indent[/code] parameter to beautify the output.
 				[b]Example output:[/b]
 				[codeblock]
 				## JSON.print(my_dictionary)

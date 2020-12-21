@@ -172,7 +172,7 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 
-	String text = JSON::print(json, "\t");
+	String text = JSON::to_json(json, "\t");
 	f->store_string(text);
 	f->close();
 	return OK;

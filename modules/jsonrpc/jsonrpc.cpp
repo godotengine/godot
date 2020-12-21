@@ -168,7 +168,7 @@ String JSONRPC::process_string(const String &p_input) {
 	if (ret.get_type() == Variant::NIL) {
 		return "";
 	}
-	return JSON::print(ret);
+	return JSON::to_json(ret);
 }
 
 void JSONRPC::set_scope(const String &p_scope, Object *p_obj) {

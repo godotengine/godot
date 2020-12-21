@@ -55,7 +55,7 @@ static String _make_indent(const String &p_indent, int p_size) {
 	return indent_text;
 }
 
-String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys) {
+String JSON::_variant_to_json(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys) {
 	String colon = ":";
 	String end_statement = "";
 
@@ -87,7 +87,7 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 					s += ",";
 					s += end_statement;
 				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(a[i], p_indent, p_cur_indent + 1, p_sort_keys);
+				s += _make_indent(p_indent, p_cur_indent + 1) + _variant_to_json(a[i], p_indent, p_cur_indent + 1, p_sort_keys);
 			}
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "]";
 			return s;
@@ -108,9 +108,9 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 					s += ",";
 					s += end_statement;
 				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(String(E->get()), p_indent, p_cur_indent + 1, p_sort_keys);
+				s += _make_indent(p_indent, p_cur_indent + 1) + _variant_to_json(String(E->get()), p_indent, p_cur_indent + 1, p_sort_keys);
 				s += colon;
-				s += _print_var(d[E->get()], p_indent, p_cur_indent + 1, p_sort_keys);
+				s += _variant_to_json(d[E->get()], p_indent, p_cur_indent + 1, p_sort_keys);
 			}
 
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "}";
@@ -121,8 +121,8 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 	}
 }
 
-String JSON::print(const Variant &p_var, const String &p_indent, bool p_sort_keys) {
-	return _print_var(p_var, p_indent, 0, p_sort_keys);
+String JSON::to_json(const Variant &p_var, const String &p_indent, bool p_sort_keys) {
+	return _variant_to_json(p_var, p_indent, 0, p_sort_keys);
 }
 
 Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str) {
@@ -470,7 +470,7 @@ Variant JSONParser::get_data() const {
 }
 
 Error JSONParser::decode_data(const Variant &p_data, const String &p_indent, bool p_sort_keys) {
-	string = JSON::print(p_data, p_indent, p_sort_keys);
+	string = JSON::to_json(p_data, p_indent, p_sort_keys);
 	data = p_data;
 	return OK;
 }

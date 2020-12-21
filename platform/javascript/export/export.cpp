@@ -287,7 +287,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	Vector<String> flags;
 	String flags_json;
 	gen_export_flags(flags, p_flags);
-	flags_json = JSON::print(flags);
+	flags_json = JSON::to_json(flags);
 	String libs;
 	for (int i = 0; i < p_shared_objects.size(); i++) {
 		libs += "\"" + p_shared_objects[i].path.get_file() + "\",";

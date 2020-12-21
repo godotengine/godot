@@ -162,7 +162,7 @@ godot_string GDAPI godot_dictionary_to_json(const godot_dictionary *p_self) {
 	godot_string raw_dest;
 	String *dest = (String *)&raw_dest;
 	const Dictionary *self = (const Dictionary *)p_self;
-	memnew_placement(dest, String(JSON::print(Variant(*self))));
+	memnew_placement(dest, String(JSON::to_json(Variant(*self))));
 	return raw_dest;
 }
 
