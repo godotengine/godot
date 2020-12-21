@@ -532,6 +532,22 @@ void ServerController::set_enabled(bool p_enable) {
 	}
 	enabled = p_enable;
 	node->pause_notify_dolls();
+
+	// ~~ On state change, reset everything to avoid accumulate old data. ~~
+
+	// Client inputs reset.
+	current_input_buffer_id = UINT32_MAX;
+	ghost_input_count = 0;
+	last_sent_state_input_id = 0;
+	client_tick_additional_speed = 0.0;
+	additional_speed_notif_timer = 0.0;
+	snapshots.clear();
+	input_arrival_time = UINT32_MAX;
+	network_watcher.reset(0.0);
+
+	// Doll reset.
+	is_epoch_important = false;
+	batch_sync_timer = 0.0;
 }
 
 void ServerController::clear_peers() {
