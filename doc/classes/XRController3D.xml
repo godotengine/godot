@@ -19,7 +19,7 @@
 				If active, returns the name of the associated controller if provided by the AR/VR SDK used.
 			</description>
 		</method>
-		<method name="get_hand" qualifiers="const">
+		<method name="get_tracker_hand" qualifiers="const">
 			<return type="int" enum="XRPositionalTracker.TrackerHand">
 			</return>
 			<description>

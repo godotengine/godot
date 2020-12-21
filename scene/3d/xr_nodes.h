@@ -93,7 +93,7 @@ public:
 	void set_rumble(real_t p_rumble);
 
 	bool get_is_active() const;
-	XRPositionalTracker::TrackerHand get_hand() const;
+	XRPositionalTracker::TrackerHand get_tracker_hand() const;
 
 	Ref<Mesh> get_mesh() const;
 

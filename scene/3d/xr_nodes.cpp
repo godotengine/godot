@@ -247,7 +247,7 @@ void XRController3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joystick_axis", "axis"), &XRController3D::get_joystick_axis);
 
 	ClassDB::bind_method(D_METHOD("get_is_active"), &XRController3D::get_is_active);
-	ClassDB::bind_method(D_METHOD("get_hand"), &XRController3D::get_hand);
+	ClassDB::bind_method(D_METHOD("get_tracker_hand"), &XRController3D::get_tracker_hand);
 
 	ClassDB::bind_method(D_METHOD("get_rumble"), &XRController3D::get_rumble);
 	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &XRController3D::set_rumble);
@@ -349,7 +349,7 @@ bool XRController3D::get_is_active() const {
 	return is_active;
 };
 
-XRPositionalTracker::TrackerHand XRController3D::get_hand() const {
+XRPositionalTracker::TrackerHand XRController3D::get_tracker_hand() const {
 	// get our XRServer
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, XRPositionalTracker::TRACKER_HAND_UNKNOWN);
@@ -359,7 +359,7 @@ XRPositionalTracker::TrackerHand XRController3D::get_hand() const {
 		return XRPositionalTracker::TRACKER_HAND_UNKNOWN;
 	};
 
-	return tracker->get_hand();
+	return tracker->get_tracker_hand();
 };
 
 String XRController3D::get_configuration_warning() const {
