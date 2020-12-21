@@ -36,6 +36,150 @@
 
 namespace TestRandomNumberGenerator {
 
+TEST_CASE("[RandomNumberGenerator] Float") {
+	Ref<RandomNumberGenerator> rng = memnew(RandomNumberGenerator);
+	rng->set_seed(0);
+
+	INFO("Should give float between 0.0 and 1.0.");
+	for (int i = 0; i < 1000; i++) {
+		real_t n = rng->randf();
+		CHECK(n >= 0.0);
+		CHECK(n <= 1.0);
+	}
+}
+
+TEST_CASE("[RandomNumberGenerator] Integer range via modulo") {
+	Ref<RandomNumberGenerator> rng = memnew(RandomNumberGenerator);
+	rng->set_seed(0);
+
+	INFO("Should give integer between 0 and 100.");
+	for (int i = 0; i < 1000; i++) {
+		uint32_t n = rng->randi() % 100;
+		CHECK(n >= 0);
+		CHECK(n <= 100);
+	}
+}
+
+TEST_CASE_MAY_FAIL("[RandomNumberGenerator] Integer 32 bit") {
+	Ref<RandomNumberGenerator> rng = memnew(RandomNumberGenerator);
+	rng->set_seed(0); // Change the seed if this fails.
+
+	bool higher = false;
+	int i;
+	for (i = 0; i < 1000; i++) {
+		uint32_t n = rng->randi();
+		if (n > 0x0fff'ffff) {
+			higher = true;
+			break;
+		}
+	}
+	INFO("Current seed: " << rng->get_seed());
+	INFO("Current iteration: " << i);
+	CHECK_MESSAGE(higher, "Given current seed, this should give an integer higher than 0x0fff'ffff at least once.");
+}
+
+TEST_CASE("[RandomNumberGenerator] Float and integer range") {
+	Ref<RandomNumberGenerator> rng = memnew(RandomNumberGenerator);
+	rng->set_seed(0);
+	uint64_t initial_state = rng->get_state();
+	uint32_t initial_seed = rng->get_seed();
+
+	INFO("Should give float between -100.0 and 100.0, base test.");
+	for (int i = 0; i < 1000; i++) {
+		real_t n0 = rng->randf_range(-100.0, 100.0);
+		CHECK(n0 >= -100);
+		CHECK(n0 <= 100);
+	}
+
+	rng->randomize();
+	INFO("Should give float between -75.0 and 75.0.");
+	INFO("Shouldn't be affected by randomize.");
+	for (int i = 0; i < 1000; i++) {
+		real_t n1 = rng->randf_range(-75.0, 75.0);
+		CHECK(n1 >= -75);
+		CHECK(n1 <= 75);
+	}
+
+	rng->set_state(initial_state);
+	INFO("Should give integer between -50 and 50.");
+	INFO("Shouldn't be affected by set_state.");
+	for (int i = 0; i < 1000; i++) {
+		real_t n2 = rng->randi_range(-50, 50);
+		CHECK(n2 >= -50);
+		CHECK(n2 <= 50);
+	}
+
+	rng->set_seed(initial_seed);
+	INFO("Should give integer between -25 and 25.");
+	INFO("Shouldn't be affected by set_seed.");
+	for (int i = 0; i < 1000; i++) {
+		int32_t n3 = rng->randi_range(-25, 25);
+		CHECK(n3 >= -25);
+		CHECK(n3 <= 25);
+	}
+
+	rng->randf();
+	rng->randf();
+
+	INFO("Should give float between -10.0 and 10.0.");
+	INFO("Shouldn't be affected after generating new numbers.");
+	for (int i = 0; i < 1000; i++) {
+		real_t n4 = rng->randf_range(-10.0, 10.0);
+		CHECK(n4 >= -10);
+		CHECK(n4 <= 10);
+	}
+
+	rng->randi();
+	rng->randi();
+
+	INFO("Should give integer between -5 and 5.");
+	INFO("Shouldn't be affected after generating new numbers.");
+	for (int i = 0; i < 1000; i++) {
+		real_t n5 = rng->randf_range(-5, 5);
+		CHECK(n5 >= -5);
+		CHECK(n5 <= 5);
+	}
+}
+
+TEST_CASE_MAY_FAIL("[RandomNumberGenerator] Normal distribution") {
+	Ref<RandomNumberGenerator> rng = memnew(RandomNumberGenerator);
+	rng->set_seed(1); // Change the seed if this fails.
+	INFO("Should give a number between -5 to 5 (5 std deviations away; above 99.7% chance it will be in this range).");
+	INFO("Standard randfn function call.");
+	for (int i = 0; i < 100; i++) {
+		real_t n = rng->randfn();
+		CHECK(n >= -5);
+		CHECK(n <= 5);
+	}
+
+	INFO("Should give number between -5 to 5 after multiple randi/randf calls.");
+	INFO("5 std deviations away; above 99.7% chance it will be in this range.");
+	rng->randf();
+	rng->randi();
+	for (int i = 0; i < 100; i++) {
+		real_t n = rng->randfn();
+		CHECK(n >= -5);
+		CHECK(n <= 5);
+	}
+
+	INFO("Checks if user defined mean and deviation work properly.");
+	INFO("5 std deviations away; above 99.7% chance it will be in this range.");
+	for (int i = 0; i < 100; i++) {
+		real_t n = rng->randfn(5, 10);
+		CHECK(n >= -45);
+		CHECK(n <= 55);
+	}
+
+	INFO("Checks if randfn works with changed seeds.");
+	INFO("5 std deviations away; above 99.7% chance it will be in this range.");
+	rng->randomize();
+	for (int i = 0; i < 100; i++) {
+		real_t n = rng->randfn(3, 3);
+		CHECK(n >= -12);
+		CHECK(n <= 18);
+	}
+}
+
 TEST_CASE("[RandomNumberGenerator] Zero for first number immediately after seeding") {
 	Ref<RandomNumberGenerator> rng = memnew(RandomNumberGenerator);
 	rng->set_seed(0);
