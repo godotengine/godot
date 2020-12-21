@@ -52,7 +52,7 @@ void StepSW::_populate_island(BodySW *p_body, BodySW **p_island, ConstraintSW **
 			if (i == E->get())
 				continue;
 			BodySW *b = c->get_body_ptr()[i];
-			if (b->get_island_step() == _step || b->get_mode() == PhysicsServer::BODY_MODE_STATIC || b->get_mode() == PhysicsServer::BODY_MODE_KINEMATIC)
+			if (b->get_space() != p_body->get_space() || b->get_island_step() == _step || b->get_mode() == PhysicsServer::BODY_MODE_STATIC || b->get_mode() == PhysicsServer::BODY_MODE_KINEMATIC)
 				continue; //no go
 			_populate_island(c->get_body_ptr()[i], p_island, p_constraint_island);
 		}
