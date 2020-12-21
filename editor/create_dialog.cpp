@@ -492,7 +492,7 @@ void CreateDialog::_favorite_selected() {
 	}
 
 	search_box->set_text(item->get_text(0).get_slicec(' ', 0));
-	recent->unselect_all();
+	recent->deselect_all();
 	_update_search();
 }
 

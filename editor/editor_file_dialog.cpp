@@ -499,7 +499,7 @@ void EditorFileDialog::_multi_selected(int p_item, bool p_selected) {
 }
 
 void EditorFileDialog::_items_clear_selection() {
-	item_list->unselect_all();
+	item_list->deselect_all();
 
 	// If nothing is selected, then block Open button.
 	switch (mode) {
@@ -595,7 +595,7 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 void EditorFileDialog::_item_list_rmb_clicked(const Vector2 &p_pos) {
 	// Right click on folder background. Deselect all files so that actions are applied on the current folder.
 	for (int i = 0; i < item_list->get_item_count(); i++) {
-		item_list->unselect(i);
+		item_list->deselect(i);
 	}
 
 	item_menu->clear();
@@ -849,7 +849,7 @@ void EditorFileDialog::update_file_list() {
 	}
 
 	if (favorites->get_current() >= 0) {
-		favorites->unselect(favorites->get_current());
+		favorites->deselect(favorites->get_current());
 	}
 
 	favorite->set_pressed(false);
@@ -1226,7 +1226,7 @@ void EditorFileDialog::_update_favorites() {
 		if (setthis) {
 			favorite->set_pressed(true);
 			favorites->set_current(favorites->get_item_count() - 1);
-			recent->unselect_all();
+			recent->deselect_all();
 		}
 	}
 }

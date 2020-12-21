@@ -183,8 +183,8 @@ public:
 	Color get_item_custom_fg_color(int p_idx) const;
 
 	void select(int p_idx, bool p_single = true);
-	void unselect(int p_idx);
-	void unselect_all();
+	void deselect(int p_idx);
+	void deselect_all();
 	bool is_selected(int p_idx) const;
 	Vector<int> get_selected_items();
 	bool is_anything_selected();

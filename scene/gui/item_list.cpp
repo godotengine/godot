@@ -333,7 +333,7 @@ void ItemList::select(int p_idx, bool p_single) {
 	update();
 }
 
-void ItemList::unselect(int p_idx) {
+void ItemList::deselect(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	if (select_mode != SELECT_MULTI) {
@@ -345,7 +345,7 @@ void ItemList::unselect(int p_idx) {
 	update();
 }
 
-void ItemList::unselect_all() {
+void ItemList::deselect_all() {
 	if (items.size() < 1) {
 		return;
 	}
@@ -573,7 +573,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 			int i = closest;
 
 			if (select_mode == SELECT_MULTI && items[i].selected && mb->get_command()) {
-				unselect(i);
+				deselect(i);
 				emit_signal("multi_selected", i, false);
 
 			} else if (select_mode == SELECT_MULTI && mb->get_shift() && current >= 0 && current < items.size() && current != i) {
@@ -759,7 +759,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					select(current, false);
 					emit_signal("multi_selected", current, true);
 				} else if (items[current].selected) {
-					unselect(current);
+					deselect(current);
 					emit_signal("multi_selected", current, false);
 				}
 			}
@@ -1519,8 +1519,8 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &ItemList::get_item_tooltip);
 
 	ClassDB::bind_method(D_METHOD("select", "idx", "single"), &ItemList::select, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("unselect", "idx"), &ItemList::unselect);
-	ClassDB::bind_method(D_METHOD("unselect_all"), &ItemList::unselect_all);
+	ClassDB::bind_method(D_METHOD("deselect", "idx"), &ItemList::deselect);
+	ClassDB::bind_method(D_METHOD("deselect_all"), &ItemList::deselect_all);
 
 	ClassDB::bind_method(D_METHOD("is_selected", "idx"), &ItemList::is_selected);
 	ClassDB::bind_method(D_METHOD("get_selected_items"), &ItemList::get_selected_items);

@@ -262,7 +262,7 @@ Vector<int> TileMapEditor::get_selected_tiles() const {
 }
 
 void TileMapEditor::set_selected_tiles(Vector<int> p_tiles) {
-	palette->unselect_all();
+	palette->deselect_all();
 
 	for (int i = p_tiles.size() - 1; i >= 0; i--) {
 		int idx = palette->find_metadata(p_tiles[i]);

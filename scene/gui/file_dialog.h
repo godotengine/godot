@@ -170,7 +170,7 @@ public:
 
 	void invalidate();
 
-	void deselect_items();
+	void deselect_all();
 
 	FileDialog();
 	~FileDialog();

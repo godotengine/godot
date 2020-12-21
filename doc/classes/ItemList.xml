@@ -471,7 +471,7 @@
 				Sorts items in the list by their text.
 			</description>
 		</method>
-		<method name="unselect">
+		<method name="deselect">
 			<return type="void">
 			</return>
 			<argument index="0" name="idx" type="int">
@@ -480,7 +480,7 @@
 				Ensures the item associated with the specified index is not selected.
 			</description>
 		</method>
-		<method name="unselect_all">
+		<method name="deselect_all">
 			<return type="void">
 			</return>
 			<description>

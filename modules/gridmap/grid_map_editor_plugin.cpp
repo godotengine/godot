@@ -724,7 +724,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 					return true;
 				} else {
 					selected_palette = -1;
-					mesh_library_palette->unselect_all();
+					mesh_library_palette->deselect_all();
 					update_palette();
 					_update_cursor_instance();
 					return true;
