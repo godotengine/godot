@@ -41,6 +41,9 @@
 // The test is skipped with this, run pending tests with `--test --no-skip`.
 #define TEST_CASE_PENDING(name) TEST_CASE(name *doctest::skip())
 
+// The test case is marked as failed, but does not fail the entire test run.
+#define TEST_CASE_MAY_FAIL(name) TEST_CASE(name *doctest::may_fail())
+
 // Temporarily disable error prints to test failure paths.
 // This allows to avoid polluting the test summary with error messages.
 // The `_print_error_enabled` boolean is defined in `core/print_string.cpp` and
