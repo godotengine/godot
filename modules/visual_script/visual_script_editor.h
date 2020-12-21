@@ -208,7 +208,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _node_moved(Vector2 p_from, Vector2 p_to, int p_id);
 	void _remove_node(int p_id);
 	void _graph_connected(const String &p_from, int p_from_slot, const String &p_to, int p_to_slot);
-	void _graph_disconnected(const String &p_from, int p_from_slot, const String &p_to, int p_to_slot);
+	void _graph_disconnected(const String &p_from, int p_from_slot, const String &p_to, int p_to_slot, bool p_is_pressed);
 	void _graph_connect_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_pos);
 
 	void _node_ports_changed(const String &p_func, int p_id);
