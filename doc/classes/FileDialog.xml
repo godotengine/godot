@@ -25,11 +25,11 @@
 				Clear all the added filters in the dialog.
 			</description>
 		</method>
-		<method name="deselect_items">
+		<method name="deselect_all">
 			<return type="void">
 			</return>
 			<description>
-				Clear currently selected items in the dialog.
+				Clear all currently selected items in the dialog.
 			</description>
 		</method>
 		<method name="get_line_edit">

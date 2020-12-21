@@ -119,7 +119,7 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	name->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 5);
 	name->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -5);
 	name->connect("gui_input", callable_mp(this, &EditorLayoutsDialog::_line_gui_input));
-	name->connect("focus_entered", callable_mp(layout_names, &ItemList::unselect_all));
+	name->connect("focus_entered", callable_mp(layout_names, &ItemList::deselect_all));
 }
 
 void EditorLayoutsDialog::set_name_line_enabled(bool p_enabled) {

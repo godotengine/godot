@@ -288,7 +288,7 @@
 				Emitted when a GraphNode is selected.
 			</description>
 		</signal>
-		<signal name="node_unselected">
+		<signal name="node_deselected">
 			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>

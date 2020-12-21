@@ -2447,7 +2447,7 @@ void FileSystemDock::_file_list_rmb_select(int p_item, const Vector2 &p_pos) {
 			continue;
 		}
 		if (files->get_item_text(p_item) == "..") {
-			files->unselect(i);
+			files->deselect(i);
 			continue;
 		}
 		paths.push_back(files->get_item_metadata(i));
