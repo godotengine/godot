@@ -292,7 +292,7 @@ public:
 	static double ease(double p_x, double p_c);
 	static int step_decimals(double p_step);
 	static int range_step_decimals(double p_step);
-	static double stepify(double p_value, double p_step);
+	static double snapped(double p_value, double p_step);
 	static double dectime(double p_value, double p_amount, double p_step);
 
 	static uint32_t larger_prime(uint32_t p_val);
@@ -472,12 +472,12 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ float snap_scalar(float p_offset, float p_step, float p_target) {
-		return p_step != 0 ? Math::stepify(p_target - p_offset, p_step) + p_offset : p_target;
+		return p_step != 0 ? Math::snapped(p_target - p_offset, p_step) + p_offset : p_target;
 	}
 
 	static _ALWAYS_INLINE_ float snap_scalar_separation(float p_offset, float p_step, float p_target, float p_separation) {
 		if (p_step != 0) {
-			float a = Math::stepify(p_target - p_offset, p_step + p_separation) + p_offset;
+			float a = Math::snapped(p_target - p_offset, p_step + p_separation) + p_offset;
 			float b = a;
 			if (p_target >= 0) {
 				b -= p_separation;

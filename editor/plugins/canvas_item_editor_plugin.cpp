@@ -444,8 +444,8 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 			}
 		}
 		Point2 grid_output;
-		grid_output.x = Math::stepify(p_target.x - offset.x, grid_step.x * Math::pow(2.0, grid_step_multiplier)) + offset.x;
-		grid_output.y = Math::stepify(p_target.y - offset.y, grid_step.y * Math::pow(2.0, grid_step_multiplier)) + offset.y;
+		grid_output.x = Math::snapped(p_target.x - offset.x, grid_step.x * Math::pow(2.0, grid_step_multiplier)) + offset.x;
+		grid_output.y = Math::snapped(p_target.y - offset.y, grid_step.y * Math::pow(2.0, grid_step_multiplier)) + offset.y;
 		_snap_if_closer_point(p_target, output, snap_target, grid_output, SNAP_TARGET_GRID, 0.0, -1.0);
 	}
 
@@ -462,9 +462,9 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 float CanvasItemEditor::snap_angle(float p_target, float p_start) const {
 	if (((smart_snap_active || snap_rotation) ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL)) && snap_rotation_step != 0) {
 		if (snap_relative) {
-			return Math::stepify(p_target - snap_rotation_offset, snap_rotation_step) + snap_rotation_offset + (p_start - (int)(p_start / snap_rotation_step) * snap_rotation_step);
+			return Math::snapped(p_target - snap_rotation_offset, snap_rotation_step) + snap_rotation_offset + (p_start - (int)(p_start / snap_rotation_step) * snap_rotation_step);
 		} else {
-			return Math::stepify(p_target - snap_rotation_offset, snap_rotation_step) + snap_rotation_offset;
+			return Math::snapped(p_target - snap_rotation_offset, snap_rotation_step) + snap_rotation_offset;
 		}
 	} else {
 		return p_target;
@@ -1931,8 +1931,8 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 						vformat(
 								TTR("Scale Node2D \"%s\" to (%s, %s)"),
 								drag_selection[0]->get_name(),
-								Math::stepify(drag_selection[0]->_edit_get_scale().x, 0.01),
-								Math::stepify(drag_selection[0]->_edit_get_scale().y, 0.01)),
+								Math::snapped(drag_selection[0]->_edit_get_scale().x, 0.01),
+								Math::snapped(drag_selection[0]->_edit_get_scale().y, 0.01)),
 						true);
 			} else {
 				// Extends from Control.
@@ -2083,8 +2083,8 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 						drag_selection,
 						vformat(TTR("Scale CanvasItem \"%s\" to (%s, %s)"),
 								drag_selection[0]->get_name(),
-								Math::stepify(drag_selection[0]->_edit_get_scale().x, 0.01),
-								Math::stepify(drag_selection[0]->_edit_get_scale().y, 0.01)),
+								Math::snapped(drag_selection[0]->_edit_get_scale().x, 0.01),
+								Math::snapped(drag_selection[0]->_edit_get_scale().y, 0.01)),
 						true);
 			}
 			if (key_auto_insert_button->is_pressed()) {
@@ -4576,7 +4576,7 @@ void CanvasItemEditor::_update_zoom_label() {
 		// Don't show a decimal when the zoom level is higher than 1000 %.
 		zoom_text = TS->format_number(rtos(Math::round((zoom / MAX(1, EDSCALE)) * 100))) + " " + TS->percent_sign();
 	} else {
-		zoom_text = TS->format_number(rtos(Math::stepify((zoom / MAX(1, EDSCALE)) * 100, 0.1))) + " " + TS->percent_sign();
+		zoom_text = TS->format_number(rtos(Math::snapped((zoom / MAX(1, EDSCALE)) * 100, 0.1))) + " " + TS->percent_sign();
 	}
 
 	zoom_reset->set_text(zoom_text);

@@ -123,7 +123,7 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 		Geometry3D::get_closest_points_between_segments(Vector3(), Vector3(4096, 0, 0), sg[0], sg[1], ra, rb);
 		float d = ra.x;
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
+			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
 		if (d < 0.001) {
@@ -142,7 +142,7 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = ra[p_idx];
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
+			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
 		if (d < 0.001) {
@@ -171,7 +171,7 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = axis.dot(ra);
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
+			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
 		if (d < 0.001) {
@@ -194,7 +194,7 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = axis.dot(ra);
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
+			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
 		if (d < 0.001) {

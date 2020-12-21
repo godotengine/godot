@@ -140,7 +140,7 @@
 				i = ceil(1.45)  # i is 2
 				i = ceil(1.001) # i is 2
 				[/codeblock]
-				See also [method floor], [method round], and [method stepify].
+				See also [method floor], [method round], and [method snapped].
 			</description>
 		</method>
 		<method name="clamp">
@@ -303,7 +303,7 @@
 				# a is -3.0
 				a = floor(-2.99)
 				[/codeblock]
-				See also [method ceil], [method round], and [method stepify].
+				See also [method ceil], [method round], and [method snapped].
 				[b]Note:[/b] This method returns a float. If you need an integer, you can use [code]int(x)[/code] directly.
 			</description>
 		</method>
@@ -848,7 +848,7 @@
 				[codeblock]
 				round(2.6) # Returns 3
 				[/codeblock]
-				See also [method floor], [method ceil], and [method stepify].
+				See also [method floor], [method ceil], and [method snapped].
 			</description>
 		</method>
 		<method name="seed">
@@ -974,7 +974,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="stepify">
+		<method name="snapped">
 			<return type="float">
 			</return>
 			<argument index="0" name="x" type="float">
@@ -984,8 +984,8 @@
 			<description>
 				Snaps float value [code]x[/code] to a given [code]step[/code]. This can also be used to round a floating point number to an arbitrary number of decimals.
 				[codeblock]
-				stepify(100, 32) # Returns 96
-				stepify(3.14159, 0.01) # Returns 3.14
+				snapped(100, 32) # Returns 96
+				snapped(3.14159, 0.01) # Returns 3.14
 				[/codeblock]
 				See also [method ceil], [method floor], and [method round].
 			</description>

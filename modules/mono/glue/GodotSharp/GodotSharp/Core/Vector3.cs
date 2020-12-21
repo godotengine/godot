@@ -513,9 +513,9 @@ namespace Godot
         {
             return new Vector3
             (
-                Mathf.Stepify(x, step.x),
-                Mathf.Stepify(y, step.y),
-                Mathf.Stepify(z, step.z)
+                Mathf.Snapped(x, step.x),
+                Mathf.Snapped(y, step.y),
+                Mathf.Snapped(z, step.z)
             );
         }
 

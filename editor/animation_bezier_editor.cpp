@@ -367,7 +367,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 
 			float scale = (min_left_scale * 2) * v_zoom;
 			float step = Math::pow(10.0, Math::round(Math::log(scale / 5.0) / Math::log(10.0))) * 5.0;
-			scale = Math::stepify(scale, step);
+			scale = Math::snapped(scale, step);
 
 			while (scale / v_zoom < min_left_scale * 2) {
 				scale += step;
@@ -390,7 +390,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					draw_line(Point2(limit, i), Point2(right_limit, i), lc);
 					Color c = color;
 					c.a *= 0.5;
-					draw_string(font, Point2(limit + 8, i - 2), TS->format_number(rtos(Math::stepify((iv + 1) * scale, step))), HALIGN_LEFT, -1, font_size, c);
+					draw_string(font, Point2(limit + 8, i - 2), TS->format_number(rtos(Math::snapped((iv + 1) * scale, step))), HALIGN_LEFT, -1, font_size, c);
 				}
 
 				first = false;
@@ -461,8 +461,8 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					ep.point_rect.size = bezier_icon->get_size();
 					if (selection.has(i)) {
 						draw_texture(selected_icon, ep.point_rect.position);
-						draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 4), TTR("Time:") + " " + TS->format_number(rtos(Math::stepify(offset, 0.001))), HALIGN_LEFT, -1, font_size, accent);
-						draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + TS->format_number(rtos(Math::stepify(value, 0.001))), HALIGN_LEFT, -1, font_size, accent);
+						draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 4), TTR("Time:") + " " + TS->format_number(rtos(Math::snapped(offset, 0.001))), HALIGN_LEFT, -1, font_size, accent);
+						draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + TS->format_number(rtos(Math::snapped(value, 0.001))), HALIGN_LEFT, -1, font_size, accent);
 					} else {
 						draw_texture(bezier_icon, ep.point_rect.position);
 					}
