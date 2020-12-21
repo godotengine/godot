@@ -63,7 +63,7 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"is_inf",
 	"ease",
 	"step_decimals",
-	"stepify",
+	"snapped",
 	"lerp",
 	"inverse_lerp",
 	"range_lerp",
@@ -192,7 +192,7 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_POSMOD:
 		case MATH_POW:
 		case MATH_EASE:
-		case MATH_STEPIFY:
+		case MATH_SNAPPED:
 		case MATH_RANDF_RANGE:
 		case MATH_RANDI_RANGE:
 		case MATH_POLAR2CARTESIAN:
@@ -309,7 +309,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		case MATH_STEP_DECIMALS: {
 			return PropertyInfo(Variant::FLOAT, "step");
 		} break;
-		case MATH_STEPIFY: {
+		case MATH_SNAPPED: {
 			if (p_idx == 0) {
 				return PropertyInfo(Variant::FLOAT, "s");
 			} else {
@@ -537,7 +537,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_STEP_DECIMALS: {
 			t = Variant::INT;
 		} break;
-		case MATH_STEPIFY:
+		case MATH_SNAPPED:
 		case MATH_LERP:
 		case MATH_LERP_ANGLE:
 		case MATH_INVERSE_LERP:
@@ -805,10 +805,10 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::step_decimals((double)*p_inputs[0]);
 		} break;
-		case VisualScriptBuiltinFunc::MATH_STEPIFY: {
+		case VisualScriptBuiltinFunc::MATH_SNAPPED: {
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			*r_return = Math::stepify((double)*p_inputs[0], (double)*p_inputs[1]);
+			*r_return = Math::snapped((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_LERP: {
 			VALIDATE_ARG_NUM(0);
@@ -1254,7 +1254,7 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(MATH_ISINF);
 	BIND_ENUM_CONSTANT(MATH_EASE);
 	BIND_ENUM_CONSTANT(MATH_STEP_DECIMALS);
-	BIND_ENUM_CONSTANT(MATH_STEPIFY);
+	BIND_ENUM_CONSTANT(MATH_SNAPPED);
 	BIND_ENUM_CONSTANT(MATH_LERP);
 	BIND_ENUM_CONSTANT(MATH_INVERSE_LERP);
 	BIND_ENUM_CONSTANT(MATH_RANGE_LERP);
@@ -1344,7 +1344,7 @@ void register_visual_script_builtin_func_node() {
 
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/ease", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_EASE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/step_decimals", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_STEP_DECIMALS>);
-	VisualScriptLanguage::singleton->add_register_func("functions/built_in/stepify", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_STEPIFY>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/snapped", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_SNAPPED>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp_angle", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP_ANGLE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/inverse_lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_INVERSE_LERP>);

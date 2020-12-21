@@ -1674,10 +1674,10 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 				real_t unit = radius * 2.0 / texture_size;
 
-				x_max_cam = Math::stepify(x_max_cam, unit);
-				x_min_cam = Math::stepify(x_min_cam, unit);
-				y_max_cam = Math::stepify(y_max_cam, unit);
-				y_min_cam = Math::stepify(y_min_cam, unit);
+				x_max_cam = Math::snapped(x_max_cam, unit);
+				x_min_cam = Math::snapped(x_min_cam, unit);
+				y_max_cam = Math::snapped(y_max_cam, unit);
+				y_min_cam = Math::snapped(y_min_cam, unit);
 			}
 		}
 

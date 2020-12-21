@@ -168,7 +168,7 @@
 				a = ceil(1.45)  # a is 2.0
 				a = ceil(1.001) # a is 2.0
 				[/codeblock]
-				See also [method floor], [method round], [method stepify], and [int].
+				See also [method floor], [method round], [method snapped], and [int].
 			</description>
 		</method>
 		<method name="char">
@@ -331,7 +331,7 @@
 				a = floor(2.99)  # a is 2.0
 				a = floor(-2.99) # a is -3.0
 				[/codeblock]
-				See also [method ceil], [method round], [method stepify], and [int].
+				See also [method ceil], [method round], [method snapped], and [int].
 				[b]Note:[/b] This method returns a float. If you need an integer and [code]s[/code] is a non-negative number, you can use [code]int(s)[/code] directly.
 			</description>
 		</method>
@@ -1015,7 +1015,7 @@
 				a = round(2.5)  # a is 3.0
 				a = round(2.51) # a is 3.0
 				[/codeblock]
-				See also [method floor], [method ceil], [method stepify], and [int].
+				See also [method floor], [method ceil], [method snapped], and [int].
 			</description>
 		</method>
 		<method name="seed">
@@ -1118,7 +1118,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="stepify">
+		<method name="snapped">
 			<return type="float">
 			</return>
 			<argument index="0" name="s" type="float">
@@ -1128,8 +1128,8 @@
 			<description>
 				Snaps float value [code]s[/code] to a given [code]step[/code]. This can also be used to round a floating point number to an arbitrary number of decimals.
 				[codeblock]
-				stepify(100, 32) # Returns 96.0
-				stepify(3.14159, 0.01) # Returns 3.14
+				snapped(100, 32) # Returns 96.0
+				snapped(3.14159, 0.01) # Returns 3.14
 				[/codeblock]
 				See also [method ceil], [method floor], [method round], and [int].
 			</description>

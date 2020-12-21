@@ -106,7 +106,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 		add_point_pos += blend_space->get_min_space();
 
 		if (snap->is_pressed()) {
-			add_point_pos = Math::stepify(add_point_pos, blend_space->get_snap());
+			add_point_pos = Math::snapped(add_point_pos, blend_space->get_snap());
 		}
 	}
 
@@ -139,7 +139,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 			point += drag_ofs.x;
 
 			if (snap->is_pressed()) {
-				point = Math::stepify(point, blend_space->get_snap());
+				point = Math::snapped(point, blend_space->get_snap());
 			}
 
 			updating = true;
@@ -253,7 +253,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 		if (dragging_selected && selected_point == i) {
 			point += drag_ofs.x;
 			if (snap->is_pressed()) {
-				point = Math::stepify(point, blend_space->get_snap());
+				point = Math::snapped(point, blend_space->get_snap());
 			}
 		}
 
@@ -454,7 +454,7 @@ void AnimationNodeBlendSpace1DEditor::_update_edited_point_pos() {
 			pos += drag_ofs.x;
 
 			if (snap->is_pressed()) {
-				pos = Math::stepify(pos, blend_space->get_snap());
+				pos = Math::snapped(pos, blend_space->get_snap());
 			}
 		}
 

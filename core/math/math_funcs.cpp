@@ -123,7 +123,7 @@ double Math::ease(double p_x, double p_c) {
 	}
 }
 
-double Math::stepify(double p_value, double p_step) {
+double Math::snapped(double p_value, double p_step) {
 	if (p_step != 0) {
 		p_value = Math::floor(p_value / p_step + 0.5) * p_step;
 	}

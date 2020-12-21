@@ -3445,7 +3445,7 @@ void AnimationTrackEditor::_insert_delay(bool p_create_reset, bool p_create_bezi
 
 		float pos = timeline->get_play_position();
 
-		pos = Math::stepify(pos + step, step);
+		pos = Math::snapped(pos + step, step);
 		if (pos > animation->get_length()) {
 			pos = animation->get_length();
 		}
@@ -5433,7 +5433,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 			float pos = timeline->get_play_position();
 
-			pos = Math::stepify(pos + step, step);
+			pos = Math::snapped(pos + step, step);
 			if (pos > animation->get_length()) {
 				pos = animation->get_length();
 			}
@@ -5452,7 +5452,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			}
 
 			float pos = timeline->get_play_position();
-			pos = Math::stepify(pos - step, step);
+			pos = Math::snapped(pos - step, step);
 			if (pos < 0) {
 				pos = 0;
 			}
@@ -5581,9 +5581,9 @@ float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
 
 		if (p_relative) {
 			double rel = Math::fmod(timeline->get_value(), snap_increment);
-			p_value = Math::stepify(p_value + rel, snap_increment) - rel;
+			p_value = Math::snapped(p_value + rel, snap_increment) - rel;
 		} else {
-			p_value = Math::stepify(p_value, snap_increment);
+			p_value = Math::snapped(p_value, snap_increment);
 		}
 	}
 

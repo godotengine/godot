@@ -320,7 +320,7 @@ int TreeItem::get_icon_max_width(int p_column) const {
 void TreeItem::set_range(int p_column, double p_value) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	if (cells[p_column].step > 0) {
-		p_value = Math::stepify(p_value, cells[p_column].step);
+		p_value = Math::snapped(p_value, cells[p_column].step);
 	}
 	if (p_value < cells[p_column].min) {
 		p_value = cells[p_column].min;
@@ -2191,7 +2191,7 @@ void Tree::_text_editor_enter(String p_text) {
 		case TreeItem::CELL_MODE_RANGE: {
 			c.val = p_text.to_float();
 			if (c.step > 0) {
-				c.val = Math::stepify(c.val, c.step);
+				c.val = Math::snapped(c.val, c.step);
 			}
 			if (c.val < c.min) {
 				c.val = c.min;

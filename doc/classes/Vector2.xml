@@ -473,7 +473,7 @@
 		<method name="snapped">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="by" type="Vector2">
+			<argument index="0" name="step" type="Vector2">
 			</argument>
 			<description>
 				Returns this vector with each component snapped to the nearest multiple of [code]step[/code]. This can also be used to round to an arbitrary number of decimals.

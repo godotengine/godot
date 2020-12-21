@@ -1016,7 +1016,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, cross, sarray("with"), varray());
 	bind_method(Vector2, abs, sarray(), varray());
 	bind_method(Vector2, sign, sarray(), varray());
-	bind_method(Vector2, snapped, sarray("by"), varray());
+	bind_method(Vector2, snapped, sarray("step"), varray());
 	bind_method(Vector2, clamped, sarray("length"), varray());
 
 	/* Vector2i */
@@ -1070,7 +1070,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, is_normalized, sarray(), varray());
 	bind_method(Vector3, is_equal_approx, sarray("to"), varray());
 	bind_method(Vector3, inverse, sarray(), varray());
-	bind_method(Vector3, snapped, sarray("by"), varray());
+	bind_method(Vector3, snapped, sarray("step"), varray());
 	bind_method(Vector3, rotated, sarray("by_axis", "phi"), varray());
 	bind_method(Vector3, lerp, sarray("to", "weight"), varray());
 	bind_method(Vector3, slerp, sarray("to", "weight"), varray());

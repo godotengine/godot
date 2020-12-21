@@ -122,10 +122,10 @@ Vector2 Vector2::project(const Vector2 &p_to) const {
 	return p_to * (dot(p_to) / p_to.length_squared());
 }
 
-Vector2 Vector2::snapped(const Vector2 &p_by) const {
+Vector2 Vector2::snapped(const Vector2 &p_step) const {
 	return Vector2(
-			Math::stepify(x, p_by.x),
-			Math::stepify(y, p_by.y));
+			Math::snapped(x, p_step.x),
+			Math::snapped(y, p_step.y));
 }
 
 Vector2 Vector2::clamped(real_t p_len) const {

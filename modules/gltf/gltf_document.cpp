@@ -178,7 +178,7 @@ Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &
 	}
 	uint64_t elapsed = OS::get_singleton()->get_ticks_usec() - begin_time;
 	float elapsed_sec = double(elapsed) / 1000000.0;
-	elapsed_sec = Math::stepify(elapsed_sec, 0.01f);
+	elapsed_sec = Math::snapped(elapsed_sec, 0.01f);
 	print_line("glTF: Export time elapsed seconds " + rtos(elapsed_sec).pad_decimals(2));
 
 	return OK;
@@ -1460,7 +1460,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> state, c
 	Vector<double> type_min;
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
-		attribs.write[i] = Math::stepify(p_attribs[i], 1.0);
+		attribs.write[i] = Math::snapped(p_attribs[i], 1.0);
 		if (i == 0) {
 			for (int32_t type_i = 0; type_i < element_count; type_i++) {
 				type_max.write[type_i] = attribs[(i * element_count) + type_i];
@@ -1552,8 +1552,8 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec2(Ref<GLTFState> state, c
 
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Vector2 attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::stepify(attrib.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::stepify(attrib.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.x, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.y, CMP_NORMALIZE_TOLERANCE);
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
 
@@ -1598,10 +1598,10 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_color(Ref<GLTFState> state, 
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::stepify(attrib.r, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::stepify(attrib.g, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::stepify(attrib.b, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 3] = Math::stepify(attrib.a, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 2] = Math::snapped(attrib.b, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 3] = Math::snapped(attrib.a, CMP_NORMALIZE_TOLERANCE);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
@@ -1663,10 +1663,10 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> state
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::stepify(attrib.r, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::stepify(attrib.g, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::stepify(attrib.b, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 3] = Math::stepify(attrib.a, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 2] = Math::snapped(attrib.b, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 3] = Math::snapped(attrib.a, CMP_NORMALIZE_TOLERANCE);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
@@ -1712,10 +1712,10 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_joints(Ref<GLTFState> state,
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::stepify(attrib.r, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::stepify(attrib.g, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::stepify(attrib.b, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 3] = Math::stepify(attrib.a, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 2] = Math::snapped(attrib.b, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 3] = Math::snapped(attrib.a, CMP_NORMALIZE_TOLERANCE);
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
 	ERR_FAIL_COND_V(attribs.size() % element_count != 0, -1);
@@ -1759,10 +1759,10 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quats(Ref<GLTFState> state, 
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Quat quat = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::stepify(quat.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::stepify(quat.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::stepify(quat.z, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 3] = Math::stepify(quat.w, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 0] = Math::snapped(quat.x, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 1] = Math::snapped(quat.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 2] = Math::snapped(quat.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 3] = Math::snapped(quat.w, CMP_NORMALIZE_TOLERANCE);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
@@ -1826,7 +1826,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> state,
 	type_min.resize(element_count);
 
 	for (int i = 0; i < p_attribs.size(); i++) {
-		attribs.write[i] = Math::stepify(p_attribs[i], CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i] = Math::snapped(p_attribs[i], CMP_NORMALIZE_TOLERANCE);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
@@ -1871,9 +1871,9 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec3(Ref<GLTFState> state, c
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Vector3 attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::stepify(attrib.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::stepify(attrib.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::stepify(attrib.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.x, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 2] = Math::snapped(attrib.z, CMP_NORMALIZE_TOLERANCE);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
@@ -1920,27 +1920,27 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> state, 
 		Basis basis = attrib.get_basis();
 		Vector3 axis_0 = basis.get_axis(Vector3::AXIS_X);
 
-		attribs.write[i * element_count + 0] = Math::stepify(axis_0.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 1] = Math::stepify(axis_0.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 2] = Math::stepify(axis_0.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 0] = Math::snapped(axis_0.x, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 1] = Math::snapped(axis_0.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 2] = Math::snapped(axis_0.z, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[i * element_count + 3] = 0.0;
 
 		Vector3 axis_1 = basis.get_axis(Vector3::AXIS_Y);
-		attribs.write[i * element_count + 4] = Math::stepify(axis_1.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 5] = Math::stepify(axis_1.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 6] = Math::stepify(axis_1.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 4] = Math::snapped(axis_1.x, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 5] = Math::snapped(axis_1.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 6] = Math::snapped(axis_1.z, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[i * element_count + 7] = 0.0;
 
 		Vector3 axis_2 = basis.get_axis(Vector3::AXIS_Z);
-		attribs.write[i * element_count + 8] = Math::stepify(axis_2.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 9] = Math::stepify(axis_2.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 10] = Math::stepify(axis_2.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 8] = Math::snapped(axis_2.x, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 9] = Math::snapped(axis_2.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 10] = Math::snapped(axis_2.z, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[i * element_count + 11] = 0.0;
 
 		Vector3 origin = attrib.get_origin();
-		attribs.write[i * element_count + 12] = Math::stepify(origin.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 13] = Math::stepify(origin.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 14] = Math::stepify(origin.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 12] = Math::snapped(origin.x, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 13] = Math::snapped(origin.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 14] = Math::snapped(origin.z, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[i * element_count + 15] = 1.0;
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
