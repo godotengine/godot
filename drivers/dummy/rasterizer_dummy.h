@@ -130,6 +130,7 @@ public:
 
 	RID reflection_atlas_create() override { return RID(); }
 	void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) override {}
+	int reflection_atlas_get_size(RID p_ref_atlas) const override { return 0; }
 
 	RID reflection_probe_instance_create(RID p_probe) override { return RID(); }
 	void reflection_probe_instance_set_transform(RID p_instance, const Transform &p_transform) override {}
@@ -149,8 +150,8 @@ public:
 
 	void gi_probe_set_quality(RS::GIProbeQuality) override {}
 
-	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) override {}
-	void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) override {}
+	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold) override {}
+	void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0, float p_screen_lod_threshold = 0.0) override {}
 	void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) override {}
 	void render_sdfgi(RID p_render_buffers, int p_region, InstanceBase **p_cull_result, int p_cull_count) override {}
 	void render_sdfgi_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const RID **p_positional_light_cull_result, const uint32_t *p_positional_light_cull_count) override {}
@@ -643,6 +644,7 @@ public:
 	void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) override {}
 	void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) override {}
 	void reflection_probe_set_resolution(RID p_probe, int p_resolution) override {}
+	void reflection_probe_set_lod_threshold(RID p_probe, float p_ratio) override {}
 
 	AABB reflection_probe_get_aabb(RID p_probe) const override { return AABB(); }
 	RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const override { return RenderingServer::REFLECTION_PROBE_UPDATE_ONCE; }
@@ -651,6 +653,7 @@ public:
 	Vector3 reflection_probe_get_origin_offset(RID p_probe) const override { return Vector3(); }
 	float reflection_probe_get_origin_max_distance(RID p_probe) const override { return 0.0; }
 	bool reflection_probe_renders_shadows(RID p_probe) const override { return false; }
+	float reflection_probe_get_lod_threshold(RID p_probe) const override { return 0.0; }
 
 	void base_update_dependency(RID p_base, InstanceBaseDependency *p_instance) override {}
 	void skeleton_update_dependency(RID p_base, InstanceBaseDependency *p_instance) override {}

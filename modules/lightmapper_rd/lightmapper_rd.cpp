@@ -31,9 +31,11 @@
 #include "lightmapper_rd.h"
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
+#ifndef SERVER_ENABLED
 #include "lm_blendseams.glsl.gen.h"
 #include "lm_compute.glsl.gen.h"
 #include "lm_raster.glsl.gen.h"
+#endif
 #include "servers/rendering/rendering_device_binds.h"
 
 //uncomment this if you want to see textures from all the process saved
@@ -796,7 +798,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	//shaders
 	Ref<RDShaderFile> raster_shader;
 	raster_shader.instance();
+#ifdef SERVER_ENABLED
+	Error err = ERR_UNAVAILABLE;
+#else
 	Error err = raster_shader->parse_versions_from_text(lm_raster_shader_glsl);
+#endif
 	if (err != OK) {
 		raster_shader->print_errors("raster_shader");
 
@@ -956,7 +962,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	Ref<RDShaderFile> compute_shader;
 	compute_shader.instance();
+#ifdef SERVER_ENABLED
+	err = ERR_UNAVAILABLE;
+#else
 	err = compute_shader->parse_versions_from_text(lm_compute_shader_glsl, p_bake_sh ? "\n#define USE_SH_LIGHTMAPS\n" : "");
+#endif
 	if (err != OK) {
 		FREE_TEXTURES
 		FREE_BUFFERS
@@ -1511,7 +1521,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	//shaders
 	Ref<RDShaderFile> blendseams_shader;
 	blendseams_shader.instance();
+#ifdef SERVER_ENABLED
+	err = ERR_UNAVAILABLE;
+#else
 	err = blendseams_shader->parse_versions_from_text(lm_blendseams_shader_glsl);
+#endif
 	if (err != OK) {
 		FREE_TEXTURES
 		FREE_BUFFERS
