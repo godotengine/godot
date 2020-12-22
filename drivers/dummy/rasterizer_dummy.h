@@ -527,6 +527,14 @@ public:
 	AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) override { return AABB(); }
 	void mesh_clear(RID p_mesh) override {}
 
+	void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) override{};
+	bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) override { return false; };
+	RID mesh_instance_create(RID p_base) override { return RID(); };
+	void mesh_instance_set_skeleton(RID p_mesh_instance, RID p_skeleton) override{};
+	void mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) override{};
+	void mesh_instance_check_for_update(RID p_mesh_instance) override{};
+	void update_mesh_instances() override{};
+
 	/* MULTIMESH API */
 
 	RID multimesh_create() override { return RID(); }

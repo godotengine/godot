@@ -35,8 +35,8 @@
 #include "drivers/dummy/texture_loader_dummy.h"
 #include "drivers/unix/os_unix.h"
 #ifdef __APPLE__
+#include "core/os/semaphore.h"
 #include "platform/osx/crash_handler_osx.h"
-#include "platform/osx/semaphore_osx.h"
 #else
 #include "platform/x11/crash_handler_linuxbsd.h"
 #endif
@@ -48,7 +48,6 @@
 
 class OS_Server : public OS_Unix {
 	RenderingServer *rendering_server = nullptr;
-	VideoMode current_videomode;
 	List<String> args;
 	MainLoop *main_loop = nullptr;
 
@@ -58,7 +57,7 @@ class OS_Server : public OS_Unix {
 
 	bool force_quit = false;
 
-	InputDefault *input = nullptr;
+	Input *input = nullptr;
 
 	CrashHandler crash_handler;
 
@@ -72,7 +71,8 @@ protected:
 	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
+	virtual void initialize();
+	virtual void initialize_joypads();
 	virtual void finalize();
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
@@ -89,12 +89,6 @@ public:
 
 	virtual MainLoop *get_main_loop() const;
 
-	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
-	virtual VideoMode get_video_mode(int p_screen = 0) const;
-	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
-
-	virtual Size2 get_window_size() const;
-
 	virtual void move_window_to_foreground();
 
 	void run();
@@ -105,7 +99,7 @@ public:
 	virtual String get_data_path() const;
 	virtual String get_cache_path() const;
 
-	virtual String get_system_dir(SystemDir p_dir) const;
+	virtual String get_system_dir(OS::SystemDir p_dir) const;
 
 	void disable_crash_handler();
 	bool is_disable_crash_handler() const;

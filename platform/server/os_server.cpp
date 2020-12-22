@@ -59,28 +59,29 @@ void OS_Server::initialize_core() {
 	OS_Unix::initialize_core();
 }
 
-Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+void OS_Server::initialize_joypads() {
+	// Do nothing
+}
+
+void OS_Server::initialize() {
 	args = OS::get_singleton()->get_cmdline_args();
-	current_videomode = p_desired;
 	main_loop = nullptr;
 
 	RasterizerDummy::make_current();
 
-	video_driver_index = p_video_driver; // unused in server platform, but should still be initialized
+	video_driver_index = 0; // unused in server platform, but should still be initialized
 
 	rendering_server = memnew(RenderingServerDefault);
 	rendering_server->init();
 
-	AudioDriverManager::initialize(p_audio_driver);
+	AudioDriverManager::initialize(-1);
 
-	input = memnew(InputDefault);
+	input = memnew(Input);
 
-	_ensure_user_data_dir();
+	ensure_user_data_dir();
 
 	resource_loader_dummy.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_dummy);
-
-	return OK;
 }
 
 void OS_Server::finalize() {
@@ -121,20 +122,6 @@ Point2 OS_Server::get_mouse_position() const {
 void OS_Server::set_window_title(const String &p_title) {
 }
 
-void OS_Server::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
-}
-
-OS::VideoMode OS_Server::get_video_mode(int p_screen) const {
-	return current_videomode;
-}
-
-Size2 OS_Server::get_window_size() const {
-	return Vector2(current_videomode.width, current_videomode.height);
-}
-
-void OS_Server::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
-}
-
 MainLoop *OS_Server::get_main_loop() const {
 	return main_loop;
 }
@@ -147,7 +134,6 @@ void OS_Server::delete_main_loop() {
 
 void OS_Server::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
-	input->set_main_loop(p_main_loop);
 }
 
 String OS_Server::get_name() const {
