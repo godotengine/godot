@@ -404,6 +404,8 @@ class ScriptEditor : public PanelContainer {
 
 	void _unhandled_key_input(const Ref<InputEvent> &p_event);
 
+	void _members_overview_gui_input(const Ref<InputEvent> &ev);
+
 	void _script_list_gui_input(const Ref<InputEvent> &ev);
 	void _make_script_list_context_menu();
 
@@ -455,6 +457,9 @@ public:
 	bool is_scripts_panel_toggled();
 	void apply_scripts() const;
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
+
+	void _go_to_next_script();
+	void _go_to_prev_script();
 
 	void ensure_select_current();
 

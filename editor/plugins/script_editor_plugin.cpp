@@ -586,6 +586,24 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	_update_help_overview_visibility();
 }
 
+void ScriptEditor::_go_to_next_script() {
+	if (script_list->get_item_count() > 1) {
+		int next_tab = script_list->get_current() + 1;
+		next_tab %= script_list->get_item_count();
+		_go_to_tab(script_list->get_item_metadata(next_tab));
+		_update_script_names();
+	}
+}
+
+void ScriptEditor::_go_to_prev_script() {
+	if (script_list->get_item_count() > 1) {
+		int next_tab = script_list->get_current() - 1;
+		next_tab = next_tab >= 0 ? next_tab : script_list->get_item_count() - 1;
+		_go_to_tab(script_list->get_item_metadata(next_tab));
+		_update_script_names();
+	}
+}
+
 void ScriptEditor::_add_recent_script(String p_path) {
 	if (p_path.empty()) {
 		return;
@@ -2697,26 +2715,30 @@ void ScriptEditor::_unhandled_key_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 	if (ED_IS_SHORTCUT("script_editor/next_script", p_event)) {
-		if (script_list->get_item_count() > 1) {
-			int next_tab = script_list->get_current() + 1;
-			next_tab %= script_list->get_item_count();
-			_go_to_tab(script_list->get_item_metadata(next_tab));
-			_update_script_names();
-		}
+		_go_to_next_script();
 	}
 	if (ED_IS_SHORTCUT("script_editor/prev_script", p_event)) {
-		if (script_list->get_item_count() > 1) {
-			int next_tab = script_list->get_current() - 1;
-			next_tab = next_tab >= 0 ? next_tab : script_list->get_item_count() - 1;
-			_go_to_tab(script_list->get_item_metadata(next_tab));
-			_update_script_names();
-		}
+		_go_to_prev_script();
 	}
 	if (ED_IS_SHORTCUT("script_editor/window_move_up", p_event)) {
 		_menu_option(WINDOW_MOVE_UP);
 	}
 	if (ED_IS_SHORTCUT("script_editor/window_move_down", p_event)) {
 		_menu_option(WINDOW_MOVE_DOWN);
+	}
+}
+
+void ScriptEditor::_members_overview_gui_input(const Ref<InputEvent> &ev) {
+	Ref<InputEventMouseButton> mb = ev;
+	if (mb.is_valid() && mb->is_pressed()) {
+		switch (mb->get_button_index()) {
+			case BUTTON_XBUTTON1: {
+				_go_to_prev_script();
+			} break;
+			case BUTTON_XBUTTON2: {
+				_go_to_next_script();
+			} break;
+		}
 	}
 }
 
@@ -2733,7 +2755,12 @@ void ScriptEditor::_script_list_gui_input(const Ref<InputEvent> &ev) {
 					_menu_option(FILE_CLOSE);
 				}
 			} break;
-
+			case BUTTON_XBUTTON1: {
+				_go_to_prev_script();
+			} break;
+			case BUTTON_XBUTTON2: {
+				_go_to_next_script();
+			} break;
 			case BUTTON_RIGHT: {
 				_make_script_list_context_menu();
 			} break;
@@ -3340,6 +3367,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	members_overview->set_allow_reselect(true);
 	members_overview->set_custom_minimum_size(Size2(0, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
 	members_overview->set_v_size_flags(SIZE_EXPAND_FILL);
+	members_overview->connect("gui_input", callable_mp(this, &ScriptEditor::_members_overview_gui_input), varray(), CONNECT_DEFERRED);
 	members_overview->set_allow_rmb_select(true);
 
 	help_overview = memnew(ItemList);
