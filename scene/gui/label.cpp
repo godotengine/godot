@@ -272,7 +272,7 @@ void Label::_notification(int p_what) {
 				case ALIGN_FILL:
 				case ALIGN_LEFT: {
 					if (rtl) {
-						ofs.x = int(size.width - style->get_margin(MARGIN_RIGHT) - TS->shaped_text_get_size(lines_rid[i]).x);
+						ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - TS->shaped_text_get_size(lines_rid[i]).x);
 					} else {
 						ofs.x = style->get_offset().x;
 					}
@@ -284,7 +284,7 @@ void Label::_notification(int p_what) {
 					if (rtl) {
 						ofs.x = style->get_offset().x;
 					} else {
-						ofs.x = int(size.width - style->get_margin(MARGIN_RIGHT) - TS->shaped_text_get_size(lines_rid[i]).x);
+						ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - TS->shaped_text_get_size(lines_rid[i]).x);
 					}
 				} break;
 			}

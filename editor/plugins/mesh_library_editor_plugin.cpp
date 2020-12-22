@@ -298,7 +298,7 @@ MeshLibraryEditorPlugin::MeshLibraryEditorPlugin(EditorNode *p_node) {
 	mesh_library_editor = memnew(MeshLibraryEditor(p_node));
 
 	p_node->get_viewport()->add_child(mesh_library_editor);
-	mesh_library_editor->set_anchors_and_margins_preset(Control::PRESET_TOP_WIDE);
+	mesh_library_editor->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	mesh_library_editor->set_end(Point2(0, 22));
 	mesh_library_editor->hide();
 

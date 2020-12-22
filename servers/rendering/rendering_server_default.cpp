@@ -45,17 +45,17 @@ int RenderingServerDefault::changes = 0;
 /* BLACK BARS */
 
 void RenderingServerDefault::black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom) {
-	black_margin[MARGIN_LEFT] = p_left;
-	black_margin[MARGIN_TOP] = p_top;
-	black_margin[MARGIN_RIGHT] = p_right;
-	black_margin[MARGIN_BOTTOM] = p_bottom;
+	black_margin[SIDE_LEFT] = p_left;
+	black_margin[SIDE_TOP] = p_top;
+	black_margin[SIDE_RIGHT] = p_right;
+	black_margin[SIDE_BOTTOM] = p_bottom;
 }
 
 void RenderingServerDefault::black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom) {
-	black_image[MARGIN_LEFT] = p_left;
-	black_image[MARGIN_TOP] = p_top;
-	black_image[MARGIN_RIGHT] = p_right;
-	black_image[MARGIN_BOTTOM] = p_bottom;
+	black_image[SIDE_LEFT] = p_left;
+	black_image[SIDE_TOP] = p_top;
+	black_image[SIDE_RIGHT] = p_right;
+	black_image[SIDE_BOTTOM] = p_bottom;
 }
 
 void RenderingServerDefault::_draw_margins() {

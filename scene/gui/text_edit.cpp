@@ -296,8 +296,8 @@ void TextEdit::_update_scrollbars() {
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();
 
-	v_scroll->set_begin(Point2(size.width - vmin.width, cache.style_normal->get_margin(MARGIN_TOP)));
-	v_scroll->set_end(Point2(size.width, size.height - cache.style_normal->get_margin(MARGIN_TOP) - cache.style_normal->get_margin(MARGIN_BOTTOM)));
+	v_scroll->set_begin(Point2(size.width - vmin.width, cache.style_normal->get_margin(SIDE_TOP)));
+	v_scroll->set_end(Point2(size.width, size.height - cache.style_normal->get_margin(SIDE_TOP) - cache.style_normal->get_margin(SIDE_BOTTOM)));
 
 	h_scroll->set_begin(Point2(0, size.height - hmin.height));
 	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
@@ -489,7 +489,7 @@ void TextEdit::_update_selection_mode_line() {
 void TextEdit::_update_minimap_click() {
 	Point2 mp = _get_local_mouse_pos();
 
-	int xmargin_end = get_size().width - cache.style_normal->get_margin(MARGIN_RIGHT);
+	int xmargin_end = get_size().width - cache.style_normal->get_margin(SIDE_RIGHT);
 	if (!dragging_minimap && (mp.x < xmargin_end - minimap_width || mp.y > xmargin_end)) {
 		minimap_clicked = false;
 		return;
@@ -622,9 +622,9 @@ void TextEdit::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
-			int xmargin_beg = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding;
+			int xmargin_beg = cache.style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding;
 
-			int xmargin_end = size.width - cache.style_normal->get_margin(MARGIN_RIGHT) - cache.minimap_width;
+			int xmargin_end = size.width - cache.style_normal->get_margin(SIDE_RIGHT) - cache.minimap_width;
 			// Let's do it easy for now.
 			cache.style_normal->draw(ci, Rect2(Point2(), size));
 			if (readonly) {
@@ -1071,7 +1071,7 @@ void TextEdit::_notification(int p_what) {
 					if (line_wrap_index == 0) {
 						// Only do these if we are on the first wrapped part of a line.
 
-						int gutter_offset = cache.style_normal->get_margin(MARGIN_LEFT);
+						int gutter_offset = cache.style_normal->get_margin(SIDE_LEFT);
 						for (int g = 0; g < gutters.size(); g++) {
 							const GutterInfo gutter = gutters[g];
 
@@ -2035,7 +2035,7 @@ int TextEdit::_calculate_spaces_till_next_right_indent(int column) {
 
 void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) const {
 	float rows = p_mouse.y;
-	rows -= cache.style_normal->get_margin(MARGIN_TOP);
+	rows -= cache.style_normal->get_margin(SIDE_TOP);
 	rows /= get_row_height();
 	rows += get_v_scroll_offset();
 	int first_vis_line = get_first_visible_line();
@@ -2061,7 +2061,7 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 		row = text.size() - 1;
 		col = text[row].size();
 	} else {
-		int colx = p_mouse.x - (cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding);
+		int colx = p_mouse.x - (cache.style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding);
 		colx += cursor.x_ofs;
 
 		RID text_rid = text.get_line_data(row)->get_line_rid(wrap_index);
@@ -2089,7 +2089,7 @@ Vector2i TextEdit::_get_cursor_pixel_pos(bool p_adjust_viewport) {
 
 	// Calculate final pixel position
 	int y = (row - get_v_scroll_offset()) * get_row_height();
-	int x = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding - cursor.x_ofs;
+	int x = cache.style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding - cursor.x_ofs;
 
 	Rect2 l_caret, t_caret;
 	TextServer::Direction l_dir, t_dir;
@@ -2106,7 +2106,7 @@ Vector2i TextEdit::_get_cursor_pixel_pos(bool p_adjust_viewport) {
 
 void TextEdit::_get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const {
 	float rows = p_mouse.y;
-	rows -= cache.style_normal->get_margin(MARGIN_TOP);
+	rows -= cache.style_normal->get_margin(SIDE_TOP);
 	rows /= (minimap_char_size.y + minimap_line_spacing);
 	rows += get_v_scroll_offset();
 
@@ -2234,7 +2234,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				int row, col;
 				_get_mouse_pos(Point2i(mpos.x, mpos.y), row, col);
 
-				int left_margin = cache.style_normal->get_margin(MARGIN_LEFT);
+				int left_margin = cache.style_normal->get_margin(SIDE_LEFT);
 				for (int i = 0; i < gutters.size(); i++) {
 					if (!gutters[i].draw || gutters[i].width <= 0) {
 						continue;
@@ -4575,7 +4575,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 	int row, col;
 	_get_mouse_pos(p_pos, row, col);
 
-	int left_margin = cache.style_normal->get_margin(MARGIN_LEFT);
+	int left_margin = cache.style_normal->get_margin(SIDE_LEFT);
 	int gutter = left_margin + gutters_width;
 	if (p_pos.x < gutter) {
 		for (int i = 0; i < gutters.size(); i++) {
@@ -4593,7 +4593,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		return CURSOR_ARROW;
 	}
 
-	int xmargin_end = get_size().width - cache.style_normal->get_margin(MARGIN_RIGHT);
+	int xmargin_end = get_size().width - cache.style_normal->get_margin(SIDE_RIGHT);
 	if (draw_minimap && p_pos.x > xmargin_end - minimap_width && p_pos.x <= xmargin_end) {
 		return CURSOR_ARROW;
 	}

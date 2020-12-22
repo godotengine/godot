@@ -2543,12 +2543,12 @@ void Node3DEditorViewport::_notification(int p_what) {
 		cinema_label->set_visible(show_cinema);
 		if (show_cinema) {
 			float cinema_half_width = cinema_label->get_size().width / 2.0f;
-			cinema_label->set_anchor_and_margin(MARGIN_LEFT, 0.5f, -cinema_half_width);
+			cinema_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -cinema_half_width);
 		}
 
 		if (lock_rotation) {
 			float locked_half_width = locked_label->get_size().width / 2.0f;
-			locked_label->set_anchor_and_margin(MARGIN_LEFT, 0.5f, -locked_half_width);
+			locked_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -locked_half_width);
 		}
 	}
 
@@ -3890,7 +3890,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	subviewport_container = c;
 	c->set_stretch(true);
 	add_child(c);
-	c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	c->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	viewport = memnew(SubViewport);
 	viewport->set_disable_input(true);
 
@@ -3898,7 +3898,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	surface = memnew(Control);
 	surface->set_drag_forwarding(this);
 	add_child(surface);
-	surface->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	surface->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	surface->set_clip_contents(true);
 	camera = memnew(Camera3D);
 	camera->set_disable_gizmo(true);
@@ -4033,19 +4033,19 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	preview_node = nullptr;
 
 	info_label = memnew(Label);
-	info_label->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -90 * EDSCALE);
-	info_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -90 * EDSCALE);
-	info_label->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -10 * EDSCALE);
-	info_label->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -10 * EDSCALE);
+	info_label->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -90 * EDSCALE);
+	info_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -90 * EDSCALE);
+	info_label->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -10 * EDSCALE);
+	info_label->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -10 * EDSCALE);
 	info_label->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 	info_label->set_v_grow_direction(GROW_DIRECTION_BEGIN);
 	surface->add_child(info_label);
 	info_label->hide();
 
 	fps_label = memnew(Label);
-	fps_label->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -90 * EDSCALE);
-	fps_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
-	fps_label->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -10 * EDSCALE);
+	fps_label->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -90 * EDSCALE);
+	fps_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
+	fps_label->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -10 * EDSCALE);
 	fps_label->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 	fps_label->set_tooltip(TTR("Note: The FPS is estimated on a 60hz refresh rate."));
 	fps_label->set_mouse_filter(MOUSE_FILTER_PASS); // Otherwise tooltip doesn't show.
@@ -4053,7 +4053,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	fps_label->hide();
 
 	cinema_label = memnew(Label);
-	cinema_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
+	cinema_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
 	cinema_label->set_h_grow_direction(GROW_DIRECTION_END);
 	cinema_label->set_align(Label::ALIGN_CENTER);
 	surface->add_child(cinema_label);
@@ -4062,8 +4062,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	previewing_cinema = false;
 
 	locked_label = memnew(Label);
-	locked_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -20 * EDSCALE);
-	locked_label->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -10 * EDSCALE);
+	locked_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -20 * EDSCALE);
+	locked_label->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -10 * EDSCALE);
 	locked_label->set_h_grow_direction(GROW_DIRECTION_END);
 	locked_label->set_v_grow_direction(GROW_DIRECTION_BEGIN);
 	locked_label->set_align(Label::ALIGN_CENTER);
@@ -4072,7 +4072,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	locked_label->hide();
 
 	top_right_vbox = memnew(VBoxContainer);
-	top_right_vbox->set_anchors_and_margins_preset(PRESET_TOP_RIGHT, PRESET_MODE_MINSIZE, 2.0 * EDSCALE);
+	top_right_vbox->set_anchors_and_offsets_preset(PRESET_TOP_RIGHT, PRESET_MODE_MINSIZE, 2.0 * EDSCALE);
 	top_right_vbox->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 
 	rotation_control = memnew(ViewportRotationControl);
@@ -4082,9 +4082,9 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	top_right_vbox->add_child(rotation_control);
 
 	fps_label = memnew(Label);
-	fps_label->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -90 * EDSCALE);
-	fps_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
-	fps_label->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -10 * EDSCALE);
+	fps_label->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -90 * EDSCALE);
+	fps_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
+	fps_label->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -10 * EDSCALE);
 	fps_label->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 	fps_label->set_tooltip(TTR("Note: The FPS value displayed is the editor's framerate.\nIt cannot be used as a reliable indication of in-game performance."));
 	fps_label->set_mouse_filter(MOUSE_FILTER_PASS); // Otherwise tooltip doesn't show.
@@ -6109,7 +6109,7 @@ void Node3DEditor::_toggle_maximize_view(Object *p_viewport) {
 	if (!maximized) {
 		for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
 			if (i == (uint32_t)index) {
-				viewports[i]->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+				viewports[i]->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 			} else {
 				viewports[i]->hide();
 			}

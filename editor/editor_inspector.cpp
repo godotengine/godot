@@ -220,7 +220,7 @@ void EditorProperty::_notification(int p_what) {
 
 		Size2 size = get_size();
 		if (bottom_editor) {
-			size.height = bottom_editor->get_margin(MARGIN_TOP);
+			size.height = bottom_editor->get_offset(SIDE_TOP);
 		} else if (label_reference) {
 			size.height = label_reference->get_size().height;
 		}

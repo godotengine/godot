@@ -672,7 +672,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 			GraphNode *gnode = memnew(GraphNode);
 			gnode->set_title(node->get_caption());
-			gnode->set_offset(pos * EDSCALE);
+			gnode->set_position_offset(pos * EDSCALE);
 			if (error_line == E->get()) {
 				gnode->set_overlay(GraphNode::OVERLAY_POSITION);
 			} else if (node->is_breakpoint()) {
@@ -2639,7 +2639,7 @@ void VisualScriptEditor::_center_on_node(const StringName &p_func, int p_id) {
 
 	if (gn) {
 		gn->set_selected(true);
-		Vector2 new_scroll = gn->get_offset() - graph->get_size() * 0.5 + gn->get_size() * 0.5;
+		Vector2 new_scroll = gn->get_position_offset() - graph->get_size() * 0.5 + gn->get_size() * 0.5;
 		graph->set_scroll_ofs(new_scroll);
 		script->set_function_scroll(p_func, new_scroll / EDSCALE);
 		script->set_edited(true);
@@ -2852,7 +2852,7 @@ void VisualScriptEditor::_move_node(const StringName &p_func, int p_id, const Ve
 	Node *node = graph->get_node(itos(p_id));
 
 	if (Object::cast_to<GraphNode>(node)) {
-		Object::cast_to<GraphNode>(node)->set_offset(p_to);
+		Object::cast_to<GraphNode>(node)->set_position_offset(p_to);
 	}
 
 	script->set_node_position(p_func, p_id, p_to / EDSCALE);
@@ -4786,7 +4786,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph = memnew(GraphEdit);
 	add_child(graph);
 	graph->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	graph->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	graph->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	graph->connect("node_selected", callable_mp(this, &VisualScriptEditor::_node_selected));
 	graph->connect("begin_node_move", callable_mp(this, &VisualScriptEditor::_begin_node_move));
 	graph->connect("end_node_move", callable_mp(this, &VisualScriptEditor::_end_node_move));
@@ -4870,9 +4870,9 @@ VisualScriptEditor::VisualScriptEditor() {
 	add_child(select_func_text);
 
 	hint_text = memnew(Label);
-	hint_text->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -100);
-	hint_text->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
-	hint_text->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
+	hint_text->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -100);
+	hint_text->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
+	hint_text->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
 	hint_text->set_align(Label::ALIGN_CENTER);
 	hint_text->set_valign(Label::VALIGN_CENTER);
 	graph->add_child(hint_text);

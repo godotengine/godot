@@ -87,10 +87,10 @@ void EditorAssetLibraryItem::_bind_methods() {
 EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	Ref<StyleBoxEmpty> border;
 	border.instance();
-	border->set_default_margin(MARGIN_LEFT, 5 * EDSCALE);
-	border->set_default_margin(MARGIN_RIGHT, 5 * EDSCALE);
-	border->set_default_margin(MARGIN_BOTTOM, 5 * EDSCALE);
-	border->set_default_margin(MARGIN_TOP, 5 * EDSCALE);
+	border->set_default_margin(SIDE_LEFT, 5 * EDSCALE);
+	border->set_default_margin(SIDE_RIGHT, 5 * EDSCALE);
+	border->set_default_margin(SIDE_BOTTOM, 5 * EDSCALE);
+	border->set_default_margin(SIDE_TOP, 5 * EDSCALE);
 	add_theme_style_override("panel", border);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -1400,10 +1400,10 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	Ref<StyleBoxEmpty> border2;
 	border2.instance();
-	border2->set_default_margin(MARGIN_LEFT, 15 * EDSCALE);
-	border2->set_default_margin(MARGIN_RIGHT, 35 * EDSCALE);
-	border2->set_default_margin(MARGIN_BOTTOM, 15 * EDSCALE);
-	border2->set_default_margin(MARGIN_TOP, 15 * EDSCALE);
+	border2->set_default_margin(SIDE_LEFT, 15 * EDSCALE);
+	border2->set_default_margin(SIDE_RIGHT, 35 * EDSCALE);
+	border2->set_default_margin(SIDE_BOTTOM, 15 * EDSCALE);
+	border2->set_default_margin(SIDE_TOP, 15 * EDSCALE);
 
 	PanelContainer *library_vb_border = memnew(PanelContainer);
 	library_scroll->add_child(library_vb_border);
@@ -1493,7 +1493,7 @@ AssetLibraryEditorPlugin::AssetLibraryEditorPlugin(EditorNode *p_node) {
 	addon_library = memnew(EditorAssetLibrary);
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	editor->get_viewport()->add_child(addon_library);
-	addon_library->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	addon_library->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	addon_library->hide();
 }
 

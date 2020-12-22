@@ -90,11 +90,11 @@ void OptionButton::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			if (has_theme_icon("arrow")) {
 				if (is_layout_rtl()) {
-					_set_internal_margin(MARGIN_LEFT, Control::get_theme_icon("arrow")->get_width());
-					_set_internal_margin(MARGIN_RIGHT, 0.f);
+					_set_internal_margin(SIDE_LEFT, Control::get_theme_icon("arrow")->get_width());
+					_set_internal_margin(SIDE_RIGHT, 0.f);
 				} else {
-					_set_internal_margin(MARGIN_LEFT, 0.f);
-					_set_internal_margin(MARGIN_RIGHT, Control::get_theme_icon("arrow")->get_width());
+					_set_internal_margin(SIDE_LEFT, 0.f);
+					_set_internal_margin(SIDE_RIGHT, Control::get_theme_icon("arrow")->get_width());
 				}
 			}
 		} break;
@@ -341,11 +341,11 @@ OptionButton::OptionButton() {
 	set_text_align(ALIGN_LEFT);
 	if (is_layout_rtl()) {
 		if (has_theme_icon("arrow")) {
-			_set_internal_margin(MARGIN_LEFT, Control::get_theme_icon("arrow")->get_width());
+			_set_internal_margin(SIDE_LEFT, Control::get_theme_icon("arrow")->get_width());
 		}
 	} else {
 		if (has_theme_icon("arrow")) {
-			_set_internal_margin(MARGIN_RIGHT, Control::get_theme_icon("arrow")->get_width());
+			_set_internal_margin(SIDE_RIGHT, Control::get_theme_icon("arrow")->get_width());
 		}
 	}
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);

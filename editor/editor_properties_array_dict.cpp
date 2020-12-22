@@ -975,7 +975,7 @@ void EditorPropertyDictionary::update_property() {
 				Ref<StyleBoxFlat> flat;
 				flat.instance();
 				for (int j = 0; j < 4; j++) {
-					flat->set_default_margin(Margin(j), 2 * EDSCALE);
+					flat->set_default_margin(Side(j), 2 * EDSCALE);
 				}
 				flat->set_bg_color(get_theme_color("prop_subsection", "Editor"));
 

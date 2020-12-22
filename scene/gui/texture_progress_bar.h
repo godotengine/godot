@@ -78,8 +78,8 @@ public:
 	void set_over_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_over_texture() const;
 
-	void set_stretch_margin(Margin p_margin, int p_size);
-	int get_stretch_margin(Margin p_margin) const;
+	void set_stretch_margin(Side p_side, int p_size);
+	int get_stretch_margin(Side p_side) const;
 
 	void set_nine_patch_stretch(bool p_stretch);
 	bool get_nine_patch_stretch() const;

@@ -215,12 +215,12 @@
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="0" />
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
-			The offset of the GraphNode, relative to the scroll offset of the [GraphEdit].
-			[b]Note:[/b] You cannot use position directly, as [GraphEdit] is a [Container].
-		</member>
 		<member name="overlay" type="int" setter="set_overlay" getter="get_overlay" enum="GraphNode.Overlay" default="0">
 			Sets the overlay shown above the GraphNode. See [enum Overlay].
+		</member>
+		<member name="position_offset" type="Vector2" setter="set_position_offset" getter="get_position_offset" default="Vector2( 0, 0 )">
+			The offset of the GraphNode, relative to the scroll offset of the [GraphEdit].
+			[b]Note:[/b] You cannot use position offset directly, as [GraphEdit] is a [Container].
 		</member>
 		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable" default="false">
 			If [code]true[/code], the user can resize the GraphNode.
@@ -255,7 +255,7 @@
 				Emitted when the GraphNode is dragged.
 			</description>
 		</signal>
-		<signal name="offset_changed">
+		<signal name="position_offset_changed">
 			<description>
 				Emitted when the GraphNode is moved.
 			</description>

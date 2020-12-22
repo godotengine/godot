@@ -341,15 +341,15 @@ void Tabs::_notification(int p_what) {
 				}
 				sb->draw(ci, sb_rect);
 
-				w += sb->get_margin(MARGIN_LEFT);
+				w += sb->get_margin(SIDE_LEFT);
 
 				Size2i sb_ms = sb->get_minimum_size();
 				Ref<Texture2D> icon = tabs[i].icon;
 				if (icon.is_valid()) {
 					if (rtl) {
-						icon->draw(ci, Point2i(size.width - w - icon->get_width(), sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
+						icon->draw(ci, Point2i(size.width - w - icon->get_width(), sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
 					} else {
-						icon->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
+						icon->draw(ci, Point2i(w, sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
 					}
 					if (tabs[i].text != "") {
 						w += icon->get_width() + get_theme_constant("hseparation");
@@ -357,9 +357,9 @@ void Tabs::_notification(int p_what) {
 				}
 
 				if (rtl) {
-					tabs[i].text_buf->draw(ci, Point2i(size.width - w - tabs[i].text_buf->get_size().x, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[i].text_buf->get_size().y) / 2), col);
+					tabs[i].text_buf->draw(ci, Point2i(size.width - w - tabs[i].text_buf->get_size().x, sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[i].text_buf->get_size().y) / 2), col);
 				} else {
-					tabs[i].text_buf->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[i].text_buf->get_size().y) / 2), col);
+					tabs[i].text_buf->draw(ci, Point2i(w, sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[i].text_buf->get_size().y) / 2), col);
 				}
 
 				w += tabs[i].size_text;
@@ -377,7 +377,7 @@ void Tabs::_notification(int p_what) {
 					} else {
 						rb_rect.position.x = w;
 					}
-					rb_rect.position.y = sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - (rb_rect.size.y)) / 2;
+					rb_rect.position.y = sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - (rb_rect.size.y)) / 2;
 
 					if (rb_hover == i) {
 						if (rb_pressing) {
@@ -388,9 +388,9 @@ void Tabs::_notification(int p_what) {
 					}
 
 					if (rtl) {
-						rb->draw(ci, Point2i(size.width - w - rb_rect.size.x + style->get_margin(MARGIN_LEFT), rb_rect.position.y + style->get_margin(MARGIN_TOP)));
+						rb->draw(ci, Point2i(size.width - w - rb_rect.size.x + style->get_margin(SIDE_LEFT), rb_rect.position.y + style->get_margin(SIDE_TOP)));
 					} else {
-						rb->draw(ci, Point2i(w + style->get_margin(MARGIN_LEFT), rb_rect.position.y + style->get_margin(MARGIN_TOP)));
+						rb->draw(ci, Point2i(w + style->get_margin(SIDE_LEFT), rb_rect.position.y + style->get_margin(SIDE_TOP)));
 					}
 					w += rb->get_width();
 					tabs.write[i].rb_rect = rb_rect;
@@ -409,7 +409,7 @@ void Tabs::_notification(int p_what) {
 					} else {
 						cb_rect.position.x = w;
 					}
-					cb_rect.position.y = sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - (cb_rect.size.y)) / 2;
+					cb_rect.position.y = sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - (cb_rect.size.y)) / 2;
 
 					if (!tabs[i].disabled && cb_hover == i) {
 						if (cb_pressing) {
@@ -420,15 +420,15 @@ void Tabs::_notification(int p_what) {
 					}
 
 					if (rtl) {
-						cb->draw(ci, Point2i(size.width - w - cb_rect.size.x + style->get_margin(MARGIN_LEFT), cb_rect.position.y + style->get_margin(MARGIN_TOP)));
+						cb->draw(ci, Point2i(size.width - w - cb_rect.size.x + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
 					} else {
-						cb->draw(ci, Point2i(w + style->get_margin(MARGIN_LEFT), cb_rect.position.y + style->get_margin(MARGIN_TOP)));
+						cb->draw(ci, Point2i(w + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
 					}
 					w += cb->get_width();
 					tabs.write[i].cb_rect = cb_rect;
 				}
 
-				w += sb->get_margin(MARGIN_RIGHT);
+				w += sb->get_margin(SIDE_RIGHT);
 			}
 
 			if (offset > 0 || missing_right) {
@@ -691,7 +691,7 @@ void Tabs::_update_cache() {
 		int slen = tabs[i].size_text;
 		if (min_width > 0 && mw > limit && i != current) {
 			if (lsize > m_width) {
-				slen = m_width - (sb->get_margin(MARGIN_LEFT) + sb->get_margin(MARGIN_RIGHT));
+				slen = m_width - (sb->get_margin(SIDE_LEFT) + sb->get_margin(SIDE_RIGHT));
 				if (tabs[i].icon.is_valid()) {
 					slen -= tabs[i].icon->get_width();
 					slen -= get_theme_constant("hseparation");

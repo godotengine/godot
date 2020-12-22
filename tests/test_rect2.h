@@ -197,10 +197,10 @@ TEST_CASE("[Rect2] Growing") {
 			"grow_individual() with positive and negative values should return the expected Rect2.");
 
 	CHECK_MESSAGE(
-			Rect2(0, 100, 1280, 720).grow_margin(MARGIN_TOP, 500).is_equal_approx(Rect2(0, -400, 1280, 1220)),
+			Rect2(0, 100, 1280, 720).grow_margin(SIDE_TOP, 500).is_equal_approx(Rect2(0, -400, 1280, 1220)),
 			"grow_margin() with positive value should return the expected Rect2.");
 	CHECK_MESSAGE(
-			Rect2(0, 100, 1280, 720).grow_margin(MARGIN_TOP, -500).is_equal_approx(Rect2(0, 600, 1280, 220)),
+			Rect2(0, 100, 1280, 720).grow_margin(SIDE_TOP, -500).is_equal_approx(Rect2(0, 600, 1280, 220)),
 			"grow_margin() with negative value should return the expected Rect2.");
 }
 
@@ -409,10 +409,10 @@ TEST_CASE("[Rect2i] Growing") {
 			"grow_individual() with positive and negative values should return the expected Rect2i.");
 
 	CHECK_MESSAGE(
-			Rect2i(0, 100, 1280, 720).grow_margin(MARGIN_TOP, 500) == Rect2i(0, -400, 1280, 1220),
+			Rect2i(0, 100, 1280, 720).grow_margin(SIDE_TOP, 500) == Rect2i(0, -400, 1280, 1220),
 			"grow_margin() with positive value should return the expected Rect2i.");
 	CHECK_MESSAGE(
-			Rect2i(0, 100, 1280, 720).grow_margin(MARGIN_TOP, -500) == Rect2i(0, 600, 1280, 220),
+			Rect2i(0, 100, 1280, 720).grow_margin(SIDE_TOP, -500) == Rect2i(0, 600, 1280, 220),
 			"grow_margin() with negative value should return the expected Rect2i.");
 }
 

@@ -63,7 +63,7 @@ private:
 	void _shape();
 
 protected:
-	void _set_internal_margin(Margin p_margin, float p_value);
+	void _set_internal_margin(Side p_side, float p_value);
 	void _notification(int p_what);
 	static void _bind_methods();
 

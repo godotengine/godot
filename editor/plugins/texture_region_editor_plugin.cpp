@@ -217,23 +217,23 @@ void TextureRegionEditor::_region_draw() {
 	Size2 vmin = vscroll->get_combined_minimum_size();
 
 	// Avoid scrollbar overlapping.
-	hscroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, vscroll->is_visible() ? -vmin.width : 0);
-	vscroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, hscroll->is_visible() ? -hmin.height : 0);
+	hscroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, vscroll->is_visible() ? -vmin.width : 0);
+	vscroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, hscroll->is_visible() ? -hmin.height : 0);
 
 	updating_scroll = false;
 
 	if (node_ninepatch || obj_styleBox.is_valid()) {
 		float margins[4] = { 0 };
 		if (node_ninepatch) {
-			margins[0] = node_ninepatch->get_patch_margin(MARGIN_TOP);
-			margins[1] = node_ninepatch->get_patch_margin(MARGIN_BOTTOM);
-			margins[2] = node_ninepatch->get_patch_margin(MARGIN_LEFT);
-			margins[3] = node_ninepatch->get_patch_margin(MARGIN_RIGHT);
+			margins[0] = node_ninepatch->get_patch_margin(SIDE_TOP);
+			margins[1] = node_ninepatch->get_patch_margin(SIDE_BOTTOM);
+			margins[2] = node_ninepatch->get_patch_margin(SIDE_LEFT);
+			margins[3] = node_ninepatch->get_patch_margin(SIDE_RIGHT);
 		} else if (obj_styleBox.is_valid()) {
-			margins[0] = obj_styleBox->get_margin_size(MARGIN_TOP);
-			margins[1] = obj_styleBox->get_margin_size(MARGIN_BOTTOM);
-			margins[2] = obj_styleBox->get_margin_size(MARGIN_LEFT);
-			margins[3] = obj_styleBox->get_margin_size(MARGIN_RIGHT);
+			margins[0] = obj_styleBox->get_margin_size(SIDE_TOP);
+			margins[1] = obj_styleBox->get_margin_size(SIDE_BOTTOM);
+			margins[2] = obj_styleBox->get_margin_size(SIDE_LEFT);
+			margins[3] = obj_styleBox->get_margin_size(SIDE_RIGHT);
 		}
 
 		Vector2 pos[4] = {
@@ -278,15 +278,15 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					edited_margin = -1;
 					float margins[4] = { 0 };
 					if (node_ninepatch) {
-						margins[0] = node_ninepatch->get_patch_margin(MARGIN_TOP);
-						margins[1] = node_ninepatch->get_patch_margin(MARGIN_BOTTOM);
-						margins[2] = node_ninepatch->get_patch_margin(MARGIN_LEFT);
-						margins[3] = node_ninepatch->get_patch_margin(MARGIN_RIGHT);
+						margins[0] = node_ninepatch->get_patch_margin(SIDE_TOP);
+						margins[1] = node_ninepatch->get_patch_margin(SIDE_BOTTOM);
+						margins[2] = node_ninepatch->get_patch_margin(SIDE_LEFT);
+						margins[3] = node_ninepatch->get_patch_margin(SIDE_RIGHT);
 					} else if (obj_styleBox.is_valid()) {
-						margins[0] = obj_styleBox->get_margin_size(MARGIN_TOP);
-						margins[1] = obj_styleBox->get_margin_size(MARGIN_BOTTOM);
-						margins[2] = obj_styleBox->get_margin_size(MARGIN_LEFT);
-						margins[3] = obj_styleBox->get_margin_size(MARGIN_RIGHT);
+						margins[0] = obj_styleBox->get_margin_size(SIDE_TOP);
+						margins[1] = obj_styleBox->get_margin_size(SIDE_BOTTOM);
+						margins[2] = obj_styleBox->get_margin_size(SIDE_LEFT);
+						margins[3] = obj_styleBox->get_margin_size(SIDE_RIGHT);
 					}
 
 					Vector2 pos[4] = {
@@ -395,13 +395,13 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 			} else if (drag) {
 				if (edited_margin >= 0) {
 					undo_redo->create_action(TTR("Set Margin"));
-					static Margin m[4] = { MARGIN_TOP, MARGIN_BOTTOM, MARGIN_LEFT, MARGIN_RIGHT };
+					static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
 					if (node_ninepatch) {
-						undo_redo->add_do_method(node_ninepatch, "set_patch_margin", m[edited_margin], node_ninepatch->get_patch_margin(m[edited_margin]));
-						undo_redo->add_undo_method(node_ninepatch, "set_patch_margin", m[edited_margin], prev_margin);
+						undo_redo->add_do_method(node_ninepatch, "set_patch_margin", side[edited_margin], node_ninepatch->get_patch_margin(side[edited_margin]));
+						undo_redo->add_undo_method(node_ninepatch, "set_patch_margin", side[edited_margin], prev_margin);
 					} else if (obj_styleBox.is_valid()) {
-						undo_redo->add_do_method(obj_styleBox.ptr(), "set_margin_size", m[edited_margin], obj_styleBox->get_margin_size(m[edited_margin]));
-						undo_redo->add_undo_method(obj_styleBox.ptr(), "set_margin_size", m[edited_margin], prev_margin);
+						undo_redo->add_do_method(obj_styleBox.ptr(), "set_margin_size", side[edited_margin], obj_styleBox->get_margin_size(side[edited_margin]));
+						undo_redo->add_undo_method(obj_styleBox.ptr(), "set_margin_size", side[edited_margin], prev_margin);
 						obj_styleBox->emit_signal(CoreStringNames::get_singleton()->changed);
 					}
 					edited_margin = -1;
@@ -438,12 +438,12 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 			if (drag) {
 				drag = false;
 				if (edited_margin >= 0) {
-					static Margin m[4] = { MARGIN_TOP, MARGIN_BOTTOM, MARGIN_LEFT, MARGIN_RIGHT };
+					static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
 					if (node_ninepatch) {
-						node_ninepatch->set_patch_margin(m[edited_margin], prev_margin);
+						node_ninepatch->set_patch_margin(side[edited_margin], prev_margin);
 					}
 					if (obj_styleBox.is_valid()) {
-						obj_styleBox->set_margin_size(m[edited_margin], prev_margin);
+						obj_styleBox->set_margin_size(side[edited_margin], prev_margin);
 					}
 					edited_margin = -1;
 				} else {
@@ -486,12 +486,12 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 				if (new_margin < 0) {
 					new_margin = 0;
 				}
-				static Margin m[4] = { MARGIN_TOP, MARGIN_BOTTOM, MARGIN_LEFT, MARGIN_RIGHT };
+				static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
 				if (node_ninepatch) {
-					node_ninepatch->set_patch_margin(m[edited_margin], new_margin);
+					node_ninepatch->set_patch_margin(side[edited_margin], new_margin);
 				}
 				if (obj_styleBox.is_valid()) {
-					obj_styleBox->set_margin_size(m[edited_margin], new_margin);
+					obj_styleBox->set_margin_size(side[edited_margin], new_margin);
 				}
 			} else {
 				Vector2 new_pos = mtx.affine_inverse().xform(mm->get_position());
@@ -772,8 +772,8 @@ void TextureRegionEditor::_notification(int p_what) {
 			zoom_reset->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
 			zoom_in->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
 
-			vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
-			hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
+			vscroll->set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE);
+			hscroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (snap_mode == SNAP_AUTOSLICE && is_visible() && autoslice_is_dirty) {

@@ -922,7 +922,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	bus_options = memnew(MenuButton);
 	bus_options->set_shortcut_context(this);
 	bus_options->set_h_size_flags(SIZE_SHRINK_END);
-	bus_options->set_anchor(MARGIN_RIGHT, 0.0);
+	bus_options->set_anchor(SIDE_RIGHT, 0.0);
 	bus_options->set_tooltip(TTR("Bus options"));
 	hbc->add_child(bus_options);
 

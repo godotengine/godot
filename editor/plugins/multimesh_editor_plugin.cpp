@@ -337,7 +337,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	vbc->add_margin_child(TTR("Scale:"), populate_scale);
 
 	populate_amount = memnew(SpinBox);
-	populate_amount->set_anchor(MARGIN_RIGHT, ANCHOR_END);
+	populate_amount->set_anchor(SIDE_RIGHT, ANCHOR_END);
 	populate_amount->set_begin(Point2(20, 232));
 	populate_amount->set_end(Point2(-5, 237));
 	populate_amount->set_min(1);

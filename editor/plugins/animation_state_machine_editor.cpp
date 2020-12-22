@@ -1291,18 +1291,18 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	state_machine_play_pos = memnew(Control);
 	state_machine_draw->add_child(state_machine_play_pos);
 	state_machine_play_pos->set_mouse_filter(MOUSE_FILTER_PASS); //pass all to parent
-	state_machine_play_pos->set_anchors_and_margins_preset(PRESET_WIDE);
+	state_machine_play_pos->set_anchors_and_offsets_preset(PRESET_WIDE);
 	state_machine_play_pos->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_pos_draw));
 
 	v_scroll = memnew(VScrollBar);
 	state_machine_draw->add_child(v_scroll);
-	v_scroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
+	v_scroll->set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE);
 	v_scroll->connect("value_changed", callable_mp(this, &AnimationNodeStateMachineEditor::_scroll_changed));
 
 	h_scroll = memnew(HScrollBar);
 	state_machine_draw->add_child(h_scroll);
-	h_scroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
-	h_scroll->set_margin(MARGIN_RIGHT, -v_scroll->get_size().x * EDSCALE);
+	h_scroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
+	h_scroll->set_offset(SIDE_RIGHT, -v_scroll->get_size().x * EDSCALE);
 	h_scroll->connect("value_changed", callable_mp(this, &AnimationNodeStateMachineEditor::_scroll_changed));
 
 	error_panel = memnew(PanelContainer);
@@ -1328,7 +1328,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	add_child(name_edit_popup);
 	name_edit = memnew(LineEdit);
 	name_edit_popup->add_child(name_edit);
-	name_edit->set_anchors_and_margins_preset(PRESET_WIDE);
+	name_edit->set_anchors_and_offsets_preset(PRESET_WIDE);
 	name_edit->connect("text_entered", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited));
 	name_edit->connect("focus_exited", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited_focus_out));
 

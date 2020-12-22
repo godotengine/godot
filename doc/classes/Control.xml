@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Control" inherits="CanvasItem" version="4.0">
 	<brief_description>
-		All user interface nodes inherit from Control. A control's anchors and margins adapt its position and size relative to its parent.
+		All user interface nodes inherit from Control. A control's anchors and offsets adapt its position and size relative to its parent.
 	</brief_description>
 	<description>
-		Base class for all UI-related nodes. [Control] features a bounding rectangle that defines its extents, an anchor position relative to its parent control or the current viewport, and margins that represent an offset to the anchor. The margins update automatically when the node, any of its parents, or the screen size change.
-		For more information on Godot's UI system, anchors, margins, and containers, see the related tutorials in the manual. To build flexible UIs, you'll need a mix of UI elements that inherit from [Control] and [Container] nodes.
+		Base class for all UI-related nodes. [Control] features a bounding rectangle that defines its extents, an anchor position relative to its parent control or the current viewport, and offsets relative to the anchor. The offsets update automatically when the node, any of its parents, or the screen size change.
+		For more information on Godot's UI system, anchors, offsets, and containers, see the related tutorials in the manual. To build flexible UIs, you'll need a mix of UI elements that inherit from [Control] and [Container] nodes.
 		[b]User Interface nodes and input[/b]
 		Godot sends input events to the scene's root node first, by calling [method Node._input]. [method Node._input] forwards the event down the node tree to the nodes under the mouse cursor, or on keyboard focus. To do so, it calls [code]MainLoop._input_event[/code].
 		[b]FIXME:[/b] No longer valid after DisplayServer split and Input refactoring.
@@ -332,17 +332,17 @@
 		<method name="get_anchor" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<description>
-				Returns the anchor identified by [code]margin[/code] constant from [enum Margin] enum. A getter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
+				Returns the anchor for the specified [enum Side]. A getter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
 			</description>
 		</method>
 		<method name="get_begin" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns [member margin_left] and [member margin_top]. See also [member rect_position].
+				Returns [member offset_left] and [member offset_top]. See also [member rect_position].
 			</description>
 		</method>
 		<method name="get_combined_minimum_size" qualifiers="const">
@@ -391,16 +391,16 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns [member margin_right] and [member margin_bottom].
+				Returns [member offset_right] and [member offset_bottom].
 			</description>
 		</method>
 		<method name="get_focus_neighbor" qualifiers="const">
 			<return type="NodePath">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<description>
-				Returns the focus neighbor identified by [code]margin[/code] constant from [enum Margin] enum. A getter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
+				Returns the focus neighbor for the specified [enum Side]. A getter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
 			</description>
 		</method>
 		<method name="get_focus_owner" qualifiers="const">
@@ -417,13 +417,13 @@
 				Returns the position and size of the control relative to the top-left corner of the screen. See [member rect_position] and [member rect_size].
 			</description>
 		</method>
-		<method name="get_margin" qualifiers="const">
+		<method name="get_offset" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<description>
-				Returns the anchor identified by [code]margin[/code] constant from [enum Margin] enum. A getter method for [member margin_bottom], [member margin_left], [member margin_right] and [member margin_top].
+				Returns the anchor for the specified [enum Side]. A getter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
 			</description>
 		</method>
 		<method name="get_minimum_size" qualifiers="const">
@@ -745,24 +745,24 @@
 		<method name="set_anchor">
 			<return type="void">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="anchor" type="float">
 			</argument>
-			<argument index="2" name="keep_margin" type="bool" default="false">
+			<argument index="2" name="keep_offset" type="bool" default="false">
 			</argument>
 			<argument index="3" name="push_opposite_anchor" type="bool" default="true">
 			</argument>
 			<description>
-				Sets the anchor identified by [code]margin[/code] constant from [enum Margin] enum to value [code]anchor[/code]. A setter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
-				If [code]keep_margin[/code] is [code]true[/code], margins aren't updated after this operation.
+				Sets the anchor for the specified [enum Side] to [code]anchor[/code]. A setter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
+				If [code]keep_offset[/code] is [code]true[/code], offsets aren't updated after this operation.
 				If [code]push_opposite_anchor[/code] is [code]true[/code] and the opposite anchor overlaps this anchor, the opposite one will have its value overridden. For example, when setting left anchor to 1 and the right anchor has value of 0.5, the right anchor will also get value of 1. If [code]push_opposite_anchor[/code] was [code]false[/code], the left anchor would get value 0.5.
 			</description>
 		</method>
-		<method name="set_anchor_and_margin">
+		<method name="set_anchor_and_offset">
 			<return type="void">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="anchor" type="float">
 			</argument>
@@ -771,10 +771,10 @@
 			<argument index="3" name="push_opposite_anchor" type="bool" default="false">
 			</argument>
 			<description>
-				Works the same as [method set_anchor], but instead of [code]keep_margin[/code] argument and automatic update of margin, it allows to set the margin offset yourself (see [method set_margin]).
+				Works the same as [method set_anchor], but instead of [code]keep_offset[/code] argument and automatic update of offset, it allows to set the offset yourself (see [method set_offset]).
 			</description>
 		</method>
-		<method name="set_anchors_and_margins_preset">
+		<method name="set_anchors_and_offsets_preset">
 			<return type="void">
 			</return>
 			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
@@ -784,7 +784,7 @@
 			<argument index="2" name="margin" type="int" default="0">
 			</argument>
 			<description>
-				Sets both anchor preset and margin preset. See [method set_anchors_preset] and [method set_margins_preset].
+				Sets both anchor preset and offset preset. See [method set_anchors_preset] and [method set_offsets_preset].
 			</description>
 		</method>
 		<method name="set_anchors_preset">
@@ -792,11 +792,11 @@
 			</return>
 			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
 			</argument>
-			<argument index="1" name="keep_margins" type="bool" default="false">
+			<argument index="1" name="keep_offsets" type="bool" default="false">
 			</argument>
 			<description>
 				Sets the anchors to a [code]preset[/code] from [enum Control.LayoutPreset] enum. This is code equivalent of using the Layout menu in 2D editor.
-				If [code]keep_margins[/code] is [code]true[/code], control's position will also be updated.
+				If [code]keep_offsets[/code] is [code]true[/code], control's position will also be updated.
 			</description>
 		</method>
 		<method name="set_begin">
@@ -805,7 +805,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Sets [member margin_left] and [member margin_top] at the same time. Equivalent of changing [member rect_position].
+				Sets [member offset_left] and [member offset_top] at the same time. Equivalent of changing [member rect_position].
 			</description>
 		</method>
 		<method name="set_drag_forwarding">
@@ -917,18 +917,18 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Sets [member margin_right] and [member margin_bottom] at the same time.
+				Sets [member offset_right] and [member offset_bottom] at the same time.
 			</description>
 		</method>
 		<method name="set_focus_neighbor">
 			<return type="void">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="neighbor" type="NodePath">
 			</argument>
 			<description>
-				Sets the anchor identified by [code]margin[/code] constant from [enum Margin] enum to [Control] at [code]neighbor[/code] node path. A setter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
+				Sets the anchor for the specified [enum Side] to the [Control] at [code]neighbor[/code] node path. A setter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
 			</description>
 		</method>
 		<method name="set_global_position">
@@ -936,25 +936,25 @@
 			</return>
 			<argument index="0" name="position" type="Vector2">
 			</argument>
-			<argument index="1" name="keep_margins" type="bool" default="false">
+			<argument index="1" name="keep_offsets" type="bool" default="false">
 			</argument>
 			<description>
 				Sets the [member rect_global_position] to given [code]position[/code].
-				If [code]keep_margins[/code] is [code]true[/code], control's anchors will be updated instead of margins.
+				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
-		<method name="set_margin">
+		<method name="set_offset">
 			<return type="void">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="offset" type="float">
 			</argument>
 			<description>
-				Sets the margin identified by [code]margin[/code] constant from [enum Margin] enum to given [code]offset[/code]. A setter method for [member margin_bottom], [member margin_left], [member margin_right] and [member margin_top].
+				Sets the offset for the specified [enum Side] to [code]offset[/code]. A setter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
 			</description>
 		</method>
-		<method name="set_margins_preset">
+		<method name="set_offsets_preset">
 			<return type="void">
 			</return>
 			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
@@ -964,7 +964,7 @@
 			<argument index="2" name="margin" type="int" default="0">
 			</argument>
 			<description>
-				Sets the margins to a [code]preset[/code] from [enum Control.LayoutPreset] enum. This is code equivalent of using the Layout menu in 2D editor.
+				Sets the offsets to a [code]preset[/code] from [enum Control.LayoutPreset] enum. This is code equivalent of using the Layout menu in 2D editor.
 				Use parameter [code]resize_mode[/code] with constants from [enum Control.LayoutPresetMode] to better determine the resulting size of the [Control]. Constant size will be ignored if used with presets that change size, e.g. [code]PRESET_LEFT_WIDE[/code].
 				Use parameter [code]margin[/code] to determine the gap between the [Control] and the edges.
 			</description>
@@ -974,11 +974,11 @@
 			</return>
 			<argument index="0" name="position" type="Vector2">
 			</argument>
-			<argument index="1" name="keep_margins" type="bool" default="false">
+			<argument index="1" name="keep_offsets" type="bool" default="false">
 			</argument>
 			<description>
 				Sets the [member rect_position] to given [code]position[/code].
-				If [code]keep_margins[/code] is [code]true[/code], control's anchors will be updated instead of margins.
+				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
 		<method name="set_rotation">
@@ -995,11 +995,11 @@
 			</return>
 			<argument index="0" name="size" type="Vector2">
 			</argument>
-			<argument index="1" name="keep_margins" type="bool" default="false">
+			<argument index="1" name="keep_offsets" type="bool" default="false">
 			</argument>
 			<description>
 				Sets the size (see [member rect_size]).
-				If [code]keep_margins[/code] is [code]true[/code], control's anchors will be updated instead of margins.
+				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
 		<method name="warp_mouse">
@@ -1014,16 +1014,16 @@
 	</methods>
 	<members>
 		<member name="anchor_bottom" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
-			Anchors the bottom edge of the node to the origin, the center, or the end of its parent control. It changes how the bottom margin updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
+			Anchors the bottom edge of the node to the origin, the center, or the end of its parent control. It changes how the bottom offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
 		<member name="anchor_left" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
-			Anchors the left edge of the node to the origin, the center or the end of its parent control. It changes how the left margin updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
+			Anchors the left edge of the node to the origin, the center or the end of its parent control. It changes how the left offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
 		<member name="anchor_right" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
-			Anchors the right edge of the node to the origin, the center or the end of its parent control. It changes how the right margin updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
+			Anchors the right edge of the node to the origin, the center or the end of its parent control. It changes how the right offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
 		<member name="anchor_top" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
-			Anchors the top edge of the node to the origin, the center or the end of its parent control. It changes how the top margin updates when the node moves or changes size. You can use  one of the [enum Anchor] constants for convenience.
+			Anchors the top edge of the node to the origin, the center or the end of its parent control. It changes how the top offset updates when the node moves or changes size. You can use  one of the [enum Anchor] constants for convenience.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode" default="0">
 			The focus access mode for the control (None, Click or All). Only one Control can be focused at the same time, and it will receive keyboard signals.
@@ -1079,19 +1079,19 @@
 		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" enum="Control.LayoutDirection" default="0">
 			Controls layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
 		</member>
-		<member name="margin_bottom" type="float" setter="set_margin" getter="get_margin" default="0.0">
+		<member name="offset_bottom" type="float" setter="set_offset" getter="get_offset" default="0.0">
 			Distance between the node's bottom edge and its parent control, based on [member anchor_bottom].
 			Margins are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Margins update automatically when you move or resize the node.
 		</member>
-		<member name="margin_left" type="float" setter="set_margin" getter="get_margin" default="0.0">
+		<member name="offset_left" type="float" setter="set_offset" getter="get_offset" default="0.0">
 			Distance between the node's left edge and its parent control, based on [member anchor_left].
 			Margins are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Margins update automatically when you move or resize the node.
 		</member>
-		<member name="margin_right" type="float" setter="set_margin" getter="get_margin" default="0.0">
+		<member name="offset_right" type="float" setter="set_offset" getter="get_offset" default="0.0">
 			Distance between the node's right edge and its parent control, based on [member anchor_right].
 			Margins are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Margins update automatically when you move or resize the node.
 		</member>
-		<member name="margin_top" type="float" setter="set_margin" getter="get_margin" default="0.0">
+		<member name="offset_top" type="float" setter="set_offset" getter="get_offset" default="0.0">
 			Distance between the node's top edge and its parent control, based on [member anchor_top].
 			Margins are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Margins update automatically when you move or resize the node.
 		</member>
@@ -1305,16 +1305,16 @@
 			Snap all 4 anchors to the center of the parent control's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_LEFT_WIDE" value="9" enum="LayoutPreset">
-			Snap all 4 anchors to the left edge of the parent control. The left margin becomes relative to the left edge and the top margin relative to the top left corner of the node's parent. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the left edge of the parent control. The left offset becomes relative to the left edge and the top offset relative to the top left corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_TOP_WIDE" value="10" enum="LayoutPreset">
-			Snap all 4 anchors to the top edge of the parent control. The left margin becomes relative to the top left corner, the top margin relative to the top edge, and the right margin relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the top edge of the parent control. The left offset becomes relative to the top left corner, the top offset relative to the top edge, and the right offset relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_RIGHT_WIDE" value="11" enum="LayoutPreset">
-			Snap all 4 anchors to the right edge of the parent control. The right margin becomes relative to the right edge and the top margin relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the right edge of the parent control. The right offset becomes relative to the right edge and the top offset relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_BOTTOM_WIDE" value="12" enum="LayoutPreset">
-			Snap all 4 anchors to the bottom edge of the parent control. The left margin becomes relative to the bottom left corner, the bottom margin relative to the bottom edge, and the right margin relative to the bottom right corner of the node's parent. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the bottom edge of the parent control. The left offset becomes relative to the bottom left corner, the bottom offset relative to the bottom edge, and the right offset relative to the bottom right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_VCENTER_WIDE" value="13" enum="LayoutPreset">
 			Snap all 4 anchors to a vertical line that cuts the parent control in half. Use with [method set_anchors_preset].
@@ -1323,7 +1323,7 @@
 			Snap all 4 anchors to a horizontal line that cuts the parent control in half. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_WIDE" value="15" enum="LayoutPreset">
-			Snap all 4 anchors to the respective corners of the parent control. Set all 4 margins to 0 after you applied this preset and the [Control] will fit its parent control. This is equivalent to the "Full Rect" layout option in the editor. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the respective corners of the parent control. Set all 4 offsets to 0 after you applied this preset and the [Control] will fit its parent control. This is equivalent to the "Full Rect" layout option in the editor. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_MODE_MINSIZE" value="0" enum="LayoutPresetMode">
 			The control will be resized to its minimum size.

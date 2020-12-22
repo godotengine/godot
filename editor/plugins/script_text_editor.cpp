@@ -84,10 +84,10 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	set_title(TTR("Connections to method:"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
 	add_child(vbc);
 
 	method = memnew(Label);
@@ -1679,7 +1679,7 @@ void ScriptTextEditor::_enable_code_editor() {
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	add_child(editor_box);
-	editor_box->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	editor_box->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	editor_box->add_child(code_editor);
@@ -1809,7 +1809,7 @@ void ScriptTextEditor::_enable_code_editor() {
 ScriptTextEditor::ScriptTextEditor() {
 	code_editor = memnew(CodeTextEditor);
 	code_editor->add_theme_constant_override("separation", 2);
-	code_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	code_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
 	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 

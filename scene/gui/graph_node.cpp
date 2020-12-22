@@ -203,7 +203,7 @@ void GraphNode::_resort() {
 
 		Size2i size = c->get_combined_minimum_size();
 
-		Rect2 r(sb->get_margin(MARGIN_LEFT), sb->get_margin(MARGIN_TOP) + vofs, w, size.y);
+		Rect2 r(sb->get_margin(SIDE_LEFT), sb->get_margin(SIDE_TOP) + vofs, w, size.y);
 
 		fit_child_in_rect(c, r);
 		cache_y.push_back(vofs + size.y * 0.5);
@@ -224,7 +224,7 @@ bool GraphNode::has_point(const Point2 &p_point) const {
 			return true;
 		}
 
-		if (Rect2(0, 0, get_size().width, comment->get_margin(MARGIN_TOP)).has_point(p_point)) {
+		if (Rect2(0, 0, get_size().width, comment->get_margin(SIDE_TOP)).has_point(p_point)) {
 			return true;
 		}
 
@@ -261,7 +261,7 @@ void GraphNode::_notification(int p_what) {
 			Color title_color = get_theme_color("title_color");
 			Point2i icofs = -port->get_size() * 0.5;
 			int edgeofs = get_theme_constant("port_offset");
-			icofs.y += sb->get_margin(MARGIN_TOP);
+			icofs.y += sb->get_margin(SIDE_TOP);
 
 			draw_style_box(sb, Rect2(Point2(), get_size()));
 
@@ -284,9 +284,9 @@ void GraphNode::_notification(int p_what) {
 			}
 
 			title_buf->set_width(w);
-			title_buf->draw(get_canvas_item(), Point2(sb->get_margin(MARGIN_LEFT) + title_h_offset, -title_buf->get_size().y + title_offset), title_color);
+			title_buf->draw(get_canvas_item(), Point2(sb->get_margin(SIDE_LEFT) + title_h_offset, -title_buf->get_size().y + title_offset), title_color);
 			if (show_close) {
-				Vector2 cpos = Point2(w + sb->get_margin(MARGIN_LEFT) + close_h_offset, -close->get_height() + close_offset);
+				Vector2 cpos = Point2(w + sb->get_margin(SIDE_LEFT) + close_h_offset, -close->get_height() + close_offset);
 				draw_texture(close, cpos, close_color);
 				close_rect.position = cpos;
 				close_rect.size = close->get_size();
@@ -528,14 +528,14 @@ String GraphNode::get_language() const {
 	return language;
 }
 
-void GraphNode::set_offset(const Vector2 &p_offset) {
-	offset = p_offset;
-	emit_signal("offset_changed");
+void GraphNode::set_position_offset(const Vector2 &p_offset) {
+	position_offset = p_offset;
+	emit_signal("position_offset_changed");
 	update();
 }
 
-Vector2 GraphNode::get_offset() const {
-	return offset;
+Vector2 GraphNode::get_position_offset() const {
+	return position_offset;
 }
 
 void GraphNode::set_selected(bool p_selected) {
@@ -549,9 +549,9 @@ bool GraphNode::is_selected() {
 
 void GraphNode::set_drag(bool p_drag) {
 	if (p_drag) {
-		drag_from = get_offset();
+		drag_from = get_position_offset();
 	} else {
-		emit_signal("dragged", drag_from, get_offset()); //useful for undo/redo
+		emit_signal("dragged", drag_from, get_position_offset()); //useful for undo/redo
 	}
 }
 
@@ -590,7 +590,7 @@ void GraphNode::_connpos_update() {
 
 		Size2i size = c->get_combined_minimum_size();
 
-		int y = sb->get_margin(MARGIN_TOP) + vofs;
+		int y = sb->get_margin(SIDE_TOP) + vofs;
 		int h = size.y;
 
 		if (slot_info.has(idx)) {
@@ -787,8 +787,8 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_slot_type_right", "idx"), &GraphNode::get_slot_type_right);
 	ClassDB::bind_method(D_METHOD("get_slot_color_right", "idx"), &GraphNode::get_slot_color_right);
 
-	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &GraphNode::set_offset);
-	ClassDB::bind_method(D_METHOD("get_offset"), &GraphNode::get_offset);
+	ClassDB::bind_method(D_METHOD("set_position_offset", "offset"), &GraphNode::set_position_offset);
+	ClassDB::bind_method(D_METHOD("get_position_offset"), &GraphNode::get_position_offset);
 
 	ClassDB::bind_method(D_METHOD("set_comment", "comment"), &GraphNode::set_comment);
 	ClassDB::bind_method(D_METHOD("is_comment"), &GraphNode::is_comment);
@@ -818,14 +818,14 @@ void GraphNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,LTR,RTL,Inherited"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language"), "set_language", "get_language");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position_offset"), "set_position_offset", "get_position_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_close"), "set_show_close_button", "is_close_button_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resizable"), "set_resizable", "is_resizable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selected"), "set_selected", "is_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "comment"), "set_comment", "is_comment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "overlay", PROPERTY_HINT_ENUM, "Disabled,Breakpoint,Position"), "set_overlay", "get_overlay");
 
-	ADD_SIGNAL(MethodInfo("offset_changed"));
+	ADD_SIGNAL(MethodInfo("position_offset_changed"));
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
 	ADD_SIGNAL(MethodInfo("raise_request"));
 	ADD_SIGNAL(MethodInfo("close_request"));

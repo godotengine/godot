@@ -171,7 +171,7 @@ private:
 		Size2 last_minimum_size;
 		bool updating_last_minimum_size = false;
 
-		float margin[4] = { 0.0, 0.0, 0.0, 0.0 };
+		float offset[4] = { 0.0, 0.0, 0.0, 0.0 };
 		float anchor[4] = { ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN };
 		FocusMode focus_mode = FOCUS_NONE;
 		GrowDirection h_grow = GROW_DIRECTION_END;
@@ -224,22 +224,22 @@ private:
 	Control *_find_control_at_pos(CanvasItem *p_node, const Point2 &p_pos, const Transform2D &p_xform, Transform2D &r_inv_xform);
 
 	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, float p_min, float &r_closest_dist, Control **r_closest);
-	Control *_get_focus_neighbor(Margin p_margin, int p_count = 0);
+	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
 
-	void _set_anchor(Margin p_margin, float p_anchor);
+	void _set_anchor(Side p_side, float p_anchor);
 	void _set_position(const Point2 &p_point);
 	void _set_global_position(const Point2 &p_point);
 	void _set_size(const Size2 &p_size);
 
 	void _theme_changed();
 
-	void _change_notify_margins();
+	void _change_notify_offsets();
 	void _update_minimum_size();
 
 	void _update_scroll();
 
-	void _compute_margins(Rect2 p_rect, const float p_anchors[4], float (&r_margins)[4]);
-	void _compute_anchors(Rect2 p_rect, const float p_margins[4], float (&r_anchors)[4]);
+	void _compute_offsets(Rect2 p_rect, const float p_anchors[4], float (&r_offsets)[4]);
+	void _compute_anchors(Rect2 p_rect, const float p_offsets[4], float (&r_anchors)[4]);
 
 	void _size_changed();
 	String _get_tooltip() const;
@@ -359,17 +359,17 @@ public:
 
 	/* POSITIONING */
 
-	void set_anchors_preset(LayoutPreset p_preset, bool p_keep_margins = true);
-	void set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
-	void set_anchors_and_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
+	void set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets = true);
+	void set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
+	void set_anchors_and_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
 
-	void set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin = true, bool p_push_opposite_anchor = true);
-	float get_anchor(Margin p_margin) const;
+	void set_anchor(Side p_side, float p_anchor, bool p_keep_offset = true, bool p_push_opposite_anchor = true);
+	float get_anchor(Side p_side) const;
 
-	void set_margin(Margin p_margin, float p_value);
-	float get_margin(Margin p_margin) const;
+	void set_offset(Side p_side, float p_value);
+	float get_offset(Side p_side) const;
 
-	void set_anchor_and_margin(Margin p_margin, float p_anchor, float p_pos, bool p_push_opposite_anchor = true);
+	void set_anchor_and_offset(Side p_side, float p_anchor, float p_pos, bool p_push_opposite_anchor = true);
 
 	void set_begin(const Point2 &p_point); // helper
 	void set_end(const Point2 &p_point); // helper
@@ -377,13 +377,13 @@ public:
 	Point2 get_begin() const;
 	Point2 get_end() const;
 
-	void set_position(const Point2 &p_point, bool p_keep_margins = false);
-	void set_global_position(const Point2 &p_point, bool p_keep_margins = false);
+	void set_position(const Point2 &p_point, bool p_keep_offsets = false);
+	void set_global_position(const Point2 &p_point, bool p_keep_offsets = false);
 	Point2 get_position() const;
 	Point2 get_global_position() const;
 	Point2 get_screen_position() const;
 
-	void set_size(const Size2 &p_size, bool p_keep_margins = false);
+	void set_size(const Size2 &p_size, bool p_keep_offsets = false);
 	Size2 get_size() const;
 
 	Rect2 get_rect() const;
@@ -436,8 +436,8 @@ public:
 	Control *find_next_valid_focus() const;
 	Control *find_prev_valid_focus() const;
 
-	void set_focus_neighbor(Margin p_margin, const NodePath &p_neighbor);
-	NodePath get_focus_neighbor(Margin p_margin) const;
+	void set_focus_neighbor(Side p_side, const NodePath &p_neighbor);
+	NodePath get_focus_neighbor(Side p_side) const;
 
 	void set_focus_next(const NodePath &p_next);
 	NodePath get_focus_next() const;
