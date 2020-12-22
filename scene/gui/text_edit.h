@@ -761,7 +761,6 @@ public:
 	void clear_undo_history();
 
 	void set_indent_using_spaces(const bool p_use_spaces);
-	bool is_indent_using_spaces() const;
 	void set_indent_size(const int p_size);
 	int get_indent_size();
 	void set_draw_tabs(bool p_draw);
@@ -772,7 +771,6 @@ public:
 	bool is_overriding_selected_font_color() const;
 
 	void set_insert_mode(bool p_enabled);
-	bool is_insert_mode() const;
 
 	void add_keyword(const String &p_keyword);
 	void clear_keywords();

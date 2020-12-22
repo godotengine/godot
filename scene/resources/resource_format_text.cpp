@@ -45,10 +45,6 @@
 
 ///
 
-void ResourceLoaderText::set_local_path(const String &p_local_path) {
-	res_path = p_local_path;
-}
-
 Ref<Resource> ResourceLoaderText::get_resource() {
 	return resource;
 }
@@ -1270,7 +1266,6 @@ RES ResourceFormatLoaderText::load(const String &p_path, const String &p_origina
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
 	loader.progress = r_progress;
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
 	loader.open(f);
 	err = loader.load();
 	if (r_error) {
@@ -1323,7 +1318,6 @@ String ResourceFormatLoaderText::get_resource_type(const String &p_path) const {
 	ResourceLoaderText loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
 	String r = loader.recognize(f);
 	return ClassDB::get_compatibility_remapped_class(r);
 }
@@ -1337,7 +1331,6 @@ void ResourceFormatLoaderText::get_dependencies(const String &p_path, List<Strin
 	ResourceLoaderText loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
 	loader.get_dependencies(f, p_dependencies, p_add_types);
 }
 
@@ -1350,7 +1343,6 @@ Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const 
 	ResourceLoaderText loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
 	return loader.rename_dependencies(f, p_path, p_map);
 }
 
@@ -1366,7 +1358,6 @@ Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path,
 	const String &path = p_src_path;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
 	loader.open(f);
 	return loader.save_as_binary(f, p_dst_path);
 }

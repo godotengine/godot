@@ -57,8 +57,6 @@ public:
 
 	_FORCE_INLINE_ real_t determinant() const;
 
-	void from_z(const Vector3 &p_z);
-
 	_FORCE_INLINE_ Vector3 get_axis(int p_axis) const {
 		// get actual basis axis (elements is transposed for performance)
 		return Vector3(elements[0][p_axis], elements[1][p_axis], elements[2][p_axis]);
@@ -123,7 +121,6 @@ public:
 	void scale_local(const Vector3 &p_scale);
 	Basis scaled_local(const Vector3 &p_scale) const;
 
-	void make_scale_uniform();
 	float get_uniform_scale() const;
 
 	Vector3 get_scale() const;

@@ -603,10 +603,6 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 	return OK; //never reach anyway
 }
 
-void ResourceLoaderBinary::set_local_path(const String &p_local_path) {
-	res_path = p_local_path;
-}
-
 Ref<Resource> ResourceLoaderBinary::get_resource() {
 	return resource;
 }
@@ -978,7 +974,6 @@ RES ResourceFormatLoaderBinary::load(const String &p_path, const String &p_origi
 	String path = p_original_path != "" ? p_original_path : p_path;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	loader.open(f);
 
 	err = loader.load();
@@ -1032,7 +1027,6 @@ void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<Str
 	ResourceLoaderBinary loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	loader.get_dependencies(f, p_dependencies, p_add_types);
 }
 
@@ -1120,7 +1114,6 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 		loader.res_path = loader.local_path;
 		loader.remaps = p_map;
-		//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
 		loader.open(f);
 
 		err = loader.load();
@@ -1242,7 +1235,6 @@ String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const
 	ResourceLoaderBinary loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	String r = loader.recognize(f);
 	return ClassDB::get_compatibility_remapped_class(r);
 }

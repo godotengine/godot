@@ -2650,10 +2650,6 @@ void Control::set_block_minimum_size_adjust(bool p_block) {
 	data.block_minimum_size_adjust = p_block;
 }
 
-bool Control::is_minimum_size_adjust_blocked() const {
-	return data.block_minimum_size_adjust;
-}
-
 void Control::set_disable_visibility_clip(bool p_ignore) {
 	data.disable_visibility_clip = p_ignore;
 	update();

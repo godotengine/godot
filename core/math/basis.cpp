@@ -37,23 +37,6 @@
 #define cofac(row1, col1, row2, col2) \
 	(elements[row1][col1] * elements[row2][col2] - elements[row1][col2] * elements[row2][col1])
 
-void Basis::from_z(const Vector3 &p_z) {
-	if (Math::abs(p_z.z) > Math_SQRT12) {
-		// choose p in y-z plane
-		real_t a = p_z[1] * p_z[1] + p_z[2] * p_z[2];
-		real_t k = 1.0 / Math::sqrt(a);
-		elements[0] = Vector3(0, -p_z[2] * k, p_z[1] * k);
-		elements[1] = Vector3(a * k, -p_z[0] * elements[0][2], p_z[0] * elements[0][1]);
-	} else {
-		// choose p in x-y plane
-		real_t a = p_z.x * p_z.x + p_z.y * p_z.y;
-		real_t k = 1.0 / Math::sqrt(a);
-		elements[0] = Vector3(-p_z.y * k, p_z.x * k, 0);
-		elements[1] = Vector3(-p_z.z * elements[0].y, p_z.z * elements[0].x, a * k);
-	}
-	elements[2] = p_z;
-}
-
 void Basis::invert() {
 	real_t co[3] = {
 		cofac(1, 1, 2, 2), cofac(1, 2, 2, 0), cofac(1, 0, 2, 1)
@@ -236,14 +219,6 @@ void Basis::scale_local(const Vector3 &p_scale) {
 
 float Basis::get_uniform_scale() const {
 	return (elements[0].length() + elements[1].length() + elements[2].length()) / 3.0;
-}
-
-void Basis::make_scale_uniform() {
-	float l = (elements[0].length() + elements[1].length() + elements[2].length()) / 3.0;
-	for (int i = 0; i < 3; i++) {
-		elements[i].normalize();
-		elements[i] *= l;
-	}
 }
 
 Basis Basis::scaled_local(const Vector3 &p_scale) const {

@@ -130,7 +130,6 @@ public:
 #endif
 
 	void set_as_translation_remapped(bool p_remapped);
-	bool is_translation_remapped() const;
 
 	virtual RID get_rid() const; // some resources may offer conversion to RID
 
@@ -161,7 +160,6 @@ class ResourceCache {
 	static void setup();
 
 public:
-	static void reload_externals();
 	static bool has(const String &p_path);
 	static Resource *get(const String &p_path);
 	static void dump(const char *p_file = nullptr, bool p_short = false);

@@ -83,7 +83,6 @@ public:
 	static void set_save_callback(ResourceSavedCallback p_callback);
 
 	static bool add_custom_resource_format_saver(String script_path);
-	static void remove_custom_resource_format_saver(String script_path);
 	static void add_custom_savers();
 	static void remove_custom_savers();
 };

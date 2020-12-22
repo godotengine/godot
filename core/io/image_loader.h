@@ -65,8 +65,6 @@ public:
 	static void add_image_format_loader(ImageFormatLoader *p_loader);
 	static void remove_image_format_loader(ImageFormatLoader *p_loader);
 
-	static const Vector<ImageFormatLoader *> &get_image_format_loaders();
-
 	static void cleanup();
 };
 

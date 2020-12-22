@@ -690,9 +690,6 @@ bool EditorPlugin::get_remove_list(List<Node *> *p_list) {
 	return false;
 }
 
-void EditorPlugin::restore_global_state() {}
-void EditorPlugin::save_global_state() {}
-
 void EditorPlugin::add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser) {
 	EditorTranslationParser::get_singleton()->add_parser(p_parser, EditorTranslationParser::CUSTOM);
 }

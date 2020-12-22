@@ -666,37 +666,6 @@ float CameraMatrix::get_lod_multiplier() const {
 
 	//usage is lod_size / (lod_distance * multiplier) < threshold
 }
-void CameraMatrix::make_scale(const Vector3 &p_scale) {
-	set_identity();
-	matrix[0][0] = p_scale.x;
-	matrix[1][1] = p_scale.y;
-	matrix[2][2] = p_scale.z;
-}
-
-void CameraMatrix::scale_translate_to_fit(const AABB &p_aabb) {
-	Vector3 min = p_aabb.position;
-	Vector3 max = p_aabb.position + p_aabb.size;
-
-	matrix[0][0] = 2 / (max.x - min.x);
-	matrix[1][0] = 0;
-	matrix[2][0] = 0;
-	matrix[3][0] = -(max.x + min.x) / (max.x - min.x);
-
-	matrix[0][1] = 0;
-	matrix[1][1] = 2 / (max.y - min.y);
-	matrix[2][1] = 0;
-	matrix[3][1] = -(max.y + min.y) / (max.y - min.y);
-
-	matrix[0][2] = 0;
-	matrix[1][2] = 0;
-	matrix[2][2] = 2 / (max.z - min.z);
-	matrix[3][2] = -(max.z + min.z) / (max.z - min.z);
-
-	matrix[0][3] = 0;
-	matrix[1][3] = 0;
-	matrix[2][3] = 0;
-	matrix[3][3] = 1;
-}
 
 CameraMatrix::operator Transform() const {
 	Transform tr;

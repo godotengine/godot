@@ -82,7 +82,6 @@ public:
 	int get_history_len();
 	int get_history_pos();
 	ObjectID get_history_obj(int p_obj) const;
-	bool is_history_obj_inspector_only(int p_obj) const;
 
 	bool next();
 	bool previous();
@@ -168,7 +167,6 @@ public:
 	UndoRedo &get_undo_redo();
 
 	void save_editor_global_states();
-	void restore_editor_global_states();
 
 	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	Object *instance_custom_type(const String &p_type, const String &p_inherits);

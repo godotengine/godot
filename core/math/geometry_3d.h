@@ -612,8 +612,6 @@ public:
 		return clipped;
 	}
 
-	static Vector<Vector<Face3>> separate_objects(Vector<Face3> p_array);
-
 	// Create a "wrap" that encloses the given geometry.
 	static Vector<Face3> wrap_geometry(Vector<Face3> p_array, real_t *p_error = nullptr);
 

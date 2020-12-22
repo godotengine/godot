@@ -6019,10 +6019,6 @@ void TextEdit::set_indent_using_spaces(const bool p_use_spaces) {
 	indent_using_spaces = p_use_spaces;
 }
 
-bool TextEdit::is_indent_using_spaces() const {
-	return indent_using_spaces;
-}
-
 void TextEdit::set_indent_size(const int p_size) {
 	ERR_FAIL_COND_MSG(p_size <= 0, "Indend size must be greater than 0.");
 	if (indent_size != p_size) {
@@ -6072,10 +6068,6 @@ bool TextEdit::is_overriding_selected_font_color() const {
 void TextEdit::set_insert_mode(bool p_enabled) {
 	insert_mode = p_enabled;
 	update();
-}
-
-bool TextEdit::is_insert_mode() const {
-	return insert_mode;
 }
 
 bool TextEdit::is_insert_text_operation() {

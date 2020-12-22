@@ -151,8 +151,6 @@ public:
 	void set_custom_property_info(const String &p_prop, const PropertyInfo &p_info);
 	const Map<StringName, PropertyInfo> &get_custom_property_info() const;
 
-	Vector<String> get_optimizer_presets() const;
-
 	List<String> get_input_presets() const { return input_presets; }
 
 	void set_disable_feature_overrides(bool p_disable);

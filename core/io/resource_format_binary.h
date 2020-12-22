@@ -87,7 +87,6 @@ class ResourceLoaderBinary {
 	Map<String, RES> dependency_cache;
 
 public:
-	void set_local_path(const String &p_local_path);
 	Ref<Resource> get_resource();
 	Error load();
 	void set_translation_remapped(bool p_remapped);
