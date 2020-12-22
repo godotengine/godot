@@ -2306,10 +2306,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				Dictionary *dict = VariantInternal::get_dictionary(container);
 				const Variant *next = dict->next(nullptr);
-				*counter = *next;
 
 				if (!dict->is_empty()) {
 					GET_INSTRUCTION_ARG(iterator, 2);
+					*counter = *next;
 					*iterator = *next;
 
 					// Skip regular iterate.
