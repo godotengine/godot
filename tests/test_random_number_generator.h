@@ -250,6 +250,26 @@ TEST_CASE("[RandomNumberGenerator] Restore from seed") {
 	CHECK_MESSAGE(s0_1_before == s0_1_after, msg);
 	CHECK_MESSAGE(s0_2_before == s0_2_after, msg);
 }
+
+TEST_CASE_MAY_FAIL("[RandomNumberGenerator] randi_range bias check") {
+	int zeros = 0;
+	int ones = 0;
+	Ref<RandomNumberGenerator> rng = memnew(RandomNumberGenerator);
+	for (int i = 0; i < 10000; i++) {
+		int val = rng->randi_range(0, 1);
+		val == 0 ? zeros++ : ones++;
+	}
+	CHECK_MESSAGE(abs(zeros * 1.0 / ones - 1.0) < 0.1, "The ratio of zeros to ones should be nearly 1");
+
+	int vals[10] = { 0 };
+	for (int i = 0; i < 1000000; i++) {
+		vals[rng->randi_range(0, 9)]++;
+	}
+
+	for (int i = 0; i < 10; i++) {
+		CHECK_MESSAGE(abs(vals[i] / 1000000.0 - 0.1) < 0.01, "Each element should appear roughly 10% of the time");
+	}
+}
 } // namespace TestRandomNumberGenerator
 
 #endif // TEST_RANDOM_NUMBER_GENERATOR_H
