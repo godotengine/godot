@@ -69,10 +69,11 @@ namespace Godot
 
         /// <summary>
         /// Returns the intersection of this Rect2i and `b`.
+        /// If the rectangles do not intersect, an empty Rect2i is returned.
         /// </summary>
         /// <param name="b">The other rect.</param>
-        /// <returns>The clipped rect.</returns>
-        public Rect2i Clip(Rect2i b)
+        /// <returns>The intersection of this Rect2i and `b`, or an empty rect if they do not intersect.</returns>
+        public Rect2i Intersection(Rect2i b)
         {
             var newRect = b;
 
