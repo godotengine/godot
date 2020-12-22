@@ -1954,7 +1954,7 @@ void ScriptEditor::_update_script_names() {
 		Vector<String> disambiguated_script_names;
 		Vector<String> full_script_paths;
 		for (int j = 0; j < sedata.size(); j++) {
-			disambiguated_script_names.append(sedata[j].name.replace("(*)", ""));
+			disambiguated_script_names.append(sedata[j].name.replace("(*)", "").get_file());
 			full_script_paths.append(sedata[j].tooltip);
 		}
 
