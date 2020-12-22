@@ -899,17 +899,11 @@ String EditorData::script_class_get_icon_path(const String &p_class) const {
 		return String();
 	}
 
-	String current = p_class;
-	String ret = _script_class_icon_paths[current];
-	while (ret.empty()) {
-		current = script_class_get_base(current);
-		if (!ScriptServer::is_global_class(current)) {
-			return String();
-		}
-		ret = _script_class_icon_paths.has(current) ? _script_class_icon_paths[current] : String();
+	if (_script_class_icon_paths.has(p_class)) {
+		return _script_class_icon_paths[p_class];
 	}
 
-	return ret;
+	return script_class_get_icon_path(script_class_get_base(p_class));
 }
 
 StringName EditorData::script_class_get_name(const String &p_path) const {
@@ -950,8 +944,8 @@ void EditorData::script_class_load_icon_paths() {
 		d.get_key_list(&keys);
 
 		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-			String name = E->get().operator String();
-			_script_class_icon_paths[name] = d[name];
+			String name = (String)E->get();
+			_script_class_icon_paths[name] = d.has(name) ? String(d[name]) : String();
 
 			String path = ScriptServer::get_global_class_path(name);
 			script_class_set_name(path, name);

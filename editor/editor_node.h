@@ -642,7 +642,7 @@ private:
 
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
-	Ref<ImageTexture> _load_custom_class_icon(const String &p_path) const;
+	Ref<ImageTexture> _load_custom_class_icon(const String &p_path);
 
 protected:
 	void _notification(int p_what);
@@ -773,8 +773,8 @@ public:
 	Ref<Theme> get_editor_theme() const { return theme; }
 	Ref<Script> get_object_custom_type_base(const Object *p_object) const;
 	StringName get_object_custom_type_name(const Object *p_object) const;
-	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "Object") const;
-	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
+	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "Object");
+	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "Object");
 
 	void show_accept(const String &p_text, const String &p_title);
 	void show_warning(const String &p_text, const String &p_title = TTR("Warning!"));
