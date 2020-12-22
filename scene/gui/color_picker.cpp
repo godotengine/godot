@@ -66,7 +66,7 @@ void ColorPicker::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_PARENTED: {
 			for (int i = 0; i < 4; i++) {
-				set_margin((Margin)i, get_margin((Margin)i) + get_theme_constant("margin"));
+				set_offset((Side)i, get_offset((Side)i) + get_theme_constant("margin"));
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -611,7 +611,7 @@ void ColorPicker::_screen_pick_pressed() {
 		screen = memnew(Control);
 		r->add_child(screen);
 		screen->set_as_top_level(true);
-		screen->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+		screen->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 		screen->set_default_cursor_shape(CURSOR_POINTING_HAND);
 		screen->connect("gui_input", callable_mp(this, &ColorPicker::_screen_input));
 		// It immediately toggles off in the first press otherwise.
@@ -973,7 +973,7 @@ void ColorPickerButton::_update_picker() {
 		popup = memnew(PopupPanel);
 		popup->set_wrap_controls(true);
 		picker = memnew(ColorPicker);
-		picker->set_anchors_and_margins_preset(PRESET_WIDE);
+		picker->set_anchors_and_offsets_preset(PRESET_WIDE);
 		popup->add_child(picker);
 		add_child(popup);
 		picker->connect("color_changed", callable_mp(this, &ColorPickerButton::_color_changed));

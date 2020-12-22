@@ -356,7 +356,7 @@ public:
 	operator Vector<Vector2>() const;
 
 	// some core type enums to convert to
-	operator Margin() const;
+	operator Side() const;
 	operator Orientation() const;
 
 	operator IP_Address() const;

@@ -44,15 +44,15 @@ class StyleBox : public Resource {
 	float margin[4];
 
 protected:
-	virtual float get_style_margin(Margin p_margin) const = 0;
+	virtual float get_style_margin(Side p_side) const = 0;
 	static void _bind_methods();
 
 public:
 	virtual bool test_mask(const Point2 &p_point, const Rect2 &p_rect) const;
 
-	void set_default_margin(Margin p_margin, float p_value);
-	float get_default_margin(Margin p_margin) const;
-	float get_margin(Margin p_margin) const;
+	void set_default_margin(Side p_side, float p_value);
+	float get_default_margin(Side p_side) const;
+	float get_margin(Side p_side) const;
 	virtual Size2 get_center_size() const;
 
 	virtual Rect2 get_draw_rect(const Rect2 &p_rect) const;
@@ -68,7 +68,7 @@ public:
 
 class StyleBoxEmpty : public StyleBox {
 	GDCLASS(StyleBoxEmpty, StyleBox);
-	virtual float get_style_margin(Margin p_margin) const override { return 0; }
+	virtual float get_style_margin(Side p_side) const override { return 0; }
 
 public:
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const override {}
@@ -96,17 +96,17 @@ private:
 	AxisStretchMode axis_v;
 
 protected:
-	virtual float get_style_margin(Margin p_margin) const override;
+	virtual float get_style_margin(Side p_side) const override;
 	static void _bind_methods();
 
 public:
-	void set_expand_margin_size(Margin p_expand_margin, float p_size);
+	void set_expand_margin_size(Side p_expand_side, float p_size);
 	void set_expand_margin_size_all(float p_expand_margin_size);
 	void set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom);
-	float get_expand_margin_size(Margin p_expand_margin) const;
+	float get_expand_margin_size(Side p_expand_side) const;
 
-	void set_margin_size(Margin p_margin, float p_size);
-	float get_margin_size(Margin p_margin) const;
+	void set_margin_size(Side p_side, float p_size);
+	float get_margin_size(Side p_side) const;
 
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
@@ -157,7 +157,7 @@ class StyleBoxFlat : public StyleBox {
 	int aa_size;
 
 protected:
-	virtual float get_style_margin(Margin p_margin) const override;
+	virtual float get_style_margin(Side p_side) const override;
 	static void _bind_methods();
 
 public:
@@ -174,8 +174,8 @@ public:
 	void set_border_width_all(int p_size);
 	int get_border_width_min() const;
 
-	void set_border_width(Margin p_margin, int p_width);
-	int get_border_width(Margin p_margin) const;
+	void set_border_width(Side p_side, int p_width);
+	int get_border_width(Side p_side) const;
 
 	//blend
 	void set_border_blend(bool p_blend);
@@ -192,10 +192,10 @@ public:
 	int get_corner_detail() const;
 
 	//EXPANDS
-	void set_expand_margin_size(Margin p_expand_margin, float p_size);
+	void set_expand_margin_size(Side p_expand_side, float p_size);
 	void set_expand_margin_size_all(float p_expand_margin_size);
 	void set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom);
-	float get_expand_margin_size(Margin p_expand_margin) const;
+	float get_expand_margin_size(Side p_expand_side) const;
 
 	//DRAW CENTER
 	void set_draw_center(bool p_enabled);
@@ -237,7 +237,7 @@ class StyleBoxLine : public StyleBox {
 	float grow_end;
 
 protected:
-	virtual float get_style_margin(Margin p_margin) const override;
+	virtual float get_style_margin(Side p_side) const override;
 	static void _bind_methods();
 
 public:

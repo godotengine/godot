@@ -83,11 +83,11 @@ enum VAlign {
 	VALIGN_BOTTOM
 };
 
-enum Margin {
-	MARGIN_LEFT,
-	MARGIN_TOP,
-	MARGIN_RIGHT,
-	MARGIN_BOTTOM
+enum Side {
+	SIDE_LEFT,
+	SIDE_TOP,
+	SIDE_RIGHT,
+	SIDE_BOTTOM
 };
 
 enum Corner {

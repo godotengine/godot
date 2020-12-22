@@ -220,15 +220,15 @@ void ScrollContainer::_update_scrollbar_position() {
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();
 
-	h_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 0);
-	h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
-	h_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -hmin.height);
-	h_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
+	h_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, 0);
+	h_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
+	h_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -hmin.height);
+	h_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
 
-	v_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -vmin.width);
-	v_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
-	v_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
-	v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
+	v_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -vmin.width);
+	v_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
+	v_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
+	v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
 
 	h_scroll->raise();
 	v_scroll->raise();
@@ -463,8 +463,8 @@ void ScrollContainer::update_scrollbars() {
 	}
 
 	// Avoid scrollbar overlapping.
-	h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, hide_scroll_v ? 0 : -vmin.width);
-	v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, hide_scroll_h ? 0 : -hmin.height);
+	h_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, hide_scroll_v ? 0 : -vmin.width);
+	v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, hide_scroll_h ? 0 : -hmin.height);
 }
 
 void ScrollContainer::_scroll_moved(float) {

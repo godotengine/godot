@@ -44,34 +44,34 @@
 static Ref<StyleBoxTexture> make_stylebox(Ref<Texture2D> p_texture, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_draw_center = true) {
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
 	style->set_texture(p_texture);
-	style->set_margin_size(MARGIN_LEFT, p_left * EDSCALE);
-	style->set_margin_size(MARGIN_RIGHT, p_right * EDSCALE);
-	style->set_margin_size(MARGIN_BOTTOM, p_botton * EDSCALE);
-	style->set_margin_size(MARGIN_TOP, p_top * EDSCALE);
-	style->set_default_margin(MARGIN_LEFT, p_margin_left * EDSCALE);
-	style->set_default_margin(MARGIN_RIGHT, p_margin_right * EDSCALE);
-	style->set_default_margin(MARGIN_BOTTOM, p_margin_botton * EDSCALE);
-	style->set_default_margin(MARGIN_TOP, p_margin_top * EDSCALE);
+	style->set_margin_size(SIDE_LEFT, p_left * EDSCALE);
+	style->set_margin_size(SIDE_RIGHT, p_right * EDSCALE);
+	style->set_margin_size(SIDE_BOTTOM, p_botton * EDSCALE);
+	style->set_margin_size(SIDE_TOP, p_top * EDSCALE);
+	style->set_default_margin(SIDE_LEFT, p_margin_left * EDSCALE);
+	style->set_default_margin(SIDE_RIGHT, p_margin_right * EDSCALE);
+	style->set_default_margin(SIDE_BOTTOM, p_margin_botton * EDSCALE);
+	style->set_default_margin(SIDE_TOP, p_margin_top * EDSCALE);
 	style->set_draw_center(p_draw_center);
 	return style;
 }
 
 static Ref<StyleBoxEmpty> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
 	Ref<StyleBoxEmpty> style(memnew(StyleBoxEmpty));
-	style->set_default_margin(MARGIN_LEFT, p_margin_left * EDSCALE);
-	style->set_default_margin(MARGIN_RIGHT, p_margin_right * EDSCALE);
-	style->set_default_margin(MARGIN_BOTTOM, p_margin_bottom * EDSCALE);
-	style->set_default_margin(MARGIN_TOP, p_margin_top * EDSCALE);
+	style->set_default_margin(SIDE_LEFT, p_margin_left * EDSCALE);
+	style->set_default_margin(SIDE_RIGHT, p_margin_right * EDSCALE);
+	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * EDSCALE);
+	style->set_default_margin(SIDE_TOP, p_margin_top * EDSCALE);
 	return style;
 }
 
 static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
 	Ref<StyleBoxFlat> style(memnew(StyleBoxFlat));
 	style->set_bg_color(p_color);
-	style->set_default_margin(MARGIN_LEFT, p_margin_left * EDSCALE);
-	style->set_default_margin(MARGIN_RIGHT, p_margin_right * EDSCALE);
-	style->set_default_margin(MARGIN_BOTTOM, p_margin_bottom * EDSCALE);
-	style->set_default_margin(MARGIN_TOP, p_margin_top * EDSCALE);
+	style->set_default_margin(SIDE_LEFT, p_margin_left * EDSCALE);
+	style->set_default_margin(SIDE_RIGHT, p_margin_right * EDSCALE);
+	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * EDSCALE);
+	style->set_default_margin(SIDE_TOP, p_margin_top * EDSCALE);
 	return style;
 }
 
@@ -477,10 +477,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const float extra_spacing = EDITOR_GET("interface/theme/additional_spacing");
 
 	Ref<StyleBoxFlat> style_widget = style_default->duplicate();
-	style_widget->set_default_margin(MARGIN_LEFT, (extra_spacing + 6) * EDSCALE);
-	style_widget->set_default_margin(MARGIN_TOP, (extra_spacing + default_margin_size) * EDSCALE);
-	style_widget->set_default_margin(MARGIN_RIGHT, (extra_spacing + 6) * EDSCALE);
-	style_widget->set_default_margin(MARGIN_BOTTOM, (extra_spacing + default_margin_size) * EDSCALE);
+	style_widget->set_default_margin(SIDE_LEFT, (extra_spacing + 6) * EDSCALE);
+	style_widget->set_default_margin(SIDE_TOP, (extra_spacing + default_margin_size) * EDSCALE);
+	style_widget->set_default_margin(SIDE_RIGHT, (extra_spacing + 6) * EDSCALE);
+	style_widget->set_default_margin(SIDE_BOTTOM, (extra_spacing + default_margin_size) * EDSCALE);
 	style_widget->set_bg_color(dark_color_1);
 	style_widget->set_border_color(dark_color_2);
 
@@ -500,10 +500,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// style for windows, popups, etc..
 	Ref<StyleBoxFlat> style_popup = style_default->duplicate();
 	const int popup_margin_size = default_margin_size * EDSCALE * 2;
-	style_popup->set_default_margin(MARGIN_LEFT, popup_margin_size);
-	style_popup->set_default_margin(MARGIN_TOP, popup_margin_size);
-	style_popup->set_default_margin(MARGIN_RIGHT, popup_margin_size);
-	style_popup->set_default_margin(MARGIN_BOTTOM, popup_margin_size);
+	style_popup->set_default_margin(SIDE_LEFT, popup_margin_size);
+	style_popup->set_default_margin(SIDE_TOP, popup_margin_size);
+	style_popup->set_default_margin(SIDE_RIGHT, popup_margin_size);
+	style_popup->set_default_margin(SIDE_BOTTOM, popup_margin_size);
 	style_popup->set_border_color(contrast_color_1);
 	style_popup->set_border_width_all(MAX(EDSCALE, border_width));
 	const Color shadow_color = Color(0, 0, 0, dark_theme ? 0.3 : 0.1);
@@ -536,13 +536,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_tab_selected = style_widget->duplicate();
 
 	style_tab_selected->set_border_width_all(border_width);
-	style_tab_selected->set_border_width(MARGIN_BOTTOM, 0);
+	style_tab_selected->set_border_width(SIDE_BOTTOM, 0);
 	style_tab_selected->set_border_color(dark_color_3);
-	style_tab_selected->set_expand_margin_size(MARGIN_BOTTOM, border_width);
-	style_tab_selected->set_default_margin(MARGIN_LEFT, tab_default_margin_side);
-	style_tab_selected->set_default_margin(MARGIN_RIGHT, tab_default_margin_side);
-	style_tab_selected->set_default_margin(MARGIN_BOTTOM, tab_default_margin_vertical);
-	style_tab_selected->set_default_margin(MARGIN_TOP, tab_default_margin_vertical);
+	style_tab_selected->set_expand_margin_size(SIDE_BOTTOM, border_width);
+	style_tab_selected->set_default_margin(SIDE_LEFT, tab_default_margin_side);
+	style_tab_selected->set_default_margin(SIDE_RIGHT, tab_default_margin_side);
+	style_tab_selected->set_default_margin(SIDE_BOTTOM, tab_default_margin_vertical);
+	style_tab_selected->set_default_margin(SIDE_TOP, tab_default_margin_vertical);
 	style_tab_selected->set_bg_color(tab_color);
 
 	Ref<StyleBoxFlat> style_tab_unselected = style_tab_selected->duplicate();
@@ -580,7 +580,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_menu_hover_border = style_widget->duplicate();
 	style_menu_hover_border->set_draw_center(false);
 	style_menu_hover_border->set_border_width_all(0);
-	style_menu_hover_border->set_border_width(MARGIN_BOTTOM, border_width);
+	style_menu_hover_border->set_border_width(SIDE_BOTTOM, border_width);
 	style_menu_hover_border->set_border_color(accent_color);
 
 	Ref<StyleBoxFlat> style_menu_hover_bg = style_widget->duplicate();
@@ -668,10 +668,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Checkbox
 	Ref<StyleBoxFlat> sb_checkbox = style_menu->duplicate();
-	sb_checkbox->set_default_margin(MARGIN_LEFT, default_margin_size * EDSCALE);
-	sb_checkbox->set_default_margin(MARGIN_RIGHT, default_margin_size * EDSCALE);
-	sb_checkbox->set_default_margin(MARGIN_TOP, default_margin_size * EDSCALE);
-	sb_checkbox->set_default_margin(MARGIN_BOTTOM, default_margin_size * EDSCALE);
+	sb_checkbox->set_default_margin(SIDE_LEFT, default_margin_size * EDSCALE);
+	sb_checkbox->set_default_margin(SIDE_RIGHT, default_margin_size * EDSCALE);
+	sb_checkbox->set_default_margin(SIDE_TOP, default_margin_size * EDSCALE);
+	sb_checkbox->set_default_margin(SIDE_BOTTOM, default_margin_size * EDSCALE);
 
 	theme->set_stylebox("normal", "CheckBox", sb_checkbox);
 	theme->set_stylebox("pressed", "CheckBox", sb_checkbox);
@@ -697,10 +697,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// PopupMenu
 	const int popup_menu_margin_size = default_margin_size * 1.5 * EDSCALE;
 	Ref<StyleBoxFlat> style_popup_menu = style_popup->duplicate();
-	style_popup_menu->set_default_margin(MARGIN_LEFT, popup_menu_margin_size);
-	style_popup_menu->set_default_margin(MARGIN_TOP, popup_menu_margin_size);
-	style_popup_menu->set_default_margin(MARGIN_RIGHT, popup_menu_margin_size);
-	style_popup_menu->set_default_margin(MARGIN_BOTTOM, popup_menu_margin_size);
+	style_popup_menu->set_default_margin(SIDE_LEFT, popup_menu_margin_size);
+	style_popup_menu->set_default_margin(SIDE_TOP, popup_menu_margin_size);
+	style_popup_menu->set_default_margin(SIDE_RIGHT, popup_menu_margin_size);
+	style_popup_menu->set_default_margin(SIDE_BOTTOM, popup_menu_margin_size);
 
 	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
 	theme->set_stylebox("separator", "PopupMenu", style_popup_separator);
@@ -724,9 +724,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size + 1) * EDSCALE);
 
 	Ref<StyleBoxFlat> sub_inspector_bg = make_flat_stylebox(dark_color_1.lerp(accent_color, 0.08), 2, 0, 2, 2);
-	sub_inspector_bg->set_border_width(MARGIN_LEFT, 2);
-	sub_inspector_bg->set_border_width(MARGIN_RIGHT, 2);
-	sub_inspector_bg->set_border_width(MARGIN_BOTTOM, 2);
+	sub_inspector_bg->set_border_width(SIDE_LEFT, 2);
+	sub_inspector_bg->set_border_width(SIDE_RIGHT, 2);
+	sub_inspector_bg->set_border_width(SIDE_BOTTOM, 2);
 	sub_inspector_bg->set_border_color(accent_color * Color(1, 1, 1, 0.3));
 	sub_inspector_bg->set_draw_center(true);
 
@@ -866,17 +866,17 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel->set_border_color(dark_color_3);
 	style_content_panel->set_border_width_all(border_width);
 	// compensate the border
-	style_content_panel->set_default_margin(MARGIN_TOP, margin_size_extra * EDSCALE);
-	style_content_panel->set_default_margin(MARGIN_RIGHT, margin_size_extra * EDSCALE);
-	style_content_panel->set_default_margin(MARGIN_BOTTOM, margin_size_extra * EDSCALE);
-	style_content_panel->set_default_margin(MARGIN_LEFT, margin_size_extra * EDSCALE);
+	style_content_panel->set_default_margin(SIDE_TOP, margin_size_extra * EDSCALE);
+	style_content_panel->set_default_margin(SIDE_RIGHT, margin_size_extra * EDSCALE);
+	style_content_panel->set_default_margin(SIDE_BOTTOM, margin_size_extra * EDSCALE);
+	style_content_panel->set_default_margin(SIDE_LEFT, margin_size_extra * EDSCALE);
 
 	// this is the stylebox used in 3d and 2d viewports (no borders)
 	Ref<StyleBoxFlat> style_content_panel_vp = style_content_panel->duplicate();
-	style_content_panel_vp->set_default_margin(MARGIN_LEFT, border_width * 2);
-	style_content_panel_vp->set_default_margin(MARGIN_TOP, default_margin_size * EDSCALE);
-	style_content_panel_vp->set_default_margin(MARGIN_RIGHT, border_width * 2);
-	style_content_panel_vp->set_default_margin(MARGIN_BOTTOM, border_width * 2);
+	style_content_panel_vp->set_default_margin(SIDE_LEFT, border_width * 2);
+	style_content_panel_vp->set_default_margin(SIDE_TOP, default_margin_size * EDSCALE);
+	style_content_panel_vp->set_default_margin(SIDE_RIGHT, border_width * 2);
+	style_content_panel_vp->set_default_margin(SIDE_BOTTOM, border_width * 2);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 	theme->set_stylebox("Content", "EditorStyles", style_content_panel_vp);
 
@@ -887,13 +887,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Debugger
 
 	Ref<StyleBoxFlat> style_panel_debugger = style_content_panel->duplicate();
-	style_panel_debugger->set_border_width(MARGIN_BOTTOM, 0);
+	style_panel_debugger->set_border_width(SIDE_BOTTOM, 0);
 	theme->set_stylebox("DebuggerPanel", "EditorStyles", style_panel_debugger);
 
 	Ref<StyleBoxFlat> style_panel_invisible_top = style_content_panel->duplicate();
-	int stylebox_offset = theme->get_font("tab_fg", "TabContainer")->get_height(theme->get_font_size("tab_fg", "TabContainer")) + theme->get_stylebox("tab_fg", "TabContainer")->get_minimum_size().height + theme->get_stylebox("panel", "TabContainer")->get_default_margin(MARGIN_TOP);
-	style_panel_invisible_top->set_expand_margin_size(MARGIN_TOP, -stylebox_offset);
-	style_panel_invisible_top->set_default_margin(MARGIN_TOP, 0);
+	int stylebox_offset = theme->get_font("tab_fg", "TabContainer")->get_height(theme->get_font_size("tab_fg", "TabContainer")) + theme->get_stylebox("tab_fg", "TabContainer")->get_minimum_size().height + theme->get_stylebox("panel", "TabContainer")->get_default_margin(SIDE_TOP);
+	style_panel_invisible_top->set_expand_margin_size(SIDE_TOP, -stylebox_offset);
+	style_panel_invisible_top->set_default_margin(SIDE_TOP, 0);
 	theme->set_stylebox("BottomPanelDebuggerOverride", "EditorStyles", style_panel_invisible_top);
 
 	// LineEdit
@@ -958,8 +958,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// WindowDialog
 	Ref<StyleBoxFlat> style_window = style_popup->duplicate();
 	style_window->set_border_color(tab_color);
-	style_window->set_border_width(MARGIN_TOP, 24 * EDSCALE);
-	style_window->set_expand_margin_size(MARGIN_TOP, 24 * EDSCALE);
+	style_window->set_border_width(SIDE_TOP, 24 * EDSCALE);
+	style_window->set_expand_margin_size(SIDE_TOP, 24 * EDSCALE);
 
 	theme->set_stylebox("panel", "Window", style_default);
 	theme->set_stylebox("panel_window", "Window", style_window);
@@ -1055,10 +1055,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// TooltipPanel
 	Ref<StyleBoxFlat> style_tooltip = style_popup->duplicate();
 	float v = MAX(border_size * EDSCALE, 1.0);
-	style_tooltip->set_default_margin(MARGIN_LEFT, v);
-	style_tooltip->set_default_margin(MARGIN_TOP, v);
-	style_tooltip->set_default_margin(MARGIN_RIGHT, v);
-	style_tooltip->set_default_margin(MARGIN_BOTTOM, v);
+	style_tooltip->set_default_margin(SIDE_LEFT, v);
+	style_tooltip->set_default_margin(SIDE_TOP, v);
+	style_tooltip->set_default_margin(SIDE_RIGHT, v);
+	style_tooltip->set_default_margin(SIDE_BOTTOM, v);
 	style_tooltip->set_bg_color(Color(mono_color.r, mono_color.g, mono_color.b, 0.9));
 	style_tooltip->set_border_width_all(border_width);
 	style_tooltip->set_border_color(mono_color);
@@ -1155,10 +1155,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	smgraphsbselected->set_shadow_color(shadow_color);
 
 	if (use_gn_headers) {
-		graphsb->set_border_width(MARGIN_TOP, 24 * EDSCALE);
-		graphsbselected->set_border_width(MARGIN_TOP, 24 * EDSCALE);
-		graphsbcomment->set_border_width(MARGIN_TOP, 24 * EDSCALE);
-		graphsbcommentselected->set_border_width(MARGIN_TOP, 24 * EDSCALE);
+		graphsb->set_border_width(SIDE_TOP, 24 * EDSCALE);
+		graphsbselected->set_border_width(SIDE_TOP, 24 * EDSCALE);
+		graphsbcomment->set_border_width(SIDE_TOP, 24 * EDSCALE);
+		graphsbcommentselected->set_border_width(SIDE_TOP, 24 * EDSCALE);
 	}
 
 	theme->set_stylebox("frame", "GraphNode", graphsb);

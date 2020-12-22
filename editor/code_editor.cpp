@@ -66,10 +66,10 @@ GotoLineDialog::GotoLineDialog() {
 	set_title(TTR("Go to Line"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
 	add_child(vbc);
 
 	Label *l = memnew(Label);

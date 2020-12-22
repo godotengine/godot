@@ -64,14 +64,14 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, fl
 
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
 	style->set_texture(texture);
-	style->set_margin_size(MARGIN_LEFT, p_left * scale);
-	style->set_margin_size(MARGIN_RIGHT, p_right * scale);
-	style->set_margin_size(MARGIN_BOTTOM, p_botton * scale);
-	style->set_margin_size(MARGIN_TOP, p_top * scale);
-	style->set_default_margin(MARGIN_LEFT, p_margin_left * scale);
-	style->set_default_margin(MARGIN_RIGHT, p_margin_right * scale);
-	style->set_default_margin(MARGIN_BOTTOM, p_margin_botton * scale);
-	style->set_default_margin(MARGIN_TOP, p_margin_top * scale);
+	style->set_margin_size(SIDE_LEFT, p_left * scale);
+	style->set_margin_size(SIDE_RIGHT, p_right * scale);
+	style->set_margin_size(SIDE_BOTTOM, p_botton * scale);
+	style->set_margin_size(SIDE_TOP, p_top * scale);
+	style->set_default_margin(SIDE_LEFT, p_margin_left * scale);
+	style->set_default_margin(SIDE_RIGHT, p_margin_right * scale);
+	style->set_default_margin(SIDE_BOTTOM, p_margin_botton * scale);
+	style->set_default_margin(SIDE_TOP, p_margin_top * scale);
 	style->set_draw_center(p_draw_center);
 
 	return style;
@@ -80,19 +80,19 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, fl
 static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
 	Ref<StyleBoxFlat> style(memnew(StyleBoxFlat));
 	style->set_bg_color(p_color);
-	style->set_default_margin(MARGIN_LEFT, p_margin_left * scale);
-	style->set_default_margin(MARGIN_RIGHT, p_margin_right * scale);
-	style->set_default_margin(MARGIN_BOTTOM, p_margin_bottom * scale);
-	style->set_default_margin(MARGIN_TOP, p_margin_top * scale);
+	style->set_default_margin(SIDE_LEFT, p_margin_left * scale);
+	style->set_default_margin(SIDE_RIGHT, p_margin_right * scale);
+	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * scale);
+	style->set_default_margin(SIDE_TOP, p_margin_top * scale);
 
 	return style;
 }
 
 static Ref<StyleBoxTexture> sb_expand(Ref<StyleBoxTexture> p_sbox, float p_left, float p_top, float p_right, float p_botton) {
-	p_sbox->set_expand_margin_size(MARGIN_LEFT, p_left * scale);
-	p_sbox->set_expand_margin_size(MARGIN_TOP, p_top * scale);
-	p_sbox->set_expand_margin_size(MARGIN_RIGHT, p_right * scale);
-	p_sbox->set_expand_margin_size(MARGIN_BOTTOM, p_botton * scale);
+	p_sbox->set_expand_margin_size(SIDE_LEFT, p_left * scale);
+	p_sbox->set_expand_margin_size(SIDE_TOP, p_top * scale);
+	p_sbox->set_expand_margin_size(SIDE_RIGHT, p_right * scale);
+	p_sbox->set_expand_margin_size(SIDE_BOTTOM, p_botton * scale);
 	return p_sbox;
 }
 
@@ -130,10 +130,10 @@ static Ref<Texture2D> flip_icon(Ref<Texture2D> p_texture, bool p_flip_y = false,
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1) {
 	Ref<StyleBox> style(memnew(StyleBoxEmpty));
 
-	style->set_default_margin(MARGIN_LEFT, p_margin_left * scale);
-	style->set_default_margin(MARGIN_RIGHT, p_margin_right * scale);
-	style->set_default_margin(MARGIN_BOTTOM, p_margin_botton * scale);
-	style->set_default_margin(MARGIN_TOP, p_margin_top * scale);
+	style->set_default_margin(SIDE_LEFT, p_margin_left * scale);
+	style->set_default_margin(SIDE_RIGHT, p_margin_right * scale);
+	style->set_default_margin(SIDE_BOTTOM, p_margin_botton * scale);
+	style->set_default_margin(SIDE_TOP, p_margin_top * scale);
 
 	return style;
 }
@@ -162,7 +162,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	Ref<StyleBoxTexture> focus = make_stylebox(focus_png, 5, 5, 5, 5);
 	for (int i = 0; i < 4; i++) {
-		focus->set_expand_margin_size(Margin(i), 1 * scale);
+		focus->set_expand_margin_size(Side(i), 1 * scale);
 	}
 
 	// Button
@@ -281,15 +281,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// CheckBox
 
 	Ref<StyleBox> cbx_empty = memnew(StyleBoxEmpty);
-	cbx_empty->set_default_margin(MARGIN_LEFT, 4 * scale);
-	cbx_empty->set_default_margin(MARGIN_RIGHT, 4 * scale);
-	cbx_empty->set_default_margin(MARGIN_TOP, 4 * scale);
-	cbx_empty->set_default_margin(MARGIN_BOTTOM, 4 * scale);
+	cbx_empty->set_default_margin(SIDE_LEFT, 4 * scale);
+	cbx_empty->set_default_margin(SIDE_RIGHT, 4 * scale);
+	cbx_empty->set_default_margin(SIDE_TOP, 4 * scale);
+	cbx_empty->set_default_margin(SIDE_BOTTOM, 4 * scale);
 	Ref<StyleBox> cbx_focus = focus;
-	cbx_focus->set_default_margin(MARGIN_LEFT, 4 * scale);
-	cbx_focus->set_default_margin(MARGIN_RIGHT, 4 * scale);
-	cbx_focus->set_default_margin(MARGIN_TOP, 4 * scale);
-	cbx_focus->set_default_margin(MARGIN_BOTTOM, 4 * scale);
+	cbx_focus->set_default_margin(SIDE_LEFT, 4 * scale);
+	cbx_focus->set_default_margin(SIDE_RIGHT, 4 * scale);
+	cbx_focus->set_default_margin(SIDE_TOP, 4 * scale);
+	cbx_focus->set_default_margin(SIDE_BOTTOM, 4 * scale);
 
 	theme->set_stylebox("normal", "CheckBox", cbx_empty);
 	theme->set_stylebox("pressed", "CheckBox", cbx_empty);
@@ -318,10 +318,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// CheckButton
 
 	Ref<StyleBox> cb_empty = memnew(StyleBoxEmpty);
-	cb_empty->set_default_margin(MARGIN_LEFT, 6 * scale);
-	cb_empty->set_default_margin(MARGIN_RIGHT, 6 * scale);
-	cb_empty->set_default_margin(MARGIN_TOP, 4 * scale);
-	cb_empty->set_default_margin(MARGIN_BOTTOM, 4 * scale);
+	cb_empty->set_default_margin(SIDE_LEFT, 6 * scale);
+	cb_empty->set_default_margin(SIDE_RIGHT, 6 * scale);
+	cb_empty->set_default_margin(SIDE_TOP, 4 * scale);
+	cb_empty->set_default_margin(SIDE_BOTTOM, 4 * scale);
 
 	theme->set_stylebox("normal", "CheckButton", cb_empty);
 	theme->set_stylebox("pressed", "CheckButton", cb_empty);
@@ -568,7 +568,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	Ref<StyleBoxTexture> selected = make_stylebox(selection_png, 6, 6, 6, 6);
 	for (int i = 0; i < 4; i++) {
-		selected->set_expand_margin_size(Margin(i), 2 * scale);
+		selected->set_expand_margin_size(Side(i), 2 * scale);
 	}
 
 	theme->set_stylebox("panel", "PopupPanel", style_pp);
@@ -617,8 +617,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxTexture> graph_bpoint = make_stylebox(graph_node_breakpoint_png, 6, 24, 6, 5, 16, 24, 16, 6);
 	Ref<StyleBoxTexture> graph_position = make_stylebox(graph_node_position_png, 6, 24, 6, 5, 16, 24, 16, 6);
 
-	//graphsb->set_expand_margin_size(MARGIN_LEFT,10);
-	//graphsb->set_expand_margin_size(MARGIN_RIGHT,10);
+	//graphsb->set_expand_margin_size(SIDE_LEFT,10);
+	//graphsb->set_expand_margin_size(SIDE_RIGHT,10);
 	theme->set_stylebox("frame", "GraphNode", graphsb);
 	theme->set_stylebox("selectedframe", "GraphNode", graphsbselected);
 	theme->set_stylebox("defaultframe", "GraphNode", graphsbdefault);
@@ -713,8 +713,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	Ref<StyleBoxTexture> tc_sb = sb_expand(make_stylebox(tab_container_bg_png, 4, 4, 4, 4, 4, 4, 4, 4), 3, 3, 3, 3);
 
-	tc_sb->set_expand_margin_size(MARGIN_TOP, 2 * scale);
-	tc_sb->set_default_margin(MARGIN_TOP, 8 * scale);
+	tc_sb->set_expand_margin_size(SIDE_TOP, 2 * scale);
+	tc_sb->set_default_margin(SIDE_TOP, 8 * scale);
 
 	theme->set_stylebox("tab_fg", "TabContainer", sb_expand(make_stylebox(tab_current_png, 4, 4, 4, 1, 16, 4, 16, 4), 2, 2, 2, 2));
 	theme->set_stylebox("tab_bg", "TabContainer", sb_expand(make_stylebox(tab_behind_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
@@ -808,7 +808,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	Ref<StyleBoxTexture> style_tt = make_stylebox(tooltip_bg_png, 4, 4, 4, 4);
 	for (int i = 0; i < 4; i++) {
-		style_tt->set_expand_margin_size((Margin)i, 4 * scale);
+		style_tt->set_expand_margin_size((Side)i, 4 * scale);
 	}
 
 	theme->set_stylebox("panel", "TooltipPanel", style_tt);

@@ -1745,7 +1745,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
-	play_position->set_anchors_and_margins_preset(PRESET_WIDE);
+	play_position->set_anchors_and_offsets_preset(PRESET_WIDE);
 	play_position->connect("draw", callable_mp(this, &AnimationTimelineEdit::_play_position_draw));
 
 	add_track = memnew(MenuButton);
@@ -2720,7 +2720,7 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			add_child(path_popup);
 			path = memnew(LineEdit);
 			path_popup->add_child(path);
-			path->set_anchors_and_margins_preset(PRESET_WIDE);
+			path->set_anchors_and_offsets_preset(PRESET_WIDE);
 			path->connect("text_entered", callable_mp(this, &AnimationTrackEdit::_path_entered));
 		}
 
@@ -2973,7 +2973,7 @@ AnimationTrackEdit::AnimationTrackEdit() {
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
-	play_position->set_anchors_and_margins_preset(PRESET_WIDE);
+	play_position->set_anchors_and_offsets_preset(PRESET_WIDE);
 	play_position->connect("draw", callable_mp(this, &AnimationTrackEdit::_play_position_draw));
 	set_focus_mode(FOCUS_CLICK);
 	set_mouse_filter(MOUSE_FILTER_PASS); //scroll has to work too for selection
@@ -5661,7 +5661,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	info_message->set_align(Label::ALIGN_CENTER);
 	info_message->set_autowrap(true);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-	info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	info_message->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 	main_panel->add_child(info_message);
 
 	timeline = memnew(AnimationTimelineEdit);

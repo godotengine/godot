@@ -456,14 +456,14 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				set_size(Vector2(4, 4) * EDSCALE + checks20gc->get_position() + checks20gc->get_size());
 
 			} else if (hint == PROPERTY_HINT_EXP_EASING) {
-				easing_draw->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 5 * EDSCALE);
-				easing_draw->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -5 * EDSCALE);
-				easing_draw->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 5 * EDSCALE);
-				easing_draw->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -30 * EDSCALE);
-				type_button->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 3 * EDSCALE);
-				type_button->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -3 * EDSCALE);
-				type_button->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_END, -25 * EDSCALE);
-				type_button->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -7 * EDSCALE);
+				easing_draw->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5 * EDSCALE);
+				easing_draw->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5 * EDSCALE);
+				easing_draw->set_anchor_and_offset(SIDE_TOP, Control::ANCHOR_BEGIN, 5 * EDSCALE);
+				easing_draw->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_END, -30 * EDSCALE);
+				type_button->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 3 * EDSCALE);
+				type_button->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -3 * EDSCALE);
+				type_button->set_anchor_and_offset(SIDE_TOP, Control::ANCHOR_END, -25 * EDSCALE);
+				type_button->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_END, -7 * EDSCALE);
 				type_button->set_text(TTR("Preset..."));
 				type_button->get_popup()->clear();
 				type_button->get_popup()->add_item(TTR("Linear"), EASING_LINEAR);
@@ -536,10 +536,10 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				int button_margin = text_edit->get_theme_constant("button_margin", "Dialogs");
 				int margin = text_edit->get_theme_constant("margin", "Dialogs");
 
-				action_buttons[0]->set_anchor(MARGIN_LEFT, Control::ANCHOR_END);
-				action_buttons[0]->set_anchor(MARGIN_TOP, Control::ANCHOR_END);
-				action_buttons[0]->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
-				action_buttons[0]->set_anchor(MARGIN_BOTTOM, Control::ANCHOR_END);
+				action_buttons[0]->set_anchor(SIDE_LEFT, Control::ANCHOR_END);
+				action_buttons[0]->set_anchor(SIDE_TOP, Control::ANCHOR_END);
+				action_buttons[0]->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
+				action_buttons[0]->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
 				action_buttons[0]->set_begin(Point2(-70 * EDSCALE, -button_margin + 5 * EDSCALE));
 				action_buttons[0]->set_end(Point2(-margin, -margin));
 				action_buttons[0]->set_text(TTR("Close"));
@@ -1661,10 +1661,10 @@ void CustomPropertyEditor::_focus_exit() {
 
 void CustomPropertyEditor::config_action_buttons(const List<String> &p_strings) {
 	Ref<StyleBox> sb = action_buttons[0]->get_theme_stylebox("panel");
-	int margin_top = sb->get_margin(MARGIN_TOP);
-	int margin_left = sb->get_margin(MARGIN_LEFT);
-	int margin_bottom = sb->get_margin(MARGIN_BOTTOM);
-	int margin_right = sb->get_margin(MARGIN_RIGHT);
+	int margin_top = sb->get_margin(SIDE_TOP);
+	int margin_left = sb->get_margin(SIDE_LEFT);
+	int margin_bottom = sb->get_margin(SIDE_BOTTOM);
+	int margin_right = sb->get_margin(SIDE_RIGHT);
 
 	int max_width = 0;
 	int height = 0;
@@ -1794,8 +1794,8 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 	text_edit = memnew(TextEdit);
 	add_child(text_edit);
-	text_edit->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
-	text_edit->set_margin(MARGIN_BOTTOM, -30);
+	text_edit->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
+	text_edit->set_offset(SIDE_BOTTOM, -30);
 
 	text_edit->hide();
 	text_edit->connect("text_changed", callable_mp(this, &CustomPropertyEditor::_text_edit_changed));
@@ -1853,12 +1853,12 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 	spinbox = memnew(SpinBox);
 	add_child(spinbox);
-	spinbox->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
+	spinbox->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
 	spinbox->connect("value_changed", callable_mp(this, &CustomPropertyEditor::_range_modified));
 
 	slider = memnew(HSlider);
 	add_child(slider);
-	slider->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
+	slider->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
 	slider->connect("value_changed", callable_mp(this, &CustomPropertyEditor::_range_modified));
 
 	create_dialog = nullptr;

@@ -276,7 +276,7 @@ void GraphEdit::_update_scroll_offset() {
 			continue;
 		}
 
-		Point2 pos = gn->get_offset() * zoom;
+		Point2 pos = gn->get_position_offset() * zoom;
 		pos -= Point2(h_scroll->get_value(), v_scroll->get_value());
 		gn->set_position(pos);
 		if (gn->get_scale() != Vector2(zoom, zoom)) {
@@ -306,7 +306,7 @@ void GraphEdit::_update_scroll() {
 		}
 
 		Rect2 r;
-		r.position = gn->get_offset() * zoom;
+		r.position = gn->get_position_offset() * zoom;
 		r.size = gn->get_size() * zoom;
 		screen = screen.merge(r);
 	}
@@ -337,8 +337,8 @@ void GraphEdit::_update_scroll() {
 	Size2 vmin = v_scroll->get_combined_minimum_size();
 
 	// Avoid scrollbar overlapping.
-	h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, v_scroll->is_visible() ? -vmin.width : 0);
-	v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, h_scroll->is_visible() ? -hmin.height : 0);
+	h_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, v_scroll->is_visible() ? -vmin.width : 0);
+	v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, h_scroll->is_visible() ? -hmin.height : 0);
 
 	set_block_minimum_size_adjust(false);
 
@@ -429,15 +429,15 @@ void GraphEdit::_notification(int p_what) {
 		Size2 hmin = h_scroll->get_combined_minimum_size();
 		Size2 vmin = v_scroll->get_combined_minimum_size();
 
-		h_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 0);
-		h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
-		h_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -hmin.height);
-		h_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
+		h_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, 0);
+		h_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
+		h_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -hmin.height);
+		h_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
 
-		v_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -vmin.width);
-		v_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
-		v_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
-		v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
+		v_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -vmin.width);
+		v_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
+		v_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
+		v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
 	}
 	if (p_what == NOTIFICATION_DRAW) {
 		draw_style_box(get_theme_stylebox("bg"), Rect2(Point2(), get_size()));
@@ -851,9 +851,9 @@ void GraphEdit::_connections_layer_draw() {
 			continue;
 		}
 
-		Vector2 frompos = gfrom->get_connection_output_position(E->get().from_port) + gfrom->get_offset() * zoom;
+		Vector2 frompos = gfrom->get_connection_output_position(E->get().from_port) + gfrom->get_position_offset() * zoom;
 		Color color = gfrom->get_connection_output_color(E->get().from_port);
-		Vector2 topos = gto->get_connection_input_position(E->get().to_port) + gto->get_offset() * zoom;
+		Vector2 topos = gto->get_connection_input_position(E->get().to_port) + gto->get_position_offset() * zoom;
 		Color tocolor = gto->get_connection_input_color(E->get().to_port);
 
 		if (E->get().activity > 0) {
@@ -929,7 +929,7 @@ void GraphEdit::_minimap_draw() {
 			continue;
 		}
 
-		Vector2 node_position = minimap->_convert_from_graph_position(gn->get_offset() * zoom - graph_offset) + minimap_offset;
+		Vector2 node_position = minimap->_convert_from_graph_position(gn->get_position_offset() * zoom - graph_offset) + minimap_offset;
 		Vector2 node_size = minimap->_convert_from_graph_position(gn->get_size() * zoom);
 		Rect2 node_rect = Rect2(node_position, node_size);
 
@@ -952,7 +952,7 @@ void GraphEdit::_minimap_draw() {
 			continue;
 		}
 
-		Vector2 node_position = minimap->_convert_from_graph_position(gn->get_offset() * zoom - graph_offset) + minimap_offset;
+		Vector2 node_position = minimap->_convert_from_graph_position(gn->get_position_offset() * zoom - graph_offset) + minimap_offset;
 		Vector2 node_size = minimap->_convert_from_graph_position(gn->get_size() * zoom);
 		Rect2 node_rect = Rect2(node_position, node_size);
 
@@ -992,10 +992,10 @@ void GraphEdit::_minimap_draw() {
 			continue;
 		}
 
-		Vector2 from_slot_position = gfrom->get_offset() * zoom + gfrom->get_connection_output_position(E->get().from_port);
+		Vector2 from_slot_position = gfrom->get_position_offset() * zoom + gfrom->get_connection_output_position(E->get().from_port);
 		Vector2 from_position = minimap->_convert_from_graph_position(from_slot_position - graph_offset) + minimap_offset;
 		Color from_color = gfrom->get_connection_output_color(E->get().from_port);
-		Vector2 to_slot_position = gto->get_offset() * zoom + gto->get_connection_input_position(E->get().to_port);
+		Vector2 to_slot_position = gto->get_position_offset() * zoom + gto->get_connection_input_position(E->get().to_port);
 		Vector2 to_position = minimap->_convert_from_graph_position(to_slot_position - graph_offset) + minimap_offset;
 		Color to_color = gto->get_connection_input_color(E->get().to_port);
 
@@ -1054,7 +1054,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 					pos = pos.snapped(Vector2(snap, snap));
 				}
 
-				gn->set_offset(pos);
+				gn->set_position_offset(pos);
 			}
 		}
 	}
@@ -1502,10 +1502,10 @@ void GraphEdit::set_minimap_size(Vector2 p_size) {
 	Vector2 minimap_size = minimap->get_size(); // The size might've been adjusted by the minimum size.
 
 	minimap->set_anchors_preset(Control::PRESET_BOTTOM_RIGHT);
-	minimap->set_margin(Margin::MARGIN_LEFT, -minimap_size.x - MINIMAP_OFFSET);
-	minimap->set_margin(Margin::MARGIN_TOP, -minimap_size.y - MINIMAP_OFFSET);
-	minimap->set_margin(Margin::MARGIN_RIGHT, -MINIMAP_OFFSET);
-	minimap->set_margin(Margin::MARGIN_BOTTOM, -MINIMAP_OFFSET);
+	minimap->set_offset(Side::SIDE_LEFT, -minimap_size.x - MINIMAP_OFFSET);
+	minimap->set_offset(Side::SIDE_TOP, -minimap_size.y - MINIMAP_OFFSET);
+	minimap->set_offset(Side::SIDE_RIGHT, -MINIMAP_OFFSET);
+	minimap->set_offset(Side::SIDE_BOTTOM, -MINIMAP_OFFSET);
 	minimap->update();
 }
 
@@ -1645,7 +1645,7 @@ GraphEdit::GraphEdit() {
 	top_layer = memnew(GraphEditFilter(this));
 	add_child(top_layer);
 	top_layer->set_mouse_filter(MOUSE_FILTER_PASS);
-	top_layer->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	top_layer->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	top_layer->connect("draw", callable_mp(this, &GraphEdit::_top_layer_draw));
 	top_layer->connect("gui_input", callable_mp(this, &GraphEdit::_top_layer_input));
 
@@ -1745,10 +1745,10 @@ GraphEdit::GraphEdit() {
 	minimap->set_custom_minimum_size(Vector2(50, 50));
 	minimap->set_size(minimap_size);
 	minimap->set_anchors_preset(Control::PRESET_BOTTOM_RIGHT);
-	minimap->set_margin(Margin::MARGIN_LEFT, -minimap_size.x - MINIMAP_OFFSET);
-	minimap->set_margin(Margin::MARGIN_TOP, -minimap_size.y - MINIMAP_OFFSET);
-	minimap->set_margin(Margin::MARGIN_RIGHT, -MINIMAP_OFFSET);
-	minimap->set_margin(Margin::MARGIN_BOTTOM, -MINIMAP_OFFSET);
+	minimap->set_offset(Side::SIDE_LEFT, -minimap_size.x - MINIMAP_OFFSET);
+	minimap->set_offset(Side::SIDE_TOP, -minimap_size.y - MINIMAP_OFFSET);
+	minimap->set_offset(Side::SIDE_RIGHT, -MINIMAP_OFFSET);
+	minimap->set_offset(Side::SIDE_BOTTOM, -MINIMAP_OFFSET);
 	minimap->connect("draw", callable_mp(this, &GraphEdit::_minimap_draw));
 
 	setting_scroll_ofs = false;

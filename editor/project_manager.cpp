@@ -1824,7 +1824,7 @@ void ProjectManager::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
-			settings_hb->set_anchors_and_margins_preset(Control::PRESET_TOP_RIGHT);
+			settings_hb->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT);
 			update();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
@@ -2440,19 +2440,19 @@ ProjectManager::ProjectManager() {
 
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
 
-	set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	set_theme(create_custom_theme());
 
-	set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 
 	Panel *panel = memnew(Panel);
 	add_child(panel);
-	panel->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	panel->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	panel->add_theme_style_override("panel", get_theme_stylebox("Background", "EditorStyles"));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	panel->add_child(vb);
-	vb->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 8 * EDSCALE);
+	vb->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 8 * EDSCALE);
 
 	Control *center_box = memnew(Control);
 	center_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -2460,7 +2460,7 @@ ProjectManager::ProjectManager() {
 
 	tabs = memnew(TabContainer);
 	center_box->add_child(tabs);
-	tabs->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	tabs->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
 
 	HBoxContainer *projects_hb = memnew(HBoxContainer);
@@ -2571,7 +2571,7 @@ ProjectManager::ProjectManager() {
 		settings_hb = memnew(HBoxContainer);
 		settings_hb->set_alignment(BoxContainer::ALIGN_END);
 		settings_hb->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
-		settings_hb->set_anchors_and_margins_preset(Control::PRESET_TOP_RIGHT);
+		settings_hb->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT);
 
 		Label *version_label = memnew(Label);
 		String hash = String(VERSION_HASH);

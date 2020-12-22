@@ -59,8 +59,8 @@ public:
 	void set_texture(const Ref<Texture2D> &p_tex);
 	Ref<Texture2D> get_texture() const;
 
-	void set_patch_margin(Margin p_margin, int p_size);
-	int get_patch_margin(Margin p_margin) const;
+	void set_patch_margin(Side p_side, int p_size);
+	int get_patch_margin(Side p_side) const;
 
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
