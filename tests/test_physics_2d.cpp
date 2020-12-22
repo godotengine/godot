@@ -315,7 +315,7 @@ protected:
 	}
 
 public:
-	virtual void init() override {
+	virtual void initialize() override {
 		RenderingServer *vs = RenderingServer::get_singleton();
 		PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
 
@@ -389,10 +389,10 @@ public:
 		//_add_plane(Vector2(-1,0).normalized(),-600);
 	}
 
-	virtual bool idle(float p_time) override {
+	virtual bool process(float p_time) override {
 		return false;
 	}
-	virtual void finish() override {
+	virtual void finalize() override {
 	}
 
 	TestPhysics2DMainLoop() {}

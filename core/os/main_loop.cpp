@@ -34,8 +34,8 @@
 
 void MainLoop::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_initialize"));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_iteration", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_idle", PropertyInfo(Variant::FLOAT, "delta")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_physics_process", PropertyInfo(Variant::FLOAT, "delta")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_process", PropertyInfo(Variant::FLOAT, "delta")));
 	BIND_VMETHOD(MethodInfo("_finalize"));
 
 	BIND_CONSTANT(NOTIFICATION_OS_MEMORY_WARNING);
@@ -52,13 +52,13 @@ void MainLoop::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("on_request_permissions_result", PropertyInfo(Variant::STRING, "permission"), PropertyInfo(Variant::BOOL, "granted")));
 };
 
-void MainLoop::set_init_script(const Ref<Script> &p_init_script) {
-	init_script = p_init_script;
+void MainLoop::set_initialize_script(const Ref<Script> &p_initialize_script) {
+	initialize_script = p_initialize_script;
 }
 
-void MainLoop::init() {
-	if (init_script.is_valid()) {
-		set_script(init_script);
+void MainLoop::initialize() {
+	if (initialize_script.is_valid()) {
+		set_script(initialize_script);
 	}
 
 	if (get_script_instance()) {
@@ -66,23 +66,23 @@ void MainLoop::init() {
 	}
 }
 
-bool MainLoop::iteration(float p_time) {
+bool MainLoop::physics_process(float p_time) {
 	if (get_script_instance()) {
-		return get_script_instance()->call("_iteration", p_time);
+		return get_script_instance()->call("_physics_process", p_time);
 	}
 
 	return false;
 }
 
-bool MainLoop::idle(float p_time) {
+bool MainLoop::process(float p_time) {
 	if (get_script_instance()) {
-		return get_script_instance()->call("_idle", p_time);
+		return get_script_instance()->call("_process", p_time);
 	}
 
 	return false;
 }
 
-void MainLoop::finish() {
+void MainLoop::finalize() {
 	if (get_script_instance()) {
 		get_script_instance()->call("_finalize");
 		set_script(Variant()); //clear script

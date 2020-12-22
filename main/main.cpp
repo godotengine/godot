@@ -2007,7 +2007,7 @@ bool Main::start() {
 								script));
 			}
 
-			script_loop->set_init_script(script_res);
+			script_loop->set_initialize_script(script_res);
 			main_loop = script_loop;
 		} else {
 			return false;
@@ -2026,7 +2026,7 @@ bool Main::start() {
 				DisplayServer::get_singleton()->alert("Error: Invalid MainLoop script base type: " + script_base);
 				ERR_FAIL_V_MSG(false, vformat("The global class %s does not inherit from SceneTree or MainLoop.", main_loop_type));
 			}
-			script_loop->set_init_script(script_res);
+			script_loop->set_initialize_script(script_res);
 			main_loop = script_loop;
 		}
 	}
@@ -2422,7 +2422,7 @@ bool Main::is_iterating() {
 
 // For performance metrics.
 static uint64_t physics_process_max = 0;
-static uint64_t idle_process_max = 0;
+static uint64_t process_max = 0;
 
 bool Main::iteration() {
 	//for now do not error on this
@@ -2438,19 +2438,19 @@ bool Main::iteration() {
 	uint64_t ticks_elapsed = ticks - last_ticks;
 
 	int physics_fps = Engine::get_singleton()->get_iterations_per_second();
-	float frame_slice = 1.0 / physics_fps;
+	float physics_step = 1.0 / physics_fps;
 
 	float time_scale = Engine::get_singleton()->get_time_scale();
 
-	MainFrameTime advance = main_timer_sync.advance(frame_slice, physics_fps);
-	double step = advance.idle_step;
-	double scaled_step = step * time_scale;
+	MainFrameTime advance = main_timer_sync.advance(physics_step, physics_fps);
+	double process_step = advance.process_step;
+	double scaled_step = process_step * time_scale;
 
-	Engine::get_singleton()->_frame_step = step;
+	Engine::get_singleton()->_process_step = process_step;
 	Engine::get_singleton()->_physics_interpolation_fraction = advance.interpolation_fraction;
 
 	uint64_t physics_process_ticks = 0;
-	uint64_t idle_process_ticks = 0;
+	uint64_t process_ticks = 0;
 
 	frame += ticks_elapsed;
 
@@ -2458,7 +2458,7 @@ bool Main::iteration() {
 
 	static const int max_physics_steps = 8;
 	if (fixed_fps == -1 && advance.physics_steps > max_physics_steps) {
-		step -= (advance.physics_steps - max_physics_steps) * frame_slice;
+		process_step -= (advance.physics_steps - max_physics_steps) * physics_step;
 		advance.physics_steps = max_physics_steps;
 	}
 
@@ -2474,33 +2474,32 @@ bool Main::iteration() {
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
 
-		if (OS::get_singleton()->get_main_loop()->iteration(frame_slice * time_scale)) {
+		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
 			exit = true;
 			break;
 		}
 
-		NavigationServer3D::get_singleton_mut()->process(frame_slice * time_scale);
+		NavigationServer3D::get_singleton_mut()->process(physics_step * time_scale);
 
 		message_queue->flush();
 
-		PhysicsServer3D::get_singleton()->step(frame_slice * time_scale);
+		PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
 
 		PhysicsServer2D::get_singleton()->end_sync();
-		PhysicsServer2D::get_singleton()->step(frame_slice * time_scale);
+		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
 
 		message_queue->flush();
 
-		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() -
-																   physics_begin); // keep the largest one for reference
+		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
 		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
 		Engine::get_singleton()->_physics_frames++;
 	}
 
 	Engine::get_singleton()->_in_physics = false;
 
-	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
+	uint64_t process_begin = OS::get_singleton()->get_ticks_usec();
 
-	if (OS::get_singleton()->get_main_loop()->idle(step * time_scale)) {
+	if (OS::get_singleton()->get_main_loop()->process(process_step * time_scale)) {
 		exit = true;
 	}
 	message_queue->flush();
@@ -2521,8 +2520,8 @@ bool Main::iteration() {
 		}
 	}
 
-	idle_process_ticks = OS::get_singleton()->get_ticks_usec() - idle_begin;
-	idle_process_max = MAX(idle_process_ticks, idle_process_max);
+	process_ticks = OS::get_singleton()->get_ticks_usec() - process_begin;
+	process_max = MAX(process_ticks, process_max);
 	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -2532,11 +2531,11 @@ bool Main::iteration() {
 	AudioServer::get_singleton()->update();
 
 	if (EngineDebugger::is_active()) {
-		EngineDebugger::get_singleton()->iteration(frame_time, idle_process_ticks, physics_process_ticks, frame_slice);
+		EngineDebugger::get_singleton()->iteration(frame_time, process_ticks, physics_process_ticks, physics_step);
 	}
 
 	frames++;
-	Engine::get_singleton()->_idle_frames++;
+	Engine::get_singleton()->_process_frames++;
 
 	if (frame > 1000000) {
 		if (editor || project_manager) {
@@ -2548,9 +2547,9 @@ bool Main::iteration() {
 		}
 
 		Engine::get_singleton()->_fps = frames;
-		performance->set_process_time(USEC_TO_SEC(idle_process_max));
+		performance->set_process_time(USEC_TO_SEC(process_max));
 		performance->set_physics_process_time(USEC_TO_SEC(physics_process_max));
-		idle_process_max = 0;
+		process_max = 0;
 		physics_process_max = 0;
 
 		frame %= 1000000;

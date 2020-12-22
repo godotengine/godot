@@ -312,7 +312,7 @@ void OS_OSX::run() {
 	if (!main_loop)
 		return;
 
-	main_loop->init();
+	main_loop->initialize();
 
 	bool quit = false;
 	while (!force_quit && !quit) {
@@ -329,7 +329,7 @@ void OS_OSX::run() {
 			ERR_PRINT("NSException: " + String([exception reason].UTF8String));
 		}
 	};
-	main_loop->finish();
+	main_loop->finalize();
 }
 
 Error OS_OSX::move_to_trash(const String &p_path) {

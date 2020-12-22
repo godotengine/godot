@@ -614,7 +614,7 @@ void OS_Windows::run() {
 	if (!main_loop)
 		return;
 
-	main_loop->init();
+	main_loop->initialize();
 
 	while (!force_quit) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
@@ -622,7 +622,7 @@ void OS_Windows::run() {
 			break;
 	};
 
-	main_loop->finish();
+	main_loop->finalize();
 }
 
 MainLoop *OS_Windows::get_main_loop() const {

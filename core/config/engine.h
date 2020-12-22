@@ -50,7 +50,7 @@ private:
 	uint64_t frames_drawn = 0;
 	uint32_t _frame_delay = 0;
 	uint64_t _frame_ticks = 0;
-	float _frame_step = 0;
+	float _process_step = 0;
 
 	int ips = 60;
 	float physics_jitter_fix = 0.5;
@@ -62,7 +62,7 @@ private:
 	bool abort_on_gpu_errors = false;
 	bool use_validation_layers = false;
 
-	uint64_t _idle_frames = 0;
+	uint64_t _process_frames = 0;
 	bool _in_physics = false;
 
 	List<Singleton> singletons;
@@ -89,10 +89,10 @@ public:
 	uint64_t get_frames_drawn();
 
 	uint64_t get_physics_frames() const { return _physics_frames; }
-	uint64_t get_idle_frames() const { return _idle_frames; }
+	uint64_t get_process_frames() const { return _process_frames; }
 	bool is_in_physics_frame() const { return _in_physics; }
-	uint64_t get_idle_frame_ticks() const { return _frame_ticks; }
-	float get_idle_frame_step() const { return _frame_step; }
+	uint64_t get_frame_ticks() const { return _frame_ticks; }
+	float get_process_step() const { return _process_step; }
 	float get_physics_interpolation_fraction() const { return _physics_interpolation_fraction; }
 
 	void set_time_scale(float p_scale);

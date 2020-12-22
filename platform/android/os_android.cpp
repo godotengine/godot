@@ -139,7 +139,7 @@ MainLoop *OS_Android::get_main_loop() const {
 
 void OS_Android::main_loop_begin() {
 	if (main_loop)
-		main_loop->init();
+		main_loop->initialize();
 }
 
 bool OS_Android::main_loop_iterate() {
@@ -151,7 +151,7 @@ bool OS_Android::main_loop_iterate() {
 
 void OS_Android::main_loop_end() {
 	if (main_loop)
-		main_loop->finish();
+		main_loop->finalize();
 }
 
 void OS_Android::main_loop_focusout() {

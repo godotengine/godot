@@ -122,7 +122,7 @@ protected:
 		ps->body_set_param(p_body, PhysicsServer3D::BODY_PARAM_BOUNCE, p_bounce);
 	}
 
-	void init_shapes() {
+	void initialize_shapes() {
 		RenderingServer *vs = RenderingServer::get_singleton();
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 
@@ -269,9 +269,9 @@ public:
 	virtual void request_quit() {
 		quit = true;
 	}
-	virtual void init() override {
+	virtual void initialize() override {
 		ofs_x = ofs_y = 0;
-		init_shapes();
+		initialize_shapes();
 
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 		space = ps->space_create();
@@ -310,7 +310,7 @@ public:
 		test_fall();
 		quit = false;
 	}
-	virtual bool iteration(float p_time) override {
+	virtual bool physics_process(float p_time) override {
 		if (mover.is_valid()) {
 			static float joy_speed = 10;
 			PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
@@ -328,7 +328,7 @@ public:
 
 		return quit;
 	}
-	virtual void finish() override {
+	virtual void finalize() override {
 	}
 
 	void test_joint() {
@@ -396,7 +396,7 @@ public:
 		create_static_plane(Plane(Vector3(0, 1, 0), -1));
 	}
 
-	virtual bool idle(float p_time) override {
+	virtual bool process(float p_time) override {
 		return false;
 	}
 

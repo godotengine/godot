@@ -247,7 +247,7 @@ bool Input::is_action_just_pressed(const StringName &p_action) const {
 	if (Engine::get_singleton()->is_in_physics_frame()) {
 		return E->get().pressed && E->get().physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return E->get().pressed && E->get().idle_frame == Engine::get_singleton()->get_idle_frames();
+		return E->get().pressed && E->get().process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
@@ -260,7 +260,7 @@ bool Input::is_action_just_released(const StringName &p_action) const {
 	if (Engine::get_singleton()->is_in_physics_frame()) {
 		return !E->get().pressed && E->get().physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return !E->get().pressed && E->get().idle_frame == Engine::get_singleton()->get_idle_frames();
+		return !E->get().pressed && E->get().process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
@@ -588,7 +588,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			if (!p_event->is_echo() && is_action_pressed(E->key()) != p_event->is_action_pressed(E->key())) {
 				Action action;
 				action.physics_frame = Engine::get_singleton()->get_physics_frames();
-				action.idle_frame = Engine::get_singleton()->get_idle_frames();
+				action.process_frame = Engine::get_singleton()->get_process_frames();
 				action.pressed = p_event->is_action_pressed(E->key());
 				action.strength = 0.0f;
 				action.raw_strength = 0.0f;
@@ -714,7 +714,7 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 	Action action;
 
 	action.physics_frame = Engine::get_singleton()->get_physics_frames();
-	action.idle_frame = Engine::get_singleton()->get_idle_frames();
+	action.process_frame = Engine::get_singleton()->get_process_frames();
 	action.pressed = true;
 	action.strength = p_strength;
 
@@ -725,7 +725,7 @@ void Input::action_release(const StringName &p_action) {
 	Action action;
 
 	action.physics_frame = Engine::get_singleton()->get_physics_frames();
-	action.idle_frame = Engine::get_singleton()->get_idle_frames();
+	action.process_frame = Engine::get_singleton()->get_process_frames();
 	action.pressed = false;
 	action.strength = 0.f;
 

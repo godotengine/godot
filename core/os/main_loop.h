@@ -39,7 +39,7 @@ class MainLoop : public Object {
 	GDCLASS(MainLoop, Object);
 	OBJ_CATEGORY("Main Loop");
 
-	Ref<Script> init_script;
+	Ref<Script> initialize_script;
 
 protected:
 	static void _bind_methods();
@@ -59,12 +59,12 @@ public:
 		NOTIFICATION_TEXT_SERVER_CHANGED = 2018,
 	};
 
-	virtual void init();
-	virtual bool iteration(float p_time);
-	virtual bool idle(float p_time);
-	virtual void finish();
+	virtual void initialize();
+	virtual bool physics_process(float p_time);
+	virtual bool process(float p_time);
+	virtual void finalize();
 
-	void set_init_script(const Ref<Script> &p_init_script);
+	void set_initialize_script(const Ref<Script> &p_initialize_script);
 
 	MainLoop() {}
 	virtual ~MainLoop() {}

@@ -114,7 +114,7 @@ private:
 
 	struct Action {
 		uint64_t physics_frame;
-		uint64_t idle_frame;
+		uint64_t process_frame;
 		bool pressed;
 		float strength;
 		float raw_strength;
