@@ -83,10 +83,10 @@ void VisualShaderNodePlugin::_bind_methods() {
 
 static Ref<StyleBoxEmpty> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
 	Ref<StyleBoxEmpty> style(memnew(StyleBoxEmpty));
-	style->set_default_margin(MARGIN_LEFT, p_margin_left * EDSCALE);
-	style->set_default_margin(MARGIN_RIGHT, p_margin_right * EDSCALE);
-	style->set_default_margin(MARGIN_BOTTOM, p_margin_bottom * EDSCALE);
-	style->set_default_margin(MARGIN_TOP, p_margin_top * EDSCALE);
+	style->set_default_margin(SIDE_LEFT, p_margin_left * EDSCALE);
+	style->set_default_margin(SIDE_RIGHT, p_margin_right * EDSCALE);
+	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * EDSCALE);
+	style->set_default_margin(SIDE_TOP, p_margin_top * EDSCALE);
 	return style;
 }
 
@@ -283,7 +283,7 @@ VisualShader::Type VisualShaderGraphPlugin::get_shader_type() const {
 
 void VisualShaderGraphPlugin::set_node_position(VisualShader::Type p_type, int p_id, const Vector2 &p_position) {
 	if (visual_shader->get_shader_type() == p_type && links.has(p_id)) {
-		links[p_id].graph_node->set_offset(p_position);
+		links[p_id].graph_node->set_position_offset(p_position);
 	}
 }
 
@@ -365,7 +365,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		expression = expression_node->get_expression();
 	}
 
-	node->set_offset(visual_shader->get_node_position(p_type, p_id));
+	node->set_position_offset(visual_shader->get_node_position(p_type, p_id));
 	node->set_title(vsnode->get_caption());
 	node->set_name(itos(p_id));
 
@@ -1580,9 +1580,9 @@ void VisualShaderEditor::_set_node_size(int p_type, int p_node, const Vector2 &p
 					box_size.x = gn->get_size().x;
 				}
 			}
-			box_size.x -= text_box->get_margin(MARGIN_LEFT);
+			box_size.x -= text_box->get_offset(SIDE_LEFT);
 			box_size.x -= 28 * EDSCALE;
-			box_size.y -= text_box->get_margin(MARGIN_TOP);
+			box_size.y -= text_box->get_offset(SIDE_TOP);
 			box_size.y -= 28 * EDSCALE;
 			text_box->set_custom_minimum_size(Size2(box_size.x, box_size.y));
 			text_box->set_size(Size2(1, 1));

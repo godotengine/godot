@@ -1250,7 +1250,7 @@ void RichTextLabel::_update_scroll() {
 			scroll_visible = true;
 			scroll_w = vscroll->get_combined_minimum_size().width;
 			vscroll->show();
-			vscroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -scroll_w);
+			vscroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -scroll_w);
 		} else {
 			scroll_visible = false;
 			scroll_w = 0;
@@ -3956,9 +3956,9 @@ RichTextLabel::RichTextLabel() {
 	add_child(vscroll);
 	vscroll->set_drag_node(String(".."));
 	vscroll->set_step(1);
-	vscroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
-	vscroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
-	vscroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
+	vscroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
+	vscroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
+	vscroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
 	vscroll->connect("value_changed", callable_mp(this, &RichTextLabel::_scroll_changed));
 	vscroll->set_step(1);
 	vscroll->hide();

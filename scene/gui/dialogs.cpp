@@ -309,8 +309,8 @@ AcceptDialog::AcceptDialog() {
 	int button_margin = hbc->get_theme_constant("button_margin", "Dialogs");
 
 	label = memnew(Label);
-	label->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
-	label->set_anchor(MARGIN_BOTTOM, Control::ANCHOR_END);
+	label->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
+	label->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
 	label->set_begin(Point2(margin, margin));
 	label->set_end(Point2(-margin, -button_margin - 10));
 	add_child(label);

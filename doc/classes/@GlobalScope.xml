@@ -1250,17 +1250,17 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="MARGIN_LEFT" value="0" enum="Margin">
-			Left margin, usually used for [Control] or [StyleBox]-derived classes.
+		<constant name="SIDE_LEFT" value="0" enum="Side">
+			Left side, usually used for [Control] or [StyleBox]-derived classes.
 		</constant>
-		<constant name="MARGIN_TOP" value="1" enum="Margin">
-			Top margin, usually used for [Control] or [StyleBox]-derived classes.
+		<constant name="SIDE_TOP" value="1" enum="Side">
+			Top side, usually used for [Control] or [StyleBox]-derived classes.
 		</constant>
-		<constant name="MARGIN_RIGHT" value="2" enum="Margin">
-			Right margin, usually used for [Control] or [StyleBox]-derived classes.
+		<constant name="SIDE_RIGHT" value="2" enum="Side">
+			Right side, usually used for [Control] or [StyleBox]-derived classes.
 		</constant>
-		<constant name="MARGIN_BOTTOM" value="3" enum="Margin">
-			Bottom margin, usually used for [Control] or [StyleBox]-derived classes.
+		<constant name="SIDE_BOTTOM" value="3" enum="Side">
+			Bottom side, usually used for [Control] or [StyleBox]-derived classes.
 		</constant>
 		<constant name="CORNER_TOP_LEFT" value="0" enum="Corner">
 			Top-left corner.

@@ -547,8 +547,8 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 	Control *control = Object::cast_to<Control>(tabs[p_index]);
 	String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(tr(control->get_name()));
 
-	int x_content = tab_rect.position.x + p_tab_style->get_margin(MARGIN_LEFT);
-	int top_margin = p_tab_style->get_margin(MARGIN_TOP);
+	int x_content = tab_rect.position.x + p_tab_style->get_margin(SIDE_LEFT);
+	int top_margin = p_tab_style->get_margin(SIDE_TOP);
 	int y_center = top_margin + (tab_rect.size.y - p_tab_style->get_minimum_size().y) / 2;
 
 	// Draw the tab icon.
@@ -607,14 +607,14 @@ void TabContainer::_repaint() {
 		Control *c = tabs[i];
 		if (i == current) {
 			c->show();
-			c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+			c->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 			if (tabs_visible) {
-				c->set_margin(MARGIN_TOP, _get_top_margin());
+				c->set_offset(SIDE_TOP, _get_top_margin());
 			}
-			c->set_margin(Margin(MARGIN_TOP), c->get_margin(Margin(MARGIN_TOP)) + sb->get_margin(Margin(MARGIN_TOP)));
-			c->set_margin(Margin(MARGIN_LEFT), c->get_margin(Margin(MARGIN_LEFT)) + sb->get_margin(Margin(MARGIN_LEFT)));
-			c->set_margin(Margin(MARGIN_RIGHT), c->get_margin(Margin(MARGIN_RIGHT)) - sb->get_margin(Margin(MARGIN_RIGHT)));
-			c->set_margin(Margin(MARGIN_BOTTOM), c->get_margin(Margin(MARGIN_BOTTOM)) - sb->get_margin(Margin(MARGIN_BOTTOM)));
+			c->set_offset(Side(SIDE_TOP), c->get_offset(Side(SIDE_TOP)) + sb->get_margin(Side(SIDE_TOP)));
+			c->set_offset(Side(SIDE_LEFT), c->get_offset(Side(SIDE_LEFT)) + sb->get_margin(Side(SIDE_LEFT)));
+			c->set_offset(Side(SIDE_RIGHT), c->get_offset(Side(SIDE_RIGHT)) - sb->get_margin(Side(SIDE_RIGHT)));
+			c->set_offset(Side(SIDE_BOTTOM), c->get_offset(Side(SIDE_BOTTOM)) - sb->get_margin(Side(SIDE_BOTTOM)));
 
 		} else {
 			c->hide();
@@ -712,15 +712,15 @@ void TabContainer::add_child_notify(Node *p_child) {
 		current = 0;
 		previous = 0;
 	}
-	c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	c->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	if (tabs_visible) {
-		c->set_margin(MARGIN_TOP, _get_top_margin());
+		c->set_offset(SIDE_TOP, _get_top_margin());
 	}
 	Ref<StyleBox> sb = get_theme_stylebox("panel");
-	c->set_margin(Margin(MARGIN_TOP), c->get_margin(Margin(MARGIN_TOP)) + sb->get_margin(Margin(MARGIN_TOP)));
-	c->set_margin(Margin(MARGIN_LEFT), c->get_margin(Margin(MARGIN_LEFT)) + sb->get_margin(Margin(MARGIN_LEFT)));
-	c->set_margin(Margin(MARGIN_RIGHT), c->get_margin(Margin(MARGIN_RIGHT)) - sb->get_margin(Margin(MARGIN_RIGHT)));
-	c->set_margin(Margin(MARGIN_BOTTOM), c->get_margin(Margin(MARGIN_BOTTOM)) - sb->get_margin(Margin(MARGIN_BOTTOM)));
+	c->set_offset(Side(SIDE_TOP), c->get_offset(Side(SIDE_TOP)) + sb->get_margin(Side(SIDE_TOP)));
+	c->set_offset(Side(SIDE_LEFT), c->get_offset(Side(SIDE_LEFT)) + sb->get_margin(Side(SIDE_LEFT)));
+	c->set_offset(Side(SIDE_RIGHT), c->get_offset(Side(SIDE_RIGHT)) - sb->get_margin(Side(SIDE_RIGHT)));
+	c->set_offset(Side(SIDE_BOTTOM), c->get_offset(Side(SIDE_BOTTOM)) - sb->get_margin(Side(SIDE_BOTTOM)));
 	update();
 	p_child->connect("renamed", callable_mp(this, &TabContainer::_child_renamed_callback));
 	if (first && is_inside_tree()) {
@@ -982,9 +982,9 @@ void TabContainer::set_tabs_visible(bool p_visible) {
 	for (int i = 0; i < tabs.size(); i++) {
 		Control *c = tabs[i];
 		if (p_visible) {
-			c->set_margin(MARGIN_TOP, _get_top_margin());
+			c->set_offset(SIDE_TOP, _get_top_margin());
 		} else {
-			c->set_margin(MARGIN_TOP, 0);
+			c->set_offset(SIDE_TOP, 0);
 		}
 	}
 

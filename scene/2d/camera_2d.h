@@ -111,8 +111,8 @@ public:
 	void set_rotating(bool p_rotating);
 	bool is_rotating() const;
 
-	void set_limit(Margin p_margin, int p_limit);
-	int get_limit(Margin p_margin) const;
+	void set_limit(Side p_side, int p_limit);
+	int get_limit(Side p_side) const;
 
 	void set_limit_smoothing_enabled(bool enable);
 	bool is_limit_smoothing_enabled() const;
@@ -123,8 +123,8 @@ public:
 	void set_v_drag_enabled(bool p_enabled);
 	bool is_v_drag_enabled() const;
 
-	void set_drag_margin(Margin p_margin, float p_drag_margin);
-	float get_drag_margin(Margin p_margin) const;
+	void set_drag_margin(Side p_side, float p_drag_margin);
+	float get_drag_margin(Side p_side) const;
 
 	void set_v_offset(float p_offset);
 	float get_v_offset() const;

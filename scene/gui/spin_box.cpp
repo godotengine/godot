@@ -173,8 +173,8 @@ void SpinBox::_line_edit_focus_exit() {
 inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
 	int w = icon->get_width();
 	if ((w != last_w)) {
-		line_edit->set_margin(MARGIN_LEFT, 0);
-		line_edit->set_margin(MARGIN_RIGHT, -w);
+		line_edit->set_offset(SIDE_LEFT, 0);
+		line_edit->set_offset(SIDE_RIGHT, -w);
 		last_w = w;
 	}
 }
@@ -272,7 +272,7 @@ SpinBox::SpinBox() {
 	line_edit = memnew(LineEdit);
 	add_child(line_edit);
 
-	line_edit->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	line_edit->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	line_edit->set_align(LineEdit::ALIGN_LEFT);
 

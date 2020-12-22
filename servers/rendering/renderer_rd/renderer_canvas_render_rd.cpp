@@ -601,10 +601,10 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, const Item
 					push_constant.flags |= FLAGS_NINEPACH_DRAW_CENTER;
 				}
 
-				push_constant.ninepatch_margins[0] = np->margin[MARGIN_LEFT];
-				push_constant.ninepatch_margins[1] = np->margin[MARGIN_TOP];
-				push_constant.ninepatch_margins[2] = np->margin[MARGIN_RIGHT];
-				push_constant.ninepatch_margins[3] = np->margin[MARGIN_BOTTOM];
+				push_constant.ninepatch_margins[0] = np->margin[SIDE_LEFT];
+				push_constant.ninepatch_margins[1] = np->margin[SIDE_TOP];
+				push_constant.ninepatch_margins[2] = np->margin[SIDE_RIGHT];
+				push_constant.ninepatch_margins[3] = np->margin[SIDE_BOTTOM];
 
 				RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(PushConstant));
 				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, shader.quad_index_array);

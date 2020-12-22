@@ -44,12 +44,12 @@ void NinePatchRect::_notification(int p_what) {
 		texture->get_rect_region(rect, src_rect, rect, src_rect);
 
 		RID ci = get_canvas_item();
-		RS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center);
+		RS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[SIDE_LEFT], margin[SIDE_TOP]), Vector2(margin[SIDE_RIGHT], margin[SIDE_BOTTOM]), RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center);
 	}
 }
 
 Size2 NinePatchRect::get_minimum_size() const {
-	return Size2(margin[MARGIN_LEFT] + margin[MARGIN_RIGHT], margin[MARGIN_TOP] + margin[MARGIN_BOTTOM]);
+	return Size2(margin[SIDE_LEFT] + margin[SIDE_RIGHT], margin[SIDE_TOP] + margin[SIDE_BOTTOM]);
 }
 
 void NinePatchRect::_bind_methods() {
@@ -73,10 +73,10 @@ void NinePatchRect::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
 
 	ADD_GROUP("Patch Margin", "patch_margin_");
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "patch_margin_left", PROPERTY_HINT_RANGE, "0,16384,1"), "set_patch_margin", "get_patch_margin", MARGIN_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "patch_margin_top", PROPERTY_HINT_RANGE, "0,16384,1"), "set_patch_margin", "get_patch_margin", MARGIN_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "patch_margin_right", PROPERTY_HINT_RANGE, "0,16384,1"), "set_patch_margin", "get_patch_margin", MARGIN_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "patch_margin_bottom", PROPERTY_HINT_RANGE, "0,16384,1"), "set_patch_margin", "get_patch_margin", MARGIN_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "patch_margin_left", PROPERTY_HINT_RANGE, "0,16384,1"), "set_patch_margin", "get_patch_margin", SIDE_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "patch_margin_top", PROPERTY_HINT_RANGE, "0,16384,1"), "set_patch_margin", "get_patch_margin", SIDE_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "patch_margin_right", PROPERTY_HINT_RANGE, "0,16384,1"), "set_patch_margin", "get_patch_margin", SIDE_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "patch_margin_bottom", PROPERTY_HINT_RANGE, "0,16384,1"), "set_patch_margin", "get_patch_margin", SIDE_BOTTOM);
 	ADD_GROUP("Axis Stretch", "axis_stretch_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis_stretch_horizontal", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_h_axis_stretch_mode", "get_h_axis_stretch_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis_stretch_vertical", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_v_axis_stretch_mode", "get_v_axis_stretch_mode");
@@ -105,30 +105,30 @@ Ref<Texture2D> NinePatchRect::get_texture() const {
 	return texture;
 }
 
-void NinePatchRect::set_patch_margin(Margin p_margin, int p_size) {
-	ERR_FAIL_INDEX((int)p_margin, 4);
-	margin[p_margin] = p_size;
+void NinePatchRect::set_patch_margin(Side p_side, int p_size) {
+	ERR_FAIL_INDEX((int)p_side, 4);
+	margin[p_side] = p_size;
 	update();
 	minimum_size_changed();
-	switch (p_margin) {
-		case MARGIN_LEFT:
+	switch (p_side) {
+		case SIDE_LEFT:
 			_change_notify("patch_margin_left");
 			break;
-		case MARGIN_TOP:
+		case SIDE_TOP:
 			_change_notify("patch_margin_top");
 			break;
-		case MARGIN_RIGHT:
+		case SIDE_RIGHT:
 			_change_notify("patch_margin_right");
 			break;
-		case MARGIN_BOTTOM:
+		case SIDE_BOTTOM:
 			_change_notify("patch_margin_bottom");
 			break;
 	}
 }
 
-int NinePatchRect::get_patch_margin(Margin p_margin) const {
-	ERR_FAIL_INDEX_V((int)p_margin, 4, 0);
-	return margin[p_margin];
+int NinePatchRect::get_patch_margin(Side p_side) const {
+	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+	return margin[p_side];
 }
 
 void NinePatchRect::set_region_rect(const Rect2 &p_region_rect) {
@@ -174,10 +174,10 @@ NinePatchRect::AxisStretchMode NinePatchRect::get_v_axis_stretch_mode() const {
 }
 
 NinePatchRect::NinePatchRect() {
-	margin[MARGIN_LEFT] = 0;
-	margin[MARGIN_RIGHT] = 0;
-	margin[MARGIN_BOTTOM] = 0;
-	margin[MARGIN_TOP] = 0;
+	margin[SIDE_LEFT] = 0;
+	margin[SIDE_RIGHT] = 0;
+	margin[SIDE_BOTTOM] = 0;
+	margin[SIDE_TOP] = 0;
 
 	set_mouse_filter(MOUSE_FILTER_IGNORE);
 	draw_center = true;

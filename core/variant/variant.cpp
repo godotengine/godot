@@ -2338,8 +2338,8 @@ Variant::operator Vector<StringName>() const {
 	return to;
 }
 
-Variant::operator Margin() const {
-	return (Margin) operator int();
+Variant::operator Side() const {
+	return (Side) operator int();
 }
 
 Variant::operator Orientation() const {

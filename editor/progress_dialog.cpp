@@ -50,7 +50,7 @@ void BackgroundProgress::_add_task(const String &p_task, const String &p_label, 
 	Control *ec = memnew(Control);
 	ec->set_h_size_flags(SIZE_EXPAND_FILL);
 	ec->set_v_size_flags(SIZE_EXPAND_FILL);
-	t.progress->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	t.progress->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	ec->add_child(t.progress);
 	ec->set_custom_minimum_size(Size2(80, 5) * EDSCALE);
 	t.hb->add_child(ec);
@@ -141,10 +141,10 @@ void ProgressDialog::_popup() {
 
 	Ref<StyleBox> style = main->get_theme_stylebox("panel", "PopupMenu");
 	ms += style->get_minimum_size();
-	main->set_margin(MARGIN_LEFT, style->get_margin(MARGIN_LEFT));
-	main->set_margin(MARGIN_RIGHT, -style->get_margin(MARGIN_RIGHT));
-	main->set_margin(MARGIN_TOP, style->get_margin(MARGIN_TOP));
-	main->set_margin(MARGIN_BOTTOM, -style->get_margin(MARGIN_BOTTOM));
+	main->set_offset(SIDE_LEFT, style->get_margin(SIDE_LEFT));
+	main->set_offset(SIDE_RIGHT, -style->get_margin(SIDE_RIGHT));
+	main->set_offset(SIDE_TOP, style->get_margin(SIDE_TOP));
+	main->set_offset(SIDE_BOTTOM, -style->get_margin(SIDE_BOTTOM));
 
 	//raise();
 	popup_centered(ms);
@@ -235,7 +235,7 @@ void ProgressDialog::_bind_methods() {
 ProgressDialog::ProgressDialog() {
 	main = memnew(VBoxContainer);
 	add_child(main);
-	main->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	main->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	set_exclusive(true);
 	last_progress_tick = 0;
 	singleton = this;
