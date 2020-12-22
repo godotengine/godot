@@ -766,7 +766,7 @@ void RendererSceneRenderForward::_allocate_normal_roughness_texture(RenderBuffer
 	tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 	tf.width = rb->width;
 	tf.height = rb->height;
-	tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
+	tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 
 	if (rb->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 		tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
@@ -782,7 +782,7 @@ void RendererSceneRenderForward::_allocate_normal_roughness_texture(RenderBuffer
 		fb.push_back(rb->normal_roughness_buffer);
 		rb->depth_normal_roughness_fb = RD::get_singleton()->framebuffer_create(fb);
 	} else {
-		tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+		tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 		tf.samples = rb->texture_samples;
 		rb->normal_roughness_buffer_msaa = RD::get_singleton()->texture_create(tf, RD::TextureView());
 

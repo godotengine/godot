@@ -1668,7 +1668,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_tonemap", "env", "tone_mapper", "exposure", "white", "auto_exposure", "min_luminance", "max_luminance", "auto_exp_speed", "auto_exp_grey"), &RenderingServer::environment_set_tonemap);
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "use_1d_color_correction", "color_correction"), &RenderingServer::environment_set_adjustment);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr", "env", "enable", "max_steps", "fade_in", "fade_out", "depth_tolerance"), &RenderingServer::environment_set_ssr);
-	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "bias", "light_affect", "ao_channel_affect", "blur", "bilateral_sharpness"), &RenderingServer::environment_set_ssao);
+	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "power", "detail", "horizon", "sharpness", "light_affect", "ao_channel_affect"), &RenderingServer::environment_set_ssao);
 	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective"), &RenderingServer::environment_set_fog);
 
 	ClassDB::bind_method(D_METHOD("scenario_create"), &RenderingServer::scenario_create);
@@ -2038,11 +2038,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_SSR_ROUGNESS_QUALITY_MEDIUM);
 	BIND_ENUM_CONSTANT(ENV_SSR_ROUGNESS_QUALITY_HIGH);
 
-	BIND_ENUM_CONSTANT(ENV_SSAO_BLUR_DISABLED);
-	BIND_ENUM_CONSTANT(ENV_SSAO_BLUR_1x1);
-	BIND_ENUM_CONSTANT(ENV_SSAO_BLUR_2x2);
-	BIND_ENUM_CONSTANT(ENV_SSAO_BLUR_3x3);
-
+	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_VERY_LOW);
 	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_LOW);
 	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_MEDIUM);
 	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_HIGH);
@@ -2309,9 +2305,18 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/depth_of_field/depth_of_field_bokeh_quality", PropertyInfo(Variant::INT, "rendering/quality/depth_of_field/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fastest),Low (Fast),Medium (Average),High (Slow)"));
 	GLOBAL_DEF("rendering/quality/depth_of_field/depth_of_field_use_jitter", false);
 
-	GLOBAL_DEF("rendering/quality/ssao/quality", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/quality", PropertyInfo(Variant::INT, "rendering/quality/ssao/quality", PROPERTY_HINT_ENUM, "Low (Fast),Medium (Average),High (Slow),Ultra (Slower)"));
+	GLOBAL_DEF("rendering/quality/ssao/quality", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/quality", PropertyInfo(Variant::INT, "rendering/quality/ssao/quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low (Fast),Medium (Average),High (Slow),Ultra (Custom)"));
 	GLOBAL_DEF("rendering/quality/ssao/half_size", false);
+	GLOBAL_DEF("rendering/quality/ssao/half_size.mobile", true);
+	GLOBAL_DEF("rendering/quality/ssao/adaptive_target", 0.5);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/adaptive_target", PropertyInfo(Variant::FLOAT, "rendering/quality/ssao/adaptive_target", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
+	GLOBAL_DEF("rendering/quality/ssao/blur_passes", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/blur_passes", PropertyInfo(Variant::INT, "rendering/quality/ssao/blur_passes", PROPERTY_HINT_RANGE, "0,6"));
+	GLOBAL_DEF("rendering/quality/ssao/fadeout_from", 50.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/fadeout_from", PropertyInfo(Variant::FLOAT, "rendering/quality/ssao/fadeout_from", PROPERTY_HINT_RANGE, "0.0,512,0.1,or_greater"));
+	GLOBAL_DEF("rendering/quality/ssao/fadeout_to", 300.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/fadeout_to", PropertyInfo(Variant::FLOAT, "rendering/quality/ssao/fadeout_to", PROPERTY_HINT_RANGE, "64,65536,0.1,or_greater"));
 
 	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter_enabled", true);
 	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter_amount", 0.25);

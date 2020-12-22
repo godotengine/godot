@@ -51,7 +51,9 @@
 #include "servers/rendering/renderer_rd/shaders/specular_merge.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/ssao.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/ssao_blur.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/ssao_minify.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/ssao_downsample.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/ssao_importance_map.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/ssao_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/subsurface_scattering.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/tonemap.glsl.gen.h"
 
@@ -288,71 +290,121 @@ class EffectsRD {
 	} bokeh;
 
 	enum SSAOMode {
-		SSAO_MINIFY_FIRST,
-		SSAO_MINIFY_MIPMAP,
-		SSAO_GATHER_LOW,
-		SSAO_GATHER_MEDIUM,
-		SSAO_GATHER_HIGH,
-		SSAO_GATHER_ULTRA,
-		SSAO_GATHER_LOW_HALF,
-		SSAO_GATHER_MEDIUM_HALF,
-		SSAO_GATHER_HIGH_HALF,
-		SSAO_GATHER_ULTRA_HALF,
+		SSAO_DOWNSAMPLE,
+		SSAO_DOWNSAMPLE_HALF_RES,
+		SSAO_DOWNSAMPLE_MIPMAP,
+		SSAO_DOWNSAMPLE_MIPMAP_HALF_RES,
+		SSAO_DOWNSAMPLE_HALF,
+		SSAO_DOWNSAMPLE_HALF_RES_HALF,
+		SSAO_GATHER,
+		SSAO_GATHER_BASE,
+		SSAO_GATHER_ADAPTIVE,
+		SSAO_GENERATE_IMPORTANCE_MAP,
+		SSAO_PROCESS_IMPORTANCE_MAPA,
+		SSAO_PROCESS_IMPORTANCE_MAPB,
 		SSAO_BLUR_PASS,
-		SSAO_BLUR_PASS_HALF,
-		SSAO_BLUR_UPSCALE,
+		SSAO_BLUR_PASS_SMART,
+		SSAO_BLUR_PASS_WIDE,
+		SSAO_INTERLEAVE,
+		SSAO_INTERLEAVE_SMART,
+		SSAO_INTERLEAVE_HALF,
 		SSAO_MAX
 	};
 
-	struct SSAOMinifyPushConstant {
+	struct SSAODownsamplePushConstant {
 		float pixel_size[2];
 		float z_far;
 		float z_near;
-		int32_t source_size[2];
 		uint32_t orthogonal;
-		uint32_t pad;
+		float radius_sq;
+		uint32_t pad[2];
 	};
 
 	struct SSAOGatherPushConstant {
 		int32_t screen_size[2];
-		float z_far;
-		float z_near;
+		int pass;
+		int quality;
 
-		uint32_t orthogonal;
-		float intensity_div_r6;
+		float half_screen_pixel_size[2];
+		int size_multiplier;
+		float detail_intensity;
+
+		float NDC_to_view_mul[2];
+		float NDC_to_view_add[2];
+
+		float pad[2];
+		float half_screen_pixel_size_x025[2];
+
 		float radius;
-		float bias;
+		float intensity;
+		float shadow_power;
+		float shadow_clamp;
 
-		float proj_info[4];
-		float pixel_size[2];
-		float proj_scale;
-		uint32_t pad;
+		float fade_out_mul;
+		float fade_out_add;
+		float horizon_angle_threshold;
+		float inv_radius_near_limit;
+
+		bool is_orthogonal;
+		float neg_inv_radius;
+		float load_counter_avg_div;
+		float adaptive_sample_limit;
+
+		int32_t pass_coord_offset[2];
+		float pass_uv_offset[2];
+	};
+
+	struct SSAOGatherConstants {
+		float rotation_matrices[80]; //5 vec4s * 4
+	};
+
+	struct SSAOImportanceMapPushConstant {
+		float half_screen_pixel_size[2];
+		float intensity;
+		float power;
 	};
 
 	struct SSAOBlurPushConstant {
 		float edge_sharpness;
-		int32_t filter_scale;
-		float z_far;
-		float z_near;
-		uint32_t orthogonal;
-		uint32_t pad[3];
-		int32_t axis[2];
-		int32_t screen_size[2];
+		float pad;
+		float half_screen_pixel_size[2];
+	};
+
+	struct SSAOInterleavePushConstant {
+		float inv_sharpness;
+		uint32_t size_modifier;
+		float pixel_size[2];
 	};
 
 	struct SSAO {
-		SSAOMinifyPushConstant minify_push_constant;
-		SsaoMinifyShaderRD minify_shader;
-		RID minify_shader_version;
+		SSAODownsamplePushConstant downsample_push_constant;
+		SsaoDownsampleShaderRD downsample_shader;
+		RID downsample_shader_version;
+		RID downsample_uniform_set;
 
 		SSAOGatherPushConstant gather_push_constant;
 		SsaoShaderRD gather_shader;
 		RID gather_shader_version;
+		RID gather_uniform_set;
+		RID gather_constants_buffer;
+		bool gather_initialized = false;
+
+		SSAOImportanceMapPushConstant importance_map_push_constant;
+		SsaoImportanceMapShaderRD importance_map_shader;
+		RID importance_map_shader_version;
+		RID importance_map_load_counter;
+		RID importance_map_uniform_set;
+		RID counter_uniform_set;
 
 		SSAOBlurPushConstant blur_push_constant;
 		SsaoBlurShaderRD blur_shader;
 		RID blur_shader_version;
 
+		SSAOInterleavePushConstant interleave_push_constant;
+		SsaoInterleaveShaderRD interleave_shader;
+		RID interleave_shader_version;
+
+		RID mirror_sampler;
 		RID pipelines[SSAO_MAX];
 	} ssao;
 
@@ -598,13 +650,27 @@ class EffectsRD {
 		}
 	};
 
+	struct TextureSamplerPair {
+		RID texture;
+		RID sampler;
+		_FORCE_INLINE_ bool operator<(const TextureSamplerPair &p_pair) const {
+			if (texture == p_pair.texture) {
+				return sampler < p_pair.sampler;
+			} else {
+				return texture < p_pair.texture;
+			}
+		}
+	};
+
 	Map<RID, RID> texture_to_compute_uniform_set_cache;
 	Map<TexturePair, RID> texture_pair_to_compute_uniform_set_cache;
 	Map<TexturePair, RID> image_pair_to_compute_uniform_set_cache;
+	Map<TextureSamplerPair, RID> texture_sampler_to_compute_uniform_set_cache;
 
 	RID _get_uniform_set_from_image(RID p_texture);
 	RID _get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
 	RID _get_compute_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
+	RID _get_compute_uniform_set_from_texture_and_sampler(RID p_texture, RID p_sampler);
 	RID _get_compute_uniform_set_from_texture_pair(RID p_texture, RID p_texture2, bool p_use_mipmaps = false);
 	RID _get_compute_uniform_set_from_image_pair(RID p_texture, RID p_texture2);
 
@@ -664,9 +730,30 @@ public:
 		Vector2i texture_size;
 	};
 
+	struct SSAOSettings {
+		float radius = 1.0;
+		float intensity = 2.0;
+		float power = 1.5;
+		float detail = 0.5;
+		float horizon = 0.06;
+		float sharpness = 0.98;
+
+		RS::EnvironmentSSAOQuality quality = RS::ENV_SSAO_QUALITY_MEDIUM;
+		bool half_size = false;
+		float adaptive_target = 0.5;
+		int blur_passes = 2;
+		float fadeout_from = 50.0;
+		float fadeout_to = 300.0;
+
+		Size2i screen_size = Size2i();
+		Size2i half_screen_size = Size2i();
+		Size2i quarter_size = Size2i();
+	};
+
 	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);
 
-	void generate_ssao(RID p_depth_buffer, RID p_normal_buffer, const Size2i &p_depth_buffer_size, RID p_depth_mipmaps_texture, const Vector<RID> &depth_mipmaps, RID p_ao1, bool p_half_size, RID p_ao2, RID p_upscale_buffer, float p_intensity, float p_radius, float p_bias, const CameraMatrix &p_projection, RS::EnvironmentSSAOQuality p_quality, RS::EnvironmentSSAOBlur p_blur, float p_edge_sharpness);
+	void gather_ssao(RD::ComputeListID p_compute_list, const Vector<RID> p_ao_slices, const SSAOSettings &p_settings, bool p_adaptive_base_pass);
+	void generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_depth_mipmaps_texture, const Vector<RID> &depth_mipmaps, RID p_ao, const Vector<RID> p_ao_slices, RID p_ao_pong, const Vector<RID> p_ao_pong_slices, RID p_upscale_buffer, RID p_importance_map, RID p_importance_map_pong, const CameraMatrix &p_projection, const SSAOSettings &p_settings, bool p_invalidate_uniform_sets);
 
 	void roughness_limit(RID p_source_normal, RID p_roughness, const Size2i &p_size, float p_curve);
 	void cubemap_downsample(RID p_source_cubemap, RID p_dest_cubemap, const Size2i &p_size);

@@ -3122,7 +3122,7 @@ RS::EnvironmentSSRRoughnessQuality RendererSceneRenderRD::environment_get_ssr_ro
 	return ssr_roughness_quality;
 }
 
-void RendererSceneRenderRD::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_bias, float p_light_affect, float p_ao_channel_affect, RS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {
+void RendererSceneRenderRD::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
@@ -3133,15 +3133,21 @@ void RendererSceneRenderRD::environment_set_ssao(RID p_env, bool p_enable, float
 	env->ssao_enabled = p_enable;
 	env->ssao_radius = p_radius;
 	env->ssao_intensity = p_intensity;
-	env->ssao_bias = p_bias;
+	env->ssao_power = p_power;
+	env->ssao_detail = p_detail;
+	env->ssao_horizon = p_horizon;
+	env->ssao_sharpness = p_sharpness;
 	env->ssao_direct_light_affect = p_light_affect;
 	env->ssao_ao_channel_affect = p_ao_channel_affect;
-	env->ssao_blur = p_blur;
 }
 
-void RendererSceneRenderRD::environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size) {
+void RendererSceneRenderRD::environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
 	ssao_quality = p_quality;
 	ssao_half_size = p_half_size;
+	ssao_adaptive_target = p_adaptive_target;
+	ssao_blur_passes = p_blur_passes;
+	ssao_fadeout_from = p_fadeout_from;
+	ssao_fadeout_to = p_fadeout_to;
 }
 
 bool RendererSceneRenderRD::environment_is_ssao_enabled(RID p_env) const {
@@ -5081,21 +5087,24 @@ void RendererSceneRenderRD::_free_render_buffer_data(RenderBuffers *rb) {
 		rb->luminance.current = RID();
 	}
 
-	if (rb->ssao.ao[0].is_valid()) {
+	if (rb->ssao.depth.is_valid()) {
 		RD::get_singleton()->free(rb->ssao.depth);
-		RD::get_singleton()->free(rb->ssao.ao[0]);
-		if (rb->ssao.ao[1].is_valid()) {
-			RD::get_singleton()->free(rb->ssao.ao[1]);
-		}
-		if (rb->ssao.ao_full.is_valid()) {
-			RD::get_singleton()->free(rb->ssao.ao_full);
-		}
+		RD::get_singleton()->free(rb->ssao.ao_deinterleaved);
+		RD::get_singleton()->free(rb->ssao.ao_pong);
+		RD::get_singleton()->free(rb->ssao.ao_final);
+
+		RD::get_singleton()->free(rb->ssao.importance_map[0]);
+		RD::get_singleton()->free(rb->ssao.importance_map[1]);
 
 		rb->ssao.depth = RID();
-		rb->ssao.ao[0] = RID();
-		rb->ssao.ao[1] = RID();
-		rb->ssao.ao_full = RID();
+		rb->ssao.ao_deinterleaved = RID();
+		rb->ssao.ao_pong = RID();
+		rb->ssao.ao_final = RID();
+		rb->ssao.importance_map[0] = RID();
+		rb->ssao.importance_map[1] = RID();
 		rb->ssao.depth_slices.clear();
+		rb->ssao.ao_deinterleaved_slices.clear();
+		rb->ssao.ao_pong_slices.clear();
 	}
 
 	if (rb->ssr.blur_radius[0].is_valid()) {
@@ -5194,64 +5203,133 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 
 	RENDER_TIMESTAMP("Process SSAO");
 
-	if (rb->ssao.ao[0].is_valid() && rb->ssao.ao_full.is_valid() != ssao_half_size) {
+	//TODO clear when settings chenge to or from ultra
+	if (rb->ssao.ao_final.is_valid() && ssao_using_half_size != ssao_half_size) {
 		RD::get_singleton()->free(rb->ssao.depth);
-		RD::get_singleton()->free(rb->ssao.ao[0]);
-		if (rb->ssao.ao[1].is_valid()) {
-			RD::get_singleton()->free(rb->ssao.ao[1]);
-		}
-		if (rb->ssao.ao_full.is_valid()) {
-			RD::get_singleton()->free(rb->ssao.ao_full);
-		}
+		RD::get_singleton()->free(rb->ssao.ao_deinterleaved);
+		RD::get_singleton()->free(rb->ssao.ao_pong);
+		RD::get_singleton()->free(rb->ssao.ao_final);
+
+		RD::get_singleton()->free(rb->ssao.importance_map[0]);
+		RD::get_singleton()->free(rb->ssao.importance_map[1]);
 
 		rb->ssao.depth = RID();
-		rb->ssao.ao[0] = RID();
-		rb->ssao.ao[1] = RID();
-		rb->ssao.ao_full = RID();
+		rb->ssao.ao_deinterleaved = RID();
+		rb->ssao.ao_pong = RID();
+		rb->ssao.ao_final = RID();
+		rb->ssao.importance_map[0] = RID();
+		rb->ssao.importance_map[1] = RID();
 		rb->ssao.depth_slices.clear();
+		rb->ssao.ao_deinterleaved_slices.clear();
+		rb->ssao.ao_pong_slices.clear();
 	}
 
-	if (!rb->ssao.ao[0].is_valid()) {
+	int buffer_width;
+	int buffer_height;
+	int half_width;
+	int half_height;
+	if (ssao_half_size) {
+		buffer_width = (rb->width + 3) / 4;
+		buffer_height = (rb->height + 3) / 4;
+		half_width = (rb->width + 7) / 8;
+		half_height = (rb->height + 7) / 8;
+	} else {
+		buffer_width = (rb->width + 1) / 2;
+		buffer_height = (rb->height + 1) / 2;
+		half_width = (rb->width + 3) / 4;
+		half_height = (rb->height + 3) / 4;
+	}
+	bool uniform_sets_are_invalid = false;
+	if (rb->ssao.depth.is_null()) {
 		//allocate depth slices
 
 		{
 			RD::TextureFormat tf;
-			tf.format = RD::DATA_FORMAT_R32_SFLOAT;
-			tf.width = rb->width / 2;
-			tf.height = rb->height / 2;
-			tf.mipmaps = Image::get_image_required_mipmaps(tf.width, tf.height, Image::FORMAT_RF) + 1;
+			tf.format = RD::DATA_FORMAT_R16_SFLOAT;
+			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+			tf.width = buffer_width;
+			tf.height = buffer_height;
+			tf.mipmaps = 4;
+			tf.array_layers = 4;
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 			rb->ssao.depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
 			for (uint32_t i = 0; i < tf.mipmaps; i++) {
-				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ssao.depth, 0, i);
+				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ssao.depth, 0, i, RD::TEXTURE_SLICE_2D_ARRAY);
 				rb->ssao.depth_slices.push_back(slice);
 			}
 		}
 
 		{
 			RD::TextureFormat tf;
-			tf.format = RD::DATA_FORMAT_R8_UNORM;
-			tf.width = ssao_half_size ? rb->width / 2 : rb->width;
-			tf.height = ssao_half_size ? rb->height / 2 : rb->height;
+			tf.format = RD::DATA_FORMAT_R8G8_UNORM;
+			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+			tf.width = buffer_width;
+			tf.height = buffer_height;
+			tf.array_layers = 4;
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-			rb->ssao.ao[0] = RD::get_singleton()->texture_create(tf, RD::TextureView());
-			rb->ssao.ao[1] = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			rb->ssao.ao_deinterleaved = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			for (uint32_t i = 0; i < 4; i++) {
+				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ssao.ao_deinterleaved, i, 0);
+				rb->ssao.ao_deinterleaved_slices.push_back(slice);
+			}
 		}
 
-		if (ssao_half_size) {
-			//upsample texture
+		{
+			RD::TextureFormat tf;
+			tf.format = RD::DATA_FORMAT_R8G8_UNORM;
+			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+			tf.width = buffer_width;
+			tf.height = buffer_height;
+			tf.array_layers = 4;
+			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+			rb->ssao.ao_pong = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			for (uint32_t i = 0; i < 4; i++) {
+				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ssao.ao_pong, i, 0);
+				rb->ssao.ao_pong_slices.push_back(slice);
+			}
+		}
+
+		{
+			RD::TextureFormat tf;
+			tf.format = RD::DATA_FORMAT_R8_UNORM;
+			tf.width = half_width;
+			tf.height = half_height;
+			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+			rb->ssao.importance_map[0] = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			rb->ssao.importance_map[1] = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		}
+		{
 			RD::TextureFormat tf;
 			tf.format = RD::DATA_FORMAT_R8_UNORM;
 			tf.width = rb->width;
 			tf.height = rb->height;
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-			rb->ssao.ao_full = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			rb->ssao.ao_final = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			_render_buffers_uniform_set_changed(p_render_buffers);
 		}
-
-		_render_buffers_uniform_set_changed(p_render_buffers);
+		ssao_using_half_size = ssao_half_size;
+		uniform_sets_are_invalid = true;
 	}
 
-	storage->get_effects()->generate_ssao(rb->depth_texture, p_normal_buffer, Size2i(rb->width, rb->height), rb->ssao.depth, rb->ssao.depth_slices, rb->ssao.ao[0], rb->ssao.ao_full.is_valid(), rb->ssao.ao[1], rb->ssao.ao_full, env->ssao_intensity, env->ssao_radius, env->ssao_bias, p_projection, ssao_quality, env->ssao_blur, env->ssao_blur_edge_sharpness);
+	EffectsRD::SSAOSettings settings;
+	settings.radius = env->ssao_radius;
+	settings.intensity = env->ssao_intensity;
+	settings.power = env->ssao_power;
+	settings.detail = env->ssao_detail;
+	settings.horizon = env->ssao_horizon;
+	settings.sharpness = env->ssao_sharpness;
+
+	settings.quality = ssao_quality;
+	settings.half_size = ssao_half_size;
+	settings.adaptive_target = ssao_adaptive_target;
+	settings.blur_passes = ssao_blur_passes;
+	settings.fadeout_from = ssao_fadeout_from;
+	settings.fadeout_to = ssao_fadeout_to;
+	settings.screen_size = Size2i(rb->width, rb->height);
+	settings.half_screen_size = Size2i(buffer_width, buffer_height);
+	settings.quarter_size = Size2i(half_width, half_height);
+
+	storage->get_effects()->generate_ssao(rb->depth_texture, p_normal_buffer, rb->ssao.depth, rb->ssao.depth_slices, rb->ssao.ao_deinterleaved, rb->ssao.ao_deinterleaved_slices, rb->ssao.ao_pong, rb->ssao.ao_pong_slices, rb->ssao.ao_final, rb->ssao.importance_map[0], rb->ssao.importance_map[1], p_projection, settings, uniform_sets_are_invalid);
 }
 
 void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(RID p_render_buffers, RID p_environment, RID p_camera_effects, const CameraMatrix &p_projection) {
@@ -5431,9 +5509,9 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID
 		}
 	}
 
-	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SSAO && rb->ssao.ao[0].is_valid()) {
+	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SSAO && rb->ssao.ao_final.is_valid()) {
 		Size2 rtsize = storage->render_target_get_size(rb->render_target);
-		RID ao_buf = rb->ssao.ao_full.is_valid() ? rb->ssao.ao_full : rb->ssao.ao[0];
+		RID ao_buf = rb->ssao.ao_final;
 		effects->copy_to_fb_rect(ao_buf, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, true);
 	}
 
@@ -5621,7 +5699,7 @@ RID RendererSceneRenderRD::render_buffers_get_ao_texture(RID p_render_buffers) {
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
 
-	return rb->ssao.ao_full.is_valid() ? rb->ssao.ao_full : rb->ssao.ao[0];
+	return rb->ssao.ao_final;
 }
 
 RID RendererSceneRenderRD::render_buffers_get_gi_probe_buffer(RID p_render_buffers) {
@@ -8435,7 +8513,7 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 
 	camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape(int(GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_bokeh_shape"))));
 	camera_effects_set_dof_blur_quality(RS::DOFBlurQuality(int(GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_use_jitter"));
-	environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
+	environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"), GLOBAL_GET("rendering/quality/ssao/adaptive_target"), GLOBAL_GET("rendering/quality/ssao/blur_passes"), GLOBAL_GET("rendering/quality/ssao/fadeout_from"), GLOBAL_GET("rendering/quality/ssao/fadeout_to"));
 	screen_space_roughness_limiter = GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_enabled");
 	screen_space_roughness_limiter_amount = GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_amount");
 	screen_space_roughness_limiter_limit = GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_limit");

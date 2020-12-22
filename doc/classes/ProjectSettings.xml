@@ -1240,11 +1240,26 @@
 		<member name="rendering/quality/shadows/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/quality/shadows/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/quality/ssao/adaptive_target" type="float" setter="" getter="" default="0.5">
+			Quality target to use when [member rendering/quality/ssao/quality] is set to [code]ULTRA[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]MEDIUM[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance.
+		</member>
+		<member name="rendering/quality/ssao/blur_passes" type="int" setter="" getter="" default="2">
+			Number of blur passes to use when computing screen-space ambient occlusion. A higher number will result in a smoother look, but will be slower to compute and will have less high-frequency detail.
+		</member>
+		<member name="rendering/quality/ssao/fadeout_from" type="float" setter="" getter="" default="50.0">
+			Distance at which the screen-space ambient occlusion effect starts to fade out. Use this hide ambient occlusion at great distances.
+		</member>
+		<member name="rendering/quality/ssao/fadeout_to" type="float" setter="" getter="" default="300.0">
+			Distance at which the screen-space ambient occlusion is fully faded out. Use this hide ambient occlusion at great distances.
+		</member>
 		<member name="rendering/quality/ssao/half_size" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], screen-space ambient occlusion will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details.
 		</member>
-		<member name="rendering/quality/ssao/quality" type="int" setter="" getter="" default="1">
-			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance.
+		<member name="rendering/quality/ssao/half_size.mobile" type="bool" setter="" getter="" default="true">
+			Lower-end override for [member rendering/quality/ssao/half_size] on mobile devices, due to performance concerns.
+		</member>
+		<member name="rendering/quality/ssao/quality" type="int" setter="" getter="" default="2">
+			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]ULTRA[/code] will use the [member rendering/quality/ssao/adaptive_target] setting.
 		</member>
 		<member name="rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale" type="float" setter="" getter="" default="0.01">
 			Scales the depth over which the subsurface scattering effect is applied. A high value may allow light to scatter into a part of the mesh or another mesh that is close in screen space but far in depth.
