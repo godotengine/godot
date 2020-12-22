@@ -45,7 +45,7 @@ void VelocityTracker3D::update_position(const Vector3 &p_position) {
 	if (physics_step) {
 		ph.frame = Engine::get_singleton()->get_physics_frames();
 	} else {
-		ph.frame = Engine::get_singleton()->get_idle_frame_ticks();
+		ph.frame = Engine::get_singleton()->get_frame_ticks();
 	}
 
 	if (position_history_len == 0 || position_history[0].frame != ph.frame) { //in same frame, use latest
@@ -72,7 +72,7 @@ Vector3 VelocityTracker3D::get_tracked_linear_velocity() const {
 			uint64_t base = Engine::get_singleton()->get_physics_frames();
 			base_time = float(base - position_history[0].frame) / Engine::get_singleton()->get_iterations_per_second();
 		} else {
-			uint64_t base = Engine::get_singleton()->get_idle_frame_ticks();
+			uint64_t base = Engine::get_singleton()->get_frame_ticks();
 			base_time = double(base - position_history[0].frame) / 1000000.0;
 		}
 	}
@@ -109,7 +109,7 @@ void VelocityTracker3D::reset(const Vector3 &p_new_pos) {
 	if (physics_step) {
 		ph.frame = Engine::get_singleton()->get_physics_frames();
 	} else {
-		ph.frame = Engine::get_singleton()->get_idle_frame_ticks();
+		ph.frame = Engine::get_singleton()->get_frame_ticks();
 	}
 
 	position_history.write[0] = ph;

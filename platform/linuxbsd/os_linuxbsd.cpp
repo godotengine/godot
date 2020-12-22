@@ -246,7 +246,7 @@ void OS_LinuxBSD::run() {
 		return;
 	}
 
-	main_loop->init();
+	main_loop->initialize();
 
 	//uint64_t last_ticks=get_ticks_usec();
 
@@ -263,7 +263,7 @@ void OS_LinuxBSD::run() {
 		}
 	};
 
-	main_loop->finish();
+	main_loop->finalize();
 }
 
 void OS_LinuxBSD::disable_crash_handler() {
