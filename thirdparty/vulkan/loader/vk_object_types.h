@@ -72,15 +72,15 @@ typedef enum VulkanObjectType {
     kVulkanObjectTypeDebugReportCallbackEXT = 33,
     kVulkanObjectTypeDebugUtilsMessengerEXT = 34,
     kVulkanObjectTypeValidationCacheEXT = 35,
-    kVulkanObjectTypeAccelerationStructureKHR = 36,
+    kVulkanObjectTypeAccelerationStructureNV = 36,
     kVulkanObjectTypePerformanceConfigurationINTEL = 37,
     kVulkanObjectTypeIndirectCommandsLayoutNV = 38,
     kVulkanObjectTypePrivateDataSlotEXT = 39,
-    kVulkanObjectTypeMax = 40,
+    kVulkanObjectTypeAccelerationStructureKHR = 40,
+    kVulkanObjectTypeMax = 41,
     // Aliases for backwards compatibilty of "promoted" types
     kVulkanObjectTypeDescriptorUpdateTemplateKHR = kVulkanObjectTypeDescriptorUpdateTemplate,
     kVulkanObjectTypeSamplerYcbcrConversionKHR = kVulkanObjectTypeSamplerYcbcrConversion,
-    kVulkanObjectTypeAccelerationStructureNV = kVulkanObjectTypeAccelerationStructureKHR,
 } VulkanObjectType;
 
 // Array of object name strings for OBJECT_TYPE enum conversion
@@ -121,10 +121,11 @@ static const char * const object_string[kVulkanObjectTypeMax] = {
     "DebugReportCallbackEXT",
     "DebugUtilsMessengerEXT",
     "ValidationCacheEXT",
-    "AccelerationStructureKHR",
+    "AccelerationStructureNV",
     "PerformanceConfigurationINTEL",
     "IndirectCommandsLayoutNV",
     "PrivateDataSlotEXT",
+    "AccelerationStructureKHR",
 };
 
 // Helper array to get Vulkan VK_EXT_debug_report object type enum from the internal layers version
@@ -165,10 +166,11 @@ const VkDebugReportObjectTypeEXT get_debug_report_enum[] = {
     VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT,   // kVulkanObjectTypeDebugReportCallbackEXT
     VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT,   // kVulkanObjectTypeDebugUtilsMessengerEXT
     VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT_EXT,   // kVulkanObjectTypeValidationCacheEXT
-    VK_DEBUG_REPORT_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR_EXT,   // kVulkanObjectTypeAccelerationStructureKHR
+    VK_DEBUG_REPORT_OBJECT_TYPE_ACCELERATION_STRUCTURE_NV_EXT,   // kVulkanObjectTypeAccelerationStructureNV
     VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT,   // kVulkanObjectTypePerformanceConfigurationINTEL
     VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT,   // kVulkanObjectTypeIndirectCommandsLayoutNV
     VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT,   // kVulkanObjectTypePrivateDataSlotEXT
+    VK_DEBUG_REPORT_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR_EXT,   // kVulkanObjectTypeAccelerationStructureKHR
 };
 
 // Helper array to get Official Vulkan VkObjectType enum from the internal layers version
@@ -209,10 +211,11 @@ const VkObjectType get_object_type_enum[] = {
     VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT,   // kVulkanObjectTypeDebugReportCallbackEXT
     VK_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT,   // kVulkanObjectTypeDebugUtilsMessengerEXT
     VK_OBJECT_TYPE_VALIDATION_CACHE_EXT,   // kVulkanObjectTypeValidationCacheEXT
-    VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR,   // kVulkanObjectTypeAccelerationStructureKHR
+    VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_NV,   // kVulkanObjectTypeAccelerationStructureNV
     VK_OBJECT_TYPE_PERFORMANCE_CONFIGURATION_INTEL,   // kVulkanObjectTypePerformanceConfigurationINTEL
     VK_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NV,   // kVulkanObjectTypeIndirectCommandsLayoutNV
     VK_OBJECT_TYPE_PRIVATE_DATA_SLOT_EXT,   // kVulkanObjectTypePrivateDataSlotEXT
+    VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR,   // kVulkanObjectTypeAccelerationStructureKHR
 };
 
 // Helper function to convert from VkDebugReportObjectTypeEXT to VkObjectType

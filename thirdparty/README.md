@@ -146,7 +146,7 @@ Files extracted from upstream source:
 ## glslang
 
 - Upstream: https://github.com/KhronosGroup/glslang
-- Version: git (bacaef3237c515e40d1a24722be48c0a0b30f75f, 2020)
+- Version: git (dd69df7f3dac26362e10b0f38efb9e47990f7537, 2020)
 - License: glslang
 
 Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
@@ -161,8 +161,6 @@ Files extracted from upstream source:
   to `glslang/build_info.h`
 - `LICENSE.txt`
 - Unnecessary files like `CMakeLists.txt` and `updateGrammar` removed.
-
-Patches in the `patches` directory should be re-applied after updates.
 
 ## Graphite engine
 
@@ -624,7 +622,7 @@ folder.
 ## vulkan
 
 - Upstream: https://github.com/KhronosGroup/Vulkan-Loader
-- Version: sdk-1.2.154.0 (2020)
+- Version: sdk-1.2.162.0 (2020)
 - License: Apache 2.0
 
 Unless there is a specific reason to package a more recent version, please stick
