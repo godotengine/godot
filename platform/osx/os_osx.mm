@@ -638,26 +638,30 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
 
-	NSPasteboard *pboard = [sender draggingPasteboard];
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101400
-	NSArray<NSURL *> *filenames = [pboard propertyListForType:NSPasteboardTypeFileURL];
-#else
-	NSArray *filenames = [pboard propertyListForType:NSFilenamesPboardType];
-#endif
-
 	Vector<String> files;
-	for (NSUInteger i = 0; i < filenames.count; i++) {
+	NSPasteboard *pboard = [sender draggingPasteboard];
+
 #if MAC_OS_X_VERSION_MIN_REQUIRED >= 101400
-		NSString *ns = [[filenames objectAtIndex:i] path];
-#else
-		NSString *ns = [filenames objectAtIndex:i];
-#endif
+	NSArray *items = pboard.pasteboardItems;
+	for (NSPasteboardItem *item in items) {
+		NSString *path = [item stringForType:NSPasteboardTypeFileURL];
+		NSString *ns = [NSURL URLWithString:path].path;
 		char *utfs = strdup([ns UTF8String]);
 		String ret;
 		ret.parse_utf8(utfs);
 		free(utfs);
 		files.push_back(ret);
 	}
+#else
+	NSArray *filenames = [pboard propertyListForType:NSFilenamesPboardType];
+	for (NSString *ns in filenames) {
+		char *utfs = strdup([ns UTF8String]);
+		String ret;
+		ret.parse_utf8(utfs);
+		free(utfs);
+		files.push_back(ret);
+	}
+#endif
 
 	if (files.size()) {
 		OS_OSX::singleton->main_loop->drop_files(files, 0);
