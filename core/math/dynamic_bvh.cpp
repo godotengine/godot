@@ -49,7 +49,6 @@ DynamicBVH::Node *DynamicBVH::_create_node(Node *p_parent, void *p_data) {
 	Node *node = memnew(Node);
 	node->parent = p_parent;
 	node->data = p_data;
-	node->childs[1] = 0;
 	return (node);
 }
 
@@ -335,6 +334,7 @@ DynamicBVH::ID DynamicBVH::insert(const AABB &p_box, void *p_userdata) {
 
 	ID id;
 	id.node = leaf;
+
 	return id;
 }
 
@@ -389,9 +389,32 @@ void DynamicBVH::_extract_leaves(Node *p_node, List<ID> *r_elements) {
 	}
 }
 
+void DynamicBVH::set_index(uint32_t p_index) {
+	ERR_FAIL_COND(bvh_root != nullptr);
+	index = p_index;
+}
+
+uint32_t DynamicBVH::get_index() const {
+	return index;
+}
+
 void DynamicBVH::get_elements(List<ID> *r_elements) {
 	if (bvh_root) {
 		_extract_leaves(bvh_root, r_elements);
+	}
+}
+
+int DynamicBVH::get_leaf_count() const {
+	return total_leaves;
+}
+int DynamicBVH::get_max_depth() const {
+	if (bvh_root) {
+		int depth = 1;
+		int max_depth = 0;
+		bvh_root->get_max_depth(depth, max_depth);
+		return max_depth;
+	} else {
+		return 0;
 	}
 }
 

@@ -266,7 +266,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 	void _update_render_base_uniform_set();
 	RID _setup_sdfgi_render_pass_uniform_set(RID p_albedo_texture, RID p_emission_texture, RID p_emission_aniso_texture, RID p_geom_facing_texture);
-	RID _setup_render_pass_uniform_set(RID p_render_buffers, RID p_radiance_texture, RID p_shadow_atlas, RID p_reflection_atlas, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count);
+	RID _setup_render_pass_uniform_set(RID p_render_buffers, RID p_radiance_texture, RID p_shadow_atlas, RID p_reflection_atlas, const PagedArray<RID> &p_gi_probes);
 
 	struct LightmapData {
 		float normal_xform[12];
@@ -567,26 +567,26 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	};
 
 	void _setup_environment(RID p_environment, RID p_render_buffers, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false);
-	void _setup_lightmaps(InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, const Transform &p_cam_transform);
+	void _setup_lightmaps(const PagedArray<InstanceBase *> &p_lightmaps, const Transform &p_cam_transform);
 
 	void _fill_instances(RenderList::Element **p_elements, int p_element_count, bool p_for_depth, bool p_has_sdfgi = false, bool p_has_opaque_gi = false);
 	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0);
 	_FORCE_INLINE_ void _add_geometry(InstanceBase *p_instance, uint32_t p_surface, RID p_material, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi = false);
 	_FORCE_INLINE_ void _add_geometry_with_material(InstanceBase *p_instance, uint32_t p_surface, MaterialData *p_material, RID p_material_rid, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi = false);
 
-	void _fill_render_list(InstanceBase **p_cull_result, int p_cull_count, PassMode p_pass_mode, bool p_using_sdfgi = false);
+	void _fill_render_list(const PagedArray<InstanceBase *> &p_instances, PassMode p_pass_mode, bool p_using_sdfgi = false);
 
 	Map<Size2i, RID> sdfgi_framebuffer_size_cache;
 
 	bool low_end = false;
 
 protected:
-	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, int p_directional_light_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color, float p_lod_threshold);
-	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0);
-	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region);
-	virtual void _render_uv2(InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region);
-	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, InstanceBase **p_cull_result, int p_cull_count, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture);
-	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, InstanceBase **p_cull_result, int p_cull_count);
+	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<InstanceBase *> &p_instances, int p_directional_light_count, const PagedArray<RID> &p_gi_probes, const PagedArray<InstanceBase *> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color, float p_lod_threshold);
+	virtual void _render_shadow(RID p_framebuffer, const PagedArray<InstanceBase *> &p_instances, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0);
+	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<InstanceBase *> &p_instances, RID p_framebuffer, const Rect2i &p_region);
+	virtual void _render_uv2(const PagedArray<InstanceBase *> &p_instances, RID p_framebuffer, const Rect2i &p_region);
+	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<InstanceBase *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture);
+	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<InstanceBase *> &p_instances);
 
 public:
 	virtual void set_time(double p_time, double p_step);

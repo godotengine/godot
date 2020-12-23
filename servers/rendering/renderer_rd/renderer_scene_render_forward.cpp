@@ -1532,7 +1532,7 @@ void RendererSceneRenderForward::_add_geometry_with_material(InstanceBase *p_ins
 	}
 }
 
-void RendererSceneRenderForward::_fill_render_list(InstanceBase **p_cull_result, int p_cull_count, PassMode p_pass_mode, bool p_using_sdfgi) {
+void RendererSceneRenderForward::_fill_render_list(const PagedArray<InstanceBase *> &p_instances, PassMode p_pass_mode, bool p_using_sdfgi) {
 	scene_state.current_shader_index = 0;
 	scene_state.current_material_index = 0;
 	scene_state.used_sss = false;
@@ -1544,8 +1544,8 @@ void RendererSceneRenderForward::_fill_render_list(InstanceBase **p_cull_result,
 
 	//fill list
 
-	for (int i = 0; i < p_cull_count; i++) {
-		InstanceBase *inst = p_cull_result[i];
+	for (int i = 0; i < (int)p_instances.size(); i++) {
+		InstanceBase *inst = p_instances[i];
 
 		//add geometry for drawing
 		switch (inst->base_type) {
@@ -1635,14 +1635,14 @@ void RendererSceneRenderForward::_fill_render_list(InstanceBase **p_cull_result,
 	}
 }
 
-void RendererSceneRenderForward::_setup_lightmaps(InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, const Transform &p_cam_transform) {
+void RendererSceneRenderForward::_setup_lightmaps(const PagedArray<InstanceBase *> &p_lightmaps, const Transform &p_cam_transform) {
 	uint32_t lightmaps_used = 0;
-	for (int i = 0; i < p_lightmap_cull_count; i++) {
+	for (int i = 0; i < (int)p_lightmaps.size(); i++) {
 		if (i >= (int)scene_state.max_lightmaps) {
 			break;
 		}
 
-		InstanceBase *lm = p_lightmap_cull_result[i];
+		InstanceBase *lm = p_lightmaps[i];
 		Basis to_lm = lm->transform.basis.inverse() * p_cam_transform.basis;
 		to_lm = to_lm.inverse().transposed(); //will transform normals
 		RendererStorageRD::store_transform_3x3(to_lm, scene_state.lightmaps[i].normal_xform);
@@ -1654,7 +1654,7 @@ void RendererSceneRenderForward::_setup_lightmaps(InstanceBase **p_lightmap_cull
 	}
 }
 
-void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, int p_directional_light_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color, float p_screen_lod_threshold) {
+void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<InstanceBase *> &p_instances, int p_directional_light_count, const PagedArray<RID> &p_gi_probes, const PagedArray<InstanceBase *> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color, float p_screen_lod_threshold) {
 	RenderBufferDataForward *render_buffer = nullptr;
 	if (p_render_buffer.is_valid()) {
 		render_buffer = (RenderBufferDataForward *)render_buffers_get_data(p_render_buffer);
@@ -1709,7 +1709,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 
 		opaque_framebuffer = render_buffer->color_fb;
 
-		if (!low_end && p_gi_probe_cull_count > 0) {
+		if (!low_end && p_gi_probes.size() > 0) {
 			using_giprobe = true;
 			render_buffer->ensure_gi();
 		}
@@ -1776,13 +1776,13 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 		ERR_FAIL(); //bug?
 	}
 
-	_setup_lightmaps(p_lightmap_cull_result, p_lightmap_cull_count, p_cam_transform);
+	_setup_lightmaps(p_lightmaps, p_cam_transform);
 	_setup_environment(p_environment, p_render_buffer, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_pixel_size, p_shadow_atlas, !p_reflection_probe.is_valid(), p_default_bg_color, p_cam_projection.get_z_near(), p_cam_projection.get_z_far(), false);
 
 	_update_render_base_uniform_set(); //may have changed due to the above (light buffer enlarged, as an example)
 
 	render_list.clear();
-	_fill_render_list(p_cull_result, p_cull_count, PASS_MODE_COLOR, using_sdfgi);
+	_fill_render_list(p_instances, PASS_MODE_COLOR, using_sdfgi);
 
 	bool using_sss = !low_end && render_buffer && scene_state.used_sss && sub_surface_scattering_get_quality() != RS::SUB_SURFACE_SCATTERING_QUALITY_DISABLED;
 
@@ -1864,7 +1864,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 		clear_color = p_default_bg_color;
 	}
 
-	RID rp_uniform_set = _setup_render_pass_uniform_set(p_render_buffer, radiance_texture, p_shadow_atlas, p_reflection_atlas, p_gi_probe_cull_result, p_gi_probe_cull_count);
+	RID rp_uniform_set = _setup_render_pass_uniform_set(p_render_buffer, radiance_texture, p_shadow_atlas, p_reflection_atlas, p_gi_probes);
 
 	render_list.sort_by_key(false);
 
@@ -1903,7 +1903,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 	}
 
 	if (using_sdfgi || using_giprobe) {
-		_process_gi(p_render_buffer, render_buffer->normal_roughness_buffer, render_buffer->ambient_buffer, render_buffer->reflection_buffer, render_buffer->giprobe_buffer, p_environment, p_cam_projection, p_cam_transform, p_gi_probe_cull_result, p_gi_probe_cull_count);
+		_process_gi(p_render_buffer, render_buffer->normal_roughness_buffer, render_buffer->ambient_buffer, render_buffer->reflection_buffer, render_buffer->giprobe_buffer, p_environment, p_cam_projection, p_cam_transform, p_gi_probes);
 	}
 
 	_setup_environment(p_environment, p_render_buffer, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_pixel_size, p_shadow_atlas, !p_reflection_probe.is_valid(), p_default_bg_color, p_cam_projection.get_z_near(), p_cam_projection.get_z_far(), p_render_buffer.is_valid());
@@ -1949,8 +1949,8 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 		dc.set_depth_correction(true);
 		CameraMatrix cm = (dc * p_cam_projection) * CameraMatrix(p_cam_transform.affine_inverse());
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(opaque_framebuffer, RD::INITIAL_ACTION_CONTINUE, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
-		for (int i = 0; i < p_gi_probe_cull_count; i++) {
-			_debug_giprobe(p_gi_probe_cull_result[i], draw_list, opaque_framebuffer, cm, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION, 1.0);
+		for (int i = 0; i < (int)p_gi_probes.size(); i++) {
+			_debug_giprobe(p_gi_probes[i], draw_list, opaque_framebuffer, cm, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION, 1.0);
 		}
 		RD::get_singleton()->draw_list_end();
 	}
@@ -2027,7 +2027,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 	}
 }
 
-void RendererSceneRenderForward::_render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold) {
+void RendererSceneRenderForward::_render_shadow(RID p_framebuffer, const PagedArray<InstanceBase *> &p_instances, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold) {
 	RENDER_TIMESTAMP("Setup Rendering Shadow");
 
 	_update_render_base_uniform_set();
@@ -2046,9 +2046,9 @@ void RendererSceneRenderForward::_render_shadow(RID p_framebuffer, InstanceBase 
 
 	PassMode pass_mode = p_use_dp ? PASS_MODE_SHADOW_DP : PASS_MODE_SHADOW;
 
-	_fill_render_list(p_cull_result, p_cull_count, pass_mode);
+	_fill_render_list(p_instances, pass_mode);
 
-	RID rp_uniform_set = _setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), nullptr, 0);
+	RID rp_uniform_set = _setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), PagedArray<RID>());
 
 	RENDER_TIMESTAMP("Render Shadow");
 
@@ -2064,7 +2064,7 @@ void RendererSceneRenderForward::_render_shadow(RID p_framebuffer, InstanceBase 
 	}
 }
 
-void RendererSceneRenderForward::_render_particle_collider_heightfield(RID p_fb, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, InstanceBase **p_cull_result, int p_cull_count) {
+void RendererSceneRenderForward::_render_particle_collider_heightfield(RID p_fb, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<InstanceBase *> &p_instances) {
 	RENDER_TIMESTAMP("Setup Render Collider Heightfield");
 
 	_update_render_base_uniform_set();
@@ -2079,9 +2079,9 @@ void RendererSceneRenderForward::_render_particle_collider_heightfield(RID p_fb,
 
 	PassMode pass_mode = PASS_MODE_SHADOW;
 
-	_fill_render_list(p_cull_result, p_cull_count, pass_mode);
+	_fill_render_list(p_instances, pass_mode);
 
-	RID rp_uniform_set = _setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), nullptr, 0);
+	RID rp_uniform_set = _setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), PagedArray<RID>());
 
 	RENDER_TIMESTAMP("Render Collider Heightield");
 
@@ -2097,7 +2097,7 @@ void RendererSceneRenderForward::_render_particle_collider_heightfield(RID p_fb,
 	}
 }
 
-void RendererSceneRenderForward::_render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) {
+void RendererSceneRenderForward::_render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<InstanceBase *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	RENDER_TIMESTAMP("Setup Rendering Material");
 
 	_update_render_base_uniform_set();
@@ -2112,9 +2112,9 @@ void RendererSceneRenderForward::_render_material(const Transform &p_cam_transfo
 	render_list.clear();
 
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
-	_fill_render_list(p_cull_result, p_cull_count, pass_mode);
+	_fill_render_list(p_instances, pass_mode);
 
-	RID rp_uniform_set = _setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), nullptr, 0);
+	RID rp_uniform_set = _setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), PagedArray<RID>());
 
 	RENDER_TIMESTAMP("Render Material");
 
@@ -2136,7 +2136,7 @@ void RendererSceneRenderForward::_render_material(const Transform &p_cam_transfo
 	}
 }
 
-void RendererSceneRenderForward::_render_uv2(InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) {
+void RendererSceneRenderForward::_render_uv2(const PagedArray<InstanceBase *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	RENDER_TIMESTAMP("Setup Rendering UV2");
 
 	_update_render_base_uniform_set();
@@ -2151,9 +2151,9 @@ void RendererSceneRenderForward::_render_uv2(InstanceBase **p_cull_result, int p
 	render_list.clear();
 
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
-	_fill_render_list(p_cull_result, p_cull_count, pass_mode);
+	_fill_render_list(p_instances, pass_mode);
 
-	RID rp_uniform_set = _setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), nullptr, 0);
+	RID rp_uniform_set = _setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), PagedArray<RID>());
 
 	RENDER_TIMESTAMP("Render Material");
 
@@ -2197,7 +2197,7 @@ void RendererSceneRenderForward::_render_uv2(InstanceBase **p_cull_result, int p
 	}
 }
 
-void RendererSceneRenderForward::_render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, InstanceBase **p_cull_result, int p_cull_count, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) {
+void RendererSceneRenderForward::_render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<InstanceBase *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) {
 	RENDER_TIMESTAMP("Render SDFGI");
 
 	_update_render_base_uniform_set();
@@ -2209,7 +2209,7 @@ void RendererSceneRenderForward::_render_sdfgi(RID p_render_buffers, const Vecto
 	render_list.clear();
 
 	PassMode pass_mode = PASS_MODE_SDF;
-	_fill_render_list(p_cull_result, p_cull_count, pass_mode);
+	_fill_render_list(p_instances, pass_mode);
 	render_list.sort_by_key(false);
 	_fill_instances(render_list.elements, render_list.element_count, true);
 
@@ -2453,7 +2453,7 @@ void RendererSceneRenderForward::_update_render_base_uniform_set() {
 	}
 }
 
-RID RendererSceneRenderForward::_setup_render_pass_uniform_set(RID p_render_buffers, RID p_radiance_texture, RID p_shadow_atlas, RID p_reflection_atlas, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count) {
+RID RendererSceneRenderForward::_setup_render_pass_uniform_set(RID p_render_buffers, RID p_radiance_texture, RID p_shadow_atlas, RID p_reflection_atlas, const PagedArray<RID> &p_gi_probes) {
 	if (render_pass_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(render_pass_uniform_set)) {
 		RD::get_singleton()->free(render_pass_uniform_set);
 	}
@@ -2516,8 +2516,8 @@ RID RendererSceneRenderForward::_setup_render_pass_uniform_set(RID p_render_buff
 		u.ids.resize(MAX_GI_PROBES);
 		RID default_tex = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
 		for (int i = 0; i < MAX_GI_PROBES; i++) {
-			if (i < p_gi_probe_cull_count) {
-				RID tex = gi_probe_instance_get_texture(p_gi_probe_cull_result[i]);
+			if (i < (int)p_gi_probes.size()) {
+				RID tex = gi_probe_instance_get_texture(p_gi_probes[i]);
 				if (!tex.is_valid()) {
 					tex = default_tex;
 				}

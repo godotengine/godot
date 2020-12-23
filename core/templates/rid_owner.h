@@ -346,6 +346,18 @@ public:
 		alloc.free(p_rid);
 	}
 
+	_FORCE_INLINE_ uint32_t get_rid_count() const {
+		return alloc.get_rid_count();
+	}
+
+	_FORCE_INLINE_ RID get_rid_by_index(uint32_t p_index) {
+		return alloc.get_rid_by_index(p_index);
+	}
+
+	_FORCE_INLINE_ T *get_ptr_by_index(uint32_t p_index) {
+		return *alloc.get_ptr_by_index(p_index);
+	}
+
 	_FORCE_INLINE_ void get_owned_list(List<RID> *p_owned) {
 		return alloc.get_owned_list(p_owned);
 	}
@@ -353,6 +365,7 @@ public:
 	void set_description(const char *p_descrption) {
 		alloc.set_description(p_descrption);
 	}
+
 	RID_PtrOwner(uint32_t p_target_chunk_byte_size = 4096) :
 			alloc(p_target_chunk_byte_size) {}
 };
