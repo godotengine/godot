@@ -115,7 +115,7 @@ struct SurfaceData {
 	Array morphs;
 };
 
-EditorSceneImporterMeshNode *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, bool use_compression) {
+EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, bool use_compression) {
 	mesh_geometry = p_mesh_geometry;
 	// todo: make this just use a uint64_t FBX ID this is a copy of our original materials unfortunately.
 	const std::vector<const FBXDocParser::Material *> &material_lookup = model->GetMaterials();
@@ -410,7 +410,7 @@ EditorSceneImporterMeshNode *FBXMeshData::create_fbx_mesh(const ImportState &sta
 		in_mesh_surface_id += 1;
 	}
 
-	EditorSceneImporterMeshNode *godot_mesh = memnew(EditorSceneImporterMeshNode);
+	EditorSceneImporterMeshNode3D *godot_mesh = memnew(EditorSceneImporterMeshNode3D);
 	godot_mesh->set_mesh(mesh);
 	return godot_mesh;
 }
