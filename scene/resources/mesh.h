@@ -252,7 +252,7 @@ public:
 	AABB get_aabb() const override;
 	virtual RID get_rid() const override;
 
-	void regen_normalmaps();
+	void regen_normal_maps();
 
 	Error lightmap_unwrap(const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
 	Error lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache, const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);

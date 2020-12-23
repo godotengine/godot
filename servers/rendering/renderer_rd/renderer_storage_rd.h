@@ -187,7 +187,7 @@ private:
 
 	struct CanvasTexture {
 		RID diffuse;
-		RID normalmap;
+		RID normal_map;
 		RID specular;
 		Color specular_color = Color(1, 1, 1, 1);
 		float shininess = 1.0;

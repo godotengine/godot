@@ -1234,7 +1234,7 @@ void RendererStorageRD::canvas_texture_set_channel(RID p_canvas_texture, RS::Can
 			ct->diffuse = p_texture;
 		} break;
 		case RS::CANVAS_TEXTURE_CHANNEL_NORMAL: {
-			ct->normalmap = p_texture;
+			ct->normal_map = p_texture;
 		} break;
 		case RS::CANVAS_TEXTURE_CHANNEL_SPECULAR: {
 			ct->specular = p_texture;
@@ -1316,7 +1316,7 @@ bool RendererStorageRD::canvas_texture_get_uniform_set(RID p_texture, RS::Canvas
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 1;
 
-			t = texture_owner.getornull(ct->normalmap);
+			t = texture_owner.getornull(ct->normal_map);
 			if (!t) {
 				u.ids.push_back(texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL));
 				ct->use_normal_cache = false;
