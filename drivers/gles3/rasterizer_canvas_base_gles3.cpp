@@ -1137,7 +1137,7 @@ void RasterizerCanvasBaseGLES3::draw_window_margins(int *black_margin, RID *blac
 
 void RasterizerCanvasBaseGLES3::initialize() {
 
-	bool flag_stream = GLOBAL_GET("rendering/options/api_usage_legacy/flag_stream");
+	bool flag_stream = false;
 	if (flag_stream) {
 		_buffer_upload_usage_flag = GL_STREAM_DRAW;
 	} else {

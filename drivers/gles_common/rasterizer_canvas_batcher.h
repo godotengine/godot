@@ -1052,10 +1052,6 @@ PREAMBLE(void)::batch_initialize() {
 	bdata.settings_light_max_join_items = CLAMP(bdata.settings_light_max_join_items, 0, 65535);
 	bdata.settings_item_reordering_lookahead = CLAMP(bdata.settings_item_reordering_lookahead, 0, 65535);
 
-	// allow user to override the api usage techniques using project settings
-	bdata.buffer_mode_batch_upload_send_null = GLOBAL_GET("rendering/options/api_usage_batching/send_null");
-	bdata.buffer_mode_batch_upload_flag_stream = GLOBAL_GET("rendering/options/api_usage_batching/flag_stream");
-
 	// for debug purposes, output a string with the batching options
 	String batching_options_string = "OpenGL ES Batching: ";
 	if (bdata.settings_use_batching) {
