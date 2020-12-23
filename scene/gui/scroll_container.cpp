@@ -328,6 +328,7 @@ void ScrollContainer::_notification(int p_what) {
 			if (rtl && v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) {
 				r.position.x += v_scroll->get_minimum_size().x;
 			}
+			r.position = r.position.floor();
 			fit_child_in_rect(c, r);
 		}
 

@@ -905,7 +905,7 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 	float off = 0.0f;
 	for (int i = 0; i < v_size; i++) {
 		for (int k = 0; k < glyphs[i].repeat; k++) {
-			if (glyphs[i].count > 0 && glyphs[i].index != 0) {
+			if ((glyphs[i].count > 0) && ((glyphs[i].index != 0) || ((glyphs[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE))) {
 				if (glyphs[i].start < end && glyphs[i].end > start) {
 					// Grapheme fully in selection range.
 					if (glyphs[i].start >= start && glyphs[i].end <= end) {
@@ -962,6 +962,10 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 
 	// Merge intersecting ranges.
 	int i = 0;
+	while (i < ranges.size()) {
+		i++;
+	}
+	i = 0;
 	while (i < ranges.size()) {
 		int j = i + 1;
 		while (j < ranges.size()) {
@@ -1034,31 +1038,36 @@ int TextServer::shaped_text_hit_test_position(RID p_shaped, float p_coords) cons
 
 	float off = 0.0f;
 	for (int i = 0; i < v_size; i++) {
-		for (int k = 0; k < glyphs[i].repeat; k++) {
-			if (glyphs[i].count > 0) {
-				float advance = 0.f;
-				for (int j = 0; j < glyphs[i].count; j++) {
-					advance += glyphs[i + j].advance;
-				}
-				// Place caret to the left of clicked grapheme.
-				if (p_coords >= off && p_coords < off + advance / 2) {
-					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-						return glyphs[i].end;
-					} else {
-						return glyphs[i].start;
-					}
-				}
-				// Place caret to the right of clicked grapheme.
-				if (p_coords >= off + advance / 2 && p_coords < off + advance) {
-					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-						return glyphs[i].start;
-					} else {
-						return glyphs[i].end;
-					}
+		if (glyphs[i].count > 0) {
+			float advance = 0.f;
+			for (int j = 0; j < glyphs[i].count; j++) {
+				advance += glyphs[i + j].advance * glyphs[i + j].repeat;
+			}
+			if (((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) == GRAPHEME_IS_VIRTUAL) && (p_coords >= off && p_coords < off + advance)) {
+				if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+					return glyphs[i].end;
+				} else {
+					return glyphs[i].start;
 				}
 			}
-			off += glyphs[i].advance;
+			// Place caret to the left of clicked grapheme.
+			if (p_coords >= off && p_coords < off + advance / 2) {
+				if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+					return glyphs[i].end;
+				} else {
+					return glyphs[i].start;
+				}
+			}
+			// Place caret to the right of clicked grapheme.
+			if (p_coords >= off + advance / 2 && p_coords < off + advance) {
+				if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+					return glyphs[i].start;
+				} else {
+					return glyphs[i].end;
+				}
+			}
 		}
+		off += glyphs[i].advance * glyphs[i].repeat;
 	}
 	return 0;
 }

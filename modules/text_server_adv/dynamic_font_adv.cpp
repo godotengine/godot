@@ -432,8 +432,8 @@ DynamicFontDataAdvanced::Character DynamicFontDataAdvanced::bitmap_to_character(
 	}
 
 	Character chr;
-	chr.align = Vector2(xofs, -yofs) * p_data->scale_color_font / oversampling;
-	chr.advance = advance * p_data->scale_color_font / oversampling;
+	chr.align = (Vector2(xofs, -yofs) * p_data->scale_color_font / oversampling).round();
+	chr.advance = (advance * p_data->scale_color_font / oversampling).round();
 	chr.texture_idx = tex_pos.index;
 	chr.found = true;
 

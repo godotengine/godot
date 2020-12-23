@@ -606,11 +606,11 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 	}
 }
 
-float RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &p_shadow_ofs) {
+void RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &p_shadow_ofs) {
 	Vector2 off;
 
-	ERR_FAIL_COND_V(p_frame == nullptr, off.y);
-	ERR_FAIL_COND_V(p_line < 0 || p_line >= p_frame->lines.size(), off.y);
+	ERR_FAIL_COND(p_frame == nullptr);
+	ERR_FAIL_COND(p_line < 0 || p_line >= p_frame->lines.size());
 
 	Line &l = p_frame->lines.write[p_line];
 
@@ -619,7 +619,7 @@ float RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p
 	Variant meta;
 
 	if (it_from == nullptr) {
-		return off.y;
+		return;
 	}
 
 	RID ci = get_canvas_item();
@@ -1040,8 +1040,6 @@ float RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p
 		}
 		off.y += TS->shaped_text_get_descent(rid);
 	}
-
-	return off.y;
 }
 
 void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool *r_outside) {
@@ -1065,7 +1063,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 
 	//TODO, change to binary search ?
 	while (from_line < main->lines.size()) {
-		if (main->lines[from_line].offset.y + main->lines[from_line].text_buf->get_size().y + _get_text_rect().get_position().y >= vofs) {
+		if (main->lines[from_line].offset.y + main->lines[from_line].text_buf->get_size().y >= vofs) {
 			break;
 		}
 		from_line++;
@@ -1349,7 +1347,7 @@ void RichTextLabel::_notification(int p_what) {
 
 			//TODO, change to binary search ?
 			while (from_line < main->lines.size()) {
-				if (main->lines[from_line].offset.y + main->lines[from_line].text_buf->get_size().y + _get_text_rect().get_position().y >= vofs) {
+				if (main->lines[from_line].offset.y + main->lines[from_line].text_buf->get_size().y >= vofs) {
 					break;
 				}
 				from_line++;
@@ -1372,7 +1370,8 @@ void RichTextLabel::_notification(int p_what) {
 			Point2 ofs = text_rect.get_position() + Vector2(0, main->lines[from_line].offset.y - vofs);
 			while (ofs.y < size.height && from_line < main->lines.size()) {
 				visible_line_count++;
-				ofs.y += _draw_line(main, from_line, ofs, text_rect.size.x, base_color, outline_size, outline_color, font_color_shadow, use_outline, shadow_ofs);
+				_draw_line(main, from_line, ofs, text_rect.size.x, base_color, outline_size, outline_color, font_color_shadow, use_outline, shadow_ofs);
+				ofs.y += main->lines[from_line].text_buf->get_size().y;
 				from_line++;
 			}
 		} break;
@@ -2062,14 +2061,14 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 		int total_height = 0;
 		if (p_frame->lines.size()) {
-			total_height = p_frame->lines[p_frame->lines.size() - 1].offset.y + p_frame->lines[p_frame->lines.size() - 1].text_buf->get_size().y + get_theme_stylebox("normal")->get_minimum_size().height;
+			total_height = p_frame->lines[p_frame->lines.size() - 1].offset.y + p_frame->lines[p_frame->lines.size() - 1].text_buf->get_size().y;
 		}
 
 		p_frame->first_resized_line = p_frame->lines.size();
 
 		updating_scroll = true;
 		vscroll->set_max(total_height);
-		vscroll->set_page(size.height);
+		vscroll->set_page(text_rect.size.height);
 		if (scroll_follow && scroll_following) {
 			vscroll->set_value(total_height - size.height);
 		}
@@ -2098,7 +2097,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 	int total_height = 0;
 	if (p_frame->lines.size()) {
-		total_height = p_frame->lines[p_frame->lines.size() - 1].offset.y + p_frame->lines[p_frame->lines.size() - 1].text_buf->get_size().y + get_theme_stylebox("normal")->get_minimum_size().height;
+		total_height = p_frame->lines[p_frame->lines.size() - 1].offset.y + p_frame->lines[p_frame->lines.size() - 1].text_buf->get_size().y;
 	}
 
 	p_frame->first_invalid_line = p_frame->lines.size();
@@ -2106,7 +2105,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 	updating_scroll = true;
 	vscroll->set_max(total_height);
-	vscroll->set_page(size.height);
+	vscroll->set_page(text_rect.size.height);
 	if (scroll_follow && scroll_following) {
 		vscroll->set_value(total_height - size.height);
 	}
@@ -3649,7 +3648,7 @@ void RichTextLabel::install_effect(const Variant effect) {
 int RichTextLabel::get_content_height() const {
 	int total_height = 0;
 	if (main->lines.size()) {
-		total_height = main->lines[main->lines.size() - 1].offset.y + main->lines[main->lines.size() - 1].text_buf->get_size().y + get_theme_stylebox("normal")->get_minimum_size().height;
+		total_height = main->lines[main->lines.size() - 1].offset.y + main->lines[main->lines.size() - 1].text_buf->get_size().y;
 	}
 	return total_height;
 }
