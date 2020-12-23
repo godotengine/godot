@@ -91,7 +91,6 @@
 #include "editor/export_template_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/import/editor_import_collada.h"
-#include "editor/import/editor_scene_importer_gltf.h"
 #include "editor/import/resource_importer_bitmask.h"
 #include "editor/import/resource_importer_csv.h"
 #include "editor/import/resource_importer_csv_translation.h"
@@ -103,6 +102,7 @@
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
 #include "editor/import/resource_importer_wav.h"
+#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "editor/import_dock.h"
 #include "editor/multi_node_edit.h"
 #include "editor/node_dock.h"
@@ -3673,7 +3673,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorFeatureProfile>();
 	ClassDB::register_class<EditorSpinSlider>();
 	ClassDB::register_class<EditorSceneImporterMesh>();
-	ClassDB::register_class<EditorSceneImporterMeshNode>();
+	ClassDB::register_class<EditorSceneImporterMeshNode3D>();
 
 	ClassDB::register_virtual_class<FileSystemDock>();
 
@@ -5711,10 +5711,6 @@ EditorNode::EditorNode() {
 			Ref<EditorOBJImporter> import_obj2;
 			import_obj2.instance();
 			import_scene->add_importer(import_obj2);
-
-			Ref<EditorSceneImporterGLTF> import_gltf;
-			import_gltf.instance();
-			import_scene->add_importer(import_gltf);
 
 			Ref<EditorSceneImporterESCN> import_escn;
 			import_escn.instance();
