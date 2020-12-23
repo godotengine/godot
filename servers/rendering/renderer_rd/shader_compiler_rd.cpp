@@ -1340,8 +1340,8 @@ ShaderCompilerRD::ShaderCompilerRD() {
 
 	actions[RS::SHADER_SPATIAL].renames["FRAGCOORD"] = "gl_FragCoord";
 	actions[RS::SHADER_SPATIAL].renames["FRONT_FACING"] = "gl_FrontFacing";
-	actions[RS::SHADER_SPATIAL].renames["NORMALMAP"] = "normalmap";
-	actions[RS::SHADER_SPATIAL].renames["NORMALMAP_DEPTH"] = "normaldepth";
+	actions[RS::SHADER_SPATIAL].renames["NORMAL_MAP"] = "normal_map";
+	actions[RS::SHADER_SPATIAL].renames["NORMAL_MAP_DEPTH"] = "normal_map_depth";
 	actions[RS::SHADER_SPATIAL].renames["ALBEDO"] = "albedo";
 	actions[RS::SHADER_SPATIAL].renames["ALPHA"] = "alpha";
 	actions[RS::SHADER_SPATIAL].renames["METALLIC"] = "metallic";
@@ -1387,8 +1387,8 @@ ShaderCompilerRD::ShaderCompilerRD() {
 	actions[RS::SHADER_SPATIAL].usage_defines["AO_LIGHT_AFFECT"] = "#define ENABLE_AO\n";
 	actions[RS::SHADER_SPATIAL].usage_defines["UV"] = "#define ENABLE_UV_INTERP\n";
 	actions[RS::SHADER_SPATIAL].usage_defines["UV2"] = "#define ENABLE_UV2_INTERP\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["NORMALMAP"] = "#define ENABLE_NORMALMAP\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["NORMALMAP_DEPTH"] = "@NORMALMAP";
+	actions[RS::SHADER_SPATIAL].usage_defines["NORMAL_MAP"] = "#define ENABLE_NORMAL_MAP\n";
+	actions[RS::SHADER_SPATIAL].usage_defines["NORMAL_MAP_DEPTH"] = "@NORMAL_MAP";
 	actions[RS::SHADER_SPATIAL].usage_defines["COLOR"] = "#define ENABLE_COLOR_INTERP\n";
 	actions[RS::SHADER_SPATIAL].usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 	actions[RS::SHADER_SPATIAL].usage_defines["ALPHA_SCISSOR"] = "#define ALPHA_SCISSOR_USED\n";

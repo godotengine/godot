@@ -350,10 +350,10 @@ public:
 	void fix_alpha_edges();
 	void premultiply_alpha();
 	void srgb_to_linear();
-	void normalmap_to_xy();
+	void normal_map_to_xy();
 	Ref<Image> rgbe_to_srgb();
 	Ref<Image> get_image_from_mipmap(int p_mipamp) const;
-	void bumpmap_to_normalmap(float bump_scale = 1.0);
+	void bump_map_to_normal_map(float bump_scale = 1.0);
 
 	void blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest);
 	void blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest);
