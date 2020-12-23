@@ -239,7 +239,8 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns a hashed integer value representing the array contents.
+				Returns a hashed integer value representing the array and its contents.
+				[b]Note:[/b] Arrays with equal contents can still produce different hashes. Only the exact same arrays will produce the same hashed integer value.
 			</description>
 		</method>
 		<method name="insert">
