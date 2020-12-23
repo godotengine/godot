@@ -8570,8 +8570,6 @@ void RasterizerStorageGLES3::initialize() {
 			}
 		}
 	}
-
-	config.should_orphan = GLOBAL_GET("rendering/options/api_usage_legacy/orphan_buffers");
 }
 
 void RasterizerStorageGLES3::finalize() {

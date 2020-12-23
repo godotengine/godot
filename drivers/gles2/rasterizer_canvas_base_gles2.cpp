@@ -947,7 +947,7 @@ void RasterizerCanvasBaseGLES2::draw_lens_distortion_rect(const Rect2 &p_rect, f
 
 void RasterizerCanvasBaseGLES2::initialize() {
 
-	bool flag_stream = GLOBAL_GET("rendering/options/api_usage_legacy/flag_stream");
+	bool flag_stream = false;
 	if (flag_stream)
 		_buffer_upload_usage_flag = GL_STREAM_DRAW;
 	else
