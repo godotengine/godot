@@ -454,13 +454,6 @@
 				Returns the position and size of the control relative to the top-left corner of the parent Control. See [member rect_position] and [member rect_size].
 			</description>
 		</method>
-		<method name="get_rotation" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the rotation (in radians).
-			</description>
-		</method>
 		<method name="get_theme_color" qualifiers="const">
 			<return type="Color">
 			</return>
@@ -981,15 +974,6 @@
 				If [code]keep_margins[/code] is [code]true[/code], control's anchors will be updated instead of margins.
 			</description>
 		</method>
-		<method name="set_rotation">
-			<return type="void">
-			</return>
-			<argument index="0" name="radians" type="float">
-			</argument>
-			<description>
-				Sets the rotation (in radians).
-			</description>
-		</method>
 		<method name="set_size">
 			<return type="void">
 			</return>
@@ -1117,7 +1101,10 @@
 		<member name="rect_position" type="Vector2" setter="_set_position" getter="get_position" default="Vector2( 0, 0 )">
 			The node's position, relative to its parent. It corresponds to the rectangle's top-left corner. The property is not affected by [member rect_pivot_offset].
 		</member>
-		<member name="rect_rotation" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees" default="0.0">
+		<member name="rect_rotation" type="float" setter="set_rotation" getter="get_rotation" default="0.0">
+			The node's rotation around its pivot, in radians. See [member rect_pivot_offset] to change the pivot's position.
+		</member>
+		<member name="rect_rotation_degrees" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees" default="0.0">
 			The node's rotation around its pivot, in degrees. See [member rect_pivot_offset] to change the pivot's position.
 		</member>
 		<member name="rect_scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2( 1, 1 )">
