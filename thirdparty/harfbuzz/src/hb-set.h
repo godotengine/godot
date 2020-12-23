@@ -41,6 +41,15 @@ HB_BEGIN_DECLS
  */
 #define HB_SET_VALUE_INVALID ((hb_codepoint_t) -1)
 
+/**
+ * hb_set_t:
+ *
+ * Data type for holding a set of integers. #hb_set_t's are
+ * used to gather and contain glyph IDs, Unicode code
+ * points, and various other collections of discrete 
+ * values.
+ *
+ **/
 typedef struct hb_set_t hb_set_t;
 
 

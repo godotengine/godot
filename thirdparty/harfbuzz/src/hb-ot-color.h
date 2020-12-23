@@ -100,8 +100,7 @@ hb_ot_color_has_layers (hb_face_t *face);
  *
  * Since: 2.1.0
  **/
-typedef struct hb_ot_color_layer_t
-{
+typedef struct hb_ot_color_layer_t {
   hb_codepoint_t glyph;
   unsigned int   color_index;
 } hb_ot_color_layer_t;

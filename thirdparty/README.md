@@ -176,7 +176,7 @@ Files extracted from upstream source:
 ## HarfBuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 2.7.2
+- Version: 2.7.4
 - License: HarfBuzz
 
 Files extracted from upstream source:

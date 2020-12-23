@@ -88,11 +88,37 @@ typedef unsigned __int64 uint64_t;
 
 HB_BEGIN_DECLS
 
-
+/**
+ * hb_bool_t:
+ * 
+ * Data type for booleans.
+ *
+ **/
 typedef int hb_bool_t;
 
+/**
+ * hb_codepoint_t:
+ * 
+ * Data type for holding Unicode codepoints. Also
+ * used to hold glyph IDs.
+ *
+ **/
 typedef uint32_t hb_codepoint_t;
+/**
+ * hb_position_t:
+ * 
+ * Data type for holding a single coordinate value.
+ * Contour points and other multi-dimensional data are
+ * stored as tuples of #hb_position_t's.
+ *
+ **/
 typedef int32_t hb_position_t;
+/**
+ * hb_mask_t:
+ * 
+ * Data type for bitmasks.
+ *
+ **/
 typedef uint32_t hb_mask_t;
 
 typedef union _hb_var_int_t {
@@ -107,9 +133,33 @@ typedef union _hb_var_int_t {
 
 /* hb_tag_t */
 
+/**
+ * hb_tag_t:
+ * 
+ * Data type for tag identifiers. Tags are four
+ * byte integers, each byte representing a character.
+ *
+ * Tags are used to identify tables, design-variation axes,
+ * scripts, languages, font features, and baselines with
+ * human-readable names.
+ *
+ **/
 typedef uint32_t hb_tag_t;
 
+/**
+ * HB_TAG:
+ *
+ * Constructs an #hb_tag_t from four characters.
+ *
+ **/
 #define HB_TAG(c1,c2,c3,c4) ((hb_tag_t)((((uint32_t)(c1)&0xFF)<<24)|(((uint32_t)(c2)&0xFF)<<16)|(((uint32_t)(c3)&0xFF)<<8)|((uint32_t)(c4)&0xFF)))
+
+/**
+ * HB_UNTAG:
+ *
+ * Extracts the characters from an #hb_tag_t.
+ *
+ **/
 #define HB_UNTAG(tag)   (uint8_t)(((tag)>>24)&0xFF), (uint8_t)(((tag)>>16)&0xFF), (uint8_t)(((tag)>>8)&0xFF), (uint8_t)((tag)&0xFF)
 
 #define HB_TAG_NONE HB_TAG(0,0,0,0)
@@ -132,6 +182,13 @@ hb_tag_to_string (hb_tag_t tag, char *buf);
  * @HB_DIRECTION_RTL: Text is set horizontally from right to left.
  * @HB_DIRECTION_TTB: Text is set vertically from top to bottom.
  * @HB_DIRECTION_BTT: Text is set vertically from bottom to top.
+ *
+ * The direction of a text segment or buffer.
+ * 
+ * A segment can also be tested for horizontal or vertical
+ * orientation (irrespective of specific direction) with 
+ * HB_DIRECTION_IS_HORIZONTAL() or HB_DIRECTION_IS_VERTICAL().
+ *
  */
 typedef enum {
   HB_DIRECTION_INVALID = 0,
@@ -148,12 +205,59 @@ hb_direction_from_string (const char *str, int len);
 HB_EXTERN const char *
 hb_direction_to_string (hb_direction_t direction);
 
+/**
+ * HB_DIRECTION_IS_VALID:
+ * @dir: #hb_direction_t to test
+ *
+ * Tests whether a text direction is valid.
+ *
+ **/
 #define HB_DIRECTION_IS_VALID(dir)	((((unsigned int) (dir)) & ~3U) == 4)
 /* Direction must be valid for the following */
+/**
+ * HB_DIRECTION_IS_HORIZONTAL:
+ * @dir: #hb_direction_t to test
+ *
+ * Tests whether a text direction is horizontal. Requires
+ * that the direction be valid.
+ *
+ **/
 #define HB_DIRECTION_IS_HORIZONTAL(dir)	((((unsigned int) (dir)) & ~1U) == 4)
+/**
+ * HB_DIRECTION_IS_VERTICAL:
+ * @dir: #hb_direction_t to test
+ *
+ * Tests whether a text direction is vertical. Requires
+ * that the direction be valid.
+ *
+ **/
 #define HB_DIRECTION_IS_VERTICAL(dir)	((((unsigned int) (dir)) & ~1U) == 6)
+/**
+ * HB_DIRECTION_IS_FORWARD:
+ * @dir: #hb_direction_t to test
+ *
+ * Tests whether a text direction moves forward (from left to right, or from
+ * top to bottom). Requires that the direction be valid.
+ *
+ **/
 #define HB_DIRECTION_IS_FORWARD(dir)	((((unsigned int) (dir)) & ~2U) == 4)
+/**
+ * HB_DIRECTION_IS_BACKWARD:
+ * @dir: #hb_direction_t to test
+ *
+ * Tests whether a text direction moves backward (from right to left, or from
+ * bottom to top). Requires that the direction be valid.
+ *
+ **/
 #define HB_DIRECTION_IS_BACKWARD(dir)	((((unsigned int) (dir)) & ~2U) == 5)
+/**
+ * HB_DIRECTION_REVERSE:
+ * @dir: #hb_direction_t to reverse
+ *
+ * Reverses a text direction. Requires that the direction
+ * be valid.
+ *
+ **/
 #define HB_DIRECTION_REVERSE(dir)	((hb_direction_t) (((unsigned int) (dir)) ^ 1))
 
 
@@ -173,7 +277,169 @@ HB_EXTERN hb_language_t
 hb_language_get_default (void);
 
 
-/* hb_script_t */
+/**
+ * hb_script_t:
+ * @HB_SCRIPT_COMMON: HB_TAG ('Z','y','y','y')
+ * @HB_SCRIPT_INHERITED: HB_TAG ('Z','i','n','h')
+ * @HB_SCRIPT_UNKNOWN: HB_TAG ('Z','z','z','z')
+ * @HB_SCRIPT_ARABIC
+ * @HB_SCRIPT_ARMENIAN
+ * @HB_SCRIPT_BENGALI
+ * @HB_SCRIPT_CYRILLIC
+ * @HB_SCRIPT_DEVANAGARI
+ * @HB_SCRIPT_GEORGIAN
+ * @HB_SCRIPT_GREEK
+ * @HB_SCRIPT_GUJARATI
+ * @HB_SCRIPT_GURMUKHI
+ * @HB_SCRIPT_HANGUL
+ * @HB_SCRIPT_HAN
+ * @HB_SCRIPT_HEBREW
+ * @HB_SCRIPT_HIRAGANA
+ * @HB_SCRIPT_KANNADA
+ * @HB_SCRIPT_KATAKANA
+ * @HB_SCRIPT_LAO
+ * @HB_SCRIPT_LATIN
+ * @HB_SCRIPT_MALAYALAM
+ * @HB_SCRIPT_ORIYA
+ * @HB_SCRIPT_TAMIL
+ * @HB_SCRIPT_TELUGU
+ * @HB_SCRIPT_THAI
+ * @HB_SCRIPT_TIBETAN
+ * @HB_SCRIPT_BOPOMOFO
+ * @HB_SCRIPT_BRAILLE
+ * @HB_SCRIPT_CANADIAN_SYLLABICS
+ * @HB_SCRIPT_CHEROKEE
+ * @HB_SCRIPT_ETHIOPIC
+ * @HB_SCRIPT_KHMER
+ * @HB_SCRIPT_MONGOLIAN
+ * @HB_SCRIPT_MYANMAR
+ * @HB_SCRIPT_OGHAM
+ * @HB_SCRIPT_RUNIC
+ * @HB_SCRIPT_SINHALA
+ * @HB_SCRIPT_SYRIAC
+ * @HB_SCRIPT_THAANA
+ * @HB_SCRIPT_YI
+ * @HB_SCRIPT_DESERET
+ * @HB_SCRIPT_GOTHIC
+ * @HB_SCRIPT_OLD_ITALIC
+ * @HB_SCRIPT_BUHID
+ * @HB_SCRIPT_HANUNOO
+ * @HB_SCRIPT_TAGALOG
+ * @HB_SCRIPT_TAGBANWA
+ * @HB_SCRIPT_CYPRIOT
+ * @HB_SCRIPT_LIMBU
+ * @HB_SCRIPT_LINEAR_B
+ * @HB_SCRIPT_OSMANYA
+ * @HB_SCRIPT_SHAVIAN
+ * @HB_SCRIPT_TAI_LE
+ * @HB_SCRIPT_UGARITIC
+ * @HB_SCRIPT_BUGINESE
+ * @HB_SCRIPT_COPTIC
+ * @HB_SCRIPT_GLAGOLITIC
+ * @HB_SCRIPT_KHAROSHTHI
+ * @HB_SCRIPT_NEW_TAI_LUE
+ * @HB_SCRIPT_OLD_PERSIAN
+ * @HB_SCRIPT_SYLOTI_NAGRI
+ * @HB_SCRIPT_TIFINAGH
+ * @HB_SCRIPT_BALINESE
+ * @HB_SCRIPT_CUNEIFORM
+ * @HB_SCRIPT_NKO
+ * @HB_SCRIPT_PHAGS_PA
+ * @HB_SCRIPT_PHOENICIAN
+ * @HB_SCRIPT_CARIAN
+ * @HB_SCRIPT_CHAM
+ * @HB_SCRIPT_KAYAH_LI
+ * @HB_SCRIPT_LEPCHA
+ * @HB_SCRIPT_LYCIAN
+ * @HB_SCRIPT_LYDIAN
+ * @HB_SCRIPT_OL_CHIKI
+ * @HB_SCRIPT_REJANG
+ * @HB_SCRIPT_SAURASHTRA
+ * @HB_SCRIPT_SUNDANESE
+ * @HB_SCRIPT_VAI
+ * @HB_SCRIPT_AVESTAN
+ * @HB_SCRIPT_BAMUM
+ * @HB_SCRIPT_EGYPTIAN_HIEROGLYPHS
+ * @HB_SCRIPT_IMPERIAL_ARAMAIC
+ * @HB_SCRIPT_INSCRIPTIONAL_PAHLAVI
+ * @HB_SCRIPT_INSCRIPTIONAL_PARTHIAN
+ * @HB_SCRIPT_JAVANESE
+ * @HB_SCRIPT_KAITHI
+ * @HB_SCRIPT_LISU
+ * @HB_SCRIPT_MEETEI_MAYEK
+ * @HB_SCRIPT_OLD_SOUTH_ARABIAN
+ * @HB_SCRIPT_OLD_TURKIC
+ * @HB_SCRIPT_SAMARITAN
+ * @HB_SCRIPT_TAI_THAM
+ * @HB_SCRIPT_TAI_VIET
+ * @HB_SCRIPT_BATAK
+ * @HB_SCRIPT_BRAHMI
+ * @HB_SCRIPT_MANDAIC
+ * @HB_SCRIPT_CHAKMA
+ * @HB_SCRIPT_MEROITIC_CURSIVE
+ * @HB_SCRIPT_MEROITIC_HIEROGLYPHS
+ * @HB_SCRIPT_MIAO
+ * @HB_SCRIPT_SHARADA
+ * @HB_SCRIPT_SORA_SOMPENG
+ * @HB_SCRIPT_TAKRI
+ * @HB_SCRIPT_BASSA_VAH
+ * @HB_SCRIPT_CAUCASIAN_ALBANIAN
+ * @HB_SCRIPT_DUPLOYAN
+ * @HB_SCRIPT_ELBASAN
+ * @HB_SCRIPT_GRANTHA
+ * @HB_SCRIPT_KHOJKI
+ * @HB_SCRIPT_KHUDAWADI
+ * @HB_SCRIPT_LINEAR_A
+ * @HB_SCRIPT_MAHAJANI
+ * @HB_SCRIPT_MANICHAEAN
+ * @HB_SCRIPT_MENDE_KIKAKUI
+ * @HB_SCRIPT_MODI
+ * @HB_SCRIPT_MRO
+ * @HB_SCRIPT_NABATAEAN
+ * @HB_SCRIPT_OLD_NORTH_ARABIAN
+ * @HB_SCRIPT_OLD_PERMIC
+ * @HB_SCRIPT_PAHAWH_HMONG
+ * @HB_SCRIPT_PALMYRENE
+ * @HB_SCRIPT_PAU_CIN_HAU
+ * @HB_SCRIPT_PSALTER_PAHLAVI
+ * @HB_SCRIPT_SIDDHAM
+ * @HB_SCRIPT_TIRHUTA
+ * @HB_SCRIPT_WARANG_CITI
+ * @HB_SCRIPT_AHOM
+ * @HB_SCRIPT_ANATOLIAN_HIEROGLYPHS
+ * @HB_SCRIPT_HATRAN
+ * @HB_SCRIPT_MULTANI
+ * @HB_SCRIPT_OLD_HUNGARIAN
+ * @HB_SCRIPT_SIGNWRITING
+ * @HB_SCRIPT_ADLAM
+ * @HB_SCRIPT_BHAIKSUKI
+ * @HB_SCRIPT_MARCHEN
+ * @HB_SCRIPT_OSAGE
+ * @HB_SCRIPT_TANGUT
+ * @HB_SCRIPT_NEWA
+ * @HB_SCRIPT_MASARAM_GONDI
+ * @HB_SCRIPT_NUSHU
+ * @HB_SCRIPT_SOYOMBO
+ * @HB_SCRIPT_ZANABAZAR_SQUARE
+ * @HB_SCRIPT_DOGRA
+ * @HB_SCRIPT_GUNJALA_GONDI
+ * @HB_SCRIPT_HANIFI_ROHINGYA
+ * @HB_SCRIPT_MAKASAR
+ * @HB_SCRIPT_MEDEFAIDRIN
+ * @HB_SCRIPT_OLD_SOGDIAN
+ * @HB_SCRIPT_SOGDIAN
+ * @HB_SCRIPT_ELYMAIC
+ * @HB_SCRIPT_NANDINAGARI
+ * @HB_SCRIPT_NYIAKENG_PUACHUE_HMONG
+ * @HB_SCRIPT_WANCHO
+ * @HB_SCRIPT_INVALID: #HB_TAG_NONE
+ *
+ * Data type for scripts. Each #hb_script_t's value is an #hb_tag_t corresponding
+ * to the four-letter values defined by [ISO 15924](https://unicode.org/iso15924/).
+ *
+ * See also the Script (sc) property of the Unicode Character Database.
+ *
+ **/
 
 /* https://unicode.org/iso15924/ */
 /* https://docs.google.com/spreadsheets/d/1Y90M0Ie3MUJ6UVCRDOypOtijlMDLNNyyLk36T6iMu0o */
@@ -410,6 +676,12 @@ hb_script_get_horizontal_direction (hb_script_t script);
 
 /* User data */
 
+/**
+ * hb_user_data_key_t:
+ *
+ * Data structure for holding user-data keys.
+ *
+ **/
 typedef struct hb_user_data_key_t {
   /*< private >*/
   char unused;
@@ -435,10 +707,10 @@ typedef void (*hb_destroy_func_t) (void *user_data);
 
 /**
  * hb_feature_t:
- * @tag: a feature tag
- * @value: 0 disables the feature, non-zero (usually 1) enables the feature.
- * For features implemented as lookup type 3 (like 'salt') the @value is a one
- * based index into the alternates.
+ * @tag: The #hb_tag_t tag of the feature
+ * @value: The value of the feature. 0 disables the feature, non-zero (usually
+ * 1) enables the feature.  For features implemented as lookup type 3 (like
+ * 'salt') the @value is a one based index into the alternates.
  * @start: the cluster to start applying this feature setting (inclusive).
  * @end: the cluster to end applying this feature setting (exclusive).
  *
@@ -465,7 +737,13 @@ hb_feature_to_string (hb_feature_t *feature,
 
 /**
  * hb_variation_t:
+ * @tag: The #hb_tag_t tag of the variation-axis name
+ * @value: The value of the variation axis
  *
+ * Data type for holding variation data. Registered OpenType
+ * variation-axis tags are listed at
+ * https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg
+ * 
  * Since: 1.4.2
  */
 typedef struct hb_variation_t {
@@ -484,7 +762,8 @@ hb_variation_to_string (hb_variation_t *variation,
 /**
  * hb_color_t:
  *
- * Data type for holding color values.
+ * Data type for holding color values. Colors are eight bits per
+ * channel RGB plus alpha transparency.
  *
  * Since: 2.1.0
  */
