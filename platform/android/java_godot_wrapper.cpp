@@ -103,7 +103,7 @@ jobject GodotJavaWrapper::get_member_object(const char *p_name, const char *p_cl
 jobject GodotJavaWrapper::get_class_loader() {
 	if (_get_class_loader) {
 		JNIEnv *env = ThreadAndroid::get_env();
-		return env->CallObjectMethod(godot_instance, _get_class_loader);
+		return env->CallObjectMethod(activity, _get_class_loader);
 	} else {
 		return NULL;
 	}
