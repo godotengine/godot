@@ -12,7 +12,7 @@
 		<method name="get_stretch_margin" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<description>
 			</description>
@@ -20,7 +20,7 @@
 		<method name="set_stretch_margin">
 			<return type="void">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="value" type="int">
 			</argument>

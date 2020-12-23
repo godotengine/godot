@@ -327,7 +327,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 
 	VBoxContainer *container = memnew(VBoxContainer);
 	add_child(container);
-	container->set_anchors_and_margins_preset(PRESET_WIDE);
+	container->set_anchors_and_offsets_preset(PRESET_WIDE);
 
 	HBoxContainer *hbox = memnew(HBoxContainer);
 	container->add_child(hbox);
@@ -381,7 +381,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	new_architecture_input = memnew(LineEdit);
 	new_architecture_dialog->add_child(new_architecture_input);
 	//	new_architecture_dialog->set_custom_minimum_size(Vector2(300, 80) * EDSCALE);
-	new_architecture_input->set_anchors_and_margins_preset(PRESET_HCENTER_WIDE, PRESET_MODE_MINSIZE, 5 * EDSCALE);
+	new_architecture_input->set_anchors_and_offsets_preset(PRESET_HCENTER_WIDE, PRESET_MODE_MINSIZE, 5 * EDSCALE);
 	new_architecture_dialog->get_ok_button()->connect("pressed", callable_mp(this, &GDNativeLibraryEditor::_on_create_new_entry));
 }
 

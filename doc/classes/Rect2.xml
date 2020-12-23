@@ -133,12 +133,12 @@
 		<method name="grow_margin">
 			<return type="Rect2">
 			</return>
-			<argument index="0" name="margin" type="int">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="by" type="float">
 			</argument>
 			<description>
-				Returns a copy of the [Rect2] grown a given amount of units towards the [enum Margin] direction.
+				Returns a copy of the [Rect2] grown a given amount of units on the specified [enum Side].
 			</description>
 		</method>
 		<method name="has_no_area">

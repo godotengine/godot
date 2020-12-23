@@ -73,7 +73,7 @@ private:
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
 
 	bool show_close;
-	Vector2 offset;
+	Vector2 position_offset;
 	bool comment;
 	bool resizable;
 
@@ -142,8 +142,8 @@ public:
 	void set_language(const String &p_language);
 	String get_language() const;
 
-	void set_offset(const Vector2 &p_offset);
-	Vector2 get_offset() const;
+	void set_position_offset(const Vector2 &p_offset);
+	Vector2 get_position_offset() const;
 
 	void set_selected(bool p_selected);
 	bool is_selected();
