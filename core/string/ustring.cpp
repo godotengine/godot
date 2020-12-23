@@ -4285,7 +4285,10 @@ bool String::is_rel_path() const {
 }
 
 String String::get_base_dir() const {
-	int basepos = find("://");
+	int basepos = find(":/");
+	if (basepos == -1) {
+		basepos = find(":\\");
+	}
 	String rs;
 	String base;
 	if (basepos != -1) {
