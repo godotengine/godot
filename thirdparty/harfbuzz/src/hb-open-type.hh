@@ -433,8 +433,6 @@ struct UnsizedArrayOf
   { return hb_array (arrayZ, len); }
   hb_array_t<const Type> as_array (unsigned int len) const
   { return hb_array (arrayZ, len); }
-  operator hb_array_t<      Type> ()       { return as_array (); }
-  operator hb_array_t<const Type> () const { return as_array (); }
 
   template <typename T>
   Type &lsearch (unsigned int len, const T &x, Type &not_found = Crap (Type))

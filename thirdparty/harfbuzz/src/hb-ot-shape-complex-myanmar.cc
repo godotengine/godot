@@ -97,12 +97,6 @@ collect_features_myanmar (hb_ot_shape_planner_t *plan)
     map->enable_feature (myanmar_other_features[i], F_MANUAL_ZWJ);
 }
 
-static void
-override_features_myanmar (hb_ot_shape_planner_t *plan)
-{
-  plan->map.disable_feature (HB_TAG('l','i','g','a'));
-}
-
 
 enum myanmar_syllable_type_t {
   myanmar_consonant_syllable,
@@ -333,10 +327,13 @@ reorder_myanmar (const hb_ot_shape_plan_t *plan,
 		 hb_font_t *font,
 		 hb_buffer_t *buffer)
 {
-  insert_dotted_circles_myanmar (plan, font, buffer);
+  if (buffer->message (font, "start reordering myanmar")) {
+    insert_dotted_circles_myanmar (plan, font, buffer);
 
-  foreach_syllable (buffer, start, end)
-    reorder_syllable_myanmar (plan, font->face, buffer, start, end);
+    foreach_syllable (buffer, start, end)
+      reorder_syllable_myanmar (plan, font->face, buffer, start, end);
+    (void) buffer->message (font, "end reordering myanmar");
+  }
 
   HB_BUFFER_DEALLOCATE_VAR (buffer, myanmar_category);
   HB_BUFFER_DEALLOCATE_VAR (buffer, myanmar_position);
@@ -346,7 +343,7 @@ reorder_myanmar (const hb_ot_shape_plan_t *plan,
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_myanmar =
 {
   collect_features_myanmar,
-  override_features_myanmar,
+  nullptr, /* override_features */
   nullptr, /* data_create */
   nullptr, /* data_destroy */
   nullptr, /* preprocess_text */

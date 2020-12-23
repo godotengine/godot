@@ -306,6 +306,9 @@ _hb_ot_get_font_funcs ()
 
 /**
  * hb_ot_font_set_funcs:
+ * @font: #hb_font_t to work upon
+ *
+ * Sets the font functions to use when working with @font. 
  *
  * Since: 0.9.28
  **/

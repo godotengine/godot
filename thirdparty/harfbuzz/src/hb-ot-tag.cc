@@ -280,6 +280,7 @@ hb_ot_tags_from_language (const char   *lang_str,
       for (i = 0;
 	   i < *count &&
 	   tag_idx + i < ARRAY_LENGTH (ot_languages) &&
+	   ot_languages[tag_idx + i].tag != HB_TAG_NONE &&
 	   0 == strcmp (ot_languages[tag_idx + i].language, ot_languages[tag_idx].language);
 	   i++)
 	tags[i] = ot_languages[tag_idx + i].tag;

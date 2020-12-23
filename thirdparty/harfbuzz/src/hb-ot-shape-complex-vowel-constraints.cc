@@ -320,7 +320,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    switch (buffer->cur (1).codepoint)
 	    {
 	      case 0x0DCAu: case 0x0DD9u: case 0x0DDAu: case 0x0DDCu:
-	      case 0x0DDDu:
+	      case 0x0DDDu: case 0x0DDEu:
 		matched = true;
 		break;
 	    }

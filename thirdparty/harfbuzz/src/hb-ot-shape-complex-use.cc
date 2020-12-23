@@ -194,6 +194,7 @@ enum use_syllable_type_t {
   use_number_joiner_terminated_cluster,
   use_numeral_cluster,
   use_symbol_cluster,
+  use_hieroglyph_cluster,
   use_broken_cluster,
   use_non_cluster,
 };
@@ -275,6 +276,7 @@ setup_topographical_masks (const hb_ot_shape_plan_t *plan,
     {
       case use_independent_cluster:
       case use_symbol_cluster:
+      case use_hieroglyph_cluster:
       case use_non_cluster:
 	/* These don't join.  Nothing to do. */
 	last_form = _USE_NONE;
@@ -385,8 +387,7 @@ reorder_syllable_use (hb_buffer_t *buffer, unsigned int start, unsigned int end)
 
   hb_glyph_info_t *info = buffer->info;
 
-#define POST_BASE_FLAGS64 (FLAG64 (USE_FM) | \
-			   FLAG64 (USE_FAbv) | \
+#define POST_BASE_FLAGS64 (FLAG64 (USE_FAbv) | \
 			   FLAG64 (USE_FBlw) | \
 			   FLAG64 (USE_FPst) | \
 			   FLAG64 (USE_MAbv) | \
@@ -516,10 +517,14 @@ reorder_use (const hb_ot_shape_plan_t *plan,
 	     hb_font_t *font,
 	     hb_buffer_t *buffer)
 {
-  insert_dotted_circles_use (plan, font, buffer);
+	if (buffer->message (font, "start reordering USE")) {
+	  insert_dotted_circles_use (plan, font, buffer);
 
-  foreach_syllable (buffer, start, end)
-    reorder_syllable_use (buffer, start, end);
+	  foreach_syllable (buffer, start, end)
+	    reorder_syllable_use (buffer, start, end);
+
+	  (void) buffer->message (font, "end reordering USE");
+  }
 
   HB_BUFFER_DEALLOCATE_VAR (buffer, use_category);
 }

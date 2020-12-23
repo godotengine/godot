@@ -33,6 +33,15 @@
 #include "hb-directwrite.h"
 
 
+/**
+ * SECTION:hb-directwrite
+ * @title: hb-directwrite
+ * @short_description: DirectWrite integration
+ * @include: hb-directwrite.h
+ *
+ * Functions for using HarfBuzz with DirectWrite fonts.
+ **/
+
 /* Declare object creator for dynamic support of DWRITE */
 typedef HRESULT (* WINAPI t_DWriteCreateFactory)(
   DWRITE_FACTORY_TYPE factoryType,

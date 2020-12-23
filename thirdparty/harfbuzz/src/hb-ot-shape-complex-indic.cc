@@ -1006,11 +1006,14 @@ initial_reordering_indic (const hb_ot_shape_plan_t *plan,
 			  hb_font_t *font,
 			  hb_buffer_t *buffer)
 {
+  if (!buffer->message (font, "start reordering indic initial"))
+    return;
   update_consonant_positions_indic (plan, font, buffer);
   insert_dotted_circles_indic (plan, font, buffer);
 
   foreach_syllable (buffer, start, end)
     initial_reordering_syllable_indic (plan, font->face, buffer, start, end);
+  (void) buffer->message (font, "end reordering indic initial");
 }
 
 static void
@@ -1485,8 +1488,11 @@ final_reordering_indic (const hb_ot_shape_plan_t *plan,
   unsigned int count = buffer->len;
   if (unlikely (!count)) return;
 
-  foreach_syllable (buffer, start, end)
-    final_reordering_syllable_indic (plan, buffer, start, end);
+  if (buffer->message (font, "start reordering indic final")) {
+    foreach_syllable (buffer, start, end)
+      final_reordering_syllable_indic (plan, buffer, start, end);
+    (void) buffer->message (font, "end reordering indic final");
+  }
 
   HB_BUFFER_DEALLOCATE_VAR (buffer, indic_category);
   HB_BUFFER_DEALLOCATE_VAR (buffer, indic_position);

@@ -35,11 +35,36 @@
 
 HB_BEGIN_DECLS
 
-
+/**
+ * hb_tag_t:
+ * @HB_OT_TAG_VAR_AXIS_ITALIC: Registered tag for the roman/italic axis
+ */
 #define HB_OT_TAG_VAR_AXIS_ITALIC	HB_TAG('i','t','a','l')
+
+/**
+ * hb_tag_t:
+ * @HB_OT_TAG_VAR_AXIS_OPTICAL_SIZE: Registered tag for the optical-size axis
+ *
+ * <note>Note: The optical-size axis supersedes the OpenType `size` feature.</note>
+ */
 #define HB_OT_TAG_VAR_AXIS_OPTICAL_SIZE	HB_TAG('o','p','s','z')
+
+/**
+ * hb_tag_t:
+ * @HB_OT_TAG_VAR_AXIS_SLANT: Registered tag for the slant axis
+ */
 #define HB_OT_TAG_VAR_AXIS_SLANT	HB_TAG('s','l','n','t')
+
+/**
+ * hb_tag_t:
+ * @HB_OT_TAG_VAR_AXIS_WIDTH: Registered tag for the width axis
+ */
 #define HB_OT_TAG_VAR_AXIS_WIDTH	HB_TAG('w','d','t','h')
+
+/**
+ * hb_tag_t:
+ * @HB_OT_TAG_VAR_AXIS_WEIGHT: Registered tag for the weight axis
+ */
 #define HB_OT_TAG_VAR_AXIS_WEIGHT	HB_TAG('w','g','h','t')
 
 
@@ -73,11 +98,24 @@ typedef enum { /*< flags >*/
 
 /**
  * hb_ot_var_axis_info_t:
+ * @axis_index: Index of the axis in the variation-axis array
+ * @tag: The #hb_tag_t tag identifying the design variation of the axis
+ * @name_id: The `name` table Name ID that provides display names for the axis
+ * @flags: The #hb_ot_var_axis_flags_t flags for the axis
+ * @min_value: The mininum value on the variation axis that the font covers
+ * @default_value: The position on the variation axis corresponding to the font's defaults
+ * @max_value: The maximum value on the variation axis that the font covers
+ * 
+ * Data type for holding variation-axis values.
+ *
+ * The minimum, default, and maximum values are in un-normalized, user scales.
+ *
+ * <note>Note: at present, the only flag defined for @flags is
+ * #HB_OT_VAR_AXIS_FLAG_HIDDEN.</note>
  *
  * Since: 2.2.0
  */
-typedef struct hb_ot_var_axis_info_t
-{
+typedef struct hb_ot_var_axis_info_t {
   unsigned int			axis_index;
   hb_tag_t			tag;
   hb_ot_name_id_t		name_id;

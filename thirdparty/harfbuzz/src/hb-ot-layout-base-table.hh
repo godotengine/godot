@@ -379,12 +379,20 @@ struct Axis
 		     const BaseCoord **coord) const
   {
     const BaseScript &base_script = (this+baseScriptList).get_base_script (script_tag);
-    if (!base_script.has_data ()) return false;
+    if (!base_script.has_data ())
+    {
+      *coord = nullptr;
+      return false;
+    }
 
     if (likely (coord))
     {
       unsigned int tag_index = 0;
-      (this+baseTagList).bfind (baseline_tag, &tag_index);
+      if (!(this+baseTagList).bfind (baseline_tag, &tag_index))
+      {
+        *coord = nullptr;
+        return false;
+      }
       *coord = &base_script.get_base_coord (tag_index);
     }
 
@@ -398,7 +406,11 @@ struct Axis
 		    const BaseCoord **max_coord) const
   {
     const BaseScript &base_script = (this+baseScriptList).get_base_script (script_tag);
-    if (!base_script.has_data ()) return false;
+    if (!base_script.has_data ())
+    {
+      *min_coord = *max_coord = nullptr;
+      return false;
+    }
 
     base_script.get_min_max (language_tag).get_min_max (feature_tag, min_coord, max_coord);
 

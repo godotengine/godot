@@ -140,12 +140,12 @@ struct hb_ot_map_t
   void get_stage_lookups (unsigned int table_index, unsigned int stage,
 			  const struct lookup_map_t **plookups, unsigned int *lookup_count) const
   {
-    if (unlikely (stage == UINT_MAX)) {
+    if (unlikely (stage > stages[table_index].length))
+    {
       *plookups = nullptr;
       *lookup_count = 0;
       return;
     }
-    assert (stage <= stages[table_index].length);
     unsigned int start = stage ? stages[table_index][stage - 1].last_lookup : 0;
     unsigned int end   = stage < stages[table_index].length ? stages[table_index][stage].last_lookup : lookups[table_index].length;
     *plookups = end == start ? nullptr : &lookups[table_index][start];

@@ -301,7 +301,7 @@ position_mark (const hb_ot_shape_plan_t *plan HB_UNUSED,
       /* Don't shift down "above" marks too much. */
       if ((y_gap > 0) != (pos.y_offset > 0))
       {
-	unsigned int correction = -pos.y_offset / 2;
+	int correction = -pos.y_offset / 2;
 	base_extents.y_bearing += correction;
 	base_extents.height -= correction;
 	pos.y_offset += correction;

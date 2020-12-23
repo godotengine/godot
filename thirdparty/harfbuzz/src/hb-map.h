@@ -41,6 +41,12 @@ HB_BEGIN_DECLS
  */
 #define HB_MAP_VALUE_INVALID ((hb_codepoint_t) -1)
 
+/**
+ * hb_map_t:
+ *
+ * Data type for holding integer-to-integer hash maps.
+ *
+ **/
 typedef struct hb_map_t hb_map_t;
 
 

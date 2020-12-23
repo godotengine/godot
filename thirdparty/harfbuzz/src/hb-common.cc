@@ -86,12 +86,15 @@ _hb_options_init ()
 
 /**
  * hb_tag_from_string:
- * @str: (array length=len) (element-type uint8_t):
- * @len:
+ * @str: (array length=len) (element-type uint8_t): String to convert
+ * @len: Length of @str, or -1 if it is %NULL-terminated
  *
+ * Converts a string into an #hb_tag_t. Valid tags
+ * are four characters. Shorter input strings will be
+ * padded with spaces. Longer input strings will be
+ * truncated.
  *
- *
- * Return value:
+ * Return value: The #hb_tag_t corresponding to @str
  *
  * Since: 0.9.2
  **/
@@ -116,10 +119,11 @@ hb_tag_from_string (const char *str, int len)
 
 /**
  * hb_tag_to_string:
- * @tag:
- * @buf: (out caller-allocates) (array fixed-size=4) (element-type uint8_t):
+ * @tag: #hb_tag_t to convert
+ * @buf: (out caller-allocates) (array fixed-size=4) (element-type uint8_t): Converted string
  *
- *
+ * Converts an #hb_tag_t to a string and returns it in @buf. 
+ * Strings will be four characters long.
  *
  * Since: 0.9.5
  **/
@@ -144,12 +148,17 @@ const char direction_strings[][4] = {
 
 /**
  * hb_direction_from_string:
- * @str: (array length=len) (element-type uint8_t):
- * @len:
+ * @str: (array length=len) (element-type uint8_t): String to convert
+ * @len: Length of @str, or -1 if it is %NULL-terminated
  *
+ * Converts a string to an #hb_direction_t. 
  *
+ * Matching is loose and applies only to the first letter. For
+ * examples, "LTR" and "left-to-right" will both return #HB_DIRECTION_LTR.
  *
- * Return value:
+ * Unmatched strings will return #HB_DIRECTION_INVALID.
+ * 
+ * Return value: The #hb_direction_t matching @str
  *
  * Since: 0.9.2
  **/
@@ -172,11 +181,11 @@ hb_direction_from_string (const char *str, int len)
 
 /**
  * hb_direction_to_string:
- * @direction:
+ * @direction: The #hb_direction_t to convert
  *
+ * Converts an #hb_direction_t to a string.
  *
- *
- * Return value: (transfer none):
+ * Return value: (transfer none): The string corresponding to @direction
  *
  * Since: 0.9.2
  **/
@@ -367,9 +376,9 @@ hb_language_from_string (const char *str, int len)
 
 /**
  * hb_language_to_string:
- * @language: an #hb_language_t to convert.
+ * @language: The #hb_language_t to convert
  *
- * See hb_language_from_string().
+ * Converts an #hb_language_t to a string.
  *
  * Return value: (transfer none):
  * A %NULL-terminated string representing the @language. Must not be freed by
@@ -388,16 +397,17 @@ hb_language_to_string (hb_language_t language)
 /**
  * hb_language_get_default:
  *
- * Get default language from current locale.
+ * Fetch the default language from current locale.
  *
- * Note that the first time this function is called, it calls
+ * <note>Note that the first time this function is called, it calls
  * "setlocale (LC_CTYPE, nullptr)" to fetch current locale.  The underlying
  * setlocale function is, in many implementations, NOT threadsafe.  To avoid
  * problems, call this function once before multiple threads can call it.
  * This function is only used from hb_buffer_guess_segment_properties() by
- * HarfBuzz itself.
+ * HarfBuzz itself.</note>
  *
- * Return value: (transfer none):
+ * Return value: (transfer none): The default language of the locale as
+ * an #hb_language_t
  *
  * Since: 0.9.2
  **/
@@ -448,7 +458,12 @@ hb_script_from_iso15924_tag (hb_tag_t tag)
     case HB_TAG('Q','a','a','c'): return HB_SCRIPT_COPTIC;
 
     /* Script variants from https://unicode.org/iso15924/ */
+    case HB_TAG('A','r','a','n'): return HB_SCRIPT_ARABIC;
     case HB_TAG('C','y','r','s'): return HB_SCRIPT_CYRILLIC;
+    case HB_TAG('G','e','o','k'): return HB_SCRIPT_GEORGIAN;
+    case HB_TAG('H','a','n','s'): return HB_SCRIPT_HAN;
+    case HB_TAG('H','a','n','t'): return HB_SCRIPT_HAN;
+    case HB_TAG('J','a','m','o'): return HB_SCRIPT_HANGUL;
     case HB_TAG('L','a','t','f'): return HB_SCRIPT_LATIN;
     case HB_TAG('L','a','t','g'): return HB_SCRIPT_LATIN;
     case HB_TAG('S','y','r','e'): return HB_SCRIPT_SYRIAC;
@@ -489,7 +504,7 @@ hb_script_from_string (const char *str, int len)
  * hb_script_to_iso15924_tag:
  * @script: an #hb_script_t to convert.
  *
- * See hb_script_from_iso15924_tag().
+ * Converts an #hb_script_t to a corresponding ISO 15924 script tag.
  *
  * Return value:
  * An #hb_tag_t representing an ISO 15924 script tag.
@@ -504,11 +519,16 @@ hb_script_to_iso15924_tag (hb_script_t script)
 
 /**
  * hb_script_get_horizontal_direction:
- * @script:
+ * @script: The #hb_script_t to query
  *
+ * Fetches the #hb_direction_t of a script when it is
+ * set horizontally. All right-to-left scripts will return
+ * #HB_DIRECTION_RTL. All left-to-right scripts will return
+ * #HB_DIRECTION_LTR.  Scripts that can be written either
+ * horizontally or vertically will return #HB_DIRECTION_INVALID.
+ * Unknown scripts will return #HB_DIRECTION_LTR.
  *
- *
- * Return value:
+ * Return value: The horizontal #hb_direction_t of @script
  *
  * Since: 0.9.2
  **/
@@ -613,9 +633,9 @@ hb_script_get_horizontal_direction (hb_script_t script)
 
 /**
  * hb_version:
- * @major: (out): Library major version component.
- * @minor: (out): Library minor version component.
- * @micro: (out): Library micro version component.
+ * @major: (out): Library major version component
+ * @minor: (out): Library minor version component
+ * @micro: (out): Library micro version component
  *
  * Returns library version as three integer components.
  *
@@ -636,7 +656,7 @@ hb_version (unsigned int *major,
  *
  * Returns library version as a string with three components.
  *
- * Return value: library version string.
+ * Return value: Library version string
  *
  * Since: 0.9.2
  **/
@@ -648,13 +668,15 @@ hb_version_string ()
 
 /**
  * hb_version_atleast:
- * @major:
- * @minor:
- * @micro:
+ * @major: Library major version component
+ * @minor: Library minor version component
+ * @micro: Library micro version component
  *
+ * Tests the library version against a minimum value,
+ * as three integer components.
  *
- *
- * Return value:
+ * Return value: True if the library is equal to or greater than
+ * the test value, false otherwise
  *
  * Since: 0.9.30
  **/
@@ -883,7 +905,7 @@ parse_one_feature (const char **pp, const char *end, hb_feature_t *feature)
  * </informaltable>
  *
  * Return value:
- * %true if @str is successfully parsed, %false otherwise.
+ * %true if @str is successfully parsed, %false otherwise
  *
  * Since: 0.9.5
  **/

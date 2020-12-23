@@ -389,11 +389,13 @@ reorder_khmer (const hb_ot_shape_plan_t *plan,
 	       hb_font_t *font,
 	       hb_buffer_t *buffer)
 {
-  insert_dotted_circles_khmer (plan, font, buffer);
+  if (buffer->message (font, "start reordering khmer")) {
+    insert_dotted_circles_khmer (plan, font, buffer);
 
-  foreach_syllable (buffer, start, end)
-    reorder_syllable_khmer (plan, font->face, buffer, start, end);
-
+    foreach_syllable (buffer, start, end)
+      reorder_syllable_khmer (plan, font->face, buffer, start, end);
+    (void) buffer->message (font, "end reordering khmer");
+  }
   HB_BUFFER_DEALLOCATE_VAR (buffer, khmer_category);
 }
 

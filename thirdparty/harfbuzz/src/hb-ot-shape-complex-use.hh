@@ -46,34 +46,25 @@ enum use_category_t {
   USE_O		= 0,	/* OTHER */
 
   USE_B		= 1,	/* BASE */
-  USE_IND	= 3,	/* BASE_IND */
   USE_N		= 4,	/* BASE_NUM */
   USE_GB	= 5,	/* BASE_OTHER */
-  USE_CGJ	= 6,	/* CGJ */
-//  USE_F		= 7,	/* CONS_FINAL */
-  USE_FM	= 8,	/* CONS_FINAL_MOD */
-//  USE_M		= 9,	/* CONS_MED */
-//  USE_CM	= 10,	/* CONS_MOD */
   USE_SUB	= 11,	/* CONS_SUB */
   USE_H		= 12,	/* HALANT */
 
   USE_HN	= 13,	/* HALANT_NUM */
   USE_ZWNJ	= 14,	/* Zero width non-joiner */
-  USE_ZWJ	= 15,	/* Zero width joiner */
-  USE_WJ	= 16,	/* Word joiner */
-  USE_Rsv	= 17,	/* Reserved characters */
   USE_R		= 18,	/* REPHA */
   USE_S		= 19,	/* SYM */
-//  USE_SM	= 20,	/* SYM_MOD */
-  USE_VS	= 21,	/* VARIATION_SELECTOR */
-//  USE_V	= 36,	/* VOWEL */
-//  USE_VM	= 40,	/* VOWEL_MOD */
   USE_CS	= 43,	/* CONS_WITH_STACKER */
 
   /* https://github.com/harfbuzz/harfbuzz/issues/1102 */
   USE_HVM	= 44,	/* HALANT_OR_VOWEL_MODIFIER */
 
   USE_Sk	= 48,	/* SAKOT */
+  USE_G		= 49,	/* HIEROGLYPH */
+  USE_J		= 50,	/* HIEROGLYPH_JOINER */
+  USE_SB	= 51,	/* HIEROGLYPH_SEGMENT_BEGIN */
+  USE_SE	= 52,	/* HIEROGLYPH_SEGMENT_END */
 
   USE_FAbv	= 24,	/* CONS_FINAL_ABOVE */
   USE_FBlw	= 25,	/* CONS_FINAL_BELOW */

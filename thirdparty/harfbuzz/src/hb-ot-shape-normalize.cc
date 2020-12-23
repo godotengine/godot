@@ -373,7 +373,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
 
   /* Second round, reorder (inplace) */
 
-  if (!all_simple)
+  if (!all_simple && buffer->message(font, "start reorder"))
   {
     count = buffer->len;
     for (unsigned int i = 0; i < count; i++)
@@ -399,6 +399,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
 
       i = end;
     }
+    (void) buffer->message(font, "end reorder");
   }
   if (buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_CGJ)
   {
@@ -408,7 +409,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
      */
     for (unsigned int i = 1; i + 1 < buffer->len; i++)
       if (buffer->info[i].codepoint == 0x034Fu/*CGJ*/ &&
-	  info_cc(buffer->info[i-1]) <= info_cc(buffer->info[i+1]))
+	  (info_cc(buffer->info[i+1]) == 0 || info_cc(buffer->info[i-1]) <= info_cc(buffer->info[i+1])))
       {
 	_hb_glyph_info_unhide (&buffer->info[i]);
       }

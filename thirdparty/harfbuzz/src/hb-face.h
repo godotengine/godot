@@ -46,6 +46,12 @@ hb_face_count (hb_blob_t *blob);
  * hb_face_t
  */
 
+/**
+ * hb_face_t:
+ *
+ * Data type for holding font faces.
+ *
+ **/
 typedef struct hb_face_t hb_face_t;
 
 HB_EXTERN hb_face_t *
