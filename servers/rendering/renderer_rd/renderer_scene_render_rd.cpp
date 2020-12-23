@@ -1153,7 +1153,7 @@ void RendererSceneRenderRD::_sdfgi_update_cascades(RID p_render_buffers) {
 	RD::get_singleton()->buffer_update(rb->sdfgi->cascades_ubo, 0, sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES, cascade_data, true);
 }
 
-void RendererSceneRenderRD::sdfgi_update_probes(RID p_render_buffers, RID p_environment, const RID *p_directional_light_instances, uint32_t p_directional_light_count, const RID *p_positional_light_instances, uint32_t p_positional_light_count) {
+void RendererSceneRenderRD::sdfgi_update_probes(RID p_render_buffers, RID p_environment, const PagedArray<RID> &p_directional_light_instances, const RID *p_positional_light_instances, uint32_t p_positional_light_count) {
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND(rb == nullptr);
 	if (rb->sdfgi == nullptr) {
@@ -1179,7 +1179,7 @@ void RendererSceneRenderRD::sdfgi_update_probes(RID p_render_buffers, RID p_envi
 
 			SDGIShader::Light lights[SDFGI::MAX_DYNAMIC_LIGHTS];
 			uint32_t idx = 0;
-			for (uint32_t j = 0; j < p_directional_light_count; j++) {
+			for (uint32_t j = 0; j < (uint32_t)p_directional_light_instances.size(); j++) {
 				if (idx == SDFGI::MAX_DYNAMIC_LIGHTS) {
 					break;
 				}
@@ -1402,7 +1402,7 @@ void RendererSceneRenderRD::sdfgi_update_probes(RID p_render_buffers, RID p_envi
 	RENDER_TIMESTAMP("<SDFGI Update Probes");
 }
 
-void RendererSceneRenderRD::_setup_giprobes(RID p_render_buffers, const Transform &p_transform, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, uint32_t &r_gi_probes_used) {
+void RendererSceneRenderRD::_setup_giprobes(RID p_render_buffers, const Transform &p_transform, const PagedArray<RID> &p_gi_probes, uint32_t &r_gi_probes_used) {
 	r_gi_probes_used = 0;
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND(rb == nullptr);
@@ -1417,8 +1417,8 @@ void RendererSceneRenderRD::_setup_giprobes(RID p_render_buffers, const Transfor
 
 	for (int i = 0; i < RenderBuffers::MAX_GIPROBES; i++) {
 		RID texture;
-		if (i < p_gi_probe_cull_count) {
-			GIProbeInstance *gipi = gi_probe_instance_owner.getornull(p_gi_probe_cull_result[i]);
+		if (i < (int)p_gi_probes.size()) {
+			GIProbeInstance *gipi = gi_probe_instance_owner.getornull(p_gi_probes[i]);
 
 			if (gipi) {
 				texture = gipi->texture;
@@ -1489,12 +1489,12 @@ void RendererSceneRenderRD::_setup_giprobes(RID p_render_buffers, const Transfor
 		}
 	}
 
-	if (p_gi_probe_cull_count > 0) {
-		RD::get_singleton()->buffer_update(gi_probe_buffer, 0, sizeof(GI::GIProbeData) * MIN(RenderBuffers::MAX_GIPROBES, p_gi_probe_cull_count), gi_probe_data, true);
+	if (p_gi_probes.size() > 0) {
+		RD::get_singleton()->buffer_update(gi_probe_buffer, 0, sizeof(GI::GIProbeData) * MIN((uint64_t)RenderBuffers::MAX_GIPROBES, p_gi_probes.size()), gi_probe_data, true);
 	}
 }
 
-void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_ambient_buffer, RID p_reflection_buffer, RID p_gi_probe_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count) {
+void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_ambient_buffer, RID p_reflection_buffer, RID p_gi_probe_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, const PagedArray<RID> &p_gi_probes) {
 	RENDER_TIMESTAMP("Render GI");
 
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
@@ -1512,7 +1512,7 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 	push_constant.proj_info[1] = -2.0f / (rb->height * p_projection.matrix[1][1]);
 	push_constant.proj_info[2] = (1.0f - p_projection.matrix[0][2]) / p_projection.matrix[0][0];
 	push_constant.proj_info[3] = (1.0f + p_projection.matrix[1][2]) / p_projection.matrix[1][1];
-	push_constant.max_giprobes = MIN(RenderBuffers::MAX_GIPROBES, p_gi_probe_cull_count);
+	push_constant.max_giprobes = MIN((uint64_t)RenderBuffers::MAX_GIPROBES, p_gi_probes.size());
 	push_constant.high_quality_vct = gi_probe_quality == RS::GI_PROBE_QUALITY_HIGH;
 	push_constant.use_sdfgi = rb->sdfgi != nullptr;
 
@@ -4061,7 +4061,7 @@ bool RendererSceneRenderRD::gi_probe_needs_update(RID p_probe) const {
 	return gi_probe->last_probe_version != storage->gi_probe_get_version(gi_probe->probe);
 }
 
-void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, int p_dynamic_object_count, InstanceBase **p_dynamic_objects) {
+void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<InstanceBase *> &p_dynamic_objects) {
 	GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
 	ERR_FAIL_COND(!gi_probe);
 
@@ -4420,7 +4420,7 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 
 	uint32_t light_count = 0;
 
-	if (p_update_light_instances || p_dynamic_object_count > 0) {
+	if (p_update_light_instances || p_dynamic_objects.size() > 0) {
 		light_count = MIN(gi_probe_max_lights, (uint32_t)p_light_instances.size());
 
 		{
@@ -4470,7 +4470,7 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 		}
 	}
 
-	if (gi_probe->has_dynamic_object_data || p_update_light_instances || p_dynamic_object_count) {
+	if (gi_probe->has_dynamic_object_data || p_update_light_instances || p_dynamic_objects.size()) {
 		// PROCESS MIPMAPS
 		if (gi_probe->mipmaps.size()) {
 			//can update mipmaps
@@ -4563,7 +4563,7 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 
 	gi_probe->has_dynamic_object_data = false; //clear until dynamic object data is used again
 
-	if (p_dynamic_object_count && gi_probe->dynamic_maps.size()) {
+	if (p_dynamic_objects.size() && gi_probe->dynamic_maps.size()) {
 		Vector3i octree_size = storage->gi_probe_get_octree_size(gi_probe->probe);
 		int multiplier = gi_probe->dynamic_maps[0].size / MAX(MAX(octree_size.x, octree_size.y), octree_size.z);
 
@@ -4577,7 +4577,7 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 		AABB probe_aabb(Vector3(), octree_size);
 
 		//this could probably be better parallelized in compute..
-		for (int i = 0; i < p_dynamic_object_count; i++) {
+		for (int i = 0; i < (int)p_dynamic_objects.size(); i++) {
 			InstanceBase *instance = p_dynamic_objects[i];
 			//not used, so clear
 			instance->depth_layer = 0;
@@ -4648,7 +4648,12 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 				CameraMatrix cm;
 				cm.set_orthogonal(-rect.size.width / 2, rect.size.width / 2, -rect.size.height / 2, rect.size.height / 2, 0.0001, aabb.size[z_axis]);
 
-				_render_material(to_world_xform * xform, cm, true, &instance, 1, gi_probe->dynamic_maps[0].fb, Rect2i(Vector2i(), rect.size));
+				if (cull_argument.size() == 0) {
+					cull_argument.push_back(nullptr);
+				}
+				cull_argument[0] = instance;
+
+				_render_material(to_world_xform * xform, cm, true, cull_argument, gi_probe->dynamic_maps[0].fb, Rect2i(Vector2i(), rect.size));
 
 				GIProbeDynamicPushConstant push_constant;
 				zeromem(&push_constant, sizeof(GIProbeDynamicPushConstant));
@@ -6001,11 +6006,11 @@ RendererSceneRenderRD::RenderBufferData *RendererSceneRenderRD::render_buffers_g
 	return rb->data;
 }
 
-void RendererSceneRenderRD::_setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, RID p_environment) {
-	for (int i = 0; i < p_reflection_probe_cull_count; i++) {
-		RID rpi = p_reflection_probe_cull_result[i];
+void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflections, const Transform &p_camera_inverse_transform, RID p_environment) {
+	for (uint32_t i = 0; i < (uint32_t)p_reflections.size(); i++) {
+		RID rpi = p_reflections[i];
 
-		if (i >= (int)cluster.max_reflections) {
+		if (i >= cluster.max_reflections) {
 			reflection_probe_instance_set_render_index(rpi, 0); //invalid, but something needs to be set
 			continue;
 		}
@@ -6056,19 +6061,19 @@ void RendererSceneRenderRD::_setup_reflections(RID *p_reflection_probe_cull_resu
 		reflection_probe_instance_set_render_pass(rpi, RSG::rasterizer->get_frame_number());
 	}
 
-	if (p_reflection_probe_cull_count) {
-		RD::get_singleton()->buffer_update(cluster.reflection_buffer, 0, MIN(cluster.max_reflections, (unsigned int)p_reflection_probe_cull_count) * sizeof(ReflectionData), cluster.reflections, true);
+	if (p_reflections.size()) {
+		RD::get_singleton()->buffer_update(cluster.reflection_buffer, 0, MIN(cluster.max_reflections, (unsigned int)p_reflections.size()) * sizeof(ReflectionData), cluster.reflections, true);
 	}
 }
 
-void RendererSceneRenderRD::_setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count) {
+void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const Transform &p_camera_inverse_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count) {
 	uint32_t light_count = 0;
 	r_directional_light_count = 0;
 	r_positional_light_count = 0;
 	sky_scene_state.ubo.directional_light_count = 0;
 
-	for (int i = 0; i < p_light_cull_count; i++) {
-		RID li = p_light_cull_result[i];
+	for (int i = 0; i < (int)p_lights.size(); i++) {
+		RID li = p_lights[i];
 		RID base = light_instance_get_base_light(li);
 
 		ERR_CONTINUE(base.is_null());
@@ -6421,15 +6426,15 @@ void RendererSceneRenderRD::_setup_lights(RID *p_light_cull_result, int p_light_
 	}
 }
 
-void RendererSceneRenderRD::_setup_decals(const RID *p_decal_instances, int p_decal_count, const Transform &p_camera_inverse_xform) {
+void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const Transform &p_camera_inverse_xform) {
 	Transform uv_xform;
 	uv_xform.basis.scale(Vector3(2.0, 1.0, 2.0));
 	uv_xform.origin = Vector3(-1.0, 0.0, -1.0);
 
-	p_decal_count = MIN((uint32_t)p_decal_count, cluster.max_decals);
+	uint32_t decal_count = MIN((uint32_t)p_decals.size(), cluster.max_decals);
 	int idx = 0;
-	for (int i = 0; i < p_decal_count; i++) {
-		RID di = p_decal_instances[i];
+	for (uint32_t i = 0; i < decal_count; i++) {
+		RID di = p_decals[i];
 		RID decal = decal_instance_get_base(di);
 
 		Transform xform = decal_instance_get_transform(di);
@@ -7097,7 +7102,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 	RD::get_singleton()->compute_list_end();
 }
 
-void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold) {
+void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<InstanceBase *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<InstanceBase *> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold) {
 	Color clear_color;
 	if (p_render_buffers.is_valid()) {
 		RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
@@ -7108,17 +7113,23 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 	}
 
 	//assign render indices to giprobes
-	for (int i = 0; i < p_gi_probe_cull_count; i++) {
-		GIProbeInstance *giprobe_inst = gi_probe_instance_owner.getornull(p_gi_probe_cull_result[i]);
+	for (uint32_t i = 0; i < (uint32_t)p_gi_probes.size(); i++) {
+		GIProbeInstance *giprobe_inst = gi_probe_instance_owner.getornull(p_gi_probes[i]);
 		if (giprobe_inst) {
 			giprobe_inst->render_index = i;
 		}
 	}
 
+	const PagedArray<RID> *lights = &p_lights;
+	const PagedArray<RID> *reflections = &p_reflection_probes;
+	const PagedArray<RID> *gi_probes = &p_gi_probes;
+
+	PagedArray<RID> empty;
+
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
-		p_light_cull_count = 0;
-		p_reflection_probe_cull_count = 0;
-		p_gi_probe_cull_count = 0;
+		lights = &empty;
+		reflections = &empty;
+		gi_probes = &empty;
 	}
 
 	cluster.builder.begin(p_cam_transform.affine_inverse(), p_cam_projection); //prepare cluster
@@ -7131,17 +7142,17 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 		}
 	} else {
 		//do not render reflections when rendering a reflection probe
-		_setup_reflections(p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_cam_transform.affine_inverse(), p_environment);
+		_setup_reflections(*reflections, p_cam_transform.affine_inverse(), p_environment);
 	}
 
 	uint32_t directional_light_count = 0;
 	uint32_t positional_light_count = 0;
-	_setup_lights(p_light_cull_result, p_light_cull_count, p_cam_transform.affine_inverse(), p_shadow_atlas, using_shadows, directional_light_count, positional_light_count);
-	_setup_decals(p_decal_cull_result, p_decal_cull_count, p_cam_transform.affine_inverse());
+	_setup_lights(*lights, p_cam_transform.affine_inverse(), p_shadow_atlas, using_shadows, directional_light_count, positional_light_count);
+	_setup_decals(p_decals, p_cam_transform.affine_inverse());
 	cluster.builder.bake_cluster(); //bake to cluster
 
 	uint32_t gi_probe_count = 0;
-	_setup_giprobes(p_render_buffers, p_cam_transform, p_gi_probe_cull_result, p_gi_probe_cull_count, gi_probe_count);
+	_setup_giprobes(p_render_buffers, p_cam_transform, *gi_probes, gi_probe_count);
 
 	if (p_render_buffers.is_valid()) {
 		bool directional_shadows = false;
@@ -7154,7 +7165,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 		_update_volumetric_fog(p_render_buffers, p_environment, p_cam_projection, p_cam_transform, p_shadow_atlas, directional_light_count, directional_shadows, positional_light_count, gi_probe_count);
 	}
 
-	_render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_cull_result, p_cull_count, directional_light_count, p_gi_probe_cull_result, p_gi_probe_cull_count, p_lightmap_cull_result, p_lightmap_cull_count, p_environment, p_camera_effects, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass, clear_color, p_screen_lod_threshold);
+	_render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_instances, directional_light_count, *gi_probes, p_lightmaps, p_environment, p_camera_effects, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass, clear_color, p_screen_lod_threshold);
 
 	if (p_render_buffers.is_valid()) {
 		RENDER_TIMESTAMP("Tonemap");
@@ -7167,7 +7178,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 	}
 }
 
-void RendererSceneRenderRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold) {
+void RendererSceneRenderRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<InstanceBase *> &p_instances, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold) {
 	LightInstance *light_instance = light_instance_owner.getornull(p_light);
 	ERR_FAIL_COND(!light_instance);
 
@@ -7318,7 +7329,7 @@ void RendererSceneRenderRD::render_shadow(RID p_light, RID p_shadow_atlas, int p
 
 	if (render_cubemap) {
 		//rendering to cubemap
-		_render_shadow(render_fb, p_cull_result, p_cull_count, light_projection, light_transform, zfar, 0, 0, false, false, use_pancake, p_camera_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+		_render_shadow(render_fb, p_instances, light_projection, light_transform, zfar, 0, 0, false, false, use_pancake, p_camera_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
 		if (finalize_cubemap) {
 			//reblit
 			atlas_rect.size.height /= 2;
@@ -7329,7 +7340,7 @@ void RendererSceneRenderRD::render_shadow(RID p_light, RID p_shadow_atlas, int p
 	} else {
 		//render shadow
 
-		_render_shadow(render_fb, p_cull_result, p_cull_count, light_projection, light_transform, zfar, bias, normal_bias, using_dual_paraboloid, using_dual_paraboloid_flip, use_pancake, p_camera_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+		_render_shadow(render_fb, p_instances, light_projection, light_transform, zfar, bias, normal_bias, using_dual_paraboloid, using_dual_paraboloid_flip, use_pancake, p_camera_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
 
 		//copy to atlas
 		if (use_linear_depth) {
@@ -7343,11 +7354,11 @@ void RendererSceneRenderRD::render_shadow(RID p_light, RID p_shadow_atlas, int p
 	}
 }
 
-void RendererSceneRenderRD::render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) {
-	_render_material(p_cam_transform, p_cam_projection, p_cam_ortogonal, p_cull_result, p_cull_count, p_framebuffer, p_region);
+void RendererSceneRenderRD::render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<InstanceBase *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+	_render_material(p_cam_transform, p_cam_projection, p_cam_ortogonal, p_instances, p_framebuffer, p_region);
 }
 
-void RendererSceneRenderRD::render_sdfgi(RID p_render_buffers, int p_region, InstanceBase **p_cull_result, int p_cull_count) {
+void RendererSceneRenderRD::render_sdfgi(RID p_render_buffers, int p_region, const PagedArray<InstanceBase *> &p_instances) {
 	//print_line("rendering region " + itos(p_region));
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND(!rb);
@@ -7370,7 +7381,7 @@ void RendererSceneRenderRD::render_sdfgi(RID p_render_buffers, int p_region, Ins
 	}
 
 	//print_line("rendering cascade " + itos(p_region) + " objects: " + itos(p_cull_count) + " bounds: " + bounds + " from: " + from + " size: " + size + " cell size: " + rtos(rb->sdfgi->cascades[cascade].cell_size));
-	_render_sdfgi(p_render_buffers, from, size, bounds, p_cull_result, p_cull_count, rb->sdfgi->render_albedo, rb->sdfgi->render_emission, rb->sdfgi->render_emission_aniso, rb->sdfgi->render_geom_facing);
+	_render_sdfgi(p_render_buffers, from, size, bounds, p_instances, rb->sdfgi->render_albedo, rb->sdfgi->render_emission, rb->sdfgi->render_emission_aniso, rb->sdfgi->render_geom_facing);
 
 	if (cascade_next != cascade) {
 		RENDER_TIMESTAMP(">SDFGI Update SDF");
@@ -7684,7 +7695,7 @@ void RendererSceneRenderRD::render_sdfgi(RID p_render_buffers, int p_region, Ins
 	}
 }
 
-void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider, const Transform &p_transform, InstanceBase **p_cull_result, int p_cull_count) {
+void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider, const Transform &p_transform, const PagedArray<InstanceBase *> &p_instances) {
 	ERR_FAIL_COND(!storage->particles_collision_is_heightfield(p_collider));
 	Vector3 extents = storage->particles_collision_get_extents(p_collider) * p_transform.basis.get_scale();
 	CameraMatrix cm;
@@ -7698,15 +7709,13 @@ void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider,
 
 	RID fb = storage->particles_collision_get_heightfield_framebuffer(p_collider);
 
-	_render_particle_collider_heightfield(fb, cam_xform, cm, p_cull_result, p_cull_count);
+	_render_particle_collider_heightfield(fb, cam_xform, cm, p_instances);
 }
 
-void RendererSceneRenderRD::render_sdfgi_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const RID **p_positional_light_cull_result, const uint32_t *p_positional_light_cull_count) {
+void RendererSceneRenderRD::render_sdfgi_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result) {
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND(!rb);
 	ERR_FAIL_COND(!rb->sdfgi);
-
-	ERR_FAIL_COND(p_positional_light_cull_count == 0);
 
 	_sdfgi_update_cascades(p_render_buffers); //need cascades updated for this
 
@@ -7743,7 +7752,7 @@ void RendererSceneRenderRD::render_sdfgi_static_lights(RID p_render_buffers, uin
 
 			int idx = 0;
 
-			for (uint32_t j = 0; j < p_positional_light_cull_count[i]; j++) {
+			for (uint32_t j = 0; j < (uint32_t)p_positional_light_cull_result[i].size(); j++) {
 				if (idx == SDFGI::MAX_STATIC_LIGHTS) {
 					break;
 				}
@@ -7982,8 +7991,11 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Vecto
 		}
 	}
 
-	InstanceBase *cull = &ins;
-	_render_uv2(&cull, 1, fb, Rect2i(0, 0, p_image_size.width, p_image_size.height));
+	if (cull_argument.size() == 0) {
+		cull_argument.push_back(nullptr);
+	}
+	cull_argument[0] = &ins;
+	_render_uv2(cull_argument, fb, Rect2i(0, 0, p_image_size.width, p_image_size.height));
 
 	TypedArray<Image> ret;
 
@@ -8534,6 +8546,8 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 	environment_set_volumetric_fog_filter_active(GLOBAL_GET("rendering/volumetric_fog/use_filter"));
 	environment_set_volumetric_fog_directional_shadow_shrink_size(GLOBAL_GET("rendering/volumetric_fog/directional_shadow_shrink"));
 	environment_set_volumetric_fog_positional_shadow_shrink_size(GLOBAL_GET("rendering/volumetric_fog/positional_shadow_shrink"));
+
+	cull_argument.set_page_pool(&cull_argument_pool);
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {
@@ -8598,4 +8612,5 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 	RD::get_singleton()->free(shadow_sampler);
 
 	directional_shadow_atlas_set_size(0);
+	cull_argument.reset(); //avoid exit error
 }

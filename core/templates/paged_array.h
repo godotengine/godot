@@ -329,7 +329,7 @@ public:
 		}
 	}
 
-	uint64_t size() const {
+	_FORCE_INLINE_ uint64_t size() const {
 		return count;
 	}
 
