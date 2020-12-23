@@ -31,6 +31,7 @@ doc_classes/*        @godotengine/documentation
 /modules/csg/        @BastiaanOlij
 /modules/enet/       @godotengine/network
 /modules/gdnative/*arvr/ @BastiaanOlij
+/modules/gdnative/text/ @bruvzg
 /modules/gdscript/   @vnen
 /modules/mbedtls/    @godotengine/network
 /modules/mobile_vr/  @BastiaanOlij
@@ -38,13 +39,19 @@ doc_classes/*        @godotengine/documentation
 /modules/mono/glue/GodotSharp @aaronfranke
 /modules/opensimplex/ @JFonS
 /modules/regex/      @LeeZH
+/modules/text_server_*/ @bruvzg
 /modules/upnp/       @godotengine/network
 /modules/websocket/  @godotengine/network
 
 /platform/javascript/ @eska014
 /platform/uwp/       @vnen
 
-/server/physics*/    @reduz @AndreaCatania
-/server/visual*/     @reduz
+/scene/resources/font.* @bruvzg
+/scene/resources/text_line.* @bruvzg
+/scene/resources/text_paragraph.* @bruvzg
+
+/servers/physics*/    @reduz @AndreaCatania
+/servers/text_server.* @bruvzg
+/servers/visual*/     @reduz
 
 /thirdparty/         @akien-mga
