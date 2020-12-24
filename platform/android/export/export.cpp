@@ -307,7 +307,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			}
 
 			// Check for devices updates
-			String adb = EditorSettings::get_singleton()->get("export/android/adb");
+			String adb = get_adb_path();
 			if (FileAccess::exists(adb)) {
 				String devices;
 				List<String> args;
@@ -432,7 +432,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		}
 
 		if (EditorSettings::get_singleton()->get("export/android/shutdown_adb_on_exit")) {
-			String adb = EditorSettings::get_singleton()->get("export/android/adb");
+			String adb = get_adb_path();
 			if (!FileAccess::exists(adb)) {
 				return; //adb not configured
 			}
@@ -1802,7 +1802,7 @@ public:
 
 		EditorProgress ep("run", "Running on " + devices[p_device].name, 3);
 
-		String adb = EditorSettings::get_singleton()->get("export/android/adb");
+		String adb = get_adb_path();
 
 		// Export_temp APK.
 		if (ep.step("Exporting APK...", 0)) {
@@ -1954,6 +1954,55 @@ public:
 		return run_icon;
 	}
 
+	static String get_adb_path() {
+		String exe_ext = "";
+		if (OS::get_singleton()->get_name() == "Windows") {
+			exe_ext = ".exe";
+		}
+		String sdk_path = EditorSettings::get_singleton()->get("export/android/android_sdk_path");
+		return sdk_path.plus_file("platform-tools/adb" + exe_ext);
+	}
+
+	static String get_apksigner_path() {
+		String exe_ext = "";
+		if (OS::get_singleton()->get_name() == "Windows") {
+			exe_ext = ".bat";
+		}
+		String apksigner_command_name = "apksigner" + exe_ext;
+		String sdk_path = EditorSettings::get_singleton()->get("export/android/android_sdk_path");
+		String apksigner_path = "";
+
+		Error errn;
+		String build_tools_dir = sdk_path.plus_file("build-tools");
+		DirAccessRef da = DirAccess::open(build_tools_dir, &errn);
+		if (errn != OK) {
+			print_error("Unable to open Android 'build-tools' directory.");
+			return apksigner_path;
+		}
+
+		// There are additional versions directories we need to go through.
+		da->list_dir_begin();
+		String sub_dir = da->get_next();
+		while (!sub_dir.empty()) {
+			if (!sub_dir.begins_with(".") && da->current_is_dir()) {
+				// Check if the tool is here.
+				String tool_path = build_tools_dir.plus_file(sub_dir).plus_file(apksigner_command_name);
+				if (FileAccess::exists(tool_path)) {
+					apksigner_path = tool_path;
+					break;
+				}
+			}
+			sub_dir = da->get_next();
+		}
+		da->list_dir_end();
+
+		if (apksigner_path.empty()) {
+			EditorNode::get_singleton()->show_warning(TTR("Unable to find the 'apksigner' tool."));
+		}
+
+		return apksigner_path;
+	}
+
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
 		String err;
@@ -1990,26 +2039,16 @@ public:
 			}
 		} else {
 			valid = exists_export_template("android_source.zip", &err);
+
+			if (!FileAccess::exists("res://android/build/build.gradle")) {
+
+				err += TTR("Android build template not installed in the project. Install it from the Project menu.") + "\n";
+				valid = false;
+			}
 		}
 		r_missing_templates = !valid;
 
 		// Validate the rest of the configuration.
-
-		String adb = EditorSettings::get_singleton()->get("export/android/adb");
-
-		if (!FileAccess::exists(adb)) {
-
-			valid = false;
-			err += TTR("ADB executable not configured in the Editor Settings.") + "\n";
-		}
-
-		String js = EditorSettings::get_singleton()->get("export/android/jarsigner");
-
-		if (!FileAccess::exists(js)) {
-
-			valid = false;
-			err += TTR("OpenJDK jarsigner not configured in the Editor Settings.") + "\n";
-		}
 
 		String dk = p_preset->get("keystore/debug");
 
@@ -2029,26 +2068,45 @@ public:
 			err += TTR("Release keystore incorrectly configured in the export preset.") + "\n";
 		}
 
-		if (bool(p_preset->get("custom_template/use_custom_build"))) {
-			String sdk_path = EditorSettings::get_singleton()->get("export/android/custom_build_sdk_path");
-			if (sdk_path == "") {
-				err += TTR("Custom build requires a valid Android SDK path in Editor Settings.") + "\n";
+		String sdk_path = EditorSettings::get_singleton()->get("export/android/android_sdk_path");
+		if (sdk_path == "") {
+			err += TTR("A valid Android SDK path is required in Editor Settings.") + "\n";
+			valid = false;
+		} else {
+			Error errn;
+			// Check for the platform-tools directory.
+			DirAccessRef da = DirAccess::open(sdk_path.plus_file("platform-tools"), &errn);
+			if (errn != OK) {
+				err += TTR("Invalid Android SDK path in Editor Settings.");
+				err += TTR("Missing 'platform-tools' directory!");
+				err += "\n";
 				valid = false;
-			} else {
-				Error errn;
-				// Check for the platform-tools directory.
-				DirAccessRef da = DirAccess::open(sdk_path.plus_file("platform-tools"), &errn);
-				if (errn != OK) {
-					err += TTR("Invalid Android SDK path for custom build in Editor Settings.");
-					err += TTR("Missing 'platform-tools' directory!");
-					err += "\n";
-					valid = false;
-				}
 			}
 
-			if (!FileAccess::exists("res://android/build/build.gradle")) {
+			// Validate that adb is available
+			String adb_path = get_adb_path();
+			if (!FileAccess::exists(adb_path)) {
+				err += TTR("Unable to find Android SDK platform-tools' adb command.");
+				err += TTR("Please check in the Android SDK directory specified in Editor Settings.");
+				err += "\n";
+				valid = false;
+			}
 
-				err += TTR("Android build template not installed in the project. Install it from the Project menu.") + "\n";
+			// Check for the build-tools directory.
+			DirAccessRef build_tools_da = DirAccess::open(sdk_path.plus_file("build-tools"), &errn);
+			if (errn != OK) {
+				err += TTR("Invalid Android SDK path in Editor Settings.");
+				err += TTR("Missing 'build-tools' directory!");
+				err += "\n";
+				valid = false;
+			}
+
+			// Validate that apksigner is available
+			String apksigner_path = get_apksigner_path();
+			if (!FileAccess::exists(apksigner_path)) {
+				err += TTR("Unable to find Android SDK build-tools' apksigner command.");
+				err += TTR("Please check in the Android SDK directory specified in Editor Settings.");
+				err += "\n";
 				valid = false;
 			}
 		}
@@ -2529,16 +2587,16 @@ public:
 		}
 	}
 
-	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, String export_path, EditorProgress ep) {
+	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &export_path, EditorProgress &ep) {
 		int export_format = int(p_preset->get("custom_template/export_format"));
 		String export_label = export_format == EXPORT_FORMAT_AAB ? "AAB" : "APK";
 		String release_keystore = p_preset->get("keystore/release");
 		String release_username = p_preset->get("keystore/release_user");
 		String release_password = p_preset->get("keystore/release_password");
 
-		String jarsigner = EditorSettings::get_singleton()->get("export/android/jarsigner");
-		if (!FileAccess::exists(jarsigner)) {
-			EditorNode::add_io_error("'jarsigner' could not be found.\nPlease supply a path in the Editor Settings.\nThe resulting " + export_label + " is unsigned.");
+		String apksigner = get_apksigner_path();
+		if (!FileAccess::exists(apksigner)) {
+			EditorNode::add_io_error("'apksigner' could not be found.\nPlease check the command is available in the Android SDK build-tools directory.\nThe resulting " + export_label + " is unsigned.");
 			return OK;
 		}
 
@@ -2558,7 +2616,7 @@ public:
 				user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
 			}
 
-			if (ep.step("Signing debug " + export_label + "...", 103)) {
+			if (ep.step("Signing debug " + export_label + "...", 104)) {
 				return ERR_SKIP;
 			}
 
@@ -2567,7 +2625,7 @@ public:
 			password = release_password;
 			user = release_username;
 
-			if (ep.step("Signing release " + export_label + "...", 103)) {
+			if (ep.step("Signing release " + export_label + "...", 104)) {
 				return ERR_SKIP;
 			}
 		}
@@ -2578,43 +2636,34 @@ public:
 		}
 
 		List<String> args;
-		args.push_back("-digestalg");
-		args.push_back("SHA-256");
-		args.push_back("-sigalg");
-		args.push_back("SHA256withRSA");
-		String tsa_url = EditorSettings::get_singleton()->get("export/android/timestamping_authority_url");
-		if (tsa_url != "") {
-			args.push_back("-tsa");
-			args.push_back(tsa_url);
-		}
-		args.push_back("-verbose");
-		args.push_back("-keystore");
+		args.push_back("sign");
+		args.push_back("--verbose");
+		args.push_back("--ks");
 		args.push_back(keystore);
-		args.push_back("-storepass");
-		args.push_back(password);
-		args.push_back(export_path);
+		args.push_back("--ks-pass");
+		args.push_back("pass:" + password);
+		args.push_back("--ks-key-alias");
 		args.push_back(user);
+		args.push_back(export_path);
 		int retval;
-		OS::get_singleton()->execute(jarsigner, args, true, NULL, NULL, &retval);
+		OS::get_singleton()->execute(apksigner, args, true, NULL, NULL, &retval);
 		if (retval) {
-			EditorNode::add_io_error("'jarsigner' returned with error #" + itos(retval));
+			EditorNode::add_io_error("'apksigner' returned with error #" + itos(retval));
 			return ERR_CANT_CREATE;
 		}
 
-		if (ep.step("Verifying " + export_label + "...", 104)) {
+		if (ep.step("Verifying " + export_label + "...", 105)) {
 			return ERR_SKIP;
 		}
 
 		args.clear();
-		args.push_back("-verify");
-		args.push_back("-keystore");
-		args.push_back(keystore);
+		args.push_back("verify");
+		args.push_back("--verbose");
 		args.push_back(export_path);
-		args.push_back("-verbose");
 
-		OS::get_singleton()->execute(jarsigner, args, true, NULL, NULL, &retval);
+		OS::get_singleton()->execute(apksigner, args, true, NULL, NULL, &retval);
 		if (retval) {
-			EditorNode::add_io_error("'jarsigner' verification of " + export_label + " failed. Make sure to use a jarsigner from OpenJDK 8.");
+			EditorNode::add_io_error("'apksigner' verification of " + export_label + " failed.");
 			return ERR_CANT_CREATE;
 		}
 		return OK;
@@ -2698,8 +2747,8 @@ public:
 					return ERR_UNCONFIGURED;
 				}
 			}
-			String sdk_path = EDITOR_GET("export/android/custom_build_sdk_path");
-			ERR_FAIL_COND_V_MSG(sdk_path == "", ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/custom_build_sdk_path'.");
+			String sdk_path = EDITOR_GET("export/android/android_sdk_path");
+			ERR_FAIL_COND_V_MSG(sdk_path == "", ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/android_sdk_path'.");
 
 			// TODO: should we use "package/name" or "application/config/name"?
 			String project_name = get_project_name(p_preset->get("package/name"));
@@ -3049,18 +3098,13 @@ public:
 			CLEANUP_AND_RETURN(err);
 		}
 
-		if (should_sign) {
-			err = sign_apk(p_preset, p_debug, tmp_unaligned_path, ep);
-			if (err != OK) {
-				CLEANUP_AND_RETURN(err);
-			}
-		}
-
-		// Let's zip-align (must be done after signing)
+		// Let's zip-align (must be done before signing)
 
 		static const int ZIP_ALIGNMENT = 4;
 
-		if (ep.step("Aligning APK...", 105)) {
+		// If we're not signing the apk, then the next step should be the last.
+		const int next_step = should_sign ? 103 : 105;
+		if (ep.step("Aligning APK...", next_step)) {
 			CLEANUP_AND_RETURN(ERR_SKIP);
 		}
 
@@ -3136,6 +3180,15 @@ public:
 		zipClose(final_apk, NULL);
 		unzClose(tmp_unaligned);
 
+		if (should_sign) {
+			// Signing must be done last as any additional modifications to the
+			// file will invalidate the signature.
+			err = sign_apk(p_preset, p_debug, p_path, ep);
+			if (err != OK) {
+				CLEANUP_AND_RETURN(err);
+			}
+		}
+
 		CLEANUP_AND_RETURN(OK);
 	}
 
@@ -3183,19 +3236,14 @@ void register_android_exporter() {
 		exe_ext = "*.exe";
 	}
 
-	EDITOR_DEF("export/android/adb", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/adb", PROPERTY_HINT_GLOBAL_FILE, exe_ext));
-	EDITOR_DEF("export/android/jarsigner", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/jarsigner", PROPERTY_HINT_GLOBAL_FILE, exe_ext));
+	EDITOR_DEF("export/android/android_sdk_path", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/android_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
 	EDITOR_DEF("export/android/debug_keystore", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/debug_keystore", PROPERTY_HINT_GLOBAL_FILE, "*.keystore,*.jks"));
 	EDITOR_DEF("export/android/debug_keystore_user", "androiddebugkey");
 	EDITOR_DEF("export/android/debug_keystore_pass", "android");
 	EDITOR_DEF("export/android/force_system_user", false);
-	EDITOR_DEF("export/android/custom_build_sdk_path", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/custom_build_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
 
-	EDITOR_DEF("export/android/timestamping_authority_url", "");
 	EDITOR_DEF("export/android/shutdown_adb_on_exit", true);
 
 	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>(memnew(EditorExportPlatformAndroid));
