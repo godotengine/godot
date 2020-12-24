@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PinJoint3D" inherits="Joint3D" version="4.0">
 	<brief_description>
-		Pin joint for 3D shapes.
+		Pin joint for 3D PhysicsBodies.
 	</brief_description>
 	<description>
-		Pin joint for 3D rigid bodies. It pins 2 bodies (rigid or static) together.
+		Pin joint for 3D rigid bodies. It pins 2 bodies (rigid or static) together. See also [Generic6DOFJoint3D].
 	</description>
 	<tutorials>
 	</tutorials>

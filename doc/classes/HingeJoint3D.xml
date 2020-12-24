@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="HingeJoint3D" inherits="Joint3D" version="4.0">
 	<brief_description>
-		A hinge between two 3D bodies.
+		A hinge between two 3D PhysicsBodies.
 	</brief_description>
 	<description>
-		A HingeJoint3D normally uses the Z axis of body A as the hinge axis, another axis can be specified when adding it manually though.
+		A HingeJoint3D normally uses the Z axis of body A as the hinge axis, another axis can be specified when adding it manually though. See also [Generic6DOFJoint3D].
 	</description>
 	<tutorials>
 	</tutorials>
