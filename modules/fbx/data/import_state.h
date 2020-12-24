@@ -71,7 +71,7 @@ struct ImportState {
 	String path = String();
 	Node3D *root_owner = nullptr;
 	Node3D *root = nullptr;
-	real_t scale = 0.01;
+	real_t scale = 1;
 	Ref<FBXNode> fbx_root_node = Ref<FBXNode>();
 	// skeleton map - merged automatically when they are on the same x node in the tree so we can merge them automatically.
 	Map<uint64_t, Ref<FBXSkeleton>> skeleton_map = Map<uint64_t, Ref<FBXSkeleton>>();

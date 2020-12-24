@@ -281,7 +281,7 @@ void PivotTransform::ComputePivotTransform() {
 	GlobalTransform = (global_origin * local_translation_pivoted) * global_rotation_scale;
 
 	ImportUtils::debug_xform("local xform calculation", LocalTransform);
-	print_verbose("scale of node: " + S.basis.get_scale_local());
+	print_verbose("scale of node: " + GlobalTransform.basis.get_scale_abs());
 	print_verbose("---------------------------------------------------------------");
 }
 

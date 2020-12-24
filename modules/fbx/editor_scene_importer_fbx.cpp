@@ -347,10 +347,27 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 
 	// Size relative to cm.
 	const real_t fbx_unit_scale = p_document->GlobalSettingsPtr()->UnitScaleFactor();
+	const real_t fbx_original_scale = p_document->GlobalSettingsPtr()->OriginalUnitScaleFactor();
+	print_verbose("Final Scale: " + rtos(fbx_original_scale / fbx_unit_scale));
 
-	print_verbose("FBX unit scale import value: " + rtos(fbx_unit_scale));
-	// Set FBX file scale is relative to CM must be converted to M
-	state.scale = fbx_unit_scale / 100.0;
+	// Godot is in meters 100 cm in a meter
+	// If the FBX is not in the correct unit scale then we must calculate the scale value
+	if (fbx_unit_scale != 100) {
+		state.scale = fbx_unit_scale / 100;
+	} else {
+		// if the file has correct unit scale calculate we must scale scene to the value
+		state.scale = fbx_unit_scale; // correct for bistro
+	}
+	//
+	//	if(!Math::is_equal_approx( fbx_unit_scale, 100.0f))
+	// 	{
+	//		state.scale = (fbx_original_scale / fbx_unit_scale);
+	//	}
+	//	else
+	//	{
+	//		print_verbose("File is in meters no scaling required");
+	//	}
+
 	print_verbose("FBX unit scale is: " + rtos(state.scale));
 
 	// Enabled by default.
