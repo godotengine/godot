@@ -354,10 +354,17 @@ void DynamicBVH::_update(Node *leaf, int lookahead) {
 void DynamicBVH::update(const ID &p_id, const AABB &p_box) {
 	ERR_FAIL_COND(!p_id.is_valid());
 	Node *leaf = p_id.node;
-	Node *base = _remove_leaf(leaf);
+
 	Volume volume;
 	volume.min = p_box.position;
 	volume.max = p_box.position + p_box.size;
+
+	if ((leaf->volume.min == volume.min) && (leaf->volume.max == volume.max)) {
+		// noop
+		return;
+	}
+
+	Node *base = _remove_leaf(leaf);
 	if (base) {
 		if (lkhd >= 0) {
 			for (int i = 0; (i < lkhd) && base->parent; ++i) {

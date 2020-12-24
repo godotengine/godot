@@ -1070,9 +1070,15 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 
 	if (!p_instance->indexer_id.is_valid()) {
 		if ((1 << p_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
-			p_instance->indexer_id = p_instance->scenario->indexers[Scenario::INDEXER_GEOMETRY].insert(p_instance->aabb, p_instance);
+			p_instance->indexer_id = p_instance->scenario->indexers[Scenario::INDEXER_GEOMETRY].insert(p_instance->transformed_aabb, p_instance);
 		} else {
-			p_instance->indexer_id = p_instance->scenario->indexers[Scenario::INDEXER_VOLUMES].insert(p_instance->aabb, p_instance);
+			p_instance->indexer_id = p_instance->scenario->indexers[Scenario::INDEXER_VOLUMES].insert(p_instance->transformed_aabb, p_instance);
+		}
+	} else {
+		if ((1 << p_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
+			p_instance->scenario->indexers[Scenario::INDEXER_GEOMETRY].update(p_instance->indexer_id, p_instance->transformed_aabb);
+		} else {
+			p_instance->scenario->indexers[Scenario::INDEXER_VOLUMES].update(p_instance->indexer_id, p_instance->transformed_aabb);
 		}
 	}
 
