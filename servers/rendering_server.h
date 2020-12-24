@@ -1409,6 +1409,8 @@ public:
 	virtual Vector<FrameProfileArea> get_frame_profile() = 0;
 	virtual uint64_t get_frame_profile_frame() = 0;
 
+	virtual float get_frame_setup_time_cpu() const = 0;
+
 	/* TESTING */
 
 	virtual RID get_test_cube() = 0;
