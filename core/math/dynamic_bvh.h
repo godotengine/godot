@@ -281,7 +281,7 @@ public:
 	void optimize_top_down(int bu_threshold = 128);
 	void optimize_incremental(int passes);
 	ID insert(const AABB &p_box, void *p_userdata);
-	void update(const ID &p_id, const AABB &p_box);
+	bool update(const ID &p_id, const AABB &p_box);
 	void remove(const ID &p_id);
 	void get_elements(List<ID> *r_elements);
 
