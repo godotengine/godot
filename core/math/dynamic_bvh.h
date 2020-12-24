@@ -56,6 +56,8 @@ subject to the following restrictions:
 ///DynamicBVH implementation by Nathanael Presson
 // The DynamicBVH class implements a fast dynamic bounding volume tree based on axis aligned bounding boxes (aabb tree).
 
+// #define DYNAMICBVH_VERBOSE_DEBUG
+
 class DynamicBVH {
 	struct Node;
 
@@ -244,6 +246,9 @@ private:
 	_FORCE_INLINE_ void _update(Node *leaf, int lookahead = -1);
 
 	void _extract_leaves(Node *p_node, List<ID> *r_elements);
+#ifdef DYNAMICBVH_VERBOSE_DEBUG
+	void _debug_print_node(const Node &p_node, int p_depth, String &p_output);
+#endif
 
 	_FORCE_INLINE_ bool _ray_aabb(const Vector3 &rayFrom, const Vector3 &rayInvDirection, const unsigned int raySign[3], const Vector3 bounds[2], real_t &tmin, real_t lambda_min, real_t lambda_max) {
 		real_t tmax, tymin, tymax, tzmin, tzmax;
@@ -287,6 +292,10 @@ public:
 
 	int get_leaf_count() const;
 	int get_max_depth() const;
+
+#ifdef DYNAMICBVH_VERBOSE_DEBUG
+	void debug_print_tree(String p_string);
+#endif
 
 	/* Discouraged, but works as a reference on how it must be used */
 	struct DefaultQueryResult {

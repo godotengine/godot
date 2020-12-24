@@ -30,6 +30,11 @@
 
 #include "dynamic_bvh.h"
 
+#ifdef DYNAMICBVH_VERBOSE_DEBUG
+#include "core/config/engine.h"
+#include "core/string/print_string.h"
+#endif
+
 void DynamicBVH::_delete_node(Node *p_node) {
 	memdelete(p_node);
 }
@@ -296,6 +301,9 @@ void DynamicBVH::optimize_bottom_up() {
 		_bottom_up(&leaves[0], leaves.size());
 		bvh_root = leaves[0];
 	}
+#ifdef DYNAMICBVH_VERBOSE_DEBUG
+	debug_print_tree("optimize_bottom_up");
+#endif
 }
 
 void DynamicBVH::optimize_top_down(int bu_threshold) {
@@ -304,6 +312,9 @@ void DynamicBVH::optimize_top_down(int bu_threshold) {
 		_fetch_leaves(bvh_root, leaves);
 		bvh_root = _top_down(&leaves[0], leaves.size(), bu_threshold);
 	}
+#ifdef DYNAMICBVH_VERBOSE_DEBUG
+	debug_print_tree("optimize_top_down");
+#endif
 }
 
 void DynamicBVH::optimize_incremental(int passes) {
@@ -321,6 +332,9 @@ void DynamicBVH::optimize_incremental(int passes) {
 			++opath;
 		} while (--passes);
 	}
+#ifdef DYNAMICBVH_VERBOSE_DEBUG
+	debug_print_tree("optimize_incremental");
+#endif
 }
 
 DynamicBVH::ID DynamicBVH::insert(const AABB &p_box, void *p_userdata) {
@@ -335,6 +349,9 @@ DynamicBVH::ID DynamicBVH::insert(const AABB &p_box, void *p_userdata) {
 	ID id;
 	id.node = leaf;
 
+#ifdef DYNAMICBVH_VERBOSE_DEBUG
+	debug_print_tree("insert");
+#endif
 	return id;
 }
 
@@ -424,6 +441,50 @@ int DynamicBVH::get_max_depth() const {
 		return 0;
 	}
 }
+
+#ifdef DYNAMICBVH_VERBOSE_DEBUG
+void DynamicBVH::_debug_print_node(const Node &p_node, int p_depth, String &p_output) {
+	String sz;
+	for (int n = 0; n < p_depth; n++) {
+		sz += "\t";
+	}
+
+	if (p_node.is_leaf()) {
+		sz += "L [";
+	} else {
+		sz += "N [";
+	}
+
+	// volume
+	sz += String(p_node.volume.min) + ", " + String(p_node.volume.max) + "]";
+
+	p_output += sz + "\n";
+
+	// children
+	if (!p_node.is_leaf()) {
+		if (p_node.childs[0])
+			_debug_print_node(*p_node.childs[0], p_depth + 1, p_output);
+
+		if (p_node.childs[1])
+			_debug_print_node(*p_node.childs[1], p_depth + 1, p_output);
+	}
+}
+
+void DynamicBVH::debug_print_tree(String p_string) {
+	if (Engine::get_singleton()->is_editor_hint())
+		return;
+
+	if (p_string != "") {
+		p_string += "\n";
+	}
+
+	if (bvh_root) {
+		_debug_print_node(*bvh_root, 0, p_string);
+	}
+
+	print_line(p_string);
+}
+#endif
 
 DynamicBVH::~DynamicBVH() {
 	clear();
