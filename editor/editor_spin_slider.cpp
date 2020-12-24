@@ -76,6 +76,7 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 					if (grabbing_spinner) {
 						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 						Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
+						dial_popup->hide();
 						update();
 					} else {
 						_focus_entered();
@@ -99,10 +100,43 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 			if (mm->is_shift_pressed() && grabbing_spinner) {
 				diff_x *= 0.1;
 			}
-			grabbing_spinner_dist_cache += diff_x;
-
-			if (!grabbing_spinner && ABS(grabbing_spinner_dist_cache) > 4 * EDSCALE) {
+			if (!grabbing_spinner && ABS(diff_x) > 4 * EDSCALE) {
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+				if (!dial_popup) {
+					dial_popup = memnew(RangeDialPopup);
+					add_child(dial_popup);
+					dial = dial_popup->get_dial();
+					share(dial);
+				}
+
+				dial_popup->set_as_minsize();
+				double digits = ceil(log(fabs(get_value())) / log(10));
+				if (digits < CMP_EPSILON2)
+					digits = 1;
+				dial->set_zoom(pow(10, 3 - digits));
+
+				Rect2i usable_rect = dial_popup->get_usable_parent_rect();
+				Rect2i cp_rect(Point2i(), dial_popup->get_size());
+				for (int i = 0; i < 4; i++) {
+					if (i > 1) {
+						cp_rect.position.y = get_screen_position().y - cp_rect.size.y;
+					} else {
+						cp_rect.position.y = get_screen_position().y + get_size().height;
+					}
+
+					if (i & 1) {
+						cp_rect.position.x = get_screen_position().x;
+					} else {
+						cp_rect.position.x = get_screen_position().x - MAX(0, (cp_rect.size.x - get_size().x));
+					}
+
+					if (usable_rect.encloses(cp_rect)) {
+						break;
+					}
+				}
+				dial_popup->set_position(cp_rect.position);
+				dial_popup->popup();
+
 				grabbing_spinner = true;
 			}
 
@@ -114,17 +148,20 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 				if (pre_grab_value > get_max() && !is_greater_allowed()) {
 					pre_grab_value = get_max();
 				}
-
+				dial->update_by_relative(mm->get_relative().y);
+				grabbing_spinner_dist_cache += dial->get_zoom_relative(diff_x);
 				if (mm->is_ctrl_pressed()) {
 					// If control was just pressed, don't make the value do a huge jump in magnitude.
 					if (grabbing_spinner_dist_cache != 0) {
-						pre_grab_value += grabbing_spinner_dist_cache * get_step();
+						pre_grab_value += grabbing_spinner_dist_cache;
 						grabbing_spinner_dist_cache = 0;
 					}
-
-					set_value(Math::round(pre_grab_value + get_step() * grabbing_spinner_dist_cache * 10));
+					dial->set_use_rounded_values(true);
+					dial->set_value(pre_grab_value + grabbing_spinner_dist_cache);
+					set_value(Math::round(pre_grab_value + grabbing_spinner_dist_cache));
 				} else {
-					set_value(pre_grab_value + get_step() * grabbing_spinner_dist_cache);
+					dial->set_use_rounded_values(false);
+					dial->set_value(pre_grab_value + grabbing_spinner_dist_cache);
 				}
 			}
 		} else if (updown_offset != -1) {
@@ -333,6 +370,16 @@ void EditorSpinSlider::_notification(int p_what) {
 		}
 		value_input_just_closed = false;
 	}
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+		if (dial_popup && !is_visible_in_tree()) {
+			dial_popup->hide();
+		}
+	}
+	if (p_what == NOTIFICATION_WM_CLOSE_REQUEST) {
+		if (dial_popup) {
+			dial_popup->hide();
+		}
+	}
 }
 
 Size2 EditorSpinSlider::get_minimum_size() const {
@@ -489,6 +536,8 @@ EditorSpinSlider::EditorSpinSlider() {
 	set_focus_mode(FOCUS_ALL);
 	updown_offset = -1;
 	hover_updown = false;
+	dial_popup = nullptr;
+	dial = nullptr;
 	grabber = memnew(TextureRect);
 	add_child(grabber);
 	grabber->hide();
