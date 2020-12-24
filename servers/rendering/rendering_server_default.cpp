@@ -101,11 +101,16 @@ void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 
 	TIMESTAMP_BEGIN()
 
+	uint64_t time_usec = OS::get_singleton()->get_ticks_usec();
+
 	RSG::scene->update(); //update scenes stuff before updating instances
+
+	frame_setup_time = double(OS::get_singleton()->get_ticks_usec() - time_usec) / 1000.0;
 
 	RSG::storage->update_particles(); //need to be done after instances are updated (colliders and particle transforms), and colliders are rendered
 
 	RSG::scene->render_probes();
+
 	RSG::viewport->draw_viewports();
 	RSG::canvas_render->update();
 
@@ -157,6 +162,10 @@ void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 	}
 
 	frame_profile_frame = RSG::storage->get_captured_timestamps_frame();
+}
+
+float RenderingServerDefault::get_frame_setup_time_cpu() const {
+	return frame_setup_time;
 }
 
 void RenderingServerDefault::sync() {

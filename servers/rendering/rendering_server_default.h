@@ -72,6 +72,8 @@ class RenderingServerDefault : public RenderingServer {
 	uint64_t frame_profile_frame;
 	Vector<FrameProfileArea> frame_profile;
 
+	float frame_setup_time = 0;
+
 public:
 	//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()
 	//#define DEBUG_CHANGES
@@ -844,6 +846,8 @@ public:
 	virtual RID get_test_cube();
 
 	/* TESTING */
+
+	virtual float get_frame_setup_time_cpu() const;
 
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
 	virtual void set_default_clear_color(const Color &p_color);

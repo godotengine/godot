@@ -776,6 +776,10 @@ public:
 		return rendering_server->get_frame_profile();
 	}
 
+	virtual float get_frame_setup_time_cpu() const {
+		return rendering_server->get_frame_setup_time_cpu();
+	}
+
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
 		rendering_server->sdfgi_set_debug_probe_select(p_position, p_dir);
 	}
