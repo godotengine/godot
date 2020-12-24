@@ -511,11 +511,23 @@
 		<constant name="INF" value="Vector2( inf, inf )">
 			Infinity vector, a vector with all components set to [constant @GDScript.INF].
 		</constant>
+		<constant name="UP_LEFT" value="Vector2( -1, -1 )">
+			Top-left ordinal vector.
+		</constant>
 		<constant name="LEFT" value="Vector2( -1, 0 )">
 			Left unit vector. Represents the direction of left.
 		</constant>
+		<constant name="DOWN_LEFT" value="Vector2( -1, 1 )">
+			Bottom-left ordinal vector.
+		</constant>
+		<constant name="UP_RIGHT" value="Vector2( 1, -1 )">
+			Top-right ordinal vector.
+		</constant>
 		<constant name="RIGHT" value="Vector2( 1, 0 )">
 			Right unit vector. Represents the direction of right.
+		</constant>
+		<constant name="DOWN_RIGHT" value="Vector2( 1, 1 )">
+			Bottom-right ordinal vector.
 		</constant>
 		<constant name="UP" value="Vector2( 0, -1 )">
 			Up unit vector. Y is down in 2D, so this vector points -Y.

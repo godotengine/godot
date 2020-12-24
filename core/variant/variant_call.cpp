@@ -1514,15 +1514,23 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "ZERO", Vector2(0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "ONE", Vector2(1, 1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "INF", Vector2(Math_INF, Math_INF));
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "UP_LEFT", Vector2(-1, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "LEFT", Vector2(-1, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "DOWN_LEFT", Vector2(-1, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "UP_RIGHT", Vector2(1, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "RIGHT", Vector2(1, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "DOWN_RIGHT", Vector2(1, 1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "UP", Vector2(0, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "DOWN", Vector2(0, 1));
 
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "ZERO", Vector2i(0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "ONE", Vector2i(1, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "UP_LEFT", Vector2i(-1, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "LEFT", Vector2i(-1, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "DOWN_LEFT", Vector2i(-1, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "UP_RIGHT", Vector2i(1, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "RIGHT", Vector2i(1, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "DOWN_RIGHT", Vector2i(1, 1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "UP", Vector2i(0, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "DOWN", Vector2i(0, 1));
 
