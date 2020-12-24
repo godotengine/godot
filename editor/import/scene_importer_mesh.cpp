@@ -62,9 +62,15 @@ void EditorSceneImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const
 	s.arrays = p_arrays;
 	s.name = p_name;
 
+	Vector<Vector3> vertex_array = p_arrays[Mesh::ARRAY_VERTEX];
+	int vertex_count = vertex_array.size();
+	ERR_FAIL_COND(vertex_count == 0);
+
 	for (int i = 0; i < blend_shapes.size(); i++) {
 		Array bsdata = p_blend_shapes[i];
 		ERR_FAIL_COND(bsdata.size() != Mesh::ARRAY_MAX);
+		Vector<Vector3> vertex_data = bsdata[Mesh::ARRAY_VERTEX];
+		ERR_FAIL_COND(vertex_data.size() != vertex_count);
 		Surface::BlendShape bs;
 		bs.arrays = bsdata;
 		s.blend_shape_data.push_back(bs);
