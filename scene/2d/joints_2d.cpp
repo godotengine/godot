@@ -90,6 +90,14 @@ void Joint2D::_update_joint(bool p_only_free) {
 	warning = String();
 	update_configuration_warning();
 
+	if (body_a) {
+		body_a->force_update_transform();
+	}
+
+	if (body_b) {
+		body_b->force_update_transform();
+	}
+
 	joint = _configure_joint(body_a, body_b);
 
 	ERR_FAIL_COND_MSG(!joint.is_valid(), "Failed to configure the joint.");
