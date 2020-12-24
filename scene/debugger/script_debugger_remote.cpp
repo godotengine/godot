@@ -709,7 +709,7 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 			prop.push_back(pi.hint_string);
 			prop.push_back(pi.usage);
 
-			if (!res.is_null()) {
+			if (!res.is_null() && !res->get_path().empty()) {
 				var = res->get_path();
 			}
 
