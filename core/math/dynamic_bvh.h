@@ -34,6 +34,7 @@
 #include "core/math/aabb.h"
 #include "core/templates/list.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/paged_allocator.h"
 #include "core/typedefs.h"
 
 // Based on bullet Dbvh
@@ -217,6 +218,7 @@ private:
 		}
 	};
 
+	PagedAllocator<Node> node_allocator;
 	// Fields
 	Node *bvh_root = nullptr;
 	int lkhd = -1;
