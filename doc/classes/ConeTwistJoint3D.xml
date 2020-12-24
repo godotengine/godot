@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ConeTwistJoint3D" inherits="Joint3D" version="4.0">
 	<brief_description>
-		A twist joint between two 3D bodies.
+		A twist joint between two 3D PhysicsBodies.
 	</brief_description>
 	<description>
 		The joint can rotate the bodies across an axis defined by the local x-axes of the [Joint3D].
 		The twist axis is initiated as the X axis of the [Joint3D].
-		Once the Bodies swing, the twist axis is calculated as the middle of the x-axes of the Joint3D in the local space of the two Bodies.
+		Once the Bodies swing, the twist axis is calculated as the middle of the x-axes of the Joint3D in the local space of the two Bodies. See also [Generic6DOFJoint3D].
 	</description>
 	<tutorials>
 	</tutorials>
