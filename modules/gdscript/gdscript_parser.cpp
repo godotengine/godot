@@ -2435,6 +2435,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_grouping(ExpressionNode *p
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *p_previous_operand, bool p_can_assign) {
+	// do nothing / prevent crash
+	if (p_previous_operand == NULL) {
+		return nullptr;
+	}
+
 	SubscriptNode *attribute = alloc_node<SubscriptNode>();
 
 	if (for_completion) {
