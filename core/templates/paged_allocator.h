@@ -108,7 +108,7 @@ public:
 		return page_size > 0;
 	}
 
-	void configure(uint32_t p_page_size, bool p_thread_safe) {
+	void configure(uint32_t p_page_size) {
 		ERR_FAIL_COND(page_pool != nullptr); //sanity check
 		ERR_FAIL_COND(p_page_size == 0);
 		page_size = nearest_power_of_2_templated(p_page_size);
@@ -116,8 +116,8 @@ public:
 		page_shift = get_shift_from_power_of_2(page_size);
 	}
 
-	PagedAllocator(uint32_t p_page_size = 4096, bool p_thread_safe = false) { // power of 2 recommended because of alignment with OS page sizes. Even if element is bigger, its still a multiple and get rounded amount of pages
-		configure(p_page_size, false);
+	PagedAllocator(uint32_t p_page_size = 4096) { // power of 2 recommended because of alignment with OS page sizes. Even if element is bigger, its still a multiple and get rounded amount of pages
+		configure(p_page_size);
 	}
 
 	~PagedAllocator() {
