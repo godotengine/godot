@@ -291,7 +291,7 @@ struct VariantUtilityFunctions {
 		Variant ret;
 		for (int i = 1; i < p_argcount; i++) {
 			bool valid;
-			Variant::evaluate(Variant::OP_GREATER, base, *p_args[i], ret, valid);
+			Variant::evaluate(Variant::OP_LESS, base, *p_args[i], ret, valid);
 			if (!valid) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.expected = base.get_type();
@@ -324,7 +324,7 @@ struct VariantUtilityFunctions {
 		Variant ret;
 		for (int i = 1; i < p_argcount; i++) {
 			bool valid;
-			Variant::evaluate(Variant::OP_LESS, base, *p_args[i], ret, valid);
+			Variant::evaluate(Variant::OP_GREATER, base, *p_args[i], ret, valid);
 			if (!valid) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.expected = base.get_type();
