@@ -350,7 +350,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 
 	print_verbose("FBX unit scale import value: " + rtos(fbx_unit_scale));
 	// Set FBX file scale is relative to CM must be converted to M
-	state.scale = fbx_unit_scale / 100.0;
+	state.scale = 1;
 	print_verbose("FBX unit scale is: " + rtos(state.scale));
 
 	// Enabled by default.
