@@ -2408,9 +2408,6 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 
-	//ensure blend shape consistency
-	ERR_FAIL_COND(mesh->blend_shape_count && p_surface.bone_aabbs.size() != mesh->bone_aabbs.size());
-
 #ifdef DEBUG_ENABLED
 	//do a validation, to catch errors first
 	{
@@ -2576,6 +2573,11 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 		mesh->bone_aabbs = p_surface.bone_aabbs;
 		mesh->aabb = p_surface.aabb;
 	} else {
+		if (mesh->bone_aabbs.size() < p_surface.bone_aabbs.size()) {
+			// ArrayMesh::_surface_set_data only allocates bone_aabbs up to max_bone
+			// Each surface may affect different numbers of bones.
+			mesh->bone_aabbs.resize(p_surface.bone_aabbs.size());
+		}
 		for (int i = 0; i < p_surface.bone_aabbs.size(); i++) {
 			mesh->bone_aabbs.write[i].merge_with(p_surface.bone_aabbs[i]);
 		}
