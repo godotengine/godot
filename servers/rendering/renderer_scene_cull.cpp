@@ -1065,20 +1065,37 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 	p_instance->transformed_aabb = new_aabb;
 
 	if (p_instance->scenario == nullptr || !p_instance->visible || Math::is_zero_approx(p_instance->transform.basis.determinant())) {
+		p_instance->prev_transformed_aabb = p_instance->transformed_aabb;
 		return;
+	}
+
+	//quantize to improve moving object performance
+	AABB bvh_aabb = p_instance->transformed_aabb;
+
+	if (p_instance->indexer_id.is_valid() && bvh_aabb != p_instance->prev_transformed_aabb) {
+		//assume motion, see if bounds need to be quantized
+		AABB motion_aabb = bvh_aabb.merge(p_instance->prev_transformed_aabb);
+		float motion_longest_axis = motion_aabb.get_longest_axis_size();
+		float longest_axis = p_instance->transformed_aabb.get_longest_axis_size();
+
+		if (motion_longest_axis < longest_axis * 2) {
+			//moved but not a lot, use motion aabb quantizing
+			float quantize_size = Math::pow(2.0, Math::ceil(Math::log(motion_longest_axis) / Math::log(2.0))) * 0.5; //one fifth
+			bvh_aabb.quantize(quantize_size);
+		}
 	}
 
 	if (!p_instance->indexer_id.is_valid()) {
 		if ((1 << p_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
-			p_instance->indexer_id = p_instance->scenario->indexers[Scenario::INDEXER_GEOMETRY].insert(p_instance->transformed_aabb, p_instance);
+			p_instance->indexer_id = p_instance->scenario->indexers[Scenario::INDEXER_GEOMETRY].insert(bvh_aabb, p_instance);
 		} else {
-			p_instance->indexer_id = p_instance->scenario->indexers[Scenario::INDEXER_VOLUMES].insert(p_instance->transformed_aabb, p_instance);
+			p_instance->indexer_id = p_instance->scenario->indexers[Scenario::INDEXER_VOLUMES].insert(bvh_aabb, p_instance);
 		}
 	} else {
 		if ((1 << p_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
-			p_instance->scenario->indexers[Scenario::INDEXER_GEOMETRY].update(p_instance->indexer_id, p_instance->transformed_aabb);
+			p_instance->scenario->indexers[Scenario::INDEXER_GEOMETRY].update(p_instance->indexer_id, bvh_aabb);
 		} else {
-			p_instance->scenario->indexers[Scenario::INDEXER_VOLUMES].update(p_instance->indexer_id, p_instance->transformed_aabb);
+			p_instance->scenario->indexers[Scenario::INDEXER_VOLUMES].update(p_instance->indexer_id, bvh_aabb);
 		}
 	}
 
@@ -1124,6 +1141,8 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 	}
 
 	pair.pair();
+
+	p_instance->prev_transformed_aabb = p_instance->transformed_aabb;
 }
 
 void RendererSceneCull::_unpair_instance(Instance *p_instance) {

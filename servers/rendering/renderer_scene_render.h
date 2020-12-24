@@ -172,6 +172,7 @@ public:
 
 		AABB aabb;
 		AABB transformed_aabb;
+		AABB prev_transformed_aabb;
 
 		struct InstanceShaderParameter {
 			int32_t index = -1;

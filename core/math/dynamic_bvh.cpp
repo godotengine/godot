@@ -351,17 +351,17 @@ void DynamicBVH::_update(Node *leaf, int lookahead) {
 	_insert_leaf(root, leaf);
 }
 
-void DynamicBVH::update(const ID &p_id, const AABB &p_box) {
-	ERR_FAIL_COND(!p_id.is_valid());
+bool DynamicBVH::update(const ID &p_id, const AABB &p_box) {
+	ERR_FAIL_COND_V(!p_id.is_valid(), false);
 	Node *leaf = p_id.node;
 
 	Volume volume;
 	volume.min = p_box.position;
 	volume.max = p_box.position + p_box.size;
 
-	if ((leaf->volume.min == volume.min) && (leaf->volume.max == volume.max)) {
+	if (leaf->volume.min.is_equal_approx(volume.min) && leaf->volume.max.is_equal_approx(volume.max)) {
 		// noop
-		return;
+		return false;
 	}
 
 	Node *base = _remove_leaf(leaf);
@@ -375,6 +375,7 @@ void DynamicBVH::update(const ID &p_id, const AABB &p_box) {
 	}
 	leaf->volume = volume;
 	_insert_leaf(base, leaf);
+	return true;
 }
 
 void DynamicBVH::remove(const ID &p_id) {
