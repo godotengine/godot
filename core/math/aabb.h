@@ -107,6 +107,9 @@ public:
 	Variant intersects_segment_bind(const Vector3 &p_from, const Vector3 &p_to) const;
 	Variant intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) const;
 
+	_FORCE_INLINE_ void quantize(float p_unit);
+	_FORCE_INLINE_ AABB quantized(float p_unit) const;
+
 	_FORCE_INLINE_ void set_end(const Vector3 &p_end) {
 		size = p_end - position;
 	}
@@ -425,6 +428,30 @@ void AABB::grow_by(real_t p_amount) {
 	size.x += 2.0 * p_amount;
 	size.y += 2.0 * p_amount;
 	size.z += 2.0 * p_amount;
+}
+
+void AABB::quantize(float p_unit) {
+	size += position;
+
+	position.x -= Math::fposmodp(position.x, p_unit);
+	position.y -= Math::fposmodp(position.y, p_unit);
+	position.z -= Math::fposmodp(position.z, p_unit);
+
+	size.x -= Math::fposmodp(size.x, p_unit);
+	size.y -= Math::fposmodp(size.y, p_unit);
+	size.z -= Math::fposmodp(size.z, p_unit);
+
+	size.x += p_unit;
+	size.y += p_unit;
+	size.z += p_unit;
+
+	size -= position;
+}
+
+AABB AABB::quantized(float p_unit) const {
+	AABB ret = *this;
+	ret.quantize(p_unit);
+	return ret;
 }
 
 #endif // AABB_H

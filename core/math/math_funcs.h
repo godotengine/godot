@@ -198,6 +198,23 @@ public:
 		value += 0.0;
 		return value;
 	}
+	static _ALWAYS_INLINE_ float fposmodp(float p_x, float p_y) {
+		float value = Math::fmod(p_x, p_y);
+		if (value < 0) {
+			value += p_y;
+		}
+		value += 0.0;
+		return value;
+	}
+	static _ALWAYS_INLINE_ double fposmodp(double p_x, double p_y) {
+		double value = Math::fmod(p_x, p_y);
+		if (value < 0) {
+			value += p_y;
+		}
+		value += 0.0;
+		return value;
+	}
+
 	static _ALWAYS_INLINE_ int posmod(int p_x, int p_y) {
 		int value = p_x % p_y;
 		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
