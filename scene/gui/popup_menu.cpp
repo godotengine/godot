@@ -572,17 +572,31 @@ void PopupMenu::_draw_items() {
 		}
 
 		// Text
+		Color font_outline_color = get_theme_color("font_outline_color");
+		int outline_size = get_theme_constant("outline_size");
 		if (items[i].separator) {
 			if (text != String()) {
 				int center = (display_width - items[i].text_buf->get_size().width) / 2;
-				items[i].text_buf->draw(ci, Point2(center, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0)), font_separator_color);
+				Vector2 text_pos = Point2(center, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
+				if (outline_size > 0 && font_outline_color.a > 0) {
+					items[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+				}
+				items[i].text_buf->draw(ci, text_pos, font_separator_color);
 			}
 		} else {
 			item_ofs.x += icon_ofs + check_ofs;
 			if (rtl) {
-				items[i].text_buf->draw(ci, Size2(control->get_size().width - items[i].text_buf->get_size().width - item_ofs.x, item_ofs.y) + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0)), items[i].disabled ? font_disabled_color : (i == mouse_over ? font_hover_color : font_color));
+				Vector2 text_pos = Size2(control->get_size().width - items[i].text_buf->get_size().width - item_ofs.x, item_ofs.y) + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
+				if (outline_size > 0 && font_outline_color.a > 0) {
+					items[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+				}
+				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? font_disabled_color : (i == mouse_over ? font_hover_color : font_color));
 			} else {
-				items[i].text_buf->draw(ci, item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0)), items[i].disabled ? font_disabled_color : (i == mouse_over ? font_hover_color : font_color));
+				Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
+				if (outline_size > 0 && font_outline_color.a > 0) {
+					items[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+				}
+				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? font_disabled_color : (i == mouse_over ? font_hover_color : font_color));
 			}
 		}
 
@@ -593,7 +607,11 @@ void PopupMenu::_draw_items() {
 			} else {
 				item_ofs.x = display_width - style->get_margin(SIDE_RIGHT) - items[i].accel_text_buf->get_size().x;
 			}
-			items[i].accel_text_buf->draw(ci, item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0)), i == mouse_over ? font_hover_color : font_accelerator_color);
+			Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
+			if (outline_size > 0 && font_outline_color.a > 0) {
+				items[i].accel_text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+			}
+			items[i].accel_text_buf->draw(ci, text_pos, i == mouse_over ? font_hover_color : font_accelerator_color);
 		}
 
 		// Cache the item vertical offset from the first item and the height

@@ -729,6 +729,9 @@
 		<theme_item name="font_hover_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			[Color] used for the hovered text.
 		</theme_item>
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the menu item.
+		</theme_item>
 		<theme_item name="font_separator_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			[Color] used for labeled separators' text. See [method add_separator].
 		</theme_item>
@@ -746,6 +749,9 @@
 		</theme_item>
 		<theme_item name="labeled_separator_right" type="StyleBox">
 			[StyleBox] for the right side of labeled separator. See [method add_separator].
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the item text outline.
 		</theme_item>
 		<theme_item name="panel" type="StyleBox">
 			Default [StyleBox] of the [PopupMenu] items.

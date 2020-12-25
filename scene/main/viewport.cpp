@@ -278,6 +278,11 @@ void Viewport::_sub_window_update(Window *p_window) {
 		int x = (r.size.width - title_text.get_size().x) / 2;
 		int y = (-title_height - title_text.get_size().y) / 2;
 
+		Color font_outline_color = p_window->get_theme_color("title_outline_modulate");
+		int outline_size = p_window->get_theme_constant("title_outline_size");
+		if (outline_size > 0 && font_outline_color.a > 0) {
+			title_text.draw_outline(sw.canvas_item, r.position + Point2(x, y), outline_size, font_outline_color);
+		}
 		title_text.draw(sw.canvas_item, r.position + Point2(x, y), title_color);
 
 		bool hl = gui.subwindow_focused == sw.window && gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE && gui.subwindow_drag_close_inside;

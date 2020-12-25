@@ -380,6 +380,9 @@
 		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			Default font color.
 		</theme_item>
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the [LineEdit].
+		</theme_item>
 		<theme_item name="font_selected_color" type="Color" default="Color( 0, 0, 0, 1 )">
 			Font color for selected text (inside the selection rectangle).
 		</theme_item>
@@ -394,6 +397,9 @@
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 			Default background for the [LineEdit].
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the text outline.
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
 			Background used when [LineEdit] is in read-only mode ([member editable] is set to [code]false[/code]).

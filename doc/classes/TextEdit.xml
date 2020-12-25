@@ -954,6 +954,9 @@
 		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			Sets the font [Color].
 		</theme_item>
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the [TextEdit].
+		</theme_item>
 		<theme_item name="font_readonly_color" type="Color" default="Color( 0.88, 0.88, 0.88, 0.5 )">
 		</theme_item>
 		<theme_item name="font_selected_color" type="Color" default="Color( 0, 0, 0, 1 )">
@@ -970,6 +973,9 @@
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit].
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the text outline.
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit] when [member readonly] is enabled.

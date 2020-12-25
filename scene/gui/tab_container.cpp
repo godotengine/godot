@@ -535,6 +535,8 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 	Vector<Control *> tabs = _get_tabs();
 	RID canvas = get_canvas_item();
 	Ref<Font> font = get_theme_font("font");
+	Color font_outline_color = get_theme_color("font_outline_color");
+	int outline_size = get_theme_constant("outline_size");
 	int icon_text_distance = get_theme_constant("icon_separation");
 	int tab_width = _get_tab_width(p_index);
 	int header_height = _get_top_margin();
@@ -565,6 +567,9 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 
 	// Draw the tab text.
 	Point2i text_pos(x_content, y_center - text_buf[p_index]->get_size().y / 2);
+	if (outline_size > 0 && font_outline_color.a > 0) {
+		text_buf[p_index]->draw_outline(canvas, text_pos, outline_size, font_outline_color);
+	}
 	text_buf[p_index]->draw(canvas, text_pos, p_font_color);
 }
 

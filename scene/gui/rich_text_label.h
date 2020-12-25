@@ -405,7 +405,7 @@ private:
 	Ref<Font> _find_font(Item *p_item);
 	int _find_font_size(Item *p_item);
 	Dictionary _find_font_features(Item *p_item);
-	int _find_outline_size(Item *p_item);
+	int _find_outline_size(Item *p_item, int p_default);
 	ItemList *_find_list_item(Item *p_item);
 	ItemDropcap *_find_dc_item(Item *p_item);
 	int _find_list(Item *p_item, Vector<int> &r_index, Vector<ItemList *> &r_list);

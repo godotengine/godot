@@ -1118,7 +1118,7 @@ int Tree::get_item_height(TreeItem *p_item) const {
 	return height;
 }
 
-void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color) {
+void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color) {
 	ERR_FAIL_COND(cache.font.is_null());
 
 	Rect2i rect = p_rect;
@@ -1160,6 +1160,9 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 		Point2 draw_pos = rect.position;
 		draw_pos.y += Math::floor((rect.size.y - p_cell.text_buf->get_size().y) / 2.0);
 		p_cell.text_buf->set_width(MAX(0, rect.size.width));
+		if (p_ol_size > 0 && p_ol_color.a > 0) {
+			p_cell.text_buf->draw_outline(ci, draw_pos, p_ol_size, p_ol_color);
+		}
 		p_cell.text_buf->draw(ci, draw_pos, p_color);
 		rect.position.x += ts.width + cache.hseparation;
 		rect.size.x -= ts.width + cache.hseparation;
@@ -1182,6 +1185,9 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 		Point2 draw_pos = rect.position;
 		draw_pos.y += Math::floor((rect.size.y - p_cell.text_buf->get_size().y) / 2.0);
 		p_cell.text_buf->set_width(MAX(0, rect.size.width));
+		if (p_ol_size > 0 && p_ol_color.a > 0) {
+			p_cell.text_buf->draw_outline(ci, draw_pos, p_ol_size, p_ol_color);
+		}
 		p_cell.text_buf->draw(ci, draw_pos, p_color);
 	}
 }
@@ -1434,6 +1440,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 
 			Color col = p_item->cells[i].custom_color ? p_item->cells[i].color : get_theme_color(p_item->cells[i].selected ? "font_selected_color" : "font_color");
+			Color font_outline_color = get_theme_color("font_outline_color");
+			int outline_size = get_theme_constant("outline_size");
 			Color icon_col = p_item->cells[i].icon_color;
 
 			if (p_item->cells[i].dirty) {
@@ -1450,7 +1458,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			switch (p_item->cells[i].mode) {
 				case TreeItem::CELL_MODE_STRING: {
-					draw_item_rect(p_item->cells.write[i], item_rect, col, icon_col);
+					draw_item_rect(p_item->cells.write[i], item_rect, col, icon_col, outline_size, font_outline_color);
 				} break;
 				case TreeItem::CELL_MODE_CHECK: {
 					Ref<Texture2D> checked = cache.checked;
@@ -1471,7 +1479,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					item_rect.size.x -= check_w;
 					item_rect.position.x += check_w;
 
-					draw_item_rect(p_item->cells.write[i], item_rect, col, icon_col);
+					draw_item_rect(p_item->cells.write[i], item_rect, col, icon_col, outline_size, font_outline_color);
 
 				} break;
 				case TreeItem::CELL_MODE_RANGE: {
@@ -1485,8 +1493,14 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 						p_item->cells.write[i].text_buf->set_width(cell_width);
 						if (rtl) {
+							if (outline_size > 0 && font_outline_color.a > 0) {
+								p_item->cells[i].text_buf->draw_outline(ci, text_pos + Vector2(cell_width - text_width, 0), outline_size, font_outline_color);
+							}
 							p_item->cells[i].text_buf->draw(ci, text_pos + Vector2(cell_width - text_width, 0), col);
 						} else {
+							if (outline_size > 0 && font_outline_color.a > 0) {
+								p_item->cells[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+							}
 							p_item->cells[i].text_buf->draw(ci, text_pos, col);
 						}
 
@@ -1501,8 +1515,14 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						int cell_width = item_rect.size.x - updown->get_width();
 
 						if (rtl) {
+							if (outline_size > 0 && font_outline_color.a > 0) {
+								p_item->cells[i].text_buf->draw_outline(ci, text_pos + Vector2(cell_width - text_width, 0), outline_size, font_outline_color);
+							}
 							p_item->cells[i].text_buf->draw(ci, text_pos + Vector2(cell_width - text_width, 0), col);
 						} else {
+							if (outline_size > 0 && font_outline_color.a > 0) {
+								p_item->cells[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+							}
 							p_item->cells[i].text_buf->draw(ci, text_pos, col);
 						}
 
@@ -1543,7 +1563,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					}
 
 					if (!p_item->cells[i].editable) {
-						draw_item_rect(p_item->cells.write[i], item_rect, col, icon_col);
+						draw_item_rect(p_item->cells.write[i], item_rect, col, icon_col, outline_size, font_outline_color);
 						break;
 					}
 
@@ -1571,7 +1591,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						ir.position += cache.custom_button->get_offset();
 					}
 
-					draw_item_rect(p_item->cells.write[i], ir, col, icon_col);
+					draw_item_rect(p_item->cells.write[i], ir, col, icon_col, outline_size, font_outline_color);
 
 					downarrow->draw(ci, arrow_pos);
 
@@ -3143,6 +3163,8 @@ void Tree::_notification(int p_what) {
 
 		Ref<StyleBox> bg = cache.bg;
 		Ref<StyleBox> bg_focus = get_theme_stylebox("bg_focus");
+		Color font_outline_color = get_theme_color("font_outline_color");
+		int outline_size = get_theme_constant("outline_size");
 
 		Point2 draw_ofs;
 		draw_ofs += bg->get_offset();
@@ -3179,7 +3201,12 @@ void Tree::_notification(int p_what) {
 				//text
 				int clip_w = tbrect.size.width - sb->get_minimum_size().width;
 				columns.write[i].text_buf->set_width(clip_w);
-				columns[i].text_buf->draw(ci, tbrect.position + Point2i(sb->get_offset().x + (tbrect.size.width - columns[i].text_buf->get_size().x) / 2, (tbrect.size.height - columns[i].text_buf->get_size().y) / 2), cache.title_button_color);
+
+				Vector2 text_pos = tbrect.position + Point2i(sb->get_offset().x + (tbrect.size.width - columns[i].text_buf->get_size().x) / 2, (tbrect.size.height - columns[i].text_buf->get_size().y) / 2);
+				if (outline_size > 0 && font_outline_color.a > 0) {
+					columns[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+				}
+				columns[i].text_buf->draw(ci, text_pos, cache.title_button_color);
 			}
 		}
 	}
