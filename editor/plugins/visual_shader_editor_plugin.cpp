@@ -2997,12 +2997,12 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	popup_menu = memnew(PopupMenu);
 	add_child(popup_menu);
-	popup_menu->add_item("Add Node", NodeMenuOptions::ADD);
+	popup_menu->add_item(TTR("Add Node"), NodeMenuOptions::ADD);
 	popup_menu->add_separator();
-	popup_menu->add_item("Copy", NodeMenuOptions::COPY);
-	popup_menu->add_item("Paste", NodeMenuOptions::PASTE);
-	popup_menu->add_item("Delete", NodeMenuOptions::DELETE);
-	popup_menu->add_item("Duplicate", NodeMenuOptions::DUPLICATE);
+	popup_menu->add_item(TTR("Copy"), NodeMenuOptions::COPY);
+	popup_menu->add_item(TTR("Paste"), NodeMenuOptions::PASTE);
+	popup_menu->add_item(TTR("Delete"), NodeMenuOptions::DELETE);
+	popup_menu->add_item(TTR("Duplicate"), NodeMenuOptions::DUPLICATE);
 	popup_menu->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_node_menu_id_pressed));
 
 	///////////////////////////////////////
