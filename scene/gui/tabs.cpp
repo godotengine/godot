@@ -275,6 +275,9 @@ void Tabs::_notification(int p_what) {
 			Color font_unselected_color = get_theme_color("font_unselected_color");
 			Color font_disabled_color = get_theme_color("font_disabled_color");
 			Ref<Texture2D> close = get_theme_icon("close");
+			Color font_outline_color = get_theme_color("font_outline_color");
+			int outline_size = get_theme_constant("outline_size");
+
 			Vector2 size = get_size();
 			bool rtl = is_layout_rtl();
 
@@ -357,9 +360,17 @@ void Tabs::_notification(int p_what) {
 				}
 
 				if (rtl) {
-					tabs[i].text_buf->draw(ci, Point2i(size.width - w - tabs[i].text_buf->get_size().x, sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[i].text_buf->get_size().y) / 2), col);
+					Vector2 text_pos = Point2i(size.width - w - tabs[i].text_buf->get_size().x, sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[i].text_buf->get_size().y) / 2);
+					if (outline_size > 0 && font_outline_color.a > 0) {
+						tabs[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+					}
+					tabs[i].text_buf->draw(ci, text_pos, col);
 				} else {
-					tabs[i].text_buf->draw(ci, Point2i(w, sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[i].text_buf->get_size().y) / 2), col);
+					Vector2 text_pos = Point2i(w, sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[i].text_buf->get_size().y) / 2);
+					if (outline_size > 0 && font_outline_color.a > 0) {
+						tabs[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+					}
+					tabs[i].text_buf->draw(ci, text_pos, col);
 				}
 
 				w += tabs[i].size_text;

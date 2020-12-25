@@ -615,6 +615,9 @@
 		<theme_item name="font_color" type="Color" default="Color( 0.63, 0.63, 0.63, 1 )">
 			Default text [Color] of the item.
 		</theme_item>
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the item.
+		</theme_item>
 		<theme_item name="font_selected_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			Text [Color] used when the item is selected.
 		</theme_item>
@@ -632,6 +635,9 @@
 		</theme_item>
 		<theme_item name="line_separation" type="int" default="2">
 			The vertical spacing between each line of text.
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the item text outline.
 		</theme_item>
 		<theme_item name="selected" type="StyleBox">
 			[StyleBox] for the selected items, used when the [ItemList] is not being focused.

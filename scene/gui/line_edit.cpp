@@ -835,6 +835,24 @@ void LineEdit::_notification(int p_what) {
 
 			// Draw text.
 			ofs.y += TS->shaped_text_get_ascent(text_rid);
+			Color font_outline_color = get_theme_color("font_outline_color");
+			int outline_size = get_theme_constant("outline_size");
+			if (outline_size > 0 && font_outline_color.a > 0) {
+				Vector2 oofs = ofs;
+				for (int i = 0; i < gl_size; i++) {
+					for (int j = 0; j < glyphs[i].repeat; j++) {
+						if (ceil(oofs.x) >= x_ofs && (oofs.x + glyphs[i].advance) <= ofs_max) {
+							if (glyphs[i].font_rid != RID()) {
+								TS->font_draw_glyph_outline(glyphs[i].font_rid, ci, glyphs[i].font_size, outline_size, oofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, font_outline_color);
+							}
+						}
+						oofs.x += glyphs[i].advance;
+					}
+					if (oofs.x >= ofs_max) {
+						break;
+					}
+				}
+			}
 			for (int i = 0; i < gl_size; i++) {
 				bool selected = selection.enabled && glyphs[i].start >= selection.begin && glyphs[i].end <= selection.end;
 				for (int j = 0; j < glyphs[i].repeat; j++) {

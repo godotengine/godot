@@ -819,8 +819,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		// Draw oulines and shadow.
 		for (int i = 0; i < gl_size; i++) {
 			Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);
-			int size = _find_outline_size(it);
-			Color font_color = _find_outline_color(it, Color(0, 0, 0, 0));
+			int size = _find_outline_size(it, p_outline_size);
+			Color font_color = _find_outline_color(it, p_outline_color);
 			if (size <= 0) {
 				gloff.x += glyphs[i].advance;
 				continue;
@@ -1398,7 +1398,7 @@ void RichTextLabel::_notification(int p_what) {
 			}
 			Ref<Font> base_font = get_theme_font("normal_font");
 			Color base_color = get_theme_color("default_color");
-			Color outline_color = get_theme_color("outline_color");
+			Color outline_color = get_theme_color("font_outline_color");
 			int outline_size = get_theme_constant("outline_size");
 			Color font_shadow_color = get_theme_color("font_shadow_color");
 			bool use_outline = get_theme_constant("shadow_as_outline");
@@ -1753,7 +1753,7 @@ int RichTextLabel::_find_font_size(Item *p_item) {
 	return -1;
 }
 
-int RichTextLabel::_find_outline_size(Item *p_item) {
+int RichTextLabel::_find_outline_size(Item *p_item, int p_default) {
 	Item *sizeitem = p_item;
 
 	while (sizeitem) {
@@ -1765,7 +1765,7 @@ int RichTextLabel::_find_outline_size(Item *p_item) {
 		sizeitem = sizeitem->parent;
 	}
 
-	return 0;
+	return p_default;
 }
 
 Dictionary RichTextLabel::_find_font_features(Item *p_item) {
