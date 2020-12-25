@@ -183,13 +183,11 @@ void RendererSceneRenderRD::_create_reflection_importance_sample(ReflectionData 
 
 void RendererSceneRenderRD::_update_reflection_mipmaps(ReflectionData &rd, int p_start, int p_end) {
 	for (int i = p_start; i < p_end; i++) {
-		for (int j = 0; j < rd.layers[i].mipmaps.size() - 1; j++) {
-			for (int k = 0; k < 6; k++) {
-				RID view = rd.layers[i].mipmaps[j].views[k];
-				RID texture = rd.layers[i].mipmaps[j + 1].views[k];
-				Size2i size = rd.layers[i].mipmaps[j + 1].size;
-				storage->get_effects()->make_mipmap(view, texture, size);
-			}
+		for (int j = 0; j < rd.layers[i].views.size() - 1; j++) {
+			RID view = rd.layers[i].views[j];
+			RID texture = rd.layers[i].views[j + 1];
+			Size2i size = rd.layers[i].mipmaps[j + 1].size;
+			storage->get_effects()->cubemap_downsample(view, texture, size);
 		}
 	}
 }
