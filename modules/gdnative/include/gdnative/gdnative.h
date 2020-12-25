@@ -53,7 +53,9 @@ extern "C" {
 #endif
 
 // This is for libraries *using* the header, NOT GODOT EXPOSING STUFF!!
-#ifdef _WIN32
+#ifdef __GNUC__
+#define GDN_EXPORT __attribute__((visibility("default")))
+#elif defined(_WIN32)
 #define GDN_EXPORT __declspec(dllexport)
 #else
 #define GDN_EXPORT
