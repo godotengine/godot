@@ -1306,10 +1306,15 @@ void VisualServerScene::_update_instance_lightmap_captures(Instance *p_instance)
 
 		Vector3 pos = to_cell_xform.xform(p_instance->transform.origin);
 
+		const float capture_energy = VSG::storage->lightmap_capture_get_energy(E->get()->base);
+
 		for (int i = 0; i < 12; i++) {
 
 			Vector3 dir = to_cell_xform.basis.xform(cone_traces[i]).normalized();
 			Color capture = _light_capture_voxel_cone_trace(octree_r.ptr(), pos, dir, cone_aperture, cell_subdiv);
+			capture.r *= capture_energy;
+			capture.g *= capture_energy;
+			capture.b *= capture_energy;
 			p_instance->lightmap_capture_data.write[i] += capture;
 		}
 	}
