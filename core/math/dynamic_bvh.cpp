@@ -31,7 +31,7 @@
 #include "dynamic_bvh.h"
 
 void DynamicBVH::_delete_node(Node *p_node) {
-	memdelete(p_node);
+	node_allocator.free(p_node);
 }
 
 void DynamicBVH::_recurse_delete_node(Node *p_node) {
@@ -46,7 +46,7 @@ void DynamicBVH::_recurse_delete_node(Node *p_node) {
 }
 
 DynamicBVH::Node *DynamicBVH::_create_node(Node *p_parent, void *p_data) {
-	Node *node = memnew(Node);
+	Node *node = node_allocator.alloc();
 	node->parent = p_parent;
 	node->data = p_data;
 	return (node);
