@@ -880,17 +880,18 @@ bool DynamicFont::has_outline() const {
 }
 
 float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, bool p_outline) const {
-	const Ref<DynamicFontAtSize> &font_at_size = p_outline && outline_cache_id.outline_size > 0 ? outline_data_at_size : data_at_size;
 
-	if (!font_at_size.is_valid())
+	if (!data_at_size.is_valid())
 		return 0;
 
-	const Vector<Ref<DynamicFontAtSize> > &fallbacks = p_outline && outline_cache_id.outline_size > 0 ? fallback_outline_data_at_size : fallback_data_at_size;
-	Color color = p_outline && outline_cache_id.outline_size > 0 ? p_modulate * outline_color : p_modulate;
-
-	// If requested outline draw, but no outline is present, simply return advance without drawing anything
-	bool advance_only = p_outline && outline_cache_id.outline_size == 0;
-	return font_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, color, fallbacks, advance_only, p_outline) + spacing_char;
+	if (p_outline) {
+		if (outline_data_at_size.is_valid() && outline_cache_id.outline_size > 0) {
+			outline_data_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate * outline_color, fallback_outline_data_at_size, false, true); // Draw glpyh outline.
+		}
+		return data_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate, fallback_data_at_size, true, false) + spacing_char; // Return advance of the base glyph.
+	} else {
+		return data_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate, fallback_data_at_size, false, false) + spacing_char; // Draw base glyph and return advance.
+	}
 }
 
 void DynamicFont::set_fallback(int p_idx, const Ref<DynamicFontData> &p_data) {
