@@ -687,7 +687,15 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 
 			uint32_t index = p_default_actions.base_varying_index;
 
+			List<Pair<StringName, SL::ShaderNode::Varying>> var_frag_to_light;
+
 			for (Map<StringName, SL::ShaderNode::Varying>::Element *E = pnode->varyings.front(); E; E = E->next()) {
+				if (E->get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT || E->get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT) {
+					var_frag_to_light.push_back(Pair<StringName, SL::ShaderNode::Varying>(E->key(), E->get()));
+					fragment_varyings.insert(E->key());
+					continue;
+				}
+
 				String vcode;
 				String interp_mode = _interpstr(E->get().interpolation);
 				vcode += _prestr(E->get().precision);
@@ -703,6 +711,21 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				r_gen_code.fragment_global += "layout(location=" + itos(index) + ") " + interp_mode + "in " + vcode;
 				r_gen_code.compute_global += "layout(location=" + itos(index) + ") " + interp_mode + "out " + vcode;
 				index++;
+			}
+
+			if (var_frag_to_light.size() > 0) {
+				String gcode = "\n\nstruct {\n";
+				for (List<Pair<StringName, SL::ShaderNode::Varying>>::Element *E = var_frag_to_light.front(); E; E = E->next()) {
+					gcode += "\t" + _prestr(E->get().second.precision) + _typestr(E->get().second.type) + " " + _mkid(E->get().first);
+					if (E->get().second.array_size > 0) {
+						gcode += "[";
+						gcode += itos(E->get().second.array_size);
+						gcode += "]";
+					}
+					gcode += ";\n";
+				}
+				gcode += "} frag_to_light;\n";
+				r_gen_code.fragment_global += gcode;
 			}
 
 			for (int i = 0; i < pnode->vconstants.size(); i++) {
@@ -833,6 +856,19 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 		} break;
 		case SL::Node::TYPE_VARIABLE: {
 			SL::VariableNode *vnode = (SL::VariableNode *)p_node;
+			bool use_fragment_varying = false;
+
+			if (current_func_name != vertex_name) {
+				if (p_assigning) {
+					if (shader->varyings.has(vnode->name)) {
+						use_fragment_varying = true;
+					}
+				} else {
+					if (fragment_varyings.has(vnode->name)) {
+						use_fragment_varying = true;
+					}
+				}
+			}
 
 			if (p_assigning && p_actions.write_flag_pointers.has(vnode->name)) {
 				*p_actions.write_flag_pointers[vnode->name] = true;
@@ -877,7 +913,10 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					}
 
 				} else {
-					code = _mkid(vnode->name); //its something else (local var most likely) use as is
+					if (use_fragment_varying) {
+						code = "frag_to_light.";
+					}
+					code += _mkid(vnode->name); //its something else (local var most likely) use as is
 				}
 			}
 
@@ -962,6 +1001,23 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 		} break;
 		case SL::Node::TYPE_ARRAY: {
 			SL::ArrayNode *anode = (SL::ArrayNode *)p_node;
+			bool use_fragment_varying = false;
+
+			if (current_func_name != vertex_name) {
+				if (anode->assign_expression != nullptr) {
+					use_fragment_varying = true;
+				} else {
+					if (p_assigning) {
+						if (shader->varyings.has(anode->name)) {
+							use_fragment_varying = true;
+						}
+					} else {
+						if (fragment_varyings.has(anode->name)) {
+							use_fragment_varying = true;
+						}
+					}
+				}
+			}
 
 			if (p_assigning && p_actions.write_flag_pointers.has(anode->name)) {
 				*p_actions.write_flag_pointers[anode->name] = true;
@@ -984,7 +1040,10 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			if (p_default_actions.renames.has(anode->name)) {
 				code = p_default_actions.renames[anode->name];
 			} else {
-				code = _mkid(anode->name);
+				if (use_fragment_varying) {
+					code = "frag_to_light.";
+				}
+				code += _mkid(anode->name);
 			}
 
 			if (anode->call_expression != nullptr) {
@@ -1277,6 +1336,7 @@ Error ShaderCompilerRD::compile(RS::ShaderMode p_mode, const String &p_code, Ide
 	used_name_defines.clear();
 	used_rmode_defines.clear();
 	used_flag_pointers.clear();
+	fragment_varyings.clear();
 
 	shader = parser.get_shader();
 	function = nullptr;
