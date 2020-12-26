@@ -124,8 +124,9 @@ DynamicFontDataFallback::DataAtSize *DynamicFontDataFallback::get_data_for_size(
 		fds->size = p_size;
 		fds->ascent = (fds->face->size->metrics.ascender / 64.0) / oversampling * fds->scale_color_font;
 		fds->descent = (-fds->face->size->metrics.descender / 64.0) / oversampling * fds->scale_color_font;
-		fds->underline_position = -fds->face->underline_position / 64.0 / oversampling * fds->scale_color_font;
-		fds->underline_thickness = fds->face->underline_thickness / 64.0 / oversampling * fds->scale_color_font;
+		fds->underline_position = (-FT_MulFix(fds->face->underline_position, fds->face->size->metrics.y_scale) / 64.0) / oversampling * fds->scale_color_font;
+		fds->underline_thickness = (FT_MulFix(fds->face->underline_thickness, fds->face->size->metrics.y_scale) / 64.0) / oversampling * fds->scale_color_font;
+
 		if (p_outline_size != 0) {
 			size_cache_outline[id] = fds;
 		} else {
