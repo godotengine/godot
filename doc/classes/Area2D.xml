@@ -35,14 +35,16 @@
 			<return type="Area2D[]">
 			</return>
 			<description>
-				Returns a list of intersecting [Area2D]s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+				Returns a list of intersecting [Area2D]s. The overlapping area must have it's collision mask be on the same layer as the collision layer of the node checking, or have its collision layer be on the same layer as the collision mask of the node checking, or else it will not be on the list.
+				For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
 			</description>
 		</method>
 		<method name="get_overlapping_bodies" qualifiers="const">
 			<return type="Node2D[]">
 			</return>
 			<description>
-				Returns a list of intersecting [PhysicsBody2D]s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+				Returns a list of intersecting [PhysicsBody2D]s. The overlapping area must have it's collision mask be on the same layer as the collision layer of the node checking, or have its collision layer be on the same layer as the collision mask of the node checking, or else it will not be on the list.
+				For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
 			</description>
 		</method>
 		<method name="overlaps_area" qualifiers="const">
