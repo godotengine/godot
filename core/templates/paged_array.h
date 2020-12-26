@@ -206,6 +206,24 @@ public:
 		count++;
 	}
 
+	_FORCE_INLINE_ void pop_back() {
+		ERR_FAIL_COND(count == 0);
+
+		if (!__has_trivial_destructor(T)) {
+			uint32_t page = (count - 1) >> page_size_shift;
+			uint32_t offset = (count - 1) & page_size_mask;
+			page_data[page][offset].~T();
+		}
+
+		uint32_t remainder = count & page_size_mask;
+		if (unlikely(remainder == 1)) {
+			// one element remained, so page must be freed.
+			uint32_t last_page = _get_pages_in_use() - 1;
+			page_pool->free_page(page_ids[last_page]);
+		}
+		count--;
+	}
+
 	void clear() {
 		//destruct if needed
 		if (!__has_trivial_destructor(T)) {
