@@ -414,6 +414,7 @@ public:
 		StringName name;
 		Node *index_expression = nullptr;
 		Node *call_expression = nullptr;
+		Node *assign_expression = nullptr;
 		bool is_const = false;
 
 		virtual DataType get_datatype() const { return datatype_cache; }
@@ -528,6 +529,7 @@ public:
 		StringName name;
 		Node *owner = nullptr;
 		Node *index_expression = nullptr;
+		Node *assign_expression = nullptr;
 		bool has_swizzling_duplicates = false;
 
 		virtual DataType get_datatype() const { return datatype; }
@@ -776,6 +778,7 @@ private:
 	int tk_line;
 
 	StringName current_function;
+	bool last_const = false;
 
 	struct TkPos {
 		int char_idx;
@@ -863,6 +866,7 @@ private:
 	bool _propagate_function_call_sampler_builtin_reference(StringName p_name, int p_argument, const StringName &p_builtin);
 
 	Node *_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
+	Node *_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info, DataType p_type, const StringName &p_struct_name, int p_array_size);
 	ShaderLanguage::Node *_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);
 
 	Node *_parse_and_reduce_expression(BlockNode *p_block, const FunctionInfo &p_function_info);

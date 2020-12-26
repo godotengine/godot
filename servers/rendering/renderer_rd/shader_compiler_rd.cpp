@@ -920,7 +920,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			if (adnode->datatype == SL::TYPE_STRUCT) {
 				declaration += _mkid(adnode->struct_name);
 			} else {
-				declaration = _prestr(adnode->precision) + _typestr(adnode->datatype);
+				declaration += _prestr(adnode->precision) + _typestr(adnode->datatype);
 			}
 			for (int i = 0; i < adnode->declarations.size(); i++) {
 				if (i > 0) {
@@ -990,12 +990,13 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			if (anode->call_expression != nullptr) {
 				code += ".";
 				code += _dump_node_code(anode->call_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning, false);
-			}
-
-			if (anode->index_expression != nullptr) {
+			} else if (anode->index_expression != nullptr) {
 				code += "[";
 				code += _dump_node_code(anode->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 				code += "]";
+			} else if (anode->assign_expression != nullptr) {
+				code += "=";
+				code += _dump_node_code(anode->assign_expression, p_level, r_gen_code, p_actions, p_default_actions, true, false);
 			}
 
 			if (anode->name == time_name) {
@@ -1233,8 +1234,10 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				code += "[";
 				code += _dump_node_code(mnode->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 				code += "]";
+			} else if (mnode->assign_expression != nullptr) {
+				code += "=";
+				code += _dump_node_code(mnode->assign_expression, p_level, r_gen_code, p_actions, p_default_actions, true, false);
 			}
-
 		} break;
 	}
 
