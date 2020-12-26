@@ -2505,6 +2505,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 		bool show_fps = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FRAME_TIME));
 
 		if (show_fps != fps_label->is_visible()) {
+			cpu_time_label->set_visible(show_fps);
+			gpu_time_label->set_visible(show_fps);
 			fps_label->set_visible(show_fps);
 			RS::get_singleton()->viewport_set_measure_render_time(viewport->get_viewport_rid(), show_fps);
 			for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
@@ -2531,12 +2533,28 @@ void Node3DEditorViewport::_notification(int p_what) {
 			}
 			gpu_time /= FRAME_TIME_HISTORY;
 
-			String text;
-			text += TTR("CPU Time") + ": " + String::num(cpu_time, 1) + " ms\n";
-			text += TTR("GPU Time") + ": " + String::num(gpu_time, 1) + " ms\n";
-			text += TTR("FPS") + ": " + itos(1000.0 / gpu_time);
+			// Color labels depending on performance level ("good" = green, "OK" = yellow, "bad" = red).
+			// Middle point is at 15 ms.
+			cpu_time_label->set_text(vformat(TTR("CPU Time: %s ms"), String::num(cpu_time, 1)));
+			cpu_time_label->add_theme_color_override(
+					"font_color",
+					frame_time_gradient->get_color_at_offset(
+							Math::range_lerp(cpu_time, 0, 30, 0, 1)));
 
-			fps_label->set_text(text);
+			gpu_time_label->set_text(vformat(TTR("GPU Time: %s ms"), String::num(gpu_time, 1)));
+			// Middle point is at 15 ms.
+			gpu_time_label->add_theme_color_override(
+					"font_color",
+					frame_time_gradient->get_color_at_offset(
+							Math::range_lerp(gpu_time, 0, 30, 0, 1)));
+
+			const float fps = 1000.0 / gpu_time;
+			fps_label->set_text(vformat(TTR("FPS: %d"), fps));
+			// Middle point is at 60 FPS.
+			fps_label->add_theme_color_override(
+					"font_color",
+					frame_time_gradient->get_color_at_offset(
+							Math::range_lerp(fps, 110, 10, 0, 1)));
 		}
 
 		bool show_cinema = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
@@ -2583,7 +2601,13 @@ void Node3DEditorViewport::_notification(int p_what) {
 		preview_camera->add_theme_style_override("focus", editor->get_gui_base()->get_theme_stylebox("Information3dViewport", "EditorStyles"));
 		preview_camera->add_theme_style_override("disabled", editor->get_gui_base()->get_theme_stylebox("Information3dViewport", "EditorStyles"));
 
+		frame_time_gradient->set_color(0, get_theme_color("success_color", "Editor"));
+		frame_time_gradient->set_color(1, get_theme_color("warning_color", "Editor"));
+		frame_time_gradient->set_color(2, get_theme_color("error_color", "Editor"));
+
 		info_label->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox("Information3dViewport", "EditorStyles"));
+		cpu_time_label->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox("Information3dViewport", "EditorStyles"));
+		gpu_time_label->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox("Information3dViewport", "EditorStyles"));
 		fps_label->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox("Information3dViewport", "EditorStyles"));
 		cinema_label->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox("Information3dViewport", "EditorStyles"));
 		locked_label->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox("Information3dViewport", "EditorStyles"));
@@ -4043,16 +4067,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	surface->add_child(info_label);
 	info_label->hide();
 
-	fps_label = memnew(Label);
-	fps_label->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -90 * EDSCALE);
-	fps_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
-	fps_label->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -10 * EDSCALE);
-	fps_label->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-	fps_label->set_tooltip(TTR("Note: The FPS is estimated on a 60hz refresh rate."));
-	fps_label->set_mouse_filter(MOUSE_FILTER_PASS); // Otherwise tooltip doesn't show.
-	surface->add_child(fps_label);
-	fps_label->hide();
-
 	cinema_label = memnew(Label);
 	cinema_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
 	cinema_label->set_h_grow_direction(GROW_DIRECTION_END);
@@ -4072,9 +4086,17 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	locked_label->set_text(TTR("View Rotation Locked"));
 	locked_label->hide();
 
+	frame_time_gradient = memnew(Gradient);
+	// The color is set when the theme changes.
+	frame_time_gradient->add_point(0.5, Color());
+
 	top_right_vbox = memnew(VBoxContainer);
 	top_right_vbox->set_anchors_and_offsets_preset(PRESET_TOP_RIGHT, PRESET_MODE_MINSIZE, 2.0 * EDSCALE);
 	top_right_vbox->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+	// Make sure frame time labels don't touch the viewport's edge.
+	top_right_vbox->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
+	// Prevent visible spacing between frame time labels.
+	top_right_vbox->add_theme_constant_override("separation", 0);
 
 	rotation_control = memnew(ViewportRotationControl);
 	rotation_control->set_custom_minimum_size(Size2(80, 80) * EDSCALE);
@@ -4082,13 +4104,16 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	rotation_control->set_viewport(this);
 	top_right_vbox->add_child(rotation_control);
 
+	// Individual Labels are used to allow coloring each label with its own color.
+	cpu_time_label = memnew(Label);
+	top_right_vbox->add_child(cpu_time_label);
+	cpu_time_label->hide();
+
+	gpu_time_label = memnew(Label);
+	top_right_vbox->add_child(gpu_time_label);
+	gpu_time_label->hide();
+
 	fps_label = memnew(Label);
-	fps_label->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -90 * EDSCALE);
-	fps_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
-	fps_label->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -10 * EDSCALE);
-	fps_label->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-	fps_label->set_tooltip(TTR("Note: The FPS value displayed is the editor's framerate.\nIt cannot be used as a reliable indication of in-game performance."));
-	fps_label->set_mouse_filter(MOUSE_FILTER_PASS); // Otherwise tooltip doesn't show.
 	top_right_vbox->add_child(fps_label);
 	fps_label->hide();
 
