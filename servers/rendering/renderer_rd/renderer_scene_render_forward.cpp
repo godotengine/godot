@@ -1532,7 +1532,7 @@ void RendererSceneRenderForward::_add_geometry_with_material(InstanceBase *p_ins
 	}
 }
 
-void RendererSceneRenderForward::_fill_render_list(const PagedArray<InstanceBase *> &p_instances, PassMode p_pass_mode, bool p_using_sdfgi) {
+void RendererSceneRenderForward::_fill_render_list(const PagedArray<InstanceBase *> &p_instances, PassMode p_pass_mode, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_using_sdfgi) {
 	scene_state.current_shader_index = 0;
 	scene_state.current_material_index = 0;
 	scene_state.used_sss = false;
@@ -1540,12 +1540,19 @@ void RendererSceneRenderForward::_fill_render_list(const PagedArray<InstanceBase
 	scene_state.used_normal_texture = false;
 	scene_state.used_depth_texture = false;
 
+	Plane near_plane(p_cam_transform.origin, -p_cam_transform.basis.get_axis(Vector3::AXIS_Z));
+	near_plane.d += p_cam_projection.get_z_near();
+	float z_max = p_cam_projection.get_z_far() - p_cam_projection.get_z_near();
+
 	uint32_t geometry_index = 0;
 
 	//fill list
 
 	for (int i = 0; i < (int)p_instances.size(); i++) {
 		InstanceBase *inst = p_instances[i];
+
+		inst->depth = near_plane.distance_to(inst->transform.origin);
+		inst->depth_layer = CLAMP(int(inst->depth * 16 / z_max), 0, 15);
 
 		//add geometry for drawing
 		switch (inst->base_type) {
@@ -1782,7 +1789,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 	_update_render_base_uniform_set(); //may have changed due to the above (light buffer enlarged, as an example)
 
 	render_list.clear();
-	_fill_render_list(p_instances, PASS_MODE_COLOR, using_sdfgi);
+	_fill_render_list(p_instances, PASS_MODE_COLOR, p_cam_projection, p_cam_transform, using_sdfgi);
 
 	bool using_sss = !low_end && render_buffer && scene_state.used_sss && sub_surface_scattering_get_quality() != RS::SUB_SURFACE_SCATTERING_QUALITY_DISABLED;
 
@@ -2046,7 +2053,7 @@ void RendererSceneRenderForward::_render_shadow(RID p_framebuffer, const PagedAr
 
 	PassMode pass_mode = p_use_dp ? PASS_MODE_SHADOW_DP : PASS_MODE_SHADOW;
 
-	_fill_render_list(p_instances, pass_mode);
+	_fill_render_list(p_instances, pass_mode, p_projection, p_transform);
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), PagedArray<RID>());
 
@@ -2079,7 +2086,7 @@ void RendererSceneRenderForward::_render_particle_collider_heightfield(RID p_fb,
 
 	PassMode pass_mode = PASS_MODE_SHADOW;
 
-	_fill_render_list(p_instances, pass_mode);
+	_fill_render_list(p_instances, pass_mode, p_cam_projection, p_cam_transform);
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), PagedArray<RID>());
 
@@ -2112,7 +2119,7 @@ void RendererSceneRenderForward::_render_material(const Transform &p_cam_transfo
 	render_list.clear();
 
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
-	_fill_render_list(p_instances, pass_mode);
+	_fill_render_list(p_instances, pass_mode, p_cam_projection, p_cam_transform);
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), PagedArray<RID>());
 
@@ -2151,7 +2158,7 @@ void RendererSceneRenderForward::_render_uv2(const PagedArray<InstanceBase *> &p
 	render_list.clear();
 
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
-	_fill_render_list(p_instances, pass_mode);
+	_fill_render_list(p_instances, pass_mode, CameraMatrix(), Transform());
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), PagedArray<RID>());
 
@@ -2209,7 +2216,7 @@ void RendererSceneRenderForward::_render_sdfgi(RID p_render_buffers, const Vecto
 	render_list.clear();
 
 	PassMode pass_mode = PASS_MODE_SDF;
-	_fill_render_list(p_instances, pass_mode);
+	_fill_render_list(p_instances, pass_mode, CameraMatrix(), Transform());
 	render_list.sort_by_key(false);
 	_fill_instances(render_list.elements, render_list.element_count, true);
 

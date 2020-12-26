@@ -1153,7 +1153,7 @@ void RendererSceneRenderRD::_sdfgi_update_cascades(RID p_render_buffers) {
 	RD::get_singleton()->buffer_update(rb->sdfgi->cascades_ubo, 0, sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES, cascade_data, true);
 }
 
-void RendererSceneRenderRD::sdfgi_update_probes(RID p_render_buffers, RID p_environment, const PagedArray<RID> &p_directional_light_instances, const RID *p_positional_light_instances, uint32_t p_positional_light_count) {
+void RendererSceneRenderRD::sdfgi_update_probes(RID p_render_buffers, RID p_environment, const Vector<RID> &p_directional_lights, const RID *p_positional_light_instances, uint32_t p_positional_light_count) {
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND(rb == nullptr);
 	if (rb->sdfgi == nullptr) {
@@ -1179,12 +1179,12 @@ void RendererSceneRenderRD::sdfgi_update_probes(RID p_render_buffers, RID p_envi
 
 			SDGIShader::Light lights[SDFGI::MAX_DYNAMIC_LIGHTS];
 			uint32_t idx = 0;
-			for (uint32_t j = 0; j < (uint32_t)p_directional_light_instances.size(); j++) {
+			for (uint32_t j = 0; j < (uint32_t)p_directional_lights.size(); j++) {
 				if (idx == SDFGI::MAX_DYNAMIC_LIGHTS) {
 					break;
 				}
 
-				LightInstance *li = light_instance_owner.getornull(p_directional_light_instances[j]);
+				LightInstance *li = light_instance_owner.getornull(p_directional_lights[j]);
 				ERR_CONTINUE(!li);
 
 				if (storage->light_directional_is_sky_only(li->light)) {
@@ -8485,7 +8485,7 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 		cluster.lights_instances = memnew_arr(RID, cluster.max_lights);
 		cluster.lights_shadow_rect_cache = memnew_arr(Rect2i, cluster.max_lights);
 
-		cluster.max_directional_lights = 8;
+		cluster.max_directional_lights = MAX_DIRECTIONAL_LIGHTS;
 		uint32_t directional_light_buffer_size = cluster.max_directional_lights * sizeof(Cluster::DirectionalLightData);
 		cluster.directional_lights = memnew_arr(Cluster::DirectionalLightData, cluster.max_directional_lights);
 		cluster.directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size);

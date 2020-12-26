@@ -37,9 +37,14 @@
 
 class RendererSceneRender {
 public:
+	enum {
+		MAX_DIRECTIONAL_LIGHTS = 8,
+		MAX_DIRECTIONAL_LIGHT_CASCADES = 4
+	};
 	/* SHADOW ATLAS API */
 
-	virtual RID shadow_atlas_create() = 0;
+	virtual RID
+	shadow_atlas_create() = 0;
 	virtual void shadow_atlas_set_size(RID p_atlas, int p_size) = 0;
 	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) = 0;
 	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) = 0;
@@ -56,7 +61,7 @@ public:
 	virtual int sdfgi_get_pending_region_count(RID p_render_buffers) const = 0;
 	virtual AABB sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const = 0;
 	virtual uint32_t sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const = 0;
-	virtual void sdfgi_update_probes(RID p_render_buffers, RID p_environment, const PagedArray<RID> &p_directionals, const RID *p_positional_light_instances, uint32_t p_positional_light_count) = 0;
+	virtual void sdfgi_update_probes(RID p_render_buffers, RID p_environment, const Vector<RID> &p_directional_lights, const RID *p_positional_light_instances, uint32_t p_positional_light_count) = 0;
 
 	/* SKY API */
 
