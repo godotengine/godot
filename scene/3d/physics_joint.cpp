@@ -30,6 +30,35 @@
 
 #include "physics_joint.h"
 
+#include "scene/scene_string_names.h"
+
+void Joint::_disconnect_signals() {
+
+	Node *node_a = get_node_or_null(a);
+	PhysicsBody *body_a = Object::cast_to<PhysicsBody>(node_a);
+	if (body_a)
+		body_a->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+
+	Node *node_b = get_node_or_null(b);
+	PhysicsBody *body_b = Object::cast_to<PhysicsBody>(node_b);
+	if (body_b)
+		body_b->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+}
+
+void Joint::_body_exit_tree(const ObjectID &p_body_id) {
+
+	_disconnect_signals();
+	Object *object = ObjectDB::get_instance(p_body_id);
+	PhysicsBody *body = Object::cast_to<PhysicsBody>(object);
+	ERR_FAIL_NULL(body);
+	RID body_rid = body->get_rid();
+	if (ba == body_rid)
+		a = NodePath();
+	if (bb == body_rid)
+		b = NodePath();
+	_update_joint();
+}
+
 void Joint::_update_joint(bool p_only_free) {
 
 	if (joint.is_valid()) {
@@ -47,8 +76,8 @@ void Joint::_update_joint(bool p_only_free) {
 		return;
 	}
 
-	Node *node_a = has_node(get_node_a()) ? get_node(get_node_a()) : (Node *)NULL;
-	Node *node_b = has_node(get_node_b()) ? get_node(get_node_b()) : (Node *)NULL;
+	Node *node_a = get_node_or_null(a);
+	Node *node_b = get_node_or_null(b);
 
 	PhysicsBody *body_a = Object::cast_to<PhysicsBody>(node_a);
 	PhysicsBody *body_b = Object::cast_to<PhysicsBody>(node_b);
@@ -97,8 +126,12 @@ void Joint::_update_joint(bool p_only_free) {
 	PhysicsServer::get_singleton()->joint_set_solver_priority(joint, solver_priority);
 
 	ba = body_a->get_rid();
-	if (body_b)
+	body_a->connect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree, make_binds(body_a->get_instance_id()));
+
+	if (body_b) {
 		bb = body_b->get_rid();
+		body_b->connect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree, make_binds(body_b->get_instance_id()));
+	}
 
 	PhysicsServer::get_singleton()->joint_disable_collisions_between_bodies(joint, exclude_from_collision);
 }
@@ -107,6 +140,9 @@ void Joint::set_node_a(const NodePath &p_node_a) {
 
 	if (a == p_node_a)
 		return;
+
+	if (joint.is_valid())
+		_disconnect_signals();
 
 	a = p_node_a;
 	_update_joint();
@@ -121,9 +157,14 @@ void Joint::set_node_b(const NodePath &p_node_b) {
 
 	if (b == p_node_b)
 		return;
+
+	if (joint.is_valid())
+		_disconnect_signals();
+
 	b = p_node_b;
 	_update_joint();
 }
+
 NodePath Joint::get_node_b() const {
 
 	return b;
@@ -150,6 +191,7 @@ void Joint::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (joint.is_valid()) {
+				_disconnect_signals();
 				_update_joint(true);
 			}
 		} break;
@@ -184,6 +226,8 @@ String Joint::get_configuration_warning() const {
 }
 
 void Joint::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("_body_exit_tree", "body_rid"), &Joint::_body_exit_tree);
 
 	ClassDB::bind_method(D_METHOD("set_node_a", "node"), &Joint::set_node_a);
 	ClassDB::bind_method(D_METHOD("get_node_a"), &Joint::get_node_a);
