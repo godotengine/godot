@@ -389,7 +389,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
 		gn->set_scale(Vector2(zoom, zoom));
-		gn->connect("offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved), varray(gn));
+		gn->connect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved), varray(gn));
 		gn->connect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised), varray(gn));
 		gn->connect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::update));
 		gn->connect("item_rect_changed", callable_mp((CanvasItem *)minimap, &GraphEditMinimap::update));
@@ -407,7 +407,7 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
-		gn->disconnect("offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved));
+		gn->disconnect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved));
 		gn->disconnect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised));
 		gn->disconnect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::update));
 		gn->disconnect("item_rect_changed", callable_mp((CanvasItem *)minimap, &GraphEditMinimap::update));
