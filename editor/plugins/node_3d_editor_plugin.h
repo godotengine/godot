@@ -289,6 +289,9 @@ private:
 
 	VBoxContainer *top_right_vbox;
 	ViewportRotationControl *rotation_control;
+	Gradient *frame_time_gradient;
+	Label *cpu_time_label;
+	Label *gpu_time_label;
 	Label *fps_label;
 
 	struct _RayResult {
