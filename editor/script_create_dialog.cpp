@@ -568,6 +568,8 @@ void ScriptCreateDialog::_create() {
 void ScriptCreateDialog::_browse_class_in_tree() {
 	select_class->set_base_type(base_type);
 	select_class->popup_create(true);
+	select_class->set_title(vformat(TTR("Inherit %s"), base_type));
+	select_class->get_ok_button()->set_text(TTR("Inherit"));
 }
 
 void ScriptCreateDialog::_path_changed(const String &p_path) {
