@@ -482,7 +482,7 @@ void SpaceBullet::remove_rigid_body(RigidBodyBullet *p_body) {
 
 	int constraints = btBody->getNumConstraintRefs();
 	if (constraints > 0) {
-		WARN_PRINT("A body connected to joints was removed. Ensure bodies are disconnected from joints before removing them.");
+		ERR_PRINT("A body connected to joints was removed.");
 		for (int i = 0; i < constraints; i++) {
 			dynamicsWorld->removeConstraint(btBody->getConstraintRef(i));
 		}
