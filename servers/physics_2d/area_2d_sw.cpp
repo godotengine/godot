@@ -215,7 +215,9 @@ void Area2DSW::call_queries() {
 
 		for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E;) {
 			if (E->get().state == 0) { // Nothing happened
-				E = E->next();
+				Map<BodyKey, BodyState>::Element *next = E->next();
+				monitored_bodies.erase(E);
+				E = next;
 				continue;
 			}
 
@@ -250,7 +252,9 @@ void Area2DSW::call_queries() {
 
 		for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E;) {
 			if (E->get().state == 0) { // Nothing happened
-				E = E->next();
+				Map<BodyKey, BodyState>::Element *next = E->next();
+				monitored_areas.erase(E);
+				E = next;
 				continue;
 			}
 
