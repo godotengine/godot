@@ -497,6 +497,7 @@ public:
 	static bool is_builtin_method_const(Variant::Type p_type, const StringName &p_method);
 	static bool is_builtin_method_vararg(Variant::Type p_type, const StringName &p_method);
 	static void get_builtin_method_list(Variant::Type p_type, List<StringName> *p_list);
+	static int get_builtin_method_count(Variant::Type p_type);
 
 	void call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 	Variant call(const StringName &p_method, const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant());
@@ -535,6 +536,7 @@ public:
 	static bool has_member(Variant::Type p_type, const StringName &p_member);
 	static Variant::Type get_member_type(Variant::Type p_type, const StringName &p_member);
 	static void get_member_list(Type p_type, List<StringName> *r_members);
+	static int get_member_count(Type p_type);
 
 	static ValidatedSetter get_member_validated_setter(Variant::Type p_type, const StringName &p_member);
 	static ValidatedGetter get_member_validated_getter(Variant::Type p_type, const StringName &p_member);
@@ -628,6 +630,7 @@ public:
 	static bool is_utility_function_vararg(const StringName &p_name);
 
 	static void get_utility_function_list(List<StringName> *r_functions);
+	static int get_utility_function_count();
 
 	//argsVariant call()
 
@@ -642,6 +645,7 @@ public:
 
 	void static_assign(const Variant &p_variant);
 	static void get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
+	static int get_constants_count_for_type(Variant::Type p_type);
 	static bool has_constant(Variant::Type p_type, const StringName &p_value);
 	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = nullptr);
 
