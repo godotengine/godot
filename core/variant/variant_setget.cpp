@@ -437,6 +437,11 @@ void Variant::get_member_list(Variant::Type p_type, List<StringName> *r_members)
 	}
 }
 
+int Variant::get_member_count(Type p_type) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, -1);
+	return variant_setters_getters_names[p_type].size();
+}
+
 Variant::ValidatedSetter Variant::get_member_validated_setter(Variant::Type p_type, const StringName &p_member) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
 
