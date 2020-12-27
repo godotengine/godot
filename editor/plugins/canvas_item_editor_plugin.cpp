@@ -4446,7 +4446,7 @@ void CanvasItemEditor::_set_anchors_and_offsets_preset(Control::LayoutPreset p_p
 				case PRESET_CENTER_RIGHT:
 				case PRESET_CENTER_BOTTOM:
 				case PRESET_CENTER:
-					undo_redo->add_do_method(control, "set_margins_preset", p_preset, Control::PRESET_MODE_KEEP_SIZE);
+					undo_redo->add_do_method(control, "set_offsets_preset", p_preset, Control::PRESET_MODE_KEEP_SIZE);
 					break;
 				case PRESET_LEFT_WIDE:
 				case PRESET_TOP_WIDE:
@@ -4455,7 +4455,7 @@ void CanvasItemEditor::_set_anchors_and_offsets_preset(Control::LayoutPreset p_p
 				case PRESET_VCENTER_WIDE:
 				case PRESET_HCENTER_WIDE:
 				case PRESET_WIDE:
-					undo_redo->add_do_method(control, "set_margins_preset", p_preset, Control::PRESET_MODE_MINSIZE);
+					undo_redo->add_do_method(control, "set_offsets_preset", p_preset, Control::PRESET_MODE_MINSIZE);
 					break;
 			}
 			undo_redo->add_undo_method(control, "_edit_set_state", control->_edit_get_state());
