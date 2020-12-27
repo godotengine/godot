@@ -298,6 +298,10 @@ Error _OS::set_thread_name(const String &p_name) {
 	return Thread::set_name(p_name);
 }
 
+Thread::ID _OS::get_thread_caller_id() const {
+	return Thread::get_caller_id();
+};
+
 bool _OS::has_feature(const String &p_feature) const {
 	return OS::get_singleton()->has_feature(p_feature);
 }
@@ -764,6 +768,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_file_access_save_and_swap", "enabled"), &_OS::set_use_file_access_save_and_swap);
 
 	ClassDB::bind_method(D_METHOD("set_thread_name", "name"), &_OS::set_thread_name);
+	ClassDB::bind_method(D_METHOD("get_thread_caller_id"), &_OS::get_thread_caller_id);
 
 	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &_OS::has_feature);
 
