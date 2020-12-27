@@ -249,7 +249,6 @@ void SSAOTap(const int p_quality_level, inout float r_obscurance_sum, inout floa
 	SSAO_tap_inner(p_quality_level, r_obscurance_sum, r_weight_sum, sampling_mirrored_uv, mip_level, p_pix_center_pos, p_pixel_normal, p_fallof_sq, p_weight_mod);
 }
 
-// this function is designed to only work with half/half depth at the moment - there's a couple of hardcoded paths that expect pixel/texel size, so it will not work for full res
 void generate_SSAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, out float r_weight, const vec2 p_pos, int p_quality_level, bool p_adaptive_base) {
 	vec2 pos_rounded = trunc(p_pos);
 	uvec2 upos = uvec2(pos_rounded);
@@ -257,8 +256,8 @@ void generate_SSAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 	const int number_of_taps = (p_adaptive_base) ? (SSAO_ADAPTIVE_TAP_BASE_COUNT) : (num_taps[p_quality_level]);
 	float pix_z, pix_left_z, pix_top_z, pix_right_z, pix_bottom_z;
 
-	vec4 valuesUL = textureGather(source_depth_mipmaps, vec3(pos_rounded * params.half_screen_pixel_size, params.pass)); // g_ViewspaceDepthSource.GatherRed(g_PointMirrorSampler, pos_rounded * params.half_screen_pixel_size);
-	vec4 valuesBR = textureGather(source_depth_mipmaps, vec3((pos_rounded + vec2(1.0)) * params.half_screen_pixel_size, params.pass)); // g_ViewspaceDepthSource.GatherRed(g_PointMirrorSampler, pos_rounded * params.half_screen_pixel_size, ivec2(1, 1));
+	vec4 valuesUL = textureGather(source_depth_mipmaps, vec3(pos_rounded * params.half_screen_pixel_size, params.pass));
+	vec4 valuesBR = textureGather(source_depth_mipmaps, vec3((pos_rounded + vec2(1.0)) * params.half_screen_pixel_size, params.pass));
 
 	// get this pixel's viewspace depth
 	pix_z = valuesUL.y;
@@ -276,8 +275,7 @@ void generate_SSAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 	uvec2 full_res_coord = upos * 2 * params.size_multiplier + params.pass_coord_offset.xy;
 	vec3 pixel_normal = load_normal(ivec2(full_res_coord));
 
-	//const vec2 pixel_size_at_center = pix_center_pos.z * params.NDC_to_view_mul * params.half_screen_pixel_size; // optimized approximation of:
-	vec2 pixel_size_at_center = NDC_to_view_space(normalized_screen_pos.xy + params.half_screen_pixel_size * 0.5, pix_center_pos.z).xy - pix_center_pos.xy;
+	const vec2 pixel_size_at_center = NDC_to_view_space(normalized_screen_pos.xy + params.half_screen_pixel_size, pix_center_pos.z).xy - pix_center_pos.xy;
 
 	float pixel_lookup_radius;
 	float fallof_sq;
@@ -439,9 +437,6 @@ void generate_SSAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 
 		fade_out *= clamp(1.0 - edge_fadeout_factor, 0.0, 1.0);
 	}
-
-	// same as a bove, but a lot more conservative version
-	// fade_out *= clamp( dot( edgesLRTB, vec4( 0.9, 0.9, 0.9, 0.9 ) ) - 2.6 , 0.0, 1.0);
 
 	// strength
 	obscurance = params.intensity * obscurance;
