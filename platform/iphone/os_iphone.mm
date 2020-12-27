@@ -45,6 +45,7 @@
 #import <AudioToolbox/AudioServices.h>
 #import <UIKit/UIKit.h>
 #import <dlfcn.h>
+#include <sys/sysctl.h>
 
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
@@ -285,6 +286,15 @@ String OSIPhone::get_locale() const {
 String OSIPhone::get_unique_id() const {
 	NSString *uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
 	return String::utf8([uuid UTF8String]);
+}
+
+String OSIPhone::get_processor_name() const {
+	char buffer[256];
+	size_t buffer_len = 256;
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+		return String::utf8(buffer, buffer_len);
+	}
+	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
 }
 
 void OSIPhone::vibrate_handheld(int p_duration_ms) {
