@@ -30,9 +30,6 @@
 
 #include "text_server_fb.h"
 
-#include "bitmap_font_fb.h"
-#include "dynamic_font_fb.h"
-
 _FORCE_INLINE_ bool is_control(char32_t p_char) {
 	return (p_char <= 0x001f) || (p_char >= 0x007f && p_char <= 0x009F);
 }
@@ -106,16 +103,7 @@ RID TextServerFallback::create_font_system(const String &p_name, int p_base_size
 
 RID TextServerFallback::create_font_resource(const String &p_filename, int p_base_size) {
 	_THREAD_SAFE_METHOD_
-	FontDataFallback *fd = nullptr;
-	if (p_filename.get_extension() == "fnt" || p_filename.get_extension() == "font") {
-		fd = memnew(BitmapFontDataFallback);
-#ifdef MODULE_FREETYPE_ENABLED
-	} else if (p_filename.get_extension() == "ttf" || p_filename.get_extension() == "otf" || p_filename.get_extension() == "woff") {
-		fd = memnew(DynamicFontDataFallback);
-#endif
-	} else {
-		return RID();
-	}
+	FontDataFallback *fd = memnew(FontDataFallback);
 
 	Error err = fd->load_from_file(p_filename, p_base_size);
 	if (err != OK) {
@@ -126,18 +114,9 @@ RID TextServerFallback::create_font_resource(const String &p_filename, int p_bas
 	return font_owner.make_rid(fd);
 }
 
-RID TextServerFallback::create_font_memory(const uint8_t *p_data, size_t p_size, const String &p_type, int p_base_size) {
+RID TextServerFallback::create_font_memory(const uint8_t *p_data, size_t p_size, int p_base_size) {
 	_THREAD_SAFE_METHOD_
-	FontDataFallback *fd = nullptr;
-	if (p_type == "fnt" || p_type == "font") {
-		fd = memnew(BitmapFontDataFallback);
-#ifdef MODULE_FREETYPE_ENABLED
-	} else if (p_type == "ttf" || p_type == "otf" || p_type == "woff") {
-		fd = memnew(DynamicFontDataFallback);
-#endif
-	} else {
-		return RID();
-	}
+	FontDataFallback *fd = memnew(FontDataFallback);
 
 	Error err = fd->load_from_memory(p_data, p_size, p_base_size);
 	if (err != OK) {
@@ -150,7 +129,7 @@ RID TextServerFallback::create_font_memory(const uint8_t *p_data, size_t p_size,
 
 RID TextServerFallback::create_font_bitmap(float p_height, float p_ascent, int p_base_size) {
 	_THREAD_SAFE_METHOD_
-	FontDataFallback *fd = memnew(BitmapFontDataFallback);
+	FontDataFallback *fd = memnew(FontDataFallback);
 	Error err = fd->bitmap_new(p_height, p_ascent, p_base_size);
 	if (err != OK) {
 		memdelete(fd);
@@ -160,7 +139,20 @@ RID TextServerFallback::create_font_bitmap(float p_height, float p_ascent, int p
 	return font_owner.make_rid(fd);
 }
 
-void TextServerFallback::font_bitmap_add_texture(RID p_font, const Ref<Texture> &p_texture) {
+void TextServerFallback::font_get_recognized_extensions(List<String> *p_extensions) const {
+	if (p_extensions) {
+#ifdef MODULE_FREETYPE_ENABLED
+		p_extensions->push_back("ttf");
+		p_extensions->push_back("otf");
+		p_extensions->push_back("woff");
+		p_extensions->push_back("woff2");
+#endif
+		p_extensions->push_back("font");
+		p_extensions->push_back("fnt");
+	}
+}
+
+void TextServerFallback::font_bitmap_add_texture(RID p_font, const Ref<Texture2D> &p_texture) {
 	_THREAD_SAFE_METHOD_
 	FontDataFallback *fd = font_owner.getornull(p_font);
 	ERR_FAIL_COND(!fd);
@@ -179,6 +171,34 @@ void TextServerFallback::font_bitmap_add_kerning_pair(RID p_font, char32_t p_A, 
 	FontDataFallback *fd = font_owner.getornull(p_font);
 	ERR_FAIL_COND(!fd);
 	fd->bitmap_add_kerning_pair(p_A, p_B, p_kerning);
+}
+
+Error TextServerFallback::font_save_cache(RID p_font, const String &p_path, uint8_t p_flags, List<String> *r_gen_files) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, ERR_CANT_CREATE);
+	return fd->save_cache(p_path, p_flags, r_gen_files);
+}
+
+void TextServerFallback::font_add_to_cache(RID p_font, const Map<int32_t, double> &p_var_id, int p_size, int p_outline_size) {
+	_THREAD_SAFE_METHOD_
+	FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->add_to_cache(p_var_id, p_size, p_outline_size);
+}
+
+void TextServerFallback::font_clear_cache(RID p_font) {
+	_THREAD_SAFE_METHOD_
+	FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->clear_cache();
+}
+
+void TextServerFallback::font_preload_range(RID p_font, uint32_t p_start, uint32_t p_end, bool p_glyphs) {
+	_THREAD_SAFE_METHOD_
+	FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->preload_range(p_start, p_end, p_glyphs);
 }
 
 float TextServerFallback::font_get_height(RID p_font, int p_size) const {
@@ -244,6 +264,20 @@ void TextServerFallback::font_set_spacing_glyph(RID p_font, int p_value) {
 	fd->set_spacing_glyph(p_value);
 }
 
+float TextServerFallback::font_get_oversampling(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, 0.0);
+	return fd->get_oversampling();
+}
+
+void TextServerFallback::font_set_oversampling(RID p_font, float p_value) {
+	_THREAD_SAFE_METHOD_
+	FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_oversampling(p_value);
+}
+
 void TextServerFallback::font_set_antialiased(RID p_font, bool p_antialiased) {
 	_THREAD_SAFE_METHOD_
 	FontDataFallback *fd = font_owner.getornull(p_font);
@@ -272,6 +306,20 @@ bool TextServerFallback::font_get_distance_field_hint(RID p_font) const {
 	return fd->get_distance_field_hint();
 }
 
+void TextServerFallback::font_set_disable_distance_field_shader(RID p_font, bool p_disable) {
+	_THREAD_SAFE_METHOD_
+	FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_disable_distance_field_shader(p_disable);
+}
+
+bool TextServerFallback::font_get_disable_distance_field_shader(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, false);
+	return fd->get_disable_distance_field_shader();
+}
+
 void TextServerFallback::font_set_hinting(RID p_font, TextServer::Hinting p_hinting) {
 	_THREAD_SAFE_METHOD_
 	FontDataFallback *fd = font_owner.getornull(p_font);
@@ -298,6 +346,20 @@ bool TextServerFallback::font_get_force_autohinter(RID p_font) const {
 	const FontDataFallback *fd = font_owner.getornull(p_font);
 	ERR_FAIL_COND_V(!fd, false);
 	return fd->get_force_autohinter();
+}
+
+void TextServerFallback::font_set_msdf_px_range(RID p_font, double p_range) {
+	_THREAD_SAFE_METHOD_
+	FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_msdf_px_range(p_range);
+}
+
+double TextServerFallback::font_get_msdf_px_range(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, 0.0);
+	return fd->get_msdf_px_range();
 }
 
 bool TextServerFallback::font_has_char(RID p_font, char32_t p_char) const {
@@ -438,18 +500,18 @@ Vector2 TextServerFallback::font_get_glyph_kerning(RID p_font, uint32_t p_index_
 	return fd->get_kerning(p_index_a, p_index_b, p_size);
 }
 
-Vector2 TextServerFallback::font_draw_glyph(RID p_font, RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const {
+void TextServerFallback::font_draw_glyph(RID p_font, RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const {
 	_THREAD_SAFE_METHOD_
 	const FontDataFallback *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, Vector2());
-	return fd->draw_glyph(p_canvas, p_size, p_pos, p_index, p_color);
+	ERR_FAIL_COND(!fd);
+	fd->draw_glyph(p_canvas, p_size, p_pos, p_index, p_color);
 }
 
-Vector2 TextServerFallback::font_draw_glyph_outline(RID p_font, RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const {
+void TextServerFallback::font_draw_glyph_outline(RID p_font, RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const {
 	_THREAD_SAFE_METHOD_
 	const FontDataFallback *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, Vector2());
-	return fd->draw_glyph_outline(p_canvas, p_size, p_outline_size, p_pos, p_index, p_color);
+	ERR_FAIL_COND(!fd);
+	fd->draw_glyph_outline(p_canvas, p_size, p_outline_size, p_pos, p_index, p_color);
 }
 
 bool TextServerFallback::font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const {
@@ -459,18 +521,21 @@ bool TextServerFallback::font_get_glyph_contours(RID p_font, int p_size, uint32_
 	return fd->get_glyph_contours(p_size, p_index, r_points, r_contours, r_orientation);
 }
 
-float TextServerFallback::font_get_oversampling() const {
+float TextServerFallback::font_get_global_oversampling() const {
 	return oversampling;
 }
 
-void TextServerFallback::font_set_oversampling(float p_oversampling) {
+void TextServerFallback::font_set_global_oversampling(float p_oversampling) {
 	_THREAD_SAFE_METHOD_
 	if (oversampling != p_oversampling) {
 		oversampling = p_oversampling;
 		List<RID> fonts;
 		font_owner.get_owned_list(&fonts);
 		for (List<RID>::Element *E = fonts.front(); E; E = E->next()) {
-			font_owner.getornull(E->get())->clear_cache();
+			FontDataFallback *fd = font_owner.getornull(E->get());
+			if (fd != nullptr && !fd->get_distance_field_hint() && (fd->get_oversampling() <= 0)) {
+				fd->clear_cache();
+			}
 		}
 	}
 }
@@ -621,6 +686,10 @@ bool TextServerFallback::shaped_text_add_string(RID p_shaped, const String &p_te
 	ShapedTextData *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 	ERR_FAIL_COND_V(p_size <= 0, false);
+
+	for (int i = 0; i < p_fonts.size(); i++) {
+		ERR_FAIL_COND_V(!font_owner.getornull(p_fonts[i]), false);
+	}
 
 	if (p_text.is_empty()) {
 		return true;
@@ -1030,7 +1099,7 @@ float TextServerFallback::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 			if (gl.count > 0) {
 				if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
 					float old_adv = gl.advance;
-					gl.advance = Math::round(MAX(gl.advance + delta_width_per_space, 0.05 * gl.font_size));
+					gl.advance = MAX(gl.advance + delta_width_per_space, Math::round(0.1 * gl.font_size));
 					sd->width += (gl.advance - old_adv);
 				}
 			}

@@ -218,13 +218,22 @@ void TextServer::_bind_methods() {
 	/* Font Interface */
 	ClassDB::bind_method(D_METHOD("create_font_system", "name", "base_size"), &TextServer::create_font_system, DEFVAL(16));
 	ClassDB::bind_method(D_METHOD("create_font_resource", "filename", "base_size"), &TextServer::create_font_resource, DEFVAL(16));
-	ClassDB::bind_method(D_METHOD("create_font_memory", "data", "type", "base_size"), &TextServer::_create_font_memory, DEFVAL(16));
+	ClassDB::bind_method(D_METHOD("create_font_memory", "data", "base_size"), &TextServer::_create_font_memory, DEFVAL(16));
 	ClassDB::bind_method(D_METHOD("create_font_bitmap", "height", "ascent", "base_size"), &TextServer::create_font_bitmap);
 
 	ClassDB::bind_method(D_METHOD("font_bitmap_add_texture", "font", "texture"), &TextServer::font_bitmap_add_texture);
 	ClassDB::bind_method(D_METHOD("font_bitmap_add_char", "font", "char", "texture_idx", "rect", "align", "advance"), &TextServer::font_bitmap_add_char);
 	ClassDB::bind_method(D_METHOD("font_bitmap_add_kerning_pair", "font", "A", "B", "kerning"), &TextServer::font_bitmap_add_kerning_pair);
 
+	// Cache.
+	ClassDB::bind_method(D_METHOD("font_save_cache", "font", "path", "flags"), &TextServer::_font_save_cache);
+	ClassDB::bind_method(D_METHOD("font_add_to_cache", "font", "var_id", "size", "outline_size"), &TextServer::_font_add_to_cache);
+	ClassDB::bind_method(D_METHOD("font_clear_cache", "font"), &TextServer::font_clear_cache);
+
+	// Preload.
+	ClassDB::bind_method(D_METHOD("font_preload_range", "font", "start", "end", "glyphs"), &TextServer::font_preload_range);
+
+	// Main.
 	ClassDB::bind_method(D_METHOD("font_get_height", "font", "size"), &TextServer::font_get_height);
 	ClassDB::bind_method(D_METHOD("font_get_ascent", "font", "size"), &TextServer::font_get_ascent);
 	ClassDB::bind_method(D_METHOD("font_get_descent", "font", "size"), &TextServer::font_get_descent);
@@ -250,11 +259,20 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_hinting", "font", "hinting"), &TextServer::font_set_hinting);
 	ClassDB::bind_method(D_METHOD("font_get_hinting", "font"), &TextServer::font_get_hinting);
 
+	ClassDB::bind_method(D_METHOD("font_get_oversampling", "font"), &TextServer::font_get_oversampling);
+	ClassDB::bind_method(D_METHOD("font_set_oversampling", "font", "value"), &TextServer::font_set_oversampling);
+
 	ClassDB::bind_method(D_METHOD("font_set_distance_field_hint", "font", "distance_field"), &TextServer::font_set_distance_field_hint);
 	ClassDB::bind_method(D_METHOD("font_get_distance_field_hint", "font"), &TextServer::font_get_distance_field_hint);
 
+	ClassDB::bind_method(D_METHOD("font_set_disable_distance_field_shader", "font", "disable"), &TextServer::font_set_disable_distance_field_shader);
+	ClassDB::bind_method(D_METHOD("font_get_disable_distance_field_shader", "font"), &TextServer::font_get_disable_distance_field_shader);
+
 	ClassDB::bind_method(D_METHOD("font_set_force_autohinter", "font", "enabeld"), &TextServer::font_set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("font_get_force_autohinter", "font"), &TextServer::font_get_force_autohinter);
+
+	ClassDB::bind_method(D_METHOD("font_set_msdf_px_range", "font", "range"), &TextServer::font_set_msdf_px_range);
+	ClassDB::bind_method(D_METHOD("font_get_msdf_px_range", "font"), &TextServer::font_get_msdf_px_range);
 
 	ClassDB::bind_method(D_METHOD("font_has_char", "font", "char"), &TextServer::font_has_char);
 	ClassDB::bind_method(D_METHOD("font_get_supported_chars", "font"), &TextServer::font_get_supported_chars);
@@ -278,13 +296,14 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("font_get_glyph_index", "font", "char", "variation_selector"), &TextServer::font_get_glyph_index, DEFVAL(0x0000));
 	ClassDB::bind_method(D_METHOD("font_get_glyph_advance", "font", "index", "size"), &TextServer::font_get_glyph_advance);
+	ClassDB::bind_method(D_METHOD("font_get_glyph_size", "font", "index", "size"), &TextServer::font_get_glyph_size);
 	ClassDB::bind_method(D_METHOD("font_get_glyph_kerning", "font", "index_a", "index_b", "size"), &TextServer::font_get_glyph_kerning);
 
 	ClassDB::bind_method(D_METHOD("font_draw_glyph", "font", "canvas", "size", "pos", "index", "color"), &TextServer::font_draw_glyph, DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("font_draw_glyph_outline", "font", "canvas", "size", "outline_size", "pos", "index", "color"), &TextServer::font_draw_glyph_outline, DEFVAL(Color(1, 1, 1)));
 
-	ClassDB::bind_method(D_METHOD("font_get_oversampling"), &TextServer::font_get_oversampling);
-	ClassDB::bind_method(D_METHOD("font_set_oversampling", "oversampling"), &TextServer::font_set_oversampling);
+	ClassDB::bind_method(D_METHOD("font_get_global_oversampling"), &TextServer::font_get_global_oversampling);
+	ClassDB::bind_method(D_METHOD("font_set_global_oversampling", "oversampling"), &TextServer::font_set_global_oversampling);
 
 	ClassDB::bind_method(D_METHOD("get_system_fonts"), &TextServer::get_system_fonts);
 
@@ -410,6 +429,10 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_ON);
 	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_OFF_CONIC);
 	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_OFF_CUBIC);
+
+	/* Font Cache Flags*/
+	BIND_ENUM_CONSTANT(FONT_CACHE_FLAGS_DEFAULT);
+	BIND_ENUM_CONSTANT(FONT_CACHE_FLAGS_CONVERT_TO_BITMAP);
 }
 
 Vector3 TextServer::hex_code_box_font_size[2] = { Vector3(5, 5, 1), Vector3(10, 10, 2) };
@@ -1215,8 +1238,8 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 	}
 }
 
-RID TextServer::_create_font_memory(const PackedByteArray &p_data, const String &p_type, int p_base_size) {
-	return create_font_memory(p_data.ptr(), p_data.size(), p_type, p_base_size);
+RID TextServer::_create_font_memory(const PackedByteArray &p_data, int p_base_size) {
+	return create_font_memory(p_data.ptr(), p_data.size(), p_base_size);
 }
 
 Dictionary TextServer::_font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index) const {
@@ -1323,6 +1346,28 @@ Array TextServer::_shaped_text_get_selection(RID p_shaped, int p_start, int p_en
 	}
 
 	return ret;
+}
+
+Error TextServer::_font_save_cache(RID p_font, const String &p_path, uint8_t p_flags) const {
+	List<String> gen_files;
+	return font_save_cache(p_font, p_path, p_flags, &gen_files);
+}
+
+void TextServer::_font_add_to_cache(RID p_font, const String &p_var_id, int p_size, int p_outline_size) {
+	Map<int32_t, double> variation;
+
+	Vector<String> variation_tags = p_var_id.split(",");
+	for (int i = 0; i < variation_tags.size(); i++) {
+		Vector<String> tokens = variation_tags[i].split("=");
+		if (tokens.size() == 2) {
+			uint32_t tag = TS->name_to_tag(tokens[0]);
+			double value = tokens[1].to_float();
+			variation.insert(tag, value);
+		} else {
+			WARN_PRINT("Invalid variation: \"" + variation_tags[i] + "\"");
+		}
+	}
+	font_add_to_cache(p_font, variation, p_size, p_outline_size);
 }
 
 TextServer::TextServer() {

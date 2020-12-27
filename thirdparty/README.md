@@ -487,6 +487,19 @@ Collection of single-file libraries used in Godot components.
   * License: BSD
 
 
+## msdfgen
+
+- Upstream: https://github.com/Chlumsky/msdfgen/tree/master
+- Version: git (9af250c7d6780a41dcaf536c05e3e1987a1bdcd7, 2020)
+- License: MIT
+
+Files extracted from the upstream source:
+
+- `msdfgen.h`
+- Files in `core/` folder.
+- `LICENSE.txt` and `CHANGELOG.md`
+
+
 ## nanosvg
 
 - Upstream: https://github.com/memononen/nanosvg

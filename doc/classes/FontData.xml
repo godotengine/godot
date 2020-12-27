@@ -11,6 +11,20 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_to_cache">
+			<return type="void">
+			</return>
+			<argument index="0" name="var_id" type="String">
+			</argument>
+			<argument index="1" name="size" type="int" default="16">
+			</argument>
+			<argument index="2" name="outline_size" type="int" default="0">
+			</argument>
+			<description>
+				Adds new cache entry for specific variation and size. Use [method preload_range] to populate it with glpyhs.
+				Note: New cache entry is created automaticaly when it's first accessed.
+			</description>
+		</method>
 		<method name="bitmap_add_char">
 			<return type="void">
 			</return>
@@ -44,10 +58,17 @@
 		<method name="bitmap_add_texture">
 			<return type="void">
 			</return>
-			<argument index="0" name="texture" type="Texture">
+			<argument index="0" name="texture" type="Texture2D">
 			</argument>
 			<description>
 				Adds a texture to the bitmap font.
+			</description>
+		</method>
+		<method name="clear_cache">
+			<return type="void">
+			</return>
+			<description>
+				Removes all loaded font sizes and variations from cache.
 			</description>
 		</method>
 		<method name="draw_glyph" qualifiers="const">
@@ -90,6 +111,13 @@
 				Note: Glyph index is bound to the font data, use only glyphs indices returned by [method TextServer.shaped_text_get_glyphs] or [method get_glyph_index] for this font data.
 			</description>
 		</method>
+		<method name="get_antialiased" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code], if font 8-bit anitialiased glyph rendering is supported and enabled.
+			</description>
+		</method>
 		<method name="get_ascent" qualifiers="const">
 			<return type="float">
 			</return>
@@ -113,6 +141,27 @@
 			</argument>
 			<description>
 				Returns the font descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="get_disable_distance_field_shader" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if distance field rendering shader is disabled.
+			</description>
+		</method>
+		<method name="get_distance_field_hint" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code], if fonts supports and uses distance field rendering.
+			</description>
+		</method>
+		<method name="get_force_autohinter" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if auto-hinting is supported and preffered over font built-in hinting.
 			</description>
 		</method>
 		<method name="get_glyph_advance" qualifiers="const">
@@ -152,6 +201,17 @@
 				Note: Glyph index is bound to the font data, use only glyphs indices returned by [method TextServer.shaped_text_get_glyphs] or [method get_glyph_index] for this font data.
 			</description>
 		</method>
+		<method name="get_glyph_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="size" type="int">
+			</argument>
+			<description>
+				Returns size of a glyph in pixels.
+			</description>
+		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="float">
 			</return>
@@ -159,6 +219,13 @@
 			</argument>
 			<description>
 				Returns the total font height (ascent plus descent) in pixels.
+			</description>
+		</method>
+		<method name="get_hinting" qualifiers="const">
+			<return type="int" enum="TextServer.Hinting">
+			</return>
+			<description>
+				Returns the font hinitng mode.
 			</description>
 		</method>
 		<method name="get_language_support_override" qualifiers="const">
@@ -175,6 +242,20 @@
 			</return>
 			<description>
 				Returns list of language support overrides.
+			</description>
+		</method>
+		<method name="get_msdf_px_range" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the width of the range around the shape between the minimum and maximum representable signed distance.
+			</description>
+		</method>
+		<method name="get_oversampling" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the font oversampling factor.
 			</description>
 		</method>
 		<method name="get_script_support_override" qualifiers="const">
@@ -283,9 +364,7 @@
 			</return>
 			<argument index="0" name="data" type="PackedByteArray">
 			</argument>
-			<argument index="1" name="type" type="String">
-			</argument>
-			<argument index="2" name="base_size" type="int" default="16">
+			<argument index="1" name="base_size" type="int" default="16">
 			</argument>
 			<description>
 				Creates new font from the data in memory.
@@ -317,6 +396,19 @@
 				Creates new, empty bitmap font.
 			</description>
 		</method>
+		<method name="preload_range">
+			<return type="void">
+			</return>
+			<argument index="0" name="start" type="int">
+			</argument>
+			<argument index="1" name="end" type="int">
+			</argument>
+			<argument index="2" name="glyphs" type="bool">
+			</argument>
+			<description>
+				Pre-renders character or glyph in range for all font sizes and variations in the cahce.
+			</description>
+		</method>
 		<method name="remove_language_support_override">
 			<return type="void">
 			</return>
@@ -335,6 +427,62 @@
 				Removes script support override.
 			</description>
 		</method>
+		<method name="save_cache" qualifiers="const">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="flags" type="int" default="0">
+			</argument>
+			<description>
+				Saves rendered glyph textures, properties and font source data to file.
+			</description>
+		</method>
+		<method name="set_antialiased">
+			<return type="void">
+			</return>
+			<argument index="0" name="antialiased" type="bool">
+			</argument>
+			<description>
+				If set to [code]true[/code], 8-bit antialiased glyph rendering is used, otherwise 1-bit rendering is used.
+			</description>
+		</method>
+		<method name="set_disable_distance_field_shader">
+			<return type="void">
+			</return>
+			<argument index="0" name="disable" type="bool">
+			</argument>
+			<description>
+				If set to [code]true[/code], disables distance field rendering shader and renders raw MSDF RGBA values instead.
+			</description>
+		</method>
+		<method name="set_distance_field_hint">
+			<return type="void">
+			</return>
+			<argument index="0" name="distance_field" type="bool">
+			</argument>
+			<description>
+				If set to [code]true[/code], MSDF font rendering is used.
+			</description>
+		</method>
+		<method name="set_force_autohinter">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				If set to [code]true[/code] auto-hinting is preffered over font built-in hinting.
+			</description>
+		</method>
+		<method name="set_hinting">
+			<return type="void">
+			</return>
+			<argument index="0" name="hinting" type="int" enum="TextServer.Hinting">
+			</argument>
+			<description>
+				Sets font hinitng mode.
+			</description>
+		</method>
 		<method name="set_language_support_override">
 			<return type="void">
 			</return>
@@ -344,6 +492,24 @@
 			</argument>
 			<description>
 				Adds override for [method is_language_supported].
+			</description>
+		</method>
+		<method name="set_msdf_px_range">
+			<return type="void">
+			</return>
+			<argument index="0" name="range" type="float">
+			</argument>
+			<description>
+				Sets the width of the range around the shape between the minimum and maximum representable signed distance.
+			</description>
+		</method>
+		<method name="set_oversampling">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<description>
+				Sets oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead.
 			</description>
 		</method>
 		<method name="set_script_support_override">
@@ -381,28 +547,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased" default="false">
-			If [code]true[/code], the font is rendered with anti-aliasing.
-		</member>
 		<member name="data_path" type="String" setter="set_data_path" getter="get_data_path" default="&quot;&quot;">
 			The path to the font data file. If font data was loaded from memory location is set to [code]"(Memory)"[/code].
-		</member>
-		<member name="distance_field_hint" type="bool" setter="set_distance_field_hint" getter="get_distance_field_hint" default="false">
-			If [code]true[/code], distance field hint is enabled.
-		</member>
-		<member name="extra_spacing_glyph" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra spacing for each glyph in pixels.
-			This can be a negative number to make the distance between glyphs smaller.
-		</member>
-		<member name="extra_spacing_space" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra spacing for the space character in pixels.
-			This can be a negative number to make the distance between words smaller.
-		</member>
-		<member name="force_autohinter" type="bool" setter="set_force_autohinter" getter="get_force_autohinter" default="false">
-			If [code]true[/code], default autohinter is used for font hinting.
-		</member>
-		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="TextServer.Hinting" default="0">
-			The font hinting mode used by FreeType. See [enum TextServer.Hinting] for options.
 		</member>
 	</members>
 	<constants>

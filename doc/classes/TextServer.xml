@@ -27,9 +27,7 @@
 			</return>
 			<argument index="0" name="data" type="PackedByteArray">
 			</argument>
-			<argument index="1" name="type" type="String">
-			</argument>
-			<argument index="2" name="base_size" type="int" default="16">
+			<argument index="1" name="base_size" type="int" default="16">
 			</argument>
 			<description>
 				Creates new font from the data in memory. To free the resulting font, use [method free_rid] method.
@@ -91,6 +89,22 @@
 				Draws box displaying character hexadecimal code. Used for replacing missing characters.
 			</description>
 		</method>
+		<method name="font_add_to_cache">
+			<return type="void">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<argument index="1" name="var_id" type="String">
+			</argument>
+			<argument index="2" name="size" type="int">
+			</argument>
+			<argument index="3" name="outline_size" type="int">
+			</argument>
+			<description>
+				Adds new cache entry for specific variation and size. Use [method font_preload_range] to populate it with glpyhs.
+				Note: New cache entry is created automaticaly when it's first accessed.
+			</description>
+		</method>
 		<method name="font_bitmap_add_char">
 			<return type="void">
 			</return>
@@ -130,14 +144,23 @@
 			</return>
 			<argument index="0" name="font" type="RID">
 			</argument>
-			<argument index="1" name="texture" type="Texture">
+			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
 				Adds a texture to the bitmap font.
 			</description>
 		</method>
+		<method name="font_clear_cache">
+			<return type="void">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<description>
+				Removes all loaded font sizes and variations from cache.
+			</description>
+		</method>
 		<method name="font_draw_glyph" qualifiers="const">
-			<return type="Vector2">
+			<return type="void">
 			</return>
 			<argument index="0" name="font" type="RID">
 			</argument>
@@ -157,7 +180,7 @@
 			</description>
 		</method>
 		<method name="font_draw_glyph_outline" qualifiers="const">
-			<return type="Vector2">
+			<return type="void">
 			</return>
 			<argument index="0" name="font" type="RID">
 			</argument>
@@ -184,7 +207,7 @@
 			<argument index="0" name="font" type="RID">
 			</argument>
 			<description>
-				Returns [code]true[/code], if font anti-aliasing is supported and enabled.
+				Returns [code]true[/code] if font 8-bit anitialiased glyph rendering is supported and enabled.
 			</description>
 		</method>
 		<method name="font_get_ascent" qualifiers="const">
@@ -218,13 +241,22 @@
 				Returns the font descent (number of pixels below the baseline).
 			</description>
 		</method>
+		<method name="font_get_disable_distance_field_shader" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<description>
+				Returns [code]true[/code] if distance field rendering shader is disabled.
+			</description>
+		</method>
 		<method name="font_get_distance_field_hint" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="font" type="RID">
 			</argument>
 			<description>
-				Returns [code]true[/code], if distance field hint is enabled.
+				Returns [code]true[/code], if fonts supports and uses distance field rendering.
 			</description>
 		</method>
 		<method name="font_get_feature_list" qualifiers="const">
@@ -242,7 +274,14 @@
 			<argument index="0" name="font" type="RID">
 			</argument>
 			<description>
-				Returns [code]true[/code], if autohinter is supported and enabled.
+				Returns [code]true[/code] if auto-hinting is supported and preffered over font built-in hinting.
+			</description>
+		</method>
+		<method name="font_get_global_oversampling" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the font oversampling factor, shared by all fonts in the TextServer.
 			</description>
 		</method>
 		<method name="font_get_glyph_advance" qualifiers="const">
@@ -302,6 +341,19 @@
 				Returns a kerning of the pair of glyphs.
 			</description>
 		</method>
+		<method name="font_get_glyph_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<argument index="2" name="size" type="int">
+			</argument>
+			<description>
+				Returns size of a glyph in pixels.
+			</description>
+		</method>
 		<method name="font_get_height" qualifiers="const">
 			<return type="float">
 			</return>
@@ -319,7 +371,7 @@
 			<argument index="0" name="font" type="RID">
 			</argument>
 			<description>
-				Returns the font hinting.
+				Returns the font hinting mode.
 			</description>
 		</method>
 		<method name="font_get_language_support_override">
@@ -342,11 +394,22 @@
 				Returns list of language support overrides.
 			</description>
 		</method>
+		<method name="font_get_msdf_px_range" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<description>
+				Return the width of the range around the shape between the minimum and maximum representable signed distance.
+			</description>
+		</method>
 		<method name="font_get_oversampling" qualifiers="const">
 			<return type="float">
 			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
 			<description>
-				Returns the font oversampling factor, shared by all fonts in the TextServer.
+				Returns the font oversampling factor.
 			</description>
 		</method>
 		<method name="font_get_script_support_override">
@@ -481,6 +544,21 @@
 				Returns [code]true[/code], if font supports given script (ISO 15924 code).
 			</description>
 		</method>
+		<method name="font_preload_range">
+			<return type="void">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<argument index="1" name="start" type="int">
+			</argument>
+			<argument index="2" name="end" type="int">
+			</argument>
+			<argument index="3" name="glyphs" type="bool">
+			</argument>
+			<description>
+				Pre-renders character or glyph in range for all font sizes and variations in the cahce.
+			</description>
+		</method>
 		<method name="font_remove_language_support_override">
 			<return type="void">
 			</return>
@@ -503,6 +581,19 @@
 				Removes script support override.
 			</description>
 		</method>
+		<method name="font_save_cache" qualifiers="const">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<argument index="1" name="path" type="String">
+			</argument>
+			<argument index="2" name="flags" type="int">
+			</argument>
+			<description>
+				Saves rendered glyph textures, properties and font source data to file.
+			</description>
+		</method>
 		<method name="font_set_antialiased">
 			<return type="void">
 			</return>
@@ -511,7 +602,18 @@
 			<argument index="1" name="antialiased" type="bool">
 			</argument>
 			<description>
-				Sets font anti-aliasing.
+				If set to [code]true[/code], 8-bit antialiased glyph rendering is used, otherwise 1-bit rendering is used.
+			</description>
+		</method>
+		<method name="font_set_disable_distance_field_shader">
+			<return type="void">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<argument index="1" name="disable" type="bool">
+			</argument>
+			<description>
+				If set to [code]true[/code], disables distance field rendering shader and renders raw MSDF RGBA values instead.
 			</description>
 		</method>
 		<method name="font_set_distance_field_hint">
@@ -533,7 +635,17 @@
 			<argument index="1" name="enabeld" type="bool">
 			</argument>
 			<description>
-				Enables/disables default autohinter.
+				If set to [code]true[/code] auto-hinting is preffered over font built-in hinting.
+			</description>
+		</method>
+		<method name="font_set_global_oversampling">
+			<return type="void">
+			</return>
+			<argument index="0" name="oversampling" type="float">
+			</argument>
+			<description>
+				Sets oversampling factor, shared by all font in the TextServer.
+				Note: This value can be automaticaly changed by display server.
 			</description>
 		</method>
 		<method name="font_set_hinting">
@@ -544,7 +656,7 @@
 			<argument index="1" name="hinting" type="int" enum="TextServer.Hinting">
 			</argument>
 			<description>
-				Sets font hinting.
+				Sets font hinting mode.
 			</description>
 		</method>
 		<method name="font_set_language_support_override">
@@ -560,13 +672,26 @@
 				Adds override for [method font_is_language_supported].
 			</description>
 		</method>
+		<method name="font_set_msdf_px_range">
+			<return type="void">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<argument index="1" name="range" type="float">
+			</argument>
+			<description>
+				Sets the width of the range around the shape between the minimum and maximum representable signed distance.
+			</description>
+		</method>
 		<method name="font_set_oversampling">
 			<return type="void">
 			</return>
-			<argument index="0" name="oversampling" type="float">
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
-				Sets oversampling factor, shared by all font in the TextServer.
+				Sets oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead.
 			</description>
 		</method>
 		<method name="font_set_script_support_override">
@@ -1325,6 +1450,12 @@
 		</constant>
 		<constant name="CONTOUR_CURVE_TAG_OFF_CUBIC" value="2" enum="ContourPointTag">
 			Contour point isn't on the curve, but serves as a control point for a cubic Bézier arc.
+		</constant>
+		<constant name="FONT_CACHE_FLAGS_DEFAULT" value="0" enum="FontCacheFlags">
+			Pre-loaded textures are saved as separate files.
+		</constant>
+		<constant name="FONT_CACHE_FLAGS_CONVERT_TO_BITMAP" value="2" enum="FontCacheFlags">
+			Converts pre-loaded dynamic font to bitmap font.
 		</constant>
 	</constants>
 </class>

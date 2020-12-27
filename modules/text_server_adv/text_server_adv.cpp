@@ -29,8 +29,6 @@
 /*************************************************************************/
 
 #include "text_server_adv.h"
-#include "bitmap_font_adv.h"
-#include "dynamic_font_adv.h"
 
 #include "core/string/translation.h"
 
@@ -528,16 +526,7 @@ RID TextServerAdvanced::create_font_system(const String &p_name, int p_base_size
 
 RID TextServerAdvanced::create_font_resource(const String &p_filename, int p_base_size) {
 	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = nullptr;
-	if (p_filename.get_extension() == "fnt" || p_filename.get_extension() == "font") {
-		fd = memnew(BitmapFontDataAdvanced);
-#ifdef MODULE_FREETYPE_ENABLED
-	} else if (p_filename.get_extension() == "ttf" || p_filename.get_extension() == "otf" || p_filename.get_extension() == "woff") {
-		fd = memnew(DynamicFontDataAdvanced);
-#endif
-	} else {
-		return RID();
-	}
+	FontDataAdvanced *fd = memnew(FontDataAdvanced);
 
 	Error err = fd->load_from_file(p_filename, p_base_size);
 	if (err != OK) {
@@ -548,18 +537,9 @@ RID TextServerAdvanced::create_font_resource(const String &p_filename, int p_bas
 	return font_owner.make_rid(fd);
 }
 
-RID TextServerAdvanced::create_font_memory(const uint8_t *p_data, size_t p_size, const String &p_type, int p_base_size) {
+RID TextServerAdvanced::create_font_memory(const uint8_t *p_data, size_t p_size, int p_base_size) {
 	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = nullptr;
-	if (p_type == "fnt" || p_type == "font") {
-		fd = memnew(BitmapFontDataAdvanced);
-#ifdef MODULE_FREETYPE_ENABLED
-	} else if (p_type == "ttf" || p_type == "otf" || p_type == "woff") {
-		fd = memnew(DynamicFontDataAdvanced);
-#endif
-	} else {
-		return RID();
-	}
+	FontDataAdvanced *fd = memnew(FontDataAdvanced);
 
 	Error err = fd->load_from_memory(p_data, p_size, p_base_size);
 	if (err != OK) {
@@ -572,7 +552,7 @@ RID TextServerAdvanced::create_font_memory(const uint8_t *p_data, size_t p_size,
 
 RID TextServerAdvanced::create_font_bitmap(float p_height, float p_ascent, int p_base_size) {
 	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = memnew(BitmapFontDataAdvanced);
+	FontDataAdvanced *fd = memnew(FontDataAdvanced);
 	Error err = fd->bitmap_new(p_height, p_ascent, p_base_size);
 	if (err != OK) {
 		memdelete(fd);
@@ -582,7 +562,20 @@ RID TextServerAdvanced::create_font_bitmap(float p_height, float p_ascent, int p
 	return font_owner.make_rid(fd);
 }
 
-void TextServerAdvanced::font_bitmap_add_texture(RID p_font, const Ref<Texture> &p_texture) {
+void TextServerAdvanced::font_get_recognized_extensions(List<String> *p_extensions) const {
+	if (p_extensions) {
+#ifdef MODULE_FREETYPE_ENABLED
+		p_extensions->push_back("ttf");
+		p_extensions->push_back("otf");
+		p_extensions->push_back("woff");
+		p_extensions->push_back("woff2");
+#endif
+		p_extensions->push_back("font");
+		p_extensions->push_back("fnt");
+	}
+}
+
+void TextServerAdvanced::font_bitmap_add_texture(RID p_font, const Ref<Texture2D> &p_texture) {
 	_THREAD_SAFE_METHOD_
 	FontDataAdvanced *fd = font_owner.getornull(p_font);
 	ERR_FAIL_COND(!fd);
@@ -601,6 +594,34 @@ void TextServerAdvanced::font_bitmap_add_kerning_pair(RID p_font, char32_t p_A, 
 	FontDataAdvanced *fd = font_owner.getornull(p_font);
 	ERR_FAIL_COND(!fd);
 	fd->bitmap_add_kerning_pair(p_A, p_B, p_kerning);
+}
+
+Error TextServerAdvanced::font_save_cache(RID p_font, const String &p_path, uint8_t p_flags, List<String> *r_gen_files) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, ERR_CANT_CREATE);
+	return fd->save_cache(p_path, p_flags, r_gen_files);
+}
+
+void TextServerAdvanced::font_add_to_cache(RID p_font, const Map<int32_t, double> &p_var_id, int p_size, int p_outline_size) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->add_to_cache(p_var_id, p_size, p_outline_size);
+}
+
+void TextServerAdvanced::font_clear_cache(RID p_font) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->clear_cache();
+}
+
+void TextServerAdvanced::font_preload_range(RID p_font, uint32_t p_start, uint32_t p_end, bool p_glyphs) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->preload_range(p_start, p_end, p_glyphs);
 }
 
 float TextServerAdvanced::font_get_height(RID p_font, int p_size) const {
@@ -666,6 +687,20 @@ void TextServerAdvanced::font_set_spacing_glyph(RID p_font, int p_value) {
 	fd->set_spacing_glyph(p_value);
 }
 
+float TextServerAdvanced::font_get_oversampling(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, 0.0);
+	return fd->get_oversampling();
+}
+
+void TextServerAdvanced::font_set_oversampling(RID p_font, float p_value) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_oversampling(p_value);
+}
+
 void TextServerAdvanced::font_set_antialiased(RID p_font, bool p_antialiased) {
 	_THREAD_SAFE_METHOD_
 	FontDataAdvanced *fd = font_owner.getornull(p_font);
@@ -722,6 +757,20 @@ bool TextServerAdvanced::font_get_distance_field_hint(RID p_font) const {
 	return fd->get_distance_field_hint();
 }
 
+void TextServerAdvanced::font_set_disable_distance_field_shader(RID p_font, bool p_disable) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_disable_distance_field_shader(p_disable);
+}
+
+bool TextServerAdvanced::font_get_disable_distance_field_shader(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, false);
+	return fd->get_disable_distance_field_shader();
+}
+
 void TextServerAdvanced::font_set_hinting(RID p_font, TextServer::Hinting p_hinting) {
 	_THREAD_SAFE_METHOD_
 	FontDataAdvanced *fd = font_owner.getornull(p_font);
@@ -748,6 +797,20 @@ bool TextServerAdvanced::font_get_force_autohinter(RID p_font) const {
 	const FontDataAdvanced *fd = font_owner.getornull(p_font);
 	ERR_FAIL_COND_V(!fd, false);
 	return fd->get_force_autohinter();
+}
+
+void TextServerAdvanced::font_set_msdf_px_range(RID p_font, double p_range) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_msdf_px_range(p_range);
+}
+
+double TextServerAdvanced::font_get_msdf_px_range(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, 0.0);
+	return fd->get_msdf_px_range();
 }
 
 bool TextServerAdvanced::font_has_char(RID p_font, char32_t p_char) const {
@@ -885,6 +948,13 @@ Vector2 TextServerAdvanced::font_get_glyph_advance(RID p_font, uint32_t p_index,
 	return fd->get_advance(p_index, p_size);
 }
 
+Vector2 TextServerAdvanced::font_get_glyph_size(RID p_font, uint32_t p_index, int p_size) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, Vector2());
+	return fd->get_glyph_size(p_index, p_size);
+}
+
 Vector2 TextServerAdvanced::font_get_glyph_kerning(RID p_font, uint32_t p_index_a, uint32_t p_index_b, int p_size) const {
 	_THREAD_SAFE_METHOD_
 	const FontDataAdvanced *fd = font_owner.getornull(p_font);
@@ -892,18 +962,18 @@ Vector2 TextServerAdvanced::font_get_glyph_kerning(RID p_font, uint32_t p_index_
 	return fd->get_kerning(p_index_a, p_index_b, p_size);
 }
 
-Vector2 TextServerAdvanced::font_draw_glyph(RID p_font, RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const {
+void TextServerAdvanced::font_draw_glyph(RID p_font, RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const {
 	_THREAD_SAFE_METHOD_
 	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, Vector2());
-	return fd->draw_glyph(p_canvas, p_size, p_pos, p_index, p_color);
+	ERR_FAIL_COND(!fd);
+	fd->draw_glyph(p_canvas, p_size, p_pos, p_index, p_color);
 }
 
-Vector2 TextServerAdvanced::font_draw_glyph_outline(RID p_font, RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const {
+void TextServerAdvanced::font_draw_glyph_outline(RID p_font, RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const {
 	_THREAD_SAFE_METHOD_
 	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, Vector2());
-	return fd->draw_glyph_outline(p_canvas, p_size, p_outline_size, p_pos, p_index, p_color);
+	ERR_FAIL_COND(!fd);
+	fd->draw_glyph_outline(p_canvas, p_size, p_outline_size, p_pos, p_index, p_color);
 }
 
 bool TextServerAdvanced::font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const {
@@ -913,24 +983,31 @@ bool TextServerAdvanced::font_get_glyph_contours(RID p_font, int p_size, uint32_
 	return fd->get_glyph_contours(p_size, p_index, r_points, r_contours, r_orientation);
 }
 
-float TextServerAdvanced::font_get_oversampling() const {
+float TextServerAdvanced::font_get_global_oversampling() const {
 	return oversampling;
 }
 
-void TextServerAdvanced::font_set_oversampling(float p_oversampling) {
+void TextServerAdvanced::font_set_global_oversampling(float p_oversampling) {
 	_THREAD_SAFE_METHOD_
 	if (oversampling != p_oversampling) {
 		oversampling = p_oversampling;
 		List<RID> fonts;
 		font_owner.get_owned_list(&fonts);
+		bool font_cleared = false;
 		for (List<RID>::Element *E = fonts.front(); E; E = E->next()) {
-			font_owner.getornull(E->get())->clear_cache();
+			FontDataAdvanced *fd = font_owner.getornull(E->get());
+			if (fd != nullptr && !fd->get_distance_field_hint() && (fd->get_oversampling() <= 0)) {
+				fd->clear_cache();
+				font_cleared = true;
+			}
 		}
 
-		List<RID> text_bufs;
-		shaped_owner.get_owned_list(&text_bufs);
-		for (List<RID>::Element *E = text_bufs.front(); E; E = E->next()) {
-			invalidate(shaped_owner.getornull(E->get()));
+		if (font_cleared) {
+			List<RID> text_bufs;
+			shaped_owner.get_owned_list(&text_bufs);
+			for (List<RID>::Element *E = text_bufs.front(); E; E = E->next()) {
+				invalidate(shaped_owner.getornull(E->get()));
+			}
 		}
 	}
 }
@@ -1132,6 +1209,10 @@ bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_te
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 	ERR_FAIL_COND_V(p_size <= 0, false);
+
+	for (int i = 0; i < p_fonts.size(); i++) {
+		ERR_FAIL_COND_V(!font_owner.getornull(p_fonts[i]), false);
+	}
 
 	if (p_text.is_empty()) {
 		return true;
@@ -1596,9 +1677,9 @@ float TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 				if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
 					float old_adv = gl.advance;
 					if ((gl.flags & GRAPHEME_IS_VIRTUAL) == GRAPHEME_IS_VIRTUAL) {
-						gl.advance = Math::round(MAX(gl.advance + delta_width_per_space, 0.f));
+						gl.advance = MAX(gl.advance + delta_width_per_space, 0.f);
 					} else {
-						gl.advance = Math::round(MAX(gl.advance + delta_width_per_space, 0.05 * gl.font_size));
+						gl.advance = MAX(gl.advance + delta_width_per_space, 0.1 * gl.font_size);
 					}
 					sd->width += (gl.advance - old_adv);
 				}
@@ -1954,6 +2035,7 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 TextServer::Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, RID p_font, int p_font_size) {
 	FontDataAdvanced *fd = font_owner.getornull(p_font);
 	hb_font_t *hb_font = fd->get_hb_handle(p_font_size);
+	ERR_FAIL_COND_V(hb_font == nullptr, TextServer::Glyph());
 
 	hb_buffer_clear_contents(p_sd->hb_buffer);
 	hb_buffer_set_direction(p_sd->hb_buffer, p_direction);

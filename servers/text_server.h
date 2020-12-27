@@ -105,6 +105,11 @@ public:
 		CONTOUR_CURVE_TAG_OFF_CUBIC = 0x02
 	};
 
+	enum FontCacheFlags {
+		FONT_CACHE_FLAGS_DEFAULT = 0,
+		FONT_CACHE_FLAGS_CONVERT_TO_BITMAP = 1 << 1
+	};
+
 	struct Glyph {
 		int start = -1; // Start offset in the source string.
 		int end = -1; // End offset in the source string.
@@ -229,13 +234,27 @@ public:
 	/* Font interface */
 	virtual RID create_font_system(const String &p_name, int p_base_size = 16) = 0;
 	virtual RID create_font_resource(const String &p_filename, int p_base_size = 16) = 0;
-	virtual RID create_font_memory(const uint8_t *p_data, size_t p_size, const String &p_type, int p_base_size = 16) = 0;
+	virtual RID create_font_memory(const uint8_t *p_data, size_t p_size, int p_base_size = 16) = 0;
 	virtual RID create_font_bitmap(float p_height, float p_ascent, int p_base_size = 16) = 0;
 
-	virtual void font_bitmap_add_texture(RID p_font, const Ref<Texture> &p_texture) = 0;
+	virtual void font_get_recognized_extensions(List<String> *p_extensions) const = 0;
+
+	virtual void font_bitmap_add_texture(RID p_font, const Ref<Texture2D> &p_texture) = 0;
 	virtual void font_bitmap_add_char(RID p_font, char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) = 0;
 	virtual void font_bitmap_add_kerning_pair(RID p_font, char32_t p_A, char32_t p_B, int p_kerning) = 0;
 
+	// Cache.
+	virtual Error font_save_cache(RID p_font, const String &p_path, uint8_t p_flags, List<String> *r_gen_files) const = 0;
+	virtual void font_add_to_cache(RID p_font, const Map<int32_t, double> &p_var_id, int p_size, int p_outline_size) = 0;
+	virtual void font_clear_cache(RID p_font) = 0;
+
+	Error _font_save_cache(RID p_font, const String &p_path, uint8_t p_flags) const;
+	void _font_add_to_cache(RID p_font, const String &p_var_id, int p_size, int p_outline_size);
+
+	// Preload.
+	virtual void font_preload_range(RID p_font, uint32_t p_start, uint32_t p_end, bool p_glyphs) = 0;
+
+	// Main.
 	virtual float font_get_height(RID p_font, int p_size) const = 0;
 	virtual float font_get_ascent(RID p_font, int p_size) const = 0;
 	virtual float font_get_descent(RID p_font, int p_size) const = 0;
@@ -245,6 +264,9 @@ public:
 
 	virtual int font_get_spacing_glyph(RID p_font) const = 0;
 	virtual void font_set_spacing_glyph(RID p_font, int p_value) = 0;
+
+	virtual float font_get_oversampling(RID p_font) const = 0;
+	virtual void font_set_oversampling(RID p_font, float p_value) = 0;
 
 	virtual float font_get_underline_position(RID p_font, int p_size) const = 0;
 	virtual float font_get_underline_thickness(RID p_font, int p_size) const = 0;
@@ -261,11 +283,17 @@ public:
 	virtual void font_set_distance_field_hint(RID p_font, bool p_distance_field) = 0;
 	virtual bool font_get_distance_field_hint(RID p_font) const = 0;
 
+	virtual void font_set_disable_distance_field_shader(RID p_font, bool p_disable) = 0;
+	virtual bool font_get_disable_distance_field_shader(RID p_font) const = 0;
+
 	virtual void font_set_hinting(RID p_font, Hinting p_hinting) = 0;
 	virtual Hinting font_get_hinting(RID p_font) const = 0;
 
 	virtual void font_set_force_autohinter(RID p_font, bool p_enabeld) = 0;
 	virtual bool font_get_force_autohinter(RID p_font) const = 0;
+
+	virtual void font_set_msdf_px_range(RID p_font, double p_range) = 0;
+	virtual double font_get_msdf_px_range(RID p_font) const = 0;
 
 	virtual bool font_has_char(RID p_font, char32_t p_char) const = 0;
 	virtual String font_get_supported_chars(RID p_font) const = 0;
@@ -287,15 +315,16 @@ public:
 
 	virtual uint32_t font_get_glyph_index(RID p_font, char32_t p_char, char32_t p_variation_selector = 0x0000) const = 0;
 	virtual Vector2 font_get_glyph_advance(RID p_font, uint32_t p_index, int p_size) const = 0;
+	virtual Vector2 font_get_glyph_size(RID p_font, uint32_t p_index, int p_size) const = 0;
 	virtual Vector2 font_get_glyph_kerning(RID p_font, uint32_t p_index_a, uint32_t p_index_b, int p_size) const = 0;
 
-	virtual Vector2 font_draw_glyph(RID p_font, RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
-	virtual Vector2 font_draw_glyph_outline(RID p_font, RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
+	virtual void font_draw_glyph(RID p_font, RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
+	virtual void font_draw_glyph_outline(RID p_font, RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
 
 	virtual bool font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const = 0;
 
-	virtual float font_get_oversampling() const = 0;
-	virtual void font_set_oversampling(float p_oversampling) = 0;
+	virtual float font_get_global_oversampling() const = 0;
+	virtual void font_set_global_oversampling(float p_oversampling) = 0;
 
 	Vector2 get_hex_code_box_size(int p_size, char32_t p_index) const;
 	void draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_pos, char32_t p_index, const Color &p_color) const;
@@ -378,7 +407,7 @@ public:
 	virtual String percent_sign(const String &p_language = "") const { return "%"; };
 
 	/* GDScript wrappers */
-	RID _create_font_memory(const PackedByteArray &p_data, const String &p_type, int p_base_size = 16);
+	RID _create_font_memory(const PackedByteArray &p_data, int p_base_size = 16);
 
 	Dictionary _font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index) const;
 
@@ -465,5 +494,6 @@ VARIANT_ENUM_CAST(TextServer::GraphemeFlag);
 VARIANT_ENUM_CAST(TextServer::Hinting);
 VARIANT_ENUM_CAST(TextServer::Feature);
 VARIANT_ENUM_CAST(TextServer::ContourPointTag);
+VARIANT_ENUM_CAST(TextServer::FontCacheFlags);
 
 #endif // TEXT_SERVER_H

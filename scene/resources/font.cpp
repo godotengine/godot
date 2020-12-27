@@ -38,12 +38,18 @@
 
 void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_resource", "filename", "base_size"), &FontData::load_resource, DEFVAL(16));
-	ClassDB::bind_method(D_METHOD("load_memory", "data", "type", "base_size"), &FontData::_load_memory, DEFVAL(16));
+	ClassDB::bind_method(D_METHOD("load_memory", "data", "base_size"), &FontData::_load_memory, DEFVAL(16));
 	ClassDB::bind_method(D_METHOD("new_bitmap", "height", "ascent", "base_size"), &FontData::new_bitmap);
 
 	ClassDB::bind_method(D_METHOD("bitmap_add_texture", "texture"), &FontData::bitmap_add_texture);
 	ClassDB::bind_method(D_METHOD("bitmap_add_char", "char", "texture_idx", "rect", "align", "advance"), &FontData::bitmap_add_char);
 	ClassDB::bind_method(D_METHOD("bitmap_add_kerning_pair", "A", "B", "kerning"), &FontData::bitmap_add_kerning_pair);
+
+	ClassDB::bind_method(D_METHOD("save_cache", "path", "flags"), &FontData::_save_cache, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_to_cache", "var_id", "size", "outline_size"), &FontData::_add_to_cache, DEFVAL(16), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("clear_cache"), &FontData::clear_cache);
+
+	ClassDB::bind_method(D_METHOD("preload_range", "start", "end", "glyphs"), &FontData::preload_range);
 
 	ClassDB::bind_method(D_METHOD("set_data_path", "path"), &FontData::set_data_path);
 	ClassDB::bind_method(D_METHOD("get_data_path"), &FontData::get_data_path);
@@ -72,13 +78,23 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_force_autohinter", "enabled"), &FontData::set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("get_force_autohinter"), &FontData::get_force_autohinter);
 
+	ClassDB::bind_method(D_METHOD("set_oversampling", "value"), &FontData::set_oversampling);
+	ClassDB::bind_method(D_METHOD("get_oversampling"), &FontData::get_oversampling);
+
+	ClassDB::bind_method(D_METHOD("set_msdf_px_range", "range"), &FontData::set_msdf_px_range);
+	ClassDB::bind_method(D_METHOD("get_msdf_px_range"), &FontData::get_msdf_px_range);
+
 	ClassDB::bind_method(D_METHOD("set_distance_field_hint", "distance_field"), &FontData::set_distance_field_hint);
 	ClassDB::bind_method(D_METHOD("get_distance_field_hint"), &FontData::get_distance_field_hint);
+
+	ClassDB::bind_method(D_METHOD("set_disable_distance_field_shader", "disable"), &FontData::set_disable_distance_field_shader);
+	ClassDB::bind_method(D_METHOD("get_disable_distance_field_shader"), &FontData::get_disable_distance_field_shader);
 
 	ClassDB::bind_method(D_METHOD("has_char", "char"), &FontData::has_char);
 	ClassDB::bind_method(D_METHOD("get_supported_chars"), &FontData::get_supported_chars);
 
 	ClassDB::bind_method(D_METHOD("get_glyph_advance", "index", "size"), &FontData::get_glyph_advance);
+	ClassDB::bind_method(D_METHOD("get_glyph_size", "index", "size"), &FontData::get_glyph_size);
 	ClassDB::bind_method(D_METHOD("get_glyph_kerning", "index_a", "index_b", "size"), &FontData::get_glyph_kerning);
 
 	ClassDB::bind_method(D_METHOD("get_base_size"), &FontData::get_base_size);
@@ -101,95 +117,10 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_glyph", "canvas", "size", "pos", "index", "color"), &FontData::draw_glyph, DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_glyph_outline", "canvas", "size", "outline_size", "pos", "index", "color"), &FontData::draw_glyph_outline, DEFVAL(Color(1, 1, 1)));
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "data_path", PROPERTY_HINT_FILE, "*.ttf,*.otf,*.woff,*.fnt,*.font"), "set_data_path", "get_data_path");
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased"), "set_antialiased", "get_antialiased");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter"), "set_force_autohinter", "get_force_autohinter");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_field_hint"), "set_distance_field_hint", "get_distance_field_hint");
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
-
-	ADD_GROUP("Extra Spacing", "extra_spacing");
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "extra_spacing_glyph"), "set_spacing", "get_spacing", SPACING_GLYPH);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "extra_spacing_space"), "set_spacing", "get_spacing", SPACING_SPACE);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "data_path", PROPERTY_HINT_FILE, "*.fontdata", PROPERTY_USAGE_STORAGE), "set_data_path", "get_data_path");
 
 	BIND_ENUM_CONSTANT(SPACING_GLYPH);
 	BIND_ENUM_CONSTANT(SPACING_SPACE);
-}
-
-bool FontData::_set(const StringName &p_name, const Variant &p_value) {
-	String str = p_name;
-	if (str.begins_with("language_support_override/")) {
-		String lang = str.get_slicec('/', 1);
-		if (lang == "_new") {
-			return false;
-		}
-		set_language_support_override(lang, p_value);
-		return true;
-	}
-	if (str.begins_with("script_support_override/")) {
-		String scr = str.get_slicec('/', 1);
-		if (scr == "_new") {
-			return false;
-		}
-		set_script_support_override(scr, p_value);
-		return true;
-	}
-	if (str.begins_with("variation/")) {
-		String name = str.get_slicec('/', 1);
-		set_variation(name, p_value);
-		return true;
-	}
-
-	return false;
-}
-
-bool FontData::_get(const StringName &p_name, Variant &r_ret) const {
-	String str = p_name;
-	if (str.begins_with("language_support_override/")) {
-		String lang = str.get_slicec('/', 1);
-		if (lang == "_new") {
-			return true;
-		}
-		r_ret = get_language_support_override(lang);
-		return true;
-	}
-	if (str.begins_with("script_support_override/")) {
-		String scr = str.get_slicec('/', 1);
-		if (scr == "_new") {
-			return true;
-		}
-		r_ret = get_script_support_override(scr);
-		return true;
-	}
-	if (str.begins_with("variation/")) {
-		String name = str.get_slicec('/', 1);
-
-		r_ret = get_variation(name);
-		return true;
-	}
-
-	return false;
-}
-
-void FontData::_get_property_list(List<PropertyInfo> *p_list) const {
-	Vector<String> lang_over = get_language_support_overrides();
-	for (int i = 0; i < lang_over.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::BOOL, "language_support_override/" + lang_over[i], PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE));
-	}
-	p_list->push_back(PropertyInfo(Variant::NIL, "language_support_override/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
-
-	Vector<String> scr_over = get_script_support_overrides();
-	for (int i = 0; i < scr_over.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::BOOL, "script_support_override/" + scr_over[i], PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE));
-	}
-	p_list->push_back(PropertyInfo(Variant::NIL, "script_support_override/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
-
-	Dictionary variations = get_variation_list();
-	for (const Variant *ftr = variations.next(nullptr); ftr != nullptr; ftr = variations.next(ftr)) {
-		Vector3i v = variations[*ftr];
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "variation/" + TS->tag_to_name(*ftr), PROPERTY_HINT_RANGE, itos(v.x) + "," + itos(v.y), PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE));
-	}
 }
 
 void FontData::reset_state() {
@@ -214,24 +145,66 @@ void FontData::load_resource(const String &p_filename, int p_base_size) {
 	emit_changed();
 }
 
-void FontData::_load_memory(const PackedByteArray &p_data, const String &p_type, int p_base_size) {
+void FontData::_load_memory(const PackedByteArray &p_data, int p_base_size) {
 	if (rid != RID()) {
 		TS->free(rid);
 	}
-	rid = TS->create_font_memory(p_data.ptr(), p_data.size(), p_type, p_base_size);
-	path = TTR("(Memory: " + p_type.to_upper() + " @ 0x" + String::num_int64((uint64_t)p_data.ptr(), 16, true) + ")");
+	rid = TS->create_font_memory(p_data.ptr(), p_data.size(), p_base_size);
+	path = TTR("(Memory: 0x" + String::num_int64((uint64_t)p_data.ptr(), 16, true) + ")");
 	base_size = TS->font_get_base_size(rid);
 	emit_changed();
 }
 
-void FontData::load_memory(const uint8_t *p_data, size_t p_size, const String &p_type, int p_base_size) {
+void FontData::load_memory(const uint8_t *p_data, size_t p_size, int p_base_size) {
 	if (rid != RID()) {
 		TS->free(rid);
 	}
-	rid = TS->create_font_memory(p_data, p_size, p_type, p_base_size);
-	path = TTR("(Memory: " + p_type.to_upper() + " @ 0x" + String::num_int64((uint64_t)p_data, 16, true) + ")");
+	rid = TS->create_font_memory(p_data, p_size, p_base_size);
+	path = TTR("(Memory: 0x" + String::num_int64((uint64_t)p_data, 16, true) + ")");
 	base_size = TS->font_get_base_size(rid);
 	emit_changed();
+}
+
+Error FontData::_save_cache(const String &p_path, uint8_t p_flags) const {
+	if (rid == RID()) {
+		return ERR_CANT_CREATE;
+	}
+	return TS->font_save_cache(rid, p_path, p_flags, nullptr);
+}
+
+Error FontData::save_cache(const String &p_path, uint8_t p_flags, List<String> *r_gen_files) const {
+	if (rid == RID()) {
+		return ERR_CANT_CREATE;
+	}
+	return TS->font_save_cache(rid, p_path, p_flags, r_gen_files);
+}
+
+void FontData::_add_to_cache(const String &p_var_id, int p_size, int p_outline_size) {
+	if (rid == RID()) {
+		return;
+	}
+	TS->_font_add_to_cache(rid, p_var_id, p_size, p_outline_size);
+}
+
+void FontData::add_to_cache(const Map<int32_t, double> &p_var_id, int p_size, int p_outline_size) {
+	if (rid == RID()) {
+		return;
+	}
+	TS->font_add_to_cache(rid, p_var_id, p_size, p_outline_size);
+}
+
+void FontData::clear_cache() {
+	if (rid == RID()) {
+		return;
+	}
+	TS->font_clear_cache(rid);
+}
+
+void FontData::preload_range(uint32_t p_start, uint32_t p_end, bool p_glyphs) {
+	if (rid == RID()) {
+		return;
+	}
+	TS->font_preload_range(rid, p_start, p_end, p_glyphs);
 }
 
 void FontData::new_bitmap(float p_height, float p_ascent, int p_base_size) {
@@ -244,7 +217,7 @@ void FontData::new_bitmap(float p_height, float p_ascent, int p_base_size) {
 	emit_changed();
 }
 
-void FontData::bitmap_add_texture(const Ref<Texture> &p_texture) {
+void FontData::bitmap_add_texture(const Ref<Texture2D> &p_texture) {
 	if (rid != RID()) {
 		TS->font_bitmap_add_texture(rid, p_texture);
 	}
@@ -274,28 +247,28 @@ float FontData::get_height(int p_size) const {
 	if (rid == RID()) {
 		return 0.f; // Do not raise errors in getters, to prevent editor from spamming errors on incomplete (without data_path set) fonts.
 	}
-	return TS->font_get_height(rid, (p_size < 0) ? base_size : p_size);
+	return TS->font_get_height(rid, p_size);
 }
 
 float FontData::get_ascent(int p_size) const {
 	if (rid == RID()) {
 		return 0.f;
 	}
-	return TS->font_get_ascent(rid, (p_size < 0) ? base_size : p_size);
+	return TS->font_get_ascent(rid, p_size);
 }
 
 float FontData::get_descent(int p_size) const {
 	if (rid == RID()) {
 		return 0.f;
 	}
-	return TS->font_get_descent(rid, (p_size < 0) ? base_size : p_size);
+	return TS->font_get_descent(rid, p_size);
 }
 
 float FontData::get_underline_position(int p_size) const {
 	if (rid == RID()) {
 		return 0.f;
 	}
-	return TS->font_get_underline_position(rid, (p_size < 0) ? base_size : p_size);
+	return TS->font_get_underline_position(rid, p_size);
 }
 
 Dictionary FontData::get_feature_list() const {
@@ -309,7 +282,7 @@ float FontData::get_underline_thickness(int p_size) const {
 	if (rid == RID()) {
 		return 0.f;
 	}
-	return TS->font_get_underline_thickness(rid, (p_size < 0) ? base_size : p_size);
+	return TS->font_get_underline_thickness(rid, p_size);
 }
 
 Dictionary FontData::get_variation_list() const {
@@ -379,6 +352,19 @@ bool FontData::get_distance_field_hint() const {
 	return TS->font_get_distance_field_hint(rid);
 }
 
+void FontData::set_disable_distance_field_shader(bool p_disable) {
+	ERR_FAIL_COND(rid == RID());
+	TS->font_set_disable_distance_field_shader(rid, p_disable);
+	emit_changed();
+}
+
+bool FontData::get_disable_distance_field_shader() const {
+	if (rid == RID()) {
+		return false;
+	}
+	return TS->font_get_disable_distance_field_shader(rid);
+}
+
 void FontData::set_hinting(TextServer::Hinting p_hinting) {
 	ERR_FAIL_COND(rid == RID());
 	TS->font_set_hinting(rid, p_hinting);
@@ -405,6 +391,32 @@ bool FontData::get_force_autohinter() const {
 	return TS->font_get_force_autohinter(rid);
 }
 
+void FontData::set_oversampling(double p_value) {
+	ERR_FAIL_COND(rid == RID());
+	TS->font_set_oversampling(rid, p_value);
+	emit_changed();
+}
+
+double FontData::get_oversampling() const {
+	if (rid == RID()) {
+		return 0.0f;
+	}
+	return TS->font_get_oversampling(rid);
+}
+
+void FontData::set_msdf_px_range(double p_range) {
+	ERR_FAIL_COND(rid == RID());
+	TS->font_set_msdf_px_range(rid, p_range);
+	emit_changed();
+}
+
+double FontData::get_msdf_px_range() const {
+	if (rid == RID()) {
+		return 0.0;
+	}
+	return TS->font_get_msdf_px_range(rid);
+}
+
 bool FontData::has_char(char32_t p_char) const {
 	if (rid == RID()) {
 		return false;
@@ -419,12 +431,17 @@ String FontData::get_supported_chars() const {
 
 Vector2 FontData::get_glyph_advance(uint32_t p_index, int p_size) const {
 	ERR_FAIL_COND_V(rid == RID(), Vector2());
-	return TS->font_get_glyph_advance(rid, p_index, (p_size < 0) ? base_size : p_size);
+	return TS->font_get_glyph_advance(rid, p_index, p_size);
+}
+
+Vector2 FontData::get_glyph_size(uint32_t p_index, int p_size) const {
+	ERR_FAIL_COND_V(rid == RID(), Vector2());
+	return TS->font_get_glyph_size(rid, p_index, p_size);
 }
 
 Vector2 FontData::get_glyph_kerning(uint32_t p_index_a, uint32_t p_index_b, int p_size) const {
 	ERR_FAIL_COND_V(rid == RID(), Vector2());
-	return TS->font_get_glyph_kerning(rid, p_index_a, p_index_b, (p_size < 0) ? base_size : p_size);
+	return TS->font_get_glyph_kerning(rid, p_index_a, p_index_b, p_size);
 }
 
 bool FontData::has_outline() const {
@@ -511,12 +528,14 @@ uint32_t FontData::get_glyph_index(char32_t p_char, char32_t p_variation_selecto
 
 Vector2 FontData::draw_glyph(RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const {
 	ERR_FAIL_COND_V(rid == RID(), Vector2());
-	return TS->font_draw_glyph(rid, p_canvas, (p_size <= 0) ? base_size : p_size, p_pos, p_index, p_color);
+	TS->font_draw_glyph(rid, p_canvas, p_size, p_pos, p_index, p_color);
+	return TS->font_get_glyph_advance(rid, p_index, p_size);
 }
 
 Vector2 FontData::draw_glyph_outline(RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const {
 	ERR_FAIL_COND_V(rid == RID(), Vector2());
-	return TS->font_draw_glyph_outline(rid, p_canvas, (p_size <= 0) ? base_size : p_size, p_outline_size, p_pos, p_index, p_color);
+	TS->font_draw_glyph_outline(rid, p_canvas, p_size, p_outline_size, p_pos, p_index, p_color);
+	return TS->font_get_glyph_advance(rid, p_index, p_size);
 }
 
 FontData::FontData() {}
@@ -525,8 +544,8 @@ FontData::FontData(const String &p_filename, int p_base_size) {
 	load_resource(p_filename, p_base_size);
 }
 
-FontData::FontData(const PackedByteArray &p_data, const String &p_type, int p_base_size) {
-	_load_memory(p_data, p_type, p_base_size);
+FontData::FontData(const PackedByteArray &p_data, int p_base_size) {
+	_load_memory(p_data, p_base_size);
 }
 
 FontData::~FontData() {
@@ -1069,11 +1088,7 @@ void ResourceFormatLoaderFont::get_recognized_extensions_for_type(const String &
 }
 
 void ResourceFormatLoaderFont::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("ttf");
-	p_extensions->push_back("otf");
-	p_extensions->push_back("woff");
-	p_extensions->push_back("font");
-	p_extensions->push_back("fnt");
+	p_extensions->push_back("fontdata");
 }
 
 bool ResourceFormatLoaderFont::handles_type(const String &p_type) const {
@@ -1082,7 +1097,7 @@ bool ResourceFormatLoaderFont::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderFont::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "ttf" || el == "otf" || el == "woff" || el == "font" || el == "fnt") {
+	if (el == "fontdata") {
 		return "FontData";
 	}
 	return "";
