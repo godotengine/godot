@@ -57,11 +57,9 @@ class CharProxy {
 			_index(p_index),
 			_cowdata(p_cowdata) {}
 
-public:
-	_FORCE_INLINE_ CharProxy(const CharProxy<T> &p_other) :
-			_index(p_other._index),
-			_cowdata(p_other._cowdata) {}
+	CharProxy(const CharProxy<T> &) = delete;
 
+public:
 	_FORCE_INLINE_ operator T() const {
 		if (unlikely(_index == _cowdata.size())) {
 			return _null;
