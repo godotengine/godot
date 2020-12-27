@@ -158,6 +158,7 @@ struct Rect2 {
 
 		return new_rect;
 	}
+
 	inline bool has_point(const Point2 &p_point) const {
 		if (p_point.x < position.x) {
 			return false;
@@ -166,15 +167,16 @@ struct Rect2 {
 			return false;
 		}
 
-		if (p_point.x >= (position.x + size.x)) {
+		if (p_point.x > (position.x + size.x)) {
 			return false;
 		}
-		if (p_point.y >= (position.y + size.y)) {
+		if (p_point.y > (position.y + size.y)) {
 			return false;
 		}
 
 		return true;
 	}
+
 	bool is_equal_approx(const Rect2 &p_rect) const;
 
 	bool operator==(const Rect2 &p_rect) const { return position == p_rect.position && size == p_rect.size; }
@@ -401,6 +403,7 @@ struct Rect2i {
 
 		return new_rect;
 	}
+
 	bool has_point(const Point2i &p_point) const {
 		if (p_point.x < position.x) {
 			return false;
@@ -409,10 +412,10 @@ struct Rect2i {
 			return false;
 		}
 
-		if (p_point.x >= (position.x + size.x)) {
+		if (p_point.x > (position.x + size.x)) {
 			return false;
 		}
-		if (p_point.y >= (position.y + size.y)) {
+		if (p_point.y > (position.y + size.y)) {
 			return false;
 		}
 
