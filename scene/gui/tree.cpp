@@ -889,9 +889,20 @@ void TreeItem::set_custom_font(int p_column, const Ref<Font> &p_font) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].custom_font = p_font;
 }
+
 Ref<Font> TreeItem::get_custom_font(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), Ref<Font>());
 	return cells[p_column].custom_font;
+}
+
+void TreeItem::set_custom_font_size(int p_column, int p_font_size) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+	cells.write[p_column].custom_font_size = p_font_size;
+}
+
+int TreeItem::get_custom_font_size(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), -1);
+	return cells[p_column].custom_font_size;
 }
 
 void TreeItem::set_tooltip(int p_column, const String &p_tooltip) {
@@ -1131,6 +1142,9 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_custom_font", "column", "font"), &TreeItem::set_custom_font);
 	ClassDB::bind_method(D_METHOD("get_custom_font", "column"), &TreeItem::get_custom_font);
+
+	ClassDB::bind_method(D_METHOD("set_custom_font_size", "column", "font_size"), &TreeItem::set_custom_font_size);
+	ClassDB::bind_method(D_METHOD("get_custom_font_size", "column"), &TreeItem::get_custom_font_size);
 
 	ClassDB::bind_method(D_METHOD("set_custom_bg_color", "column", "color", "just_outline"), &TreeItem::set_custom_bg_color, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_custom_bg_color", "column"), &TreeItem::clear_custom_bg_color);
@@ -1507,7 +1521,14 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 	} else {
 		font = cache.font;
 	}
-	p_item->cells.write[p_col].text_buf->add_string(valtext, font, cache.font_size, p_item->cells[p_col].opentype_features, (p_item->cells[p_col].language != "") ? p_item->cells[p_col].language : TranslationServer::get_singleton()->get_tool_locale());
+
+	int font_size;
+	if (p_item->cells[p_col].custom_font_size > 0) {
+		font_size = p_item->cells[p_col].custom_font_size;
+	} else {
+		font_size = cache.font_size;
+	}
+	p_item->cells.write[p_col].text_buf->add_string(valtext, font, font_size, p_item->cells[p_col].opentype_features, (p_item->cells[p_col].language != "") ? p_item->cells[p_col].language : TranslationServer::get_singleton()->get_tool_locale());
 	TS->shaped_text_set_bidi_override(p_item->cells[p_col].text_buf->get_rid(), structured_text_parser(p_item->cells[p_col].st_parser, p_item->cells[p_col].st_args, valtext));
 	p_item->cells.write[p_col].dirty = false;
 }

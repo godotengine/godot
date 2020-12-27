@@ -641,7 +641,7 @@ void LineEdit::_notification(int p_what) {
 			int x_ofs = 0;
 			bool using_placeholder = text.is_empty() && ime_text.is_empty();
 			float text_width = TS->shaped_text_get_size(text_rid).x;
-			float text_height = TS->shaped_text_get_size(text_rid).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM);
+			float text_height = TS->shaped_text_get_size(text_rid).y + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM);
 
 			switch (align) {
 				case ALIGN_FILL:
@@ -1531,7 +1531,7 @@ Size2 LineEdit::get_minimum_size() const {
 		min_size.width = MAX(min_size.width, full_width + em_space_size);
 	}
 
-	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM), font->get_height(font_size));
+	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM), font->get_height(font_size));
 
 	// Take icons into account.
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
@@ -1941,6 +1941,7 @@ void LineEdit::_shape() {
 
 	const Ref<Font> &font = get_theme_font(SNAME("font"));
 	int font_size = get_theme_font_size(SNAME("font_size"));
+	ERR_FAIL_COND(font.is_null());
 	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
 	TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, t));
 

@@ -5354,7 +5354,7 @@
 				},
 				{
 					"name": "godot_glyph_get_advance",
-					"return_type": "godot_float",
+					"return_type": "godot_real_t",
 					"arguments": [
 						[
 							"const godot_glyph *",
@@ -5371,7 +5371,7 @@
 							"p_self"
 						],
 						[
-							"godot_float",
+							"godot_real_t",
 							"p_advance"
 						]
 					]

@@ -541,6 +541,14 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					src_rect = Rect2(0, 0, 1, 1);
 				}
 
+				if (rect->flags & CANVAS_RECT_MSDF) {
+					push_constant.flags |= FLAGS_USE_MSDF;
+					push_constant.msdf[0] = rect->px_range; // Pixel range.
+					push_constant.msdf[1] = rect->outline; // Outline size.
+					push_constant.msdf[2] = 0.f; // Reserved.
+					push_constant.msdf[3] = 0.f; // Reserved.
+				}
+
 				push_constant.modulation[0] = rect->modulate.r * base_color.r;
 				push_constant.modulation[1] = rect->modulate.g * base_color.g;
 				push_constant.modulation[2] = rect->modulate.b * base_color.b;

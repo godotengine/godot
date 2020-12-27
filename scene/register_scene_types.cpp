@@ -247,12 +247,6 @@
 static Ref<ResourceFormatSaverText> resource_saver_text;
 static Ref<ResourceFormatLoaderText> resource_loader_text;
 
-static Ref<ResourceFormatLoaderFont> resource_loader_font;
-
-#ifndef DISABLE_DEPRECATED
-static Ref<ResourceFormatLoaderCompatFont> resource_loader_compat_font;
-#endif /* DISABLE_DEPRECATED */
-
 static Ref<ResourceFormatLoaderStreamTexture2D> resource_loader_stream_texture;
 static Ref<ResourceFormatLoaderStreamTextureLayered> resource_loader_texture_layered;
 static Ref<ResourceFormatLoaderStreamTexture3D> resource_loader_texture_3d;
@@ -266,14 +260,6 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	Node::init_node_hrcr();
-
-	resource_loader_font.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_font);
-
-#ifndef DISABLE_DEPRECATED
-	resource_loader_compat_font.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_compat_font);
-#endif /* DISABLE_DEPRECATED */
 
 	resource_loader_stream_texture.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
@@ -1064,14 +1050,6 @@ void unregister_scene_types() {
 
 	SceneDebugger::deinitialize();
 	clear_default_theme();
-
-	ResourceLoader::remove_resource_format_loader(resource_loader_font);
-	resource_loader_font.unref();
-
-#ifndef DISABLE_DEPRECATED
-	ResourceLoader::remove_resource_format_loader(resource_loader_compat_font);
-	resource_loader_compat_font.unref();
-#endif /* DISABLE_DEPRECATED */
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_texture_layered);
 	resource_loader_texture_layered.unref();

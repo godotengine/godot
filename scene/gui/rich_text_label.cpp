@@ -874,7 +874,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						charfx->visibility = visible;
 						charfx->outline = true;
 						charfx->font = frid;
-						charfx->glpyh_index = gl;
+						charfx->glyph_index = gl;
 						charfx->offset = fx_offset;
 						charfx->color = font_color;
 
@@ -884,7 +884,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						fx_offset += charfx->offset;
 						font_color = charfx->color;
 						frid = charfx->font;
-						gl = charfx->glpyh_index;
+						gl = charfx->glyph_index;
 						visible &= charfx->visibility;
 					}
 				} else if (item_fx->type == ITEM_SHAKE) {
@@ -1026,7 +1026,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						charfx->visibility = visible;
 						charfx->outline = false;
 						charfx->font = frid;
-						charfx->glpyh_index = gl;
+						charfx->glyph_index = gl;
 						charfx->offset = fx_offset;
 						charfx->color = font_color;
 
@@ -1036,7 +1036,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						fx_offset += charfx->offset;
 						font_color = charfx->color;
 						frid = charfx->font;
-						gl = charfx->glpyh_index;
+						gl = charfx->glyph_index;
 						visible &= charfx->visibility;
 					}
 				} else if (item_fx->type == ITEM_SHAKE) {

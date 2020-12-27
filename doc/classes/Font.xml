@@ -70,6 +70,12 @@
 				Add font data source to the set.
 			</description>
 		</method>
+		<method name="clear_data">
+			<return type="void" />
+			<description>
+				Removes all font data sourcers for the set.
+			</description>
+		</method>
 		<method name="draw_char" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="canvas_item" type="RID" />
@@ -151,6 +157,13 @@
 				Returns the number of font data sources.
 			</description>
 		</method>
+		<method name="get_data_rid" qualifiers="const">
+			<return type="RID" />
+			<argument index="0" name="idx" type="int" />
+			<description>
+				Returns TextServer RID of the font data resources.
+			</description>
+		</method>
 		<method name="get_descent" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="size" type="int" default="-1" />
@@ -180,15 +193,18 @@
 		</method>
 		<method name="get_spacing" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="type" type="int" />
+			<argument index="0" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<description>
-				Returns the spacing for the given [code]type[/code] (see [enum SpacingType]).
+				Returns the spacing for the given [code]type[/code] (see [enum TextServer.SpacingType]).
 			</description>
 		</method>
 		<method name="get_string_size" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="text" type="String" />
 			<argument index="1" name="size" type="int" default="-1" />
+			<argument index="2" name="align" type="int" enum="HAlign" default="0" />
+			<argument index="3" name="width" type="float" default="-1" />
+			<argument index="4" name="flags" type="int" default="3" />
 			<description>
 				Returns the size of a bounding box of a string, taking kerning and advance into account.
 				[b]Note:[/b] Real height of the string is context-dependent and can be significantly different from the value returned by [method get_height].
@@ -242,10 +258,10 @@
 		</method>
 		<method name="set_spacing">
 			<return type="void" />
-			<argument index="0" name="type" type="int" />
+			<argument index="0" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<argument index="1" name="value" type="int" />
 			<description>
-				Sets the spacing for [code]type[/code] (see [enum SpacingType]) to [code]value[/code] in pixels (not relative to the font size).
+				Sets the spacing for [code]type[/code] (see [enum TextServer.SpacingType]) to [code]value[/code] in pixels (not relative to the font size).
 			</description>
 		</method>
 		<method name="update_changes">
@@ -256,19 +272,19 @@
 		</method>
 	</methods>
 	<members>
-		<member name="extra_spacing_bottom" type="int" setter="set_spacing" getter="get_spacing" default="0">
+		<member name="base_size" type="int" setter="set_base_size" getter="get_base_size" default="16">
+			Default font size.
+		</member>
+		<member name="spacing_bottom" type="int" setter="set_spacing" getter="get_spacing" default="0">
 			Extra spacing at the bottom of the line in pixels.
 		</member>
-		<member name="extra_spacing_top" type="int" setter="set_spacing" getter="get_spacing" default="0">
+		<member name="spacing_top" type="int" setter="set_spacing" getter="get_spacing" default="0">
 			Extra spacing at the top of the line in pixels.
+		</member>
+		<member name="variation_coordinates" type="Dictionary" setter="set_variation_coordinates" getter="get_variation_coordinates" default="{}">
+			Default font [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]variation coordinates[/url].
 		</member>
 	</members>
 	<constants>
-		<constant name="SPACING_TOP" value="0" enum="SpacingType">
-			Spacing at the top of the line.
-		</constant>
-		<constant name="SPACING_BOTTOM" value="1" enum="SpacingType">
-			Spacing at the bottom of the line.
-		</constant>
 	</constants>
 </class>

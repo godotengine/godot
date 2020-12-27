@@ -55,39 +55,6 @@ public:
 
 /*************************************************************************/
 
-class FontDataEditor : public EditorProperty {
-	GDCLASS(FontDataEditor, EditorProperty);
-
-	LineEdit *le = nullptr;
-	CheckBox *chk = nullptr;
-	Button *button = nullptr;
-
-	void toggle_lang(bool p_pressed);
-	void toggle_script(bool p_pressed);
-	void add_lang();
-	void add_script();
-	void remove_lang();
-	void remove_script();
-
-protected:
-	void _notification(int p_what);
-
-	static void _bind_methods();
-
-public:
-	virtual Size2 get_minimum_size() const override;
-	virtual void update_property() override;
-
-	void init_lang_add();
-	void init_lang_edit();
-	void init_script_add();
-	void init_script_edit();
-
-	FontDataEditor();
-};
-
-/*************************************************************************/
-
 class EditorInspectorPluginFont : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginFont, EditorInspectorPlugin);
 
