@@ -327,16 +327,17 @@ void main() {
 	vec3 color = textureLod(source, uv_interp, 0.0f).rgb;
 
 	// Exposure
+	float full_exposure = exposure;
 
 #ifdef USE_AUTO_EXPOSURE
-	color /= texelFetch(source_auto_exposure, ivec2(0, 0), 0).r / auto_exposure_grey;
+	full_exposure /= texelFetch(source_auto_exposure, ivec2(0, 0), 0).r / auto_exposure_grey;
 #endif
 
-	color *= exposure;
+	color *= full_exposure;
 
 #ifdef USE_FXAA
 	// FXAA must be applied before tonemapping.
-	color = apply_fxaa(color, exposure, uv_interp, pixel_size);
+	color = apply_fxaa(color, full_exposure, uv_interp, pixel_size);
 #endif
 
 #ifdef USE_DEBANDING
