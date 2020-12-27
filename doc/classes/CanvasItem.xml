@@ -106,6 +106,20 @@
 				Draws a [Mesh] in 2D, using the provided texture. See [MeshInstance2D] for related documentation.
 			</description>
 		</method>
+		<method name="draw_msdf_texture_rect_region">
+			<return type="void" />
+			<argument index="0" name="texture" type="Texture2D" />
+			<argument index="1" name="rect" type="Rect2" />
+			<argument index="2" name="src_rect" type="Rect2" />
+			<argument index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<argument index="4" name="outline" type="float" default="0.0" />
+			<argument index="5" name="pixel_range" type="float" default="4.0" />
+			<description>
+				Draws a textured rectangle region of the multi-channel signed distance field texture at a given position, optionally modulated by a color.
+				If [code]outline[/code] is positive, each alpha channel value of pixel in region is set to maximum value of true distance in the [code]outline[/code] radius.
+				Value of the [code]pixel_range[/code] should the same that was used during distance field texture generation.
+			</description>
+		</method>
 		<method name="draw_multiline">
 			<return type="void" />
 			<argument index="0" name="points" type="PackedVector2Array" />

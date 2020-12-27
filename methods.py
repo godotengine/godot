@@ -319,7 +319,7 @@ def disable_module(self):
     self.disabled_modules.append(self.current_module)
 
 
-def module_check_dependencies(self, module, dependencies):
+def module_check_dependencies(self, module, dependencies, silent=False):
     """
     Checks if module dependencies are enabled for a given module,
     and prints a warning if they aren't.
@@ -333,11 +333,12 @@ def module_check_dependencies(self, module, dependencies):
             missing_deps.append(dep)
 
     if missing_deps != []:
-        print(
-            "Disabling '{}' module as the following dependencies are not satisfied: {}".format(
-                module, ", ".join(missing_deps)
+        if not silent:
+            print(
+                "Disabling '{}' module as the following dependencies are not satisfied: {}".format(
+                    module, ", ".join(missing_deps)
+                )
             )
-        )
         return False
     else:
         return True

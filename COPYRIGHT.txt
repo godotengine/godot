@@ -377,6 +377,11 @@ Comment: YUV2RGB
 Copyright: 2008-2011, Robin Watts
 License: BSD-2-clause
 
+Files: ./thirdparty/msdfgen/
+Comment: Multi-channel signed distance field generator
+Copyright: 2016, Viktor Chlumsky
+License: MIT
+
 Files: ./thirdparty/nanosvg/
 Comment: NanoSVG
 Copyright: 2013-2014, Mikko Mononen

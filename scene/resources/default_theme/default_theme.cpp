@@ -1008,7 +1008,7 @@ void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
 
 		Ref<FontData> dynamic_font_data;
 		dynamic_font_data.instantiate();
-		dynamic_font_data->load_memory(_font_OpenSans_SemiBold, _font_OpenSans_SemiBold_size, "ttf", default_font_size);
+		dynamic_font_data->load_memory(_font_OpenSans_SemiBold, _font_OpenSans_SemiBold_size, default_font_size);
 		dynamic_font->add_data(dynamic_font_data);
 
 		default_font = dynamic_font;
