@@ -49,6 +49,7 @@
 #include "test_json.h"
 #include "test_list.h"
 #include "test_lru.h"
+#include "test_marshalls.h"
 #include "test_math.h"
 #include "test_method_bind.h"
 #include "test_node_path.h"
