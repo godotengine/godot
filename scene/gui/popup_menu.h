@@ -184,7 +184,7 @@ public:
 
 	void remove_item(int p_idx);
 
-	void add_separator(const String &p_text = String());
+	void add_separator(const String &p_text = String(), int p_id = -1);
 
 	void clear();
 

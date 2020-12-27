@@ -203,8 +203,10 @@
 			</return>
 			<argument index="0" name="label" type="String" default="&quot;&quot;">
 			</argument>
+			<argument index="1" name="id" type="int" default="-1">
+			</argument>
 			<description>
-				Adds a separator between items. Separators also occupy an index.
+				Adds a separator between items. Separators also occupy an index, which you can set by using the [code]id[/code] parameter.
 				A [code]label[/code] can optionally be provided, which will appear at the center of the separator.
 			</description>
 		</method>

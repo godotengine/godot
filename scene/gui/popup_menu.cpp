@@ -1216,11 +1216,11 @@ void PopupMenu::remove_item(int p_idx) {
 	minimum_size_changed();
 }
 
-void PopupMenu::add_separator(const String &p_text) {
+void PopupMenu::add_separator(const String &p_text, int p_id) {
 
 	Item sep;
 	sep.separator = true;
-	sep.id = -1;
+	sep.id = p_id;
 	if (p_text != String()) {
 		sep.text = p_text;
 		sep.xl_text = tr(p_text);
@@ -1484,7 +1484,7 @@ void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &PopupMenu::remove_item);
 
-	ClassDB::bind_method(D_METHOD("add_separator", "label"), &PopupMenu::add_separator, DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("add_separator", "label", "id"), &PopupMenu::add_separator, DEFVAL(String()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("clear"), &PopupMenu::clear);
 
 	ClassDB::bind_method(D_METHOD("_set_items"), &PopupMenu::_set_items);
