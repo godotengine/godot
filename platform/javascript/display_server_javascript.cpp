@@ -558,56 +558,50 @@ bool DisplayServerJavaScript::screen_is_touchscreen(int p_screen) const {
 }
 
 // Gamepad
-
-EM_BOOL DisplayServerJavaScript::gamepad_change_callback(int p_event_type, const EmscriptenGamepadEvent *p_event, void *p_user_data) {
+void DisplayServerJavaScript::gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid) {
 	Input *input = Input::get_singleton();
-	if (p_event_type == EMSCRIPTEN_EVENT_GAMEPADCONNECTED) {
-		String guid = "";
-		if (String::utf8(p_event->mapping) == "standard")
-			guid = "Default HTML5 Gamepad";
-		input->joy_connection_changed(p_event->index, true, String::utf8(p_event->id), guid);
+	if (p_connected) {
+		input->joy_connection_changed(p_index, true, String::utf8(p_id), String::utf8(p_guid));
 	} else {
-		input->joy_connection_changed(p_event->index, false, "");
+		input->joy_connection_changed(p_index, false, "");
 	}
-	return true;
 }
 
 void DisplayServerJavaScript::process_joypads() {
-	int joypad_count = emscripten_get_num_gamepads();
 	Input *input = Input::get_singleton();
-	for (int joypad = 0; joypad < joypad_count; joypad++) {
-		EmscriptenGamepadEvent state;
-		EMSCRIPTEN_RESULT query_result = emscripten_get_gamepad_status(joypad, &state);
-		// Chromium reserves gamepads slots, so NO_DATA is an expected result.
-		ERR_CONTINUE(query_result != EMSCRIPTEN_RESULT_SUCCESS &&
-					 query_result != EMSCRIPTEN_RESULT_NO_DATA);
-		if (query_result == EMSCRIPTEN_RESULT_SUCCESS && state.connected) {
-			int button_count = MIN(state.numButtons, 18);
-			int axis_count = MIN(state.numAxes, 8);
-			for (int button = 0; button < button_count; button++) {
-				float value = state.analogButton[button];
-				input->joy_button(joypad, button, value);
-			}
-			for (int axis = 0; axis < axis_count; axis++) {
+	int32_t pads = godot_js_display_gamepad_sample_count();
+	int32_t s_btns_num = 0;
+	int32_t s_axes_num = 0;
+	int32_t s_standard = 0;
+	float s_btns[16];
+	float s_axes[10];
+	for (int idx = 0; idx < pads; idx++) {
+		int err = godot_js_display_gamepad_sample_get(idx, s_btns, &s_btns_num, s_axes, &s_axes_num, &s_standard);
+		if (err) {
+			continue;
+		}
+		for (int b = 0; b < s_btns_num; b++) {
+			float value = s_btns[b];
+			// Buttons 6 and 7 in the standard mapping need to be
+			// axis to be handled as JOY_AXIS_TRIGGER by Godot.
+			if (s_standard && (b == 6 || b == 7)) {
 				Input::JoyAxis joy_axis;
-				joy_axis.min = -1;
-				joy_axis.value = state.axis[axis];
-				input->joy_axis(joypad, axis, joy_axis);
+				joy_axis.min = 0;
+				joy_axis.value = value;
+				int a = b == 6 ? JOY_AXIS_TRIGGER_LEFT : JOY_AXIS_TRIGGER_RIGHT;
+				input->joy_axis(idx, a, joy_axis);
+			} else {
+				input->joy_button(idx, b, value);
 			}
+		}
+		for (int a = 0; a < s_axes_num; a++) {
+			Input::JoyAxis joy_axis;
+			joy_axis.min = -1;
+			joy_axis.value = s_axes[a];
+			input->joy_axis(idx, a, joy_axis);
 		}
 	}
 }
-
-#if 0
-bool DisplayServerJavaScript::is_joy_known(int p_device) {
-	return Input::get_singleton()->is_joy_mapped(p_device);
-}
-
-
-String DisplayServerJavaScript::get_joy_guid(int p_device) const {
-	return Input::get_singleton()->get_joy_guid_remapped(p_device);
-}
-#endif
 
 Vector<String> DisplayServerJavaScript::get_rendering_drivers_func() {
 	Vector<String> drivers;
@@ -766,9 +760,6 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 #define SET_EM_WINDOW_CALLBACK(ev, cb)                                                         \
 	result = emscripten_set_##ev##_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, &cb); \
 	EM_CHECK(ev)
-#define SET_EM_CALLBACK_NOTARGET(ev, cb)                         \
-	result = emscripten_set_##ev##_callback(nullptr, true, &cb); \
-	EM_CHECK(ev)
 	// These callbacks from Emscripten's html5.h suffice to access most
 	// JavaScript APIs.
 	SET_EM_CALLBACK(canvas_id, mousedown, mouse_button_callback)
@@ -783,9 +774,6 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	SET_EM_CALLBACK(canvas_id, keypress, keypress_callback)
 	SET_EM_CALLBACK(canvas_id, keyup, keyup_callback)
 	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, fullscreenchange, fullscreen_change_callback)
-	SET_EM_CALLBACK_NOTARGET(gamepadconnected, gamepad_change_callback)
-	SET_EM_CALLBACK_NOTARGET(gamepaddisconnected, gamepad_change_callback)
-#undef SET_EM_CALLBACK_NOTARGET
 #undef SET_EM_CALLBACK
 #undef EM_CHECK
 
@@ -798,6 +786,7 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 			WINDOW_EVENT_FOCUS_OUT);
 	godot_js_display_paste_cb(update_clipboard_callback);
 	godot_js_display_drop_files_cb(drop_files_js_callback);
+	godot_js_display_gamepad_cb(&DisplayServerJavaScript::gamepad_callback);
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_event);
 }
@@ -1026,8 +1015,9 @@ bool DisplayServerJavaScript::can_any_window_draw() const {
 }
 
 void DisplayServerJavaScript::process_events() {
-	if (emscripten_sample_gamepad_data() == EMSCRIPTEN_RESULT_SUCCESS)
+	if (godot_js_display_gamepad_sample() == OK) {
 		process_joypads();
+	}
 }
 
 int DisplayServerJavaScript::get_current_video_driver() const {
