@@ -42,7 +42,7 @@
 			If [code]true[/code], the button's shape is centered in the provided texture. If no texture is used, this property has no effect.
 		</member>
 		<member name="shape_visible" type="bool" setter="set_shape_visible" getter="is_shape_visible" default="true">
-			If [code]true[/code], the button's shape is visible.
+			If [code]true[/code], the button's shape is visible in the editor.
 		</member>
 		<member name="visibility_mode" type="int" setter="set_visibility_mode" getter="get_visibility_mode" enum="TouchScreenButton.VisibilityMode" default="0">
 			The button's visibility mode. See [enum VisibilityMode] for possible values.
