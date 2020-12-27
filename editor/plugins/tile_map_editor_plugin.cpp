@@ -1466,7 +1466,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid() && k->is_pressed()) {
-		if (last_tool == TOOL_NONE && tool == TOOL_PICKING && k->get_keycode() == KEY_SHIFT && k->get_command()) {
+		if (last_tool == TOOL_NONE && tool == TOOL_PICKING && k->is_keycode_modifier(KEY_MASK_SHIFT) && k->get_command()) {
 			// trying to draw a rectangle with the painting tool, so change to the correct tool
 			tool = last_tool;
 
@@ -1608,16 +1608,12 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	} else if (k.is_valid()) { // Release event.
 
 		if (tool == TOOL_NONE) {
-			if (k->get_keycode() == KEY_SHIFT && k->get_command()) {
+			if (k->is_keycode_modifier(KEY_MASK_SHIFT) && k->get_command()) {
 				tool = TOOL_PICKING;
 				_update_button_tool();
 			}
 		} else if (tool == TOOL_PICKING) {
-#ifdef APPLE_STYLE_KEYS
-			if (k->get_keycode() == KEY_META) {
-#else
-			if (k->get_keycode() == KEY_CONTROL) {
-#endif
+			if (k->is_keycode_modifier(KEY_MASK_COMMAND)) {
 				// Go back to that last tool if KEY_CONTROL was released.
 				tool = last_tool;
 
@@ -2024,7 +2020,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	invalid_cell.write[0] = TileMap::INVALID_CELL;
 
 	ED_SHORTCUT("tile_map_editor/erase_selection", TTR("Erase Selection"), KEY_DELETE);
-	ED_SHORTCUT("tile_map_editor/find_tile", TTR("Find Tile"), KEY_MASK_CMD + KEY_F);
+	ED_SHORTCUT("tile_map_editor/find_tile", TTR("Find Tile"), KEY_MASK_COMMAND + KEY_F);
 	ED_SHORTCUT("tile_map_editor/transpose", TTR("Transpose"), KEY_T);
 
 	HBoxContainer *tool_hb = memnew(HBoxContainer);
@@ -2184,8 +2180,8 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	toolbar_right->add_child(options);
 
 	PopupMenu *p = options->get_popup();
-	p->add_shortcut(ED_SHORTCUT("tile_map_editor/cut_selection", TTR("Cut Selection"), KEY_MASK_CMD + KEY_X), OPTION_CUT);
-	p->add_shortcut(ED_SHORTCUT("tile_map_editor/copy_selection", TTR("Copy Selection"), KEY_MASK_CMD + KEY_C), OPTION_COPY);
+	p->add_shortcut(ED_SHORTCUT("tile_map_editor/cut_selection", TTR("Cut Selection"), KEY_MASK_COMMAND + KEY_X), OPTION_CUT);
+	p->add_shortcut(ED_SHORTCUT("tile_map_editor/copy_selection", TTR("Copy Selection"), KEY_MASK_COMMAND + KEY_C), OPTION_COPY);
 	p->add_shortcut(ED_GET_SHORTCUT("tile_map_editor/erase_selection"), OPTION_ERASE_SELECTION);
 	p->add_separator();
 	p->add_item(TTR("Fix Invalid Tiles"), OPTION_FIX_INVALID);

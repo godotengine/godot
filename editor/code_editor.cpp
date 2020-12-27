@@ -538,7 +538,7 @@ void FindReplaceBar::_search_text_changed(const String &p_text) {
 }
 
 void FindReplaceBar::_search_text_entered(const String &p_text) {
-	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (Input::get_singleton()->is_modifier_pressed(KEY_MASK_SHIFT)) {
 		search_prev();
 	} else {
 		search_next();
@@ -549,7 +549,7 @@ void FindReplaceBar::_replace_text_entered(const String &p_text) {
 	if (selection_only->is_pressed() && text_editor->is_selection_active()) {
 		_replace_all();
 		_hide_bar();
-	} else if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	} else if (Input::get_singleton()->is_modifier_pressed(KEY_MASK_SHIFT)) {
 		_replace();
 		search_prev();
 	} else {
@@ -1698,9 +1698,9 @@ void CodeTextEditor::update_toggle_scripts_button() {
 
 CodeTextEditor::CodeTextEditor() {
 	code_complete_func = nullptr;
-	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KEY_MASK_CMD | KEY_EQUAL);
-	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KEY_MASK_CMD | KEY_MINUS);
-	ED_SHORTCUT("script_editor/reset_zoom", TTR("Reset Zoom"), KEY_MASK_CMD | KEY_0);
+	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KEY_MASK_COMMAND | KEY_EQUAL);
+	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KEY_MASK_COMMAND | KEY_MINUS);
+	ED_SHORTCUT("script_editor/reset_zoom", TTR("Reset Zoom"), KEY_MASK_COMMAND | KEY_0);
 
 	text_editor = memnew(CodeEdit);
 	add_child(text_editor);

@@ -476,10 +476,10 @@ EM_BOOL DisplayServerJavaScript::wheel_callback(int p_event_type, const Emscript
 	ev->set_position(input->get_mouse_position());
 	ev->set_global_position(ev->get_position());
 
-	ev->set_shift(input->is_key_pressed(KEY_SHIFT));
-	ev->set_alt(input->is_key_pressed(KEY_ALT));
-	ev->set_control(input->is_key_pressed(KEY_CONTROL));
-	ev->set_metakey(input->is_key_pressed(KEY_META));
+	ev->set_shift(input->is_modifier_pressed(KEY_MASK_SHIFT));
+	ev->set_alt(input->is_modifier_pressed(KEY_MASK_ALT));
+	ev->set_control(input->is_modifier_pressed(KEY_MASK_CONTROL));
+	ev->set_metakey(input->is_modifier_pressed(KEY_MASK_META));
 
 	if (p_event->deltaY < 0)
 		ev->set_button_index(BUTTON_WHEEL_UP);

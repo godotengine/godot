@@ -430,7 +430,7 @@ void ExportTemplateManager::_http_download_templates_completed(int p_status, int
 }
 
 void ExportTemplateManager::_begin_template_download(const String &p_url) {
-	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (Input::get_singleton()->is_modifier_pressed(KEY_MASK_SHIFT)) {
 		OS::get_singleton()->shell_open(p_url);
 		return;
 	}

@@ -154,18 +154,18 @@ int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 	DOM2GODOT("Slash", SLASH);
 
 	// Functional keys in the Alphanumeric section.
-	DOM2GODOT("AltLeft", ALT);
-	DOM2GODOT("AltRight", ALT);
+	DOM2GODOT("AltLeft", LEFT_ALT);
+	DOM2GODOT("AltRight", RIGHT_ALT);
 	DOM2GODOT("Backspace", BACKSPACE);
 	DOM2GODOT("CapsLock", CAPSLOCK);
 	DOM2GODOT("ContextMenu", MENU);
-	DOM2GODOT("ControlLeft", CONTROL);
-	DOM2GODOT("ControlRight", CONTROL);
+	DOM2GODOT("ControlLeft", LEFT_CONTROL);
+	DOM2GODOT("ControlRight", RIGHT_CONTROL);
 	DOM2GODOT("Enter", ENTER);
-	DOM2GODOT("MetaLeft", SUPER_L);
-	DOM2GODOT("MetaRight", SUPER_R);
-	DOM2GODOT("ShiftLeft", SHIFT);
-	DOM2GODOT("ShiftRight", SHIFT);
+	DOM2GODOT("MetaLeft", META);
+	DOM2GODOT("MetaRight", META);
+	DOM2GODOT("ShiftLeft", LEFT_SHIFT);
+	DOM2GODOT("ShiftRight", RIGHT_SHIFT);
 	DOM2GODOT("Space", SPACE);
 	DOM2GODOT("Tab", TAB);
 

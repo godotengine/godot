@@ -424,6 +424,7 @@ private:
 
 	void _set_mouse_mode_impl(MouseMode p_mode);
 
+	WPARAM _map_left_right_keys(WPARAM wParam, LPARAM lParam);
 	void _process_key_events();
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);

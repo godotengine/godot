@@ -208,7 +208,7 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 						tangent = 9999 * (dir.y >= 0 ? 1 : -1);
 					}
 
-					bool link = !Input::get_singleton()->is_key_pressed(KEY_SHIFT);
+					bool link = !Input::get_singleton()->is_modifier_pressed(KEY_MASK_SHIFT);
 
 					if (_selected_tangent == TANGENT_LEFT) {
 						curve.set_point_left_tangent(_selected_point, tangent);

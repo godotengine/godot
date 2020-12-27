@@ -198,16 +198,16 @@ String InputEventWithModifiers::as_text() const {
 	Vector<String> mod_names;
 
 	if (get_control()) {
-		mod_names.push_back(find_keycode_name(KEY_CONTROL));
+		mod_names.push_back(find_keycode_name(KEY_MASK_CONTROL));
 	}
 	if (get_shift()) {
-		mod_names.push_back(find_keycode_name(KEY_SHIFT));
+		mod_names.push_back(find_keycode_name(KEY_MASK_SHIFT));
 	}
 	if (get_alt()) {
-		mod_names.push_back(find_keycode_name(KEY_ALT));
+		mod_names.push_back(find_keycode_name(KEY_MASK_ALT));
 	}
 	if (get_metakey()) {
-		mod_names.push_back(find_keycode_name(KEY_META));
+		mod_names.push_back(find_keycode_name(KEY_MASK_META));
 	}
 
 	if (!mod_names.empty()) {
@@ -312,10 +312,25 @@ bool InputEventKey::is_echo() const {
 	return echo;
 }
 
+bool InputEventKey::is_keycode_modifier(int p_modifier_mask) const {
+	switch (p_modifier_mask) {
+		case KEY_MASK_SHIFT:
+			return keycode == KEY_LEFT_SHIFT || keycode == KEY_RIGHT_SHIFT;
+		case KEY_MASK_ALT:
+			return keycode == KEY_LEFT_ALT || keycode == KEY_RIGHT_ALT;
+		case KEY_MASK_CONTROL:
+			return keycode == KEY_LEFT_CONTROL || keycode == KEY_RIGHT_CONTROL;
+		case KEY_MASK_META:
+			return keycode == KEY_LEFT_META || keycode == KEY_RIGHT_META;
+		default:
+			return false;
+	}
+}
+
 uint32_t InputEventKey::get_keycode_with_modifiers() const {
 	uint32_t sc = keycode;
 	if (get_control()) {
-		sc |= KEY_MASK_CTRL;
+		sc |= KEY_MASK_CONTROL;
 	}
 	if (get_alt()) {
 		sc |= KEY_MASK_ALT;
@@ -333,7 +348,7 @@ uint32_t InputEventKey::get_keycode_with_modifiers() const {
 uint32_t InputEventKey::get_physical_keycode_with_modifiers() const {
 	uint32_t sc = physical_keycode;
 	if (get_control()) {
-		sc |= KEY_MASK_CTRL;
+		sc |= KEY_MASK_CONTROL;
 	}
 	if (get_alt()) {
 		sc |= KEY_MASK_ALT;

@@ -2459,13 +2459,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	if (k.is_valid()) {
 		k = k->duplicate(); // It will be modified later on.
-
-#ifdef OSX_ENABLED
-		if (k->get_keycode() == KEY_META) {
-#else
-		if (k->get_keycode() == KEY_CONTROL) {
-
-#endif
+		if (k->is_keycode_modifier(KEY_MASK_COMMAND)) {
 			if (select_identifiers_enabled) {
 				if (k->is_pressed() && !dragging_minimap && !dragging_selection) {
 					Point2 mp = _get_local_mouse_pos();
@@ -2571,7 +2565,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						return;
 					}
 
-					if (k->get_keycode() == KEY_SHIFT) {
+					if (k->is_keycode_modifier(KEY_MASK_SHIFT)) {
 						accept_event();
 						return;
 					}
@@ -4038,21 +4032,21 @@ void TextEdit::_generate_context_menu() {
 	// Reorganize context menu.
 	menu->clear();
 	if (!readonly) {
-		menu->add_item(RTR("Cut"), MENU_CUT, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_X : 0);
+		menu->add_item(RTR("Cut"), MENU_CUT, is_shortcut_keys_enabled() ? KEY_MASK_COMMAND | KEY_X : 0);
 	}
-	menu->add_item(RTR("Copy"), MENU_COPY, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_C : 0);
+	menu->add_item(RTR("Copy"), MENU_COPY, is_shortcut_keys_enabled() ? KEY_MASK_COMMAND | KEY_C : 0);
 	if (!readonly) {
-		menu->add_item(RTR("Paste"), MENU_PASTE, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_V : 0);
+		menu->add_item(RTR("Paste"), MENU_PASTE, is_shortcut_keys_enabled() ? KEY_MASK_COMMAND | KEY_V : 0);
 	}
 	menu->add_separator();
 	if (is_selecting_enabled()) {
-		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_A : 0);
+		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? KEY_MASK_COMMAND | KEY_A : 0);
 	}
 	if (!readonly) {
 		menu->add_item(RTR("Clear"), MENU_CLEAR);
 		menu->add_separator();
-		menu->add_item(RTR("Undo"), MENU_UNDO, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_Z : 0);
-		menu->add_item(RTR("Redo"), MENU_REDO, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Z : 0);
+		menu->add_item(RTR("Undo"), MENU_UNDO, is_shortcut_keys_enabled() ? KEY_MASK_COMMAND | KEY_Z : 0);
+		menu->add_item(RTR("Redo"), MENU_REDO, is_shortcut_keys_enabled() ? KEY_MASK_COMMAND | KEY_MASK_SHIFT | KEY_Z : 0);
 	}
 	menu->add_separator();
 	menu->add_submenu_item(RTR("Text writing direction"), "DirMenu");
