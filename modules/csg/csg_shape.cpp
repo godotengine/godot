@@ -701,7 +701,7 @@ CSGPrimitive3D::CSGPrimitive3D() {
 
 CSGBrush *CSGMesh3D::_build_brush() {
 	if (!mesh.is_valid()) {
-		return nullptr;
+		return memnew(CSGBrush);
 	}
 
 	Vector<Vector3> vertices;
@@ -719,7 +719,7 @@ CSGBrush *CSGMesh3D::_build_brush() {
 
 		if (arrays.size() == 0) {
 			_make_dirty();
-			ERR_FAIL_COND_V(arrays.size() == 0, nullptr);
+			ERR_FAIL_COND_V(arrays.size() == 0, memnew(CSGBrush));
 		}
 
 		Vector<Vector3> avertices = arrays[Mesh::ARRAY_VERTEX];
@@ -840,7 +840,7 @@ CSGBrush *CSGMesh3D::_build_brush() {
 	}
 
 	if (vertices.size() == 0) {
-		return nullptr;
+		return memnew(CSGBrush);
 	}
 
 	return _create_brush_from_arrays(vertices, uvs, smooth, materials);
@@ -1502,7 +1502,7 @@ CSGBrush *CSGTorus3D::_build_brush() {
 	float max_radius = outer_radius;
 
 	if (min_radius == max_radius) {
-		return nullptr; //sorry, can't
+		return memnew(CSGBrush); //sorry, can't
 	}
 
 	if (min_radius > max_radius) {
@@ -1721,7 +1721,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 	// set our bounding box
 
 	if (polygon.size() < 3) {
-		return nullptr;
+		return memnew(CSGBrush);
 	}
 
 	Vector<Point2> final_polygon = polygon;
@@ -1733,7 +1733,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 	Vector<int> triangles = Geometry2D::triangulate_polygon(final_polygon);
 
 	if (triangles.size() < 3) {
-		return nullptr;
+		return memnew(CSGBrush);
 	}
 
 	Path3D *path = nullptr;
@@ -1767,15 +1767,15 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 	if (mode == MODE_PATH) {
 		if (!has_node(path_node)) {
-			return nullptr;
+			return memnew(CSGBrush);
 		}
 		Node *n = get_node(path_node);
 		if (!n) {
-			return nullptr;
+			return memnew(CSGBrush);
 		}
 		path = Object::cast_to<Path3D>(n);
 		if (!path) {
-			return nullptr;
+			return memnew(CSGBrush);
 		}
 
 		if (path != path_cache) {
@@ -1793,10 +1793,10 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 		}
 		curve = path->get_curve();
 		if (curve.is_null()) {
-			return nullptr;
+			return memnew(CSGBrush);
 		}
 		if (curve->get_baked_length() <= 0) {
-			return nullptr;
+			return memnew(CSGBrush);
 		}
 	}
 	CSGBrush *brush = memnew(CSGBrush);
