@@ -1379,3 +1379,7 @@ void Variant::get_utility_function_list(List<StringName> *r_functions) {
 		r_functions->push_back(E->get());
 	}
 }
+
+int Variant::get_utility_function_count() {
+	return utility_function_name_table.size();
+}

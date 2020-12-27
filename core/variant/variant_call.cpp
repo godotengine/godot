@@ -705,6 +705,11 @@ void Variant::get_builtin_method_list(Variant::Type p_type, List<StringName> *p_
 	}
 }
 
+int Variant::get_builtin_method_count(Variant::Type p_type) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, -1);
+	return builtin_method_names[p_type].size();
+}
+
 Variant::Type Variant::get_builtin_method_return_type(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::NIL);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
@@ -797,6 +802,13 @@ void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_c
 		p_constants->push_back(E->key());
 #endif
 	}
+}
+
+int Variant::get_constants_count_for_type(Variant::Type p_type) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, -1);
+	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
+
+	return cd.value.size() + cd.variant_value.size();
 }
 
 bool Variant::has_constant(Variant::Type p_type, const StringName &p_value) {
