@@ -202,9 +202,8 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		Ref<Script> script = p_node->get_script();
 		EditorData &ed = EditorNode::get_editor_data();
 		if (script.is_valid() &&
-			ed.script_class_get_name(script->get_path()) == StringName() &&
-			EditorNode::get_singleton()->get_object_custom_type_base(p_node) != script) {
-
+				ed.script_class_get_name(script->get_path()) == StringName() &&
+				EditorNode::get_singleton()->get_object_custom_type_base(p_node) != script) {
 			//has script
 			item->add_button(0, get_theme_icon("Script", "EditorIcons"), BUTTON_SCRIPT);
 		} else {
