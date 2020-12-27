@@ -78,7 +78,8 @@
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
-				Returns the intersection of this [Rect2] and b.
+				Returns the intersection of this [Rect2] and [code]b[/code].
+				If the rectangles do not intersect, an empty [Rect2] is returned.
 			</description>
 		</method>
 		<method name="encloses">
