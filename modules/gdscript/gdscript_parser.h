@@ -286,7 +286,7 @@ public:
 
 	struct AssertNode : public Node {
 		ExpressionNode *condition = nullptr;
-		LiteralNode *message = nullptr;
+		ExpressionNode *message = nullptr;
 
 		AssertNode() {
 			type = ASSERT;

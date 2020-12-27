@@ -1215,7 +1215,10 @@ void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant
 void GDScriptAnalyzer::resolve_assert(GDScriptParser::AssertNode *p_assert) {
 	reduce_expression(p_assert->condition);
 	if (p_assert->message != nullptr) {
-		reduce_literal(p_assert->message);
+		reduce_expression(p_assert->message);
+		if (!p_assert->message->is_constant || p_assert->message->reduced_value.get_type() != Variant::STRING) {
+			push_error(R"(Expected constant string for assert error message.)", p_assert->message);
+		}
 	}
 
 	p_assert->set_datatype(p_assert->condition->get_datatype());
