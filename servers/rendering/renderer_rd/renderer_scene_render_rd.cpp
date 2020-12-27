@@ -5208,7 +5208,6 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 
 	RENDER_TIMESTAMP("Process SSAO");
 
-	//TODO clear when settings chenge to or from ultra
 	if (rb->ssao.ao_final.is_valid() && ssao_using_half_size != ssao_half_size) {
 		RD::get_singleton()->free(rb->ssao.depth);
 		RD::get_singleton()->free(rb->ssao.ao_deinterleaved);
