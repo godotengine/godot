@@ -2328,7 +2328,7 @@ void Node3DEditorViewport::set_message(String p_message, float p_time) {
 
 void Node3DEditorPlugin::edited_scene_changed() {
 	for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
-		Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_viewport(i);
+		Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_main_control(i);
 		if (viewport->is_visible()) {
 			viewport->notification(Control::NOTIFICATION_VISIBILITY_CHANGED);
 		}
@@ -5622,7 +5622,7 @@ void Node3DEditor::_init_grid() {
 	if (!grid_enabled) {
 		return;
 	}
-	Camera3D *camera = get_editor_viewport(0)->camera;
+	Camera3D *camera = get_editor_main_control(0)->camera;
 	Vector3 camera_position = camera->get_translation();
 	if (camera_position == Vector3()) {
 		return; // Camera3D is invalid, don't draw the grid.

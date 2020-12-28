@@ -561,7 +561,7 @@ int EditorPlugin::update_overlays() const {
 	if (Node3DEditor::get_singleton()->is_visible()) {
 		int count = 0;
 		for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
-			Node3DEditorViewport *vp = Node3DEditor::get_singleton()->get_editor_viewport(i);
+			Node3DEditorViewport *vp = Node3DEditor::get_singleton()->get_editor_main_control(i);
 			if (vp->is_visible()) {
 				vp->update_surface();
 				count++;

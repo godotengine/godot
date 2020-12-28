@@ -2586,7 +2586,7 @@ void SceneTreeDock::_focus_node() {
 		editor->get_canvas_item_editor()->focus_selection();
 	} else {
 		Node3DEditorPlugin *editor = Object::cast_to<Node3DEditorPlugin>(editor_data->get_editor("3D"));
-		editor->get_spatial_editor()->get_editor_viewport(0)->focus_selection();
+		editor->get_spatial_editor()->get_editor_main_control(0)->focus_selection();
 	}
 }
 

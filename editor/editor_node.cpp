@@ -1285,7 +1285,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			// This check prevents the preview from regenerating in case those scenes are then saved.
 			Ref<EditorFeatureProfile> profile = feature_profile_manager->get_current_profile();
 			if (profile.is_valid() && !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
-				img = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_data();
+				img = Node3DEditor::get_singleton()->get_editor_main_control(0)->get_viewport_node()->get_texture()->get_data();
 			}
 		}
 

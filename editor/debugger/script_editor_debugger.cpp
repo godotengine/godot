@@ -790,7 +790,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 				} else if (camera_override >= CameraOverride::OVERRIDE_3D_1) {
 					int viewport_idx = camera_override - CameraOverride::OVERRIDE_3D_1;
-					Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_viewport(viewport_idx);
+					Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_main_control(viewport_idx);
 					Camera3D *const cam = viewport->get_camera();
 
 					Array msg;

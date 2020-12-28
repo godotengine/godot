@@ -794,7 +794,7 @@ public:
 
 	void set_can_preview(Camera3D *p_preview);
 
-	Node3DEditorViewport *get_editor_viewport(int p_idx) {
+	Node3DEditorViewport *get_editor_main_control(int p_idx) {
 		ERR_FAIL_INDEX_V(p_idx, static_cast<int>(VIEWPORTS_COUNT), nullptr);
 		return viewports[p_idx];
 	}
