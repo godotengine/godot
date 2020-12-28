@@ -69,15 +69,14 @@ protected:
 	bool smoothing_enabled;
 	int limit[4];
 	bool limit_smoothing_enabled;
+
 	float drag_margin[4];
-
-	bool h_drag_enabled;
-	bool v_drag_enabled;
-	float h_ofs;
-	float v_ofs;
-
-	bool h_offset_changed;
-	bool v_offset_changed;
+	bool drag_horizontal_enabled;
+	bool drag_vertical_enabled;
+	float drag_horizontal_offset;
+	float drag_vertical_offset;
+	bool drag_horizontal_offset_changed;
+	bool drag_vertical_offset_changed;
 
 	Point2 camera_screen_center;
 	void _update_process_mode();
@@ -117,20 +116,20 @@ public:
 	void set_limit_smoothing_enabled(bool enable);
 	bool is_limit_smoothing_enabled() const;
 
-	void set_h_drag_enabled(bool p_enabled);
-	bool is_h_drag_enabled() const;
+	void set_drag_horizontal_enabled(bool p_enabled);
+	bool is_drag_horizontal_enabled() const;
 
-	void set_v_drag_enabled(bool p_enabled);
-	bool is_v_drag_enabled() const;
+	void set_drag_vertical_enabled(bool p_enabled);
+	bool is_drag_vertical_enabled() const;
 
 	void set_drag_margin(Side p_side, float p_drag_margin);
 	float get_drag_margin(Side p_side) const;
 
-	void set_v_offset(float p_offset);
-	float get_v_offset() const;
+	void set_drag_horizontal_offset(float p_offset);
+	float get_drag_horizontal_offset() const;
 
-	void set_h_offset(float p_offset);
-	float get_h_offset() const;
+	void set_drag_vertical_offset(float p_offset);
+	float get_drag_vertical_offset() const;
 
 	void set_enable_follow_smoothing(bool p_enabled);
 	bool is_follow_smoothing_enabled() const;
