@@ -97,7 +97,7 @@ struct PluginConfig {
 static inline String resolve_local_dependency_path(String plugin_config_dir, String dependency_path) {
 	String absolute_path;
 
-	if (dependency_path.empty()) {
+	if (dependency_path.is_empty()) {
 		return absolute_path;
 	}
 
@@ -114,7 +114,7 @@ static inline String resolve_local_dependency_path(String plugin_config_dir, Str
 static inline String resolve_system_dependency_path(String dependency_path) {
 	String absolute_path;
 
-	if (dependency_path.empty()) {
+	if (dependency_path.is_empty()) {
 		return absolute_path;
 	}
 
@@ -133,7 +133,7 @@ static inline Vector<String> resolve_local_dependencies(String plugin_config_dir
 	for (int i = 0; i < p_paths.size(); i++) {
 		String path = resolve_local_dependency_path(plugin_config_dir, p_paths[i]);
 
-		if (path.empty()) {
+		if (path.is_empty()) {
 			continue;
 		}
 
@@ -149,7 +149,7 @@ static inline Vector<String> resolve_system_dependencies(Vector<String> p_paths)
 	for (int i = 0; i < p_paths.size(); i++) {
 		String path = resolve_system_dependency_path(p_paths[i]);
 
-		if (path.empty()) {
+		if (path.is_empty()) {
 			continue;
 		}
 
@@ -160,10 +160,10 @@ static inline Vector<String> resolve_system_dependencies(Vector<String> p_paths)
 }
 
 static inline bool validate_plugin(PluginConfig &plugin_config) {
-	bool valid_name = !plugin_config.name.empty();
-	bool valid_binary_name = !plugin_config.binary.empty();
-	bool valid_initialize = !plugin_config.initialization_method.empty();
-	bool valid_deinitialize = !plugin_config.deinitialization_method.empty();
+	bool valid_name = !plugin_config.name.is_empty();
+	bool valid_binary_name = !plugin_config.binary.is_empty();
+	bool valid_initialize = !plugin_config.initialization_method.is_empty();
+	bool valid_deinitialize = !plugin_config.deinitialization_method.is_empty();
 
 	bool fields_value = valid_name && valid_binary_name && valid_initialize && valid_deinitialize;
 
@@ -247,7 +247,7 @@ static inline PluginConfig load_plugin_config(Ref<ConfigFile> config_file, const
 		for (int i = 0; i < keys.size(); i++) {
 			String value = config_file->get_value(PLIST_SECTION, keys[i], String());
 
-			if (value.empty()) {
+			if (value.is_empty()) {
 				continue;
 			}
 

@@ -3818,7 +3818,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						if (index_expression->type == Node::TYPE_CONSTANT) {
 							ConstantNode *cnode = (ConstantNode *)index_expression;
 							if (cnode) {
-								if (!cnode->values.empty()) {
+								if (!cnode->values.is_empty()) {
 									int value = cnode->values[0].sint;
 									if (value < 0 || value >= array_size) {
 										_set_error(vformat("Index [%s] out of range [%s..%s]", value, 0, array_size - 1));
@@ -4210,7 +4210,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						if (index_expression->type == Node::TYPE_CONSTANT) {
 							ConstantNode *cnode = (ConstantNode *)index_expression;
 							if (cnode) {
-								if (!cnode->values.empty()) {
+								if (!cnode->values.is_empty()) {
 									int value = cnode->values[0].sint;
 									if (value < 0 || value >= array_size) {
 										_set_error(vformat("Index [%s] out of range [%s..%s]", value, 0, array_size - 1));
@@ -5504,7 +5504,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 							if (flow->flow_op == FLOW_OP_CASE) {
 								if (flow->expressions[0]->type == Node::TYPE_CONSTANT) {
 									ConstantNode *cn = static_cast<ConstantNode *>(flow->expressions[0]);
-									if (!cn || cn->values.empty()) {
+									if (!cn || cn->values.is_empty()) {
 										return ERR_PARSE_ERROR;
 									}
 									if (constants.has(cn->values[0].sint)) {

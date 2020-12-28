@@ -865,7 +865,7 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 
 	String text;
 	PackedStringArray slices = p_text.split("::", false);
-	if (!slices.empty()) {
+	if (!slices.is_empty()) {
 		String property_name = slices[0].strip_edges();
 		text = TTR("Property:") + " [u][b]" + property_name + "[/b][/u]";
 
@@ -1098,7 +1098,7 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
 	PackedStringArray slices = p_text.split("::", false);
-	if (!slices.empty()) {
+	if (!slices.is_empty()) {
 		String property_name = slices[0].strip_edges();
 		String text = "[u][b]" + property_name + "[/b][/u]";
 
@@ -1901,7 +1901,7 @@ void EditorInspector::update_tree() {
 						}
 					}
 
-					if (!F->get().inherits.empty()) {
+					if (!F->get().inherits.is_empty()) {
 						F = dd->class_list.find(F->get().inherits);
 					} else {
 						break;
@@ -2525,7 +2525,7 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 		script = script->get_base_script();
 	}
 
-	if (classes.empty()) {
+	if (classes.is_empty()) {
 		return;
 	}
 

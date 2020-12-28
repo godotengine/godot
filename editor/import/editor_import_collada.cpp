@@ -1027,7 +1027,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 
 					Vector<String> skeletons = ng2->skeletons;
 
-					ERR_FAIL_COND_V(skeletons.empty(), ERR_INVALID_DATA);
+					ERR_FAIL_COND_V(skeletons.is_empty(), ERR_INVALID_DATA);
 
 					String skname = skeletons[0];
 					ERR_FAIL_COND_V(!node_map.has(skname), ERR_INVALID_DATA);
@@ -1471,7 +1471,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				}
 
 				Vector<float> data = at.get_value_at_time(snapshots[i]);
-				ERR_CONTINUE(data.empty());
+				ERR_CONTINUE(data.is_empty());
 
 				Collada::Node::XForm &xf = cn->xform_list.write[xform_idx];
 

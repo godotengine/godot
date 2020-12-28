@@ -167,12 +167,12 @@ void EditorHelp::_class_desc_resized() {
 
 void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	String t = p_type;
-	if (t.empty()) {
+	if (t.is_empty()) {
 		t = "void";
 	}
-	bool can_ref = (t != "void") || !p_enum.empty();
+	bool can_ref = (t != "void") || !p_enum.is_empty();
 
-	if (!p_enum.empty()) {
+	if (!p_enum.is_empty()) {
 		if (p_enum.get_slice_count(".") > 1) {
 			t = p_enum.get_slice(".", 1);
 		} else {
@@ -188,7 +188,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 			add_array = true;
 			t = t.replace("[]", "");
 		}
-		if (p_enum.empty()) {
+		if (p_enum.is_empty()) {
 			class_desc->push_meta("#" + t); //class
 		} else {
 			class_desc->push_meta("$" + p_enum); //class
@@ -472,7 +472,7 @@ void EditorHelp::_update_doc() {
 
 		for (int i = 0; i < cd.tutorials.size(); i++) {
 			const String link = DTR(cd.tutorials[i].link);
-			String linktxt = (cd.tutorials[i].title.empty()) ? link : DTR(cd.tutorials[i].title);
+			String linktxt = (cd.tutorials[i].title.is_empty()) ? link : DTR(cd.tutorials[i].title);
 			const int seppos = linktxt.find("//");
 			if (seppos != -1) {
 				linktxt = link.right(seppos + 2);
@@ -498,7 +498,7 @@ void EditorHelp::_update_doc() {
 	if (cd.is_script_doc) {
 		has_properties = false;
 		for (int i = 0; i < cd.properties.size(); i++) {
-			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.empty()) {
+			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.is_empty()) {
 				continue;
 			}
 			has_properties = true;
@@ -522,7 +522,7 @@ void EditorHelp::_update_doc() {
 
 		for (int i = 0; i < cd.properties.size(); i++) {
 			// Ignore undocumented private.
-			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.empty()) {
+			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.is_empty()) {
 				continue;
 			}
 			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
@@ -633,7 +633,7 @@ void EditorHelp::_update_doc() {
 			}
 		}
 		// Ignore undocumented private.
-		if (cd.methods[i].name.begins_with("_") && cd.methods[i].description.empty()) {
+		if (cd.methods[i].name.begins_with("_") && cd.methods[i].description.is_empty()) {
 			continue;
 		}
 		methods.push_back(cd.methods[i]);
@@ -668,7 +668,7 @@ void EditorHelp::_update_doc() {
 				}
 			}
 
-			if (any_previous && !m.empty()) {
+			if (any_previous && !m.is_empty()) {
 				class_desc->push_cell();
 				class_desc->pop(); //cell
 				class_desc->push_cell();
@@ -702,7 +702,7 @@ void EditorHelp::_update_doc() {
 				_add_method(m[i], true);
 			}
 
-			any_previous = !m.empty();
+			any_previous = !m.is_empty();
 		}
 
 		class_desc->pop(); //table
@@ -848,7 +848,7 @@ void EditorHelp::_update_doc() {
 		Vector<DocData::ConstantDoc> constants;
 
 		for (int i = 0; i < cd.constants.size(); i++) {
-			if (!cd.constants[i].enumeration.empty()) {
+			if (!cd.constants[i].enumeration.is_empty()) {
 				if (!enums.has(cd.constants[i].enumeration)) {
 					enums[cd.constants[i].enumeration] = Vector<DocData::ConstantDoc>();
 				}
@@ -856,7 +856,7 @@ void EditorHelp::_update_doc() {
 				enums[cd.constants[i].enumeration].push_back(cd.constants[i]);
 			} else {
 				// Ignore undocumented private.
-				if (cd.constants[i].name.begins_with("_") && cd.constants[i].description.empty()) {
+				if (cd.constants[i].name.begins_with("_") && cd.constants[i].description.is_empty()) {
 					continue;
 				}
 				constants.push_back(cd.constants[i]);
@@ -1174,7 +1174,7 @@ void EditorHelp::_update_doc() {
 			class_desc->push_color(text_color);
 			class_desc->push_font(doc_font);
 			class_desc->push_indent(1);
-			if (!cd.properties[i].description.strip_edges().empty()) {
+			if (!cd.properties[i].description.strip_edges().is_empty()) {
 				_add_text(DTR(cd.properties[i].description));
 			} else {
 				class_desc->add_image(get_theme_icon("Error", "EditorIcons"));
@@ -1229,7 +1229,7 @@ void EditorHelp::_update_doc() {
 				class_desc->push_color(text_color);
 				class_desc->push_font(doc_font);
 				class_desc->push_indent(1);
-				if (!methods_filtered[i].description.strip_edges().empty()) {
+				if (!methods_filtered[i].description.strip_edges().is_empty()) {
 					_add_text(DTR(methods_filtered[i].description));
 				} else {
 					class_desc->add_image(get_theme_icon("Error", "EditorIcons"));
@@ -1838,7 +1838,7 @@ void FindBar::popup_search() {
 		grabbed_focus = true;
 	}
 
-	if (!search_text->get_text().empty()) {
+	if (!search_text->get_text().is_empty()) {
 		search_text->select_all();
 		search_text->set_cursor_position(search_text->get_text().length());
 		if (grabbed_focus) {
@@ -1908,7 +1908,7 @@ void FindBar::_update_results_count() {
 	results_count = 0;
 
 	String searched = search_text->get_text();
-	if (searched.empty()) {
+	if (searched.is_empty()) {
 		return;
 	}
 
@@ -1928,7 +1928,7 @@ void FindBar::_update_results_count() {
 }
 
 void FindBar::_update_matches_label() {
-	if (search_text->get_text().empty() || results_count == -1) {
+	if (search_text->get_text().is_empty() || results_count == -1) {
 		matches_label->hide();
 	} else {
 		matches_label->show();

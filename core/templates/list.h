@@ -373,7 +373,7 @@ public:
 	/**
 	 * return whether the list is empty
 	 */
-	_FORCE_INLINE_ bool empty() const {
+	_FORCE_INLINE_ bool is_empty() const {
 		return (!_data || !_data->size_cache);
 	}
 

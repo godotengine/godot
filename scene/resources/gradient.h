@@ -82,7 +82,7 @@ public:
 	Vector<Color> get_colors() const;
 
 	_FORCE_INLINE_ Color get_color_at_offset(float p_offset) {
-		if (points.empty()) {
+		if (points.is_empty()) {
 			return Color(0, 0, 0, 1);
 		}
 

@@ -165,7 +165,7 @@ void AcceptDialog::register_text_enter(Node *p_line_edit) {
 
 void AcceptDialog::_update_child_rects() {
 	Size2 label_size = label->get_minimum_size();
-	if (label->get_text().empty()) {
+	if (label->get_text().is_empty()) {
 		label_size.height = 0;
 	}
 	int margin = hbc->get_theme_constant("margin", "Dialogs");

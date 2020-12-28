@@ -1015,7 +1015,7 @@ void VisualShaderEditor::_update_options_menu() {
 	TreeItem *root = members->create_item();
 
 	String filter = node_filter->get_text().strip_edges();
-	bool use_filter = !filter.empty();
+	bool use_filter = !filter.is_empty();
 
 	bool is_first_item = true;
 
@@ -2108,7 +2108,7 @@ void VisualShaderEditor::_delete_nodes_request() {
 		}
 	}
 
-	if (to_erase.empty()) {
+	if (to_erase.is_empty()) {
 		return;
 	}
 
@@ -2145,13 +2145,13 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 		}
-		if (to_change.empty() && copy_nodes_buffer.empty()) {
+		if (to_change.is_empty() && copy_nodes_buffer.is_empty()) {
 			_show_members_dialog(true);
 		} else {
-			popup_menu->set_item_disabled(NodeMenuOptions::COPY, to_change.empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::PASTE, copy_nodes_buffer.empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::DELETE, to_change.empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::DUPLICATE, to_change.empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::COPY, to_change.is_empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::PASTE, copy_nodes_buffer.is_empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::DELETE, to_change.is_empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::DUPLICATE, to_change.is_empty());
 			menu_point = graph->get_local_mouse_position();
 			Point2 gpos = Input::get_singleton()->get_mouse_position();
 			popup_menu->set_position(gpos);
@@ -2445,7 +2445,7 @@ void VisualShaderEditor::_duplicate_nodes() {
 
 	_dup_copy_nodes(type, nodes, excluded);
 
-	if (nodes.empty()) {
+	if (nodes.is_empty()) {
 		return;
 	}
 
@@ -2463,7 +2463,7 @@ void VisualShaderEditor::_copy_nodes() {
 }
 
 void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 &p_custom_position) {
-	if (copy_nodes_buffer.empty()) {
+	if (copy_nodes_buffer.is_empty()) {
 		return;
 	}
 

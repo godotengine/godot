@@ -366,8 +366,8 @@ void CollisionObject2D::_update_pickable() {
 String CollisionObject2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
-	if (shapes.empty()) {
-		if (!warning.empty()) {
+	if (shapes.is_empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape2D or CollisionPolygon2D as a child to define its shape.");

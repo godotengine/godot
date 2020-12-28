@@ -198,7 +198,7 @@ void GroupDialog::_add_group(String p_name) {
 	}
 
 	String name = p_name.strip_edges();
-	if (name.empty() || groups->get_item_with_text(name)) {
+	if (name.is_empty() || groups->get_item_with_text(name)) {
 		return;
 	}
 
@@ -551,7 +551,7 @@ void GroupsEditor::_add_group(const String &p_group) {
 	}
 
 	const String name = group_name->get_text().strip_edges();
-	if (name.empty()) {
+	if (name.is_empty()) {
 		return;
 	}
 

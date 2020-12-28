@@ -806,7 +806,7 @@ void Input::accumulate_input_event(const Ref<InputEvent> &p_event) {
 		parse_input_event(p_event);
 		return;
 	}
-	if (!accumulated_events.empty() && accumulated_events.back()->get()->accumulate(p_event)) {
+	if (!accumulated_events.is_empty() && accumulated_events.back()->get()->accumulate(p_event)) {
 		return; //event was accumulated, exit
 	}
 

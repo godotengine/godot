@@ -427,12 +427,12 @@ String operator+(char32_t p_chr, const String &p_str) {
 }
 
 String &String::operator+=(const String &p_str) {
-	if (empty()) {
+	if (is_empty()) {
 		*this = p_str;
 		return *this;
 	}
 
-	if (p_str.empty()) {
+	if (p_str.is_empty()) {
 		return *this;
 	}
 
@@ -519,7 +519,7 @@ bool String::operator==(const char *p_str) const {
 	if (length() != len) {
 		return false;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return true;
 	}
 
@@ -558,7 +558,7 @@ bool String::operator==(const char32_t *p_str) const {
 	if (length() != len) {
 		return false;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return true;
 	}
 
@@ -580,7 +580,7 @@ bool String::operator==(const String &p_str) const {
 	if (length() != p_str.length()) {
 		return false;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return true;
 	}
 
@@ -605,7 +605,7 @@ bool String::operator==(const StrRange &p_str_range) const {
 	if (length() != len) {
 		return false;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return true;
 	}
 
@@ -678,20 +678,20 @@ bool String::operator>=(const String &p_str) const {
 }
 
 bool String::operator<(const char *p_str) const {
-	if (empty() && p_str[0] == 0) {
+	if (is_empty() && p_str[0] == 0) {
 		return false;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return true;
 	}
 	return is_str_less(get_data(), p_str);
 }
 
 bool String::operator<(const wchar_t *p_str) const {
-	if (empty() && p_str[0] == 0) {
+	if (is_empty() && p_str[0] == 0) {
 		return false;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return true;
 	}
 
@@ -705,10 +705,10 @@ bool String::operator<(const wchar_t *p_str) const {
 }
 
 bool String::operator<(const char32_t *p_str) const {
-	if (empty() && p_str[0] == 0) {
+	if (is_empty() && p_str[0] == 0) {
 		return false;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return true;
 	}
 
@@ -720,13 +720,13 @@ bool String::operator<(const String &p_str) const {
 }
 
 signed char String::nocasecmp_to(const String &p_str) const {
-	if (empty() && p_str.empty()) {
+	if (is_empty() && p_str.is_empty()) {
 		return 0;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return -1;
 	}
-	if (p_str.empty()) {
+	if (p_str.is_empty()) {
 		return 1;
 	}
 
@@ -752,13 +752,13 @@ signed char String::nocasecmp_to(const String &p_str) const {
 }
 
 signed char String::casecmp_to(const String &p_str) const {
-	if (empty() && p_str.empty()) {
+	if (is_empty() && p_str.is_empty()) {
 		return 0;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return -1;
 	}
-	if (p_str.empty()) {
+	if (p_str.is_empty()) {
 		return 1;
 	}
 
@@ -949,10 +949,10 @@ String String::get_with_code_lines() const {
 }
 
 int String::get_slice_count(String p_splitter) const {
-	if (empty()) {
+	if (is_empty()) {
 		return 0;
 	}
-	if (p_splitter.empty()) {
+	if (p_splitter.is_empty()) {
 		return 0;
 	}
 
@@ -968,7 +968,7 @@ int String::get_slice_count(String p_splitter) const {
 }
 
 String String::get_slice(String p_splitter, int p_slice) const {
-	if (empty() || p_splitter.empty()) {
+	if (is_empty() || p_splitter.is_empty()) {
 		return "";
 	}
 
@@ -1008,7 +1008,7 @@ String String::get_slice(String p_splitter, int p_slice) const {
 }
 
 String String::get_slicec(char32_t p_splitter, int p_slice) const {
-	if (empty()) {
+	if (is_empty()) {
 		return String();
 	}
 
@@ -2585,7 +2585,7 @@ int64_t String::to_int(const char32_t *p_str, int p_len, bool p_clamp) {
 }
 
 double String::to_float() const {
-	if (empty()) {
+	if (is_empty()) {
 		return 0;
 	}
 	return built_in_strtod<char32_t>(get_data());
@@ -2767,7 +2767,7 @@ String String::substr(int p_from, int p_chars) const {
 		p_chars = length() - p_from;
 	}
 
-	if (empty() || p_from < 0 || p_from >= length() || p_chars <= 0) {
+	if (is_empty() || p_from < 0 || p_from >= length() || p_chars <= 0) {
 		return "";
 	}
 
@@ -3142,7 +3142,7 @@ bool String::is_quoted() const {
 }
 
 int String::_count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const {
-	if (p_string.empty()) {
+	if (p_string.is_empty()) {
 		return 0;
 	}
 	int len = length();
@@ -4241,7 +4241,7 @@ bool String::is_valid_ip_address() const {
 		Vector<String> ip = split(":");
 		for (int i = 0; i < ip.size(); i++) {
 			String n = ip[i];
-			if (n.empty()) {
+			if (n.is_empty()) {
 				continue;
 			}
 			if (n.is_valid_hex_number(false)) {
@@ -4331,7 +4331,7 @@ String String::get_extension() const {
 }
 
 String String::plus_file(const String &p_file) const {
-	if (empty()) {
+	if (is_empty()) {
 		return p_file;
 	}
 	if (operator[](length() - 1) == '/' || (p_file.size() > 0 && p_file.operator[](0) == '/')) {
@@ -4760,7 +4760,7 @@ String String::unquote() const {
 
 Vector<uint8_t> String::to_ascii_buffer() const {
 	const String *s = this;
-	if (s->empty()) {
+	if (s->is_empty()) {
 		return Vector<uint8_t>();
 	}
 	CharString charstr = s->ascii();
@@ -4776,7 +4776,7 @@ Vector<uint8_t> String::to_ascii_buffer() const {
 
 Vector<uint8_t> String::to_utf8_buffer() const {
 	const String *s = this;
-	if (s->empty()) {
+	if (s->is_empty()) {
 		return Vector<uint8_t>();
 	}
 	CharString charstr = s->utf8();
@@ -4792,7 +4792,7 @@ Vector<uint8_t> String::to_utf8_buffer() const {
 
 Vector<uint8_t> String::to_utf16_buffer() const {
 	const String *s = this;
-	if (s->empty()) {
+	if (s->is_empty()) {
 		return Vector<uint8_t>();
 	}
 	Char16String charstr = s->utf16();
@@ -4808,7 +4808,7 @@ Vector<uint8_t> String::to_utf16_buffer() const {
 
 Vector<uint8_t> String::to_utf32_buffer() const {
 	const String *s = this;
-	if (s->empty()) {
+	if (s->is_empty()) {
 		return Vector<uint8_t>();
 	}
 

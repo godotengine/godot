@@ -665,7 +665,7 @@ int TriangulatorPartition::Triangulate_OPT(TriangulatorPoly *poly, List<Triangul
 	newdiagonal.index1 = 0;
 	newdiagonal.index2 = n-1;
 	diagonals.push_back(newdiagonal);
-	while(!diagonals.empty()) {
+	while(!diagonals.is_empty()) {
 		diagonal = (diagonals.front()->get());
 		diagonals.pop_front();
 		bestvertex = dpstates[diagonal.index2][diagonal.index1].bestvertex;
@@ -712,8 +712,8 @@ void TriangulatorPartition::UpdateState(long a, long b, long w, long i, long j, 
 		pairs->push_front(newdiagonal);
 		dpstates[a][b].weight = w;
 	} else {
-		if((!pairs->empty())&&(i <= pairs->front()->get().index1)) return;
-		while((!pairs->empty())&&(pairs->front()->get().index2 >= j)) pairs->pop_front();
+		if((!pairs->is_empty())&&(i <= pairs->front()->get().index1)) return;
+		while((!pairs->is_empty())&&(pairs->front()->get().index2 >= j)) pairs->pop_front();
 		pairs->push_front(newdiagonal);
 	}
 }
@@ -771,7 +771,7 @@ void TriangulatorPartition::TypeB(long i, long j, long k, PartitionVertex *verti
 		pairs = &(dpstates[j][k].pairs);
 
 		iter = pairs->front();
-		if((!pairs->empty())&&(!IsReflex(vertices[i].p,vertices[j].p,vertices[iter->get().index1].p))) {
+		if((!pairs->is_empty())&&(!IsReflex(vertices[i].p,vertices[j].p,vertices[iter->get().index1].p))) {
 			lastiter = iter;
 			while(iter!=NULL) {
 				if(!IsReflex(vertices[i].p,vertices[j].p,vertices[iter->get().index1].p)) {
@@ -906,12 +906,12 @@ int TriangulatorPartition::ConvexPartition_OPT(TriangulatorPoly *poly, List<Tria
 	newdiagonal.index1 = 0;
 	newdiagonal.index2 = n-1;
 	diagonals.push_front(newdiagonal);
-	while(!diagonals.empty()) {
+	while(!diagonals.is_empty()) {
 		diagonal = (diagonals.front()->get());
 		diagonals.pop_front();
 		if((diagonal.index2 - diagonal.index1) <=1) continue;
 		pairs = &(dpstates[diagonal.index1][diagonal.index2].pairs);
-		if(pairs->empty()) {
+		if(pairs->is_empty()) {
 			ret = 0;
 			break;
 		}
@@ -926,7 +926,7 @@ int TriangulatorPartition::ConvexPartition_OPT(TriangulatorPoly *poly, List<Tria
 				if(iter->get().index1 != iter->get().index2) {
 					pairs2 = &(dpstates[diagonal.index1][j].pairs);
 					while(1) {
-						if(pairs2->empty()) {
+						if(pairs2->is_empty()) {
 							ret = 0;
 							break;
 						}
@@ -951,7 +951,7 @@ int TriangulatorPartition::ConvexPartition_OPT(TriangulatorPoly *poly, List<Tria
 				if(iter->get().index1 != iter->get().index2) {
 					pairs2 = &(dpstates[j][diagonal.index2].pairs);
 					while(1) {
-						if(pairs2->empty()) {
+						if(pairs2->is_empty()) {
 							ret = 0;
 							break;
 						}
@@ -981,7 +981,7 @@ int TriangulatorPartition::ConvexPartition_OPT(TriangulatorPoly *poly, List<Tria
 	newdiagonal.index1 = 0;
 	newdiagonal.index2 = n-1;
 	diagonals.push_front(newdiagonal);
-	while(!diagonals.empty()) {
+	while(!diagonals.is_empty()) {
 		diagonal = (diagonals.front())->get();
 		diagonals.pop_front();
 		if((diagonal.index2 - diagonal.index1) <= 1) continue;
@@ -992,7 +992,7 @@ int TriangulatorPartition::ConvexPartition_OPT(TriangulatorPoly *poly, List<Tria
 		indices.push_back(diagonal.index2);
 		diagonals2.push_front(diagonal);
 
-		while(!diagonals2.empty()) {
+		while(!diagonals2.is_empty()) {
 			diagonal = (diagonals2.front()->get());
 			diagonals2.pop_front();
 			if((diagonal.index2 - diagonal.index1) <= 1) continue;

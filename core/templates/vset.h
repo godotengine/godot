@@ -40,7 +40,7 @@ class VSet {
 
 	_FORCE_INLINE_ int _find(const T &p_val, bool &r_exact) const {
 		r_exact = false;
-		if (_data.empty()) {
+		if (_data.is_empty()) {
 			return 0;
 		}
 
@@ -76,7 +76,7 @@ class VSet {
 	}
 
 	_FORCE_INLINE_ int _find_exact(const T &p_val) const {
-		if (_data.empty()) {
+		if (_data.is_empty()) {
 			return -1;
 		}
 
@@ -126,7 +126,7 @@ public:
 		return _find_exact(p_val);
 	}
 
-	_FORCE_INLINE_ bool empty() const { return _data.empty(); }
+	_FORCE_INLINE_ bool is_empty() const { return _data.is_empty(); }
 
 	_FORCE_INLINE_ int size() const { return _data.size(); }
 

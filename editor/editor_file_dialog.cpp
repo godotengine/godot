@@ -758,7 +758,7 @@ void EditorFileDialog::update_file_list() {
 	dirs.sort_custom<NaturalNoCaseComparator>();
 	files.sort_custom<NaturalNoCaseComparator>();
 
-	while (!dirs.empty()) {
+	while (!dirs.is_empty()) {
 		const String &dir_name = dirs.front()->get();
 
 		item_list->add_item(dir_name);
@@ -806,8 +806,8 @@ void EditorFileDialog::update_file_list() {
 		}
 	}
 
-	while (!files.empty()) {
-		bool match = patterns.empty();
+	while (!files.is_empty()) {
+		bool match = patterns.is_empty();
 
 		for (List<String>::Element *E = patterns.front(); E; E = E->next()) {
 			if (files.front()->get().matchn(E->get())) {

@@ -281,7 +281,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			locales_to_skip.push_back("te"); // Telugu
 		}
 
-		if (!locales_to_skip.empty()) {
+		if (!locales_to_skip.is_empty()) {
 			WARN_PRINT("Some locales are not properly supported by selected Text Server and are disabled.");
 		}
 
@@ -1476,7 +1476,7 @@ bool EditorSettings::is_default_text_editor_theme() {
 Vector<String> EditorSettings::get_script_templates(const String &p_extension, const String &p_custom_path) {
 	Vector<String> templates;
 	String template_dir = get_script_templates_dir();
-	if (!p_custom_path.empty()) {
+	if (!p_custom_path.is_empty()) {
 		template_dir = p_custom_path;
 	}
 	DirAccess *d = DirAccess::open(template_dir);

@@ -74,7 +74,7 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 		}
 
 		Array a = surface_get_arrays(i);
-		ERR_FAIL_COND_V(a.empty(), Ref<TriangleMesh>());
+		ERR_FAIL_COND_V(a.is_empty(), Ref<TriangleMesh>());
 
 		int vc = surface_get_array_len(i);
 		Vector<Vector3> vertices = a[ARRAY_VERTEX];
@@ -226,7 +226,7 @@ Ref<Shape3D> Mesh::create_convex_shape() const {
 
 	for (int i = 0; i < get_surface_count(); i++) {
 		Array a = surface_get_arrays(i);
-		ERR_FAIL_COND_V(a.empty(), Ref<ConvexPolygonShape3D>());
+		ERR_FAIL_COND_V(a.is_empty(), Ref<ConvexPolygonShape3D>());
 		Vector<Vector3> v = a[ARRAY_VERTEX];
 		vertices.append_array(v);
 	}
@@ -266,7 +266,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 		}
 
 		Array a = surface_get_arrays(i);
-		ERR_FAIL_COND_V(a.empty(), Ref<ArrayMesh>());
+		ERR_FAIL_COND_V(a.is_empty(), Ref<ArrayMesh>());
 
 		if (i == 0) {
 			arrays = a;

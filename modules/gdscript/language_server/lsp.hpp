@@ -687,7 +687,7 @@ struct Diagnostic {
 		dict["severity"] = severity;
 		dict["message"] = message;
 		dict["source"] = source;
-		if (!relatedInformation.empty()) {
+		if (!relatedInformation.is_empty()) {
 			Array arr;
 			arr.resize(relatedInformation.size());
 			for (int i = 0; i < relatedInformation.size(); i++) {
@@ -1191,7 +1191,7 @@ struct DocumentSymbol {
 
 	void symbol_tree_as_list(const String &p_uri, Vector<DocumentedSymbolInformation> &r_list, const String &p_container = "", bool p_join_name = false) const {
 		DocumentedSymbolInformation si;
-		if (p_join_name && !p_container.empty()) {
+		if (p_join_name && !p_container.is_empty()) {
 			si.name = p_container + ">" + name;
 		} else {
 			si.name = name;

@@ -114,7 +114,7 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 			ERR_CONTINUE(!sdmap.has(sd.identifier));
 
 			sdmap[sd.identifier].pos.pop_back();
-			if (sdmap[sd.identifier].pos.empty()) {
+			if (sdmap[sd.identifier].pos.is_empty()) {
 				sdmap.erase(sd.identifier);
 			}
 		}

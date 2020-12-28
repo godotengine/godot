@@ -55,7 +55,7 @@ DynamicFontDataAdvanced::DataAtSize *DynamicFontDataAdvanced::get_data_for_size(
 		fds = E->get();
 	} else {
 		if (font_mem == nullptr && font_path != String()) {
-			if (!font_mem_cache.empty()) {
+			if (!font_mem_cache.is_empty()) {
 				font_mem = font_mem_cache.ptr();
 				font_mem_size = font_mem_cache.size();
 			} else {
@@ -171,7 +171,7 @@ DynamicFontDataAdvanced::DataAtSize *DynamicFontDataAdvanced::get_data_for_size(
 			}
 
 			FT_Set_Var_Design_Coordinates(fds->face, coords.size(), coords.ptrw());
-			hb_font_set_variations(fds->hb_handle, hb_vars.empty() ? nullptr : &hb_vars[0], hb_vars.size());
+			hb_font_set_variations(fds->hb_handle, hb_vars.is_empty() ? nullptr : &hb_vars[0], hb_vars.size());
 
 			FT_Done_MM_Var(library, amaster);
 		}

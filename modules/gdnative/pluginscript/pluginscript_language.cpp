@@ -407,7 +407,7 @@ bool PluginScriptLanguage::handles_global_class_type(const String &p_type) const
 }
 
 String PluginScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
-	if (!p_path.empty()) {
+	if (!p_path.is_empty()) {
 		Ref<PluginScript> script = ResourceLoader::load(p_path, "PluginScript");
 		if (script.is_valid()) {
 			if (r_base_type) {

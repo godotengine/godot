@@ -99,7 +99,7 @@ public:
 String OS_OSX::get_unique_id() const {
 	static String serial_number;
 
-	if (serial_number.empty()) {
+	if (serial_number.is_empty()) {
 		io_service_t platformExpert = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
 		CFStringRef serialNumberAsCFString = NULL;
 		if (platformExpert) {

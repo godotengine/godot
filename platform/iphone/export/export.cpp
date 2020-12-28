@@ -218,7 +218,7 @@ public:
 			da->list_dir_begin();
 			while (true) {
 				String file = da->get_next();
-				if (file.empty()) {
+				if (file.is_empty()) {
 					break;
 				}
 
@@ -259,7 +259,7 @@ public:
 		if (DirAccess::exists(plugins_dir)) {
 			Vector<String> plugins_filenames = list_plugin_config_files(plugins_dir, true);
 
-			if (!plugins_filenames.empty()) {
+			if (!plugins_filenames.is_empty()) {
 				Ref<ConfigFile> config_file = memnew(ConfigFile);
 				for (int i = 0; i < plugins_filenames.size(); i++) {
 					PluginConfig config = load_plugin_config(config_file, plugins_dir.plus_file(plugins_filenames[i]));
@@ -815,7 +815,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 
 		const String splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
 
-		if (!splash_path.empty()) {
+		if (!splash_path.is_empty()) {
 			splash.instance();
 			const Error err = splash->load(splash_path);
 			if (err) {
@@ -1430,7 +1430,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 			String key = *K;
 			String value = plugin.plist[key];
 
-			if (key.empty() || value.empty()) {
+			if (key.is_empty() || value.is_empty()) {
 				continue;
 			}
 
@@ -1457,7 +1457,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 			String key = *K;
 			String value = plist_values[key];
 
-			if (key.empty() || value.empty()) {
+			if (key.is_empty() || value.is_empty()) {
 				continue;
 			}
 
@@ -1930,7 +1930,7 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 		err += etc_error;
 	}
 
-	if (!err.empty()) {
+	if (!err.is_empty()) {
 		r_error = err;
 	}
 

@@ -452,7 +452,7 @@ void InspectorDock::update(Object *p_object) {
 	List<MethodInfo> methods;
 	p_object->get_method_list(&methods);
 
-	if (!methods.empty()) {
+	if (!methods.is_empty()) {
 		bool found = false;
 		List<MethodInfo>::Element *I = methods.front();
 		int i = 0;

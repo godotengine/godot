@@ -2282,7 +2282,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				VariantInternal::initialize(counter, Variant::INT);
 				*VariantInternal::get_int(counter) = 0;
 
-				if (!str->empty()) {
+				if (!str->is_empty()) {
 					GET_INSTRUCTION_ARG(iterator, 2);
 					VariantInternal::initialize(iterator, Variant::STRING);
 					*VariantInternal::get_string(iterator) = str->substr(0, 1);
@@ -2308,7 +2308,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				const Variant *next = dict->next(nullptr);
 				*counter = *next;
 
-				if (!dict->empty()) {
+				if (!dict->is_empty()) {
 					GET_INSTRUCTION_ARG(iterator, 2);
 					*iterator = *next;
 
@@ -2334,7 +2334,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				VariantInternal::initialize(counter, Variant::INT);
 				*VariantInternal::get_int(counter) = 0;
 
-				if (!array->empty()) {
+				if (!array->is_empty()) {
 					GET_INSTRUCTION_ARG(iterator, 2);
 					*iterator = array->get(0);
 
@@ -2357,7 +2357,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		Vector<m_elem_type> *array = VariantInternal::m_get_func(container);                                               \
 		VariantInternal::initialize(counter, Variant::INT);                                                                \
 		*VariantInternal::get_int(counter) = 0;                                                                            \
-		if (!array->empty()) {                                                                                             \
+		if (!array->is_empty()) {                                                                                          \
 			GET_INSTRUCTION_ARG(iterator, 2);                                                                              \
 			VariantInternal::initialize(iterator, Variant::m_var_ret_type);                                                \
 			m_ret_type *it = VariantInternal::m_ret_get_func(iterator);                                                    \
@@ -2781,7 +2781,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						GET_INSTRUCTION_ARG(message, 1);
 						message_str = *message;
 					}
-					if (message_str.empty()) {
+					if (message_str.is_empty()) {
 						err_text = "Assertion failed.";
 					} else {
 						err_text = "Assertion failed: " + message_str;

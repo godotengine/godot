@@ -221,7 +221,7 @@ String GDScriptTokenizer::get_token_name(Token::Type p_token_type) {
 
 void GDScriptTokenizer::set_source_code(const String &p_source_code) {
 	source = p_source_code;
-	if (source.empty()) {
+	if (source.is_empty()) {
 		_source = U"";
 	} else {
 		_source = source.ptr();
@@ -287,7 +287,7 @@ void GDScriptTokenizer::push_paren(char32_t p_char) {
 }
 
 bool GDScriptTokenizer::pop_paren(char32_t p_expected) {
-	if (paren_stack.empty()) {
+	if (paren_stack.is_empty()) {
 		return false;
 	}
 	char32_t actual = paren_stack.back()->get();
@@ -405,7 +405,7 @@ void GDScriptTokenizer::push_error(const Token &p_error) {
 }
 
 GDScriptTokenizer::Token GDScriptTokenizer::make_paren_error(char32_t p_paren) {
-	if (paren_stack.empty()) {
+	if (paren_stack.is_empty()) {
 		return make_error(vformat("Closing \"%c\" doesn't have an opening counterpart.", p_paren));
 	}
 	Token error = make_error(vformat("Closing \"%c\" doesn't match the opening \"%c\".", p_paren, paren_stack.back()->get()));

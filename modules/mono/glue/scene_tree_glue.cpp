@@ -48,7 +48,7 @@ Array *godot_icall_SceneTree_get_nodes_in_group_Generic(SceneTree *ptr, StringNa
 	ptr->get_nodes_in_group(*group, &nodes);
 
 	// No need to bother if the group is empty
-	if (!nodes.empty()) {
+	if (!nodes.is_empty()) {
 		MonoType *elem_type = mono_reflection_type_get_type(refltype);
 		MonoClass *mono_class = mono_class_from_mono_type(elem_type);
 		GDMonoClass *klass = GDMono::get_singleton()->get_class(mono_class);

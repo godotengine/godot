@@ -265,7 +265,7 @@ public:
 		return ConstElement(list.back());
 	}
 
-	inline bool empty() const { return list.empty(); }
+	inline bool is_empty() const { return list.is_empty(); }
 	inline int size() const { return list.size(); }
 
 	const void *id() const {

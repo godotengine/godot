@@ -126,7 +126,7 @@ void PluginConfigDialog::_on_cancelled() {
 void PluginConfigDialog::_on_required_text_changed(const String &) {
 	int lang_idx = script_option_edit->get_selected();
 	String ext = ScriptServer::get_language(lang_idx)->get_extension();
-	get_ok_button()->set_disabled(script_edit->get_text().get_basename().empty() || script_edit->get_text().get_extension() != ext || name_edit->get_text().empty());
+	get_ok_button()->set_disabled(script_edit->get_text().get_basename().is_empty() || script_edit->get_text().get_extension() != ext || name_edit->get_text().is_empty());
 }
 
 void PluginConfigDialog::_notification(int p_what) {

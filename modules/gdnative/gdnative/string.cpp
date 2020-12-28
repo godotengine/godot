@@ -1087,10 +1087,10 @@ godot_string GDAPI godot_string_sha256_text(const godot_string *p_self) {
 	return result;
 }
 
-godot_bool godot_string_empty(const godot_string *p_self) {
+godot_bool godot_string_is_empty(const godot_string *p_self) {
 	const String *self = (const String *)p_self;
 
-	return self->empty();
+	return self->is_empty();
 }
 
 // path functions

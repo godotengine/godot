@@ -183,7 +183,7 @@ String RemoteTransform3D::get_configuration_warning() const {
 	String warning = Node3D::get_configuration_warning();
 
 	if (!has_node(remote_node) || !Object::cast_to<Node3D>(get_node(remote_node))) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("The \"Remote Path\" property must point to a valid Node3D or Node3D-derived node to work.");

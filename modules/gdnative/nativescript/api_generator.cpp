@@ -295,7 +295,7 @@ List<ClassAPI> generate_c_api_classes() {
 
 				property_api.index = ClassDB::get_property_index(class_name, p->get().name);
 
-				if (!property_api.setter.empty() || !property_api.getter.empty()) {
+				if (!property_api.setter.is_empty() || !property_api.getter.is_empty()) {
 					class_api.properties.push_back(property_api);
 				}
 			}

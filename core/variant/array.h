@@ -57,7 +57,7 @@ public:
 	const Variant &get(int p_idx) const;
 
 	int size() const;
-	bool empty() const;
+	bool is_empty() const;
 	void clear();
 
 	bool operator==(const Array &p_array) const;

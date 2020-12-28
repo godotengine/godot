@@ -400,7 +400,7 @@ bool CSharpLanguage::supports_builtin_mode() const {
 
 #ifdef TOOLS_ENABLED
 static String variant_type_to_managed_name(const String &p_var_type_name) {
-	if (p_var_type_name.empty()) {
+	if (p_var_type_name.is_empty()) {
 		return "object";
 	}
 
@@ -762,7 +762,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 
 	String appname = ProjectSettings::get_singleton()->get("application/config/name");
 	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-	if (appname_safe.empty()) {
+	if (appname_safe.is_empty()) {
 		appname_safe = "UnnamedProject";
 	}
 
@@ -859,7 +859,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 		to_reload.push_back(script);
 
-		if (script->get_path().empty()) {
+		if (script->get_path().is_empty()) {
 			script->tied_class_name_for_reload = script->script_class->get_name_for_lookup();
 			script->tied_class_namespace_for_reload = script->script_class->get_namespace();
 		}
@@ -976,7 +976,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 #endif
 		script->signals_invalidated = true;
 
-		if (!script->get_path().empty()) {
+		if (!script->get_path().is_empty()) {
 			script->reload(p_soft_reload);
 
 			if (!script->valid) {
@@ -1446,7 +1446,7 @@ Map<Object *, CSharpScriptBinding>::Element *CSharpLanguage::insert_script_bindi
 void CSharpLanguage::free_instance_binding_data(void *p_data) {
 	if (GDMono::get_singleton() == nullptr) {
 #ifdef DEBUG_ENABLED
-		CRASH_COND(!script_bindings.empty());
+		CRASH_COND(!script_bindings.is_empty());
 #endif
 		// Mono runtime finalized, all the gchandle bindings were already released
 		return;
@@ -3128,7 +3128,7 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 		ERR_FAIL_COND_V_MSG(p_argcount == 0, nullptr,
 				"Cannot create script instance. The class '" + script_class->get_full_name() +
 						"' does not define a parameterless constructor." +
-						(get_path().empty() ? String() : " Path: '" + get_path() + "'."));
+						(get_path().is_empty() ? String() : " Path: '" + get_path() + "'."));
 
 		ERR_FAIL_V_MSG(nullptr, "Constructor not found.");
 	}
@@ -3283,7 +3283,7 @@ bool CSharpScript::instance_has(const Object *p_this) const {
 }
 
 bool CSharpScript::has_source_code() const {
-	return !source.empty();
+	return !source.is_empty();
 }
 
 String CSharpScript::get_source_code() const {
@@ -3598,7 +3598,7 @@ Error CSharpScript::load_source_code(const String &p_path) {
 void CSharpScript::_update_name() {
 	String path = get_path();
 
-	if (!path.empty()) {
+	if (!path.is_empty()) {
 		name = get_path().get_file().get_basename();
 	}
 }

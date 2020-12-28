@@ -278,7 +278,7 @@ private:
 public:
 	// Methods
 	void clear();
-	bool empty() const { return (0 == bvh_root); }
+	bool is_empty() const { return (0 == bvh_root); }
 	void optimize_bottom_up();
 	void optimize_top_down(int bu_threshold = 128);
 	void optimize_incremental(int passes);
@@ -332,7 +332,7 @@ void DynamicBVH::aabb_query(const AABB &p_box, QueryResult &r_result) {
 		if (n->volume.intersects(volume)) {
 			if (n->is_internal()) {
 				if (depth > threshold) {
-					if (aux_stack.empty()) {
+					if (aux_stack.is_empty()) {
 						aux_stack.resize(ALLOCA_STACK_SIZE * 2);
 						copymem(aux_stack.ptr(), stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
 					} else {
@@ -388,7 +388,7 @@ void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Ve
 		if (n->volume.intersects(volume) && n->volume.intersects_convex(p_planes, p_plane_count, p_points, p_point_count)) {
 			if (n->is_internal()) {
 				if (depth > threshold) {
-					if (aux_stack.empty()) {
+					if (aux_stack.is_empty()) {
 						aux_stack.resize(ALLOCA_STACK_SIZE * 2);
 						copymem(aux_stack.ptr(), stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
 					} else {
@@ -445,7 +445,7 @@ void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResu
 		if (result1) {
 			if (node->is_internal()) {
 				if (depth > threshold) {
-					if (aux_stack.empty()) {
+					if (aux_stack.is_empty()) {
 						aux_stack.resize(ALLOCA_STACK_SIZE * 2);
 						copymem(aux_stack.ptr(), stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
 					} else {

@@ -136,7 +136,7 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 	ERR_FAIL_COND(!E);
 
 	E->get().nodes.erase(p_node);
-	if (E->get().nodes.empty()) {
+	if (E->get().nodes.is_empty()) {
 		group_map.erase(E);
 	}
 }
@@ -183,7 +183,7 @@ void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
 	if (!g.changed) {
 		return;
 	}
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -206,7 +206,7 @@ void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_grou
 		return;
 	}
 	Group &g = E->get();
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -282,7 +282,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 		return;
 	}
 	Group &g = E->get();
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -333,7 +333,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 		return;
 	}
 	Group &g = E->get();
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -787,7 +787,7 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 		return;
 	}
 	Group &g = E->get();
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -840,7 +840,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 		return;
 	}
 	Group &g = E->get();
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -1303,7 +1303,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 		List<String> directories;
 		directories.push_back(dir_access->get_current_dir());
 
-		while (!directories.empty()) {
+		while (!directories.is_empty()) {
 			dir_access->change_dir(directories.back()->get());
 			directories.pop_back();
 

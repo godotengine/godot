@@ -251,7 +251,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	if (can_rename) { //should be can edit..
 
 		String warning = p_node->get_configuration_warning();
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			item->add_button(0, get_theme_icon("NodeWarning", "EditorIcons"), BUTTON_WARNING, false, TTR("Node configuration warning:") + "\n" + p_node->get_configuration_warning());
 		}
 
@@ -754,7 +754,7 @@ void SceneTreeEditor::_renamed() {
 	ERR_FAIL_COND(!n);
 
 	// Empty node names are not allowed, so resets it to previous text and show warning
-	if (which->get_text(0).strip_edges().empty()) {
+	if (which->get_text(0).strip_edges().is_empty()) {
 		which->set_text(0, n->get_name());
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
@@ -765,7 +765,7 @@ void SceneTreeEditor::_renamed() {
 		error->set_text(TTR("Invalid node name, the following characters are not allowed:") + "\n" + Node::invalid_character);
 		error->popup_centered();
 
-		if (new_name.empty()) {
+		if (new_name.is_empty()) {
 			which->set_text(0, n->get_name());
 			return;
 		}
@@ -931,7 +931,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 		next = tree->get_next_selected(next);
 	}
 
-	if (selected.empty()) {
+	if (selected.is_empty()) {
 		return Variant();
 	}
 
