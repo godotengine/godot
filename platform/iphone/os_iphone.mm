@@ -149,7 +149,7 @@ void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 
 	if (main_loop) {
-		main_loop->init();
+		main_loop->initialize();
 	}
 }
 
@@ -159,7 +159,7 @@ MainLoop *OSIPhone::get_main_loop() const {
 
 void OSIPhone::delete_main_loop() {
 	if (main_loop) {
-		main_loop->finish();
+		main_loop->finalize();
 		memdelete(main_loop);
 	};
 

@@ -63,8 +63,8 @@ public:
 	virtual void request_quit() {
 		quit();
 	}
-	virtual void init() {
-		SceneTree::init();
+	virtual void initialize() {
+		SceneTree::initialize();
 
 		Panel *frame = memnew(Panel);
 		frame->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);

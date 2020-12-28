@@ -390,20 +390,20 @@ void SceneTree::set_group(const StringName &p_group, const String &p_name, const
 	set_group_flags(0, p_group, p_name, p_value);
 }
 
-void SceneTree::init() {
+void SceneTree::initialize() {
 	initialized = true;
 	root->_set_tree(this);
-	MainLoop::init();
+	MainLoop::initialize();
 }
 
-bool SceneTree::iteration(float p_time) {
+bool SceneTree::physics_process(float p_time) {
 	root_lock++;
 
 	current_frame++;
 
 	flush_transform_notifications();
 
-	MainLoop::iteration(p_time);
+	MainLoop::physics_process(p_time);
 	physics_process_time = p_time;
 
 	emit_signal("physics_frame");
@@ -422,29 +422,25 @@ bool SceneTree::iteration(float p_time) {
 	return _quit;
 }
 
-bool SceneTree::idle(float p_time) {
-	//print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
-	//print_line("node count: "+itos(get_node_count()));
-	//print_line("TEXTURE RAM: "+itos(RS::get_singleton()->get_render_info(RS::INFO_TEXTURE_MEM_USED)));
-
+bool SceneTree::process(float p_time) {
 	root_lock++;
 
-	MainLoop::idle(p_time);
+	MainLoop::process(p_time);
 
-	idle_process_time = p_time;
+	process_time = p_time;
 
 	if (multiplayer_poll) {
 		multiplayer->poll();
 	}
 
-	emit_signal("idle_frame");
+	emit_signal("process_frame");
 
 	MessageQueue::get_singleton()->flush(); //small little hack
 
 	flush_transform_notifications();
 
-	_notify_group_pause("idle_process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
-	_notify_group_pause("idle_process", Node::NOTIFICATION_PROCESS);
+	_notify_group_pause("process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
+	_notify_group_pause("process", Node::NOTIFICATION_PROCESS);
 
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
@@ -516,14 +512,14 @@ bool SceneTree::idle(float p_time) {
 	return _quit;
 }
 
-void SceneTree::finish() {
+void SceneTree::finalize() {
 	_flush_delete_queue();
 
 	_flush_ugc();
 
 	initialized = false;
 
-	MainLoop::finish();
+	MainLoop::finalize();
 
 	if (root) {
 		root->_set_tree(nullptr);
@@ -1265,7 +1261,7 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("node_renamed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_configuration_warning_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 
-	ADD_SIGNAL(MethodInfo("idle_frame"));
+	ADD_SIGNAL(MethodInfo("process_frame"));
 	ADD_SIGNAL(MethodInfo("physics_frame"));
 
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files"), PropertyInfo(Variant::INT, "screen")));

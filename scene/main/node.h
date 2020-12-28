@@ -121,11 +121,11 @@ private:
 		// Variables used to properly sort the node when processing, ignored otherwise.
 		// TODO: Should move all the stuff below to bits.
 		bool physics_process = false;
-		bool idle_process = false;
+		bool process = false;
 		int process_priority = 0;
 
 		bool physics_process_internal = false;
-		bool idle_process_internal = false;
+		bool process_internal = false;
 
 		bool input = false;
 		bool unhandled_input = false;
@@ -339,14 +339,14 @@ public:
 	float get_physics_process_delta_time() const;
 	bool is_physics_processing() const;
 
-	void set_process(bool p_idle_process);
+	void set_process(bool p_process);
 	float get_process_delta_time() const;
 	bool is_processing() const;
 
 	void set_physics_process_internal(bool p_process_internal);
 	bool is_physics_processing_internal() const;
 
-	void set_process_internal(bool p_idle_process_internal);
+	void set_process_internal(bool p_process_internal);
 	bool is_processing_internal() const;
 
 	void set_process_priority(int p_priority);

@@ -317,7 +317,7 @@ struct RemoteDebugger::ServersProfiler {
 
 	void _send_frame_data(bool p_final) {
 		DebuggerMarshalls::ServersProfilerFrame frame;
-		frame.frame_number = Engine::get_singleton()->get_idle_frames();
+		frame.frame_number = Engine::get_singleton()->get_process_frames();
 		frame.frame_time = frame_time;
 		frame.idle_time = idle_time;
 		frame.physics_time = physics_time;
