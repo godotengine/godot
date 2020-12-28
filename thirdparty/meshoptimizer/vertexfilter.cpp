@@ -2,6 +2,7 @@
 #include "meshoptimizer.h"
 
 #include <math.h>
+#include <string.h>
 
 // The block below auto-detects SIMD ISA that can be used on the target platform
 #ifndef MESHOPTIMIZER_NO_SIMD
@@ -159,6 +160,25 @@ static void decodeFilterExp(unsigned int* data, size_t count)
 #endif
 
 #if defined(SIMD_SSE) || defined(SIMD_NEON) || defined(SIMD_WASM)
+template <typename T> static void dispatchSimd(void (*process)(T*, size_t), T* data, size_t count, size_t stride)
+{
+	assert(stride <= 4);
+
+	size_t count4 = count & ~size_t(3);
+	process(data, count4);
+
+	if (count4 < count)
+	{
+		T tail[4 * 4] = {}; // max stride 4, max count 4
+		size_t tail_size = (count - count4) * stride * sizeof(T);
+		assert(tail_size <= sizeof(tail));
+
+		memcpy(tail, data + count4 * stride, tail_size);
+		process(tail, count - count4);
+		memcpy(data + count4 * stride, tail, tail_size);
+	}
+}
+
 inline uint64_t rotateleft64(uint64_t v, int x)
 {
 #if defined(_MSC_VER) && !defined(__clang__)
@@ -775,14 +795,13 @@ void meshopt_decodeFilterOct(void* buffer, size_t vertex_count, size_t vertex_si
 {
 	using namespace meshopt;
 
-	assert(vertex_count % 4 == 0);
 	assert(vertex_size == 4 || vertex_size == 8);
 
 #if defined(SIMD_SSE) || defined(SIMD_NEON) || defined(SIMD_WASM)
 	if (vertex_size == 4)
-		decodeFilterOctSimd(static_cast<signed char*>(buffer), vertex_count);
+		dispatchSimd(decodeFilterOctSimd, static_cast<signed char*>(buffer), vertex_count, 4);
 	else
-		decodeFilterOctSimd(static_cast<short*>(buffer), vertex_count);
+		dispatchSimd(decodeFilterOctSimd, static_cast<short*>(buffer), vertex_count, 4);
 #else
 	if (vertex_size == 4)
 		decodeFilterOct(static_cast<signed char*>(buffer), vertex_count);
@@ -795,12 +814,11 @@ void meshopt_decodeFilterQuat(void* buffer, size_t vertex_count, size_t vertex_s
 {
 	using namespace meshopt;
 
-	assert(vertex_count % 4 == 0);
 	assert(vertex_size == 8);
 	(void)vertex_size;
 
 #if defined(SIMD_SSE) || defined(SIMD_NEON) || defined(SIMD_WASM)
-	decodeFilterQuatSimd(static_cast<short*>(buffer), vertex_count);
+	dispatchSimd(decodeFilterQuatSimd, static_cast<short*>(buffer), vertex_count, 4);
 #else
 	decodeFilterQuat(static_cast<short*>(buffer), vertex_count);
 #endif
@@ -810,11 +828,10 @@ void meshopt_decodeFilterExp(void* buffer, size_t vertex_count, size_t vertex_si
 {
 	using namespace meshopt;
 
-	assert(vertex_count % 4 == 0);
 	assert(vertex_size % 4 == 0);
 
 #if defined(SIMD_SSE) || defined(SIMD_NEON) || defined(SIMD_WASM)
-	decodeFilterExpSimd(static_cast<unsigned int*>(buffer), vertex_count * (vertex_size / 4));
+	dispatchSimd(decodeFilterExpSimd, static_cast<unsigned int*>(buffer), vertex_count * (vertex_size / 4), 1);
 #else
 	decodeFilterExp(static_cast<unsigned int*>(buffer), vertex_count * (vertex_size / 4));
 #endif
