@@ -154,10 +154,10 @@ godot_vector2 GDAPI godot_vector2_rotated(const godot_vector2 *p_self, const god
 	return dest;
 }
 
-godot_vector2 GDAPI godot_vector2_tangent(const godot_vector2 *p_self) {
+godot_vector2 GDAPI godot_vector2_orthogonal(const godot_vector2 *p_self) {
 	godot_vector2 dest;
 	const Vector2 *self = (const Vector2 *)p_self;
-	*((Vector2 *)&dest) = self->tangent();
+	*((Vector2 *)&dest) = self->orthogonal();
 	return dest;
 }
 
