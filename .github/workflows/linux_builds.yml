@@ -94,7 +94,8 @@ jobs:
       - name: Configure dependencies
         run: |
           sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
-            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
+            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm \
+            xvfb wget2 unzip
 
       # Upload cache on completion and check it out now
       - name: Load .scons_cache directory
@@ -137,6 +138,22 @@ jobs:
       - name: Unit Tests
         run: |
           ./bin/godot.linuxbsd.tools.64s --test
+
+      # Download and test project to check leaks and invalid memory usage.
+      # CI has no audio device, so use the Dummy audio driver to avoid spurious error messages.
+      - name: Importing and running project
+        run: |
+          wget2 https://github.com/qarmin/RegressionTestProject/archive/4.0.zip
+          unzip 4.0.zip
+          mv "RegressionTestProject-4.0" "test_project"
+
+          echo "----- Just open and close editor to see if there are any crashes or memory leaks -----"
+          DRI_PRIME=0 xvfb-run bin/godot.linuxbsd.tools.64s --rendering-driver GLES2 --audio-driver Dummy -e -q --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
+
+          echo "----- Run and test project -----"
+          DRI_PRIME=0 xvfb-run bin/godot.linuxbsd.tools.64s 30 --rendering-driver GLES2 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
 
   linux-template-mono:
     runs-on: "ubuntu-20.04"
