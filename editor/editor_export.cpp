@@ -398,7 +398,7 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_pat
 Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	ERR_FAIL_COND_V(theme.is_null(), Ref<ImageTexture>());
-	if (EditorNode::get_singleton()->get_viewport()->is_layout_rtl()) {
+	if (EditorNode::get_singleton()->get_main_control()->is_layout_rtl()) {
 		return theme->get_icon("PlayBackwards", "EditorIcons");
 	} else {
 		return theme->get_icon("Play", "EditorIcons");
