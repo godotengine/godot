@@ -4888,12 +4888,12 @@ GLTFCameraIndex GLTFDocument::_convert_camera(Ref<GLTFState> state, Camera3D *p_
 	if (p_camera->get_projection() == Camera3D::Projection::PROJECTION_PERSPECTIVE) {
 		c->set_perspective(true);
 		c->set_fov_size(p_camera->get_fov());
-		c->set_zfar(p_camera->get_zfar());
-		c->set_znear(p_camera->get_znear());
+		c->set_zfar(p_camera->get_far());
+		c->set_znear(p_camera->get_near());
 	} else {
 		c->set_fov_size(p_camera->get_fov());
-		c->set_zfar(p_camera->get_zfar());
-		c->set_znear(p_camera->get_znear());
+		c->set_zfar(p_camera->get_far());
+		c->set_znear(p_camera->get_near());
 	}
 	GLTFCameraIndex camera_index = state->cameras.size();
 	state->cameras.push_back(c);
