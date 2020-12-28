@@ -3646,7 +3646,7 @@ void ScriptEditorPlugin::edited_scene_changed() {
 ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	script_editor = memnew(ScriptEditor(p_node));
-	editor->get_viewport()->add_child(script_editor);
+	editor->get_main_control()->add_child(script_editor);
 	script_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	script_editor->hide();

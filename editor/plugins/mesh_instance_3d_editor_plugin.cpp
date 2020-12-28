@@ -505,7 +505,7 @@ void MeshInstance3DEditorPlugin::make_visible(bool p_visible) {
 MeshInstance3DEditorPlugin::MeshInstance3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	mesh_editor = memnew(MeshInstance3DEditor);
-	editor->get_viewport()->add_child(mesh_editor);
+	editor->get_main_control()->add_child(mesh_editor);
 
 	mesh_editor->options->hide();
 }
