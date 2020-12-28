@@ -1013,7 +1013,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 
 	float pos = CLAMP(anim->get_length() * (p_value / frame->get_max()), 0, anim->get_length());
 	if (track_editor->is_snap_enabled()) {
-		pos = Math::stepify(pos, _get_editor_step());
+		pos = Math::snapped(pos, _get_editor_step());
 	}
 
 	if (player->is_valid() && !p_set) {
@@ -1069,7 +1069,7 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag)
 	}
 
 	updating = true;
-	frame->set_value(Math::stepify(p_pos, _get_editor_step()));
+	frame->set_value(Math::snapped(p_pos, _get_editor_step()));
 	updating = false;
 	_seek_value_changed(p_pos, !p_drag);
 

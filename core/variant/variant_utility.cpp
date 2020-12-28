@@ -217,8 +217,8 @@ struct VariantUtilityFunctions {
 		return Math::range_step_decimals(step);
 	}
 
-	static inline double stepify(double value, double step) {
-		return Math::stepify(value, step);
+	static inline double snapped(double value, double step) {
+		return Math::snapped(value, step);
 	}
 
 	static inline double lerp(double from, double to, double weight) {
@@ -1181,7 +1181,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(ease, sarray("x", "curve"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(range_step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(stepify, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(snapped, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(lerp_angle, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
