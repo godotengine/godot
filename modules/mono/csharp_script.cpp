@@ -520,6 +520,37 @@ String CSharpLanguage::_get_indentation() const {
 	return "\t";
 }
 
+bool CSharpLanguage::handles_global_class_type(const String &p_type) const {
+	return p_type == "CSharpScript";
+}
+
+String CSharpLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
+	Ref<CSharpScript> script = ResourceLoader::load(p_path, "CSharpScript");
+	if (script.is_valid()) {
+		String name = script->get_script_class_name();
+		if (name.length()) {
+			if (r_base_type) {
+				StringName base_name = script->get_script_class_base();
+				if (base_name != StringName()) {
+					*r_base_type = base_name;
+				} else {
+					*r_base_type = script->get_instance_base_type();
+				}
+			}
+			if (r_icon_path) {
+				*r_icon_path = script->get_script_class_icon_path();
+			}
+			return name;
+		}
+	}
+
+	if (r_base_type)
+		*r_base_type = String();
+	if (r_icon_path)
+		*r_icon_path = String();
+	return String();
+}
+
 String CSharpLanguage::debug_get_error() const {
 
 	return _debug_error;
@@ -916,6 +947,13 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 #endif
 			script->signals_invalidated = true;
 
+#ifdef TOOLS_ENABLED
+			EditorFileSystem::get_singleton()->remove_compiled_lang_script_class_file_cache(script->get_path());
+			EditorData &ed = EditorNode::get_editor_data();
+			ed.script_class_set_name(script->get_path(), script->get_script_class_name());
+			ed.script_class_set_icon_path(script->get_script_class_name(), script->get_script_class_icon_path());
+#endif
+
 			script->reload(p_soft_reload);
 			script->update_exports();
 
@@ -1014,6 +1052,11 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 		to_reload_state.push_back(script);
 	}
+
+#ifdef TOOLS_ENABLED
+	ScriptServer::save_global_classes();
+	EditorNode::get_editor_data().script_class_save_icon_paths();
+#endif
 
 	for (List<Ref<CSharpScript> >::Element *E = to_reload_state.front(); E; E = E->next()) {
 		Ref<CSharpScript> script = E->get();
@@ -3280,6 +3323,16 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 			load_script_signals(script_class, native);
 			_update_exports();
+
+			_update_global_script_class_settings();
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				// Force file cache update for compiled languages to update script class metadata
+				StringName n = script_class_name;
+				StringName b = script_class_base;
+				EditorFileSystem::get_singleton()->update_file_script_class_metadata(get_path(), n, b, get_language()->get_name(), script_class_icon_path);
+			}
+#endif
 		}
 
 		return OK;
@@ -3370,6 +3423,37 @@ Error CSharpScript::load_source_code(const String &p_path) {
 #endif
 
 	return OK;
+}
+
+void CSharpScript::_update_global_script_class_settings() {
+	// Evaluate script's use of engine "Script Class" system.
+	if (script_class->has_attribute(CACHED_CLASS(GlobalAttribute))) {
+		MonoObject *attr = script_class->get_attribute(CACHED_CLASS(GlobalAttribute));
+		script_class_name = CACHED_FIELD(GlobalAttribute, name)->get_string_value(attr);
+		script_class_icon_path = CACHED_FIELD(GlobalAttribute, iconPath)->get_string_value(attr);
+		if (script_class_name.empty()) {
+			script_class_name = script_class->get_name();
+		}
+	} else {
+		script_class_name = String();
+		script_class_icon_path = String();
+	}
+
+	GDMonoClass *parent = script_class->get_parent_class();
+	while (parent) {
+		if (parent->has_attribute(CACHED_CLASS(GlobalAttribute))) {
+			MonoObject *attr = parent->get_attribute(CACHED_CLASS(GlobalAttribute));
+			script_class_base = CACHED_FIELD(GlobalAttribute, name)->get_string_value(attr);
+			if (script_class_base.empty()) {
+				script_class_base = script_class->get_name();
+			}
+			break;
+		}
+		parent = parent->get_parent_class();
+	}
+	if (script_class_base.empty()) {
+		script_class_base = get_instance_base_type();
+	}
 }
 
 StringName CSharpScript::get_script_name() const {
