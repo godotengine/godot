@@ -196,7 +196,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		export_path->hide();
 		runnable->set_disabled(true);
 		parameters->edit(nullptr);
-		presets->unselect_all();
+		presets->deselect_all();
 		duplicate_preset->set_disabled(true);
 		delete_preset->set_disabled(true);
 		sections->hide();
