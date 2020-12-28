@@ -108,10 +108,10 @@
 		<method name="grow">
 			<return type="Rect2i">
 			</return>
-			<argument index="0" name="by" type="int">
+			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
-				Returns a copy of the [Rect2i] grown a given amount of units towards all the sides.
+				Returns a copy of the [Rect2i] grown by the specified [code]amount[/code] on all sides.
 			</description>
 		</method>
 		<method name="grow_individual">
@@ -126,18 +126,18 @@
 			<argument index="3" name="bottom" type="int">
 			</argument>
 			<description>
-				Returns a copy of the [Rect2i] grown a given amount of units towards each direction individually.
+				Returns a copy of the [Rect2i] grown by the specified amount on each side individually.
 			</description>
 		</method>
-		<method name="grow_margin">
+		<method name="grow_side">
 			<return type="Rect2i">
 			</return>
 			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
-			<argument index="1" name="by" type="int">
+			<argument index="1" name="amount" type="int">
 			</argument>
 			<description>
-				Returns a copy of the [Rect2i] grown a given amount of units on the specified [enum Side].
+				Returns a copy of the [Rect2i] grown by the specified [code]amount[/code] on the specified [enum Side].
 			</description>
 		</method>
 		<method name="has_no_area">

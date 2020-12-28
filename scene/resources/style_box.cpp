@@ -687,7 +687,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	if (aa_on) {
 		for (int i = 0; i < 4; i++) {
 			if (border_width[i] > 0) {
-				border_style_rect = border_style_rect.grow_margin((Side)i, -aa_size_grow);
+				border_style_rect = border_style_rect.grow_side((Side)i, -aa_size_grow);
 			}
 		}
 	}

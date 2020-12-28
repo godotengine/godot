@@ -90,7 +90,7 @@ godot_rect2 GDAPI godot_rect2_grow(const godot_rect2 *p_self, const godot_real p
 
 godot_rect2 GDAPI godot_rect2_grow_individual(const godot_rect2 *p_self, const godot_real p_left, const godot_real p_top, const godot_real p_right, const godot_real p_bottom);
 
-godot_rect2 GDAPI godot_rect2_grow_margin(const godot_rect2 *p_self, const godot_int p_margin, const godot_real p_by);
+godot_rect2 GDAPI godot_rect2_grow_side(const godot_rect2 *p_self, const godot_int p_margin, const godot_real p_by);
 
 godot_rect2 GDAPI godot_rect2_abs(const godot_rect2 *p_self);
 
@@ -133,7 +133,7 @@ godot_rect2i GDAPI godot_rect2i_grow(const godot_rect2i *p_self, const godot_int
 
 godot_rect2i GDAPI godot_rect2i_grow_individual(const godot_rect2i *p_self, const godot_int p_left, const godot_int p_top, const godot_int p_right, const godot_int p_bottom);
 
-godot_rect2i GDAPI godot_rect2i_grow_margin(const godot_rect2i *p_self, const godot_int p_margin, const godot_int p_by);
+godot_rect2i GDAPI godot_rect2i_grow_side(const godot_rect2i *p_self, const godot_int p_margin, const godot_int p_by);
 
 godot_rect2i GDAPI godot_rect2i_abs(const godot_rect2i *p_self);
 
