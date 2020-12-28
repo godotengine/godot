@@ -476,13 +476,13 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fov"), &Camera3D::get_fov);
 	ClassDB::bind_method(D_METHOD("get_frustum_offset"), &Camera3D::get_frustum_offset);
 	ClassDB::bind_method(D_METHOD("get_size"), &Camera3D::get_size);
-	ClassDB::bind_method(D_METHOD("get_zfar"), &Camera3D::get_zfar);
-	ClassDB::bind_method(D_METHOD("get_znear"), &Camera3D::get_znear);
+	ClassDB::bind_method(D_METHOD("get_far"), &Camera3D::get_far);
+	ClassDB::bind_method(D_METHOD("get_near"), &Camera3D::get_near);
 	ClassDB::bind_method(D_METHOD("set_fov"), &Camera3D::set_fov);
 	ClassDB::bind_method(D_METHOD("set_frustum_offset"), &Camera3D::set_frustum_offset);
 	ClassDB::bind_method(D_METHOD("set_size"), &Camera3D::set_size);
-	ClassDB::bind_method(D_METHOD("set_zfar"), &Camera3D::set_zfar);
-	ClassDB::bind_method(D_METHOD("set_znear"), &Camera3D::set_znear);
+	ClassDB::bind_method(D_METHOD("set_far"), &Camera3D::set_far);
+	ClassDB::bind_method(D_METHOD("set_near"), &Camera3D::set_near);
 	ClassDB::bind_method(D_METHOD("get_projection"), &Camera3D::get_projection);
 	ClassDB::bind_method(D_METHOD("set_projection"), &Camera3D::set_projection);
 	ClassDB::bind_method(D_METHOD("set_h_offset", "ofs"), &Camera3D::set_h_offset);
@@ -519,8 +519,8 @@ void Camera3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov", PROPERTY_HINT_RANGE, "1,179,0.1"), "set_fov", "get_fov");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0.1,16384,0.01"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frustum_offset"), "set_frustum_offset", "get_frustum_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "near", PROPERTY_HINT_EXP_RANGE, "0.001,10,0.001,or_greater"), "set_znear", "get_znear");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "far", PROPERTY_HINT_EXP_RANGE, "0.01,4000,0.01,or_greater"), "set_zfar", "get_zfar");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "near", PROPERTY_HINT_EXP_RANGE, "0.001,10,0.001,or_greater"), "set_near", "get_near");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "far", PROPERTY_HINT_EXP_RANGE, "0.01,4000,0.01,or_greater"), "set_far", "get_far");
 
 	BIND_ENUM_CONSTANT(PROJECTION_PERSPECTIVE);
 	BIND_ENUM_CONSTANT(PROJECTION_ORTHOGONAL);
@@ -542,7 +542,7 @@ float Camera3D::get_size() const {
 	return size;
 }
 
-float Camera3D::get_znear() const {
+float Camera3D::get_near() const {
 	return near;
 }
 
@@ -550,7 +550,7 @@ Vector2 Camera3D::get_frustum_offset() const {
 	return frustum_offset;
 }
 
-float Camera3D::get_zfar() const {
+float Camera3D::get_far() const {
 	return far;
 }
 
@@ -572,8 +572,8 @@ void Camera3D::set_size(float p_size) {
 	_change_notify("size");
 }
 
-void Camera3D::set_znear(float p_znear) {
-	near = p_znear;
+void Camera3D::set_near(float p_near) {
+	near = p_near;
 	_update_camera_mode();
 }
 
@@ -582,8 +582,8 @@ void Camera3D::set_frustum_offset(Vector2 p_offset) {
 	_update_camera_mode();
 }
 
-void Camera3D::set_zfar(float p_zfar) {
-	far = p_zfar;
+void Camera3D::set_far(float p_far) {
+	far = p_far;
 	_update_camera_mode();
 }
 
