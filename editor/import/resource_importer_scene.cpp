@@ -1257,7 +1257,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	Ref<Script> root_script = nullptr;
 	if (ScriptServer::is_global_class(root_type)) {
-		root_script = ResourceLoader::load(ScriptServer::get_global_class_path(root_type));
+		root_script = ScriptServer::get_global_class_script(root_type);
 		root_type = ScriptServer::get_global_class_base(root_type);
 	}
 

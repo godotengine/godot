@@ -37,6 +37,7 @@
 #include "core/resource.h"
 
 class ScriptLanguage;
+class Script;
 
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
 
@@ -59,6 +60,7 @@ class ScriptServer {
 	};
 
 	static HashMap<StringName, GlobalScriptClass> global_classes;
+	static HashMap<String, StringName> global_class_paths;
 
 public:
 	static ScriptEditRequestFunction edit_request_func;
@@ -81,9 +83,12 @@ public:
 	static void remove_global_class(const StringName &p_class);
 	static bool is_global_class(const StringName &p_class);
 	static StringName get_global_class_language(const StringName &p_class);
-	static String get_global_class_path(const String &p_class);
-	static StringName get_global_class_base(const String &p_class);
-	static StringName get_global_class_native_base(const String &p_class);
+	static String get_global_class_path(const StringName &p_class);
+	static StringName get_global_class_name(const String &p_path);
+	static StringName get_global_class_base(const StringName &p_class);
+	static StringName get_global_class_native_base(const StringName &p_class);
+	static Ref<Script> get_global_class_script(const StringName &p_class);
+	static Variant instantiate_global_class(const StringName &p_class);
 	static void get_global_class_list(List<StringName> *r_global_classes);
 	static void save_global_classes();
 
@@ -283,6 +288,7 @@ public:
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const = 0;
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
 	virtual bool overrides_external_editor() { return false; }
+	virtual bool has_delayed_script_class_metadata() const { return false; }
 
 	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
 

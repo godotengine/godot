@@ -522,6 +522,37 @@ String CSharpLanguage::_get_indentation() const {
 	return "\t";
 }
 
+bool CSharpLanguage::handles_global_class_type(const String &p_type) const {
+	return p_type == "CSharpScript";
+}
+
+String CSharpLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
+	Ref<CSharpScript> script = ResourceLoader::load(p_path, "CSharpScript");
+	if (script.is_valid()) {
+		String name = script->get_script_class_name();
+		if (name.length()) {
+			if (r_base_type) {
+				StringName base_name = script->get_script_class_base();
+				if (base_name != StringName()) {
+					*r_base_type = base_name;
+				} else {
+					*r_base_type = script->get_instance_base_type();
+				}
+			}
+			if (r_icon_path) {
+				*r_icon_path = script->get_script_class_icon_path();
+			}
+			return name;
+		}
+	}
+
+	if (r_base_type)
+		*r_base_type = String();
+	if (r_icon_path)
+		*r_icon_path = String();
+	return String();
+}
+
 String CSharpLanguage::debug_get_error() const {
 	return _debug_error;
 }
@@ -911,6 +942,11 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 #endif
 			script->signals_invalidated = true;
 
+#ifdef TOOLS_ENABLED
+			EditorFileSystem::get_singleton()->remove_compiled_lang_script_class_file_cache(script->get_path());
+			EditorNode::get_editor_data().script_class_set_icon_path(script->get_script_class_name(), script->get_script_class_icon_path());
+#endif
+
 			script->reload(p_soft_reload);
 			script->update_exports();
 
@@ -1009,6 +1045,11 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 		to_reload_state.push_back(script);
 	}
+
+#ifdef TOOLS_ENABLED
+	ScriptServer::save_global_classes();
+	EditorNode::get_editor_data().script_class_save_icon_paths();
+#endif
 
 	for (List<Ref<CSharpScript>>::Element *E = to_reload_state.front(); E; E = E->next()) {
 		Ref<CSharpScript> script = E->get();
@@ -2593,7 +2634,9 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 	}
 
 #ifdef TOOLS_ENABLED
-	int hint_res = _try_get_member_export_hint(p_member, type, variant_type, /* allow_generics: */ true, hint, hint_string);
+	PropertyHint given_hint = PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr));
+	String given_hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
+	int hint_res = _try_get_member_export_hint(p_member, type, variant_type, given_hint, given_hint_string, /* allow_generics: */ true, hint, hint_string);
 
 	ERR_FAIL_COND_V_MSG(hint_res == -1, false,
 			"Error while trying to determine information about the exported member: '" +
@@ -2614,7 +2657,7 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 }
 
 #ifdef TOOLS_ENABLED
-int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string) {
+int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, PropertyHint p_given_hint, String p_given_hint_string, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string) {
 	GD_MONO_ASSERT_THREAD_ATTACHED;
 
 	if (p_variant_type == Variant::INT && p_type.type_encoding == MONO_TYPE_VALUETYPE && mono_class_is_enum(p_type.type_class->get_mono_ptr())) {
@@ -2675,6 +2718,16 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 
 		r_hint = PROPERTY_HINT_RESOURCE_TYPE;
 		r_hint_string = NATIVE_GDMONOCLASS_NAME(field_native_class);
+
+		if (p_type.type_class->has_attribute(CACHED_CLASS(GlobalAttribute))) {
+			MonoObject *attr = p_type.type_class->get_attribute(CACHED_CLASS(GlobalAttribute));
+			StringName script_class_name = CACHED_FIELD(GlobalAttribute, name)->get_string_value(attr);
+			if (script_class_name != StringName()) {
+				r_hint_string = script_class_name;
+			}
+		} else if (!p_given_hint_string.empty()) {
+			r_hint_string = p_given_hint_string;
+		}
 	} else if (p_allow_generics && p_variant_type == Variant::ARRAY) {
 		// Nested arrays are not supported in the inspector
 
@@ -2700,7 +2753,7 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 		}
 
 		if (!preset_hint) {
-			int hint_res = _try_get_member_export_hint(p_member, elem_type, elem_variant_type, /* allow_generics: */ false, elem_hint, elem_hint_string);
+			int hint_res = _try_get_member_export_hint(p_member, elem_type, elem_variant_type, p_given_hint, p_given_hint_string, /* allow_generics: */ false, elem_hint, elem_hint_string);
 
 			ERR_FAIL_COND_V_MSG(hint_res == -1, -1, "Error while trying to determine information about the array element type.");
 
@@ -3219,6 +3272,16 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 			load_script_signals(script_class, native);
 			_update_exports();
+
+			_update_global_script_class_settings();
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				// Force file cache update for compiled languages to update script class metadata
+				StringName n = script_class_name;
+				StringName b = script_class_base;
+				EditorFileSystem::get_singleton()->update_file_script_class_metadata(get_path(), n, b, get_language()->get_name(), script_class_icon_path);
+			}
+#endif
 		}
 
 		return OK;
@@ -3325,6 +3388,37 @@ Error CSharpScript::load_source_code(const String &p_path) {
 #endif
 
 	return OK;
+}
+
+void CSharpScript::_update_global_script_class_settings() {
+	// Evaluate script's use of engine "Script Class" system.
+	if (script_class->has_attribute(CACHED_CLASS(GlobalAttribute))) {
+		MonoObject *attr = script_class->get_attribute(CACHED_CLASS(GlobalAttribute));
+		script_class_name = CACHED_FIELD(GlobalAttribute, name)->get_string_value(attr);
+		script_class_icon_path = CACHED_FIELD(GlobalAttribute, iconPath)->get_string_value(attr);
+		if (script_class_name.empty()) {
+			script_class_name = script_class->get_name();
+		}
+	} else {
+		script_class_name = String();
+		script_class_icon_path = String();
+	}
+
+	GDMonoClass *parent = script_class->get_parent_class();
+	while (parent) {
+		if (parent->has_attribute(CACHED_CLASS(GlobalAttribute))) {
+			MonoObject *attr = parent->get_attribute(CACHED_CLASS(GlobalAttribute));
+			script_class_base = CACHED_FIELD(GlobalAttribute, name)->get_string_value(attr);
+			if (script_class_base.empty()) {
+				script_class_base = script_class->get_name();
+			}
+			break;
+		}
+		parent = parent->get_parent_class();
+	}
+	if (script_class_base.empty()) {
+		script_class_base = get_instance_base_type();
+	}
 }
 
 StringName CSharpScript::get_script_name() const {

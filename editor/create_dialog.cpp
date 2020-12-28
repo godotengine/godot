@@ -147,17 +147,18 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 			return;
 		}
 	} else {
-		if (!search_loaded_scripts.has(p_type)) {
-			search_loaded_scripts[p_type] = ed.script_class_load_script(p_type);
-		}
-
 		if (!ScriptServer::is_global_class(p_type) || !ed.script_class_is_parent(p_type, base_type)) {
 			return;
 		}
 
+		if (!search_loaded_scripts.has(p_type)) {
+			search_loaded_scripts[p_type] = ScriptServer::get_global_class_script(p_type);
+		}
+
 		String script_path = ScriptServer::get_global_class_path(p_type);
 		if (script_path.find("res://addons/", 0) != -1) {
-			if (!EditorNode::get_singleton()->is_addon_plugin_enabled(script_path.get_slicec('/', 3))) {
+			String cfg_path = script_path.plus_file("plugin.cfg");
+			if (FileAccess::exists(cfg_path) && !EditorNode::get_singleton()->is_addon_plugin_enabled(script_path.get_slicec('/', 3))) {
 				return;
 			}
 		}
@@ -186,7 +187,11 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		item->set_text(0, p_type);
 	} else {
 		item->set_metadata(0, p_type);
-		item->set_text(0, p_type + " (" + ScriptServer::get_global_class_path(p_type).get_file() + ")");
+		String text = p_type;
+		if (!EDITOR_GET("interface/editors/create_dialog_hide_script_class_filepath")) {
+			text += " (" + ScriptServer::get_global_class_path(p_type).get_file() + ")";
+		}
+		item->set_text(0, text);
 	}
 	if (!can_instance) {
 		item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
@@ -348,7 +353,7 @@ void CreateDialog::_update_search() {
 			bool cpp_type2 = cpp_type;
 
 			if (!cpp_type && !search_loaded_scripts.has(type)) {
-				search_loaded_scripts[type] = ed.script_class_load_script(type);
+				search_loaded_scripts[type] = ScriptServer::get_global_class_script(type);
 			}
 
 			while (type2 != "" && (cpp_type2 ? ClassDB::is_parent_class(type2, base_type) : ed.script_class_is_parent(type2, base_type)) && type2 != base_type) {
@@ -361,7 +366,7 @@ void CreateDialog::_update_search() {
 				cpp_type2 = cpp_type2 || ClassDB::class_exists(type2); // Built-in class can't inherit from custom type, so we can skip the check if it's already true.
 
 				if (!cpp_type2 && !search_loaded_scripts.has(type2)) {
-					search_loaded_scripts[type2] = ed.script_class_load_script(type2);
+					search_loaded_scripts[type2] = ScriptServer::get_global_class_script(type2);
 				}
 			}
 

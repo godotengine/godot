@@ -41,6 +41,15 @@
 				[b]Warning:[/b] Removing and freeing this node will render the editor useless and may cause a crash.
 			</description>
 		</method>
+		<method name="get_class_icon">
+			<return type="Texture" />
+			<argument index="0" name="class" type="String" />
+			<argument index="1" name="fallback" type="String" />
+			<description>
+				Returns the editor icon bound to a class name or the [code]fallback[/code] class's icon if not found. The [code]fallback[/code] defaults to "Object". If still not found, returns [code]null[/code].
+				[b]Node:[/b] This includes icons from custom types (see [method EditorPlugin.add_custom_type]) and global script classes from [ScriptServer].
+			</description>
+		</method>
 		<method name="get_current_path" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -86,6 +95,15 @@
 			<description>
 				Returns the editor's [EditorInspector] instance.
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
+			</description>
+		</method>
+		<method name="get_object_icon">
+			<return type="Texture" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="fallback" type="String" />
+			<description>
+				Returns the editor icon bound to [Object] [code]object[/code] or the class [code]fallback[/code] if a type cannot be determined. If [code]object[/code] extends [Script], then return the editor icon bound to the scripted class, not the actual script. If still not found, return [code]null[/code].
+				[b]Note:[/b] if you need the editor icon for a script such as [GDScript], use [method get_class_icon].
 			</description>
 		</method>
 		<method name="get_open_scenes" qualifiers="const">

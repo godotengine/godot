@@ -86,6 +86,9 @@
 		<member name="Time" type="Time" setter="" getter="">
 			The [Time] singleton.
 		</member>
+		<member name="ScriptServer" type="ScriptServer" setter="" getter="">
+			The [ScriptServer] singleton.
+		</member>
 		<member name="TranslationServer" type="TranslationServer" setter="" getter="">
 			The [TranslationServer] singleton.
 		</member>

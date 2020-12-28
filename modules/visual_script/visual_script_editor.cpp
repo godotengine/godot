@@ -1277,6 +1277,18 @@ void VisualScriptEditor::_member_edited() {
 	}
 }
 
+void VisualScriptEditor::_script_class_icon_btn_gui_input(Ref<InputEvent> p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && !mb->is_pressed()) {
+		int index = mb->get_button_index();
+		if (index == BUTTON_LEFT) {
+			_script_class_icon_path_dialog->popup_centered_ratio();
+		} else if (index == BUTTON_RIGHT) {
+			_script_class_icon_btn_set_icon("");
+		}
+	}
+}
+
 void VisualScriptEditor::_create_function_dialog() {
 	function_create_dialog->popup_centered();
 	func_name_box->set_text("");
@@ -2463,6 +2475,12 @@ void VisualScriptEditor::set_edited_resource(const RES &p_res) {
 		script->add_function(default_func);
 		script->set_edited(true); //so that if a function was added it's saved
 	}
+
+	_script_class_name_edit->set_text(script->get_script_class_name());
+	String icon_path = script->get_script_class_icon_path();
+	Control *gui_base = EditorNode::get_singleton()->get_gui_base();
+	RES icon = FileAccess::exists(icon_path) ? ResourceLoader::load(icon_path, "Texture") : (RES)gui_base->get_icon("Nil", "EditorIcons");
+	_script_class_icon_btn->set_icon(icon);
 
 	_update_graph();
 	call_deferred("_update_members");
@@ -4670,6 +4688,42 @@ void VisualScriptEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter
 void VisualScriptEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 }
 
+void VisualScriptEditor::_script_class_icon_path_dialog_confirmed() {
+	const String &path = _script_class_icon_path_dialog->get_current_path();
+	_script_class_icon_btn_set_icon(path);
+}
+
+void VisualScriptEditor::_script_class_icon_path_dialog_file_selected(const String &p_path) {
+	_script_class_icon_btn_set_icon(p_path);
+}
+
+void VisualScriptEditor::_script_class_icon_btn_set_icon(const String &p_path) {
+	ERR_FAIL_COND(!_script_class_icon_btn);
+	ERR_FAIL_COND_MSG(p_path.length() && !FileAccess::exists(p_path), "The given script class icon path does not exist.");
+	RES icon = FileAccess::exists(p_path) ? ResourceLoader::load(p_path, "Texture") : (RES)EditorNode::get_singleton()->get_gui_base()->get_icon("Nil", "EditorIcons");
+	undo_redo->create_action("Set script class icon");
+	undo_redo->add_do_method(_script_class_icon_btn, "set_button_icon", icon);
+	undo_redo->add_undo_method(_script_class_icon_btn, "set_button_icon", _script_class_icon_btn->get_icon());
+	if (script.is_valid()) {
+		undo_redo->add_do_method(script.operator->(), "set_script_class_icon_path", p_path);
+		undo_redo->add_undo_method(script.operator->(), "set_script_class_icon_path", script->get_script_class_icon_path());
+	}
+	undo_redo->commit_action();
+	set_edited(true);
+}
+
+void VisualScriptEditor::_script_class_name_text_changed(const String &p_text) {
+	if (script.is_valid())
+		script->set_script_class_name(p_text);
+	set_edited(true);
+}
+
+void VisualScriptEditor::_script_class_icon_path_text_changed(const String &p_text) {
+	if (script.is_valid())
+		script->set_script_class_icon_path(p_text);
+	set_edited(true);
+}
+
 void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_member_button", &VisualScriptEditor::_member_button);
 	ClassDB::bind_method("_member_edited", &VisualScriptEditor::_member_edited);
@@ -4743,6 +4797,12 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_draw_color_over_button", &VisualScriptEditor::_draw_color_over_button);
 
 	ClassDB::bind_method("_generic_search", &VisualScriptEditor::_generic_search);
+
+	ClassDB::bind_method("_script_class_icon_path_dialog_confirmed", &VisualScriptEditor::_script_class_icon_path_dialog_confirmed);
+	ClassDB::bind_method("_script_class_icon_path_dialog_file_selected", &VisualScriptEditor::_script_class_icon_path_dialog_file_selected);
+	ClassDB::bind_method("_script_class_name_text_changed", &VisualScriptEditor::_script_class_name_text_changed);
+	ClassDB::bind_method("_script_class_icon_path_text_changed", &VisualScriptEditor::_script_class_icon_path_text_changed);
+	ClassDB::bind_method("_script_class_icon_btn_gui_input", &VisualScriptEditor::_script_class_icon_btn_gui_input);
 }
 
 VisualScriptEditor::VisualScriptEditor() {
@@ -4777,6 +4837,37 @@ VisualScriptEditor::VisualScriptEditor() {
 	tool_script_check->set_text(TTR("Make Tool:"));
 	members_section->add_child(tool_script_check);
 	tool_script_check->connect("pressed", this, "_toggle_tool_script");
+
+	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	Label *lbl = memnew(Label);
+	lbl->set_text(TTR("Class Name:"));
+	hb->add_child(lbl);
+	LineEdit *le = memnew(LineEdit);
+	le->set_tooltip(TTR("Script Class names must be valid identifiers. Alphanumeric characters and underscores not starting with a number."));
+	le->connect("text_changed", this, "_script_class_name_text_changed");
+	le->set_h_size_flags(SIZE_EXPAND_FILL);
+	hb->add_child(le);
+	_script_class_name_edit = le;
+	_script_class_icon_btn = memnew(Button);
+	_script_class_icon_btn->set_tooltip(TTR("Choose a 16x16 icon for the class. Right-click to clear."));
+	FileDialog *fd = memnew(FileDialog);
+	fd->set_mode(FileDialog::MODE_OPEN_FILE);
+	List<String> texture_type_exts;
+	ResourceLoader::get_recognized_extensions_for_type("Texture", &texture_type_exts);
+	for (List<String>::Element *E = texture_type_exts.front(); E; E = E->next()) {
+		fd->add_filter(vformat("*.%s", E->get()));
+	}
+	fd->set_enable_multiple_selection(false);
+	fd->set_show_hidden_files(false);
+	fd->set_title("Choose an image.");
+	fd->connect("confirmed", this, "_script_class_icon_path_dialog_confirmed");
+	fd->connect("file_selected", this, "_script_class_icon_path_dialog_file_selected");
+	_script_class_icon_btn->add_child(fd);
+	_script_class_icon_path_dialog = fd;
+	_script_class_icon_btn->connect("gui_input", this, "_script_class_icon_btn_gui_input");
+	hb->add_child(_script_class_icon_btn);
+	members_section->add_child(hb);
 
 	///       Members        ///
 

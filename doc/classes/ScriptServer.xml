@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScriptServer" inherits="Object" version="3.5">
+	<brief_description>
+		Global script class management singleton.
+	</brief_description>
+	<description>
+		ScriptServer manages all information related to global script classes in Godot projects, similar to [ClassDB] for engine classes. Scripts independently opt-in to become global classes. With it, you can check if a script has a global name or icon, what its base classes are, or even instantiate them directly.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton through a global variable.
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/stable/getting_started/scripting/gdscript/gdscript_basics.html#classes</link>
+	</tutorials>
+	<methods>
+		<method name="get_global_class_base" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="class" type="String" />
+			<description>
+				Returns the class name that the script named [code]class[/code] directly extends. This may be an engine class or another global script class.
+			</description>
+		</method>
+		<method name="get_global_class_list" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns the names of all global script class names known by the ScriptServer.
+			</description>
+		</method>
+		<method name="get_global_class_name" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="path" type="String" />
+			<description>
+				Returns the global class name bound to the [Script] at [code]path[/code].
+			</description>
+		</method>
+		<method name="get_global_class_native_base" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="class" type="String" />
+			<description>
+				Returns the native engine class that the script named [code]class[/code] eventually extends.
+			</description>
+		</method>
+		<method name="get_global_class_path" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="class" type="String" />
+			<description>
+				Returns the file path to the script resource named [code]class[/code].
+			</description>
+		</method>
+		<method name="get_global_class_script" qualifiers="const">
+			<return type="Script" />
+			<argument index="0" name="class" type="String" />
+			<description>
+				Returns the loaded [Script] named [code]class[/code].
+			</description>
+		</method>
+		<method name="instantiate_global_class" qualifiers="const">
+			<return type="Variant" />
+			<argument index="0" name="class" type="String" />
+			<description>
+				Returns a new instance of the scripted type defined by the script named [code]class[/code].
+			</description>
+		</method>
+		<method name="is_global_class" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="class" type="String" />
+			<description>
+				Returns [code]true[/code] if the name [code]class[/code] is a global script class.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

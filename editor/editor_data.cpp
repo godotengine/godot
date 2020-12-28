@@ -865,17 +865,35 @@ void EditorData::get_plugin_window_layout(Ref<ConfigFile> p_layout) {
 	}
 }
 
-bool EditorData::script_class_is_parent(const String &p_class, const String &p_inherits) {
+bool EditorData::class_equals_or_inherits(const StringName &p_class, const StringName &p_inherits) const {
+	if (p_class == p_inherits) {
+		return true;
+	}
+	if (ScriptServer::is_global_class(p_class)) {
+		return script_class_is_parent(p_class, p_inherits);
+	}
+	if (custom_types.has(p_inherits)) {
+		const Vector<EditorData::CustomType> &v = custom_types[p_inherits];
+		for (int i = 0; i < v.size(); i++) {
+			if (v[i].name == p_class) {
+				return true;
+			}
+		}
+	}
+	if (ClassDB::class_exists(p_class)) {
+		return ClassDB::is_parent_class(p_class, p_inherits);
+	}
+	return false;
+}
+
+bool EditorData::script_class_is_parent(const StringName &p_class, const StringName &p_inherits) const {
 	if (!ScriptServer::is_global_class(p_class)) {
 		return false;
 	}
 
-	Ref<Script> script = script_class_load_script(p_class);
-	if (script.is_null()) {
-		return false;
-	}
-
 	String base = script_class_get_base(p_class);
+	Ref<Script> script = ScriptServer::get_global_class_script(p_class);
+	ERR_FAIL_COND_V_MSG(script.is_null(), false, vformat("Global script class '%s' failed to load."));
 	Ref<Script> base_script = script->get_base_script();
 
 	while (p_inherits != base) {
@@ -892,25 +910,29 @@ bool EditorData::script_class_is_parent(const String &p_class, const String &p_i
 	return true;
 }
 
-StringName EditorData::script_class_get_base(const String &p_class) const {
-	Ref<Script> script = script_class_load_script(p_class);
+StringName EditorData::script_class_get_base(const StringName &p_class) const {
+	if (!ScriptServer::is_global_class(p_class)) {
+		return StringName();
+	}
+
+	Ref<Script> script = ScriptServer::get_global_class_script(p_class);
 	if (script.is_null()) {
 		return StringName();
 	}
 
 	Ref<Script> base_script = script->get_base_script();
 	if (base_script.is_null()) {
-		return ScriptServer::get_global_class_base(p_class);
+		return ScriptServer::get_global_class_native_base(p_class);
 	}
 
-	return script->get_language()->get_global_class_name(base_script->get_path());
+	return ScriptServer::get_global_class_name(base_script->get_path());
 }
 
-Variant EditorData::script_class_instance(const String &p_class) {
+Variant EditorData::script_class_instance(const StringName &p_class) const {
 	if (ScriptServer::is_global_class(p_class)) {
 		Variant obj = ClassDB::instance(ScriptServer::get_global_class_native_base(p_class));
 		if (obj) {
-			Ref<Script> script = script_class_load_script(p_class);
+			Ref<Script> script = ScriptServer::get_global_class_script(p_class);
 			if (script.is_valid()) {
 				((Object *)obj)->set_script(script.get_ref_ptr());
 			}
@@ -920,25 +942,16 @@ Variant EditorData::script_class_instance(const String &p_class) {
 	return Variant();
 }
 
-Ref<Script> EditorData::script_class_load_script(const String &p_class) const {
-	if (!ScriptServer::is_global_class(p_class)) {
-		return Ref<Script>();
-	}
-
-	String path = ScriptServer::get_global_class_path(p_class);
-	return ResourceLoader::load(path, "Script");
-}
-
-void EditorData::script_class_set_icon_path(const String &p_class, const String &p_icon_path) {
+void EditorData::script_class_set_icon_path(const StringName &p_class, const String &p_icon_path) {
 	_script_class_icon_paths[p_class] = p_icon_path;
 }
 
-String EditorData::script_class_get_icon_path(const String &p_class) const {
+String EditorData::script_class_get_icon_path(const StringName &p_class) const {
 	if (!ScriptServer::is_global_class(p_class)) {
 		return String();
 	}
 
-	String current = p_class;
+	StringName current = p_class;
 	String ret = _script_class_icon_paths[current];
 	while (ret.empty()) {
 		current = script_class_get_base(current);
@@ -951,12 +964,25 @@ String EditorData::script_class_get_icon_path(const String &p_class) const {
 	return ret;
 }
 
-StringName EditorData::script_class_get_name(const String &p_path) const {
-	return _script_class_file_to_path.has(p_path) ? _script_class_file_to_path[p_path] : StringName();
-}
-
-void EditorData::script_class_set_name(const String &p_path, const StringName &p_class) {
-	_script_class_file_to_path[p_path] = p_class;
+Ref<Script> EditorData::script_class_get_base_from_anonymous_path(const String &p_path) const {
+	StringName name = ScriptServer::get_global_class_name(p_path);
+	if (name != StringName()) {
+		return nullptr;
+	}
+	Ref<Script> script = ResourceLoader::load(p_path, "Script");
+	if (script.is_null()) {
+		return nullptr;
+	}
+	do {
+		if (ScriptServer::get_global_class_name(script->get_path()) != StringName()) {
+			return script;
+		}
+		if (script->get_path().find("::") != -1) {
+			WARN_PRINT_ONCE("If you remove a built-in script that derives a script class, inheritance cannot be determined. The entire script is removed.");
+		}
+		script = script->get_base_script();
+	} while (script.is_valid());
+	return nullptr;
 }
 
 void EditorData::script_class_save_icon_paths() {
@@ -965,8 +991,10 @@ void EditorData::script_class_save_icon_paths() {
 
 	Dictionary d;
 	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
-		if (ScriptServer::is_global_class(E->get())) {
-			d[E->get()] = _script_class_icon_paths[E->get()];
+		StringName name = E->get();
+		String icon_path = _script_class_icon_paths[name];
+		if (ScriptServer::is_global_class(name)) {
+			d[name] = icon_path;
 		}
 	}
 
@@ -997,11 +1025,8 @@ void EditorData::script_class_load_icon_paths() {
 		d.get_key_list(&keys);
 
 		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-			String name = E->get().operator String();
+			StringName name = E->get().operator StringName();
 			_script_class_icon_paths[name] = d[name];
-
-			String path = ScriptServer::get_global_class_path(name);
-			script_class_set_name(path, name);
 		}
 	}
 }

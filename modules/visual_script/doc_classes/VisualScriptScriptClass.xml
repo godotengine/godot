@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualScriptScriptClass" inherits="VisualScriptNode" version="3.5">
+	<brief_description>
+		Gets a global script class resource.
+	</brief_description>
+	<description>
+		This node returns a global script class with a given name. See the [ScriptServer] class for more information.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="script_class" type="Script" setter="set_script_class" getter="get_script_class">
+			The global script class resource.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

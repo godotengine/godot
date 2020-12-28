@@ -40,6 +40,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "core/script_language.h"
 
 /**
  *  Time constants borrowed from loc_time.h
@@ -3003,6 +3004,89 @@ _ClassDB::_ClassDB() {
 }
 _ClassDB::~_ClassDB() {
 }
+///////////////////////////////
+
+bool _ScriptServer::_set(const StringName &p_name, const Variant &p_value) {
+	return false;
+}
+
+bool _ScriptServer::_get(const StringName &p_name, Variant &r_ret) const {
+	if (ScriptServer::is_global_class(p_name)) {
+		r_ret = ResourceLoader::load(ScriptServer::get_global_class_path(p_name), "Script");
+		return true;
+	}
+	return false;
+}
+
+void _ScriptServer::_get_property_list(List<PropertyInfo> *p_list) const {
+	ERR_FAIL_COND(!p_list);
+	List<StringName> names;
+	ScriptServer::get_global_class_list(&names);
+	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
+		StringName n = E->get();
+		String class_name = String(n).get_file().get_extension();
+		p_list->push_back(PropertyInfo(Variant::OBJECT, class_name, PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_NETWORK, ResourceLoader::get_resource_type(ScriptServer::get_global_class_path(n))));
+	}
+}
+
+bool _ScriptServer::is_global_class(const StringName &p_class) const {
+	return ScriptServer::is_global_class(p_class);
+}
+
+String _ScriptServer::get_global_class_path(const String &p_class) const {
+	return ScriptServer::get_global_class_path(p_class);
+}
+
+StringName _ScriptServer::get_global_class_base(const String &p_class) const {
+	return ScriptServer::get_global_class_base(p_class);
+}
+
+StringName _ScriptServer::get_global_class_native_base(const String &p_class) const {
+	return ScriptServer::get_global_class_native_base(p_class);
+}
+
+StringName _ScriptServer::get_global_class_name(const String &p_path) const {
+	return ScriptServer::get_global_class_name(p_path);
+}
+
+Ref<Script> _ScriptServer::get_global_class_script(const StringName &p_class) const {
+	return ScriptServer::get_global_class_script(p_class);
+}
+
+Variant _ScriptServer::instantiate_global_class(const StringName &p_class) const {
+	return ScriptServer::instantiate_global_class(p_class);
+}
+
+Array _ScriptServer::get_global_class_list() const {
+	Array ret;
+	List<StringName> lst;
+	ScriptServer::get_global_class_list(&lst);
+	for (List<StringName>::Element *E = lst.front(); E; E = E->next()) {
+		ret.push_back(E->get());
+	}
+	return ret;
+}
+
+void _ScriptServer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("is_global_class", "class"), &_ScriptServer::is_global_class);
+	ClassDB::bind_method(D_METHOD("get_global_class_path", "class"), &_ScriptServer::get_global_class_path);
+	ClassDB::bind_method(D_METHOD("get_global_class_base", "class"), &_ScriptServer::get_global_class_base);
+	ClassDB::bind_method(D_METHOD("get_global_class_native_base", "class"), &_ScriptServer::get_global_class_native_base);
+	ClassDB::bind_method(D_METHOD("get_global_class_name", "path"), &_ScriptServer::get_global_class_name);
+	ClassDB::bind_method(D_METHOD("get_global_class_script", "class"), &_ScriptServer::get_global_class_script);
+	ClassDB::bind_method(D_METHOD("instantiate_global_class", "class"), &_ScriptServer::instantiate_global_class);
+	ClassDB::bind_method(D_METHOD("get_global_class_list"), &_ScriptServer::get_global_class_list);
+}
+
+_ScriptServer::_ScriptServer() {
+	singleton = this;
+}
+
+_ScriptServer::~_ScriptServer() {
+}
+
+_ScriptServer *_ScriptServer::singleton = nullptr;
+
 ///////////////////////////////
 
 void _Engine::set_iterations_per_second(int p_ips) {

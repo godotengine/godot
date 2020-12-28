@@ -103,6 +103,11 @@ class CSharpScript : public Script {
 	String source;
 	StringName name;
 
+	// For engine "Script Class" support, not affiliated with `GDMonoClass *script_class` property.
+	String script_class_name;
+	String script_class_base;
+	String script_class_icon_path;
+
 	SelfList<CSharpScript> script_list;
 
 	struct Argument {
@@ -140,7 +145,7 @@ class CSharpScript : public Script {
 
 	bool _get_member_export(IMonoClassMember *p_member, bool p_inspect_export, PropertyInfo &r_prop_info, bool &r_exported);
 #ifdef TOOLS_ENABLED
-	static int _try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string);
+	static int _try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, PropertyHint p_given_hint, String p_given_hint_string, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string);
 #endif
 
 	CSharpInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error);
@@ -201,6 +206,11 @@ public:
 #endif
 
 	Error load_source_code(const String &p_path);
+
+	String get_script_class_name() const { return script_class_name; }
+	String get_script_class_base() const { return script_class_base; }
+	String get_script_class_icon_path() const { return script_class_icon_path; }
+	void _update_global_script_class_settings();
 
 	StringName get_script_name() const;
 
@@ -419,6 +429,11 @@ public:
 	virtual String _get_indentation() const;
 	/* TODO? */ virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const {}
 	/* TODO */ virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) {}
+	virtual bool has_delayed_script_class_metadata() const override { return true; }
+
+	/* SCRIPT CLASS FUNCTIONS */
+	virtual bool handles_global_class_type(const String &p_type) const;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = NULL, String *r_icon_path = NULL) const;
 
 	/* DEBUGGER FUNCTIONS */
 	virtual String debug_get_error() const;

@@ -569,6 +569,7 @@ class EditorPropertyResource : public EditorProperty {
 	bool _can_use_sub_inspector(const RES &p_resource);
 	void _open_editor_pressed();
 	void _fold_other_editors(Object *p_self);
+
 	void _update_property_bg();
 
 protected:

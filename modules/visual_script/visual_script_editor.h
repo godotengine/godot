@@ -34,6 +34,7 @@
 #include "editor/create_dialog.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/property_editor.h"
+#include "scene/gui/file_dialog.h"
 #include "scene/gui/graph_edit.h"
 #include "visual_script.h"
 #include "visual_script_property_selector.h"
@@ -172,6 +173,10 @@ class VisualScriptEditor : public ScriptEditorBase {
 	Vector2 port_action_pos;
 	int port_action_new_node;
 
+	LineEdit *_script_class_name_edit;
+	Button *_script_class_icon_btn;
+	FileDialog *_script_class_icon_path_dialog;
+
 	bool saved_pos_dirty;
 	Vector2 saved_position;
 
@@ -202,6 +207,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _toggle_tool_script();
 	void _member_selected();
 	void _member_edited();
+	void _script_class_icon_btn_gui_input(Ref<InputEvent> p_event);
 
 	void _begin_node_move();
 	void _end_node_move();
@@ -287,6 +293,12 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _member_rmb_selected(const Vector2 &p_pos);
 	void _member_option(int p_option);
+
+	void _script_class_icon_path_dialog_confirmed();
+	void _script_class_icon_path_dialog_file_selected(const String &p_path);
+	void _script_class_icon_btn_set_icon(const String &p_path);
+	void _script_class_name_text_changed(const String &p_text);
+	void _script_class_icon_path_text_changed(const String &p_text);
 
 protected:
 	void _notification(int p_what);

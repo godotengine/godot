@@ -165,6 +165,18 @@
 				Returns a node's position in pixels.
 			</description>
 		</method>
+		<method name="get_script_class_icon_path">
+			<return type="String" />
+			<description>
+				Returns this [VisualScript]'s global class icon path provided to the [ScriptServer].
+			</description>
+		</method>
+		<method name="get_script_class_name">
+			<return type="String" />
+			<description>
+				Returns this [VisualScript]'s global class name provided to the [ScriptServer].
+			</description>
+		</method>
 		<method name="get_variable_default_value" qualifiers="const">
 			<return type="Variant" />
 			<argument index="0" name="name" type="String" />
@@ -332,6 +344,20 @@
 			<argument index="2" name="position" type="Vector2" />
 			<description>
 				Position a node on the screen.
+			</description>
+		</method>
+		<method name="set_script_class_icon_path">
+			<return type="void" />
+			<argument index="0" name="script_class_icon_path" type="String" />
+			<description>
+				Assigns the global class icon path that this [VisualScript] provides to the [ScriptServer].
+			</description>
+		</method>
+		<method name="set_script_class_name">
+			<return type="void" />
+			<argument index="0" name="script_class_name" type="String" />
+			<description>
+				Assigns the global class name that this [VisualScript] provides to the [ScriptServer].
 			</description>
 		</method>
 		<method name="set_variable_default_value">

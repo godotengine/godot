@@ -31,6 +31,7 @@
 #include "script_language.h"
 
 #include "core/core_string_names.h"
+#include "core/io/resource_loader.h"
 #include "core/project_settings.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
@@ -200,20 +201,28 @@ void ScriptServer::thread_exit() {
 }
 
 HashMap<StringName, ScriptServer::GlobalScriptClass> ScriptServer::global_classes;
+HashMap<String, StringName> ScriptServer::global_class_paths;
 
 void ScriptServer::global_classes_clear() {
 	global_classes.clear();
+	global_class_paths.clear();
 }
 
 void ScriptServer::add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path) {
 	ERR_FAIL_COND_MSG(p_class == p_base || (global_classes.has(p_base) && get_global_class_native_base(p_base) == p_class), "Cyclic inheritance in script class.");
+	ERR_FAIL_COND_MSG(p_class == StringName(), vformat("Attempted to register global script class at path '%s' without a class name.", p_path));
+	ERR_FAIL_COND_MSG(p_base == StringName(), vformat("Attempted to register global script class at path '%s' without a base name.", p_path));
+	ERR_FAIL_COND_MSG(p_language == StringName(), vformat("Attempted to register global script class at path '%s' without a language name.", p_path));
+	ERR_FAIL_COND_MSG(p_path.empty(), vformat("Attempted to register global script class named '%s' with an empty path.", p_class));
 	GlobalScriptClass g;
 	g.language = p_language;
 	g.path = p_path;
 	g.base = p_base;
 	global_classes[p_class] = g;
+	global_class_paths[p_path] = p_class;
 }
 void ScriptServer::remove_global_class(const StringName &p_class) {
+	global_class_paths.erase(global_classes[p_class].path);
 	global_classes.erase(p_class);
 }
 bool ScriptServer::is_global_class(const StringName &p_class) {
@@ -223,23 +232,71 @@ StringName ScriptServer::get_global_class_language(const StringName &p_class) {
 	ERR_FAIL_COND_V(!global_classes.has(p_class), StringName());
 	return global_classes[p_class].language;
 }
-String ScriptServer::get_global_class_path(const String &p_class) {
+String ScriptServer::get_global_class_path(const StringName &p_class) {
 	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
 	return global_classes[p_class].path;
 }
+StringName ScriptServer::get_global_class_name(const String &p_path) {
+	if (global_class_paths.has(p_path)) {
+		return global_class_paths[p_path];
+	}
+	return StringName();
+}
 
-StringName ScriptServer::get_global_class_base(const String &p_class) {
-	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
+StringName ScriptServer::get_global_class_base(const StringName &p_class) {
+	ERR_FAIL_COND_V(!global_classes.has(p_class), StringName());
 	return global_classes[p_class].base;
 }
-StringName ScriptServer::get_global_class_native_base(const String &p_class) {
-	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
+
+StringName ScriptServer::get_global_class_native_base(const StringName &p_class) {
+	ERR_FAIL_COND_V(!global_classes.has(p_class), StringName());
 	String base = global_classes[p_class].base;
 	while (global_classes.has(base)) {
 		base = global_classes[base].base;
 	}
 	return base;
 }
+
+Ref<Script> ScriptServer::get_global_class_script(const StringName &p_class) {
+	ERR_FAIL_COND_V_MSG(!ScriptServer::is_global_class(p_class), Ref<Script>(), vformat("Class to load '%s' is not a script class.", p_class));
+	if (!ScriptServer::is_global_class(p_class)) {
+		return Ref<Script>();
+	}
+
+	String path = ScriptServer::get_global_class_path(p_class);
+	return ResourceLoader::load(path, "Script");
+}
+
+Variant ScriptServer::instantiate_global_class(const StringName &p_class) {
+	ERR_FAIL_COND_V_MSG(!global_classes.has(p_class), Variant(), vformat("Class to instantiate '%s' is not a script class.", p_class));
+	String native = get_global_class_native_base(p_class);
+	Object *o = ClassDB::instance(native);
+	ERR_FAIL_COND_V_MSG(!o, Variant(), vformat("Could not instantiate global script class '%s'. It extends native class '%s' which is not instantiable.", p_class, native));
+
+	REF ref;
+	Reference *r = Object::cast_to<Reference>(o);
+	if (r) {
+		ref = REF(r);
+	}
+
+	Variant ret;
+	if (ref.is_valid()) {
+		ret = ref;
+	} else {
+		ret = o;
+	}
+
+	Ref<Script> s = get_global_class_script(p_class);
+	ERR_FAIL_COND_V_MSG(s.is_null(), Variant(), vformat("Failed to load global script class '%s'.", p_class));
+
+	o->set_script(s.get_ref_ptr());
+
+	ScriptInstance *si = o->get_script_instance();
+	ERR_FAIL_COND_V_MSG(!si, Variant(), vformat("Failed to create script instance for global script class '%s'.", p_class));
+
+	return ret;
+}
+
 void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
 	const StringName *K = nullptr;
 	List<StringName> classes;
