@@ -180,16 +180,16 @@ struct Rect2 {
 	bool operator==(const Rect2 &p_rect) const { return position == p_rect.position && size == p_rect.size; }
 	bool operator!=(const Rect2 &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
-	inline Rect2 grow(real_t p_by) const {
+	inline Rect2 grow(real_t p_amount) const {
 		Rect2 g = *this;
-		g.position.x -= p_by;
-		g.position.y -= p_by;
-		g.size.width += p_by * 2;
-		g.size.height += p_by * 2;
+		g.position.x -= p_amount;
+		g.position.y -= p_amount;
+		g.size.width += p_amount * 2;
+		g.size.height += p_amount * 2;
 		return g;
 	}
 
-	inline Rect2 grow_margin(Side p_side, real_t p_amount) const {
+	inline Rect2 grow_side(Side p_side, real_t p_amount) const {
 		Rect2 g = *this;
 		g = g.grow_individual((SIDE_LEFT == p_side) ? p_amount : 0,
 				(SIDE_TOP == p_side) ? p_amount : 0,
@@ -198,8 +198,8 @@ struct Rect2 {
 		return g;
 	}
 
-	inline Rect2 grow_margin_bind(uint32_t p_side, real_t p_amount) const {
-		return grow_margin(Side(p_side), p_amount);
+	inline Rect2 grow_side_bind(uint32_t p_side, real_t p_amount) const {
+		return grow_side(Side(p_side), p_amount);
 	}
 
 	inline Rect2 grow_individual(real_t p_left, real_t p_top, real_t p_right, real_t p_bottom) const {
@@ -422,16 +422,16 @@ struct Rect2i {
 	bool operator==(const Rect2i &p_rect) const { return position == p_rect.position && size == p_rect.size; }
 	bool operator!=(const Rect2i &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
-	Rect2i grow(int p_by) const {
+	Rect2i grow(int p_amount) const {
 		Rect2i g = *this;
-		g.position.x -= p_by;
-		g.position.y -= p_by;
-		g.size.width += p_by * 2;
-		g.size.height += p_by * 2;
+		g.position.x -= p_amount;
+		g.position.y -= p_amount;
+		g.size.width += p_amount * 2;
+		g.size.height += p_amount * 2;
 		return g;
 	}
 
-	inline Rect2i grow_margin(Side p_side, int p_amount) const {
+	inline Rect2i grow_side(Side p_side, int p_amount) const {
 		Rect2i g = *this;
 		g = g.grow_individual((SIDE_LEFT == p_side) ? p_amount : 0,
 				(SIDE_TOP == p_side) ? p_amount : 0,
@@ -440,8 +440,8 @@ struct Rect2i {
 		return g;
 	}
 
-	inline Rect2i grow_margin_bind(uint32_t p_side, int p_amount) const {
-		return grow_margin(Side(p_side), p_amount);
+	inline Rect2i grow_side_bind(uint32_t p_side, int p_amount) const {
+		return grow_side(Side(p_side), p_amount);
 	}
 
 	inline Rect2i grow_individual(int p_left, int p_top, int p_right, int p_bottom) const {

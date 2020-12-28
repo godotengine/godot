@@ -3534,11 +3534,11 @@
         ]
       },
       {
-        "name": "godot_rect2_grow_margin",
+        "name": "godot_rect2_grow_side",
         "return_type": "godot_rect2",
         "arguments": [
           ["const godot_rect2 *", "p_self"],
-          ["const godot_int", "p_margin"],
+          ["const godot_int", "p_side"],
           ["const godot_real", "p_by"]
         ]
       },
@@ -3758,11 +3758,11 @@
         ]
       },
       {
-        "name": "godot_rect2i_grow_margin",
+        "name": "godot_rect2i_grow_side",
         "return_type": "godot_rect2i",
         "arguments": [
           ["const godot_rect2i *", "p_self"],
-          ["const godot_int", "p_margin"],
+          ["const godot_int", "p_side"],
           ["const godot_int", "p_by"]
         ]
       },

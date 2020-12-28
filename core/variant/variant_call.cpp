@@ -1036,8 +1036,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Rect2, intersection, sarray("b"), varray());
 	bind_method(Rect2, merge, sarray("b"), varray());
 	bind_method(Rect2, expand, sarray("to"), varray());
-	bind_method(Rect2, grow, sarray("by"), varray());
-	bind_methodv(Rect2, grow_margin, &Rect2::grow_margin_bind, sarray("margin", "by"), varray());
+	bind_method(Rect2, grow, sarray("amount"), varray());
+	bind_methodv(Rect2, grow_side, &Rect2::grow_side_bind, sarray("side", "amount"), varray());
 	bind_method(Rect2, grow_individual, sarray("left", "top", "right", "bottom"), varray());
 	bind_method(Rect2, abs, sarray(), varray());
 
@@ -1051,8 +1051,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Rect2i, intersection, sarray("b"), varray());
 	bind_method(Rect2i, merge, sarray("b"), varray());
 	bind_method(Rect2i, expand, sarray("to"), varray());
-	bind_method(Rect2i, grow, sarray("by"), varray());
-	bind_methodv(Rect2i, grow_margin, &Rect2i::grow_margin_bind, sarray("margin", "by"), varray());
+	bind_method(Rect2i, grow, sarray("amount"), varray());
+	bind_methodv(Rect2i, grow_side, &Rect2i::grow_side_bind, sarray("side", "amount"), varray());
 	bind_method(Rect2i, grow_individual, sarray("left", "top", "right", "bottom"), varray());
 	bind_method(Rect2i, abs, sarray(), varray());
 
