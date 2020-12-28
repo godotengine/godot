@@ -148,6 +148,8 @@ class EditorFileSystem : public Node {
 
 	void _save_late_updated_files();
 
+	HashMap<String, Dictionary> compiled_lang_script_class_file_cache; // keep track of script classes from compiled languages
+
 	EditorFileSystemDirectory *filesystem;
 
 	static EditorFileSystem *singleton;
@@ -222,8 +224,7 @@ class EditorFileSystem : public Node {
 	void _scan_script_classes(EditorFileSystemDirectory *p_dir);
 	volatile bool update_script_classes_queued;
 	void _queue_update_script_classes();
-
-	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
+	String _get_global_class_name(String p_path, String *p_base = nullptr, String *p_icon_path = nullptr);
 
 	static Error _resource_import(const String &p_path);
 
@@ -257,6 +258,8 @@ public:
 	void reimport_files(const Vector<String> &p_files);
 
 	void update_script_classes();
+	void remove_compiled_lang_script_class_file_cache(const String &p_file);
+	void init_compiled_lang_script_class_file_cache();
 
 	bool is_group_file(const String &p_path) const;
 	void move_group_file(const String &p_path, const String &p_new_path);

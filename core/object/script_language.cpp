@@ -34,6 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/io/resource_loader.h"
 
 #include <stdint.h>
 
@@ -249,7 +250,16 @@ StringName ScriptServer::get_global_class_native_base(const String &p_class) {
 	}
 	return base;
 }
-
+Object *ScriptServer::instantiate_global_class(const StringName &p_class) {
+	ERR_FAIL_COND_V_MSG(!global_classes.has(p_class), nullptr, "Class to instantiate '" + String(p_class) + "' is not a script class.");
+	String native = get_global_class_native_base(p_class);
+	Ref<Script> script = ResourceLoader::load(get_global_class_path(p_class), "Script");
+	ERR_FAIL_COND_V_MSG(script.is_null(), nullptr, "Failed to load script class '" + String(p_class) + "'");
+	Object *obj = ClassDB::instance(native);
+	ERR_FAIL_NULL_V_MSG(obj, nullptr, "Instantiated native class '" + native + "' was null.");
+	obj->set_script(script.ptr());
+	return obj;
+}
 void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
 	const StringName *K = nullptr;
 	List<StringName> classes;

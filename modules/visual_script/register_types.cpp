@@ -67,6 +67,7 @@ void register_visual_script_types() {
 	ClassDB::register_class<VisualScriptClassConstant>();
 	ClassDB::register_class<VisualScriptMathConstant>();
 	ClassDB::register_class<VisualScriptBasicTypeConstant>();
+	ClassDB::register_class<VisualScriptScriptClass>();
 	ClassDB::register_class<VisualScriptEngineSingleton>();
 	ClassDB::register_class<VisualScriptSceneNode>();
 	ClassDB::register_class<VisualScriptSceneTree>();
