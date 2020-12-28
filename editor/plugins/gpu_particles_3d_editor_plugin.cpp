@@ -454,7 +454,7 @@ void GPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 GPUParticles3DEditorPlugin::GPUParticles3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	particles_editor = memnew(GPUParticles3DEditor);
-	editor->get_viewport()->add_child(particles_editor);
+	editor->get_main_control()->add_child(particles_editor);
 
 	particles_editor->hide();
 }
