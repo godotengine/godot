@@ -846,6 +846,7 @@ Error GLTFDocument::_encode_accessors(Ref<GLTFState> state) {
 		d["count"] = accessor->count;
 		d["type"] = _get_accessor_type_name(accessor->type);
 		d["byteOffset"] = accessor->byte_offset;
+		d["normalized"] = accessor->normalized;
 		d["max"] = accessor->max;
 		d["min"] = accessor->min;
 		d["bufferView"] = accessor->buffer_view; //optional because it may be sparse...
@@ -959,6 +960,10 @@ Error GLTFDocument::_parse_accessors(Ref<GLTFState> state) {
 
 		if (d.has("byteOffset")) {
 			accessor->byte_offset = d["byteOffset"];
+		}
+
+		if (d.has("normalized")) {
+			accessor->normalized = d["normalized"];
 		}
 
 		if (d.has("max")) {
