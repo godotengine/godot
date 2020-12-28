@@ -98,7 +98,7 @@ void Camera3DEditorPlugin::make_visible(bool p_visible) {
 Camera3DEditorPlugin::Camera3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	/*	camera_editor = memnew( CameraEditor );
-	editor->get_viewport()->add_child(camera_editor);
+	editor->get_main_control()->add_child(camera_editor);
 
 	camera_editor->set_anchor(SIDE_LEFT,Control::ANCHOR_END);
 	camera_editor->set_anchor(SIDE_RIGHT,Control::ANCHOR_END);

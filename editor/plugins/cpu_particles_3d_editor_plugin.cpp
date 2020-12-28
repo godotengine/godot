@@ -122,7 +122,7 @@ void CPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 CPUParticles3DEditorPlugin::CPUParticles3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	particles_editor = memnew(CPUParticles3DEditor);
-	editor->get_viewport()->add_child(particles_editor);
+	editor->get_main_control()->add_child(particles_editor);
 
 	particles_editor->hide();
 }
