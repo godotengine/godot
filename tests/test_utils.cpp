@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_file_access.h                                                   */
+/*  test_utils.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,38 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_FILE_ACCESS_H
-#define TEST_FILE_ACCESS_H
-
-#include "core/os/file_access.h"
 #include "test_utils.h"
 
-namespace TestFileAccess {
+#include "core/os/os.h"
 
-TEST_CASE("[FileAccess] CSV read") {
-	FileAccess *f = FileAccess::open(TestUtils::get_data_path("translations.csv"), FileAccess::READ);
-
-	Vector<String> header = f->get_csv_line(); // Default delimiter: ","
-	REQUIRE(header.size() == 3);
-
-	Vector<String> row1 = f->get_csv_line(",");
-	REQUIRE(row1.size() == 3);
-	CHECK(row1[0] == "GOOD_MORNING");
-	CHECK(row1[1] == "Good Morning");
-	CHECK(row1[2] == "Guten Morgen");
-
-	Vector<String> row2 = f->get_csv_line();
-	REQUIRE(row2.size() == 3);
-	CHECK(row2[0] == "GOOD_EVENING");
-	CHECK(row2[1] == "Good Evening");
-	CHECK(row2[2] == ""); // Use case: not yet translated!
-
-	// https://github.com/godotengine/godot/issues/44269
-	CHECK_MESSAGE(row2[2] != "\"", "Should not parse empty string as a single double quote.");
-
-	f->close();
-	memdelete(f);
+String TestUtils::get_data_path(const String &p_file) {
+	String data_path = "../tests/data";
+	return get_executable_dir().plus_file(data_path.plus_file(p_file));
 }
-} // namespace TestFileAccess
 
-#endif // TEST_FILE_ACCESS_H
+String TestUtils::get_executable_dir() {
+	return OS::get_singleton()->get_executable_path().get_base_dir();
+}
