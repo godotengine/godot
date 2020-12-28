@@ -191,17 +191,17 @@ namespace Godot
         /// <summary>
         /// Returns a copy of the Rect2i grown a given amount of units towards the <see cref="Margin"/> direction.
         /// </summary>
-        /// <param name="margin">The direction to grow in.</param>
+        /// <param name="side">The direction to grow in.</param>
         /// <param name="by">The amount to grow by.</param>
         /// <returns>The grown rect.</returns>
-        public Rect2i GrowMargin(Margin margin, int by)
+        public Rect2i GrowMargin(Side side, int by)
         {
             var g = this;
 
-            g = g.GrowIndividual(Margin.Left == margin ? by : 0,
-                    Margin.Top == margin ? by : 0,
-                    Margin.Right == margin ? by : 0,
-                    Margin.Bottom == margin ? by : 0);
+            g = g.GrowIndividual(Side.Left == side ? by : 0,
+                    Side.Top == side ? by : 0,
+                    Side.Right == side ? by : 0,
+                    Side.Bottom == side ? by : 0);
 
             return g;
         }
