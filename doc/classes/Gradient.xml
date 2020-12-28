@@ -57,10 +57,10 @@
 		<method name="remove_point">
 			<return type="void">
 			</return>
-			<argument index="0" name="offset" type="int">
+			<argument index="0" name="point" type="int">
 			</argument>
 			<description>
-				Removes the color at the index [code]offset[/code].
+				Removes the color at the index [code]point[/code].
 			</description>
 		</method>
 		<method name="set_color">
