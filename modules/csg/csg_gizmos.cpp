@@ -56,8 +56,7 @@ String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, 
 	}
 
 	if (Object::cast_to<CSGBox3D>(cs)) {
-		static const char *hname[3] = { "Width", "Height", "Depth" };
-		return hname[p_idx];
+		return "Size";
 	}
 
 	if (Object::cast_to<CSGCylinder3D>(cs)) {
@@ -81,14 +80,7 @@ Variant CSGShape3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int 
 
 	if (Object::cast_to<CSGBox3D>(cs)) {
 		CSGBox3D *s = Object::cast_to<CSGBox3D>(cs);
-		switch (p_idx) {
-			case 0:
-				return s->get_width();
-			case 1:
-				return s->get_height();
-			case 2:
-				return s->get_depth();
-		}
+		return s->get_size();
 	}
 
 	if (Object::cast_to<CSGCylinder3D>(cs)) {
@@ -149,17 +141,9 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 			d = 0.001;
 		}
 
-		switch (p_idx) {
-			case 0:
-				s->set_width(d * 2);
-				break;
-			case 1:
-				s->set_height(d * 2);
-				break;
-			case 2:
-				s->set_depth(d * 2);
-				break;
-		}
+		Vector3 h = s->get_size();
+		h[p_idx] = d * 2;
+		s->set_size(h);
 	}
 
 	if (Object::cast_to<CSGCylinder3D>(cs)) {
@@ -229,38 +213,14 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 	if (Object::cast_to<CSGBox3D>(cs)) {
 		CSGBox3D *s = Object::cast_to<CSGBox3D>(cs);
 		if (p_cancel) {
-			switch (p_idx) {
-				case 0:
-					s->set_width(p_restore);
-					break;
-				case 1:
-					s->set_height(p_restore);
-					break;
-				case 2:
-					s->set_depth(p_restore);
-					break;
-			}
+			s->set_size(p_restore);
 			return;
 		}
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
-		ur->create_action(TTR("Change Box Shape Extents"));
-		static const char *method[3] = { "set_width", "set_height", "set_depth" };
-		float current = 0;
-		switch (p_idx) {
-			case 0:
-				current = s->get_width();
-				break;
-			case 1:
-				current = s->get_height();
-				break;
-			case 2:
-				current = s->get_depth();
-				break;
-		}
-
-		ur->add_do_method(s, method[p_idx], current);
-		ur->add_undo_method(s, method[p_idx], p_restore);
+		ur->create_action(TTR("Change Box Shape Size"));
+		ur->add_do_method(s, "set_size", s->get_size());
+		ur->add_undo_method(s, "set_size", p_restore);
 		ur->commit_action();
 	}
 
@@ -408,9 +368,13 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		CSGBox3D *s = Object::cast_to<CSGBox3D>(cs);
 
 		Vector<Vector3> handles;
-		handles.push_back(Vector3(s->get_width() * 0.5, 0, 0));
-		handles.push_back(Vector3(0, s->get_height() * 0.5, 0));
-		handles.push_back(Vector3(0, 0, s->get_depth() * 0.5));
+
+		for (int i = 0; i < 3; i++) {
+			Vector3 h;
+			h[i] = s->get_size()[i] / 2;
+			handles.push_back(h);
+		}
+
 		p_gizmo->add_handles(handles, handles_material);
 	}
 

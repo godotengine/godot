@@ -240,27 +240,19 @@ class CSGBox3D : public CSGPrimitive3D {
 	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
-	float width;
-	float height;
-	float depth;
+	Vector3 size = Vector3(2, 2, 2);
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_width(const float p_width);
-	float get_width() const;
-
-	void set_height(const float p_height);
-	float get_height() const;
-
-	void set_depth(const float p_depth);
-	float get_depth() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGBox3D();
+	CSGBox3D() {}
 };
 
 class CSGCylinder3D : public CSGPrimitive3D {
