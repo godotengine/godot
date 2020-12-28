@@ -29,6 +29,9 @@
 /*************************************************************************/
 
 #include "gltf_document.h"
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
+#include "core/variant/variant.h"
 #include "gltf_accessor.h"
 #include "gltf_animation.h"
 #include "gltf_camera.h"
@@ -2199,33 +2202,81 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 				}
 			}
 			{
-				Array a = array[Mesh::ARRAY_BONES];
-				if (a.size()) {
-					const int ret_size = a.size() / 4;
+				const Array &a = array[Mesh::ARRAY_BONES];
+				const Vector<Vector3> &vertex_array = array[Mesh::ARRAY_VERTEX];
+				if ((a.size() / JOINT_GROUP_SIZE) == vertex_array.size()) {
+					const int ret_size = a.size() / JOINT_GROUP_SIZE;
 					Vector<Color> attribs;
 					attribs.resize(ret_size);
 					{
 						for (int array_i = 0; array_i < attribs.size(); array_i++) {
-							int32_t joint_0 = a[(array_i * 4) + 0];
-							int32_t joint_1 = a[(array_i * 4) + 1];
-							int32_t joint_2 = a[(array_i * 4) + 2];
-							int32_t joint_3 = a[(array_i * 4) + 3];
+							int32_t joint_0 = a[(array_i * JOINT_GROUP_SIZE) + 0];
+							int32_t joint_1 = a[(array_i * JOINT_GROUP_SIZE) + 1];
+							int32_t joint_2 = a[(array_i * JOINT_GROUP_SIZE) + 2];
+							int32_t joint_3 = a[(array_i * JOINT_GROUP_SIZE) + 3];
 							attribs.write[array_i] = Color(joint_0, joint_1, joint_2, joint_3);
 						}
 					}
 					attributes["JOINTS_0"] = _encode_accessor_as_joints(state, attribs, true);
+				} else if ((a.size() / (JOINT_GROUP_SIZE * 2)) >= vertex_array.size()) {
+					int32_t vertex_count = vertex_array.size();
+					Vector<Color> joints_0;
+					joints_0.resize(vertex_count);
+					Vector<Color> joints_1;
+					joints_1.resize(vertex_count);
+					int32_t weights_8_count = JOINT_GROUP_SIZE * 2;
+					for (int32_t vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
+						Color joint_0;
+						joint_0.r = a[vertex_i * weights_8_count + 0];
+						joint_0.g = a[vertex_i * weights_8_count + 1];
+						joint_0.b = a[vertex_i * weights_8_count + 2];
+						joint_0.a = a[vertex_i * weights_8_count + 3];
+						joints_0.write[vertex_i] = joint_0;
+						Color joint_1;
+						joint_1.r = a[vertex_i * weights_8_count + 4];
+						joint_1.g = a[vertex_i * weights_8_count + 5];
+						joint_1.b = a[vertex_i * weights_8_count + 6];
+						joint_1.a = a[vertex_i * weights_8_count + 7];
+						joints_1.write[vertex_i] = joint_1;
+					}
+					attributes["JOINTS_0"] = _encode_accessor_as_joints(state, joints_0, true);
+					attributes["JOINTS_1"] = _encode_accessor_as_joints(state, joints_1, true);
 				}
 			}
 			{
-				Array a = array[Mesh::ARRAY_WEIGHTS];
-				if (a.size()) {
-					const int ret_size = a.size() / 4;
+				const Array &a = array[Mesh::ARRAY_WEIGHTS];
+				const Vector<Vector3> &vertex_array = array[Mesh::ARRAY_VERTEX];
+				if ((a.size() / JOINT_GROUP_SIZE) == vertex_array.size()) {
+					const int ret_size = a.size() / JOINT_GROUP_SIZE;
 					Vector<Color> attribs;
 					attribs.resize(ret_size);
 					for (int i = 0; i < ret_size; i++) {
-						attribs.write[i] = Color(a[(i * 4) + 0], a[(i * 4) + 1], a[(i * 4) + 2], a[(i * 4) + 3]);
+						attribs.write[i] = Color(a[(i * JOINT_GROUP_SIZE) + 0], a[(i * JOINT_GROUP_SIZE) + 1], a[(i * JOINT_GROUP_SIZE) + 2], a[(i * JOINT_GROUP_SIZE) + 3]);
 					}
 					attributes["WEIGHTS_0"] = _encode_accessor_as_weights(state, attribs, true);
+				} else if ((a.size() / (JOINT_GROUP_SIZE * 2)) >= vertex_array.size()) {
+					int32_t vertex_count = vertex_array.size();
+					Vector<Color> weights_0;
+					weights_0.resize(vertex_count);
+					Vector<Color> weights_1;
+					weights_1.resize(vertex_count);
+					int32_t weights_8_count = JOINT_GROUP_SIZE * 2;
+					for (int32_t vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
+						Color weight_0;
+						weight_0.r = a[vertex_i * weights_8_count + 0];
+						weight_0.g = a[vertex_i * weights_8_count + 1];
+						weight_0.b = a[vertex_i * weights_8_count + 2];
+						weight_0.a = a[vertex_i * weights_8_count + 3];
+						weights_0.write[vertex_i] = weight_0;
+						Color weight_1;
+						weight_1.r = a[vertex_i * weights_8_count + 4];
+						weight_1.g = a[vertex_i * weights_8_count + 5];
+						weight_1.b = a[vertex_i * weights_8_count + 6];
+						weight_1.a = a[vertex_i * weights_8_count + 7];
+						weights_1.write[vertex_i] = weight_1;
+					}
+					attributes["WEIGHTS_0"] = _encode_accessor_as_weights(state, weights_0, true);
+					attributes["WEIGHTS_1"] = _encode_accessor_as_weights(state, weights_1, true);
 				}
 			}
 			{
@@ -2428,10 +2479,29 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(state, a["COLOR_0"], true);
 				has_vertex_color = true;
 			}
-			if (a.has("JOINTS_0")) {
+			if (a.has("JOINTS_0") && !a.has("JOINTS_1")) {
 				array[Mesh::ARRAY_BONES] = _decode_accessor_as_ints(state, a["JOINTS_0"], true);
+			} else if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
+				PackedInt32Array joints_0 = _decode_accessor_as_ints(state, a["JOINTS_0"], true);
+				PackedInt32Array joints_1 = _decode_accessor_as_ints(state, a["JOINTS_1"], true);
+				ERR_FAIL_COND_V(joints_0.size() != joints_0.size(), ERR_INVALID_DATA);
+				int32_t weight_8_count = JOINT_GROUP_SIZE * 2;
+				int32_t vertex_count = joints_0.size() / JOINT_GROUP_SIZE;
+				Vector<int> joints;
+				joints.resize(vertex_count * weight_8_count);
+				for (int32_t vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
+					joints.write[vertex_i * weight_8_count + 0] = joints_0[vertex_i * JOINT_GROUP_SIZE + 0];
+					joints.write[vertex_i * weight_8_count + 1] = joints_0[vertex_i * JOINT_GROUP_SIZE + 1];
+					joints.write[vertex_i * weight_8_count + 2] = joints_0[vertex_i * JOINT_GROUP_SIZE + 2];
+					joints.write[vertex_i * weight_8_count + 3] = joints_0[vertex_i * JOINT_GROUP_SIZE + 3];
+					joints.write[vertex_i * weight_8_count + 4] = joints_1[vertex_i * JOINT_GROUP_SIZE + 0];
+					joints.write[vertex_i * weight_8_count + 5] = joints_1[vertex_i * JOINT_GROUP_SIZE + 1];
+					joints.write[vertex_i * weight_8_count + 6] = joints_1[vertex_i * JOINT_GROUP_SIZE + 2];
+					joints.write[vertex_i * weight_8_count + 7] = joints_1[vertex_i * JOINT_GROUP_SIZE + 3];
+				}
+				array[Mesh::ARRAY_BONES] = joints;
 			}
-			if (a.has("WEIGHTS_0")) {
+			if (a.has("WEIGHTS_0") && !a.has("WEIGHTS_1")) {
 				Vector<float> weights = _decode_accessor_as_floats(state, a["WEIGHTS_0"], true);
 				{ //gltf does not seem to normalize the weights for some reason..
 					int wc = weights.size();
@@ -2448,6 +2518,51 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 							w[k + 1] /= total;
 							w[k + 2] /= total;
 							w[k + 3] /= total;
+						}
+					}
+				}
+				array[Mesh::ARRAY_WEIGHTS] = weights;
+			} else if (a.has("WEIGHTS_0") && a.has("WEIGHTS_1")) {
+				Vector<float> weights_0 = _decode_accessor_as_floats(state, a["WEIGHTS_0"], true);
+				Vector<float> weights_1 = _decode_accessor_as_floats(state, a["WEIGHTS_1"], true);
+				Vector<float> weights;
+				ERR_FAIL_COND_V(weights_0.size() != weights_1.size(), ERR_INVALID_DATA);
+				int32_t weight_8_count = JOINT_GROUP_SIZE * 2;
+				int32_t vertex_count = weights_0.size() / JOINT_GROUP_SIZE;
+				weights.resize(vertex_count * weight_8_count);
+				for (int32_t vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
+					weights.write[vertex_i * weight_8_count + 0] = weights_0[vertex_i * JOINT_GROUP_SIZE + 0];
+					weights.write[vertex_i * weight_8_count + 1] = weights_0[vertex_i * JOINT_GROUP_SIZE + 1];
+					weights.write[vertex_i * weight_8_count + 2] = weights_0[vertex_i * JOINT_GROUP_SIZE + 2];
+					weights.write[vertex_i * weight_8_count + 3] = weights_0[vertex_i * JOINT_GROUP_SIZE + 3];
+					weights.write[vertex_i * weight_8_count + 4] = weights_1[vertex_i * JOINT_GROUP_SIZE + 0];
+					weights.write[vertex_i * weight_8_count + 5] = weights_1[vertex_i * JOINT_GROUP_SIZE + 1];
+					weights.write[vertex_i * weight_8_count + 6] = weights_1[vertex_i * JOINT_GROUP_SIZE + 2];
+					weights.write[vertex_i * weight_8_count + 7] = weights_1[vertex_i * JOINT_GROUP_SIZE + 3];
+				}
+				{ //gltf does not seem to normalize the weights for some reason..
+					int wc = weights.size();
+					float *w = weights.ptrw();
+
+					for (int k = 0; k < wc; k += weight_8_count) {
+						float total = 0.0;
+						total += w[k + 0];
+						total += w[k + 1];
+						total += w[k + 2];
+						total += w[k + 3];
+						total += w[k + 4];
+						total += w[k + 5];
+						total += w[k + 6];
+						total += w[k + 7];
+						if (total > 0.0) {
+							w[k + 0] /= total;
+							w[k + 1] /= total;
+							w[k + 2] /= total;
+							w[k + 3] /= total;
+							w[k + 4] /= total;
+							w[k + 5] /= total;
+							w[k + 6] /= total;
+							w[k + 7] /= total;
 						}
 					}
 				}
@@ -2492,6 +2607,9 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				//must generate mikktspace tangents.. ergh..
 				Ref<SurfaceTool> st;
 				st.instance();
+				if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
+					st->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
+				}
 				st->create_from_triangle_arrays(array);
 				st->generate_tangents();
 				array = st->commit_to_arrays();
@@ -2608,6 +2726,9 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 					if (generate_tangents) {
 						Ref<SurfaceTool> st;
 						st.instance();
+						if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
+							st->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
+						}
 						st->create_from_triangle_arrays(array_copy);
 						st->deindex();
 						st->generate_tangents();
@@ -2649,6 +2770,9 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 		if (d.has("weights")) {
 			const Array &weights = d["weights"];
 			for (int j = 0; j < weights.size(); j++) {
+				if (j >= blend_weights.size()) {
+					break;
+				}
 				blend_weights.write[j] = weights[j];
 			}
 			mesh->set_blend_weights(blend_weights);
