@@ -18,7 +18,7 @@
 # sugusan <sugusan.development@gmail.com>, 2018, 2019.
 # Nathan Lovato <nathan.lovato.art@gmail.com>, 2018.
 # nyanode <akaruooyagi@yahoo.co.jp>, 2018.
-# nitenook <admin@alterbaum.net>, 2018, 2019.
+# nitenook <admin@alterbaum.net>, 2018, 2019, 2020.
 # Rob Matych <robertsmatych@gmail.com>, 2018.
 # Hidetsugu Takahashi <manzyun@gmail.com>, 2019.
 # Wataru Onuki <watonu@magadou.com>, 2019.
@@ -36,8 +36,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-01 20:29+0000\n"
-"Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
+"PO-Revision-Date: 2020-12-27 02:25+0000\n"
+"Last-Translator: nitenook <admin@alterbaum.net>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -278,7 +278,7 @@ msgstr "このトラックの オン/オフ を切り替え。"
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr "Update モード（このプロパティの設定方法）"
+msgstr "Update モード (このプロパティの設定方法)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
@@ -286,7 +286,7 @@ msgstr "補間モード"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr "ループラップモード（ループの先頭で補間を終了する）"
+msgstr "ループラップモード (ループの先頭で補間を終了する)"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
@@ -2310,7 +2310,7 @@ msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
-"シーンを保存できませんでした。 おそらく、依存関係（インスタンスまたは継承）を"
+"シーンを保存できませんでした。 おそらく、依存関係 (インスタンスまたは継承) を"
 "満たせませんでした。"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
@@ -3129,13 +3129,13 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
-"この操作は \"res://android/build\" にソーステンプレートをインストールし、アン"
-"ドロイドのカスタムビルドを設定します。\n"
+"この操作は \"res://android/build\" にソーステンプレートをインストールし、"
+"Androidのカスタムビルドを設定します。\n"
 "後から設定に変更を加えたり、エクスポート時にカスタムAPKをビルドできます (モ"
 "ジュールを追加する、AndroidManifest.xmlを変更する等)。\n"
-"APKビルドの初期設定の代わりにカスタムビルド設定を使うためには、アンドロイドの"
-"エクスポート設定の「Use Custom Build (カスタムビルドを使用する)」のオプション"
-"が有効化されている必要があることに注意してください。"
+"APKビルドの初期設定の代わりにカスタムビルド設定を使うためには、Androidのエク"
+"スポート設定の「Use Custom Build (カスタムビルドを使用する)」のオプションが有"
+"効化されている必要があることに注意してください。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3736,6 +3736,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"以下のファイルまたはフォルダは、対象の場所 '%s' にある項目と競合していま"
+"す。\n"
+"\n"
+"%s\n"
+"\n"
+"上書きしますか？"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3927,8 +3933,19 @@ msgid "Searching..."
 msgstr "検索中..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "検索完了"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d件の一致が見つかりました。"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d件の一致が見つかりました。"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d件の一致が見つかりました。"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -7024,7 +7041,7 @@ msgstr "ターゲット"
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
 msgstr ""
-"メソッド'%s' (シグナル'％s'用) が見つかりません、これはノード'%s'からノー"
+"メソッド'%s' (シグナル'%s'用) が見つかりません、これはノード'%s'からノー"
 "ド'%s'へのシグナル用です。"
 
 #: editor/plugins/script_text_editor.cpp
@@ -8563,10 +8580,6 @@ msgid "Error"
 msgstr "エラー"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "コミットメッセージは提供されませんでした"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "ステージに追加されているファイルがありません"
 
@@ -8621,10 +8634,6 @@ msgstr "選択対象をステージする"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "すべてをステージする"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "コミットメッセージを追加する"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9629,7 +9638,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Features"
-msgstr "特徴"
+msgstr "機能"
 
 #: editor/project_export.cpp
 msgid "Custom (comma-separated):"
@@ -9825,7 +9834,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "お使いのGPUドライバではサポートされていません。"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -10204,7 +10213,7 @@ msgstr "プロパティ '%s' は存在しません。"
 
 #: editor/project_settings_editor.cpp
 msgid "Setting '%s' is internal, and it can't be deleted."
-msgstr "設定 '％s'は内部的なものであり、削除することはできません。"
+msgstr "設定 '%s'は内部的なものであり、削除することはできません。"
 
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
@@ -11808,8 +11817,8 @@ msgid ""
 "Can't drop properties because script '%s' is not used in this scene.\n"
 "Drop holding 'Shift' to just copy the signature."
 msgstr ""
-"このシーンではスクリプト '％s'が使用されていないため、プロパティを削除できま"
-"せん。\n"
+"このシーンではスクリプト '%s'が使用されていないため、プロパティを削除できませ"
+"ん。\n"
 "「Shift」を押しながらドロップすると、署名がコピーされます。"
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -12398,23 +12407,23 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "Node AとNode Bは PhysicsBody2D でなければなりません"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "Node A は PhysicsBody2D でなければなりません"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "Node B は PhysicsBody2D でなければなりません"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr ""
+msgstr "Joint が2つの PhysicsBody2D に接続されてません"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr ""
+msgstr "Node A と Node B は異なる PhysicsBody2D でなければなりません"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12746,23 +12755,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "Node A と Node B は PhysicsBody でなければなりません"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "Node A は PhysicsBody でなければなりません"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "Node B は PhysicsBody でなければなりません"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "Joint と接続している PhysicsBody がありません"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "Node A と Node B は異なる PhysicsBody でなければなりません"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -12827,7 +12836,7 @@ msgstr ""
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "On BlendTree node '%s', animation not found: '%s'"
-msgstr "BlendTreeノード '％s' では、アニメーションが見つかりません: '％s'"
+msgstr "BlendTreeノード '%s' では、アニメーションが見つかりません: '%s'"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "Animation not found: '%s'"
@@ -12843,7 +12852,7 @@ msgstr "無効なアニメーション: '%s'。"
 
 #: scene/animation/animation_tree.cpp
 msgid "Nothing connected to input '%s' of node '%s'."
-msgstr "入力 '％s'(ノード '％s')に接続されているものはありません。"
+msgstr "入力 '%s'(ノード '%s')に接続されているものはありません。"
 
 #: scene/animation/animation_tree.cpp
 msgid "No root AnimationNode for the graph is set."
@@ -12925,6 +12934,11 @@ msgstr "警告!"
 msgid "Please Confirm..."
 msgstr "確認..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "スナップを有効にする"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13004,6 +13018,15 @@ msgstr "Varying変数は頂点関数にのみ割り当てることができま�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#~ msgid "Search complete"
+#~ msgstr "検索完了"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "コミットメッセージは提供されませんでした"
+
+#~ msgid "Add a commit message"
+#~ msgstr "コミットメッセージを追加する"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "このパスには、既に同名のファイルかフォルダがあります。"

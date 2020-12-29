@@ -10,11 +10,12 @@
 # Oymate <dhruboadittya96@gmail.com>, 2020.
 # Mokarrom Hossain <mhb2016.bzs@gmail.com>, 2020.
 # Sagen Soren <sagensoren03@gmail.com>, 2020.
+# Hasibul Hasan <d1hasib@yahoo.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-26 08:43+0000\n"
+"PO-Revision-Date: 2020-12-27 02:25+0000\n"
 "Last-Translator: Mokarrom Hossain <mhb2016.bzs@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
@@ -23,13 +24,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
-#, fuzzy
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "অবৈধ প্রকার রূপান্তর করার যুক্তি(),use TYPE_* constants."
+msgstr "অবৈধ প্রকার রূপান্তর করার যুক্তি , TYPE_* constants ব্যবহার করুন"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
@@ -265,7 +265,7 @@ msgstr "ইন্টারপোলেশন মোড"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr ""
+msgstr "লুপ Wrap মোড (লুপ দিয়ে শুরু দিয়ে ইন্টারপোলেট শেষ)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -277,9 +277,8 @@ msgid "Time (s): "
 msgstr "সময় (সেঃ): "
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle Track Enabled"
-msgstr "সক্রিয় করুন"
+msgstr "ট্র্যাক সক্রিয় করুন"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -397,7 +396,7 @@ msgstr "ট্র্যাকগুলি পুনর্বিন্যস্�
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr ""
+msgstr "রূপান্তর ট্র্যাকগুলি কেবল Spatial-based নোডগুলিতে প্রযোজ্য।"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -406,10 +405,15 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
+"রূপান্তর ট্র্যাকগুলি কেবল স্থানিক ভিত্তিক নোডগুলিতে প্রযোজ্য। অডিও ট্র্যাকগুলি কেবল "
+"প্রকারের নোডগুলিতে নির্দেশ করতে পারে:\n"
+"-অডিও স্ট্রিমপ্লেয়ার\n"
+"-অডিও স্ট্রিমপ্লেয়ার 2 ডি\n"
+"-অডিওস্ট্রিপপ্লেয়ার 3 ডি"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr ""
+msgstr "অ্যানিমেশন ট্র্যাকগুলি কেবল অ্যানিমেশনপ্লেয়ার নোডগুলিতে নির্দেশ করতে পারে।"
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
@@ -417,24 +421,23 @@ msgstr "একটি অ্যানিমেশন প্লেয়ার ন
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "মূল ছাড়া নতুন ট্র্যাক যুক্ত করা সম্ভব নয়"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "বেজিয়ারের জন্য অবৈধ ট্র্যাক (উপযুক্ত উপ-বৈশিষ্ট্য নেই)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Bezier Track"
-msgstr "অ্যানিমেশন (Anim) ট্র্যাক যোগ করুন"
+msgstr "বেজিয়ার ট্র্যাক যুক্ত করুন"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "ট্র্যাক পাথটি অবৈধ, সুতরাং কোনও কী যুক্ত করতে পারছে না।"
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr ""
+msgstr "ট্র্যাক Spatial টাইপের নয়, কী সন্নিবেশ করতে পারে না"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -514,14 +517,12 @@ msgid "Group tracks by node or display them as plain list."
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "স্ন্যাপ"
+msgstr "স্ন্যাপ :"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation step value."
-msgstr "অ্যানিমেশনের তালিকাটি কার্যকর।"
+msgstr "অ্যানিমেশন পদক্ষেপের মান।"
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
@@ -544,7 +545,7 @@ msgstr "সম্পাদন করুন (Edit)"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation properties."
-msgstr "অ্যানিমেশন বৈশিষ্ট্য"
+msgstr "অ্যানিমেশন বৈশিষ্ট্য।"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -3145,12 +3146,14 @@ msgid "Send Docs Feedback"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Community"
-msgstr "কমিউনিটি/যৌথ-সামাজিক উৎস"
+msgstr "সম্প্রদায়"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "About"
-msgstr "সম্বন্ধে/সম্পর্কে"
+msgstr "সম্বন্ধে"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -4145,8 +4148,18 @@ msgstr "সংরক্ষিত হচ্ছে..."
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Search complete"
-msgstr "টেক্সট অনুসন্ধান করুন"
+msgid "%d match in %d file."
+msgstr "কোনো মিল নেই"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "কোনো মিল নেই"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "কোনো মিল নেই"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -9158,11 +9171,6 @@ msgid "Error"
 msgstr "সমস্যা/ভুল"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "No commit message was provided"
-msgstr "কোন নাম ব্যাবহার করা হয়নি"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -9226,10 +9234,6 @@ msgstr "নির্বাচিত সমূহ অপসারণ করুন
 #, fuzzy
 msgid "Stage All"
 msgstr "সকল্গুলি সংরক্ষণ করুন"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -10887,7 +10891,7 @@ msgstr "প্রকল্পের সেটিংস (engine.cfg)"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr "জেনেরাল"
+msgstr "সাধারণ"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."
@@ -13623,6 +13627,11 @@ msgstr "সতর্কতা!"
 msgid "Please Confirm..."
 msgstr "অনুগ্রহ করে নিশ্চিত করুন..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "স্ন্যাপ সক্রিয় করুন"
+
 #: scene/gui/popup.cpp
 #, fuzzy
 msgid ""
@@ -13701,6 +13710,14 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Search complete"
+#~ msgstr "টেক্সট অনুসন্ধান করুন"
+
+#, fuzzy
+#~ msgid "No commit message was provided"
+#~ msgstr "কোন নাম ব্যাবহার করা হয়নি"
 
 #, fuzzy
 #~ msgid "There is already file or folder with the same name in this location."

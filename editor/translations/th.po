@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-01 20:29+0000\n"
+"PO-Revision-Date: 2020-12-14 11:03+0000\n"
 "Last-Translator: Kongfa Warorot <gongpha@hotmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
@@ -3643,6 +3643,11 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"ไฟล์หรือโฟลเดอร์ต่อไปนี้มีความขัดแย้งกับรายการในตำแหน่งเป้าหมาย '%s':\n"
+"\n"
+"%s\n"
+"\n"
+"คุณต้องการที่จะเขียนทับหรือไม่?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3833,8 +3838,19 @@ msgid "Searching..."
 msgstr "กำลังค้นหา..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "ค้นหาสำเร็จ"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d ตรงกัน"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d ตรงกัน"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d ตรงกัน"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -4078,7 +4094,7 @@ msgstr "คุณสมบัติออบเจกต์"
 
 #: editor/inspector_dock.cpp
 msgid "Filter properties"
-msgstr "คุญสมบัติตัวกรอง"
+msgstr "คุณสมบัติตัวกรอง"
 
 #: editor/inspector_dock.cpp
 msgid "Changes may be lost!"
@@ -8426,10 +8442,6 @@ msgid "Error"
 msgstr "ผิดพลาด"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "ไม่ได้ระบุข้อความ commit"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "ไม่มีไฟล์เพิ่มไฟยัง stage"
 
@@ -8484,10 +8496,6 @@ msgstr "เลือก stage"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Stage ทั้งหมด"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "เพิ่มข้อความ commit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9659,7 +9667,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "ไม่รองรับโดยไดรเวอร์ GPU ของคุณ"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12171,23 +12179,23 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "โหนด A และ โหนด B จะต้องเป็น PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "Node A จะต้องเป็น PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "Node B จะต้องเป็น PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr ""
+msgstr "ข้อต่อไม่ได้เชื่อมโยงกับ PhysicsBody2D สองโหนด"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr ""
+msgstr "โหนด A และโหนด B จะต้องเป็น PhysicsBody2D ที่แตกต่างกัน"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12485,23 +12493,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "โหนด A และโหนด B จะต้องเป็น PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "Node A จะต้องเป็น PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "Node A จะต้องเป็น PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "ข้อต่อไม่ได้เชื่อมโยงกับ PhysicsBody ใด ๆ"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "โหนด A และโหนด B จะต้องเป็น PhysicsBody ที่แตกต่างกัน"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -12652,6 +12660,11 @@ msgstr "แจ้งเตือน!"
 msgid "Please Confirm..."
 msgstr "กรุณายืนยัน..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "จำกัดการเคลื่อนย้าย"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -12728,6 +12741,15 @@ msgstr "Varyings สามารถกำหนดในังก์ชันเ
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "ค่าคงที่ไม่สามารถแก้ไขได้"
+
+#~ msgid "Search complete"
+#~ msgstr "ค้นหาสำเร็จ"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "ไม่ได้ระบุข้อความ commit"
+
+#~ msgid "Add a commit message"
+#~ msgstr "เพิ่มข้อความ commit"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "มีไฟล์หรือโฟลเดอร์ชื่อเดียวกันอยู่แล้ว"

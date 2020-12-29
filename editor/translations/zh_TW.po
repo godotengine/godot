@@ -29,7 +29,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-07 08:11+0000\n"
+"PO-Revision-Date: 2020-12-19 04:29+0000\n"
 "Last-Translator: BinotaLIU <me@binota.org>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
@@ -3652,6 +3652,11 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"以下檔案或資料夾與目標路徑「%s」中的項目衝突：\n"
+"\n"
+"%s\n"
+"\n"
+"要覆蓋這些檔案或資料夾嗎？"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3842,8 +3847,19 @@ msgid "Searching..."
 msgstr "正在搜尋..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "搜尋完成"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d 件相符合的結果。"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d 件相符合的結果。"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d 件相符合的結果。"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8434,10 +8450,6 @@ msgid "Error"
 msgstr "錯誤"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "未提供提交訊息"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "預存區無檔案"
 
@@ -8492,10 +8504,6 @@ msgstr "預存所選"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "預存全部"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "新增一個提交訊息"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9660,7 +9668,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "所使用的 GPU 驅動程式不支援。"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12171,23 +12179,23 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "Node A 與 Node B 必須為 PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "Node A 必須為 PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "Node B 必須為 PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr ""
+msgstr "Joint 未連結至 2 個 PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr ""
+msgstr "Node A 與 Node B 必須為不同的 PhysicsBody2D"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12485,23 +12493,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "Node A 與 Node B 必須為 PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "Node A 必須為 PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "Node B 必須為 PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "Joint 尚未連結至任何 PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "Node A 與 Node B 必須為不同的 PhysicsBody"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -12656,6 +12664,11 @@ msgstr "警告！"
 msgid "Please Confirm..."
 msgstr "請確認..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "啟用吸附"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -12733,6 +12746,15 @@ msgstr "Varying 變數只可在頂點函式中指派。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不可修改常數。"
+
+#~ msgid "Search complete"
+#~ msgstr "搜尋完成"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "未提供提交訊息"
+
+#~ msgid "Add a commit message"
+#~ msgstr "新增一個提交訊息"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "該位置已有相同名稱的檔案或資料夾。"

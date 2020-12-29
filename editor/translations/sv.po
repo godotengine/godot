@@ -3995,8 +3995,18 @@ msgstr "Sparar..."
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Search complete"
-msgstr "Söktext"
+msgid "%d match in %d file."
+msgstr "%d matchningar."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d matchningar."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d matchningar."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8794,10 +8804,6 @@ msgid "Error"
 msgstr "Fel"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -8860,10 +8866,6 @@ msgstr "Skala urval"
 #, fuzzy
 msgid "Stage All"
 msgstr "Spara Alla"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -13045,6 +13047,10 @@ msgstr "Varning!"
 msgid "Please Confirm..."
 msgstr "Vänligen Bekräfta..."
 
+#: scene/gui/graph_edit.cpp
+msgid "Enable grid minimap."
+msgstr ""
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13115,6 +13121,10 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Search complete"
+#~ msgstr "Söktext"
 
 #, fuzzy
 #~ msgid "There is already file or folder with the same name in this location."

@@ -3933,8 +3933,19 @@ msgid "Searching..."
 msgstr "Mencari..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Pencarian selesai"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "Ditemukan %d kecocokan."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "Ditemukan %d kecocokan."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "Ditemukan %d kecocokan."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8583,10 +8594,6 @@ msgid "Error"
 msgstr "Galat"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "Tidak ada pesan komit yang diberikan"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "Tidak ada berkas yang ditambahkan ke staging"
 
@@ -8641,10 +8648,6 @@ msgstr "Stage Hanya yang Dipilih"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Stage Semua"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Tambahkan pesan komit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -12954,6 +12957,11 @@ msgstr "Peringatan!"
 msgid "Please Confirm..."
 msgstr "Mohon konfirmasi..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Aktifkan Pengancingan"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13037,6 +13045,15 @@ msgstr "Variasi hanya bisa ditetapkan dalam fungsi vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
+
+#~ msgid "Search complete"
+#~ msgstr "Pencarian selesai"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "Tidak ada pesan komit yang diberikan"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Tambahkan pesan komit"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "Sudah ada nama berkas atau folder seperti itu di lokasi ini."

@@ -4252,8 +4252,18 @@ msgstr "Чување..."
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Search complete"
-msgstr "Потражи текст"
+msgid "%d match in %d file."
+msgstr "Нема подударања."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "Нема подударања."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "Нема подударања."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -9422,11 +9432,6 @@ msgstr "Грешка"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
-msgid "No commit message was provided"
-msgstr "Име није дато"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "No files added to stage"
 msgstr "Ни један фајл није додат на позорницу"
 
@@ -9494,11 +9499,6 @@ msgstr "Увећај одабрано"
 #, fuzzy
 msgid "Stage All"
 msgstr "Сачувај све"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "Add a commit message"
-msgstr "Додај предајну поруку"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -14547,6 +14547,11 @@ msgstr "Узбуна!"
 msgid "Please Confirm..."
 msgstr "Молимо Потврди..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Укључи лепљење"
+
 #: scene/gui/popup.cpp
 #, fuzzy
 msgid ""
@@ -14641,6 +14646,18 @@ msgstr "Варијације могу само бити одређене у фу
 #, fuzzy
 msgid "Constants cannot be modified."
 msgstr "Константе није могуће мењати."
+
+#, fuzzy
+#~ msgid "Search complete"
+#~ msgstr "Потражи текст"
+
+#, fuzzy
+#~ msgid "No commit message was provided"
+#~ msgstr "Име није дато"
+
+#, fuzzy
+#~ msgid "Add a commit message"
+#~ msgstr "Додај предајну поруку"
 
 #, fuzzy
 #~ msgid "There is already file or folder with the same name in this location."

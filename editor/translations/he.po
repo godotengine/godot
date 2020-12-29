@@ -3901,8 +3901,18 @@ msgstr "שמירה…"
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Search complete"
-msgstr "חיפוש טקסט"
+msgid "%d match in %d file."
+msgstr "%d התאמות."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d התאמות."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d התאמות."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8669,11 +8679,6 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "No commit message was provided"
-msgstr "לא צוין שם"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -8737,10 +8742,6 @@ msgstr "מחובר"
 #, fuzzy
 msgid "Stage All"
 msgstr "לשמור הכול"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -12905,6 +12906,11 @@ msgstr "אזהרה!"
 msgid "Please Confirm..."
 msgstr "נא לאשר…"
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "הפעלת הצמדה"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -12982,6 +12988,14 @@ msgstr "ניתן להקצות שינויים רק בפונקצית vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "אי אפשר לשנות קבועים."
+
+#, fuzzy
+#~ msgid "Search complete"
+#~ msgstr "חיפוש טקסט"
+
+#, fuzzy
+#~ msgid "No commit message was provided"
+#~ msgstr "לא צוין שם"
 
 #, fuzzy
 #~ msgid "There is already file or folder with the same name in this location."

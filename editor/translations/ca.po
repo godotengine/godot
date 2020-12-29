@@ -3950,8 +3950,19 @@ msgid "Searching..."
 msgstr "Cercant..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Cerca completa"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d coincidències."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d coincidències."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d coincidències."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8764,11 +8775,6 @@ msgid "Error"
 msgstr "Error"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "No commit message was provided"
-msgstr "Manca Nom"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "No hi ha fitxers afegits a l'escenari"
 
@@ -8832,11 +8838,6 @@ msgstr "Elimina Seleccionats"
 #, fuzzy
 msgid "Stage All"
 msgstr "Desa-ho Tot"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "Add a commit message"
-msgstr "Afegir un missatge de commit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -13292,6 +13293,11 @@ msgstr "Ep!"
 msgid "Please Confirm..."
 msgstr "Confirmeu..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Activar Ajustament"
+
 #: scene/gui/popup.cpp
 #, fuzzy
 msgid ""
@@ -13376,6 +13382,17 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constants no es poden modificar."
+
+#~ msgid "Search complete"
+#~ msgstr "Cerca completa"
+
+#, fuzzy
+#~ msgid "No commit message was provided"
+#~ msgstr "Manca Nom"
+
+#, fuzzy
+#~ msgid "Add a commit message"
+#~ msgstr "Afegir un missatge de commit"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "Ja hi existex un fitxer o directori amb aquest nom."

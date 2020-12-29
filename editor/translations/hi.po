@@ -12,12 +12,13 @@
 # Shirious <sad3119823@gmail.com>, 2020.
 # Abhay Patel <Traumaticbean@protonmail.com>, 2020.
 # Bishwajeet Parhi <bishwajeet.techmaster@gmail.com>, 2020.
+# l4KKY <greenforcesave@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-20 23:08+0000\n"
-"Last-Translator: Bishwajeet Parhi <bishwajeet.techmaster@gmail.com>\n"
+"PO-Revision-Date: 2020-12-19 04:29+0000\n"
+"Last-Translator: l4KKY <greenforcesave@gmail.com>\n"
 "Language-Team: Hindi <https://hosted.weblate.org/projects/godot-engine/godot/"
 "hi/>\n"
 "Language: hi\n"
@@ -1151,9 +1152,8 @@ msgid "Gold Sponsors"
 msgstr "गोल्ड प्रायोजक"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
-msgstr "रजत दाताओं"
+msgstr "रजत प्रायोजक"
 
 #: editor/editor_about.cpp
 #, fuzzy
@@ -3867,8 +3867,19 @@ msgid "Searching..."
 msgstr "खोज..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr ""
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d मिल गया।"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d मिल गया।"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d मिल गया।"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8458,10 +8469,6 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -8520,10 +8527,6 @@ msgstr "जुडिये"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -9471,7 +9474,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Features"
-msgstr ""
+msgstr "सुविधाऐं"
 
 #: editor/project_export.cpp
 msgid "Custom (comma-separated):"
@@ -12569,6 +12572,10 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable grid minimap."
 msgstr ""
 
 #: scene/gui/popup.cpp

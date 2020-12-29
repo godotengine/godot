@@ -46,12 +46,13 @@
 # Musab Alasaifer <mousablasefer@gmail.com>, 2020.
 # Yassine Oudjana <y.oudjana@protonmail.com>, 2020.
 # bruvzg <bruvzg13@gmail.com>, 2020.
+# StarlkYT <mrsstarlkps4@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-07 08:11+0000\n"
-"Last-Translator: Musab Alasaifer <mousablasefer@gmail.com>\n"
+"PO-Revision-Date: 2020-12-29 15:03+0000\n"
+"Last-Translator: StarlkYT <mrsstarlkps4@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -60,7 +61,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1648,7 +1649,6 @@ msgstr ""
 "'Import Etc 2' او 'Import Pvrtc' في إعدادات المشروع."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for the driver fallback "
 "to GLES2.\n"
@@ -1657,7 +1657,7 @@ msgid ""
 msgstr ""
 "تتطلب المنصة المستهدفة ضغط الرسومات النقشية 'ETC' texture ليرجع المعرّف إلى "
 "GLES2.\n"
-"مكّن 'استيراد Etc' في إعدادات المشروع، أو عطّل 'تمكين التوافق الرجعي للتعريفات "
+"مَكِّن 'استيراد Etc' في إعدادات المشروع، أو عطّل 'تمكين التوافق الرجعي للتعريفات "
 "Driver Fallback Enabled'."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
@@ -2337,6 +2337,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"حدث خطأ ما عند المحاوله لحفظ المحرر.\n"
+"تأكد من عنوان بيانات المستخدم للمحرر قابله للكتابه."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3920,8 +3922,19 @@ msgid "Searching..."
 msgstr "جاري البحث..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "إكتمل البحث"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d تطابقات."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d تطابقات."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d تطابقات."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8559,10 +8572,6 @@ msgid "Error"
 msgstr "خطأ"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "لم يتم تقديم رسالة ارتكاب commit"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "لم يتم إضافة ملفات إلى المرحلة"
 
@@ -8617,10 +8626,6 @@ msgstr "حُددت المرحلة"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "مُجمل المراحل"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "إضافة رسالة إجراء"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -12939,6 +12944,11 @@ msgstr "تنبيه!"
 msgid "Please Confirm..."
 msgstr "يُرجى التأكيد..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "تمكين المحاذاة"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13017,6 +13027,15 @@ msgstr "يمكن تعيين المتغيرات فقط في الذروة ."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "لا يمكن تعديل الثوابت."
+
+#~ msgid "Search complete"
+#~ msgstr "إكتمل البحث"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "لم يتم تقديم رسالة ارتكاب commit"
+
+#~ msgid "Add a commit message"
+#~ msgstr "إضافة رسالة إجراء"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "يوجد بالفعل ملف أو مجلد بنفس الاسم في هذا المكان."

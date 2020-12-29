@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-29 08:29+0000\n"
+"PO-Revision-Date: 2020-12-14 11:03+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -3738,6 +3738,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Вказані нижче файли або теки мають такі самі назви, що і записи у місці "
+"призначення «%s»:\n"
+"\n"
+"%s\n"
+"\n"
+"Хочете виконати перезапис поточних даних?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3930,8 +3936,19 @@ msgid "Searching..."
 msgstr "Шукаємо…"
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Пошук завершено"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d відповідників."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d відповідників."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d відповідників."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8581,10 +8598,6 @@ msgid "Error"
 msgstr "Помилка"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "Не було вказано повідомлення щодо внеску"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "Не додано жодних файлів для внеску"
 
@@ -8639,10 +8652,6 @@ msgstr "Вибрано для внеску"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Внести все"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Додати повідомлення щодо внеску"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9850,7 +9859,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "У ваших драйверах підтримки не передбачено."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12450,23 +12459,23 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "Вузол A і вузол B мають бути PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "Вузол A має бути PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "Вузол B має бути PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr ""
+msgstr "З'єднання не з'єднано із двома PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr ""
+msgstr "Вузол A і вузол B мають бути різними PhysicsBody2D"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12803,23 +12812,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "Вузол A і вузол B мають належати до типу PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "Вузол A має належати до типу PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "Вузол B має належати до типу PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "З'єднання не з'єднано із жодним PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "Вузол A і вузол B має бути різними PhysicsBody"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -12982,6 +12991,11 @@ msgstr "Увага!"
 msgid "Please Confirm..."
 msgstr "Будь ласка, підтвердьте..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Дозволити прилипання"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13064,6 +13078,15 @@ msgstr "Змінні величини можна пов'язувати лише 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
+
+#~ msgid "Search complete"
+#~ msgstr "Пошук завершено"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "Не було вказано повідомлення щодо внеску"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Додати повідомлення щодо внеску"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "У вказаному каталозі вже міститься тека або файл із вказано назвою."
