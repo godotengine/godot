@@ -188,7 +188,7 @@ String find_msbuild_tools_path() {
 				if (key == "installationPath") {
 					String val = line.substr(sep_idx + 1, line.length()).strip_edges();
 
-					ERR_BREAK(val.empty());
+					ERR_BREAK(val.is_empty());
 
 					if (!val.ends_with("\\")) {
 						val += "\\";
