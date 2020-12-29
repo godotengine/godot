@@ -1101,14 +1101,6 @@
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
 			Shaders have a time variable that constantly increases. At some point, it needs to be rolled back to zero to avoid precision errors on shader animations. This setting specifies when (in seconds).
 		</member>
-		<member name="rendering/options/api_usage_batching/flag_stream" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/options/api_usage_batching/send_null" type="bool" setter="" getter="" default="true">
-		</member>
-		<member name="rendering/options/api_usage_legacy/flag_stream" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/options/api_usage_legacy/orphan_buffers" type="bool" setter="" getter="" default="true">
-		</member>
 		<member name="rendering/quality/2d/ninepatch_mode" type="int" setter="" getter="" default="0">
 			Choose between default mode where corner scalings are preserved matching the artwork, and scaling mode.
 			Not available in GLES3 when [member rendering/batching/options/use_batching] is off.
