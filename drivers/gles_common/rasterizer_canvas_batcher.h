@@ -605,17 +605,30 @@ protected:
 		return TM_ALL;
 	}
 	bool _software_skin_poly(RasterizerCanvas::Item::CommandPolygon *p_poly, RasterizerCanvas::Item *p_item, BatchVertex *bvs, BatchColor *vertex_colors, const FillState &p_fill_state, const BatchColor *p_precalced_colors);
+
 	typename T_STORAGE::Texture *_get_canvas_texture(const RID &p_texture) const {
 		if (p_texture.is_valid()) {
 
 			typename T_STORAGE::Texture *texture = get_storage()->texture_owner.getornull(p_texture);
 
 			if (texture) {
+
+				// could be a proxy texture (e.g. animated)
+				if (texture->proxy) {
+					// take care to prevent infinite loop
+					int count = 0;
+					while (texture->proxy) {
+						texture = texture->proxy;
+						count++;
+						ERR_FAIL_COND_V_MSG(count == 16, nullptr, "Texture proxy infinite loop detected.");
+					}
+				}
+
 				return texture->get_ptr();
 			}
 		}
 
-		return 0;
+		return nullptr;
 	}
 
 public:
@@ -1351,13 +1364,14 @@ PREAMBLE(bool)::_prefill_line(RasterizerCanvas::Item::CommandLine *p_line, FillS
 T_PREAMBLE
 template <bool SEND_LIGHT_ANGLES>
 bool C_PREAMBLE::_prefill_ninepatch(RasterizerCanvas::Item::CommandNinePatch *p_np, FillState &r_fill_state, int &r_command_start, int command_num, int command_count, RasterizerCanvas::Item *p_item, bool multiply_final_modulate) {
-	typename T_STORAGE::Texture *tex = get_storage()->texture_owner.getornull(p_np->texture);
+	typename T_STORAGE::Texture *tex = _get_canvas_texture(p_np->texture);
 
 	if (!tex) {
 		// FIXME: Handle textureless ninepatch gracefully
 		WARN_PRINT("NinePatch without texture not supported yet, skipping.");
 		return false;
 	}
+
 	if (tex->width == 0 || tex->height == 0) {
 		WARN_PRINT("Cannot set empty texture to NinePatch.");
 		return false;
