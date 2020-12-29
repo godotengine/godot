@@ -147,7 +147,7 @@ void TextParagraph::_shape_lines() {
 					TS->free(line);
 					break;
 				}
-				if (!tab_stops.empty()) {
+				if (!tab_stops.is_empty()) {
 					TS->shaped_text_tab_align(line, tab_stops);
 				}
 				if (align == HALIGN_FILL && (line_breaks.size() == 1 || i < line_breaks.size() - 1)) {

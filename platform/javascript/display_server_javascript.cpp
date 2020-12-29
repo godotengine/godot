@@ -93,7 +93,7 @@ EM_BOOL DisplayServerJavaScript::fullscreen_change_callback(int p_event_type, co
 	DisplayServerJavaScript *display = get_singleton();
 	// Empty ID is canvas.
 	String target_id = String::utf8(p_event->id);
-	if (target_id.empty() || target_id == String::utf8(display->canvas_id)) {
+	if (target_id.is_empty() || target_id == String::utf8(display->canvas_id)) {
 		// This event property is the only reliable data on
 		// browser fullscreen state.
 		if (p_event->isFullscreen) {

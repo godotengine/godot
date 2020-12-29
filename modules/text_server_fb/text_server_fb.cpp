@@ -550,7 +550,7 @@ bool TextServerFallback::shaped_text_add_string(RID p_shaped, const String &p_te
 	ERR_FAIL_COND_V(!sd, false);
 	ERR_FAIL_COND_V(p_size <= 0, false);
 
-	if (p_text.empty()) {
+	if (p_text.is_empty()) {
 		return true;
 	}
 
@@ -573,7 +573,7 @@ bool TextServerFallback::shaped_text_add_string(RID p_shaped, const String &p_te
 			span.fonts.push_back(p_fonts[i]);
 		}
 	}
-	ERR_FAIL_COND_V(span.fonts.empty(), false);
+	ERR_FAIL_COND_V(span.fonts.is_empty(), false);
 	span.font_size = p_size;
 	span.language = p_language;
 

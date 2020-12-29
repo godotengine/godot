@@ -404,7 +404,7 @@
 				Returns an empty [code]Dictionary[/code] if no result was found. Otherwise, returns a [code]Dictionary[/code] containing [code]line[/code] and [code]column[/code] entries, e.g:
 				[codeblock]
 				var result = search(key, flags, line, column)
-				if !result.empty():
+				if !result.is_empty():
 				    # Result found.
 				    var line_number = result.line
 				    var column_number = result.column

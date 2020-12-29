@@ -108,7 +108,7 @@ void JavaScriptToolsEditorPlugin::_zip_recursive(String p_path, String p_base_pa
 	}
 	dir->list_dir_begin();
 	String cur = dir->get_next();
-	while (!cur.empty()) {
+	while (!cur.is_empty()) {
 		String cs = p_path.plus_file(cur);
 		if (cur == "." || cur == ".." || cur == ".import") {
 			// Skip

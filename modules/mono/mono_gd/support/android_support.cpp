@@ -134,7 +134,7 @@ String determine_app_native_lib_dir() {
 }
 
 String get_app_native_lib_dir() {
-	if (app_native_lib_dir_cache.empty())
+	if (app_native_lib_dir_cache.is_empty())
 		app_native_lib_dir_cache = determine_app_native_lib_dir();
 	return app_native_lib_dir_cache;
 }

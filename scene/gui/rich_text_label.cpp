@@ -2359,7 +2359,7 @@ bool RichTextLabel::remove_line(const int p_line) {
 
 void RichTextLabel::push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins, const Color &p_color, int p_ol_size, const Color &p_ol_color) {
 	ERR_FAIL_COND(current->type == ITEM_TABLE);
-	ERR_FAIL_COND(p_string.empty());
+	ERR_FAIL_COND(p_string.is_empty());
 	ERR_FAIL_COND(p_font.is_null());
 	ERR_FAIL_COND(p_size <= 0);
 
