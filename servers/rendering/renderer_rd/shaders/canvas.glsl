@@ -499,7 +499,7 @@ void main() {
 	{
 		float normal_depth = 1.0;
 
-#if defined(NORMALMAP_USED)
+#if defined(NORMAL_MAP_USED)
 		vec3 normal_map = vec3(0.0, 0.0, 1.0);
 		normal_used = true;
 #endif
@@ -510,7 +510,7 @@ FRAGMENT_SHADER_CODE
 
 		/* clang-format on */
 
-#if defined(NORMALMAP_USED)
+#if defined(NORMAL_MAP_USED)
 		normal = mix(vec3(0.0, 0.0, 1.0), normal_map * vec3(2.0, -2.0, 1.0) - vec3(1.0, -1.0, 0.0), normal_depth);
 #endif
 	}

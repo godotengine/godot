@@ -68,13 +68,13 @@
 				Blits [code]src_rect[/code] area from [code]src[/code] image to this image at the coordinates given by [code]dst[/code]. [code]src[/code] pixel is copied onto [code]dst[/code] if the corresponding [code]mask[/code] pixel's alpha value is not 0. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats.
 			</description>
 		</method>
-		<method name="bumpmap_to_normalmap">
+		<method name="bump_map_to_normal_map">
 			<return type="void">
 			</return>
 			<argument index="0" name="bump_scale" type="float" default="1.0">
 			</argument>
 			<description>
-				Converts a bumpmap to a normalmap. A bumpmap provides a height offset per-pixel, while a normalmap provides a normal direction per pixel.
+				Converts a bump map to a normal map. A bump map provides a height offset per-pixel, while a normal map provides a normal direction per pixel.
 			</description>
 		</method>
 		<method name="clear_mipmaps">
@@ -398,11 +398,11 @@
 				Loads an image from the binary contents of a WebP file.
 			</description>
 		</method>
-		<method name="normalmap_to_xy">
+		<method name="normal_map_to_xy">
 			<return type="void">
 			</return>
 			<description>
-				Converts the image's data to represent coordinates on a 3D plane. This is used when the image represents a normalmap. A normalmap can add lots of detail to a 3D surface without increasing the polygon count.
+				Converts the image's data to represent coordinates on a 3D plane. This is used when the image represents a normal map. A normal map can add lots of detail to a 3D surface without increasing the polygon count.
 			</description>
 		</method>
 		<method name="premultiply_alpha">

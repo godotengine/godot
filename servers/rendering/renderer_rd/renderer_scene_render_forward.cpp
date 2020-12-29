@@ -112,7 +112,7 @@ void RendererSceneRenderForward::ShaderData::set_code(const String &p_code) {
 	actions.usage_flag_pointers["TIME"] = &uses_time;
 	actions.usage_flag_pointers["ROUGHNESS"] = &uses_roughness;
 	actions.usage_flag_pointers["NORMAL"] = &uses_normal;
-	actions.usage_flag_pointers["NORMALMAP"] = &uses_normal;
+	actions.usage_flag_pointers["NORMAL_MAP"] = &uses_normal;
 
 	actions.usage_flag_pointers["POINT_SIZE"] = &uses_point_size;
 	actions.usage_flag_pointers["POINT_COORD"] = &uses_point_size;
@@ -2867,8 +2867,8 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["FRONT_FACING"] = "gl_FrontFacing";
-		actions.renames["NORMALMAP"] = "normalmap";
-		actions.renames["NORMALMAP_DEPTH"] = "normaldepth";
+		actions.renames["NORMAL_MAP"] = "normal_map";
+		actions.renames["NORMAL_MAP_DEPTH"] = "normal_map_depth";
 		actions.renames["ALBEDO"] = "albedo";
 		actions.renames["ALPHA"] = "alpha";
 		actions.renames["METALLIC"] = "metallic";
@@ -2935,8 +2935,8 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 		actions.usage_defines["CUSTOM1"] = "#define CUSTOM1\n";
 		actions.usage_defines["CUSTOM2"] = "#define CUSTOM2\n";
 		actions.usage_defines["CUSTOM3"] = "#define CUSTOM3\n";
-		actions.usage_defines["NORMALMAP"] = "#define NORMALMAP_USED\n";
-		actions.usage_defines["NORMALMAP_DEPTH"] = "@NORMALMAP";
+		actions.usage_defines["NORMAL_MAP"] = "#define NORMAL_MAP_USED\n";
+		actions.usage_defines["NORMAL_MAP_DEPTH"] = "@NORMAL_MAP";
 		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";
 		actions.usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 		actions.usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";

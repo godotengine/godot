@@ -236,7 +236,7 @@ public:
 	enum TextureType {
 		TYPE_DATA,
 		TYPE_COLOR,
-		TYPE_NORMALMAP,
+		TYPE_NORMAL_MAP,
 	};
 
 private:
@@ -412,7 +412,7 @@ public:
 	enum TextureType {
 		TYPE_DATA,
 		TYPE_COLOR,
-		TYPE_NORMALMAP
+		TYPE_NORMAL_MAP
 	};
 
 private:
@@ -1834,7 +1834,7 @@ public:
 	enum TextureType {
 		TYPE_DATA,
 		TYPE_COLOR,
-		TYPE_NORMALMAP,
+		TYPE_NORMAL_MAP,
 		TYPE_ANISO,
 	};
 

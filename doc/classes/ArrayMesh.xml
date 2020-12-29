@@ -121,7 +121,7 @@
 				Will perform a UV unwrap on the [ArrayMesh] to prepare the mesh for lightmapping.
 			</description>
 		</method>
-		<method name="regen_normalmaps">
+		<method name="regen_normal_maps">
 			<return type="void">
 			</return>
 			<description>
