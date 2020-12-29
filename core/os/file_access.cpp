@@ -379,7 +379,7 @@ Vector<String> FileAccess::get_csv_line(const String &p_delim) const {
 			strings.push_back(current);
 			current = String();
 		} else if (c == '"') {
-			if (l[i + 1] == '"') {
+			if (l[i + 1] == '"' && in_quote) {
 				s[0] = '"';
 				current += s;
 				i++;

@@ -393,15 +393,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("filesystem/file_dialog/thumbnail_size", 64);
 	hints["filesystem/file_dialog/thumbnail_size"] = PropertyInfo(Variant::INT, "filesystem/file_dialog/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
 
-	// Import
-	_initial_set("filesystem/import/pvrtc_texture_tool", "");
-#ifdef WINDOWS_ENABLED
-	hints["filesystem/import/pvrtc_texture_tool"] = PropertyInfo(Variant::STRING, "filesystem/import/pvrtc_texture_tool", PROPERTY_HINT_GLOBAL_FILE, "*.exe");
-#else
-	hints["filesystem/import/pvrtc_texture_tool"] = PropertyInfo(Variant::STRING, "filesystem/import/pvrtc_texture_tool", PROPERTY_HINT_GLOBAL_FILE, "");
-#endif
-	_initial_set("filesystem/import/pvrtc_fast_conversion", false);
-
 	/* Docks */
 
 	// SceneTree
@@ -509,6 +500,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// 3D
 	_initial_set("editors/3d/primary_grid_color", Color(0.56, 0.56, 0.56, 0.5));
 	_initial_set("editors/3d/secondary_grid_color", Color(0.38, 0.38, 0.38, 0.5));
+
+	// Use a similar color to the 2D editor selection.
+	_initial_set("editors/3d/selection_box_color", Color(1.0, 0.5, 0));
+	hints["editors/3d/selection_box_color"] = PropertyInfo(Variant::COLOR, "editors/3d/selection_box_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 
 	// If a line is a multiple of this, it uses the primary grid color.
 	// Use a power of 2 value by default as it's more common to use powers of 2 in level design.

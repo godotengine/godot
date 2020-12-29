@@ -163,7 +163,6 @@
 #include "editor/progress_dialog.h"
 #include "editor/project_export.h"
 #include "editor/project_settings_editor.h"
-#include "editor/pvrtc_compress.h"
 #include "editor/quick_open.h"
 #include "editor/register_exporters.h"
 #include "editor/run_settings_dialog.h"
@@ -5902,8 +5901,6 @@ EditorNode::EditorNode() {
 		smp.instance();
 		EditorInspector::add_inspector_plugin(smp);
 	}
-
-	_pvrtc_register_compressors();
 
 	editor_selection = memnew(EditorSelection);
 

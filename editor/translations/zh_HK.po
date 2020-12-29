@@ -4017,8 +4017,19 @@ msgid "Searching..."
 msgstr "搜尋中..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "搜尋完成"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d　相同。"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d　相同。"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d　相同。"
 
 #: editor/groups_editor.cpp
 #, fuzzy
@@ -8858,10 +8869,6 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -8924,10 +8931,6 @@ msgstr "刪除選中檔案"
 #, fuzzy
 msgid "Stage All"
 msgstr "全選"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -13111,6 +13114,10 @@ msgstr "警告!"
 msgid "Please Confirm..."
 msgstr "請確認..."
 
+#: scene/gui/graph_edit.cpp
+msgid "Enable grid minimap."
+msgstr ""
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13180,6 +13187,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Search complete"
+#~ msgstr "搜尋完成"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "此位置已存在同名的檔案或資料夾。"

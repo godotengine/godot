@@ -3894,8 +3894,19 @@ msgid "Searching..."
 msgstr "검색 중..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "검색 완료"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d개 일치."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d개 일치."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d개 일치."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8526,10 +8537,6 @@ msgid "Error"
 msgstr "오류"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "커밋 메시지를 제공하지 않았습니다"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "스테이지에 추가된 파일이 없습니다"
 
@@ -8584,10 +8591,6 @@ msgstr "선택 항목 스테이지로 보내기"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "모두 스테이지로 보내기"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "커밋 메시지 추가"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -12827,6 +12830,11 @@ msgstr "경고!"
 msgid "Please Confirm..."
 msgstr "확인해주세요..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "스냅 켜기"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -12905,6 +12913,15 @@ msgstr "Varying은 꼭짓점 함수에만 지정할 수 있습니다."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없습니다."
+
+#~ msgid "Search complete"
+#~ msgstr "검색 완료"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "커밋 메시지를 제공하지 않았습니다"
+
+#~ msgid "Add a commit message"
+#~ msgstr "커밋 메시지 추가"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "이 위치에는 같은 이름의 파일이나 폴더가 있습니다."

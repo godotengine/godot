@@ -13,7 +13,6 @@ def get_name():
 
 
 def can_build():
-
     if os.name != "posix" or sys.platform == "darwin":
         return False
 
@@ -81,12 +80,10 @@ def get_opts():
 
 
 def get_flags():
-
     return []
 
 
 def configure(env):
-
     ## Build type
 
     if env["target"] == "release":

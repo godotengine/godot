@@ -248,6 +248,14 @@
 		<member name="application/run/disable_stdout" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], disables printing to standard output in an exported build.
 		</member>
+		<member name="application/run/flush_stdout_on_print" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], flushes the standard output stream every time a line is printed. This affects both terminal logging and file logging.
+			When running a project, this setting must be enabled if you want logs to be collected by service managers such as systemd/journalctl. This setting is disabled by default on release builds, since flushing on every printed line will negatively affect performance if lots of lines are printed in a rapid succession. Also, if this setting is enabled, logged files will still be written successfully if the application crashes or is otherwise killed by the user (without being closed "normally").
+			[b]Note:[/b] Regardless of this setting, the standard error stream ([code]stderr[/code]) is always flushed when a line is printed to it.
+		</member>
+		<member name="application/run/flush_stdout_on_print.debug" type="bool" setter="" getter="" default="true">
+			Debug build override for [member application/run/flush_stdout_on_print], as performance is less important during debugging.
+		</member>
 		<member name="application/run/frame_delay_msec" type="int" setter="" getter="" default="0">
 			Forces a delay between frames in the main loop (in milliseconds). This may be useful if you plan to disable vertical synchronization.
 		</member>
@@ -1092,14 +1100,6 @@
 		</member>
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
 			Shaders have a time variable that constantly increases. At some point, it needs to be rolled back to zero to avoid precision errors on shader animations. This setting specifies when (in seconds).
-		</member>
-		<member name="rendering/options/api_usage_batching/flag_stream" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/options/api_usage_batching/send_null" type="bool" setter="" getter="" default="true">
-		</member>
-		<member name="rendering/options/api_usage_legacy/flag_stream" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/options/api_usage_legacy/orphan_buffers" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="rendering/quality/2d/ninepatch_mode" type="int" setter="" getter="" default="0">
 			Choose between default mode where corner scalings are preserved matching the artwork, and scaling mode.

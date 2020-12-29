@@ -7,15 +7,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2020-05-05 14:01+0000\n"
-"Last-Translator: Shirious <sad3119823@gmail.com>\n"
+"PO-Revision-Date: 2020-12-23 22:57+0000\n"
+"Last-Translator: Prachi Joshi <josprachi@yahoo.com>\n"
 "Language-Team: Marathi <https://hosted.weblate.org/projects/godot-engine/"
 "godot/mr/>\n"
 "Language: mr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2854,11 +2854,11 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "समुदाय"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr ""
+msgstr "आमच्या बद्दल"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3727,7 +3727,15 @@ msgid "Searching..."
 msgstr ""
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
+msgid "%d match in %d file."
+msgstr ""
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d file."
+msgstr ""
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d files."
 msgstr ""
 
 #: editor/groups_editor.cpp
@@ -8250,10 +8258,6 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -8307,10 +8311,6 @@ msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -9838,7 +9838,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr ""
+msgstr "सामान्य"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."
@@ -12282,6 +12282,10 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable grid minimap."
 msgstr ""
 
 #: scene/gui/popup.cpp

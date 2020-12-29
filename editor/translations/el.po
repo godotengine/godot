@@ -3932,8 +3932,19 @@ msgid "Searching..."
 msgstr "Αναζήτηση..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Ολοκλήρωση αναζήτησης"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d αποτελέσματα."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d αποτελέσματα."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d αποτελέσματα."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8616,10 +8627,6 @@ msgid "Error"
 msgstr "Σφάλμα"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "Κανένα δεσμευμένο μήνυμα δεν παρασχέθηκε"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "Κανένα αρχείο δεν προστέθηκε στο στάδιο"
 
@@ -8674,10 +8681,6 @@ msgstr "Στάδιο Επιλέχθηκε"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Διεξαγωγή Όλων"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Προσθέστε ένα μήνυμα δέσμευσης"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -13016,6 +13019,11 @@ msgstr "Ειδοποίηση!"
 msgid "Please Confirm..."
 msgstr "Παρακαλώ επιβεβαιώστε..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Ενεργοποίηση κουμπώματος"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13100,6 +13108,15 @@ msgstr "Τα «varying» μπορούν να ανατεθούν μόνο στη�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
+
+#~ msgid "Search complete"
+#~ msgstr "Ολοκλήρωση αναζήτησης"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "Κανένα δεσμευμένο μήνυμα δεν παρασχέθηκε"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Προσθέστε ένα μήνυμα δέσμευσης"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "Υπάρχει ήδη αρχείο ή φάκελος με το ίδιο όνομα στη διαδρομή."

@@ -64,7 +64,7 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 	if (updating)
 		return;
 
-	emit_changed(get_edited_property(), p_string, "", true);
+	emit_changed(get_edited_property(), p_string, "", false);
 }
 
 void EditorPropertyText::update_property() {
@@ -2350,10 +2350,12 @@ void EditorPropertyResource::_menu_option(int p_which) {
 			}
 
 			Object *obj = NULL;
+			RES res_temp;
 
 			if (ScriptServer::is_global_class(intype)) {
 				obj = ClassDB::instance(ScriptServer::get_global_class_native_base(intype));
 				if (obj) {
+					res_temp = obj;
 					Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(intype));
 					if (script.is_valid()) {
 						obj->set_script(Variant(script));
@@ -2361,21 +2363,21 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				}
 			} else {
 				obj = ClassDB::instance(intype);
+				res_temp = obj;
 			}
 
 			if (!obj) {
 				obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+				res_temp = obj;
 			}
 
-			ERR_BREAK(!obj);
-			Resource *resp = Object::cast_to<Resource>(obj);
-			ERR_BREAK(!resp);
+			ERR_BREAK(!res_temp.is_valid());
 			if (get_edited_object() && base_type != String() && base_type == "Script") {
 				//make visual script the right type
-				resp->call("set_instance_base_type", get_edited_object()->get_class());
+				res_temp->call("set_instance_base_type", get_edited_object()->get_class());
 			}
 
-			res = Ref<Resource>(resp);
+			res = res_temp;
 			emit_changed(get_edited_property(), res);
 			update_property();
 

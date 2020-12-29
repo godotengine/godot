@@ -59,8 +59,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-07 08:11+0000\n"
-"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
+"PO-Revision-Date: 2020-12-14 11:03+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -3796,6 +3796,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Los siguientes archivos o carpetas entran en conflicto con los elementos de "
+"la ubicación del objetivo '%s':\n"
+"\n"
+"%s\n"
+"\n"
+"¿Deseas sobrescribirlos?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3988,8 +3994,19 @@ msgid "Searching..."
 msgstr "Buscando..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Búsqueda completa"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d coincidencias."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d coincidencias."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d coincidencias."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8643,10 +8660,6 @@ msgid "Error"
 msgstr "Error"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "No se indicó ningún mensaje de confirmación"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "No se agregaron archivos al stage"
 
@@ -8701,10 +8714,6 @@ msgstr "Hacer Staging de Selección"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Hacer Staging de Todo"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Añadir un mensaje de confirmación"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9917,7 +9926,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "No es soportado por los controladores de tu GPU."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12523,23 +12532,23 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "El nodo A y el nodo B deben ser PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "El nodo A debe ser un PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "El nodo B debe ser un PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr ""
+msgstr "La unión no está conectada a dos PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr ""
+msgstr "El Nodo A y el Nodo B deben ser diferentes PhysicsBody2D"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12877,23 +12886,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "El nodo A y el nodo B deben ser PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "El nodo A debe ser un PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "El nodo B debe ser un PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "La unión no está conectada a ningún PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "El nodo A y el nodo B deben ser diferentes PhysicsBody"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -13057,6 +13066,11 @@ msgstr "¡Alerta!"
 msgid "Please Confirm..."
 msgstr "Por favor, Confirma..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Activar Snap"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13139,6 +13153,15 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "Search complete"
+#~ msgstr "Búsqueda completa"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "No se indicó ningún mensaje de confirmación"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Añadir un mensaje de confirmación"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "Ya hay un archivo o carpeta con el mismo nombre en esta ubicación."

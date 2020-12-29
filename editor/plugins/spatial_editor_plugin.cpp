@@ -2644,11 +2644,31 @@ void SpatialEditorViewport::_draw() {
 	if (_edit.mode == TRANSFORM_ROTATE) {
 
 		Point2 center = _point_to_screen(_edit.center);
+
+		Color handle_color;
+		switch (_edit.plane) {
+			case TRANSFORM_X_AXIS:
+				handle_color = get_color("axis_x_color", "Editor");
+				break;
+			case TRANSFORM_Y_AXIS:
+				handle_color = get_color("axis_y_color", "Editor");
+				break;
+			case TRANSFORM_Z_AXIS:
+				handle_color = get_color("axis_z_color", "Editor");
+				break;
+			default:
+				handle_color = get_color("accent_color", "Editor");
+				break;
+		}
+		handle_color.a = 1.0;
+		const float brightness = 1.3;
+		handle_color *= Color(brightness, brightness, brightness);
+
 		VisualServer::get_singleton()->canvas_item_add_line(
 				ci,
 				_edit.mouse_pos,
 				center,
-				get_color("accent_color", "Editor") * Color(1, 1, 1, 0.6),
+				handle_color,
 				Math::round(2 * EDSCALE),
 				true);
 	}
@@ -4514,8 +4534,8 @@ void SpatialEditor::_generate_selection_boxes() {
 
 	Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
 	mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	// Use a similar color to the 2D editor selection.
-	mat->set_albedo(Color(1, 0.5, 0));
+	const Color selection_box_color = EDITOR_GET("editors/3d/selection_box_color");
+	mat->set_albedo(selection_box_color);
 	mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 	st->set_material(mat);
 	selection_box = st->commit();
@@ -4523,7 +4543,7 @@ void SpatialEditor::_generate_selection_boxes() {
 	Ref<SpatialMaterial> mat_xray = memnew(SpatialMaterial);
 	mat_xray->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 	mat_xray->set_flag(SpatialMaterial::FLAG_DISABLE_DEPTH_TEST, true);
-	mat_xray->set_albedo(Color(1, 0.5, 0, 0.15));
+	mat_xray->set_albedo(selection_box_color * Color(1, 1, 1, 0.15));
 	mat_xray->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 	st_xray->set_material(mat_xray);
 	selection_box_xray = st_xray->commit();
@@ -5204,7 +5224,9 @@ void SpatialEditor::_init_indicators() {
 			gizmo_color[i] = mat;
 
 			Ref<SpatialMaterial> mat_hl = mat->duplicate();
-			mat_hl->set_albedo(Color(col.r, col.g, col.b, 1.0));
+			const float brightness = 1.3;
+			const Color albedo = Color(col.r * brightness, col.g * brightness, col.b * brightness);
+			mat_hl->set_albedo(albedo);
 			gizmo_color_hl[i] = mat_hl;
 
 			Vector3 ivec;
@@ -5302,7 +5324,7 @@ void SpatialEditor::_init_indicators() {
 				surftool->commit(move_plane_gizmo[i]);
 
 				Ref<SpatialMaterial> plane_mat_hl = plane_mat->duplicate();
-				plane_mat_hl->set_albedo(Color(col.r, col.g, col.b, 1.0));
+				plane_mat_hl->set_albedo(albedo);
 				plane_gizmo_color_hl[i] = plane_mat_hl; // needed, so we can draw planes from both sides
 			}
 
@@ -5382,7 +5404,7 @@ void SpatialEditor::_init_indicators() {
 				rotate_gizmo[i]->surface_set_material(0, rotate_mat);
 
 				Ref<ShaderMaterial> rotate_mat_hl = rotate_mat->duplicate();
-				rotate_mat_hl->set_shader_param("albedo", Color(col.r, col.g, col.b, 1.0));
+				rotate_mat_hl->set_shader_param("albedo", albedo);
 				rotate_gizmo_color_hl[i] = rotate_mat_hl;
 
 				if (i == 2) { // Rotation white outline
@@ -5511,7 +5533,7 @@ void SpatialEditor::_init_indicators() {
 				surftool->commit(scale_plane_gizmo[i]);
 
 				Ref<SpatialMaterial> plane_mat_hl = plane_mat->duplicate();
-				plane_mat_hl->set_albedo(Color(col.r, col.g, col.b, 1.0));
+				plane_mat_hl->set_albedo(Color(col.r * 1.3, col.g * 1.3, col.b * 1.3));
 				plane_gizmo_color_hl[i] = plane_mat_hl; // needed, so we can draw planes from both sides
 			}
 		}
@@ -6520,8 +6542,8 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	add_to_group("_spatial_editor_group");
 
 	EDITOR_DEF("editors/3d/manipulator_gizmo_size", 80);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/3d/manipulator_gizmo_size", PROPERTY_HINT_RANGE, "16,1024,1"));
-	EDITOR_DEF("editors/3d/manipulator_gizmo_opacity", 0.4);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/3d/manipulator_gizmo_size", PROPERTY_HINT_RANGE, "16,160,1"));
+	EDITOR_DEF("editors/3d/manipulator_gizmo_opacity", 0.9);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::REAL, "editors/3d/manipulator_gizmo_opacity", PROPERTY_HINT_RANGE, "0,1,0.01"));
 	EDITOR_DEF("editors/3d/navigation/show_viewport_rotation_gizmo", true);
 

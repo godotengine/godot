@@ -184,7 +184,7 @@
 			<argument index="3" name="q2" type="Vector2">
 			</argument>
 			<description>
-				Given the two 2D segments ([code]p1[/code], [code]p2[/code]) and ([code]q1[/code], [code]q2[/code]), finds those two points on the two segments that are closest to each other. Returns a [PoolVector2Array] that contains this point on ([code]p1[/code], [code]p2[/code]) as well the accompanying point on ([code]q1[/code], [code]q2[/code]).
+				Given the two 2D segments ([code]p1[/code], [code]q1[/code]) and ([code]p2[/code], [code]q2[/code]), finds those two points on the two segments that are closest to each other. Returns a [PoolVector2Array] that contains this point on ([code]p1[/code], [code]q1[/code]) as well the accompanying point on ([code]p2[/code], [code]q2[/code]).
 			</description>
 		</method>
 		<method name="get_uv84_normal_bit">

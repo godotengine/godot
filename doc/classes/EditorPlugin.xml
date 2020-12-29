@@ -82,6 +82,7 @@
 			<argument index="0" name="plugin" type="EditorExportPlugin">
 			</argument>
 			<description>
+				Registers a new export plugin. Export plugins are used when the project is being exported. See [EditorExportPlugin] for more information.
 			</description>
 		</method>
 		<method name="add_import_plugin">

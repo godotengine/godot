@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  pvrtc_compress.h                                                     */
+/*  image_compress_etc.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PVRTC_COMPRESS_H
-#define PVRTC_COMPRESS_H
+#ifndef IMAGE_COMPRESS_ETC_H
+#define IMAGE_COMPRESS_ETC_H
 
-#include "core/image.h"
+void _register_etc_compress_func();
 
-void _pvrtc_register_compressors();
-
-#endif // PVRTC_COMPRESS_H
+#endif // IMAGE_COMPRESS_ETC_H

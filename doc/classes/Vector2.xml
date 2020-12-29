@@ -123,7 +123,7 @@
 			<argument index="0" name="b" type="Vector2">
 			</argument>
 			<description>
-				Returns the normalized vector pointing from this vector to [code]b[/code].
+				Returns the normalized vector pointing from this vector to [code]b[/code]. This is equivalent to using [code](b - a).normalized()[/code].
 			</description>
 		</method>
 		<method name="distance_squared_to">

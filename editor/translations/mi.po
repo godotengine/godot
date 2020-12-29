@@ -1,4 +1,4 @@
-# LANGUAGE translation of the Godot Engine editor
+# Māori translation of the Godot Engine editor
 # Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
@@ -3720,7 +3720,15 @@ msgid "Searching..."
 msgstr ""
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
+msgid "%d match in %d file."
+msgstr ""
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d file."
+msgstr ""
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d files."
 msgstr ""
 
 #: editor/groups_editor.cpp
@@ -8243,10 +8251,6 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -8300,10 +8304,6 @@ msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -12274,6 +12274,10 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable grid minimap."
 msgstr ""
 
 #: scene/gui/popup.cpp

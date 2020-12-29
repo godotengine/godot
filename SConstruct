@@ -113,7 +113,6 @@ opts.Add(EnumVariable("target", "Compilation target", "debug", ("debug", "releas
 opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size")))
 opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True))
 opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
-opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable deprecated features", True))
@@ -130,7 +129,6 @@ opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
-opts.Add(EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")))
 opts.Add(
     BoolVariable(
         "split_libmodules",
@@ -142,9 +140,9 @@ opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable",
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", False))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
+opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 
 # Thirdparty libraries
-# opts.Add(BoolVariable('builtin_assimp', "Use the built-in Assimp library", True))
 opts.Add(BoolVariable("builtin_bullet", "Use the built-in Bullet library", True))
 opts.Add(BoolVariable("builtin_certs", "Use the built-in SSL certificates bundles", True))
 opts.Add(BoolVariable("builtin_enet", "Use the built-in ENet library", True))
@@ -176,16 +174,54 @@ opts.Add("CFLAGS", "Custom flags for the C compiler")
 opts.Add("CXXFLAGS", "Custom flags for the C++ compiler")
 opts.Add("LINKFLAGS", "Custom flags for the linker")
 
-# add platform specific options
-
-for k in platform_opts.keys():
-    opt_list = platform_opts[k]
-    for o in opt_list:
-        opts.Add(o)
-
-# Update the environment now as the "custom_modules" option may be
-# defined in a file rather than specified via the command line.
+# Update the environment to have all above options defined
+# in following code (especially platform and custom_modules).
 opts.Update(env_base)
+
+# Platform selection: validate input, and add options.
+
+selected_platform = ""
+
+if env_base["platform"] != "":
+    selected_platform = env_base["platform"]
+elif env_base["p"] != "":
+    selected_platform = env_base["p"]
+else:
+    # Missing `platform` argument, try to detect platform automatically
+    if sys.platform.startswith("linux"):
+        selected_platform = "x11"
+    elif sys.platform == "darwin":
+        selected_platform = "osx"
+    elif sys.platform == "win32":
+        selected_platform = "windows"
+    else:
+        print("Could not detect platform automatically. Supported platforms:")
+        for x in platform_list:
+            print("\t" + x)
+        print("\nPlease run SCons again and select a valid platform: platform=<string>")
+
+    if selected_platform != "":
+        print("Automatically detected platform: " + selected_platform)
+
+if selected_platform in ["linux", "bsd", "linuxbsd"]:
+    if selected_platform == "linuxbsd":
+        # Alias for forward compatibility.
+        print('Platform "linuxbsd" is still called "x11" in Godot 3.2.x. Building for platform "x11".')
+    # Alias for convenience.
+    selected_platform = "x11"
+
+# Make sure to update this to the found, valid platform as it's used through the buildsystem as the reference.
+# It should always be re-set after calling `opts.Update()` otherwise it uses the original input value.
+env_base["platform"] = selected_platform
+
+# Add platform-specific options.
+if selected_platform in platform_opts:
+    for opt in platform_opts[selected_platform]:
+        opts.Add(opt)
+
+# Update the environment to take platform-specific options into account.
+opts.Update(env_base)
+env_base["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
 
 # Detect modules.
 modules_detected = OrderedDict()
@@ -225,6 +261,7 @@ methods.write_modules(modules_detected)
 
 # Update the environment again after all the module options are added.
 opts.Update(env_base)
+env_base["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
 Help(opts.GenerateHelpText(env_base))
 
 # add default include paths
@@ -256,41 +293,6 @@ if env_base["no_editor_splash"]:
 
 if not env_base["deprecated"]:
     env_base.Append(CPPDEFINES=["DISABLE_DEPRECATED"])
-
-env_base.platforms = {}
-
-selected_platform = ""
-
-if env_base["platform"] != "":
-    selected_platform = env_base["platform"]
-elif env_base["p"] != "":
-    selected_platform = env_base["p"]
-    env_base["platform"] = selected_platform
-else:
-    # Missing `platform` argument, try to detect platform automatically
-    if sys.platform.startswith("linux"):
-        selected_platform = "x11"
-    elif sys.platform == "darwin":
-        selected_platform = "osx"
-    elif sys.platform == "win32":
-        selected_platform = "windows"
-    else:
-        print("Could not detect platform automatically. Supported platforms:")
-        for x in platform_list:
-            print("\t" + x)
-        print("\nPlease run SCons again and select a valid platform: platform=<string>")
-
-    if selected_platform != "":
-        print("Automatically detected platform: " + selected_platform)
-        env_base["platform"] = selected_platform
-
-if selected_platform in ["linux", "bsd", "linuxbsd"]:
-    if selected_platform == "linuxbsd":
-        # Alias for forward compatibility.
-        print('Platform "linuxbsd" is still called "x11" in Godot 3.2.x. Building for platform "x11".')
-    # Alias for convenience.
-    selected_platform = "x11"
-    env_base["platform"] = selected_platform
 
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform

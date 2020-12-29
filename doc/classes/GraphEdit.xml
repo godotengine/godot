@@ -181,7 +181,7 @@
 		<member name="minimap_opacity" type="float" setter="set_minimap_opacity" getter="get_minimap_opacity" default="0.65">
 			The opacity of the minimap rectangle.
 		</member>
-		<member name="minimap_size" type="Vector2" setter="set_minimap_size" getter="get_minimap_size" default="Vector2(240, 160)">
+		<member name="minimap_size" type="Vector2" setter="set_minimap_size" getter="get_minimap_size" default="Vector2( 240, 160 )">
 			The size of the minimap rectangle. The map itself is based on the size of the grid area and is scaled to fit this rectangle.
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
@@ -325,6 +325,8 @@
 		</theme_item>
 		<theme_item name="grid_minor" type="Color" default="Color( 1, 1, 1, 0.05 )">
 			Color of minor grid lines.
+		</theme_item>
+		<theme_item name="minimap" type="Texture">
 		</theme_item>
 		<theme_item name="minus" type="Texture">
 			The icon for the zoom out button.

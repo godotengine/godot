@@ -47,6 +47,7 @@
 			<description>
 				Changes the running scene to the one at the given [code]path[/code], after loading it into a [PackedScene] and creating a new instance.
 				Returns [constant OK] on success, [constant ERR_CANT_OPEN] if the [code]path[/code] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if that scene cannot be instantiated.
+				[b]Note:[/b] The scene change is deferred, which means that the new scene node is added on the next idle frame. You won't be able to access it immediately after the [method change_scene] call.
 			</description>
 		</method>
 		<method name="change_scene_to">
@@ -57,6 +58,7 @@
 			<description>
 				Changes the running scene to a new instance of the given [PackedScene].
 				Returns [constant OK] on success or [constant ERR_CANT_CREATE] if the scene cannot be instantiated.
+				[b]Note:[/b] The scene change is deferred, which means that the new scene node is added on the next idle frame. You won't be able to access it immediately after the [method change_scene_to] call.
 			</description>
 		</method>
 		<method name="create_timer">
