@@ -32,6 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource.h"
 #include "core/math/math_funcs.h"
@@ -1836,6 +1837,11 @@ String Variant::stringify(List<const void *> &stack) const {
 	}
 
 	return "";
+}
+
+String Variant::to_json_string() const {
+	JSON json;
+	return json.stringify(*this);
 }
 
 Variant::operator Vector2() const {

@@ -31,7 +31,6 @@
 #include "gdscript_language_protocol.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/json.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
@@ -194,7 +193,7 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 				vformat("GDScriptLanguageProtocol: Can't initialize invalid peer '%d'.", latest_client_id));
 		Ref<LSPeer> peer = clients.get(latest_client_id);
 		if (peer != nullptr) {
-			String msg = JSON::print(request);
+			String msg = Variant(request).to_json_string();
 			msg = format_output(msg);
 			(*peer)->res_queue.push_back(msg.utf8());
 		}
@@ -280,7 +279,7 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 	ERR_FAIL_COND(peer == nullptr);
 
 	Dictionary message = make_notification(p_method, p_params);
-	String msg = JSON::print(message);
+	String msg = Variant(message).to_json_string();
 	msg = format_output(msg);
 	peer->res_queue.push_back(msg.utf8());
 }

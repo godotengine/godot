@@ -645,6 +645,7 @@ public:
 	bool hash_compare(const Variant &p_variant) const;
 	bool booleanize() const;
 	String stringify(List<const void *> &stack) const;
+	String to_json_string() const;
 
 	void static_assign(const Variant &p_variant);
 	static void get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);

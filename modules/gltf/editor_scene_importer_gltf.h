@@ -32,7 +32,6 @@
 #define EDITOR_SCENE_IMPORTER_GLTF_H
 
 #include "core/config/project_settings.h"
-#include "core/io/json.h"
 #include "core/object/object.h"
 #include "core/templates/vector.h"
 #include "editor/import/resource_importer_scene.h"

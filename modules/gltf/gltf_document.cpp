@@ -238,15 +238,13 @@ Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> state) {
 	String text;
 	text.parse_utf8((const char *)array.ptr(), array.size());
 
-	String err_txt;
-	int err_line;
-	Variant v;
-	err = JSON::parse(text, v, err_txt, err_line);
+	JSON json;
+	err = json.parse(text);
 	if (err != OK) {
-		_err_print_error("", p_path.utf8().get_data(), err_line, err_txt.utf8().get_data(), ERR_HANDLER_SCRIPT);
+		_err_print_error("", p_path.utf8().get_data(), json.get_error_line(), json.get_error_message().utf8().get_data(), ERR_HANDLER_SCRIPT);
 		return err;
 	}
-	state->json = v;
+	state->json = json.get_data();
 
 	return OK;
 }
@@ -299,16 +297,14 @@ Error GLTFDocument::_parse_glb(const String &p_path, Ref<GLTFState> state) {
 	String text;
 	text.parse_utf8((const char *)json_data.ptr(), json_data.size());
 
-	String err_txt;
-	int err_line;
-	Variant v;
-	err = JSON::parse(text, v, err_txt, err_line);
+	JSON json;
+	err = json.parse(text);
 	if (err != OK) {
-		_err_print_error("", p_path.utf8().get_data(), err_line, err_txt.utf8().get_data(), ERR_HANDLER_SCRIPT);
+		_err_print_error("", p_path.utf8().get_data(), json.get_error_line(), json.get_error_message().utf8().get_data(), ERR_HANDLER_SCRIPT);
 		return err;
 	}
 
-	state->json = v;
+	state->json = json.get_data();
 
 	//data?
 
@@ -6584,7 +6580,7 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 		FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE, &err);
 		ERR_FAIL_COND_V(!f, FAILED);
 
-		String json = JSON::print(state->json);
+		String json = Variant(state->json).to_json_string();
 
 		const uint32_t magic = 0x46546C67; // GLTF
 		const int32_t header_size = 12;
@@ -6625,7 +6621,7 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 		ERR_FAIL_COND_V(!f, FAILED);
 
 		f->create(FileAccess::ACCESS_RESOURCES);
-		String json = JSON::print(state->json);
+		String json = Variant(state->json).to_json_string();
 		f->store_string(json);
 		f->close();
 	}
