@@ -34,8 +34,7 @@
 #ifdef TOOLS_ENABLED
 
 #include "core/io/file_access.h"
-#include "core/io/json.h"
-#include "core/string/ustring.h"
+#include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/map.h"
 

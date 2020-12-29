@@ -32,7 +32,6 @@
 
 #include "../gdscript.h"
 #include "../gdscript_analyzer.h"
-#include "core/io/json.h"
 #include "gdscript_language_protocol.h"
 #include "gdscript_workspace.h"
 
@@ -183,7 +182,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					symbol.detail += ": " + m.get_datatype().to_string();
 				}
 				if (m.variable->initializer != nullptr && m.variable->initializer->is_constant) {
-					symbol.detail += " = " + JSON::print(m.variable->initializer->reduced_value);
+					symbol.detail += " = " + m.variable->initializer->reduced_value.to_json_string();
 				}
 
 				symbol.documentation = parse_documentation(LINE_NUMBER_TO_INDEX(m.variable->start_line));
@@ -224,10 +223,10 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 							}
 						}
 					} else {
-						value_text = JSON::print(default_value);
+						value_text = default_value.to_json_string();
 					}
 				} else {
-					value_text = JSON::print(default_value);
+					value_text = default_value.to_json_string();
 				}
 				if (!value_text.is_empty()) {
 					symbol.detail += " = " + value_text;
@@ -353,8 +352,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 			parameters += ": " + parameter->get_datatype().to_string();
 		}
 		if (parameter->default_value != nullptr) {
-			String value = JSON::print(parameter->default_value->reduced_value);
-			parameters += " = " + value;
+			parameters += " = " + parameter->default_value->reduced_value.to_json_string();
 		}
 	}
 	r_symbol.detail += parameters + ")";

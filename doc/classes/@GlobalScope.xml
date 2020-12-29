@@ -1066,11 +1066,13 @@
 			<description>
 				Returns the internal type of the given Variant object, using the [enum Variant.Type] values.
 				[codeblock]
-				p = parse_json('["a", "b", "c"]')
-				if typeof(p) == TYPE_ARRAY:
-				    print(p[0]) # Prints a
+				var json = JSON.new()
+				json.parse('["a", "b", "c"]')
+				var result = json.get_data()
+				if typeof(result) == TYPE_ARRAY:
+				    print(result[0]) # Prints a
 				else:
-				    print("unexpected results")
+				    print("Unexpected result")
 				[/codeblock]
 			</description>
 		</method>
@@ -1210,9 +1212,6 @@
 		</member>
 		<member name="InputMap" type="InputMap" setter="" getter="">
 			The [InputMap] singleton.
-		</member>
-		<member name="JSON" type="JSON" setter="" getter="">
-			The [JSON] singleton.
 		</member>
 		<member name="JavaClassWrapper" type="JavaClassWrapper" setter="" getter="">
 			The [JavaClassWrapper] singleton.

@@ -161,21 +161,21 @@ String EditorFeatureProfile::get_feature_description(Feature p_feature) {
 }
 
 Error EditorFeatureProfile::save_to_file(const String &p_path) {
-	Dictionary json;
-	json["type"] = "feature_profile";
+	Dictionary data;
+	data["type"] = "feature_profile";
 	Array dis_classes;
 	for (Set<StringName>::Element *E = disabled_classes.front(); E; E = E->next()) {
 		dis_classes.push_back(String(E->get()));
 	}
 	dis_classes.sort();
-	json["disabled_classes"] = dis_classes;
+	data["disabled_classes"] = dis_classes;
 
 	Array dis_editors;
 	for (Set<StringName>::Element *E = disabled_editors.front(); E; E = E->next()) {
 		dis_editors.push_back(String(E->get()));
 	}
 	dis_editors.sort();
-	json["disabled_editors"] = dis_editors;
+	data["disabled_editors"] = dis_editors;
 
 	Array dis_props;
 
@@ -185,7 +185,7 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 		}
 	}
 
-	json["disabled_properties"] = dis_props;
+	data["disabled_properties"] = dis_props;
 
 	Array dis_features;
 	for (int i = 0; i < FEATURE_MAX; i++) {
@@ -194,12 +194,13 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 		}
 	}
 
-	json["disabled_features"] = dis_features;
+	data["disabled_features"] = dis_features;
 
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 
-	String text = JSON::print(json, "\t");
+	JSON json;
+	String text = json.stringify(data, "\t");
 	f->store_string(text);
 	f->close();
 	return OK;
@@ -212,26 +213,24 @@ Error EditorFeatureProfile::load_from_file(const String &p_path) {
 		return err;
 	}
 
-	String err_str;
-	int err_line;
-	Variant v;
-	err = JSON::parse(text, v, err_str, err_line);
+	JSON json;
+	err = json.parse(text);
 	if (err != OK) {
-		ERR_PRINT("Error parsing '" + p_path + "' on line " + itos(err_line) + ": " + err_str);
+		ERR_PRINT("Error parsing '" + p_path + "' on line " + itos(json.get_error_line()) + ": " + json.get_error_message());
 		return ERR_PARSE_ERROR;
 	}
 
-	Dictionary json = v;
+	Dictionary data = json.get_data();
 
-	if (!json.has("type") || String(json["type"]) != "feature_profile") {
+	if (!data.has("type") || String(data["type"]) != "feature_profile") {
 		ERR_PRINT("Error parsing '" + p_path + "', it's not a feature profile.");
 		return ERR_PARSE_ERROR;
 	}
 
 	disabled_classes.clear();
 
-	if (json.has("disabled_classes")) {
-		Array disabled_classes_arr = json["disabled_classes"];
+	if (data.has("disabled_classes")) {
+		Array disabled_classes_arr = data["disabled_classes"];
 		for (int i = 0; i < disabled_classes_arr.size(); i++) {
 			disabled_classes.insert(disabled_classes_arr[i]);
 		}
@@ -239,8 +238,8 @@ Error EditorFeatureProfile::load_from_file(const String &p_path) {
 
 	disabled_editors.clear();
 
-	if (json.has("disabled_editors")) {
-		Array disabled_editors_arr = json["disabled_editors"];
+	if (data.has("disabled_editors")) {
+		Array disabled_editors_arr = data["disabled_editors"];
 		for (int i = 0; i < disabled_editors_arr.size(); i++) {
 			disabled_editors.insert(disabled_editors_arr[i]);
 		}
@@ -248,16 +247,16 @@ Error EditorFeatureProfile::load_from_file(const String &p_path) {
 
 	disabled_properties.clear();
 
-	if (json.has("disabled_properties")) {
-		Array disabled_properties_arr = json["disabled_properties"];
+	if (data.has("disabled_properties")) {
+		Array disabled_properties_arr = data["disabled_properties"];
 		for (int i = 0; i < disabled_properties_arr.size(); i++) {
 			String s = disabled_properties_arr[i];
 			set_disable_class_property(s.get_slice(":", 0), s.get_slice(":", 1), true);
 		}
 	}
 
-	if (json.has("disabled_features")) {
-		Array disabled_features_arr = json["disabled_features"];
+	if (data.has("disabled_features")) {
+		Array disabled_features_arr = data["disabled_features"];
 		for (int i = 0; i < FEATURE_MAX; i++) {
 			bool found = false;
 			String f = feature_identifiers[i];

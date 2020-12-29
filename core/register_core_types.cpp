@@ -86,7 +86,6 @@ static _OS *_os = nullptr;
 static _Engine *_engine = nullptr;
 static _ClassDB *_classdb = nullptr;
 static _Marshalls *_marshalls = nullptr;
-static _JSON *_json = nullptr;
 static _EngineDebugger *_engine_debugger = nullptr;
 
 static IP *ip = nullptr;
@@ -199,7 +198,7 @@ void register_core_types() {
 	ClassDB::register_class<_Semaphore>();
 
 	ClassDB::register_class<XMLParser>();
-	ClassDB::register_class<JSONParser>();
+	ClassDB::register_class<JSON>();
 
 	ClassDB::register_class<ConfigFile>();
 
@@ -211,8 +210,6 @@ void register_core_types() {
 	ClassDB::register_class<AStar2D>();
 	ClassDB::register_class<EncodedObjectAsID>();
 	ClassDB::register_class<RandomNumberGenerator>();
-
-	ClassDB::register_class<JSONParseResult>();
 
 	ClassDB::register_virtual_class<ResourceImporter>();
 
@@ -227,7 +224,6 @@ void register_core_types() {
 	_engine = memnew(_Engine);
 	_classdb = memnew(_ClassDB);
 	_marshalls = memnew(_Marshalls);
-	_json = memnew(_JSON);
 	_engine_debugger = memnew(_EngineDebugger);
 }
 
@@ -256,7 +252,6 @@ void register_core_singletons() {
 	ClassDB::register_class<TranslationServer>();
 	ClassDB::register_virtual_class<Input>();
 	ClassDB::register_class<InputMap>();
-	ClassDB::register_class<_JSON>();
 	ClassDB::register_class<Expression>();
 	ClassDB::register_class<_EngineDebugger>();
 	ClassDB::register_class<Time>();
@@ -274,7 +269,6 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TranslationServer", TranslationServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("JSON", _JSON::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", _EngineDebugger::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
 }
@@ -286,7 +280,6 @@ void unregister_core_types() {
 	memdelete(_engine);
 	memdelete(_classdb);
 	memdelete(_marshalls);
-	memdelete(_json);
 	memdelete(_engine_debugger);
 
 	memdelete(_geometry_2d);

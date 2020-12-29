@@ -35,7 +35,6 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/io/file_access_compressed.h"
 #include "core/io/file_access_encrypted.h"
-#include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
@@ -2154,80 +2153,6 @@ void _Engine::_bind_methods() {
 }
 
 _Engine *_Engine::singleton = nullptr;
-
-////// _JSON //////
-
-void JSONParseResult::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_error"), &JSONParseResult::get_error);
-	ClassDB::bind_method(D_METHOD("get_error_string"), &JSONParseResult::get_error_string);
-	ClassDB::bind_method(D_METHOD("get_error_line"), &JSONParseResult::get_error_line);
-	ClassDB::bind_method(D_METHOD("get_result"), &JSONParseResult::get_result);
-
-	ClassDB::bind_method(D_METHOD("set_error", "error"), &JSONParseResult::set_error);
-	ClassDB::bind_method(D_METHOD("set_error_string", "error_string"), &JSONParseResult::set_error_string);
-	ClassDB::bind_method(D_METHOD("set_error_line", "error_line"), &JSONParseResult::set_error_line);
-	ClassDB::bind_method(D_METHOD("set_result", "result"), &JSONParseResult::set_result);
-
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "error", PROPERTY_HINT_NONE, "Error", PROPERTY_USAGE_CLASS_IS_ENUM), "set_error", "get_error");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "error_string"), "set_error_string", "get_error_string");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "error_line"), "set_error_line", "get_error_line");
-	ADD_PROPERTY(PropertyInfo(Variant::NIL, "result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), "set_result", "get_result");
-}
-
-void JSONParseResult::set_error(Error p_error) {
-	error = p_error;
-}
-
-Error JSONParseResult::get_error() const {
-	return error;
-}
-
-void JSONParseResult::set_error_string(const String &p_error_string) {
-	error_string = p_error_string;
-}
-
-String JSONParseResult::get_error_string() const {
-	return error_string;
-}
-
-void JSONParseResult::set_error_line(int p_error_line) {
-	error_line = p_error_line;
-}
-
-int JSONParseResult::get_error_line() const {
-	return error_line;
-}
-
-void JSONParseResult::set_result(const Variant &p_result) {
-	result = p_result;
-}
-
-Variant JSONParseResult::get_result() const {
-	return result;
-}
-
-void _JSON::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("print", "value", "indent", "sort_keys", "full_precision"), &_JSON::print, DEFVAL(String()), DEFVAL(false), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("parse", "json"), &_JSON::parse);
-}
-
-String _JSON::print(const Variant &p_value, const String &p_indent, bool p_sort_keys, bool p_full_precision) {
-	return JSON::print(p_value, p_indent, p_sort_keys, p_full_precision);
-}
-
-Ref<JSONParseResult> _JSON::parse(const String &p_json) {
-	Ref<JSONParseResult> result;
-	result.instance();
-
-	result->error = JSON::parse(p_json, result->result, result->error_string, result->error_line);
-
-	if (result->error != OK) {
-		ERR_PRINT(vformat("Error parsing JSON at line %s: %s", result->error_line, result->error_string));
-	}
-	return result;
-}
-
-_JSON *_JSON::singleton = nullptr;
 
 ////// _EngineDebugger //////
 
