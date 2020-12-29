@@ -528,6 +528,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ClassDB::register_class<Performance>();
 	engine->add_singleton(Engine::Singleton("Performance", performance));
 
+	// Only flush stdout in debug builds by default, as spamming `print()` will
+	// decrease performance if this is enabled.
+	GLOBAL_DEF("application/run/flush_stdout_on_print", false);
+	GLOBAL_DEF("application/run/flush_stdout_on_print.debug", true);
+
 	GLOBAL_DEF("debug/settings/crash_handler/message",
 			String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
 
@@ -1120,11 +1125,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		project_manager = main_args.size() == 0 && !found_project;
 	}
 #endif
-
-	// Only flush stdout in debug builds by default, as spamming `print()` will
-	// decrease performance if this is enabled.
-	GLOBAL_DEF("application/run/flush_stdout_on_print", false);
-	GLOBAL_DEF("application/run/flush_stdout_on_print.debug", true);
 
 	GLOBAL_DEF("logging/file_logging/enable_file_logging", false);
 	// Only file logging by default on desktop platforms as logs can't be
