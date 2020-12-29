@@ -4534,8 +4534,8 @@ void SpatialEditor::_generate_selection_boxes() {
 
 	Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
 	mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	// Use a similar color to the 2D editor selection.
-	mat->set_albedo(Color(1, 0.5, 0));
+	const Color selection_box_color = EDITOR_GET("editors/3d/selection_box_color");
+	mat->set_albedo(selection_box_color);
 	mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 	st->set_material(mat);
 	selection_box = st->commit();
@@ -4543,7 +4543,7 @@ void SpatialEditor::_generate_selection_boxes() {
 	Ref<SpatialMaterial> mat_xray = memnew(SpatialMaterial);
 	mat_xray->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 	mat_xray->set_flag(SpatialMaterial::FLAG_DISABLE_DEPTH_TEST, true);
-	mat_xray->set_albedo(Color(1, 0.5, 0, 0.15));
+	mat_xray->set_albedo(selection_box_color * Color(1, 1, 1, 0.15));
 	mat_xray->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 	st_xray->set_material(mat_xray);
 	selection_box_xray = st_xray->commit();
