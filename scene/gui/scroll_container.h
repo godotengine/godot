@@ -69,6 +69,7 @@ protected:
 	Size2 get_minimum_size() const override;
 
 	void _gui_input(const Ref<InputEvent> &p_gui_input);
+	void _update_dimensions();
 	void _notification(int p_what);
 
 	void _scroll_moved(float);
