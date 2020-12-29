@@ -782,13 +782,13 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, f
 		delta = next_pos - cd.pos; // Fix delta (after determination of backwards because negative zero is lost here)
 
 		if (&cd == &playback.current) {
-			if (!backwards && cd.pos <= len && next_pos == len /*&& playback.blend.empty()*/) {
+			if (!backwards && cd.pos <= len && next_pos == len) {
 				//playback finished
 				end_reached = true;
 				end_notify = cd.pos < len; // Notify only if not already at the end
 			}
 
-			if (backwards && cd.pos >= 0 && next_pos == 0 /*&& playback.blend.empty()*/) {
+			if (backwards && cd.pos >= 0 && next_pos == 0) {
 				//playback finished
 				end_reached = true;
 				end_notify = cd.pos > 0; // Notify only if not already at the beginning
