@@ -81,8 +81,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-10 14:11+0100\n"
-"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
+"PO-Revision-Date: 2020-12-16 09:41+0000\n"
+"Last-Translator: Pierre Caye <pierrecaye@laposte.net>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -90,7 +90,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Poedit 2.4.2\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -4021,8 +4021,16 @@ msgid "Searching..."
 msgstr "Recherche…"
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Recherche terminée"
+msgid "%d match in %d file."
+msgstr "%d correspondance dans %d fichier."
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d file."
+msgstr "%d correspondances dans %d fichier."
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d files."
+msgstr "%d correspondances dans %d fichiers."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8692,10 +8700,6 @@ msgid "Error"
 msgstr "Erreur"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "Aucun message de livraison n'a été fourni"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "Aucun fichier à ajouter"
 
@@ -8750,10 +8754,6 @@ msgstr "Étape sélectionnée"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Tout ajouter"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Ajouter un message de livraison"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -12598,11 +12598,11 @@ msgstr "Node B doit être un PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr ""
+msgstr "Le Joint n'est pas connecté à deux PhysicsBody2Ds"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr ""
+msgstr "Node A et Node B doivent être des PhysicsBody2D différents"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -13127,6 +13127,11 @@ msgstr "Alerte !"
 msgid "Please Confirm..."
 msgstr "Veuillez confirmer…"
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Activer l'alignement"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13210,6 +13215,15 @@ msgstr "Les variations ne peuvent être affectées que dans la fonction vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constantes ne peuvent être modifiées."
+
+#~ msgid "Search complete"
+#~ msgstr "Recherche terminée"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "Aucun message de livraison n'a été fourni"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Ajouter un message de livraison"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr ""

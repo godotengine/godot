@@ -4052,8 +4052,18 @@ msgstr "Shranjevanje..."
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Search complete"
-msgstr "Išči Besedilo"
+msgid "%d match in %d file."
+msgstr "Ni Zadetkov"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "Ni Zadetkov"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "Ni Zadetkov"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8910,11 +8920,6 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "No commit message was provided"
-msgstr "Ime ni na voljo"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -8977,10 +8982,6 @@ msgstr "Izbriši Izbrano"
 #, fuzzy
 msgid "Stage All"
 msgstr "Zamenjaj Vse"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -13156,6 +13157,10 @@ msgstr "Opozorilo!"
 msgid "Please Confirm..."
 msgstr "Prosimo Potrdite..."
 
+#: scene/gui/graph_edit.cpp
+msgid "Enable grid minimap."
+msgstr ""
+
 #: scene/gui/popup.cpp
 #, fuzzy
 msgid ""
@@ -13229,6 +13234,14 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstante ni možno spreminjati."
+
+#, fuzzy
+#~ msgid "Search complete"
+#~ msgstr "Išči Besedilo"
+
+#, fuzzy
+#~ msgid "No commit message was provided"
+#~ msgstr "Ime ni na voljo"
 
 #, fuzzy
 #~ msgid "There is already file or folder with the same name in this location."

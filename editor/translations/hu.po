@@ -3894,8 +3894,19 @@ msgid "Searching..."
 msgstr "Keresés…"
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "A keresés kész"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d egyezés."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d egyezés."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d egyezés."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8480,10 +8491,6 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -8537,10 +8544,6 @@ msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -12550,6 +12553,11 @@ msgstr "Figyelem!"
 msgid "Please Confirm..."
 msgstr "Kérjük erősítse meg..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Illesztés Engedélyezése"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -12622,6 +12630,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Search complete"
+#~ msgstr "A keresés kész"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "Ezen a helyen már van azonos nevű fájl vagy mappa."

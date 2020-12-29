@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-29 08:28+0000\n"
+"PO-Revision-Date: 2020-12-14 11:03+0000\n"
 "Last-Translator: Václav Blažej <vaclavblazej@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
@@ -3717,6 +3717,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Následující soubory nebo složky jsou v konfliktu s položkami v cílovém "
+"umístění '%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Přejete si je přepsat?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3909,8 +3915,19 @@ msgid "Searching..."
 msgstr "Hledám..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Vyhledávání dokončeno"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d shody."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d shody."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d shody."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8534,10 +8551,6 @@ msgid "Error"
 msgstr "Chyba"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "Nebyla poskytnuta commit message"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "Zádné soubory nebyly přidány k zápisu"
 
@@ -8592,10 +8605,6 @@ msgstr "Připravit vybrané k zapsání"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Připravit k zapsání vše"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Přidat zprávu commitu"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9794,7 +9803,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "Nepodporováno vašimi ovladači GPU."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12353,23 +12362,23 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "Uzel A a uzel B musí být PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "Uzel A musí být PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "Uzel B musí být PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr ""
+msgstr "Kloub není připojen ke dvěma PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr ""
+msgstr "Uzel A a uzel B musí být různé PhysicsBody2D"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12693,23 +12702,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "Uzel A a uzel B musí být PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "Uzel A musí být PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "Uzel B musí být PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "Kloub není připojen k PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "Uzel A a uzel B musí být odlišné PhysicsBody"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -12868,6 +12877,11 @@ msgstr "Pozor!"
 msgid "Please Confirm..."
 msgstr "Potvrďte prosím..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Povolit přichytávání"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -12949,6 +12963,15 @@ msgstr "Odlišnosti mohou být přiřazeny pouze ve vertex funkci."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanty není možné upravovat."
+
+#~ msgid "Search complete"
+#~ msgstr "Vyhledávání dokončeno"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "Nebyla poskytnuta commit message"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Přidat zprávu commitu"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "Soubor nebo složka se stejným názvem již na tomto místě existuje."

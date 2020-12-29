@@ -16,12 +16,13 @@
 # Nicolas Zirulnik <nicolaszirulnik@gmail.com>, 2020.
 # Cristian Yepez <cristianyepez@gmail.com>, 2020.
 # Skarline <lihue-molina@hotmail.com>, 2020.
+# Joakker <joaquinandresleon108@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-07 08:11+0000\n"
-"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
+"PO-Revision-Date: 2020-12-29 15:03+0000\n"
+"Last-Translator: Skarline <lihue-molina@hotmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -29,7 +30,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1172,11 +1173,11 @@ msgstr "Sponsor Oro"
 
 #: editor/editor_about.cpp
 msgid "Silver Sponsors"
-msgstr "Sponsors Plata"
+msgstr "Patrocinadores Nivel Plata"
 
 #: editor/editor_about.cpp
 msgid "Bronze Sponsors"
-msgstr "Sponsors Bronce"
+msgstr "Patrocinadores Nivel Bronce"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -2867,8 +2868,8 @@ msgstr ""
 "Cuando esta opción está activada, al utilizar el deploy en un click, el "
 "ejecutable intentará conectarse a la IP de este equipo para que el proyecto "
 "en ejecución pueda ser depurado.\n"
-"Esta opción está pensada para ser usada en la depuración remota "
-"( normalmente con un dispositivo móvil).\n"
+"Esta opción está pensada para ser usada en la depuración remota (normalmente "
+"con un dispositivo móvil).\n"
 "No es necesario habilitarla para usar el depurador GDScript localmente."
 
 #: editor/editor_node.cpp
@@ -3549,7 +3550,7 @@ msgstr "Error al obtener la lista de mirrors."
 #: editor/export_template_manager.cpp
 msgid "Error parsing JSON of mirror list. Please report this issue!"
 msgstr ""
-"Error al parsear el JSON de la lista de mirrors. Por favor reportá este "
+"Error al parsear el JSON de la lista de mirrors. ¡Por favor reportá este "
 "problema!"
 
 #: editor/export_template_manager.cpp
@@ -3750,6 +3751,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Los siguientes archivos o carpetas entran en conflicto con los elementos de "
+"la ubicación del objetivo '%s':\n"
+"\n"
+"%s\n"
+"\n"
+"¿Querés sobrescribirlos?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3942,8 +3949,19 @@ msgid "Searching..."
 msgstr "Buscando..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Búsqueda completa"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d coincidencias."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d coincidencias."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d coincidencias."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8589,10 +8607,6 @@ msgid "Error"
 msgstr "Error"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "No se indicó ningún mensaje de commit"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "No se agregaron archivos al stage"
 
@@ -8647,10 +8661,6 @@ msgstr "Hacer Staging de Selección"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Hacer Staging de Todo"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Agregar mensaje de commit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9863,7 +9873,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "No soportado por tus drivers de GPU."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12333,7 +12343,7 @@ msgstr "Nombre único de paquete inválido."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package publisher display name."
-msgstr "Nombre de paquete de publisher inválido."
+msgstr "Nombre de paquete de editor inválido."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
@@ -12465,23 +12475,23 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "El nodo A y el nodo B deben ser PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "El nodo A debe ser un PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "El nodo B debe ser un PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr ""
+msgstr "La unión no está conectada a dos PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr ""
+msgstr "El Nodo A y el Nodo B deben ser diferentes PhysicsBody2D"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12817,23 +12827,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "El nodo A y el nodo B deben ser PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "El nodo A debe ser un PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "El nodo B debe ser un PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "La unión no está conectada a ningún PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "El nodo A y el nodo B deben ser diferentes PhysicsBody"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -12997,6 +13007,11 @@ msgstr "Alerta!"
 msgid "Please Confirm..."
 msgstr "Confirmá, por favor..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Activar Ajuste"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13076,6 +13091,15 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "Search complete"
+#~ msgstr "Búsqueda completa"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "No se indicó ningún mensaje de commit"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Agregar mensaje de commit"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "Ya hay un archivo o carpeta con el mismo nombre en esta ubicación."

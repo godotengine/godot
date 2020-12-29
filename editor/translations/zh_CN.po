@@ -77,7 +77,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-11-29 08:29+0000\n"
+"PO-Revision-Date: 2020-12-25 12:29+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -86,7 +86,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2242,7 +2242,7 @@ msgstr "导入的资源无法保存。"
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
-msgstr "好"
+msgstr "确定"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -3070,7 +3070,7 @@ msgstr "文件系统"
 
 #: editor/editor_node.cpp
 msgid "Inspector"
-msgstr "属性检查器"
+msgstr "检查器"
 
 #: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
@@ -3698,6 +3698,11 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"下列文件或文件夹与目标路径 “%s” 中的项目冲突：\n"
+"\n"
+"%s\n"
+"\n"
+"要复写这些文件或文件夹吗？"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3888,8 +3893,19 @@ msgid "Searching..."
 msgstr "搜索中..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "搜索完毕"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d 个匹配。"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d 个匹配。"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d 个匹配。"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -4586,7 +4602,7 @@ msgstr "编辑过渡方式..."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Open in Inspector"
-msgstr "在属性检查器中打开"
+msgstr "在检查器中打开"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
@@ -8282,7 +8298,7 @@ msgstr "保持多边形位于纹理区域中。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Enable snap and show grid (configurable via the Inspector)."
-msgstr "启用吸附并显示网格（可通过属性检查器设置）。"
+msgstr "启用吸附并显示网格（可通过检查器设置）。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Display Tile Names (Hold Alt Key)"
@@ -8479,10 +8495,6 @@ msgid "Error"
 msgstr "错误"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "没有提供提交消息"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "没有文件被添加到暂存区"
 
@@ -8537,10 +8549,6 @@ msgstr "将选定放入暂存区"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "暂存全部"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "添加提交消息"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9705,7 +9713,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "所使用的 GPU 驱动不支持。"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12211,23 +12219,23 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "Node A 与 Node B 必须为 PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "Node A 必须为 PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "Node B 必须为 PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr ""
+msgstr "Joint 未连结到 2 个 PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr ""
+msgstr "Node A 与 Node B 必须为不同的 PhysicsBody2D"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12527,23 +12535,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "Node A 与 Node B 必须为 PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "Node A 必须为 PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "Node B 必须为 PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "Joint 未连结到任何 PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "Node A 与 Node B 必须为不同的 PhysicsBody"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -12697,6 +12705,11 @@ msgstr "警告！"
 msgid "Please Confirm..."
 msgstr "请确认..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "启用吸附"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -12774,6 +12787,15 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid "Search complete"
+#~ msgstr "搜索完毕"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "没有提供提交消息"
+
+#~ msgid "Add a commit message"
+#~ msgstr "添加提交消息"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "当前位置已存在同名文件或文件夹。"

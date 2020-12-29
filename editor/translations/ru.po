@@ -89,11 +89,12 @@
 # Nikita Epifanov <nikgreens@protonmail.com>, 2020.
 # Cube Show <griiv.06@gmail.com>, 2020.
 # Roman Tolkachyov <roman@tolkachyov.name>, 2020.
+# Igor Grachev <igorecha.9999@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-01 20:29+0000\n"
+"PO-Revision-Date: 2020-12-21 00:29+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -1117,8 +1118,8 @@ msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
 msgstr ""
-"Удалить выбранные файлы из проекта? (Нельзя восстановить)\n"
-"Вы можете найти удалённые файлы в Корзине, чтобы восстановить их."
+"Удалить выбранные файлы из проекта? (Нельзя отменить)\n"
+"Вы можете найти удалённые файлы в корзине, чтобы восстановить их."
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1128,8 +1129,8 @@ msgid ""
 "You can find the removed files in the system trash to restore them."
 msgstr ""
 "Удаляемые файлы требуются для правильной работы других ресурсов.\n"
-"Всё равно удалить их? (Нельзя отменить!)\n"
-"Вы можете найти удалённые файлы в Корзине, чтобы восстановить их."
+"Всё равно удалить их? (Нельзя отменить)\n"
+"Вы можете найти удалённые файлы в корзине, чтобы восстановить их."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -2671,7 +2672,7 @@ msgstr "Сцена «%s» имеет испорченные зависимост
 
 #: editor/editor_node.cpp
 msgid "Clear Recent Scenes"
-msgstr "Очистить последние сцены"
+msgstr "Очистить недавние сцены"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2817,7 +2818,7 @@ msgstr "Открыть сцену..."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
-msgstr "Открыть последнее"
+msgstr "Открыть недавнее"
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
@@ -3113,7 +3114,7 @@ msgstr "Запустить сцену"
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
-msgstr "Запустить выборочную сцену"
+msgstr "Запустить произвольную сцену"
 
 #: editor/editor_node.cpp
 msgid "Play Custom Scene"
@@ -3795,6 +3796,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Обнаружен конфликт следующих файлов (или папок) с объектами находящимися в "
+"целевой директории '%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Вы хотите их перезаписать?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3876,7 +3883,7 @@ msgstr "Дублировать..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move to Trash"
-msgstr "Удалить в Корзину"
+msgstr "Удалить в корзину"
 
 #: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Rename..."
@@ -3980,15 +3987,26 @@ msgstr "Заменить: "
 
 #: editor/find_in_files.cpp
 msgid "Replace all (no undo)"
-msgstr "Заменить всё (без возможности отмены)"
+msgstr "Заменить всё (нельзя отменить)"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
 msgstr "Поиск..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Поиск завершен"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d совпадения(ий)."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d совпадения(ий)."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d совпадения(ий)."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -4226,7 +4244,7 @@ msgstr "Перейти к следующему редактируемому об
 
 #: editor/inspector_dock.cpp
 msgid "History of recently edited objects."
-msgstr "История последних отредактированных объектов."
+msgstr "История недавно отредактированных объектов."
 
 #: editor/inspector_dock.cpp
 msgid "Object properties."
@@ -6951,7 +6969,7 @@ msgstr "Сохранить всё"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Soft Reload Script"
-msgstr "Мягкая перезагрузка скрипта"
+msgstr "Мягко перезагрузить скрипт"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Copy Script Path"
@@ -7181,7 +7199,7 @@ msgstr "Переключить комментарий"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
-msgstr "Свернуть/Развернуть строку"
+msgstr "Свернуть/развернуть строку"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
@@ -7213,11 +7231,11 @@ msgstr "Преобразовать отступ в пробелы"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent to Tabs"
-msgstr "Преобразовать отступы в табуляторы"
+msgstr "Преобразовать отступы в табуляцию"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
-msgstr "Авто-отступ"
+msgstr "Автоотступ"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Find in Files..."
@@ -8624,10 +8642,6 @@ msgid "Error"
 msgstr "Ошибка"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "Не указано сообщение коммита"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "Не добавлены файлы для коммита"
 
@@ -8682,10 +8696,6 @@ msgstr "Индекс. выбранные"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Индекс. всё"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Добавьте сообщение коммита"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9891,7 +9901,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "Не поддерживается вашими драйверами GPU."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12469,23 +12479,26 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "Узел А и Узел B должны быть экземплярами класса PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "Узел А должен быть экземпляром класса PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "Узел B должен быть экземпляром класса PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
 msgstr ""
+"Сустав должен быть связан с двумя объектами являющимися экземплярами класса "
+"PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr ""
+"Узел А и Узел B должны быть различными экземплярами класса PhysicsBody2D"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12815,23 +12828,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "Узел А и Узел В должны быть наследниками класса PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "Узел А должен быть наследником класса PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "Узел В должен быть наследником класса PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "Сустав не соединён ни с одним экземпляром класса PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "Узел А и Узел В должны быть различными объектами класса PhysicsBody"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -12993,6 +13006,11 @@ msgstr "Внимание!"
 msgid "Please Confirm..."
 msgstr "Подтверждение..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Активировать привязку"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13074,6 +13092,15 @@ msgstr "Изменения могут быть назначены только �
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
+
+#~ msgid "Search complete"
+#~ msgstr "Поиск завершен"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "Не указано сообщение коммита"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Добавьте сообщение коммита"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "По этому пути уже существует файл или папка с указанным именем."
