@@ -59,8 +59,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-07 08:11+0000\n"
-"Last-Translator: Mirko <miknsop@gmail.com>\n"
+"PO-Revision-Date: 2020-12-22 21:12+0000\n"
+"Last-Translator: Lorenzo Cerqua <lorenzocerqua@tutanota.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -68,12 +68,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Tipo argomento non valido per convert(), usa le costanti TYPE_*."
+msgstr "Tipo dell'argomento di convert() non valido, usa le costanti TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
@@ -83,17 +83,15 @@ msgstr "Prevista una stringa di lunghezza 1 (un singolo carattere)."
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
-"Non ci sono abbastanza byte per decodificarli, oppure il formato non è "
-"valido."
+msgstr "Byte insufficienti per decodificarli o formato non valido."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Input non valido %i (assente) nell'espressione"
+msgstr "Input %i non valido (assente) nell'espressione"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self non può essere usato perché l'istanza è nulla (non passata)"
+msgstr "self non può essere utilizzato perché l'istanza è nulla (non passata)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -105,7 +103,7 @@ msgstr "Indice di tipo %s non valido per il tipo base %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "Nome indice '%s' non valido per il tipo base %s"
+msgstr "Nome dell'indice '%s' non valido per il tipo base %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
@@ -145,15 +143,15 @@ msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Libero"
+msgstr "Libere"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr "Bilanciato"
+msgstr "Bilanciate"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr "Rifletti"
+msgstr "Specchiate"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
@@ -177,108 +175,117 @@ msgstr "Elimina le chiavi selezionate"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr "Aggiungi Punto Bezier"
+msgstr "Inserisci un punto di controllo di Bézier"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr "Sposta Punti Bezier"
+msgstr "Sposta dei punti di controllo di Bézier"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Duplica chiavi d'animazione"
+msgstr "Duplica delle chiavi d'animazione"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Elimina chiavi d'animazione"
+msgstr "Elimina delle chiavi d'animazione"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "Anim Cambia Tempo Keyframe"
+msgstr "Cambia il tempo di un fotogramma chiave"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Cambia transizione dell'animazione"
+msgstr "Cambia la transizione di un'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
-msgstr "Cambia trasformazione dell'animazione"
+msgstr "Cambia la trasformazione di un'animazione"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "Cambia valore fotogramma chiave dell'animazione"
+msgstr "Cambia il valore del fotogramma chiave di un'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr "Cambia chiamata animazione"
+msgstr "Cambia la chiamata di un'animazione"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Anim Cambio Multiplo Tempo Keyframe"
+msgstr "Cambia il tempo di più fotogrammi chiave"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Animazione Cambio Multiplo Transizione"
+msgstr "Cambia la transizione di più animazioni"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Animazione Cambio Multiplo Trasformazione"
+msgstr "Cambia le trasformazioni di più animazioni"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Animazione Cambio Multiplo Valore Keyframe"
+msgstr "Cambia il valore di più fotogrammi chiave di un'Animazione"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Animazione Cambio Multiplo Chiamata"
+msgstr "Cambia la chiamata di metodo di più animazioni"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Change Animation Length"
-msgstr "Cambia lunghezza dell'animazione"
+msgstr "Cambia la lunghezza di un'animazione"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
 msgid "Change Animation Loop"
-msgstr "Modifica ciclicità animazione"
+msgstr "Commuta ciclicità animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr "Traccia proprietà"
+msgstr "Traccia di proprietà"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
-msgstr "Traccia trasformazione 3D"
+msgstr "Traccia di trasformazioni 3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr "Traccia chiamata metodo"
+msgstr "Traccia di chiamate di metodo"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr "Traccia curva di Bézier"
+msgstr "Traccia di curve di Bézier"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr "Traccia Riproduzione Audio"
+msgstr "Traccia di riproduzione audio"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Playback Track"
-msgstr "Traccia di riproduzione animazione"
+msgstr "Traccia di riproduzione di animazioni"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
-msgstr "Durata animazione (fotogrammi)"
+msgstr "Durata dell'animazione (fotogrammi)"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (seconds)"
-msgstr "Durata Animazione (secondi)"
+msgstr "Durata dell'animazione (secondi)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
-msgstr "Aggiungi Traccia"
+msgstr "Aggiungi una traccia"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr "Ripeti Ciclicamente Animazione"
+msgstr "Ciclicità animazione"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -287,31 +294,32 @@ msgstr "Funzioni:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr "Clip Audio:"
+msgstr "Clip audio:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr "Clip Animazione:"
+msgstr "Clip animazione:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
-msgstr "Cambia percorso traccia"
+msgstr "Cambia il percorso della traccia"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr "Attiva/disattiva la traccia."
+msgstr "Attiva/Disattiva questa traccia."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr "Modalità di aggiornamento (Come viene impostata questa proprietà)"
+msgstr "Modalità di aggiornamento (come viene impostata questa proprietà)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
-msgstr "Modalità Interpolazione"
+msgstr "Modalità d'interpolazione"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr "Modalità Ciclo ad Anello (Interpola la fine con l'inizio del ciclo)"
+msgstr "Modalità ciclo ad anello (interpola la fine con l'inizio del ciclo)"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
@@ -323,25 +331,28 @@ msgstr "Tempo (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr "Abilita/disabilita tracce"
+msgstr "Abilita/Disabilita una traccia"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
-msgstr "Continuo"
+msgstr "Continua"
 
 #: editor/animation_track_editor.cpp
 msgid "Discrete"
-msgstr "Discreto"
+msgstr "Discreta"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Trigger"
 msgstr "Attivazione"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Capture"
 msgstr "Cattura"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Nearest"
 msgstr "Più vicino"
 
@@ -352,52 +363,59 @@ msgstr "Lineare"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr "Cubico"
+msgstr "Cubica"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Clamp Loop Interp"
-msgstr "Blocca interpolazione ciclo"
+msgstr "Blocca l'interpolazione d'un ciclo"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Wrap Loop Interp"
-msgstr "Continua interpolazione ciclo"
+msgstr "Continua l'interpolazione d'un ciclo"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Insert Key"
-msgstr "Inserisci chiave"
+msgstr "Inserisci un fotogramma chiave"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Duplicate Key(s)"
-msgstr "Duplica chiave(i)"
+msgstr "Duplica i fotogrammi chiave selezionati"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Delete Key(s)"
-msgstr "Elimina chiave(i)"
+msgstr "Elimina i fotogrammi chiave selezionati"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
-msgstr "Cambia modalità di aggiornamento animazione"
+msgstr "Cambia la modalità d'aggiornamento di un'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Interpolation Mode"
-msgstr "Cambia modalità di interpolazione animazione"
+msgstr "Cambia la modalità d'interpolazione di un'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
-msgstr "Cambia modalità di ciclo animazione"
+msgstr "Cambia la modalità del ciclo di un'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
-msgstr "Rimuovi traccia animazione"
+msgstr "Rimuovi la traccia di un'animazione"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Create NEW track for %s and insert key?"
-msgstr "Crea NUOVA traccia per %s e inserire la chiave?"
+msgstr "Creare una NUOVA traccia per %s e inserirci il fotogramma chiave?"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Create %d NEW tracks and insert keys?"
-msgstr "Creare %d NUOVE tracce e inserire la chiave?"
+msgstr "Creare %d NUOVE tracce e inserirci i fotogrammi chiavi?"
 
 #: editor/animation_track_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/editor_feature_profile.cpp
@@ -413,23 +431,27 @@ msgstr "Crea"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert"
-msgstr "Inserisci Animazione"
+msgstr "Inserisci un'animazione"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr "AnimationPlayer non può animare se stesso, solo altri nodi."
+msgstr "AnimationPlayer non può animarsi, solo altri nodi."
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Create & Insert"
-msgstr "Crea e inserisci un'animazione"
+msgstr "Crea un'animazione e inserisci un fotogramma chiave"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Insert Track & Key"
-msgstr "Inserisci traccia e chiave animazione"
+msgstr "Inserisci un traccia con un fotogramma chiave in un'animazione"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Insert Key"
-msgstr "Inserisci una chiave d'animazione"
+msgstr "Inserisci un fotogramma chiave in un'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Step"
@@ -437,13 +459,16 @@ msgstr "Cambia passo animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Rearrange Tracks"
-msgstr "Riordina tracce"
+msgstr "Riordina delle tracce"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr "Le tracce Transform si applicano solo a nodi di tipo Spatial."
+msgstr ""
+"Le tracce di trasformazioni 3D si applicano solo a nodi di tipo Spatial."
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
 "-AudioStreamPlayer\n"
@@ -457,15 +482,19 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr "Le tracce Animation possono puntare solo a nodi AnimationPlayer."
+msgstr ""
+"Le tracce di riproduzione di animazioni possono puntare solo a nodi di tipo "
+"AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "An animation player can't animate itself, only other players."
-msgstr "Un AnimationPlayer non può animare se stesso, solo altri oggetti."
+msgstr "Un AnimationPlayer non può animare se stesso, solo altri riproduttori."
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Not possible to add a new track without a root"
-msgstr "Non è possibile aggiungere una nuova traccia senza un nodo root"
+msgstr "Non è possibile aggiungere una nuova traccia senza un nodo radice"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
@@ -2174,7 +2203,6 @@ msgid "Property:"
 msgstr "Proprietà:"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Set"
 msgstr "Imposta"
 
@@ -3784,6 +3812,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"I seguenti file o cartelle vanno in conflitto con gli oggetti nel percorso "
+"di destinazione '%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Desideri sovrascriverli?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3976,8 +4010,19 @@ msgid "Searching..."
 msgstr "Ricerca..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Ricerca completata"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d corrispondenza/e."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d corrispondenza/e."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d corrispondenza/e."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -7321,7 +7366,6 @@ msgid "Create physical bones"
 msgstr "Crea ossa fisiche"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
-#, fuzzy
 msgid "Skeleton"
 msgstr "Scheletro"
 
@@ -7669,7 +7713,6 @@ msgstr "Abilita/Disabilita Vista libera"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Transform"
 msgstr "Trasforma"
 
@@ -8642,10 +8685,6 @@ msgid "Error"
 msgstr "Errore"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "Non è stato inserito alcun messaggio di commit"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "Nessun file aggiunto allo stage"
 
@@ -8702,10 +8741,6 @@ msgid "Stage All"
 msgstr "Stage Tutto"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Aggiungi un messaggio di commit"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
 msgstr "Commit Cambiamenti"
 
@@ -8741,9 +8776,8 @@ msgid "Scalar"
 msgstr "Scalare"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector"
-msgstr "Vector"
+msgstr "Vettore"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
@@ -9920,7 +9954,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "Non supportato dai tuoi driver GPU."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -11276,7 +11310,6 @@ msgid "Value"
 msgstr "Valore"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Monitors"
 msgstr "Monitor"
 
@@ -12520,23 +12553,23 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "Nodo A e Nodo B devono essere PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "Nodo A deve essere un PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "Nodo B deve essere un PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr ""
+msgstr "Il giunto non è collegato a due PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr ""
+msgstr "Il Nodo A e il Nodo B devono essere PhysicsBody2D diversi"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12873,23 +12906,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "Il Nodo A e il Nodo B devono essere PhysicsBodies"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "Il Nodo A deve essere un PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "Il Nodo B deve essere un PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "Il giunto non è collegato a dei PhysicsBodies"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "Il Nodo A e il Nodo B devono essere PhysicsBodies diversi"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -13051,6 +13084,11 @@ msgstr "Attenzione!"
 msgid "Please Confirm..."
 msgstr "Per Favore Conferma..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Abilita Snap"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13133,6 +13171,15 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Le constanti non possono essere modificate."
+
+#~ msgid "Search complete"
+#~ msgstr "Ricerca completata"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "Non è stato inserito alcun messaggio di commit"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Aggiungi un messaggio di commit"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr ""

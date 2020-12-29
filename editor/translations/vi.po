@@ -3906,8 +3906,19 @@ msgid "Searching..."
 msgstr "Đang tìm kiếm ..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Tìm kiếm hoàn tất"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "Tìm thấy %d khớp."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "Tìm thấy %d khớp."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "Tìm thấy %d khớp."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8617,10 +8628,6 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -8682,10 +8689,6 @@ msgstr "Xoá lựa chọn"
 #, fuzzy
 msgid "Stage All"
 msgstr "Chọn Toàn Bộ"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -12836,6 +12839,10 @@ msgstr "Cảnh báo!"
 msgid "Please Confirm..."
 msgstr "Xin hãy xác nhận..."
 
+#: scene/gui/graph_edit.cpp
+msgid "Enable grid minimap."
+msgstr ""
+
 #: scene/gui/popup.cpp
 #, fuzzy
 msgid ""
@@ -12910,6 +12917,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Không thể chỉnh sửa hằng số."
+
+#~ msgid "Search complete"
+#~ msgstr "Tìm kiếm hoàn tất"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "Đã có tệp tin hoặc thư mục cùng tên tại vị trí này."

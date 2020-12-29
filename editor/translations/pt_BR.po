@@ -104,11 +104,12 @@
 # NogardRyuu <nogardryuu@gmail.com>, 2020.
 # Elton <eltondeoliveira@outlook.com>, 2020.
 # ThiagoCTN <thiagocampostn@gmail.com>, 2020.
+# Alec Santos <alecsantos96@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2020-12-07 08:11+0000\n"
+"PO-Revision-Date: 2020-12-19 04:29+0000\n"
 "Last-Translator: ThiagoCTN <thiagocampostn@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
@@ -3818,6 +3819,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Os seguintes arquivos ou pastas entram em conflito com os itens do local "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Deseja sobreescrever?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -4010,8 +4017,19 @@ msgid "Searching..."
 msgstr "Procurando..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Pesquisa concluída"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d correspondências."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d correspondências."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d correspondências."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8652,10 +8670,6 @@ msgid "Error"
 msgstr "Erro"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "Nenhuma mensagem de confirmação foi fornecida"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "Nenhum arquivo em espera"
 
@@ -8710,10 +8724,6 @@ msgstr "Estágio selecionado"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Salvar Tudo"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Adicione uma mensagem ao commit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9921,7 +9931,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "Não suportado pelos seus drivers de GPU."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12202,7 +12212,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
-msgstr ""
+msgstr "Diretório 'ferramentas-da-plataforma' ausente!"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12225,13 +12235,14 @@ msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
-"Módulo inválido \"GodotPaymentV3\" incluido na configuração de projeto "
-"\"android/modules\" (changed in Godot 3.2.2).\n"
+"Módulo \"GodotPaymentV3\" inválido incluido na configuração de projeto "
+"\"android/modules\" (alterado em Godot 3.2.2).\n"
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
-"\"Use Custom Build\" precisa estar ativo para ser possível utilizar plugins."
+"\"Usar Compilação Customizada\" precisa estar ativo para ser possível "
+"utilizar plugins."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12257,6 +12268,8 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
+"\"Exportar AAB\" só é válido quando \"Usar Compilação Customizada\" está "
+"habilitado."
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
@@ -12268,7 +12281,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android APK requires the *.apk extension."
-msgstr ""
+msgstr "Nome de arquivo inválido! Android APK requer a extensão *.apk."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12306,7 +12319,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Moving output"
-msgstr ""
+msgstr "Movendo saída"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -13028,6 +13041,11 @@ msgstr "Alerta!"
 msgid "Please Confirm..."
 msgstr "Confirme Por Favor..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Ativar Snap"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13109,6 +13127,15 @@ msgstr "Variáveis só podem ser atribuídas na função de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constantes não podem serem modificadas."
+
+#~ msgid "Search complete"
+#~ msgstr "Pesquisa concluída"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "Nenhuma mensagem de confirmação foi fornecida"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Adicione uma mensagem ao commit"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "Já há uma pasta ou arquivo neste caminho com o nome especificado."

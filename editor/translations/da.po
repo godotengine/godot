@@ -4035,8 +4035,18 @@ msgstr "Gemmer..."
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Search complete"
-msgstr "Søg Tekst"
+msgid "%d match in %d file."
+msgstr "Ingen Match"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "Ingen Match"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "Ingen Match"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8847,11 +8857,6 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "No commit message was provided"
-msgstr "Intet navn angivet"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -8914,10 +8919,6 @@ msgstr "Slet Valgte"
 #, fuzzy
 msgid "Stage All"
 msgstr "Vælg alle"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -13142,6 +13143,10 @@ msgstr "Advarsel!"
 msgid "Please Confirm..."
 msgstr "Bekræft venligst..."
 
+#: scene/gui/graph_edit.cpp
+msgid "Enable grid minimap."
+msgstr ""
+
 #: scene/gui/popup.cpp
 #, fuzzy
 msgid ""
@@ -13220,6 +13225,14 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanter kan ikke ændres."
+
+#, fuzzy
+#~ msgid "Search complete"
+#~ msgstr "Søg Tekst"
+
+#, fuzzy
+#~ msgid "No commit message was provided"
+#~ msgstr "Intet navn angivet"
 
 #, fuzzy
 #~ msgid "There is already file or folder with the same name in this location."

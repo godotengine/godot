@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-01 20:29+0000\n"
+"PO-Revision-Date: 2020-12-14 11:03+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
@@ -3729,6 +3729,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Os seguintes ficheiros ou pastas estão em conflito com os items na "
+"localização '%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Deseja sobrescrevê-los?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3921,8 +3927,19 @@ msgid "Searching..."
 msgstr "A procurar..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Pesquisa completa"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d correspondências."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d correspondências."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d correspondências."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8372,7 +8389,7 @@ msgstr "Não selecionou uma textura para remover."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr "Criar a partir de cena? Irá substituir todos os tiles atuais."
+msgstr "Criar a partir de cena? Irá sobrescrever todos os tiles atuais."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
@@ -8549,10 +8566,6 @@ msgid "Error"
 msgstr "Erro"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "Nenhuma mensagem de gravação foi fornecida"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "Nenhum ficheiro adicionado ao palco"
 
@@ -8607,10 +8620,6 @@ msgstr "Palco Selecionado"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Tudo no Palco"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Adicionar mensagem de gravação"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9813,7 +9822,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "Não suportado pelos seus drivers GPU."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12399,23 +12408,23 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "Nó A e Nó B têm de ser PhysicsBody2Ds"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "Nó A tem de ser um PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "Nó B tem de ser um PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr ""
+msgstr "Junção não está conetada a dois PhysicsBody2Ds"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr ""
+msgstr "Nó A e Nó B têm de ser PhysicsBody2Ds diferentes"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12743,23 +12752,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "Nó A e Nó B têm de ser PhysicsBodies"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "Nó A tem de ser um PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "Nó B tem de ser um PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "Junção não está conetada a quaisquer PhysicsBodies"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "Nó A e Nó B têm de ser PhysicsBodies diferentes"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -12921,6 +12930,11 @@ msgstr "Alerta!"
 msgid "Please Confirm..."
 msgstr "Confirme por favor..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Ativar Ajuste"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13000,6 +13014,15 @@ msgstr "Variações só podem ser atribuídas na função vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constantes não podem ser modificadas."
+
+#~ msgid "Search complete"
+#~ msgstr "Pesquisa completa"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "Nenhuma mensagem de gravação foi fornecida"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Adicionar mensagem de gravação"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "Já existe um ficheiro ou pasta com o mesmo nome nesta localização."

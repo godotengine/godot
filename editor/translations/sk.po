@@ -3892,8 +3892,19 @@ msgid "Searching..."
 msgstr "Vyhľadávam..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Vyhľadávanie bolo dokončené"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d zhody."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d zhody."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d zhody."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8588,10 +8599,6 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -8652,10 +8659,6 @@ msgstr "Zmeniť veľkosť výberu"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -12756,6 +12759,11 @@ msgstr ""
 msgid "Please Confirm..."
 msgstr ""
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Povoliť Prichytávanie"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -12825,6 +12833,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Search complete"
+#~ msgstr "Vyhľadávanie bolo dokončené"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "Už tu je súbor alebo priečinok pomenovaný rovnako."

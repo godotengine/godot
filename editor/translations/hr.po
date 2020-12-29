@@ -3745,8 +3745,19 @@ msgid "Searching..."
 msgstr ""
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr ""
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d pojavljivanja."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d pojavljivanja."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d pojavljivanja."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8272,10 +8283,6 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -8336,10 +8343,6 @@ msgstr "Brisati odabrani ključ/odabrane ključeve"
 #, fuzzy
 msgid "Stage All"
 msgstr "Zamijeni sve"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -12320,6 +12323,10 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable grid minimap."
 msgstr ""
 
 #: scene/gui/popup.cpp

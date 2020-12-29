@@ -49,8 +49,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-01 20:29+0000\n"
-"Last-Translator: Mateusz Grzonka <alpinus4@gmail.com>\n"
+"PO-Revision-Date: 2020-12-14 11:03+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -3742,6 +3742,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Następujące pliki lub foldery konfliktują z pozycjami w lokalizacji "
+"docelowej \"%s\":\n"
+"\n"
+"%s\n"
+"\n"
+"Czy chcesz je nadpisać?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3934,8 +3940,19 @@ msgid "Searching..."
 msgstr "Wyszukiwanie..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Wyszukiwanie zakończone"
+#, fuzzy
+msgid "%d match in %d file."
+msgstr "%d dopasowań."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "%d dopasowań."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "%d dopasowań."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -8577,10 +8594,6 @@ msgid "Error"
 msgstr "Błąd"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "Nie podano wiadomości commitu"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "Brak plików dodanych do stage'a"
 
@@ -8635,10 +8648,6 @@ msgstr "Stage'uj zaznaczone"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Stage'uj wszystko"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Dodaj wiadomość comittu"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9845,7 +9854,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "Nie obsługiwany przez twój sterownik GPU."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12430,23 +12439,23 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "Node A i Node B muszą być węzłami PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "Node A musi być węzłem PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "Node B musi być węzłem PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr ""
+msgstr "Złącze nie jest połączone do dwóch węzłów PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr ""
+msgstr "Node A i Node B muszą być różnymi węzłami PhysicsBody2D"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12781,23 +12790,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "Node A i Node B muszą być węzłami PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "Node A musi być węzłem PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "Node B musi być węzłem PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "Złącze nie jest połączone z żadnym węzłem PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "Node A i Node B muszą być różnymi węzłami PhysicsBody"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -12958,6 +12967,11 @@ msgstr "Alarm!"
 msgid "Please Confirm..."
 msgstr "Proszę potwierdzić..."
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Włączyć przyciąganie"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13037,6 +13051,15 @@ msgstr "Varying może być przypisane tylko w funkcji wierzchołków."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Stałe nie mogą być modyfikowane."
+
+#~ msgid "Search complete"
+#~ msgstr "Wyszukiwanie zakończone"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "Nie podano wiadomości commitu"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Dodaj wiadomość comittu"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "W tej lokalizacji istnieje już plik lub folder o podanej nazwie."
