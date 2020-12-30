@@ -240,6 +240,9 @@ static const LauncherIcon launcher_adaptive_icon_backgrounds[icon_densities_coun
 	{ "res/mipmap/icon_background.png", 432 }
 };
 
+static const int EXPORT_FORMAT_APK = 0;
+static const int EXPORT_FORMAT_AAB = 1;
+
 class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	GDCLASS(EditorExportPlatformAndroid, EditorExportPlatform);
@@ -1650,7 +1653,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "custom_template/use_custom_build"), false));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "custom_template/export_format", PROPERTY_HINT_ENUM, "Export APK,Export AAB"), 0));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "custom_template/export_format", PROPERTY_HINT_ENUM, "Export APK,Export AAB"), EXPORT_FORMAT_APK));
 
 		Vector<PluginConfig> plugins_configs = get_plugins();
 		for (int i = 0; i < plugins_configs.size(); i++) {
@@ -1823,7 +1826,7 @@ public:
 	}
 
 		// Export to temporary APK before sending to device.
-		Error err = export_project(p_preset, true, tmp_export_path, p_debug_flags);
+		Error err = export_project_helper(p_preset, true, tmp_export_path, EXPORT_FORMAT_APK, true, p_debug_flags);
 
 		if (err != OK) {
 			CLEANUP_AND_RETURN(err);
@@ -2126,7 +2129,7 @@ public:
 			}
 		}
 
-		if (int(p_preset->get("custom_template/export_format")) == 1 && /*AAB*/
+		if (int(p_preset->get("custom_template/export_format")) == EXPORT_FORMAT_AAB &&
 				!bool(p_preset->get("custom_template/use_custom_build"))) {
 			valid = false;
 			err += TTR("\"Export AAB\" is only valid when \"Use Custom Build\" is enabled.");
@@ -2528,7 +2531,7 @@ public:
 
 	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, String export_path, EditorProgress ep) {
 		int export_format = int(p_preset->get("custom_template/export_format"));
-		String export_label = export_format == 1 ? "AAB" : "APK";
+		String export_label = export_format == EXPORT_FORMAT_AAB ? "AAB" : "APK";
 		String release_keystore = p_preset->get("keystore/release");
 		String release_username = p_preset->get("keystore/release_user");
 		String release_password = p_preset->get("keystore/release_password");
@@ -2627,6 +2630,12 @@ public:
 	}
 
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) {
+		int export_format = int(p_preset->get("custom_template/export_format"));
+		bool should_sign = p_preset->get("package/signed");
+		return export_project_helper(p_preset, p_debug, p_path, export_format, should_sign, p_flags);
+	}
+
+	Error export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int export_format, bool should_sign, int p_flags) {
 
 		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
@@ -2636,9 +2645,7 @@ public:
 		EditorProgress ep("export", "Exporting for Android", 105, true);
 
 		bool use_custom_build = bool(p_preset->get("custom_template/use_custom_build"));
-		int export_format = int(p_preset->get("custom_template/export_format"));
 		bool p_give_internet = p_flags & (DEBUG_FLAG_DUMB_CLIENT | DEBUG_FLAG_REMOTE_DEBUG);
-		bool _signed = p_preset->get("package/signed");
 		bool apk_expansion = p_preset->get("apk_expansion/enable");
 		Vector<String> enabled_abis = get_enabled_abis(p_preset);
 
@@ -2656,7 +2663,7 @@ public:
 		// Write command line flags into the command_line_flags variable.
 		get_command_line_flags(p_preset, p_path, p_flags, command_line_flags);
 
-		if (export_format == 1) {
+		if (export_format == EXPORT_FORMAT_AAB) {
 			if (!p_path.ends_with(".aab")) {
 				EditorNode::get_singleton()->show_warning(TTR("Invalid filename! Android App Bundle requires the *.aab extension."));
 				return ERR_UNCONFIGURED;
@@ -2666,12 +2673,12 @@ public:
 				return ERR_UNCONFIGURED;
 			}
 		}
-		if (export_format == 0 && !p_path.ends_with(".apk")) {
+		if (export_format == EXPORT_FORMAT_APK && !p_path.ends_with(".apk")) {
 			EditorNode::get_singleton()->show_warning(
 					TTR("Invalid filename! Android APK requires the *.apk extension."));
 			return ERR_UNCONFIGURED;
 		}
-		if (export_format > 1 || export_format < 0) {
+		if (export_format > EXPORT_FORMAT_AAB || export_format < EXPORT_FORMAT_APK) {
 			EditorNode::add_io_error("Unsupported export format!\n");
 			return ERR_UNCONFIGURED; //TODO: is this the right error?
 		}
@@ -2738,7 +2745,7 @@ public:
 			String version_code = itos(p_preset->get("version/code"));
 			String version_name = p_preset->get("version/name");
 			String enabled_abi_string = String("|").join(enabled_abis);
-			String sign_flag = _signed ? "true" : "false";
+			String sign_flag = should_sign ? "true" : "false";
 			String zipalign_flag = "true";
 
 			Vector<PluginConfig> enabled_plugins = get_enabled_plugins(p_preset);
@@ -2753,10 +2760,10 @@ public:
 			}
 
 			String build_type = p_debug ? "Debug" : "Release";
-			if (export_format == 1) {
+			if (export_format == EXPORT_FORMAT_AAB) {
 				String bundle_build_command = vformat("bundle%s", build_type);
 				cmdline.push_back(bundle_build_command);
-			} else if (export_format == 0) {
+			} else if (export_format == EXPORT_FORMAT_APK) {
 				String apk_build_command = vformat("assemble%s", build_type);
 				cmdline.push_back(apk_build_command);
 			}
@@ -2770,7 +2777,7 @@ public:
 			cmdline.push_back("-Pplugins_maven_repos=" + custom_maven_repos); // argument to specify the list of custom maven repos for the plugins dependencies.
 			cmdline.push_back("-Pperform_zipalign=" + zipalign_flag); // argument to specify whether the build should be zipaligned.
 			cmdline.push_back("-Pperform_signing=" + sign_flag); // argument to specify whether the build should be signed.
-			if (_signed && !p_debug) {
+			if (should_sign && !p_debug) {
 				// Pass the release keystore info as well
 				String release_keystore = p_preset->get("keystore/release");
 				String release_username = p_preset->get("keystore/release_user");
@@ -2795,9 +2802,9 @@ public:
 
 			List<String> copy_args;
 			String copy_command;
-			if (export_format == 1) {
+			if (export_format == EXPORT_FORMAT_AAB) {
 				copy_command = vformat("copyAndRename%sAab", build_type);
-			} else if (export_format == 0) {
+			} else if (export_format == EXPORT_FORMAT_APK) {
 				copy_command = vformat("copyAndRename%sApk", build_type);
 			}
 
@@ -2953,7 +2960,7 @@ public:
 				}
 			}
 
-			if (file.begins_with("META-INF") && _signed) {
+			if (file.begins_with("META-INF") && should_sign) {
 				skip = true;
 			}
 
@@ -3042,7 +3049,7 @@ public:
 			CLEANUP_AND_RETURN(err);
 		}
 
-		if (_signed) {
+		if (should_sign) {
 			err = sign_apk(p_preset, p_debug, tmp_unaligned_path, ep);
 			if (err != OK) {
 				CLEANUP_AND_RETURN(err);
