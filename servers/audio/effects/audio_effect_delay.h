@@ -42,13 +42,13 @@ class AudioEffectDelayInstance : public AudioEffectInstance {
 
 	Vector<AudioFrame> ring_buffer;
 
-	unsigned int ring_buffer_pos;
-	unsigned int ring_buffer_mask;
+	unsigned int ring_buffer_pos = 0;
+	unsigned int ring_buffer_mask = 0;
 
 	/* feedback buffer */
 	Vector<AudioFrame> feedback_buffer;
 
-	unsigned int feedback_buffer_pos;
+	unsigned int feedback_buffer_pos = 0;
 
 	AudioFrame h;
 	void _process_chunk(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
@@ -66,22 +66,22 @@ class AudioEffectDelay : public AudioEffect {
 		MAX_TAPS = 2
 	};
 
-	float dry;
+	float dry = 0.0;
 
-	bool tap_1_active;
-	float tap_1_delay_ms;
-	float tap_1_level;
-	float tap_1_pan;
+	bool tap_1_active = false;
+	float tap_1_delay_ms = 0.0;
+	float tap_1_level = 0.0;
+	float tap_1_pan = 0.0;
 
-	bool tap_2_active;
-	float tap_2_delay_ms;
-	float tap_2_level;
-	float tap_2_pan;
+	bool tap_2_active = false;
+	float tap_2_delay_ms = 0.0;
+	float tap_2_level = 0.0;
+	float tap_2_pan = 0.0;
 
-	bool feedback_active;
-	float feedback_delay_ms;
-	float feedback_level;
-	float feedback_lowpass;
+	bool feedback_active = false;
+	float feedback_delay_ms = 0.0;
+	float feedback_level = 0.0;
+	float feedback_lowpass = 0.0;
 
 protected:
 	static void _bind_methods();

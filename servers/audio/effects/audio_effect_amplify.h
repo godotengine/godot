@@ -40,7 +40,7 @@ class AudioEffectAmplifyInstance : public AudioEffectInstance {
 	friend class AudioEffectAmplify;
 	Ref<AudioEffectAmplify> base;
 
-	float mix_volume_db;
+	float mix_volume_db = 0.0;
 
 public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
@@ -50,7 +50,7 @@ class AudioEffectAmplify : public AudioEffect {
 	GDCLASS(AudioEffectAmplify, AudioEffect);
 
 	friend class AudioEffectAmplifyInstance;
-	float volume_db;
+	float volume_db = 0.0;
 
 protected:
 	static void _bind_methods();
