@@ -703,12 +703,12 @@ void GDAPI godot_glyph_set_offset(godot_glyph *p_self, const godot_vector2 *p_of
 	self->y_off = offset->y;
 }
 
-godot_real GDAPI godot_glyph_get_advance(const godot_glyph *p_self) {
+godot_float GDAPI godot_glyph_get_advance(const godot_glyph *p_self) {
 	const TextServer::Glyph *self = (const TextServer::Glyph *)p_self;
 	return self->advance;
 }
 
-void GDAPI godot_glyph_set_advance(godot_glyph *p_self, godot_real p_advance) {
+void GDAPI godot_glyph_set_advance(godot_glyph *p_self, godot_float p_advance) {
 	TextServer::Glyph *self = (TextServer::Glyph *)p_self;
 	self->advance = p_advance;
 }

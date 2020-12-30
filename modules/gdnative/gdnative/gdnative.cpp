@@ -99,7 +99,7 @@ godot_class_constructor GDAPI godot_get_class_constructor(const char *p_classnam
 
 godot_dictionary GDAPI godot_get_global_constants() {
 	godot_dictionary constants;
-	godot_dictionary_new(&constants);
+	memnew_placement(&constants, Dictionary);
 	Dictionary *p_constants = (Dictionary *)&constants;
 	const int constants_count = CoreConstants::get_global_constant_count();
 	for (int i = 0; i < constants_count; ++i) {
