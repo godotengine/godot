@@ -823,6 +823,9 @@ private:
 
 	///the m_needsJointFeedback gets updated/computed during the stepVelocitiesMultiDof and it for internal usage only
 	bool m_internalNeedsJointFeedback;
+
+  //If enabled, calculate the velocity based on kinematic transform changes. Currently only implemented for the base.
+	bool m_kinematic_calculate_velocity;
 };
 
 struct btMultiBodyLinkDoubleData

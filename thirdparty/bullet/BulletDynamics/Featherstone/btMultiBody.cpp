@@ -125,7 +125,8 @@ btMultiBody::btMultiBody(int n_links,
 	  m_posVarCnt(0),
 	  m_useRK4(false),
 	  m_useGlobalVelocities(false),
-	  m_internalNeedsJointFeedback(false)
+	  m_internalNeedsJointFeedback(false),
+		m_kinematic_calculate_velocity(false)
 {
 	m_cachedInertiaTopLeft.setValue(0, 0, 0, 0, 0, 0, 0, 0, 0);
 	m_cachedInertiaTopRight.setValue(0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -2381,7 +2382,7 @@ const char *btMultiBody::serialize(void *dataBuffer, class btSerializer *seriali
 void btMultiBody::saveKinematicState(btScalar timeStep)
 {
 	//todo: clamp to some (user definable) safe minimum timestep, to limit maximum angular/linear velocities
-	if (timeStep != btScalar(0.))
+	if (m_kinematic_calculate_velocity && timeStep != btScalar(0.))
 	{
 		btVector3 linearVelocity, angularVelocity;
 		btTransformUtil::calculateVelocity(getInterpolateBaseWorldTransform(), getBaseWorldTransform(), timeStep, linearVelocity, angularVelocity);
