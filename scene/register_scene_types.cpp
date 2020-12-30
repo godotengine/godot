@@ -533,6 +533,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<VisualShaderNodeOutput>();
 	ClassDB::register_virtual_class<VisualShaderNodeResizableBase>();
 	ClassDB::register_virtual_class<VisualShaderNodeGroupBase>();
+	ClassDB::register_virtual_class<VisualShaderNodeConstant>();
 	ClassDB::register_class<VisualShaderNodeFloatConstant>();
 	ClassDB::register_class<VisualShaderNodeIntConstant>();
 	ClassDB::register_class<VisualShaderNodeBooleanConstant>();
