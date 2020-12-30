@@ -869,6 +869,7 @@
 			If [code]true[/code], logs all output to files.
 		</member>
 		<member name="logging/file_logging/enable_file_logging.pc" type="bool" setter="" getter="" default="true">
+			Desktop override for [member logging/file_logging/enable_file_logging], as log files are not readily accessible on mobile/Web platforms.
 		</member>
 		<member name="logging/file_logging/log_path" type="String" setter="" getter="" default="&quot;user://logs/godot.log&quot;">
 			Path to logs within the project. Using an [code]user://[/code] path is recommended.
