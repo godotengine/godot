@@ -115,7 +115,6 @@ void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 
 	if (mesh.is_valid()) {
 		mesh->disconnect(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_mesh_changed);
-		materials.clear();
 	}
 
 	if (skin_ref.is_valid() && mesh.is_valid() && _is_software_skinning_enabled() && is_visible_in_tree()) {
