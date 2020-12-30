@@ -32,6 +32,7 @@
 #define COWDATA_H
 
 #include "core/error/error_macros.h"
+#include "core/os/copymem.h"
 #include "core/os/memory.h"
 #include "core/templates/safe_refcount.h"
 
@@ -297,6 +298,8 @@ Error CowData<T>::resize(int p_size) {
 			for (int i = *_get_size(); i < p_size; i++) {
 				memnew_placement(&elems[i], T);
 			}
+		} else {
+			zeromem((void *)(_get_data() + current_size), (p_size - current_size) * sizeof(T));
 		}
 
 		*_get_size() = p_size;
