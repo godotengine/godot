@@ -36,11 +36,11 @@
 class AudioFilterSW {
 public:
 	struct Coeffs {
-		float a1, a2;
-		float b0, b1, b2;
+		float a1 = 0.0, a2 = 0.0;
+		float b0 = 0.0, b1 = 0.0, b2 = 0.0;
 
 		//bool operator==(const Coeffs &p_rv) { return (FLOATS_EQ(a1,p_rv.a1) && FLOATS_EQ(a2,p_rv.a2) && FLOATS_EQ(b1,p_rv.b1) && FLOATS_EQ(b2,p_rv.b2) && FLOATS_EQ(b0,p_rv.b0) ); }
-		Coeffs() { a1 = a2 = b0 = b1 = b2 = 0.0; }
+		Coeffs() { }
 	};
 
 	enum Mode {
@@ -57,9 +57,9 @@ public:
 
 	class Processor { // simple filter processor
 
-		AudioFilterSW *filter;
+		AudioFilterSW *filter = nullptr;
 		Coeffs coeffs;
-		float ha1, ha2, hb1, hb2; //history
+		float ha1 = 0.0, ha2 = 0.0, hb1 = 0.0, hb2 = 0.0; //history
 		Coeffs incr_coeffs;
 
 	public:
@@ -73,11 +73,11 @@ public:
 	};
 
 private:
-	float cutoff;
-	float resonance;
-	float gain;
-	float sampling_rate;
-	int stages;
+	float cutoff = 0.0;
+	float resonance = 0.0;
+	float gain = 0.0;
+	float sampling_rate = 0.0;
+	int stages = 0;
 	Mode mode;
 
 public:

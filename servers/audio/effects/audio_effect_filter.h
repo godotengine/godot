@@ -67,9 +67,9 @@ public:
 	friend class AudioEffectFilterInstance;
 
 	AudioFilterSW::Mode mode;
-	float cutoff;
-	float resonance;
-	float gain;
+	float cutoff = 0.0;
+	float resonance = 0.0;
+	float gain = 0.0;
 	FilterDB db;
 
 protected:
