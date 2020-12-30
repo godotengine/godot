@@ -274,6 +274,7 @@ void Spatial::set_global_rotation(const Vector3 &p_euler_rad) {
 void Spatial::set_transform(const Transform &p_transform) {
 	data.local_transform = p_transform;
 	data.dirty |= DIRTY_VECTORS;
+	data.dirty &= ~DIRTY_LOCAL;
 	_change_notify("translation");
 	_change_notify("rotation");
 	_change_notify("rotation_degrees");
