@@ -76,12 +76,14 @@ void PivotTransform::ReadTransformChain() {
 	const Vector3 &Scaling = ImportUtils::safe_import_vector3(FBXDocParser::PropertyGet<Vector3>(props, "Lcl Scaling", ok));
 	if (ok) {
 		scaling = Scaling;
+	} else {
+		scaling = Vector3(1, 1, 1);
 	}
 	const Vector3 &GeometricScaling = ImportUtils::safe_import_vector3(FBXDocParser::PropertyGet<Vector3>(props, "GeometricScaling", ok));
 	if (ok) {
 		geometric_scaling = GeometricScaling;
 	} else {
-		geometric_scaling = Vector3(0, 0, 0);
+		geometric_scaling = Vector3(1, 1, 1);
 	}
 
 	const Vector3 &GeometricRotation = ImportUtils::safe_import_vector3(FBXDocParser::PropertyGet<Vector3>(props, "GeometricRotation", ok));
@@ -207,6 +209,8 @@ Transform PivotTransform::ComputeGlobalTransform(Vector3 p_translation, Quat p_r
 	Transform local_transform = T * Roff * Rp * Rpre * R * Rpost.affine_inverse() * Rp.affine_inverse() * Soff * Sp * S * Sp.affine_inverse();
 	//Transform local_translation_pivoted = Transform(Basis(), LocalTransform.origin);
 
+	ERR_FAIL_COND_V_MSG(local_transform.basis.determinant() == 0, Transform(), "Det == 0 prevented in scene file");
+
 	// manual hack to force SSC not to be compensated for - until we can handle it properly with tests
 	return parent_global_xform * local_transform;
 }
@@ -290,5 +294,14 @@ void PivotTransform::Execute() {
 	ComputePivotTransform();
 
 	ImportUtils::debug_xform("global xform: ", GlobalTransform);
+
+	if (LocalTransform.basis.determinant() == 0) {
+		print_error("Serious det == 0!");
+	}
+
+	if (GlobalTransform.basis.determinant() == 0) {
+		print_error("Serious! node has det == 0!");
+	}
+
 	computed_global_xform = true;
 }

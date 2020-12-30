@@ -3321,6 +3321,21 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 
 	xform.basis.scale(scale);
 
+	// if the determinant is zero, we should disable the gizmo from being rendered
+	// this prevents supplying bad values to the renderer and then having to filter it out again
+	if (xform.basis.determinant() == 0) {
+		for (int i = 0; i < 3; i++) {
+			RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], false);
+			RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
+			RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
+			RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
+			RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
+		}
+		// Rotation white outline
+		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], false);
+		return;
+	}
+
 	for (int i = 0; i < 3; i++) {
 		RenderingServer::get_singleton()->instance_set_transform(move_gizmo_instance[i], xform);
 		RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));

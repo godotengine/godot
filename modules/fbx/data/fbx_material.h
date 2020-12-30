@@ -217,9 +217,6 @@ struct FBXMaterial : public Reference {
 		{ "TransparencyFactor", PROPERTY_DESC_TRANSPARENT },
 		{ "Maya|opacity", PROPERTY_DESC_TRANSPARENT },
 
-		/* Metallic */
-		{ "Shininess", PROPERTY_DESC_METALLIC },
-		{ "Reflectivity", PROPERTY_DESC_METALLIC },
 		{ "Maya|metalness", PROPERTY_DESC_METALLIC },
 		{ "Maya|metallic", PROPERTY_DESC_METALLIC },
 
@@ -241,6 +238,8 @@ struct FBXMaterial : public Reference {
 		{ "Maya|emissionColor", PROPERTY_DESC_EMISSIVE_COLOR },
 
 		/* Ignore */
+		{ "Shininess", PROPERTY_DESC_IGNORE },
+		{ "Reflectivity", PROPERTY_DESC_IGNORE },
 		{ "Maya|diffuseRoughness", PROPERTY_DESC_IGNORE },
 		{ "Maya", PROPERTY_DESC_IGNORE },
 		{ "Diffuse", PROPERTY_DESC_ALBEDO_COLOR },
