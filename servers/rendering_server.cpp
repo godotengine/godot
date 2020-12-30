@@ -865,8 +865,22 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 					ERR_FAIL_V(ERR_INVALID_DATA);
 				} break;
 			}
-
 			ERR_FAIL_COND_V(array_len == 0, ERR_INVALID_DATA);
+		} else if (i == RS::ARRAY_BONES) {
+			switch (p_arrays[i].get_type()) {
+				case Variant::PACKED_INT32_ARRAY: {
+					Vector<Vector3> vertexes = p_arrays[RS::ARRAY_VERTEX];
+					Vector<int32_t> bones = p_arrays[i];
+					int32_t bone_8_group_count = bones.size() / (ARRAY_WEIGHTS_SIZE * 2);
+					int32_t vertex_count = vertexes.size();
+					if (vertex_count == bone_8_group_count) {
+						format |= RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+					}
+				} break;
+				default: {
+					ERR_FAIL_V(ERR_INVALID_DATA);
+				} break;
+			}
 		} else if (i == RS::ARRAY_INDEX) {
 			index_array_len = PackedInt32Array(p_arrays[i]).size();
 		}

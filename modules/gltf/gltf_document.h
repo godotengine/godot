@@ -71,6 +71,7 @@ class GLTFDocument : public Resource {
 	friend class GLTFSkeleton;
 
 public:
+	const int32_t JOINT_GROUP_SIZE = 4;
 	enum GLTFType {
 		TYPE_SCALAR,
 		TYPE_VEC2,
