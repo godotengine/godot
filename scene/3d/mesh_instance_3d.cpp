@@ -112,7 +112,6 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 
 	if (mesh.is_valid()) {
 		mesh->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &MeshInstance3D::_mesh_changed));
-		materials.clear();
 	}
 
 	mesh = p_mesh;
