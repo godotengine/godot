@@ -16,53 +16,70 @@
 			</return>
 			<argument index="0" name="from_node" type="Node" default="null">
 			</argument>
-			<argument index="1" name="create_visual_debug" type="bool" default="false">
+			<argument index="1" name="data_save_path" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Bakes the lightmaps within the currently edited scene. Returns a [enum BakeError] to signify if the bake was successful, or if unsuccessful, how the bake failed.
-			</description>
-		</method>
-		<method name="debug_bake">
-			<return type="void">
-			</return>
-			<description>
-				Executes a dry run bake of lightmaps within the currently edited scene.
+				Bakes the lightmap, scanning from the given [code]from_node[/code] root and saves the resulting [BakedLightmapData] in [code]data_save_path[/code]. If no save path is provided it will try to match the path from the current [member light_data].
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="bake_cell_size" type="float" setter="set_bake_cell_size" getter="get_bake_cell_size" default="0.25">
-			Grid subdivision size for lightmapper calculation. The default value will work for most cases. Increase for better lighting on small details or if your scene is very large.
+		<member name="atlas_generate" type="bool" setter="set_generate_atlas" getter="is_generate_atlas_enabled" default="true">
+			When enabled, the lightmapper will merge the textures for all meshes into a single large layered texture. Not supported in GLES2.
 		</member>
-		<member name="bake_default_texels_per_unit" type="float" setter="set_bake_default_texels_per_unit" getter="get_bake_default_texels_per_unit" default="20.0">
-			If a [member Mesh.lightmap_size_hint] isn't specified, the lightmap baker will dynamically set the lightmap size using this value. This value is measured in texels per world unit. The maximum lightmap texture size is 4096x4096.
+		<member name="atlas_max_size" type="int" setter="set_max_atlas_size" getter="get_max_atlas_size" default="4096">
+			Maximum size of each lightmap layer, only used when [member atlas_generate] is enabled.
 		</member>
-		<member name="bake_energy" type="float" setter="set_energy" getter="get_energy" default="1.0">
-			Multiplies the light sources' intensity by this value. For instance, if the value is set to 2, lights will be twice as bright. If the value is set to 0.5, lights will be half as bright.
+		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.005">
+			Raycasting bias used during baking to avoid floating point precission issues.
 		</member>
-		<member name="bake_extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 10, 10, 10 )">
-			The size of the affected area.
-		</member>
-		<member name="bake_hdr" type="bool" setter="set_hdr" getter="is_hdr" default="false">
-			If [code]true[/code], the lightmap can capture light values greater than [code]1.0[/code]. Turning this off will result in a smaller file size.
-		</member>
-		<member name="bake_mode" type="int" setter="set_bake_mode" getter="get_bake_mode" enum="BakedLightmap.BakeMode" default="0">
-			Lightmapping mode. See [enum BakeMode].
-		</member>
-		<member name="bake_propagation" type="float" setter="set_propagation" getter="get_propagation" default="1.0">
-			Defines how far the light will travel before it is no longer effective. The higher the number, the farther the light will travel. For instance, if the value is set to 2, the light will go twice as far. If the value is set to 0.5, the light will only go half as far.
-		</member>
-		<member name="bake_quality" type="int" setter="set_bake_quality" getter="get_bake_quality" enum="BakedLightmap.BakeQuality" default="1">
-			Three quality modes are available. Higher quality requires more rendering time. See [enum BakeQuality].
+		<member name="bounces" type="int" setter="set_bounces" getter="get_bounces" default="3">
+			Number of light bounces that are taken into account during baking.
 		</member>
 		<member name="capture_cell_size" type="float" setter="set_capture_cell_size" getter="get_capture_cell_size" default="0.5">
-			Grid size used for real-time capture information on dynamic objects. Cannot be larger than [member bake_cell_size].
+			Grid size used for real-time capture information on dynamic objects.
 		</member>
-		<member name="image_path" type="String" setter="set_image_path" getter="get_image_path" default="&quot;.&quot;">
-			The location where lightmaps will be saved.
+		<member name="capture_enabled" type="bool" setter="set_capture_enabled" getter="get_capture_enabled" default="true">
+			When enabled, an octree containing the scene's lighting information will be computed. This octree will then be used to light dynamic objects in the scene.
+		</member>
+		<member name="capture_propagation" type="float" setter="set_capture_propagation" getter="get_capture_propagation" default="1.0">
+			Bias value to reduce the amount of light proagation in the captured octree.
+		</member>
+		<member name="capture_quality" type="int" setter="set_capture_quality" getter="get_capture_quality" enum="BakedLightmap.BakeQuality" default="1">
+			Bake quality of the capture data.
+		</member>
+		<member name="default_texels_per_unit" type="float" setter="set_default_texels_per_unit" getter="get_default_texels_per_unit" default="16.0">
+			If a baked mesh doesn't have a UV2 size hint, this value will be used to roughly compute a suitable lightmap size.
+		</member>
+		<member name="environment_custom_color" type="Color" setter="set_environment_custom_color" getter="get_environment_custom_color">
+			The environment color when [member environment_mode] is set to [constant ENVIRONMENT_MODE_CUSTOM_COLOR].
+		</member>
+		<member name="environment_custom_energy" type="float" setter="set_environment_custom_energy" getter="get_environment_custom_energy">
+			The energy scaling factor when when [member environment_mode] is set to [constant ENVIRONMENT_MODE_CUSTOM_COLOR] or [constant ENVIRONMENT_MODE_CUSTOM_SKY].
+		</member>
+		<member name="environment_custom_sky" type="Sky" setter="set_environment_custom_sky" getter="get_environment_custom_sky">
+			The [Sky] resource to use when [member environment_mode] is set o [constant ENVIRONMENT_MODE_CUSTOM_SKY].
+		</member>
+		<member name="environment_custom_sky_rotation_degrees" type="Vector3" setter="set_environment_custom_sky_rotation_degrees" getter="get_environment_custom_sky_rotation_degrees">
+			The rotation of the baked custom sky.
+		</member>
+		<member name="environment_mode" type="int" setter="set_environment_mode" getter="get_environment_mode" enum="BakedLightmap.EnvironmentMode" default="0">
+			Decides which environment to use during baking.
+		</member>
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 10, 10, 10 )">
+			Size of the baked lightmap. Only meshes inside this region will be included in the baked lightmap, also used as the bounds of the captured region for dynamic lighting.
+		</member>
+		<member name="image_path" type="String" setter="set_image_path" getter="get_image_path">
+			Deprecated, in previous versions it determined the location where lightmaps were be saved.
 		</member>
 		<member name="light_data" type="BakedLightmapData" setter="set_light_data" getter="get_light_data">
 			The calculated light data.
+		</member>
+		<member name="quality" type="int" setter="set_bake_quality" getter="get_bake_quality" enum="BakedLightmap.BakeQuality" default="1">
+			Determines the amount of samples per texel used in indrect light baking. The amount of samples for each quality level can be configured in the project settings.
+		</member>
+		<member name="use_denoiser" type="bool" setter="set_use_denoiser" getter="is_using_denoiser" default="true">
+			When enabled, a lightmap denoiser will be used to reduce the noise inherent to Monte Carlo based global illumination.
 		</member>
 	</members>
 	<constants>
@@ -73,13 +90,10 @@
 			The default bake quality mode.
 		</constant>
 		<constant name="BAKE_QUALITY_HIGH" value="2" enum="BakeQuality">
-			The highest bake quality mode. Takes longer to calculate.
+			A higher bake quality mode. Takes longer to calculate.
 		</constant>
-		<constant name="BAKE_MODE_CONE_TRACE" value="0" enum="BakeMode">
-			Less precise but faster bake mode.
-		</constant>
-		<constant name="BAKE_MODE_RAY_TRACE" value="1" enum="BakeMode">
-			More precise bake mode but can take considerably longer to bake.
+		<constant name="BAKE_QUALITY_ULTRA" value="3" enum="BakeQuality">
+			The highest bake quality mode. Takes the longest to calculate.
 		</constant>
 		<constant name="BAKE_ERROR_OK" value="0" enum="BakeError">
 			Baking was successful.
@@ -93,8 +107,28 @@
 		<constant name="BAKE_ERROR_CANT_CREATE_IMAGE" value="3" enum="BakeError">
 			Returns when the baker cannot save per-mesh textures to file.
 		</constant>
-		<constant name="BAKE_ERROR_USER_ABORTED" value="4" enum="BakeError">
+		<constant name="BAKE_ERROR_LIGHTMAP_SIZE" value="4" enum="BakeError">
+			The size of the generated lightmaps is too large.
+		</constant>
+		<constant name="BAKE_ERROR_INVALID_MESH" value="5" enum="BakeError">
+			Some mesh contains UV2 values outside the [code][0,1][/code] range.
+		</constant>
+		<constant name="BAKE_ERROR_USER_ABORTED" value="6" enum="BakeError">
 			Returns if user cancels baking.
+		</constant>
+		<constant name="BAKE_ERROR_NO_LIGHTMAPPER" value="7" enum="BakeError">
+		</constant>
+		<constant name="ENVIRONMENT_MODE_DISABLED" value="0" enum="EnvironmentMode">
+			No environment is used during baking.
+		</constant>
+		<constant name="ENVIRONMENT_MODE_SCENE" value="1" enum="EnvironmentMode">
+			The baked environment is automatically picked from the current scene.
+		</constant>
+		<constant name="ENVIRONMENT_MODE_CUSTOM_SKY" value="2" enum="EnvironmentMode">
+			A custom sky is used as environment during baking.
+		</constant>
+		<constant name="ENVIRONMENT_MODE_CUSTOM_COLOR" value="3" enum="EnvironmentMode">
+			A custom solid color is used as environment during baking.
 		</constant>
 	</constants>
 </class>

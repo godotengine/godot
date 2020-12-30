@@ -12,9 +12,13 @@
 			</return>
 			<argument index="0" name="path" type="NodePath">
 			</argument>
-			<argument index="1" name="lightmap" type="Texture">
+			<argument index="1" name="lightmap" type="Resource">
 			</argument>
-			<argument index="2" name="instance" type="int">
+			<argument index="2" name="lightmap_slice" type="int">
+			</argument>
+			<argument index="3" name="lightmap_uv_rect" type="Rect2">
+			</argument>
+			<argument index="4" name="instance" type="int">
 			</argument>
 			<description>
 			</description>
@@ -32,7 +36,7 @@
 			</description>
 		</method>
 		<method name="get_user_lightmap" qualifiers="const">
-			<return type="Texture">
+			<return type="Resource">
 			</return>
 			<argument index="0" name="user_idx" type="int">
 			</argument>
