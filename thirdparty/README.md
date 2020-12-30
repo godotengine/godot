@@ -50,6 +50,9 @@ Files extracted from upstream:
 - All cpp files listed in `modules/raytrace/godot_update_embree.py`
 - All header files in the directories listed in `modules/raytrace/godot_update_embree.py`
 
+The `modules/raytrace/godot_update_embree.py`script can be used to pull the 
+relevant files from the latest Embree release and apply some automatic changes.
+
 Some minor changes have been made in order to fix build errors.
 They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 comments. Apply the patches in the `patches/` folder when syncing on newer upstream

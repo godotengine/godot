@@ -31,7 +31,8 @@
 #include "core/object.h"
 #include "scene/3d/lightmapper.h"
 #include "scene/resources/mesh.h"
-#include "thirdparty/embree/include/embree3/rtcore.h"
+
+#include <embree3/rtcore.h>
 
 class LightmapRaycasterEmbree : public LightmapRaycaster {
 	GDCLASS(LightmapRaycasterEmbree, LightmapRaycaster);

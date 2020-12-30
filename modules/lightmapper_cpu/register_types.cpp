@@ -46,7 +46,6 @@ void register_lightmapper_cpu_types() {
 	GLOBAL_DEF("rendering/cpu_lightmapper/quality/high_quality_ray_count", 512);
 	GLOBAL_DEF("rendering/cpu_lightmapper/quality/ultra_quality_ray_count", 1024);
 #ifndef _3D_DISABLED
-	ClassDB::register_class<LightmapperCPU>();
 	Lightmapper::create_cpu = create_lightmapper_cpu;
 #endif
 }

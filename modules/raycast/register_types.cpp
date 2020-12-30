@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "register_types.h"
+
 #include "lightmap_raycaster.h"
 
 void register_raycast_types() {

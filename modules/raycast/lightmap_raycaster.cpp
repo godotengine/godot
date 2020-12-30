@@ -29,8 +29,10 @@
 /*************************************************************************/
 
 #include "lightmap_raycaster.h"
-#include "math/vec2.h"
-#include "math/vec3.h"
+
+// From Embree.
+#include <math/vec2.h>
+#include <math/vec3.h>
 
 using namespace embree;
 

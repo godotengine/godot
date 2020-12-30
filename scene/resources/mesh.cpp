@@ -30,13 +30,12 @@
 
 #include "mesh.h"
 
+#include "core/crypto/crypto_core.h"
 #include "core/local_vector.h"
 #include "core/pair.h"
 #include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "surface_tool.h"
-
-#include "core/crypto/crypto_core.h"
 
 #include <stdlib.h>
 

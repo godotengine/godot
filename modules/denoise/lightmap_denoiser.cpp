@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "lightmap_denoiser.h"
+
 #include "denoise_wrapper.h"
 
 LightmapDenoiser *LightmapDenoiserOIDN::create_oidn_denoiser() {

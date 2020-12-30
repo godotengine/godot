@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "register_types.h"
+
 #include "core/engine.h"
 #include "lightmap_denoiser.h"
 

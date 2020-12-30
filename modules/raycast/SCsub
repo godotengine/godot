@@ -62,7 +62,7 @@ embree_dir = "#thirdparty/embree/"
 
 env_embree = env_modules.Clone()
 embree_sources = [embree_dir + file for file in embree_src]
-env_embree.Prepend(CPPPATH=[embree_dir, embree_dir + "include/embree3"])
+env_embree.Prepend(CPPPATH=[embree_dir, embree_dir + "include"])
 env_embree.Append(
     CPPFLAGS=[
         "-DEMBREE_TARGET_SSE2",
@@ -88,6 +88,6 @@ env_embree.disable_warnings()
 env_embree.add_source_files(env.modules_sources, embree_sources)
 
 env_raycast = env_modules.Clone()
-env_raycast.Prepend(CPPPATH=[embree_dir, embree_dir + "include/embree3", embree_dir + "common"])
+env_raycast.Prepend(CPPPATH=[embree_dir, embree_dir + "include", embree_dir + "common"])
 
 env_raycast.add_source_files(env.modules_sources, "*.cpp")

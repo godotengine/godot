@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "lightmapper_cpu.h"
+
 #include "core/math/geometry.h"
 #include "core/os/os.h"
 #include "core/os/threaded_array_processor.h"

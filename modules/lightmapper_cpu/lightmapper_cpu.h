@@ -35,6 +35,7 @@
 #include "scene/3d/lightmapper.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
+
 #include <atomic>
 
 class LightmapperCPU : public Lightmapper {
