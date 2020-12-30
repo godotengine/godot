@@ -726,7 +726,9 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 	bsud.from_percent = 0.1;
 	bsud.to_percent = 0.9;
 
-	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, bounces, bias, generate_atlas, max_atlas_size, environment_image, environment_xform, _lightmap_bake_step_function, &bsud, bake_substep_function);
+	bool gen_atlas = OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2 ? false : generate_atlas;
+
+	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, bounces, bias, gen_atlas, max_atlas_size, environment_image, environment_xform, _lightmap_bake_step_function, &bsud, bake_substep_function);
 
 	if (bake_err != Lightmapper::BAKE_OK) {
 		switch (bake_err) {
@@ -847,7 +849,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 		images.push_back(lightmapper->get_bake_texture(i));
 	}
 
-	if (generate_atlas) {
+	if (gen_atlas) {
 
 		Ref<Image> large_image;
 		large_image.instance();
@@ -1079,6 +1081,8 @@ void BakedLightmap::_assign_lightmaps() {
 
 	ERR_FAIL_COND(!light_data.is_valid());
 
+	bool atlassed_on_gles2 = false;
+
 	for (int i = 0; i < light_data->get_user_count(); i++) {
 		Ref<Resource> lightmap = light_data->get_user_lightmap(i);
 		ERR_CONTINUE(!lightmap.is_valid());
@@ -1089,13 +1093,21 @@ void BakedLightmap::_assign_lightmaps() {
 		if (instance_idx >= 0) {
 			RID instance = node->call("get_bake_mesh_instance", instance_idx);
 			if (instance.is_valid()) {
-				VS::get_singleton()->instance_set_use_lightmap(instance, get_instance(), lightmap->get_rid(), light_data->get_user_lightmap_slice(i), light_data->get_user_lightmap_uv_rect(i));
+				int slice = light_data->get_user_lightmap_slice(i);
+				atlassed_on_gles2 = atlassed_on_gles2 || (slice != -1 && OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2);
+				VS::get_singleton()->instance_set_use_lightmap(instance, get_instance(), lightmap->get_rid(), slice, light_data->get_user_lightmap_uv_rect(i));
 			}
 		} else {
 			VisualInstance *vi = Object::cast_to<VisualInstance>(node);
 			ERR_CONTINUE(!vi);
-			VS::get_singleton()->instance_set_use_lightmap(vi->get_instance(), get_instance(), lightmap->get_rid(), light_data->get_user_lightmap_slice(i), light_data->get_user_lightmap_uv_rect(i));
+			int slice = light_data->get_user_lightmap_slice(i);
+			atlassed_on_gles2 = atlassed_on_gles2 || (slice != -1 && OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2);
+			VS::get_singleton()->instance_set_use_lightmap(vi->get_instance(), get_instance(), lightmap->get_rid(), slice, light_data->get_user_lightmap_uv_rect(i));
 		}
+	}
+
+	if (atlassed_on_gles2) {
+		ERR_PRINT("GLES2 doesn't support layered textures, so lightmap atlassing is not supported. Please re-bake the lightmap or switch to GLES3.");
 	}
 }
 
