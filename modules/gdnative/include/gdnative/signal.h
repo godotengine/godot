@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  node_path.cpp                                                        */
+/*  signal.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gdnative/node_path.h"
-
-#include "core/string/node_path.h"
-
-static_assert(sizeof(godot_node_path) == sizeof(NodePath), "NodePath size mismatch");
+#ifndef GODOT_SIGNAL_H
+#define GODOT_SIGNAL_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void GDAPI godot_node_path_new(godot_node_path *p_self) {
-	memnew_placement(p_self, NodePath);
-}
+#include <stdint.h>
 
-void GDAPI godot_node_path_destroy(godot_node_path *p_self) {
-	NodePath *self = (NodePath *)p_self;
-	self->~NodePath();
-}
+#define GODOT_SIGNAL_SIZE (16)
+
+#ifndef GODOT_CORE_API_GODOT_SIGNAL_TYPE_DEFINED
+#define GODOT_CORE_API_GODOT_SIGNAL_TYPE_DEFINED
+typedef struct {
+	uint8_t _dont_touch_that[GODOT_SIGNAL_SIZE];
+} godot_signal;
+#endif
+
+#include <gdnative/gdnative.h>
+
+void GDAPI godot_signal_new(godot_signal *p_self);
+void GDAPI godot_signal_destroy(godot_signal *p_self);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
