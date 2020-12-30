@@ -381,7 +381,7 @@
 		</signal>
 		<signal name="item_activated">
 			<description>
-				Emitted when an item's label is double-clicked.
+				Emitted when an item is activated either by double-clicking the item, or by pressing a [code]ui_accept[/code] action when it is selected.
 			</description>
 		</signal>
 		<signal name="item_collapsed">
@@ -396,9 +396,10 @@
 				Emitted when a custom button is pressed (i.e. in a [constant TreeItem.CELL_MODE_CUSTOM] mode cell).
 			</description>
 		</signal>
-		<signal name="item_double_clicked">
+		<signal name="item_editable_icon_clicked">
 			<description>
-				Emitted when an item's icon is double-clicked.
+				Emitted when an editable item's icon is clicked. See [method TreeItem.set_editable].
+				[b]Note:[/b] Requires the item to be editable. Will be emitted when any non-editable portion of an editable item is clicked; not just the icon. If [member select_mode] is [code]SELECT_MULTI[/code] ([code]2[/code]), requires an editable item to first be selected and then clicked.
 			</description>
 		</signal>
 		<signal name="item_edited">

@@ -2732,10 +2732,10 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 						}
 						if (rect.has_point(mpos)) {
 							if (!edit_selected()) {
-								emit_signal("item_double_clicked");
+								emit_signal("item_editable_icon_clicked");
 							}
 						} else {
-							emit_signal("item_double_clicked");
+							emit_signal("item_editable_icon_clicked");
 						}
 					}
 					pressing_for_editor = false;
@@ -4204,9 +4204,8 @@ void Tree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_edited"));
 	ADD_SIGNAL(MethodInfo("item_rmb_edited"));
 	ADD_SIGNAL(MethodInfo("item_custom_button_pressed"));
-	ADD_SIGNAL(MethodInfo("item_double_clicked"));
+	ADD_SIGNAL(MethodInfo("item_editable_icon_clicked"));
 	ADD_SIGNAL(MethodInfo("item_collapsed", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem")));
-	//ADD_SIGNAL( MethodInfo("item_doubleclicked" ) );
 	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem"), PropertyInfo(Variant::INT, "column"), PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("custom_popup_edited", PropertyInfo(Variant::BOOL, "arrow_clicked")));
 	ADD_SIGNAL(MethodInfo("item_activated"));
