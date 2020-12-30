@@ -37,8 +37,27 @@
 /// CONSTANTS
 ///////////////////////////////////////
 
-class VisualShaderNodeFloatConstant : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeFloatConstant, VisualShaderNode);
+class VisualShaderNodeConstant : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeConstant, VisualShaderNode);
+
+public:
+	virtual String get_caption() const override = 0;
+
+	virtual int get_input_port_count() const override = 0;
+	virtual PortType get_input_port_type(int p_port) const override = 0;
+	virtual String get_input_port_name(int p_port) const override = 0;
+
+	virtual int get_output_port_count() const override = 0;
+	virtual PortType get_output_port_type(int p_port) const override = 0;
+	virtual String get_output_port_name(int p_port) const override = 0;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override = 0;
+
+	VisualShaderNodeConstant();
+};
+
+class VisualShaderNodeFloatConstant : public VisualShaderNodeConstant {
+	GDCLASS(VisualShaderNodeFloatConstant, VisualShaderNodeConstant);
 	float constant = 0.0f;
 
 protected:
@@ -67,8 +86,8 @@ public:
 
 ///////////////////////////////////////
 
-class VisualShaderNodeIntConstant : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeIntConstant, VisualShaderNode);
+class VisualShaderNodeIntConstant : public VisualShaderNodeConstant {
+	GDCLASS(VisualShaderNodeIntConstant, VisualShaderNodeConstant);
 	int constant = 0;
 
 protected:
@@ -97,8 +116,8 @@ public:
 
 ///////////////////////////////////////
 
-class VisualShaderNodeBooleanConstant : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeBooleanConstant, VisualShaderNode);
+class VisualShaderNodeBooleanConstant : public VisualShaderNodeConstant {
+	GDCLASS(VisualShaderNodeBooleanConstant, VisualShaderNodeConstant);
 	bool constant = false;
 
 protected:
@@ -127,8 +146,8 @@ public:
 
 ///////////////////////////////////////
 
-class VisualShaderNodeColorConstant : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeColorConstant, VisualShaderNode);
+class VisualShaderNodeColorConstant : public VisualShaderNodeConstant {
+	GDCLASS(VisualShaderNodeColorConstant, VisualShaderNodeConstant);
 	Color constant = Color(1, 1, 1, 1);
 
 protected:
@@ -157,8 +176,8 @@ public:
 
 ///////////////////////////////////////
 
-class VisualShaderNodeVec3Constant : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeVec3Constant, VisualShaderNode);
+class VisualShaderNodeVec3Constant : public VisualShaderNodeConstant {
+	GDCLASS(VisualShaderNodeVec3Constant, VisualShaderNodeConstant);
 	Vector3 constant;
 
 protected:
@@ -187,8 +206,8 @@ public:
 
 ///////////////////////////////////////
 
-class VisualShaderNodeTransformConstant : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeTransformConstant, VisualShaderNode);
+class VisualShaderNodeTransformConstant : public VisualShaderNodeConstant {
+	GDCLASS(VisualShaderNodeTransformConstant, VisualShaderNodeConstant);
 	Transform constant;
 
 protected:

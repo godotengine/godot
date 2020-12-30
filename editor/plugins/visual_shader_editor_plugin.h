@@ -189,6 +189,9 @@ class VisualShaderEditor : public VBoxContainer {
 		PASTE,
 		DELETE,
 		DUPLICATE,
+		SEPARATOR2, // ignore
+		CONVERT_CONSTANTS_TO_UNIFORMS,
+		CONVERT_UNIFORMS_TO_CONSTANTS,
 	};
 
 	Tree *members;
@@ -318,6 +321,14 @@ class VisualShaderEditor : public VBoxContainer {
 	int to_slot;
 	int from_node;
 	int from_slot;
+
+	Set<int> selected_constants;
+	Set<int> selected_uniforms;
+
+	void _convert_constants_to_uniforms(bool p_vice_versa);
+	void _replace_node(VisualShader::Type p_type_id, int p_node_id, const StringName &p_from, const StringName &p_to);
+	void _update_constant(VisualShader::Type p_type_id, int p_node_id, Variant p_var, int p_preview_port);
+	void _update_uniform(VisualShader::Type p_type_id, int p_node_id, Variant p_var, int p_preview_port);
 
 	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
 	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
