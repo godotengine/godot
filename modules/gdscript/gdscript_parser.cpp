@@ -976,6 +976,8 @@ GDScriptParser::ConstantNode *GDScriptParser::parse_constant() {
 			push_error(R"(Expected initializer expression for constant.)");
 			return nullptr;
 		}
+	} else {
+		return nullptr;
 	}
 
 	end_statement("constant declaration");
