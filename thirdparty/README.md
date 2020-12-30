@@ -22,7 +22,7 @@ Files extracted from upstream source:
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
-- Version: 3.07 (e32fc59c88a3908876949c6f2665e8d091d987fa, 2020)
+- Version: 3.08 (df09fd9ed37e365ceae884ca7f620b61607dae2e, 2020)
 - License: zlib
 
 Files extracted from upstream source:
