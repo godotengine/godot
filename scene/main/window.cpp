@@ -46,6 +46,8 @@ void Window::set_title(const String &p_title) {
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_title(p_title, window_id);
 	}
+
+	emit_signal("title_changed");
 }
 
 String Window::get_title() const {
@@ -518,13 +520,10 @@ bool Window::is_visible() const {
 }
 
 void Window::_update_window_size() {
-	Size2i size_limit;
+	Size2i size_limit{};
 	if (wrap_controls) {
 		size_limit = get_contents_minimum_size();
 	}
-
-	size_limit.x = MAX(size_limit.x, min_size.x);
-	size_limit.y = MAX(size_limit.y, min_size.y);
 
 	size.x = MAX(size_limit.x, size.x);
 	size.y = MAX(size_limit.y, size.y);
@@ -1424,6 +1423,7 @@ void Window::_bind_methods() {
 	ADD_GROUP("Theme", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
 
+	ADD_SIGNAL(MethodInfo("title_changed"));
 	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));

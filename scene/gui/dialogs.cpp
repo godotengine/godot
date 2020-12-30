@@ -34,14 +34,13 @@
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "line_edit.h"
+#include "servers/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "scene/main/window.h" // Only used to check for more modals when dimming the editor.
 #endif
-
-// AcceptDialog
 
 void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
@@ -91,6 +90,8 @@ void AcceptDialog::_notification(int p_what) {
 				_update_child_rects();
 			}
 		} break;
+
+		// Handle native close button
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			_cancel_pressed();
 		} break;
@@ -168,12 +169,14 @@ void AcceptDialog::_update_child_rects() {
 	if (label->get_text().is_empty()) {
 		label_size.height = 0;
 	}
-	int margin = hbc->get_theme_constant("margin", "Dialogs");
+	float margin = hbc->get_theme_constant("margin", "Dialogs");
 	Size2 size = get_size();
 	Size2 hminsize = hbc->get_combined_minimum_size();
+	Size2 title_minsize = title_bar->get_combined_minimum_size();
 
-	Vector2 cpos(margin, margin + label_size.height);
-	Vector2 csize(size.x - margin * 2, size.y - margin * 3 - hminsize.y - label_size.height);
+	// Position/size for non-default child controls
+	Point2 cpos(margin, title_minsize.y + margin + label_size.height);
+	Size2 csize(size.x - margin * 2, size.y - margin * 3 - hminsize.y - label_size.height - title_minsize.y);
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -181,7 +184,7 @@ void AcceptDialog::_update_child_rects() {
 			continue;
 		}
 
-		if (c == hbc || c == label || c == bg || c->is_set_as_top_level()) {
+		if (c == title_bar || c == hbc || c == label || c == bg || c->is_set_as_toplevel()) {
 			continue;
 		}
 
@@ -189,13 +192,14 @@ void AcceptDialog::_update_child_rects() {
 		c->set_size(csize);
 	}
 
-	cpos.y += csize.y + margin;
-	csize.y = hminsize.y;
+	title_bar->set_position(Point2{ 0, 0 });
 
-	hbc->set_position(cpos);
-	hbc->set_size(csize);
+	label->set_margin(MARGIN_TOP, title_minsize.y);
 
-	bg->set_position(Point2());
+	hbc->set_position(Point2{ cpos.x, cpos.y + csize.y + margin });
+	hbc->set_size(Size2{ csize.x, hminsize.y });
+
+	bg->set_position(Point2{});
 	bg->set_size(size);
 }
 
@@ -209,7 +213,7 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 			continue;
 		}
 
-		if (c == hbc || c == label || c->is_set_as_top_level()) {
+		if (c == title_bar || c == hbc || c == label || c->is_set_as_toplevel()) {
 			continue;
 		}
 
@@ -218,11 +222,15 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 		minsize.y = MAX(cminsize.y, minsize.y);
 	}
 
+	Size2 title_minsize = title_bar->get_minimum_size();
 	Size2 hminsize = hbc->get_combined_minimum_size();
 	minsize.x = MAX(hminsize.x, minsize.x);
-	minsize.y += hminsize.y;
+	minsize.x = MAX(title_minsize.x, minsize.x);
 	minsize.x += margin * 2;
-	minsize.y += margin * 3; //one as separation between hbc and child
+	// [border] title <-> label child <-> hbc <-> [border]
+	minsize.y += title_minsize.y;
+	minsize.y += hminsize.y;
+	minsize.y += margin * 3;
 
 	Size2 wmsize = get_min_size();
 	minsize.x = MAX(wmsize.x, minsize.x);
@@ -299,9 +307,16 @@ AcceptDialog::AcceptDialog() {
 	set_transient(true);
 	set_exclusive(true);
 	set_clamp_to_embedder(true);
+	set_flag(FLAG_BORDERLESS, true);
 
 	bg = memnew(Panel);
 	add_child(bg);
+
+	title_bar = memnew(TitleBar);
+	title_bar->bind_window(this);
+	title_bar->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
+	add_child(title_bar);
+	title_bar->connect("window_closing", callable_mp(this, &AcceptDialog::_cancel_pressed));
 
 	hbc = memnew(HBoxContainer);
 

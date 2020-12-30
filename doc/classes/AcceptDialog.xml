@@ -57,6 +57,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" override="true" default="true" />
 		<member name="dialog_autowrap" type="bool" setter="set_autowrap" getter="has_autowrap" default="false">
 			Sets autowrapping for the text in the dialog.
 		</member>

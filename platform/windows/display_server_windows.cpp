@@ -37,6 +37,9 @@
 #include "scene/resources/texture.h"
 
 #include <avrt.h>
+#include <dwmapi.h>
+
+// Borderless windows and resizing behaviors are adapted from https://github.com/melak47/BorderlessWindow
 
 #ifdef DEBUG_ENABLED
 static String format_error_message(DWORD id) {
@@ -157,6 +160,12 @@ Point2i DisplayServerWindows::mouse_get_position() const {
 	GetCursorPos(&p);
 	return Point2i(p.x, p.y);
 	//return Point2(old_x, old_y);
+}
+
+Point2i DisplayServerWindows::mouse_get_absolute_position() const {
+	POINT p;
+	GetCursorPos(&p);
+	return Point2i(p.x, p.y);
 }
 
 int DisplayServerWindows::mouse_get_button_state() const {
@@ -695,12 +704,6 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 
 	if (wd.fullscreen)
 		return;
-#if 0
-	//wrong needs to account properly for decorations
-	RECT r;
-	GetWindowRect(wd.hWnd, &r);
-	MoveWindow(wd.hWnd, p_position.x, p_position.y, r.right - r.left, r.bottom - r.top, TRUE);
-#else
 
 	RECT rc;
 	rc.left = p_position.x;
@@ -713,7 +716,7 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 
 	AdjustWindowRectEx(&rc, style, false, exStyle);
 	MoveWindow(wd.hWnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
-#endif
+
 	// Don't let the mouse leave the window when moved
 	if (mouse_mode == MOUSE_MODE_CONFINED) {
 		RECT rect;
@@ -881,33 +884,47 @@ Size2i DisplayServerWindows::window_get_real_size(WindowID p_window) const {
 }
 
 void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex) {
-	r_style = 0;
 	r_style_ex = WS_EX_WINDOWEDGE;
 	if (p_main_window) {
 		r_style_ex |= WS_EX_APPWINDOW;
 	}
-
-	if (p_fullscreen || p_borderless) {
-		r_style |= WS_POPUP;
-		//if (p_borderless) {
-		//	r_style_ex |= WS_EX_TOOLWINDOW;
-		//}
-	} else {
-		if (p_resizable) {
-			if (p_maximized) {
-				r_style = WS_OVERLAPPEDWINDOW | WS_MAXIMIZE;
-			} else {
-				r_style = WS_OVERLAPPEDWINDOW;
-			}
-		} else {
-			r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
-		}
-	}
-
 	if (p_no_activate_focus) {
 		r_style_ex |= WS_EX_TOPMOST | WS_EX_NOACTIVATE;
 	}
-	r_style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+
+	// Windows must have a frame in order to have shadows
+	r_style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+	if (p_fullscreen) {
+		r_style |= WS_POPUP;
+	} else {
+		if (p_resizable) {
+			if (p_borderless) {
+				// `WS_SIZEBOX` makes the window rect unpredictable for some reason (it includes the shadow size on creation, but doesn't do so when moving the window afterwards)
+				// Instead, we implement resizing for borderless windows by processing `WM_NCHITTEST` in `WndProc`
+				r_style = WS_POPUP;
+			} else {
+				// `WS_OVERLAPPEDWINDOW` is equivlent to `WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX`
+				// `WS_THICKFRAME == WS_SIZEBOX`, which does the resizing here
+				r_style = WS_OVERLAPPEDWINDOW;
+			}
+		} else {
+			if (p_borderless) {
+				r_style = WS_POPUP;
+			} else {
+				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
+			}
+		}
+
+		if (p_maximized) {
+			r_style |= WS_MAXIMIZE;
+		}
+	}
+}
+
+bool DisplayServerWindows::_try_enable_composition() {
+	BOOL composition_enabled = FALSE;
+	bool success = DwmIsCompositionEnabled(&composition_enabled) == S_OK;
+	return composition_enabled && success;
 }
 
 void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repaint, bool p_maximized) {
@@ -920,6 +937,21 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	DWORD style_ex = 0;
 
 	_get_window_style(p_window == MAIN_WINDOW_ID, wd.fullscreen, wd.borderless, wd.resizable, wd.maximized, wd.no_focus, style, style_ex);
+	if (wd.borderless) {
+		if (wd.shadows) {
+			// Add shadows to a borderless window
+			if (_try_enable_composition()) {
+				static const DWORD val = DWMNCRP_ENABLED;
+				DwmSetWindowAttribute(wd.hWnd, DWMWA_NCRENDERING_POLICY, &val, sizeof(DWORD));
+				static const MARGINS shadows{ 0, 0, 0, 1 };
+				DwmExtendFrameIntoClientArea(wd.hWnd, &shadows);
+			}
+		}
+	} else {
+		if (!wd.shadows) {
+			// TODO how do you even do this, google doesn't seem to help here
+		}
+	}
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -1043,6 +1075,10 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 			wd.borderless = p_enabled;
 			_update_window_style(p_window);
 			_update_window_mouse_passthrough(p_window);
+		} break;
+		case WINDOW_FLAG_SHADOWS: {
+			wd.shadows = p_enabled;
+			_update_window_style(p_window);
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			ERR_FAIL_COND_MSG(wd.transient_parent != INVALID_WINDOW_ID && p_enabled, "Transient windows can't become on top");
@@ -1733,6 +1769,68 @@ void DisplayServerWindows::_touch_event(WindowID p_window, bool p_pressed, float
 	Input::get_singleton()->accumulate_input_event(event);
 }
 
+LRESULT DisplayServerWindows::_hit_test(WindowID p_window, POINT p_cursor) const {
+	POINT border{
+		GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER),
+		GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER)
+	};
+
+	const WindowData &wd = windows[p_window];
+	RECT rect;
+	if (!GetWindowRect(wd.hWnd, &rect)) {
+		return HTNOWHERE;
+	}
+
+	if (wd.resizable) {
+		enum RegionMask {
+			CLIENT = 0b0000,
+			LEFT = 0b0001,
+			RIGHT = 0b0010,
+			TOP = 0b0100,
+			BOTTOM = 0b1000,
+		};
+
+		enum RegionMaskBit {
+			LEFT_BIT = 0,
+			RIGHT_BIT = 1,
+			TOP_BIT = 2,
+			BOTTOM_BIT = 3,
+		};
+
+		int result =
+				(p_cursor.x < (rect.left + border.x)) << LEFT_BIT |
+				(p_cursor.x >= (rect.right - border.x)) << RIGHT_BIT |
+				(p_cursor.y < (rect.top + border.y)) << TOP_BIT |
+				(p_cursor.y >= (rect.bottom - border.y)) << BOTTOM_BIT;
+
+		switch (static_cast<RegionMask>(result)) {
+			case LEFT:
+				return HTLEFT;
+			case RIGHT:
+				return HTRIGHT;
+			case TOP:
+				return HTTOP;
+			case BOTTOM:
+				return HTBOTTOM;
+			case TOP | LEFT:
+				return HTTOPLEFT;
+			case TOP | RIGHT:
+				return HTTOPRIGHT;
+			case BOTTOM | LEFT:
+				return HTBOTTOMLEFT;
+			case BOTTOM | RIGHT:
+				return HTBOTTOMRIGHT;
+			case CLIENT:
+				return HTCLIENT;
+			default:
+				return HTNOWHERE;
+		}
+	} else {
+		// Dragging is handled by window controls
+		return HTCLIENT;
+	}
+}
+
 void DisplayServerWindows::_drag_event(WindowID p_window, float p_x, float p_y, int idx) {
 	Map<int, Vector2>::Element *curr = touch_state.find(idx);
 	// Defensive
@@ -1915,10 +2013,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 		}
-		case WM_PAINT:
-
+		case WM_PAINT: {
+			auto &wd = windows[window_id];
+			// Draw over the caption to pretend that it doens't exist
+			if (wd.borderless) {
+			}
 			Main::force_redraw();
-			break;
+		} break;
 
 		case WM_SYSCOMMAND: // Intercept System Commands
 		{
@@ -1933,6 +2034,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 			break; // Exit
 		}
+
+		case WM_NCHITTEST: {
+			// When we have no border or title bar, we need to perform our own hit testing to allow resizing and moving.
+			auto &wd = windows[window_id];
+			if (wd.borderless) {
+				return _hit_test(window_id, POINT{ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) });
+			}
+		} break;
 
 		case WM_CLOSE: // Did We Receive A Close Message?
 		{

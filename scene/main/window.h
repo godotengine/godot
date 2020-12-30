@@ -37,7 +37,8 @@
 
 class Control;
 class Window : public Viewport {
-	GDCLASS(Window, Viewport)
+	GDCLASS(Window, Viewport);
+
 public:
 	enum Mode {
 		MODE_WINDOWED = DisplayServer::WINDOW_MODE_WINDOWED,

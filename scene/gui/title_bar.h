@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  dialogs.h                                                            */
+/*  title_bar.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,85 +28,64 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DIALOGS_H
-#define DIALOGS_H
+#ifndef TITLE_BAR_H
+#define TITLE_BAR_H
 
-#include "box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/label.h"
-#include "scene/gui/panel.h"
-#include "scene/gui/popup.h"
-#include "scene/gui/title_bar.h"
+#include "scene/gui/texture_button.h"
 #include "scene/main/window.h"
 
-class LineEdit;
+class TitleBar : public Control {
+	GDCLASS(TitleBar, Control);
 
-class AcceptDialog : public Window {
-	GDCLASS(AcceptDialog, Window);
+public:
+	enum TitleButton {
+		BUTTON_CLOSE = 0b001,
+		BUTTON_MAXIMIZE = 0b010,
+		BUTTON_MINIMIZE = 0b100,
+	};
 
-	Window *parent_visible;
-	Panel *bg;
-	TitleBar *title_bar;
-	HBoxContainer *hbc;
-	Label *label;
-	Button *ok;
-	bool hide_on_ok;
+private:
+	Window *window = nullptr;
+	TextureButton *close_btn;
+	TextureButton *maximize_btn;
+	TextureButton *minimize_btn;
+	// Dragging position relative to top left of the window, including native decorations
+	Point2i initial_drag_pos = { -1, -1 };
+	bool force_custom_buttons = false;
 
-	void _custom_action(const String &p_action);
-	void _update_child_rects();
+	void _update_button_rects();
+	void _update_button_textures();
 
-	static bool swap_cancel_ok;
-
-	void _input_from_window(const Ref<InputEvent> &p_event);
-	void _parent_focused();
+	// Signal handlers for the custom buttons.
+	void _close_pressed();
+	void _maximize_pressed();
+	void _minimize_pressed();
 
 protected:
-	virtual Size2 _get_contents_minimum_size() const override;
+	static void _bind_methods();
+	virtual void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
 
-	static void _bind_methods();
-	virtual void ok_pressed() {}
-	virtual void cancel_pressed() {}
-	virtual void custom_action(const String &) {}
-
-	// Not private since used by derived classes signal.
-	void _text_entered(const String &p_text);
-	void _ok_pressed();
-	void _cancel_pressed();
-
 public:
-	Label *get_label() { return label; }
-	static void set_swap_cancel_ok(bool p_swap);
+	bool is_forcing_custom_buttons() const;
+	void set_force_custom_buttons(bool p_force);
 
-	void register_text_enter(Node *p_line_edit);
+	bool is_button_enabled(TitleButton p_button);
+	void set_buttons_enabled(int p_flags, bool p_enabled);
 
-	Button *get_ok_button() { return ok; }
-	Button *add_button(const String &p_text, bool p_right = false, const String &p_action = "");
-	Button *add_cancel_button(const String &p_cancel = "");
+	void close_window();
+	void maximize_window();
+	void restore_window();
+	void minimize_window();
 
-	void set_hide_on_ok(bool p_hide);
-	bool get_hide_on_ok() const;
+	virtual Size2 get_minimum_size() const override;
 
-	void set_text(String p_text);
-	String get_text() const;
+	void bind_window(Window *p_window);
 
-	void set_autowrap(bool p_autowrap);
-	bool has_autowrap();
-
-	AcceptDialog();
-	~AcceptDialog();
+	TitleBar();
+	~TitleBar();
 };
 
-class ConfirmationDialog : public AcceptDialog {
-	GDCLASS(ConfirmationDialog, AcceptDialog);
-	Button *cancel;
+VARIANT_ENUM_CAST(TitleBar::TitleButton);
 
-protected:
-	static void _bind_methods();
-
-public:
-	Button *get_cancel_button();
-	ConfirmationDialog();
-};
-
-#endif
+#endif // TITLE_BAR_H
