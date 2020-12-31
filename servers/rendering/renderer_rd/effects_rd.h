@@ -745,9 +745,9 @@ public:
 		float fadeout_from = 50.0;
 		float fadeout_to = 300.0;
 
-		Size2i screen_size = Size2i();
+		Size2i full_screen_size = Size2i();
 		Size2i half_screen_size = Size2i();
-		Size2i quarter_size = Size2i();
+		Size2i quarter_screen_size = Size2i();
 	};
 
 	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);
