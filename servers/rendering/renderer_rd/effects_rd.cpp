@@ -992,21 +992,21 @@ void EffectsRD::gather_ssao(RD::ComputeListID p_compute_list, const Vector<RID> 
 
 		ssao.gather_push_constant.pass_coord_offset[0] = i % 2;
 		ssao.gather_push_constant.pass_coord_offset[1] = i / 2;
-		ssao.gather_push_constant.pass_uv_offset[0] = ((i % 2) - 0.0) / p_settings.screen_size.x;
-		ssao.gather_push_constant.pass_uv_offset[1] = ((i / 2) - 0.0) / p_settings.screen_size.y;
+		ssao.gather_push_constant.pass_uv_offset[0] = ((i % 2) - 0.0) / p_settings.full_screen_size.x;
+		ssao.gather_push_constant.pass_uv_offset[1] = ((i / 2) - 0.0) / p_settings.full_screen_size.y;
 		ssao.gather_push_constant.pass = i;
 		RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, _get_uniform_set_from_image(p_ao_slices[i]), 2);
 		RD::get_singleton()->compute_list_set_push_constant(p_compute_list, &ssao.gather_push_constant, sizeof(SSAOGatherPushConstant));
 
-		int x_groups = ((p_settings.screen_size.x >> (p_settings.half_size ? 2 : 1)) - 1) / 8 + 1;
-		int y_groups = ((p_settings.screen_size.y >> (p_settings.half_size ? 2 : 1)) - 1) / 8 + 1;
+		int x_groups = ((p_settings.full_screen_size.x >> (p_settings.half_size ? 2 : 1)) - 1) / 8 + 1;
+		int y_groups = ((p_settings.full_screen_size.y >> (p_settings.half_size ? 2 : 1)) - 1) / 8 + 1;
 
 		RD::get_singleton()->compute_list_dispatch(p_compute_list, x_groups, y_groups, 1);
 	}
 	RD::get_singleton()->compute_list_add_barrier(p_compute_list);
 }
 
-void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_depth_mipmaps_texture, const Vector<RID> &depth_mipmaps, RID p_ao, const Vector<RID> p_ao_slices, RID p_ao_pong, const Vector<RID> p_ao_pong_slices, RID p_upscale_buffer, RID p_importance_map, RID p_importance_map_pong, const CameraMatrix &p_projection, const SSAOSettings &p_settings, bool p_invalidate_uniform_sets) {
+void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_depth_mipmaps_texture, const Vector<RID> &p_depth_mipmaps, RID p_ao, const Vector<RID> p_ao_slices, RID p_ao_pong, const Vector<RID> p_ao_pong_slices, RID p_upscale_buffer, RID p_importance_map, RID p_importance_map_pong, const CameraMatrix &p_projection, const SSAOSettings &p_settings, bool p_invalidate_uniform_sets) {
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
 	/* FIRST PASS */
@@ -1018,21 +1018,21 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 0;
-				u.ids.push_back(depth_mipmaps[1]);
+				u.ids.push_back(p_depth_mipmaps[1]);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 1;
-				u.ids.push_back(depth_mipmaps[2]);
+				u.ids.push_back(p_depth_mipmaps[2]);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 2;
-				u.ids.push_back(depth_mipmaps[3]);
+				u.ids.push_back(p_depth_mipmaps[3]);
 				uniforms.push_back(u);
 			}
 			ssao.downsample_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssao.downsample_shader.version_get_shader(ssao.downsample_shader_version, 2), 2);
@@ -1051,8 +1051,8 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 			ssao.downsample_push_constant.z_near = p_projection.get_z_near();
 			ssao.downsample_push_constant.z_far = p_projection.get_z_far();
 		}
-		ssao.downsample_push_constant.pixel_size[0] = 1.0 / p_settings.screen_size.x;
-		ssao.downsample_push_constant.pixel_size[1] = 1.0 / p_settings.screen_size.y;
+		ssao.downsample_push_constant.pixel_size[0] = 1.0 / p_settings.full_screen_size.x;
+		ssao.downsample_push_constant.pixel_size[1] = 1.0 / p_settings.full_screen_size.y;
 		ssao.downsample_push_constant.radius_sq = p_settings.radius * p_settings.radius;
 
 		int downsample_pipeline = SSAO_DOWNSAMPLE;
@@ -1068,14 +1068,14 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[downsample_pipeline]);
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth_buffer), 0);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(depth_mipmaps[0]), 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_depth_mipmaps[0]), 1);
 		if (p_settings.quality > RS::ENV_SSAO_QUALITY_MEDIUM) {
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, ssao.downsample_uniform_set, 2);
 		}
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssao.downsample_push_constant, sizeof(SSAODownsamplePushConstant));
 
-		int x_groups = (MAX(1, p_settings.screen_size.x >> (p_settings.half_size ? 2 : 1)) - 1) / 8 + 1;
-		int y_groups = (MAX(1, p_settings.screen_size.y >> (p_settings.half_size ? 2 : 1)) - 1) / 8 + 1;
+		int x_groups = (MAX(1, p_settings.full_screen_size.x >> (p_settings.half_size ? 2 : 1)) - 1) / 8 + 1;
+		int y_groups = (MAX(1, p_settings.full_screen_size.y >> (p_settings.half_size ? 2 : 1)) - 1) / 8 + 1;
 
 		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
@@ -1084,8 +1084,8 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 	/* SECOND PASS */
 	// Sample SSAO
 	{
-		ssao.gather_push_constant.screen_size[0] = p_settings.screen_size.x;
-		ssao.gather_push_constant.screen_size[1] = p_settings.screen_size.y;
+		ssao.gather_push_constant.screen_size[0] = p_settings.full_screen_size.x;
+		ssao.gather_push_constant.screen_size[1] = p_settings.full_screen_size.y;
 
 		ssao.gather_push_constant.half_screen_pixel_size[0] = 1.0 / p_settings.half_screen_size.x;
 		ssao.gather_push_constant.half_screen_pixel_size[1] = 1.0 / p_settings.half_screen_size.y;
@@ -1122,7 +1122,7 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 		ssao.gather_push_constant.inv_radius_near_limit = 1.0f / radius_near_limit;
 		ssao.gather_push_constant.neg_inv_radius = -1.0 / ssao.gather_push_constant.radius;
 
-		ssao.gather_push_constant.load_counter_avg_div = 9.0 / float((p_settings.quarter_size.x) * (p_settings.quarter_size.y) * 255);
+		ssao.gather_push_constant.load_counter_avg_div = 9.0 / float((p_settings.quarter_screen_size.x) * (p_settings.quarter_screen_size.y) * 255);
 		ssao.gather_push_constant.adaptive_sample_limit = p_settings.adaptive_target;
 
 		ssao.gather_push_constant.detail_intensity = p_settings.detail;
@@ -1192,8 +1192,8 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GATHER_BASE]);
 			gather_ssao(compute_list, p_ao_pong_slices, p_settings, true);
 			//generate importance map
-			int x_groups = (p_settings.quarter_size.x - 1) / 8 + 1;
-			int y_groups = (p_settings.quarter_size.y - 1) / 8 + 1;
+			int x_groups = (p_settings.quarter_screen_size.x - 1) / 8 + 1;
+			int y_groups = (p_settings.quarter_screen_size.y - 1) / 8 + 1;
 
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GENERATE_IMPORTANCE_MAP]);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_ao_pong), 0);
@@ -1268,8 +1268,8 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 				}
 				RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssao.blur_push_constant, sizeof(SSAOBlurPushConstant));
 
-				int x_groups = ((p_settings.screen_size.x >> (p_settings.half_size ? 2 : 1)) - 1) / 8 + 1;
-				int y_groups = ((p_settings.screen_size.y >> (p_settings.half_size ? 2 : 1)) - 1) / 8 + 1;
+				int x_groups = ((p_settings.full_screen_size.x >> (p_settings.half_size ? 2 : 1)) - 1) / 8 + 1;
+				int y_groups = ((p_settings.full_screen_size.y >> (p_settings.half_size ? 2 : 1)) - 1) / 8 + 1;
 
 				RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
 			}
@@ -1285,8 +1285,8 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 	// back to full size
 	{
 		ssao.interleave_push_constant.inv_sharpness = 1.0 - p_settings.sharpness;
-		ssao.interleave_push_constant.pixel_size[0] = 1.0 / p_settings.screen_size.x;
-		ssao.interleave_push_constant.pixel_size[1] = 1.0 / p_settings.screen_size.y;
+		ssao.interleave_push_constant.pixel_size[0] = 1.0 / p_settings.full_screen_size.x;
+		ssao.interleave_push_constant.pixel_size[1] = 1.0 / p_settings.full_screen_size.y;
 		ssao.interleave_push_constant.size_modifier = uint32_t(p_settings.half_size ? 4 : 2);
 
 		int interleave_pipeline = SSAO_INTERLEAVE_HALF;
@@ -1307,8 +1307,8 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssao.interleave_push_constant, sizeof(SSAOInterleavePushConstant));
 
-		int x_groups = (p_settings.screen_size.x - 1) / 8 + 1;
-		int y_groups = (p_settings.screen_size.y - 1) / 8 + 1;
+		int x_groups = (p_settings.full_screen_size.x - 1) / 8 + 1;
+		int y_groups = (p_settings.full_screen_size.y - 1) / 8 + 1;
 
 		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
 		RD::get_singleton()->compute_list_add_barrier(compute_list);

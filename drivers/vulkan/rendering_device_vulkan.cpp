@@ -2134,7 +2134,16 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 		VK_IMAGE_VIEW_TYPE_2D,
 	};
 
-	image_view_create_info.viewType = p_slice_type == TEXTURE_SLICE_CUBEMAP ? VK_IMAGE_VIEW_TYPE_CUBE : (p_slice_type == TEXTURE_SLICE_3D ? VK_IMAGE_VIEW_TYPE_3D : view_types[texture.type]);
+	image_view_create_info.viewType = view_types[texture.type];
+
+	if (p_slice_type == TEXTURE_SLICE_CUBEMAP) {
+		image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+	} else if (p_slice_type == TEXTURE_SLICE_3D) {
+		image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_3D;
+	} else if (p_slice_type == TEXTURE_SLICE_2D_ARRAY) {
+		image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+	}
+
 	if (p_view.format_override == DATA_FORMAT_MAX || p_view.format_override == texture.format) {
 		image_view_create_info.format = vulkan_formats[texture.format];
 	} else {

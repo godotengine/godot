@@ -5329,9 +5329,9 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 	settings.blur_passes = ssao_blur_passes;
 	settings.fadeout_from = ssao_fadeout_from;
 	settings.fadeout_to = ssao_fadeout_to;
-	settings.screen_size = Size2i(rb->width, rb->height);
+	settings.full_screen_size = Size2i(rb->width, rb->height);
 	settings.half_screen_size = Size2i(buffer_width, buffer_height);
-	settings.quarter_size = Size2i(half_width, half_height);
+	settings.quarter_screen_size = Size2i(half_width, half_height);
 
 	storage->get_effects()->generate_ssao(rb->depth_texture, p_normal_buffer, rb->ssao.depth, rb->ssao.depth_slices, rb->ssao.ao_deinterleaved, rb->ssao.ao_deinterleaved_slices, rb->ssao.ao_pong, rb->ssao.ao_pong_slices, rb->ssao.ao_final, rb->ssao.importance_map[0], rb->ssao.importance_map[1], p_projection, settings, uniform_sets_are_invalid);
 }
