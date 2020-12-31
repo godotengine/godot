@@ -108,7 +108,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Gets the actual playing speed of current animation or 0 if not playing. This speed is the [member playback_speed] property multiplied by [code]custom_speed[/code] argument specified when calling the [method play] method.
+				Gets the actual playing speed of current animation or 0 if not playing. This speed is the [member playback_speed] property multiplied by [code]custom_speed[/code] argument specified when calling the [method start] method.
 			</description>
 		</method>
 		<method name="get_queue">
@@ -139,34 +139,6 @@
 			</return>
 			<description>
 				Pauses the currently playing animation. To resume the animation again use [method resume]. To stop and reset an animation use [method stop].
-			</description>
-		</method>
-		<method name="play">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName" default="&quot;&quot;">
-			</argument>
-			<argument index="1" name="custom_blend" type="float" default="-1">
-			</argument>
-			<argument index="2" name="custom_speed" type="float" default="1.0">
-			</argument>
-			<argument index="3" name="from_end" type="bool" default="false">
-			</argument>
-			<description>
-				Plays the currently assigned animation or the animation with key [code]name[/code] from the beginning. Custom blend times and speed can be set. If [code]custom_speed[/code] is negative and [code]from_end[/code] is [code]true[/code], the animation will play backwards (which is equivalent to calling [method play_backwards]).
-				[b]Note:[/b] The animation will be updated the next time the [AnimationPlayer] is processed. If other variables are updated at the same time this is called, they may be updated too early. To perform the update immediately, call [code]advance(0)[/code].
-			</description>
-		</method>
-		<method name="play_backwards">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName" default="&quot;&quot;">
-			</argument>
-			<argument index="1" name="custom_blend" type="float" default="-1">
-			</argument>
-			<description>
-				Plays the animation with key [code]name[/code] in reverse.
-				This method is a shorthand for [method play] with [code]custom_speed = -1.0[/code] and [code]from_end = true[/code], so see its description for more information.
 			</description>
 		</method>
 		<method name="queue">
@@ -230,6 +202,20 @@
 				Specifies a blend time (in seconds) between two animations, referenced by their names.
 			</description>
 		</method>
+		<method name="start">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName" default="&quot;&quot;">
+			</argument>
+			<argument index="1" name="custom_blend_time" type="float" default="-1">
+			</argument>
+			<argument index="2" name="custom_speed" type="float" default="1.0">
+			</argument>
+			<description>
+				Starts playing the currently assigned animation or the animation with key [code]name[/code] from the beginning. A custom blend time and speed can be set. If [code]custom_speed[/code] is negative, the animation will play backwards from the end.
+				[b]Note:[/b] The animation will be updated the next time the [AnimationPlayer] is processed. If other variables are updated at the same time this is called, they may be updated too early. To perform the update immediately, call [code]advance(0)[/code].
+			</description>
+		</method>
 		<method name="stop">
 			<return type="void">
 			</return>
@@ -246,7 +232,7 @@
 			The name of the animation to play when the scene loads.
 		</member>
 		<member name="current_animation" type="String" setter="set_current_animation" getter="get_current_animation" default="&quot;&quot;">
-			The name of the currently playing animation. If no animation is playing, the property's value is an empty string. Changing this value does not restart the animation. See [method play] for more information on playing animations.
+			The name of the currently playing animation. If no animation is playing, the property's value is an empty string. Changing this value does not start the animation. See [method start] for more information on starting the animation.
 			[b]Note[/b]: while this property appears in the inspector, it's not meant to be edited, and it's not saved in the scene. This property is mainly used to get the currently playing animation, and internally for animation playback tracks. For more information, see [Animation].
 		</member>
 		<member name="current_animation_length" type="float" setter="" getter="get_current_animation_length">
