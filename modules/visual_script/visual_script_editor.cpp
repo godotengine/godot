@@ -3433,11 +3433,9 @@ void VisualScriptEditor::_graph_connected(const String &p_from, int p_from_slot,
 void VisualScriptEditor::_graph_disconnected(const String &p_from, int p_from_slot, const String &p_to, int p_to_slot) {
 	Ref<VisualScriptNode> from_node;
 	Ref<VisualScriptNode> to_node;
-	Object *objptr = script.ptr();
 	if (inside_module) {
 		from_node = curr_module->get_node(p_from.to_int());
 		to_node = curr_module->get_node(p_to.to_int());
-		objptr = curr_module.ptr();
 	} else {
 		from_node = script->get_node(p_from.to_int());
 		to_node = script->get_node(p_to.to_int());
