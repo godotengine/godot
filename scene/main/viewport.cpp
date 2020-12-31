@@ -38,6 +38,7 @@
 #include "core/string/translation.h"
 
 #include "scene/2d/collision_object_2d.h"
+#include "scene/2d/listener_2d.cpp"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/3d/listener_3d.h"
@@ -912,12 +913,6 @@ void Viewport::_update_listener_3d() {
 }
 
 void Viewport::_update_listener_2d() {
-	/*
-	if (is_inside_tree() && audio_listener && (!get_parent() || (Object::cast_to<Control>(get_parent()) && Object::cast_to<Control>(get_parent())->is_visible_in_tree())))
-		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, find_world_2d()->get_sound_space());
-	else
-		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, RID());
-*/
 }
 
 void Viewport::set_as_audio_listener_3d(bool p_enable) {
@@ -1005,6 +1000,28 @@ void Viewport::set_global_canvas_transform(const Transform2D &p_transform) {
 
 Transform2D Viewport::get_global_canvas_transform() const {
 	return global_canvas_transform;
+}
+
+void Viewport::_listener_2d_transform_changed_notify() {
+}
+
+void Viewport::_listener_2d_set(Listener2D *p_listener) {
+	if (listener_2d == p_listener) {
+		return;
+	} else if (listener_2d) {
+		listener_2d->clear_current();
+	}
+
+	listener_2d = p_listener;
+
+	_update_listener_2d();
+	_listener_2d_transform_changed_notify();
+}
+
+void Viewport::_listener_2d_remove(Listener2D *p_listener) {
+	if (listener_2d == p_listener) {
+		listener_2d = nullptr;
+	}
 }
 
 void Viewport::_listener_3d_transform_changed_notify() {
@@ -1304,6 +1321,10 @@ Ref<World3D> Viewport::find_world_3d() const {
 	} else {
 		return Ref<World3D>();
 	}
+}
+
+Listener2D *Viewport::get_listener_2d() const {
+	return listener_2d;
 }
 
 Listener3D *Viewport::get_listener_3d() const {

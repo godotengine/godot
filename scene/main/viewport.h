@@ -41,6 +41,7 @@
 class Camera3D;
 class Camera2D;
 class Listener3D;
+class Listener2D;
 class Control;
 class CanvasItem;
 class CanvasLayer;
@@ -188,6 +189,7 @@ private:
 
 	Viewport *parent = nullptr;
 
+	Listener2D *listener_2d = nullptr;
 	Listener3D *listener_3d = nullptr;
 	Set<Listener3D *> listeners_3d;
 
@@ -430,6 +432,11 @@ private:
 
 	bool _gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_check);
 
+	friend class Listener2D;
+	void _listener_2d_transform_changed_notify();
+	void _listener_2d_set(Listener2D *p_listener);
+	void _listener_2d_remove(Listener2D *p_listener);
+
 	friend class Listener3D;
 	void _listener_3d_transform_changed_notify();
 	void _listener_3d_set(Listener3D *p_listener);
@@ -485,6 +492,7 @@ protected:
 public:
 	uint64_t get_processed_events_count() const { return event_count; }
 
+	Listener2D *get_listener_2d() const;
 	Listener3D *get_listener_3d() const;
 	Camera3D *get_camera() const;
 
