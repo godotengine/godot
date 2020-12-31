@@ -5064,7 +5064,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph->add_child(hint_text);
 
 	hint_text_timer = memnew(Timer);
-	hint_text_timer->set_wait_time(4);
+	hint_text_timer->set_wait_time(12);
 	hint_text_timer->connect("timeout", callable_mp(this, &VisualScriptEditor::_hide_timer));
 	add_child(hint_text_timer);
 
