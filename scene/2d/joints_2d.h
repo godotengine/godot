@@ -49,6 +49,8 @@ class Joint2D : public Node2D {
 	String warning;
 
 protected:
+	void _disconnect_signals();
+	void _body_exit_tree(const ObjectID &p_body_id);
 	void _update_joint(bool p_only_free = false);
 
 	void _notification(int p_what);
