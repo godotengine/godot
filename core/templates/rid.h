@@ -40,30 +40,35 @@ class RID {
 	uint64_t _id = 0;
 
 public:
-	_FORCE_INLINE_ bool operator==(const RID &p_rid) const {
+	_ALWAYS_INLINE_ bool operator==(const RID &p_rid) const {
 		return _id == p_rid._id;
 	}
-	_FORCE_INLINE_ bool operator<(const RID &p_rid) const {
+	_ALWAYS_INLINE_ bool operator<(const RID &p_rid) const {
 		return _id < p_rid._id;
 	}
-	_FORCE_INLINE_ bool operator<=(const RID &p_rid) const {
+	_ALWAYS_INLINE_ bool operator<=(const RID &p_rid) const {
 		return _id <= p_rid._id;
 	}
-	_FORCE_INLINE_ bool operator>(const RID &p_rid) const {
+	_ALWAYS_INLINE_ bool operator>(const RID &p_rid) const {
 		return _id > p_rid._id;
 	}
-	_FORCE_INLINE_ bool operator>=(const RID &p_rid) const {
+	_ALWAYS_INLINE_ bool operator>=(const RID &p_rid) const {
 		return _id >= p_rid._id;
 	}
-	_FORCE_INLINE_ bool operator!=(const RID &p_rid) const {
+	_ALWAYS_INLINE_ bool operator!=(const RID &p_rid) const {
 		return _id != p_rid._id;
 	}
-	_FORCE_INLINE_ bool is_valid() const { return _id != 0; }
-	_FORCE_INLINE_ bool is_null() const { return _id == 0; }
+	_ALWAYS_INLINE_ bool is_valid() const { return _id != 0; }
+	_ALWAYS_INLINE_ bool is_null() const { return _id == 0; }
 
-	_FORCE_INLINE_ uint64_t get_id() const { return _id; }
+	static _ALWAYS_INLINE_ RID from_uint64(uint64_t p_id) {
+		RID _rid;
+		_rid._id = p_id;
+		return _rid;
+	}
+	_ALWAYS_INLINE_ uint64_t get_id() const { return _id; }
 
-	_FORCE_INLINE_ RID() {}
+	_ALWAYS_INLINE_ RID() {}
 };
 
 #endif // RID_H
