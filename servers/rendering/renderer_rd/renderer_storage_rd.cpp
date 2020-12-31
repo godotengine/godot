@@ -4155,24 +4155,18 @@ RID RendererStorageRD::particles_get_draw_pass_mesh(RID p_particles, int p_pass)
 	return particles->draw_passes[p_pass];
 }
 
-void RendererStorageRD::particles_add_collision(RID p_particles, InstanceBaseDependency *p_instance) {
-	RendererSceneRender::InstanceBase *instance = static_cast<RendererSceneRender::InstanceBase *>(p_instance);
-
+void RendererStorageRD::particles_add_collision(RID p_particles, RID p_particles_collision_instance) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
-	ERR_FAIL_COND(instance->base_type != RS::INSTANCE_PARTICLES_COLLISION);
-
-	particles->collisions.insert(instance);
+	particles->collisions.insert(p_particles_collision_instance);
 }
 
-void RendererStorageRD::particles_remove_collision(RID p_particles, InstanceBaseDependency *p_instance) {
-	RendererSceneRender::InstanceBase *instance = static_cast<RendererSceneRender::InstanceBase *>(p_instance);
-
+void RendererStorageRD::particles_remove_collision(RID p_particles, RID p_particles_collision_instance) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
-	particles->collisions.erase(instance);
+	particles->collisions.erase(p_particles_collision_instance);
 }
 
 void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta) {
@@ -4272,9 +4266,15 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 			to_particles = p_particles->emission_transform.affine_inverse();
 		}
 		uint32_t collision_3d_textures_used = 0;
-		for (const Set<RendererSceneRender::InstanceBase *>::Element *E = p_particles->collisions.front(); E; E = E->next()) {
-			ParticlesCollision *pc = particles_collision_owner.getornull(E->get()->base);
-			Transform to_collider = E->get()->transform;
+		for (const Set<RID>::Element *E = p_particles->collisions.front(); E; E = E->next()) {
+			ParticlesCollisionInstance *pci = particles_collision_instance_owner.getornull(E->get());
+			if (!pci || !pci->active) {
+				continue;
+			}
+			ParticlesCollision *pc = particles_collision_owner.getornull(pci->collision);
+			ERR_CONTINUE(!pc);
+
+			Transform to_collider = pci->transform;
 			if (p_particles->use_local_coords) {
 				to_collider = to_particles * to_collider;
 			}
@@ -5096,6 +5096,22 @@ bool RendererStorageRD::particles_collision_is_heightfield(RID p_particles_colli
 	return particles_collision->type == RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE;
 }
 
+RID RendererStorageRD::particles_collision_instance_create(RID p_collision) {
+	ParticlesCollisionInstance pci;
+	pci.collision = p_collision;
+	return particles_collision_instance_owner.make_rid(pci);
+}
+void RendererStorageRD::particles_collision_instance_set_transform(RID p_collision_instance, const Transform &p_transform) {
+	ParticlesCollisionInstance *pci = particles_collision_instance_owner.getornull(p_collision_instance);
+	ERR_FAIL_COND(!pci);
+	pci->transform = p_transform;
+}
+void RendererStorageRD::particles_collision_instance_set_active(RID p_collision_instance, bool p_active) {
+	ParticlesCollisionInstance *pci = particles_collision_instance_owner.getornull(p_collision_instance);
+	ERR_FAIL_COND(!pci);
+	pci->active = p_active;
+}
+
 /* SKELETON API */
 
 RID RendererStorageRD::skeleton_create() {
@@ -5290,17 +5306,20 @@ RID RendererStorageRD::light_create(RS::LightType p_type) {
 	light.param[RS::LIGHT_PARAM_SPECULAR] = 0.5;
 	light.param[RS::LIGHT_PARAM_RANGE] = 1.0;
 	light.param[RS::LIGHT_PARAM_SIZE] = 0.0;
+	light.param[RS::LIGHT_PARAM_ATTENUATION] = 1.0;
 	light.param[RS::LIGHT_PARAM_SPOT_ANGLE] = 45;
+	light.param[RS::LIGHT_PARAM_SPOT_ATTENUATION] = 1.0;
 	light.param[RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE] = 0;
 	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET] = 0.1;
 	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET] = 0.3;
 	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET] = 0.6;
 	light.param[RS::LIGHT_PARAM_SHADOW_FADE_START] = 0.8;
-	light.param[RS::LIGHT_PARAM_SHADOW_BIAS] = 0.02;
 	light.param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] = 1.0;
+	light.param[RS::LIGHT_PARAM_SHADOW_BIAS] = 0.02;
+	light.param[RS::LIGHT_PARAM_SHADOW_BLUR] = 0;
 	light.param[RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
-	light.param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
 	light.param[RS::LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE] = 1.0;
+	light.param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
 
 	return light_owner.make_rid(light);
 }
@@ -8188,6 +8207,8 @@ bool RendererStorageRD::free(RID p_rid) {
 		}
 		particles_collision->instance_dependency.instance_notify_deleted(p_rid);
 		particles_collision_owner.free(p_rid);
+	} else if (particles_collision_instance_owner.owns(p_rid)) {
+		particles_collision_instance_owner.free(p_rid);
 	} else if (render_target_owner.owns(p_rid)) {
 		RenderTarget *rt = render_target_owner.getornull(p_rid);
 

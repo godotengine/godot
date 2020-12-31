@@ -31,6 +31,7 @@
 #ifndef RENDERING_SERVER_SCENE_RENDER_FORWARD_H
 #define RENDERING_SERVER_SCENE_RENDER_FORWARD_H
 
+#include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
@@ -46,7 +47,8 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 	enum {
 		SDFGI_MAX_CASCADES = 8,
-		MAX_GI_PROBES = 8
+		MAX_GI_PROBES = 8,
+		MAX_LIGHTMAPS = 8
 	};
 
 	/* Scene Shader */
@@ -266,7 +268,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 	void _update_render_base_uniform_set();
 	RID _setup_sdfgi_render_pass_uniform_set(RID p_albedo_texture, RID p_emission_texture, RID p_emission_aniso_texture, RID p_geom_facing_texture);
-	RID _setup_render_pass_uniform_set(RID p_render_buffers, RID p_radiance_texture, RID p_shadow_atlas, RID p_reflection_atlas, const PagedArray<RID> &p_gi_probes);
+	RID _setup_render_pass_uniform_set(RID p_render_buffers, RID p_radiance_texture, RID p_shadow_atlas, RID p_reflection_atlas, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_lightmaps);
 
 	struct LightmapData {
 		float normal_xform[12];
@@ -385,7 +387,10 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 		RID uniform_buffer;
 
-		LightmapData *lightmaps;
+		LightmapData lightmaps[MAX_LIGHTMAPS];
+		RID lightmap_ids[MAX_LIGHTMAPS];
+		bool lightmap_has_sh[MAX_LIGHTMAPS];
+		uint32_t lightmaps_used = 0;
 		uint32_t max_lightmaps;
 		RID lightmap_buffer;
 
@@ -408,11 +413,13 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 	/* Render List */
 
+	struct GeometryInstanceForward;
+
 	struct RenderList {
 		int max_elements;
 
 		struct Element {
-			RendererSceneRender::InstanceBase *instance;
+			GeometryInstanceForward *instance;
 			MaterialData *material;
 			union {
 				struct {
@@ -567,28 +574,89 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	};
 
 	void _setup_environment(RID p_environment, RID p_render_buffers, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false);
-	void _setup_lightmaps(const PagedArray<InstanceBase *> &p_lightmaps, const Transform &p_cam_transform);
+	void _setup_lightmaps(const PagedArray<RID> &p_lightmaps, const Transform &p_cam_transform);
 
 	void _fill_instances(RenderList::Element **p_elements, int p_element_count, bool p_for_depth, bool p_has_sdfgi = false, bool p_has_opaque_gi = false);
 	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0);
-	_FORCE_INLINE_ void _add_geometry(InstanceBase *p_instance, uint32_t p_surface, RID p_material, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi = false);
-	_FORCE_INLINE_ void _add_geometry_with_material(InstanceBase *p_instance, uint32_t p_surface, MaterialData *p_material, RID p_material_rid, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi = false);
+	_FORCE_INLINE_ void _add_geometry(GeometryInstanceForward *p_instance, uint32_t p_surface, RID p_material, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi = false);
+	_FORCE_INLINE_ void _add_geometry_with_material(GeometryInstanceForward *p_instance, uint32_t p_surface, MaterialData *p_material, RID p_material_rid, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi = false);
 
-	void _fill_render_list(const PagedArray<InstanceBase *> &p_instances, PassMode p_pass_mode, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_using_sdfgi = false);
+	void _fill_render_list(const PagedArray<GeometryInstance *> &p_instances, PassMode p_pass_mode, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_using_sdfgi = false);
 
 	Map<Size2i, RID> sdfgi_framebuffer_size_cache;
+
+	struct GeometryInstanceForward : public GeometryInstance {
+		RID base;
+		RS::InstanceType base_type;
+
+		RID skeleton;
+		RID mesh_instance;
+
+		uint32_t layer_mask = 1;
+
+		float depth = 0;
+		int depth_layer = 0;
+
+		RID gi_probe_instances[MAX_GI_PROBES];
+		uint32_t gi_probe_instance_count = 0;
+
+		Vector<RID> surface_materials;
+		RID material_override;
+		Transform transform;
+		AABB aabb;
+		AABB transformed_aabb;
+		float lod_bias = 0.0;
+		int32_t shader_parameters_offset = -1;
+
+		bool use_dynamic_gi = false;
+		bool use_baked_light = false;
+		bool cast_double_sided_shaodows = false;
+		bool mirror = false;
+		RID lightmap_instance;
+		Rect2 lightmap_uv_scale;
+		uint32_t lightmap_slice_index = 0;
+		Color *lightmap_sh = nullptr;
+	};
+
+	PagedAllocator<GeometryInstanceForward> geometry_instance_alloc;
 
 	bool low_end = false;
 
 protected:
-	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<InstanceBase *> &p_instances, int p_directional_light_count, const PagedArray<RID> &p_gi_probes, const PagedArray<InstanceBase *> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color, float p_lod_threshold);
-	virtual void _render_shadow(RID p_framebuffer, const PagedArray<InstanceBase *> &p_instances, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0);
-	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<InstanceBase *> &p_instances, RID p_framebuffer, const Rect2i &p_region);
-	virtual void _render_uv2(const PagedArray<InstanceBase *> &p_instances, RID p_framebuffer, const Rect2i &p_region);
-	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<InstanceBase *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture);
-	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<InstanceBase *> &p_instances);
+	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, int p_directional_light_count, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color, float p_lod_threshold);
+	virtual void _render_shadow(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0);
+	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region);
+	virtual void _render_uv2(const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region);
+	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<GeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture);
+	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances);
 
 public:
+	virtual GeometryInstance *geometry_instance_create(RID p_base);
+	virtual void geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton);
+	virtual void geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override);
+	virtual void geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_materials);
+	virtual void geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance);
+	virtual void geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb);
+	virtual void geometry_instance_set_layer_mask(GeometryInstance *p_geometry_instance, uint32_t p_layer_mask);
+	virtual void geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias);
+	virtual void geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable);
+	virtual void geometry_instance_set_use_dynamic_gi(GeometryInstance *p_geometry_instance, bool p_enable);
+	virtual void geometry_instance_set_use_lightmap(GeometryInstance *p_geometry_instance, RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index);
+	virtual void geometry_instance_set_lightmap_capture(GeometryInstance *p_geometry_instance, const Color *p_sh9);
+	virtual void geometry_instance_set_instance_shader_parameters_offset(GeometryInstance *p_geometry_instance, int32_t p_offset);
+	virtual void geometry_instance_set_cast_double_sided_shadows(GeometryInstance *p_geometry_instance, bool p_enable);
+
+	virtual Transform geometry_instance_get_transform(GeometryInstance *p_instance);
+	virtual AABB geometry_instance_get_aabb(GeometryInstance *p_instance);
+
+	virtual void geometry_instance_free(GeometryInstance *p_geometry_instance);
+
+	virtual uint32_t geometry_instance_get_pair_mask();
+	virtual void geometry_instance_pair_light_instances(GeometryInstance *p_geometry_instance, const RID *p_light_instances, uint32_t p_light_instance_count);
+	virtual void geometry_instance_pair_reflection_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count);
+	virtual void geometry_instance_pair_decal_instances(GeometryInstance *p_geometry_instance, const RID *p_decal_instances, uint32_t p_decal_instance_count);
+	virtual void geometry_instance_pair_gi_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_gi_probe_instances, uint32_t p_gi_probe_instance_count);
+
 	virtual void set_time(double p_time, double p_step);
 
 	virtual bool free(RID p_rid);

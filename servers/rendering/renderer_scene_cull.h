@@ -53,7 +53,8 @@ public:
 
 	enum {
 		SDFGI_MAX_CASCADES = 8,
-		SDFGI_MAX_REGIONS_PER_CASCADE = 3
+		SDFGI_MAX_REGIONS_PER_CASCADE = 3,
+		MAX_INSTANCE_PAIRS = 32
 	};
 
 	uint64_t render_pass;
@@ -249,7 +250,10 @@ public:
 		uint32_t flags = 0;
 		uint32_t layer_mask = 0; //for fast layer-mask discard
 		RID base_rid;
-		RID instance_data_rid;
+		union {
+			uint64_t instance_data_rid;
+			RendererSceneRender::GeometryInstance *instance_geometry;
+		};
 		Instance *instance = nullptr;
 	};
 
@@ -296,7 +300,7 @@ public:
 	static void _instance_pair(Instance *p_A, Instance *p_B);
 	static void _instance_unpair(Instance *p_A, Instance *p_B);
 
-	static void _instance_update_mesh_instance(Instance *p_instance);
+	void _instance_update_mesh_instance(Instance *p_instance);
 
 	virtual RID scenario_create();
 
@@ -325,7 +329,55 @@ public:
 		virtual ~InstanceBaseData() {}
 	};
 
-	struct Instance : RendererSceneRender::InstanceBase {
+	struct Instance : public RendererStorage::InstanceBaseDependency {
+		RS::InstanceType base_type;
+		RID base;
+
+		RID skeleton;
+		RID material_override;
+
+		RID mesh_instance; //only used for meshes and when skeleton/blendshapes exist
+
+		Transform transform;
+
+		float lod_bias;
+
+		Vector<RID> materials;
+
+		RS::ShadowCastingSetting cast_shadows;
+
+		uint32_t layer_mask;
+		//fit in 32 bits
+		bool mirror : 8;
+		bool receive_shadows : 8;
+		bool visible : 8;
+		bool baked_light : 2; //this flag is only to know if it actually did use baked light
+		bool dynamic_gi : 2; //this flag is only to know if it actually did use baked light
+		bool redraw_if_visible : 4;
+
+		Instance *lightmap;
+		Rect2 lightmap_uv_scale;
+		int lightmap_slice_index;
+		uint32_t lightmap_cull_index;
+		Vector<Color> lightmap_sh; //spherical harmonic
+
+		AABB aabb;
+		AABB transformed_aabb;
+		AABB prev_transformed_aabb;
+
+		struct InstanceShaderParameter {
+			int32_t index = -1;
+			Variant value;
+			Variant default_value;
+			PropertyInfo info;
+		};
+
+		Map<StringName, InstanceShaderParameter> instance_shader_parameters;
+		bool instance_allocated_shader_parameters = false;
+		int32_t instance_allocated_shader_parameters_offset = -1;
+
+		//
+
 		RID self;
 		//scenario stuff
 		DynamicBVH::ID indexer_id;
@@ -377,6 +429,20 @@ public:
 		Instance() :
 				scenario_item(this),
 				update_item(this) {
+			base_type = RS::INSTANCE_NONE;
+			cast_shadows = RS::SHADOW_CASTING_SETTING_ON;
+			receive_shadows = true;
+			visible = true;
+			layer_mask = 1;
+			instance_version = 0;
+			baked_light = false;
+			dynamic_gi = false;
+			redraw_if_visible = false;
+			lightmap_slice_index = 0;
+			lightmap = nullptr;
+			lightmap_cull_index = 0;
+			lod_bias = 1.0;
+
 			scenario = nullptr;
 
 			update_aabb = false;
@@ -415,6 +481,7 @@ public:
 	void _instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_dependencies = false);
 
 	struct InstanceGeometryData : public InstanceBaseData {
+		RendererSceneRender::GeometryInstance *geometry_instance = nullptr;
 		Set<Instance *> lights;
 		bool can_cast_shadows;
 		bool material_is_animated;
@@ -457,6 +524,10 @@ public:
 	};
 
 	SelfList<InstanceReflectionProbeData>::List reflection_probe_render_list;
+
+	struct InstanceParticlesCollisionData : public InstanceBaseData {
+		RID instance;
+	};
 
 	struct InstanceLightData : public InstanceBaseData {
 		RID instance;
@@ -523,6 +594,7 @@ public:
 	SelfList<InstanceGIProbeData>::List gi_probe_update_list;
 
 	struct InstanceLightmapData : public InstanceBaseData {
+		RID instance;
 		Set<Instance *> geometries;
 		Set<Instance *> users;
 
@@ -600,17 +672,16 @@ public:
 	Set<Instance *> heightfield_particle_colliders_update_list;
 
 	PagedArrayPool<Instance *> instance_cull_page_pool;
-	PagedArrayPool<RendererSceneRender::InstanceBase *> base_instance_cull_page_pool;
+	PagedArrayPool<RendererSceneRender::GeometryInstance *> geometry_instance_cull_page_pool;
 	PagedArrayPool<RID> rid_cull_page_pool;
 
 	PagedArray<Instance *> instance_cull_result;
 	PagedArray<RID> mesh_instance_cull_result;
-	PagedArray<RendererSceneRender::InstanceBase *> geometry_instances_to_render;
+	PagedArray<RendererSceneRender::GeometryInstance *> geometry_instances_to_render;
 	PagedArray<Instance *> instance_shadow_cull_result;
-	PagedArray<RendererSceneRender::InstanceBase *> geometry_instances_to_shadow_render;
-	PagedArray<Instance *> instance_sdfgi_cull_result;
+	PagedArray<RendererSceneRender::GeometryInstance *> geometry_instances_to_shadow_render;
 	PagedArray<Instance *> light_cull_result;
-	PagedArray<RendererSceneRender::InstanceBase *> lightmap_cull_result;
+	PagedArray<RID> lightmap_cull_result;
 	PagedArray<RID> reflection_probe_instance_cull_result;
 	PagedArray<RID> light_instance_cull_result;
 
@@ -619,7 +690,7 @@ public:
 
 	RID_PtrOwner<Instance> instance_owner;
 
-	bool pair_volumes_to_mesh; // used in traditional forward, unnecesary on clustered
+	uint32_t geometry_instance_pair_mask; // used in traditional forward, unnecesary on clustered
 
 	virtual RID instance_create();
 
@@ -653,7 +724,7 @@ public:
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias);
 
-	void _update_instance_shader_parameters_from_material(Map<StringName, RendererSceneRender::InstanceBase::InstanceShaderParameter> &isparams, const Map<StringName, RendererSceneRender::InstanceBase::InstanceShaderParameter> &existing_isparams, RID p_material);
+	void _update_instance_shader_parameters_from_material(Map<StringName, Instance::InstanceShaderParameter> &isparams, const Map<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material);
 
 	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value);
 	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const;
@@ -687,7 +758,7 @@ public:
 				real_t range_begin;
 				Vector2 uv_scale;
 
-				PagedArray<RendererSceneRender::InstanceBase *> cull_result;
+				PagedArray<RendererSceneRender::GeometryInstance *> cull_result;
 
 			} cascades[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES]; //max 4 cascades
 			uint32_t cascade_count;
@@ -698,7 +769,7 @@ public:
 
 		struct SDFGI {
 			//have arrays here because SDFGI functions expects this, plus regions can have areas
-			PagedArray<RendererSceneRender::InstanceBase *> region_cull_result[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE];
+			PagedArray<RendererSceneRender::GeometryInstance *> region_cull_result[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE];
 			AABB region_aabb[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
 			uint32_t region_cascade[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
 			uint32_t region_count = 0;
@@ -827,6 +898,8 @@ public:
 	virtual void update();
 
 	bool free(RID p_rid);
+
+	void set_scene_render(RendererSceneRender *p_scene_render);
 
 	RendererSceneCull();
 	virtual ~RendererSceneCull();

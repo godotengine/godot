@@ -267,7 +267,7 @@ RenderingServerDefault::RenderingServerDefault() {
 	RSG::rasterizer = RendererCompositor::create();
 	RSG::storage = RSG::rasterizer->get_storage();
 	RSG::canvas_render = RSG::rasterizer->get_canvas();
-	sr->scene_render = RSG::rasterizer->get_scene();
+	sr->set_scene_render(RSG::rasterizer->get_scene());
 
 	frame_profile_frame = 0;
 

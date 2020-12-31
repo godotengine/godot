@@ -734,7 +734,7 @@ private:
 		ParticleEmissionBuffer *emission_buffer = nullptr;
 		RID emission_storage_buffer;
 
-		Set<RendererSceneRender::InstanceBase *> collisions;
+		Set<RID> collisions;
 
 		Particles() :
 				inactive(true),
@@ -893,6 +893,14 @@ private:
 	};
 
 	mutable RID_Owner<ParticlesCollision> particles_collision_owner;
+
+	struct ParticlesCollisionInstance {
+		RID collision;
+		Transform transform;
+		bool active = false;
+	};
+
+	mutable RID_Owner<ParticlesCollisionInstance> particles_collision_instance_owner;
 
 	/* Skeleton */
 
@@ -1977,7 +1985,11 @@ public:
 	_FORCE_INLINE_ float lightmap_get_probe_capture_update_speed() const {
 		return lightmap_probe_capture_update_speed;
 	}
-
+	_FORCE_INLINE_ RID lightmap_get_texture(RID p_lightmap) const {
+		const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+		ERR_FAIL_COND_V(!lm, RID());
+		return lm->light_texture;
+	}
 	_FORCE_INLINE_ int32_t lightmap_get_array_index(RID p_lightmap) const {
 		ERR_FAIL_COND_V(!using_lightmap_array, -1); //only for arrays
 		const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
@@ -2078,8 +2090,8 @@ public:
 		return particles->particles_transforms_buffer_uniform_set;
 	}
 
-	virtual void particles_add_collision(RID p_particles, InstanceBaseDependency *p_instance);
-	virtual void particles_remove_collision(RID p_particles, InstanceBaseDependency *p_instance);
+	virtual void particles_add_collision(RID p_particles, RID p_particles_collision_instance);
+	virtual void particles_remove_collision(RID p_particles, RID p_particles_collision_instance);
 
 	/* PARTICLES COLLISION */
 
@@ -2098,6 +2110,11 @@ public:
 	virtual Vector3 particles_collision_get_extents(RID p_particles_collision) const;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const;
 	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const;
+
+	//used from 2D and 3D
+	virtual RID particles_collision_instance_create(RID p_collision);
+	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform &p_transform);
+	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active);
 
 	/* GLOBAL VARIABLES API */
 

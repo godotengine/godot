@@ -474,8 +474,8 @@ public:
 
 	virtual void particles_set_view_axis(RID p_particles, const Vector3 &p_axis) = 0;
 
-	virtual void particles_add_collision(RID p_particles, InstanceBaseDependency *p_instance) = 0;
-	virtual void particles_remove_collision(RID p_particles, InstanceBaseDependency *p_instance) = 0;
+	virtual void particles_add_collision(RID p_particles, RID p_particles_collision_instance) = 0;
+	virtual void particles_remove_collision(RID p_particles, RID p_particles_collision_instance) = 0;
 
 	virtual void update_particles() = 0;
 
@@ -495,6 +495,11 @@ public:
 	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const = 0;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const = 0;
 	virtual RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const = 0;
+
+	//used from 2D and 3D
+	virtual RID particles_collision_instance_create(RID p_collision) = 0;
+	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform &p_transform) = 0;
+	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) = 0;
 
 	/* GLOBAL VARIABLES */
 

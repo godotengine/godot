@@ -177,35 +177,33 @@ layout(set = 0, binding = 10, std140) restrict readonly buffer Lightmaps {
 }
 lightmaps;
 
-layout(set = 0, binding = 11) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
-
 struct LightmapCapture {
 	vec4 sh[9];
 };
 
-layout(set = 0, binding = 12, std140) restrict readonly buffer LightmapCaptures {
+layout(set = 0, binding = 11, std140) restrict readonly buffer LightmapCaptures {
 	LightmapCapture data[];
 }
 lightmap_captures;
 
-layout(set = 0, binding = 13) uniform texture2D decal_atlas;
-layout(set = 0, binding = 14) uniform texture2D decal_atlas_srgb;
+layout(set = 0, binding = 12) uniform texture2D decal_atlas;
+layout(set = 0, binding = 13) uniform texture2D decal_atlas_srgb;
 
-layout(set = 0, binding = 15, std430) restrict readonly buffer Decals {
+layout(set = 0, binding = 14, std430) restrict readonly buffer Decals {
 	DecalData data[];
 }
 decals;
 
-layout(set = 0, binding = 16) uniform utexture3D cluster_texture;
+layout(set = 0, binding = 15) uniform utexture3D cluster_texture;
 
-layout(set = 0, binding = 17, std430) restrict readonly buffer ClusterData {
+layout(set = 0, binding = 16, std430) restrict readonly buffer ClusterData {
 	uint indices[];
 }
 cluster_data;
 
-layout(set = 0, binding = 18) uniform texture2D directional_shadow_atlas;
+layout(set = 0, binding = 17) uniform texture2D directional_shadow_atlas;
 
-layout(set = 0, binding = 19, std430) restrict readonly buffer GlobalVariableData {
+layout(set = 0, binding = 18, std430) restrict readonly buffer GlobalVariableData {
 	vec4 data[];
 }
 global_variables;
@@ -219,7 +217,7 @@ struct SDFGIProbeCascadeData {
 	float to_cell; // 1/bounds * grid_size
 };
 
-layout(set = 0, binding = 20, std140) uniform SDFGI {
+layout(set = 0, binding = 19, std140) uniform SDFGI {
 	vec3 grid_size;
 	uint max_cascades;
 
@@ -269,18 +267,20 @@ layout(set = 1, binding = 1) uniform textureCubeArray reflection_atlas;
 
 layout(set = 1, binding = 2) uniform texture2D shadow_atlas;
 
+layout(set = 1, binding = 3) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
+
 #ifndef LOW_END_MODE
-layout(set = 1, binding = 3) uniform texture3D gi_probe_textures[MAX_GI_PROBES];
+layout(set = 1, binding = 4) uniform texture3D gi_probe_textures[MAX_GI_PROBES];
 #endif
 
 /* Set 3, Render Buffers */
 
 #ifdef MODE_RENDER_SDF
 
-layout(r16ui, set = 1, binding = 4) uniform restrict writeonly uimage3D albedo_volume_grid;
-layout(r32ui, set = 1, binding = 5) uniform restrict writeonly uimage3D emission_grid;
-layout(r32ui, set = 1, binding = 6) uniform restrict writeonly uimage3D emission_aniso_grid;
-layout(r32ui, set = 1, binding = 7) uniform restrict uimage3D geom_facing_grid;
+layout(r16ui, set = 1, binding = 5) uniform restrict writeonly uimage3D albedo_volume_grid;
+layout(r32ui, set = 1, binding = 6) uniform restrict writeonly uimage3D emission_grid;
+layout(r32ui, set = 1, binding = 7) uniform restrict writeonly uimage3D emission_aniso_grid;
+layout(r32ui, set = 1, binding = 8) uniform restrict uimage3D geom_facing_grid;
 
 //still need to be present for shaders that use it, so remap them to something
 #define depth_buffer shadow_atlas
@@ -289,17 +289,17 @@ layout(r32ui, set = 1, binding = 7) uniform restrict uimage3D geom_facing_grid;
 
 #else
 
-layout(set = 1, binding = 4) uniform texture2D depth_buffer;
-layout(set = 1, binding = 5) uniform texture2D color_buffer;
+layout(set = 1, binding = 5) uniform texture2D depth_buffer;
+layout(set = 1, binding = 6) uniform texture2D color_buffer;
 
 #ifndef LOW_END_MODE
 
-layout(set = 1, binding = 6) uniform texture2D normal_roughness_buffer;
-layout(set = 1, binding = 7) uniform texture2D ao_buffer;
-layout(set = 1, binding = 8) uniform texture2D ambient_buffer;
-layout(set = 1, binding = 9) uniform texture2D reflection_buffer;
-layout(set = 1, binding = 10) uniform texture2DArray sdfgi_lightprobe_texture;
-layout(set = 1, binding = 11) uniform texture3D sdfgi_occlusion_cascades;
+layout(set = 1, binding = 7) uniform texture2D normal_roughness_buffer;
+layout(set = 1, binding = 8) uniform texture2D ao_buffer;
+layout(set = 1, binding = 9) uniform texture2D ambient_buffer;
+layout(set = 1, binding = 10) uniform texture2D reflection_buffer;
+layout(set = 1, binding = 11) uniform texture2DArray sdfgi_lightprobe_texture;
+layout(set = 1, binding = 12) uniform texture3D sdfgi_occlusion_cascades;
 
 struct GIProbeData {
 	mat4 xform;
@@ -317,12 +317,12 @@ struct GIProbeData {
 	uint mipmaps;
 };
 
-layout(set = 1, binding = 12, std140) uniform GIProbes {
+layout(set = 1, binding = 13, std140) uniform GIProbes {
 	GIProbeData data[MAX_GI_PROBES];
 }
 gi_probes;
 
-layout(set = 1, binding = 13) uniform texture3D volumetric_fog_texture;
+layout(set = 1, binding = 14) uniform texture3D volumetric_fog_texture;
 
 #endif // LOW_END_MODE
 
