@@ -2642,6 +2642,7 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 	script_create_dialog->connect("script_created", callable_mp(this, &SceneTreeDock::_script_created));
 	script_create_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_script_creation_closed));
 	script_create_dialog->connect("cancelled", callable_mp(this, &SceneTreeDock::_script_creation_closed));
+	script_create_dialog->connect("close_requested", callable_mp(this, &SceneTreeDock::_script_creation_closed), varray(), CONNECT_ONESHOT);
 	script_create_dialog->set_inheritance_base_type("Node");
 	script_create_dialog->config(inherits, path);
 	script_create_dialog->popup_centered();

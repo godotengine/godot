@@ -167,6 +167,7 @@ private:
 
 	void _graph_node_raised(Node *p_gn);
 	void _graph_node_moved(Node *p_gn);
+	void _graph_double_clicked(Node *p_gn);
 
 	void _update_scroll();
 	void _scroll_moved(double);

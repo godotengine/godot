@@ -1194,8 +1194,9 @@ PropertyInfo VisualScriptVariableGet::get_input_value_port_info(int p_idx) const
 PropertyInfo VisualScriptVariableGet::get_output_value_port_info(int p_idx) const {
 	PropertyInfo pinfo;
 	pinfo.name = "value";
-	if (get_visual_script().is_valid() && get_visual_script()->has_variable(variable)) {
-		PropertyInfo vinfo = get_visual_script()->get_variable_info(variable);
+	Ref<VisualScript> vs = get_container();
+	if (vs.is_valid() && vs->has_variable(variable)) {
+		PropertyInfo vinfo = vs->get_variable_info(variable);
 		pinfo.type = vinfo.type;
 		pinfo.hint = vinfo.hint;
 		pinfo.hint_string = vinfo.hint_string;
@@ -1220,8 +1221,8 @@ StringName VisualScriptVariableGet::get_variable() const {
 }
 
 void VisualScriptVariableGet::_validate_property(PropertyInfo &property) const {
-	if (property.name == "var_name" && get_visual_script().is_valid()) {
-		Ref<VisualScript> vs = get_visual_script();
+	if (property.name == "var_name" && get_container().is_valid()) {
+		Ref<VisualScript> vs = get_container();
 		List<StringName> vars;
 		vs->get_variable_list(&vars);
 
@@ -1300,8 +1301,9 @@ String VisualScriptVariableSet::get_output_sequence_port_text(int p_port) const 
 PropertyInfo VisualScriptVariableSet::get_input_value_port_info(int p_idx) const {
 	PropertyInfo pinfo;
 	pinfo.name = "set";
-	if (get_visual_script().is_valid() && get_visual_script()->has_variable(variable)) {
-		PropertyInfo vinfo = get_visual_script()->get_variable_info(variable);
+	Ref<VisualScript> vs = get_container();
+	if (vs.is_valid() && vs->has_variable(variable)) {
+		PropertyInfo vinfo = vs->get_variable_info(variable);
 		pinfo.type = vinfo.type;
 		pinfo.hint = vinfo.hint;
 		pinfo.hint_string = vinfo.hint_string;
@@ -1330,8 +1332,8 @@ StringName VisualScriptVariableSet::get_variable() const {
 }
 
 void VisualScriptVariableSet::_validate_property(PropertyInfo &property) const {
-	if (property.name == "var_name" && get_visual_script().is_valid()) {
-		Ref<VisualScript> vs = get_visual_script();
+	if (property.name == "var_name" && get_container().is_valid()) {
+		Ref<VisualScript> vs = get_container();
 		List<StringName> vars;
 		vs->get_variable_list(&vars);
 
@@ -2418,7 +2420,7 @@ VisualScriptSceneNode::TypeGuess VisualScriptSceneNode::guess_output_type(TypeGu
 	tg.gdclass = "Node";
 
 #ifdef TOOLS_ENABLED
-	Ref<Script> script = get_visual_script();
+	Ref<Script> script = get_container();
 	if (!script.is_valid()) {
 		return tg;
 	}
@@ -2455,7 +2457,7 @@ VisualScriptSceneNode::TypeGuess VisualScriptSceneNode::guess_output_type(TypeGu
 void VisualScriptSceneNode::_validate_property(PropertyInfo &property) const {
 #ifdef TOOLS_ENABLED
 	if (property.name == "node_path") {
-		Ref<Script> script = get_visual_script();
+		Ref<Script> script = get_container();
 		if (!script.is_valid()) {
 			return;
 		}
@@ -2687,8 +2689,9 @@ PropertyInfo VisualScriptSelf::get_input_value_port_info(int p_idx) const {
 
 PropertyInfo VisualScriptSelf::get_output_value_port_info(int p_idx) const {
 	String type_name;
-	if (get_visual_script().is_valid()) {
-		type_name = get_visual_script()->get_instance_base_type();
+	Ref<VisualScript> vs = get_container();
+	if (vs.is_valid()) {
+		type_name = vs->get_instance_base_type();
 	} else {
 		type_name = "instance";
 	}
@@ -2723,7 +2726,7 @@ VisualScriptSelf::TypeGuess VisualScriptSelf::guess_output_type(TypeGuess *p_inp
 	tg.type = Variant::OBJECT;
 	tg.gdclass = "Object";
 
-	Ref<Script> script = get_visual_script();
+	Ref<Script> script = get_container();
 	if (!script.is_valid()) {
 		return tg;
 	}
