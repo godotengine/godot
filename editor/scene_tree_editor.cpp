@@ -531,6 +531,10 @@ void SceneTreeEditor::_update_tree() {
 		return;
 	}
 
+	if (tree->is_editing()) {
+		return;
+	}
+
 	updating_tree = true;
 	tree->clear();
 	if (get_scene_node()) {
