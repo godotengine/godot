@@ -419,7 +419,7 @@ void Viewport::_own_world_3d_changed() {
 		RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
 	}
 
-	_update_listener();
+	_update_listener_3d();
 }
 
 void Viewport::_notification(int p_what) {
@@ -438,7 +438,7 @@ void Viewport::_notification(int p_what) {
 			RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
 			RenderingServer::get_singleton()->viewport_attach_canvas(viewport, current_canvas);
 
-			_update_listener();
+			_update_listener_3d();
 			_update_listener_2d();
 
 			find_world_2d()->_register_viewport(this, Rect2());
@@ -464,9 +464,9 @@ void Viewport::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_READY: {
 #ifndef _3D_DISABLED
-			if (listeners.size() && !listener) {
+			if (listeners_3d.size() && !listener_3d) {
 				Listener3D *first = nullptr;
-				for (Set<Listener3D *>::Element *E = listeners.front(); E; E = E->next()) {
+				for (Set<Listener3D *>::Element *E = listeners_3d.front(); E; E = E->next()) {
 					if (first == nullptr || first->is_greater_than(E->get())) {
 						first = E->get();
 					}
@@ -908,7 +908,7 @@ Rect2 Viewport::get_visible_rect() const {
 	return r;
 }
 
-void Viewport::_update_listener() {
+void Viewport::_update_listener_3d() {
 }
 
 void Viewport::_update_listener_2d() {
@@ -920,17 +920,17 @@ void Viewport::_update_listener_2d() {
 */
 }
 
-void Viewport::set_as_audio_listener(bool p_enable) {
-	if (p_enable == audio_listener) {
+void Viewport::set_as_audio_listener_3d(bool p_enable) {
+	if (p_enable == audio_listener_3d) {
 		return;
 	}
 
-	audio_listener = p_enable;
-	_update_listener();
+	audio_listener_3d = p_enable;
+	_update_listener_3d();
 }
 
-bool Viewport::is_audio_listener() const {
-	return audio_listener;
+bool Viewport::is_audio_listener_3d() const {
+	return audio_listener_3d;
 }
 
 void Viewport::set_as_audio_listener_2d(bool p_enable) {
@@ -1007,46 +1007,46 @@ Transform2D Viewport::get_global_canvas_transform() const {
 	return global_canvas_transform;
 }
 
-void Viewport::_listener_transform_changed_notify() {
+void Viewport::_listener_3d_transform_changed_notify() {
 }
 
-void Viewport::_listener_set(Listener3D *p_listener) {
+void Viewport::_listener_3d_set(Listener3D *p_listener) {
 #ifndef _3D_DISABLED
 
-	if (listener == p_listener) {
+	if (listener_3d == p_listener) {
 		return;
 	}
 
-	listener = p_listener;
+	listener_3d = p_listener;
 
-	_update_listener();
-	_listener_transform_changed_notify();
+	_update_listener_3d();
+	_listener_3d_transform_changed_notify();
 #endif
 }
 
-bool Viewport::_listener_add(Listener3D *p_listener) {
-	listeners.insert(p_listener);
-	return listeners.size() == 1;
+bool Viewport::_listener_3d_add(Listener3D *p_listener) {
+	listeners_3d.insert(p_listener);
+	return listeners_3d.size() == 1;
 }
 
-void Viewport::_listener_remove(Listener3D *p_listener) {
-	listeners.erase(p_listener);
-	if (listener == p_listener) {
-		listener = nullptr;
+void Viewport::_listener_3d_remove(Listener3D *p_listener) {
+	listeners_3d.erase(p_listener);
+	if (listener_3d == p_listener) {
+		listener_3d = nullptr;
 	}
 }
 
 #ifndef _3D_DISABLED
-void Viewport::_listener_make_next_current(Listener3D *p_exclude) {
-	if (listeners.size() > 0) {
-		for (Set<Listener3D *>::Element *E = listeners.front(); E; E = E->next()) {
+void Viewport::_listener_3d_make_next_current(Listener3D *p_exclude) {
+	if (listeners_3d.size() > 0) {
+		for (Set<Listener3D *>::Element *E = listeners_3d.front(); E; E = E->next()) {
 			if (p_exclude == E->get()) {
 				continue;
 			}
 			if (!E->get()->is_inside_tree()) {
 				continue;
 			}
-			if (listener != nullptr) {
+			if (listener_3d != nullptr) {
 				return;
 			}
 
@@ -1055,7 +1055,7 @@ void Viewport::_listener_make_next_current(Listener3D *p_exclude) {
 	} else {
 		// Attempt to reset listener to the camera position
 		if (camera != nullptr) {
-			_update_listener();
+			_update_listener_3d();
 			_camera_transform_changed_notify();
 		}
 	}
@@ -1092,7 +1092,7 @@ void Viewport::_camera_set(Camera3D *p_camera) {
 		camera->notification(Camera3D::NOTIFICATION_BECAME_CURRENT);
 	}
 
-	_update_listener();
+	_update_listener_3d();
 	_camera_transform_changed_notify();
 #endif
 }
@@ -1283,7 +1283,7 @@ void Viewport::set_world_3d(const Ref<World3D> &p_world_3d) {
 		RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
 	}
 
-	_update_listener();
+	_update_listener_3d();
 }
 
 Ref<World3D> Viewport::get_world_3d() const {
@@ -1306,8 +1306,8 @@ Ref<World3D> Viewport::find_world_3d() const {
 	}
 }
 
-Listener3D *Viewport::get_listener() const {
-	return listener;
+Listener3D *Viewport::get_listener_3d() const {
+	return listener_3d;
 }
 
 Camera3D *Viewport::get_camera() const {
@@ -3137,7 +3137,7 @@ void Viewport::set_use_own_world_3d(bool p_world_3d) {
 		RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
 	}
 
-	_update_listener();
+	_update_listener_3d();
 }
 
 bool Viewport::is_using_own_world_3d() const {
@@ -3503,8 +3503,8 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_camera"), &Viewport::get_camera);
 
-	ClassDB::bind_method(D_METHOD("set_as_audio_listener", "enable"), &Viewport::set_as_audio_listener);
-	ClassDB::bind_method(D_METHOD("is_audio_listener"), &Viewport::is_audio_listener);
+	ClassDB::bind_method(D_METHOD("set_as_audio_listener", "enable"), &Viewport::set_as_audio_listener_3d);
+	ClassDB::bind_method(D_METHOD("is_audio_listener"), &Viewport::is_audio_listener_3d);
 
 	ClassDB::bind_method(D_METHOD("set_as_audio_listener_2d", "enable"), &Viewport::set_as_audio_listener_2d);
 	ClassDB::bind_method(D_METHOD("is_audio_listener_2d"), &Viewport::is_audio_listener_2d);
@@ -3693,7 +3693,13 @@ Viewport::Viewport() {
 	viewport_textures.insert(default_texture.ptr());
 	default_texture->proxy = RS::get_singleton()->texture_proxy_create(texture_rid);
 
-	//internal_listener_2d = SpatialSound2DServer::get_singleton()->listener_create();
+	audio_listener_3d = false;
+	audio_listener_2d = false;
+	transparent_bg = false;
+	parent = nullptr;
+	listener_3d = nullptr;
+	camera = nullptr;
+	override_canvas_transform = false;
 	canvas_layers.insert(nullptr); // This eases picking code (interpreted as the canvas of the Viewport)
 
 	//clear=true;

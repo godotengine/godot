@@ -188,8 +188,8 @@ private:
 
 	Viewport *parent = nullptr;
 
-	Listener3D *listener = nullptr;
-	Set<Listener3D *> listeners;
+	Listener3D *listener_3d = nullptr;
+	Set<Listener3D *> listeners_3d;
 
 	struct CameraOverrideData {
 		Transform transform;
@@ -217,8 +217,8 @@ private:
 	RID current_canvas;
 	RID subwindow_canvas;
 
-	bool audio_listener = false;
-	RID internal_listener;
+	bool audio_listener_3d = false;
+	RID internal_listener_3d;
 
 	bool audio_listener_2d = false;
 	RID internal_listener_2d;
@@ -283,7 +283,7 @@ private:
 	StringName unhandled_input_group;
 	StringName unhandled_key_input_group;
 
-	void _update_listener();
+	void _update_listener_3d();
 	void _update_listener_2d();
 
 	void _propagate_enter_world(Node *p_node);
@@ -431,11 +431,11 @@ private:
 	bool _gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_check);
 
 	friend class Listener3D;
-	void _listener_transform_changed_notify();
-	void _listener_set(Listener3D *p_listener);
-	bool _listener_add(Listener3D *p_listener); //true if first
-	void _listener_remove(Listener3D *p_listener);
-	void _listener_make_next_current(Listener3D *p_exclude);
+	void _listener_3d_transform_changed_notify();
+	void _listener_3d_set(Listener3D *p_listener);
+	bool _listener_3d_add(Listener3D *p_listener); //true if first
+	void _listener_3d_remove(Listener3D *p_listener);
+	void _listener_3d_make_next_current(Listener3D *p_exclude);
 
 	friend class Camera3D;
 	void _camera_transform_changed_notify();
@@ -485,7 +485,7 @@ protected:
 public:
 	uint64_t get_processed_events_count() const { return event_count; }
 
-	Listener3D *get_listener() const;
+	Listener3D *get_listener_3d() const;
 	Camera3D *get_camera() const;
 
 	void enable_camera_override(bool p_enable);
@@ -497,8 +497,8 @@ public:
 	void set_camera_override_perspective(float p_fovy_degrees, float p_z_near, float p_z_far);
 	void set_camera_override_orthogonal(float p_size, float p_z_near, float p_z_far);
 
-	void set_as_audio_listener(bool p_enable);
-	bool is_audio_listener() const;
+	void set_as_audio_listener_3d(bool p_enable);
+	bool is_audio_listener_3d() const;
 
 	void set_as_audio_listener_2d(bool p_enable);
 	bool is_audio_listener_2d() const;
