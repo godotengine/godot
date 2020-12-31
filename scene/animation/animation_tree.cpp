@@ -1553,7 +1553,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 
 							if (player2->is_playing() || seeked) {
-								player2->play(anim_name);
+								player2->start(anim_name);
 								player2->seek(at_anim_pos);
 								t->playing = true;
 								playing_caches.insert(t);
@@ -1576,7 +1576,7 @@ void AnimationTree::_process_graph(double p_delta) {
 										t->playing = false;
 									}
 								} else {
-									player2->play(anim_name);
+									player2->start(anim_name);
 									t->playing = true;
 									playing_caches.insert(t);
 								}

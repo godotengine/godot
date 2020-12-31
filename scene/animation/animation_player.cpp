@@ -235,7 +235,7 @@ void AnimationPlayer::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
-				play(autoplay);
+				start(autoplay);
 				_animation_process(0);
 			}
 		} break;
@@ -905,7 +905,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					}
 
 					if (player->is_playing() || p_seeked) {
-						player->play(anim_name);
+						player->start(anim_name);
 						player->seek(at_anim_pos);
 						nc->animation_playing = true;
 						playing_caches.insert(nc);
@@ -928,8 +928,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 								nc->animation_playing = false;
 							}
 						} else {
-							player->play(anim_name);
-							player->seek(0.0, true);
+							player->start(anim_name);
 							nc->animation_playing = true;
 							playing_caches.insert(nc);
 						}
@@ -1166,7 +1165,7 @@ void AnimationPlayer::_animation_process(double p_delta) {
 		if (end_reached) {
 			if (queued.size()) {
 				String old = playback.assigned;
-				play(queued.front()->get());
+				start(queued.front()->get());
 				String new_name = playback.assigned;
 				queued.pop_front();
 				if (end_notify) {
@@ -1522,7 +1521,7 @@ float AnimationPlayer::get_blend_time(const StringName &p_animation1, const Stri
 
 void AnimationPlayer::queue(const StringName &p_name) {
 	if (!is_playing()) {
-		play(p_name);
+		start(p_name);
 	} else {
 		queued.push_back(p_name);
 	}
@@ -1541,11 +1540,7 @@ void AnimationPlayer::clear_queue() {
 	queued.clear();
 }
 
-void AnimationPlayer::play_backwards(const StringName &p_name, float p_custom_blend) {
-	play(p_name, p_custom_blend, -1, true);
-}
-
-void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float p_custom_scale, bool p_from_end) {
+void AnimationPlayer::start(const StringName &p_name, float p_custom_blend_time, float p_custom_scale) {
 	StringName name = p_name;
 
 	if (String(name) == "") {
@@ -1563,8 +1558,8 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 		bk.from = c.current.from->name;
 		bk.to = name;
 
-		if (p_custom_blend >= 0) {
-			blend_time = p_custom_blend;
+		if (p_custom_blend_time >= 0) {
+			blend_time = p_custom_blend_time;
 		} else if (blend_times.has(bk)) {
 			blend_time = blend_times[bk];
 		} else {
@@ -1581,7 +1576,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 			}
 		}
 
-		if (p_custom_blend < 0 && blend_time == 0 && default_blend_time) {
+		if (p_custom_blend_time < 0 && blend_time == 0 && default_blend_time) {
 			blend_time = default_blend_time;
 		}
 		if (blend_time > 0) {
@@ -1595,7 +1590,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 	_stop_playing_caches();
 
 	c.current.from = &animation_set[name];
-	c.current.pos = p_from_end ? c.current.from->animation->get_length() : 0;
+	c.current.pos = p_custom_scale < 0 ? c.current.from->animation->get_length() : 0;
 	c.current.speed_scale = p_custom_scale;
 	c.assigned = name;
 	c.seeked = false;
@@ -1628,7 +1623,7 @@ void AnimationPlayer::set_current_animation(const String &p_anim) {
 	if (p_anim == "[stop]" || p_anim.is_empty()) {
 		stop();
 	} else if (!is_playing() || playback.assigned != p_anim) {
-		play(p_anim);
+		start(p_anim);
 	} else {
 		// Same animation, do not replay from start
 	}
@@ -1640,7 +1635,7 @@ String AnimationPlayer::get_current_animation() const {
 
 void AnimationPlayer::set_assigned_animation(const String &p_anim) {
 	if (is_playing()) {
-		play(p_anim);
+		start(p_anim);
 	} else {
 		ERR_FAIL_COND_MSG(!animation_set.has(p_anim), vformat("Animation not found: %s.", p_anim));
 		playback.current.pos = 0;
@@ -1937,7 +1932,7 @@ NodePath AnimationPlayer::get_root() const {
 
 void AnimationPlayer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	String pf = p_function;
-	if (p_idx == 0 && (p_function == "play" || p_function == "play_backwards" || p_function == "has_animation" || p_function == "queue")) {
+	if (p_idx == 0 && (p_function == "start" || p_function == "has_animation" || p_function == "queue")) {
 		List<StringName> al;
 		get_animation_list(&al);
 		for (const StringName &name : al) {
@@ -2067,8 +2062,7 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_blend_time", "sec"), &AnimationPlayer::set_default_blend_time);
 	ClassDB::bind_method(D_METHOD("get_default_blend_time"), &AnimationPlayer::get_default_blend_time);
 
-	ClassDB::bind_method(D_METHOD("play", "name", "custom_blend", "custom_speed", "from_end"), &AnimationPlayer::play, DEFVAL(""), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("play_backwards", "name", "custom_blend"), &AnimationPlayer::play_backwards, DEFVAL(""), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("start", "name", "custom_blend_time", "custom_speed"), &AnimationPlayer::start, DEFVAL(""), DEFVAL(-1), DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("pause"), &AnimationPlayer::pause);
 	ClassDB::bind_method(D_METHOD("resume"), &AnimationPlayer::resume);
 	ClassDB::bind_method(D_METHOD("stop"), &AnimationPlayer::stop);
