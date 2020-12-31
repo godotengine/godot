@@ -1396,19 +1396,6 @@ void AnimationPlayer::clear_caches() {
 	cache_update_bezier_size = 0;
 }
 
-void AnimationPlayer::set_active(bool p_active) {
-	if (active == p_active) {
-		return;
-	}
-
-	active = p_active;
-	_set_process(processing, true);
-}
-
-bool AnimationPlayer::is_active() const {
-	return active;
-}
-
 StringName AnimationPlayer::find_animation(const Ref<Animation> &p_animation) const {
 	for (Map<StringName, AnimationData>::Element *E = animation_set.front(); E; E = E->next()) {
 		if (E->get().animation == p_animation) {
@@ -1466,17 +1453,17 @@ AnimationPlayer::AnimationMethodCallMode AnimationPlayer::get_method_call_mode()
 	return method_call_mode;
 }
 
-void AnimationPlayer::_set_process(bool p_process, bool p_force) {
-	if (processing == p_process && !p_force) {
+void AnimationPlayer::_set_process(bool p_process) {
+	if (processing == p_process) {
 		return;
 	}
 
 	switch (process_callback) {
 		case ANIMATION_PROCESS_PHYSICS:
-			set_physics_process_internal(p_process && active);
+			set_physics_process_internal(p_process);
 			break;
 		case ANIMATION_PROCESS_IDLE:
-			set_process_internal(p_process && active);
+			set_process_internal(p_process);
 			break;
 		case ANIMATION_PROCESS_MANUAL:
 			break;
@@ -1655,9 +1642,6 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_queue"), &AnimationPlayer::get_queue);
 	ClassDB::bind_method(D_METHOD("clear_queue"), &AnimationPlayer::clear_queue);
 
-	ClassDB::bind_method(D_METHOD("set_active", "active"), &AnimationPlayer::set_active);
-	ClassDB::bind_method(D_METHOD("is_active"), &AnimationPlayer::is_active);
-
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "speed"), &AnimationPlayer::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &AnimationPlayer::get_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_playing_speed"), &AnimationPlayer::get_playing_speed);
@@ -1698,7 +1682,6 @@ void AnimationPlayer::_bind_methods() {
 	ADD_GROUP("Playback Options", "playback_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_process_callback", "get_process_callback");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_default_blend_time", "get_default_blend_time");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playback_active", PROPERTY_HINT_NONE, "", 0), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_speed", PROPERTY_HINT_RANGE, "-64,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "method_call_mode", PROPERTY_HINT_ENUM, "Deferred,Immediate"), "set_method_call_mode", "get_method_call_mode");
 

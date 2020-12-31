@@ -278,7 +278,11 @@ void VisibilityEnabler2D::_change_node_state(Node *p_node, bool p_enabled) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
 		if (ap) {
-			ap->set_active(p_enabled);
+			if (p_enabled) {
+				ap->resume();
+			} else {
+				ap->pause();
+			}
 		}
 	}
 

@@ -209,7 +209,6 @@ private:
 	AnimationProcessCallback process_callback = ANIMATION_PROCESS_IDLE;
 	AnimationMethodCallMode method_call_mode = ANIMATION_METHOD_CALL_DEFERRED;
 	bool processing = false;
-	bool active = true;
 
 	NodePath root;
 
@@ -242,7 +241,7 @@ private:
 	void _ref_anim(const Ref<Animation> &p_anim);
 	void _unref_anim(const Ref<Animation> &p_anim);
 
-	void _set_process(bool p_process, bool p_force = false);
+	void _set_process(bool p_process);
 
 	bool playing = false;
 	bool paused = false;
@@ -289,8 +288,6 @@ public:
 	String get_assigned_animation() const;
 	void set_assigned_animation(const String &p_anim);
 	void stop_all();
-	void set_active(bool p_active);
-	bool is_active() const;
 	bool is_valid() const;
 
 	void set_speed_scale(float p_speed);
