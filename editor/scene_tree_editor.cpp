@@ -540,6 +540,10 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 		return;
 	}
 
+	if (tree->is_editing()) {
+		return;
+	}
+
 	updating_tree = true;
 	tree->clear();
 	if (get_scene_node()) {

@@ -604,6 +604,7 @@ public:
 	int get_item_offset(TreeItem *p_item) const;
 	Rect2 get_item_rect(TreeItem *p_item, int p_column = -1) const;
 	bool edit_selected();
+	bool is_editing();
 
 	// First item that starts with the text, from the current focused item down and wraps around.
 	TreeItem *search_item_text(const String &p_find, int *r_col = nullptr, bool p_selectable = false);
