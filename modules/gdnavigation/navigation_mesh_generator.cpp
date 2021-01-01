@@ -138,7 +138,7 @@ void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, cons
 	}
 }
 
-void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, int p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
+void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, int p_generate_from, uint32_t p_physics_mask, bool p_recurse_children) {
 	if (Object::cast_to<MeshInstance3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 		MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(p_node);
 		Ref<Mesh> mesh = mesh_instance->get_mesh();
@@ -163,7 +163,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 	if (Object::cast_to<StaticBody3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_MESH_INSTANCES) {
 		StaticBody3D *static_body = Object::cast_to<StaticBody3D>(p_node);
 
-		if (static_body->get_collision_layer() & p_collision_mask) {
+		if (static_body->get_collision_layer() & p_physics_mask) {
 			for (int i = 0; i < p_node->get_child_count(); ++i) {
 				Node *child = p_node->get_child(i);
 				if (Object::cast_to<CollisionShape3D>(child)) {
@@ -268,7 +268,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 
 	if (p_recurse_children) {
 		for (int i = 0; i < p_node->get_child_count(); i++) {
-			_parse_geometry(p_accumulated_transform, p_node->get_child(i), p_verticies, p_indices, p_generate_from, p_collision_mask, p_recurse_children);
+			_parse_geometry(p_accumulated_transform, p_node->get_child(i), p_verticies, p_indices, p_generate_from, p_physics_mask, p_recurse_children);
 		}
 	}
 }
@@ -280,7 +280,7 @@ void NavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_mesh(con
 		const float *v = &p_detail_mesh->verts[i * 3];
 		nav_vertices.push_back(Vector3(v[0], v[1], v[2]));
 	}
-	p_nav_mesh->set_vertices(nav_vertices);
+	p_nav_mesh->_set_vertices(nav_vertices);
 
 	for (int i = 0; i < p_detail_mesh->nmeshes; i++) {
 		const unsigned int *m = &p_detail_mesh->meshes[i * 4];
@@ -341,7 +341,7 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	cfg.maxSimplificationError = p_nav_mesh->get_edge_max_error();
 	cfg.minRegionArea = (int)(p_nav_mesh->get_region_min_size() * p_nav_mesh->get_region_min_size());
 	cfg.mergeRegionArea = (int)(p_nav_mesh->get_region_merge_size() * p_nav_mesh->get_region_merge_size());
-	cfg.maxVertsPerPoly = (int)p_nav_mesh->get_verts_per_poly();
+	cfg.maxVertsPerPoly = (int)p_nav_mesh->get_vertices_per_polygon();
 	cfg.detailSampleDist = p_nav_mesh->get_detail_sample_distance() < 0.9f ? 0 : p_nav_mesh->get_cell_size() * p_nav_mesh->get_detail_sample_distance();
 	cfg.detailSampleMaxError = p_nav_mesh->get_cell_height() * p_nav_mesh->get_detail_sample_max_error();
 
@@ -516,9 +516,9 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 	Transform navmesh_xform = Object::cast_to<Node3D>(p_node)->get_transform().affine_inverse();
 	for (const List<Node *>::Element *E = parse_nodes.front(); E; E = E->next()) {
 		int geometry_type = p_nav_mesh->get_parsed_geometry_type();
-		uint32_t collision_mask = p_nav_mesh->get_collision_mask();
+		uint32_t physics_mask = p_nav_mesh->get_physics_mask();
 		bool recurse_children = p_nav_mesh->get_source_geometry_mode() != NavigationMesh::SOURCE_GEOMETRY_GROUPS_EXPLICIT;
-		_parse_geometry(navmesh_xform, E->get(), vertices, indices, geometry_type, collision_mask, recurse_children);
+		_parse_geometry(navmesh_xform, E->get(), vertices, indices, geometry_type, physics_mask, recurse_children);
 	}
 
 	if (vertices.size() > 0 && indices.size() > 0) {
@@ -571,7 +571,7 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 void NavigationMeshGenerator::clear(Ref<NavigationMesh> p_nav_mesh) {
 	if (p_nav_mesh.is_valid()) {
 		p_nav_mesh->clear_polygons();
-		p_nav_mesh->set_vertices(Vector<Vector3>());
+		p_nav_mesh->_set_vertices(Vector<Vector3>());
 	}
 }
 

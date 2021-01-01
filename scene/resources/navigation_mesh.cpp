@@ -83,28 +83,28 @@ int NavigationMesh::get_parsed_geometry_type() const {
 	return parsed_geometry_type;
 }
 
-void NavigationMesh::set_collision_mask(uint32_t p_mask) {
-	collision_mask = p_mask;
+void NavigationMesh::set_physics_mask(uint32_t p_mask) {
+	physics_mask = p_mask;
 }
 
-uint32_t NavigationMesh::get_collision_mask() const {
-	return collision_mask;
+uint32_t NavigationMesh::get_physics_mask() const {
+	return physics_mask;
 }
 
-void NavigationMesh::set_collision_mask_bit(int p_bit, bool p_value) {
+void NavigationMesh::set_physics_mask_bit(int p_bit, bool p_value) {
 	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision mask bit must be between 0 and 31 inclusive.");
-	uint32_t mask = get_collision_mask();
+	uint32_t mask = get_physics_mask();
 	if (p_value) {
 		mask |= 1 << p_bit;
 	} else {
 		mask &= ~(1 << p_bit);
 	}
-	set_collision_mask(mask);
+	set_physics_mask(mask);
 }
 
-bool NavigationMesh::get_collision_mask_bit(int p_bit) const {
+bool NavigationMesh::get_physics_mask_bit(int p_bit) const {
 	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
-	return get_collision_mask() & (1 << p_bit);
+	return get_physics_mask() & (1 << p_bit);
 }
 
 void NavigationMesh::set_source_geometry_mode(int p_geometry_mode) {
@@ -205,12 +205,12 @@ float NavigationMesh::get_edge_max_error() const {
 	return edge_max_error;
 }
 
-void NavigationMesh::set_verts_per_poly(float p_value) {
-	verts_per_poly = p_value;
+void NavigationMesh::set_vertices_per_polygon(float p_value) {
+	vertices_per_polygon = p_value;
 }
 
-float NavigationMesh::get_verts_per_poly() const {
-	return verts_per_poly;
+float NavigationMesh::get_vertices_per_polygon() const {
+	return vertices_per_polygon;
 }
 
 void NavigationMesh::set_detail_sample_distance(float p_value) {
@@ -253,12 +253,12 @@ bool NavigationMesh::get_filter_walkable_low_height_spans() const {
 	return filter_walkable_low_height_spans;
 }
 
-void NavigationMesh::set_vertices(const Vector<Vector3> &p_vertices) {
+void NavigationMesh::_set_vertices(const Vector<Vector3> &p_vertices) {
 	vertices = p_vertices;
 	notify_property_list_changed();
 }
 
-Vector<Vector3> NavigationMesh::get_vertices() const {
+Vector<Vector3> NavigationMesh::_get_vertices() const {
 	return vertices;
 }
 
@@ -305,7 +305,7 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 		return debug_mesh;
 	}
 
-	Vector<Vector3> vertices = get_vertices();
+	Vector<Vector3> vertices = _get_vertices();
 	const Vector3 *vr = vertices.ptr();
 	List<Face3> faces;
 	for (int i = 0; i < get_polygon_count(); i++) {
@@ -389,11 +389,11 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_parsed_geometry_type", "geometry_type"), &NavigationMesh::set_parsed_geometry_type);
 	ClassDB::bind_method(D_METHOD("get_parsed_geometry_type"), &NavigationMesh::get_parsed_geometry_type);
 
-	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &NavigationMesh::set_collision_mask);
-	ClassDB::bind_method(D_METHOD("get_collision_mask"), &NavigationMesh::get_collision_mask);
+	ClassDB::bind_method(D_METHOD("set_physics_mask", "mask"), &NavigationMesh::set_physics_mask);
+	ClassDB::bind_method(D_METHOD("get_physics_mask"), &NavigationMesh::get_physics_mask);
 
-	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &NavigationMesh::set_collision_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &NavigationMesh::get_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_physics_mask_bit", "bit", "value"), &NavigationMesh::set_physics_mask_bit);
+	ClassDB::bind_method(D_METHOD("get_physics_mask_bit", "bit"), &NavigationMesh::get_physics_mask_bit);
 
 	ClassDB::bind_method(D_METHOD("set_source_geometry_mode", "mask"), &NavigationMesh::set_source_geometry_mode);
 	ClassDB::bind_method(D_METHOD("get_source_geometry_mode"), &NavigationMesh::get_source_geometry_mode);
@@ -431,8 +431,8 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_edge_max_error", "edge_max_error"), &NavigationMesh::set_edge_max_error);
 	ClassDB::bind_method(D_METHOD("get_edge_max_error"), &NavigationMesh::get_edge_max_error);
 
-	ClassDB::bind_method(D_METHOD("set_verts_per_poly", "verts_per_poly"), &NavigationMesh::set_verts_per_poly);
-	ClassDB::bind_method(D_METHOD("get_verts_per_poly"), &NavigationMesh::get_verts_per_poly);
+	ClassDB::bind_method(D_METHOD("set_vertices_per_polygon", "vertices_per_polygon"), &NavigationMesh::set_vertices_per_polygon);
+	ClassDB::bind_method(D_METHOD("get_vertices_per_polygon"), &NavigationMesh::get_vertices_per_polygon);
 
 	ClassDB::bind_method(D_METHOD("set_detail_sample_distance", "detail_sample_dist"), &NavigationMesh::set_detail_sample_distance);
 	ClassDB::bind_method(D_METHOD("get_detail_sample_distance"), &NavigationMesh::get_detail_sample_distance);
@@ -449,8 +449,8 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_filter_walkable_low_height_spans", "filter_walkable_low_height_spans"), &NavigationMesh::set_filter_walkable_low_height_spans);
 	ClassDB::bind_method(D_METHOD("get_filter_walkable_low_height_spans"), &NavigationMesh::get_filter_walkable_low_height_spans);
 
-	ClassDB::bind_method(D_METHOD("set_vertices", "vertices"), &NavigationMesh::set_vertices);
-	ClassDB::bind_method(D_METHOD("get_vertices"), &NavigationMesh::get_vertices);
+	ClassDB::bind_method(D_METHOD("_set_vertices", "vertices"), &NavigationMesh::_set_vertices);
+	ClassDB::bind_method(D_METHOD("_get_vertices"), &NavigationMesh::_get_vertices);
 
 	ClassDB::bind_method(D_METHOD("add_polygon", "polygon"), &NavigationMesh::add_polygon);
 	ClassDB::bind_method(D_METHOD("get_polygon_count"), &NavigationMesh::get_polygon_count);
@@ -470,43 +470,48 @@ void NavigationMesh::_bind_methods() {
 	BIND_CONSTANT(PARSED_GEOMETRY_STATIC_COLLIDERS);
 	BIND_CONSTANT(PARSED_GEOMETRY_BOTH);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sample_partition_type", PROPERTY_HINT_ENUM, "Watershed,Monotone,Layers"), "set_sample_partition_type", "get_sample_partition_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "parsed_geometry_type", PROPERTY_HINT_ENUM, "Mesh Instances,Static Colliders,Both"), "set_parsed_geometry_type", "get_parsed_geometry_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_physics_mask", "get_physics_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "source_geometry_mode", PROPERTY_HINT_ENUM, "Navmesh Children, Group With Children, Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_group_name"), "set_source_group_name", "get_source_group_name");
+
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_vertices", "_get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vertices_per_polygon", PROPERTY_HINT_RANGE, "3.0,12.0,1.0,or_greater"), "set_vertices_per_polygon", "get_vertices_per_polygon");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sample_partition_type/sample_partition_type", PROPERTY_HINT_ENUM, "Watershed,Monotone,Layers"), "set_sample_partition_type", "get_sample_partition_type");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry/parsed_geometry_type", PROPERTY_HINT_ENUM, "Mesh Instances,Static Colliders,Both"), "set_parsed_geometry_type", "get_parsed_geometry_type");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry/collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry/source_geometry_mode", PROPERTY_HINT_ENUM, "Navmesh Children, Group With Children, Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "geometry/source_group_name"), "set_source_group_name", "get_source_group_name");
-
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell/size", PROPERTY_HINT_RANGE, "0.1,1.0,0.01,or_greater"), "set_cell_size", "get_cell_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell/height", PROPERTY_HINT_RANGE, "0.1,1.0,0.01,or_greater"), "set_cell_height", "get_cell_height");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent/height", PROPERTY_HINT_RANGE, "0.1,5.0,0.01,or_greater"), "set_agent_height", "get_agent_height");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent/radius", PROPERTY_HINT_RANGE, "0.1,5.0,0.01,or_greater"), "set_agent_radius", "get_agent_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent/max_climb", PROPERTY_HINT_RANGE, "0.1,5.0,0.01,or_greater"), "set_agent_max_climb", "get_agent_max_climb");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent/max_slope", PROPERTY_HINT_RANGE, "0.0,90.0,0.1"), "set_agent_max_slope", "get_agent_max_slope");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "region/min_size", PROPERTY_HINT_RANGE, "0.0,150.0,0.01,or_greater"), "set_region_min_size", "get_region_min_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "region/merge_size", PROPERTY_HINT_RANGE, "0.0,150.0,0.01,or_greater"), "set_region_merge_size", "get_region_merge_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "edge/max_length", PROPERTY_HINT_RANGE, "0.0,50.0,0.01,or_greater"), "set_edge_max_length", "get_edge_max_length");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "edge/max_error", PROPERTY_HINT_RANGE, "0.1,3.0,0.01,or_greater"), "set_edge_max_error", "get_edge_max_error");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "polygon/verts_per_poly", PROPERTY_HINT_RANGE, "3.0,12.0,1.0,or_greater"), "set_verts_per_poly", "get_verts_per_poly");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "detail/sample_distance", PROPERTY_HINT_RANGE, "0.0,16.0,0.01,or_greater"), "set_detail_sample_distance", "get_detail_sample_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "detail/sample_max_error", PROPERTY_HINT_RANGE, "0.0,16.0,0.01,or_greater"), "set_detail_sample_max_error", "get_detail_sample_max_error");
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter/low_hanging_obstacles"), "set_filter_low_hanging_obstacles", "get_filter_low_hanging_obstacles");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter/ledge_spans"), "set_filter_ledge_spans", "get_filter_ledge_spans");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter/filter_walkable_low_height_spans"), "set_filter_walkable_low_height_spans", "get_filter_walkable_low_height_spans");
+	ADD_GROUP("Cell", "cell_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size", PROPERTY_HINT_RANGE, "0.1,1.0,0.01,or_greater"), "set_cell_size", "get_cell_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_height", PROPERTY_HINT_RANGE, "0.1,1.0,0.01,or_greater"), "set_cell_height", "get_cell_height");
+	ADD_GROUP("Agent", "agent_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_height", PROPERTY_HINT_RANGE, "0.1,5.0,0.01,or_greater"), "set_agent_height", "get_agent_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_radius", PROPERTY_HINT_RANGE, "0.1,5.0,0.01,or_greater"), "set_agent_radius", "get_agent_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_max_climb", PROPERTY_HINT_RANGE, "0.1,5.0,0.01,or_greater"), "set_agent_max_climb", "get_agent_max_climb");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_max_slope", PROPERTY_HINT_RANGE, "0.0,90.0,0.1"), "set_agent_max_slope", "get_agent_max_slope");
+	ADD_GROUP("Region", "region_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "region_min_size", PROPERTY_HINT_RANGE, "0.0,150.0,0.01,or_greater"), "set_region_min_size", "get_region_min_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "region_merge_size", PROPERTY_HINT_RANGE, "0.0,150.0,0.01,or_greater"), "set_region_merge_size", "get_region_merge_size");
+	ADD_GROUP("Edge", "edge_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "edge_max_length", PROPERTY_HINT_RANGE, "0.0,50.0,0.01,or_greater"), "set_edge_max_length", "get_edge_max_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "edge_max_error", PROPERTY_HINT_RANGE, "0.1,3.0,0.01,or_greater"), "set_edge_max_error", "get_edge_max_error");
+	ADD_GROUP("Detail", "detail_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "detail_sample_distance", PROPERTY_HINT_RANGE, "0.0,16.0,0.01,or_greater"), "set_detail_sample_distance", "get_detail_sample_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "detail_sample_max_error", PROPERTY_HINT_RANGE, "0.0,16.0,0.01,or_greater"), "set_detail_sample_max_error", "get_detail_sample_max_error");
+	ADD_GROUP("Filter", "filter_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_low_hanging_obstacles"), "set_filter_low_hanging_obstacles", "get_filter_low_hanging_obstacles");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_ledge_spans"), "set_filter_ledge_spans", "get_filter_ledge_spans");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_walkable_low_height_spans"), "set_filter_walkable_low_height_spans", "get_filter_walkable_low_height_spans");
 }
 
 void NavigationMesh::_validate_property(PropertyInfo &property) const {
-	if (property.name == "geometry/collision_mask") {
+	if (property.name == "physics_mask") {
 		if (parsed_geometry_type == PARSED_GEOMETRY_MESH_INSTANCES) {
 			property.usage = 0;
 			return;
 		}
 	}
 
-	if (property.name == "geometry/source_group_name") {
+	if (property.name == "source_group_name") {
 		if (source_geometry_mode == SOURCE_GEOMETRY_NAVMESH_CHILDREN) {
 			property.usage = 0;
 			return;

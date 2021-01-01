@@ -1118,7 +1118,7 @@ void KinematicBody3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_motion_y"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_Y);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_motion_z"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_Z);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
 }
 
 void KinematicBody3D::_direct_state_changed(Object *p_state) {

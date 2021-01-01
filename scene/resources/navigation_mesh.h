@@ -92,13 +92,13 @@ protected:
 	float region_merge_size = 20.0f;
 	float edge_max_length = 12.0f;
 	float edge_max_error = 1.3f;
-	float verts_per_poly = 6.0f;
+	float vertices_per_polygon = 6.0f;
 	float detail_sample_distance = 6.0f;
 	float detail_sample_max_error = 1.0f;
 
 	SamplePartitionType partition_type = SAMPLE_PARTITION_WATERSHED;
 	ParsedGeometryType parsed_geometry_type = PARSED_GEOMETRY_MESH_INSTANCES;
-	uint32_t collision_mask = 0xFFFFFFFF;
+	uint32_t physics_mask = 0xFFFFFFFF;
 
 	SourceGeometryMode source_geometry_mode = SOURCE_GEOMETRY_NAVMESH_CHILDREN;
 	StringName source_group_name = "navmesh";
@@ -115,11 +115,11 @@ public:
 	void set_parsed_geometry_type(int p_value);
 	int get_parsed_geometry_type() const;
 
-	void set_collision_mask(uint32_t p_mask);
-	uint32_t get_collision_mask() const;
+	void set_physics_mask(uint32_t p_mask);
+	uint32_t get_physics_mask() const;
 
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
+	void set_physics_mask_bit(int p_bit, bool p_value);
+	bool get_physics_mask_bit(int p_bit) const;
 
 	void set_source_geometry_mode(int p_geometry_mode);
 	int get_source_geometry_mode() const;
@@ -157,8 +157,8 @@ public:
 	void set_edge_max_error(float p_value);
 	float get_edge_max_error() const;
 
-	void set_verts_per_poly(float p_value);
-	float get_verts_per_poly() const;
+	void set_vertices_per_polygon(float p_value);
+	float get_vertices_per_polygon() const;
 
 	void set_detail_sample_distance(float p_value);
 	float get_detail_sample_distance() const;
@@ -177,8 +177,8 @@ public:
 
 	void create_from_mesh(const Ref<Mesh> &p_mesh);
 
-	void set_vertices(const Vector<Vector3> &p_vertices);
-	Vector<Vector3> get_vertices() const;
+	void _set_vertices(const Vector<Vector3> &p_vertices);
+	Vector<Vector3> _get_vertices() const;
 
 	void add_polygon(const Vector<int> &p_polygon);
 	int get_polygon_count() const;

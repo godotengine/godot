@@ -138,25 +138,25 @@
 		<member name="glow_intensity" type="float" setter="set_glow_intensity" getter="get_glow_intensity" default="0.8">
 			The overall brightness multiplier of the glow effect. When using the GLES2 renderer, this should be increased to 1.5 to compensate for the lack of HDR rendering.
 		</member>
-		<member name="glow_levels/1" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
+		<member name="glow_level_1" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
 			The intensity of the 1st level of glow. This is the most "local" level (least blurry).
 		</member>
-		<member name="glow_levels/2" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
+		<member name="glow_level_2" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
 			The intensity of the 2nd level of glow.
 		</member>
-		<member name="glow_levels/3" type="float" setter="set_glow_level" getter="get_glow_level" default="1.0">
+		<member name="glow_level_3" type="float" setter="set_glow_level" getter="get_glow_level" default="1.0">
 			The intensity of the 3rd level of glow.
 		</member>
-		<member name="glow_levels/4" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
+		<member name="glow_level_4" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
 			The intensity of the 4th level of glow.
 		</member>
-		<member name="glow_levels/5" type="float" setter="set_glow_level" getter="get_glow_level" default="1.0">
+		<member name="glow_level_5" type="float" setter="set_glow_level" getter="get_glow_level" default="1.0">
 			The intensity of the 5th level of glow.
 		</member>
-		<member name="glow_levels/6" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
+		<member name="glow_level_6" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
 			The intensity of the 6th level of glow.
 		</member>
-		<member name="glow_levels/7" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
+		<member name="glow_level_7" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
 			The intensity of the 7th level of glow. This is the most "global" level (blurriest).
 		</member>
 		<member name="glow_mix" type="float" setter="set_glow_mix" getter="get_glow_mix" default="0.05">
