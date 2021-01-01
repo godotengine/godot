@@ -3431,7 +3431,7 @@ void AnimationTrackEditor::_insert_delay(bool p_create_reset, bool p_create_bezi
 		if (insert_data.front()->get().advance) {
 			advance = true;
 		}
-		next_tracks = _confirm_insert(insert_data.front()->get(), next_tracks, p_create_reset, p_create_beziers);
+		next_tracks = _confirm_insert(insert_data.front()->get(), next_tracks, p_create_reset, reset_anim, p_create_beziers);
 		insert_data.pop_front();
 	}
 
@@ -3749,7 +3749,7 @@ void AnimationTrackEditor::_confirm_insert_list() {
 
 	TrackIndices next_tracks(animation.ptr(), reset_anim.ptr());
 	while (insert_data.size()) {
-		next_tracks = _confirm_insert(insert_data.front()->get(), next_tracks, create_reset, insert_confirm_bezier->is_pressed());
+		next_tracks = _confirm_insert(insert_data.front()->get(), next_tracks, create_reset, reset_anim, insert_confirm_bezier->is_pressed());
 		insert_data.pop_front();
 	}
 
@@ -3869,7 +3869,7 @@ static Vector<String> _get_bezier_subindices_for_type(Variant::Type p_type, bool
 	return subindices;
 }
 
-AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertData p_id, TrackIndices p_next_tracks, bool p_create_reset, bool p_create_beziers) {
+AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertData p_id, TrackIndices p_next_tracks, bool p_create_reset, Ref<Animation> p_reset_anim, bool p_create_beziers) {
 	bool created = false;
 	if (p_id.track_idx < 0) {
 		if (p_create_beziers) {
@@ -3881,7 +3881,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 					id.type = Animation::TYPE_BEZIER;
 					id.value = p_id.value.get(subindices[i].substr(1, subindices[i].length()));
 					id.path = String(p_id.path) + subindices[i];
-					p_next_tracks = _confirm_insert(id, p_next_tracks, p_create_reset, false);
+					p_next_tracks = _confirm_insert(id, p_next_tracks, p_create_reset, p_reset_anim, false);
 				}
 
 				return p_next_tracks;
@@ -3986,7 +3986,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 
 	if (p_create_reset && track_type_is_resettable(p_id.type)) {
 		bool create_reset_track = true;
-		Animation *reset_anim = AnimationPlayerEditor::singleton->get_player()->get_animation("RESET").ptr();
+		Animation *reset_anim = p_reset_anim.ptr();
 		for (int i = 0; i < reset_anim->get_track_count(); i++) {
 			if (reset_anim->track_get_path(i) == p_id.path) {
 				create_reset_track = false;
