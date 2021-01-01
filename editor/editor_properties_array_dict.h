@@ -84,8 +84,8 @@ class EditorPropertyArray : public EditorProperty {
 	bool updating;
 
 	Ref<EditorPropertyArrayObject> object;
-	int page_len;
-	int page_idx;
+	int page_len = 20;
+	int page_idx = 0;
 	int changing_type_idx;
 	Button *edit;
 	VBoxContainer *vbox;
@@ -124,8 +124,8 @@ class EditorPropertyDictionary : public EditorProperty {
 	bool updating;
 
 	Ref<EditorPropertyDictionaryObject> object;
-	int page_len;
-	int page_idx;
+	int page_len = 20;
+	int page_idx = 0;
 	int changing_type_idx;
 	Button *edit;
 	VBoxContainer *vbox;
