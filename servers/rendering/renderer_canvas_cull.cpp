@@ -524,11 +524,11 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 	Item::CommandPrimitive *line = canvas_item->alloc_command<Item::CommandPrimitive>();
 	ERR_FAIL_COND(!line);
 	if (p_width > 1.001) {
-		Vector2 t = (p_from - p_to).orthogonal().normalized();
-		line->points[0] = p_from + t * p_width;
-		line->points[1] = p_from - t * p_width;
-		line->points[2] = p_to - t * p_width;
-		line->points[3] = p_to + t * p_width;
+		Vector2 offset = 0.5 * p_width * (p_from - p_to).orthogonal().normalized();
+		line->points[0] = p_from + offset;
+		line->points[1] = p_from - offset;
+		line->points[2] = p_to - offset;
+		line->points[3] = p_to + offset;
 		line->point_count = 4;
 	} else {
 		line->point_count = 2;
