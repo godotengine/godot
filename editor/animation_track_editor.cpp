@@ -3048,6 +3048,18 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 		draw_line(Point2(get_size().width - timeline->get_buttons_width(), 0), Point2(get_size().width - timeline->get_buttons_width(), get_size().height), linecolor, Math::round(EDSCALE));
 
 		int ofs = 0;
+		Ref<Texture2D> arrow;
+		if (editor->is_group_folded(group_name)) {
+			if (is_layout_rtl()) {
+				arrow = get_theme_icon("arrow_collapsed_mirrored", "Tree");
+			} else {
+				arrow = get_theme_icon("arrow_collapsed", "Tree");
+			}
+		} else {
+			arrow = get_theme_icon("arrow", "Tree");
+		}
+		draw_texture(arrow, Point2(ofs + separation / 2, int(get_size().height - arrow->get_height()) / 2));
+		ofs += separation + arrow->get_width();
 		draw_texture(icon, Point2(ofs, int(get_size().height - icon->get_height()) / 2));
 		ofs += separation + icon->get_width();
 		draw_string(font, Point2(ofs, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), node_name, HALIGN_LEFT, timeline->get_name_limit() - ofs, font_size, color);
@@ -3064,6 +3076,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 void AnimationTrackEditGroup::set_type_and_name(const Ref<Texture2D> &p_type, const String &p_name, const NodePath &p_node) {
 	icon = p_type;
 	node_name = p_name;
+	group_name = ((String)p_node).get_slice(":", 0);
 	node = p_node;
 	update();
 	minimum_size_changed();
@@ -3083,16 +3096,49 @@ void AnimationTrackEditGroup::set_timeline(AnimationTimelineEdit *p_timeline) {
 	timeline->connect("name_limit_changed", callable_mp(this, &AnimationTrackEditGroup::_zoom_changed));
 }
 
+void AnimationTrackEditGroup::set_editor(AnimationTrackEditor *p_editor) {
+	editor = p_editor;
+}
+
 void AnimationTrackEditGroup::set_root(Node *p_root) {
 	root = p_root;
 	update();
+}
+
+void AnimationTrackEditGroup::add_track_edit(AnimationTrackEdit *p_track_edit) {
+	track_edits.push_back(p_track_edit);
+}
+
+void AnimationTrackEditGroup::update_folding() {
+	if (editor->is_group_folded(group_name)) {
+		for (int i = 0; i < track_edits.size(); i++) {
+			track_edits[i]->hide();
+		}
+	} else {
+		for (int i = 0; i < track_edits.size(); i++) {
+			track_edits[i]->show();
+		}
+	}
 }
 
 void AnimationTrackEditGroup::_zoom_changed() {
 	update();
 }
 
+void AnimationTrackEditGroup::_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+		Point2 pos = mb->get_position();
+
+		if (pos.x < get_theme_icon("arrow", "Tree")->get_width() + get_theme_constant("hseparation", "ItemList")) {
+			editor->toggle_group_folded(group_name);
+			update_folding();
+		}
+	}
+}
+
 void AnimationTrackEditGroup::_bind_methods() {
+	ClassDB::bind_method("_gui_input", &AnimationTrackEditGroup::_gui_input);
 }
 
 AnimationTrackEditGroup::AnimationTrackEditGroup() {
@@ -4132,7 +4178,10 @@ void AnimationTrackEditor::_update_tracks() {
 			String base_path = animation->track_get_path(i);
 			base_path = base_path.get_slice(":", 0); // Remove sub-path.
 
-			if (!group_sort.has(base_path)) {
+			if (group_sort.has(base_path)) {
+				AnimationTrackEditGroup *g = (AnimationTrackEditGroup *)group_sort[base_path]->get_child(0);
+				g->add_track_edit(track_edit);
+			} else {
 				AnimationTrackEditGroup *g = memnew(AnimationTrackEditGroup);
 				Ref<Texture2D> icon = get_theme_icon("Node", "EditorIcons");
 				String name = base_path;
@@ -4150,17 +4199,23 @@ void AnimationTrackEditor::_update_tracks() {
 				g->set_root(root);
 				g->set_tooltip(tooltip);
 				g->set_timeline(timeline);
+				g->set_editor(this);
 				groups.push_back(g);
 				VBoxContainer *vb = memnew(VBoxContainer);
 				vb->add_theme_constant_override("separation", 0);
 				vb->add_child(g);
 				track_vbox->add_child(vb);
 				group_sort[base_path] = vb;
+
+				g->add_track_edit(track_edit);
 			}
 
 			track_edit->set_in_group(true);
 			group_sort[base_path]->add_child(track_edit);
 
+			if (group_folding[base_path]) {
+				track_edit->hide();
+			}
 		} else {
 			track_edit->set_in_group(false);
 			track_vbox->add_child(track_edit);
@@ -5554,6 +5609,14 @@ bool AnimationTrackEditor::is_grouping_tracks() {
 	}
 
 	return !view_group->is_pressed();
+}
+
+void AnimationTrackEditor::toggle_group_folded(String p_group_name) {
+	group_folding[p_group_name] = !group_folding[p_group_name];
+}
+
+bool AnimationTrackEditor::is_group_folded(String p_group_name) {
+	return group_folding[p_group_name];
 }
 
 void AnimationTrackEditor::_selection_changed() {

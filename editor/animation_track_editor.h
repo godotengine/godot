@@ -253,9 +253,12 @@ class AnimationTrackEditGroup : public Control {
 	GDCLASS(AnimationTrackEditGroup, Control);
 	Ref<Texture2D> icon;
 	String node_name;
+	String group_name;
 	NodePath node;
 	Node *root = nullptr;
 	AnimationTimelineEdit *timeline = nullptr;
+	AnimationTrackEditor *editor = nullptr;
+	Vector<AnimationTrackEdit *> track_edits;
 
 	void _zoom_changed();
 
@@ -263,11 +266,16 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
+	virtual void _gui_input(const Ref<InputEvent> &p_event);
+
 public:
 	void set_type_and_name(const Ref<Texture2D> &p_type, const String &p_name, const NodePath &p_node);
 	virtual Size2 get_minimum_size() const override;
 	void set_timeline(AnimationTimelineEdit *p_timeline);
+	void set_editor(AnimationTrackEditor *p_editor);
 	void set_root(Node *p_root);
+	void add_track_edit(AnimationTrackEdit *p_track_edit);
+	void update_folding();
 
 	AnimationTrackEditGroup();
 };
@@ -320,6 +328,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _snap_mode_changed(int p_mode);
 	Vector<AnimationTrackEdit *> track_edits;
 	Vector<AnimationTrackEditGroup *> groups;
+	Map<String, bool> group_folding;
 
 	bool animation_changing_awaiting_update;
 	void _animation_update();
@@ -533,6 +542,9 @@ public:
 	float get_moving_selection_offset() const;
 	float snap_time(float p_value, bool p_relative = false);
 	bool is_grouping_tracks();
+
+	void toggle_group_folded(String p_group_name);
+	bool is_group_folded(String p_group_name);
 
 	MenuButton *get_edit_menu();
 	AnimationTrackEditor();
