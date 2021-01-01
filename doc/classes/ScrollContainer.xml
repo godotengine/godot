@@ -45,6 +45,9 @@
 		<member name="scroll_vertical_enabled" type="bool" setter="set_enable_v_scroll" getter="is_v_scroll_enabled" default="true">
 			If [code]true[/code], enables vertical scrolling.
 		</member>
+		<member name="scroll_deadzone" type="bool" setter="set_enable_v_scroll" getter="is_v_scroll_enabled" default="true">
+			The minimum difference in position required to actually scroll when using momentum-based scrolling. (i.e. when using touch) If the movement of the touch point is less than this, a scroll event will not be triggered, and child nodes may receive click/tap events.
+		</member>
 	</members>
 	<signals>
 		<signal name="scroll_ended">
