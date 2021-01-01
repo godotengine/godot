@@ -59,7 +59,7 @@ class Body2DSW : public CollisionObject2DSW {
 
 	real_t _inv_mass;
 	real_t _inv_inertia;
-	bool user_inertia;
+	bool user_inertia = false;
 
 	Vector2 gravity;
 	real_t area_linear_damp;
@@ -76,11 +76,11 @@ class Body2DSW : public CollisionObject2DSW {
 
 	VSet<RID> exceptions;
 	PhysicsServer2D::CCDMode continuous_cd_mode;
-	bool omit_force_integration;
-	bool active;
-	bool can_sleep;
-	bool first_time_kinematic;
-	bool first_integration;
+	bool omit_force_integration = false;
+	bool active = false;
+	bool can_sleep = false;
+	bool first_time_kinematic = false;
+	bool first_integration = false;
 	void _update_inertia();
 	virtual void _shapes_changed();
 	Transform2D new_transform;
@@ -88,8 +88,8 @@ class Body2DSW : public CollisionObject2DSW {
 	List<Pair<Constraint2DSW *, int>> constraint_list;
 
 	struct AreaCMP {
-		Area2DSW *area;
-		int refCount;
+		Area2DSW *area = nullptr;
+		int refCount = 0;
 		_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
 		_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
 		_FORCE_INLINE_ AreaCMP() {}
@@ -105,16 +105,16 @@ class Body2DSW : public CollisionObject2DSW {
 		Vector2 local_pos;
 		Vector2 local_normal;
 		real_t depth;
-		int local_shape;
+		int local_shape = 0;
 		Vector2 collider_pos;
-		int collider_shape;
+		int collider_shape = 0;
 		ObjectID collider_instance_id;
 		RID collider;
 		Vector2 collider_velocity_at_pos;
 	};
 
 	Vector<Contact> contacts; //no contacts by default
-	int contact_count;
+	int contact_count = 0;
 
 	struct ForceIntegrationCallback {
 		ObjectID id;
@@ -122,11 +122,11 @@ class Body2DSW : public CollisionObject2DSW {
 		Variant callback_udata;
 	};
 
-	ForceIntegrationCallback *fi_callback;
+	ForceIntegrationCallback *fi_callback = nullptr;
 
-	uint64_t island_step;
-	Body2DSW *island_next;
-	Body2DSW *island_list_next;
+	uint64_t island_step = 0;
+	Body2DSW *island_next = nullptr;
+	Body2DSW *island_list_next = nullptr;
 
 	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const Area2DSW *p_area);
 
@@ -341,8 +341,8 @@ class PhysicsDirectBodyState2DSW : public PhysicsDirectBodyState2D {
 	GDCLASS(PhysicsDirectBodyState2DSW, PhysicsDirectBodyState2D);
 
 public:
-	static PhysicsDirectBodyState2DSW *singleton;
-	Body2DSW *body;
+	static PhysicsDirectBodyState2DSW *singleton = nullptr;
+	Body2DSW *body = nullptr;
 	real_t step;
 
 	virtual Vector2 get_total_gravity() const override { return body->gravity; } // get gravity vector working on this body space/area

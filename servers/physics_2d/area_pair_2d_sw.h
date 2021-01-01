@@ -36,11 +36,11 @@
 #include "constraint_2d_sw.h"
 
 class AreaPair2DSW : public Constraint2DSW {
-	Body2DSW *body;
-	Area2DSW *area;
-	int body_shape;
-	int area_shape;
-	bool colliding;
+	Body2DSW *body = nullptr;
+	Area2DSW *area = nullptr;
+	int body_shape = 0;
+	int area_shape = 0;
+	bool colliding = false;
 
 public:
 	bool setup(real_t p_step);
@@ -51,11 +51,11 @@ public:
 };
 
 class Area2Pair2DSW : public Constraint2DSW {
-	Area2DSW *area_a;
-	Area2DSW *area_b;
-	int shape_a;
-	int shape_b;
-	bool colliding;
+	Area2DSW *area_a = nullptr;
+	Area2DSW *area_b = nullptr;
+	int shape_a = 0;
+	int shape_b = 0;
+	bool colliding = false;
 
 public:
 	bool setup(real_t p_step);

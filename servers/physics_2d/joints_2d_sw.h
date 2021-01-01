@@ -60,11 +60,11 @@ public:
 class PinJoint2DSW : public Joint2DSW {
 	union {
 		struct {
-			Body2DSW *A;
-			Body2DSW *B;
+			Body2DSW *A = nullptr;
+			Body2DSW *B = nullptr;
 		};
 
-		Body2DSW *_arr[2];
+		Body2DSW *_arr[2] = {};
 	};
 
 	Transform2D M;
@@ -91,11 +91,11 @@ public:
 class GrooveJoint2DSW : public Joint2DSW {
 	union {
 		struct {
-			Body2DSW *A;
-			Body2DSW *B;
+			Body2DSW *A = nullptr;
+			Body2DSW *B = nullptr;
 		};
 
-		Body2DSW *_arr[2];
+		Body2DSW *_arr[2] = {};
 	};
 
 	Vector2 A_groove_1;
@@ -110,7 +110,7 @@ class GrooveJoint2DSW : public Joint2DSW {
 	Vector2 rA, rB;
 	Vector2 k1, k2;
 
-	bool correct;
+	bool correct = false;
 
 public:
 	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_GROOVE; }
@@ -125,11 +125,11 @@ public:
 class DampedSpringJoint2DSW : public Joint2DSW {
 	union {
 		struct {
-			Body2DSW *A;
-			Body2DSW *B;
+			Body2DSW *A = nullptr;
+			Body2DSW *B = nullptr;
 		};
 
-		Body2DSW *_arr[2];
+		Body2DSW *_arr[2] = {};
 	};
 
 	Vector2 anchor_A;
