@@ -77,8 +77,8 @@ void ArrayPropertyEdit::_set_value(int p_idx, const Variant &p_value) {
 bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 	String pn = p_name;
 
-	if (pn.begins_with("array/")) {
-		if (pn == "array/size") {
+	if (pn.begins_with("array_")) {
+		if (pn == "array_size") {
 			Variant arr = get_array();
 			int size = arr.call("size");
 
@@ -114,16 +114,16 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 			ur->commit_action();
 			return true;
 		}
-		if (pn == "array/page") {
+		if (pn == "array_page") {
 			page = p_value;
 			notify_property_list_changed();
 			return true;
 		}
 
 	} else if (pn.begins_with("indices")) {
-		if (pn.find("_") != -1) {
+		if (pn.ends_with("type")) {
 			//type
-			int idx = pn.get_slicec('/', 1).get_slicec('_', 0).to_int();
+			int idx = pn.get_slicec('_', 1).to_int();
 
 			int type = p_value;
 
@@ -146,7 +146,7 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 			return true;
 
 		} else {
-			int idx = pn.get_slicec('/', 1).to_int();
+			int idx = pn.get_slicec('_', 1).to_int();
 			Variant arr = get_array();
 
 			Variant value = arr.get(idx);
@@ -168,19 +168,19 @@ bool ArrayPropertyEdit::_get(const StringName &p_name, Variant &r_ret) const {
 	//int size = arr.call("size");
 
 	String pn = p_name;
-	if (pn.begins_with("array/")) {
-		if (pn == "array/size") {
+	if (pn.begins_with("array_")) {
+		if (pn == "array_size") {
 			r_ret = arr.call("size");
 			return true;
 		}
-		if (pn == "array/page") {
+		if (pn == "array_page") {
 			r_ret = page;
 			return true;
 		}
 	} else if (pn.begins_with("indices")) {
-		if (pn.find("_") != -1) {
+		if (pn.ends_with("type")) {
 			//type
-			int idx = pn.get_slicec('/', 1).get_slicec('_', 0).to_int();
+			int idx = pn.get_slicec('_', 1).to_int();
 			bool valid;
 			r_ret = arr.get(idx, &valid);
 			if (valid) {
@@ -189,7 +189,7 @@ bool ArrayPropertyEdit::_get(const StringName &p_name, Variant &r_ret) const {
 			return valid;
 
 		} else {
-			int idx = pn.get_slicec('/', 1).to_int();
+			int idx = pn.get_slicec('_', 1).to_int();
 			bool valid;
 			r_ret = arr.get(idx, &valid);
 
@@ -208,31 +208,33 @@ void ArrayPropertyEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 	Variant arr = get_array();
 	int size = arr.call("size");
 
-	p_list->push_back(PropertyInfo(Variant::INT, "array/size", PROPERTY_HINT_RANGE, "0,100000,1"));
+	p_list->push_back(PropertyInfo(Variant::NIL, "Array", PROPERTY_HINT_NONE, "array_", PROPERTY_USAGE_GROUP));
+	p_list->push_back(PropertyInfo(Variant::INT, "array_size", PROPERTY_HINT_RANGE, "0,100000,1"));
 	int pages = size / ITEMS_PER_PAGE;
 	if (pages > 0) {
-		p_list->push_back(PropertyInfo(Variant::INT, "array/page", PROPERTY_HINT_RANGE, "0," + itos(pages) + ",1"));
+		p_list->push_back(PropertyInfo(Variant::INT, "array_page", PROPERTY_HINT_RANGE, "0," + itos(pages) + ",1"));
 	}
 
 	int offset = page * ITEMS_PER_PAGE;
 
 	int items = MIN(size - offset, ITEMS_PER_PAGE);
 
+	p_list->push_back(PropertyInfo(Variant::NIL, "Indices", PROPERTY_HINT_NONE, "indices_", PROPERTY_USAGE_GROUP));
 	for (int i = 0; i < items; i++) {
 		Variant v = arr.get(i + offset);
 		bool is_typed = arr.get_type() != Variant::ARRAY || subtype != Variant::NIL;
 
 		if (!is_typed) {
-			p_list->push_back(PropertyInfo(Variant::INT, "indices/" + itos(i + offset) + "_type", PROPERTY_HINT_ENUM, vtypes));
+			p_list->push_back(PropertyInfo(Variant::INT, "indices_" + itos(i + offset) + "_type", PROPERTY_HINT_ENUM, vtypes));
 		}
 
 		if (v.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(v)) {
-			p_list->push_back(PropertyInfo(Variant::INT, "indices/" + itos(i + offset), PROPERTY_HINT_OBJECT_ID, "Object"));
+			p_list->push_back(PropertyInfo(Variant::INT, "indices_" + itos(i + offset), PROPERTY_HINT_OBJECT_ID, "Object"));
 			continue;
 		}
 
 		if (is_typed || v.get_type() != Variant::NIL) {
-			PropertyInfo pi(v.get_type(), "indices/" + itos(i + offset));
+			PropertyInfo pi(v.get_type(), "indices_" + itos(i + offset));
 			if (subtype != Variant::NIL) {
 				pi.type = Variant::Type(subtype);
 				pi.hint = PropertyHint(subtype_hint);

@@ -90,9 +90,9 @@ bool Skin::_set(const StringName &p_name, const Variant &p_value) {
 	if (name == "bind_count") {
 		set_bind_count(p_value);
 		return true;
-	} else if (name.begins_with("bind/")) {
-		int index = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	} else if (name.begins_with("bind_")) {
+		int index = name.get_slicec('_', 1).to_int();
+		String what = name.get_slicec('_', 2);
 		if (what == "bone") {
 			set_bind_bone(index, p_value);
 			return true;
@@ -112,9 +112,9 @@ bool Skin::_get(const StringName &p_name, Variant &r_ret) const {
 	if (name == "bind_count") {
 		r_ret = get_bind_count();
 		return true;
-	} else if (name.begins_with("bind/")) {
-		int index = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	} else if (name.begins_with("bind_")) {
+		int index = name.get_slicec('_', 1).to_int();
+		String what = name.get_slicec('_', 2);
 		if (what == "bone") {
 			r_ret = get_bind_bone(index);
 			return true;
@@ -131,10 +131,12 @@ bool Skin::_get(const StringName &p_name, Variant &r_ret) const {
 
 void Skin::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, "bind_count", PROPERTY_HINT_RANGE, "0,16384,1,or_greater"));
+	p_list->push_back(PropertyInfo(Variant::NIL, "Binds", PROPERTY_HINT_NONE, "bind_", PROPERTY_USAGE_GROUP));
 	for (int i = 0; i < get_bind_count(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING_NAME, "bind/" + itos(i) + "/name"));
-		p_list->push_back(PropertyInfo(Variant::INT, "bind/" + itos(i) + "/bone", PROPERTY_HINT_RANGE, "0,16384,1,or_greater", get_bind_name(i) != StringName() ? PROPERTY_USAGE_NOEDITOR : PROPERTY_USAGE_DEFAULT));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM, "bind/" + itos(i) + "/pose"));
+		p_list->push_back(PropertyInfo(Variant::NIL, itos(i), PROPERTY_HINT_NONE, "bind_" + itos(i) + "_", PROPERTY_USAGE_SUBGROUP));
+		p_list->push_back(PropertyInfo(Variant::STRING_NAME, "bind_" + itos(i) + "_name"));
+		p_list->push_back(PropertyInfo(Variant::INT, "bind_" + itos(i) + "_bone", PROPERTY_HINT_RANGE, "0,16384,1,or_greater", get_bind_name(i) != StringName() ? PROPERTY_USAGE_NOEDITOR : PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM, "bind_" + itos(i) + "_pose"));
 	}
 }
 

@@ -61,9 +61,9 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 		return true;
 	}
 	if (String(p_name).begins_with("argument_")) {
-		int idx = String(p_name).get_slicec('_', 1).get_slicec('/', 0).to_int() - 1;
+		int idx = String(p_name).get_slicec('_', 1).to_int() - 1;
 		ERR_FAIL_INDEX_V(idx, arguments.size(), false);
-		String what = String(p_name).get_slice("/", 1);
+		String what = String(p_name).get_slicec('_', 2);
 		if (what == "type") {
 			Variant::Type new_type = Variant::Type(int(p_value));
 			arguments.write[idx].type = new_type;
@@ -79,22 +79,22 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 		}
 	}
 
-	if (p_name == "stack/stackless") {
+	if (p_name == "stack_stackless") {
 		set_stack_less(p_value);
 		return true;
 	}
 
-	if (p_name == "stack/size") {
+	if (p_name == "stack_size") {
 		stack_size = p_value;
 		return true;
 	}
 
-	if (p_name == "rpc/mode") {
+	if (p_name == "rpc_mode") {
 		rpc_mode = MultiplayerAPI::RPCMode(int(p_value));
 		return true;
 	}
 
-	if (p_name == "sequenced/sequenced") {
+	if (p_name == "sequenced") {
 		sequenced = p_value;
 		ports_changed_notify();
 		return true;
@@ -109,9 +109,9 @@ bool VisualScriptFunction::_get(const StringName &p_name, Variant &r_ret) const 
 		return true;
 	}
 	if (String(p_name).begins_with("argument_")) {
-		int idx = String(p_name).get_slicec('_', 1).get_slicec('/', 0).to_int() - 1;
+		int idx = String(p_name).get_slicec('_', 1).to_int() - 1;
 		ERR_FAIL_INDEX_V(idx, arguments.size(), false);
-		String what = String(p_name).get_slice("/", 1);
+		String what = String(p_name).get_slicec('_', 2);
 		if (what == "type") {
 			r_ret = arguments[idx].type;
 			return true;
@@ -122,22 +122,22 @@ bool VisualScriptFunction::_get(const StringName &p_name, Variant &r_ret) const 
 		}
 	}
 
-	if (p_name == "stack/stackless") {
+	if (p_name == "stack_stackless") {
 		r_ret = stack_less;
 		return true;
 	}
 
-	if (p_name == "stack/size") {
+	if (p_name == "stack_size") {
 		r_ret = stack_size;
 		return true;
 	}
 
-	if (p_name == "rpc/mode") {
+	if (p_name == "rpc_mode") {
 		r_ret = rpc_mode;
 		return true;
 	}
 
-	if (p_name == "sequenced/sequenced") {
+	if (p_name == "sequenced") {
 		r_ret = sequenced;
 		return true;
 	}
@@ -153,17 +153,17 @@ void VisualScriptFunction::_get_property_list(List<PropertyInfo> *p_list) const 
 	}
 
 	for (int i = 0; i < arguments.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::INT, "argument_" + itos(i + 1) + "/type", PROPERTY_HINT_ENUM, argt));
-		p_list->push_back(PropertyInfo(Variant::STRING, "argument_" + itos(i + 1) + "/name"));
+		p_list->push_back(PropertyInfo(Variant::INT, "argument_" + itos(i + 1) + "_type", PROPERTY_HINT_ENUM, argt));
+		p_list->push_back(PropertyInfo(Variant::STRING, "argument_" + itos(i + 1) + "_name"));
 	}
 
-	p_list->push_back(PropertyInfo(Variant::BOOL, "sequenced/sequenced"));
+	p_list->push_back(PropertyInfo(Variant::BOOL, "sequenced"));
 
 	if (!stack_less) {
-		p_list->push_back(PropertyInfo(Variant::INT, "stack/size", PROPERTY_HINT_RANGE, "1,100000"));
+		p_list->push_back(PropertyInfo(Variant::INT, "stack_size", PROPERTY_HINT_RANGE, "1,100000"));
 	}
-	p_list->push_back(PropertyInfo(Variant::BOOL, "stack/stackless"));
-	p_list->push_back(PropertyInfo(Variant::INT, "rpc/mode", PROPERTY_HINT_ENUM, "Disabled,Remote,Master,Puppet,Remote Sync,Master Sync,Puppet Sync"));
+	p_list->push_back(PropertyInfo(Variant::BOOL, "stack_stackless"));
+	p_list->push_back(PropertyInfo(Variant::INT, "rpc_mode", PROPERTY_HINT_ENUM, "Disabled,Remote,Master,Puppet,Remote Sync,Master Sync,Puppet Sync"));
 }
 
 int VisualScriptFunction::get_output_sequence_port_count() const {
@@ -433,9 +433,9 @@ bool VisualScriptLists::_set(const StringName &p_name, const Variant &p_value) {
 		return true;
 	}
 	if (String(p_name).begins_with("input_") && is_input_port_editable()) {
-		int idx = String(p_name).get_slicec('_', 1).get_slicec('/', 0).to_int() - 1;
+		int idx = String(p_name).get_slicec('_', 1).to_int() - 1;
 		ERR_FAIL_INDEX_V(idx, inputports.size(), false);
-		String what = String(p_name).get_slice("/", 1);
+		String what = String(p_name).get_slicec('_', 2);
 		if (what == "type") {
 			Variant::Type new_type = Variant::Type(int(p_value));
 			inputports.write[idx].type = new_type;
@@ -469,9 +469,9 @@ bool VisualScriptLists::_set(const StringName &p_name, const Variant &p_value) {
 		return true;
 	}
 	if (String(p_name).begins_with("output_") && is_output_port_editable()) {
-		int idx = String(p_name).get_slicec('_', 1).get_slicec('/', 0).to_int() - 1;
+		int idx = String(p_name).get_slicec('_', 1).to_int() - 1;
 		ERR_FAIL_INDEX_V(idx, outputports.size(), false);
-		String what = String(p_name).get_slice("/", 1);
+		String what = String(p_name).get_slicec('_', 1);
 		if (what == "type") {
 			Variant::Type new_type = Variant::Type(int(p_value));
 			outputports.write[idx].type = new_type;
@@ -502,9 +502,9 @@ bool VisualScriptLists::_get(const StringName &p_name, Variant &r_ret) const {
 		return true;
 	}
 	if (String(p_name).begins_with("input_") && is_input_port_editable()) {
-		int idx = String(p_name).get_slicec('_', 1).get_slicec('/', 0).to_int() - 1;
+		int idx = String(p_name).get_slicec('_', 1).to_int() - 1;
 		ERR_FAIL_INDEX_V(idx, inputports.size(), false);
-		String what = String(p_name).get_slice("/", 1);
+		String what = String(p_name).get_slicec('_', 1);
 		if (what == "type") {
 			r_ret = inputports[idx].type;
 			return true;
@@ -520,9 +520,9 @@ bool VisualScriptLists::_get(const StringName &p_name, Variant &r_ret) const {
 		return true;
 	}
 	if (String(p_name).begins_with("output_") && is_output_port_editable()) {
-		int idx = String(p_name).get_slicec('_', 1).get_slicec('/', 0).to_int() - 1;
+		int idx = String(p_name).get_slicec('_', 1).to_int() - 1;
 		ERR_FAIL_INDEX_V(idx, outputports.size(), false);
-		String what = String(p_name).get_slice("/", 1);
+		String what = String(p_name).get_slicec('_', 1);
 		if (what == "type") {
 			r_ret = outputports[idx].type;
 			return true;
@@ -550,8 +550,8 @@ void VisualScriptLists::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 
 		for (int i = 0; i < inputports.size(); i++) {
-			p_list->push_back(PropertyInfo(Variant::INT, "input_" + itos(i + 1) + "/type", PROPERTY_HINT_ENUM, argt));
-			p_list->push_back(PropertyInfo(Variant::STRING, "input_" + itos(i + 1) + "/name"));
+			p_list->push_back(PropertyInfo(Variant::INT, "input_" + itos(i + 1) + "_type", PROPERTY_HINT_ENUM, argt));
+			p_list->push_back(PropertyInfo(Variant::STRING, "input_" + itos(i + 1) + "_name"));
 		}
 	}
 
@@ -563,11 +563,11 @@ void VisualScriptLists::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 
 		for (int i = 0; i < outputports.size(); i++) {
-			p_list->push_back(PropertyInfo(Variant::INT, "output_" + itos(i + 1) + "/type", PROPERTY_HINT_ENUM, argt));
-			p_list->push_back(PropertyInfo(Variant::STRING, "output_" + itos(i + 1) + "/name"));
+			p_list->push_back(PropertyInfo(Variant::INT, "output_" + itos(i + 1) + "_type", PROPERTY_HINT_ENUM, argt));
+			p_list->push_back(PropertyInfo(Variant::STRING, "output_" + itos(i + 1) + "_name"));
 		}
 	}
-	p_list->push_back(PropertyInfo(Variant::BOOL, "sequenced/sequenced"));
+	p_list->push_back(PropertyInfo(Variant::BOOL, "sequenced"));
 }
 
 // input data port interaction

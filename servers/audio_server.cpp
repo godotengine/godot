@@ -1330,15 +1330,15 @@ AudioServer::~AudioServer() {
 
 bool AudioBusLayout::_set(const StringName &p_name, const Variant &p_value) {
 	String s = p_name;
-	if (s.begins_with("bus/")) {
-		int index = s.get_slice("/", 1).to_int();
+	if (s.begins_with("bus_")) {
+		int index = s.get_slicec('_', 1).to_int();
 		if (buses.size() <= index) {
 			buses.resize(index + 1);
 		}
 
 		Bus &bus = buses.write[index];
 
-		String what = s.get_slice("/", 2);
+		String what = s.get_slicec('_', 2);
 
 		if (what == "name") {
 			bus.name = p_value;
@@ -1353,14 +1353,14 @@ bool AudioBusLayout::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (what == "send") {
 			bus.send = p_value;
 		} else if (what == "effect") {
-			int which = s.get_slice("/", 3).to_int();
+			int which = s.get_slicec('_', 3).to_int();
 			if (bus.effects.size() <= which) {
 				bus.effects.resize(which + 1);
 			}
 
 			Bus::Effect &fx = bus.effects.write[which];
 
-			String fxwhat = s.get_slice("/", 4);
+			String fxwhat = s.get_slicec('_', 4);
 			if (fxwhat == "effect") {
 				fx.effect = p_value;
 			} else if (fxwhat == "enabled") {
@@ -1382,15 +1382,15 @@ bool AudioBusLayout::_set(const StringName &p_name, const Variant &p_value) {
 
 bool AudioBusLayout::_get(const StringName &p_name, Variant &r_ret) const {
 	String s = p_name;
-	if (s.begins_with("bus/")) {
-		int index = s.get_slice("/", 1).to_int();
+	if (s.begins_with("bus_")) {
+		int index = s.get_slicec('_', 1).to_int();
 		if (index < 0 || index >= buses.size()) {
 			return false;
 		}
 
 		const Bus &bus = buses[index];
 
-		String what = s.get_slice("/", 2);
+		String what = s.get_slicec('_', 2);
 
 		if (what == "name") {
 			r_ret = bus.name;
@@ -1405,14 +1405,14 @@ bool AudioBusLayout::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (what == "send") {
 			r_ret = bus.send;
 		} else if (what == "effect") {
-			int which = s.get_slice("/", 3).to_int();
+			int which = s.get_slicec('_', 3).to_int();
 			if (which < 0 || which >= bus.effects.size()) {
 				return false;
 			}
 
 			const Bus::Effect &fx = bus.effects[which];
 
-			String fxwhat = s.get_slice("/", 4);
+			String fxwhat = s.get_slicec('_', 4);
 			if (fxwhat == "effect") {
 				r_ret = fx.effect;
 			} else if (fxwhat == "enabled") {
@@ -1434,16 +1434,16 @@ bool AudioBusLayout::_get(const StringName &p_name, Variant &r_ret) const {
 
 void AudioBusLayout::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < buses.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, "bus/" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "bus/" + itos(i) + "/solo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "bus/" + itos(i) + "/mute", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "bus/" + itos(i) + "/bypass_fx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "bus/" + itos(i) + "/volume_db", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "bus/" + itos(i) + "/send", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::STRING, "bus_" + itos(i) + "_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "bus_" + itos(i) + "_solo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "bus_" + itos(i) + "_mute", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "bus_" + itos(i) + "_bypass_fx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "bus_" + itos(i) + "_volume_db", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "bus_" + itos(i) + "_send", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 
 		for (int j = 0; j < buses[i].effects.size(); j++) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "bus/" + itos(i) + "/effect/" + itos(j) + "/effect", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-			p_list->push_back(PropertyInfo(Variant::BOOL, "bus/" + itos(i) + "/effect/" + itos(j) + "/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "bus_" + itos(i) + "_effect_" + itos(j) + "_effect", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+			p_list->push_back(PropertyInfo(Variant::BOOL, "bus_" + itos(i) + "_effect_" + itos(j) + "_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 		}
 	}
 }

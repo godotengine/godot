@@ -633,8 +633,8 @@ bool VisualScriptSwitch::_set(const StringName &p_name, const Variant &p_value) 
 		return true;
 	}
 
-	if (String(p_name).begins_with("case/")) {
-		int idx = String(p_name).get_slice("/", 1).to_int();
+	if (String(p_name).begins_with("case_")) {
+		int idx = String(p_name).get_slicec('_', 1).to_int();
 		ERR_FAIL_INDEX_V(idx, case_values.size(), false);
 
 		case_values.write[idx].type = Variant::Type(int(p_value));
@@ -653,8 +653,8 @@ bool VisualScriptSwitch::_get(const StringName &p_name, Variant &r_ret) const {
 		return true;
 	}
 
-	if (String(p_name).begins_with("case/")) {
-		int idx = String(p_name).get_slice("/", 1).to_int();
+	if (String(p_name).begins_with("case_")) {
+		int idx = String(p_name).get_slicec('_', 1).to_int();
 		ERR_FAIL_INDEX_V(idx, case_values.size(), false);
 
 		r_ret = case_values[idx].type;
@@ -672,8 +672,9 @@ void VisualScriptSwitch::_get_property_list(List<PropertyInfo> *p_list) const {
 		argt += "," + Variant::get_type_name(Variant::Type(i));
 	}
 
+	p_list->push_back(PropertyInfo(Variant::NIL, "Cases", PROPERTY_HINT_NONE, "case_", PROPERTY_USAGE_GROUP));
 	for (int i = 0; i < case_values.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::INT, "case/" + itos(i), PROPERTY_HINT_ENUM, argt));
+		p_list->push_back(PropertyInfo(Variant::INT, "case_" + itos(i), PROPERTY_HINT_ENUM, argt));
 	}
 }
 

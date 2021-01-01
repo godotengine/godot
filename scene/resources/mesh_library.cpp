@@ -32,9 +32,9 @@
 
 bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
-	if (name.begins_with("item/")) {
-		int idx = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	if (name.begins_with("item_")) {
+		int idx = name.get_slicec('_', 1).to_int();
+		String what = name.get_slicec('_', 2);
 		if (!item_map.has(idx)) {
 			create_item(idx);
 		}
@@ -54,9 +54,11 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (what == "preview") {
 			set_item_preview(idx, p_value);
 		} else if (what == "navmesh") {
-			set_item_navmesh(idx, p_value);
-		} else if (what == "navmesh_transform") {
-			set_item_navmesh_transform(idx, p_value);
+			if (name.get_slicec('_', 3) == "transform") {
+				set_item_navmesh_transform(idx, p_value);
+			} else {
+				set_item_navmesh(idx, p_value);
+			}
 		} else {
 			return false;
 		}
@@ -69,9 +71,9 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 
 bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
-	int idx = name.get_slicec('/', 1).to_int();
+	int idx = name.get_slicec('_', 1).to_int();
 	ERR_FAIL_COND_V(!item_map.has(idx), false);
-	String what = name.get_slicec('/', 2);
+	String what = name.get_slicec('_', 2);
 
 	if (what == "name") {
 		r_ret = get_item_name(idx);
@@ -80,9 +82,11 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 	} else if (what == "shapes") {
 		r_ret = _get_item_shapes(idx);
 	} else if (what == "navmesh") {
-		r_ret = get_item_navmesh(idx);
-	} else if (what == "navmesh_transform") {
-		r_ret = get_item_navmesh_transform(idx);
+		if (name.get_slicec('_', 3) == "transform") {
+			r_ret = get_item_navmesh_transform(idx);
+		} else {
+			r_ret = get_item_navmesh(idx);
+		}
 	} else if (what == "preview") {
 		r_ret = get_item_preview(idx);
 	} else {
@@ -93,8 +97,10 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::NIL, "Items", PROPERTY_HINT_NONE, "item_", PROPERTY_USAGE_GROUP));
 	for (Map<int, Item>::Element *E = item_map.front(); E; E = E->next()) {
-		String name = "item/" + itos(E->key()) + "/";
+		String name = "item_" + itos(E->key()) + "_";
+		p_list->push_back(PropertyInfo(Variant::NIL, itos(E->key()), PROPERTY_HINT_NONE, name, PROPERTY_USAGE_SUBGROUP));
 		p_list->push_back(PropertyInfo(Variant::STRING, name + "name"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, name + "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM, name + "mesh_transform"));

@@ -36,9 +36,9 @@
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
 
-	if (name.begins_with("tracks/")) {
-		int track = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	if (name.begins_with("tracks_")) {
+		int track = name.get_slicec('_', 1).to_int();
+		String what = name.get_slicec('_', 2);
 
 		if (tracks.size() == track && what == "type") {
 			String type = p_value;
@@ -312,9 +312,9 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = loop;
 	} else if (name == "step") {
 		r_ret = step;
-	} else if (name.begins_with("tracks/")) {
-		int track = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	} else if (name.begins_with("tracks_")) {
+		int track = name.get_slicec('_', 1).to_int();
+		String what = name.get_slicec('_', 2);
 		ERR_FAIL_INDEX_V(track, tracks.size(), false);
 		if (what == "type") {
 			switch (track_get_type(track)) {
@@ -570,13 +570,13 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 
 void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < tracks.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, "tracks/" + itos(i) + "/type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::NODE_PATH, "tracks/" + itos(i) + "/path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::INT, "tracks/" + itos(i) + "/interp", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/loop_wrap", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/imported", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::ARRAY, "tracks/" + itos(i) + "/keys", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::STRING, "tracks_" + itos(i) + "_type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::NODE_PATH, "tracks_" + itos(i) + "_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::INT, "tracks_" + itos(i) + "_interp", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks_" + itos(i) + "_loop_wrap", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks_" + itos(i) + "_imported", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks_" + itos(i) + "_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::ARRAY, "tracks_" + itos(i) + "_keys", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 	}
 }
 

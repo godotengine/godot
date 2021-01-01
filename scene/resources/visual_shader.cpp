@@ -1000,8 +1000,8 @@ bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 	if (name == "mode") {
 		set_mode(Shader::Mode(int(p_value)));
 		return true;
-	} else if (name.begins_with("flags/")) {
-		StringName flag = name.get_slicec('/', 1);
+	} else if (name.begins_with("flags_")) {
+		StringName flag = name.get_slicec('_', 1);
 		bool enable = p_value;
 		if (enable) {
 			flags.insert(flag);
@@ -1010,8 +1010,8 @@ bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 		}
 		_queue_update();
 		return true;
-	} else if (name.begins_with("modes/")) {
-		String mode = name.get_slicec('/', 1);
+	} else if (name.begins_with("modes_")) {
+		String mode = name.get_slicec('_', 1);
 		int value = p_value;
 		if (value == 0) {
 			modes.erase(mode); //means it's default anyway, so don't store it
@@ -1020,8 +1020,8 @@ bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 		}
 		_queue_update();
 		return true;
-	} else if (name.begins_with("nodes/")) {
-		String typestr = name.get_slicec('/', 1);
+	} else if (name.begins_with("nodes_")) {
+		String typestr = name.get_slicec('_', 1);
 		Type type = TYPE_VERTEX;
 		for (int i = 0; i < TYPE_MAX; i++) {
 			if (typestr == type_string[i]) {
@@ -1030,7 +1030,7 @@ bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 			}
 		}
 
-		String index = name.get_slicec('/', 2);
+		String index = name.get_slicec('_', 2);
 		if (index == "connections") {
 			Vector<int> conns = p_value;
 			if (conns.size() % 4 == 0) {
@@ -1042,7 +1042,7 @@ bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 		int id = index.to_int();
-		String what = name.get_slicec('/', 3);
+		String what = name.get_slicec('_', 3);
 
 		if (what == "node") {
 			add_node(type, p_value, Vector2(), id);
@@ -1072,20 +1072,20 @@ bool VisualShader::_get(const StringName &p_name, Variant &r_ret) const {
 	if (name == "mode") {
 		r_ret = get_mode();
 		return true;
-	} else if (name.begins_with("flags/")) {
-		StringName flag = name.get_slicec('/', 1);
+	} else if (name.begins_with("flags_")) {
+		StringName flag = name.get_slicec('_', 1);
 		r_ret = flags.has(flag);
 		return true;
-	} else if (name.begins_with("modes/")) {
-		String mode = name.get_slicec('/', 1);
+	} else if (name.begins_with("modes_")) {
+		String mode = name.get_slicec('_', 1);
 		if (modes.has(mode)) {
 			r_ret = modes[mode];
 		} else {
 			r_ret = 0;
 		}
 		return true;
-	} else if (name.begins_with("nodes/")) {
-		String typestr = name.get_slicec('/', 1);
+	} else if (name.begins_with("nodes_")) {
+		String typestr = name.get_slicec('_', 1);
 		Type type = TYPE_VERTEX;
 		for (int i = 0; i < TYPE_MAX; i++) {
 			if (typestr == type_string[i]) {
@@ -1094,7 +1094,7 @@ bool VisualShader::_get(const StringName &p_name, Variant &r_ret) const {
 			}
 		}
 
-		String index = name.get_slicec('/', 2);
+		String index = name.get_slicec('_', 2);
 		if (index == "connections") {
 			Vector<int> conns;
 			for (const List<Connection>::Element *E = graph[type].connections.front(); E; E = E->next()) {
@@ -1109,7 +1109,7 @@ bool VisualShader::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 
 		int id = index.to_int();
-		String what = name.get_slicec('/', 3);
+		String what = name.get_slicec('_', 3);
 
 		if (what == "node") {
 			r_ret = get_node(type, id);
@@ -1172,35 +1172,37 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
+	p_list->push_back(PropertyInfo(Variant::NIL, "Modes", PROPERTY_HINT_NONE, "modes_", PROPERTY_USAGE_GROUP));
 	for (Map<String, String>::Element *E = blend_mode_enums.front(); E; E = E->next()) {
-		p_list->push_back(PropertyInfo(Variant::INT, "modes/" + E->key(), PROPERTY_HINT_ENUM, E->get()));
+		p_list->push_back(PropertyInfo(Variant::INT, "modes_" + E->key(), PROPERTY_HINT_ENUM, E->get()));
 	}
 
+	p_list->push_back(PropertyInfo(Variant::NIL, "Flags", PROPERTY_HINT_NONE, "flags_", PROPERTY_USAGE_GROUP));
 	for (Set<String>::Element *E = toggles.front(); E; E = E->next()) {
-		p_list->push_back(PropertyInfo(Variant::BOOL, "flags/" + E->get()));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "flags_" + E->get()));
 	}
 
 	for (int i = 0; i < TYPE_MAX; i++) {
 		for (Map<int, Node>::Element *E = graph[i].nodes.front(); E; E = E->next()) {
-			String prop_name = "nodes/";
+			String prop_name = "nodes_";
 			prop_name += type_string[i];
-			prop_name += "/" + itos(E->key());
+			prop_name += "_" + itos(E->key());
 
 			if (E->key() != NODE_ID_OUTPUT) {
-				p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
+				p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + "_node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
 			}
-			p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+			p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 
 			if (Object::cast_to<VisualShaderNodeGroupBase>(E->get().node.ptr()) != nullptr) {
-				p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/input_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+				p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "_input_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "_output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 			}
 			if (Object::cast_to<VisualShaderNodeExpression>(E->get().node.ptr()) != nullptr) {
-				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/expression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "_expression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 			}
 		}
-		p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "nodes/" + String(type_string[i]) + "/connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "nodes_" + String(type_string[i]) + "_connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 	}
 }
 

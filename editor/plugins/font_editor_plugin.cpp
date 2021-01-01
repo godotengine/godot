@@ -291,8 +291,8 @@ void EditorInspectorPluginFont::parse_begin(Object *p_object) {
 }
 
 bool EditorInspectorPluginFont::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide) {
-	if (p_path.begins_with("language_support_override/") && p_object->is_class("FontData")) {
-		String lang = p_path.replace("language_support_override/", "");
+	if (p_path.begins_with("language_support_override_") && p_object->is_class("FontData")) {
+		String lang = p_path.replace("language_support_override_", "");
 
 		FontDataEditor *editor = memnew(FontDataEditor);
 		if (lang != "_new") {
@@ -305,8 +305,8 @@ bool EditorInspectorPluginFont::parse_property(Object *p_object, Variant::Type p
 		return true;
 	}
 
-	if (p_path.begins_with("script_support_override/") && p_object->is_class("FontData")) {
-		String script = p_path.replace("script_support_override/", "");
+	if (p_path.begins_with("script_support_override_") && p_object->is_class("FontData")) {
+		String script = p_path.replace("script_support_override_", "");
 
 		FontDataEditor *editor = memnew(FontDataEditor);
 		if (script != "_new") {

@@ -35,8 +35,8 @@
 
 bool ItemListPlugin::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
-	int idx = name.get_slice("/", 0).to_int();
-	String what = name.get_slice("/", 1);
+	int idx = name.get_slicec('_', 0).to_int();
+	String what = name.get_slicec('_', 1);
 
 	if (what == "text") {
 		set_item_text(idx, p_value);
@@ -70,8 +70,8 @@ bool ItemListPlugin::_set(const StringName &p_name, const Variant &p_value) {
 
 bool ItemListPlugin::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
-	int idx = name.get_slice("/", 0).to_int();
-	String what = name.get_slice("/", 1);
+	int idx = name.get_slicec('_', 0).to_int();
+	String what = name.get_slicec('_', 1);
 
 	if (what == "text") {
 		r_ret = get_item_text(idx);
@@ -101,7 +101,8 @@ bool ItemListPlugin::_get(const StringName &p_name, Variant &r_ret) const {
 
 void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < get_item_count(); i++) {
-		String base = itos(i) + "/";
+		String base = itos(i) + "_";
+		p_list->push_back(PropertyInfo(Variant::NIL, itos(i), PROPERTY_HINT_NONE, base, PROPERTY_USAGE_GROUP));
 
 		p_list->push_back(PropertyInfo(Variant::STRING, base + "text"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));

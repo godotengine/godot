@@ -1019,7 +1019,7 @@ bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
-	p_properties->push_back(PropertyInfo(Variant::STRING, "script/source", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+	p_properties->push_back(PropertyInfo(Variant::STRING, "script_source", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
 void GDScript::_bind_methods() {
@@ -2244,7 +2244,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	strings._set = StaticCString::create("_set");
 	strings._get = StaticCString::create("_get");
 	strings._get_property_list = StaticCString::create("_get_property_list");
-	strings._script_source = StaticCString::create("script/source");
+	strings._script_source = StaticCString::create("script_source");
 	_debug_parse_err_line = -1;
 	_debug_parse_err_file = "";
 

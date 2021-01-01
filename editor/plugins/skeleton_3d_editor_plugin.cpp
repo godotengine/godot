@@ -203,12 +203,12 @@ void BoneTransformEditor::_value_changed_transform(const String p_property_name,
 }
 
 void BoneTransformEditor::_change_transform(Transform p_new_transform) {
-	if (property.get_slicec('/', 0) == "bones" && property.get_slicec('/', 2) == "custom_pose") {
+	if (property.get_slicec('_', 0) == "bones" && property.get_slicec('_', 2) == "custom_pose") {
 		undo_redo->create_action(TTR("Set Custom Bone Pose Transform"), UndoRedo::MERGE_ENDS);
-		undo_redo->add_undo_method(skeleton, "set_bone_custom_pose", property.get_slicec('/', 1).to_int(), skeleton->get_bone_custom_pose(property.get_slicec('/', 1).to_int()));
-		undo_redo->add_do_method(skeleton, "set_bone_custom_pose", property.get_slicec('/', 1).to_int(), p_new_transform);
+		undo_redo->add_undo_method(skeleton, "set_bone_custom_pose", property.get_slicec('_', 1).to_int(), skeleton->get_bone_custom_pose(property.get_slicec('_', 1).to_int()));
+		undo_redo->add_do_method(skeleton, "set_bone_custom_pose", property.get_slicec('_', 1).to_int(), p_new_transform);
 		undo_redo->commit_action();
-	} else if (property.get_slicec('/', 0) == "bones") {
+	} else if (property.get_slicec('_', 0) == "bones") {
 		undo_redo->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
 		undo_redo->add_undo_property(skeleton, property, skeleton->get(property));
 		undo_redo->add_do_property(skeleton, property, p_new_transform);
@@ -218,7 +218,7 @@ void BoneTransformEditor::_change_transform(Transform p_new_transform) {
 
 void BoneTransformEditor::update_enabled_checkbox() {
 	if (enabled_checkbox) {
-		const String path = "bones/" + property.get_slicec('/', 1) + "/enabled";
+		const String path = "bones_" + property.get_slicec('_', 1) + "_enabled";
 		const bool is_enabled = skeleton->get(path);
 		enabled_checkbox->set_pressed(is_enabled);
 	}
@@ -298,7 +298,7 @@ void BoneTransformEditor::_key_button_pressed() {
 		return;
 	}
 
-	const BoneId bone_id = property.get_slicec('/', 1).to_int();
+	const BoneId bone_id = property.get_slicec('_', 1).to_int();
 	const String name = skeleton->get_bone_name(bone_id);
 
 	if (name.is_empty()) {
@@ -313,7 +313,7 @@ void BoneTransformEditor::_key_button_pressed() {
 
 void BoneTransformEditor::_checkbox_toggled(const bool p_toggled) {
 	if (enabled_checkbox) {
-		const String path = "bones/" + property.get_slicec('/', 1) + "/enabled";
+		const String path = "bones_" + property.get_slicec('_', 1) + "_enabled";
 		skeleton->set(path, p_toggled);
 	}
 }
@@ -446,7 +446,7 @@ bool Skeleton3DEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 	}
 
 	const String path = target->get_metadata(0);
-	if (!path.begins_with("bones/")) {
+	if (!path.begins_with("bones_")) {
 		return false;
 	}
 
@@ -456,7 +456,7 @@ bool Skeleton3DEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 	}
 
 	const String path2 = target->get_metadata(0);
-	if (!path2.begins_with("bones/")) {
+	if (!path2.begins_with("bones_")) {
 		return false;
 	}
 
@@ -471,8 +471,8 @@ void Skeleton3DEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	TreeItem *target = joint_tree->get_item_at_position(p_point);
 	TreeItem *selected = Object::cast_to<TreeItem>(Dictionary(p_data)["node"]);
 
-	const BoneId target_boneidx = String(target->get_metadata(0)).get_slicec('/', 1).to_int();
-	const BoneId selected_boneidx = String(selected->get_metadata(0)).get_slicec('/', 1).to_int();
+	const BoneId target_boneidx = String(target->get_metadata(0)).get_slicec('_', 1).to_int();
+	const BoneId selected_boneidx = String(selected->get_metadata(0)).get_slicec('_', 1).to_int();
 
 	move_skeleton_bone(skeleton->get_path(), selected_boneidx, target_boneidx);
 }
@@ -507,9 +507,9 @@ void Skeleton3DEditor::_joint_tree_selection_changed() {
 	TreeItem *selected = joint_tree->get_selected();
 	const String path = selected->get_metadata(0);
 
-	if (path.begins_with("bones/")) {
-		const int b_idx = path.get_slicec('/', 1).to_int();
-		const String bone_path = "bones/" + itos(b_idx) + "/";
+	if (path.begins_with("bones_")) {
+		const int b_idx = path.get_slicec('_', 1).to_int();
+		const String bone_path = "bones_" + itos(b_idx) + "_";
 
 		pose_editor->set_target(bone_path + "pose");
 		rest_editor->set_target(bone_path + "rest");
@@ -566,7 +566,7 @@ void Skeleton3DEditor::update_joint_tree() {
 		joint_item->set_text(0, skeleton->get_bone_name(b_idx));
 		joint_item->set_icon(0, bone_icon);
 		joint_item->set_selectable(0, true);
-		joint_item->set_metadata(0, "bones/" + itos(b_idx));
+		joint_item->set_metadata(0, "bones_" + itos(b_idx));
 	}
 }
 

@@ -276,10 +276,10 @@ Vector<String> Theme::_get_type_list() const {
 bool Theme::_set(const StringName &p_name, const Variant &p_value) {
 	String sname = p_name;
 
-	if (sname.find("/") != -1) {
-		String type = sname.get_slicec('/', 1);
-		String node_type = sname.get_slicec('/', 0);
-		String name = sname.get_slicec('/', 2);
+	if (sname.find("_") != -1) {
+		String type = sname.get_slicec('_', 1);
+		String node_type = sname.get_slicec('_', 0);
+		String name = sname.get_slicec('_', 2);
 
 		if (type == "icons") {
 			set_icon(name, node_type, p_value);
@@ -304,10 +304,10 @@ bool Theme::_set(const StringName &p_name, const Variant &p_value) {
 bool Theme::_get(const StringName &p_name, Variant &r_ret) const {
 	String sname = p_name;
 
-	if (sname.find("/") != -1) {
-		String type = sname.get_slicec('/', 1);
-		String node_type = sname.get_slicec('/', 0);
-		String name = sname.get_slicec('/', 2);
+	if (sname.find("_") != -1) {
+		String type = sname.get_slicec('_', 1);
+		String node_type = sname.get_slicec('_', 0);
+		String name = sname.get_slicec('_', 2);
 
 		if (type == "icons") {
 			if (!has_icon(name, node_type)) {
@@ -342,61 +342,114 @@ bool Theme::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
-	List<PropertyInfo> list;
-
 	const StringName *key = nullptr;
+	Set<StringName> node_types;
+	Set<StringName> property_groups;
+	List<PropertyInfo> properties;
 
 	while ((key = icon_map.next(key))) {
+		String node_type = *key;
+		node_types.insert(node_type);
+		String property_group = node_type + "_icons";
+		property_groups.insert(property_group);
 		const StringName *key2 = nullptr;
-
 		while ((key2 = icon_map[*key].next(key2))) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + *key + "/icons/" + *key2, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+			properties.push_back(PropertyInfo(Variant::OBJECT, property_group + "_" + *key2, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
 	key = nullptr;
 
 	while ((key = style_map.next(key))) {
+		String node_type = *key;
+		node_types.insert(node_type);
+		String property_group = node_type + "_styles";
+		property_groups.insert(property_group);
 		const StringName *key2 = nullptr;
-
 		while ((key2 = style_map[*key].next(key2))) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + *key + "/styles/" + *key2, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+			properties.push_back(PropertyInfo(Variant::OBJECT, property_group + "_" + *key2, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
 	key = nullptr;
 
 	while ((key = font_map.next(key))) {
+		String node_type = *key;
+		node_types.insert(node_type);
+		String property_group = node_type + "_fonts";
+		property_groups.insert(property_group);
 		const StringName *key2 = nullptr;
-
 		while ((key2 = font_map[*key].next(key2))) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + *key + "/fonts/" + *key2, PROPERTY_HINT_RESOURCE_TYPE, "Font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+			properties.push_back(PropertyInfo(Variant::OBJECT, property_group + "_" + *key2, PROPERTY_HINT_RESOURCE_TYPE, "Font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
 	key = nullptr;
 
 	while ((key = color_map.next(key))) {
+		String node_type = *key;
+		node_types.insert(node_type);
+		String property_group = node_type + "_colors";
+		property_groups.insert(property_group);
 		const StringName *key2 = nullptr;
-
 		while ((key2 = color_map[*key].next(key2))) {
-			list.push_back(PropertyInfo(Variant::COLOR, String() + *key + "/colors/" + *key2));
+			properties.push_back(PropertyInfo(Variant::COLOR, property_group + "_" + *key2));
 		}
 	}
 
 	key = nullptr;
 
 	while ((key = constant_map.next(key))) {
+		String node_type = *key;
+		node_types.insert(node_type);
+		String property_group = node_type + "_contstants";
+		property_groups.insert(property_group);
 		const StringName *key2 = nullptr;
-
 		while ((key2 = constant_map[*key].next(key2))) {
-			list.push_back(PropertyInfo(Variant::INT, String() + *key + "/constants/" + *key2));
+			properties.push_back(PropertyInfo(Variant::INT, property_group + "_" + *key2));
 		}
 	}
 
-	list.sort();
-	for (List<PropertyInfo>::Element *E = list.front(); E; E = E->next()) {
-		p_list->push_back(E->get());
+	if (properties.size() == 0) {
+		return;
+	}
+
+	List<String> sorted_node_types;
+	for (Set<StringName>::Element *E = node_types.front(); E; E = E->next()) {
+		sorted_node_types.push_back(E->get());
+	}
+	sorted_node_types.sort();
+
+	List<String> sorted_property_groups;
+	for (Set<StringName>::Element *E = property_groups.front(); E; E = E->next()) {
+		sorted_property_groups.push_back(E->get());
+	}
+	sorted_property_groups.sort();
+
+	properties.sort();
+
+	List<String>::Element *node_element = sorted_node_types.front();
+	List<String>::Element *group_element = sorted_property_groups.front();
+	ERR_FAIL_COND_MSG((!node_element || !group_element), "No node types or property groups.");
+	String node_type = "Guaranteed to be wrong";
+	String group_name = "Guaranteed to be wrong";
+	for (List<PropertyInfo>::Element *info_element = properties.front(); info_element; info_element = info_element->next()) {
+		PropertyInfo info = info_element->get();
+		if (!info.name.begins_with(node_type)) {
+			// New node type
+			ERR_FAIL_COND_MSG(!node_element || !info.name.begins_with(node_element->get()), "Incorrect or missing node type");
+			node_type = node_element->get();
+			node_element = node_element->next();
+			p_list->push_back(PropertyInfo(Variant::NIL, node_type, PROPERTY_HINT_NONE, node_type + "_", PROPERTY_USAGE_GROUP));
+		}
+		if (!info.name.begins_with(group_name)) {
+			// New property group
+			ERR_FAIL_COND_MSG(!group_element || !info.name.begins_with(group_element->get()), "Incorrect or missing group name");
+			group_name = group_element->get();
+			group_element = group_element->next();
+			p_list->push_back(PropertyInfo(Variant::NIL, group_name.trim_prefix(node_type), PROPERTY_HINT_NONE, group_name + "_", PROPERTY_USAGE_SUBGROUP));
+		}
+		p_list->push_back(info_element->get());
 	}
 }
 

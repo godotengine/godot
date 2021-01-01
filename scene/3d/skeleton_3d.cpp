@@ -72,12 +72,12 @@ SkinReference::~SkinReference() {
 bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
-	if (!path.begins_with("bones/")) {
+	if (!path.begins_with("bones_")) {
 		return false;
 	}
 
-	int which = path.get_slicec('/', 1).to_int();
-	String what = path.get_slicec('/', 2);
+	int which = path.get_slicec('_', 1).to_int();
+	String what = path.get_slicec('_', 2);
 
 	if (which == bones.size() && what == "name") {
 		add_bone(p_value);
@@ -118,12 +118,12 @@ bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 bool Skeleton3D::_get(const StringName &p_path, Variant &r_ret) const {
 	String path = p_path;
 
-	if (!path.begins_with("bones/")) {
+	if (!path.begins_with("bones_")) {
 		return false;
 	}
 
-	int which = path.get_slicec('/', 1).to_int();
-	String what = path.get_slicec('/', 2);
+	int which = path.get_slicec('_', 1).to_int();
+	String what = path.get_slicec('_', 2);
 
 	ERR_FAIL_INDEX_V(which, bones.size(), false);
 
@@ -158,8 +158,10 @@ bool Skeleton3D::_get(const StringName &p_path, Variant &r_ret) const {
 }
 
 void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::NIL, "Bones", PROPERTY_HINT_NONE, "bones_", PROPERTY_USAGE_GROUP));
 	for (int i = 0; i < bones.size(); i++) {
-		String prep = "bones/" + itos(i) + "/";
+		p_list->push_back(PropertyInfo(Variant::NIL, itos(i), PROPERTY_HINT_NONE, "bones_" + itos(i) + "_", PROPERTY_USAGE_SUBGROUP));
+		String prep = "bones_" + itos(i) + "_";
 		p_list->push_back(PropertyInfo(Variant::STRING, prep + "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::INT, prep + "parent", PROPERTY_HINT_RANGE, "-1," + itos(bones.size() - 1) + ",1", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM, prep + "rest", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));

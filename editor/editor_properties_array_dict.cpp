@@ -38,7 +38,7 @@ bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_
 	String pn = p_name;
 
 	if (pn.begins_with("indices")) {
-		int idx = pn.get_slicec('/', 1).to_int();
+		int idx = pn.get_slicec('_', 1).to_int();
 		array.set(idx, p_value);
 		return true;
 	}
@@ -50,7 +50,7 @@ bool EditorPropertyArrayObject::_get(const StringName &p_name, Variant &r_ret) c
 	String pn = p_name;
 
 	if (pn.begins_with("indices")) {
-		int idx = pn.get_slicec('/', 1).to_int();
+		int idx = pn.get_slicec('_', 1).to_int();
 		bool valid;
 		r_ret = array.get(idx, &valid);
 		if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
@@ -90,7 +90,7 @@ bool EditorPropertyDictionaryObject::_set(const StringName &p_name, const Varian
 	}
 
 	if (pn.begins_with("indices")) {
-		int idx = pn.get_slicec('/', 1).to_int();
+		int idx = pn.get_slicec('_', 1).to_int();
 		Variant key = dict.get_key_at_index(idx);
 		dict[key] = p_value;
 		return true;
@@ -113,7 +113,7 @@ bool EditorPropertyDictionaryObject::_get(const StringName &p_name, Variant &r_r
 	}
 
 	if (pn.begins_with("indices")) {
-		int idx = pn.get_slicec('/', 1).to_int();
+		int idx = pn.get_slicec('_', 1).to_int();
 		Variant key = dict.get_key_at_index(idx);
 		r_ret = dict[key];
 		if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
@@ -157,7 +157,7 @@ EditorPropertyDictionaryObject::EditorPropertyDictionaryObject() {
 
 void EditorPropertyArray::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("indices")) {
-		int idx = p_property.get_slice("/", 1).to_int();
+		int idx = p_property.get_slicec('_', 1).to_int();
 		Variant array = object->get_array();
 		array.set(idx, p_value);
 		emit_changed(get_edited_property(), array, "", true);
@@ -322,7 +322,7 @@ void EditorPropertyArray::update_property() {
 		object->set_array(array);
 
 		for (int i = 0; i < amount; i++) {
-			String prop_name = "indices/" + itos(i + offset);
+			String prop_name = "indices_" + itos(i + offset);
 
 			EditorProperty *prop = nullptr;
 			Variant value = array.get(i + offset);
@@ -554,7 +554,7 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 		int hint_subtype_separator = p_hint_string.find(":");
 		if (hint_subtype_separator >= 0) {
 			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
-			int slash_pos = subtype_string.find("/");
+			int slash_pos = subtype_string.find("_");
 			if (slash_pos >= 0) {
 				subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1, subtype_string.size() - slash_pos - 1).to_int());
 				subtype_string = subtype_string.substr(0, slash_pos);
@@ -615,7 +615,7 @@ void EditorPropertyDictionary::_property_changed(const String &p_property, Varia
 	} else if (p_property == "new_item_value") {
 		object->set_new_item_value(p_value);
 	} else if (p_property.begins_with("indices")) {
-		int idx = p_property.get_slice("/", 1).to_int();
+		int idx = p_property.get_slicec('_', 1).to_int();
 		Dictionary dict = object->get_dict();
 		Variant key = dict.get_key_at_index(idx);
 		dict[key] = p_value;
@@ -762,7 +762,7 @@ void EditorPropertyDictionary::update_property() {
 			Variant value;
 
 			if (i < amount) {
-				prop_name = "indices/" + itos(i + offset);
+				prop_name = "indices_" + itos(i + offset);
 				key = dict.get_key_at_index(i + offset);
 				value = dict.get_value_at_index(i + offset);
 			} else if (i == amount) {

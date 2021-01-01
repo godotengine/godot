@@ -74,16 +74,12 @@ void AnimatedValuesBackup::_bind_methods() {
 bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
 
-	if (name.begins_with("playback/play")) { // bw compatibility
-
-		set_current_animation(p_value);
-
-	} else if (name.begins_with("anims/")) {
-		String which = name.get_slicec('/', 1);
+	if (name.begins_with("anims_")) {
+		String which = name.get_slicec('_', 1);
 		add_animation(which, p_value);
 
-	} else if (name.begins_with("next/")) {
-		String which = name.get_slicec('/', 1);
+	} else if (name.begins_with("next_")) {
+		String which = name.get_slicec('_', 1);
 		animation_set_next(which, p_value);
 
 	} else if (p_name == SceneStringNames::get_singleton()->blend_times) {
@@ -109,16 +105,12 @@ bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {
 bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
 
-	if (name == "playback/play") { // bw compatibility
-
-		r_ret = get_current_animation();
-
-	} else if (name.begins_with("anims/")) {
-		String which = name.get_slicec('/', 1);
+	if (name.begins_with("anims_")) {
+		String which = name.get_slicec('_', 1);
 		r_ret = get_animation(which);
 
-	} else if (name.begins_with("next/")) {
-		String which = name.get_slicec('/', 1);
+	} else if (name.begins_with("next_")) {
+		String which = name.get_slicec('_', 1);
 
 		r_ret = animation_get_next(which);
 
@@ -168,9 +160,9 @@ void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<PropertyInfo> anim_names;
 
 	for (Map<StringName, AnimationData>::Element *E = animation_set.front(); E; E = E->next()) {
-		anim_names.push_back(PropertyInfo(Variant::OBJECT, "anims/" + String(E->key()), PROPERTY_HINT_RESOURCE_TYPE, "Animation", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
+		anim_names.push_back(PropertyInfo(Variant::OBJECT, "anims_" + String(E->key()), PROPERTY_HINT_RESOURCE_TYPE, "Animation", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
 		if (E->get().next != StringName()) {
-			anim_names.push_back(PropertyInfo(Variant::STRING, "next/" + String(E->key()), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+			anim_names.push_back(PropertyInfo(Variant::STRING, "next_" + String(E->key()), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 		}
 	}
 
