@@ -43,7 +43,7 @@
 #endif
 
 class PhysicsServer2DWrapMT : public PhysicsServer2D {
-	mutable PhysicsServer2D *physics_2d_server;
+	mutable PhysicsServer2D *physics_2d_server = nullptr;
 
 	mutable CommandQueueMT command_queue;
 
@@ -52,22 +52,22 @@ class PhysicsServer2DWrapMT : public PhysicsServer2D {
 
 	Thread::ID server_thread;
 	Thread::ID main_thread;
-	volatile bool exit;
-	Thread *thread;
-	volatile bool step_thread_up;
-	bool create_thread;
+	volatile bool exit = false;
+	Thread *thread = nullptr;
+	volatile bool step_thread_up = false;
+	bool create_thread = false;
 
 	Semaphore step_sem;
-	int step_pending;
+	int step_pending = 0;
 	void thread_step(real_t p_delta);
 	void thread_flush();
 
 	void thread_exit();
 
-	bool first_frame;
+	bool first_frame = false;
 
 	Mutex alloc_mutex;
-	int pool_max_size;
+	int pool_max_size = 0;
 
 public:
 #define ServerName PhysicsServer2D

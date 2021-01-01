@@ -59,7 +59,7 @@ public:
 class Shape2DSW {
 	RID self;
 	Rect2 aabb;
-	bool configured;
+	bool configured = false;
 	real_t custom_bias;
 
 	Map<ShapeOwner2DSW *, int> owners;
@@ -191,7 +191,7 @@ public:
 
 class RayShape2DSW : public Shape2DSW {
 	real_t length;
-	bool slips_on_slope;
+	bool slips_on_slope = false;
 
 public:
 	_FORCE_INLINE_ real_t get_length() const { return length; }
@@ -420,8 +420,8 @@ class ConvexPolygonShape2DSW : public Shape2DSW {
 		Vector2 normal; //normal to next segment
 	};
 
-	Point *points;
-	int point_count;
+	Point *points = nullptr;
+	int point_count = 0;
 
 public:
 	_FORCE_INLINE_ int get_point_count() const { return point_count; }
@@ -480,7 +480,7 @@ public:
 
 class ConcavePolygonShape2DSW : public ConcaveShape2DSW {
 	struct Segment {
-		int points[2];
+		int points[2] = {};
 	};
 
 	Vector<Segment> segments;
@@ -488,11 +488,11 @@ class ConcavePolygonShape2DSW : public ConcaveShape2DSW {
 
 	struct BVH {
 		Rect2 aabb;
-		int left, right;
+		int left = 0, right = 0;
 	};
 
 	Vector<BVH> bvh;
-	int bvh_depth;
+	int bvh_depth = 0;
 
 	struct BVH_CompareX {
 		_FORCE_INLINE_ bool operator()(const BVH &a, const BVH &b) const {

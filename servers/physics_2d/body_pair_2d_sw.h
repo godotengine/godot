@@ -40,17 +40,17 @@ class BodyPair2DSW : public Constraint2DSW {
 	};
 	union {
 		struct {
-			Body2DSW *A;
-			Body2DSW *B;
+			Body2DSW *A = nullptr;
+			Body2DSW *B = nullptr;
 		};
 
-		Body2DSW *_arr[2];
+		Body2DSW *_arr[2] = {};
 	};
 
-	int shape_A;
-	int shape_B;
+	int shape_A = 0;
+	int shape_B = 0;
 
-	Space2DSW *space;
+	Space2DSW *space = nullptr;
 
 	struct Contact {
 		Vector2 position;
@@ -63,20 +63,20 @@ class BodyPair2DSW : public Constraint2DSW {
 		real_t bias;
 
 		real_t depth;
-		bool active;
+		bool active = false;
 		Vector2 rA, rB;
-		bool reused;
+		bool reused = false;
 		real_t bounce;
 	};
 
 	Vector2 offset_B; //use local A coordinates to avoid numerical issues on collision detection
 
 	Vector2 sep_axis;
-	Contact contacts[MAX_CONTACTS];
-	int contact_count;
-	bool collided;
-	bool oneway_disabled;
-	int cc;
+	Contact contacts[MAX_CONTACTS] = {};
+	int contact_count = 0;
+	bool collided = false;
+	bool oneway_disabled = false;
+	int cc = 0;
 
 	bool _test_ccd(real_t p_step, Body2DSW *p_A, int p_shape_A, const Transform2D &p_xform_A, Body2DSW *p_B, int p_shape_B, const Transform2D &p_xform_B, bool p_swap_result = false);
 	void _validate_contacts();
