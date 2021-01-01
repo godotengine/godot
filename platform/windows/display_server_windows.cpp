@@ -903,6 +903,9 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 			r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
 		}
 	}
+	if (!p_borderless) {
+		r_style |= WS_VISIBLE;
+	}
 
 	if (p_no_activate_focus) {
 		r_style_ex |= WS_EX_TOPMOST | WS_EX_NOACTIVATE;
@@ -910,7 +913,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 	r_style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 }
 
-void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repaint, bool p_maximized) {
+void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repaint) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -943,6 +946,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		RECT rect;
 
 		wd.fullscreen = false;
+		wd.maximized = wd.was_maximized;
 
 		if (wd.pre_fs_valid) {
 			rect = wd.pre_fs_rect;
@@ -951,24 +955,21 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 			rect.right = wd.width;
 			rect.top = 0;
 			rect.bottom = wd.height;
+			wd.pre_fs_valid = true;
 		}
 
-		_update_window_style(p_window, false, wd.was_maximized);
+		_update_window_style(p_window, false);
 
 		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
-
-		wd.pre_fs_valid = true;
+	} else if (p_mode == WINDOW_MODE_WINDOWED) {
+		ShowWindow(wd.hWnd, SW_RESTORE);
+		wd.maximized = false;
+		wd.minimized = false;
 	}
 
 	if (p_mode == WINDOW_MODE_MAXIMIZED) {
 		ShowWindow(wd.hWnd, SW_MAXIMIZE);
 		wd.maximized = true;
-		wd.minimized = false;
-	}
-
-	if (p_mode == WINDOW_MODE_WINDOWED) {
-		ShowWindow(wd.hWnd, SW_RESTORE);
-		wd.maximized = false;
 		wd.minimized = false;
 	}
 
@@ -2991,6 +2992,9 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			MessageBoxW(nullptr, L"Window Creation Error.", L"ERROR", MB_OK | MB_ICONEXCLAMATION);
 			windows.erase(id);
 			return INVALID_WINDOW_ID;
+		}
+		if (p_mode != WINDOW_MODE_FULLSCREEN) {
+			wd.pre_fs_valid = true;
 		}
 #ifdef VULKAN_ENABLED
 
