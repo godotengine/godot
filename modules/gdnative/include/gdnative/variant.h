@@ -195,48 +195,84 @@ typedef void (*godot_ptr_utility_function)(void *r_return, const void **p_argume
 extern "C" {
 #endif
 #if __STDC_VERSION__ >= 201112L
-#define godot_variant_new(r_dest, p_value)                                      \
-    _Generic((p_value),                                                         \
-        godot_bool: godot_variant_new_bool,                                     \
-        int:      godot_variant_new_int,                                        \
-        uint64_t: godot_variant_new_uint,                                       \
-        int64_t:  godot_variant_new_int,                                        \
-        double:   godot_variant_new_real,                                       \
-        float:    godot_variant_new_real,                                       \
-        godot_string *: godot_variant_new_string,                               \
-        godot_string_name *: godot_variant_new_string_name,                     \
-        godot_vector2 *: godot_variant_new_vector2,                             \
-        godot_vector2i *: godot_variant_new_vector2i,                           \
-        godot_rect2 *: godot_variant_new_rect2,                                 \
-        godot_rect2i *: godot_variant_new_rect2i,                               \
-        godot_vector3 *: godot_variant_new_vector3,                             \
-        godot_vector3i *: godot_variant_new_vector3i,                           \
-        godot_transform2d *: godot_variant_new_transform2d,                     \
-        godot_plane *: godot_variant_new_plane,                                 \
-        godot_quat *: godot_variant_new_quat,                                   \
-        godot_aabb *: godot_variant_new_aabb,                                   \
-        godot_basis *: godot_variant_new_basis,                                 \
-        godot_transform *: godot_variant_new_transform,                         \
-        godot_color *: godot_variant_new_color,                                 \
-        godot_node_path *: godot_variant_new_node_path,                         \
-        godot_rid *: godot_variant_new_rid,                                     \
-        godot_callable *: godot_variant_new_callable,                           \
-        godot_signal *: godot_variant_new_signal,                               \
-        godot_object *: godot_variant_new_object,                               \
-        godot_dictionary *: godot_variant_new_dictionary,                       \
-        godot_array *: godot_variant_new_array,                                 \
-        godot_packed_byte_array *: godot_variant_new_packed_byte_array,         \
-        godot_packed_int32_array *: godot_variant_new_packed_int32_array,       \
-        godot_packed_int64_array *: godot_variant_new_packed_int64_array,       \
-        godot_packed_float32_array *: godot_variant_new_packed_float32_array,   \
-        godot_packed_float64_array *: godot_variant_new_packed_float64_array,   \
-        godot_packed_string_array *: godot_variant_new_packed_string_array,     \
-        godot_packed_vector2_array *: godot_variant_new_packed_vector2_array,   \
-        godot_packed_vector3_array *: godot_variant_new_packed_vector3_array,   \
-        godot_packed_color_array *: godot_variant_new_packed_color_array)       \
-    ((r_dest), (p_value))
+#define godot_variant_new(r_dest, p_value)             \
+	_Generic((p_value),                                \
+			 godot_bool                                \
+			 : godot_variant_new_bool,                 \
+			 int                                       \
+			 : godot_variant_new_int,                  \
+			 uint64_t                                  \
+			 : godot_variant_new_uint,                 \
+			 int64_t                                   \
+			 : godot_variant_new_int,                  \
+			 double                                    \
+			 : godot_variant_new_real,                 \
+			 float                                     \
+			 : godot_variant_new_real,                 \
+			 godot_string *                            \
+			 : godot_variant_new_string,               \
+			 godot_string_name *                       \
+			 : godot_variant_new_string_name,          \
+			 godot_vector2 *                           \
+			 : godot_variant_new_vector2,              \
+			 godot_vector2i *                          \
+			 : godot_variant_new_vector2i,             \
+			 godot_rect2 *                             \
+			 : godot_variant_new_rect2,                \
+			 godot_rect2i *                            \
+			 : godot_variant_new_rect2i,               \
+			 godot_vector3 *                           \
+			 : godot_variant_new_vector3,              \
+			 godot_vector3i *                          \
+			 : godot_variant_new_vector3i,             \
+			 godot_transform2d *                       \
+			 : godot_variant_new_transform2d,          \
+			 godot_plane *                             \
+			 : godot_variant_new_plane,                \
+			 godot_quat *                              \
+			 : godot_variant_new_quat,                 \
+			 godot_aabb *                              \
+			 : godot_variant_new_aabb,                 \
+			 godot_basis *                             \
+			 : godot_variant_new_basis,                \
+			 godot_transform *                         \
+			 : godot_variant_new_transform,            \
+			 godot_color *                             \
+			 : godot_variant_new_color,                \
+			 godot_node_path *                         \
+			 : godot_variant_new_node_path,            \
+			 godot_rid *                               \
+			 : godot_variant_new_rid,                  \
+			 godot_callable *                          \
+			 : godot_variant_new_callable,             \
+			 godot_signal *                            \
+			 : godot_variant_new_signal,               \
+			 godot_object *                            \
+			 : godot_variant_new_object,               \
+			 godot_dictionary *                        \
+			 : godot_variant_new_dictionary,           \
+			 godot_array *                             \
+			 : godot_variant_new_array,                \
+			 godot_packed_byte_array *                 \
+			 : godot_variant_new_packed_byte_array,    \
+			 godot_packed_int32_array *                \
+			 : godot_variant_new_packed_int32_array,   \
+			 godot_packed_int64_array *                \
+			 : godot_variant_new_packed_int64_array,   \
+			 godot_packed_float32_array *              \
+			 : godot_variant_new_packed_float32_array, \
+			 godot_packed_float64_array *              \
+			 : godot_variant_new_packed_float64_array, \
+			 godot_packed_string_array *               \
+			 : godot_variant_new_packed_string_array,  \
+			 godot_packed_vector2_array *              \
+			 : godot_variant_new_packed_vector2_array, \
+			 godot_packed_vector3_array *              \
+			 : godot_variant_new_packed_vector3_array, \
+			 godot_packed_color_array *                \
+			 : godot_variant_new_packed_color_array)((r_dest), (p_value))
 #endif
-	
+
 godot_variant_type GDAPI godot_variant_get_type(const godot_variant *p_v);
 // Memory.
 
