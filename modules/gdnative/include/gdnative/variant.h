@@ -194,7 +194,7 @@ typedef void (*godot_ptr_utility_function)(void *r_return, const void **p_argume
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#if __STDC_VERSION__ >= 201112L
 #define godot_variant_new(r_dest, p_value)                                      \
     _Generic((p_value),                                                         \
         godot_bool: godot_variant_new_bool,                                     \
@@ -236,7 +236,7 @@ extern "C" {
         godot_packed_color_array *: godot_variant_new_packed_color_array,       \
     ((r_dest), (p_value))
 #endif
-
+	
 godot_variant_type GDAPI godot_variant_get_type(const godot_variant *p_v);
 // Memory.
 
