@@ -3619,7 +3619,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 
+#ifdef WINDOWS_ENABLED
 		if (!keycode_handled && (!k->get_command() || (k->get_command() && k->get_alt()))) { // For German keyboards.
+#else
+		if (!keycode_handled && !k->get_command()) { // For German keyboards.
+#endif
 
 			if (k->get_unicode() >= 32) {
 				if (readonly) {
