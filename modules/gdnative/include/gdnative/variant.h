@@ -233,7 +233,7 @@ extern "C" {
         godot_packed_string_array *: godot_variant_new_packed_string_array,     \
         godot_packed_vector2_array *: godot_variant_new_packed_vector2_array,   \
         godot_packed_vector3_array *: godot_variant_new_packed_vector3_array,   \
-        godot_packed_color_array *: godot_variant_new_packed_color_array,       \
+        godot_packed_color_array *: godot_variant_new_packed_color_array)       \
     ((r_dest), (p_value))
 #endif
 	
