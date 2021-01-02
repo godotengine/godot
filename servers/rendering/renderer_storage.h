@@ -71,8 +71,8 @@ public:
 			for (Set<InstanceDependency *>::Element *E = dependencies.front(); E; E = E->next()) {
 				InstanceDependency *dep = E->get();
 				Map<InstanceBaseDependency *, uint32_t>::Element *F = dep->instances.find(this);
-				ERR_CONTINUE(!F);
-				if (F->get() != instance_version) {
+
+				if (F && F->get() != instance_version) {
 					Pair<InstanceDependency *, Map<InstanceBaseDependency *, uint32_t>::Element *> p;
 					p.first = dep;
 					p.second = F;
