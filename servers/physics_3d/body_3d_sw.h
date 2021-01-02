@@ -83,14 +83,14 @@ class Body3DSW : public CollisionObject3DSW {
 	SelfList<Body3DSW> direct_state_query_list;
 
 	VSet<RID> exceptions;
-	bool omit_force_integration;
-	bool active;
+	bool omit_force_integration = false;
+	bool active = false;
 
-	bool first_integration;
+	bool first_integration = false;
 
-	bool continuous_cd;
-	bool can_sleep;
-	bool first_time_kinematic;
+	bool continuous_cd = false;
+	bool can_sleep = false;
+	bool first_time_kinematic = false;
 	void _update_inertia();
 	virtual void _shapes_changed();
 	Transform new_transform;
@@ -98,14 +98,13 @@ class Body3DSW : public CollisionObject3DSW {
 	Map<Constraint3DSW *, int> constraint_map;
 
 	struct AreaCMP {
-		Area3DSW *area;
-		int refCount;
+		Area3DSW *area = nullptr;
+		int refCount = 1;
 		_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
 		_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
 		_FORCE_INLINE_ AreaCMP() {}
 		_FORCE_INLINE_ AreaCMP(Area3DSW *p_area) {
 			area = p_area;
-			refCount = 1;
 		}
 	};
 
@@ -115,16 +114,16 @@ class Body3DSW : public CollisionObject3DSW {
 		Vector3 local_pos;
 		Vector3 local_normal;
 		real_t depth;
-		int local_shape;
+		int local_shape = 0;
 		Vector3 collider_pos;
-		int collider_shape;
+		int collider_shape = 0;
 		ObjectID collider_instance_id;
 		RID collider;
 		Vector3 collider_velocity_at_pos;
 	};
 
 	Vector<Contact> contacts; //no contacts by default
-	int contact_count;
+	int contact_count = 0;
 
 	struct ForceIntegrationCallback {
 		ObjectID id;
@@ -132,11 +131,11 @@ class Body3DSW : public CollisionObject3DSW {
 		Variant udata;
 	};
 
-	ForceIntegrationCallback *fi_callback;
+	ForceIntegrationCallback *fi_callback = nullptr;
 
-	uint64_t island_step;
-	Body3DSW *island_next;
-	Body3DSW *island_list_next;
+	uint64_t island_step = 0;
+	Body3DSW *island_next = nullptr;
+	Body3DSW *island_list_next = nullptr;
 
 	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const Area3DSW *p_area);
 
@@ -378,8 +377,8 @@ class PhysicsDirectBodyState3DSW : public PhysicsDirectBodyState3D {
 	GDCLASS(PhysicsDirectBodyState3DSW, PhysicsDirectBodyState3D);
 
 public:
-	static PhysicsDirectBodyState3DSW *singleton;
-	Body3DSW *body;
+	static PhysicsDirectBodyState3DSW *singleton = nullptr;
+	Body3DSW *body = nullptr;
 	real_t step;
 
 	virtual Vector3 get_total_gravity() const override { return body->gravity; } // get gravity vector working on this body space/area

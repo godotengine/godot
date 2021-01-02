@@ -63,14 +63,14 @@ public:
 
 	union {
 		struct {
-			Body3DSW *A;
-			Body3DSW *B;
+			Body3DSW *A = nullptr;
+			Body3DSW *B = nullptr;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2] = {};
 	};
 
-	JacobianEntry3DSW m_jac[3]; //3 orthogonal linear constraints
+	JacobianEntry3DSW m_jac[3] = {}; //3 orthogonal linear constraints
 
 	real_t m_appliedImpulse;
 	Transform m_rbAFrame;
@@ -97,9 +97,9 @@ public:
 	real_t m_accSwingLimitImpulse;
 	real_t m_accTwistLimitImpulse;
 
-	bool m_angularOnly;
-	bool m_solveTwistLimit;
-	bool m_solveSwingLimit;
+	bool m_angularOnly = false;
+	bool m_solveTwistLimit = false;
+	bool m_solveSwingLimit = false;
 
 public:
 	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_CONE_TWIST; }

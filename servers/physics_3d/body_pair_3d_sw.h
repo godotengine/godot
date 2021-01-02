@@ -41,15 +41,15 @@ class BodyPair3DSW : public Constraint3DSW {
 
 	union {
 		struct {
-			Body3DSW *A;
-			Body3DSW *B;
+			Body3DSW *A = nullptr;
+			Body3DSW *B = nullptr;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2] = {};
 	};
 
-	int shape_A;
-	int shape_B;
+	int shape_A = 0;
+	int shape_B = 0;
 
 	struct Contact {
 		Vector3 position;
@@ -64,16 +64,16 @@ class BodyPair3DSW : public Constraint3DSW {
 		real_t bounce;
 
 		real_t depth;
-		bool active;
+		bool active = false;
 		Vector3 rA, rB; // Offset in world orientation with respect to center of mass
 	};
 
 	Vector3 offset_B; //use local A coordinates to avoid numerical issues on collision detection
 
 	Vector3 sep_axis;
-	Contact contacts[MAX_CONTACTS];
-	int contact_count;
-	bool collided;
+	Contact contacts[MAX_CONTACTS] = {};
+	int contact_count = 0;
+	bool collided = false;
 
 	static void _contact_added_callback(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata);
 
@@ -82,7 +82,7 @@ class BodyPair3DSW : public Constraint3DSW {
 	void validate_contacts();
 	bool _test_ccd(real_t p_step, Body3DSW *p_A, int p_shape_A, const Transform &p_xform_A, Body3DSW *p_B, int p_shape_B, const Transform &p_xform_B);
 
-	Space3DSW *space;
+	Space3DSW *space = nullptr;
 
 public:
 	bool setup(real_t p_step);

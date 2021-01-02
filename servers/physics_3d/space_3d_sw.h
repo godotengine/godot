@@ -45,7 +45,7 @@ class PhysicsDirectSpaceState3DSW : public PhysicsDirectSpaceState3D {
 	GDCLASS(PhysicsDirectSpaceState3DSW, PhysicsDirectSpaceState3D);
 
 public:
-	Space3DSW *space;
+	Space3DSW *space = nullptr;
 
 	virtual int intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
 	virtual bool intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_ray = false) override;
@@ -71,12 +71,12 @@ public:
 	};
 
 private:
-	uint64_t elapsed_time[ELAPSED_TIME_MAX];
+	uint64_t elapsed_time[ELAPSED_TIME_MAX] = {};
 
-	PhysicsDirectSpaceState3DSW *direct_access;
+	PhysicsDirectSpaceState3DSW *direct_access = nullptr;
 	RID self;
 
-	BroadPhase3DSW *broadphase;
+	BroadPhase3DSW *broadphase = nullptr;
 	SelfList<Body3DSW>::List active_list;
 	SelfList<Body3DSW>::List inertia_update_list;
 	SelfList<Body3DSW>::List state_query_list;
@@ -88,7 +88,7 @@ private:
 
 	Set<CollisionObject3DSW *> objects;
 
-	Area3DSW *area;
+	Area3DSW *area = nullptr;
 
 	real_t contact_recycle_radius;
 	real_t contact_max_separation;
@@ -100,24 +100,24 @@ private:
 		INTERSECTION_QUERY_MAX = 2048
 	};
 
-	CollisionObject3DSW *intersection_query_results[INTERSECTION_QUERY_MAX];
-	int intersection_query_subindex_results[INTERSECTION_QUERY_MAX];
+	CollisionObject3DSW *intersection_query_results[INTERSECTION_QUERY_MAX] = {};
+	int intersection_query_subindex_results[INTERSECTION_QUERY_MAX] = {};
 
 	real_t body_linear_velocity_sleep_threshold;
 	real_t body_angular_velocity_sleep_threshold;
 	real_t body_time_to_sleep;
 	real_t body_angular_velocity_damp_ratio;
 
-	bool locked;
+	bool locked = false;
 
-	int island_count;
-	int active_objects;
-	int collision_pairs;
+	int island_count = 0;
+	int active_objects = 0;
+	int collision_pairs = 0;
 
 	RID static_global_body;
 
 	Vector<Vector3> contact_debug;
-	int contact_debug_count;
+	int contact_debug_count = 0;
 
 	friend class PhysicsDirectSpaceState3DSW;
 

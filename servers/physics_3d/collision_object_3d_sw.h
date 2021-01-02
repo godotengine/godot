@@ -55,26 +55,26 @@ private:
 	Type type;
 	RID self;
 	ObjectID instance_id;
-	uint32_t collision_layer;
-	uint32_t collision_mask;
+	uint32_t collision_layer = 0;
+	uint32_t collision_mask = 0;
 
 	struct Shape {
 		Transform xform;
 		Transform xform_inv;
-		BroadPhase3DSW::ID bpid;
+		BroadPhase3DSW::ID bpid = 0;
 		AABB aabb_cache; //for rayqueries
 		real_t area_cache;
-		Shape3DSW *shape;
-		bool disabled;
+		Shape3DSW *shape = nullptr;
+		bool disabled = false;
 
-		Shape() { disabled = false; }
+		Shape() { }
 	};
 
 	Vector<Shape> shapes;
-	Space3DSW *space;
+	Space3DSW *space = nullptr;
 	Transform transform;
 	Transform inv_transform;
-	bool _static;
+	bool _static = false;
 
 	SelfList<CollisionObject3DSW> pending_shape_update_list;
 
@@ -101,7 +101,7 @@ protected:
 	virtual void _shapes_changed() = 0;
 	void _set_space(Space3DSW *p_space);
 
-	bool ray_pickable;
+	bool ray_pickable = false;
 
 	CollisionObject3DSW(Type p_type);
 
