@@ -160,7 +160,249 @@ typedef struct {
 
 #include <gdnative/gdnative.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#if __STDC_VERSION__ >= 201112L
+
+#define godot_packed_array_new(r_dest)                                  \
+    _Generic((r_dest),                                                  \
+        godot_packed_byte_array*:    godot_packed_byte_array_new,       \
+        godot_packed_int_array*:     godot_packed_int_array_new,        \
+        godot_packed_real_array*:    godot_packed_real_array_new,       \
+        godot_packed_string_array*:  godot_packed_string_array_new,     \
+        godot_packed_vector2_array*: godot_packed_vector2_array_new,    \
+        godot_packed_vector3_array*: godot_packed_vector3_array_new,    \
+        godot_packed_color_array*:   godot_packed_color_array_new)      \
+    ((r_dest))
+
+
+#define godot_packed_array_new_copy(r_dest, p_src)                       \
+    _Generic((r_dest),                                                   \
+        godot_packed_byte_array*:    godot_packed_byte_array_new_copy,   \
+        godot_packed_int_array*:     godot_packed_int_array_new_copy,    \
+        godot_packed_real_array*:    godot_packed_real_array_new_copy,   \
+        godot_packed_string_array*:  godot_packed_string_array_new_copy, \
+        godot_packed_vector2_array*: godot_packed_vector2_array_new_copy,\
+        godot_packed_vector3_array*: godot_packed_vector3_array_new_copy,\
+        godot_packed_color_array*:   godot_packed_color_array_new_copy)  \
+    ((r_dest), (p_src))
+
+
+#define godot_packed_array_new_with_array(r_dest, p_a)                          \
+    _Generic((r_dest),                                                          \
+        godot_packed_byte_array*:    godot_packed_byte_array_new_with_array,    \
+        godot_packed_int_array*:     godot_packed_int_array_new_with_array,     \
+        godot_packed_real_array*:    godot_packed_real_array_new_with_array,    \
+        godot_packed_string_array*:  godot_packed_string_array_new_with_array,  \
+        godot_packed_vector2_array*: godot_packed_vector2_array_new_with_array, \
+        godot_packed_vector3_array*: godot_packed_vector3_array_new_with_array, \
+        godot_packed_color_array*:   godot_packed_color_array_new_with_array)   \
+    ((r_dest), (p_a))
+
+
+#define godot_packed_array_append(p_self, p_data)                      \
+    _Generic((p_self),                                                 \
+        godot_packed_byte_array*:    godot_packed_byte_array_append,   \
+        godot_packed_int_array*:     godot_packed_int_array_append,    \
+        godot_packed_real_array*:    godot_packed_real_array_append,   \
+        godot_packed_string_array*:  godot_packed_string_array_append, \
+        godot_packed_vector2_array*: godot_packed_vector2_array_append,\
+        godot_packed_vector3_array*: godot_packed_vector3_array_append,\
+        godot_packed_color_array*:   godot_packed_color_array_append)  \
+    ((p_self), (p_data))
+
+
+#define godot_packed_array_append_array(p_self, p_array)                      \
+    _Generic((p_self),                                                        \
+        godot_packed_byte_array*:    godot_packed_byte_array_append_array,    \
+        godot_packed_int_array*:     godot_packed_int_array_append_array,     \
+        godot_packed_real_array*:    godot_packed_real_array_append_array,    \
+        godot_packed_string_array*:  godot_packed_string_array_append_array,  \
+        godot_packed_vector2_array*: godot_packed_vector2_array_append_array, \
+        godot_packed_vector3_array*: godot_packed_vector3_array_append_array, \
+        godot_packed_color_array*:   godot_packed_color_array_append_array)   \
+    ((p_self), (p_array))
+
+
+#define godot_packed_array_insert(p_self, p_idx, p_data)                \
+    _Generic((p_self),                                                  \
+        godot_packed_byte_array*:    godot_packed_byte_array_insert,    \
+        godot_packed_int_array*:     godot_packed_int_array_insert,     \
+        godot_packed_real_array*:    godot_packed_real_array_insert,    \
+        godot_packed_string_array*:  godot_packed_string_array_insert,  \
+        godot_packed_vector2_array*: godot_packed_vector2_array_insert, \
+        godot_packed_vector3_array*: godot_packed_vector3_array_insert, \
+        godot_packed_color_array*:   godot_packed_color_array_insert)   \
+    ((p_self), (p_idx), (p_data))
+
+
+#define godot_packed_array_invert(p_self)                               \
+    _Generic((p_self),                                                  \
+        godot_packed_byte_array*:    godot_packed_byte_array_invert,    \
+        godot_packed_int_array*:     godot_packed_int_array_invert,     \
+        godot_packed_real_array*:    godot_packed_real_array_invert,    \
+        godot_packed_string_array*:  godot_packed_string_array_invert,  \
+        godot_packed_vector2_array*: godot_packed_vector2_array_invert, \
+        godot_packed_vector3_array*: godot_packed_vector3_array_invert, \
+        godot_packed_color_array*:   godot_packed_color_array_invert)   \
+    ((p_self))
+
+
+#define godot_packed_array_push_back(p_self, p_data)                        \
+    _Generic((p_self),                                                      \
+        godot_packed_byte_array*:    godot_packed_byte_array_push_back,     \
+        godot_packed_int_array*:     godot_packed_int_array_push_back,      \
+        godot_packed_real_array*:    godot_packed_real_array_push_back,     \
+        godot_packed_string_array*:  godot_packed_string_array_push_back,   \
+        godot_packed_vector2_array*: godot_packed_vector2_array_push_back,  \
+        godot_packed_vector3_array*: godot_packed_vector3_array_push_back,  \
+        godot_packed_color_array*:   godot_packed_color_array_push_back)    \
+    ((p_self), (p_data))
+
+
+#define godot_packed_array_remove(p_self, p_idx)                        \
+    _Generic((p_self),                                                  \
+        godot_packed_byte_array*:    godot_packed_byte_array_remove,    \
+        godot_packed_int_array*:     godot_packed_int_array_remove,     \
+        godot_packed_real_array*:    godot_packed_real_array_remove,    \
+        godot_packed_string_array*:  godot_packed_string_array_remove,  \
+        godot_packed_vector2_array*: godot_packed_vector2_array_remove, \
+        godot_packed_vector3_array*: godot_packed_vector3_array_remove, \
+        godot_packed_color_array*:   godot_packed_color_array_remove)   \
+    ((p_self), (p_idx))
+
+
+#define godot_packed_array_resize(p_self, p_size)                           \
+    _Generic((p_self),                                                      \
+        godot_packed_byte_array*:    godot_packed_byte_array_resize,        \
+        godot_packed_int_array*:     godot_packed_int_array_resize,         \
+        godot_packed_real_array*:    godot_packed_real_array_resize,        \
+        godot_packed_string_array*:  godot_packed_string_array_resize,      \
+        godot_packed_vector2_array*: godot_packed_vector2_array_resize,     \
+        godot_packed_vector3_array*: godot_packed_vector3_array_resize,     \
+        godot_packed_color_array*:   godot_packed_color_array_resize)       \
+    ((p_self), (p_size))
+
+
+#define godot_packed_array_read(p_self)                                 \
+    _Generic((p_self),                                                  \
+        godot_packed_byte_array*:    godot_packed_byte_array_read,      \
+        godot_packed_int_array*:     godot_packed_int_array_read,       \
+        godot_packed_real_array*:    godot_packed_real_array_read,      \
+        godot_packed_string_array*:  godot_packed_string_array_read,    \
+        godot_packed_vector2_array*: godot_packed_vector2_array_read,   \
+        godot_packed_vector3_array*: godot_packed_vector3_array_read,   \
+        godot_packed_color_array*:   godot_packed_color_array_read)     \
+    ((p_self))
+
+
+#define godot_packed_array_write(p_self)                                \
+    _Generic((p_self),                                                  \
+        godot_packed_byte_array*:    godot_packed_byte_array_write,     \
+        godot_packed_int_array*:     godot_packed_int_array_write,      \
+        godot_packed_real_array*:    godot_packed_real_array_write,     \
+        godot_packed_string_array*:  godot_packed_string_array_write,   \
+        godot_packed_vector2_array*: godot_packed_vector2_array_write,  \
+        godot_packed_vector3_array*: godot_packed_vector3_array_write,  \
+        godot_packed_color_array*:   godot_packed_color_array_write)    \
+    ((p_self))
+
+
+#define godot_packed_array_set(p_self, p_idx, p_data)                \
+    _Generic((p_self),                                               \
+        godot_packed_byte_array*:    godot_packed_byte_array_set,    \
+        godot_packed_int_array*:     godot_packed_int_array_set,     \
+        godot_packed_real_array*:    godot_packed_real_array_set,    \
+        godot_packed_string_array*:  godot_packed_string_array_set,  \
+        godot_packed_vector2_array*: godot_packed_vector2_array_set, \
+        godot_packed_vector3_array*: godot_packed_vector3_array_set, \
+        godot_packed_color_array*:   godot_packed_color_array_set)   \
+    ((p_self), (p_idx), (p_data))
+
+
+#define godot_packed_array_get(p_self, p_idx)                        \
+    _Generic((p_self),                                               \
+        godot_packed_byte_array*:    godot_packed_byte_array_get,    \
+        godot_packed_int_array*:     godot_packed_int_array_get,     \
+        godot_packed_real_array*:    godot_packed_real_array_get,    \
+        godot_packed_string_array*:  godot_packed_string_array_get,  \
+        godot_packed_vector2_array*: godot_packed_vector2_array_get, \
+        godot_packed_vector3_array*: godot_packed_vector3_array_get, \
+        godot_packed_color_array*:   godot_packed_color_array_get)   \
+    ((p_self), (p_idx))
+
+
+#define godot_packed_array_size(p_self)                               \
+    _Generic((p_self),                                                \
+        godot_packed_byte_array*:    godot_packed_byte_array_size,    \
+        godot_packed_int_array*:     godot_packed_int_array_size,     \
+        godot_packed_real_array*:    godot_packed_real_array_size,    \
+        godot_packed_string_array*:  godot_packed_string_array_size,  \
+        godot_packed_vector2_array*: godot_packed_vector2_array_size, \
+        godot_packed_vector3_array*: godot_packed_vector3_array_size, \
+        godot_packed_color_array*:   godot_packed_color_array_size)   \
+    ((p_self))
+
+
+#define godot_packed_array_empty(p_self)                               \
+    _Generic((p_self),                                                 \
+        godot_packed_byte_array*:    godot_packed_byte_array_empty,    \
+        godot_packed_int_array*:     godot_packed_int_array_empty,     \
+        godot_packed_real_array*:    godot_packed_real_array_empty,    \
+        godot_packed_string_array*:  godot_packed_string_array_empty,  \
+        godot_packed_vector2_array*: godot_packed_vector2_array_empty, \
+        godot_packed_vector3_array*: godot_packed_vector3_array_empty, \
+        godot_packed_color_array*:   godot_packed_color_array_empty)   \
+    ((p_self))
+
+
+#define godot_packed_array_destroy(p_self)                               \
+    _Generic((p_self),                                                   \
+        godot_packed_byte_array*:    godot_packed_byte_array_destroy,    \
+        godot_packed_int_array*:     godot_packed_int_array_destroy,     \
+        godot_packed_real_array*:    godot_packed_real_array_destroy,    \
+        godot_packed_string_array*:  godot_packed_string_array_destroy,  \
+        godot_packed_vector2_array*: godot_packed_vector2_array_destroy, \
+        godot_packed_vector3_array*: godot_packed_vector3_array_destroy, \
+        godot_packed_color_array*:   godot_packed_color_array_destroy)   \
+    ((p_self))
+
+#endif
+
 // Byte.
+void GDAPI godot_packed_byte_array_new(godot_packed_byte_array *r_dest);
+void GDAPI godot_packed_byte_array_new_copy(godot_packed_byte_array *r_dest, const godot_packed_byte_array *p_src);
+void GDAPI godot_packed_byte_array_new_with_array(godot_packed_byte_array *r_dest, const godot_array *p_a);
+
+const uint8_t GDAPI *godot_packed_byte_array_ptr(const godot_packed_byte_array *p_self);
+uint8_t GDAPI *godot_packed_byte_array_ptrw(godot_packed_byte_array *p_self);
+
+void GDAPI godot_packed_byte_array_append(godot_packed_byte_array *p_self, const uint8_t p_data);
+
+void GDAPI godot_packed_byte_array_append_array(godot_packed_byte_array *p_self, const godot_packed_byte_array *p_array);
+
+godot_error GDAPI godot_packed_byte_array_insert(godot_packed_byte_array *p_self, const godot_int p_idx, const uint8_t p_data);
+
+godot_bool GDAPI godot_packed_byte_array_has(godot_packed_byte_array *p_self, const uint8_t p_value);
+
+void GDAPI godot_packed_byte_array_sort(godot_packed_byte_array *p_self);
+
+void GDAPI godot_packed_byte_array_invert(godot_packed_byte_array *p_self);
+
+void GDAPI godot_packed_byte_array_push_back(godot_packed_byte_array *p_self, const uint8_t p_data);
+
+void GDAPI godot_packed_byte_array_remove(godot_packed_byte_array *p_self, const godot_int p_idx);
+
+void GDAPI godot_packed_byte_array_resize(godot_packed_byte_array *p_self, const godot_int p_size);
+
+void GDAPI godot_packed_byte_array_set(godot_packed_byte_array *p_self, const godot_int p_idx, const uint8_t p_data);
+uint8_t GDAPI godot_packed_byte_array_get(const godot_packed_byte_array *p_self, const godot_int p_idx);
+
+godot_int GDAPI godot_packed_byte_array_size(const godot_packed_byte_array *p_self);
+
+godot_bool GDAPI godot_packed_byte_array_is_empty(const godot_packed_byte_array *p_self);
 
 void GDAPI godot_packed_byte_array_new(godot_packed_byte_array *p_self);
 void GDAPI godot_packed_byte_array_destroy(godot_packed_byte_array *p_self);
