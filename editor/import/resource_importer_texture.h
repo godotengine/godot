@@ -62,7 +62,7 @@ protected:
 	struct MakeInfo {
 		int flags = 0;
 		String normal_path_for_roughness;
-		RS::TextureDetectRoughnessChannel channel_for_roughness = RS::TEXTURE_DETECT_ROUGNHESS_R;
+		RS::TextureDetectRoughnessChannel channel_for_roughness = RS::TEXTURE_DETECT_ROUGHNESS_R;
 	};
 
 	Map<StringName, MakeInfo> make_flags;
