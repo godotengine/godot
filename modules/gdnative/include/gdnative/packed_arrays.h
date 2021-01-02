@@ -332,7 +332,7 @@ extern "C" {
         godot_packed_vector2i_array *:godot_packed_vector2i_array_push_back,\
         godot_packed_vector3_array *:godot_packed_vector3_array_push_back,\
         godot_packed_color_array *:godot_packed_color_array_push_back)\
-    (p_self)
+    ((p_self), (p_data))
 
 #define godot_packed_array_remove(p_self, p_idx)                            \
     _Generic((p_self),                                                      \
@@ -360,7 +360,7 @@ extern "C" {
         godot_packed_vector2i_array *:godot_packed_vector2i_array_resize,   \
         godot_packed_vector3_array *:godot_packed_vector3_array_resize,     \
         godot_packed_color_array *:godot_packed_color_array_resize)         \
-    ((p_self))
+    ((p_self), (p_size))
 
 #define godot_packed_array_set(p_self, p_idx, p_data)                   \
     _Generic((p_self),                                                  \
