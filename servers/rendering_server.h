@@ -130,11 +130,11 @@ public:
 	virtual void texture_set_detect_normal_callback(RID p_texture, TextureDetectCallback p_callback, void *p_userdata) = 0;
 
 	enum TextureDetectRoughnessChannel {
-		TEXTURE_DETECT_ROUGNHESS_R,
-		TEXTURE_DETECT_ROUGNHESS_G,
-		TEXTURE_DETECT_ROUGNHESS_B,
-		TEXTURE_DETECT_ROUGNHESS_A,
-		TEXTURE_DETECT_ROUGNHESS_GRAY,
+		TEXTURE_DETECT_ROUGHNESS_R,
+		TEXTURE_DETECT_ROUGHNESS_G,
+		TEXTURE_DETECT_ROUGHNESS_B,
+		TEXTURE_DETECT_ROUGHNESS_A,
+		TEXTURE_DETECT_ROUGHNESS_GRAY,
 	};
 
 	typedef void (*TextureDetectRoughnessCallback)(void *, const String &, TextureDetectRoughnessChannel);

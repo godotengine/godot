@@ -2216,7 +2216,7 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 	RendererStorageRD *singleton = (RendererStorageRD *)RendererStorage::base_singleton;
 #ifdef TOOLS_ENABLED
 	Texture *roughness_detect_texture = nullptr;
-	RS::TextureDetectRoughnessChannel roughness_channel = RS::TEXTURE_DETECT_ROUGNHESS_R;
+	RS::TextureDetectRoughnessChannel roughness_channel = RS::TEXTURE_DETECT_ROUGHNESS_R;
 	Texture *normal_detect_texture = nullptr;
 #endif
 
