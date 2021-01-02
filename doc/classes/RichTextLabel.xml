@@ -330,6 +330,7 @@
 		</member>
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
 			The restricted number of characters to display in the label. If [code]-1[/code], all characters will be displayed.
+			[b]Note:[/b] Setting this property updates [member percent_visible] based on current [method get_total_character_count].
 		</member>
 	</members>
 	<signals>

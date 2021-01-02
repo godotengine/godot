@@ -2688,6 +2688,7 @@ void RichTextLabel::set_percent_visible(float p_percent) {
 		visible_characters = get_total_character_count() * p_percent;
 		percent_visible = p_percent;
 	}
+	_change_notify("visible_characters");
 	update();
 }
 
@@ -2870,6 +2871,15 @@ void RichTextLabel::_bind_methods() {
 
 void RichTextLabel::set_visible_characters(int p_visible) {
 	visible_characters = p_visible;
+	if (p_visible == -1) {
+		percent_visible = 1;
+	} else {
+		int total_char_count = get_total_character_count();
+		if (total_char_count > 0) {
+			percent_visible = (float)p_visible / (float)total_char_count;
+		}
+	}
+	_change_notify("percent_visible");
 	update();
 }
 
