@@ -56,15 +56,15 @@ subject to the following restrictions:
 class HingeJoint3DSW : public Joint3DSW {
 	union {
 		struct {
-			Body3DSW *A;
-			Body3DSW *B;
+			Body3DSW *A = nullptr;
+			Body3DSW *B = nullptr;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2] = {};
 	};
 
-	JacobianEntry3DSW m_jac[3]; //3 orthogonal linear constraints
-	JacobianEntry3DSW m_jacAng[3]; //2 orthogonal angular constraints+ 1 for limit/motor
+	JacobianEntry3DSW m_jac[3] = {}; //3 orthogonal linear constraints
+	JacobianEntry3DSW m_jacAng[3] = {}; //2 orthogonal angular constraints+ 1 for limit/motor
 
 	Transform m_rbAFrame; // constraint axii. Assumes z is hinge axis.
 	Transform m_rbBFrame;
@@ -88,10 +88,10 @@ class HingeJoint3DSW : public Joint3DSW {
 
 	real_t tau;
 
-	bool m_useLimit;
-	bool m_angularOnly;
-	bool m_enableAngularMotor;
-	bool m_solveLimit;
+	bool m_useLimit = false;
+	bool m_angularOnly = false;
+	bool m_enableAngularMotor = false;
+	bool m_solveLimit = false;
 
 	real_t m_appliedImpulse;
 
