@@ -39,7 +39,10 @@
 #include "scene/gui/split_container.h"
 
 void TileMapEditor::_node_removed(Node *p_node) {
-	if (p_node == node) {
+	if (p_node == node && node) {
+		// Fixes #44824, which describes a situation where you can reselect a TileMap node without first de-selecting it when switching scenes.
+		node->disconnect("settings_changed", callable_mp(this, &TileMapEditor::_tileset_settings_changed));
+
 		node = nullptr;
 	}
 }
