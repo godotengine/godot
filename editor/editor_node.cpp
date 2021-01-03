@@ -5756,6 +5756,11 @@ EditorNode::EditorNode() {
 	// Exporters might need the theme
 	theme = create_custom_theme();
 
+#ifdef WINDOWS_ENABLED
+	// Windows has no built-in DRAG cursor, so the editor pan icon is using to emulating it.
+	DisplayServer::get_singleton()->cursor_set_custom_image(theme->get_icon("ToolPan", "EditorIcons"), DisplayServer::CURSOR_DRAG);
+#endif
+
 	register_exporters();
 
 	GLOBAL_DEF("editor/main_run_args", "");
