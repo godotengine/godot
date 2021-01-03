@@ -2144,10 +2144,6 @@ void EditorPropertyColor::_color_changed(const Color &p_color) {
 	emit_changed(get_edited_property(), p_color, "", true);
 }
 
-void EditorPropertyColor::_popup_closed() {
-	emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
-}
-
 void EditorPropertyColor::_picker_created() {
 	// get default color picker mode from editor settings
 	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
@@ -2191,7 +2187,6 @@ EditorPropertyColor::EditorPropertyColor() {
 	add_child(picker);
 	picker->set_flat(true);
 	picker->connect("color_changed", callable_mp(this, &EditorPropertyColor::_color_changed));
-	picker->connect("popup_closed", callable_mp(this, &EditorPropertyColor::_popup_closed));
 	picker->connect("picker_created", callable_mp(this, &EditorPropertyColor::_picker_created));
 }
 
