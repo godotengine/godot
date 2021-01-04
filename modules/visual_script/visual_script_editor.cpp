@@ -1397,6 +1397,9 @@ void VisualScriptEditor::_deselect_input_names() {
 
 void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_button) {
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
+	if (!ti) {
+		return;
+	}
 
 	TreeItem *root = members->get_root();
 
