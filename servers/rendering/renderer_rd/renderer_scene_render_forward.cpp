@@ -806,160 +806,10 @@ bool RendererSceneRenderForward::free(RID p_rid) {
 	return false;
 }
 
-void RendererSceneRenderForward::_fill_instances(RenderList::Element **p_elements, int p_element_count, bool p_for_depth, bool p_has_sdfgi, bool p_has_opaque_gi) {
-	uint32_t lightmap_captures_used = 0;
-
-	for (int i = 0; i < p_element_count; i++) {
-		const RenderList::Element *e = p_elements[i];
-		InstanceData &id = scene_state.instances[i];
-		bool store_transform = true;
-		id.flags = 0;
-		id.mask = e->instance->layer_mask;
-		id.instance_uniforms_ofs = e->instance->shader_parameters_offset >= 0 ? e->instance->shader_parameters_offset : 0;
-
-		if (e->instance->base_type == RS::INSTANCE_MULTIMESH) {
-			id.flags |= INSTANCE_DATA_FLAG_MULTIMESH;
-			uint32_t stride;
-			if (storage->multimesh_get_transform_format(e->instance->base) == RS::MULTIMESH_TRANSFORM_2D) {
-				id.flags |= INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D;
-				stride = 2;
-			} else {
-				stride = 3;
-			}
-			if (storage->multimesh_uses_colors(e->instance->base)) {
-				id.flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
-				stride += 1;
-			}
-			if (storage->multimesh_uses_custom_data(e->instance->base)) {
-				id.flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA;
-				stride += 1;
-			}
-
-			id.flags |= (stride << INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_SHIFT);
-		} else if (e->instance->base_type == RS::INSTANCE_PARTICLES) {
-			id.flags |= INSTANCE_DATA_FLAG_MULTIMESH;
-			uint32_t stride;
-			if (false) { // 2D particles
-				id.flags |= INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D;
-				stride = 2;
-			} else {
-				stride = 3;
-			}
-
-			id.flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
-			stride += 1;
-
-			id.flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA;
-			stride += 1;
-
-			id.flags |= (stride << INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_SHIFT);
-
-			if (!storage->particles_is_using_local_coords(e->instance->base)) {
-				store_transform = false;
-			}
-
-		} else if (e->instance->base_type == RS::INSTANCE_MESH) {
-			if (e->instance->skeleton.is_valid()) {
-				id.flags |= INSTANCE_DATA_FLAG_SKELETON;
-			}
-		}
-
-		if (store_transform) {
-			RendererStorageRD::store_transform(e->instance->transform, id.transform);
-			RendererStorageRD::store_transform(Transform(e->instance->transform.basis.inverse().transposed()), id.normal_transform);
-		} else {
-			RendererStorageRD::store_transform(Transform(), id.transform);
-			RendererStorageRD::store_transform(Transform(), id.normal_transform);
-		}
-
-		if (p_for_depth) {
-			id.gi_offset = 0xFFFFFFFF;
-			continue;
-		}
-
-		if (e->instance->lightmap_instance.is_valid()) {
-			int32_t lightmap_cull_index = -1;
-			for (uint32_t j = 0; j < scene_state.lightmaps_used; j++) {
-				if (scene_state.lightmap_ids[j] == e->instance->lightmap_instance) {
-					lightmap_cull_index = j;
-					break;
-				}
-			}
-			if (lightmap_cull_index >= 0) {
-				id.gi_offset = 0;
-				id.gi_offset |= e->instance->lightmap_slice_index << 12;
-				id.gi_offset |= lightmap_cull_index << 20;
-				id.lightmap_uv_scale[0] = e->instance->lightmap_uv_scale.position.x;
-				id.lightmap_uv_scale[1] = e->instance->lightmap_uv_scale.position.y;
-				id.lightmap_uv_scale[2] = e->instance->lightmap_uv_scale.size.width;
-				id.lightmap_uv_scale[3] = e->instance->lightmap_uv_scale.size.height;
-				id.flags |= INSTANCE_DATA_FLAG_USE_LIGHTMAP;
-				if (scene_state.lightmap_has_sh[lightmap_cull_index]) {
-					id.flags |= INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP;
-				}
-			} else {
-				id.gi_offset = 0xFFFFFFFF;
-			}
-		} else if (e->instance->lightmap_sh) {
-			if (lightmap_captures_used < scene_state.max_lightmap_captures) {
-				const Color *src_capture = e->instance->lightmap_sh;
-				LightmapCaptureData &lcd = scene_state.lightmap_captures[lightmap_captures_used];
-				for (int j = 0; j < 9; j++) {
-					lcd.sh[j * 4 + 0] = src_capture[j].r;
-					lcd.sh[j * 4 + 1] = src_capture[j].g;
-					lcd.sh[j * 4 + 2] = src_capture[j].b;
-					lcd.sh[j * 4 + 3] = src_capture[j].a;
-				}
-				id.flags |= INSTANCE_DATA_FLAG_USE_LIGHTMAP_CAPTURE;
-				id.gi_offset = lightmap_captures_used;
-				lightmap_captures_used++;
-			}
-
-		} else {
-			if (p_has_opaque_gi) {
-				id.flags |= INSTANCE_DATA_FLAG_USE_GI_BUFFERS;
-			}
-
-			if (!low_end && e->instance->gi_probe_instance_count > 0) {
-				uint32_t written = 0;
-				for (uint32_t j = 0; j < e->instance->gi_probe_instance_count; j++) {
-					RID probe = e->instance->gi_probe_instances[j];
-
-					uint32_t index = gi_probe_instance_get_render_index(probe);
-
-					if (written == 0) {
-						id.gi_offset = index;
-						id.flags |= INSTANCE_DATA_FLAG_USE_GIPROBE;
-						written = 1;
-					} else {
-						id.gi_offset = index << 16;
-						written = 2;
-						break;
-					}
-				}
-				if (written == 0) {
-					id.gi_offset = 0xFFFFFFFF;
-				} else if (written == 1) {
-					id.gi_offset |= 0xFFFF0000;
-				}
-			} else {
-				if (p_has_sdfgi && (e->instance->use_baked_light || e->instance->use_dynamic_gi)) {
-					id.flags |= INSTANCE_DATA_FLAG_USE_SDFGI;
-				}
-				id.gi_offset = 0xFFFFFFFF;
-			}
-		}
-	}
-
-	RD::get_singleton()->buffer_update(scene_state.instance_buffer, 0, sizeof(InstanceData) * p_element_count, scene_state.instances, true);
-	if (lightmap_captures_used) {
-		RD::get_singleton()->buffer_update(scene_state.lightmap_capture_buffer, 0, sizeof(LightmapCaptureData) * lightmap_captures_used, scene_state.lightmap_captures, true);
-	}
-}
-
 /// RENDERING ///
 
-void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe, const Vector2 &p_uv_offset, const Plane &p_lod_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold) {
+template <RendererSceneRenderForward::PassMode p_pass_mode>
+void RendererSceneRenderForward::_render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, GeometryInstanceSurfaceDataCache **p_elements, int p_element_count, bool p_reverse_cull, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe, const Vector2 &p_uv_offset, const Plane &p_lod_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold) {
 	RD::DrawListID draw_list = p_draw_list;
 	RD::FramebufferFormatID framebuffer_format = p_framebuffer_Format;
 
@@ -968,96 +818,77 @@ void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_render_pass_uniform_set, RENDER_PASS_UNIFORM_SET);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, default_vec4_xform_uniform_set, TRANSFORMS_UNIFORM_SET);
 
-	MaterialData *prev_material = nullptr;
+	RID prev_material_uniform_set;
 
 	RID prev_vertex_array_rd;
 	RID prev_index_array_rd;
 	RID prev_pipeline_rd;
 	RID prev_xforms_uniform_set;
 
-	PushConstant push_constant;
-	zeromem(&push_constant, sizeof(PushConstant));
-	push_constant.bake_uv2_offset[0] = p_uv_offset.x;
-	push_constant.bake_uv2_offset[1] = p_uv_offset.y;
+	bool shadow_pass = (p_pass_mode == PASS_MODE_SHADOW) || (p_pass_mode == PASS_MODE_SHADOW_DP);
+
+	float old_offset[2];
 
 	for (int i = 0; i < p_element_count; i++) {
-		const RenderList::Element *e = p_elements[i];
+		const GeometryInstanceSurfaceDataCache *surf = p_elements[i];
 
-		MaterialData *material = e->material;
-		ShaderData *shader = material->shader_data;
-		RID xforms_uniform_set;
+		RID material_uniform_set;
+		ShaderData *shader;
+		void *mesh_surface;
+
+		if (shadow_pass) {
+			material_uniform_set = surf->material_uniform_set_shadow;
+			shader = surf->shader_shadow;
+			mesh_surface = surf->surface_shadow;
+
+		} else {
+			material_uniform_set = surf->material_uniform_set;
+			shader = surf->shader;
+			mesh_surface = surf->surface;
+		}
+
+		if (!mesh_surface) {
+			continue;
+		}
+
+		if (p_pass_mode == PASS_MODE_DEPTH_MATERIAL) {
+			old_offset[0] = surf->owner->push_constant.lightmap_uv_scale[0];
+			old_offset[1] = surf->owner->push_constant.lightmap_uv_scale[1];
+			surf->owner->push_constant.lightmap_uv_scale[0] = p_uv_offset.x;
+			surf->owner->push_constant.lightmap_uv_scale[1] = p_uv_offset.y;
+		}
 
 		//find cull variant
 		ShaderData::CullVariant cull_variant;
 
-		if (p_pass_mode == PASS_MODE_DEPTH_MATERIAL || p_pass_mode == PASS_MODE_SDF || ((p_pass_mode == PASS_MODE_SHADOW || p_pass_mode == PASS_MODE_SHADOW_DP) && e->instance->cast_double_sided_shaodows)) {
+		if (p_pass_mode == PASS_MODE_DEPTH_MATERIAL || p_pass_mode == PASS_MODE_SDF || ((p_pass_mode == PASS_MODE_SHADOW || p_pass_mode == PASS_MODE_SHADOW_DP) && surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_DOUBLE_SIDED_SHADOWS)) {
 			cull_variant = ShaderData::CULL_VARIANT_DOUBLE_SIDED;
 		} else {
-			bool mirror = e->instance->mirror;
+			bool mirror = surf->owner->mirror;
 			if (p_reverse_cull) {
 				mirror = !mirror;
 			}
 			cull_variant = mirror ? ShaderData::CULL_VARIANT_REVERSED : ShaderData::CULL_VARIANT_NORMAL;
 		}
 
-		//find primitive and vertex format
-		RS::PrimitiveType primitive;
-		void *mesh_surface = nullptr;
-
-		switch (e->instance->base_type) {
-			case RS::INSTANCE_MESH: {
-				mesh_surface = storage->mesh_get_surface(e->instance->base, e->surface_index);
-
-				primitive = storage->mesh_surface_get_primitive(mesh_surface);
-				if (e->instance->skeleton.is_valid()) {
-					xforms_uniform_set = storage->skeleton_get_3d_uniform_set(e->instance->skeleton, default_shader_rd, TRANSFORMS_UNIFORM_SET);
-				}
-			} break;
-			case RS::INSTANCE_MULTIMESH: {
-				RID mesh = storage->multimesh_get_mesh(e->instance->base);
-				ERR_CONTINUE(!mesh.is_valid()); //should be a bug
-
-				mesh_surface = storage->mesh_get_surface(e->instance->base, e->surface_index);
-
-				primitive = storage->mesh_surface_get_primitive(mesh_surface);
-
-				xforms_uniform_set = storage->multimesh_get_3d_uniform_set(e->instance->base, default_shader_rd, TRANSFORMS_UNIFORM_SET);
-
-			} break;
-			case RS::INSTANCE_IMMEDIATE: {
-				ERR_CONTINUE(true); //should be a bug
-			} break;
-			case RS::INSTANCE_PARTICLES: {
-				RID mesh = storage->particles_get_draw_pass_mesh(e->instance->base, e->surface_index >> 16);
-				ERR_CONTINUE(!mesh.is_valid()); //should be a bug
-
-				mesh_surface = storage->mesh_get_surface(e->instance->base, e->surface_index & 0xFFFF);
-
-				primitive = storage->mesh_surface_get_primitive(mesh_surface);
-
-				xforms_uniform_set = storage->particles_get_instance_buffer_uniform_set(e->instance->base, default_shader_rd, TRANSFORMS_UNIFORM_SET);
-
-			} break;
-			default: {
-				ERR_CONTINUE(true); //should be a bug
-			}
-		}
+		RS::PrimitiveType primitive = surf->primitive;
+		RID xforms_uniform_set = surf->owner->transforms_uniform_set;
 
 		ShaderVersion shader_version = SHADER_VERSION_MAX; // Assigned to silence wrong -Wmaybe-initialized.
 
 		switch (p_pass_mode) {
 			case PASS_MODE_COLOR:
 			case PASS_MODE_COLOR_TRANSPARENT: {
-				if (e->uses_lightmap) {
+				if (surf->sort.uses_lightmap) {
 					shader_version = SHADER_VERSION_LIGHTMAP_COLOR_PASS;
-				} else if (e->uses_forward_gi) {
+				} else if (surf->sort.uses_forward_gi) {
 					shader_version = SHADER_VERSION_COLOR_PASS_WITH_FORWARD_GI;
 				} else {
 					shader_version = SHADER_VERSION_COLOR_PASS;
 				}
 			} break;
 			case PASS_MODE_COLOR_SPECULAR: {
-				if (e->uses_lightmap) {
+				if (surf->sort.uses_lightmap) {
 					shader_version = SHADER_VERSION_LIGHTMAP_COLOR_PASS_WITH_SEPARATE_SPECULAR;
 				} else {
 					shader_version = SHADER_VERSION_COLOR_PASS_WITH_SEPARATE_SPECULAR;
@@ -1092,40 +923,37 @@ void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw
 		RID vertex_array_rd;
 		RID index_array_rd;
 
-		if (mesh_surface) {
-			if (e->instance->mesh_instance.is_valid()) { //skeleton and blend shape
-				storage->mesh_instance_surface_get_vertex_arrays_and_format(e->instance->mesh_instance, e->surface_index, pipeline->get_vertex_input_mask(), vertex_array_rd, vertex_format);
-			} else {
-				storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, pipeline->get_vertex_input_mask(), vertex_array_rd, vertex_format);
+		//skeleton and blend shape
+		if (surf->owner->mesh_instance.is_valid()) {
+			storage->mesh_instance_surface_get_vertex_arrays_and_format(surf->owner->mesh_instance, surf->surface_index, pipeline->get_vertex_input_mask(), vertex_array_rd, vertex_format);
+		} else {
+			storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, pipeline->get_vertex_input_mask(), vertex_array_rd, vertex_format);
+		}
+
+		if (p_screen_lod_threshold > 0.0 && storage->mesh_surface_has_lod(mesh_surface)) {
+			//lod
+			Vector3 support_min = surf->owner->transformed_aabb.get_support(-p_lod_plane.normal);
+			Vector3 support_max = surf->owner->transformed_aabb.get_support(p_lod_plane.normal);
+
+			float distance_min = p_lod_plane.distance_to(support_min);
+			float distance_max = p_lod_plane.distance_to(support_max);
+
+			float distance = 0.0;
+
+			if (distance_min * distance_max < 0.0) {
+				//crossing plane
+				distance = 0.0;
+			} else if (distance_min >= 0.0) {
+				distance = distance_min;
+			} else if (distance_max <= 0.0) {
+				distance = -distance_max;
 			}
 
-			if (p_screen_lod_threshold > 0.0 && storage->mesh_surface_has_lod(mesh_surface)) {
-				Vector3 support_min = e->instance->transformed_aabb.get_support(-p_lod_plane.normal);
-				Vector3 support_max = e->instance->transformed_aabb.get_support(p_lod_plane.normal);
+			index_array_rd = storage->mesh_surface_get_index_array_with_lod(mesh_surface, surf->owner->lod_model_scale * surf->owner->lod_bias, distance * p_lod_distance_multiplier, p_screen_lod_threshold);
 
-				float distance_min = p_lod_plane.distance_to(support_min);
-				float distance_max = p_lod_plane.distance_to(support_max);
-
-				float distance = 0.0;
-
-				if (distance_min * distance_max < 0.0) {
-					//crossing plane
-					distance = 0.0;
-				} else if (distance_min >= 0.0) {
-					distance = distance_min;
-				} else if (distance_max <= 0.0) {
-					distance = -distance_max;
-				}
-
-				Vector3 model_scale_vec = e->instance->transform.basis.get_scale_abs();
-
-				float model_scale = MAX(model_scale_vec.x, MAX(model_scale_vec.y, model_scale_vec.z));
-
-				index_array_rd = storage->mesh_surface_get_index_array_with_lod(mesh_surface, model_scale * e->instance->lod_bias, distance * p_lod_distance_multiplier, p_screen_lod_threshold);
-
-			} else {
-				index_array_rd = storage->mesh_surface_get_index_array(mesh_surface);
-			}
+		} else {
+			//no lod
+			index_array_rd = storage->mesh_surface_get_index_array(mesh_surface);
 		}
 
 		if (prev_vertex_array_rd != vertex_array_rd) {
@@ -1154,36 +982,59 @@ void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw
 			prev_xforms_uniform_set = xforms_uniform_set;
 		}
 
-		if (material != prev_material) {
+		if (material_uniform_set != prev_material_uniform_set) {
 			//update uniform set
-			if (material->uniform_set.is_valid()) {
-				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, material->uniform_set, MATERIAL_UNIFORM_SET);
+			if (material_uniform_set.is_valid()) {
+				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, material_uniform_set, MATERIAL_UNIFORM_SET);
 			}
 
-			prev_material = material;
+			prev_material_uniform_set = material_uniform_set;
 		}
 
-		push_constant.index = i;
-		RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(PushConstant));
+		RD::get_singleton()->draw_list_set_push_constant(draw_list, &surf->owner->push_constant, sizeof(GeometryInstanceForward::PushConstant));
 
-		switch (e->instance->base_type) {
-			case RS::INSTANCE_MESH: {
-				RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid());
-			} break;
-			case RS::INSTANCE_MULTIMESH: {
-				uint32_t instances = storage->multimesh_get_instances_to_draw(e->instance->base);
-				RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instances);
-			} break;
-			case RS::INSTANCE_IMMEDIATE: {
-			} break;
-			case RS::INSTANCE_PARTICLES: {
-				uint32_t instances = storage->particles_get_amount(e->instance->base);
-				RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instances);
-			} break;
-			default: {
-				ERR_CONTINUE(true); //should be a bug
-			}
+		RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), surf->owner->instance_count);
+
+		if (p_pass_mode == PASS_MODE_DEPTH_MATERIAL) {
+			surf->owner->push_constant.lightmap_uv_scale[0] = old_offset[0];
+			surf->owner->push_constant.lightmap_uv_scale[1] = old_offset[1];
 		}
+	}
+}
+
+void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, GeometryInstanceSurfaceDataCache **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe, const Vector2 &p_uv_offset, const Plane &p_lod_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold) {
+	//use template for faster performance (pass mode comparisons are inlined)
+	switch (p_pass_mode) {
+		case PASS_MODE_COLOR: {
+			_render_list_template<PASS_MODE_COLOR>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+		} break;
+		case PASS_MODE_COLOR_SPECULAR: {
+			_render_list_template<PASS_MODE_COLOR_SPECULAR>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+		} break;
+		case PASS_MODE_COLOR_TRANSPARENT: {
+			_render_list_template<PASS_MODE_COLOR_TRANSPARENT>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+		} break;
+		case PASS_MODE_SHADOW: {
+			_render_list_template<PASS_MODE_SHADOW>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+		} break;
+		case PASS_MODE_SHADOW_DP: {
+			_render_list_template<PASS_MODE_SHADOW_DP>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+		} break;
+		case PASS_MODE_DEPTH: {
+			_render_list_template<PASS_MODE_DEPTH>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+		} break;
+		case PASS_MODE_DEPTH_NORMAL_ROUGHNESS: {
+			_render_list_template<PASS_MODE_DEPTH_NORMAL_ROUGHNESS>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+		} break;
+		case PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE: {
+			_render_list_template<PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+		} break;
+		case PASS_MODE_DEPTH_MATERIAL: {
+			_render_list_template<PASS_MODE_DEPTH_MATERIAL>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+		} break;
+		case PASS_MODE_SDF: {
+			_render_list_template<PASS_MODE_SDF>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+		} break;
 	}
 }
 
@@ -1419,128 +1270,7 @@ void RendererSceneRenderForward::_setup_environment(RID p_environment, RID p_ren
 	RD::get_singleton()->buffer_update(scene_state.uniform_buffer, 0, sizeof(SceneState::UBO), &scene_state.ubo, true);
 }
 
-void RendererSceneRenderForward::_add_geometry(GeometryInstanceForward *p_instance, uint32_t p_surface, RID p_material, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi) {
-	RID m_src;
-
-	m_src = p_instance->material_override.is_valid() ? p_instance->material_override : p_material;
-
-	if (unlikely(get_debug_draw_mode() != RS::VIEWPORT_DEBUG_DRAW_DISABLED)) {
-		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
-			m_src = overdraw_material;
-		} else if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING) {
-			m_src = default_material;
-		}
-	}
-
-	MaterialData *material = nullptr;
-
-	if (m_src.is_valid()) {
-		material = (MaterialData *)storage->material_get_data(m_src, RendererStorageRD::SHADER_TYPE_3D);
-		if (!material || !material->shader_data->valid) {
-			material = nullptr;
-		}
-	}
-
-	if (!material) {
-		material = (MaterialData *)storage->material_get_data(default_material, RendererStorageRD::SHADER_TYPE_3D);
-		m_src = default_material;
-	}
-
-	ERR_FAIL_COND(!material);
-
-	_add_geometry_with_material(p_instance, p_surface, material, m_src, p_pass_mode, p_geometry_index, p_using_sdfgi);
-
-	while (material->next_pass.is_valid()) {
-		material = (MaterialData *)storage->material_get_data(material->next_pass, RendererStorageRD::SHADER_TYPE_3D);
-		if (!material || !material->shader_data->valid) {
-			break;
-		}
-		_add_geometry_with_material(p_instance, p_surface, material, material->next_pass, p_pass_mode, p_geometry_index, p_using_sdfgi);
-	}
-}
-
-void RendererSceneRenderForward::_add_geometry_with_material(GeometryInstanceForward *p_instance, uint32_t p_surface, MaterialData *p_material, RID p_material_rid, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi) {
-	bool has_read_screen_alpha = p_material->shader_data->uses_screen_texture || p_material->shader_data->uses_depth_texture || p_material->shader_data->uses_normal_texture;
-	bool has_base_alpha = (p_material->shader_data->uses_alpha || has_read_screen_alpha);
-	bool has_blend_alpha = p_material->shader_data->uses_blend_alpha;
-	bool has_alpha = has_base_alpha || has_blend_alpha;
-
-	if (p_material->shader_data->uses_sss) {
-		scene_state.used_sss = true;
-	}
-
-	if (p_material->shader_data->uses_screen_texture) {
-		scene_state.used_screen_texture = true;
-	}
-
-	if (p_material->shader_data->uses_depth_texture) {
-		scene_state.used_depth_texture = true;
-	}
-
-	if (p_material->shader_data->uses_normal_texture) {
-		scene_state.used_normal_texture = true;
-	}
-
-	if (p_pass_mode != PASS_MODE_COLOR && p_pass_mode != PASS_MODE_COLOR_SPECULAR) {
-		if (has_blend_alpha || has_read_screen_alpha || (has_base_alpha && !p_material->shader_data->uses_depth_pre_pass) || p_material->shader_data->depth_draw == ShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test == ShaderData::DEPTH_TEST_DISABLED) {
-			//conditions in which no depth pass should be processed
-			return;
-		}
-
-		if ((p_pass_mode != PASS_MODE_DEPTH_MATERIAL && p_pass_mode != PASS_MODE_SDF) && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_pre_pass) {
-			//shader does not use discard and does not write a vertex position, use generic material
-			if (p_pass_mode == PASS_MODE_SHADOW || p_pass_mode == PASS_MODE_DEPTH) {
-				p_material = (MaterialData *)storage->material_get_data(default_material, RendererStorageRD::SHADER_TYPE_3D);
-			} else if ((p_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS || p_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE) && !p_material->shader_data->uses_normal && !p_material->shader_data->uses_roughness) {
-				p_material = (MaterialData *)storage->material_get_data(default_material, RendererStorageRD::SHADER_TYPE_3D);
-			}
-		}
-
-		has_alpha = false;
-	}
-
-	has_alpha = has_alpha || p_material->shader_data->depth_test == ShaderData::DEPTH_TEST_DISABLED;
-
-	RenderList::Element *e = has_alpha ? render_list.add_alpha_element() : render_list.add_element();
-
-	if (!e) {
-		return;
-	}
-
-	e->instance = p_instance;
-	e->material = p_material;
-	e->surface_index = p_surface;
-	e->sort_key = 0;
-
-	if (e->material->last_pass != render_pass) {
-		if (!RD::get_singleton()->uniform_set_is_valid(e->material->uniform_set)) {
-			//uniform set no longer valid, probably a texture changed
-			storage->material_force_update_textures(p_material_rid, RendererStorageRD::SHADER_TYPE_3D);
-		}
-		e->material->last_pass = render_pass;
-		e->material->index = scene_state.current_material_index++;
-		if (e->material->shader_data->last_pass != render_pass) {
-			e->material->shader_data->last_pass = scene_state.current_material_index++;
-			e->material->shader_data->index = scene_state.current_shader_index++;
-		}
-	}
-	e->geometry_index = p_geometry_index;
-	e->material_index = e->material->index;
-	e->uses_instancing = e->instance->base_type == RS::INSTANCE_MULTIMESH;
-	e->uses_lightmap = e->instance->lightmap_instance.is_valid() || e->instance->lightmap_sh != nullptr;
-	e->uses_forward_gi = has_alpha && (e->instance->gi_probe_instance_count > 0 || p_using_sdfgi);
-	e->shader_index = e->shader_index;
-	e->depth_layer = e->instance->depth_layer;
-	e->priority = p_material->priority;
-
-	if (p_material->shader_data->uses_time) {
-		RenderingServerDefault::redraw_request();
-	}
-}
-
-void RendererSceneRenderForward::_fill_render_list(const PagedArray<GeometryInstance *> &p_instances, PassMode p_pass_mode, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_using_sdfgi) {
-	scene_state.current_shader_index = 0;
-	scene_state.current_material_index = 0;
+void RendererSceneRenderForward::_fill_render_list(const PagedArray<GeometryInstance *> &p_instances, PassMode p_pass_mode, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_using_sdfgi, bool p_using_opaque_gi) {
 	scene_state.used_sss = false;
 	scene_state.used_screen_texture = false;
 	scene_state.used_normal_texture = false;
@@ -1549,102 +1279,158 @@ void RendererSceneRenderForward::_fill_render_list(const PagedArray<GeometryInst
 	Plane near_plane(p_cam_transform.origin, -p_cam_transform.basis.get_axis(Vector3::AXIS_Z));
 	near_plane.d += p_cam_projection.get_z_near();
 	float z_max = p_cam_projection.get_z_far() - p_cam_projection.get_z_near();
+	uint32_t lightmap_captures_used = 0;
 
-	uint32_t geometry_index = 0;
+	_update_dirty_geometry_instances();
+	render_list.clear();
 
 	//fill list
 
 	for (int i = 0; i < (int)p_instances.size(); i++) {
 		GeometryInstanceForward *inst = static_cast<GeometryInstanceForward *>(p_instances[i]);
 
-		inst->depth = near_plane.distance_to(inst->transform.origin);
-		inst->depth_layer = CLAMP(int(inst->depth * 16 / z_max), 0, 15);
+		Vector3 support_min = inst->transformed_aabb.get_support(-near_plane.normal);
+		inst->depth = near_plane.distance_to(support_min);
+		uint32_t depth_layer = CLAMP(int(inst->depth * 16 / z_max), 0, 15);
 
-		//add geometry for drawing
-		switch (inst->base_type) {
-			case RS::INSTANCE_MESH: {
-				const RID *materials = nullptr;
-				uint32_t surface_count;
+		uint32_t flags = inst->base_flags; //fill flags if appropriate
 
-				materials = storage->mesh_get_surface_count_and_materials(inst->base, surface_count);
-				if (!materials) {
-					continue; //nothing to do
-				}
+		bool uses_lightmap = false;
+		bool uses_gi = false;
 
-				const RID *inst_materials = inst->surface_materials.ptr();
+		if (p_pass_mode == PASS_MODE_COLOR) {
+			//setup GI
 
-				for (uint32_t j = 0; j < surface_count; j++) {
-					RID material = inst_materials[j].is_valid() ? inst_materials[j] : materials[j];
-
-					uint32_t surface_index = storage->mesh_surface_get_render_pass_index(inst->base, j, render_pass, &geometry_index);
-					_add_geometry(inst, j, material, p_pass_mode, surface_index, p_using_sdfgi);
-				}
-
-				//mesh->last_pass=frame;
-
-			} break;
-
-			case RS::INSTANCE_MULTIMESH: {
-				if (storage->multimesh_get_instances_to_draw(inst->base) == 0) {
-					//not visible, 0 instances
-					continue;
-				}
-
-				RID mesh = storage->multimesh_get_mesh(inst->base);
-				if (!mesh.is_valid()) {
-					continue;
-				}
-
-				const RID *materials = nullptr;
-				uint32_t surface_count;
-
-				materials = storage->mesh_get_surface_count_and_materials(mesh, surface_count);
-				if (!materials) {
-					continue; //nothing to do
-				}
-
-				for (uint32_t j = 0; j < surface_count; j++) {
-					uint32_t surface_index = storage->mesh_surface_get_multimesh_render_pass_index(mesh, j, render_pass, &geometry_index);
-					_add_geometry(inst, j, materials[j], p_pass_mode, surface_index, p_using_sdfgi);
-				}
-
-			} break;
-#if 0
-			case RS::INSTANCE_IMMEDIATE: {
-				RasterizerStorageGLES3::Immediate *immediate = storage->immediate_owner.getornull(inst->base);
-				ERR_CONTINUE(!immediate);
-
-				_add_geometry(immediate, inst, nullptr, -1, p_depth_pass, p_shadow_pass);
-
-			} break;
-#endif
-			case RS::INSTANCE_PARTICLES: {
-				int draw_passes = storage->particles_get_draw_passes(inst->base);
-
-				for (int j = 0; j < draw_passes; j++) {
-					RID mesh = storage->particles_get_draw_pass_mesh(inst->base, j);
-					if (!mesh.is_valid())
-						continue;
-
-					const RID *materials = nullptr;
-					uint32_t surface_count;
-
-					materials = storage->mesh_get_surface_count_and_materials(mesh, surface_count);
-					if (!materials) {
-						continue; //nothing to do
-					}
-
-					for (uint32_t k = 0; k < surface_count; k++) {
-						uint32_t surface_index = storage->mesh_surface_get_particles_render_pass_index(mesh, j, render_pass, &geometry_index);
-						_add_geometry(inst, (j << 16) | k, materials[j], p_pass_mode, surface_index, p_using_sdfgi);
+			if (inst->lightmap_instance.is_valid()) {
+				int32_t lightmap_cull_index = -1;
+				for (uint32_t j = 0; j < scene_state.lightmaps_used; j++) {
+					if (scene_state.lightmap_ids[j] == inst->lightmap_instance) {
+						lightmap_cull_index = j;
+						break;
 					}
 				}
+				if (lightmap_cull_index >= 0) {
+					inst->push_constant.gi_offset &= 0xFFFF;
+					inst->push_constant.gi_offset |= lightmap_cull_index;
+					flags |= INSTANCE_DATA_FLAG_USE_LIGHTMAP;
+					if (scene_state.lightmap_has_sh[lightmap_cull_index]) {
+						flags |= INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP;
+					}
+					uses_lightmap = true;
+				} else {
+					inst->push_constant.gi_offset = 0xFFFFFFFF;
+				}
 
-			} break;
+			} else if (inst->lightmap_sh) {
+				if (lightmap_captures_used < scene_state.max_lightmap_captures) {
+					const Color *src_capture = inst->lightmap_sh->sh;
+					LightmapCaptureData &lcd = scene_state.lightmap_captures[lightmap_captures_used];
+					for (int j = 0; j < 9; j++) {
+						lcd.sh[j * 4 + 0] = src_capture[j].r;
+						lcd.sh[j * 4 + 1] = src_capture[j].g;
+						lcd.sh[j * 4 + 2] = src_capture[j].b;
+						lcd.sh[j * 4 + 3] = src_capture[j].a;
+					}
+					flags |= INSTANCE_DATA_FLAG_USE_LIGHTMAP_CAPTURE;
+					inst->push_constant.gi_offset = lightmap_captures_used;
+					lightmap_captures_used++;
+					uses_lightmap = true;
+				}
 
-			default: {
+			} else if (!low_end) {
+				if (p_using_opaque_gi) {
+					flags |= INSTANCE_DATA_FLAG_USE_GI_BUFFERS;
+				}
+
+				if (inst->gi_probes[0].is_valid()) {
+					uint32_t probe0_index = 0xFFFF;
+					uint32_t probe1_index = 0xFFFF;
+
+					for (uint32_t j = 0; j < scene_state.giprobes_used; j++) {
+						if (scene_state.giprobe_ids[j] == inst->gi_probes[0]) {
+							probe0_index = j;
+						} else if (scene_state.giprobe_ids[j] == inst->gi_probes[1]) {
+							probe1_index = j;
+						}
+					}
+
+					if (probe0_index == 0xFFFF && probe1_index != 0xFFFF) {
+						//0 must always exist if a probe exists
+						SWAP(probe0_index, probe1_index);
+					}
+
+					inst->push_constant.gi_offset = probe0_index | (probe1_index << 16);
+					uses_gi = true;
+				} else {
+					if (p_using_sdfgi && inst->can_sdfgi) {
+						flags |= INSTANCE_DATA_FLAG_USE_SDFGI;
+						uses_gi = true;
+					}
+					inst->push_constant.gi_offset = 0xFFFFFFFF;
+				}
 			}
 		}
+		inst->push_constant.flags = flags;
+
+		GeometryInstanceSurfaceDataCache *surf = inst->surface_caches;
+
+		while (surf) {
+			surf->sort.uses_forward_gi = 0;
+			surf->sort.uses_lightmap = 0;
+
+			if (p_pass_mode == PASS_MODE_COLOR) {
+				if (surf->flags & (GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH | GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE)) {
+					render_list.add_element(surf);
+				}
+				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_ALPHA) {
+					render_list.add_alpha_element(surf);
+					if (uses_gi) {
+						surf->sort.uses_forward_gi = 1;
+					}
+				}
+
+				if (uses_lightmap) {
+					surf->sort.uses_lightmap = 1;
+				}
+
+				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_SUBSURFACE_SCATTERING) {
+					scene_state.used_sss = true;
+				}
+				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_SCREEN_TEXTURE) {
+					scene_state.used_screen_texture = true;
+				}
+				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_NORMAL_TEXTURE) {
+					scene_state.used_normal_texture = true;
+				}
+				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_DEPTH_TEXTURE) {
+					scene_state.used_depth_texture = true;
+				}
+
+			} else if (p_pass_mode == PASS_MODE_SHADOW || p_pass_mode == PASS_MODE_SHADOW_DP) {
+				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_SHADOW) {
+					render_list.add_element(surf);
+				}
+			} else {
+				if (surf->flags & (GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH | GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE)) {
+					render_list.add_element(surf);
+				}
+			}
+
+			surf->sort.depth_layer = depth_layer;
+
+			surf = surf->next;
+		}
+	}
+
+	if (lightmap_captures_used) {
+		RD::get_singleton()->buffer_update(scene_state.lightmap_capture_buffer, 0, sizeof(LightmapCaptureData) * lightmap_captures_used, scene_state.lightmap_captures, true);
+	}
+}
+
+void RendererSceneRenderForward::_setup_giprobes(const PagedArray<RID> &p_giprobes) {
+	scene_state.giprobes_used = MIN(p_giprobes.size(), MAX_GI_PROBES);
+	for (uint32_t i = 0; i < scene_state.giprobes_used; i++) {
+		scene_state.giprobe_ids[i] = p_giprobes[i];
 	}
 }
 
@@ -1793,12 +1579,12 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 	}
 
 	_setup_lightmaps(p_lightmaps, p_cam_transform);
+	_setup_giprobes(p_gi_probes);
 	_setup_environment(p_environment, p_render_buffer, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_pixel_size, p_shadow_atlas, !p_reflection_probe.is_valid(), p_default_bg_color, p_cam_projection.get_z_near(), p_cam_projection.get_z_far(), false);
 
 	_update_render_base_uniform_set(); //may have changed due to the above (light buffer enlarged, as an example)
 
-	render_list.clear();
-	_fill_render_list(p_instances, PASS_MODE_COLOR, p_cam_projection, p_cam_transform, using_sdfgi);
+	_fill_render_list(p_instances, PASS_MODE_COLOR, p_cam_projection, p_cam_transform, using_sdfgi, using_sdfgi || using_giprobe);
 
 	bool using_sss = !low_end && render_buffer && scene_state.used_sss && sub_surface_scattering_get_quality() != RS::SUB_SURFACE_SCATTERING_QUALITY_DISABLED;
 
@@ -1882,8 +1668,6 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 
 	render_list.sort_by_key(false);
 
-	_fill_instances(render_list.elements, render_list.element_count, false, false, using_sdfgi || using_giprobe);
-
 	bool debug_giprobes = get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION;
 	bool debug_sdfgi_probes = get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_SDFGI_PROBES;
 
@@ -1894,7 +1678,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 	if (depth_pre_pass) { //depth pre pass
 		RENDER_TIMESTAMP("Render Depth Pre-Pass");
 
-		_setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), PagedArray<RID>(), PagedArray<RID>());
+		RID rp_uniform_set = _setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), PagedArray<RID>(), PagedArray<RID>());
 
 		bool finish_depth = using_ssao || using_sdfgi || using_giprobe;
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(depth_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, finish_depth ? RD::FINAL_ACTION_READ : RD::FINAL_ACTION_CONTINUE, depth_pass_clear);
@@ -1926,7 +1710,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 
 	RENDER_TIMESTAMP("Render Opaque Pass");
 
-	_setup_render_pass_uniform_set(p_render_buffer, radiance_texture, p_shadow_atlas, p_reflection_atlas, p_gi_probes, p_lightmaps);
+	RID rp_uniform_set = _setup_render_pass_uniform_set(p_render_buffer, radiance_texture, p_shadow_atlas, p_reflection_atlas, p_gi_probes, p_lightmaps);
 
 	bool can_continue_color = !scene_state.used_screen_texture && !using_ssr && !using_sss;
 	bool can_continue_depth = !scene_state.used_depth_texture && !using_ssr && !using_sss;
@@ -2032,8 +1816,6 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 
 	render_list.sort_by_reverse_depth_and_priority(true);
 
-	_fill_instances(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, false, using_sdfgi);
-
 	{
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(alpha_framebuffer, can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
 		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(alpha_framebuffer), &render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, false, PASS_MODE_COLOR, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
@@ -2060,8 +1842,6 @@ void RendererSceneRenderForward::_render_shadow(RID p_framebuffer, const PagedAr
 		p_screen_lod_threshold = 0.0;
 	}
 
-	render_list.clear();
-
 	PassMode pass_mode = p_use_dp ? PASS_MODE_SHADOW_DP : PASS_MODE_SHADOW;
 
 	_fill_render_list(p_instances, pass_mode, p_projection, p_transform);
@@ -2071,8 +1851,6 @@ void RendererSceneRenderForward::_render_shadow(RID p_framebuffer, const PagedAr
 	RENDER_TIMESTAMP("Render Shadow");
 
 	render_list.sort_by_key(false);
-
-	_fill_instances(render_list.elements, render_list.element_count, true);
 
 	{
 		//regular forward for now
@@ -2093,8 +1871,6 @@ void RendererSceneRenderForward::_render_particle_collider_heightfield(RID p_fb,
 
 	_setup_environment(RID(), RID(), p_cam_projection, p_cam_transform, RID(), true, Vector2(1, 1), RID(), true, Color(), 0, p_cam_projection.get_z_far(), false, false);
 
-	render_list.clear();
-
 	PassMode pass_mode = PASS_MODE_SHADOW;
 
 	_fill_render_list(p_instances, pass_mode, p_cam_projection, p_cam_transform);
@@ -2104,8 +1880,6 @@ void RendererSceneRenderForward::_render_particle_collider_heightfield(RID p_fb,
 	RENDER_TIMESTAMP("Render Collider Heightield");
 
 	render_list.sort_by_key(false);
-
-	_fill_instances(render_list.elements, render_list.element_count, true);
 
 	{
 		//regular forward for now
@@ -2127,8 +1901,6 @@ void RendererSceneRenderForward::_render_material(const Transform &p_cam_transfo
 
 	_setup_environment(RID(), RID(), p_cam_projection, p_cam_transform, RID(), true, Vector2(1, 1), RID(), false, Color(), 0, 0);
 
-	render_list.clear();
-
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
 	_fill_render_list(p_instances, pass_mode, p_cam_projection, p_cam_transform);
 
@@ -2137,8 +1909,6 @@ void RendererSceneRenderForward::_render_material(const Transform &p_cam_transfo
 	RENDER_TIMESTAMP("Render Material");
 
 	render_list.sort_by_key(false);
-
-	_fill_instances(render_list.elements, render_list.element_count, true);
 
 	{
 		//regular forward for now
@@ -2166,8 +1936,6 @@ void RendererSceneRenderForward::_render_uv2(const PagedArray<GeometryInstance *
 
 	_setup_environment(RID(), RID(), CameraMatrix(), Transform(), RID(), true, Vector2(1, 1), RID(), false, Color(), 0, 0);
 
-	render_list.clear();
-
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
 	_fill_render_list(p_instances, pass_mode, CameraMatrix(), Transform());
 
@@ -2176,8 +1944,6 @@ void RendererSceneRenderForward::_render_uv2(const PagedArray<GeometryInstance *
 	RENDER_TIMESTAMP("Render Material");
 
 	render_list.sort_by_key(false);
-
-	_fill_instances(render_list.elements, render_list.element_count, true);
 
 	{
 		//regular forward for now
@@ -2224,12 +1990,10 @@ void RendererSceneRenderForward::_render_sdfgi(RID p_render_buffers, const Vecto
 	ERR_FAIL_COND(!render_buffer);
 
 	render_pass++;
-	render_list.clear();
 
 	PassMode pass_mode = PASS_MODE_SDF;
 	_fill_render_list(p_instances, pass_mode, CameraMatrix(), Transform());
 	render_list.sort_by_key(false);
-	_fill_instances(render_list.elements, render_list.element_count, true);
 
 	RID rp_uniform_set = _setup_sdfgi_render_pass_uniform_set(p_albedo_texture, p_emission_texture, p_emission_aniso_texture, p_geom_facing_texture);
 
@@ -2347,13 +2111,6 @@ void RendererSceneRenderForward::_update_render_base_uniform_set() {
 			u.binding = 3;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.ids.push_back(scene_state.uniform_buffer);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 4;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.ids.push_back(scene_state.instance_buffer);
 			uniforms.push_back(u);
 		}
 
@@ -2799,44 +2556,417 @@ void RendererSceneRenderForward::set_time(double p_time, double p_step) {
 	RendererSceneRenderRD::set_time(p_time, p_step);
 }
 
+void RendererSceneRenderForward::_geometry_instance_mark_dirty(GeometryInstance *p_geometry_instance) {
+	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	if (ginstance->dirty_list_element.in_list()) {
+		return;
+	}
+
+	//clear surface caches
+	GeometryInstanceSurfaceDataCache *surf = ginstance->surface_caches;
+
+	while (surf) {
+		GeometryInstanceSurfaceDataCache *next = surf->next;
+		geometry_instance_surface_alloc.free(surf);
+		surf = next;
+	}
+
+	ginstance->surface_caches = nullptr;
+
+	geometry_instance_dirty_list.add(&ginstance->dirty_list_element);
+}
+
+void RendererSceneRenderForward::_geometry_instance_add_surface_with_material(GeometryInstanceForward *ginstance, uint32_t p_surface, MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh) {
+	bool has_read_screen_alpha = p_material->shader_data->uses_screen_texture || p_material->shader_data->uses_depth_texture || p_material->shader_data->uses_normal_texture;
+	bool has_base_alpha = (p_material->shader_data->uses_alpha || has_read_screen_alpha);
+	bool has_blend_alpha = p_material->shader_data->uses_blend_alpha;
+	bool has_alpha = has_base_alpha || has_blend_alpha;
+
+	uint32_t flags = 0;
+
+	if (p_material->shader_data->uses_sss) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SUBSURFACE_SCATTERING;
+	}
+
+	if (p_material->shader_data->uses_screen_texture) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SCREEN_TEXTURE;
+	}
+
+	if (p_material->shader_data->uses_depth_texture) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_DEPTH_TEXTURE;
+	}
+
+	if (p_material->shader_data->uses_normal_texture) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_NORMAL_TEXTURE;
+	}
+
+	if (ginstance->data->cast_double_sided_shaodows) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_DOUBLE_SIDED_SHADOWS;
+	}
+
+	if (has_alpha || has_read_screen_alpha || p_material->shader_data->depth_draw == ShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test == ShaderData::DEPTH_TEST_DISABLED) {
+		//material is only meant for alpha pass
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_ALPHA;
+		if (p_material->shader_data->uses_depth_pre_pass && !(p_material->shader_data->depth_draw == ShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test == ShaderData::DEPTH_TEST_DISABLED)) {
+			flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH;
+			flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_SHADOW;
+		}
+	} else {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE;
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH;
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_SHADOW;
+	}
+
+	MaterialData *material_shadow = nullptr;
+	//void *surface_shadow = nullptr;
+	if (!p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_pre_pass) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SHARED_SHADOW_MATERIAL;
+		material_shadow = (MaterialData *)storage->material_get_data(default_material, RendererStorageRD::SHADER_TYPE_3D);
+	} else {
+		material_shadow = p_material;
+	}
+
+	GeometryInstanceSurfaceDataCache *sdcache = geometry_instance_surface_alloc.alloc();
+
+	sdcache->flags = flags;
+
+	sdcache->shader = p_material->shader_data;
+	sdcache->material_uniform_set = p_material->uniform_set;
+	sdcache->surface = storage->mesh_get_surface(p_mesh, p_surface);
+	sdcache->primitive = storage->mesh_surface_get_primitive(sdcache->surface);
+	sdcache->surface_index = p_surface;
+
+	if (ginstance->data->dirty_dependencies) {
+		storage->base_update_dependency(p_mesh, &ginstance->data->dependency_tracker);
+	}
+
+	//shadow
+	sdcache->shader_shadow = material_shadow->shader_data;
+	sdcache->material_uniform_set_shadow = material_shadow->uniform_set;
+	sdcache->surface_shadow = sdcache->surface; //when adding special shadow meshes, will use this
+
+	sdcache->owner = ginstance;
+
+	sdcache->next = ginstance->surface_caches;
+	ginstance->surface_caches = sdcache;
+
+	//sortkey
+
+	sdcache->sort.sort_key1 = 0;
+	sdcache->sort.sort_key2 = 0;
+
+	sdcache->sort.surface_type = ginstance->data->base_type;
+	sdcache->sort.material_id = p_material_id;
+	sdcache->sort.shader_id = p_shader_id;
+	sdcache->sort.geometry_id = p_mesh.get_local_index();
+	sdcache->sort.uses_forward_gi = ginstance->can_sdfgi;
+	sdcache->sort.priority = p_material->priority;
+}
+
+void RendererSceneRenderForward::_geometry_instance_add_surface(GeometryInstanceForward *ginstance, uint32_t p_surface, RID p_material, RID p_mesh) {
+	RID m_src;
+
+	m_src = ginstance->data->material_override.is_valid() ? ginstance->data->material_override : p_material;
+
+	MaterialData *material = nullptr;
+
+	if (m_src.is_valid()) {
+		material = (MaterialData *)storage->material_get_data(m_src, RendererStorageRD::SHADER_TYPE_3D);
+		if (!material || !material->shader_data->valid) {
+			material = nullptr;
+		}
+	}
+
+	if (material) {
+		if (ginstance->data->dirty_dependencies) {
+			storage->material_update_dependency(m_src, &ginstance->data->dependency_tracker);
+		}
+	} else {
+		material = (MaterialData *)storage->material_get_data(default_material, RendererStorageRD::SHADER_TYPE_3D);
+		m_src = default_material;
+	}
+
+	ERR_FAIL_COND(!material);
+
+	_geometry_instance_add_surface_with_material(ginstance, p_surface, material, m_src.get_local_index(), storage->material_get_shader_id(m_src), p_mesh);
+
+	while (material->next_pass.is_valid()) {
+		RID next_pass = material->next_pass;
+		material = (MaterialData *)storage->material_get_data(next_pass, RendererStorageRD::SHADER_TYPE_3D);
+		if (!material || !material->shader_data->valid) {
+			break;
+		}
+		if (ginstance->data->dirty_dependencies) {
+			storage->material_update_dependency(next_pass, &ginstance->data->dependency_tracker);
+		}
+		_geometry_instance_add_surface_with_material(ginstance, p_surface, material, next_pass.get_local_index(), storage->material_get_shader_id(next_pass), p_mesh);
+	}
+}
+
+void RendererSceneRenderForward::_geometry_instance_update(GeometryInstance *p_geometry_instance) {
+	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+
+	if (ginstance->data->dirty_dependencies) {
+		ginstance->data->dependency_tracker.update_begin();
+	}
+
+	//add geometry for drawing
+	switch (ginstance->data->base_type) {
+		case RS::INSTANCE_MESH: {
+			const RID *materials = nullptr;
+			uint32_t surface_count;
+			RID mesh = ginstance->data->base;
+
+			materials = storage->mesh_get_surface_count_and_materials(mesh, surface_count);
+			if (materials) {
+				//if no materials, no surfaces.
+				const RID *inst_materials = ginstance->data->surface_materials.ptr();
+				uint32_t surf_mat_count = ginstance->data->surface_materials.size();
+
+				for (uint32_t j = 0; j < surface_count; j++) {
+					RID material = (j < surf_mat_count && inst_materials[j].is_valid()) ? inst_materials[j] : materials[j];
+					_geometry_instance_add_surface(ginstance, j, material, mesh);
+				}
+			}
+
+			ginstance->instance_count = 1;
+
+		} break;
+
+		case RS::INSTANCE_MULTIMESH: {
+			RID mesh = storage->multimesh_get_mesh(ginstance->data->base);
+			if (mesh.is_valid()) {
+				const RID *materials = nullptr;
+				uint32_t surface_count;
+
+				materials = storage->mesh_get_surface_count_and_materials(mesh, surface_count);
+				if (materials) {
+					for (uint32_t j = 0; j < surface_count; j++) {
+						_geometry_instance_add_surface(ginstance, j, materials[j], mesh);
+					}
+				}
+
+				ginstance->instance_count = storage->multimesh_get_instances_to_draw(ginstance->data->base);
+			}
+
+		} break;
+#if 0
+		case RS::INSTANCE_IMMEDIATE: {
+			RasterizerStorageGLES3::Immediate *immediate = storage->immediate_owner.getornull(inst->base);
+			ERR_CONTINUE(!immediate);
+
+			_add_geometry(immediate, inst, nullptr, -1, p_depth_pass, p_shadow_pass);
+
+		} break;
+#endif
+		case RS::INSTANCE_PARTICLES: {
+			int draw_passes = storage->particles_get_draw_passes(ginstance->data->base);
+
+			for (int j = 0; j < draw_passes; j++) {
+				RID mesh = storage->particles_get_draw_pass_mesh(ginstance->data->base, j);
+				if (!mesh.is_valid())
+					continue;
+
+				const RID *materials = nullptr;
+				uint32_t surface_count;
+
+				materials = storage->mesh_get_surface_count_and_materials(mesh, surface_count);
+				if (materials) {
+					for (uint32_t k = 0; k < surface_count; k++) {
+						_geometry_instance_add_surface(ginstance, k, materials[k], mesh);
+					}
+				}
+			}
+
+			ginstance->instance_count = storage->particles_get_amount(ginstance->data->base);
+
+		} break;
+
+		default: {
+		}
+	}
+
+	//Fill push constant
+
+	ginstance->push_constant.instance_uniforms_ofs = ginstance->data->shader_parameters_offset >= 0 ? ginstance->data->shader_parameters_offset : 0;
+	ginstance->push_constant.layer_mask = ginstance->data->layer_mask;
+	ginstance->push_constant.flags = 0;
+	ginstance->push_constant.gi_offset = 0xFFFFFFFF; //disabled
+
+	bool store_transform = true;
+
+	if (ginstance->data->base_type == RS::INSTANCE_MULTIMESH) {
+		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH;
+		uint32_t stride;
+		if (storage->multimesh_get_transform_format(ginstance->data->base) == RS::MULTIMESH_TRANSFORM_2D) {
+			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D;
+			stride = 2;
+		} else {
+			stride = 3;
+		}
+		if (storage->multimesh_uses_colors(ginstance->data->base)) {
+			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
+			stride += 1;
+		}
+		if (storage->multimesh_uses_custom_data(ginstance->data->base)) {
+			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA;
+			stride += 1;
+		}
+
+		ginstance->base_flags |= (stride << INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_SHIFT);
+		ginstance->transforms_uniform_set = storage->multimesh_get_3d_uniform_set(ginstance->data->base, default_shader_rd, TRANSFORMS_UNIFORM_SET);
+
+	} else if (ginstance->data->base_type == RS::INSTANCE_PARTICLES) {
+		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH;
+		uint32_t stride;
+		if (false) { // 2D particles
+			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D;
+			stride = 2;
+		} else {
+			stride = 3;
+		}
+
+		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
+		stride += 1;
+
+		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA;
+		stride += 1;
+
+		ginstance->base_flags |= (stride << INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_SHIFT);
+
+		if (!storage->particles_is_using_local_coords(ginstance->data->base)) {
+			store_transform = false;
+		}
+		ginstance->transforms_uniform_set = storage->particles_get_instance_buffer_uniform_set(ginstance->data->base, default_shader_rd, TRANSFORMS_UNIFORM_SET);
+
+	} else if (ginstance->data->base_type == RS::INSTANCE_MESH) {
+		if (storage->skeleton_is_valid(ginstance->data->skeleton)) {
+			ginstance->base_flags |= INSTANCE_DATA_FLAG_SKELETON;
+			ginstance->transforms_uniform_set = storage->skeleton_get_3d_uniform_set(ginstance->data->skeleton, default_shader_rd, TRANSFORMS_UNIFORM_SET);
+			if (ginstance->data->dirty_dependencies) {
+				storage->skeleton_update_dependency(ginstance->data->skeleton, &ginstance->data->dependency_tracker);
+			}
+		}
+	}
+
+	if (store_transform) {
+		RendererStorageRD::store_transform(ginstance->data->transform, ginstance->push_constant.transform);
+	} else {
+		RendererStorageRD::store_transform(Transform(), ginstance->push_constant.transform);
+	}
+
+	ginstance->can_sdfgi = false;
+
+	if (lightmap_instance_is_valid(ginstance->lightmap_instance)) {
+		ginstance->push_constant.gi_offset = ginstance->data->lightmap_slice_index << 16;
+		ginstance->push_constant.lightmap_uv_scale[0] = ginstance->data->lightmap_uv_scale.position.x;
+		ginstance->push_constant.lightmap_uv_scale[1] = ginstance->data->lightmap_uv_scale.position.y;
+		ginstance->push_constant.lightmap_uv_scale[2] = ginstance->data->lightmap_uv_scale.size.width;
+		ginstance->push_constant.lightmap_uv_scale[3] = ginstance->data->lightmap_uv_scale.size.height;
+	} else if (!low_end) {
+		if (ginstance->gi_probes[0].is_null() && (ginstance->data->use_baked_light || ginstance->data->use_dynamic_gi)) {
+			ginstance->can_sdfgi = true;
+		}
+	}
+
+	if (ginstance->data->dirty_dependencies) {
+		ginstance->data->dependency_tracker.update_end();
+		ginstance->data->dirty_dependencies = false;
+	}
+
+	ginstance->dirty_list_element.remove_from_list();
+}
+
+void RendererSceneRenderForward::_update_dirty_geometry_instances() {
+	while (geometry_instance_dirty_list.first()) {
+		_geometry_instance_update(geometry_instance_dirty_list.first()->self());
+	}
+}
+
+void RendererSceneRenderForward::_geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker) {
+	switch (p_notification) {
+		case RendererStorage::DEPENDENCY_CHANGED_MATERIAL:
+		case RendererStorage::DEPENDENCY_CHANGED_MESH:
+		case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH:
+		case RendererStorage::DEPENDENCY_CHANGED_SKELETON_DATA: {
+			static_cast<RendererSceneRenderForward *>(singleton)->_geometry_instance_mark_dirty(static_cast<GeometryInstance *>(p_tracker->userdata));
+		} break;
+		case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES: {
+			GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_tracker->userdata);
+			if (ginstance->data->base_type == RS::INSTANCE_MULTIMESH) {
+				ginstance->instance_count = static_cast<RendererSceneRenderForward *>(singleton)->storage->multimesh_get_instances_to_draw(ginstance->data->base);
+			}
+		} break;
+		default: {
+			//rest of notifications of no interest
+		} break;
+	}
+}
+void RendererSceneRenderForward::_geometry_instance_dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *p_tracker) {
+	static_cast<RendererSceneRenderForward *>(singleton)->_geometry_instance_mark_dirty(static_cast<GeometryInstance *>(p_tracker->userdata));
+}
+
 RendererSceneRender::GeometryInstance *RendererSceneRenderForward::geometry_instance_create(RID p_base) {
 	RS::InstanceType type = storage->get_base_type(p_base);
 	ERR_FAIL_COND_V(!((1 << type) & RS::INSTANCE_GEOMETRY_MASK), nullptr);
 
 	GeometryInstanceForward *ginstance = geometry_instance_alloc.alloc();
+	ginstance->data = memnew(GeometryInstanceForward::Data);
 
-	ginstance->base = p_base;
-	ginstance->base_type = type;
+	ginstance->data->base = p_base;
+	ginstance->data->base_type = type;
+	ginstance->data->dependency_tracker.userdata = ginstance;
+	ginstance->data->dependency_tracker.changed_callback = _geometry_instance_dependency_changed;
+	ginstance->data->dependency_tracker.deleted_callback = _geometry_instance_dependency_deleted;
+
+	_geometry_instance_mark_dirty(ginstance);
 
 	return ginstance;
 }
 void RendererSceneRenderForward::geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
-	ginstance->skeleton = p_skeleton;
+	ginstance->data->skeleton = p_skeleton;
+	_geometry_instance_mark_dirty(ginstance);
+	ginstance->data->dirty_dependencies = true;
 }
 void RendererSceneRenderForward::geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
-	ginstance->material_override = p_override;
+	ginstance->data->material_override = p_override;
+	_geometry_instance_mark_dirty(ginstance);
+	ginstance->data->dirty_dependencies = true;
 }
 void RendererSceneRenderForward::geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_materials) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
-	ginstance->surface_materials = p_materials;
+	ginstance->data->surface_materials = p_materials;
+	_geometry_instance_mark_dirty(ginstance);
+	ginstance->data->dirty_dependencies = true;
 }
 void RendererSceneRenderForward::geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->mesh_instance = p_mesh_instance;
+	_geometry_instance_mark_dirty(ginstance);
 }
 void RendererSceneRenderForward::geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
-	ginstance->transform = p_transform;
+	RendererStorageRD::store_transform(p_transform, ginstance->push_constant.transform);
+	ginstance->data->transform = p_transform;
 	ginstance->mirror = p_transform.basis.determinant() < 0;
-	ginstance->aabb = p_aabb;
+	ginstance->data->aabb = p_aabb;
 	ginstance->transformed_aabb = p_transformed_aabb;
+
+	Vector3 model_scale_vec = p_transform.basis.get_scale_abs();
+	// handle non uniform scale here
+
+	float max_scale = MAX(model_scale_vec.x, MAX(model_scale_vec.y, model_scale_vec.z));
+	float min_scale = MIN(model_scale_vec.x, MIN(model_scale_vec.y, model_scale_vec.z));
+	ginstance->non_uniform_scale = max_scale >= 0.0 && (min_scale / max_scale) < 0.9;
+
+	ginstance->lod_model_scale = max_scale;
 }
 void RendererSceneRenderForward::geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
@@ -2846,60 +2976,74 @@ void RendererSceneRenderForward::geometry_instance_set_lod_bias(GeometryInstance
 void RendererSceneRenderForward::geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
-	ginstance->use_baked_light = p_enable;
+	ginstance->data->use_baked_light = p_enable;
+	_geometry_instance_mark_dirty(ginstance);
 }
 void RendererSceneRenderForward::geometry_instance_set_use_dynamic_gi(GeometryInstance *p_geometry_instance, bool p_enable) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
-	ginstance->use_dynamic_gi = p_enable;
+	ginstance->data->use_dynamic_gi = p_enable;
+	_geometry_instance_mark_dirty(ginstance);
 }
 void RendererSceneRenderForward::geometry_instance_set_use_lightmap(GeometryInstance *p_geometry_instance, RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->lightmap_instance = p_lightmap_instance;
-	ginstance->lightmap_uv_scale = p_lightmap_uv_scale;
-	ginstance->lightmap_slice_index = p_lightmap_slice_index;
+	ginstance->data->lightmap_uv_scale = p_lightmap_uv_scale;
+	ginstance->data->lightmap_slice_index = p_lightmap_slice_index;
+	_geometry_instance_mark_dirty(ginstance);
 }
 void RendererSceneRenderForward::geometry_instance_set_lightmap_capture(GeometryInstance *p_geometry_instance, const Color *p_sh9) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	if (p_sh9) {
 		if (ginstance->lightmap_sh == nullptr) {
-			ginstance->lightmap_sh = (Color *)memalloc(sizeof(Color) * 9);
+			ginstance->lightmap_sh = geometry_instance_lightmap_sh.alloc();
 		}
 
-		copymem(ginstance->lightmap_sh, p_sh9, sizeof(Color) * 9);
+		copymem(ginstance->lightmap_sh->sh, p_sh9, sizeof(Color) * 9);
 	} else {
 		if (ginstance->lightmap_sh != nullptr) {
-			memfree(ginstance->lightmap_sh);
+			geometry_instance_lightmap_sh.free(ginstance->lightmap_sh);
 			ginstance->lightmap_sh = nullptr;
 		}
 	}
+	_geometry_instance_mark_dirty(ginstance);
 }
 void RendererSceneRenderForward::geometry_instance_set_instance_shader_parameters_offset(GeometryInstance *p_geometry_instance, int32_t p_offset) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
-	ginstance->shader_parameters_offset = p_offset;
+	ginstance->data->shader_parameters_offset = p_offset;
+	_geometry_instance_mark_dirty(ginstance);
 }
 void RendererSceneRenderForward::geometry_instance_set_cast_double_sided_shadows(GeometryInstance *p_geometry_instance, bool p_enable) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 
-	ginstance->cast_double_sided_shaodows = p_enable;
+	ginstance->data->cast_double_sided_shaodows = p_enable;
+	_geometry_instance_mark_dirty(ginstance);
 }
 
 void RendererSceneRenderForward::geometry_instance_set_layer_mask(GeometryInstance *p_geometry_instance, uint32_t p_layer_mask) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
-	ginstance->layer_mask = p_layer_mask;
+	ginstance->data->layer_mask = p_layer_mask;
+	ginstance->push_constant.layer_mask = p_layer_mask;
 }
 
 void RendererSceneRenderForward::geometry_instance_free(GeometryInstance *p_geometry_instance) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	if (ginstance->lightmap_sh != nullptr) {
-		memfree(ginstance->lightmap_sh);
+		geometry_instance_lightmap_sh.free(ginstance->lightmap_sh);
 	}
+	GeometryInstanceSurfaceDataCache *surf = ginstance->surface_caches;
+	while (surf) {
+		GeometryInstanceSurfaceDataCache *next = surf->next;
+		geometry_instance_surface_alloc.free(surf);
+		surf = next;
+	}
+	memdelete(ginstance->data);
 	geometry_instance_alloc.free(ginstance);
 }
 
@@ -2916,20 +3060,27 @@ void RendererSceneRenderForward::geometry_instance_pair_decal_instances(Geometry
 Transform RendererSceneRenderForward::geometry_instance_get_transform(GeometryInstance *p_instance) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_instance);
 	ERR_FAIL_COND_V(!ginstance, Transform());
-	return ginstance->transform;
+	return ginstance->data->transform;
 }
 AABB RendererSceneRenderForward::geometry_instance_get_aabb(GeometryInstance *p_instance) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_instance);
 	ERR_FAIL_COND_V(!ginstance, AABB());
-	return ginstance->aabb;
+	return ginstance->data->aabb;
 }
 
 void RendererSceneRenderForward::geometry_instance_pair_gi_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_gi_probe_instances, uint32_t p_gi_probe_instance_count) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
-	ginstance->gi_probe_instance_count = MIN(p_gi_probe_instance_count, MAX_GI_PROBES);
-	for (uint32_t i = 0; i < ginstance->gi_probe_instance_count; i++) {
-		ginstance->gi_probe_instances[i] = p_gi_probe_instances[i];
+	if (p_gi_probe_instance_count > 0) {
+		ginstance->gi_probes[0] = p_gi_probe_instances[0];
+	} else {
+		ginstance->gi_probes[0] = RID();
+	}
+
+	if (p_gi_probe_instance_count > 1) {
+		ginstance->gi_probes[1] = p_gi_probe_instances[1];
+	} else {
+		ginstance->gi_probes[1] = RID();
 	}
 }
 
@@ -3182,12 +3333,6 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 	render_list.init();
 	render_pass = 0;
 
-	{
-		scene_state.max_instances = render_list.max_elements;
-		scene_state.instances = memnew_arr(InstanceData, scene_state.max_instances);
-		scene_state.instance_buffer = RD::get_singleton()->storage_buffer_create(sizeof(InstanceData) * scene_state.max_instances);
-	}
-
 	scene_state.uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SceneState::UBO));
 
 	{
@@ -3262,10 +3407,8 @@ RendererSceneRenderForward::~RendererSceneRenderForward() {
 
 	{
 		RD::get_singleton()->free(scene_state.uniform_buffer);
-		RD::get_singleton()->free(scene_state.instance_buffer);
 		RD::get_singleton()->free(scene_state.lightmap_buffer);
 		RD::get_singleton()->free(scene_state.lightmap_capture_buffer);
-		memdelete_arr(scene_state.instances);
 		memdelete_arr(scene_state.lightmap_captures);
 	}
 

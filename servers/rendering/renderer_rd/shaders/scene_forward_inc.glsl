@@ -12,9 +12,12 @@
 #endif
 
 layout(push_constant, binding = 0, std430) uniform DrawCall {
-	uint instance_index;
-	uint pad; //16 bits minimum size
-	vec2 bake_uv2_offset; //used for bake to uv2, ignored otherwise
+	mat4 transform;
+	uint flags;
+	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
+	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)
+	uint layer_mask;
+	vec4 lightmap_uv_scale;
 }
 draw_call;
 
@@ -134,21 +137,7 @@ scene_data;
 #define INSTANCE_FLAGS_MULTIMESH_STRIDE_MASK 0x7
 
 #define INSTANCE_FLAGS_SKELETON (1 << 19)
-
-struct InstanceData {
-	mat4 transform;
-	mat4 normal_transform;
-	uint flags;
-	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
-	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)
-	uint layer_mask;
-	vec4 lightmap_uv_scale;
-};
-
-layout(set = 0, binding = 4, std430) restrict readonly buffer Instances {
-	InstanceData data[];
-}
-instances;
+#define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 20)
 
 layout(set = 0, binding = 5, std430) restrict readonly buffer Lights {
 	LightData data[];

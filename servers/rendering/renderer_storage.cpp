@@ -32,28 +32,31 @@
 
 RendererStorage *RendererStorage::base_singleton = nullptr;
 
-void RendererStorage::InstanceDependency::instance_notify_changed(bool p_aabb, bool p_dependencies) {
-	for (Map<InstanceBaseDependency *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
-		E->key()->dependency_changed(p_aabb, p_dependencies);
+void RendererStorage::Dependency::changed_notify(DependencyChangedNotification p_notification) {
+	for (Map<DependencyTracker *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
+		if (E->key()->changed_callback) {
+			E->key()->changed_callback(p_notification, E->key());
+		}
 	}
 }
 
-void RendererStorage::InstanceDependency::instance_notify_deleted(RID p_deleted) {
-	for (Map<InstanceBaseDependency *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
-		E->key()->dependency_deleted(p_deleted);
+void RendererStorage::Dependency::deleted_notify(const RID &p_rid) {
+	for (Map<DependencyTracker *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
+		if (E->key()->deleted_callback) {
+			E->key()->deleted_callback(p_rid, E->key());
+		}
 	}
-	for (Map<InstanceBaseDependency *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
+	for (Map<DependencyTracker *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
 		E->key()->dependencies.erase(this);
 	}
-
 	instances.clear();
 }
 
-RendererStorage::InstanceDependency::~InstanceDependency() {
+RendererStorage::Dependency::~Dependency() {
 #ifdef DEBUG_ENABLED
 	if (instances.size()) {
 		WARN_PRINT("Leaked instance dependency: Bug - did not call instance_notify_deleted when freeing.");
-		for (Map<InstanceBaseDependency *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
+		for (Map<DependencyTracker *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
 			E->key()->dependencies.erase(this);
 		}
 	}

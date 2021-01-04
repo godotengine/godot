@@ -1836,6 +1836,10 @@ public:
 
 	virtual RID lightmap_instance_create(RID p_lightmap);
 	virtual void lightmap_instance_set_transform(RID p_lightmap, const Transform &p_transform);
+	_FORCE_INLINE_ bool lightmap_instance_is_valid(RID p_lightmap_instance) {
+		return lightmap_instance_owner.getornull(p_lightmap_instance) != nullptr;
+	}
+
 	_FORCE_INLINE_ RID lightmap_instance_get_lightmap(RID p_lightmap_instance) {
 		LightmapInstance *li = lightmap_instance_owner.getornull(p_lightmap_instance);
 		return li->lightmap;
