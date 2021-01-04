@@ -51,13 +51,6 @@
 				Returns the frames per second of the running game.
 			</description>
 		</method>
-		<method name="get_process_frames" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the total number of frames passed since engine initialization which is advanced on each [b]process frame[/b], regardless of whether the render loop is enabled. See also [method get_frames_drawn].
-			</description>
-		</method>
 		<method name="get_license_info" qualifiers="const">
 			<return type="Dictionary">
 			</return>
@@ -91,6 +84,13 @@
 			</return>
 			<description>
 				Returns the fraction through the current physics tick we are at the time of rendering the frame. This can be used to implement fixed timestep interpolation.
+			</description>
+		</method>
+		<method name="get_process_frames" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the total number of frames passed since engine initialization which is advanced on each [b]process frame[/b], regardless of whether the render loop is enabled. See also [method get_frames_drawn].
 			</description>
 		</method>
 		<method name="get_singleton" qualifiers="const">

@@ -70,16 +70,6 @@
 				Returns a [Rect2i] with equivalent position and area, modified so that the top-left corner is the origin and [code]width[/code] and [code]height[/code] are positive.
 			</description>
 		</method>
-		<method name="intersection">
-			<return type="Rect2i">
-			</return>
-			<argument index="0" name="b" type="Rect2i">
-			</argument>
-			<description>
-				Returns the intersection of this [Rect2i] and [code]b[/code].
-				If the rectangles do not intersect, an empty [Rect2i] is returned.
-			</description>
-		</method>
 		<method name="encloses">
 			<return type="bool">
 			</return>
@@ -132,7 +122,7 @@
 		<method name="grow_side">
 			<return type="Rect2i">
 			</return>
-			<argument index="0" name="side" type="int" enum="Side">
+			<argument index="0" name="side" type="int">
 			</argument>
 			<argument index="1" name="amount" type="int">
 			</argument>
@@ -154,6 +144,16 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the [Rect2i] contains a point.
+			</description>
+		</method>
+		<method name="intersection">
+			<return type="Rect2i">
+			</return>
+			<argument index="0" name="b" type="Rect2i">
+			</argument>
+			<description>
+				Returns the intersection of this [Rect2i] and [code]b[/code].
+				If the rectangles do not intersect, an empty [Rect2i] is returned.
 			</description>
 		</method>
 		<method name="intersects">
