@@ -668,7 +668,7 @@
 		</method>
 		<method name="print" qualifiers="vararg">
 			<description>
-				Converts one or more arguments to strings in the best way possible and prints them to the console.
+				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
 				[codeblock]
 				a = [1, 2, 3]
 				print("a", "b", a) # Prints ab[1, 2, 3]
@@ -994,7 +994,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Converts one or more arguments to string in the best way possible.
+				Converts one or more arguments of any type to string in the best way possible.
 			</description>
 		</method>
 		<method name="str2var">
