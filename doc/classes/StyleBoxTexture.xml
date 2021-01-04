@@ -12,7 +12,7 @@
 		<method name="get_expand_margin_size" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="side" type="int" enum="Side">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<description>
 				Returns the expand margin size of the specified [enum Side].
@@ -21,7 +21,7 @@
 		<method name="get_margin_size" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="side" type="int" enum="Side">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<description>
 				Returns the margin size of the specified [enum Side].
@@ -54,7 +54,7 @@
 		<method name="set_expand_margin_size">
 			<return type="void">
 			</return>
-			<argument index="0" name="side" type="int" enum="Side">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="size" type="float">
 			</argument>
@@ -65,7 +65,7 @@
 		<method name="set_margin_size">
 			<return type="void">
 			</return>
-			<argument index="0" name="side" type="int" enum="Side">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="size" type="float">
 			</argument>

@@ -92,13 +92,6 @@
 				Creates a copy of the array, and returns it.
 			</description>
 		</method>
-		<method name="is_empty">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the array is empty.
-			</description>
-		</method>
 		<method name="get_string_from_ascii">
 			<return type="String">
 			</return>
@@ -169,6 +162,13 @@
 			</return>
 			<description>
 				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="is_empty">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">

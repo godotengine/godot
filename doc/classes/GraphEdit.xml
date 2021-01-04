@@ -281,17 +281,17 @@
 				Emitted at the end of a GraphNode movement.
 			</description>
 		</signal>
+		<signal name="node_deselected">
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="node_selected">
 			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
 				Emitted when a GraphNode is selected.
-			</description>
-		</signal>
-		<signal name="node_deselected">
-			<argument index="0" name="node" type="Node">
-			</argument>
-			<description>
 			</description>
 		</signal>
 		<signal name="paste_nodes_request">

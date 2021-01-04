@@ -1153,6 +1153,12 @@
 		<member name="rendering/quality/intended_usage/framebuffer_allocation.mobile" type="int" setter="" getter="" default="3">
 			Lower-end override for [member rendering/quality/intended_usage/framebuffer_allocation] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/quality/mesh_lod/threshold_pixels" type="float" setter="" getter="" default="1.0">
+		</member>
+		<member name="rendering/quality/rd_renderer/use_low_end_renderer" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/quality/rd_renderer/use_low_end_renderer.mobile" type="bool" setter="" getter="" default="true">
+		</member>
 		<member name="rendering/quality/reflection_atlas/reflection_count" type="int" setter="" getter="" default="64">
 			Number of cubemaps to store in the reflection atlas. The number of [ReflectionProbe]s in a scene will be limited by this amount. A higher number requires more VRAM.
 		</member>
@@ -1280,6 +1286,8 @@
 		<member name="rendering/sdfgi/frames_to_converge" type="int" setter="" getter="" default="1">
 		</member>
 		<member name="rendering/sdfgi/probe_ray_count" type="int" setter="" getter="" default="2">
+		</member>
+		<member name="rendering/spatial_indexer/update_iterations_per_frame" type="int" setter="" getter="" default="10">
 		</member>
 		<member name="rendering/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.

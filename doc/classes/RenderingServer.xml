@@ -859,6 +859,12 @@
 				Tries to free an object in the RenderingServer.
 			</description>
 		</method>
+		<method name="get_frame_setup_time_cpu" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_render_info">
 			<return type="int">
 			</return>
@@ -1354,7 +1360,7 @@
 			<argument index="1" name="scenario" type="RID">
 			</argument>
 			<description>
-				Returns an array of object IDs intersecting with the provided AABB. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GDScript.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
+				Returns an array of object IDs intersecting with the provided AABB. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
@@ -1366,7 +1372,7 @@
 			<argument index="1" name="scenario" type="RID">
 			</argument>
 			<description>
-				Returns an array of object IDs intersecting with the provided convex shape. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GDScript.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
+				Returns an array of object IDs intersecting with the provided convex shape. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
@@ -1380,7 +1386,7 @@
 			<argument index="2" name="scenario" type="RID">
 			</argument>
 			<description>
-				Returns an array of object IDs intersecting with the provided 3D ray. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GDScript.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
+				Returns an array of object IDs intersecting with the provided 3D ray. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
@@ -2715,6 +2721,22 @@
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
 			</description>
 		</method>
+		<method name="viewport_get_measured_render_time_cpu" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_get_measured_render_time_gpu" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="viewport_get_render_info">
 			<return type="int">
 			</return>
@@ -2850,6 +2872,16 @@
 			</argument>
 			<description>
 				Currently unimplemented in Godot 3.x.
+			</description>
+		</method>
+		<method name="viewport_set_measure_render_time">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="viewport_set_msaa">
