@@ -102,9 +102,6 @@ void EditorLog::copy() {
 }
 
 void EditorLog::add_message(const String &p_msg, MessageType p_type) {
-
-	log->add_newline();
-
 	bool restore = p_type != MSG_TYPE_STD;
 	switch (p_type) {
 		case MSG_TYPE_STD: {
@@ -130,6 +127,7 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	}
 
 	log->add_text(p_msg);
+	log->add_newline();
 
 	if (restore)
 		log->pop();
