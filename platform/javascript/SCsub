@@ -66,6 +66,16 @@ else:
 
 sys_env.Depends(build[0], sys_env["JS_LIBS"])
 
+if "JS_PRE" in env:
+    for js in env["JS_PRE"]:
+        env.Append(LINKFLAGS=["--pre-js", env.File(js).path])
+    env.Depends(build, env["JS_PRE"])
+
+if "JS_EXTERNS" in env:
+    for ext in env["JS_EXTERNS"]:
+        env["ENV"]["EMCC_CLOSURE_ARGS"] += " --externs " + ext.path
+    env.Depends(build, env["JS_EXTERNS"])
+
 engine = [
     "js/engine/preloader.js",
     "js/engine/utils.js",
