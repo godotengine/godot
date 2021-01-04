@@ -1636,7 +1636,6 @@ void PopupMenu::_bind_methods() {
 void PopupMenu::popup(const Rect2 &p_bounds) {
 	moved = Vector2();
 	popup_time_msec = OS::get_singleton()->get_ticks_msec();
-	set_as_minsize();
 	Popup::popup(p_bounds);
 }
 
