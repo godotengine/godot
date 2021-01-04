@@ -483,6 +483,7 @@ public:
 	Camera3D *get_camera() { return camera; } // return the default camera object.
 
 	Node3DEditorViewport(Node3DEditor *p_spatial_editor, EditorNode *p_editor, int p_index);
+	~Node3DEditorViewport();
 };
 
 class Node3DEditorSelectedItem : public Object {
