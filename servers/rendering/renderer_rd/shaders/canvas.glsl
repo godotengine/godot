@@ -497,7 +497,7 @@ void main() {
 	vec2 shadow_vertex = vertex;
 
 	{
-		float normal_depth = 1.0;
+		float normal_map_depth = 1.0;
 
 #if defined(NORMAL_MAP_USED)
 		vec3 normal_map = vec3(0.0, 0.0, 1.0);
@@ -511,7 +511,7 @@ FRAGMENT_SHADER_CODE
 		/* clang-format on */
 
 #if defined(NORMAL_MAP_USED)
-		normal = mix(vec3(0.0, 0.0, 1.0), normal_map * vec3(2.0, -2.0, 1.0) - vec3(1.0, -1.0, 0.0), normal_depth);
+		normal = mix(vec3(0.0, 0.0, 1.0), normal_map * vec3(2.0, -2.0, 1.0) - vec3(1.0, -1.0, 0.0), normal_map_depth);
 #endif
 	}
 
