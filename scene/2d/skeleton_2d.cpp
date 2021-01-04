@@ -125,7 +125,7 @@ void Bone2D::_notification(int p_what) {
 #endif // TOOLS_ENABLED
 	}
 
-	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
+	else if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
 		if (skeleton) {
 			skeleton->_make_transform_dirty();
 		}
@@ -149,7 +149,7 @@ void Bone2D::_notification(int p_what) {
 #endif // TOOLS_ENABLED
 	}
 
-	if (p_what == NOTIFICATION_MOVED_IN_PARENT) {
+	else if (p_what == NOTIFICATION_MOVED_IN_PARENT) {
 		if (skeleton) {
 			skeleton->_make_bone_setup_dirty();
 		}
@@ -158,7 +158,7 @@ void Bone2D::_notification(int p_what) {
 		}
 	}
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
+	else if (p_what == NOTIFICATION_EXIT_TREE) {
 		if (skeleton) {
 			for (int i = 0; i < skeleton->bones.size(); i++) {
 				if (skeleton->bones[i].bone == this) {
@@ -173,21 +173,21 @@ void Bone2D::_notification(int p_what) {
 		set_transform(cache_transform);
 	}
 
-	if (p_what == NOTIFICATION_READY) {
+	else if (p_what == NOTIFICATION_READY) {
 		if (autocalculate_length_and_angle) {
 			calculate_length_and_rotation();
 		}
 	}
 
 #ifdef TOOLS_ENABLED
-	if (p_what == NOTIFICATION_EDITOR_PRE_SAVE || p_what == NOTIFICATION_EDITOR_POST_SAVE) {
+	else if (p_what == NOTIFICATION_EDITOR_PRE_SAVE || p_what == NOTIFICATION_EDITOR_POST_SAVE) {
 		Transform2D tmp_trans = get_transform();
 		set_transform(cache_transform);
 		cache_transform = tmp_trans;
 	}
 
 	// Bone2D Editor gizmo drawing:
-	if (p_what == NOTIFICATION_DRAW) {
+	else if (p_what == NOTIFICATION_DRAW) {
 		// Only draw the gizmo in the editor!
 		if (Engine::get_singleton()->is_editor_hint() == false) {
 			return;

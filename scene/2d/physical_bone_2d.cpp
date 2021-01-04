@@ -31,7 +31,29 @@
 #include "physical_bone_2d.h"
 
 void PhysicalBone2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+
+	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
+		// Position the RigidBody in the correct position
+		if (follow_bone_when_simulating) {
+			_position_at_bone2d();
+		}
+
+		// Keep the child joint in the correct position.
+		if (child_joint && auto_configure_joint) {
+			child_joint->set_global_position(get_global_position());
+		}
+	}
+
+// Only in the editor: keep the PhysicalBone2D at the Bone2D position (if there is one) at all times.
+#ifdef TOOLS_ENABLED
+	else if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
+		if (Engine::get_singleton()->is_editor_hint()) {
+			_position_at_bone2d();
+		}
+	}
+#endif //TOOLS_ENABLED
+	
+	else if (p_what == NOTIFICATION_READY) {
 		_find_skeleton_parent();
 		_find_joint_child();
 
@@ -46,50 +68,17 @@ void PhysicalBone2D::_notification(int p_what) {
 		} else {
 			_stop_physics_simulation();
 		}
-	}
 
-	if (p_what == NOTIFICATION_READY) {
-		_position_at_bone2d();
 		set_physics_process_internal(true);
 	}
-
-	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		// Position the RigidBody in the correct position
-		if (follow_bone_when_simulating) {
-			_position_at_bone2d();
-		}
-
-		// Keep the child joint in the correct position.
-		if (child_joint && auto_configure_joint) {
-			child_joint->set_global_position(get_global_position());
-		}
-
-		// Remove any collision layers and masks if we're disabled.
-		// We do this so the RigidBody can still have it's layers and masks set like normal, but they will not be applied
-		// unless physics are told to simulate, only making them effective when we want them to be.
-		if (!_internal_simulate_physics) {
-			PhysicsServer2D::get_singleton()->body_set_collision_layer(get_rid(), 0);
-			PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), 0);
-		}
-	}
-
-// Only in the editor: keep the PhysicalBone2D at the Bone2D position (if there is one) at all times.
-#ifdef TOOLS_ENABLED
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			_position_at_bone2d();
-		}
-	}
-#endif //TOOLS_ENABLED
 }
 
 void PhysicalBone2D::_position_at_bone2d() {
 	// Reset to Bone2D position
-	if (parent_skeleton && bone2d_index > -1) {
-		if (bone2d_index <= parent_skeleton->get_bone_count()) {
-			Bone2D *bone_to_use = parent_skeleton->get_bone(bone2d_index);
-			set_global_transform(bone_to_use->get_global_transform());
-		}
+	if (parent_skeleton) {
+		Bone2D *bone_to_use = parent_skeleton->get_bone(bone2d_index);
+		ERR_FAIL_COND_MSG(bone_to_use==nullptr, "It's not possible to position the bone with ID: " + itos(bone2d_index));
+		set_global_transform(bone_to_use->get_global_transform());
 	}
 }
 
@@ -193,6 +182,7 @@ void PhysicalBone2D::_start_physics_simulation() {
 	PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
 
 	_internal_simulate_physics = true;
+	set_physics_process_internal(true);
 }
 
 void PhysicalBone2D::_stop_physics_simulation() {
@@ -203,6 +193,10 @@ void PhysicalBone2D::_stop_physics_simulation() {
 
 		// Reset to Bone2D position
 		_position_at_bone2d();
+		
+		set_physics_process_internal(false);
+		PhysicsServer2D::get_singleton()->body_set_collision_layer(get_rid(), 0);
+		PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), 0);
 	}
 }
 
