@@ -1167,7 +1167,7 @@ Dictionary VisualScript::_get_data() const {
 }
 
 void VisualScript::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_function", "name"), &VisualScript::add_function);
+	ClassDB::bind_method(D_METHOD("add_function", "name", "func_node_id"), &VisualScript::add_function);
 	ClassDB::bind_method(D_METHOD("has_function", "name"), &VisualScript::has_function);
 	ClassDB::bind_method(D_METHOD("remove_function", "name"), &VisualScript::remove_function);
 	ClassDB::bind_method(D_METHOD("rename_function", "name", "new_name"), &VisualScript::rename_function);
