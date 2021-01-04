@@ -809,13 +809,13 @@ bool RendererSceneRenderForward::free(RID p_rid) {
 /// RENDERING ///
 
 template <RendererSceneRenderForward::PassMode p_pass_mode>
-void RendererSceneRenderForward::_render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, GeometryInstanceSurfaceDataCache **p_elements, int p_element_count, bool p_reverse_cull, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe, const Vector2 &p_uv_offset, const Plane &p_lod_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold) {
+void RendererSceneRenderForward::_render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element) {
 	RD::DrawListID draw_list = p_draw_list;
 	RD::FramebufferFormatID framebuffer_format = p_framebuffer_Format;
 
 	//global scope bindings
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, render_base_uniform_set, SCENE_UNIFORM_SET);
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_render_pass_uniform_set, RENDER_PASS_UNIFORM_SET);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_params->render_pass_uniform_set, RENDER_PASS_UNIFORM_SET);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, default_vec4_xform_uniform_set, TRANSFORMS_UNIFORM_SET);
 
 	RID prev_material_uniform_set;
@@ -825,12 +825,12 @@ void RendererSceneRenderForward::_render_list_template(RenderingDevice::DrawList
 	RID prev_pipeline_rd;
 	RID prev_xforms_uniform_set;
 
-	bool shadow_pass = (p_pass_mode == PASS_MODE_SHADOW) || (p_pass_mode == PASS_MODE_SHADOW_DP);
+	bool shadow_pass = (p_params->pass_mode == PASS_MODE_SHADOW) || (p_params->pass_mode == PASS_MODE_SHADOW_DP);
 
-	float old_offset[2];
+	float old_offset[2] = { 0, 0 };
 
-	for (int i = 0; i < p_element_count; i++) {
-		const GeometryInstanceSurfaceDataCache *surf = p_elements[i];
+	for (uint32_t i = p_from_element; i < p_to_element; i++) {
+		const GeometryInstanceSurfaceDataCache *surf = p_params->elements[i];
 
 		RID material_uniform_set;
 		ShaderData *shader;
@@ -851,21 +851,21 @@ void RendererSceneRenderForward::_render_list_template(RenderingDevice::DrawList
 			continue;
 		}
 
-		if (p_pass_mode == PASS_MODE_DEPTH_MATERIAL) {
+		if (p_params->pass_mode == PASS_MODE_DEPTH_MATERIAL) {
 			old_offset[0] = surf->owner->push_constant.lightmap_uv_scale[0];
 			old_offset[1] = surf->owner->push_constant.lightmap_uv_scale[1];
-			surf->owner->push_constant.lightmap_uv_scale[0] = p_uv_offset.x;
-			surf->owner->push_constant.lightmap_uv_scale[1] = p_uv_offset.y;
+			surf->owner->push_constant.lightmap_uv_scale[0] = p_params->uv_offset.x;
+			surf->owner->push_constant.lightmap_uv_scale[1] = p_params->uv_offset.y;
 		}
 
 		//find cull variant
 		ShaderData::CullVariant cull_variant;
 
-		if (p_pass_mode == PASS_MODE_DEPTH_MATERIAL || p_pass_mode == PASS_MODE_SDF || ((p_pass_mode == PASS_MODE_SHADOW || p_pass_mode == PASS_MODE_SHADOW_DP) && surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_DOUBLE_SIDED_SHADOWS)) {
+		if (p_params->pass_mode == PASS_MODE_DEPTH_MATERIAL || p_params->pass_mode == PASS_MODE_SDF || ((p_params->pass_mode == PASS_MODE_SHADOW || p_params->pass_mode == PASS_MODE_SHADOW_DP) && surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_DOUBLE_SIDED_SHADOWS)) {
 			cull_variant = ShaderData::CULL_VARIANT_DOUBLE_SIDED;
 		} else {
 			bool mirror = surf->owner->mirror;
-			if (p_reverse_cull) {
+			if (p_params->reverse_cull) {
 				mirror = !mirror;
 			}
 			cull_variant = mirror ? ShaderData::CULL_VARIANT_REVERSED : ShaderData::CULL_VARIANT_NORMAL;
@@ -876,7 +876,7 @@ void RendererSceneRenderForward::_render_list_template(RenderingDevice::DrawList
 
 		ShaderVersion shader_version = SHADER_VERSION_MAX; // Assigned to silence wrong -Wmaybe-initialized.
 
-		switch (p_pass_mode) {
+		switch (p_params->pass_mode) {
 			case PASS_MODE_COLOR:
 			case PASS_MODE_COLOR_TRANSPARENT: {
 				if (surf->sort.uses_lightmap) {
@@ -930,13 +930,13 @@ void RendererSceneRenderForward::_render_list_template(RenderingDevice::DrawList
 			storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, pipeline->get_vertex_input_mask(), vertex_array_rd, vertex_format);
 		}
 
-		if (p_screen_lod_threshold > 0.0 && storage->mesh_surface_has_lod(mesh_surface)) {
+		if (p_params->screen_lod_threshold > 0.0 && storage->mesh_surface_has_lod(mesh_surface)) {
 			//lod
-			Vector3 support_min = surf->owner->transformed_aabb.get_support(-p_lod_plane.normal);
-			Vector3 support_max = surf->owner->transformed_aabb.get_support(p_lod_plane.normal);
+			Vector3 support_min = surf->owner->transformed_aabb.get_support(-p_params->lod_plane.normal);
+			Vector3 support_max = surf->owner->transformed_aabb.get_support(p_params->lod_plane.normal);
 
-			float distance_min = p_lod_plane.distance_to(support_min);
-			float distance_max = p_lod_plane.distance_to(support_max);
+			float distance_min = p_params->lod_plane.distance_to(support_min);
+			float distance_max = p_params->lod_plane.distance_to(support_max);
 
 			float distance = 0.0;
 
@@ -949,7 +949,7 @@ void RendererSceneRenderForward::_render_list_template(RenderingDevice::DrawList
 				distance = -distance_max;
 			}
 
-			index_array_rd = storage->mesh_surface_get_index_array_with_lod(mesh_surface, surf->owner->lod_model_scale * surf->owner->lod_bias, distance * p_lod_distance_multiplier, p_screen_lod_threshold);
+			index_array_rd = storage->mesh_surface_get_index_array_with_lod(mesh_surface, surf->owner->lod_model_scale * surf->owner->lod_bias, distance * p_params->lod_distance_multiplier, p_params->screen_lod_threshold);
 
 		} else {
 			//no lod
@@ -968,7 +968,7 @@ void RendererSceneRenderForward::_render_list_template(RenderingDevice::DrawList
 			prev_index_array_rd = index_array_rd;
 		}
 
-		RID pipeline_rd = pipeline->get_render_pipeline(vertex_format, framebuffer_format, p_force_wireframe);
+		RID pipeline_rd = pipeline->get_render_pipeline(vertex_format, framebuffer_format, p_params->force_wireframe);
 
 		if (pipeline_rd != prev_pipeline_rd) {
 			// checking with prev shader does not make so much sense, as
@@ -995,46 +995,73 @@ void RendererSceneRenderForward::_render_list_template(RenderingDevice::DrawList
 
 		RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), surf->owner->instance_count);
 
-		if (p_pass_mode == PASS_MODE_DEPTH_MATERIAL) {
+		if (p_params->pass_mode == PASS_MODE_DEPTH_MATERIAL) {
 			surf->owner->push_constant.lightmap_uv_scale[0] = old_offset[0];
 			surf->owner->push_constant.lightmap_uv_scale[1] = old_offset[1];
 		}
 	}
 }
 
-void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, GeometryInstanceSurfaceDataCache **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe, const Vector2 &p_uv_offset, const Plane &p_lod_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold) {
+void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element) {
 	//use template for faster performance (pass mode comparisons are inlined)
-	switch (p_pass_mode) {
+
+	switch (p_params->pass_mode) {
 		case PASS_MODE_COLOR: {
-			_render_list_template<PASS_MODE_COLOR>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+			_render_list_template<PASS_MODE_COLOR>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 		case PASS_MODE_COLOR_SPECULAR: {
-			_render_list_template<PASS_MODE_COLOR_SPECULAR>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+			_render_list_template<PASS_MODE_COLOR_SPECULAR>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 		case PASS_MODE_COLOR_TRANSPARENT: {
-			_render_list_template<PASS_MODE_COLOR_TRANSPARENT>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+			_render_list_template<PASS_MODE_COLOR_TRANSPARENT>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 		case PASS_MODE_SHADOW: {
-			_render_list_template<PASS_MODE_SHADOW>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+			_render_list_template<PASS_MODE_SHADOW>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 		case PASS_MODE_SHADOW_DP: {
-			_render_list_template<PASS_MODE_SHADOW_DP>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+			_render_list_template<PASS_MODE_SHADOW_DP>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 		case PASS_MODE_DEPTH: {
-			_render_list_template<PASS_MODE_DEPTH>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+			_render_list_template<PASS_MODE_DEPTH>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 		case PASS_MODE_DEPTH_NORMAL_ROUGHNESS: {
-			_render_list_template<PASS_MODE_DEPTH_NORMAL_ROUGHNESS>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+			_render_list_template<PASS_MODE_DEPTH_NORMAL_ROUGHNESS>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 		case PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE: {
-			_render_list_template<PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+			_render_list_template<PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 		case PASS_MODE_DEPTH_MATERIAL: {
-			_render_list_template<PASS_MODE_DEPTH_MATERIAL>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+			_render_list_template<PASS_MODE_DEPTH_MATERIAL>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 		case PASS_MODE_SDF: {
-			_render_list_template<PASS_MODE_SDF>(p_draw_list, p_framebuffer_Format, p_elements, p_element_count, p_reverse_cull, p_no_gi, p_render_pass_uniform_set, p_force_wireframe, p_uv_offset, p_lod_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+			_render_list_template<PASS_MODE_SDF>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
+	}
+}
+
+void RendererSceneRenderForward::_render_list_thread_function(uint32_t p_thread, RenderListParameters *p_params) {
+	uint32_t render_total = p_params->element_count;
+	uint32_t total_threads = RendererThreadPool::singleton->thread_work_pool.get_thread_count();
+	uint32_t render_from = p_thread * render_total / total_threads;
+	uint32_t render_to = (p_thread + 1 == total_threads) ? render_total : ((p_thread + 1) * render_total / total_threads);
+	_render_list(thread_draw_lists[p_thread], p_params->framebuffer_format, p_params, render_from, render_to);
+}
+
+void RendererSceneRenderForward::_render_list_with_threads(RenderListParameters *p_params, RID p_framebuffer, RD::InitialAction p_initial_color_action, RD::FinalAction p_final_color_action, RD::InitialAction p_initial_depth_action, RD::FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const Vector<RID> &p_storage_textures) {
+	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(p_framebuffer);
+	p_params->framebuffer_format = fb_format;
+
+	if ((uint32_t)p_params->element_count > render_list_thread_threshold && false) { // secondary command buffers need more testing at this time
+		//multi threaded
+		thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
+		RD::get_singleton()->draw_list_begin_split(p_framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, p_storage_textures);
+		RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RendererSceneRenderForward::_render_list_thread_function, p_params);
+		RD::get_singleton()->draw_list_end();
+	} else {
+		//single threaded
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, p_storage_textures);
+		_render_list(draw_list, fb_format, p_params, 0, p_params->element_count);
+		RD::get_singleton()->draw_list_end();
 	}
 }
 
@@ -1428,7 +1455,7 @@ void RendererSceneRenderForward::_fill_render_list(const PagedArray<GeometryInst
 }
 
 void RendererSceneRenderForward::_setup_giprobes(const PagedArray<RID> &p_giprobes) {
-	scene_state.giprobes_used = MIN(p_giprobes.size(), MAX_GI_PROBES);
+	scene_state.giprobes_used = MIN(p_giprobes.size(), uint32_t(MAX_GI_PROBES));
 	for (uint32_t i = 0; i < scene_state.giprobes_used; i++) {
 		scene_state.giprobe_ids[i] = p_giprobes[i];
 	}
@@ -1681,9 +1708,8 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 		RID rp_uniform_set = _setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), PagedArray<RID>(), PagedArray<RID>());
 
 		bool finish_depth = using_ssao || using_sdfgi || using_giprobe;
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(depth_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, finish_depth ? RD::FINAL_ACTION_READ : RD::FINAL_ACTION_CONTINUE, depth_pass_clear);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(depth_framebuffer), render_list.elements, render_list.element_count, false, depth_pass_mode, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
-		RD::get_singleton()->draw_list_end();
+		RenderListParameters render_list_params(render_list.elements, render_list.element_count, false, depth_pass_mode, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
+		_render_list_with_threads(&render_list_params, depth_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, finish_depth ? RD::FINAL_ACTION_READ : RD::FINAL_ACTION_CONTINUE, depth_pass_clear);
 
 		if (render_buffer && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 			RENDER_TIMESTAMP("Resolve Depth Pre-Pass");
@@ -1731,13 +1757,13 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 		}
 
 		RID framebuffer = using_separate_specular ? opaque_specular_framebuffer : opaque_framebuffer;
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, depth_pre_pass ? (continue_depth ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CONTINUE) : RD::INITIAL_ACTION_CLEAR, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(framebuffer), render_list.elements, render_list.element_count, false, using_separate_specular ? PASS_MODE_COLOR_SPECULAR : PASS_MODE_COLOR, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
-		RD::get_singleton()->draw_list_end();
+		RenderListParameters render_list_params(render_list.elements, render_list.element_count, false, using_separate_specular ? PASS_MODE_COLOR_SPECULAR : PASS_MODE_COLOR, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
+
+		_render_list_with_threads(&render_list_params, framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, depth_pre_pass ? (continue_depth ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CONTINUE) : RD::INITIAL_ACTION_CLEAR, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
 
 		if (will_continue_color && using_separate_specular) {
 			// close the specular framebuffer, as it's no longer used
-			draw_list = RD::get_singleton()->draw_list_begin(render_buffer->specular_only_fb, RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_CONTINUE);
+			RD::get_singleton()->draw_list_begin(render_buffer->specular_only_fb, RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_CONTINUE);
 			RD::get_singleton()->draw_list_end();
 		}
 	}
@@ -1817,9 +1843,8 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 	render_list.sort_by_reverse_depth_and_priority(true);
 
 	{
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(alpha_framebuffer, can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(alpha_framebuffer), &render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, false, PASS_MODE_COLOR, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
-		RD::get_singleton()->draw_list_end();
+		RenderListParameters render_list_params(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, false, PASS_MODE_COLOR, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
+		_render_list_with_threads(&render_list_params, alpha_framebuffer, can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
 	}
 
 	if (render_buffer && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
@@ -1854,9 +1879,8 @@ void RendererSceneRenderForward::_render_shadow(RID p_framebuffer, const PagedAr
 
 	{
 		//regular forward for now
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), render_list.elements, render_list.element_count, p_use_dp_flip, pass_mode, true, rp_uniform_set, false, Vector2(), p_camera_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
-		RD::get_singleton()->draw_list_end();
+		RenderListParameters render_list_params(render_list.elements, render_list.element_count, p_use_dp_flip, pass_mode, true, rp_uniform_set, false, Vector2(), p_camera_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
+		_render_list_with_threads(&render_list_params, p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ);
 	}
 }
 
@@ -1883,9 +1907,8 @@ void RendererSceneRenderForward::_render_particle_collider_heightfield(RID p_fb,
 
 	{
 		//regular forward for now
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_fb), render_list.elements, render_list.element_count, false, pass_mode, true, rp_uniform_set);
-		RD::get_singleton()->draw_list_end();
+		RenderListParameters render_list_params(render_list.elements, render_list.element_count, false, pass_mode, true, rp_uniform_set);
+		_render_list_with_threads(&render_list_params, p_fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ);
 	}
 }
 
@@ -1911,6 +1934,7 @@ void RendererSceneRenderForward::_render_material(const Transform &p_cam_transfo
 	render_list.sort_by_key(false);
 
 	{
+		RenderListParameters render_list_params(render_list.elements, render_list.element_count, true, pass_mode, true, rp_uniform_set);
 		//regular forward for now
 		Vector<Color> clear;
 		clear.push_back(Color(0, 0, 0, 0));
@@ -1919,7 +1943,7 @@ void RendererSceneRenderForward::_render_material(const Transform &p_cam_transfo
 		clear.push_back(Color(0, 0, 0, 0));
 		clear.push_back(Color(0, 0, 0, 0));
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, clear, 1.0, 0, p_region);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), render_list.elements, render_list.element_count, true, pass_mode, true, rp_uniform_set);
+		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), &render_list_params, 0, render_list_params.element_count);
 		RD::get_singleton()->draw_list_end();
 	}
 }
@@ -1946,6 +1970,7 @@ void RendererSceneRenderForward::_render_uv2(const PagedArray<GeometryInstance *
 	render_list.sort_by_key(false);
 
 	{
+		RenderListParameters render_list_params(render_list.elements, render_list.element_count, true, pass_mode, true, rp_uniform_set, true);
 		//regular forward for now
 		Vector<Color> clear;
 		clear.push_back(Color(0, 0, 0, 0));
@@ -1973,9 +1998,11 @@ void RendererSceneRenderForward::_render_uv2(const PagedArray<GeometryInstance *
 			Vector2 ofs = uv_offsets[i];
 			ofs.x /= p_region.size.width;
 			ofs.y /= p_region.size.height;
-			_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), render_list.elements, render_list.element_count, true, pass_mode, true, rp_uniform_set, true, ofs); //first wireframe, for pseudo conservative
+			render_list_params.uv_offset = ofs;
+			_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), &render_list_params, 0, render_list_params.element_count); //first wireframe, for pseudo conservative
 		}
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), render_list.elements, render_list.element_count, true, pass_mode, true, rp_uniform_set, false); //second regular triangles
+		render_list_params.uv_offset = Vector2();
+		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), &render_list_params, 0, render_list_params.element_count); //second regular triangles
 
 		RD::get_singleton()->draw_list_end();
 	}
@@ -2054,9 +2081,8 @@ void RendererSceneRenderForward::_render_sdfgi(RID p_render_buffers, const Vecto
 			E = sdfgi_framebuffer_size_cache.insert(fb_size, fb);
 		}
 
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(E->get(), RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, Rect2(), sbs);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(E->get()), render_list.elements, render_list.element_count, true, pass_mode, true, rp_uniform_set, false); //second regular triangles
-		RD::get_singleton()->draw_list_end();
+		RenderListParameters render_list_params(render_list.elements, render_list.element_count, true, pass_mode, true, rp_uniform_set, false);
+		_render_list_with_threads(&render_list_params, E->get(), RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, Rect2(), sbs);
 	}
 }
 
@@ -3380,6 +3406,8 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 		sampler.compare_op = RD::COMPARE_OP_LESS;
 		shadow_sampler = RD::get_singleton()->sampler_create(sampler);
 	}
+
+	render_list_thread_threshold = GLOBAL_GET("rendering/forward_renderer/threaded_render_minimum_instances");
 }
 
 RendererSceneRenderForward::~RendererSceneRenderForward() {

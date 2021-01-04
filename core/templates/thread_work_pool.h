@@ -125,6 +125,7 @@ public:
 		end_work();
 	}
 
+	_FORCE_INLINE_ int get_thread_count() const { return thread_count; }
 	void init(int p_thread_count = -1);
 	void finish();
 	~ThreadWorkPool();

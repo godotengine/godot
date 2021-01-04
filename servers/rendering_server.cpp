@@ -2253,6 +2253,8 @@ void RenderingServer::set_render_loop_enabled(bool p_enabled) {
 
 RenderingServer::RenderingServer() {
 	//ERR_FAIL_COND(singleton);
+
+	thread_pool = memnew(RendererThreadPool);
 	singleton = this;
 
 	GLOBAL_DEF_RST("rendering/vram_compression/import_bptc", false);
@@ -2383,8 +2385,13 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/spatial_indexer/update_iterations_per_frame", 10);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/spatial_indexer/update_iterations_per_frame", PropertyInfo(Variant::INT, "rendering/spatial_indexer/update_iterations_per_frame", PROPERTY_HINT_RANGE, "0,1024,1"));
+	GLOBAL_DEF("rendering/spatial_indexer/threaded_cull_minimum_instances", 1000);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/spatial_indexer/threaded_cull_minimum_instances", PropertyInfo(Variant::INT, "rendering/spatial_indexer/threaded_cull_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"));
+	GLOBAL_DEF("rendering/forward_renderer/threaded_render_minimum_instances", 500);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/forward_renderer/threaded_render_minimum_instances", PropertyInfo(Variant::INT, "rendering/forward_renderer/threaded_render_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"));
 }
 
 RenderingServer::~RenderingServer() {
+	memdelete(thread_pool);
 	singleton = nullptr;
 }

@@ -425,10 +425,44 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 	struct GeometryInstanceSurfaceDataCache;
 
-	template <PassMode p_pass_mode>
-	_FORCE_INLINE_ void _render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, GeometryInstanceSurfaceDataCache **p_elements, int p_element_count, bool p_reverse_cull, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0);
+	struct RenderListParameters {
+		GeometryInstanceSurfaceDataCache **elements = nullptr;
+		int element_count = 0;
+		bool reverse_cull = false;
+		PassMode pass_mode = PASS_MODE_COLOR;
+		bool no_gi = false;
+		RID render_pass_uniform_set;
+		bool force_wireframe = false;
+		Vector2 uv_offset;
+		Plane lod_plane;
+		float lod_distance_multiplier = 0.0;
+		float screen_lod_threshold = 0.0;
+		RD::FramebufferFormatID framebuffer_format = 0;
+		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0) {
+			elements = p_elements;
+			element_count = p_element_count;
+			reverse_cull = p_reverse_cull;
+			pass_mode = p_pass_mode;
+			no_gi = p_no_gi;
+			render_pass_uniform_set = p_render_pass_uniform_set;
+			force_wireframe = p_force_wireframe;
+			uv_offset = p_uv_offset;
+			lod_plane = p_lod_plane;
+			lod_distance_multiplier = p_lod_distance_multiplier;
+			screen_lod_threshold = p_screen_lod_threshold;
+		}
+	};
 
-	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, GeometryInstanceSurfaceDataCache **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0);
+	template <PassMode p_pass_mode>
+	_FORCE_INLINE_ void _render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element);
+
+	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element);
+
+	LocalVector<RD::DrawListID> thread_draw_lists;
+	void _render_list_thread_function(uint32_t p_thread, RenderListParameters *p_params);
+	void _render_list_with_threads(RenderListParameters *p_params, RID p_framebuffer, RD::InitialAction p_initial_color_action, RD::FinalAction p_final_color_action, RD::InitialAction p_initial_depth_action, RD::FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const Vector<RID> &p_storage_textures = Vector<RID>());
+
+	uint32_t render_list_thread_threshold = 500;
 
 	void _fill_render_list(const PagedArray<GeometryInstance *> &p_instances, PassMode p_pass_mode, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_using_sdfgi = false, bool p_using_opaque_gi = false);
 
