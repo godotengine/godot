@@ -148,8 +148,8 @@ _FORCE_INLINE_ Plane Transform::xform_inv(const Plane &p_plane) const {
 
 	Vector3 point = p_plane.normal * p_plane.d;
 	Vector3 point_dir = point + p_plane.normal;
-	xform_inv(point);
-	xform_inv(point_dir);
+	point = xform_inv(point);
+	point_dir = xform_inv(point_dir);
 
 	Vector3 normal = point_dir - point;
 	normal.normalize();
