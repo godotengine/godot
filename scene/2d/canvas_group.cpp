@@ -84,4 +84,5 @@ CanvasGroup::CanvasGroup() {
 	set_fit_margin(10.0); //sets things
 }
 CanvasGroup::~CanvasGroup() {
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CANVAS_GROUP_MODE_DISABLED);
 }
