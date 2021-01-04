@@ -136,8 +136,6 @@ class VisualScriptEditor : public ScriptEditorBase {
 	};
 
 	HashMap<StringName, Ref<StyleBox>> node_styles;
-	StringName edited_func;
-	StringName default_func;
 
 	void _update_graph_connections();
 	void _update_graph(int p_only_id = -1);
@@ -176,7 +174,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	Vector2 mouse_up_position;
 
-	void _port_action_menu(int p_option, const StringName &p_func);
+	void _port_action_menu(int p_option);
 
 	void connect_data(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode, int new_id);
 
@@ -184,13 +182,13 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void connect_seq(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode_new, int new_id);
 
 	void _cancel_connect_node();
-	int _create_new_node_from_name(const String &p_text, const Vector2 &p_point, const StringName &p_func = StringName());
+	int _create_new_node_from_name(const String &p_text, const Vector2 &p_point);
 	void _selected_new_virtual_method(const String &p_text, const String &p_category, const bool p_connecting);
 
 	int error_line;
 
 	void _node_selected(Node *p_node);
-	void _center_on_node(const StringName &p_func, int p_id);
+	void _center_on_node(int p_id);
 
 	void _node_filter_changed(const String &p_text);
 	void _change_base_type_callback();
@@ -201,7 +199,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _begin_node_move();
 	void _end_node_move();
-	void _move_node(const StringName &p_func, int p_id, const Vector2 &p_to);
+	void _move_node(int p_id, const Vector2 &p_to);
 
 	void _get_ends(int p_node, const List<VisualScript::SequenceConnection> &p_seqs, const Set<int> &p_selected, Set<int> &r_end_nodes);
 
@@ -211,7 +209,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _graph_disconnected(const String &p_from, int p_from_slot, const String &p_to, int p_to_slot);
 	void _graph_connect_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_pos);
 
-	void _node_ports_changed(const String &p_func, int p_id);
+	void _node_ports_changed(int p_id);
 	void _node_create();
 
 	void _update_available_nodes();
@@ -228,10 +226,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _port_name_focus_out(const Node *p_name_box, int p_id, int p_port, bool is_input);
 
 	Vector2 _get_available_pos(bool centered = true, Vector2 ofs = Vector2()) const;
-	StringName _get_function_of_node(int p_id) const;
 
-	void _move_nodes_with_rescan(const StringName &p_func_from, const StringName &p_func_to, int p_id);
-	bool node_has_sequence_connections(const StringName &p_func, int p_id);
+	bool node_has_sequence_connections(int p_id);
 
 	void _generic_search(String p_base_type = "", Vector2 pos = Vector2(), bool node_centered = false);
 
