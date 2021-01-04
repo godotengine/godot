@@ -171,7 +171,7 @@
 			<argument index="0" name="to" type="Vector3">
 			</argument>
 			<description>
-				Returns [code]true[/code] if this vector and [code]v[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
+				Returns [code]true[/code] if this vector and [code]v[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="is_normalized">
@@ -410,7 +410,7 @@
 			<argument index="0" name="mod" type="float">
 			</argument>
 			<description>
-				Returns a vector composed of the [method @GDScript.fposmod] of this vector's components and [code]mod[/code].
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [code]mod[/code].
 			</description>
 		</method>
 		<method name="posmodv">
@@ -419,7 +419,7 @@
 			<argument index="0" name="modv" type="Vector3">
 			</argument>
 			<description>
-				Returns a vector composed of the [method @GDScript.fposmod] of this vector's components and [code]modv[/code]'s components.
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [code]modv[/code]'s components.
 			</description>
 		</method>
 		<method name="project">
@@ -462,7 +462,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Returns a vector with each component set to one or negative one, depending on the signs of this vector's components, or zero if the component is zero, by calling [method @GDScript.sign] on each component.
+				Returns a vector with each component set to one or negative one, depending on the signs of this vector's components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
 			</description>
 		</method>
 		<method name="slerp">

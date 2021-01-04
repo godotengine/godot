@@ -944,6 +944,22 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="snapped">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="step" type="float">
+			</argument>
+			<description>
+				Snaps float value [code]x[/code] to a given [code]step[/code]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				[codeblock]
+				snapped(100, 32) # Returns 96
+				snapped(3.14159, 0.01) # Returns 3.14
+				[/codeblock]
+				See also [method ceil], [method floor], and [method round].
+			</description>
+		</method>
 		<method name="sqrt">
 			<return type="float">
 			</return>
@@ -972,22 +988,6 @@
 				# n is 9
 				n = step_decimals(0.000000005)
 				[/codeblock]
-			</description>
-		</method>
-		<method name="snapped">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
-			<argument index="1" name="step" type="float">
-			</argument>
-			<description>
-				Snaps float value [code]x[/code] to a given [code]step[/code]. This can also be used to round a floating point number to an arbitrary number of decimals.
-				[codeblock]
-				snapped(100, 32) # Returns 96
-				snapped(3.14159, 0.01) # Returns 3.14
-				[/codeblock]
-				See also [method ceil], [method floor], and [method round].
 			</description>
 		</method>
 		<method name="str" qualifiers="vararg">

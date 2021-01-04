@@ -59,13 +59,6 @@
 				Creates a copy of the array, and returns it.
 			</description>
 		</method>
-		<method name="is_empty">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the array is empty.
-			</description>
-		</method>
 		<method name="has">
 			<return type="bool">
 			</return>
@@ -91,6 +84,13 @@
 			</return>
 			<description>
 				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="is_empty">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">

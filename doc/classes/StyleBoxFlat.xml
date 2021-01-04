@@ -27,7 +27,7 @@
 		<method name="get_border_width" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="side" type="int" enum="Side">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<description>
 				Returns the specified [enum Side]'s border width.
@@ -52,7 +52,7 @@
 		<method name="get_expand_margin" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="side" type="int" enum="Side">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<description>
 				Returns the size of the specified [enum Side]'s expand margin.
@@ -61,7 +61,7 @@
 		<method name="set_border_width">
 			<return type="void">
 			</return>
-			<argument index="0" name="side" type="int" enum="Side">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="width" type="int">
 			</argument>
@@ -116,7 +116,7 @@
 		<method name="set_expand_margin">
 			<return type="void">
 			</return>
-			<argument index="0" name="side" type="int" enum="Side">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="size" type="float">
 			</argument>

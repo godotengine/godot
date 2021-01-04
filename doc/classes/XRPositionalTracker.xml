@@ -12,13 +12,6 @@
 		<link title="VR tutorial index">https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
-		<method name="get_tracker_hand" qualifiers="const">
-			<return type="int" enum="XRPositionalTracker.TrackerHand">
-			</return>
-			<description>
-				Returns the hand holding this tracker, if known. See [enum TrackerHand] constants.
-			</description>
-		</method>
 		<method name="get_joy_id" qualifiers="const">
 			<return type="int">
 			</return>
@@ -47,6 +40,13 @@
 				Returns the world-space controller position.
 			</description>
 		</method>
+		<method name="get_tracker_hand" qualifiers="const">
+			<return type="int" enum="XRPositionalTracker.TrackerHand">
+			</return>
+			<description>
+				Returns the hand holding this tracker, if known. See [enum TrackerHand] constants.
+			</description>
+		</method>
 		<method name="get_tracker_id" qualifiers="const">
 			<return type="int">
 			</return>
@@ -68,6 +68,15 @@
 				Returns the tracker's type, which will be one of the values from the [enum XRServer.TrackerType] enum.
 			</description>
 		</method>
+		<method name="get_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="adjust_by_reference_frame" type="bool">
+			</argument>
+			<description>
+				Returns the transform combining this device's orientation and position.
+			</description>
+		</method>
 		<method name="is_tracking_orientation" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -80,15 +89,6 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if this device is tracking position.
-			</description>
-		</method>
-		<method name="get_transform" qualifiers="const">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="adjust_by_reference_frame" type="bool">
-			</argument>
-			<description>
-				Returns the transform combining this device's orientation and position.
 			</description>
 		</method>
 	</methods>

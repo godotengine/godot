@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFMesh" inherits="Resource" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="blend_weights" type="PackedFloat32Array" setter="set_blend_weights" getter="get_blend_weights" default="PackedFloat32Array(  )">
+		</member>
+		<member name="mesh" type="EditorSceneImporterMesh" setter="set_mesh" getter="get_mesh">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

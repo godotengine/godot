@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PackedSceneGLTF" inherits="PackedScene" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="export_gltf">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<argument index="1" name="path" type="String">
+			</argument>
+			<argument index="2" name="flags" type="int" default="0">
+			</argument>
+			<argument index="3" name="bake_fps" type="float" default="1000.0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="import_gltf_scene">
+			<return type="Node">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="flags" type="int" default="0">
+			</argument>
+			<argument index="2" name="bake_fps" type="float" default="1000.0">
+			</argument>
+			<argument index="3" name="state" type="GLTFState" default="null">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="pack_gltf">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="flags" type="int" default="0">
+			</argument>
+			<argument index="2" name="bake_fps" type="float" default="1000.0">
+			</argument>
+			<argument index="3" name="state" type="GLTFState" default="null">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" override="true" default="{&quot;conn_count&quot;: 0,&quot;conns&quot;: PackedInt32Array(  ),&quot;editable_instances&quot;: [  ],&quot;names&quot;: PackedStringArray(  ),&quot;node_count&quot;: 0,&quot;node_paths&quot;: [  ],&quot;nodes&quot;: PackedInt32Array(  ),&quot;variants&quot;: [  ],&quot;version&quot;: 2}" />
+	</members>
+	<constants>
+	</constants>
+</class>

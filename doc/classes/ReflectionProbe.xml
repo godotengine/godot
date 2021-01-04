@@ -37,6 +37,8 @@
 		<member name="interior" type="bool" setter="set_as_interior" getter="is_set_as_interior" default="false">
 			If [code]true[/code], reflections will ignore sky contribution.
 		</member>
+		<member name="lod_threshold" type="float" setter="set_lod_threshold" getter="get_lod_threshold" default="1.0">
+		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="0.0">
 			Sets the max distance away from the probe an object can be before it is culled.
 		</member>

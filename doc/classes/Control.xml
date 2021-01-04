@@ -213,17 +213,6 @@
 				Overrides the icon with given [code]name[/code] in the [member theme] resource the control uses. If [code]icon[/code] is [code]null[/code] or invalid, the override is cleared and the icon from assigned [Theme] is used.
 			</description>
 		</method>
-		<method name="add_theme_shader_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="shader" type="Shader">
-			</argument>
-			<description>
-				Overrides the [Shader] with given [code]name[/code] in the [member theme] resource the control uses. If [code]shader[/code] is [code]null[/code] or invalid, the override is cleared and the shader from assigned [Theme] is used.
-			</description>
-		</method>
 		<method name="add_theme_stylebox_override">
 			<return type="void">
 			</return>
@@ -417,20 +406,20 @@
 				Returns the position and size of the control relative to the top-left corner of the screen. See [member rect_position] and [member rect_size].
 			</description>
 		</method>
-		<method name="get_offset" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="side" type="int" enum="Side">
-			</argument>
-			<description>
-				Returns the anchor for the specified [enum Side]. A getter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
-			</description>
-		</method>
 		<method name="get_minimum_size" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
 				Returns the minimum size for this control. See [member rect_min_size].
+			</description>
+		</method>
+		<method name="get_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="offset" type="int" enum="Side">
+			</argument>
+			<description>
+				Returns the anchor for the specified [enum Side]. A getter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
 			</description>
 		</method>
 		<method name="get_parent_area_size" qualifiers="const">
@@ -683,15 +672,6 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if icon with given [code]name[/code] has a valid override in this [Control] node.
-			</description>
-		</method>
-		<method name="has_theme_shader_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<description>
-				Returns [code]true[/code] if [Shader] with given [code]name[/code] has a valid override in this [Control] node.
 			</description>
 		</method>
 		<method name="has_theme_stylebox" qualifiers="const">
@@ -1063,6 +1043,13 @@
 		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" enum="Control.LayoutDirection" default="0">
 			Controls layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
 		</member>
+		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" enum="Control.CursorShape" default="0">
+			The default cursor shape for this control. Useful for Godot plugins and applications or games that use the system's mouse cursors.
+			[b]Note:[/b] On Linux, shapes may vary depending on the cursor theme of the system.
+		</member>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter" default="0">
+			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Also controls whether the control can receive the [signal mouse_entered], and [signal mouse_exited] signals. See the constants to learn what each does.
+		</member>
 		<member name="offset_bottom" type="float" setter="set_offset" getter="get_offset" default="0.0">
 			Distance between the node's bottom edge and its parent control, based on [member anchor_bottom].
 			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
@@ -1078,13 +1065,6 @@
 		<member name="offset_top" type="float" setter="set_offset" getter="get_offset" default="0.0">
 			Distance between the node's top edge and its parent control, based on [member anchor_top].
 			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
-		</member>
-		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" enum="Control.CursorShape" default="0">
-			The default cursor shape for this control. Useful for Godot plugins and applications or games that use the system's mouse cursors.
-			[b]Note:[/b] On Linux, shapes may vary depending on the cursor theme of the system.
-		</member>
-		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter" default="0">
-			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Also controls whether the control can receive the [signal mouse_entered], and [signal mouse_exited] signals. See the constants to learn what each does.
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
 			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered.

@@ -52,6 +52,22 @@
 				Removes all OpenType features from the item's text.
 			</description>
 		</method>
+		<method name="deselect">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Ensures the item associated with the specified index is not selected.
+			</description>
+		</method>
+		<method name="deselect_all">
+			<return type="void">
+			</return>
+			<description>
+				Ensures there are no items selected.
+			</description>
+		</method>
 		<method name="ensure_current_is_visible">
 			<return type="void">
 			</return>
@@ -469,22 +485,6 @@
 			</return>
 			<description>
 				Sorts items in the list by their text.
-			</description>
-		</method>
-		<method name="deselect">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-				Ensures the item associated with the specified index is not selected.
-			</description>
-		</method>
-		<method name="deselect_all">
-			<return type="void">
-			</return>
-			<description>
-				Ensures there are no items selected.
 			</description>
 		</method>
 	</methods>

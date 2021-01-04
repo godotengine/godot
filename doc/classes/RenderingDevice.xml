@@ -730,6 +730,8 @@
 			</argument>
 			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray(  )">
 			</argument>
+			<argument index="2" name="use_as_storage" type="bool" default="false">
+			</argument>
 			<description>
 			</description>
 		</method>

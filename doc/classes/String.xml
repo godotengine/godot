@@ -135,13 +135,6 @@
 				Returns a copy of the string with indentation (leading tabs and spaces) removed.
 			</description>
 		</method>
-		<method name="is_empty">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the length of the string equals [code]0[/code].
-			</description>
-		</method>
 		<method name="ends_with">
 			<return type="bool">
 			</return>
@@ -274,6 +267,13 @@
 			</return>
 			<description>
 				If the string is a path to a file or directory, returns [code]true[/code] if the path is absolute.
+			</description>
+		</method>
+		<method name="is_empty">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the length of the string equals [code]0[/code].
 			</description>
 		</method>
 		<method name="is_rel_path">

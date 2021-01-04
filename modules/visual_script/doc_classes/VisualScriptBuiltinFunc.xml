@@ -92,7 +92,7 @@
 		<constant name="MATH_STEP_DECIMALS" value="24" enum="BuiltinFunc">
 			Return the number of digit places after the decimal that the first non-zero digit occurs.
 		</constant>
-		<constant name="MATH_STEPIFY" value="25" enum="BuiltinFunc">
+		<constant name="MATH_SNAPPED" value="25" enum="BuiltinFunc">
 			Return the input snapped to a given step.
 		</constant>
 		<constant name="MATH_LERP" value="26" enum="BuiltinFunc">

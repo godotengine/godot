@@ -222,6 +222,8 @@
 		</member>
 		<member name="handle_input_locally" type="bool" setter="set_handle_input_locally" getter="is_handling_input_locally" default="true">
 		</member>
+		<member name="lod_threshold" type="float" setter="set_lod_threshold" getter="get_lod_threshold" default="1.0">
+		</member>
 		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA" default="0">
 			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 4 is best unless targeting very high-end systems.
 		</member>
@@ -404,6 +406,8 @@
 		<constant name="DEBUG_DRAW_SDFGI_PROBES" value="16" enum="DebugDraw">
 		</constant>
 		<constant name="DEBUG_DRAW_GI_BUFFER" value="17" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_DISABLE_LOD" value="18" enum="DebugDraw">
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
 			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.

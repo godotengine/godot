@@ -409,7 +409,7 @@
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
-				Returns the transition curve (easing) for a specific key (see the built-in math function [method @GDScript.ease]).
+				Returns the transition curve (easing) for a specific key (see the built-in math function [method @GlobalScope.ease]).
 			</description>
 		</method>
 		<method name="track_get_key_value" qualifiers="const">
@@ -592,7 +592,7 @@
 			<argument index="2" name="transition" type="float">
 			</argument>
 			<description>
-				Sets the transition curve (easing) for a specific key (see the built-in math function [method @GDScript.ease]).
+				Sets the transition curve (easing) for a specific key (see the built-in math function [method @GlobalScope.ease]).
 			</description>
 		</method>
 		<method name="track_set_key_value">
