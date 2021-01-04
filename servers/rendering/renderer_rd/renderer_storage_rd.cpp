@@ -1438,7 +1438,7 @@ void RendererStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 
 	for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
 		Material *material = E->get();
-		material->instance_dependency.instance_notify_changed(false, true);
+		material->dependency.changed_notify(DEPENDENCY_CHANGED_MATERIAL);
 		_material_queue_update(material, true, true);
 	}
 }
@@ -1547,7 +1547,8 @@ void RendererStorageRD::material_set_shader(RID p_material, RID p_shader) {
 	}
 
 	if (p_shader.is_null()) {
-		material->instance_dependency.instance_notify_changed(false, true);
+		material->dependency.changed_notify(DEPENDENCY_CHANGED_MATERIAL);
+		material->shader_id = 0;
 		return;
 	}
 
@@ -1555,6 +1556,7 @@ void RendererStorageRD::material_set_shader(RID p_material, RID p_shader) {
 	ERR_FAIL_COND(!shader);
 	material->shader = shader;
 	material->shader_type = shader->type;
+	material->shader_id = p_shader.get_local_index();
 	shader->owners.insert(material);
 
 	if (shader->type == SHADER_TYPE_MAX) {
@@ -1568,7 +1570,7 @@ void RendererStorageRD::material_set_shader(RID p_material, RID p_shader) {
 	material->data->set_next_pass(material->next_pass);
 	material->data->set_render_priority(material->priority);
 	//updating happens later
-	material->instance_dependency.instance_notify_changed(false, true);
+	material->dependency.changed_notify(DEPENDENCY_CHANGED_MATERIAL);
 	_material_queue_update(material, true, true);
 }
 
@@ -1613,7 +1615,7 @@ void RendererStorageRD::material_set_next_pass(RID p_material, RID p_next_materi
 		material->data->set_next_pass(p_next_material);
 	}
 
-	material->instance_dependency.instance_notify_changed(false, true);
+	material->dependency.changed_notify(DEPENDENCY_CHANGED_MATERIAL);
 }
 
 void RendererStorageRD::material_set_render_priority(RID p_material, int priority) {
@@ -1663,10 +1665,10 @@ void RendererStorageRD::material_get_instance_shader_parameters(RID p_material, 
 	}
 }
 
-void RendererStorageRD::material_update_dependency(RID p_material, InstanceBaseDependency *p_instance) {
+void RendererStorageRD::material_update_dependency(RID p_material, DependencyTracker *p_instance) {
 	Material *material = material_owner.getornull(p_material);
 	ERR_FAIL_COND(!material);
-	p_instance->update_dependency(&material->instance_dependency);
+	p_instance->update_dependency(&material->dependency);
 	if (material->next_pass.is_valid()) {
 		material_update_dependency(material->next_pass, p_instance);
 	}
@@ -2596,7 +2598,7 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 		_mesh_instance_add_surface(mi, mesh, mesh->surface_count - 1);
 	}
 
-	mesh->instance_dependency.instance_notify_changed(true, true);
+	mesh->dependency.changed_notify(DEPENDENCY_CHANGED_MESH);
 
 	mesh->material_cache.clear();
 }
@@ -2638,7 +2640,7 @@ void RendererStorageRD::mesh_surface_set_material(RID p_mesh, int p_surface, RID
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
 	mesh->surfaces[p_surface]->material = p_material;
 
-	mesh->instance_dependency.instance_notify_changed(false, true);
+	mesh->dependency.changed_notify(DEPENDENCY_CHANGED_MATERIAL);
 	mesh->material_cache.clear();
 }
 
@@ -2858,8 +2860,8 @@ void RendererStorageRD::mesh_clear(RID p_mesh) {
 		MeshInstance *mi = E->get();
 		_mesh_instance_clear(mi);
 	}
-	mesh->instance_dependency.instance_notify_changed(true, true);
 	mesh->has_bone_weights = false;
+	mesh->dependency.changed_notify(DEPENDENCY_CHANGED_MESH);
 }
 
 bool RendererStorageRD::mesh_needs_instance(RID p_mesh, bool p_has_skeleton) {
@@ -3298,6 +3300,8 @@ void RendererStorageRD::multimesh_allocate(RID p_multimesh, int p_instances, RS:
 	if (multimesh->instances) {
 		multimesh->buffer = RD::get_singleton()->storage_buffer_create(multimesh->instances * multimesh->stride_cache * 4);
 	}
+
+	multimesh->dependency.changed_notify(DEPENDENCY_CHANGED_MULTIMESH);
 }
 
 int RendererStorageRD::multimesh_get_instance_count(RID p_multimesh) const {
@@ -3331,7 +3335,7 @@ void RendererStorageRD::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 		}
 	}
 
-	multimesh->instance_dependency.instance_notify_changed(true, true);
+	multimesh->dependency.changed_notify(DEPENDENCY_CHANGED_MESH);
 }
 
 #define MULTIMESH_DIRTY_REGION_SIZE 512
@@ -3690,7 +3694,7 @@ void RendererStorageRD::multimesh_set_buffer(RID p_multimesh, const Vector<float
 		const float *data = p_buffer.ptr();
 
 		_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
-		multimesh->instance_dependency.instance_notify_changed(true, false);
+		multimesh->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 	}
 }
 
@@ -3731,6 +3735,8 @@ void RendererStorageRD::multimesh_set_visible_instances(RID p_multimesh, int p_v
 	}
 
 	multimesh->visible_instances = p_visible;
+
+	multimesh->dependency.changed_notify(DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES);
 }
 
 int RendererStorageRD::multimesh_get_visible_instances(RID p_multimesh) const {
@@ -3788,7 +3794,7 @@ void RendererStorageRD::_update_dirty_multimeshes() {
 				//aabb is dirty..
 				_multimesh_re_create_aabb(multimesh, data, visible_instances);
 				multimesh->aabb_dirty = false;
-				multimesh->instance_dependency.instance_notify_changed(true, false);
+				multimesh->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 			}
 		}
 
@@ -3926,7 +3932,7 @@ void RendererStorageRD::particles_set_custom_aabb(RID p_particles, const AABB &p
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->custom_aabb = p_aabb;
-	particles->instance_dependency.instance_notify_changed(true, false);
+	particles->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 }
 
 void RendererStorageRD::particles_set_speed_scale(RID p_particles, float p_scale) {
@@ -4687,7 +4693,7 @@ void RendererStorageRD::update_particles() {
 			RD::get_singleton()->compute_list_end();
 		}
 
-		particles->instance_dependency.instance_notify_changed(true, false); //make sure shadows are updated
+		particles->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 	}
 }
 
@@ -4986,7 +4992,7 @@ void RendererStorageRD::particles_collision_set_collision_type(RID p_particles_c
 		particles_collision->heightfield_texture = RID();
 	}
 	particles_collision->type = p_type;
-	particles_collision->instance_dependency.instance_notify_changed(true, false);
+	particles_collision->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 }
 
 void RendererStorageRD::particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) {
@@ -5000,7 +5006,7 @@ void RendererStorageRD::particles_collision_set_sphere_radius(RID p_particles_co
 	ERR_FAIL_COND(!particles_collision);
 
 	particles_collision->radius = p_radius;
-	particles_collision->instance_dependency.instance_notify_changed(true, false);
+	particles_collision->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 }
 
 void RendererStorageRD::particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) {
@@ -5008,7 +5014,7 @@ void RendererStorageRD::particles_collision_set_box_extents(RID p_particles_coll
 	ERR_FAIL_COND(!particles_collision);
 
 	particles_collision->extents = p_extents;
-	particles_collision->instance_dependency.instance_notify_changed(true, false);
+	particles_collision->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 }
 
 void RendererStorageRD::particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength) {
@@ -5042,7 +5048,7 @@ void RendererStorageRD::particles_collision_set_field_texture(RID p_particles_co
 void RendererStorageRD::particles_collision_height_field_update(RID p_particles_collision) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
-	particles_collision->instance_dependency.instance_notify_changed(true, false);
+	particles_collision->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 }
 
 void RendererStorageRD::particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) {
@@ -5165,6 +5171,8 @@ void RendererStorageRD::skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d
 			skeleton->uniform_set_mi = RD::get_singleton()->uniform_set_create(uniforms, skeleton_shader.version_shader[0], SkeletonShader::UNIFORM_SET_SKELETON);
 		}
 	}
+
+	skeleton->dependency.changed_notify(DEPENDENCY_CHANGED_SKELETON_DATA);
 }
 
 int RendererStorageRD::skeleton_get_bone_count(RID p_skeleton) const {
@@ -5285,7 +5293,8 @@ void RendererStorageRD::_update_dirty_skeletons() {
 
 		skeleton_dirty_list = skeleton->dirty_list;
 
-		skeleton->instance_dependency.instance_notify_changed(true, false);
+		skeleton->dependency.changed_notify(DEPENDENCY_CHANGED_SKELETON_BONES);
+
 		skeleton->version++;
 
 		skeleton->dirty = false;
@@ -5347,7 +5356,7 @@ void RendererStorageRD::light_set_param(RID p_light, RS::LightParam p_param, flo
 		case RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE:
 		case RS::LIGHT_PARAM_SHADOW_BIAS: {
 			light->version++;
-			light->instance_dependency.instance_notify_changed(true, false);
+			light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT);
 		} break;
 		default: {
 		}
@@ -5362,7 +5371,7 @@ void RendererStorageRD::light_set_shadow(RID p_light, bool p_enabled) {
 	light->shadow = p_enabled;
 
 	light->version++;
-	light->instance_dependency.instance_notify_changed(true, false);
+	light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT);
 }
 
 void RendererStorageRD::light_set_shadow_color(RID p_light, const Color &p_color) {
@@ -5404,7 +5413,7 @@ void RendererStorageRD::light_set_cull_mask(RID p_light, uint32_t p_mask) {
 	light->cull_mask = p_mask;
 
 	light->version++;
-	light->instance_dependency.instance_notify_changed(true, false);
+	light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT);
 }
 
 void RendererStorageRD::light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) {
@@ -5414,7 +5423,7 @@ void RendererStorageRD::light_set_reverse_cull_face_mode(RID p_light, bool p_ena
 	light->reverse_cull = p_enabled;
 
 	light->version++;
-	light->instance_dependency.instance_notify_changed(true, false);
+	light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT);
 }
 
 void RendererStorageRD::light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) {
@@ -5424,7 +5433,7 @@ void RendererStorageRD::light_set_bake_mode(RID p_light, RS::LightBakeMode p_bak
 	light->bake_mode = p_bake_mode;
 
 	light->version++;
-	light->instance_dependency.instance_notify_changed(true, false);
+	light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT);
 }
 
 void RendererStorageRD::light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) {
@@ -5434,7 +5443,7 @@ void RendererStorageRD::light_set_max_sdfgi_cascade(RID p_light, uint32_t p_casc
 	light->max_sdfgi_cascade = p_cascade;
 
 	light->version++;
-	light->instance_dependency.instance_notify_changed(true, false);
+	light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT);
 }
 
 void RendererStorageRD::light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode) {
@@ -5444,7 +5453,7 @@ void RendererStorageRD::light_omni_set_shadow_mode(RID p_light, RS::LightOmniSha
 	light->omni_shadow_mode = p_mode;
 
 	light->version++;
-	light->instance_dependency.instance_notify_changed(true, false);
+	light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT);
 }
 
 RS::LightOmniShadowMode RendererStorageRD::light_omni_get_shadow_mode(RID p_light) {
@@ -5460,7 +5469,7 @@ void RendererStorageRD::light_directional_set_shadow_mode(RID p_light, RS::Light
 
 	light->directional_shadow_mode = p_mode;
 	light->version++;
-	light->instance_dependency.instance_notify_changed(true, false);
+	light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT);
 }
 
 void RendererStorageRD::light_directional_set_blend_splits(RID p_light, bool p_enable) {
@@ -5469,7 +5478,7 @@ void RendererStorageRD::light_directional_set_blend_splits(RID p_light, bool p_e
 
 	light->directional_blend_splits = p_enable;
 	light->version++;
-	light->instance_dependency.instance_notify_changed(true, false);
+	light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT);
 }
 
 bool RendererStorageRD::light_directional_get_blend_splits(RID p_light) const {
@@ -5568,7 +5577,7 @@ void RendererStorageRD::reflection_probe_set_update_mode(RID p_probe, RS::Reflec
 	ERR_FAIL_COND(!reflection_probe);
 
 	reflection_probe->update_mode = p_mode;
-	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+	reflection_probe->dependency.changed_notify(DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 void RendererStorageRD::reflection_probe_set_intensity(RID p_probe, float p_intensity) {
@@ -5605,7 +5614,7 @@ void RendererStorageRD::reflection_probe_set_max_distance(RID p_probe, float p_d
 
 	reflection_probe->max_distance = p_distance;
 
-	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+	reflection_probe->dependency.changed_notify(DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 void RendererStorageRD::reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) {
@@ -5616,7 +5625,7 @@ void RendererStorageRD::reflection_probe_set_extents(RID p_probe, const Vector3 
 		return;
 	}
 	reflection_probe->extents = p_extents;
-	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+	reflection_probe->dependency.changed_notify(DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 void RendererStorageRD::reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) {
@@ -5624,7 +5633,7 @@ void RendererStorageRD::reflection_probe_set_origin_offset(RID p_probe, const Ve
 	ERR_FAIL_COND(!reflection_probe);
 
 	reflection_probe->origin_offset = p_offset;
-	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+	reflection_probe->dependency.changed_notify(DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 void RendererStorageRD::reflection_probe_set_as_interior(RID p_probe, bool p_enable) {
@@ -5632,7 +5641,7 @@ void RendererStorageRD::reflection_probe_set_as_interior(RID p_probe, bool p_ena
 	ERR_FAIL_COND(!reflection_probe);
 
 	reflection_probe->interior = p_enable;
-	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+	reflection_probe->dependency.changed_notify(DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 void RendererStorageRD::reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) {
@@ -5647,7 +5656,7 @@ void RendererStorageRD::reflection_probe_set_enable_shadows(RID p_probe, bool p_
 	ERR_FAIL_COND(!reflection_probe);
 
 	reflection_probe->enable_shadows = p_enable;
-	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+	reflection_probe->dependency.changed_notify(DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 void RendererStorageRD::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {
@@ -5655,7 +5664,7 @@ void RendererStorageRD::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_l
 	ERR_FAIL_COND(!reflection_probe);
 
 	reflection_probe->cull_mask = p_layers;
-	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+	reflection_probe->dependency.changed_notify(DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 void RendererStorageRD::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
@@ -5672,7 +5681,7 @@ void RendererStorageRD::reflection_probe_set_lod_threshold(RID p_probe, float p_
 
 	reflection_probe->lod_threshold = p_ratio;
 
-	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+	reflection_probe->dependency.changed_notify(DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 AABB RendererStorageRD::reflection_probe_get_aabb(RID p_probe) const {
@@ -5790,7 +5799,7 @@ void RendererStorageRD::decal_set_extents(RID p_decal, const Vector3 &p_extents)
 	Decal *decal = decal_owner.getornull(p_decal);
 	ERR_FAIL_COND(!decal);
 	decal->extents = p_extents;
-	decal->instance_dependency.instance_notify_changed(true, false);
+	decal->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 }
 
 void RendererStorageRD::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) {
@@ -5814,7 +5823,7 @@ void RendererStorageRD::decal_set_texture(RID p_decal, RS::DecalTexture p_type, 
 		texture_add_to_decal_atlas(decal->textures[p_type]);
 	}
 
-	decal->instance_dependency.instance_notify_changed(false, true);
+	decal->dependency.changed_notify(DEPENDENCY_CHANGED_DECAL);
 }
 
 void RendererStorageRD::decal_set_emission_energy(RID p_decal, float p_energy) {
@@ -5839,7 +5848,7 @@ void RendererStorageRD::decal_set_cull_mask(RID p_decal, uint32_t p_layers) {
 	Decal *decal = decal_owner.getornull(p_decal);
 	ERR_FAIL_COND(!decal);
 	decal->cull_mask = p_layers;
-	decal->instance_dependency.instance_notify_changed(true, false);
+	decal->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 }
 
 void RendererStorageRD::decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) {
@@ -5996,7 +6005,7 @@ void RendererStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_to_
 	gi_probe->version++;
 	gi_probe->data_version++;
 
-	gi_probe->instance_dependency.instance_notify_changed(true, false);
+	gi_probe->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 }
 
 AABB RendererStorageRD::gi_probe_get_bounds(RID p_gi_probe) const {
@@ -7074,45 +7083,45 @@ void RendererStorageRD::render_target_set_backbuffer_uniform_set(RID p_render_ta
 	rt->backbuffer_uniform_set = p_uniform_set;
 }
 
-void RendererStorageRD::base_update_dependency(RID p_base, InstanceBaseDependency *p_instance) {
+void RendererStorageRD::base_update_dependency(RID p_base, DependencyTracker *p_instance) {
 	if (mesh_owner.owns(p_base)) {
 		Mesh *mesh = mesh_owner.getornull(p_base);
-		p_instance->update_dependency(&mesh->instance_dependency);
+		p_instance->update_dependency(&mesh->dependency);
 	} else if (multimesh_owner.owns(p_base)) {
 		MultiMesh *multimesh = multimesh_owner.getornull(p_base);
-		p_instance->update_dependency(&multimesh->instance_dependency);
+		p_instance->update_dependency(&multimesh->dependency);
 		if (multimesh->mesh.is_valid()) {
 			base_update_dependency(multimesh->mesh, p_instance);
 		}
 	} else if (reflection_probe_owner.owns(p_base)) {
 		ReflectionProbe *rp = reflection_probe_owner.getornull(p_base);
-		p_instance->update_dependency(&rp->instance_dependency);
+		p_instance->update_dependency(&rp->dependency);
 	} else if (decal_owner.owns(p_base)) {
 		Decal *decal = decal_owner.getornull(p_base);
-		p_instance->update_dependency(&decal->instance_dependency);
+		p_instance->update_dependency(&decal->dependency);
 	} else if (gi_probe_owner.owns(p_base)) {
 		GIProbe *gip = gi_probe_owner.getornull(p_base);
-		p_instance->update_dependency(&gip->instance_dependency);
+		p_instance->update_dependency(&gip->dependency);
 	} else if (lightmap_owner.owns(p_base)) {
 		Lightmap *lm = lightmap_owner.getornull(p_base);
-		p_instance->update_dependency(&lm->instance_dependency);
+		p_instance->update_dependency(&lm->dependency);
 	} else if (light_owner.owns(p_base)) {
 		Light *l = light_owner.getornull(p_base);
-		p_instance->update_dependency(&l->instance_dependency);
+		p_instance->update_dependency(&l->dependency);
 	} else if (particles_owner.owns(p_base)) {
 		Particles *p = particles_owner.getornull(p_base);
-		p_instance->update_dependency(&p->instance_dependency);
+		p_instance->update_dependency(&p->dependency);
 	} else if (particles_collision_owner.owns(p_base)) {
 		ParticlesCollision *pc = particles_collision_owner.getornull(p_base);
-		p_instance->update_dependency(&pc->instance_dependency);
+		p_instance->update_dependency(&pc->dependency);
 	}
 }
 
-void RendererStorageRD::skeleton_update_dependency(RID p_skeleton, InstanceBaseDependency *p_instance) {
+void RendererStorageRD::skeleton_update_dependency(RID p_skeleton, DependencyTracker *p_instance) {
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 	ERR_FAIL_COND(!skeleton);
 
-	p_instance->update_dependency(&skeleton->instance_dependency);
+	p_instance->update_dependency(&skeleton->dependency);
 }
 
 RS::InstanceType RendererStorageRD::get_base_type(RID p_rid) const {
@@ -8133,12 +8142,13 @@ bool RendererStorageRD::free(RID p_rid) {
 			_update_queued_materials();
 		}
 		material_set_shader(p_rid, RID()); //clean up shader
-		material->instance_dependency.instance_notify_deleted(p_rid);
+		material->dependency.deleted_notify(p_rid);
+
 		material_owner.free(p_rid);
 	} else if (mesh_owner.owns(p_rid)) {
 		mesh_clear(p_rid);
 		Mesh *mesh = mesh_owner.getornull(p_rid);
-		mesh->instance_dependency.instance_notify_deleted(p_rid);
+		mesh->dependency.deleted_notify(p_rid);
 		if (mesh->instances.size()) {
 			ERR_PRINT("deleting mesh with active instances");
 		}
@@ -8155,17 +8165,17 @@ bool RendererStorageRD::free(RID p_rid) {
 		_update_dirty_multimeshes();
 		multimesh_allocate(p_rid, 0, RS::MULTIMESH_TRANSFORM_2D);
 		MultiMesh *multimesh = multimesh_owner.getornull(p_rid);
-		multimesh->instance_dependency.instance_notify_deleted(p_rid);
+		multimesh->dependency.deleted_notify(p_rid);
 		multimesh_owner.free(p_rid);
 	} else if (skeleton_owner.owns(p_rid)) {
 		_update_dirty_skeletons();
 		skeleton_allocate(p_rid, 0);
 		Skeleton *skeleton = skeleton_owner.getornull(p_rid);
-		skeleton->instance_dependency.instance_notify_deleted(p_rid);
+		skeleton->dependency.deleted_notify(p_rid);
 		skeleton_owner.free(p_rid);
 	} else if (reflection_probe_owner.owns(p_rid)) {
 		ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_rid);
-		reflection_probe->instance_dependency.instance_notify_deleted(p_rid);
+		reflection_probe->dependency.deleted_notify(p_rid);
 		reflection_probe_owner.free(p_rid);
 	} else if (decal_owner.owns(p_rid)) {
 		Decal *decal = decal_owner.getornull(p_rid);
@@ -8174,30 +8184,30 @@ bool RendererStorageRD::free(RID p_rid) {
 				texture_remove_from_decal_atlas(decal->textures[i]);
 			}
 		}
-		decal->instance_dependency.instance_notify_deleted(p_rid);
+		decal->dependency.deleted_notify(p_rid);
 		decal_owner.free(p_rid);
 	} else if (gi_probe_owner.owns(p_rid)) {
 		gi_probe_allocate(p_rid, Transform(), AABB(), Vector3i(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<int>()); //deallocate
 		GIProbe *gi_probe = gi_probe_owner.getornull(p_rid);
-		gi_probe->instance_dependency.instance_notify_deleted(p_rid);
+		gi_probe->dependency.deleted_notify(p_rid);
 		gi_probe_owner.free(p_rid);
 	} else if (lightmap_owner.owns(p_rid)) {
 		lightmap_set_textures(p_rid, RID(), false);
 		Lightmap *lightmap = lightmap_owner.getornull(p_rid);
-		lightmap->instance_dependency.instance_notify_deleted(p_rid);
+		lightmap->dependency.deleted_notify(p_rid);
 		lightmap_owner.free(p_rid);
 
 	} else if (light_owner.owns(p_rid)) {
 		light_set_projector(p_rid, RID()); //clear projector
 		// delete the texture
 		Light *light = light_owner.getornull(p_rid);
-		light->instance_dependency.instance_notify_deleted(p_rid);
+		light->dependency.deleted_notify(p_rid);
 		light_owner.free(p_rid);
 
 	} else if (particles_owner.owns(p_rid)) {
 		Particles *particles = particles_owner.getornull(p_rid);
 		_particles_free_data(particles);
-		particles->instance_dependency.instance_notify_deleted(p_rid);
+		particles->dependency.deleted_notify(p_rid);
 		particles_owner.free(p_rid);
 	} else if (particles_collision_owner.owns(p_rid)) {
 		ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_rid);
@@ -8205,7 +8215,7 @@ bool RendererStorageRD::free(RID p_rid) {
 		if (particles_collision->heightfield_texture.is_valid()) {
 			RD::get_singleton()->free(particles_collision->heightfield_texture);
 		}
-		particles_collision->instance_dependency.instance_notify_deleted(p_rid);
+		particles_collision->dependency.deleted_notify(p_rid);
 		particles_collision_owner.free(p_rid);
 	} else if (particles_collision_instance_owner.owns(p_rid)) {
 		particles_collision_instance_owner.free(p_rid);

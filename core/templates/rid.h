@@ -61,6 +61,8 @@ public:
 	_ALWAYS_INLINE_ bool is_valid() const { return _id != 0; }
 	_ALWAYS_INLINE_ bool is_null() const { return _id == 0; }
 
+	_ALWAYS_INLINE_ uint32_t get_local_index() const { return _id & 0xFFFFFFFF; }
+
 	static _ALWAYS_INLINE_ RID from_uint64(uint64_t p_id) {
 		RID _rid;
 		_rid._id = p_id;

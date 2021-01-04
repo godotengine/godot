@@ -97,8 +97,6 @@ VERTEX_SHADER_GLOBALS
 
 invariant gl_Position;
 
-layout(location = 7) flat out uint instance_index;
-
 #ifdef MODE_DUAL_PARABOLOID
 
 layout(location = 8) out float dp_clip;
@@ -106,22 +104,27 @@ layout(location = 8) out float dp_clip;
 #endif
 
 void main() {
-	instance_index = draw_call.instance_index;
 	vec4 instance_custom = vec4(0.0);
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
 #endif
 
-	mat4 world_matrix = instances.data[instance_index].transform;
-	mat3 world_normal_matrix = mat3(instances.data[instance_index].normal_transform);
+	mat4 world_matrix = draw_call.transform;
 
-	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH)) {
+	mat3 world_normal_matrix;
+	if (bool(draw_call.flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
+		world_normal_matrix = inverse(mat3(world_matrix));
+	} else {
+		world_normal_matrix = mat3(world_matrix);
+	}
+
+	if (bool(draw_call.flags & INSTANCE_FLAGS_MULTIMESH)) {
 		//multimesh, instances are for it
-		uint offset = (instances.data[instance_index].flags >> INSTANCE_FLAGS_MULTIMESH_STRIDE_SHIFT) & INSTANCE_FLAGS_MULTIMESH_STRIDE_MASK;
+		uint offset = (draw_call.flags >> INSTANCE_FLAGS_MULTIMESH_STRIDE_SHIFT) & INSTANCE_FLAGS_MULTIMESH_STRIDE_MASK;
 		offset *= gl_InstanceIndex;
 
 		mat4 matrix;
-		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_FORMAT_2D)) {
+		if (bool(draw_call.flags & INSTANCE_FLAGS_MULTIMESH_FORMAT_2D)) {
 			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
 			offset += 2;
 		} else {
@@ -129,14 +132,14 @@ void main() {
 			offset += 3;
 		}
 
-		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_COLOR)) {
+		if (bool(draw_call.flags & INSTANCE_FLAGS_MULTIMESH_HAS_COLOR)) {
 #ifdef COLOR_USED
 			color_interp *= transforms.data[offset];
 #endif
 			offset += 1;
 		}
 
-		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA)) {
+		if (bool(draw_call.flags & INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA)) {
 			instance_custom = transforms.data[offset];
 		}
 
@@ -144,10 +147,6 @@ void main() {
 		matrix = transpose(matrix);
 		world_matrix = world_matrix * matrix;
 		world_normal_matrix = world_normal_matrix * mat3(matrix);
-
-	} else {
-		//not a multimesh, instances are for multiple draw calls
-		instance_index += gl_InstanceIndex;
 	}
 
 	vec3 vertex = vertex_attrib;
@@ -162,7 +161,7 @@ void main() {
 #endif
 
 #if 0
-	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_SKELETON)) {
+	if (bool(draw_call.flags & INSTANCE_FLAGS_SKELETON)) {
 		//multimesh, instances are for it
 
 		uvec2 bones_01 = uvec2(bone_attrib.x & 0xFFFF, bone_attrib.x >> 16) * 3;
@@ -305,7 +304,7 @@ VERTEX_SHADER_CODE
 #endif
 #ifdef MODE_RENDER_MATERIAL
 	if (scene_data.material_uv2_mode) {
-		gl_Position.xy = (uv2_attrib.xy + draw_call.bake_uv2_offset) * 2.0 - 1.0;
+		gl_Position.xy = (uv2_attrib.xy + draw_call.lightmap_uv_scale.xy) * 2.0 - 1.0;
 		gl_Position.z = 0.00001;
 		gl_Position.w = 1.0;
 	}
@@ -345,8 +344,6 @@ layout(location = 5) in vec3 tangent_interp;
 layout(location = 6) in vec3 binormal_interp;
 #endif
 
-layout(location = 7) flat in uint instance_index;
-
 #ifdef MODE_DUAL_PARABOLOID
 
 layout(location = 8) in float dp_clip;
@@ -355,8 +352,7 @@ layout(location = 8) in float dp_clip;
 
 //defines to keep compatibility with vertex
 
-#define world_matrix instances.data[instance_index].transform
-#define world_normal_matrix instances.data[instance_index].normal_transform
+#define world_matrix draw_call.transform
 #define projection_matrix scene_data.projection_matrix
 
 #if defined(ENABLE_SSS) && defined(ENABLE_TRANSMITTANCE)
@@ -1971,7 +1967,7 @@ FRAGMENT_SHADER_CODE
 
 		for (uint i = 0; i < decal_count; i++) {
 			uint decal_index = cluster_data.indices[decal_pointer + i];
-			if (!bool(decals.data[decal_index].mask & instances.data[instance_index].layer_mask)) {
+			if (!bool(decals.data[decal_index].mask & draw_call.layer_mask)) {
 				continue; //not masked
 			}
 
@@ -2102,8 +2098,8 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_LIGHTMAP
 
 	//lightmap
-	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
-		uint index = instances.data[instance_index].gi_offset;
+	if (bool(draw_call.flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
+		uint index = draw_call.gi_offset;
 
 		vec3 wnormal = mat3(scene_data.camera_matrix) * normal;
 		const float c1 = 0.429043;
@@ -2122,12 +2118,12 @@ FRAGMENT_SHADER_CODE
 						  2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
 						  2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z);
 
-	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
-		bool uses_sh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
-		uint ofs = instances.data[instance_index].gi_offset & 0xFFF;
+	} else if (bool(draw_call.flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
+		bool uses_sh = bool(draw_call.flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
+		uint ofs = draw_call.gi_offset & 0xFFFF;
 		vec3 uvw;
-		uvw.xy = uv2 * instances.data[instance_index].lightmap_uv_scale.zw + instances.data[instance_index].lightmap_uv_scale.xy;
-		uvw.z = float((instances.data[instance_index].gi_offset >> 12) & 0xFF);
+		uvw.xy = uv2 * draw_call.lightmap_uv_scale.zw + draw_call.lightmap_uv_scale.xy;
+		uvw.z = float((draw_call.gi_offset >> 16) & 0xFFFF);
 
 		if (uses_sh) {
 			uvw.z *= 4.0; //SH textures use 4 times more data
@@ -2136,7 +2132,7 @@ FRAGMENT_SHADER_CODE
 			vec3 lm_light_l1_0 = textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw + vec3(0.0, 0.0, 2.0), 0.0).rgb;
 			vec3 lm_light_l1p1 = textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb;
 
-			uint idx = instances.data[instance_index].gi_offset >> 20;
+			uint idx = draw_call.gi_offset >> 20;
 			vec3 n = normalize(lightmaps.data[idx].normal_xform * normal);
 
 			ambient_light += lm_light_l0 * 0.282095f;
@@ -2156,7 +2152,7 @@ FRAGMENT_SHADER_CODE
 	}
 #elif defined(USE_FORWARD_GI)
 
-	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SDFGI)) { //has lightmap capture
+	if (bool(draw_call.flags & INSTANCE_FLAGS_USE_SDFGI)) { //has lightmap capture
 
 		//make vertex orientation the world one, but still align to camera
 		vec3 cam_pos = mat3(scene_data.camera_matrix) * vertex;
@@ -2228,9 +2224,9 @@ FRAGMENT_SHADER_CODE
 		}
 	}
 
-	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GIPROBE)) { // process giprobes
+	if (bool(draw_call.flags & INSTANCE_FLAGS_USE_GIPROBE)) { // process giprobes
 
-		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
+		uint index1 = draw_call.gi_offset & 0xFFFF;
 		vec3 ref_vec = normalize(reflect(normalize(vertex), normal));
 		//find arbitrary tangent and bitangent, then build a matrix
 		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
@@ -2242,7 +2238,7 @@ FRAGMENT_SHADER_CODE
 		vec4 spec_accum = vec4(0.0);
 		gi_probe_compute(index1, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
 
-		uint index2 = instances.data[instance_index].gi_offset >> 16;
+		uint index2 = draw_call.gi_offset >> 16;
 
 		if (index2 != 0xFFFF) {
 			gi_probe_compute(index2, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
@@ -2261,7 +2257,7 @@ FRAGMENT_SHADER_CODE
 	}
 #elif !defined(LOW_END_MODE)
 
-	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GI_BUFFERS)) { //use GI buffers
+	if (bool(draw_call.flags & INSTANCE_FLAGS_USE_GI_BUFFERS)) { //use GI buffers
 
 		ivec2 coord;
 
@@ -2343,7 +2339,7 @@ FRAGMENT_SHADER_CODE
 	{ //directional light
 
 		for (uint i = 0; i < scene_data.directional_light_count; i++) {
-			if (!bool(directional_lights.data[i].mask & instances.data[instance_index].layer_mask)) {
+			if (!bool(directional_lights.data[i].mask & draw_call.layer_mask)) {
 				continue; //not masked
 			}
 
@@ -2613,7 +2609,7 @@ FRAGMENT_SHADER_CODE
 		for (uint i = 0; i < omni_light_count; i++) {
 			uint light_index = cluster_data.indices[omni_light_pointer + i];
 
-			if (!bool(lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
+			if (!bool(lights.data[light_index].mask & draw_call.layer_mask)) {
 				continue; //not masked
 			}
 
@@ -2651,7 +2647,7 @@ FRAGMENT_SHADER_CODE
 		for (uint i = 0; i < spot_light_count; i++) {
 			uint light_index = cluster_data.indices[spot_light_pointer + i];
 
-			if (!bool(lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
+			if (!bool(lights.data[light_index].mask & draw_call.layer_mask)) {
 				continue; //not masked
 			}
 
@@ -2822,9 +2818,9 @@ FRAGMENT_SHADER_CODE
 	normal_roughness_output_buffer = vec4(normal * 0.5 + 0.5, roughness);
 
 #ifdef MODE_RENDER_GIPROBE
-	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GIPROBE)) { // process giprobes
-		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
-		uint index2 = instances.data[instance_index].gi_offset >> 16;
+	if (bool(draw_call.flags & INSTANCE_FLAGS_USE_GIPROBE)) { // process giprobes
+		uint index1 = draw_call.gi_offset & 0xFFFF;
+		uint index2 = draw_call.gi_offset >> 16;
 		giprobe_buffer.x = index1 & 0xFF;
 		giprobe_buffer.y = index2 & 0xFF;
 	} else {

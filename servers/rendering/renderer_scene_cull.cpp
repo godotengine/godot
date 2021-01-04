@@ -596,7 +596,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 		}
 
 		//forcefully update the dependency now, so if for some reason it gets removed, we can immediately clear it
-		RSG::storage->base_update_dependency(p_base, instance);
+		RSG::storage->base_update_dependency(p_base, &instance->dependency_tracker);
 	}
 
 	_instance_queue_update(instance, true, true);
@@ -830,7 +830,7 @@ void RendererSceneCull::instance_attach_skeleton(RID p_instance, RID p_skeleton)
 
 	if (p_skeleton.is_valid()) {
 		//update the dependency now, so if cleared, we remove it
-		RSG::storage->skeleton_update_dependency(p_skeleton, instance);
+		RSG::storage->skeleton_update_dependency(p_skeleton, &instance->dependency_tracker);
 	}
 
 	_instance_queue_update(instance, true, true);
@@ -3152,14 +3152,14 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 	}
 
 	if (p_instance->update_dependencies) {
-		p_instance->instance_increase_version();
+		p_instance->dependency_tracker.update_begin();
 
 		if (p_instance->base.is_valid()) {
-			RSG::storage->base_update_dependency(p_instance->base, p_instance);
+			RSG::storage->base_update_dependency(p_instance->base, &p_instance->dependency_tracker);
 		}
 
 		if (p_instance->material_override.is_valid()) {
-			RSG::storage->material_update_dependency(p_instance->material_override, p_instance);
+			RSG::storage->material_update_dependency(p_instance->material_override, &p_instance->dependency_tracker);
 		}
 
 		if (p_instance->base_type == RS::INSTANCE_MESH) {
@@ -3211,7 +3211,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 
 								_update_instance_shader_parameters_from_material(isparams, p_instance->instance_shader_parameters, mat);
 
-								RSG::storage->material_update_dependency(mat, p_instance);
+								RSG::storage->material_update_dependency(mat, &p_instance->dependency_tracker);
 							}
 						}
 
@@ -3242,7 +3242,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 
 								_update_instance_shader_parameters_from_material(isparams, p_instance->instance_shader_parameters, mat);
 
-								RSG::storage->material_update_dependency(mat, p_instance);
+								RSG::storage->material_update_dependency(mat, &p_instance->dependency_tracker);
 							}
 						}
 
@@ -3250,7 +3250,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 							can_cast_shadows = false;
 						}
 
-						RSG::storage->base_update_dependency(mesh, p_instance);
+						RSG::storage->base_update_dependency(mesh, &p_instance->dependency_tracker);
 					}
 				} else if (p_instance->base_type == RS::INSTANCE_IMMEDIATE) {
 					RID mat = RSG::storage->immediate_get_material(p_instance->base);
@@ -3268,7 +3268,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 					}
 
 					if (mat.is_valid()) {
-						RSG::storage->material_update_dependency(mat, p_instance);
+						RSG::storage->material_update_dependency(mat, &p_instance->dependency_tracker);
 					}
 
 				} else if (p_instance->base_type == RS::INSTANCE_PARTICLES) {
@@ -3299,7 +3299,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 
 								_update_instance_shader_parameters_from_material(isparams, p_instance->instance_shader_parameters, mat);
 
-								RSG::storage->material_update_dependency(mat, p_instance);
+								RSG::storage->material_update_dependency(mat, &p_instance->dependency_tracker);
 							}
 						}
 					}
@@ -3343,10 +3343,10 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 		}
 
 		if (p_instance->skeleton.is_valid()) {
-			RSG::storage->skeleton_update_dependency(p_instance->skeleton, p_instance);
+			RSG::storage->skeleton_update_dependency(p_instance->skeleton, &p_instance->dependency_tracker);
 		}
 
-		p_instance->clean_up_dependencies();
+		p_instance->dependency_tracker.update_end();
 
 		if ((1 << p_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
 			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);

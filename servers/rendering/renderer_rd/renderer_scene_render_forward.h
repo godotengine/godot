@@ -48,7 +48,8 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	enum {
 		SDFGI_MAX_CASCADES = 8,
 		MAX_GI_PROBES = 8,
-		MAX_LIGHTMAPS = 8
+		MAX_LIGHTMAPS = 8,
+		MAX_GI_PROBES_PER_INSTANCE = 2,
 	};
 
 	/* Scene Shader */
@@ -199,14 +200,6 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		return static_cast<RendererSceneRenderForward *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
 	}
 
-	/* Push Constant */
-
-	struct PushConstant {
-		uint32_t index;
-		uint32_t pad;
-		float bake_uv2_offset[2];
-	};
-
 	/* Framebuffer */
 
 	struct RenderBufferDataForward : public RenderBufferData {
@@ -292,16 +285,6 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_SHIFT = 16,
 		INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_MASK = 0x7,
 		INSTANCE_DATA_FLAG_SKELETON = 1 << 19,
-	};
-
-	struct InstanceData {
-		float transform[16];
-		float normal_transform[16];
-		uint32_t flags;
-		uint32_t instance_uniforms_ofs; //instance_offset in instancing/skeleton buffer
-		uint32_t gi_offset; //GI information when using lightmapping (VCT or lightmap)
-		uint32_t mask;
-		float lightmap_uv_scale[4];
 	};
 
 	struct SceneState {
@@ -398,152 +381,15 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		uint32_t max_lightmap_captures;
 		RID lightmap_capture_buffer;
 
-		RID instance_buffer;
-		InstanceData *instances;
-		uint32_t max_instances;
+		RID giprobe_ids[MAX_GI_PROBES];
+		uint32_t giprobes_used = 0;
 
 		bool used_screen_texture = false;
 		bool used_normal_texture = false;
 		bool used_depth_texture = false;
 		bool used_sss = false;
-		uint32_t current_shader_index = 0;
-		uint32_t current_material_index = 0;
 
 	} scene_state;
-
-	/* Render List */
-
-	struct GeometryInstanceForward;
-
-	struct RenderList {
-		int max_elements;
-
-		struct Element {
-			GeometryInstanceForward *instance;
-			MaterialData *material;
-			union {
-				struct {
-					//from least significant to most significant in sort, TODO: should be endian swapped on big endian
-					uint64_t geometry_index : 20;
-					uint64_t material_index : 15;
-					uint64_t shader_index : 12;
-					uint64_t uses_instancing : 1;
-					uint64_t uses_forward_gi : 1;
-					uint64_t uses_lightmap : 1;
-					uint64_t depth_layer : 4;
-					uint64_t priority : 8;
-				};
-
-				uint64_t sort_key;
-			};
-			uint32_t surface_index;
-		};
-
-		Element *base_elements;
-		Element **elements;
-
-		int element_count;
-		int alpha_element_count;
-
-		void clear() {
-			element_count = 0;
-			alpha_element_count = 0;
-		}
-
-		//should eventually be replaced by radix
-
-		struct SortByKey {
-			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
-				return A->sort_key < B->sort_key;
-			}
-		};
-
-		void sort_by_key(bool p_alpha) {
-			SortArray<Element *, SortByKey> sorter;
-			if (p_alpha) {
-				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
-			} else {
-				sorter.sort(elements, element_count);
-			}
-		}
-
-		struct SortByDepth {
-			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
-				return A->instance->depth < B->instance->depth;
-			}
-		};
-
-		void sort_by_depth(bool p_alpha) { //used for shadows
-
-			SortArray<Element *, SortByDepth> sorter;
-			if (p_alpha) {
-				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
-			} else {
-				sorter.sort(elements, element_count);
-			}
-		}
-
-		struct SortByReverseDepthAndPriority {
-			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
-				uint32_t layer_A = uint32_t(A->priority);
-				uint32_t layer_B = uint32_t(B->priority);
-				if (layer_A == layer_B) {
-					return A->instance->depth > B->instance->depth;
-				} else {
-					return layer_A < layer_B;
-				}
-			}
-		};
-
-		void sort_by_reverse_depth_and_priority(bool p_alpha) { //used for alpha
-
-			SortArray<Element *, SortByReverseDepthAndPriority> sorter;
-			if (p_alpha) {
-				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
-			} else {
-				sorter.sort(elements, element_count);
-			}
-		}
-
-		_FORCE_INLINE_ Element *add_element() {
-			if (element_count + alpha_element_count >= max_elements) {
-				return nullptr;
-			}
-			elements[element_count] = &base_elements[element_count];
-			return elements[element_count++];
-		}
-
-		_FORCE_INLINE_ Element *add_alpha_element() {
-			if (element_count + alpha_element_count >= max_elements) {
-				return nullptr;
-			}
-			int idx = max_elements - alpha_element_count - 1;
-			elements[idx] = &base_elements[idx];
-			alpha_element_count++;
-			return elements[idx];
-		}
-
-		void init() {
-			element_count = 0;
-			alpha_element_count = 0;
-			elements = memnew_arr(Element *, max_elements);
-			base_elements = memnew_arr(Element, max_elements);
-			for (int i = 0; i < max_elements; i++) {
-				elements[i] = &base_elements[i]; // assign elements
-			}
-		}
-
-		RenderList() {
-			max_elements = 0;
-		}
-
-		~RenderList() {
-			memdelete_arr(elements);
-			memdelete_arr(base_elements);
-		}
-	};
-
-	RenderList render_list;
 
 	static RendererSceneRenderForward *singleton;
 	uint64_t render_pass;
@@ -574,53 +420,249 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	};
 
 	void _setup_environment(RID p_environment, RID p_render_buffers, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false);
+	void _setup_giprobes(const PagedArray<RID> &p_giprobes);
 	void _setup_lightmaps(const PagedArray<RID> &p_lightmaps, const Transform &p_cam_transform);
 
-	void _fill_instances(RenderList::Element **p_elements, int p_element_count, bool p_for_depth, bool p_has_sdfgi = false, bool p_has_opaque_gi = false);
-	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0);
-	_FORCE_INLINE_ void _add_geometry(GeometryInstanceForward *p_instance, uint32_t p_surface, RID p_material, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi = false);
-	_FORCE_INLINE_ void _add_geometry_with_material(GeometryInstanceForward *p_instance, uint32_t p_surface, MaterialData *p_material, RID p_material_rid, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi = false);
+	struct GeometryInstanceSurfaceDataCache;
 
-	void _fill_render_list(const PagedArray<GeometryInstance *> &p_instances, PassMode p_pass_mode, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_using_sdfgi = false);
+	template <PassMode p_pass_mode>
+	_FORCE_INLINE_ void _render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, GeometryInstanceSurfaceDataCache **p_elements, int p_element_count, bool p_reverse_cull, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0);
+
+	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, GeometryInstanceSurfaceDataCache **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0);
+
+	void _fill_render_list(const PagedArray<GeometryInstance *> &p_instances, PassMode p_pass_mode, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_using_sdfgi = false, bool p_using_opaque_gi = false);
 
 	Map<Size2i, RID> sdfgi_framebuffer_size_cache;
 
-	struct GeometryInstanceForward : public GeometryInstance {
-		RID base;
-		RS::InstanceType base_type;
+	struct GeometryInstanceData;
+	struct GeometryInstanceForward;
 
-		RID skeleton;
-		RID mesh_instance;
-
-		uint32_t layer_mask = 1;
-
-		float depth = 0;
-		int depth_layer = 0;
-
-		RID gi_probe_instances[MAX_GI_PROBES];
-		uint32_t gi_probe_instance_count = 0;
-
-		Vector<RID> surface_materials;
-		RID material_override;
-		Transform transform;
-		AABB aabb;
-		AABB transformed_aabb;
-		float lod_bias = 0.0;
-		int32_t shader_parameters_offset = -1;
-
-		bool use_dynamic_gi = false;
-		bool use_baked_light = false;
-		bool cast_double_sided_shaodows = false;
-		bool mirror = false;
-		RID lightmap_instance;
-		Rect2 lightmap_uv_scale;
-		uint32_t lightmap_slice_index = 0;
-		Color *lightmap_sh = nullptr;
+	struct GeometryInstanceLightmapSH {
+		Color sh[9];
 	};
 
+	// Cached data for drawing surfaces
+	struct GeometryInstanceSurfaceDataCache {
+		enum {
+			FLAG_PASS_DEPTH = 1,
+			FLAG_PASS_OPAQUE = 2,
+			FLAG_PASS_ALPHA = 4,
+			FLAG_PASS_SHADOW = 8,
+			FLAG_USES_SHARED_SHADOW_MATERIAL = 128,
+			FLAG_USES_SUBSURFACE_SCATTERING = 2048,
+			FLAG_USES_SCREEN_TEXTURE = 4096,
+			FLAG_USES_DEPTH_TEXTURE = 8192,
+			FLAG_USES_NORMAL_TEXTURE = 16384,
+			FLAG_USES_DOUBLE_SIDED_SHADOWS = 32768,
+		};
+
+		union {
+			struct {
+				uint32_t geometry_id;
+				uint32_t material_id;
+				uint32_t shader_id;
+				uint32_t surface_type : 4;
+				uint32_t uses_forward_gi : 1; //set during addition
+				uint32_t uses_lightmap : 1; //set during addition
+				uint32_t depth_layer : 4; //set during addition
+				uint32_t priority : 8;
+			};
+			struct {
+				uint64_t sort_key1;
+				uint64_t sort_key2;
+			};
+		} sort;
+
+		RS::PrimitiveType primitive = RS::PRIMITIVE_MAX;
+		uint32_t flags = 0;
+		uint32_t surface_index = 0;
+
+		void *surface = nullptr;
+		RID material_uniform_set;
+		ShaderData *shader = nullptr;
+
+		void *surface_shadow = nullptr;
+		RID material_uniform_set_shadow;
+		ShaderData *shader_shadow = nullptr;
+
+		GeometryInstanceSurfaceDataCache *next = nullptr;
+		GeometryInstanceForward *owner = nullptr;
+	};
+
+	struct GeometryInstanceForward : public GeometryInstance {
+		//used during rendering
+		bool mirror = false;
+		bool non_uniform_scale = false;
+		float lod_bias = 0.0;
+		float lod_model_scale = 1.0;
+		AABB transformed_aabb; //needed for LOD
+		float depth = 0;
+		struct PushConstant {
+			float transform[16];
+			uint32_t flags;
+			uint32_t instance_uniforms_ofs; //base offset in global buffer for instance variables
+			uint32_t gi_offset; //GI information when using lightmapping (VCT or lightmap index)
+			uint32_t layer_mask;
+			float lightmap_uv_scale[4];
+		} push_constant;
+		RID transforms_uniform_set;
+		uint32_t instance_count = 0;
+		RID mesh_instance;
+		bool can_sdfgi = false;
+		//used during setup
+		uint32_t base_flags = 0;
+		RID gi_probes[MAX_GI_PROBES_PER_INSTANCE];
+		RID lightmap_instance;
+		GeometryInstanceLightmapSH *lightmap_sh = nullptr;
+		GeometryInstanceSurfaceDataCache *surface_caches = nullptr;
+		SelfList<GeometryInstanceForward> dirty_list_element;
+
+		struct Data {
+			//data used less often goes into regular heap
+			RID base;
+			RS::InstanceType base_type;
+
+			RID skeleton;
+
+			uint32_t layer_mask = 1;
+
+			Vector<RID> surface_materials;
+			RID material_override;
+			Transform transform;
+			AABB aabb;
+			int32_t shader_parameters_offset = -1;
+
+			bool use_dynamic_gi = false;
+			bool use_baked_light = false;
+			bool cast_double_sided_shaodows = false;
+			bool mirror = false;
+			Rect2 lightmap_uv_scale;
+			uint32_t lightmap_slice_index = 0;
+			bool dirty_dependencies = false;
+
+			RendererStorage::DependencyTracker dependency_tracker;
+		};
+
+		Data *data = nullptr;
+
+		GeometryInstanceForward() :
+				dirty_list_element(this) {}
+	};
+
+	static void _geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker);
+	static void _geometry_instance_dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *p_tracker);
+
+	SelfList<GeometryInstanceForward>::List geometry_instance_dirty_list;
+
 	PagedAllocator<GeometryInstanceForward> geometry_instance_alloc;
+	PagedAllocator<GeometryInstanceSurfaceDataCache> geometry_instance_surface_alloc;
+	PagedAllocator<GeometryInstanceLightmapSH> geometry_instance_lightmap_sh;
+
+	void _geometry_instance_add_surface_with_material(GeometryInstanceForward *ginstance, uint32_t p_surface, MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh);
+	void _geometry_instance_add_surface(GeometryInstanceForward *ginstance, uint32_t p_surface, RID p_material, RID p_mesh);
+	void _geometry_instance_mark_dirty(GeometryInstance *p_geometry_instance);
+	void _geometry_instance_update(GeometryInstance *p_geometry_instance);
+	void _update_dirty_geometry_instances();
 
 	bool low_end = false;
+
+	/* Render List */
+
+	struct RenderList {
+		int max_elements;
+
+		GeometryInstanceSurfaceDataCache **elements = nullptr;
+
+		int element_count;
+		int alpha_element_count;
+
+		void clear() {
+			element_count = 0;
+			alpha_element_count = 0;
+		}
+
+		//should eventually be replaced by radix
+
+		struct SortByKey {
+			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
+				return (A->sort.sort_key2 == B->sort.sort_key2) ? (A->sort.sort_key1 < B->sort.sort_key1) : (A->sort.sort_key2 < B->sort.sort_key2);
+			}
+		};
+
+		void sort_by_key(bool p_alpha) {
+			SortArray<GeometryInstanceSurfaceDataCache *, SortByKey> sorter;
+			if (p_alpha) {
+				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
+			} else {
+				sorter.sort(elements, element_count);
+			}
+		}
+
+		struct SortByDepth {
+			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
+				return (A->owner->depth < B->owner->depth);
+			}
+		};
+
+		void sort_by_depth(bool p_alpha) { //used for shadows
+
+			SortArray<GeometryInstanceSurfaceDataCache *, SortByDepth> sorter;
+			if (p_alpha) {
+				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
+			} else {
+				sorter.sort(elements, element_count);
+			}
+		}
+
+		struct SortByReverseDepthAndPriority {
+			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
+				return (A->sort.priority == B->sort.priority) ? (A->owner->depth > B->owner->depth) : (A->sort.priority < B->sort.priority);
+			}
+		};
+
+		void sort_by_reverse_depth_and_priority(bool p_alpha) { //used for alpha
+
+			SortArray<GeometryInstanceSurfaceDataCache *, SortByReverseDepthAndPriority> sorter;
+			if (p_alpha) {
+				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
+			} else {
+				sorter.sort(elements, element_count);
+			}
+		}
+
+		_FORCE_INLINE_ void add_element(GeometryInstanceSurfaceDataCache *p_element) {
+			if (element_count + alpha_element_count >= max_elements) {
+				return;
+			}
+			elements[element_count] = p_element;
+			element_count++;
+		}
+
+		_FORCE_INLINE_ void add_alpha_element(GeometryInstanceSurfaceDataCache *p_element) {
+			if (element_count + alpha_element_count >= max_elements) {
+				return;
+			}
+			int idx = max_elements - alpha_element_count - 1;
+			elements[idx] = p_element;
+			alpha_element_count++;
+		}
+
+		void init() {
+			element_count = 0;
+			alpha_element_count = 0;
+			elements = memnew_arr(GeometryInstanceSurfaceDataCache *, max_elements);
+		}
+
+		RenderList() {
+			max_elements = 0;
+		}
+
+		~RenderList() {
+			memdelete_arr(elements);
+		}
+	};
+
+	RenderList render_list;
 
 protected:
 	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, int p_directional_light_count, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color, float p_lod_threshold);

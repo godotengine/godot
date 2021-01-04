@@ -329,7 +329,7 @@ public:
 		virtual ~InstanceBaseData() {}
 	};
 
-	struct Instance : public RendererStorage::InstanceBaseDependency {
+	struct Instance {
 		RS::InstanceType base_type;
 		RID base;
 
@@ -412,18 +412,43 @@ public:
 		SelfList<InstancePair>::List pairs;
 		uint64_t pair_check;
 
-		virtual void dependency_deleted(RID p_dependency) {
-			if (p_dependency == base) {
-				singleton->instance_set_base(self, RID());
-			} else if (p_dependency == skeleton) {
-				singleton->instance_attach_skeleton(self, RID());
-			} else {
-				singleton->_instance_queue_update(this, false, true);
+		RendererStorage::DependencyTracker dependency_tracker;
+
+		static void dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *tracker) {
+			Instance *instance = (Instance *)tracker->userdata;
+			switch (p_notification) {
+				case RendererStorage::DEPENDENCY_CHANGED_SKELETON_DATA:
+				case RendererStorage::DEPENDENCY_CHANGED_AABB: {
+					singleton->_instance_queue_update(instance, true, false);
+
+				} break;
+				case RendererStorage::DEPENDENCY_CHANGED_MATERIAL: {
+					singleton->_instance_queue_update(instance, false, true);
+				} break;
+				case RendererStorage::DEPENDENCY_CHANGED_MESH:
+				case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH:
+				case RendererStorage::DEPENDENCY_CHANGED_DECAL:
+				case RendererStorage::DEPENDENCY_CHANGED_LIGHT:
+				case RendererStorage::DEPENDENCY_CHANGED_REFLECTION_PROBE: {
+					singleton->_instance_queue_update(instance, true, true);
+				} break;
+				case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES:
+				case RendererStorage::DEPENDENCY_CHANGED_SKELETON_BONES: {
+					//ignored
+				} break;
 			}
 		}
 
-		virtual void dependency_changed(bool p_aabb, bool p_dependencies) {
-			singleton->_instance_queue_update(this, p_aabb, p_dependencies);
+		static void dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *tracker) {
+			Instance *instance = (Instance *)tracker->userdata;
+
+			if (p_dependency == instance->base) {
+				singleton->instance_set_base(instance->self, RID());
+			} else if (p_dependency == instance->skeleton) {
+				singleton->instance_attach_skeleton(instance->self, RID());
+			} else {
+				singleton->_instance_queue_update(instance, false, true);
+			}
 		}
 
 		Instance() :
@@ -434,7 +459,6 @@ public:
 			receive_shadows = true;
 			visible = true;
 			layer_mask = 1;
-			instance_version = 0;
 			baked_light = false;
 			dynamic_gi = false;
 			redraw_if_visible = false;
@@ -465,6 +489,10 @@ public:
 
 			pair_check = 0;
 			array_index = -1;
+
+			dependency_tracker.userdata = this;
+			dependency_tracker.changed_callback = dependency_changed;
+			dependency_tracker.deleted_callback = dependency_deleted;
 		}
 
 		~Instance() {

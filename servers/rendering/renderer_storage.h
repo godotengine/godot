@@ -37,43 +37,59 @@ class RendererStorage {
 	Color default_clear_color;
 
 public:
-	struct InstanceBaseDependency;
-
-	struct InstanceDependency {
-		void instance_notify_changed(bool p_aabb, bool p_dependencies);
-		void instance_notify_deleted(RID p_deleted);
-
-		~InstanceDependency();
-
-	private:
-		friend struct InstanceBaseDependency;
-		Map<InstanceBaseDependency *, uint32_t> instances;
+	enum DependencyChangedNotification {
+		DEPENDENCY_CHANGED_AABB,
+		DEPENDENCY_CHANGED_MATERIAL,
+		DEPENDENCY_CHANGED_MESH,
+		DEPENDENCY_CHANGED_MULTIMESH,
+		DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES,
+		DEPENDENCY_CHANGED_DECAL,
+		DEPENDENCY_CHANGED_SKELETON_DATA,
+		DEPENDENCY_CHANGED_SKELETON_BONES,
+		DEPENDENCY_CHANGED_LIGHT,
+		DEPENDENCY_CHANGED_REFLECTION_PROBE,
 	};
 
-	struct InstanceBaseDependency {
-		uint32_t instance_version;
-		Set<InstanceDependency *> dependencies;
+	struct DependencyTracker;
 
-		virtual void dependency_deleted(RID p_dependency) {}
-		virtual void dependency_changed(bool p_aabb, bool p_dependencies) {}
+protected:
+	struct Dependency {
+		void changed_notify(DependencyChangedNotification p_notification);
+		void deleted_notify(const RID &p_rid);
 
-		void instance_increase_version() {
+		~Dependency();
+
+	private:
+		friend struct DependencyTracker;
+		Map<DependencyTracker *, uint32_t> instances;
+	};
+
+public:
+	struct DependencyTracker {
+		void *userdata = nullptr;
+		typedef void (*ChangedCallback)(DependencyChangedNotification, DependencyTracker *);
+		typedef void (*DeletedCallback)(const RID &, DependencyTracker *);
+
+		ChangedCallback changed_callback = nullptr;
+		DeletedCallback deleted_callback = nullptr;
+
+		void update_begin() { // call before updating dependencies
 			instance_version++;
 		}
 
-		void update_dependency(InstanceDependency *p_dependency) {
+		void update_dependency(Dependency *p_dependency) { //called internally, can't be used directly, use update functions in Storage
 			dependencies.insert(p_dependency);
 			p_dependency->instances[this] = instance_version;
 		}
 
-		void clean_up_dependencies() {
-			List<Pair<InstanceDependency *, Map<InstanceBaseDependency *, uint32_t>::Element *>> to_clean_up;
-			for (Set<InstanceDependency *>::Element *E = dependencies.front(); E; E = E->next()) {
-				InstanceDependency *dep = E->get();
-				Map<InstanceBaseDependency *, uint32_t>::Element *F = dep->instances.find(this);
+		void update_end() { //call after updating dependencies
+			List<Pair<Dependency *, Map<DependencyTracker *, uint32_t>::Element *>> to_clean_up;
+			for (Set<Dependency *>::Element *E = dependencies.front(); E; E = E->next()) {
+				Dependency *dep = E->get();
+				Map<DependencyTracker *, uint32_t>::Element *F = dep->instances.find(this);
 				ERR_CONTINUE(!F);
 				if (F->get() != instance_version) {
-					Pair<InstanceDependency *, Map<InstanceBaseDependency *, uint32_t>::Element *> p;
+					Pair<Dependency *, Map<DependencyTracker *, uint32_t>::Element *> p;
 					p.first = dep;
 					p.second = F;
 					to_clean_up.push_back(p);
@@ -86,15 +102,20 @@ public:
 			}
 		}
 
-		void clear_dependencies() {
-			for (Set<InstanceDependency *>::Element *E = dependencies.front(); E; E = E->next()) {
-				InstanceDependency *dep = E->get();
+		void clear() { // clear all dependencies
+			for (Set<Dependency *>::Element *E = dependencies.front(); E; E = E->next()) {
+				Dependency *dep = E->get();
 				dep->instances.erase(this);
 			}
 			dependencies.clear();
 		}
 
-		virtual ~InstanceBaseDependency() { clear_dependencies(); }
+		~DependencyTracker() { clear(); }
+
+	private:
+		friend class Dependency;
+		uint32_t instance_version = 0;
+		Set<Dependency *> dependencies;
 	};
 
 	/* TEXTURE API */
@@ -181,7 +202,7 @@ public:
 
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) = 0;
 
-	virtual void material_update_dependency(RID p_material, InstanceBaseDependency *p_instance) = 0;
+	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) = 0;
 
 	/* MESH API */
 
@@ -349,8 +370,8 @@ public:
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const = 0;
 	virtual float reflection_probe_get_lod_threshold(RID p_probe) const = 0;
 
-	virtual void base_update_dependency(RID p_base, InstanceBaseDependency *p_instance) = 0;
-	virtual void skeleton_update_dependency(RID p_base, InstanceBaseDependency *p_instance) = 0;
+	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;
+	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;
 
 	/* DECAL API */
 
