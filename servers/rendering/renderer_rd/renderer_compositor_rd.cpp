@@ -154,12 +154,9 @@ void RendererCompositorRD::initialize() {
 	}
 }
 
-ThreadWorkPool RendererCompositorRD::thread_work_pool;
 uint64_t RendererCompositorRD::frame = 1;
 
 void RendererCompositorRD::finalize() {
-	thread_work_pool.finish();
-
 	memdelete(scene);
 	memdelete(canvas);
 	memdelete(storage);
@@ -174,7 +171,6 @@ RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
 
 RendererCompositorRD::RendererCompositorRD() {
 	singleton = this;
-	thread_work_pool.init();
 	time = 0;
 
 	storage = memnew(RendererStorageRD);

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  renderer_compositor_rd.h                                             */
+/*  renderer_thread_pool.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,70 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_COMPOSITOR_RD_H
-#define RENDERING_SERVER_COMPOSITOR_RD_H
+#ifndef RENDERERTHREADPOOL_H
+#define RENDERERTHREADPOOL_H
 
-#include "core/os/os.h"
 #include "core/templates/thread_work_pool.h"
-#include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/renderer_rd/renderer_canvas_render_rd.h"
-#include "servers/rendering/renderer_rd/renderer_scene_render_forward.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 
-class RendererCompositorRD : public RendererCompositor {
-protected:
-	RendererCanvasRenderRD *canvas;
-	RendererStorageRD *storage;
-	RendererSceneRenderForward *scene;
-
-	RID copy_viewports_rd_shader;
-	RID copy_viewports_rd_pipeline;
-	RID copy_viewports_rd_index_buffer;
-	RID copy_viewports_rd_array;
-	RID copy_viewports_sampler;
-
-	Map<RID, RID> render_target_descriptors;
-
-	double time;
-	float delta;
-
-	static uint64_t frame;
-
+class RendererThreadPool {
 public:
-	RendererStorage *get_storage() { return storage; }
-	RendererCanvasRender *get_canvas() { return canvas; }
-	RendererSceneRender *get_scene() { return scene; }
+	ThreadWorkPool thread_work_pool;
 
-	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {}
-
-	void initialize();
-	void begin_frame(double frame_step);
-	void prepare_for_blitting_render_targets();
-	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
-
-	void end_frame(bool p_swap_buffers);
-	void finalize();
-
-	_ALWAYS_INLINE_ uint64_t get_frame_number() const { return frame; }
-	_ALWAYS_INLINE_ float get_frame_delta_time() const { return delta; }
-	_ALWAYS_INLINE_ double get_total_time() const { return time; }
-
-	static Error is_viable() {
-		return OK;
-	}
-
-	static RendererCompositor *_create_current() {
-		return memnew(RendererCompositorRD);
-	}
-
-	static void make_current() {
-		_create_func = _create_current;
-	}
-
-	virtual bool is_low_end() const { return false; }
-
-	static RendererCompositorRD *singleton;
-	RendererCompositorRD();
-	~RendererCompositorRD() {}
+	static RendererThreadPool *singleton;
+	RendererThreadPool();
+	~RendererThreadPool();
 };
-#endif // RASTERIZER_RD_H
+
+#endif // RENDERERTHREADPOOL_H

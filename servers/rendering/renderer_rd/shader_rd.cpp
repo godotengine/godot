@@ -360,7 +360,7 @@ void ShaderRD::_compile_version(Version *p_version) {
 	p_version->variants = memnew_arr(RID, variant_defines.size());
 #if 1
 
-	RendererCompositorRD::thread_work_pool.do_work(variant_defines.size(), this, &ShaderRD::_compile_variant, p_version);
+	RendererThreadPool::singleton->thread_work_pool.do_work(variant_defines.size(), this, &ShaderRD::_compile_variant, p_version);
 #else
 	for (int i = 0; i < variant_defines.size(); i++) {
 		_compile_variant(i, p_version);

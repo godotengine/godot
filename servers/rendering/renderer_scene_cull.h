@@ -352,7 +352,7 @@ public:
 		bool receive_shadows : 8;
 		bool visible : 8;
 		bool baked_light : 2; //this flag is only to know if it actually did use baked light
-		bool dynamic_gi : 2; //this flag is only to know if it actually did use baked light
+		bool dynamic_gi : 2; //same above for dynamic objects
 		bool redraw_if_visible : 4;
 
 		Instance *lightmap;
@@ -688,15 +688,6 @@ public:
 		}
 	};
 
-	struct CullResult {
-		PagedArray<Instance *> *result;
-		_FORCE_INLINE_ bool operator()(void *p_data) {
-			Instance *p_instance = (Instance *)p_data;
-			result->push_back(p_instance);
-			return false;
-		}
-	};
-
 	Set<Instance *> heightfield_particle_colliders_update_list;
 
 	PagedArrayPool<Instance *> instance_cull_page_pool;
@@ -704,17 +695,127 @@ public:
 	PagedArrayPool<RID> rid_cull_page_pool;
 
 	PagedArray<Instance *> instance_cull_result;
-	PagedArray<RID> mesh_instance_cull_result;
-	PagedArray<RendererSceneRender::GeometryInstance *> geometry_instances_to_render;
 	PagedArray<Instance *> instance_shadow_cull_result;
 	PagedArray<RendererSceneRender::GeometryInstance *> geometry_instances_to_shadow_render;
-	PagedArray<Instance *> light_cull_result;
-	PagedArray<RID> lightmap_cull_result;
-	PagedArray<RID> reflection_probe_instance_cull_result;
-	PagedArray<RID> light_instance_cull_result;
 
-	PagedArray<RID> gi_probe_instance_cull_result;
-	PagedArray<RID> decal_instance_cull_result;
+	struct FrustumCullResult {
+		PagedArray<RendererSceneRender::GeometryInstance *> geometry_instances;
+		PagedArray<Instance *> lights;
+		PagedArray<RID> light_instances;
+		PagedArray<RID> lightmaps;
+		PagedArray<RID> reflections;
+		PagedArray<RID> decals;
+		PagedArray<RID> gi_probes;
+		PagedArray<RID> mesh_instances;
+
+		struct DirectionalShadow {
+			PagedArray<RendererSceneRender::GeometryInstance *> cascade_geometry_instances[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES];
+		} directional_shadows[RendererSceneRender::MAX_DIRECTIONAL_LIGHTS];
+
+		PagedArray<RendererSceneRender::GeometryInstance *> sdfgi_region_geometry_instances[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE];
+		PagedArray<RID> sdfgi_cascade_lights[SDFGI_MAX_CASCADES];
+
+		void clear() {
+			geometry_instances.clear();
+			lights.clear();
+			light_instances.clear();
+			lightmaps.clear();
+			reflections.clear();
+			decals.clear();
+			gi_probes.clear();
+			mesh_instances.clear();
+			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
+				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
+					directional_shadows[i].cascade_geometry_instances[j].clear();
+				}
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
+				sdfgi_region_geometry_instances[i].clear();
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES; i++) {
+				sdfgi_cascade_lights[i].clear();
+			}
+		}
+
+		void reset() {
+			geometry_instances.reset();
+			lights.reset();
+			light_instances.reset();
+			lightmaps.reset();
+			reflections.reset();
+			decals.reset();
+			gi_probes.reset();
+			mesh_instances.reset();
+			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
+				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
+					directional_shadows[i].cascade_geometry_instances[j].reset();
+				}
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
+				sdfgi_region_geometry_instances[i].reset();
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES; i++) {
+				sdfgi_cascade_lights[i].reset();
+			}
+		}
+
+		void append_from(FrustumCullResult &p_cull_result) {
+			geometry_instances.merge_unordered(p_cull_result.geometry_instances);
+			lights.merge_unordered(p_cull_result.lights);
+			light_instances.merge_unordered(p_cull_result.light_instances);
+			lightmaps.merge_unordered(p_cull_result.lightmaps);
+			reflections.merge_unordered(p_cull_result.reflections);
+			decals.merge_unordered(p_cull_result.decals);
+			gi_probes.merge_unordered(p_cull_result.gi_probes);
+			mesh_instances.merge_unordered(p_cull_result.mesh_instances);
+
+			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
+				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
+					directional_shadows[i].cascade_geometry_instances[j].merge_unordered(p_cull_result.directional_shadows[i].cascade_geometry_instances[j]);
+				}
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
+				sdfgi_region_geometry_instances[i].merge_unordered(p_cull_result.sdfgi_region_geometry_instances[i]);
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES; i++) {
+				sdfgi_cascade_lights[i].merge_unordered(p_cull_result.sdfgi_cascade_lights[i]);
+			}
+		}
+
+		void init(PagedArrayPool<RID> *p_rid_pool, PagedArrayPool<RendererSceneRender::GeometryInstance *> *p_geometry_instance_pool, PagedArrayPool<Instance *> *p_instance_pool) {
+			geometry_instances.set_page_pool(p_geometry_instance_pool);
+			light_instances.set_page_pool(p_rid_pool);
+			lights.set_page_pool(p_instance_pool);
+			lightmaps.set_page_pool(p_rid_pool);
+			reflections.set_page_pool(p_rid_pool);
+			decals.set_page_pool(p_rid_pool);
+			mesh_instances.set_page_pool(p_rid_pool);
+			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
+				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
+					directional_shadows[i].cascade_geometry_instances[j].set_page_pool(p_geometry_instance_pool);
+				}
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
+				sdfgi_region_geometry_instances[i].set_page_pool(p_geometry_instance_pool);
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES; i++) {
+				sdfgi_cascade_lights[i].set_page_pool(p_rid_pool);
+			}
+		}
+	};
+
+	FrustumCullResult frustum_cull_result;
+	LocalVector<FrustumCullResult> frustum_cull_result_threads;
+
+	uint32_t thread_cull_threshold = 200;
 
 	RID_PtrOwner<Instance> instance_owner;
 
@@ -786,8 +887,6 @@ public:
 				real_t range_begin;
 				Vector2 uv_scale;
 
-				PagedArray<RendererSceneRender::GeometryInstance *> cull_result;
-
 			} cascades[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES]; //max 4 cascades
 			uint32_t cascade_count;
 
@@ -797,12 +896,10 @@ public:
 
 		struct SDFGI {
 			//have arrays here because SDFGI functions expects this, plus regions can have areas
-			PagedArray<RendererSceneRender::GeometryInstance *> region_cull_result[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE];
 			AABB region_aabb[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
 			uint32_t region_cascade[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
 			uint32_t region_count = 0;
 
-			PagedArray<RID> cascade_lights[SDFGI_MAX_CASCADES];
 			uint32_t cascade_light_index[SDFGI_MAX_CASCADES];
 			uint32_t cascade_light_count = 0;
 
@@ -812,6 +909,18 @@ public:
 
 		Frustum frustum;
 	} cull;
+
+	struct FrustumCullData {
+		Cull *cull;
+		Scenario *scenario;
+		RID shadow_atlas;
+		Transform cam_transform;
+		uint32_t visible_layers;
+		Instance *render_reflection_probe;
+	};
+
+	void _frustum_cull_threaded(uint32_t p_thread, FrustumCullData *cull_data);
+	void _frustum_cull(FrustumCullData &cull_data, FrustumCullResult &cull_result, uint64_t p_from, uint64_t p_to);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
 	void _prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, float p_screen_lod_threshold, bool p_using_shadows = true);

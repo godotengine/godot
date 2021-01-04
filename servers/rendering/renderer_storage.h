@@ -113,7 +113,7 @@ public:
 		~DependencyTracker() { clear(); }
 
 	private:
-		friend class Dependency;
+		friend struct Dependency;
 		uint32_t instance_version = 0;
 		Set<Dependency *> dependencies;
 	};
