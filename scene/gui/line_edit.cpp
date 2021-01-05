@@ -584,7 +584,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 			if (handled) {
 				accept_event();
-			} else if (!k->get_command() || (k->get_command() && k->get_alt())) {
+			} else if (!k->get_command()) {
 				if (k->get_unicode() >= 32 && k->get_keycode() != KEY_DELETE) {
 					if (editable) {
 						selection_delete();
