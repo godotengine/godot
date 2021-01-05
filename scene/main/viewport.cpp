@@ -1538,7 +1538,7 @@ void Viewport::_gui_show_tooltip() {
 			gui.tooltip_control,
 			gui.tooltip_control->get_global_transform().xform_inv(gui.last_mouse_pos),
 			&tooltip_owner);
-	tooltip_text.strip_edges();
+	tooltip_text = tooltip_text.strip_edges();
 	if (tooltip_text.is_empty()) {
 		return; // Nothing to show.
 	}
