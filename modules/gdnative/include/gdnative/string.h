@@ -261,7 +261,7 @@ godot_bool godot_string_is_empty(const godot_string *p_self);
 // path functions
 godot_string GDAPI godot_string_get_base_dir(const godot_string *p_self);
 godot_string GDAPI godot_string_get_file(const godot_string *p_self);
-godot_string GDAPI godot_string_humanize_size(size_t p_size);
+godot_string GDAPI godot_string_humanize_size(uint64_t p_size);
 godot_bool GDAPI godot_string_is_abs_path(const godot_string *p_self);
 godot_bool GDAPI godot_string_is_rel_path(const godot_string *p_self);
 godot_bool GDAPI godot_string_is_resource_file(const godot_string *p_self);
