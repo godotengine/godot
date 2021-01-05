@@ -681,6 +681,10 @@ Vector<StringName> VisualShaderNodeTexture::get_editable_properties() const {
 
 String VisualShaderNodeTexture::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
 
+	if (is_input_port_connected(2) && source != SOURCE_PORT) {
+		return TTR("The sampler port is connected but not used. Consider changing the source to 'SamplerPort'.");
+	}
+
 	if (source == SOURCE_TEXTURE) {
 		return String(); // all good
 	}
@@ -905,6 +909,13 @@ Vector<StringName> VisualShaderNodeCubeMap::get_editable_properties() const {
 		props.push_back("texture_type");
 	}
 	return props;
+}
+
+String VisualShaderNodeCubeMap::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
+	if (is_input_port_connected(2) && source != SOURCE_PORT) {
+		return TTR("The sampler port is connected but not used. Consider changing the source to 'SamplerPort'.");
+	}
+	return String();
 }
 
 void VisualShaderNodeCubeMap::_bind_methods() {
