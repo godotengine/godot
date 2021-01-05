@@ -1098,6 +1098,8 @@
 			Choose between default mode where corner scalings are preserved matching the artwork, and scaling mode.
 			Not available in GLES3 when [member rendering/batching/options/use_batching] is off.
 		</member>
+		<member name="rendering/quality/2d/use_camera_snap" type="bool" setter="" getter="" default="false">
+		</member>
 		<member name="rendering/quality/2d/use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="" default="false">
 			Some NVIDIA GPU drivers have a bug which produces flickering issues for the [code]draw_rect[/code] method, especially as used in [TileMap]. Refer to [url=https://github.com/godotengine/godot/issues/9913]GitHub issue 9913[/url] for details.
 			If [code]true[/code], this option enables a "safe" code path for such NVIDIA GPUs at the cost of performance. This option affects GLES2 and GLES3 rendering, but only on desktop platforms.

@@ -90,18 +90,7 @@
 		<link title="How to make a VR game for WebXR with Godot">https://www.snopekgames.com/blog/2020/how-make-vr-game-webxr-godot</link>
 	</tutorials>
 	<methods>
-		<method name="is_session_supported">
-			<return type="void">
-			</return>
-			<argument index="0" name="session_mode" type="String">
-			</argument>
-			<description>
-				Checks if the given [code]session_mode[/code] is supported by the user's browser.
-				Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRSessionMode]WebXR's XRSessionMode[/url], including: [code]"immersive-vr"[/code], [code]"immersive-ar"[/code], and [code]"inline"[/code].
-				This method returns nothing, instead it emits the [signal session_supported] signal with the result.
-			</description>
-		</method>
-		<method name="get_controller">
+		<method name="get_controller" qualifiers="const">
 			<return type="ARVRPositionalTracker">
 			</return>
 			<argument index="0" name="controller_id" type="int">
@@ -118,23 +107,32 @@
 				- [signal squeezestart]
 			</description>
 		</method>
+		<method name="is_session_supported">
+			<return type="void">
+			</return>
+			<argument index="0" name="session_mode" type="String">
+			</argument>
+			<description>
+				Checks if the given [code]session_mode[/code] is supported by the user's browser.
+				Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRSessionMode]WebXR's XRSessionMode[/url], including: [code]"immersive-vr"[/code], [code]"immersive-ar"[/code], and [code]"inline"[/code].
+				This method returns nothing, instead it emits the [signal session_supported] signal with the result.
+			</description>
+		</method>
 	</methods>
 	<members>
-		<member name="session_mode" type="String" setter="set_session_mode" getter="get_session_mode">
-			The session mode used by [method ARVRInterface.initialize] when setting up the WebXR session.
-			This doesn't have any effect on the interface when already initialized.
-			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRSessionMode]WebXR's XRSessionMode[/url], including: [code]"immersive-vr"[/code], [code]"immersive-ar"[/code], and [code]"inline"[/code].
-		</member>
-		<member name="required_features" type="String" setter="set_required_features" getter="get_required_features">
-			A comma-seperated list of required features used by [method ARVRInterface.initialize] when setting up the WebXR session.
-			If a user's browser or device doesn't support one of the given features, initialization will fail and [signal session_failed] will be emitted.
-			This doesn't have any effect on the interface when already initialized.
-			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url]. If you want to use a particular reference space type, it must be listed in either [member required_features] or [member optional_features].
+		<member name="bounds_geometry" type="PoolVector3Array" setter="" getter="get_bounds_geometry">
+			The vertices of a polygon which defines the boundaries of the user's play area.
+			This will only be available if [member reference_space_type] is [code]"bounded-floor"[/code] and only on certain browsers and devices that support it.
+			The [signal reference_space_reset] signal may indicate when this changes.
 		</member>
 		<member name="optional_features" type="String" setter="set_optional_features" getter="get_optional_features">
 			A comma-seperated list of optional features used by [method ARVRInterface.initialize] when setting up the WebXR session.
 			If a user's browser or device doesn't support one of the given features, initialization will continue, but you won't be able to use the requested feature.
 			This doesn't have any effect on the interface when already initialized.
+			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url]. If you want to use a particular reference space type, it must be listed in either [member required_features] or [member optional_features].
+		</member>
+		<member name="reference_space_type" type="String" setter="" getter="get_reference_space_type">
+			The reference space type (from the list of requested types set in the [member requested_reference_space_types] property), that was ultimately used by [method ARVRInterface.initialize] when setting up the WebXR session.
 			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url]. If you want to use a particular reference space type, it must be listed in either [member required_features] or [member optional_features].
 		</member>
 		<member name="requested_reference_space_types" type="String" setter="set_requested_reference_space_types" getter="get_requested_reference_space_types">
@@ -143,56 +141,28 @@
 			This doesn't have any effect on the interface when already initialized.
 			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url]. If you want to use a particular reference space type, it must be listed in either [member required_features] or [member optional_features].
 		</member>
-		<member name="reference_space_type" type="String" setter="" getter="get_reference_space_type">
-			The reference space type (from the list of requested types set in the [member requested_reference_space_types] property), that was ultimately used by [method ARVRInterface.initialize] when setting up the WebXR session.
+		<member name="required_features" type="String" setter="set_required_features" getter="get_required_features">
+			A comma-seperated list of required features used by [method ARVRInterface.initialize] when setting up the WebXR session.
+			If a user's browser or device doesn't support one of the given features, initialization will fail and [signal session_failed] will be emitted.
+			This doesn't have any effect on the interface when already initialized.
 			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url]. If you want to use a particular reference space type, it must be listed in either [member required_features] or [member optional_features].
+		</member>
+		<member name="session_mode" type="String" setter="set_session_mode" getter="get_session_mode">
+			The session mode used by [method ARVRInterface.initialize] when setting up the WebXR session.
+			This doesn't have any effect on the interface when already initialized.
+			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRSessionMode]WebXR's XRSessionMode[/url], including: [code]"immersive-vr"[/code], [code]"immersive-ar"[/code], and [code]"inline"[/code].
 		</member>
 		<member name="visibility_state" type="String" setter="" getter="get_visibility_state">
 			Indicates if the WebXR session's imagery is visible to the user.
 			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRVisibilityState]WebXR's XRVisibilityState[/url], including [code]"hidden"[/code], [code]"visible"[/code], and [code]"visible-blurred"[/code].
 		</member>
-		<member name="bounds_geometry" type="PoolVector3Array" setter="" getter="get_bounds_geometry">
-			The vertices of a polygon which defines the boundaries of the user's play area.
-			This will only be available if [member reference_space_type] is [code]"bounded-floor"[/code] and only on certain browsers and devices that support it.
-			The [signal reference_space_reset] signal may indicate when this changes.
-		</member>
 	</members>
 	<signals>
-		<signal name="session_supported">
-			<argument index="0" name="session_mode" type="String">
-			</argument>
-			<argument index="1" name="supported" type="bool">
-			</argument>
+		<signal name="reference_space_reset">
 			<description>
-				Emitted by [method is_session_supported] to indicate if the given [code]session_mode[/code] is supported or not.
-			</description>
-		</signal>
-		<signal name="session_started">
-			<description>
-				Emitted by [method ARVRInterface.initialize] if the session is successfully started.
-				At this point, it's safe to do [code]get_viewport().arvr = true[/code] to instruct Godot to start rendering to the AR/VR device.
-			</description>
-		</signal>
-		<signal name="session_failed">
-			<argument index="0" name="message" type="String">
-			</argument>
-			<description>
-				Emitted by [method ARVRInterface.initialize] if the session fails to start.
-				[code]message[/code] may optionally contain an error message from WebXR, or an empty string if no message is available.
-			</description>
-		</signal>
-		<signal name="session_ended">
-			<description>
-				Emitted when the user ends the WebXR session (which can be done using UI from the browser or device).
-				At this point, you should do [code]get_viewport().arvr = false[/code] to instruct Godot to resume rendering to the screen.
-			</description>
-		</signal>
-		<signal name="selectstart">
-			<argument index="0" name="controller_id" type="int">
-			</argument>
-			<description>
-				Emitted when one of the "controllers" has started its "primary action".
-				Use [method get_controller] to get more information about the controller.
+				Emitted to indicate that the reference space has been reset or reconfigured.
+				When (or whether) this is emitted depends on the user's browser or device, but may include when the user has changed the dimensions of their play space (which you may be able to access via [member bounds_geometry]) or pressed/held a button to recenter their position.
+				See [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpace/reset_event]WebXR's XRReferenceSpace reset event[/url] for more information.
 			</description>
 		</signal>
 		<signal name="select">
@@ -211,12 +181,41 @@
 				Use [method get_controller] to get more information about the controller.
 			</description>
 		</signal>
-		<signal name="squeezestart">
+		<signal name="selectstart">
 			<argument index="0" name="controller_id" type="int">
 			</argument>
 			<description>
-				Emitted when one of the "controllers" has started its "primary squeeze action".
+				Emitted when one of the "controllers" has started its "primary action".
 				Use [method get_controller] to get more information about the controller.
+			</description>
+		</signal>
+		<signal name="session_ended">
+			<description>
+				Emitted when the user ends the WebXR session (which can be done using UI from the browser or device).
+				At this point, you should do [code]get_viewport().arvr = false[/code] to instruct Godot to resume rendering to the screen.
+			</description>
+		</signal>
+		<signal name="session_failed">
+			<argument index="0" name="message" type="String">
+			</argument>
+			<description>
+				Emitted by [method ARVRInterface.initialize] if the session fails to start.
+				[code]message[/code] may optionally contain an error message from WebXR, or an empty string if no message is available.
+			</description>
+		</signal>
+		<signal name="session_started">
+			<description>
+				Emitted by [method ARVRInterface.initialize] if the session is successfully started.
+				At this point, it's safe to do [code]get_viewport().arvr = true[/code] to instruct Godot to start rendering to the AR/VR device.
+			</description>
+		</signal>
+		<signal name="session_supported">
+			<argument index="0" name="session_mode" type="String">
+			</argument>
+			<argument index="1" name="supported" type="bool">
+			</argument>
+			<description>
+				Emitted by [method is_session_supported] to indicate if the given [code]session_mode[/code] is supported or not.
 			</description>
 		</signal>
 		<signal name="squeeze">
@@ -235,16 +234,17 @@
 				Use [method get_controller] to get more information about the controller.
 			</description>
 		</signal>
+		<signal name="squeezestart">
+			<argument index="0" name="controller_id" type="int">
+			</argument>
+			<description>
+				Emitted when one of the "controllers" has started its "primary squeeze action".
+				Use [method get_controller] to get more information about the controller.
+			</description>
+		</signal>
 		<signal name="visibility_state_changed">
 			<description>
 				Emitted when [member visibility_state] has changed.
-			</description>
-		</signal>
-		<signal name="reference_space_reset">
-			<description>
-				Emitted to indicate that the reference space has been reset or reconfigured.
-				When (or whether) this is emitted depends on the user's browser or device, but may include when the user has changed the dimensions of their play space (which you may be able to access via [member bounds_geometry]) or pressed/held a button to recenter their position.
-				See [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpace/reset_event]WebXR's XRReferenceSpace reset event[/url] for more information.
 			</description>
 		</signal>
 	</signals>
