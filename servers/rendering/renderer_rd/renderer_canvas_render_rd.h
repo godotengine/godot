@@ -188,6 +188,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual Variant get_default_parameter(const StringName &p_parameter) const;
+		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+
 		ShaderData();
 		virtual ~ShaderData();
 	};

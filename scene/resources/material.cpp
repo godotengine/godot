@@ -36,6 +36,7 @@
 #include "editor/editor_settings.h"
 #endif
 
+#include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
@@ -80,12 +81,23 @@ void Material::_validate_property(PropertyInfo &property) const {
 	}
 }
 
+void Material::inspect_native_shader_code() {
+	SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+	RID shader = get_shader_rid();
+	if (st && shader.is_valid()) {
+		st->call_group("_native_shader_source_visualizer", "_inspect_shader", shader);
+	}
+}
+
 void Material::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_next_pass", "next_pass"), &Material::set_next_pass);
 	ClassDB::bind_method(D_METHOD("get_next_pass"), &Material::get_next_pass);
 
 	ClassDB::bind_method(D_METHOD("set_render_priority", "priority"), &Material::set_render_priority);
 	ClassDB::bind_method(D_METHOD("get_render_priority"), &Material::get_render_priority);
+
+	ClassDB::bind_method(D_METHOD("inspect_native_shader_code"), &Material::inspect_native_shader_code);
+	ClassDB::set_method_flags(get_class_static(), _scs_create("inspect_native_shader_code"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RENDER_PRIORITY_MIN) + "," + itos(RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next_pass", PROPERTY_HINT_RESOURCE_TYPE, "Material"), "set_next_pass", "get_next_pass");
@@ -258,6 +270,13 @@ Shader::Mode ShaderMaterial::get_shader_mode() const {
 		return shader->get_mode();
 	} else {
 		return Shader::MODE_SPATIAL;
+	}
+}
+RID ShaderMaterial::get_shader_rid() const {
+	if (shader.is_valid()) {
+		return shader->get_rid();
+	} else {
+		return RID();
 	}
 }
 

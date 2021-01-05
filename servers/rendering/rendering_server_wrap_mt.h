@@ -129,6 +129,8 @@ public:
 	FUNC2RC(RID, shader_get_default_texture_param, RID, const StringName &)
 	FUNC2RC(Variant, shader_get_param_default, RID, const StringName &)
 
+	FUNC1RC(ShaderNativeSourceCode, shader_get_native_source_code, RID)
+
 	/* COMMON MATERIAL API */
 
 	FUNCRID(material)

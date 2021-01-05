@@ -219,6 +219,8 @@ public:
 	BIND2RC(RID, shader_get_default_texture_param, RID, const StringName &)
 	BIND2RC(Variant, shader_get_param_default, RID, const StringName &)
 
+	BIND1RC(ShaderNativeSourceCode, shader_get_native_source_code, RID)
+
 	/* COMMON MATERIAL API */
 
 	BIND0R(RID, material_create)

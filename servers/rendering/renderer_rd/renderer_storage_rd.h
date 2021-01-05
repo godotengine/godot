@@ -127,6 +127,8 @@ public:
 		virtual bool is_animated() const = 0;
 		virtual bool casts_shadows() const = 0;
 		virtual Variant get_default_parameter(const StringName &p_parameter) const = 0;
+		virtual RS::ShaderNativeSourceCode get_native_source_code() const { return RS::ShaderNativeSourceCode(); }
+
 		virtual ~ShaderData() {}
 	};
 
@@ -840,6 +842,8 @@ private:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual Variant get_default_parameter(const StringName &p_parameter) const;
+		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+
 		ParticlesShaderData();
 		virtual ~ParticlesShaderData();
 	};
@@ -1338,6 +1342,8 @@ public:
 	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const;
 	Variant shader_get_param_default(RID p_shader, const StringName &p_param) const;
 	void shader_set_data_request_function(ShaderType p_shader_type, ShaderDataRequestFunction p_function);
+
+	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const;
 
 	/* COMMON MATERIAL API */
 

@@ -394,6 +394,12 @@ Variant RendererSceneRenderForward::ShaderData::get_default_parameter(const Stri
 	return Variant();
 }
 
+RS::ShaderNativeSourceCode RendererSceneRenderForward::ShaderData::get_native_source_code() const {
+	RendererSceneRenderForward *scene_singleton = (RendererSceneRenderForward *)RendererSceneRenderForward::singleton;
+
+	return scene_singleton->shader.scene_shader.version_get_native_source_code(version);
+}
+
 RendererSceneRenderForward::ShaderData::ShaderData() {
 	valid = false;
 	uses_screen_texture = false;
