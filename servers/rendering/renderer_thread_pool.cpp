@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rid.h                                                                */
+/*  renderer_thread_pool.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RID_H
-#define RID_H
+#include "renderer_thread_pool.h"
 
-#include "core/typedefs.h"
+RendererThreadPool *RendererThreadPool::singleton = nullptr;
 
-class RID_AllocBase;
+RendererThreadPool::RendererThreadPool() {
+	singleton = this;
+	thread_work_pool.init();
+}
 
-class RID {
-	friend class RID_AllocBase;
-	uint64_t _id = 0;
-
-public:
-	_ALWAYS_INLINE_ bool operator==(const RID &p_rid) const {
-		return _id == p_rid._id;
-	}
-	_ALWAYS_INLINE_ bool operator<(const RID &p_rid) const {
-		return _id < p_rid._id;
-	}
-	_ALWAYS_INLINE_ bool operator<=(const RID &p_rid) const {
-		return _id <= p_rid._id;
-	}
-	_ALWAYS_INLINE_ bool operator>(const RID &p_rid) const {
-		return _id > p_rid._id;
-	}
-	_ALWAYS_INLINE_ bool operator>=(const RID &p_rid) const {
-		return _id >= p_rid._id;
-	}
-	_ALWAYS_INLINE_ bool operator!=(const RID &p_rid) const {
-		return _id != p_rid._id;
-	}
-	_ALWAYS_INLINE_ bool is_valid() const { return _id != 0; }
-	_ALWAYS_INLINE_ bool is_null() const { return _id == 0; }
-
-	_ALWAYS_INLINE_ uint32_t get_local_index() const { return _id & 0xFFFFFFFF; }
-
-	static _ALWAYS_INLINE_ RID from_uint64(uint64_t p_id) {
-		RID _rid;
-		_rid._id = p_id;
-		return _rid;
-	}
-	_ALWAYS_INLINE_ uint64_t get_id() const { return _id; }
-
-	_ALWAYS_INLINE_ RID() {}
-};
-
-#endif // RID_H
+RendererThreadPool::~RendererThreadPool() {
+	thread_work_pool.finish();
+}

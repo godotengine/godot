@@ -90,8 +90,6 @@ public:
 
 	virtual bool is_low_end() const { return false; }
 
-	static ThreadWorkPool thread_work_pool;
-
 	static RendererCompositorRD *singleton;
 	RendererCompositorRD();
 	~RendererCompositorRD() {}

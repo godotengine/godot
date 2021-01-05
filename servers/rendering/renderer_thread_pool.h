@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rid.h                                                                */
+/*  renderer_thread_pool.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RID_H
-#define RID_H
+#ifndef RENDERERTHREADPOOL_H
+#define RENDERERTHREADPOOL_H
 
-#include "core/typedefs.h"
+#include "core/templates/thread_work_pool.h"
 
-class RID_AllocBase;
-
-class RID {
-	friend class RID_AllocBase;
-	uint64_t _id = 0;
-
+class RendererThreadPool {
 public:
-	_ALWAYS_INLINE_ bool operator==(const RID &p_rid) const {
-		return _id == p_rid._id;
-	}
-	_ALWAYS_INLINE_ bool operator<(const RID &p_rid) const {
-		return _id < p_rid._id;
-	}
-	_ALWAYS_INLINE_ bool operator<=(const RID &p_rid) const {
-		return _id <= p_rid._id;
-	}
-	_ALWAYS_INLINE_ bool operator>(const RID &p_rid) const {
-		return _id > p_rid._id;
-	}
-	_ALWAYS_INLINE_ bool operator>=(const RID &p_rid) const {
-		return _id >= p_rid._id;
-	}
-	_ALWAYS_INLINE_ bool operator!=(const RID &p_rid) const {
-		return _id != p_rid._id;
-	}
-	_ALWAYS_INLINE_ bool is_valid() const { return _id != 0; }
-	_ALWAYS_INLINE_ bool is_null() const { return _id == 0; }
+	ThreadWorkPool thread_work_pool;
 
-	_ALWAYS_INLINE_ uint32_t get_local_index() const { return _id & 0xFFFFFFFF; }
-
-	static _ALWAYS_INLINE_ RID from_uint64(uint64_t p_id) {
-		RID _rid;
-		_rid._id = p_id;
-		return _rid;
-	}
-	_ALWAYS_INLINE_ uint64_t get_id() const { return _id; }
-
-	_ALWAYS_INLINE_ RID() {}
+	static RendererThreadPool *singleton;
+	RendererThreadPool();
+	~RendererThreadPool();
 };
 
-#endif // RID_H
+#endif // RENDERERTHREADPOOL_H

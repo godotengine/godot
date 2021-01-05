@@ -4035,6 +4035,19 @@ void RendererSceneRenderRD::decal_instance_set_transform(RID p_decal, const Tran
 
 /////////////////////////////////
 
+RID RendererSceneRenderRD::lightmap_instance_create(RID p_lightmap) {
+	LightmapInstance li;
+	li.lightmap = p_lightmap;
+	return lightmap_instance_owner.make_rid(li);
+}
+void RendererSceneRenderRD::lightmap_instance_set_transform(RID p_lightmap, const Transform &p_transform) {
+	LightmapInstance *li = lightmap_instance_owner.getornull(p_lightmap);
+	ERR_FAIL_COND(!li);
+	li->transform = p_transform;
+}
+
+/////////////////////////////////
+
 RID RendererSceneRenderRD::gi_probe_instance_create(RID p_base) {
 	GIProbeInstance gi_probe;
 	gi_probe.probe = p_base;
@@ -4061,7 +4074,7 @@ bool RendererSceneRenderRD::gi_probe_needs_update(RID p_probe) const {
 	return gi_probe->last_probe_version != storage->gi_probe_get_version(gi_probe->probe);
 }
 
-void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<InstanceBase *> &p_dynamic_objects) {
+void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<GeometryInstance *> &p_dynamic_objects) {
 	GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
 	ERR_FAIL_COND(!gi_probe);
 
@@ -4578,13 +4591,10 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 
 		//this could probably be better parallelized in compute..
 		for (int i = 0; i < (int)p_dynamic_objects.size(); i++) {
-			InstanceBase *instance = p_dynamic_objects[i];
-			//not used, so clear
-			instance->depth_layer = 0;
-			instance->depth = 0;
+			GeometryInstance *instance = p_dynamic_objects[i];
 
 			//transform aabb to giprobe
-			AABB aabb = (to_probe_xform * instance->transform).xform(instance->aabb);
+			AABB aabb = (to_probe_xform * geometry_instance_get_transform(instance)).xform(geometry_instance_get_aabb(instance));
 
 			//this needs to wrap to grid resolution to avoid jitter
 			//also extend margin a bit just in case
@@ -7101,7 +7111,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 	RD::get_singleton()->compute_list_end();
 }
 
-void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<InstanceBase *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<InstanceBase *> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold) {
+void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold) {
 	Color clear_color;
 	if (p_render_buffers.is_valid()) {
 		RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
@@ -7177,7 +7187,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 	}
 }
 
-void RendererSceneRenderRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<InstanceBase *> &p_instances, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold) {
+void RendererSceneRenderRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<GeometryInstance *> &p_instances, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold) {
 	LightInstance *light_instance = light_instance_owner.getornull(p_light);
 	ERR_FAIL_COND(!light_instance);
 
@@ -7353,11 +7363,11 @@ void RendererSceneRenderRD::render_shadow(RID p_light, RID p_shadow_atlas, int p
 	}
 }
 
-void RendererSceneRenderRD::render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<InstanceBase *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+void RendererSceneRenderRD::render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	_render_material(p_cam_transform, p_cam_projection, p_cam_ortogonal, p_instances, p_framebuffer, p_region);
 }
 
-void RendererSceneRenderRD::render_sdfgi(RID p_render_buffers, int p_region, const PagedArray<InstanceBase *> &p_instances) {
+void RendererSceneRenderRD::render_sdfgi(RID p_render_buffers, int p_region, const PagedArray<GeometryInstance *> &p_instances) {
 	//print_line("rendering region " + itos(p_region));
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND(!rb);
@@ -7694,7 +7704,7 @@ void RendererSceneRenderRD::render_sdfgi(RID p_render_buffers, int p_region, con
 	}
 }
 
-void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider, const Transform &p_transform, const PagedArray<InstanceBase *> &p_instances) {
+void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider, const Transform &p_transform, const PagedArray<GeometryInstance *> &p_instances) {
 	ERR_FAIL_COND(!storage->particles_collision_is_heightfield(p_collider));
 	Vector3 extents = storage->particles_collision_get_extents(p_collider) * p_transform.basis.get_scale();
 	CameraMatrix cm;
@@ -7844,6 +7854,8 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 		reflection_probe_instance_owner.free(p_rid);
 	} else if (decal_instance_owner.owns(p_rid)) {
 		decal_instance_owner.free(p_rid);
+	} else if (lightmap_instance_owner.owns(p_rid)) {
+		lightmap_instance_owner.free(p_rid);
 	} else if (gi_probe_instance_owner.owns(p_rid)) {
 		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_rid);
 		if (gi_probe->texture.is_valid()) {
@@ -7979,22 +7991,27 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Vecto
 
 	//RID sampled_light;
 
-	InstanceBase ins;
+	GeometryInstance *gi = geometry_instance_create(p_base);
 
-	ins.base_type = RSG::storage->get_base_type(p_base);
-	ins.base = p_base;
-	ins.materials.resize(RSG::storage->mesh_get_surface_count(p_base));
-	for (int i = 0; i < ins.materials.size(); i++) {
-		if (i < p_material_overrides.size()) {
-			ins.materials.write[i] = p_material_overrides[i];
+	uint32_t sc = RSG::storage->mesh_get_surface_count(p_base);
+	Vector<RID> materials;
+	materials.resize(sc);
+
+	for (uint32_t i = 0; i < sc; i++) {
+		if (i < (uint32_t)p_material_overrides.size()) {
+			materials.write[i] = p_material_overrides[i];
 		}
 	}
+
+	geometry_instance_set_surface_materials(gi, materials);
 
 	if (cull_argument.size() == 0) {
 		cull_argument.push_back(nullptr);
 	}
-	cull_argument[0] = &ins;
+	cull_argument[0] = gi;
 	_render_uv2(cull_argument, fb, Rect2i(0, 0, p_image_size.width, p_image_size.height));
+
+	geometry_instance_free(gi);
 
 	TypedArray<Image> ret;
 
