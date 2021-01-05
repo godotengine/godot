@@ -112,6 +112,8 @@ android {
         disable 'MissingTranslation', 'UnusedResources'
     }
 
+    ndkVersion versions.ndkVersion
+
     packagingOptions {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
