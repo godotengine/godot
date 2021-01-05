@@ -1112,7 +1112,7 @@ godot_string GDAPI godot_string_get_file(const godot_string *p_self) {
 	return result;
 }
 
-godot_string GDAPI godot_string_humanize_size(size_t p_size) {
+godot_string GDAPI godot_string_humanize_size(uint64_t p_size) {
 	godot_string result;
 	String return_value = String::humanize_size(p_size);
 	memnew_placement(&result, String(return_value));
