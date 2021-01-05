@@ -1876,27 +1876,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			break;
 		}
-		case WM_ACTIVATE: // Watch For Window Activate Message
-		{
-			windows[window_id].minimized = HIWORD(wParam) != 0;
+		case WM_ACTIVATE: { // Watch For Window Activate Message
+			saved_wparam = wParam;
+			saved_lparam = lParam;
 
-			if (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE) {
-				_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_IN);
-				windows[window_id].window_focused = true;
-				alt_mem = false;
-				control_mem = false;
-				shift_mem = false;
-			} else { // WM_INACTIVE
-				Input::get_singleton()->release_pressed_events();
-				_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_OUT);
-				windows[window_id].window_focused = false;
-				alt_mem = false;
-			};
-
-			if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
-				wintab_WTEnable(windows[window_id].wtctx, GET_WM_ACTIVATE_STATE(wParam, lParam));
-			}
-
+			// Run a timer to prevent event catching warning if the window is closing.
+			focus_timer_id = SetTimer(windows[window_id].hWnd, 2, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
 			return 0; // Return  To The Message Loop
 		}
 		case WM_GETMINMAXINFO: {
@@ -1937,6 +1922,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		case WM_CLOSE: // Did We Receive A Close Message?
 		{
+			if (focus_timer_id != 0U) {
+				KillTimer(windows[window_id].hWnd, focus_timer_id);
+			}
 			_send_window_event(windows[window_id], WINDOW_EVENT_CLOSE_REQUEST);
 
 			return 0; // Jump Back
@@ -2630,6 +2618,28 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (!Main::is_iterating()) {
 					Main::iteration();
 				}
+			} else if (wParam == focus_timer_id) {
+				windows[window_id].minimized = HIWORD(saved_wparam) != 0;
+
+				if (LOWORD(saved_wparam) == WA_ACTIVE || LOWORD(saved_wparam) == WA_CLICKACTIVE) {
+					_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_IN);
+					windows[window_id].window_focused = true;
+					alt_mem = false;
+					control_mem = false;
+					shift_mem = false;
+				} else { // WM_INACTIVE
+					Input::get_singleton()->release_pressed_events();
+					_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_OUT);
+					windows[window_id].window_focused = false;
+					alt_mem = false;
+				};
+
+				if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
+					wintab_WTEnable(windows[window_id].wtctx, GET_WM_ACTIVATE_STATE(saved_wparam, saved_lparam));
+				}
+
+				KillTimer(windows[window_id].hWnd, focus_timer_id);
+				focus_timer_id = 0U;
 			}
 		} break;
 
@@ -3212,8 +3222,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		RendererCompositorRD::make_current();
 	}
 #endif
-
-	move_timer_id = 1;
 
 	//set_ime_active(false);
 

@@ -387,7 +387,8 @@ private:
 
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 
-	uint32_t move_timer_id;
+	uint32_t move_timer_id = 0U;
+	uint32_t focus_timer_id = 0U;
 
 	HCURSOR hCursor;
 
@@ -407,6 +408,9 @@ private:
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
 	bool console_visible = false;
+
+	WPARAM saved_wparam;
+	LPARAM saved_lparam;
 
 	WNDCLASSEXW wc;
 
