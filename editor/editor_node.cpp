@@ -6528,6 +6528,9 @@ EditorNode::EditorNode() {
 
 	center_split->connect("resized", callable_mp(this, &EditorNode::_vp_resized));
 
+	native_shader_source_visualizer = memnew(EditorNativeShaderSourceVisualizer);
+	gui_base->add_child(native_shader_source_visualizer);
+
 	orphan_resources = memnew(OrphanResourcesDialog);
 	gui_base->add_child(orphan_resources);
 

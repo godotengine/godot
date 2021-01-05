@@ -179,6 +179,19 @@ public:
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) = 0;
 	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const = 0;
 
+	struct ShaderNativeSourceCode {
+		struct Version {
+			struct Stage {
+				String name;
+				String code;
+			};
+			Vector<Stage> stages;
+		};
+		Vector<Version> versions;
+	};
+
+	virtual ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
+
 	/* COMMON MATERIAL API */
 
 	enum {

@@ -1499,6 +1499,15 @@ void RendererStorageRD::shader_set_data_request_function(ShaderType p_shader_typ
 	shader_data_request_func[p_shader_type] = p_function;
 }
 
+RS::ShaderNativeSourceCode RendererStorageRD::shader_get_native_source_code(RID p_shader) const {
+	Shader *shader = shader_owner.getornull(p_shader);
+	ERR_FAIL_COND_V(!shader, RS::ShaderNativeSourceCode());
+	if (shader->data) {
+		return shader->data->get_native_source_code();
+	}
+	return RS::ShaderNativeSourceCode();
+}
+
 /* COMMON MATERIAL API */
 
 RID RendererStorageRD::material_create() {
@@ -4821,6 +4830,10 @@ Variant RendererStorageRD::ParticlesShaderData::get_default_parameter(const Stri
 		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.hint);
 	}
 	return Variant();
+}
+
+RS::ShaderNativeSourceCode RendererStorageRD::ParticlesShaderData::get_native_source_code() const {
+	return base_singleton->particles_shader.shader.version_get_native_source_code(version);
 }
 
 RendererStorageRD::ParticlesShaderData::ParticlesShaderData() {

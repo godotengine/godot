@@ -34,6 +34,7 @@
 #include "editor/editor_data.h"
 #include "editor/editor_export.h"
 #include "editor/editor_folding.h"
+#include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_run.h"
 #include "editor/inspector_dock.h"
 #include "editor/property_editor.h"
@@ -322,6 +323,8 @@ private:
 	CheckBox *file_export_lib_merge;
 	String current_path;
 	MenuButton *update_spinner;
+
+	EditorNativeShaderSourceVisualizer *native_shader_source_visualizer;
 
 	String defer_load_scene;
 	Node *_last_instanced_scene;

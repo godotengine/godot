@@ -2674,6 +2674,12 @@ Variant RendererSceneRenderRD::SkyShaderData::get_default_parameter(const String
 	return Variant();
 }
 
+RS::ShaderNativeSourceCode RendererSceneRenderRD::SkyShaderData::get_native_source_code() const {
+	RendererSceneRenderRD *scene_singleton = (RendererSceneRenderRD *)RendererSceneRenderRD::singleton;
+
+	return scene_singleton->sky_shader.shader.version_get_native_source_code(version);
+}
+
 RendererSceneRenderRD::SkyShaderData::SkyShaderData() {
 	valid = false;
 }
