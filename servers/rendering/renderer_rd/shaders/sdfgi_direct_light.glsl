@@ -112,6 +112,15 @@ vec2 octahedron_encode(vec3 n) {
 	return n.xy;
 }
 
+float get_omni_attenuation(float distance, float inv_range, float decay) {
+	float nd = distance * inv_range;
+	nd *= nd;
+	nd *= nd; // nd^4
+	nd = max(1.0 - nd, 0.0);
+	nd *= nd; // nd^2
+	return nd * pow(max(distance, 0.0001), -decay);
+}
+
 void main() {
 	uint voxel_index = uint(gl_GlobalInvocationID.x);
 
@@ -184,14 +193,15 @@ void main() {
 				direction = normalize(rel_vec);
 				light_distance = length(rel_vec);
 				rel_vec.y /= params.y_mult;
-				attenuation = pow(clamp(1.0 - length(rel_vec) / lights.data[i].radius, 0.0, 1.0), lights.data[i].attenuation);
+				attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[i].radius, lights.data[i].attenuation);
+
 			} break;
 			case LIGHT_TYPE_SPOT: {
 				vec3 rel_vec = lights.data[i].position - position;
 				direction = normalize(rel_vec);
 				light_distance = length(rel_vec);
 				rel_vec.y /= params.y_mult;
-				attenuation = pow(clamp(1.0 - length(rel_vec) / lights.data[i].radius, 0.0, 1.0), lights.data[i].attenuation);
+				attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[i].radius, lights.data[i].attenuation);
 
 				float angle = acos(dot(normalize(rel_vec), -lights.data[i].direction));
 				if (angle > lights.data[i].spot_angle) {
