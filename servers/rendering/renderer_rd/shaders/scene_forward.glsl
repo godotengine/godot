@@ -891,6 +891,15 @@ float sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex
 
 #endif //USE_NO_SHADOWS
 
+float get_omni_attenuation(float distance, float inv_range, float decay) {
+	float nd = distance * inv_range;
+	nd *= nd;
+	nd *= nd; // nd^4
+	nd = max(1.0 - nd, 0.0);
+	nd *= nd; // nd^2
+	return nd * pow(max(distance, 0.0001), -decay);
+}
+
 void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, vec3 albedo, float roughness, float metallic, float specular, float p_blob_intensity,
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
@@ -916,9 +925,8 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		inout vec3 diffuse_light, inout vec3 specular_light) {
 	vec3 light_rel_vec = lights.data[idx].position - vertex;
 	float light_length = length(light_rel_vec);
-	float normalized_distance = light_length * lights.data[idx].inv_radius;
 	vec2 attenuation_energy = unpackHalf2x16(lights.data[idx].attenuation_energy);
-	float omni_attenuation = pow(max(1.0 - normalized_distance, 0.0), attenuation_energy.x);
+	float omni_attenuation = get_omni_attenuation(light_length, lights.data[idx].inv_radius, attenuation_energy.x);
 	float light_attenuation = omni_attenuation;
 	vec3 shadow_attenuation = vec3(1.0);
 	vec4 color_specular = unpackUnorm4x8(lights.data[idx].color_specular);
@@ -1205,9 +1213,8 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		inout vec3 specular_light) {
 	vec3 light_rel_vec = lights.data[idx].position - vertex;
 	float light_length = length(light_rel_vec);
-	float normalized_distance = light_length * lights.data[idx].inv_radius;
 	vec2 attenuation_energy = unpackHalf2x16(lights.data[idx].attenuation_energy);
-	float spot_attenuation = pow(max(1.0 - normalized_distance, 0.001), attenuation_energy.x);
+	float spot_attenuation = get_omni_attenuation(light_length, lights.data[idx].inv_radius, attenuation_energy.x);
 	vec3 spot_dir = lights.data[idx].direction;
 	vec2 spot_att_angle = unpackHalf2x16(lights.data[idx].cone_attenuation_angle);
 	float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_att_angle.y);

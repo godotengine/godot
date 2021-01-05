@@ -169,6 +169,15 @@ vec3 hash3f(uvec3 x) {
 	return vec3(x & 0xFFFFF) / vec3(float(0xFFFFF));
 }
 
+float get_omni_attenuation(float distance, float inv_range, float decay) {
+	float nd = distance * inv_range;
+	nd *= nd;
+	nd *= nd; // nd^4
+	nd = max(1.0 - nd, 0.0);
+	nd *= nd; // nd^2
+	return nd * pow(max(distance, 0.0001), -decay);
+}
+
 void main() {
 	vec3 fog_cell_size = 1.0 / vec3(params.fog_volume_size);
 
@@ -270,14 +279,14 @@ void main() {
 		uint light_index = cluster_data.indices[omni_light_pointer + i];
 
 		vec3 light_pos = lights.data[i].position;
-		float d = distance(lights.data[i].position, view_pos) * lights.data[i].inv_radius;
+		float d = distance(lights.data[i].position, view_pos);
 		vec3 shadow_attenuation = vec3(1.0);
 
-		if (d < 1.0) {
+		if (d * lights.data[i].inv_radius < 1.0) {
 			vec2 attenuation_energy = unpackHalf2x16(lights.data[i].attenuation_energy);
 			vec4 color_specular = unpackUnorm4x8(lights.data[i].color_specular);
 
-			float attenuation = pow(max(1.0 - d, 0.0), attenuation_energy.x);
+			float attenuation = get_omni_attenuation(d, lights.data[i].inv_radius, attenuation_energy.x);
 
 			vec3 light = attenuation_energy.y * color_specular.rgb / M_PI;
 
@@ -326,14 +335,14 @@ void main() {
 
 		vec3 light_pos = lights.data[i].position;
 		vec3 light_rel_vec = lights.data[i].position - view_pos;
-		float d = length(light_rel_vec) * lights.data[i].inv_radius;
+		float d = length(light_rel_vec);
 		vec3 shadow_attenuation = vec3(1.0);
 
-		if (d < 1.0) {
+		if (d * lights.data[i].inv_radius < 1.0) {
 			vec2 attenuation_energy = unpackHalf2x16(lights.data[i].attenuation_energy);
 			vec4 color_specular = unpackUnorm4x8(lights.data[i].color_specular);
 
-			float attenuation = pow(max(1.0 - d, 0.0), attenuation_energy.x);
+			float attenuation = get_omni_attenuation(d, lights.data[i].inv_radius, attenuation_energy.x);
 
 			vec3 spot_dir = lights.data[i].direction;
 			vec2 spot_att_angle = unpackHalf2x16(lights.data[i].cone_attenuation_angle);
