@@ -1551,7 +1551,12 @@ bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName 
 	return false;
 }
 
-void EditorInspector::update_tree() {
+void EditorInspector::update_tree(bool p_clear_all) {
+	if (!object) {
+		_clear();
+		return;
+	}
+
 	//to update properly if all is refreshed
 	StringName current_selected = property_selected;
 	int current_focusable = -1;
@@ -1575,12 +1580,6 @@ void EditorInspector::update_tree() {
 		if (restore_focus) {
 			current_focusable = property_focusable;
 		}
-	}
-
-	_clear();
-
-	if (!object) {
-		return;
 	}
 
 	List<Ref<EditorInspectorPlugin>> valid_plugins;
@@ -1614,6 +1613,36 @@ void EditorInspector::update_tree() {
 	List<PropertyInfo> plist;
 	object->get_property_list(&plist, true);
 	_update_script_class_properties(*object, plist);
+
+	Map<StringName, List<Control *>> cached_controls;
+	Map<StringName, List<Pair<StringName, EditorProperty *>>> cached_mapped_props;
+
+	if (!p_clear_all) {
+		for (List<PropertyInfo>::Element *I = plist.front(); I; I = I->next()) {
+			PropertyInfo const &property_info = I->get();
+
+			Map<StringName, PropertyInfo>::Element *cached_info = property_info_cache.find(property_info.name);
+			if (cached_info) {
+				// Property already existed, re-use if it has the same info.
+				if (cached_info->get() == property_info) {
+					List<Control *> control_list = property_control_cache[property_info.name];
+					cached_controls[property_info.name] = control_list;
+
+					// Keep all controls outside of the tree for backup.
+					for (List<Control *>::Element *C = control_list.front(); C; C = C->next()) {
+						Control *control = C->get();
+						ERR_CONTINUE(!control);
+						ERR_CONTINUE(!control->get_parent());
+						control->get_parent()->remove_child(control);
+					}
+				}
+			}
+		}
+
+		cached_mapped_props = property_map_cache;
+	}
+
+	_clear();
 
 	HashMap<String, VBoxContainer *> item_path;
 	Map<VBoxContainer *, EditorInspectorSection *> section_map;
@@ -1913,6 +1942,43 @@ void EditorInspector::update_tree() {
 			doc_hint = descr;
 		}
 
+		property_info_cache[p.name] = p;
+
+		Map<StringName, List<Control *>>::Element *controls = cached_controls.find(p.name);
+		if (controls) {
+			// Add all previous controls.
+			for (List<Control *>::Element *C = controls->get().front(); C; C = C->next()) {
+				Control *control = C->get();
+				ERR_CONTINUE(!control);
+				current_vbox->add_child(control);
+
+				EditorProperty *ep = Object::cast_to<EditorProperty>(control);
+				if (ep) {
+					ep->update_property();
+					ep->update_reload_status();
+
+					if (current_selected && ep->property == current_selected) {
+						ep->deselect();
+						ep->select(current_focusable);
+					}
+				}
+			}
+			property_control_cache[p.name] = controls->get();
+
+			// Update property map.
+			Map<StringName, List<Pair<StringName, EditorProperty *>>>::Element *mapped_properties = cached_mapped_props.find(p.name);
+			if (mapped_properties) {
+				for (List<Pair<StringName, EditorProperty *>>::Element *M = mapped_properties->get().front(); M; M = M->next()) {
+					String prop = M->get().first;
+					editor_property_map[prop].push_back(M->get().second);
+					property_map_cache[p.name].push_back(M->get());
+				}
+			}
+
+			cached_controls.erase(p.name);
+			continue;
+		}
+
 		for (List<Ref<EditorInspectorPlugin>>::Element *E = valid_plugins.front(); E; E = E->next()) {
 			Ref<EditorInspectorPlugin> ped = E->get();
 			bool exclusive = ped->parse_property(object, p.type, p.name, p.hint, p.hint_string, p.usage, wide_editors);
@@ -1921,7 +1987,8 @@ void EditorInspector::update_tree() {
 			ped->added_editors.clear();
 
 			for (List<EditorInspectorPlugin::AddedEditor>::Element *F = editors.front(); F; F = F->next()) {
-				EditorProperty *ep = Object::cast_to<EditorProperty>(F->get().property_editor);
+				Control *property_editor = F->get().property_editor;
+				EditorProperty *ep = Object::cast_to<EditorProperty>(property_editor);
 
 				if (ep) {
 					//set all this before the control gets the ENTER_TREE notification
@@ -1943,11 +2010,8 @@ void EditorInspector::update_tree() {
 						}
 						for (int i = 0; i < F->get().properties.size(); i++) {
 							String prop = F->get().properties[i];
-
-							if (!editor_property_map.has(prop)) {
-								editor_property_map[prop] = List<EditorProperty *>();
-							}
 							editor_property_map[prop].push_back(ep);
+							property_map_cache[p.name].push_back(Pair<StringName, EditorProperty *>(prop, ep));
 						}
 					}
 					ep->set_draw_red(draw_red);
@@ -1960,7 +2024,8 @@ void EditorInspector::update_tree() {
 					ep->set_deletable(deletable_properties);
 				}
 
-				current_vbox->add_child(F->get().property_editor);
+				current_vbox->add_child(property_editor);
+				property_control_cache[p.name].push_back(property_editor);
 
 				if (ep) {
 					ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed));
@@ -2001,7 +2066,13 @@ void EditorInspector::update_tree() {
 		_parse_added_editors(main_vbox, ped);
 	}
 
-	//see if this property exists and should be kept
+	// Destroy any unused control from the cache.
+	for (Map<StringName, List<Control *>>::Element *CC = cached_controls.front(); CC; CC = CC->next()) {
+		for (List<Control *>::Element *C = CC->get().front(); C; C = C->next()) {
+			ERR_CONTINUE(!C->get());
+			memdelete(C->get());
+		}
+	}
 }
 
 void EditorInspector::update_property(const String &p_prop) {
@@ -2022,6 +2093,9 @@ void EditorInspector::_clear() {
 	property_selected = StringName();
 	property_focusable = -1;
 	editor_property_map.clear();
+	property_info_cache.clear();
+	property_control_cache.clear();
+	property_map_cache.clear();
 	sections.clear();
 	pending.clear();
 	restart_request_props.clear();
@@ -2434,7 +2508,7 @@ void EditorInspector::_notification(int p_what) {
 		changing++;
 
 		if (update_tree_pending) {
-			update_tree();
+			update_tree(false);
 			update_tree_pending = false;
 			pending.clear();
 
