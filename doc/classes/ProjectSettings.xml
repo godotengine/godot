@@ -1058,6 +1058,8 @@
 		<member name="rendering/environment/default_environment" type="String" setter="" getter="" default="&quot;&quot;">
 			[Environment] that will be used as a fallback environment in case a scene does not specify its own environment. The default environment is loaded in at scene load time regardless of whether you have set an environment or not. If you do not rely on the fallback environment, it is best to delete [code]default_env.tres[/code], or to specify a different default environment here.
 		</member>
+		<member name="rendering/forward_renderer/threaded_render_minimum_instances" type="int" setter="" getter="" default="500">
+		</member>
 		<member name="rendering/gpu_lightmapper/performance/max_rays_per_pass" type="int" setter="" getter="" default="32">
 		</member>
 		<member name="rendering/gpu_lightmapper/performance/max_rays_per_probe_pass" type="int" setter="" getter="" default="64">
@@ -1286,6 +1288,8 @@
 		<member name="rendering/sdfgi/frames_to_converge" type="int" setter="" getter="" default="1">
 		</member>
 		<member name="rendering/sdfgi/probe_ray_count" type="int" setter="" getter="" default="2">
+		</member>
+		<member name="rendering/spatial_indexer/threaded_cull_minimum_instances" type="int" setter="" getter="" default="1000">
 		</member>
 		<member name="rendering/spatial_indexer/update_iterations_per_frame" type="int" setter="" getter="" default="10">
 		</member>
