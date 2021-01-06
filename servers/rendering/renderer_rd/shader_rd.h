@@ -36,6 +36,7 @@
 #include "core/templates/map.h"
 #include "core/templates/rid_owner.h"
 #include "core/variant/variant.h"
+#include "servers/rendering_server.h"
 
 #include <stdio.h>
 /**
@@ -132,6 +133,8 @@ public:
 
 	void set_variant_enabled(int p_variant, bool p_enabled);
 	bool is_variant_enabled(int p_variant) const;
+
+	RS::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 
 	void initialize(const Vector<String> &p_variant_defines, const String &p_general_defines = "");
 	virtual ~ShaderRD();

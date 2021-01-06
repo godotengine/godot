@@ -89,7 +89,7 @@ public:
 	float get_sun_curve() const;
 
 	virtual Shader::Mode get_shader_mode() const override;
-	RID get_shader_rid() const;
+	virtual RID get_shader_rid() const override;
 
 	ProceduralSkyMaterial();
 	~ProceduralSkyMaterial();
@@ -114,7 +114,7 @@ public:
 	Ref<Texture2D> get_panorama() const;
 
 	virtual Shader::Mode get_shader_mode() const override;
-	RID get_shader_rid() const;
+	virtual RID get_shader_rid() const override;
 
 	PanoramaSkyMaterial();
 	~PanoramaSkyMaterial();
@@ -180,7 +180,7 @@ public:
 	Ref<Texture2D> get_night_sky() const;
 
 	virtual Shader::Mode get_shader_mode() const override;
-	RID get_shader_rid() const;
+	virtual RID get_shader_rid() const override;
 
 	PhysicalSkyMaterial();
 	~PhysicalSkyMaterial();

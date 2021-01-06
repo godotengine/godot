@@ -179,6 +179,8 @@ public:
 	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const = 0;
 	virtual Variant shader_get_param_default(RID p_material, const StringName &p_param) const = 0;
 
+	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
+
 	/* COMMON MATERIAL API */
 
 	virtual RID material_create() = 0;
