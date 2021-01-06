@@ -469,7 +469,7 @@ ParticlesEditor::ParticlesEditor() {
 	particles_editor_hb->hide();
 
 	options->set_text(TTR("Particles"));
-	options->get_popup()->add_item(TTR("Generate AABB"), MENU_OPTION_GENERATE_AABB);
+	options->get_popup()->add_item(TTR("Generate Visibility AABB"), MENU_OPTION_GENERATE_AABB);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Emission Points From Mesh"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH);
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);

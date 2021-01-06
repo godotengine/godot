@@ -6,6 +6,7 @@
 	<description>
 		CPU-based 2D particle node used to create a variety of particle systems and effects.
 		See also [Particles2D], which provides the same functionality with hardware acceleration, but may not run on older devices.
+		[b]Note:[/b] Unlike [Particles2D], the visibility rect is generated on-the-fly and doesn't need to be configured by the user.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/3.2/tutorials/2d/particle_systems_2d.html</link>
