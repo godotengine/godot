@@ -2544,35 +2544,32 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				return;
 			}
 
-			Object *obj = nullptr;
-			RES res_temp;
+			Variant obj;
 
 			if (ScriptServer::is_global_class(intype)) {
 				obj = ClassDB::instance(ScriptServer::get_global_class_native_base(intype));
 				if (obj) {
-					res_temp = obj;
 					Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(intype));
 					if (script.is_valid()) {
-						obj->set_script(Variant(script));
+						((Object *)obj)->set_script(script);
 					}
 				}
 			} else {
 				obj = ClassDB::instance(intype);
-				res_temp = obj;
 			}
 
 			if (!obj) {
 				obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
-				res_temp = obj;
 			}
 
-			ERR_BREAK(!res_temp.is_valid());
+			Resource *resp = Object::cast_to<Resource>(obj);
+			ERR_BREAK(!resp);
 			if (get_edited_object() && base_type != String() && base_type == "Script") {
 				//make visual script the right type
-				res_temp->call("set_instance_base_type", get_edited_object()->get_class());
+				resp->call("set_instance_base_type", get_edited_object()->get_class());
 			}
 
-			res = res_temp;
+			res = RES(resp);
 			emit_changed(get_edited_property(), res);
 			update_property();
 

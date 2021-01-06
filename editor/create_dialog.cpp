@@ -408,15 +408,15 @@ String CreateDialog::get_selected_type() {
 	return selected->get_text(0);
 }
 
-Object *CreateDialog::instance_selected() {
+Variant CreateDialog::instance_selected() {
 	TreeItem *selected = search_options->get_selected();
 
 	if (!selected) {
-		return nullptr;
+		return Variant();
 	}
 
 	Variant md = selected->get_metadata(0);
-	Object *obj = nullptr;
+	Variant obj;
 	if (md.get_type() != Variant::NIL) {
 		String custom = md;
 		if (ScriptServer::is_global_class(custom)) {
@@ -434,13 +434,13 @@ Object *CreateDialog::instance_selected() {
 
 	// Check if any Object-type property should be instantiated.
 	List<PropertyInfo> pinfo;
-	obj->get_property_list(&pinfo);
+	((Object *)obj)->get_property_list(&pinfo);
 
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 		PropertyInfo pi = E->get();
 		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
 			Object *prop = ClassDB::instance(pi.class_name);
-			obj->set(pi.name, prop);
+			((Object *)obj)->set(pi.name, prop);
 		}
 	}
 

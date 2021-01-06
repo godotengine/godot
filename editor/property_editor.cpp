@@ -262,7 +262,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						return;
 					}
 
-					Object *obj = ClassDB::instance(intype);
+					Variant obj = ClassDB::instance(intype);
 
 					if (!obj) {
 						if (ScriptServer::is_global_class(intype)) {
@@ -280,7 +280,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						res->call("set_instance_base_type", owner->get_class());
 					}
 
-					v = res;
+					v = obj;
 					emit_signal("variant_changed");
 
 				} break;
@@ -1064,7 +1064,7 @@ void CustomPropertyEditor::_type_create_selected(int p_idx) {
 
 		String intype = inheritors_array[p_idx];
 
-		Object *obj = ClassDB::instance(intype);
+		Variant obj = ClassDB::instance(intype);
 
 		if (!obj) {
 			if (ScriptServer::is_global_class(intype)) {
@@ -1075,11 +1075,9 @@ void CustomPropertyEditor::_type_create_selected(int p_idx) {
 		}
 
 		ERR_FAIL_COND(!obj);
+		ERR_FAIL_COND(!Object::cast_to<Resource>(obj));
 
-		Resource *res = Object::cast_to<Resource>(obj);
-		ERR_FAIL_COND(!res);
-
-		v = res;
+		v = obj;
 		emit_signal("variant_changed");
 		hide();
 	}
@@ -1251,7 +1249,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				String intype = inheritors_array[0];
 
 				if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
-					Object *obj = ClassDB::instance(intype);
+					Variant obj = ClassDB::instance(intype);
 
 					if (!obj) {
 						if (ScriptServer::is_global_class(intype)) {
@@ -1262,10 +1260,9 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 					}
 
 					ERR_BREAK(!obj);
-					Resource *res = Object::cast_to<Resource>(obj);
-					ERR_BREAK(!res);
+					ERR_BREAK(!Object::cast_to<Resource>(obj));
 
-					v = res;
+					v = obj;
 					emit_signal("variant_changed");
 					hide();
 				}
