@@ -153,60 +153,6 @@
 				]
 			},
 			{
-				"name": "godot_print_error",
-				"return_type": "void",
-				"arguments": [
-					[
-						"const char *",
-						"p_description"
-					],
-					[
-						"const char *",
-						"p_function"
-					],
-					[
-						"const char *",
-						"p_file"
-					],
-					[
-						"int",
-						"p_line"
-					]
-				]
-			},
-			{
-				"name": "godot_print_warning",
-				"return_type": "void",
-				"arguments": [
-					[
-						"const char *",
-						"p_description"
-					],
-					[
-						"const char *",
-						"p_function"
-					],
-					[
-						"const char *",
-						"p_file"
-					],
-					[
-						"int",
-						"p_line"
-					]
-				]
-			},
-			{
-				"name": "godot_print",
-				"return_type": "void",
-				"arguments": [
-					[
-						"const godot_string *",
-						"p_message"
-					]
-				]
-			},
-			{
 				"name": "godot_get_class_tag",
 				"return_type": "void *",
 				"arguments": [
