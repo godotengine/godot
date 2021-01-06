@@ -180,20 +180,22 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 				}
 			}
 
-			if (!is_blender_fbx) {
-				Spatial *spatial = _generate_scene(p_path, &doc, p_flags, p_bake_fps, 8);
-				// todo: move to document shutdown (will need to be validated after moving; this code has been validated already)
-				for (FBXDocParser::TokenPtr token : tokens) {
-					if (token) {
-						delete token;
-						token = nullptr;
-					}
-				}
-
-				return spatial;
-			} else {
-				ERR_PRINT("We can't import Blender FBX files for the time being. Please favor glTF 2.0 when exporting from Blender.");
+			if (is_blender_fbx) {
+				WARN_PRINT("We don't officially support Blender FBX animations yet, due to issues with upstream Blender,\n"
+						   "so please wait for us to work around remaining issues. We will continue to import the file but it may be broken.\n"
+						   "For minimal breakage, please export FBX from Blender with -Z forward, and Y up.");
 			}
+
+			Spatial *spatial = _generate_scene(p_path, &doc, p_flags, p_bake_fps, 8, is_blender_fbx);
+			// todo: move to document shutdown (will need to be validated after moving; this code has been validated already)
+			for (FBXDocParser::TokenPtr token : tokens) {
+				if (token) {
+					delete token;
+					token = nullptr;
+				}
+			}
+
+			return spatial;
 
 		} else {
 			ERR_PRINT(vformat("Cannot import FBX file: %s. It uses file format %d which is unsupported by Godot. Please re-export it or convert it to a newer format.", p_path, doc.FBXVersion()));
@@ -368,9 +370,11 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 		const FBXDocParser::Document *p_document,
 		const uint32_t p_flags,
 		int p_bake_fps,
-		const int32_t p_max_bone_weights) {
+		const int32_t p_max_bone_weights,
+		bool p_is_blender_fbx) {
 
 	ImportState state;
+	state.is_blender_fbx = p_is_blender_fbx;
 	state.path = p_path;
 	state.animation_player = NULL;
 

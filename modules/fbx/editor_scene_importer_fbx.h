@@ -115,7 +115,9 @@ private:
 
 	Spatial *_generate_scene(const String &p_path, const FBXDocParser::Document *p_document,
 			const uint32_t p_flags,
-			int p_bake_fps, const int32_t p_max_bone_weights);
+			int p_bake_fps,
+			const int32_t p_max_bone_weights,
+			bool p_is_blender_fbx);
 
 	template <class T>
 	T _interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time, AssetImportAnimation::Interpolation p_interp);

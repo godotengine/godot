@@ -134,26 +134,6 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 			&collect_all,
 			HashMap<int, Vector3>());
 
-	//	List<int> keys;
-	//	normals.get_key_list(&keys);
-	//
-	//	const std::vector<Assimp::FBX::MeshGeometry::Edge>& edges = mesh_geometry->get_edge_map();
-	//	for (int index = 0; index < keys.size(); index++) {
-	//		const int key = keys[index];
-	//		const int v1 = edges[key].vertex_0;
-	//		const int v2 = edges[key].vertex_1;
-	//		const Vector3& n1 = normals.get(v1);
-	//		const Vector3& n2 = normals.get(v2);
-	//		print_verbose("[" + itos(v1) + "] n1: " + n1 + "\n[" + itos(v2) + "] n2: " + n2);
-	//		//print_verbose("[" + itos(key) + "] n1: " + n1 + ", n2: " + n2) ;
-	//		//print_verbose("vindex: " + itos(edges[key].vertex_0) + ", vindex2: " + itos(edges[key].vertex_1));
-	//		//Vector3 ver1 = vertices[edges[key].vertex_0];
-	//		//Vector3 ver2 = vertices[edges[key].vertex_1];
-	//		/*real_t angle1 = Math::rad2deg(n1.angle_to(n2));
-	//		real_t angle2 = Math::rad2deg(n2.angle_to(n1));
-	//		print_verbose("angle of normals: " + rtos(angle1) + " angle 2" + rtos(angle2));*/
-	//	}
-
 	HashMap<int, Vector2> uvs_0;
 	HashMap<int, HashMap<int, Vector2> > uvs_0_raw = extract_per_vertex_data(
 			vertices.size(),
@@ -370,6 +350,9 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 						normals_ptr[vertex]);
 			}
 
+			if (state.is_blender_fbx) {
+				morph_st->generate_normals();
+			}
 			morph_st->generate_tangents();
 			surface->morphs.push_back(morph_st->commit_to_arrays());
 		}
@@ -392,6 +375,9 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 	for (const SurfaceId *surface_id = surfaces.next(nullptr); surface_id != nullptr; surface_id = surfaces.next(surface_id)) {
 		SurfaceData *surface = surfaces.getptr(*surface_id);
 
+		if (state.is_blender_fbx) {
+			surface->surface_tool->generate_normals();
+		}
 		// you can't generate them without a valid uv map.
 		if (uvs_0_raw.size() > 0) {
 			surface->surface_tool->generate_tangents();
@@ -790,7 +776,7 @@ void FBXMeshData::add_vertex(
 
 	ERR_FAIL_INDEX_MSG(p_vertex, (Vertex)p_vertices_position.size(), "FBX file is corrupted, the position of the vertex can't be retrieved.");
 
-	if (p_normals.has(p_vertex)) {
+	if (p_normals.has(p_vertex) && !state.is_blender_fbx) {
 		p_surface_tool->add_normal(p_normals[p_vertex] + p_morph_normal);
 	}
 
