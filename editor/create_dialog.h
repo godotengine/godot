@@ -97,7 +97,7 @@ protected:
 	void _save_and_update_favorite_list();
 
 public:
-	Object *instance_selected();
+	Variant instance_selected();
 	String get_selected_type();
 
 	void set_base_type(const String &p_base);

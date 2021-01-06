@@ -515,7 +515,7 @@ String CreateDialog::get_selected_type() {
 		return String();
 }
 
-Object *CreateDialog::instance_selected() {
+Variant CreateDialog::instance_selected() {
 
 	TreeItem *selected = search_options->get_selected();
 
@@ -529,7 +529,7 @@ Object *CreateDialog::instance_selected() {
 
 		if (custom != String()) {
 			if (ScriptServer::is_global_class(custom)) {
-				Object *obj = EditorNode::get_editor_data().script_class_instance(custom);
+				Variant obj = EditorNode::get_editor_data().script_class_instance(custom);
 				Node *n = Object::cast_to<Node>(obj);
 				if (n)
 					n->set_name(custom);
@@ -541,7 +541,7 @@ Object *CreateDialog::instance_selected() {
 		}
 	}
 
-	return NULL;
+	return Variant();
 }
 
 void CreateDialog::_item_selected() {
