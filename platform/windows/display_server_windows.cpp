@@ -2794,7 +2794,7 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id, WPARAM 
 		_send_window_event(windows[p_window_id], WINDOW_EVENT_FOCUS_OUT);
 		windows[p_window_id].window_focused = false;
 		alt_mem = false;
-	};
+	}
 
 	if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[p_window_id].wtctx) {
 		wintab_WTEnable(windows[p_window_id].wtctx, GET_WM_ACTIVATE_STATE(wParam, lParam));
