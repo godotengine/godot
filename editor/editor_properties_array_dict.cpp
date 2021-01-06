@@ -669,290 +669,288 @@ void EditorPropertyDictionary::update_property() {
 			page_hb->add_child(page);
 			page->set_h_size_flags(SIZE_EXPAND_FILL);
 			page->connect("value_changed", this, "_page_changed");
-		} else {
-			// Queue children for deletion, deleting immediately might cause errors.
-			for (int i = 1; i < vbox->get_child_count(); i++) {
-				vbox->get_child(i)->queue_delete();
-			}
-		}
 
-		int len = dict.size();
+			int len = dict.size();
 
-		int pages = MAX(0, len - 1) / page_len + 1;
+			int pages = MAX(0, len - 1) / page_len + 1;
 
-		page->set_max(pages);
-		page_idx = MIN(page_idx, pages - 1);
-		page->set_value(page_idx);
-		page_hb->set_visible(pages > 1);
+			page->set_max(pages);
+			page_idx = MIN(page_idx, pages - 1);
+			page->set_value(page_idx);
+			page_hb->set_visible(pages > 1);
 
-		int offset = page_idx * page_len;
+			int offset = page_idx * page_len;
 
-		int amount = MIN(len - offset, page_len);
+			int amount = MIN(len - offset, page_len);
 
-		dict = dict.duplicate();
+			dict = dict.duplicate();
 
-		object->set_dict(dict);
-		VBoxContainer *add_vbox = NULL;
+			object->set_dict(dict);
+			VBoxContainer *add_vbox = NULL;
 
-		for (int i = 0; i < amount + 2; i++) {
-			String prop_name;
-			Variant key;
-			Variant value;
+			for (int i = 0; i < amount + 2; i++) {
+				String prop_name;
+				Variant key;
+				Variant value;
 
-			if (i < amount) {
-				prop_name = "indices/" + itos(i + offset);
-				key = dict.get_key_at_index(i + offset);
-				value = dict.get_value_at_index(i + offset);
-			} else if (i == amount) {
-				prop_name = "new_item_key";
-				value = object->get_new_item_key();
-			} else if (i == amount + 1) {
-				prop_name = "new_item_value";
-				value = object->get_new_item_value();
-			}
+				if (i < amount) {
+					prop_name = "indices/" + itos(i + offset);
+					key = dict.get_key_at_index(i + offset);
+					value = dict.get_value_at_index(i + offset);
+				} else if (i == amount) {
+					prop_name = "new_item_key";
+					value = object->get_new_item_key();
+				} else if (i == amount + 1) {
+					prop_name = "new_item_value";
+					value = object->get_new_item_value();
+				}
 
-			EditorProperty *prop = NULL;
+				EditorProperty *prop = NULL;
 
-			switch (value.get_type()) {
-				case Variant::NIL: {
-					prop = memnew(EditorPropertyNil);
+				switch (value.get_type()) {
+					case Variant::NIL: {
+						prop = memnew(EditorPropertyNil);
 
-				} break;
+					} break;
 
-				// atomic types
-				case Variant::BOOL: {
+					// atomic types
+					case Variant::BOOL: {
 
-					prop = memnew(EditorPropertyCheck);
+						prop = memnew(EditorPropertyCheck);
 
-				} break;
-				case Variant::INT: {
-					EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
-					editor->setup(-100000, 100000, 1, true, true);
-					prop = editor;
-
-				} break;
-				case Variant::REAL: {
-
-					EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
-					editor->setup(-100000, 100000, 0.001, true, false, true, true);
-					prop = editor;
-				} break;
-				case Variant::STRING: {
-
-					prop = memnew(EditorPropertyText);
-
-				} break;
-
-				// math types
-				case Variant::VECTOR2: {
-
-					EditorPropertyVector2 *editor = memnew(EditorPropertyVector2);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::RECT2: {
-
-					EditorPropertyRect2 *editor = memnew(EditorPropertyRect2);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::VECTOR3: {
-
-					EditorPropertyVector3 *editor = memnew(EditorPropertyVector3);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::TRANSFORM2D: {
-
-					EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::PLANE: {
-
-					EditorPropertyPlane *editor = memnew(EditorPropertyPlane);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::QUAT: {
-
-					EditorPropertyQuat *editor = memnew(EditorPropertyQuat);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::AABB: {
-
-					EditorPropertyAABB *editor = memnew(EditorPropertyAABB);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::BASIS: {
-					EditorPropertyBasis *editor = memnew(EditorPropertyBasis);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::TRANSFORM: {
-					EditorPropertyTransform *editor = memnew(EditorPropertyTransform);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-
-				// misc types
-				case Variant::COLOR: {
-					prop = memnew(EditorPropertyColor);
-
-				} break;
-				case Variant::NODE_PATH: {
-					prop = memnew(EditorPropertyNodePath);
-
-				} break;
-				case Variant::_RID: {
-					prop = memnew(EditorPropertyRID);
-
-				} break;
-				case Variant::OBJECT: {
-
-					if (Object::cast_to<EncodedObjectAsID>(value)) {
-
-						EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
-						editor->setup("Object");
+					} break;
+					case Variant::INT: {
+						EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
+						editor->setup(-100000, 100000, 1, true, true);
 						prop = editor;
 
-					} else {
+					} break;
+					case Variant::REAL: {
 
-						EditorPropertyResource *editor = memnew(EditorPropertyResource);
-						editor->setup("Resource");
+						EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
+						editor->setup(-100000, 100000, 0.001, true, false, true, true);
 						prop = editor;
+					} break;
+					case Variant::STRING: {
+
+						prop = memnew(EditorPropertyText);
+
+					} break;
+
+					// math types
+					case Variant::VECTOR2: {
+
+						EditorPropertyVector2 *editor = memnew(EditorPropertyVector2);
+						editor->setup(-100000, 100000, 0.001, true);
+						prop = editor;
+
+					} break;
+					case Variant::RECT2: {
+
+						EditorPropertyRect2 *editor = memnew(EditorPropertyRect2);
+						editor->setup(-100000, 100000, 0.001, true);
+						prop = editor;
+
+					} break;
+					case Variant::VECTOR3: {
+
+						EditorPropertyVector3 *editor = memnew(EditorPropertyVector3);
+						editor->setup(-100000, 100000, 0.001, true);
+						prop = editor;
+
+					} break;
+					case Variant::TRANSFORM2D: {
+
+						EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
+						editor->setup(-100000, 100000, 0.001, true);
+						prop = editor;
+
+					} break;
+					case Variant::PLANE: {
+
+						EditorPropertyPlane *editor = memnew(EditorPropertyPlane);
+						editor->setup(-100000, 100000, 0.001, true);
+						prop = editor;
+
+					} break;
+					case Variant::QUAT: {
+
+						EditorPropertyQuat *editor = memnew(EditorPropertyQuat);
+						editor->setup(-100000, 100000, 0.001, true);
+						prop = editor;
+
+					} break;
+					case Variant::AABB: {
+
+						EditorPropertyAABB *editor = memnew(EditorPropertyAABB);
+						editor->setup(-100000, 100000, 0.001, true);
+						prop = editor;
+
+					} break;
+					case Variant::BASIS: {
+						EditorPropertyBasis *editor = memnew(EditorPropertyBasis);
+						editor->setup(-100000, 100000, 0.001, true);
+						prop = editor;
+
+					} break;
+					case Variant::TRANSFORM: {
+						EditorPropertyTransform *editor = memnew(EditorPropertyTransform);
+						editor->setup(-100000, 100000, 0.001, true);
+						prop = editor;
+
+					} break;
+
+					// misc types
+					case Variant::COLOR: {
+						prop = memnew(EditorPropertyColor);
+
+					} break;
+					case Variant::NODE_PATH: {
+						prop = memnew(EditorPropertyNodePath);
+
+					} break;
+					case Variant::_RID: {
+						prop = memnew(EditorPropertyRID);
+
+					} break;
+					case Variant::OBJECT: {
+
+						if (Object::cast_to<EncodedObjectAsID>(value)) {
+
+							EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+							editor->setup("Object");
+							prop = editor;
+
+						} else {
+
+							EditorPropertyResource *editor = memnew(EditorPropertyResource);
+							editor->setup("Resource");
+							prop = editor;
+						}
+
+					} break;
+					case Variant::DICTIONARY: {
+						prop = memnew(EditorPropertyDictionary);
+
+					} break;
+					case Variant::ARRAY: {
+						EditorPropertyArray *editor = memnew(EditorPropertyArray);
+						editor->setup(Variant::ARRAY);
+						prop = editor;
+					} break;
+
+					// arrays
+					case Variant::POOL_BYTE_ARRAY: {
+
+						EditorPropertyArray *editor = memnew(EditorPropertyArray);
+						editor->setup(Variant::POOL_BYTE_ARRAY);
+						prop = editor;
+					} break;
+					case Variant::POOL_INT_ARRAY: {
+
+						EditorPropertyArray *editor = memnew(EditorPropertyArray);
+						editor->setup(Variant::POOL_INT_ARRAY);
+						prop = editor;
+					} break;
+					case Variant::POOL_REAL_ARRAY: {
+
+						EditorPropertyArray *editor = memnew(EditorPropertyArray);
+						editor->setup(Variant::POOL_REAL_ARRAY);
+						prop = editor;
+					} break;
+					case Variant::POOL_STRING_ARRAY: {
+
+						EditorPropertyArray *editor = memnew(EditorPropertyArray);
+						editor->setup(Variant::POOL_STRING_ARRAY);
+						prop = editor;
+					} break;
+					case Variant::POOL_VECTOR2_ARRAY: {
+
+						EditorPropertyArray *editor = memnew(EditorPropertyArray);
+						editor->setup(Variant::POOL_VECTOR2_ARRAY);
+						prop = editor;
+					} break;
+					case Variant::POOL_VECTOR3_ARRAY: {
+
+						EditorPropertyArray *editor = memnew(EditorPropertyArray);
+						editor->setup(Variant::POOL_VECTOR3_ARRAY);
+						prop = editor;
+					} break;
+					case Variant::POOL_COLOR_ARRAY: {
+
+						EditorPropertyArray *editor = memnew(EditorPropertyArray);
+						editor->setup(Variant::POOL_COLOR_ARRAY);
+						prop = editor;
+					} break;
+					default: {
 					}
-
-				} break;
-				case Variant::DICTIONARY: {
-					prop = memnew(EditorPropertyDictionary);
-
-				} break;
-				case Variant::ARRAY: {
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::ARRAY);
-					prop = editor;
-				} break;
-
-				// arrays
-				case Variant::POOL_BYTE_ARRAY: {
-
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_BYTE_ARRAY);
-					prop = editor;
-				} break;
-				case Variant::POOL_INT_ARRAY: {
-
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_INT_ARRAY);
-					prop = editor;
-				} break;
-				case Variant::POOL_REAL_ARRAY: {
-
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_REAL_ARRAY);
-					prop = editor;
-				} break;
-				case Variant::POOL_STRING_ARRAY: {
-
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_STRING_ARRAY);
-					prop = editor;
-				} break;
-				case Variant::POOL_VECTOR2_ARRAY: {
-
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_VECTOR2_ARRAY);
-					prop = editor;
-				} break;
-				case Variant::POOL_VECTOR3_ARRAY: {
-
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_VECTOR3_ARRAY);
-					prop = editor;
-				} break;
-				case Variant::POOL_COLOR_ARRAY: {
-
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_COLOR_ARRAY);
-					prop = editor;
-				} break;
-				default: {
 				}
-			}
 
-			if (i == amount) {
-				PanelContainer *pc = memnew(PanelContainer);
-				vbox->add_child(pc);
-				Ref<StyleBoxFlat> flat;
-				flat.instance();
-				for (int j = 0; j < 4; j++) {
-					flat->set_default_margin(Margin(j), 2 * EDSCALE);
+				if (i == amount) {
+					PanelContainer *pc = memnew(PanelContainer);
+					vbox->add_child(pc);
+					Ref<StyleBoxFlat> flat;
+					flat.instance();
+					for (int j = 0; j < 4; j++) {
+						flat->set_default_margin(Margin(j), 2 * EDSCALE);
+					}
+					flat->set_bg_color(get_color("prop_subsection", "Editor"));
+
+					pc->add_style_override("panel", flat);
+					add_vbox = memnew(VBoxContainer);
+					pc->add_child(add_vbox);
 				}
-				flat->set_bg_color(get_color("prop_subsection", "Editor"));
+				prop->set_object_and_property(object.ptr(), prop_name);
+				int change_index = 0;
 
-				pc->add_style_override("panel", flat);
-				add_vbox = memnew(VBoxContainer);
-				pc->add_child(add_vbox);
-			}
-			prop->set_object_and_property(object.ptr(), prop_name);
-			int change_index = 0;
+				if (i < amount) {
+					String cs = key.get_construct_string();
+					prop->set_label(key.get_construct_string());
+					prop->set_tooltip(cs);
+					change_index = i + offset;
+				} else if (i == amount) {
+					prop->set_label(TTR("New Key:"));
+					change_index = -1;
+				} else if (i == amount + 1) {
+					prop->set_label(TTR("New Value:"));
+					change_index = -2;
+				}
 
-			if (i < amount) {
-				String cs = key.get_construct_string();
-				prop->set_label(key.get_construct_string());
-				prop->set_tooltip(cs);
-				change_index = i + offset;
-			} else if (i == amount) {
-				prop->set_label(TTR("New Key:"));
-				change_index = -1;
-			} else if (i == amount + 1) {
-				prop->set_label(TTR("New Value:"));
-				change_index = -2;
-			}
+				prop->set_selectable(false);
+				prop->connect("property_changed", this, "_property_changed");
+				prop->connect("object_id_selected", this, "_object_id_selected");
 
-			prop->set_selectable(false);
-			prop->connect("property_changed", this, "_property_changed");
-			prop->connect("object_id_selected", this, "_object_id_selected");
+				HBoxContainer *hb = memnew(HBoxContainer);
+				if (add_vbox) {
+					add_vbox->add_child(hb);
+				} else {
+					vbox->add_child(hb);
+				}
+				hb->add_child(prop);
+				prop->set_h_size_flags(SIZE_EXPAND_FILL);
+				Button *edit = memnew(Button);
+				edit->set_icon(get_icon("Edit", "EditorIcons"));
+				hb->add_child(edit);
+				edit->connect("pressed", this, "_change_type", varray(edit, change_index));
 
-			HBoxContainer *hb = memnew(HBoxContainer);
-			if (add_vbox) {
-				add_vbox->add_child(hb);
-			} else {
-				vbox->add_child(hb);
-			}
-			hb->add_child(prop);
-			prop->set_h_size_flags(SIZE_EXPAND_FILL);
-			Button *edit = memnew(Button);
-			edit->set_icon(get_icon("Edit", "EditorIcons"));
-			hb->add_child(edit);
-			edit->connect("pressed", this, "_change_type", varray(edit, change_index));
+				prop->update_property();
 
-			prop->update_property();
-
-			if (i == amount + 1) {
-				Button *butt_add_item = memnew(Button);
-				butt_add_item->set_text(TTR("Add Key/Value Pair"));
-				butt_add_item->connect("pressed", this, "_add_key_value");
-				add_vbox->add_child(butt_add_item);
+				if (i == amount + 1) {
+					Button *butt_add_item = memnew(Button);
+					butt_add_item->set_text(TTR("Add Key/Value Pair"));
+					butt_add_item->connect("pressed", this, "_add_key_value");
+					add_vbox->add_child(butt_add_item);
+				}
 			}
 		}
-
 		updating = false;
 
 	} else {
 		if (vbox) {
+			// Queue children for deletion, deleting immediately might cause errors.
+			for (int i = 1; i < vbox->get_child_count(); i++) {
+				vbox->get_child(i)->queue_delete();
+			}
 			set_bottom_editor(NULL);
 			memdelete(vbox);
 			vbox = NULL;
