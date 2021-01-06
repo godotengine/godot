@@ -131,6 +131,7 @@
 			<argument index="0" name="right" type="bool">
 			</argument>
 			<description>
+				Returns [code]true[/code] if two bools are different, i.e. one is [code]true[/code] and the other is [code]false[/code].
 			</description>
 		</method>
 		<method name="operator &lt;" qualifiers="operator">
@@ -139,6 +140,7 @@
 			<argument index="0" name="right" type="bool">
 			</argument>
 			<description>
+				Returns [code]true[/code] if left operand is [code]false[/code] and right operand is [code]true[/code].
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
@@ -147,6 +149,7 @@
 			<argument index="0" name="right" type="bool">
 			</argument>
 			<description>
+				Returns [code]true[/code] if two bools are equal, i.e. both are [code]true[/code] or both are [code]false[/code].
 			</description>
 		</method>
 		<method name="operator &gt;" qualifiers="operator">
@@ -155,6 +158,7 @@
 			<argument index="0" name="right" type="bool">
 			</argument>
 			<description>
+				Returns [code]true[/code] if left operand is [code]true[/code] and right operand is [code]false[/code].
 			</description>
 		</method>
 	</methods>

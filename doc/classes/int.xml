@@ -79,6 +79,7 @@
 			<argument index="0" name="right" type="float">
 			</argument>
 			<description>
+				Returns [code]true[/code] if operands are different from each other.
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">
@@ -87,6 +88,7 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if operands are different from each other.
 			</description>
 		</method>
 		<method name="operator %" qualifiers="operator">
@@ -95,6 +97,12 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Returns the result of the modulo operator for two integers, i.e. the remainder after dividing both numbers.
+				[codeblock]
+				print(5 % 2) # 1
+				print(12 % 4) # 0
+				print(12 % 2) # 2
+				[/codeblock]
 			</description>
 		</method>
 		<method name="operator &amp;" qualifiers="operator">
@@ -103,6 +111,18 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Returns the result of bitwise [code]AND[/code] operation for two integers.
+				[codeblock]
+				print(3 &amp; 1) # 1
+				print(11 &amp; 3) # 3
+				[/codeblock]
+				It's useful to retrieve binary flags from a variable.
+				[codeblock]
+				var flags = 5
+				# Do something if the first bit is enabled.
+				if flags &amp; 1:
+				    do_stuff()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
@@ -111,6 +131,7 @@
 			<argument index="0" name="right" type="float">
 			</argument>
 			<description>
+				Multiplies an [int] and a [float]. The result is a [float].
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
@@ -119,6 +140,7 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Multiplies two [int]s.
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
@@ -127,6 +149,10 @@
 			<argument index="0" name="right" type="Vector2">
 			</argument>
 			<description>
+				Multiplies each component of the vector by the given integer.
+				[codeblock]
+				print(2 * Vector2(1, 1)) # Vector2(2, 2)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
@@ -135,6 +161,7 @@
 			<argument index="0" name="right" type="Vector2i">
 			</argument>
 			<description>
+				Multiplies each component of the integer vector by the given integer.
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
@@ -143,6 +170,7 @@
 			<argument index="0" name="right" type="Vector3">
 			</argument>
 			<description>
+				Multiplies each component of the vector by the given integer.
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
@@ -151,6 +179,7 @@
 			<argument index="0" name="right" type="Vector3i">
 			</argument>
 			<description>
+				Multiplies each component of the integer vector by the given integer.
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
@@ -159,6 +188,7 @@
 			<argument index="0" name="right" type="Quat">
 			</argument>
 			<description>
+				Multiplies each component of the quaternion by the given integer.
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
@@ -167,12 +197,20 @@
 			<argument index="0" name="right" type="Color">
 			</argument>
 			<description>
+				Multiplies each component of the color by the given integer.
+				[codeblock]
+				print(2 * Color(0.5, 0.5, 0.5)) # Color(1, 1, 1)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="operator +" qualifiers="operator">
 			<return type="int">
 			</return>
 			<description>
+				Unary plus operator. Doesn't have any effect.
+				[codeblock]
+				var a = +1 # a is 1.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="operator +" qualifiers="operator">
@@ -181,6 +219,7 @@
 			<argument index="0" name="right" type="float">
 			</argument>
 			<description>
+				Adds an [int] to a [float]. The result is a [float].
 			</description>
 		</method>
 		<method name="operator +" qualifiers="operator">
@@ -189,12 +228,18 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Adds two integers.
 			</description>
 		</method>
 		<method name="operator -" qualifiers="operator">
 			<return type="int">
 			</return>
 			<description>
+				Unary minus operator. Negates the number.
+				[codeblock]
+				var a = -1 # a is -1.
+				print(-a) # 1
+				[/codeblock]
 			</description>
 		</method>
 		<method name="operator -" qualifiers="operator">
@@ -203,6 +248,7 @@
 			<argument index="0" name="right" type="float">
 			</argument>
 			<description>
+				Subtracts a [float] from an [int]. The result is a [float].
 			</description>
 		</method>
 		<method name="operator -" qualifiers="operator">
@@ -211,6 +257,7 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Subtracts two integers.
 			</description>
 		</method>
 		<method name="operator /" qualifiers="operator">
@@ -219,6 +266,10 @@
 			<argument index="0" name="right" type="float">
 			</argument>
 			<description>
+				Divides an [int] by a [float]. The result is a [float].
+				[codeblock]
+				print(10 / 3.0) # 3.333...
+				[/codeblock]
 			</description>
 		</method>
 		<method name="operator /" qualifiers="operator">
@@ -227,6 +278,11 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Divides two integers. The decimal part of the result is discarded (truncated).
+				[codeblock]
+				print(10 / 2) # 5
+				print(10 / 3) # 3
+				[/codeblock]
 			</description>
 		</method>
 		<method name="operator &lt;" qualifiers="operator">
@@ -235,6 +291,7 @@
 			<argument index="0" name="right" type="float">
 			</argument>
 			<description>
+				Returns [code]true[/code] if this [int] is less than the given [float].
 			</description>
 		</method>
 		<method name="operator &lt;" qualifiers="operator">
@@ -243,6 +300,7 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] the left integer is less than the right one.
 			</description>
 		</method>
 		<method name="operator &lt;&lt;" qualifiers="operator">
@@ -251,6 +309,11 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Performs bitwise shift left operation on the integer. Effectively the same as multiplying by a power of 2.
+				[codeblock]
+				print(10 &lt;&lt; 1) # 20
+				print(10 &lt;&lt; 4) # 160
+				[/codeblock]
 			</description>
 		</method>
 		<method name="operator &lt;=" qualifiers="operator">
@@ -259,6 +322,7 @@
 			<argument index="0" name="right" type="float">
 			</argument>
 			<description>
+				Returns [code]true[/code] if this [int] is less than or equal to the given [float].
 			</description>
 		</method>
 		<method name="operator &lt;=" qualifiers="operator">
@@ -267,6 +331,7 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] the left integer is less than or equal to the right one.
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
@@ -275,6 +340,7 @@
 			<argument index="0" name="right" type="float">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the integer is equal to the given [float].
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
@@ -283,6 +349,7 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if both integers are equal.
 			</description>
 		</method>
 		<method name="operator &gt;" qualifiers="operator">
@@ -291,6 +358,7 @@
 			<argument index="0" name="right" type="float">
 			</argument>
 			<description>
+				Returns [code]true[/code] if this [int] is greater than the given [float].
 			</description>
 		</method>
 		<method name="operator &gt;" qualifiers="operator">
@@ -299,6 +367,7 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] the left integer is greater than the right one.
 			</description>
 		</method>
 		<method name="operator &gt;=" qualifiers="operator">
@@ -307,6 +376,7 @@
 			<argument index="0" name="right" type="float">
 			</argument>
 			<description>
+				Returns [code]true[/code] if this [int] is greater than or equal to the given [float].
 			</description>
 		</method>
 		<method name="operator &gt;=" qualifiers="operator">
@@ -315,6 +385,7 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] the left integer is greater than or equal to the right one.
 			</description>
 		</method>
 		<method name="operator &gt;&gt;" qualifiers="operator">
@@ -323,6 +394,11 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Performs bitwise shift right operation on the integer. Effectively the same as dividing by a power of 2.
+				[codeblock]
+				print(10 &gt;&gt; 1) # 5
+				print(10 &gt;&gt; 2) # 2
+				[/codeblock]
 			</description>
 		</method>
 		<method name="operator ^" qualifiers="operator">
@@ -331,6 +407,11 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Returns the result of bitwise [code]XOR[/code] operation for two integers.
+				[codeblock]
+				print(5 ^ 1) # 4
+				print(4 ^ 7) # 3
+				[/codeblock]
 			</description>
 		</method>
 		<method name="operator |" qualifiers="operator">
@@ -339,12 +420,29 @@
 			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
+				Returns the result of bitwise [code]OR[/code] operation for two integers.
+				[codeblock]
+				print(2 | 4) # 6
+				print(1 | 3) # 3
+				[/codeblock]
+				It's useful to store binary flags in a variable.
+				[codeblock]
+				var flags = 0
+				# Turn first and third bit on.
+				flags |= 1
+				flags |= 4
+				[/codeblock]
 			</description>
 		</method>
 		<method name="operator ~" qualifiers="operator">
 			<return type="int">
 			</return>
 			<description>
+				Returns the result of bitwise [code]NOT[/code] operation for the integer. It's effectively equal to [code]-int + 1[/code].
+				[codeblock]
+				print(~4) # -3
+				print(~7) # -6
+				[/codeblock]
 			</description>
 		</method>
 	</methods>
