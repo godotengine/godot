@@ -127,18 +127,6 @@ void GDAPI godot_free(void *p_ptr) {
 	memfree(p_ptr);
 }
 
-void GDAPI godot_print_error(const char *p_description, const char *p_function, const char *p_file, int p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_ERROR);
-}
-
-void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_WARNING);
-}
-
-void GDAPI godot_print(const godot_string *p_message) {
-	print_line(*(String *)p_message);
-}
-
 void _gdnative_report_version_mismatch(const godot_object *p_library, const char *p_ext, godot_gdnative_api_version p_want, godot_gdnative_api_version p_have) {
 	String message = "Error loading GDNative file ";
 	GDNativeLibrary *library = (GDNativeLibrary *)p_library;

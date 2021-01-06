@@ -266,13 +266,6 @@ void GDAPI *godot_alloc(int p_bytes);
 void GDAPI *godot_realloc(void *p_ptr, int p_bytes);
 void GDAPI godot_free(void *p_ptr);
 
-//print using Godot's error handler list
-void GDAPI godot_print_error(const char *p_description, const char *p_function, const char *p_file, int p_line);
-void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line);
-void GDAPI godot_print(const godot_string *p_message);
-
-// GDNATIVE CORE 1.0.2?
-
 //tags used for safe dynamic casting
 void GDAPI *godot_get_class_tag(const godot_string_name *p_class);
 godot_object GDAPI *godot_object_cast_to(const godot_object *p_object, void *p_class_tag);
