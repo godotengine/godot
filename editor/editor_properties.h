@@ -61,8 +61,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_string_name(bool p_enabled);
 	virtual void update_property() override;
+	virtual void restore_state(EditorProperty *p_property) override;
+	void set_string_name(bool p_enabled);
 	void set_placeholder(const String &p_string);
 	EditorPropertyText();
 };
@@ -85,6 +86,7 @@ protected:
 
 public:
 	virtual void update_property() override;
+	virtual void restore_state(EditorProperty *p_property) override;
 	EditorPropertyMultilineText();
 };
 

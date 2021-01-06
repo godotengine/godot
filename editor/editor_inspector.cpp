@@ -1555,14 +1555,19 @@ void EditorInspector::update_tree() {
 	//to update properly if all is refreshed
 	StringName current_selected = property_selected;
 	int current_focusable = -1;
+	EditorProperty *current_property = nullptr;
 
-	if (property_focusable != -1) {
+	if (object && (property_focusable != -1)) {
 		//check focusable is really focusable
 		bool restore_focus = false;
 		Control *focused = get_focus_owner();
 		if (focused) {
 			Node *parent = focused->get_parent();
 			while (parent) {
+				EditorProperty *editor_property = Object::cast_to<EditorProperty>(parent);
+				if (editor_property) {
+					current_property = editor_property;
+				}
 				EditorInspector *inspector = Object::cast_to<EditorInspector>(parent);
 				if (inspector) {
 					restore_focus = inspector == this; //may be owned by another inspector
@@ -1574,6 +1579,14 @@ void EditorInspector::update_tree() {
 
 		if (restore_focus) {
 			current_focusable = property_focusable;
+		}
+
+		if (current_property) {
+			// Remove from tree to keep a reference long enough to restore the previous property state.
+			Node *parent = current_property->get_parent();
+			if (parent) {
+				parent->remove_child(current_property);
+			}
 		}
 	}
 
@@ -1985,6 +1998,9 @@ void EditorInspector::update_tree() {
 
 					if (current_selected && ep->property == current_selected) {
 						ep->select(current_focusable);
+						if (current_property) {
+							ep->restore_state(current_property);
+						}
 					}
 				}
 			}
@@ -1999,6 +2015,10 @@ void EditorInspector::update_tree() {
 		Ref<EditorInspectorPlugin> ped = E->get();
 		ped->parse_end();
 		_parse_added_editors(main_vbox, ped);
+	}
+
+	if (current_property) {
+		memdelete(current_property);
 	}
 
 	//see if this property exists and should be kept

@@ -77,9 +77,19 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 void EditorPropertyText::update_property() {
 	String s = get_edited_object()->get(get_edited_property());
 	updating = true;
-	text->set_text(s);
+	if (text->get_text() != s) {
+		text->set_text(s);
+	}
 	text->set_editable(!is_read_only());
 	updating = false;
+}
+
+void EditorPropertyText::restore_state(EditorProperty *p_property) {
+	EditorPropertyText *text_property = Object::cast_to<EditorPropertyText>(p_property);
+	ERR_FAIL_NULL(text_property);
+
+	text->set_text(text_property->text->get_text());
+	text->set_cursor_position(text_property->text->get_cursor_position());
 }
 
 void EditorPropertyText::set_string_name(bool p_enabled) {
@@ -108,11 +118,11 @@ EditorPropertyText::EditorPropertyText() {
 
 void EditorPropertyMultilineText::_big_text_changed() {
 	text->set_text(big_text->get_text());
-	emit_changed(get_edited_property(), big_text->get_text(), "", true);
+	emit_changed(get_edited_property(), big_text->get_text(), "", false);
 }
 
 void EditorPropertyMultilineText::_text_changed() {
-	emit_changed(get_edited_property(), text->get_text(), "", true);
+	emit_changed(get_edited_property(), text->get_text(), "", false);
 }
 
 void EditorPropertyMultilineText::_open_big_text() {
@@ -133,9 +143,26 @@ void EditorPropertyMultilineText::_open_big_text() {
 
 void EditorPropertyMultilineText::update_property() {
 	String t = get_edited_object()->get(get_edited_property());
-	text->set_text(t);
-	if (big_text && big_text->is_visible_in_tree()) {
-		big_text->set_text(t);
+	if (text->get_text() != t) {
+		text->set_text(t);
+		if (big_text && big_text->is_visible_in_tree()) {
+			big_text->set_text(t);
+		}
+	}
+}
+
+void EditorPropertyMultilineText::restore_state(EditorProperty *p_property) {
+	EditorPropertyMultilineText *text_property = Object::cast_to<EditorPropertyMultilineText>(p_property);
+	ERR_FAIL_NULL(text_property);
+
+	text->set_text(text_property->text->get_text());
+	text->cursor_set_line(text_property->text->cursor_get_line());
+	text->cursor_set_column(text_property->text->cursor_get_column());
+
+	if (text_property->big_text && text_property->big_text->is_visible_in_tree()) {
+		_open_big_text();
+		big_text->cursor_set_line(text_property->big_text->cursor_get_line());
+		big_text->cursor_set_column(text_property->big_text->cursor_get_column());
 	}
 }
 

@@ -121,6 +121,8 @@ public:
 	virtual void update_property();
 	void update_reload_status();
 
+	virtual void restore_state(EditorProperty *p_property) {}
+
 	virtual bool use_keying_next() const;
 
 	void set_checkable(bool p_checkable);
