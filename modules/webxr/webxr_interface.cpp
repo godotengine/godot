@@ -42,7 +42,7 @@ void WebXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_reference_space_type"), &WebXRInterface::get_reference_space_type);
 	ClassDB::bind_method(D_METHOD("set_requested_reference_space_types", "requested_reference_space_types"), &WebXRInterface::set_requested_reference_space_types);
 	ClassDB::bind_method(D_METHOD("get_requested_reference_space_types"), &WebXRInterface::get_requested_reference_space_types);
-	ClassDB::bind_method(D_METHOD("get_controller"), &WebXRInterface::get_controller);
+	ClassDB::bind_method(D_METHOD("get_controller", "controller_id"), &WebXRInterface::get_controller);
 	ClassDB::bind_method(D_METHOD("get_visibility_state"), &WebXRInterface::get_visibility_state);
 	ClassDB::bind_method(D_METHOD("get_bounds_geometry"), &WebXRInterface::get_bounds_geometry);
 
