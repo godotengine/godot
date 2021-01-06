@@ -222,7 +222,6 @@ void EditorFileDialog::update_dir() {
 void EditorFileDialog::_dir_entered(String p_dir) {
 
 	dir_access->change_dir(p_dir);
-	file->set_text("");
 	invalidate();
 	update_dir();
 	_push_history();
@@ -244,6 +243,14 @@ void EditorFileDialog::_save_confirm_pressed() {
 void EditorFileDialog::_post_popup() {
 
 	ConfirmationDialog::_post_popup();
+
+	// Check if the current path doesn't exist and correct it.
+	String current = dir_access->get_current_dir();
+	while (!dir_access->dir_exists(current)) {
+		current = current.get_base_dir();
+	}
+	set_current_dir(current);
+
 	if (invalidated) {
 		update_file_list();
 		invalidated = false;
@@ -279,11 +286,17 @@ void EditorFileDialog::_post_popup() {
 			} else {
 				name = name.get_file() + "/";
 			}
-
-			recent->add_item(name, folder);
-			recent->set_item_metadata(recent->get_item_count() - 1, recentd[i]);
-			recent->set_item_icon_modulate(recent->get_item_count() - 1, folder_color);
+			bool exists = dir_access->dir_exists(recentd[i]);
+			if (!exists) {
+				// Remove invalid directory from the list of Recent directories.
+				recentd.remove(i--);
+			} else {
+				recent->add_item(name, folder);
+				recent->set_item_metadata(recent->get_item_count() - 1, recentd[i]);
+				recent->set_item_icon_modulate(recent->get_item_count() - 1, folder_color);
+			}
 		}
+		EditorSettings::get_singleton()->set_recent_dirs(recentd);
 
 		local_history.clear();
 		local_history_pos = -1;
@@ -441,10 +454,12 @@ void EditorFileDialog::_action_pressed() {
 			}
 		}
 
+		// Add first extension of filter if no valid extension is found.
 		if (!valid) {
-
-			exterr->popup_centered_minsize(Size2(250, 80) * EDSCALE);
-			return;
+			int idx = filter->get_selected();
+			String flt = filters[idx].get_slice(";", 0);
+			String ext = flt.get_slice(",", 0).strip_edges().get_extension();
+			f += "." + ext;
 		}
 
 		if (dir_access->file_exists(f) && !disable_overwrite_warning) {
@@ -1734,10 +1749,6 @@ EditorFileDialog::EditorFileDialog() {
 	mkdirerr = memnew(AcceptDialog);
 	mkdirerr->set_text(TTR("Could not create folder."));
 	add_child(mkdirerr);
-
-	exterr = memnew(AcceptDialog);
-	exterr->set_text(TTR("Must use a valid extension."));
-	add_child(exterr);
 
 	update_filters();
 	update_dir();

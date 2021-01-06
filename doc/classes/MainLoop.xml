@@ -113,7 +113,7 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
-				Called each physics frame with the time since the last physics frame as argument (in seconds). Equivalent to [method Node._physics_process].
+				Called each physics frame with the time since the last physics frame as argument ([code]delta[/code], in seconds). Equivalent to [method Node._physics_process].
 				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
 			</description>
 		</method>

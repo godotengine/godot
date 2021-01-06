@@ -15,11 +15,24 @@
 		<link>https://docs.godotengine.org/en/3.2/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_current_length" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_current_node" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Returns the currently playing animation state.
+			</description>
+		</method>
+		<method name="get_current_play_position" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the playback position within the current animation state.
 			</description>
 		</method>
 		<method name="get_travel_path" qualifiers="const">

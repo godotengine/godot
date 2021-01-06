@@ -248,14 +248,6 @@
 		<member name="application/run/disable_stdout" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], disables printing to standard output in an exported build.
 		</member>
-		<member name="application/run/flush_stdout_on_print" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], flushes the standard output stream every time a line is printed. This affects both terminal logging and file logging.
-			When running a project, this setting must be enabled if you want logs to be collected by service managers such as systemd/journalctl. This setting is disabled by default on release builds, since flushing on every printed line will negatively affect performance if lots of lines are printed in a rapid succession. Also, if this setting is enabled, logged files will still be written successfully if the application crashes or is otherwise killed by the user (without being closed "normally").
-			[b]Note:[/b] Regardless of this setting, the standard error stream ([code]stderr[/code]) is always flushed when a line is printed to it.
-		</member>
-		<member name="application/run/flush_stdout_on_print.debug" type="bool" setter="" getter="" default="true">
-			Debug build override for [member application/run/flush_stdout_on_print], as performance is less important during debugging.
-		</member>
 		<member name="application/run/frame_delay_msec" type="int" setter="" getter="" default="0">
 			Forces a delay between frames in the main loop (in milliseconds). This may be useful if you plan to disable vertical synchronization.
 		</member>
@@ -850,6 +842,7 @@
 			If [code]true[/code], logs all output to files.
 		</member>
 		<member name="logging/file_logging/enable_file_logging.pc" type="bool" setter="" getter="" default="true">
+			Desktop override for [member logging/file_logging/enable_file_logging], as log files are not readily accessible on mobile/Web platforms.
 		</member>
 		<member name="logging/file_logging/log_path" type="String" setter="" getter="" default="&quot;user://logs/godot.log&quot;">
 			Path to logs within the project. Using an [code]user://[/code] path is recommended.
@@ -1104,6 +1097,8 @@
 		<member name="rendering/quality/2d/ninepatch_mode" type="int" setter="" getter="" default="0">
 			Choose between default mode where corner scalings are preserved matching the artwork, and scaling mode.
 			Not available in GLES3 when [member rendering/batching/options/use_batching] is off.
+		</member>
+		<member name="rendering/quality/2d/use_camera_snap" type="bool" setter="" getter="" default="false">
 		</member>
 		<member name="rendering/quality/2d/use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="" default="false">
 			Some NVIDIA GPU drivers have a bug which produces flickering issues for the [code]draw_rect[/code] method, especially as used in [TileMap]. Refer to [url=https://github.com/godotengine/godot/issues/9913]GitHub issue 9913[/url] for details.

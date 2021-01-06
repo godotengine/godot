@@ -3766,7 +3766,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 
-		if (!scancode_handled && (!k->get_command() || (k->get_command() && k->get_alt()))) { // For German keyboards.
+		if (!scancode_handled && !k->get_command()) { // For German keyboards.
 
 			if (k->get_unicode() >= 32) {
 
