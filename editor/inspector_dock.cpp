@@ -269,14 +269,13 @@ void InspectorDock::_select_history(int p_idx) const {
 }
 
 void InspectorDock::_resource_created() const {
-	Object *c = new_resource_dialog->instance_selected();
+	Variant c = new_resource_dialog->instance_selected();
 
 	ERR_FAIL_COND(!c);
 	Resource *r = Object::cast_to<Resource>(c);
 	ERR_FAIL_COND(!r);
 
-	REF res(r);
-	editor->push_item(c);
+	editor->push_item(r);
 }
 
 void InspectorDock::_resource_selected(const RES &p_res, const String &p_property) const {
