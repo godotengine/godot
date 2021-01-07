@@ -468,24 +468,25 @@ void EditorData::add_custom_type(const String &p_type, const String &p_inherits,
 	custom_types[p_inherits].push_back(ct);
 }
 
-Object *EditorData::instance_custom_type(const String &p_type, const String &p_inherits) {
+Variant EditorData::instance_custom_type(const String &p_type, const String &p_inherits) {
 	if (get_custom_types().has(p_inherits)) {
 		for (int i = 0; i < get_custom_types()[p_inherits].size(); i++) {
 			if (get_custom_types()[p_inherits][i].name == p_type) {
 				Ref<Script> script = get_custom_types()[p_inherits][i].script;
 
-				Object *ob = ClassDB::instance(p_inherits);
-				ERR_FAIL_COND_V(!ob, nullptr);
-				if (ob->is_class("Node")) {
-					ob->call("set_name", p_type);
+				Variant ob = ClassDB::instance(p_inherits);
+				ERR_FAIL_COND_V(!ob, Variant());
+				Node *n = Object::cast_to<Node>(ob);
+				if (n) {
+					n->set_name(p_type);
 				}
-				ob->set_script(script);
+				((Object *)ob)->set_script(script);
 				return ob;
 			}
 		}
 	}
 
-	return nullptr;
+	return Variant();
 }
 
 void EditorData::remove_custom_type(const String &p_type) {
@@ -867,18 +868,18 @@ StringName EditorData::script_class_get_base(const String &p_class) const {
 	return script->get_language()->get_global_class_name(base_script->get_path());
 }
 
-Object *EditorData::script_class_instance(const String &p_class) {
+Variant EditorData::script_class_instance(const String &p_class) {
 	if (ScriptServer::is_global_class(p_class)) {
-		Object *obj = ClassDB::instance(ScriptServer::get_global_class_native_base(p_class));
+		Variant obj = ClassDB::instance(ScriptServer::get_global_class_native_base(p_class));
 		if (obj) {
 			Ref<Script> script = script_class_load_script(p_class);
 			if (script.is_valid()) {
-				obj->set_script(script);
+				((Object *)obj)->set_script(script);
 			}
 			return obj;
 		}
 	}
-	return nullptr;
+	return Variant();
 }
 
 Ref<Script> EditorData::script_class_load_script(const String &p_class) const {
