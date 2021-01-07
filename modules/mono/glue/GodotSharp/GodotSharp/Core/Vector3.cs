@@ -356,6 +356,14 @@ namespace Godot
             v.Normalize();
             return v;
         }
+        
+        public Vector3 normalized {
+            get { 
+                var v = this;
+                v.Normalize();
+                return v;
+            } 
+        }
 
         /// <summary>
         /// Returns the outer product with `b`.
