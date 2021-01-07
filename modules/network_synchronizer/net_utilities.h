@@ -292,6 +292,10 @@ struct NodeData {
 	ObjectID instance_id = ObjectID();
 	NodeData *controlled_by = nullptr;
 
+	/// When `false`, this node is not sync. It's usefult to locally pause sync
+	/// of specific nodes.
+	bool sync_enabled = true;
+
 	bool is_controller = false;
 	LocalVector<NodeData *> controlled_nodes;
 	LocalVector<NodeData *> dependency_nodes;

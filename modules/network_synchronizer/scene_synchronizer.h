@@ -186,6 +186,12 @@ public:
 	void register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify_to = StringName(), NetEventFlag p_flags = NetEventFlag::DEFAULT);
 	void unregister_variable(Node *p_node, StringName p_variable);
 
+	/// Start local node sync.
+	void start_node_sync(Node *p_node);
+	/// Stop local node sync.
+	void stop_node_sync(Node *p_node);
+	bool is_node_sync(const Node *p_node) const;
+
 	/// Returns the variable ID relative to the `Node`.
 	/// This may return `UINT32_MAX` in various cases:
 	/// - The node is not registered.
@@ -257,8 +263,8 @@ private:
 
 	/// This function is slow, but allow to take the node data even if the
 	/// `NetNodeId` is not yet assigned.
-	NetUtility::NodeData *find_node_data(Node *p_node);
-	const NetUtility::NodeData *find_node_data(Node *p_node) const;
+	NetUtility::NodeData *find_node_data(const Node *p_node);
+	const NetUtility::NodeData *find_node_data(const Node *p_node) const;
 
 	/// This function is super fast, but only nodes with a `NetNodeId` assigned
 	/// can be returned.

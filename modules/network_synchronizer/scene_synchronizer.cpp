@@ -65,6 +65,10 @@ void SceneSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unregister_variable", "node", "variable"), &SceneSynchronizer::unregister_variable);
 	ClassDB::bind_method(D_METHOD("get_variable_id", "node", "variable"), &SceneSynchronizer::get_variable_id);
 
+	ClassDB::bind_method(D_METHOD("start_node_sync", "node"), &SceneSynchronizer::start_node_sync);
+	ClassDB::bind_method(D_METHOD("stop_node_sync", "node"), &SceneSynchronizer::stop_node_sync);
+	ClassDB::bind_method(D_METHOD("is_node_sync", "node"), &SceneSynchronizer::is_node_sync);
+
 	ClassDB::bind_method(D_METHOD("set_skip_rewinding", "node", "variable", "skip_rewinding"), &SceneSynchronizer::set_skip_rewinding);
 
 	ClassDB::bind_method(D_METHOD("track_variable_changes", "node", "variable", "object", "method", "flags"), &SceneSynchronizer::track_variable_changes, DEFVAL(NetEventFlag::DEFAULT));
@@ -334,6 +338,35 @@ void SceneSynchronizer::unregister_variable(Node *p_node, StringName p_variable)
 	}
 
 	nd->vars[index].change_listeners.clear();
+}
+
+void SceneSynchronizer::start_node_sync(Node *p_node) {
+	ERR_FAIL_COND(p_node == nullptr);
+
+	NetUtility::NodeData *nd = find_node_data(p_node);
+	ERR_FAIL_COND(nd == nullptr);
+
+	nd->sync_enabled = true;
+}
+
+void SceneSynchronizer::stop_node_sync(Node *p_node) {
+	ERR_FAIL_COND(p_node == nullptr);
+
+	NetUtility::NodeData *nd = find_node_data(p_node);
+	ERR_FAIL_COND(nd == nullptr);
+
+	nd->sync_enabled = false;
+}
+
+bool SceneSynchronizer::is_node_sync(const Node *p_node) const {
+	ERR_FAIL_COND_V(p_node == nullptr, false);
+
+	const NetUtility::NodeData *nd = find_node_data(p_node);
+	if (nd == nullptr) {
+		return false;
+	}
+
+	return nd->sync_enabled;
 }
 
 uint32_t SceneSynchronizer::get_variable_id(Node *p_node, StringName p_variable) {
@@ -1419,7 +1452,7 @@ void SceneSynchronizer::expand_organized_node_data_vector(uint32_t p_size) {
 	memset(organized_node_data.ptr() + from, 0, sizeof(void *) * p_size);
 }
 
-NetUtility::NodeData *SceneSynchronizer::find_node_data(Node *p_node) {
+NetUtility::NodeData *SceneSynchronizer::find_node_data(const Node *p_node) {
 	for (uint32_t i = 0; i < node_data.size(); i += 1) {
 		if (node_data[i] == nullptr) {
 			continue;
@@ -1431,7 +1464,7 @@ NetUtility::NodeData *SceneSynchronizer::find_node_data(Node *p_node) {
 	return nullptr;
 }
 
-const NetUtility::NodeData *SceneSynchronizer::find_node_data(Node *p_node) const {
+const NetUtility::NodeData *SceneSynchronizer::find_node_data(const Node *p_node) const {
 	for (uint32_t i = 0; i < node_data.size(); i += 1) {
 		if (node_data[i] == nullptr) {
 			continue;
@@ -2224,8 +2257,8 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 
 	nodes_to_recover.reserve(server_snapshots.front().node_vars.size());
 	for (uint32_t net_node_id = 0; net_node_id < uint32_t(server_snapshots.front().node_vars.size()); net_node_id += 1) {
-		NetUtility::NodeData* rew_node_data = scene_synchronizer->get_node_data(net_node_id);
-		if (rew_node_data == nullptr) {
+		NetUtility::NodeData *rew_node_data = scene_synchronizer->get_node_data(net_node_id);
+		if (rew_node_data == nullptr || rew_node_data->sync_enabled == false) {
 			continue;
 		}
 
@@ -2311,6 +2344,13 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 				NET_DEBUG_WARN("The node: " + nodes_to_recover[i]->node->get_path() + " was not found on the server snapshot, this is not supposed to happen a lot.");
 				continue;
 			}
+			if (nodes_to_recover[i]->sync_enabled == false) {
+				// Don't sync this node.
+				// This check is also here, because the `recover_controller`
+				// mechanism, may have insert a no sync node.
+				// The check is here because I feel it more clear, here.
+				continue;
+			}
 
 #ifdef DEBUG_ENABLED
 			// The parser make sure to properly initialize the snapshot variable
@@ -2352,12 +2392,19 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 		CRASH_COND(client_snapshots.size() != size_t(remaining_inputs));
 #endif
 
+#ifdef DEBUG_ENABLED
+		// Used to double check all the instants have been processed.
 		bool has_next = false;
+#endif
 		for (int i = 0; i < remaining_inputs; i += 1) {
 			scene_synchronizer->change_events_begin(NetEventFlag::SYNC_RECOVER | NetEventFlag::SYNC_REWIND);
 
 			// Step 1 -- Process the scene nodes.
 			for (uint32_t r = 0; r < nodes_to_recover.size(); r += 1) {
+				if (nodes_to_recover[r]->sync_enabled == false) {
+					// This node is not sync.
+					continue;
+				}
 				nodes_to_recover[r]->process(p_delta);
 #ifdef DEBUG_ENABLED
 				if (nodes_to_recover[r]->functions.size()) {
@@ -2367,13 +2414,20 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 			}
 
 			// Step 2 -- Process the controller.
-			if (recover_controller) {
-				has_next = controller->process_instant(i, p_delta);
+			if (recover_controller && player_controller_node_data->sync_enabled) {
+#ifdef DEBUG_ENABLED
+				has_next =
+#endif
+						controller->process_instant(i, p_delta);
 				NET_DEBUG_PRINT("Rewind, processed controller: " + controller->get_path());
 			}
 
 			// Step 3 -- Pull node changes and Update snapshots.
 			for (uint32_t r = 0; r < nodes_to_recover.size(); r += 1) {
+				if (nodes_to_recover[r]->sync_enabled == false) {
+					// This node is not sync.
+					continue;
+				}
 				// Pull changes
 				scene_synchronizer->pull_node_changes(nodes_to_recover[r]);
 
@@ -2403,6 +2457,11 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 		scene_synchronizer->change_events_begin(NetEventFlag::SYNC_RECOVER);
 		for (uint32_t i = 0; i < postponed_recover.size(); i += 1) {
 			NetUtility::NodeData *rew_node_data = postponed_recover[i].node_data;
+			if (rew_node_data->sync_enabled == false) {
+				// This node sync is disabled.
+				continue;
+			}
+
 			Node *node = rew_node_data->node;
 			const NetUtility::Var *vars_ptr = postponed_recover[i].vars.ptr();
 
@@ -2475,7 +2534,7 @@ void ClientSynchronizer::process_paused_controller_recovery(real_t p_delta) {
 	scene_synchronizer->change_events_begin(NetEventFlag::SYNC_RECOVER);
 	for (uint32_t net_node_id = 0; net_node_id < uint32_t(server_snapshots.front().node_vars.size()); net_node_id += 1) {
 		NetUtility::NodeData *rew_node_data = scene_synchronizer->get_node_data(net_node_id);
-		if (rew_node_data == nullptr) {
+		if (rew_node_data == nullptr || rew_node_data->sync_enabled == false) {
 			continue;
 		}
 
