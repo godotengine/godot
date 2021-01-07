@@ -67,6 +67,7 @@
 			</argument>
 			<description>
 				Returns an array with all the methods of [code]class[/code] or its ancestry if [code]no_inheritance[/code] is [code]false[/code]. Every element of the array is a [Dictionary] with the following keys: [code]args[/code], [code]default_args[/code], [code]flags[/code], [code]id[/code], [code]name[/code], [code]return: (class_name, hint, hint_string, name, type, usage)[/code].
+				[b]Note:[/code] In exported release builds the debug info is not available, so the returned dictionaries will contain only method names.
 			</description>
 		</method>
 		<method name="class_get_property" qualifiers="const">
