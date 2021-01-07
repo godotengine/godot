@@ -370,7 +370,6 @@ struct _RestCallbackData2D {
 	Vector2 best_normal;
 	real_t best_len;
 	Vector2 valid_dir;
-	real_t valid_depth;
 	real_t min_allowed_depth;
 };
 
@@ -378,15 +377,16 @@ static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B,
 
 	_RestCallbackData2D *rd = (_RestCallbackData2D *)p_userdata;
 
-	if (rd->valid_dir != Vector2()) {
-		if (p_point_A.distance_squared_to(p_point_B) > rd->valid_depth * rd->valid_depth)
-			return;
-		if (rd->valid_dir.dot((p_point_A - p_point_B).normalized()) < Math_PI * 0.25)
-			return;
-	}
-
 	Vector2 contact_rel = p_point_B - p_point_A;
 	real_t len = contact_rel.length();
+
+	if (len == 0)
+		return;
+
+	Vector2 normal = contact_rel / len;
+
+	if (rd->valid_dir != Vector2() && rd->valid_dir.dot(normal) > -CMP_EPSILON)
+		return;
 
 	if (len < rd->min_allowed_depth)
 		return;
@@ -396,7 +396,7 @@ static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B,
 
 	rd->best_len = len;
 	rd->best_contact = p_point_B;
-	rd->best_normal = contact_rel / len;
+	rd->best_normal = normal;
 	rd->best_object = rd->object;
 	rd->best_shape = rd->shape;
 	rd->best_local_shape = rd->local_shape;
@@ -431,7 +431,6 @@ bool Physics2DDirectSpaceStateSW::rest_info(RID p_shape, const Transform2D &p_sh
 			continue;
 
 		rcd.valid_dir = Vector2();
-		rcd.valid_depth = 0;
 		rcd.object = col_obj;
 		rcd.shape = shape_idx;
 		rcd.local_shape = 0;
@@ -638,7 +637,7 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 								Vector2 a = sr[k * 2 + 0];
 								Vector2 b = sr[k * 2 + 1];
 
-								recover_motion += (b - a) * 0.4;
+								recover_motion += (b - a) / cbk.amount;
 
 								float depth = a.distance_to(b);
 								if (depth > result.collision_depth) {
@@ -849,7 +848,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 				Vector2 a = sr[i * 2 + 0];
 				Vector2 b = sr[i * 2 + 1];
-				recover_motion += (b - a) * 0.4;
+				recover_motion += (b - a) / cbk.amount;
 			}
 
 			if (recover_motion == Vector2()) {
@@ -1010,7 +1009,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 		best_shape = -1; //no best shape with cast, reset to -1
 	}
 
-	{
+	if (safe < 1) {
 
 		//it collided, let's get the rest info in unsafe advance
 		Transform2D ugt = body_transform;
@@ -1070,12 +1069,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				Transform2D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 
 				if (col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
-
 					rcd.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
-					rcd.valid_depth = 10e20;
 				} else {
 					rcd.valid_dir = Vector2();
-					rcd.valid_depth = 0;
 				}
 
 				rcd.object = col_obj;
