@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 #include "servers/audio_server.h"
 
 class OS_OSX : public OS_Unix {
-	virtual void delete_main_loop();
+	virtual void delete_main_loop() override;
 
 	bool force_quit;
 
@@ -61,45 +61,45 @@ public:
 	String open_with_filename;
 
 protected:
-	virtual void initialize_core();
-	virtual void initialize();
-	virtual void finalize();
+	virtual void initialize_core() override;
+	virtual void initialize() override;
+	virtual void finalize() override;
 
-	virtual void initialize_joypads();
+	virtual void initialize_joypads() override;
 
-	virtual void set_main_loop(MainLoop *p_main_loop);
+	virtual void set_main_loop(MainLoop *p_main_loop) override;
 
 public:
-	virtual String get_name() const;
+	virtual String get_name() const override;
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
 
-	virtual MainLoop *get_main_loop() const;
+	virtual MainLoop *get_main_loop() const override;
 
-	virtual String get_config_path() const;
-	virtual String get_data_path() const;
-	virtual String get_cache_path() const;
-	virtual String get_bundle_resource_dir() const;
-	virtual String get_godot_dir_name() const;
+	virtual String get_config_path() const override;
+	virtual String get_data_path() const override;
+	virtual String get_cache_path() const override;
+	virtual String get_bundle_resource_dir() const override;
+	virtual String get_godot_dir_name() const override;
 
-	virtual String get_system_dir(SystemDir p_dir) const;
+	virtual String get_system_dir(SystemDir p_dir) const override;
 
-	Error shell_open(String p_uri);
+	Error shell_open(String p_uri) override;
 
-	String get_locale() const;
+	String get_locale() const override;
 
-	virtual String get_executable_path() const;
+	virtual String get_executable_path() const override;
 
-	virtual String get_unique_id() const; //++
+	virtual String get_unique_id() const override; //++
 
-	virtual bool _check_internal_feature_support(const String &p_feature);
+	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
 	void run();
 
-	void disable_crash_handler();
-	bool is_disable_crash_handler() const;
+	virtual void disable_crash_handler() override;
+	virtual bool is_disable_crash_handler() const override;
 
-	virtual Error move_to_trash(const String &p_path);
+	virtual Error move_to_trash(const String &p_path) override;
 
 	OS_OSX();
 };

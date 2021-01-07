@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,12 +41,10 @@ class GridMapEditor : public VBoxContainer {
 	GDCLASS(GridMapEditor, VBoxContainer);
 
 	enum {
-
 		GRID_CURSOR_SIZE = 50
 	};
 
 	enum InputAction {
-
 		INPUT_NONE,
 		INPUT_PAINT,
 		INPUT_ERASE,
@@ -56,7 +54,6 @@ class GridMapEditor : public VBoxContainer {
 	};
 
 	enum ClipMode {
-
 		CLIP_DISABLED,
 		CLIP_ABOVE,
 		CLIP_BELOW
@@ -93,7 +90,7 @@ class GridMapEditor : public VBoxContainer {
 
 	List<SetItem> set_items;
 
-	GridMap *node;
+	GridMap *node = nullptr;
 	MeshLibrary *last_mesh_library;
 	ClipMode clip_mode;
 
@@ -158,7 +155,6 @@ class GridMapEditor : public VBoxContainer {
 	int cursor_rot;
 
 	enum Menu {
-
 		MENU_OPTION_NEXT_LEVEL,
 		MENU_OPTION_PREV_LEVEL,
 		MENU_OPTION_LOCK_VIEW,

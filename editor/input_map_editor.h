@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef INPUT_MAP_EDITOR_H
 #define INPUT_MAP_EDITOR_H
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor/editor_data.h"
 
 class InputMapEditor : public Control {
@@ -69,7 +69,7 @@ class InputMapEditor : public Control {
 	AcceptDialog *message;
 	UndoRedo *undo_redo;
 	String inputmap_changed;
-	bool setting;
+	bool setting = false;
 
 	void _update_actions();
 	void _add_item(int p_item, Ref<InputEvent> p_exiting_event = Ref<InputEvent>());
@@ -87,6 +87,8 @@ class InputMapEditor : public Control {
 	void _wait_for_key(const Ref<InputEvent> &p_event);
 	void _press_a_key_confirm();
 	void _show_last_added(const Ref<InputEvent> &p_event, const String &p_name);
+
+	String _get_joypad_motion_event_text(const Ref<InputEventJoypadMotion> &p_event);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

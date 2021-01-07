@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 #include "bullet_physics_server.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "shape_owner_bullet.h"
 
 #include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
@@ -275,7 +275,7 @@ void CapsuleShapeBullet::setup(real_t p_height, real_t p_radius) {
 }
 
 btCollisionShape *CapsuleShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge) {
-	return prepare(ShapeBullet::create_shape_capsule(radius * p_implicit_scale[0] + p_extra_edge, height * p_implicit_scale[1] + p_extra_edge));
+	return prepare(ShapeBullet::create_shape_capsule(radius * p_implicit_scale[0] + p_extra_edge, height * p_implicit_scale[1]));
 }
 
 /* Cylinder */

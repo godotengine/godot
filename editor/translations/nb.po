@@ -1,6 +1,6 @@
 # Norwegian Bokmål translation of the Godot Engine editor
-# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Allan Nordhøy <epost@anotheragency.no>, 2017-2018, 2019, 2020.
 # Anonymous <GentleSaucepan@protonmail.com>, 2017.
@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-22 06:40+0000\n"
+"PO-Revision-Date: 2020-10-09 05:49+0000\n"
 "Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1088,14 +1088,18 @@ msgstr "Eiere Av:"
 
 #: editor/dependency_editor.cpp
 #, fuzzy
-msgid "Remove selected files from the project? (Can't be restored)"
+msgid ""
+"Remove selected files from the project? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr "Fjerne valgte filer fra prosjektet? (kan ikke angres)"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
-"Remove them anyway? (no undo)"
+"Remove them anyway? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr ""
 "Filene som fjernes kreves for at andre ressurser skal virke.\n"
 "Fjern dem likevel? (kan ikke angres)"
@@ -1144,7 +1148,7 @@ msgstr "Foreldreløs ressursutforsker"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -1668,6 +1672,37 @@ msgid ""
 "Target platform requires 'ETC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"Målplatform krever 'ETC' teksturkomprimering for drivertilbakefallet til "
+"GLES2.\n"
+"Aktiver 'Importer Etc' i Prosjektinnstillinger, eller deaktiver "
+"'Drivertilbakefall Aktivert'."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"Målplatform krever 'ETC' teksturkomprimering for GLES2. Aktiver 'Importer "
+"Etc' i Prosjektinnstillinger."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"Målplatform krever 'ETC' teksturkomprimering for GLES3. Aktiver 'Importer "
+"Etc 2' i Prosjektinnstillinger."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
 "Målplatform krever 'ETC' teksturkomprimering for drivertilbakefallet til "
@@ -2408,19 +2443,25 @@ msgid "Error saving TileSet!"
 msgstr "Error ved lagring av TileSet!"
 
 #: editor/editor_node.cpp
-msgid "Error trying to save layout!"
-msgstr "Error ved lagring av layout!"
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Default editor layout overridden."
-msgstr "Standard editor layout overskrevet."
+msgid ""
+"Default editor layout overridden.\n"
+"To restore the Default layout to its base settings, use the Delete Layout "
+"option and delete the Default layout."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Layoutnavn ikke funnet!"
 
 #: editor/editor_node.cpp
-msgid "Restored default layout to base settings."
+#, fuzzy
+msgid "Restored the Default layout to its base settings."
 msgstr "Gjenoppretter standard layout til grunninnstillinger."
 
 #: editor/editor_node.cpp
@@ -3085,8 +3126,7 @@ msgstr "Håndter Eksportmaler"
 msgid "Help"
 msgstr "Hjelp"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -3849,6 +3889,16 @@ msgid "Name contains invalid characters."
 msgstr "Navn inneholder ugyldige tegn."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr "Endrer filnavn:"
 
@@ -3903,15 +3953,6 @@ msgstr "Endre Avhengigheter..."
 msgid "View Owners..."
 msgstr "Vis Eiere..."
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "Endre Navn..."
-
-#: editor/filesystem_dock.cpp
-#, fuzzy
-msgid "Duplicate..."
-msgstr "Duplisér"
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Flytt Til..."
@@ -3944,11 +3985,18 @@ msgid "Collapse All"
 msgstr "Kollaps alle"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
-msgstr "Endre navn"
+#, fuzzy
+msgid "Duplicate..."
+msgstr "Duplisér"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Move to Trash"
+msgstr "Flytt Autoload"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "Endre Navn..."
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -3987,9 +4035,11 @@ msgid "Move"
 msgstr "Flytt"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
-msgid "There is already file or folder with the same name in this location."
-msgstr "En fil eller mappe med dette navnet eksisterer allerede."
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "Endre navn"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -4063,8 +4113,18 @@ msgstr "Lagrer..."
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Search complete"
-msgstr "Søk Tekst"
+msgid "%d match in %d file."
+msgstr "Ingen Treff"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "Ingen Treff"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "Ingen Treff"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -4609,7 +4669,6 @@ msgid "Add Node to BlendTree"
 msgstr "Legg til node(r) fra tre"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Node Moved"
 msgstr "Flytt Modus"
@@ -5492,33 +5551,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "Lag ny horisontal og vertikal veileder"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Move pivot"
-msgstr "Flytt Pivot"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Rotate CanvasItem"
+msgid "Rotate %d CanvasItems"
 msgstr "Endre CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Move anchor"
-msgstr "Flytt Handling"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Resize CanvasItem"
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
 msgstr "Endre CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Scale CanvasItem"
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Endre CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "Endre CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Move CanvasItem"
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Endre CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "Endre CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Endre CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6853,12 +6929,22 @@ msgid "Move Points"
 msgstr "Flytt Punkt"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Roter"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "Dra: Roter"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: Flytt Alle"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "Shift+Ctrl: Skaler"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl: Roter"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6899,12 +6985,14 @@ msgid "Radius:"
 msgstr "Radius:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr ""
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "Lag Poly"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr ""
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Flytt Polygon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -7118,7 +7206,7 @@ msgstr "Lagre Tema Som..."
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
 msgid "%s Class Reference"
-msgstr " Klassereferanse"
+msgstr "%s-klassereferanse"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -7383,11 +7471,6 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr ""
 
@@ -7395,6 +7478,11 @@ msgstr ""
 #, fuzzy
 msgid "Breakpoints"
 msgstr "Slett punkter"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -8542,6 +8630,12 @@ msgstr ""
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
 "Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+msgid ""
+"Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
 
@@ -8718,8 +8812,23 @@ msgstr "Lag ny %s"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid "New Rectangle"
+msgstr "Ny Scene"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "Create a new polygon."
 msgstr "Lag en ny polygon fra bunnen."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Polygon"
+msgstr "Flytt Polygon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "Slett Valgte"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -8936,11 +9045,6 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "No commit message was provided"
-msgstr "Ingen navn gitt"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -9004,10 +9108,6 @@ msgstr "Slett Valgte"
 #, fuzzy
 msgid "Stage All"
 msgstr "Lagre Alle"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -9121,6 +9221,11 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
+msgid "Node(s) Moved"
+msgstr "Flytt Modus"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Duplicate Nodes"
 msgstr "Anim Dupliser Nøkler"
 
@@ -9137,6 +9242,11 @@ msgstr "Kutt Noder"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "Forandre"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9809,6 +9919,10 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr ""
 
@@ -9869,19 +9983,6 @@ msgstr "Forandre"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Kjørbar"
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Add initial export..."
-msgstr "Legg til Input"
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
-msgstr ""
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -9973,19 +10074,6 @@ msgid ""
 msgstr ""
 
 #: editor/project_export.cpp
-msgid "Patches"
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr ""
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Pack File"
-msgstr " Filer"
-
-#: editor/project_export.cpp
 msgid "Features"
 msgstr ""
 
@@ -10046,9 +10134,8 @@ msgid "Export All"
 msgstr "Eksporter"
 
 #: editor/project_export.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "ZIP File"
-msgstr " Filer"
+msgstr "ZIP-fil"
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"
@@ -10187,6 +10274,10 @@ msgstr "Opptegner:"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -12510,6 +12601,10 @@ msgid "Invalid Android SDK path for custom build in Editor Settings."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Missing 'platform-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -12551,6 +12646,22 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -12575,7 +12686,13 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
@@ -12751,6 +12868,26 @@ msgstr ""
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr ""
 
 #: scene/2d/light_2d.cpp
@@ -13013,6 +13150,26 @@ msgid ""
 "Change the size in children collision shapes instead."
 msgstr ""
 
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
@@ -13152,6 +13309,11 @@ msgstr ""
 msgid "Please Confirm..."
 msgstr ""
 
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "Aktiver Snap"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13221,6 +13383,43 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanter kan ikke endres."
+
+#, fuzzy
+#~ msgid "Search complete"
+#~ msgstr "Søk Tekst"
+
+#, fuzzy
+#~ msgid "No commit message was provided"
+#~ msgstr "Ingen navn gitt"
+
+#, fuzzy
+#~ msgid "There is already file or folder with the same name in this location."
+#~ msgstr "En fil eller mappe med dette navnet eksisterer allerede."
+
+#~ msgid "Error trying to save layout!"
+#~ msgstr "Error ved lagring av layout!"
+
+#~ msgid "Default editor layout overridden."
+#~ msgstr "Standard editor layout overskrevet."
+
+#, fuzzy
+#~ msgid "Move pivot"
+#~ msgstr "Flytt Pivot"
+
+#, fuzzy
+#~ msgid "Move anchor"
+#~ msgstr "Flytt Handling"
+
+#, fuzzy
+#~ msgid "Resize CanvasItem"
+#~ msgstr "Endre CanvasItem"
+
+#, fuzzy
+#~ msgid "Add initial export..."
+#~ msgstr "Legg til Input"
+
+#~ msgid "Pack File"
+#~ msgstr "Pakkefil"
 
 #, fuzzy
 #~ msgid "FileSystem and Import Docks"

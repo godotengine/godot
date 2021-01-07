@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,6 @@
 
 #include "collision_object_2d.h"
 #include "core/io/marshalls.h"
-#include "core/method_bind_ext.gen.inc"
 #include "core/os/os.h"
 #include "scene/2d/area_2d.h"
 #include "servers/navigation_server_2d.h"
@@ -529,15 +528,14 @@ void TileMap::update_dirty_quadrants() {
 				rect.position += tile_ofs;
 			}
 
-			Ref<Texture2D> normal_map = tile_set->tile_get_normal_map(c.id);
 			Color modulate = tile_set->tile_get_modulate(c.id);
 			Color self_modulate = get_self_modulate();
 			modulate = Color(modulate.r * self_modulate.r, modulate.g * self_modulate.g,
 					modulate.b * self_modulate.b, modulate.a * self_modulate.a);
 			if (r == Rect2()) {
-				tex->draw_rect(canvas_item, rect, false, modulate, c.transpose, normal_map);
+				tex->draw_rect(canvas_item, rect, false, modulate, c.transpose);
 			} else {
-				tex->draw_rect_region(canvas_item, rect, r, modulate, c.transpose, normal_map, Ref<Texture2D>(), Color(1, 1, 1, 1), RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, clip_uv);
+				tex->draw_rect_region(canvas_item, rect, r, modulate, c.transpose, clip_uv);
 			}
 
 			Vector<TileSet::ShapeData> shapes = tile_set->tile_get_shapes(c.id);
@@ -1026,7 +1024,9 @@ void TileMap::update_dirty_bitmask() {
 
 void TileMap::fix_invalid_tiles() {
 	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot fix invalid tiles if Tileset is not open.");
-	for (Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
+
+	Map<PosKey, Cell> temp_tile_map = tile_map;
+	for (Map<PosKey, Cell>::Element *E = temp_tile_map.front(); E; E = E->next()) {
 		if (!tile_set->has_tile(get_cell(E->key().x, E->key().y))) {
 			set_cell(E->key().x, E->key().y, INVALID_CELL);
 		}
@@ -1716,7 +1716,7 @@ String TileMap::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	if (use_parent && !collision_parent) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		return TTR("TileMap with Use Parent on needs a parent CollisionObject2D to give shapes to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef SPACE_BULLET_H
 #define SPACE_BULLET_H
 
-#include "core/variant.h"
-#include "core/vector.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "godot_result_callbacks.h"
 #include "rid_bullet.h"
 #include "servers/physics_server_3d.h"
@@ -167,7 +167,7 @@ public:
 	BulletPhysicsDirectSpaceState *get_direct_state();
 
 	void set_debug_contacts(int p_amount) { contactDebug.resize(p_amount); }
-	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contactDebug.empty(); }
+	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contactDebug.is_empty(); }
 	_FORCE_INLINE_ void reset_debug_contact_count() {
 		contactDebugCount = 0;
 	}

@@ -1,13 +1,14 @@
 name: 🐧 Linux Builds
 on: [push, pull_request]
 
-# Global Cache Settings
+# Global Settings
 env:
   GODOT_BASE_BRANCH: master
+  SCONSFLAGS: platform=linuxbsd verbose=yes warnings=extra werror=yes --jobs=2 module_text_server_fb_enabled=yes
   SCONS_CACHE_LIMIT: 4096
 
 jobs:
-  linux-editor:
+  linux-editor-mono:
     runs-on: "ubuntu-20.04"
     name: Editor w/ Mono (target=release_debug, tools=yes, tests=yes)
 
@@ -61,12 +62,19 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=linuxbsd tools=yes tests=yes target=release_debug module_mono_enabled=yes mono_glue=no
+          scons tools=yes tests=yes target=release_debug module_mono_enabled=yes mono_glue=no
+          ls -l bin/
 
       # Execute unit tests for the editor
       - name: Unit Tests
         run: |
           ./bin/godot.linuxbsd.opt.tools.64.mono --test
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14
 
   linux-editor-sanitizers:
     runs-on: "ubuntu-20.04"
@@ -90,7 +98,7 @@ jobs:
 
       # Upload cache on completion and check it out now
       - name: Load .scons_cache directory
-        id: linux-editor-cache
+        id: linux-sanitizers-cache
         uses: actions/cache@v2
         with:
           path: ${{github.workspace}}/.scons_cache/
@@ -122,14 +130,15 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=linuxbsd tools=yes tests=yes target=debug use_asan=yes use_ubsan=yes
+          scons tools=yes tests=yes target=debug use_asan=yes use_ubsan=yes
+          ls -l bin/
 
       # Execute unit tests for the editor
       - name: Unit Tests
         run: |
           ./bin/godot.linuxbsd.tools.64s --test
 
-  linux-template:
+  linux-template-mono:
     runs-on: "ubuntu-20.04"
     name: Template w/ Mono (target=release, tools=no)
 
@@ -182,4 +191,11 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=linuxbsd target=release tools=no module_mono_enabled=yes mono_glue=no
+          scons target=release tools=no module_mono_enabled=yes mono_glue=no debug_symbols=no
+          ls -l bin/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,11 @@
 #ifndef FILE_ACCESS_PACK_H
 #define FILE_ACCESS_PACK_H
 
-#include "core/list.h"
-#include "core/map.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
 
 // Godot's packed file magic header ("GDPC" in ASCII).
 #define PACK_HEADER_MAGIC 0x43504447
@@ -122,6 +122,9 @@ public:
 	_FORCE_INLINE_ FileAccess *try_open_path(const String &p_path);
 	_FORCE_INLINE_ bool has_path(const String &p_path);
 
+	_FORCE_INLINE_ DirAccess *try_open_directory(const String &p_path);
+	_FORCE_INLINE_ bool has_directory(const String &p_path);
+
 	PackedData();
 	~PackedData();
 };
@@ -199,12 +202,24 @@ bool PackedData::has_path(const String &p_path) {
 	return files.has(PathMD5(p_path.md5_buffer()));
 }
 
+bool PackedData::has_directory(const String &p_path) {
+	DirAccess *da = try_open_directory(p_path);
+	if (da) {
+		memdelete(da);
+		return true;
+	} else {
+		return false;
+	}
+}
+
 class DirAccessPack : public DirAccess {
 	PackedData::PackedDir *current;
 
 	List<String> list_dirs;
 	List<String> list_files;
 	bool cdir = false;
+
+	PackedData::PackedDir *_find_dir(String p_dir);
 
 public:
 	virtual Error list_dir_begin();
@@ -234,5 +249,14 @@ public:
 	DirAccessPack();
 	~DirAccessPack() {}
 };
+
+DirAccess *PackedData::try_open_directory(const String &p_path) {
+	DirAccess *da = memnew(DirAccessPack());
+	if (da->change_dir(p_path) != OK) {
+		memdelete(da);
+		da = nullptr;
+	}
+	return da;
+}
 
 #endif // FILE_ACCESS_PACK_H

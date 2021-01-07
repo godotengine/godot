@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "camera_matrix.h"
 
 #include "core/math/math_funcs.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 float CameraMatrix::determinant() const {
 	return matrix[0][3] * matrix[1][2] * matrix[2][1] * matrix[3][0] - matrix[0][2] * matrix[1][3] * matrix[2][1] * matrix[3][0] -
@@ -655,6 +655,17 @@ real_t CameraMatrix::get_fov() const {
 	}
 }
 
+float CameraMatrix::get_lod_multiplier() const {
+	if (is_orthogonal()) {
+		return get_viewport_half_extents().x;
+	} else {
+		float zn = get_z_near();
+		float width = get_viewport_half_extents().x * 2.0;
+		return 1.0 / (zn / width);
+	}
+
+	//usage is lod_size / (lod_distance * multiplier) < threshold
+}
 void CameraMatrix::make_scale(const Vector3 &p_scale) {
 	set_identity();
 	matrix[0][0] = p_scale.x;

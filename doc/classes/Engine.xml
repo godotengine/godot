@@ -41,7 +41,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the total number of frames drawn. If the render loop is disabled with [code]--disable-render-loop[/code] via command line, this returns [code]0[/code]. See also [method get_idle_frames].
+				Returns the total number of frames drawn. If the render loop is disabled with [code]--disable-render-loop[/code] via command line, this returns [code]0[/code]. See also [method get_process_frames].
 			</description>
 		</method>
 		<method name="get_frames_per_second" qualifiers="const">
@@ -49,13 +49,6 @@
 			</return>
 			<description>
 				Returns the frames per second of the running game.
-			</description>
-		</method>
-		<method name="get_idle_frames" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the total number of frames passed since engine initialization which is advanced on each [b]idle frame[/b], regardless of whether the render loop is enabled. See also [method get_frames_drawn].
 			</description>
 		</method>
 		<method name="get_license_info" qualifiers="const">
@@ -93,6 +86,13 @@
 				Returns the fraction through the current physics tick we are at the time of rendering the frame. This can be used to implement fixed timestep interpolation.
 			</description>
 		</method>
+		<method name="get_process_frames" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the total number of frames passed since engine initialization which is advanced on each [b]process frame[/b], regardless of whether the render loop is enabled. See also [method get_frames_drawn].
+			</description>
+		</method>
 		<method name="get_singleton" qualifiers="const">
 			<return type="Object">
 			</return>
@@ -117,12 +117,24 @@
 				[code]year[/code]     - Holds the year the version was released in as an int
 				[code]string[/code]   - [code]major[/code] + [code]minor[/code] + [code]patch[/code] + [code]status[/code] + [code]build[/code] in a single String
 				The [code]hex[/code] value is encoded as follows, from left to right: one byte for the major, one byte for the minor, one byte for the patch version. For example, "3.1.12" would be [code]0x03010C[/code]. [b]Note:[/b] It's still an int internally, and printing it will give you its decimal representation, which is not particularly meaningful. Use hexadecimal literals for easy version comparisons from code:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				if Engine.get_version_info().hex &gt;= 0x030200:
 				    # Do things specific to version 3.2 or later
 				else:
 				    # Do things specific to versions before 3.2
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				if ((int)Engine.GetVersionInfo()["hex"] &gt;= 0x030200)
+				{
+				    // Do things specific to version 3.2 or later
+				}
+				else
+				{
+				    // Do things specific to versions before 3.2
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="has_singleton" qualifiers="const">

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,15 +68,15 @@ private:
 	GodotIOJavaWrapper *godot_io_java;
 
 public:
-	virtual void initialize_core();
-	virtual void initialize();
+	virtual void initialize_core() override;
+	virtual void initialize() override;
 
-	virtual void initialize_joypads();
+	virtual void initialize_joypads() override;
 
-	virtual void set_main_loop(MainLoop *p_main_loop);
-	virtual void delete_main_loop();
+	virtual void set_main_loop(MainLoop *p_main_loop) override;
+	virtual void delete_main_loop() override;
 
-	virtual void finalize();
+	virtual void finalize() override;
 
 	typedef int64_t ProcessID;
 
@@ -84,14 +84,14 @@ public:
 	GodotJavaWrapper *get_godot_java();
 	GodotIOJavaWrapper *get_godot_io_java();
 
-	virtual bool request_permission(const String &p_name);
-	virtual bool request_permissions();
-	virtual Vector<String> get_granted_permissions() const;
+	virtual bool request_permission(const String &p_name) override;
+	virtual bool request_permissions() override;
+	virtual Vector<String> get_granted_permissions() const override;
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
 
-	virtual String get_name() const;
-	virtual MainLoop *get_main_loop() const;
+	virtual String get_name() const override;
+	virtual MainLoop *get_main_loop() const override;
 
 	void main_loop_begin();
 	bool main_loop_iterate();
@@ -109,19 +109,19 @@ public:
 	void set_native_window(ANativeWindow *p_native_window);
 	ANativeWindow *get_native_window() const;
 
-	virtual Error shell_open(String p_uri);
-	virtual String get_user_data_dir() const;
-	virtual String get_resource_dir() const;
-	virtual String get_locale() const;
-	virtual String get_model_name() const;
+	virtual Error shell_open(String p_uri) override;
+	virtual String get_user_data_dir() const override;
+	virtual String get_resource_dir() const override;
+	virtual String get_locale() const override;
+	virtual String get_model_name() const override;
 
-	virtual String get_unique_id() const;
+	virtual String get_unique_id() const override;
 
-	virtual String get_system_dir(SystemDir p_dir) const;
+	virtual String get_system_dir(SystemDir p_dir) const override;
 
-	void vibrate_handheld(int p_duration_ms);
+	void vibrate_handheld(int p_duration_ms) override;
 
-	virtual bool _check_internal_feature_support(const String &p_feature);
+	virtual bool _check_internal_feature_support(const String &p_feature) override;
 	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);
 	~OS_Android();
 };

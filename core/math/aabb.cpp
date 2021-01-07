@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,8 @@
 
 #include "aabb.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
+#include "core/variant/variant.h"
 
 real_t AABB::get_area() const {
 	return size.x * size.y * size.z;
@@ -373,6 +374,21 @@ void AABB::get_edge(int p_edge, Vector3 &r_from, Vector3 &r_to) const {
 
 		} break;
 	}
+}
+
+Variant AABB::intersects_segment_bind(const Vector3 &p_from, const Vector3 &p_to) const {
+	Vector3 inters;
+	if (intersects_segment(p_from, p_to, &inters)) {
+		return inters;
+	}
+	return Variant();
+}
+Variant AABB::intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) const {
+	Vector3 inters;
+	if (intersects_ray(p_from, p_dir, &inters)) {
+		return inters;
+	}
+	return Variant();
 }
 
 AABB::operator String() const {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,8 @@
 #define BULLET_PHYSICS_SERVER_H
 
 #include "area_bullet.h"
-#include "core/rid.h"
-#include "core/rid_owner.h"
+#include "core/templates/rid.h"
+#include "core/templates/rid_owner.h"
 #include "joint_bullet.h"
 #include "rigid_body_bullet.h"
 #include "servers/physics_server_3d.h"
@@ -376,9 +376,6 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag, bool p_enable) override;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag) override;
 
-	virtual void generic_6dof_joint_set_precision(RID p_joint, int precision) override;
-	virtual int generic_6dof_joint_get_precision(RID p_joint) override;
-
 	/* MISC */
 
 	virtual void free(RID p_rid) override;
@@ -397,7 +394,6 @@ public:
 
 	virtual void init() override;
 	virtual void step(float p_deltaTime) override;
-	virtual void sync() override;
 	virtual void flush_queries() override;
 	virtual void finish() override;
 

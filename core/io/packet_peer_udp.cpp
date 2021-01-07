@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -178,7 +178,6 @@ Error PacketPeerUDP::listen(int p_port, const IP_Address &p_bind_address, int p_
 	}
 
 	_sock->set_blocking_enabled(false);
-	_sock->set_reuse_address_enabled(true);
 	_sock->set_broadcasting_enabled(broadcast);
 	err = _sock->bind(p_bind_address, p_port);
 

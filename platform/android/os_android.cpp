@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,16 +30,14 @@
 
 #include "os_android.h"
 
-#include "core/io/file_access_buffered_fa.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
-#include "file_access_android.h"
 #include "main/main.h"
 #include "platform/android/display_server_android.h"
 
 #include "dir_access_jandroid.h"
-#include "file_access_jandroid.h"
+#include "file_access_android.h"
 #include "net_socket_android.h"
 
 #include <dlfcn.h>
@@ -62,16 +60,10 @@ void OS_Android::initialize_core() {
 	if (use_apk_expansion)
 		FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	else {
-#ifdef USE_JAVA_FILE_ACCESS
-		FileAccess::make_default<FileAccessBufferedFA<FileAccessJAndroid>>(FileAccess::ACCESS_RESOURCES);
-#else
-		//FileAccess::make_default<FileAccessBufferedFA<FileAccessAndroid> >(FileAccess::ACCESS_RESOURCES);
 		FileAccess::make_default<FileAccessAndroid>(FileAccess::ACCESS_RESOURCES);
-#endif
 	}
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
-	//FileAccessBufferedFA<FileAccessUnix>::make_default();
 	if (use_apk_expansion)
 		DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
 	else
@@ -147,18 +139,19 @@ MainLoop *OS_Android::get_main_loop() const {
 
 void OS_Android::main_loop_begin() {
 	if (main_loop)
-		main_loop->init();
+		main_loop->initialize();
 }
 
 bool OS_Android::main_loop_iterate() {
 	if (!main_loop)
 		return false;
+	DisplayServerAndroid::get_singleton()->process_events();
 	return Main::iteration();
 }
 
 void OS_Android::main_loop_end() {
 	if (main_loop)
-		main_loop->finish();
+		main_loop->finalize();
 }
 
 void OS_Android::main_loop_focusout() {
@@ -313,6 +306,7 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 #if defined(OPENGL_ENABLED)
 	gl_extensions = nullptr;
 	use_gl2 = false;
+	use_16bits_fbo = false;
 #endif
 
 #if defined(VULKAN_ENABLED)

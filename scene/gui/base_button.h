@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,8 +49,8 @@ private:
 	bool toggle_mode;
 	bool shortcut_in_tooltip;
 	bool keep_pressed_outside;
-	FocusMode enabled_focus_mode;
 	Ref<Shortcut> shortcut;
+	ObjectID shortcut_context;
 
 	ActionMode action_mode;
 	struct Status {
@@ -76,8 +76,10 @@ protected:
 	virtual void toggled(bool p_pressed);
 	static void _bind_methods();
 	virtual void _gui_input(Ref<InputEvent> p_event);
-	virtual void _unhandled_input(Ref<InputEvent> p_event);
+	virtual void _unhandled_key_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
+
+	bool _is_focus_owner_in_shorcut_context() const;
 
 public:
 	enum DrawMode {
@@ -115,9 +117,6 @@ public:
 	void set_button_mask(int p_mask);
 	int get_button_mask() const;
 
-	void set_enabled_focus_mode(FocusMode p_mode);
-	FocusMode get_enabled_focus_mode() const;
-
 	void set_shortcut(const Ref<Shortcut> &p_shortcut);
 	Ref<Shortcut> get_shortcut() const;
 
@@ -125,6 +124,9 @@ public:
 
 	void set_button_group(const Ref<ButtonGroup> &p_group);
 	Ref<ButtonGroup> get_button_group() const;
+
+	void set_shortcut_context(Node *p_node);
+	Node *get_shortcut_context() const;
 
 	BaseButton();
 	~BaseButton();

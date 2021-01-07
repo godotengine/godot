@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #include "translation_loader_po.h"
 
 #include "core/os/file_access.h"
-#include "core/translation.h"
-#include "core/translation_po.h"
+#include "core/string/translation.h"
+#include "core/string/translation_po.h"
 
 RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 	enum Status {
@@ -70,7 +70,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		is_eof = f->eof_reached();
 
 		// If we reached last line and it's not a content line, break, otherwise let processing that last loop
-		if (is_eof && l.empty()) {
+		if (is_eof && l.is_empty()) {
 			if (status == STATUS_READING_ID || status == STATUS_READING_CONTEXT || (status == STATUS_READING_PLURAL && plural_index != plural_forms - 1)) {
 				memdelete(f);
 				ERR_FAIL_V_MSG(RES(), "Unexpected EOF while reading PO file at: " + path + ":" + itos(line));

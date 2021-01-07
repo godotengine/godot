@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,12 +30,12 @@
 
 #include "gdnative/array.h"
 
-#include "core/array.h"
 #include "core/os/memory.h"
+#include "core/variant/array.h"
 
-#include "core/color.h"
+#include "core/math/color.h"
 
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -81,6 +81,18 @@ void GDAPI godot_array_new_packed_vector3_array(godot_array *r_dest, const godot
 void GDAPI godot_array_new_packed_vector2_array(godot_array *r_dest, const godot_packed_vector2_array *p_pv2a) {
 	Array *dest = (Array *)r_dest;
 	Vector<Vector2> *pca = (Vector<Vector2> *)p_pv2a;
+	memnew_placement(dest, Array);
+	dest->resize(pca->size());
+
+	for (int i = 0; i < dest->size(); i++) {
+		Variant v = pca->operator[](i);
+		dest->operator[](i) = v;
+	}
+}
+
+void GDAPI godot_array_new_packed_vector2i_array(godot_array *r_dest, const godot_packed_vector2i_array *p_pv2a) {
+	Array *dest = (Array *)r_dest;
+	Vector<Vector2i> *pca = (Vector<Vector2i> *)p_pv2a;
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
@@ -203,9 +215,9 @@ godot_int GDAPI godot_array_count(const godot_array *p_self, const godot_variant
 	return self->count(*val);
 }
 
-godot_bool GDAPI godot_array_empty(const godot_array *p_self) {
+godot_bool GDAPI godot_array_is_empty(const godot_array *p_self) {
 	const Array *self = (const Array *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_array_erase(godot_array *p_self, const godot_variant *p_value) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef VISUAL_SHADER_H
 #define VISUAL_SHADER_H
 
-#include "core/string_builder.h"
+#include "core/string/string_builder.h"
 #include "scene/gui/control.h"
 #include "scene/resources/shader.h"
 
@@ -175,7 +175,7 @@ public:
 
 	String generate_preview_shader(Type p_type, int p_node, int p_port, Vector<DefaultTextureParam> &r_default_tex_params) const;
 
-	String validate_port_name(const String &p_name, const List<String> &p_input_ports, const List<String> &p_output_ports) const;
+	String validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const;
 	String validate_uniform_name(const String &p_name, const Ref<VisualShaderNodeUniform> &p_uniform) const;
 
 	VisualShader();
@@ -486,14 +486,33 @@ public:
 	VisualShaderNodeUniformRef();
 };
 
-class VisualShaderNodeGroupBase : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeGroupBase, VisualShaderNode);
+class VisualShaderNodeResizableBase : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeResizableBase, VisualShaderNode);
+
+protected:
+	Vector2 size = Size2(0, 0);
+	bool allow_v_resize = true;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_size(const Vector2 &p_size);
+	Vector2 get_size() const;
+
+	bool is_allow_v_resize() const;
+	void set_allow_v_resize(bool p_enabled);
+
+	VisualShaderNodeResizableBase();
+};
+
+class VisualShaderNodeGroupBase : public VisualShaderNodeResizableBase {
+	GDCLASS(VisualShaderNodeGroupBase, VisualShaderNodeResizableBase);
 
 private:
 	void _apply_port_changes();
 
 protected:
-	Vector2 size = Size2(0, 0);
 	String inputs = "";
 	String outputs = "";
 	bool editable = false;
@@ -511,11 +530,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const override;
-
-	void set_size(const Vector2 &p_size);
-	Vector2 get_size() const;
-
 	void set_inputs(const String &p_inputs);
 	String get_inputs() const;
 

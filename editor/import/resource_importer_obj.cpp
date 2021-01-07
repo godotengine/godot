@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,8 @@
 
 #include "core/io/resource_saver.h"
 #include "core/os/file_access.h"
+#include "editor/import/scene_importer_mesh.h"
+#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/mesh.h"
@@ -210,7 +212,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	bool generate_tangents = p_generate_tangents;
 	Vector3 scale_mesh = p_scale_mesh;
 	Vector3 offset_mesh = p_offset_mesh;
-	int mesh_flags = p_optimize ? Mesh::ARRAY_COMPRESS_DEFAULT : 0;
+	int mesh_flags = 0;
 
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
@@ -225,6 +227,8 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	String current_material_library;
 	String current_material;
 	String current_group;
+	uint32_t smooth_group = 0;
+	bool smoothing = true;
 
 	while (true) {
 		String l = f->get_line().strip_edges();
@@ -294,7 +298,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 							norm += normals.size() + 1;
 						}
 						ERR_FAIL_INDEX_V(norm, normals.size(), ERR_FILE_CORRUPT);
-						surf_tool->add_normal(normals[norm]);
+						surf_tool->set_normal(normals[norm]);
 					}
 
 					if (face[idx].size() >= 2 && face[idx][1] != String()) {
@@ -303,7 +307,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 							uv += uvs.size() + 1;
 						}
 						ERR_FAIL_INDEX_V(uv, uvs.size(), ERR_FILE_CORRUPT);
-						surf_tool->add_uv(uvs[uv]);
+						surf_tool->set_uv(uvs[uv]);
 					}
 
 					int vtx = face[idx][0].to_int() - 1;
@@ -315,6 +319,10 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 					Vector3 vertex = vertices[vtx];
 					//if (weld_vertices)
 					//	vertex.snap(Vector3(weld_tolerance, weld_tolerance, weld_tolerance));
+					if (!smoothing) {
+						smooth_group++;
+					}
+					surf_tool->set_smooth_group(smooth_group);
 					surf_tool->add_vertex(vertex);
 				}
 
@@ -322,10 +330,15 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			}
 		} else if (l.begins_with("s ")) { //smoothing
 			String what = l.substr(2, l.length()).strip_edges();
+			bool do_smooth;
 			if (what == "off") {
-				surf_tool->add_smooth_group(false);
+				do_smooth = false;
 			} else {
-				surf_tool->add_smooth_group(true);
+				do_smooth = true;
+			}
+			if (do_smooth != smoothing) {
+				smooth_group++;
+				smoothing = do_smooth;
 			}
 		} else if (/*l.begins_with("g ") ||*/ l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { //commit group to mesh
 			//groups are too annoying
@@ -426,8 +439,15 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 	Node3D *scene = memnew(Node3D);
 
 	for (List<Ref<Mesh>>::Element *E = meshes.front(); E; E = E->next()) {
-		MeshInstance3D *mi = memnew(MeshInstance3D);
-		mi->set_mesh(E->get());
+		Ref<EditorSceneImporterMesh> mesh;
+		mesh.instance();
+		Ref<Mesh> m = E->get();
+		for (int i = 0; i < m->get_surface_count(); i++) {
+			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), m->surface_get_material(i));
+		}
+
+		EditorSceneImporterMeshNode3D *mi = memnew(EditorSceneImporterMeshNode3D);
+		mi->set_mesh(mesh);
 		mi->set_name(E->get()->get_name());
 		scene->add_child(mi);
 		mi->set_owner(scene);
@@ -471,6 +491,10 @@ String ResourceImporterOBJ::get_save_extension() const {
 
 String ResourceImporterOBJ::get_resource_type() const {
 	return "Mesh";
+}
+
+int ResourceImporterOBJ::get_format_version() const {
+	return 1;
 }
 
 int ResourceImporterOBJ::get_preset_count() const {

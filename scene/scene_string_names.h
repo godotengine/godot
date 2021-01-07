@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef SCENE_STRING_NAMES_H
 #define SCENE_STRING_NAMES_H
 
-#include "core/node_path.h"
-#include "core/string_name.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
 
 class SceneStringNames {
 	friend void register_scene_types();
@@ -58,7 +58,7 @@ public:
 	StringName dot;
 	StringName doubledot;
 	StringName draw;
-	StringName hide;
+	StringName hidden;
 	StringName visibility_changed;
 	StringName input_event;
 	StringName _input_event;
@@ -130,6 +130,7 @@ public:
 	StringName _update_xform;
 
 	StringName _clips_input;
+	StringName _structured_text_parser;
 
 	StringName _proxgroup_add;
 	StringName _proxgroup_remove;

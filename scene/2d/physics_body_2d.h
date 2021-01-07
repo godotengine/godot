@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef PHYSICS_BODY_2D_H
 #define PHYSICS_BODY_2D_H
 
-#include "core/vset.h"
+#include "core/templates/vset.h"
 #include "scene/2d/collision_object_2d.h"
 #include "scene/resources/physics_material.h"
 #include "servers/physics_server_2d.h"
@@ -43,9 +43,6 @@ class PhysicsBody2D : public CollisionObject2D {
 
 	uint32_t collision_layer;
 	uint32_t collision_mask;
-
-	void _set_layers(uint32_t p_mask);
-	uint32_t _get_layers() const;
 
 protected:
 	void _notification(int p_what);
@@ -194,9 +191,6 @@ public:
 
 	void set_inertia(real_t p_inertia);
 	real_t get_inertia() const;
-
-	void set_weight(real_t p_weight);
-	real_t get_weight() const;
 
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
 	Ref<PhysicsMaterial> get_physics_material_override() const;

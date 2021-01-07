@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -628,7 +628,6 @@ void Body3DSW::integrate_velocities(real_t p_step) {
 
 /*
 void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
-
 	Transform inv_xform = p_xform.affine_inverse();
 	if (!get_space()) {
 		_set_transform(p_xform);
@@ -655,8 +654,6 @@ void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
 		get_space()->body_add_to_state_query_list(&direct_state_query_list);
 	simulated_motion=true;
 	_set_transform(p_xform);
-
-
 }
 
 */

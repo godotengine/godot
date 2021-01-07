@@ -12,7 +12,6 @@ def get_name():
 
 
 def can_build():
-
     if sys.platform == "darwin" or ("OSXCROSS_ROOT" in os.environ):
         return True
 
@@ -31,7 +30,8 @@ def get_opts():
             " validation layers)",
             False,
         ),
-        EnumVariable("debug_symbols", "Add debugging symbols to release builds", "yes", ("yes", "no", "full")),
+        EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")),
+        EnumVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", "yes", ("yes", "no")),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN))", False),
@@ -40,12 +40,10 @@ def get_opts():
 
 
 def get_flags():
-
     return []
 
 
 def configure(env):
-
     ## Build type
 
     if env["target"] == "release":
@@ -57,8 +55,6 @@ def configure(env):
             env.Prepend(CCFLAGS=["-msse2"])
 
         if env["debug_symbols"] == "yes":
-            env.Prepend(CCFLAGS=["-g1"])
-        if env["debug_symbols"] == "full":
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "release_debug":
@@ -68,8 +64,6 @@ def configure(env):
             env.Prepend(CCFLAGS=["-Os"])
         env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
         if env["debug_symbols"] == "yes":
-            env.Prepend(CCFLAGS=["-g1"])
-        if env["debug_symbols"] == "full":
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "debug":
@@ -91,8 +85,8 @@ def configure(env):
 
     if env["arch"] == "arm64":
         print("Building for macOS 10.15+, platform arm64.")
-        env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15", "-target", "arm64-apple-macos10.15"])
-        env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15", "-target", "arm64-apple-macos10.15"])
+        env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15"])
+        env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15"])
     else:
         print("Building for macOS 10.12+, platform x86-64.")
         env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
@@ -103,7 +97,6 @@ def configure(env):
             mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
             mpclangver = env["macports_clang"]
             env["CC"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/clang"
-            env["LINK"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/clang++"
             env["CXX"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/clang++"
             env["AR"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ar"
             env["RANLIB"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ranlib"
@@ -137,11 +130,6 @@ def configure(env):
         env["RANLIB"] = basecmd + "ranlib"
         env["AS"] = basecmd + "as"
         env.Append(CPPDEFINES=["__MACPORTS__"])  # hack to fix libvpx MM256_BROADCASTSI128_SI256 define
-
-    if env["CXX"] == "clang++":
-        env.Append(CPPDEFINES=["TYPED_METHOD_BIND"])
-        env["CC"] = "clang"
-        env["LINK"] = "clang++"
 
     if env["use_ubsan"] or env["use_asan"] or env["use_tsan"]:
         env.extra_suffix += "s"

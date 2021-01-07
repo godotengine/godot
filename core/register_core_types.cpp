@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,24 +30,24 @@
 
 #include "register_core_types.h"
 
-#include "core/bind/core_bind.h"
-#include "core/class_db.h"
-#include "core/compressed_translation.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/core_bind.h"
 #include "core/core_string_names.h"
 #include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
-#include "core/engine.h"
-#include "core/func_ref.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/config_file.h"
 #include "core/io/dtls_server.h"
 #include "core/io/http_client.h"
 #include "core/io/image_loader.h"
+#include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/io/multiplayer_api.h"
 #include "core/io/networked_multiplayer_peer.h"
+#include "core/io/packed_data_container.h"
 #include "core/io/packet_peer.h"
 #include "core/io/packet_peer_dtls.h"
 #include "core/io/packet_peer_udp.h"
@@ -65,11 +65,11 @@
 #include "core/math/geometry_3d.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
+#include "core/object/class_db.h"
+#include "core/object/undo_redo.h"
 #include "core/os/main_loop.h"
-#include "core/packed_data_container.h"
-#include "core/project_settings.h"
-#include "core/translation.h"
-#include "core/undo_redo.h"
+#include "core/string/compressed_translation.h"
+#include "core/string/translation.h"
 
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
@@ -97,8 +97,6 @@ extern Mutex _global_mutex;
 
 extern void register_global_constants();
 extern void unregister_global_constants();
-extern void register_variant_methods();
-extern void unregister_variant_methods();
 
 void register_core_types() {
 	//consistency check
@@ -111,7 +109,8 @@ void register_core_types() {
 	ResourceLoader::initialize();
 
 	register_global_constants();
-	register_variant_methods();
+
+	Variant::register_types();
 
 	CoreStringNames::create();
 
@@ -155,7 +154,6 @@ void register_core_types() {
 	ClassDB::register_class<InputEventPanGesture>();
 	ClassDB::register_class<InputEventMIDI>();
 
-	ClassDB::register_class<FuncRef>();
 	ClassDB::register_virtual_class<StreamPeer>();
 	ClassDB::register_class<StreamPeerBuffer>();
 	ClassDB::register_class<StreamPeerTCP>();
@@ -170,6 +168,7 @@ void register_core_types() {
 	ClassDB::register_class<AESContext>();
 	ClassDB::register_custom_instance_class<X509Certificate>();
 	ClassDB::register_custom_instance_class<CryptoKey>();
+	ClassDB::register_custom_instance_class<HMACContext>();
 	ClassDB::register_custom_instance_class<Crypto>();
 	ClassDB::register_custom_instance_class<StreamPeerSSL>();
 
@@ -200,6 +199,7 @@ void register_core_types() {
 	ClassDB::register_class<_Semaphore>();
 
 	ClassDB::register_class<XMLParser>();
+	ClassDB::register_class<JSONParser>();
 
 	ClassDB::register_class<ConfigFile>();
 
@@ -319,7 +319,8 @@ void unregister_core_types() {
 	ClassDB::cleanup_defaults();
 	ObjectDB::cleanup();
 
-	unregister_variant_methods();
+	Variant::unregister_types();
+
 	unregister_global_constants();
 
 	ClassDB::cleanup();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,12 +30,13 @@
 
 #include "material.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
 
+#include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
@@ -80,12 +81,23 @@ void Material::_validate_property(PropertyInfo &property) const {
 	}
 }
 
+void Material::inspect_native_shader_code() {
+	SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+	RID shader = get_shader_rid();
+	if (st && shader.is_valid()) {
+		st->call_group("_native_shader_source_visualizer", "_inspect_shader", shader);
+	}
+}
+
 void Material::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_next_pass", "next_pass"), &Material::set_next_pass);
 	ClassDB::bind_method(D_METHOD("get_next_pass"), &Material::get_next_pass);
 
 	ClassDB::bind_method(D_METHOD("set_render_priority", "priority"), &Material::set_render_priority);
 	ClassDB::bind_method(D_METHOD("get_render_priority"), &Material::get_render_priority);
+
+	ClassDB::bind_method(D_METHOD("inspect_native_shader_code"), &Material::inspect_native_shader_code);
+	ClassDB::set_method_flags(get_class_static(), _scs_create("inspect_native_shader_code"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RENDER_PRIORITY_MIN) + "," + itos(RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next_pass", PROPERTY_HINT_RESOURCE_TYPE, "Material"), "set_next_pass", "get_next_pass");
@@ -260,6 +272,13 @@ Shader::Mode ShaderMaterial::get_shader_mode() const {
 		return Shader::MODE_SPATIAL;
 	}
 }
+RID ShaderMaterial::get_shader_rid() const {
+	if (shader.is_valid()) {
+		return shader->get_rid();
+	} else {
+		return RID();
+	}
+}
 
 ShaderMaterial::ShaderMaterial() {
 }
@@ -324,7 +343,6 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->rim_texture_channel = "rim_texture_channel";
 	shader_names->heightmap_texture_channel = "heightmap_texture_channel";
 	shader_names->refraction_texture_channel = "refraction_texture_channel";
-	shader_names->alpha_scissor_threshold = "alpha_scissor_threshold";
 
 	shader_names->transmittance_color = "transmittance_color";
 	shader_names->transmittance_curve = "transmittance_curve";
@@ -349,6 +367,12 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->texture_names[TEXTURE_DETAIL_ALBEDO] = "texture_detail_albedo";
 	shader_names->texture_names[TEXTURE_DETAIL_NORMAL] = "texture_detail_normal";
 	shader_names->texture_names[TEXTURE_ORM] = "texture_orm";
+
+	shader_names->alpha_scissor_threshold = "alpha_scissor_threshold";
+	shader_names->alpha_hash_scale = "alpha_hash_scale";
+
+	shader_names->alpha_antialiasing_edge = "alpha_antialiasing_edge";
+	shader_names->albedo_texture_size = "albedo_texture_size";
 }
 
 Ref<StandardMaterial3D> BaseMaterial3D::materials_for_2d[BaseMaterial3D::MAX_MATERIALS_FOR_2D];
@@ -435,6 +459,8 @@ void BaseMaterial3D::_update_shader() {
 		case BLEND_MODE_MUL:
 			code += "blend_mul";
 			break;
+		case BLEND_MODE_MAX:
+			break; // Internal value, skip.
 	}
 
 	DepthDrawMode ddm = depth_draw_mode;
@@ -452,10 +478,8 @@ void BaseMaterial3D::_update_shader() {
 		case DEPTH_DRAW_DISABLED:
 			code += ",depth_draw_never";
 			break;
-	}
-
-	if (transparency == TRANSPARENCY_ALPHA_DEPTH_PRE_PASS) {
-		code += ",depth_prepass_alpha";
+		case DEPTH_DRAW_MAX:
+			break; // Internal value, skip.
 	}
 
 	switch (cull_mode) {
@@ -468,6 +492,8 @@ void BaseMaterial3D::_update_shader() {
 		case CULL_DISABLED:
 			code += ",cull_disabled";
 			break;
+		case CULL_MAX:
+			break; // Internal value, skip.
 	}
 	switch (diffuse_mode) {
 		case DIFFUSE_BURLEY:
@@ -485,6 +511,8 @@ void BaseMaterial3D::_update_shader() {
 		case DIFFUSE_TOON:
 			code += ",diffuse_toon";
 			break;
+		case DIFFUSE_MAX:
+			break; // Internal value, skip.
 	}
 	switch (specular_mode) {
 		case SPECULAR_SCHLICK_GGX:
@@ -502,6 +530,8 @@ void BaseMaterial3D::_update_shader() {
 		case SPECULAR_DISABLED:
 			code += ",specular_disabled";
 			break;
+		case SPECULAR_MAX:
+			break; // Internal value, skip.
 	}
 	if (features[FEATURE_SUBSURFACE_SCATTERING] && flags[FLAG_SUBSURFACE_MODE_SKIN]) {
 		code += ",sss_mode_skin";
@@ -525,6 +555,23 @@ void BaseMaterial3D::_update_shader() {
 	if (flags[FLAG_USE_SHADOW_TO_OPACITY]) {
 		code += ",shadow_to_opacity";
 	}
+
+	if (transparency == TRANSPARENCY_ALPHA_DEPTH_PRE_PASS) {
+		code += ",depth_prepass_alpha";
+	}
+
+	// Although its technically possible to do alpha antialiasing without using alpha hash or alpha scissor,
+	// it is restricted in the base material because it has no use, and abusing it with regular Alpha blending can
+	// saturate the MSAA mask
+	if (transparency == TRANSPARENCY_ALPHA_HASH || transparency == TRANSPARENCY_ALPHA_SCISSOR) {
+		// alpha antialiasing is only useful in ALPHA_HASH or ALPHA_SCISSOR
+		if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE) {
+			code += ",alpha_to_coverage";
+		} else if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE) {
+			code += ",alpha_to_coverage_and_one";
+		}
+	}
+
 	code += ";\n";
 
 	code += "uniform vec4 albedo : hint_color;\n";
@@ -541,8 +588,18 @@ void BaseMaterial3D::_update_shader() {
 		code += "uniform float distance_fade_max;\n";
 	}
 
+	// alpha scissor is only valid if there is not antialiasing edge
+	// alpha hash is valid whenever, but not with alpha scissor
 	if (transparency == TRANSPARENCY_ALPHA_SCISSOR) {
 		code += "uniform float alpha_scissor_threshold;\n";
+	} else if (transparency == TRANSPARENCY_ALPHA_HASH) {
+		code += "uniform float alpha_hash_scale;\n";
+	}
+	// if alpha antialiasing isn't off, add in the edge variable
+	if (alpha_antialiasing_mode != ALPHA_ANTIALIASING_OFF &&
+			(transparency == TRANSPARENCY_ALPHA_SCISSOR || transparency == TRANSPARENCY_ALPHA_HASH)) {
+		code += "uniform float alpha_antialiasing_edge;\n";
+		code += "uniform ivec2 albedo_texture_size;\n";
 	}
 
 	code += "uniform float point_size : hint_range(0,128);\n";
@@ -568,6 +625,8 @@ void BaseMaterial3D::_update_shader() {
 			case TEXTURE_CHANNEL_GRAYSCALE: {
 				code += "uniform sampler2D texture_roughness : hint_roughness_gray," + texfilter_str + ";\n";
 			} break;
+			case TEXTURE_CHANNEL_MAX:
+				break; // Internal value, skip.
 		}
 
 		code += "uniform float specular;\n";
@@ -731,6 +790,8 @@ void BaseMaterial3D::_update_shader() {
 			code += "\tUV /= vec2(h_frames, v_frames);\n";
 			code += "\tUV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
 		} break;
+		case BILLBOARD_MAX:
+			break; // Internal value, skip.
 	}
 
 	if (flags[FLAG_FIXED_SIZE]) {
@@ -903,6 +964,8 @@ void BaseMaterial3D::_update_shader() {
 			case TEXTURE_CHANNEL_GRAYSCALE: {
 				code += "\tvec4 roughness_texture_channel = vec4(0.333333,0.333333,0.333333,0.0);\n";
 			} break;
+			case TEXTURE_CHANNEL_MAX:
+				break; // Internal value, skip.
 		}
 
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
@@ -925,11 +988,11 @@ void BaseMaterial3D::_update_shader() {
 
 	if (features[FEATURE_NORMAL_MAPPING]) {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tNORMALMAP = triplanar_texture(texture_normal,uv1_power_normal,uv1_triplanar_pos).rgb;\n";
+			code += "\tNORMAL_MAP = triplanar_texture(texture_normal,uv1_power_normal,uv1_triplanar_pos).rgb;\n";
 		} else {
-			code += "\tNORMALMAP = texture(texture_normal,base_uv).rgb;\n";
+			code += "\tNORMAL_MAP = texture(texture_normal,base_uv).rgb;\n";
 		}
-		code += "\tNORMALMAP_DEPTH = normal_scale;\n";
+		code += "\tNORMAL_MAP_DEPTH = normal_scale;\n";
 	}
 
 	if (features[FEATURE_EMISSION]) {
@@ -956,7 +1019,7 @@ void BaseMaterial3D::_update_shader() {
 
 	if (features[FEATURE_REFRACTION]) {
 		if (features[FEATURE_NORMAL_MAPPING]) {
-			code += "\tvec3 ref_normal = normalize( mix(NORMAL,TANGENT * NORMALMAP.x + BINORMAL * NORMALMAP.y + NORMAL * NORMALMAP.z,NORMALMAP_DEPTH) );\n";
+			code += "\tvec3 ref_normal = normalize( mix(NORMAL,TANGENT * NORMAL_MAP.x + BINORMAL * NORMAL_MAP.y + NORMAL * NORMAL_MAP.z,NORMAL_MAP_DEPTH) );\n";
 		} else {
 			code += "\tvec3 ref_normal = NORMAL;\n";
 		}
@@ -970,10 +1033,17 @@ void BaseMaterial3D::_update_shader() {
 		code += "\tALBEDO *= 1.0 - ref_amount;\n";
 		code += "\tALPHA = 1.0;\n";
 
-	} else if (transparency == TRANSPARENCY_ALPHA || transparency == TRANSPARENCY_ALPHA_DEPTH_PRE_PASS || flags[FLAG_USE_SHADOW_TO_OPACITY] || (distance_fade == DISTANCE_FADE_PIXEL_ALPHA) || proximity_fade_enabled) {
+	} else if (transparency != TRANSPARENCY_DISABLED || flags[FLAG_USE_SHADOW_TO_OPACITY] || (distance_fade == DISTANCE_FADE_PIXEL_ALPHA) || proximity_fade_enabled) {
 		code += "\tALPHA = albedo.a * albedo_tex.a;\n";
+	}
+	if (transparency == TRANSPARENCY_ALPHA_HASH) {
+		code += "\tALPHA_HASH_SCALE = alpha_hash_scale;\n";
 	} else if (transparency == TRANSPARENCY_ALPHA_SCISSOR) {
-		code += "\tif (albedo.a * albedo_tex.a < alpha_scissor_threshold) discard;\n";
+		code += "\tALPHA_SCISSOR_THRESHOLD = alpha_scissor_threshold;\n";
+	}
+	if (alpha_antialiasing_mode != ALPHA_ANTIALIASING_OFF && (transparency == TRANSPARENCY_ALPHA_HASH || transparency == TRANSPARENCY_ALPHA_SCISSOR)) {
+		code += "\tALPHA_ANTIALIASING_EDGE = alpha_antialiasing_edge;\n";
+		code += "\tALPHA_TEXTURE_COORDINATE = UV * vec2(albedo_texture_size);\n";
 	}
 
 	if (proximity_fade_enabled) {
@@ -1143,10 +1213,12 @@ void BaseMaterial3D::_update_shader() {
 			case BLEND_MODE_MUL: {
 				code += "\tvec3 detail = mix(ALBEDO.rgb,ALBEDO.rgb*detail_tex.rgb,detail_tex.a);\n";
 			} break;
+			case BLEND_MODE_MAX:
+				break; // Internal value, skip.
 		}
 
-		code += "\tvec3 detail_norm = mix(NORMALMAP,detail_norm_tex.rgb,detail_tex.a);\n";
-		code += "\tNORMALMAP = mix(NORMALMAP,detail_norm,detail_mask_tex.r);\n";
+		code += "\tvec3 detail_norm = mix(NORMAL_MAP,detail_norm_tex.rgb,detail_tex.a);\n";
+		code += "\tNORMAL_MAP = mix(NORMAL_MAP,detail_norm,detail_mask_tex.r);\n";
 		code += "\tALBEDO.rgb = mix(ALBEDO.rgb,detail,detail_mask_tex.r);\n";
 	}
 
@@ -1424,6 +1496,20 @@ BaseMaterial3D::Transparency BaseMaterial3D::get_transparency() const {
 	return transparency;
 }
 
+void BaseMaterial3D::set_alpha_antialiasing(AlphaAntiAliasing p_alpha_aa) {
+	if (alpha_antialiasing_mode == p_alpha_aa) {
+		return;
+	}
+
+	alpha_antialiasing_mode = p_alpha_aa;
+	_queue_shader_change();
+	_change_notify();
+}
+
+BaseMaterial3D::AlphaAntiAliasing BaseMaterial3D::get_alpha_antialiasing() const {
+	return alpha_antialiasing_mode;
+}
+
 void BaseMaterial3D::set_shading_mode(ShadingMode p_shading_mode) {
 	if (shading_mode == p_shading_mode) {
 		return;
@@ -1530,6 +1616,10 @@ void BaseMaterial3D::set_texture(TextureParam p_param, const Ref<Texture2D> &p_t
 	textures[p_param] = p_texture;
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->texture_names[p_param], rid);
+	if (p_texture.is_valid() && p_param == TEXTURE_ALBEDO) {
+		RS::get_singleton()->material_set_param(_get_material(), shader_names->albedo_texture_size,
+				Vector2i(p_texture->get_width(), p_texture->get_height()));
+	}
 	_change_notify();
 	_queue_shader_change();
 }
@@ -1605,7 +1695,31 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
+	// you can only enable anti-aliasing (in mataerials) on alpha scissor and alpha hash
+	const bool can_select_aa = (transparency == TRANSPARENCY_ALPHA_SCISSOR || transparency == TRANSPARENCY_ALPHA_HASH);
+	// alpha anti aliasiasing is only enabled when you can select aa
+	const bool alpha_aa_enabled = (alpha_antialiasing_mode != ALPHA_ANTIALIASING_OFF) && can_select_aa;
+
+	// alpha scissor slider isn't needed when alpha antialiasing is enabled
 	if (property.name == "alpha_scissor_threshold" && transparency != TRANSPARENCY_ALPHA_SCISSOR) {
+		property.usage = 0;
+	}
+
+	// alpha hash scale slider is only needed if transparency is alpha hash
+	if (property.name == "alpha_hash_scale" && transparency != TRANSPARENCY_ALPHA_HASH) {
+		property.usage = 0;
+	}
+
+	if (property.name == "alpha_antialiasing_mode" && !can_select_aa) {
+		property.usage = 0;
+	}
+
+	// we cant choose an antialiasing mode if alpha isnt possible
+	if (property.name == "alpha_antialiasing_edge" && !alpha_aa_enabled) {
+		property.usage = 0;
+	}
+
+	if (property.name == "blend_mode" && alpha_aa_enabled) {
 		property.usage = 0;
 	}
 
@@ -1845,6 +1959,24 @@ float BaseMaterial3D::get_alpha_scissor_threshold() const {
 	return alpha_scissor_threshold;
 }
 
+void BaseMaterial3D::set_alpha_hash_scale(float p_scale) {
+	alpha_hash_scale = p_scale;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->alpha_hash_scale, p_scale);
+}
+
+float BaseMaterial3D::get_alpha_hash_scale() const {
+	return alpha_hash_scale;
+}
+
+void BaseMaterial3D::set_alpha_antialiasing_edge(float p_edge) {
+	alpha_antialiasing_edge = p_edge;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->alpha_antialiasing_edge, p_edge);
+}
+
+float BaseMaterial3D::get_alpha_antialiasing_edge() const {
+	return alpha_antialiasing_edge;
+}
+
 void BaseMaterial3D::set_grow(float p_grow) {
 	grow = p_grow;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->grow, p_grow);
@@ -2033,6 +2165,12 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transparency", "transparency"), &BaseMaterial3D::set_transparency);
 	ClassDB::bind_method(D_METHOD("get_transparency"), &BaseMaterial3D::get_transparency);
 
+	ClassDB::bind_method(D_METHOD("set_alpha_antialiasing", "alpha_aa"), &BaseMaterial3D::set_alpha_antialiasing);
+	ClassDB::bind_method(D_METHOD("get_alpha_antialiasing"), &BaseMaterial3D::get_alpha_antialiasing);
+
+	ClassDB::bind_method(D_METHOD("set_alpha_antialiasing_edge", "edge"), &BaseMaterial3D::set_alpha_antialiasing_edge);
+	ClassDB::bind_method(D_METHOD("get_alpha_antialiasing_edge"), &BaseMaterial3D::get_alpha_antialiasing_edge);
+
 	ClassDB::bind_method(D_METHOD("set_shading_mode", "shading_mode"), &BaseMaterial3D::set_shading_mode);
 	ClassDB::bind_method(D_METHOD("get_shading_mode"), &BaseMaterial3D::get_shading_mode);
 
@@ -2186,6 +2324,9 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_alpha_scissor_threshold", "threshold"), &BaseMaterial3D::set_alpha_scissor_threshold);
 	ClassDB::bind_method(D_METHOD("get_alpha_scissor_threshold"), &BaseMaterial3D::get_alpha_scissor_threshold);
 
+	ClassDB::bind_method(D_METHOD("set_alpha_hash_scale", "threshold"), &BaseMaterial3D::set_alpha_hash_scale);
+	ClassDB::bind_method(D_METHOD("get_alpha_hash_scale"), &BaseMaterial3D::get_alpha_hash_scale);
+
 	ClassDB::bind_method(D_METHOD("set_grow_enabled", "enable"), &BaseMaterial3D::set_grow_enabled);
 	ClassDB::bind_method(D_METHOD("is_grow_enabled"), &BaseMaterial3D::is_grow_enabled);
 
@@ -2217,8 +2358,11 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_distance_fade_min_distance"), &BaseMaterial3D::get_distance_fade_min_distance);
 
 	ADD_GROUP("Transparency", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "transparency", PROPERTY_HINT_ENUM, "Disabled,Alpha,AlphaScissor,DepthPrePass"), "set_transparency", "get_transparency");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "transparency", PROPERTY_HINT_ENUM, "Disabled,Alpha,Alpha Scissor,Alpha Hash,Depth PrePass"), "set_transparency", "get_transparency");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_scissor_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_scissor_threshold", "get_alpha_scissor_threshold");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_hash_scale", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_alpha_hash_scale", "get_alpha_hash_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_antialiasing_mode", PROPERTY_HINT_ENUM, "Disabled,Alpha Edge Blend,Alpha Edge Clip"), "set_alpha_antialiasing", "get_alpha_antialiasing");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_antialiasing_edge", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_antialiasing_edge", "get_alpha_antialiasing_edge");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul"), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never"), "set_depth_draw_mode", "get_depth_draw_mode");
@@ -2292,10 +2436,10 @@ void BaseMaterial3D::_bind_methods() {
 
 	ADD_GROUP("Height", "heightmap_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "heightmap_enabled"), "set_feature", "get_feature", FEATURE_HEIGHT_MAPPING);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "heightmap_scale", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_heightmap_scale", "get_heightmap_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "heightmap_scale", PROPERTY_HINT_RANGE, "-16,16,0.001"), "set_heightmap_scale", "get_heightmap_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "heightmap_deep_parallax"), "set_heightmap_deep_parallax", "is_heightmap_deep_parallax_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "heightmap_min_layers", PROPERTY_HINT_RANGE, "1,32,1"), "set_heightmap_deep_parallax_min_layers", "get_heightmap_deep_parallax_min_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "heightmap_max_layers", PROPERTY_HINT_RANGE, "1,32,1"), "set_heightmap_deep_parallax_max_layers", "get_heightmap_deep_parallax_max_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "heightmap_min_layers", PROPERTY_HINT_RANGE, "1,64,1"), "set_heightmap_deep_parallax_min_layers", "get_heightmap_deep_parallax_min_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "heightmap_max_layers", PROPERTY_HINT_RANGE, "1,64,1"), "set_heightmap_deep_parallax_max_layers", "get_heightmap_deep_parallax_max_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "heightmap_flip_tangent"), "set_heightmap_deep_parallax_flip_tangent", "get_heightmap_deep_parallax_flip_tangent");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "heightmap_flip_binormal"), "set_heightmap_deep_parallax_flip_binormal", "get_heightmap_deep_parallax_flip_binormal");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "heightmap_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_HEIGHTMAP);
@@ -2414,6 +2558,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRANSPARENCY_DISABLED);
 	BIND_ENUM_CONSTANT(TRANSPARENCY_ALPHA);
 	BIND_ENUM_CONSTANT(TRANSPARENCY_ALPHA_SCISSOR);
+	BIND_ENUM_CONSTANT(TRANSPARENCY_ALPHA_HASH);
 	BIND_ENUM_CONSTANT(TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
 	BIND_ENUM_CONSTANT(TRANSPARENCY_MAX);
 
@@ -2440,6 +2585,10 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_ADD);
 	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
 	BIND_ENUM_CONSTANT(BLEND_MODE_MUL);
+
+	BIND_ENUM_CONSTANT(ALPHA_ANTIALIASING_OFF);
+	BIND_ENUM_CONSTANT(ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE);
+	BIND_ENUM_CONSTANT(ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE);
 
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_OPAQUE_ONLY);
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_ALWAYS);
@@ -2506,8 +2655,9 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 		element(this) {
 	orm = p_orm;
 	// Initialize to the same values as the shader
-	transparency = TRANSPARENCY_DISABLED;
 	shading_mode = SHADING_MODE_PER_PIXEL;
+	transparency = TRANSPARENCY_DISABLED;
+	alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 	set_albedo(Color(1.0, 1.0, 1.0, 1.0));
 	set_specular(0.5);
 	set_roughness(1.0);
@@ -2539,8 +2689,13 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_particles_anim_h_frames(1);
 	set_particles_anim_v_frames(1);
 	set_particles_anim_loop(false);
-	set_alpha_scissor_threshold(0.98);
 	emission_op = EMISSION_OP_ADD;
+
+	set_transparency(TRANSPARENCY_DISABLED);
+	set_alpha_antialiasing(ALPHA_ANTIALIASING_OFF);
+	set_alpha_scissor_threshold(0.05);
+	set_alpha_hash_scale(1.0);
+	set_alpha_antialiasing_edge(0.3);
 
 	proximity_fade_enabled = false;
 	distance_fade = DISTANCE_FADE_DISABLED;
@@ -2582,10 +2737,8 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 		features[i] = false;
 	}
 
-	current_key.key0 = 0;
-	current_key.key1 = 0;
-	current_key.invalid_key = 1;
 	texture_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
+
 	_queue_shader_change();
 }
 
@@ -2633,6 +2786,12 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			set_transparency(TRANSPARENCY_ALPHA_SCISSOR);
 		}
 		return true;
+	} else if (p_name == "params_use_alpha_hash") {
+		bool use_hash = p_value;
+		if (use_hash) {
+			set_transparency(TRANSPARENCY_ALPHA_HASH);
+		}
+		return true;
 	} else if (p_name == "params_depth_draw_mode") {
 		int mode = p_value;
 		if (mode == 3) {
@@ -2667,6 +2826,8 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			{ "params_grow", "grow" },
 			{ "params_grow_amount", "grow_amount" },
 			{ "params_alpha_scissor_threshold", "alpha_scissor_threshold" },
+			{ "params_alpha_hash_scale", "alpha_hash_scale" },
+			{ "params_alpha_antialiasing_edge", "alpha_antialiasing_edge" },
 
 			{ "depth_scale", "heightmap_scale" },
 			{ "depth_deep_parallax", "heightmap_deep_parallax" },

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@
 #include "main/main.h"
 #include "platform/windows/display_server_windows.h"
 #include "servers/audio_server.h"
-#include "servers/rendering/rendering_server_raster.h"
+#include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/rendering_server_wrap_mt.h"
 #include "windows_terminal_logger.h"
 
@@ -183,7 +183,6 @@ void OS_Windows::initialize() {
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_FILESYSTEM);
-	//FileAccessBufferedFA<FileAccessWindows>::make_default();
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
@@ -244,7 +243,7 @@ void OS_Windows::finalize_core() {
 }
 
 Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
-	String path = p_path;
+	String path = p_path.replace("/", "\\");
 
 	if (!FileAccess::exists(path)) {
 		//this code exists so gdnative can load .dll files from within the executable path
@@ -412,8 +411,10 @@ String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 }
 
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+	String path = p_path.replace("/", "\\");
+
 	if (p_blocking && r_pipe) {
-		String argss = _quote_command_line_argument(p_path);
+		String argss = _quote_command_line_argument(path);
 		for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
 			argss += " " + _quote_command_line_argument(E->get());
 		}
@@ -446,7 +447,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		return OK;
 	}
 
-	String cmdline = _quote_command_line_argument(p_path);
+	String cmdline = _quote_command_line_argument(path);
 	const List<String>::Element *I = p_arguments.front();
 	while (I) {
 		cmdline += " " + _quote_command_line_argument(I->get());
@@ -464,8 +465,10 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	ERR_FAIL_COND_V(ret == 0, ERR_CANT_FORK);
 
 	if (p_blocking) {
-		DWORD ret2 = WaitForSingleObject(pi.pi.hProcess, INFINITE);
+		WaitForSingleObject(pi.pi.hProcess, INFINITE);
 		if (r_exitcode) {
+			DWORD ret2;
+			GetExitCodeProcess(pi.pi.hProcess, &ret2);
 			*r_exitcode = ret2;
 		}
 
@@ -509,7 +512,7 @@ Error OS_Windows::set_cwd(const String &p_cwd) {
 String OS_Windows::get_executable_path() const {
 	WCHAR bufname[4096];
 	GetModuleFileNameW(nullptr, bufname, 4096);
-	String s = String::utf16((const char16_t *)bufname);
+	String s = String::utf16((const char16_t *)bufname).replace("\\", "/");
 	return s;
 }
 
@@ -558,21 +561,21 @@ String OS_Windows::get_locale() const {
 
 	LANGID langid = GetUserDefaultUILanguage();
 	String neutral;
-	int lang = langid & ((1 << 9) - 1);
-	int sublang = langid & ~((1 << 9) - 1);
+	int lang = PRIMARYLANGID(langid);
+	int sublang = SUBLANGID(langid);
 
 	while (wl->locale) {
 		if (wl->main_lang == lang && wl->sublang == SUBLANG_NEUTRAL)
 			neutral = wl->locale;
 
 		if (lang == wl->main_lang && sublang == wl->sublang)
-			return wl->locale;
+			return String(wl->locale).replace("-", "_");
 
 		wl++;
 	}
 
 	if (neutral != "")
-		return neutral;
+		return String(neutral).replace("-", "_");
 
 	return "en";
 }
@@ -611,7 +614,7 @@ void OS_Windows::run() {
 	if (!main_loop)
 		return;
 
-	main_loop->init();
+	main_loop->initialize();
 
 	while (!force_quit) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
@@ -619,7 +622,7 @@ void OS_Windows::run() {
 			break;
 	};
 
-	main_loop->finish();
+	main_loop->finalize();
 }
 
 MainLoop *OS_Windows::get_main_loop() const {
@@ -798,6 +801,11 @@ void OS_Windows::set_current_tablet_driver(const String &p_driver) {
 }
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
+	ticks_per_second = 0;
+	ticks_start = 0;
+	main_loop = nullptr;
+	process_map = nullptr;
+
 	//Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
 	if (wintab_lib) {

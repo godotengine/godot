@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,15 +78,15 @@ Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Ve
 	ERR_FAIL_INDEX_V(p_method, METHOD_MAX, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V_MSG(p_method == METHOD_TRACE || p_method == METHOD_CONNECT, ERR_UNAVAILABLE, "HTTP methods TRACE and CONNECT are not supported for the HTML5 platform.");
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(host.empty(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(host.is_empty(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(port < 0, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!p_url.begins_with("/"), ERR_INVALID_PARAMETER);
 
 	String url = (use_tls ? "https://" : "http://") + host + ":" + itos(port) + p_url;
 	godot_xhr_reset(xhr_id);
 	godot_xhr_open(xhr_id, _methods[p_method], url.utf8().get_data(),
-			username.empty() ? nullptr : username.utf8().get_data(),
-			password.empty() ? nullptr : password.utf8().get_data());
+			username.is_empty() ? nullptr : username.utf8().get_data(),
+			password.is_empty() ? nullptr : password.utf8().get_data());
 
 	for (int i = 0; i < p_headers.size(); i++) {
 		int header_separator = p_headers[i].find(": ");
@@ -132,7 +132,7 @@ HTTPClient::Status HTTPClient::get_status() const {
 }
 
 bool HTTPClient::has_response() const {
-	return !polled_response_header.empty();
+	return !polled_response_header.is_empty();
 }
 
 bool HTTPClient::is_response_chunked() const {
@@ -145,7 +145,7 @@ int HTTPClient::get_response_code() const {
 }
 
 Error HTTPClient::get_response_headers(List<String> *r_response) {
-	if (polled_response_header.empty())
+	if (polled_response_header.is_empty())
 		return ERR_INVALID_PARAMETER;
 
 	Vector<String> header_lines = polled_response_header.split("\r\n", false);

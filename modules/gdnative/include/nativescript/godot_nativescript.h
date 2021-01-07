@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,7 +85,6 @@ typedef enum {
 } godot_nativescript_property_hint;
 
 typedef enum {
-
 	GODOT_PROPERTY_USAGE_STORAGE = 1,
 	GODOT_PROPERTY_USAGE_EDITOR = 2,
 	GODOT_PROPERTY_USAGE_NETWORK = 4,

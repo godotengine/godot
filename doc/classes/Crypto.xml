@@ -73,6 +73,18 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="constant_time_compare">
+			<return type="bool">
+			</return>
+			<argument index="0" name="trusted" type="PackedByteArray">
+			</argument>
+			<argument index="1" name="received" type="PackedByteArray">
+			</argument>
+			<description>
+				Compares two [PackedByteArray]s for equality without leaking timing information in order to prevent timing attacks.
+				See [url=https://paragonie.com/blog/2015/11/preventing-timing-attacks-on-string-comparison-with-double-hmac-strategy]this blog post[/url] for more information.
+			</description>
+		</method>
 		<method name="decrypt">
 			<return type="PackedByteArray">
 			</return>
@@ -145,6 +157,20 @@
 				X509Certificate cert = crypto.GenerateSelfSignedCertificate(key, "CN=mydomain.com,O=My Game Company,C=IT");
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="hmac_digest">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="hash_type" type="int" enum="HashingContext.HashType">
+			</argument>
+			<argument index="1" name="key" type="PackedByteArray">
+			</argument>
+			<argument index="2" name="msg" type="PackedByteArray">
+			</argument>
+			<description>
+				Generates an [url=https://en.wikipedia.org/wiki/HMAC]HMAC[/url] digest of [code]msg[/code] using [code]key[/code]. The [code]hash_type[/code] parameter is the hashing algorithm that is used for the inner and outer hashes.
+				Currently, only [constant HashingContext.HASH_SHA256] and [constant HashingContext.HASH_SHA1] are supported.
 			</description>
 		</method>
 		<method name="sign">

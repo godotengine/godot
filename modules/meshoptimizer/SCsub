@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_meshoptimizer = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+thirdparty_dir = "#thirdparty/meshoptimizer/"
+thirdparty_sources = [
+    "allocator.cpp",
+    "clusterizer.cpp",
+    "indexcodec.cpp",
+    "indexgenerator.cpp",
+    "overdrawanalyzer.cpp",
+    "overdrawoptimizer.cpp",
+    "simplifier.cpp",
+    "spatialorder.cpp",
+    "stripifier.cpp",
+    "vcacheanalyzer.cpp",
+    "vcacheoptimizer.cpp",
+    "vertexcodec.cpp",
+    "vertexfilter.cpp",
+    "vfetchanalyzer.cpp",
+    "vfetchoptimizer.cpp",
+]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+env_thirdparty = env_meshoptimizer.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
+
+# Godot source files
+
+module_obj = []
+
+env_meshoptimizer.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

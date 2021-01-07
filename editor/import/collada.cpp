@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1365,7 +1365,7 @@ Collada::Node *Collada::_parse_visual_instance_geometry(XMLParser &parser) {
 	}
 
 	if (geom->controller) {
-		if (geom->skeletons.empty()) {
+		if (geom->skeletons.is_empty()) {
 			//XSI style
 
 			if (state.skin_controller_data_map.has(geom->source)) {
@@ -2321,7 +2321,7 @@ void Collada::_optimize() {
 				i--;
 			}
 
-			while (!mgeom.empty()) {
+			while (!mgeom.is_empty()) {
 				Node *n = mgeom.front()->get();
 				n->parent->children.push_back(n);
 				mgeom.pop_front();

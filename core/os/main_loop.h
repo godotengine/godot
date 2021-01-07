@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,14 +32,14 @@
 #define MAIN_LOOP_H
 
 #include "core/input/input_event.h"
-#include "core/reference.h"
-#include "core/script_language.h"
+#include "core/object/reference.h"
+#include "core/object/script_language.h"
 
 class MainLoop : public Object {
 	GDCLASS(MainLoop, Object);
 	OBJ_CATEGORY("Main Loop");
 
-	Ref<Script> init_script;
+	Ref<Script> initialize_script;
 
 protected:
 	static void _bind_methods();
@@ -56,14 +56,15 @@ public:
 		NOTIFICATION_APPLICATION_PAUSED = 2015,
 		NOTIFICATION_APPLICATION_FOCUS_IN = 2016,
 		NOTIFICATION_APPLICATION_FOCUS_OUT = 2017,
+		NOTIFICATION_TEXT_SERVER_CHANGED = 2018,
 	};
 
-	virtual void init();
-	virtual bool iteration(float p_time);
-	virtual bool idle(float p_time);
-	virtual void finish();
+	virtual void initialize();
+	virtual bool physics_process(float p_time);
+	virtual bool process(float p_time);
+	virtual void finalize();
 
-	void set_init_script(const Ref<Script> &p_init_script);
+	void set_initialize_script(const Ref<Script> &p_initialize_script);
 
 	MainLoop() {}
 	virtual ~MainLoop() {}

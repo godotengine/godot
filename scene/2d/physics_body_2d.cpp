@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,25 +30,15 @@
 
 #include "physics_body_2d.h"
 
+#include "core/config/engine.h"
 #include "core/core_string_names.h"
-#include "core/engine.h"
-#include "core/list.h"
 #include "core/math/math_funcs.h"
-#include "core/method_bind_ext.gen.inc"
-#include "core/object.h"
-#include "core/rid.h"
+#include "core/object/class_db.h"
+#include "core/templates/list.h"
+#include "core/templates/rid.h"
 #include "scene/scene_string_names.h"
 
 void PhysicsBody2D::_notification(int p_what) {
-}
-
-void PhysicsBody2D::_set_layers(uint32_t p_mask) {
-	set_collision_layer(p_mask);
-	set_collision_mask(p_mask);
-}
-
-uint32_t PhysicsBody2D::_get_layers() const {
-	return get_collision_layer();
 }
 
 void PhysicsBody2D::_bind_methods() {
@@ -63,13 +53,9 @@ void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &PhysicsBody2D::set_collision_layer_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &PhysicsBody2D::get_collision_layer_bit);
 
-	ClassDB::bind_method(D_METHOD("_set_layers", "mask"), &PhysicsBody2D::_set_layers);
-	ClassDB::bind_method(D_METHOD("_get_layers"), &PhysicsBody2D::_get_layers);
-
 	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody2D::get_collision_exceptions);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody2D::add_collision_exception_with);
 	ClassDB::bind_method(D_METHOD("remove_collision_exception_with", "body"), &PhysicsBody2D::remove_collision_exception_with);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_2D_PHYSICS, "", 0), "_set_layers", "_get_layers"); //for backwards compat
 
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_layer", "get_collision_layer");
@@ -315,7 +301,7 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 
 		bool in_scene = E->get().in_scene;
 
-		if (E->get().shapes.empty()) {
+		if (E->get().shapes.is_empty()) {
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree));
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree));
@@ -474,8 +460,6 @@ RigidBody2D::Mode RigidBody2D::get_mode() const {
 void RigidBody2D::set_mass(real_t p_mass) {
 	ERR_FAIL_COND(p_mass <= 0);
 	mass = p_mass;
-	_change_notify("mass");
-	_change_notify("weight");
 	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_MASS, mass);
 }
 
@@ -490,14 +474,6 @@ void RigidBody2D::set_inertia(real_t p_inertia) {
 
 real_t RigidBody2D::get_inertia() const {
 	return PhysicsServer2D::get_singleton()->body_get_param(get_rid(), PhysicsServer2D::BODY_PARAM_INERTIA);
-}
-
-void RigidBody2D::set_weight(real_t p_weight) {
-	set_mass(p_weight / (real_t(GLOBAL_DEF("physics/2d/default_gravity", 98)) / 10));
-}
-
-real_t RigidBody2D::get_weight() const {
-	return mass * (real_t(GLOBAL_DEF("physics/2d/default_gravity", 98)) / 10);
 }
 
 void RigidBody2D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
@@ -748,7 +724,7 @@ String RigidBody2D::get_configuration_warning() const {
 	String warning = CollisionObject2D::get_configuration_warning();
 
 	if ((get_mode() == MODE_RIGID || get_mode() == MODE_CHARACTER) && (ABS(t.elements[0].length() - 1.0) > 0.05 || ABS(t.elements[1].length() - 1.0) > 0.05)) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Size changes to RigidBody2D (in character or rigid modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
@@ -766,9 +742,6 @@ void RigidBody2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_inertia"), &RigidBody2D::get_inertia);
 	ClassDB::bind_method(D_METHOD("set_inertia", "inertia"), &RigidBody2D::set_inertia);
-
-	ClassDB::bind_method(D_METHOD("set_weight", "weight"), &RigidBody2D::set_weight);
-	ClassDB::bind_method(D_METHOD("get_weight"), &RigidBody2D::get_weight);
 
 	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &RigidBody2D::set_physics_material_override);
 	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &RigidBody2D::get_physics_material_override);
@@ -832,7 +805,6 @@ void RigidBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Rigid,Static,Character,Kinematic"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_mass", "get_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "inertia", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01", 0), "set_inertia", "get_inertia");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "weight", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01", PROPERTY_USAGE_EDITOR), "set_weight", "get_weight");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_integrator"), "set_use_custom_integrator", "is_using_custom_integrator");

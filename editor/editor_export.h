@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef EDITOR_EXPORT_H
 #define EDITOR_EXPORT_H
 
+#include "core/io/resource.h"
 #include "core/os/dir_access.h"
-#include "core/resource.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
 #include "scene/resources/texture.h"
@@ -67,8 +67,6 @@ private:
 	String exporter;
 	Set<String> selected_files;
 	bool runnable = false;
-
-	Vector<String> patches;
 
 	friend class EditorExport;
 	friend class EditorExportPlatform;
@@ -121,12 +119,6 @@ public:
 	void set_exclude_filter(const String &p_exclude);
 	String get_exclude_filter() const;
 
-	void add_patch(const String &p_path, int p_at_pos = -1);
-	void set_patch(int p_index, const String &p_path);
-	String get_patch(int p_index);
-	void remove_patch(int p_idx);
-	Vector<String> get_patches() const;
-
 	void set_custom_features(const String &p_custom_features);
 	String get_custom_features() const;
 
@@ -177,9 +169,9 @@ public:
 
 private:
 	struct SavedData {
-		uint64_t ofs;
-		uint64_t size;
-		bool encrypted;
+		uint64_t ofs = 0;
+		uint64_t size = 0;
+		bool encrypted = false;
 		Vector<uint8_t> md5;
 		CharString path_utf8;
 
@@ -189,15 +181,15 @@ private:
 	};
 
 	struct PackData {
-		FileAccess *f;
+		FileAccess *f = nullptr;
 		Vector<SavedData> file_ofs;
-		EditorProgress *ep;
-		Vector<SharedObject> *so_files;
+		EditorProgress *ep = nullptr;
+		Vector<SharedObject> *so_files = nullptr;
 	};
 
 	struct ZipData {
-		void *zip;
-		EditorProgress *ep;
+		void *zip = nullptr;
+		EditorProgress *ep = nullptr;
 	};
 
 	struct FeatureContainers {
@@ -302,7 +294,7 @@ class EditorExportPlugin : public Reference {
 	struct ExtraFile {
 		String path;
 		Vector<uint8_t> data;
-		bool remap;
+		bool remap = false;
 	};
 	Vector<ExtraFile> extra_files;
 	bool skipped;
@@ -431,8 +423,6 @@ private:
 	String release_file_64;
 	String debug_file_32;
 	String debug_file_64;
-
-	Set<String> extra_features;
 
 	int chmod_flags;
 

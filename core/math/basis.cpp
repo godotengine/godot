@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 
 #include "core/math/math_funcs.h"
 #include "core/os/copymem.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #define cofac(row1, col1, row2, col2) \
 	(elements[row1][col1] * elements[row2][col2] - elements[row1][col2] * elements[row2][col1])
@@ -1017,15 +1017,15 @@ void Basis::set_diagonal(const Vector3 &p_diag) {
 	elements[2][2] = p_diag.z;
 }
 
-Basis Basis::slerp(const Basis &target, const real_t &t) const {
+Basis Basis::slerp(const Basis &p_to, const real_t &p_weight) const {
 	//consider scale
 	Quat from(*this);
-	Quat to(target);
+	Quat to(p_to);
 
-	Basis b(from.slerp(to, t));
-	b.elements[0] *= Math::lerp(elements[0].length(), target.elements[0].length(), t);
-	b.elements[1] *= Math::lerp(elements[1].length(), target.elements[1].length(), t);
-	b.elements[2] *= Math::lerp(elements[2].length(), target.elements[2].length(), t);
+	Basis b(from.slerp(to, p_weight));
+	b.elements[0] *= Math::lerp(elements[0].length(), p_to.elements[0].length(), p_weight);
+	b.elements[1] *= Math::lerp(elements[1].length(), p_to.elements[1].length(), p_weight);
+	b.elements[2] *= Math::lerp(elements[2].length(), p_to.elements[2].length(), p_weight);
 
 	return b;
 }

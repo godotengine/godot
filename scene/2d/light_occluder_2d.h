@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,7 +84,7 @@ class LightOccluder2D : public Node2D {
 	bool enabled;
 	int mask;
 	Ref<OccluderPolygon2D> occluder_polygon;
-
+	bool sdf_collision;
 	void _poly_changed();
 
 protected:
@@ -102,6 +102,9 @@ public:
 
 	void set_occluder_light_mask(int p_mask);
 	int get_occluder_light_mask() const;
+
+	void set_as_sdf_collision(bool p_enable);
+	bool is_set_as_sdf_collision() const;
 
 	String get_configuration_warning() const override;
 

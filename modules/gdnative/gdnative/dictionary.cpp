@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "gdnative/dictionary.h"
 
-#include "core/variant.h"
-// core/variant.h before to avoid compile errors with MSVC
-#include "core/dictionary.h"
+#include "core/variant/variant.h"
+// core/variant/variant.h before to avoid compile errors with MSVC
 #include "core/io/json.h"
+#include "core/variant/dictionary.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,9 +71,9 @@ godot_int GDAPI godot_dictionary_size(const godot_dictionary *p_self) {
 	return self->size();
 }
 
-godot_bool GDAPI godot_dictionary_empty(const godot_dictionary *p_self) {
+godot_bool GDAPI godot_dictionary_is_empty(const godot_dictionary *p_self) {
 	const Dictionary *self = (const Dictionary *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_dictionary_clear(godot_dictionary *p_self) {

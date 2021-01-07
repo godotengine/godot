@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 
 #include "visual_script_nodes.h"
 
-#include "core/engine.h"
-#include "core/global_constants.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/core_constants.h"
 #include "core/input/input.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 
@@ -828,7 +828,6 @@ PropertyInfo VisualScriptOperator::get_input_value_port_info(int p_idx) const {
 		{ Variant::NIL, Variant::NIL }, //OP_NEGATE,
 		{ Variant::NIL, Variant::NIL }, //OP_POSITIVE,
 		{ Variant::INT, Variant::INT }, //OP_MODULE,
-		{ Variant::STRING, Variant::STRING }, //OP_STRING_CONCAT,
 		//bitwise
 		{ Variant::INT, Variant::INT }, //OP_SHIFT_LEFT,
 		{ Variant::INT, Variant::INT }, //OP_SHIFT_RIGHT,
@@ -873,7 +872,6 @@ PropertyInfo VisualScriptOperator::get_output_value_port_info(int p_idx) const {
 		Variant::NIL, //OP_NEGATE,
 		Variant::NIL, //OP_POSITIVE,
 		Variant::INT, //OP_MODULE,
-		Variant::STRING, //OP_STRING_CONCAT,
 		//bitwise
 		Variant::INT, //OP_SHIFT_LEFT,
 		Variant::INT, //OP_SHIFT_RIGHT,
@@ -1433,7 +1431,7 @@ void VisualScriptConstant::set_constant_type(Variant::Type p_type) {
 
 	type = p_type;
 	Callable::CallError ce;
-	value = Variant::construct(type, nullptr, 0, ce);
+	Variant::construct(type, value, nullptr, 0, ce);
 	ports_changed_notify();
 	_change_notify();
 }
@@ -1756,7 +1754,7 @@ PropertyInfo VisualScriptGlobalConstant::get_input_value_port_info(int p_idx) co
 }
 
 PropertyInfo VisualScriptGlobalConstant::get_output_value_port_info(int p_idx) const {
-	String name = GlobalConstants::get_global_constant_name(index);
+	String name = CoreConstants::get_global_constant_name(index);
 	return PropertyInfo(Variant::INT, name);
 }
 
@@ -1780,7 +1778,7 @@ public:
 	//virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
-		*p_outputs[0] = GlobalConstants::get_global_constant_value(index);
+		*p_outputs[0] = CoreConstants::get_global_constant_value(index);
 		return 0;
 	}
 };
@@ -1797,11 +1795,11 @@ void VisualScriptGlobalConstant::_bind_methods() {
 
 	String cc;
 
-	for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
+	for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 		if (i > 0) {
 			cc += ",";
 		}
-		cc += GlobalConstants::get_global_constant_name(i);
+		cc += CoreConstants::get_global_constant_name(i);
 	}
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "constant", PROPERTY_HINT_ENUM, cc), "set_global_constant", "get_global_constant");
 }
@@ -3257,7 +3255,7 @@ public:
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 		Callable::CallError ce;
-		*p_outputs[0] = Variant::construct(type, p_inputs, argcount, ce);
+		Variant::construct(type, *p_outputs[0], p_inputs, argcount, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
 			r_error_str = "Invalid arguments for constructor";
 		}
@@ -3729,7 +3727,7 @@ void VisualScriptDeconstruct::_update_elements() {
 	elements.clear();
 	Variant v;
 	Callable::CallError ce;
-	v = Variant::construct(type, nullptr, 0, ce);
+	Variant::construct(type, v, nullptr, 0, ce);
 
 	List<PropertyInfo> pinfo;
 	v.get_property_list(&pinfo);
@@ -3881,7 +3879,6 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("operators/math/negate", create_op_node<Variant::OP_NEGATE>);
 	VisualScriptLanguage::singleton->add_register_func("operators/math/positive", create_op_node<Variant::OP_POSITIVE>);
 	VisualScriptLanguage::singleton->add_register_func("operators/math/remainder", create_op_node<Variant::OP_MODULE>);
-	VisualScriptLanguage::singleton->add_register_func("operators/math/string_concat", create_op_node<Variant::OP_STRING_CONCAT>);
 	//bitwise
 	VisualScriptLanguage::singleton->add_register_func("operators/bitwise/shift_left", create_op_node<Variant::OP_SHIFT_LEFT>);
 	VisualScriptLanguage::singleton->add_register_func("operators/bitwise/shift_right", create_op_node<Variant::OP_SHIFT_RIGHT>);

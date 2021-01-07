@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,8 +35,13 @@
 extern "C" {
 #endif
 
+#include <stddef.h>
 #include <stdint.h>
-#include <wchar.h>
+
+#ifndef __cplusplus
+typedef uint32_t char32_t;
+typedef uint16_t char16_t;
+#endif
 
 typedef char32_t godot_char_type;
 
@@ -251,12 +256,12 @@ godot_string GDAPI godot_string_sha1_text(const godot_string *p_self);
 godot_packed_byte_array GDAPI godot_string_sha256_buffer(const godot_string *p_self);
 godot_string GDAPI godot_string_sha256_text(const godot_string *p_self);
 
-godot_bool godot_string_empty(const godot_string *p_self);
+godot_bool godot_string_is_empty(const godot_string *p_self);
 
 // path functions
 godot_string GDAPI godot_string_get_base_dir(const godot_string *p_self);
 godot_string GDAPI godot_string_get_file(const godot_string *p_self);
-godot_string GDAPI godot_string_humanize_size(size_t p_size);
+godot_string GDAPI godot_string_humanize_size(uint64_t p_size);
 godot_bool GDAPI godot_string_is_abs_path(const godot_string *p_self);
 godot_bool GDAPI godot_string_is_rel_path(const godot_string *p_self);
 godot_bool GDAPI godot_string_is_resource_file(const godot_string *p_self);

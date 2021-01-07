@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -106,7 +106,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 		add_point_pos += blend_space->get_min_space();
 
 		if (snap->is_pressed()) {
-			add_point_pos = Math::stepify(add_point_pos, blend_space->get_snap());
+			add_point_pos = Math::snapped(add_point_pos, blend_space->get_snap());
 		}
 	}
 
@@ -139,7 +139,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 			point += drag_ofs.x;
 
 			if (snap->is_pressed()) {
-				point = Math::stepify(point, blend_space->get_snap());
+				point = Math::snapped(point, blend_space->get_snap());
 			}
 
 			updating = true;
@@ -201,6 +201,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 	linecolor_soft.a *= 0.5;
 
 	Ref<Font> font = get_theme_font("font", "Label");
+	int font_size = get_theme_font_size("font_size", "Label");
 	Ref<Texture2D> icon = get_theme_icon("KeyValue", "EditorIcons");
 	Ref<Texture2D> icon_selected = get_theme_icon("KeySelected", "EditorIcons");
 
@@ -221,7 +222,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 		float x = point;
 
 		blend_space_draw->draw_line(Point2(x, s.height - 1), Point2(x, s.height - 5 * EDSCALE), linecolor);
-		blend_space_draw->draw_string(font, Point2(x + 2 * EDSCALE, s.height - 2 * EDSCALE - font->get_height() + font->get_ascent()), "0", linecolor);
+		blend_space_draw->draw_string(font, Point2(x + 2 * EDSCALE, s.height - 2 * EDSCALE - font->get_height(font_size) + font->get_ascent(font_size)), "0", HALIGN_LEFT, -1, font_size, linecolor);
 		blend_space_draw->draw_line(Point2(x, s.height - 5 * EDSCALE), Point2(x, 0), linecolor_soft);
 	}
 
@@ -252,7 +253,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 		if (dragging_selected && selected_point == i) {
 			point += drag_ofs.x;
 			if (snap->is_pressed()) {
-				point = Math::stepify(point, blend_space->get_snap());
+				point = Math::snapped(point, blend_space->get_snap());
 			}
 		}
 
@@ -453,7 +454,7 @@ void AnimationNodeBlendSpace1DEditor::_update_edited_point_pos() {
 			pos += drag_ofs.x;
 
 			if (snap->is_pressed()) {
-				pos = Math::stepify(pos, blend_space->get_snap());
+				pos = Math::snapped(pos, blend_space->get_snap());
 			}
 		}
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef VECTOR3I_H
 #define VECTOR3I_H
 
+#include "core/string/ustring.h"
 #include "core/typedefs.h"
-#include "core/ustring.h"
 
 struct Vector3i {
 	enum Axis {
@@ -80,11 +80,15 @@ struct Vector3i {
 	_FORCE_INLINE_ Vector3i operator*(const Vector3i &p_v) const;
 	_FORCE_INLINE_ Vector3i &operator/=(const Vector3i &p_v);
 	_FORCE_INLINE_ Vector3i operator/(const Vector3i &p_v) const;
+	_FORCE_INLINE_ Vector3i &operator%=(const Vector3i &p_v);
+	_FORCE_INLINE_ Vector3i operator%(const Vector3i &p_v) const;
 
 	_FORCE_INLINE_ Vector3i &operator*=(int32_t p_scalar);
 	_FORCE_INLINE_ Vector3i operator*(int32_t p_scalar) const;
 	_FORCE_INLINE_ Vector3i &operator/=(int32_t p_scalar);
 	_FORCE_INLINE_ Vector3i operator/(int32_t p_scalar) const;
+	_FORCE_INLINE_ Vector3i &operator%=(int32_t p_scalar);
+	_FORCE_INLINE_ Vector3i operator%(int32_t p_scalar) const;
 
 	_FORCE_INLINE_ Vector3i operator-() const;
 
@@ -159,6 +163,17 @@ Vector3i Vector3i::operator/(const Vector3i &p_v) const {
 	return Vector3i(x / p_v.x, y / p_v.y, z / p_v.z);
 }
 
+Vector3i &Vector3i::operator%=(const Vector3i &p_v) {
+	x %= p_v.x;
+	y %= p_v.y;
+	z %= p_v.z;
+	return *this;
+}
+
+Vector3i Vector3i::operator%(const Vector3i &p_v) const {
+	return Vector3i(x % p_v.x, y % p_v.y, z % p_v.z);
+}
+
 Vector3i &Vector3i::operator*=(int32_t p_scalar) {
 	x *= p_scalar;
 	y *= p_scalar;
@@ -183,6 +198,17 @@ Vector3i &Vector3i::operator/=(int32_t p_scalar) {
 
 Vector3i Vector3i::operator/(int32_t p_scalar) const {
 	return Vector3i(x / p_scalar, y / p_scalar, z / p_scalar);
+}
+
+Vector3i &Vector3i::operator%=(int32_t p_scalar) {
+	x %= p_scalar;
+	y %= p_scalar;
+	z %= p_scalar;
+	return *this;
+}
+
+Vector3i Vector3i::operator%(int32_t p_scalar) const {
+	return Vector3i(x % p_scalar, y % p_scalar, z % p_scalar);
 }
 
 Vector3i Vector3i::operator-() const {

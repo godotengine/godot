@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #ifdef MONO_GLUE_ENABLED
 
-#include "core/ustring.h"
-#include "core/variant.h"
-#include "core/vector.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 
 #include "../mono_gd/gd_mono_marshal.h"
 
@@ -68,12 +68,12 @@ MonoString *godot_icall_String_sha256_text(MonoString *p_str) {
 }
 
 void godot_register_string_icalls() {
-	mono_add_internal_call("Godot.StringExtensions::godot_icall_String_md5_buffer", (void *)godot_icall_String_md5_buffer);
-	mono_add_internal_call("Godot.StringExtensions::godot_icall_String_md5_text", (void *)godot_icall_String_md5_text);
-	mono_add_internal_call("Godot.StringExtensions::godot_icall_String_rfind", (void *)godot_icall_String_rfind);
-	mono_add_internal_call("Godot.StringExtensions::godot_icall_String_rfindn", (void *)godot_icall_String_rfindn);
-	mono_add_internal_call("Godot.StringExtensions::godot_icall_String_sha256_buffer", (void *)godot_icall_String_sha256_buffer);
-	mono_add_internal_call("Godot.StringExtensions::godot_icall_String_sha256_text", (void *)godot_icall_String_sha256_text);
+	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_md5_buffer", godot_icall_String_md5_buffer);
+	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_md5_text", godot_icall_String_md5_text);
+	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_rfind", godot_icall_String_rfind);
+	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_rfindn", godot_icall_String_rfindn);
+	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_sha256_buffer", godot_icall_String_sha256_buffer);
+	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_sha256_text", godot_icall_String_sha256_text);
 }
 
 #endif // MONO_GLUE_ENABLED

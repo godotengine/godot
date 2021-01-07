@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "navigation_region_2d.h"
 
+#include "core/config/engine.h"
 #include "core/core_string_names.h"
-#include "core/engine.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
 #include "navigation_2d.h"
@@ -503,7 +503,7 @@ String NavigationRegion2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	if (!navpoly.is_valid()) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon.");
@@ -516,7 +516,7 @@ String NavigationRegion2D::get_configuration_warning() const {
 
 		c = Object::cast_to<Node2D>(c->get_parent());
 	}
-	if (!warning.empty()) {
+	if (!warning.is_empty()) {
 		warning += "\n\n";
 	}
 	return warning + TTR("NavigationRegion2D must be a child or grandchild to a Navigation2D node. It only provides navigation data.");

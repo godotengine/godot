@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -99,7 +99,8 @@ void Sprite2D::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_c
 	if (centered) {
 		dest_offset -= frame_size / 2;
 	}
-	if (Engine::get_singleton()->get_use_pixel_snap()) {
+
+	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
 		dest_offset = dest_offset.floor();
 	}
 
@@ -130,8 +131,8 @@ void Sprite2D::_notification(int p_what) {
 			Rect2 src_rect, dst_rect;
 			bool filter_clip;
 			_get_rects(src_rect, dst_rect, filter_clip);
-			texture->draw_rect_region(ci, dst_rect, src_rect, Color(1, 1, 1), false, normal_map, specular, Color(specular_color.r, specular_color.g, specular_color.b, shininess), RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, filter_clip);
 
+			texture->draw_rect_region(ci, dst_rect, src_rect, Color(1, 1, 1), false, filter_clip);
 		} break;
 	}
 }
@@ -155,42 +156,6 @@ void Sprite2D::set_texture(const Ref<Texture2D> &p_texture) {
 	emit_signal("texture_changed");
 	item_rect_changed();
 	_change_notify("texture");
-}
-
-void Sprite2D::set_normal_map(const Ref<Texture2D> &p_texture) {
-	normal_map = p_texture;
-	update();
-}
-
-Ref<Texture2D> Sprite2D::get_normal_map() const {
-	return normal_map;
-}
-
-void Sprite2D::set_specular_map(const Ref<Texture2D> &p_texture) {
-	specular = p_texture;
-	update();
-}
-
-Ref<Texture2D> Sprite2D::get_specular_map() const {
-	return specular;
-}
-
-void Sprite2D::set_specular_color(const Color &p_color) {
-	specular_color = p_color;
-	update();
-}
-
-Color Sprite2D::get_specular_color() const {
-	return specular_color;
-}
-
-void Sprite2D::set_shininess(float p_shininess) {
-	shininess = CLAMP(p_shininess, 0.0, 1.0);
-	update();
-}
-
-float Sprite2D::get_shininess() const {
-	return shininess;
 }
 
 Ref<Texture2D> Sprite2D::get_texture() const {
@@ -403,6 +368,10 @@ Rect2 Sprite2D::get_rect() const {
 		ofs -= Size2(s) / 2;
 	}
 
+	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
+		ofs = ofs.floor();
+	}
+
 	if (s == Size2(0, 0)) {
 		s = Size2(1, 1);
 	}
@@ -433,18 +402,6 @@ void Sprite2D::_texture_changed() {
 void Sprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Sprite2D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &Sprite2D::get_texture);
-
-	ClassDB::bind_method(D_METHOD("set_normal_map", "normal_map"), &Sprite2D::set_normal_map);
-	ClassDB::bind_method(D_METHOD("get_normal_map"), &Sprite2D::get_normal_map);
-
-	ClassDB::bind_method(D_METHOD("set_specular_map", "specular_map"), &Sprite2D::set_specular_map);
-	ClassDB::bind_method(D_METHOD("get_specular_map"), &Sprite2D::get_specular_map);
-
-	ClassDB::bind_method(D_METHOD("set_specular_color", "specular_color"), &Sprite2D::set_specular_color);
-	ClassDB::bind_method(D_METHOD("get_specular_color"), &Sprite2D::get_specular_color);
-
-	ClassDB::bind_method(D_METHOD("set_shininess", "shininess"), &Sprite2D::set_shininess);
-	ClassDB::bind_method(D_METHOD("get_shininess"), &Sprite2D::get_shininess);
 
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &Sprite2D::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &Sprite2D::is_centered);
@@ -487,11 +444,6 @@ void Sprite2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
-	ADD_GROUP("Lighting", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normal_map", "get_normal_map");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "specular_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_specular_map", "get_specular_map");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "specular_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_specular_color", "get_specular_color");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shininess", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_shininess", "get_shininess");
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
@@ -515,8 +467,6 @@ Sprite2D::Sprite2D() {
 	vflip = false;
 	region = false;
 	region_filter_clip = false;
-	shininess = 1.0;
-	specular_color = Color(1, 1, 1, 1);
 
 	frame = 0;
 

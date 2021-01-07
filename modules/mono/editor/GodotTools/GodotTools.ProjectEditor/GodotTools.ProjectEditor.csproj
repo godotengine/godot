@@ -10,6 +10,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GodotTools.Core\GodotTools.Core.csproj" />
+    <ProjectReference Include="..\GodotTools.Shared\GodotTools.Shared.csproj" />
   </ItemGroup>
   <!--
   The Microsoft.Build.Runtime package is too problematic so we create a MSBuild.exe stub. The workaround described

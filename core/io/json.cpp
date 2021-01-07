@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "json.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 const char *JSON::tk_name[TK_MAX] = {
 	"'{'",
@@ -47,7 +47,7 @@ const char *JSON::tk_name[TK_MAX] = {
 
 static String _make_indent(const String &p_indent, int p_size) {
 	String indent_text = "";
-	if (!p_indent.empty()) {
+	if (!p_indent.is_empty()) {
 		for (int i = 0; i < p_size; i++) {
 			indent_text += p_indent;
 		}
@@ -59,7 +59,7 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 	String colon = ":";
 	String end_statement = "";
 
-	if (!p_indent.empty()) {
+	if (!p_indent.is_empty()) {
 		colon += " ";
 		end_statement += "\n";
 	}
@@ -454,4 +454,36 @@ Error JSON::parse(const String &p_json, Variant &r_ret, String &r_err_str, int &
 	err = _parse_value(r_ret, token, str, idx, len, r_err_line, r_err_str);
 
 	return err;
+}
+
+Error JSONParser::parse_string(const String &p_json_string) {
+	return JSON::parse(p_json_string, data, err_text, err_line);
+}
+String JSONParser::get_error_text() const {
+	return err_text;
+}
+int JSONParser::get_error_line() const {
+	return err_line;
+}
+Variant JSONParser::get_data() const {
+	return data;
+}
+
+Error JSONParser::decode_data(const Variant &p_data, const String &p_indent, bool p_sort_keys) {
+	string = JSON::print(p_data, p_indent, p_sort_keys);
+	data = p_data;
+	return OK;
+}
+
+String JSONParser::get_string() const {
+	return string;
+}
+
+void JSONParser::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("parse_string", "json_string"), &JSONParser::parse_string);
+	ClassDB::bind_method(D_METHOD("get_error_text"), &JSONParser::get_error_text);
+	ClassDB::bind_method(D_METHOD("get_error_line"), &JSONParser::get_error_line);
+	ClassDB::bind_method(D_METHOD("get_data"), &JSONParser::get_data);
+	ClassDB::bind_method(D_METHOD("decode_data", "data", "indent", "sort_keys"), &JSONParser::decode_data, DEFVAL(""), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_string"), &JSONParser::get_string);
 }

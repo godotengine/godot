@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "node_3d.h"
 
-#include "core/engine.h"
-#include "core/message_queue.h"
+#include "core/config/engine.h"
+#include "core/object/message_queue.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
@@ -784,28 +784,4 @@ void Node3D::_bind_methods() {
 }
 
 Node3D::Node3D() :
-		xform_change(this) {
-	data.dirty = DIRTY_NONE;
-	data.children_lock = 0;
-
-	data.ignore_notification = false;
-	data.top_level = false;
-	data.top_level_active = false;
-	data.scale = Vector3(1, 1, 1);
-	data.viewport = nullptr;
-	data.inside_world = false;
-	data.visible = true;
-	data.disable_scale = false;
-
-#ifdef TOOLS_ENABLED
-	data.gizmo_disabled = false;
-	data.gizmo_dirty = false;
-#endif
-	data.notify_local_transform = false;
-	data.notify_transform = false;
-	data.parent = nullptr;
-	data.C = nullptr;
-}
-
-Node3D::~Node3D() {
-}
+		xform_change(this) {}

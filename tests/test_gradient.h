@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef TEST_GRADIENT_H
 #define TEST_GRADIENT_H
 
-#include "core/class_db.h"
-#include "core/color.h"
+#include "core/math/color.h"
+#include "core/object/class_db.h"
 #include "scene/resources/gradient.h"
 
 #include "thirdparty/doctest/doctest.h"
@@ -146,7 +146,6 @@ TEST_CASE("[Gradient] Custom gradient (points specified out-of-order)") {
 			gradient->get_color_at_offset(0.1).is_equal_approx(Color(1, 0, 0)),
 			"Custom out-of-order gradient should return the expected interpolated value at offset 0.1 after removing point at index 0.");
 }
-
 } // namespace TestGradient
 
 #endif // TEST_GRADIENT_H

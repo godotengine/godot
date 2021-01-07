@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "register_server_types.h"
 
-#include "core/engine.h"
-#include "core/project_settings.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
 
 #include "audio/audio_effect.h"
 #include "audio/audio_stream.h"
@@ -62,12 +62,12 @@
 #include "physics_3d/physics_server_3d_sw.h"
 #include "physics_server_2d.h"
 #include "physics_server_3d.h"
-#include "rendering/rasterizer.h"
+#include "rendering/renderer_compositor.h"
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
-
 #include "rendering_server.h"
 #include "servers/rendering/shader_types.h"
+#include "text_server.h"
 #include "xr/xr_interface.h"
 #include "xr/xr_positional_tracker.h"
 #include "xr_server.h"
@@ -102,6 +102,11 @@ void register_server_types() {
 	ClassDB::register_virtual_class<DisplayServer>();
 	ClassDB::register_virtual_class<RenderingServer>();
 	ClassDB::register_class<AudioServer>();
+
+	ClassDB::register_class<TextServerManager>();
+	ClassDB::register_virtual_class<TextServer>();
+	TextServer::initialize_hex_code_box_fonts();
+
 	ClassDB::register_virtual_class<PhysicsServer2D>();
 	ClassDB::register_virtual_class<PhysicsServer3D>();
 	ClassDB::register_virtual_class<NavigationServer2D>();
@@ -209,6 +214,7 @@ void register_server_types() {
 
 void unregister_server_types() {
 	memdelete(shader_types);
+	TextServer::finish_hex_code_box_fonts();
 }
 
 void register_server_singletons() {
@@ -219,6 +225,7 @@ void register_server_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer3D", PhysicsServer3D::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer2D", NavigationServer2D::get_singleton_mut()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer3D", NavigationServer3D::get_singleton_mut()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("XRServer", XRServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton()));
 }

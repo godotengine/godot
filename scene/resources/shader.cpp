@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "shader.h"
+
 #include "core/os/file_access.h"
 #include "scene/scene_string_names.h"
 #include "servers/rendering/shader_language.h"
@@ -80,7 +81,7 @@ void Shader::get_param_list(List<PropertyInfo> *p_params) const {
 		params_cache[pi.name] = E->get().name;
 		if (p_params) {
 			//small little hack
-			if (pi.type == Variant::_RID) {
+			if (pi.type == Variant::RID) {
 				pi.type = Variant::OBJECT;
 			}
 			p_params->push_back(pi);

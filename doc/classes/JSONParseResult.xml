@@ -21,16 +21,29 @@
 			The error message if the JSON source was not successfully parsed. See the [enum Error] constants.
 		</member>
 		<member name="result" type="Variant" setter="set_result" getter="get_result">
-			A [Variant] containing the parsed JSON. Use [method @GDScript.typeof] or the [code]is[/code] keyword to check if it is what you expect. For example, if the JSON source starts with curly braces ([code]{}[/code]), a [Dictionary] will be returned. If the JSON source starts with brackets ([code][][/code]), an [Array] will be returned.
+			A [Variant] containing the parsed JSON. Use [method @GlobalScope.typeof] or the [code]is[/code] keyword to check if it is what you expect. For example, if the JSON source starts with curly braces ([code]{}[/code]), a [Dictionary] will be returned. If the JSON source starts with brackets ([code][][/code]), an [Array] will be returned.
 			[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, parsing a JSON text will convert all numerical values to [float] types.
 			[b]Note:[/b] JSON objects do not preserve key order like Godot dictionaries, thus, you should not rely on keys being in a certain order if a dictionary is constructed from JSON. In contrast, JSON arrays retain the order of their elements:
-			[codeblock]
+			[codeblocks]
+			[gdscript]
 			var p = JSON.parse('["hello", "world", "!"]')
 			if typeof(p.result) == TYPE_ARRAY:
 			    print(p.result[0]) # Prints "hello"
 			else:
 			    push_error("Unexpected results.")
-			[/codeblock]
+			[/gdscript]
+			[csharp]
+			JSONParseResult p = JSON.Parse("[\"hello\"], \"world\", \"!\"]");
+			if (p.Result is Godot.Collections.Array)
+			{
+			    GD.Print((p.Result as Godot.Collections.Array)[0]); // Prints "hello"
+			}
+			else
+			{
+			    GD.PushError("Unexpected results.");
+			}
+			[/csharp]
+			[/codeblocks]
 		</member>
 	</members>
 	<constants>

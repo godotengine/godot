@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,18 +35,21 @@
 
 class ReferenceRect : public Control {
 	GDCLASS(ReferenceRect, Control);
-	Color border_color;
-	bool editor_only;
+
+	Color border_color = Color(1, 0, 0);
+	float border_width = 1.0;
+	bool editor_only = true;
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	ReferenceRect();
-
 	void set_border_color(const Color &p_color);
 	Color get_border_color() const;
+
+	void set_border_width(float p_width);
+	float get_border_width() const;
 
 	void set_editor_only(const bool &p_enabled);
 	bool get_editor_only() const;

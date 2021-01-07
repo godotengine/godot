@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "code_completion.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/control.h"
@@ -150,7 +150,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 			List<String> directories;
 			directories.push_back(dir_access->get_current_dir());
 
-			while (!directories.empty()) {
+			while (!directories.is_empty()) {
 				dir_access->change_dir(directories.back()->get());
 				directories.pop_back();
 
@@ -228,6 +228,18 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				}
 			}
 		} break;
+		case CompletionKind::THEME_FONT_SIZES: {
+			Ref<Script> script = ResourceLoader::load(p_script_file.simplify_path());
+			Node *base = _try_find_owner_node_in_tree(script);
+			if (base && Object::cast_to<Control>(base)) {
+				List<StringName> sn;
+				Theme::get_default()->get_font_size_list(base->get_class(), &sn);
+
+				for (List<StringName>::Element *E = sn.front(); E; E = E->next()) {
+					suggestions.push_back(quoted(E->get()));
+				}
+			}
+		} break;
 		case CompletionKind::THEME_STYLES: {
 			Ref<Script> script = ResourceLoader::load(p_script_file.simplify_path());
 			Node *base = _try_find_owner_node_in_tree(script);
@@ -246,5 +258,4 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 
 	return suggestions;
 }
-
 } // namespace gdmono

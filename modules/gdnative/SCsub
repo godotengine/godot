@@ -20,6 +20,7 @@ SConscript("net/SCsub")
 SConscript("xr/SCsub")
 SConscript("pluginscript/SCsub")
 SConscript("videodecoder/SCsub")
+SConscript("text/SCsub")
 
 
 import gdnative_builders
@@ -30,5 +31,3 @@ _, gensource = env_gdnative.CommandNoCache(
     env.Run(gdnative_builders.build_gdnative_api_struct, "Generating GDNative API."),
 )
 env_gdnative.add_source_files(env.modules_sources, [gensource])
-
-env.use_ptrcall = True

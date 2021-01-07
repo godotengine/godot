@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "thread_jandroid.h"
 
+#include "core/object/script_language.h"
 #include "core/os/memory.h"
-#include "core/safe_refcount.h"
-#include "core/script_language.h"
+#include "core/templates/safe_refcount.h"
 
 static void _thread_id_key_destr_callback(void *p_value) {
 	memdelete(static_cast<Thread::ID *>(p_value));

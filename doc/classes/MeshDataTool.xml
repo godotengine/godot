@@ -7,16 +7,44 @@
 		MeshDataTool provides access to individual vertices in a [Mesh]. It allows users to read and edit vertex data of meshes. It also creates an array of faces and edges.
 		To use MeshDataTool, load a mesh with [method create_from_surface]. When you are finished editing the data commit the data to a mesh with [method commit_to_surface].
 		Below is an example of how MeshDataTool may be used.
-		[codeblock]
+		[codeblocks]
+		[gdscript]
+		var mesh = ArrayMesh.new()
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, BoxMesh.new().get_mesh_arrays())
 		var mdt = MeshDataTool.new()
 		mdt.create_from_surface(mesh, 0)
 		for i in range(mdt.get_vertex_count()):
 		    var vertex = mdt.get_vertex(i)
-		    ...
+		    # In this example we extend the mesh by one unit, which results in seperated faces as it is flat shaded.
+		    vertex += mdt.get_vertex_normal(i)
+		    # Save your change.
 		    mdt.set_vertex(i, vertex)
 		mesh.surface_remove(0)
 		mdt.commit_to_surface(mesh)
-		[/codeblock]
+		var mi = MeshInstance.new()
+		mi.mesh = mesh
+		add_child(mi)
+		[/gdscript]
+		[csharp]
+		var mesh = new ArrayMesh();
+		mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, new BoxMesh().GetMeshArrays());
+		var mdt = new MeshDataTool();
+		mdt.CreateFromSurface(mesh, 0);
+		for (var i = 0; i &lt; mdt.GetVertexCount(); i++)
+		{
+		    Vector3 vertex = mdt.GetVertex(i);
+		    // In this example we extend the mesh by one unit, which results in seperated faces as it is flat shaded.
+		    vertex += mdt.GetVertexNormal(i);
+		    // Save your change.
+		    mdt.SetVertex(i, vertex);
+		}
+		mesh.SurfaceRemove(0);
+		mdt.CommitToSurface(mesh);
+		var mi = new MeshInstance();
+		mi.Mesh = mesh;
+		AddChild(mi);
+		[/csharp]
+		[/codeblocks]
 		See also [ArrayMesh], [ImmediateGeometry3D] and [SurfaceTool] for procedural geometry generation.
 		[b]Note:[/b] Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.
 	</description>
@@ -141,8 +169,8 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the [Mesh]'s format. Format is an integer made up of [Mesh] format flags combined together. For example, a mesh containing both vertices and normals would return a format of [code]3[/code] because [constant ArrayMesh.ARRAY_FORMAT_VERTEX] is [code]1[/code] and [constant ArrayMesh.ARRAY_FORMAT_NORMAL] is [code]2[/code].
-				See [enum ArrayMesh.ArrayFormat] for a list of format flags.
+				Returns the [Mesh]'s format. Format is an integer made up of [Mesh] format flags combined together. For example, a mesh containing both vertices and normals would return a format of [code]3[/code] because [constant Mesh.ARRAY_FORMAT_VERTEX] is [code]1[/code] and [constant Mesh.ARRAY_FORMAT_NORMAL] is [code]2[/code].
+				See [enum Mesh.ArrayFormat] for a list of format flags.
 			</description>
 		</method>
 		<method name="get_material" qualifiers="const">

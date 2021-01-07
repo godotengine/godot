@@ -4,9 +4,9 @@ using GodotTools.Export;
 using GodotTools.Utils;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using GodotTools.Build;
 using GodotTools.Ides;
 using GodotTools.Ides.Rider;
 using GodotTools.Internals;
@@ -19,7 +19,6 @@ using Path = System.IO.Path;
 
 namespace GodotTools
 {
-    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
     public class GodotSharpEditor : EditorPlugin, ISerializationListener
     {
         private EditorSettings editorSettings;
@@ -37,7 +36,7 @@ namespace GodotTools
 
         private WeakRef exportPluginWeak; // TODO Use WeakReference once we have proper serialization
 
-        public BottomPanel BottomPanel { get; private set; }
+        public MSBuildPanel MSBuildPanel { get; private set; }
 
         public bool SkipBuildBeforePlaying { get; set; } = false;
 
@@ -148,12 +147,27 @@ namespace GodotTools
                 case MenuOptions.AboutCSharp:
                     _ShowAboutDialog();
                     break;
+                case MenuOptions.SetupGodotNugetFallbackFolder:
+                {
+                    try
+                    {
+                        string fallbackFolder = NuGetUtils.GodotFallbackFolderPath;
+                        NuGetUtils.AddFallbackFolderToUserNuGetConfigs(NuGetUtils.GodotFallbackFolderName, fallbackFolder);
+                        NuGetUtils.AddBundledPackagesToFallbackFolder(fallbackFolder);
+                    }
+                    catch (Exception e)
+                    {
+                        ShowErrorDialog("Failed to setup Godot NuGet Offline Packages: " + e.Message);
+                    }
+
+                    break;
+                }
                 default:
                     throw new ArgumentOutOfRangeException(nameof(id), id, "Invalid menu option");
             }
         }
 
-        private void _BuildSolutionPressed()
+        private void BuildSolutionPressed()
         {
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
             {
@@ -161,23 +175,22 @@ namespace GodotTools
                     return; // Failed to create solution
             }
 
-            Instance.BottomPanel.BuildProjectPressed();
+            Instance.MSBuildPanel.BuildSolution();
         }
 
-        public override void _Notification(int what)
+        public override void _Ready()
         {
-            base._Notification(what);
+            base._Ready();
 
-            if (what == NotificationReady)
+            MSBuildPanel.BuildOutputView.BuildStateChanged += BuildStateChanged;
+
+            bool showInfoDialog = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
+            if (showInfoDialog)
             {
-                bool showInfoDialog = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
-                if (showInfoDialog)
-                {
-                    aboutDialog.Exclusive = true;
-                    _ShowAboutDialog();
-                    // Once shown a first time, it can be seen again via the Mono menu - it doesn't have to be exclusive from that time on.
-                    aboutDialog.Exclusive = false;
-                }
+                aboutDialog.Exclusive = true;
+                _ShowAboutDialog();
+                // Once shown a first time, it can be seen again via the Mono menu - it doesn't have to be exclusive from that time on.
+                aboutDialog.Exclusive = false;
             }
         }
 
@@ -185,6 +198,7 @@ namespace GodotTools
         {
             CreateSln,
             AboutCSharp,
+            SetupGodotNugetFallbackFolder,
         }
 
         public void ShowErrorDialog(string message, string title = "Error")
@@ -393,6 +407,12 @@ namespace GodotTools
             }
         }
 
+        private void BuildStateChanged()
+        {
+            if (bottomPanelBtn != null)
+                bottomPanelBtn.Icon = MSBuildPanel.BuildOutputView.BuildStateIcon;
+        }
+
         public override void EnablePlugin()
         {
             base.EnablePlugin();
@@ -409,20 +429,20 @@ namespace GodotTools
             errorDialog = new AcceptDialog();
             editorBaseControl.AddChild(errorDialog);
 
-            BottomPanel = new BottomPanel();
-
-            bottomPanelBtn = AddControlToBottomPanel(BottomPanel, "Mono".TTR());
+            MSBuildPanel = new MSBuildPanel();
+            bottomPanelBtn = AddControlToBottomPanel(MSBuildPanel, "MSBuild".TTR());
 
             AddChild(new HotReloadAssemblyWatcher {Name = "HotReloadAssemblyWatcher"});
 
             menuPopup = new PopupMenu();
             menuPopup.Hide();
 
-            AddToolSubmenuItem("Mono", menuPopup);
+            AddToolSubmenuItem("C#", menuPopup);
 
             // TODO: Remove or edit this info dialog once Mono support is no longer in alpha
             {
                 menuPopup.AddItem("About C# support".TTR(), (int)MenuOptions.AboutCSharp);
+                menuPopup.AddItem("Setup Godot NuGet Offline Packages".TTR(), (int)MenuOptions.SetupGodotNugetFallbackFolder);
                 aboutDialog = new AcceptDialog();
                 editorBaseControl.AddChild(aboutDialog);
                 aboutDialog.Title = "Important: C# support is not feature-complete";
@@ -476,7 +496,7 @@ namespace GodotTools
                 HintTooltip = "Build solution",
                 FocusMode = Control.FocusModeEnum.None
             };
-            toolBarBuildButton.PressedSignal += _BuildSolutionPressed;
+            toolBarBuildButton.PressedSignal += BuildSolutionPressed;
             AddControlToContainer(CustomControlContainer.Toolbar, toolBarBuildButton);
 
             if (File.Exists(GodotSharpDirs.ProjectSlnPath) && File.Exists(GodotSharpDirs.ProjectCsProjPath))
@@ -532,6 +552,16 @@ namespace GodotTools
             exportPlugin.RegisterExportSettings();
             exportPluginWeak = WeakRef(exportPlugin);
 
+            try
+            {
+                // At startup we make sure NuGet.Config files have our Godot NuGet fallback folder included
+                NuGetUtils.AddFallbackFolderToUserNuGetConfigs(NuGetUtils.GodotFallbackFolderName, NuGetUtils.GodotFallbackFolderPath);
+            }
+            catch (Exception e)
+            {
+                GD.PushError("Failed to add Godot NuGet Offline Packages to NuGet.Config: " + e.Message);
+            }
+
             BuildManager.Initialize();
             RiderPathManager.Initialize();
 
@@ -570,6 +600,7 @@ namespace GodotTools
 
         public static GodotSharpEditor Instance { get; private set; }
 
+        [UsedImplicitly]
         private GodotSharpEditor()
         {
         }

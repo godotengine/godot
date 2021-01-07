@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "parallax_layer.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "parallax_background.h"
 
 void ParallaxLayer::set_motion_scale(const Size2 &p_scale) {
@@ -139,7 +139,7 @@ String ParallaxLayer::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	if (!Object::cast_to<ParallaxBackground>(get_parent())) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("ParallaxLayer node only works when set as child of a ParallaxBackground node.");

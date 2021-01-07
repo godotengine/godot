@@ -5,12 +5,27 @@
 	</brief_description>
 	<description>
 		An [Array] specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
-		[b]Note:[/b] This type is passed by value and not by reference.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="PackedByteArray">
+		<method name="PackedByteArray" qualifiers="constructor">
+			<return type="PackedByteArray">
+			</return>
+			<description>
+				Constructs an empty [PackedByteArray].
+			</description>
+		</method>
+		<method name="PackedByteArray" qualifiers="constructor">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="from" type="PackedByteArray">
+			</argument>
+			<description>
+				Constructs a [PackedByteArray] as a copy of the given [PackedByteArray].
+			</description>
+		</method>
+		<method name="PackedByteArray" qualifiers="constructor">
 			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="from" type="Array">
@@ -20,9 +35,9 @@
 			</description>
 		</method>
 		<method name="append">
-			<return type="void">
+			<return type="bool">
 			</return>
-			<argument index="0" name="byte" type="int">
+			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
 				Appends an element at the end of the array (alias of [method push_back]).
@@ -70,11 +85,11 @@
 				GZIP has a maximal compression ratio of 1032:1, meaning it's very possible for a small compressed payload to decompress to a potentially very large output. To guard against this, you may provide a maximum size this function is allowed to allocate in bytes via [code]max_output_size[/code]. Passing -1 will allow for unbounded output. If any positive value is passed, and the decompression exceeds that amount in bytes, then an error will be returned.
 			</description>
 		</method>
-		<method name="empty">
-			<return type="bool">
+		<method name="duplicate">
+			<return type="PackedByteArray">
 			</return>
 			<description>
-				Returns [code]true[/code] if the array is empty.
+				Creates a copy of the array, and returns it.
 			</description>
 		</method>
 		<method name="get_string_from_ascii">
@@ -119,18 +134,24 @@
 			</return>
 			<description>
 				Returns a hexadecimal representation of this array as a [String].
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var array = PackedByteArray([11, 46, 255])
 				print(array.hex_encode()) # Prints: 0b2eff
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var array = new byte[] {11, 46, 255};
+				GD.Print(array.HexEncode()); // Prints: 0b2eff
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="insert">
 			<return type="int">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="at_index" type="int">
 			</argument>
-			<argument index="1" name="byte" type="int">
+			<argument index="1" name="value" type="int">
 			</argument>
 			<description>
 				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
@@ -143,10 +164,49 @@
 				Reverses the order of the elements in the array.
 			</description>
 		</method>
-		<method name="push_back">
-			<return type="void">
+		<method name="is_empty">
+			<return type="bool">
 			</return>
-			<argument index="0" name="byte" type="int">
+			<description>
+				Returns [code]true[/code] if the array is empty.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="right" type="PackedByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="int">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="push_back">
+			<return type="bool">
+			</return>
+			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
 				Appends an element at the end of the array.
@@ -155,16 +215,16 @@
 		<method name="remove">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
 				Removes an element from the array by index.
 			</description>
 		</method>
 		<method name="resize">
-			<return type="void">
+			<return type="int">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="new_size" type="int">
 			</argument>
 			<description>
 				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
@@ -173,9 +233,9 @@
 		<method name="set">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
-			<argument index="1" name="byte" type="int">
+			<argument index="1" name="value" type="int">
 			</argument>
 			<description>
 				Changes the byte at the given index.

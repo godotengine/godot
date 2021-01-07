@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -661,8 +661,8 @@ ExportTemplateManager::ExportTemplateManager() {
 	installed_scroll->set_enable_h_scroll(false);
 	installed_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-	get_cancel()->set_text(TTR("Close"));
-	get_ok()->set_text(TTR("Install From File"));
+	get_cancel_button()->set_text(TTR("Close"));
+	get_ok_button()->set_text(TTR("Install From File"));
 
 	remove_confirm = memnew(ConfirmationDialog);
 	remove_confirm->set_title(TTR("Remove Template"));
@@ -690,7 +690,7 @@ ExportTemplateManager::ExportTemplateManager() {
 
 	template_downloader = memnew(AcceptDialog);
 	template_downloader->set_title(TTR("Download Templates"));
-	template_downloader->get_ok()->set_text(TTR("Close"));
+	template_downloader->get_ok_button()->set_text(TTR("Close"));
 	template_downloader->set_exclusive(true);
 	add_child(template_downloader);
 	template_downloader->connect("cancelled", callable_mp(this, &ExportTemplateManager::_window_template_downloader_closed));

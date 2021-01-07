@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,11 +32,11 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/class_db.h"
-#include "core/engine.h"
-#include "core/global_constants.h"
+#include "core/config/engine.h"
+#include "core/core_constants.h"
+#include "core/object/class_db.h"
 #include "core/os/file_access.h"
-#include "core/pair.h"
+#include "core/templates/pair.h"
 
 // helper stuff
 
@@ -173,19 +173,19 @@ List<ClassAPI> generate_c_api_classes() {
 	ClassDB::get_class_list(&classes);
 	classes.sort_custom<StringName::AlphCompare>();
 
-	// Register global constants as a fake GlobalConstants singleton class
+	// Register global constants as a fake CoreConstants singleton class
 	{
 		ClassAPI global_constants_api;
-		global_constants_api.class_name = "GlobalConstants";
+		global_constants_api.class_name = "CoreConstants";
 		global_constants_api.api_type = ClassDB::API_CORE;
 		global_constants_api.is_singleton = true;
-		global_constants_api.singleton_name = "GlobalConstants";
+		global_constants_api.singleton_name = "CoreConstants";
 		global_constants_api.is_instanciable = false;
-		const int constants_count = GlobalConstants::get_global_constant_count();
+		const int constants_count = CoreConstants::get_global_constant_count();
 		for (int i = 0; i < constants_count; ++i) {
 			ConstantAPI constant_api;
-			constant_api.constant_name = GlobalConstants::get_global_constant_name(i);
-			constant_api.constant_value = GlobalConstants::get_global_constant_value(i);
+			constant_api.constant_name = CoreConstants::get_global_constant_name(i);
+			constant_api.constant_value = CoreConstants::get_global_constant_value(i);
 			global_constants_api.constants.push_back(constant_api);
 		}
 		global_constants_api.constants.sort_custom<ConstantAPIComparator>();
@@ -295,7 +295,7 @@ List<ClassAPI> generate_c_api_classes() {
 
 				property_api.index = ClassDB::get_property_index(class_name, p->get().name);
 
-				if (!property_api.setter.empty() || !property_api.getter.empty()) {
+				if (!property_api.setter.is_empty() || !property_api.getter.is_empty()) {
 					class_api.properties.push_back(property_api);
 				}
 			}

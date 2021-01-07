@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -495,6 +495,8 @@ void AnimationNodeStateMachinePlayback::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("stop"), &AnimationNodeStateMachinePlayback::stop);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimationNodeStateMachinePlayback::is_playing);
 	ClassDB::bind_method(D_METHOD("get_current_node"), &AnimationNodeStateMachinePlayback::get_current_node);
+	ClassDB::bind_method(D_METHOD("get_current_play_position"), &AnimationNodeStateMachinePlayback::get_current_play_pos);
+	ClassDB::bind_method(D_METHOD("get_current_length"), &AnimationNodeStateMachinePlayback::get_current_length);
 	ClassDB::bind_method(D_METHOD("get_travel_path"), &AnimationNodeStateMachinePlayback::get_travel_path);
 }
 
@@ -565,7 +567,7 @@ void AnimationNodeStateMachine::replace_node(const StringName &p_name, Ref<Anima
 	{
 		Ref<AnimationNode> node = states[p_name].node;
 		if (node.is_valid()) {
-			node->disconnect_compat("tree_changed", this, "_tree_changed");
+			node->disconnect("tree_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed));
 		}
 	}
 
@@ -574,7 +576,7 @@ void AnimationNodeStateMachine::replace_node(const StringName &p_name, Ref<Anima
 	emit_changed();
 	emit_signal("tree_changed");
 
-	p_node->connect_compat("tree_changed", this, "_tree_changed", varray(), CONNECT_REFERENCE_COUNTED);
+	p_node->connect("tree_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed), varray(), CONNECT_REFERENCE_COUNTED);
 }
 
 Ref<AnimationNode> AnimationNodeStateMachine::get_node(const StringName &p_name) const {

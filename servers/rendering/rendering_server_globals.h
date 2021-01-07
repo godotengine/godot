@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,22 +31,23 @@
 #ifndef RENDERING_SERVER_GLOBALS_H
 #define RENDERING_SERVER_GLOBALS_H
 
-#include "rasterizer.h"
+#include "servers/rendering/renderer_canvas_cull.h"
+#include "servers/rendering/renderer_canvas_render.h"
+#include "servers/rendering/renderer_scene.h"
 
-class RenderingServerCanvas;
-class RenderingServerViewport;
-class RenderingServerScene;
+class RendererCanvasCull;
+class RendererViewport;
+class RendererScene;
 
 class RenderingServerGlobals {
 public:
-	static RasterizerStorage *storage;
-	static RasterizerCanvas *canvas_render;
-	static RasterizerScene *scene_render;
-	static Rasterizer *rasterizer;
+	static RendererStorage *storage;
+	static RendererCanvasRender *canvas_render;
+	static RendererCompositor *rasterizer;
 
-	static RenderingServerCanvas *canvas;
-	static RenderingServerViewport *viewport;
-	static RenderingServerScene *scene;
+	static RendererCanvasCull *canvas;
+	static RendererViewport *viewport;
+	static RendererScene *scene;
 };
 
 #define RSG RenderingServerGlobals

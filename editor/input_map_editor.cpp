@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,47 +34,6 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
-
-static const char *_button_descriptions[JOY_SDL_BUTTONS] = {
-	TTRC("Face Bottom, DualShock Cross, Xbox A, Nintendo B"),
-	TTRC("Face Right, DualShock Circle, Xbox B, Nintendo A"),
-	TTRC("Face Left, DualShock Square, Xbox X, Nintendo Y"),
-	TTRC("Face Top, DualShock Triangle, Xbox Y, Nintendo X"),
-	TTRC("DualShock Select, Xbox Back, Nintendo -"),
-	TTRC("Home, DualShock PS, Guide"),
-	TTRC("Start, Nintendo +"),
-	TTRC("Left Stick, DualShock L3, Xbox L/LS"),
-	TTRC("Right Stick, DualShock R3, Xbox R/RS"),
-	TTRC("Left Shoulder, DualShock L1, Xbox LB"),
-	TTRC("Right Shoulder, DualShock R1, Xbox RB"),
-	TTRC("D-Pad Up"),
-	TTRC("D-Pad Down"),
-	TTRC("D-Pad Left"),
-	TTRC("D-Pad Right")
-};
-
-static const char *_axis_descriptions[JOY_AXIS_MAX * 2] = {
-	TTRC("Left Stick Left"),
-	TTRC("Left Stick Right"),
-	TTRC("Left Stick Up"),
-	TTRC("Left Stick Down"),
-	TTRC("Right Stick Left"),
-	TTRC("Right Stick Right"),
-	TTRC("Right Stick Up"),
-	TTRC("Right Stick Down"),
-	TTRC("Joystick 2 Left"),
-	TTRC("Joystick 2 Right, Left Trigger, L2, LT"),
-	TTRC("Joystick 2 Up"),
-	TTRC("Joystick 2 Down, Right Trigger, R2, RT"),
-	TTRC("Joystick 3 Left"),
-	TTRC("Joystick 3 Right"),
-	TTRC("Joystick 3 Up"),
-	TTRC("Joystick 3 Down"),
-	TTRC("Joystick 4 Left"),
-	TTRC("Joystick 4 Right"),
-	TTRC("Joystick 4 Up"),
-	TTRC("Joystick 4 Down"),
-};
 
 void InputMapEditor::_notification(int p_what) {
 	switch (p_what) {
@@ -395,6 +354,42 @@ void InputMapEditor::_show_last_added(const Ref<InputEvent> &p_event, const Stri
 	}
 }
 
+// Maps to 2*axis if value is neg, or + 1 if value is pos.
+static const char *_joy_axis_descriptions[JOY_AXIS_MAX * 2] = {
+	TTRC("Left Stick Left, Joystick 0 Left"),
+	TTRC("Left Stick Right, Joystick 0 Right"),
+	TTRC("Left Stick Up, Joystick 0 Up"),
+	TTRC("Left Stick Down, Joystick 0 Down"),
+	TTRC("Right Stick Left, Joystick 1 Left"),
+	TTRC("Right Stick Right, Joystick 1 Right"),
+	TTRC("Right Stick Up, Joystick 1 Up"),
+	TTRC("Right Stick Down, Joystick 1 Down"),
+	TTRC("Joystick 2 Left"),
+	TTRC("Left Trigger, Sony L2, Xbox LT, Joystick 2 Right"),
+	TTRC("Joystick 2 Up"),
+	TTRC("Right Trigger, Sony R2, Xbox RT, Joystick 2 Down"),
+	TTRC("Joystick 3 Left"),
+	TTRC("Joystick 3 Right"),
+	TTRC("Joystick 3 Up"),
+	TTRC("Joystick 3 Down"),
+	TTRC("Joystick 4 Left"),
+	TTRC("Joystick 4 Right"),
+	TTRC("Joystick 4 Up"),
+	TTRC("Joystick 4 Down"),
+};
+
+// Separate from `InputEvent::as_text()` since the descriptions need to be different for the input map editor. See #43660.
+String InputMapEditor::_get_joypad_motion_event_text(const Ref<InputEventJoypadMotion> &p_event) {
+	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Provided event is not a valid instance of InputEventJoypadMotion");
+
+	String desc = TTR("Unknown Joypad Axis");
+	if (p_event->get_axis() < JOY_AXIS_MAX) {
+		desc = RTR(_joy_axis_descriptions[2 * p_event->get_axis() + (p_event->get_axis_value() < 0 ? 0 : 1)]);
+	}
+
+	return vformat("Joypad Axis %s %s (%s)", itos(p_event->get_axis()), p_event->get_axis_value() < 0 ? "-" : "+", desc);
+}
+
 void InputMapEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
@@ -403,7 +398,7 @@ void InputMapEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 		const String str = (press_a_key_physical) ? keycode_get_string(k->get_physical_keycode_with_modifiers()) + TTR(" (Physical)") : keycode_get_string(k->get_keycode_with_modifiers());
 
 		press_a_key_label->set_text(str);
-		press_a_key->get_ok()->set_disabled(false);
+		press_a_key->get_ok_button()->set_disabled(false);
 		press_a_key->set_input_as_handled();
 	}
 }
@@ -437,7 +432,7 @@ void InputMapEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 		case INPUT_KEY: {
 			press_a_key_physical = false;
 			press_a_key_label->set_text(TTR("Press a Key..."));
-			press_a_key->get_ok()->set_disabled(true);
+			press_a_key->get_ok_button()->set_disabled(true);
 			last_wait_for_key = Ref<InputEvent>();
 			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 			//press_a_key->grab_focus();
@@ -470,10 +465,10 @@ void InputMapEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 			if (mb.is_valid()) {
 				device_index->select(mb->get_button_index() - 1);
 				_set_current_device(mb->get_device());
-				device_input->get_ok()->set_text(TTR("Change"));
+				device_input->get_ok_button()->set_text(TTR("Change"));
 			} else {
 				_set_current_device(0);
-				device_input->get_ok()->set_text(TTR("Add"));
+				device_input->get_ok_button()->set_text(TTR("Add"));
 			}
 
 		} break;
@@ -481,9 +476,11 @@ void InputMapEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 			device_index_label->set_text(TTR("Joypad Axis Index:"));
 			device_index->clear();
 			for (int i = 0; i < JOY_AXIS_MAX * 2; i++) {
-				String desc = TTR("Axis") + " " + itos(i / 2) + " " + ((i & 1) ? "+" : "-") +
-							  " (" + TTR(_axis_descriptions[i]) + ")";
-				device_index->add_item(desc);
+				Ref<InputEventJoypadMotion> jm;
+				jm.instance();
+				jm->set_axis(i / 2);
+				jm->set_axis_value((i & 1) ? 1 : -1);
+				device_index->add_item(_get_joypad_motion_event_text(jm));
 			}
 			device_input->popup_centered(Size2(350, 95) * EDSCALE);
 
@@ -491,10 +488,10 @@ void InputMapEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 			if (jm.is_valid()) {
 				device_index->select(jm->get_axis() * 2 + (jm->get_axis_value() > 0 ? 1 : 0));
 				_set_current_device(jm->get_device());
-				device_input->get_ok()->set_text(TTR("Change"));
+				device_input->get_ok_button()->set_text(TTR("Change"));
 			} else {
 				_set_current_device(0);
-				device_input->get_ok()->set_text(TTR("Add"));
+				device_input->get_ok_button()->set_text(TTR("Add"));
 			}
 
 		} break;
@@ -502,11 +499,10 @@ void InputMapEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 			device_index_label->set_text(TTR("Joypad Button Index:"));
 			device_index->clear();
 			for (int i = 0; i < JOY_BUTTON_MAX; i++) {
-				String desc = TTR("Button") + " " + itos(i);
-				if (i < JOY_SDL_BUTTONS) {
-					desc += " (" + TTR(_button_descriptions[i]) + ")";
-				}
-				device_index->add_item(desc);
+				Ref<InputEventJoypadButton> jb;
+				jb.instance();
+				jb->set_button_index(i);
+				device_index->add_item(jb->as_text());
 			}
 			device_input->popup_centered(Size2(350, 95) * EDSCALE);
 
@@ -514,10 +510,10 @@ void InputMapEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 			if (jb.is_valid()) {
 				device_index->select(jb->get_button_index());
 				_set_current_device(jb->get_device());
-				device_input->get_ok()->set_text(TTR("Change"));
+				device_input->get_ok_button()->set_text(TTR("Change"));
 			} else {
 				_set_current_device(0);
-				device_input->get_ok()->set_text(TTR("Add"));
+				device_input->get_ok_button()->set_text(TTR("Add"));
 			}
 
 		} break;
@@ -714,14 +710,7 @@ void InputMapEditor::_update_actions() {
 
 			Ref<InputEventJoypadButton> jb = event;
 			if (jb.is_valid()) {
-				const int idx = jb->get_button_index();
-				String str = _get_device_string(jb->get_device()) + ", " +
-							 TTR("Button") + " " + itos(idx);
-				if (idx >= 0 && idx < JOY_SDL_BUTTONS) {
-					str += String() + " (" + TTR(_button_descriptions[jb->get_button_index()]) + ")";
-				}
-
-				action2->set_text(0, str);
+				action2->set_text(0, jb->as_text());
 				action2->set_icon(0, input_editor->get_theme_icon("JoyButton", "EditorIcons"));
 			}
 
@@ -754,12 +743,8 @@ void InputMapEditor::_update_actions() {
 
 			Ref<InputEventJoypadMotion> jm = event;
 			if (jm.is_valid()) {
-				int ax = jm->get_axis();
-				int n = 2 * ax + (jm->get_axis_value() < 0 ? 0 : 1);
-				String str = _get_device_string(jm->get_device()) + ", " +
-							 TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") +
-							 " (" + _axis_descriptions[n] + ")";
-				action2->set_text(0, str);
+				device_index->add_item(_get_joypad_motion_event_text(jm));
+				action2->set_text(0, jm->as_text());
 				action2->set_icon(0, input_editor->get_theme_icon("JoyAxis", "EditorIcons"));
 			}
 			action2->set_metadata(0, i);
@@ -936,10 +921,10 @@ InputMapEditor::InputMapEditor() {
 	inputmap_changed = "inputmap_changed";
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 0);
-	vbc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, 0);
-	vbc->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 0);
-	vbc->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, 0);
+	vbc->set_anchor_and_offset(SIDE_TOP, Control::ANCHOR_BEGIN, 0);
+	vbc->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_END, 0);
+	vbc->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 0);
+	vbc->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, 0);
 	add_child(vbc);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
@@ -993,7 +978,7 @@ InputMapEditor::InputMapEditor() {
 	add_child(popup_add);
 
 	press_a_key = memnew(ConfirmationDialog);
-	press_a_key->get_ok()->set_disabled(true);
+	press_a_key->get_ok_button()->set_disabled(true);
 	//press_a_key->set_focus_mode(Control::FOCUS_ALL);
 	press_a_key->connect("window_input", callable_mp(this, &InputMapEditor::_wait_for_key));
 	press_a_key->connect("confirmed", callable_mp(this, &InputMapEditor::_press_a_key_confirm));
@@ -1001,15 +986,15 @@ InputMapEditor::InputMapEditor() {
 
 	l = memnew(Label);
 	l->set_text(TTR("Press a Key..."));
-	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	l->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	l->set_align(Label::ALIGN_CENTER);
-	l->set_margin(MARGIN_TOP, 20);
-	l->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_BEGIN, 30);
+	l->set_offset(SIDE_TOP, 20);
+	l->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_BEGIN, 30);
 	press_a_key->add_child(l);
 	press_a_key_label = l;
 
 	device_input = memnew(ConfirmationDialog);
-	device_input->get_ok()->set_text(TTR("Add"));
+	device_input->get_ok_button()->set_text(TTR("Add"));
 	device_input->connect("confirmed", callable_mp(this, &InputMapEditor::_device_input_add));
 	add_child(device_input);
 

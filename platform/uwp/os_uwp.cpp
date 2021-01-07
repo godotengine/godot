@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,8 +33,8 @@
 
 #include "os_uwp.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
-#include "core/project_settings.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
@@ -44,7 +44,7 @@
 #include "main/main.h"
 #include "platform/windows/windows_terminal_logger.h"
 #include "servers/audio_server.h"
-#include "servers/rendering/rendering_server_raster.h"
+#include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/rendering_server_wrap_mt.h"
 #include "thread_uwp.h"
 
@@ -156,10 +156,6 @@ void OS_UWP::initialize_core() {
 	cursor_shape = CURSOR_ARROW;
 }
 
-bool OS_UWP::can_draw() const {
-	return !minimized;
-};
-
 void OS_UWP::set_window(Windows::UI::Core::CoreWindow ^ p_window) {
 	window = p_window;
 }
@@ -240,7 +236,7 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	set_video_mode(vm);
 
-	rendering_server = memnew(RenderingServerRaster);
+	rendering_server = memnew(RenderingServerDefault);
 	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		rendering_server = memnew(RenderingServerWrapMT(rendering_server, false));

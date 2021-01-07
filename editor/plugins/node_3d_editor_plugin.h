@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SPATIAL_EDITOR_PLUGIN_H
-#define SPATIAL_EDITOR_PLUGIN_H
+#ifndef NODE_3D_EDITOR_PLUGIN_H
+#define NODE_3D_EDITOR_PLUGIN_H
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -61,16 +61,10 @@ public:
 		Ref<Material> material;
 		Ref<SkinReference> skin_reference;
 		RID skeleton;
-		bool billboard;
-		bool unscaled;
-		bool can_intersect;
-		bool extra_margin;
-		Instance() {
-			billboard = false;
-			unscaled = false;
-			can_intersect = false;
-			extra_margin = false;
-		}
+		bool billboard = false;
+		bool unscaled = false;
+		bool can_intersect = false;
+		bool extra_margin = false;
 
 		void create_instance(Node3D *p_base, bool p_hidden = false);
 	};
@@ -80,7 +74,7 @@ public:
 
 	struct Handle {
 		Vector3 pos;
-		bool billboard;
+		bool billboard = false;
 	};
 
 	Vector<Vector3> handles;
@@ -180,7 +174,6 @@ class Node3DEditorViewport : public Control {
 	friend class Node3DEditor;
 	friend class ViewportRotationControl;
 	enum {
-
 		VIEW_TOP,
 		VIEW_BOTTOM,
 		VIEW_LEFT,
@@ -219,6 +212,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_DISPLAY_DEBUG_SDFGI,
 		VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
 		VIEW_DISPLAY_DEBUG_GI_BUFFER,
+		VIEW_DISPLAY_DEBUG_DISABLE_LOD,
 		VIEW_LOCK_ROTATION,
 		VIEW_CINEMATIC_PREVIEW,
 		VIEW_AUTO_ORTHOGONAL,
@@ -230,6 +224,7 @@ public:
 		GIZMO_BASE_LAYER = 27,
 		GIZMO_EDIT_LAYER = 26,
 		GIZMO_GRID_LAYER = 25,
+		MISC_TOOL_LAYER = 24,
 
 		FRAME_TIME_HISTORY = 20,
 	};
@@ -294,12 +289,15 @@ private:
 
 	VBoxContainer *top_right_vbox;
 	ViewportRotationControl *rotation_control;
+	Gradient *frame_time_gradient;
+	Label *cpu_time_label;
+	Label *gpu_time_label;
 	Label *fps_label;
 
 	struct _RayResult {
-		Node3D *item;
-		float depth;
-		int handle;
+		Node3D *item = nullptr;
+		float depth = 0;
+		int handle = 0;
 		_FORCE_INLINE_ bool operator<(const _RayResult &p_rr) const { return depth < p_rr.depth; }
 	};
 
@@ -376,11 +374,11 @@ private:
 		Vector3 click_ray_pos;
 		Vector3 center;
 		Vector3 orig_gizmo_pos;
-		int edited_gizmo;
+		int edited_gizmo = 0;
 		Point2 mouse_pos;
-		bool snap;
+		bool snap = false;
 		Ref<EditorNode3DGizmo> gizmo;
-		int gizmo_handle;
+		int gizmo_handle = 0;
 		Variant gizmo_initial_value;
 		Vector3 gizmo_initial_pos;
 	} _edit;
@@ -485,6 +483,7 @@ public:
 	Camera3D *get_camera() { return camera; } // return the default camera object.
 
 	Node3DEditorViewport(Node3DEditor *p_spatial_editor, EditorNode *p_editor, int p_index);
+	~Node3DEditorViewport();
 };
 
 class Node3DEditorSelectedItem : public Object {
@@ -498,6 +497,7 @@ public:
 	bool last_xform_dirty;
 	Node3D *sp;
 	RID sbox_instance;
+	RID sbox_instance_xray;
 
 	Node3DEditorSelectedItem() {
 		sp = nullptr;
@@ -553,7 +553,6 @@ public:
 	static const unsigned int VIEWPORTS_COUNT = 4;
 
 	enum ToolMode {
-
 		TOOL_MODE_SELECT,
 		TOOL_MODE_MOVE,
 		TOOL_MODE_ROTATE,
@@ -567,7 +566,6 @@ public:
 	};
 
 	enum ToolOptions {
-
 		TOOL_OPT_LOCAL_COORDS,
 		TOOL_OPT_USE_SNAP,
 		TOOL_OPT_OVERRIDE_CAMERA,
@@ -613,6 +611,7 @@ private:
 	float snap_rotate_value;
 	float snap_scale_value;
 
+	Ref<ArrayMesh> selection_box_xray;
 	Ref<ArrayMesh> selection_box;
 	RID indicators;
 	RID indicators_instance;
@@ -626,13 +625,12 @@ private:
 	AABB preview_bounds;
 
 	struct Gizmo {
-		bool visible;
-		float scale;
+		bool visible = false;
+		float scale = 0;
 		Transform transform;
 	} gizmo;
 
 	enum MenuOption {
-
 		MENU_TOOL_SELECT,
 		MENU_TOOL_MOVE,
 		MENU_TOOL_ROTATE,
@@ -701,7 +699,7 @@ private:
 
 	HBoxContainer *hbc_menu;
 
-	void _generate_selection_box();
+	void _generate_selection_boxes();
 	UndoRedo *undo_redo;
 
 	int camera_override_viewport_id;
@@ -864,12 +862,12 @@ protected:
 public:
 	void create_material(const String &p_name, const Color &p_color, bool p_billboard = false, bool p_on_top = false, bool p_use_vertex_color = false);
 	void create_icon_material(const String &p_name, const Ref<Texture2D> &p_texture, bool p_on_top = false, const Color &p_albedo = Color(1, 1, 1, 1));
-	void create_handle_material(const String &p_name, bool p_billboard = false);
+	void create_handle_material(const String &p_name, bool p_billboard = false, const Ref<Texture2D> &p_texture = nullptr);
 	void add_material(const String &p_name, Ref<StandardMaterial3D> p_material);
 
 	Ref<StandardMaterial3D> get_material(const String &p_name, const Ref<EditorNode3DGizmo> &p_gizmo = Ref<EditorNode3DGizmo>());
 
-	virtual String get_name() const;
+	virtual String get_gizmo_name() const;
 	virtual int get_priority() const;
 	virtual bool can_be_hidden() const;
 	virtual bool is_selectable_when_hidden() const;
@@ -890,4 +888,4 @@ public:
 	virtual ~EditorNode3DGizmoPlugin();
 };
 
-#endif
+#endif // NODE_3D_EDITOR_PLUGIN_H

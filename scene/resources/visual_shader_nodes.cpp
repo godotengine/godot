@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -480,7 +480,7 @@ String VisualShaderNodeTexture::generate_global(Shader::Mode p_mode, VisualShade
 			case TYPE_COLOR:
 				u += " : hint_albedo";
 				break;
-			case TYPE_NORMALMAP:
+			case TYPE_NORMAL_MAP:
 				u += " : hint_normal";
 				break;
 		}
@@ -724,6 +724,10 @@ Vector<StringName> VisualShaderNodeTexture::get_editable_properties() const {
 }
 
 String VisualShaderNodeTexture::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
+	if (is_input_port_connected(2) && source != SOURCE_PORT) {
+		return TTR("The sampler port is connected but not used. Consider changing the source to 'SamplerPort'.");
+	}
+
 	if (source == SOURCE_TEXTURE) {
 		return String(); // all good
 	}
@@ -776,10 +780,94 @@ void VisualShaderNodeTexture::_bind_methods() {
 	BIND_ENUM_CONSTANT(SOURCE_PORT);
 	BIND_ENUM_CONSTANT(TYPE_DATA);
 	BIND_ENUM_CONSTANT(TYPE_COLOR);
-	BIND_ENUM_CONSTANT(TYPE_NORMALMAP);
+	BIND_ENUM_CONSTANT(TYPE_NORMAL_MAP);
 }
 
 VisualShaderNodeTexture::VisualShaderNodeTexture() {
+}
+
+////////////// Curve
+
+String VisualShaderNodeCurveTexture::get_caption() const {
+	return "CurveTexture";
+}
+
+int VisualShaderNodeCurveTexture::get_input_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeCurveTexture::PortType VisualShaderNodeCurveTexture::get_input_port_type(int p_port) const {
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeCurveTexture::get_input_port_name(int p_port) const {
+	return String();
+}
+
+int VisualShaderNodeCurveTexture::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeCurveTexture::PortType VisualShaderNodeCurveTexture::get_output_port_type(int p_port) const {
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeCurveTexture::get_output_port_name(int p_port) const {
+	return String();
+}
+
+void VisualShaderNodeCurveTexture::set_texture(Ref<CurveTexture> p_texture) {
+	texture = p_texture;
+	emit_changed();
+}
+
+Ref<CurveTexture> VisualShaderNodeCurveTexture::get_texture() const {
+	return texture;
+}
+
+Vector<StringName> VisualShaderNodeCurveTexture::get_editable_properties() const {
+	Vector<StringName> props;
+	props.push_back("texture");
+	return props;
+}
+
+String VisualShaderNodeCurveTexture::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	return "uniform sampler2D " + make_unique_id(p_type, p_id, "curve") + ";\n";
+}
+
+String VisualShaderNodeCurveTexture::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	if (p_input_vars[0] == String()) {
+		return "\t" + p_output_vars[0] + " = 0.0;\n";
+	}
+	String id = make_unique_id(p_type, p_id, "curve");
+	String code;
+	code += "\t" + p_output_vars[0] + " = texture(" + id + ", vec2(" + p_input_vars[0] + ", 0.0)).r;\n";
+	return code;
+}
+
+Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCurveTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	VisualShader::DefaultTextureParam dtp;
+	dtp.name = make_unique_id(p_type, p_id, "curve");
+	dtp.param = texture;
+	Vector<VisualShader::DefaultTextureParam> ret;
+	ret.push_back(dtp);
+	return ret;
+}
+
+void VisualShaderNodeCurveTexture::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &VisualShaderNodeCurveTexture::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"), &VisualShaderNodeCurveTexture::get_texture);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_texture", "get_texture");
+}
+
+bool VisualShaderNodeCurveTexture::is_use_prop_slots() const {
+	return true;
+}
+
+VisualShaderNodeCurveTexture::VisualShaderNodeCurveTexture() {
+	simple_decl = true;
+	allow_v_resize = false;
 }
 
 ////////////// Sample3D
@@ -896,6 +984,10 @@ void VisualShaderNodeSample3D::_bind_methods() {
 }
 
 String VisualShaderNodeSample3D::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
+	if (is_input_port_connected(2) && source != SOURCE_PORT) {
+		return TTR("The sampler port is connected but not used. Consider changing the source to 'SamplerPort'.");
+	}
+
 	if (source == SOURCE_TEXTURE) {
 		return String(); // all good
 	}
@@ -1089,7 +1181,7 @@ String VisualShaderNodeCubemap::generate_global(Shader::Mode p_mode, VisualShade
 			case TYPE_COLOR:
 				u += " : hint_albedo";
 				break;
-			case TYPE_NORMALMAP:
+			case TYPE_NORMAL_MAP:
 				u += " : hint_normal";
 				break;
 		}
@@ -1192,6 +1284,13 @@ Vector<StringName> VisualShaderNodeCubemap::get_editable_properties() const {
 	return props;
 }
 
+String VisualShaderNodeCubemap::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
+	if (is_input_port_connected(2) && source != SOURCE_PORT) {
+		return TTR("The sampler port is connected but not used. Consider changing the source to 'SamplerPort'.");
+	}
+	return String();
+}
+
 void VisualShaderNodeCubemap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_source", "value"), &VisualShaderNodeCubemap::set_source);
 	ClassDB::bind_method(D_METHOD("get_source"), &VisualShaderNodeCubemap::get_source);
@@ -1211,7 +1310,7 @@ void VisualShaderNodeCubemap::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(TYPE_DATA);
 	BIND_ENUM_CONSTANT(TYPE_COLOR);
-	BIND_ENUM_CONSTANT(TYPE_NORMALMAP);
+	BIND_ENUM_CONSTANT(TYPE_NORMAL_MAP);
 }
 
 VisualShaderNodeCubemap::VisualShaderNodeCubemap() {
@@ -4251,7 +4350,7 @@ String VisualShaderNodeTextureUniform::generate_global(Shader::Mode p_mode, Visu
 				code += " : hint_albedo;\n";
 			}
 			break;
-		case TYPE_NORMALMAP:
+		case TYPE_NORMAL_MAP:
 			code += " : hint_normal;\n";
 			break;
 		case TYPE_ANISO:
@@ -4332,7 +4431,7 @@ void VisualShaderNodeTextureUniform::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(TYPE_DATA);
 	BIND_ENUM_CONSTANT(TYPE_COLOR);
-	BIND_ENUM_CONSTANT(TYPE_NORMALMAP);
+	BIND_ENUM_CONSTANT(TYPE_NORMAL_MAP);
 	BIND_ENUM_CONSTANT(TYPE_ANISO);
 
 	BIND_ENUM_CONSTANT(COLOR_DEFAULT_WHITE);
@@ -4509,7 +4608,7 @@ String VisualShaderNodeTexture2DArrayUniform::generate_global(Shader::Mode p_mod
 			else
 				code += " : hint_albedo;\n";
 			break;
-		case TYPE_NORMALMAP:
+		case TYPE_NORMAL_MAP:
 			code += " : hint_normal;\n";
 			break;
 		case TYPE_ANISO:
@@ -4577,7 +4676,7 @@ String VisualShaderNodeTexture3DUniform::generate_global(Shader::Mode p_mode, Vi
 			else
 				code += " : hint_albedo;\n";
 			break;
-		case TYPE_NORMALMAP:
+		case TYPE_NORMAL_MAP:
 			code += " : hint_normal;\n";
 			break;
 		case TYPE_ANISO:
@@ -4647,7 +4746,7 @@ String VisualShaderNodeCubemapUniform::generate_global(Shader::Mode p_mode, Visu
 				code += " : hint_albedo;\n";
 			}
 			break;
-		case TYPE_NORMALMAP:
+		case TYPE_NORMAL_MAP:
 			code += " : hint_normal;\n";
 			break;
 		case TYPE_ANISO:

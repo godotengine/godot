@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,10 @@
 
 #include "rendering_server_globals.h"
 
-RasterizerStorage *RenderingServerGlobals::storage = nullptr;
-RasterizerCanvas *RenderingServerGlobals::canvas_render = nullptr;
-RasterizerScene *RenderingServerGlobals::scene_render = nullptr;
-Rasterizer *RenderingServerGlobals::rasterizer = nullptr;
+RendererStorage *RenderingServerGlobals::storage = nullptr;
+RendererCanvasRender *RenderingServerGlobals::canvas_render = nullptr;
+RendererCompositor *RenderingServerGlobals::rasterizer = nullptr;
 
-RenderingServerCanvas *RenderingServerGlobals::canvas = nullptr;
-RenderingServerViewport *RenderingServerGlobals::viewport = nullptr;
-RenderingServerScene *RenderingServerGlobals::scene = nullptr;
+RendererCanvasCull *RenderingServerGlobals::canvas = nullptr;
+RendererViewport *RenderingServerGlobals::viewport = nullptr;
+RendererScene *RenderingServerGlobals::scene = nullptr;

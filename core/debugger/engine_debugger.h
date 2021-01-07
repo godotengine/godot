@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,12 @@
 #ifndef ENGINE_DEBUGGER_H
 #define ENGINE_DEBUGGER_H
 
-#include "core/array.h"
-#include "core/map.h"
-#include "core/string_name.h"
-#include "core/ustring.h"
-#include "core/variant.h"
-#include "core/vector.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 
 class RemoteDebuggerPeer;
 class ScriptDebugger;
@@ -44,7 +44,7 @@ class ScriptDebugger;
 class EngineDebugger {
 public:
 	typedef void (*ProfilingToggle)(void *p_user, bool p_enable, const Array &p_opts);
-	typedef void (*ProfilingTick)(void *p_user, float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time);
+	typedef void (*ProfilingTick)(void *p_user, float p_frame_time, float p_process_time, float p_physics_time, float p_physics_frame_time);
 	typedef void (*ProfilingAdd)(void *p_user, const Array &p_arr);
 
 	typedef Error (*CaptureFunc)(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
@@ -86,7 +86,7 @@ public:
 
 private:
 	float frame_time = 0.0;
-	float idle_time = 0.0;
+	float process_time = 0.0;
 	float physics_time = 0.0;
 	float physics_frame_time = 0.0;
 
@@ -120,7 +120,7 @@ public:
 
 	static void register_uri_handler(const String &p_protocol, CreatePeerFunc p_func);
 
-	void iteration(uint64_t p_frame_ticks, uint64_t p_idle_ticks, uint64_t p_physics_ticks, float p_physics_frame_time);
+	void iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, float p_physics_frame_time);
 	void profiler_enable(const StringName &p_name, bool p_enabled, const Array &p_opts = Array());
 	Error capture_parse(const StringName &p_name, const String &p_msg, const Array &p_args, bool &r_captured);
 

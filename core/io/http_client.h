@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,14 +34,13 @@
 #include "core/io/ip.h"
 #include "core/io/stream_peer.h"
 #include "core/io/stream_peer_tcp.h"
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 class HTTPClient : public Reference {
 	GDCLASS(HTTPClient, Reference);
 
 public:
 	enum ResponseCode {
-
 		// 1xx informational
 		RESPONSE_CONTINUE = 100,
 		RESPONSE_SWITCHING_PROTOCOLS = 101,
@@ -116,7 +115,6 @@ public:
 	};
 
 	enum Method {
-
 		METHOD_GET,
 		METHOD_HEAD,
 		METHOD_POST,
@@ -131,7 +129,6 @@ public:
 	};
 
 	enum Status {
-
 		STATUS_DISCONNECTED,
 		STATUS_RESOLVING, // Resolving hostname (if passed a hostname)
 		STATUS_CANT_RESOLVE,
@@ -150,7 +147,6 @@ private:
 	static const int HOST_MIN_LEN = 4;
 
 	enum Port {
-
 		PORT_HTTP = 80,
 		PORT_HTTPS = 443,
 
@@ -182,7 +178,8 @@ private:
 
 	int response_num = 0;
 	Vector<String> response_headers;
-	int read_chunk_size = 4096;
+	// 64 KiB by default (favors fast download speeds at the cost of memory usage).
+	int read_chunk_size = 65536;
 
 	Error _get_http_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 

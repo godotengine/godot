@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,13 @@
 #ifndef OS_H
 #define OS_H
 
-#include "core/engine.h"
-#include "core/image.h"
+#include "core/config/engine.h"
+#include "core/io/image.h"
 #include "core/io/logger.h"
-#include "core/list.h"
 #include "core/os/main_loop.h"
-#include "core/ustring.h"
-#include "core/vector.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
 
 #include <stdarg.h>
 
@@ -62,8 +62,6 @@ class OS {
 
 	char *last_error;
 
-	void *_stack_bottom;
-
 	CompositeLogger *_logger = nullptr;
 
 	bool restart_on_exit = false;
@@ -77,7 +75,6 @@ public:
 	typedef bool (*HasServerFeatureCallback)(const String &p_feature);
 
 	enum RenderThreadMode {
-
 		RENDER_THREAD_UNSAFE,
 		RENDER_THREAD_SAFE,
 		RENDER_SEPARATE_THREAD

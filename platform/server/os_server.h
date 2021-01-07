@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,28 +41,28 @@
 #include "platform/x11/crash_handler_linuxbsd.h"
 #endif
 #include "servers/audio_server.h"
-#include "servers/rendering/rasterizer.h"
+#include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
 #undef CursorShape
 
 class OS_Server : public OS_Unix {
-	RenderingServer *rendering_server;
+	RenderingServer *rendering_server = nullptr;
 	VideoMode current_videomode;
 	List<String> args;
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
-	bool grab;
+	bool grab = false;
 
 	virtual void delete_main_loop();
 
-	bool force_quit;
+	bool force_quit = false;
 
-	InputDefault *input;
+	InputDefault *input = nullptr;
 
 	CrashHandler crash_handler;
 
-	int video_driver_index;
+	int video_driver_index = 0;
 
 	Ref<ResourceFormatDummyTexture> resource_loader_dummy;
 
@@ -70,8 +70,6 @@ protected:
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
 	virtual int get_current_video_driver() const;
-	virtual int get_audio_driver_count() const;
-	virtual const char *get_audio_driver_name(int p_driver) const;
 
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
@@ -90,8 +88,6 @@ public:
 	virtual void set_window_title(const String &p_title);
 
 	virtual MainLoop *get_main_loop() const;
-
-	virtual bool can_draw() const;
 
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
 	virtual VideoMode get_video_mode(int p_screen = 0) const;

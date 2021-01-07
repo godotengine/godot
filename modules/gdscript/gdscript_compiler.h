@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef GDSCRIPT_COMPILER_H
 #define GDSCRIPT_COMPILER_H
 
-#include "core/set.h"
+#include "core/templates/set.h"
 #include "gdscript.h"
 #include "gdscript_codegen.h"
 #include "gdscript_function.h"
@@ -51,12 +51,11 @@ class GDScriptCompiler {
 		GDScriptCodeGenerator *generator = nullptr;
 		Map<StringName, GDScriptCodeGenerator::Address> parameters;
 		Map<StringName, GDScriptCodeGenerator::Address> locals;
-		List<Set<StringName>> locals_in_scope;
+		List<Map<StringName, GDScriptCodeGenerator::Address>> locals_stack;
 
 		GDScriptCodeGenerator::Address add_local(const StringName &p_name, const GDScriptDataType &p_type) {
 			uint32_t addr = generator->add_local(p_name, p_type);
 			locals[p_name] = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::LOCAL_VARIABLE, addr, p_type);
-			locals_in_scope.back()->get().insert(p_name);
 			return locals[p_name];
 		}
 
@@ -102,17 +101,14 @@ class GDScriptCompiler {
 		}
 
 		void start_block() {
-			Set<StringName> scope;
-			locals_in_scope.push_back(scope);
+			Map<StringName, GDScriptCodeGenerator::Address> old_locals = locals;
+			locals_stack.push_back(old_locals);
 			generator->start_block();
 		}
 
 		void end_block() {
-			Set<StringName> &scope = locals_in_scope.back()->get();
-			for (Set<StringName>::Element *E = scope.front(); E; E = E->next()) {
-				locals.erase(E->get());
-			}
-			locals_in_scope.pop_back();
+			locals = locals_stack.back()->get();
+			locals_stack.pop_back();
 			generator->end_block();
 		}
 	};

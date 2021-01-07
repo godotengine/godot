@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -398,14 +398,14 @@ XRPositionalTracker *ARKitInterface::get_anchor_for_uuid(const unsigned char *p_
 	}
 
 	XRPositionalTracker *new_tracker = memnew(XRPositionalTracker);
-	new_tracker->set_type(XRServer::TRACKER_ANCHOR);
+	new_tracker->set_tracker_type(XRServer::TRACKER_ANCHOR);
 
 	char tracker_name[256];
 	sprintf(tracker_name, "Anchor %02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", p_uuid[0], p_uuid[1], p_uuid[2], p_uuid[3], p_uuid[4], p_uuid[5], p_uuid[6], p_uuid[7], p_uuid[8], p_uuid[9], p_uuid[10], p_uuid[11], p_uuid[12], p_uuid[13], p_uuid[14], p_uuid[15]);
 
 	String name = tracker_name;
 	print_line("Adding tracker " + name);
-	new_tracker->set_name(name);
+	new_tracker->set_tracker_name(name);
 
 	// add our tracker
 	XRServer::get_singleton()->add_tracker(new_tracker);
@@ -712,8 +712,8 @@ void ARKitInterface::_add_or_update_anchor(GodotARAnchor *p_anchor) {
 						int16_t index = planeAnchor.geometry.triangleIndices[j];
 						simd_float3 vrtx = planeAnchor.geometry.vertices[index];
 						simd_float2 textcoord = planeAnchor.geometry.textureCoordinates[index];
-						surftool->add_uv(Vector2(textcoord[0], textcoord[1]));
-						surftool->add_color(Color(0.8, 0.8, 0.8));
+						surftool->set_uv(Vector2(textcoord[0], textcoord[1]));
+						surftool->set_color(Color(0.8, 0.8, 0.8));
 						surftool->add_vertex(Vector3(vrtx[0], vrtx[1], vrtx[2]));
 					}
 

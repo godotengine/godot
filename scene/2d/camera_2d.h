@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,15 +69,14 @@ protected:
 	bool smoothing_enabled;
 	int limit[4];
 	bool limit_smoothing_enabled;
+
 	float drag_margin[4];
-
-	bool h_drag_enabled;
-	bool v_drag_enabled;
-	float h_ofs;
-	float v_ofs;
-
-	bool h_offset_changed;
-	bool v_offset_changed;
+	bool drag_horizontal_enabled;
+	bool drag_vertical_enabled;
+	float drag_horizontal_offset;
+	float drag_vertical_offset;
+	bool drag_horizontal_offset_changed;
+	bool drag_vertical_offset_changed;
 
 	Point2 camera_screen_center;
 	void _update_process_mode();
@@ -111,26 +110,26 @@ public:
 	void set_rotating(bool p_rotating);
 	bool is_rotating() const;
 
-	void set_limit(Margin p_margin, int p_limit);
-	int get_limit(Margin p_margin) const;
+	void set_limit(Side p_side, int p_limit);
+	int get_limit(Side p_side) const;
 
 	void set_limit_smoothing_enabled(bool enable);
 	bool is_limit_smoothing_enabled() const;
 
-	void set_h_drag_enabled(bool p_enabled);
-	bool is_h_drag_enabled() const;
+	void set_drag_horizontal_enabled(bool p_enabled);
+	bool is_drag_horizontal_enabled() const;
 
-	void set_v_drag_enabled(bool p_enabled);
-	bool is_v_drag_enabled() const;
+	void set_drag_vertical_enabled(bool p_enabled);
+	bool is_drag_vertical_enabled() const;
 
-	void set_drag_margin(Margin p_margin, float p_drag_margin);
-	float get_drag_margin(Margin p_margin) const;
+	void set_drag_margin(Side p_side, float p_drag_margin);
+	float get_drag_margin(Side p_side) const;
 
-	void set_v_offset(float p_offset);
-	float get_v_offset() const;
+	void set_drag_horizontal_offset(float p_offset);
+	float get_drag_horizontal_offset() const;
 
-	void set_h_offset(float p_offset);
-	float get_h_offset() const;
+	void set_drag_vertical_offset(float p_offset);
+	float get_drag_vertical_offset() const;
 
 	void set_enable_follow_smoothing(bool p_enabled);
 	bool is_follow_smoothing_enabled() const;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,7 +70,6 @@ public:
 	virtual String get_import_group_file(const String &p_path) const;
 	virtual bool exists(const String &p_path) const;
 
-	virtual bool can_be_imported(const String &p_path) const;
 	virtual int get_import_order(const String &p_path) const;
 
 	String get_internal_resource_path(const String &p_path) const;
@@ -102,6 +101,7 @@ public:
 	virtual String get_resource_type() const = 0;
 	virtual float get_priority() const { return 1.0; }
 	virtual int get_import_order() const { return 0; }
+	virtual int get_format_version() const { return 0; }
 
 	struct ImportOption {
 		PropertyInfo option;

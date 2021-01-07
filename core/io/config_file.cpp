@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 
 #include "core/io/file_access_encrypted.h"
 #include "core/os/keyboard.h"
-#include "core/variant_parser.h"
+#include "core/variant/variant_parser.h"
 
 PackedStringArray ConfigFile::_get_sections() const {
 	List<String> s;
@@ -67,7 +67,7 @@ void ConfigFile::set_value(const String &p_section, const String &p_key, const V
 			return; // ?
 		}
 		values[p_section].erase(p_key);
-		if (values[p_section].empty()) {
+		if (values[p_section].is_empty()) {
 			values.erase(p_section);
 		}
 

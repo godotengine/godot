@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define GRAPH_NODE_H
 
 #include "scene/gui/container.h"
+#include "scene/resources/text_line.h"
 
 class GraphNode : public Container {
 	GDCLASS(GraphNode, Container);
@@ -65,8 +66,14 @@ private:
 	};
 
 	String title;
+	Ref<TextLine> title_buf;
+
+	Dictionary opentype_features;
+	String language;
+	TextDirection text_direction = TEXT_DIRECTION_AUTO;
+
 	bool show_close;
-	Vector2 offset;
+	Vector2 position_offset;
 	bool comment;
 	bool resizable;
 
@@ -93,6 +100,7 @@ private:
 
 	void _connpos_update();
 	void _resort();
+	void _shape();
 
 	Vector2 drag_from;
 	bool selected;
@@ -124,8 +132,18 @@ public:
 	void set_title(const String &p_title);
 	String get_title() const;
 
-	void set_offset(const Vector2 &p_offset);
-	Vector2 get_offset() const;
+	void set_text_direction(TextDirection p_text_direction);
+	TextDirection get_text_direction() const;
+
+	void set_opentype_feature(const String &p_name, int p_value);
+	int get_opentype_feature(const String &p_name) const;
+	void clear_opentype_features();
+
+	void set_language(const String &p_language);
+	String get_language() const;
+
+	void set_position_offset(const Vector2 &p_offset);
+	Vector2 get_position_offset() const;
 
 	void set_selected(bool p_selected);
 	bool is_selected();

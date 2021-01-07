@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,7 +55,6 @@ class SceneTreeDock : public VBoxContainer {
 	GDCLASS(SceneTreeDock, VBoxContainer);
 
 	enum Tool {
-
 		TOOL_NEW,
 		TOOL_INSTANCE,
 		TOOL_EXPAND_COLLAPSE,
@@ -204,7 +203,6 @@ class SceneTreeDock : public VBoxContainer {
 	bool _validate_no_foreign();
 	void _selection_changed();
 	void _update_script_button();
-	Node *_get_selection_group_tail(Node *p_node, List<Node *> p_list);
 
 	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, List<Pair<NodePath, NodePath>> *p_renames);
 

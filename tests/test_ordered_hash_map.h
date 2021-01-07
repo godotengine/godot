@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef TEST_ORDERED_HASH_MAP_H
 #define TEST_ORDERED_HASH_MAP_H
 
-#include "core/ordered_hash_map.h"
 #include "core/os/os.h"
-#include "core/pair.h"
-#include "core/vector.h"
+#include "core/templates/ordered_hash_map.h"
+#include "core/templates/pair.h"
+#include "core/templates/vector.h"
 
 #include "tests/test_macros.h"
 
@@ -133,7 +133,6 @@ TEST_CASE("[OrderedHashMap] Const iteration") {
 		++idx;
 	}
 }
-
 } // namespace TestOrderedHashMap
 
 #endif // TEST_ORDERED_HASH_MAP_H

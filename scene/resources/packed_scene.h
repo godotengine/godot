@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef PACKED_SCENE_H
 #define PACKED_SCENE_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 #include "scene/main/node.h"
 
 class SceneState : public Reference {
@@ -172,7 +172,6 @@ public:
 	//build API
 
 	int add_name(const StringName &p_name);
-	int find_name(const StringName &p_name) const;
 	int add_value(const Variant &p_value);
 	int add_node_path(const NodePath &p_path);
 	int add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index);

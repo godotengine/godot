@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef RENDERING_DEVICE_H
 #define RENDERING_DEVICE_H
 
-#include "core/object.h"
-#include "core/typed_array.h"
+#include "core/object/class_db.h"
+#include "core/variant/typed_array.h"
 #include "servers/display_server.h"
 
 class RDTextureFormat;
@@ -392,7 +392,7 @@ public:
 		uint32_t depth;
 		uint32_t array_layers;
 		uint32_t mipmaps;
-		TextureType type;
+		TextureType texture_type;
 		TextureSamples samples;
 		uint32_t usage_bits;
 		Vector<DataFormat> shareable_formats;
@@ -404,7 +404,7 @@ public:
 			depth = 1;
 			array_layers = 1;
 			mipmaps = 1;
-			type = TEXTURE_TYPE_2D;
+			texture_type = TEXTURE_TYPE_2D;
 			samples = TEXTURE_SAMPLES_1;
 			usage_bits = 0;
 		}
@@ -433,6 +433,7 @@ public:
 		TEXTURE_SLICE_2D,
 		TEXTURE_SLICE_CUBEMAP,
 		TEXTURE_SLICE_3D,
+		TEXTURE_SLICE_2D_ARRAY,
 	};
 
 	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D) = 0;
@@ -564,7 +565,7 @@ public:
 			frequency = VERTEX_FREQUENCY_VERTEX;
 		}
 	};
-	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>()) = 0;
+	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_as_storage = false) = 0;
 
 	typedef int64_t VertexFormatID;
 
@@ -629,7 +630,7 @@ public:
 	virtual RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>()) = 0;
 
 	struct Uniform {
-		UniformType type;
+		UniformType uniform_type;
 		int binding; //binding index as specified in shader
 
 		//for single items, provide one ID, for
@@ -640,7 +641,7 @@ public:
 		Vector<RID> ids;
 
 		Uniform() {
-			type = UNIFORM_TYPE_IMAGE;
+			uniform_type = UNIFORM_TYPE_IMAGE;
 			binding = 0;
 		}
 	};

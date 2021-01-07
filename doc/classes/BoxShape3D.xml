@@ -14,8 +14,8 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 1, 1, 1 )">
-			The box's half extents. The width, height and depth of this shape is twice the half extents.
+		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3( 2, 2, 2 )">
+			The box's width, height and depth.
 		</member>
 	</members>
 	<constants>

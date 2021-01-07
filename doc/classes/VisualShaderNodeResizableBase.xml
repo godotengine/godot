@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeResizableBase" inherits="VisualShaderNode" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 0, 0 )">
+			The size of the node in the visual shader graph.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

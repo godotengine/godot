@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -213,21 +213,27 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 }
 
 void ScrollContainer::_update_scrollbar_position() {
+	if (!_updating_scrollbars) {
+		return;
+	}
+
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();
 
-	h_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 0);
-	h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
-	h_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -hmin.height);
-	h_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
+	h_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, 0);
+	h_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
+	h_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -hmin.height);
+	h_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
 
-	v_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -vmin.width);
-	v_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
-	v_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
-	v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
+	v_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -vmin.width);
+	v_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
+	v_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
+	v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
 
 	h_scroll->raise();
 	v_scroll->raise();
+
+	_updating_scrollbars = false;
 }
 
 void ScrollContainer::_ensure_focused_visible(Control *p_control) {
@@ -249,74 +255,89 @@ void ScrollContainer::_ensure_focused_visible(Control *p_control) {
 
 		float diff = MAX(MIN(other_rect.position.y, global_rect.position.y), other_rect.position.y + other_rect.size.y - global_rect.size.y + bottom_margin);
 		set_v_scroll(get_v_scroll() + (diff - global_rect.position.y));
-		diff = MAX(MIN(other_rect.position.x, global_rect.position.x), other_rect.position.x + other_rect.size.x - global_rect.size.x + right_margin);
+		if (is_layout_rtl()) {
+			diff = MAX(MIN(other_rect.position.x, global_rect.position.x), other_rect.position.x + other_rect.size.x - global_rect.size.x);
+		} else {
+			diff = MAX(MIN(other_rect.position.x, global_rect.position.x), other_rect.position.x + other_rect.size.x - global_rect.size.x + right_margin);
+		}
 		set_h_scroll(get_h_scroll() + (diff - global_rect.position.x));
 	}
 }
 
+void ScrollContainer::_update_dimensions() {
+	child_max_size = Size2(0, 0);
+	Size2 size = get_size();
+	Point2 ofs;
+
+	Ref<StyleBox> sb = get_theme_stylebox("bg");
+	size -= sb->get_minimum_size();
+	ofs += sb->get_offset();
+	bool rtl = is_layout_rtl();
+
+	if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
+		size.y -= h_scroll->get_minimum_size().y;
+	}
+
+	if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
+		size.x -= v_scroll->get_minimum_size().x;
+	}
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *c = Object::cast_to<Control>(get_child(i));
+		if (!c) {
+			continue;
+		}
+		if (c->is_set_as_top_level()) {
+			continue;
+		}
+		if (c == h_scroll || c == v_scroll) {
+			continue;
+		}
+		Size2 minsize = c->get_combined_minimum_size();
+		child_max_size.x = MAX(child_max_size.x, minsize.x);
+		child_max_size.y = MAX(child_max_size.y, minsize.y);
+
+		Rect2 r = Rect2(-scroll, minsize);
+		if (!scroll_h || (!h_scroll->is_visible_in_tree() && c->get_h_size_flags() & SIZE_EXPAND)) {
+			r.position.x = 0;
+			if (c->get_h_size_flags() & SIZE_EXPAND) {
+				r.size.width = MAX(size.width, minsize.width);
+			} else {
+				r.size.width = minsize.width;
+			}
+		}
+		if (!scroll_v || (!v_scroll->is_visible_in_tree() && c->get_v_size_flags() & SIZE_EXPAND)) {
+			r.position.y = 0;
+			if (c->get_v_size_flags() & SIZE_EXPAND) {
+				r.size.height = MAX(size.height, minsize.height);
+			} else {
+				r.size.height = minsize.height;
+			}
+		}
+		r.position += ofs;
+		if (rtl && v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) {
+			r.position.x += v_scroll->get_minimum_size().x;
+		}
+		r.position = r.position.floor();
+		fit_child_in_rect(c, r);
+	}
+
+	update();
+}
+
 void ScrollContainer::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
+		_updating_scrollbars = true;
 		call_deferred("_update_scrollbar_position");
 	};
 
 	if (p_what == NOTIFICATION_READY) {
 		get_viewport()->connect("gui_focus_changed", callable_mp(this, &ScrollContainer::_ensure_focused_visible));
+		_update_dimensions();
 	}
 
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
-		child_max_size = Size2(0, 0);
-		Size2 size = get_size();
-		Point2 ofs;
-
-		Ref<StyleBox> sb = get_theme_stylebox("bg");
-		size -= sb->get_minimum_size();
-		ofs += sb->get_offset();
-
-		if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
-			size.y -= h_scroll->get_minimum_size().y;
-		}
-
-		if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
-			size.x -= v_scroll->get_minimum_size().x;
-		}
-
-		for (int i = 0; i < get_child_count(); i++) {
-			Control *c = Object::cast_to<Control>(get_child(i));
-			if (!c) {
-				continue;
-			}
-			if (c->is_set_as_top_level()) {
-				continue;
-			}
-			if (c == h_scroll || c == v_scroll) {
-				continue;
-			}
-			Size2 minsize = c->get_combined_minimum_size();
-			child_max_size.x = MAX(child_max_size.x, minsize.x);
-			child_max_size.y = MAX(child_max_size.y, minsize.y);
-
-			Rect2 r = Rect2(-scroll, minsize);
-			if (!scroll_h || (!h_scroll->is_visible_in_tree() && c->get_h_size_flags() & SIZE_EXPAND)) {
-				r.position.x = 0;
-				if (c->get_h_size_flags() & SIZE_EXPAND) {
-					r.size.width = MAX(size.width, minsize.width);
-				} else {
-					r.size.width = minsize.width;
-				}
-			}
-			if (!scroll_v || (!v_scroll->is_visible_in_tree() && c->get_v_size_flags() & SIZE_EXPAND)) {
-				r.position.y = 0;
-				if (c->get_v_size_flags() & SIZE_EXPAND) {
-					r.size.height = MAX(size.height, minsize.height);
-				} else {
-					r.size.height = minsize.height;
-				}
-			}
-			r.position += ofs;
-			fit_child_in_rect(c, r);
-		}
-
-		update();
+		_update_dimensions();
 	};
 
 	if (p_what == NOTIFICATION_DRAW) {
@@ -414,12 +435,13 @@ void ScrollContainer::update_scrollbars() {
 	bool hide_scroll_v = !scroll_v || min.height <= size.height;
 	bool hide_scroll_h = !scroll_h || min.width <= size.width;
 
+	v_scroll->set_max(min.height);
 	if (hide_scroll_v) {
+		v_scroll->set_page(size.height);
 		v_scroll->hide();
 		scroll.y = 0;
 	} else {
 		v_scroll->show();
-		v_scroll->set_max(min.height);
 		if (hide_scroll_h) {
 			v_scroll->set_page(size.height);
 		} else {
@@ -429,12 +451,13 @@ void ScrollContainer::update_scrollbars() {
 		scroll.y = v_scroll->get_value();
 	}
 
+	h_scroll->set_max(min.width);
 	if (hide_scroll_h) {
+		h_scroll->set_page(size.width);
 		h_scroll->hide();
 		scroll.x = 0;
 	} else {
 		h_scroll->show();
-		h_scroll->set_max(min.width);
 		if (hide_scroll_v) {
 			h_scroll->set_page(size.width);
 		} else {
@@ -445,8 +468,8 @@ void ScrollContainer::update_scrollbars() {
 	}
 
 	// Avoid scrollbar overlapping.
-	h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, hide_scroll_v ? 0 : -vmin.width);
-	v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, hide_scroll_h ? 0 : -hmin.height);
+	h_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, hide_scroll_v ? 0 : -vmin.width);
+	v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, hide_scroll_h ? 0 : -hmin.height);
 }
 
 void ScrollContainer::_scroll_moved(float) {
@@ -540,7 +563,7 @@ String ScrollContainer::get_configuration_warning() const {
 	}
 
 	if (found != 1) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox, HBox, etc.), or a Control and set the custom minimum size manually.");

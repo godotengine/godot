@@ -1,9 +1,10 @@
 name: 🌐 JavaScript Builds
 on: [push, pull_request]
 
-# Global Cache Settings
+# Global Settings
 env:
   GODOT_BASE_BRANCH: master
+  SCONSFLAGS: platform=javascript verbose=yes warnings=extra werror=yes --jobs=2
   SCONS_CACHE_LIMIT: 4096
   EM_VERSION: 1.39.20
   EM_CACHE_FOLDER: 'emsdk-cache'
@@ -74,4 +75,11 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=javascript target=release tools=no use_closure_compiler=yes
+          scons target=release tools=no use_closure_compiler=yes
+          ls -l bin/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14

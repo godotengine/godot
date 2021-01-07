@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,18 +30,17 @@
 
 #include "resource_format_binary.h"
 
-#include "core/image.h"
+#include "core/config/project_settings.h"
 #include "core/io/file_access_compressed.h"
+#include "core/io/image.h"
 #include "core/io/marshalls.h"
 #include "core/os/dir_access.h"
-#include "core/project_settings.h"
 #include "core/version.h"
 
 //#define print_bl(m_what) print_line(m_what)
 #define print_bl(m_what) (void)(m_what)
 
 enum {
-
 	//numbering must be different from variant, in case new variant types are added (variant must be always contiguous for jumptable optimization)
 	VARIANT_NIL = 1,
 	VARIANT_BOOL = 2,
@@ -90,7 +89,6 @@ enum {
 	FORMAT_VERSION = 3,
 	FORMAT_VERSION_CAN_RENAME_DEPS = 1,
 	FORMAT_VERSION_NO_NODEPATH_PROPERTY = 3,
-
 };
 
 void ResourceLoaderBinary::_advance_padding(uint32_t p_len) {
@@ -1467,7 +1465,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 			}
 
 		} break;
-		case Variant::_RID: {
+		case Variant::RID: {
 			f->store_32(VARIANT_RID);
 			WARN_PRINT("Can't save RIDs.");
 			RID val = p_property;

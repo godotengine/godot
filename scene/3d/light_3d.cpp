@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "light_3d.h"
 
-#include "core/engine.h"
-#include "core/project_settings.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "scene/resources/surface_tool.h"
 
 bool Light3D::_can_gizmo_scale() const {
@@ -394,6 +394,15 @@ bool DirectionalLight3D::is_blend_splits_enabled() const {
 	return blend_splits;
 }
 
+void DirectionalLight3D::set_sky_only(bool p_sky_only) {
+	sky_only = p_sky_only;
+	RS::get_singleton()->light_directional_set_sky_only(light, p_sky_only);
+}
+
+bool DirectionalLight3D::is_sky_only() const {
+	return sky_only;
+}
+
 void DirectionalLight3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_mode", "mode"), &DirectionalLight3D::set_shadow_mode);
 	ClassDB::bind_method(D_METHOD("get_shadow_mode"), &DirectionalLight3D::get_shadow_mode);
@@ -403,6 +412,9 @@ void DirectionalLight3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_blend_splits", "enabled"), &DirectionalLight3D::set_blend_splits);
 	ClassDB::bind_method(D_METHOD("is_blend_splits_enabled"), &DirectionalLight3D::is_blend_splits_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_sky_only", "priority"), &DirectionalLight3D::set_sky_only);
+	ClassDB::bind_method(D_METHOD("is_sky_only"), &DirectionalLight3D::is_sky_only);
 
 	ADD_GROUP("Directional Shadow", "directional_shadow_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "directional_shadow_mode", PROPERTY_HINT_ENUM, "Orthogonal (Fast),PSSM 2 Splits (Average),PSSM 4 Splits (Slow)"), "set_shadow_mode", "get_shadow_mode");
@@ -414,6 +426,8 @@ void DirectionalLight3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "directional_shadow_depth_range", PROPERTY_HINT_ENUM, "Stable,Optimized"), "set_shadow_depth_range", "get_shadow_depth_range");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_max_distance", PROPERTY_HINT_EXP_RANGE, "0,8192,0.1,or_greater"), "set_param", "get_param", PARAM_SHADOW_MAX_DISTANCE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_pancake_size", PROPERTY_HINT_EXP_RANGE, "0,1024,0.1,or_greater"), "set_param", "get_param", PARAM_SHADOW_PANCAKE_SIZE);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_in_sky_only"), "set_sky_only", "is_sky_only");
 
 	BIND_ENUM_CONSTANT(SHADOW_ORTHOGONAL);
 	BIND_ENUM_CONSTANT(SHADOW_PARALLEL_2_SPLITS);
@@ -448,7 +462,7 @@ String OmniLight3D::get_configuration_warning() const {
 	String warning = Light3D::get_configuration_warning();
 
 	if (!has_shadow() && get_projector().is_valid()) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Projector texture only works with shadows active.");
@@ -482,14 +496,14 @@ String SpotLight3D::get_configuration_warning() const {
 	String warning = Light3D::get_configuration_warning();
 
 	if (has_shadow() && get_param(PARAM_SPOT_ANGLE) >= 90.0) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("A SpotLight3D with an angle wider than 90 degrees cannot cast shadows.");
 	}
 
 	if (!has_shadow() && get_projector().is_valid()) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Projector texture only works with shadows active.");

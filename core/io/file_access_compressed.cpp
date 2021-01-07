@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "file_access_compressed.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, int p_block_size) {
 	magic = p_magic.ascii().get_data();
@@ -327,14 +327,14 @@ Error FileAccessCompressed::get_error() const {
 
 void FileAccessCompressed::flush() {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
-	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
 	// compressed files keep data in memory till close()
 }
 
 void FileAccessCompressed::store_8(uint8_t p_dest) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
-	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
 	WRITE_FIT(1);
 	write_ptr[write_pos++] = p_dest;

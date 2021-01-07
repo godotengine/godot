@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "texture_editor_plugin.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
-#include "core/project_settings.h"
 #include "editor/editor_settings.h"
 
 void TextureEditor::_gui_input(Ref<InputEvent> p_event) {
@@ -79,6 +79,7 @@ void TextureEditor::_notification(int p_what) {
 		draw_texture_rect(texture, Rect2(ofs_x, ofs_y, tex_width, tex_height));
 
 		Ref<Font> font = get_theme_font("font", "Label");
+		int font_size = get_theme_font_size("font_size", "Label");
 
 		String format;
 		if (Object::cast_to<ImageTexture>(*texture)) {
@@ -90,16 +91,16 @@ void TextureEditor::_notification(int p_what) {
 		}
 		String text = itos(texture->get_width()) + "x" + itos(texture->get_height()) + " " + format;
 
-		Size2 rect = font->get_string_size(text);
+		Size2 rect = font->get_string_size(text, font_size);
 
-		Vector2 draw_from = size - rect + Size2(-2, font->get_ascent() - 2);
+		Vector2 draw_from = size - rect + Size2(-2, font->get_ascent(font_size) - 2);
 		if (draw_from.x < 0) {
 			draw_from.x = 0;
 		}
 
-		draw_string(font, draw_from + Vector2(2, 2), text, Color(0, 0, 0, 0.5), size.width);
-		draw_string(font, draw_from - Vector2(2, 2), text, Color(0, 0, 0, 0.5), size.width);
-		draw_string(font, draw_from, text, Color(1, 1, 1, 1), size.width);
+		draw_string(font, draw_from + Vector2(2, 2), text, HALIGN_LEFT, size.width, font_size, Color(0, 0, 0, 0.5));
+		draw_string(font, draw_from - Vector2(2, 2), text, HALIGN_LEFT, size.width, font_size, Color(0, 0, 0, 0.5));
+		draw_string(font, draw_from, text, HALIGN_LEFT, size.width, font_size, Color(1, 1, 1, 1));
 	}
 }
 

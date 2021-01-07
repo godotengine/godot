@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,10 +51,6 @@ class Polygon2D : public Node2D {
 
 	Color color;
 	Ref<Texture2D> texture;
-	Ref<Texture2D> normal_map;
-	Ref<Texture2D> specular_map;
-	Color specular_color;
-	float shininess;
 
 	Size2 tex_scale;
 	Vector2 tex_ofs;
@@ -114,18 +110,6 @@ public:
 
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
-
-	void set_normal_map(const Ref<Texture2D> &p_normal_map);
-	Ref<Texture2D> get_normal_map() const;
-
-	void set_specular_map(const Ref<Texture2D> &p_specular_map);
-	Ref<Texture2D> get_specular_map() const;
-
-	void set_specular_color(const Color &p_specular_color);
-	Color get_specular_color() const;
-
-	void set_shininess(float p_shininess);
-	float get_shininess() const;
 
 	void set_texture_offset(const Vector2 &p_offset);
 	Vector2 get_texture_offset() const;

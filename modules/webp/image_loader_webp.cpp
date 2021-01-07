@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,14 +32,14 @@
 
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #include <stdlib.h>
 #include <webp/decode.h>
 #include <webp/encode.h>
 
 static Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quality) {
-	ERR_FAIL_COND_V(p_image.is_null() || p_image->empty(), Vector<uint8_t>());
+	ERR_FAIL_COND_V(p_image.is_null() || p_image->is_empty(), Vector<uint8_t>());
 
 	Ref<Image> img = p_image->duplicate();
 	if (img->detect_alpha()) {

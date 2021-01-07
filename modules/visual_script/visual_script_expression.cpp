@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1341,7 +1341,7 @@ public:
 				}
 
 				bool valid;
-				r_ret = base.get_named(index->name, &valid);
+				r_ret = base.get_named(index->name, valid);
 				if (!valid) {
 					r_error_str = "Invalid index '" + String(index->name) + "' for base of type " + Variant::get_type_name(base.get_type()) + ".";
 					return true;
@@ -1405,7 +1405,7 @@ public:
 					argp.write[i] = &arr[i];
 				}
 
-				r_ret = Variant::construct(constructor->data_type, (const Variant **)argp.ptr(), argp.size(), ce);
+				Variant::construct(constructor->data_type, r_ret, (const Variant **)argp.ptr(), argp.size(), ce);
 
 				if (ce.error != Callable::CallError::CALL_OK) {
 					r_error_str = "Invalid arguments to construct '" + Variant::get_type_name(constructor->data_type) + "'.";
@@ -1463,7 +1463,7 @@ public:
 					argp.write[i] = &arr[i];
 				}
 
-				r_ret = base.call(call->method, (const Variant **)argp.ptr(), argp.size(), ce);
+				base.call(call->method, (const Variant **)argp.ptr(), argp.size(), r_ret, ce);
 
 				if (ce.error != Callable::CallError::CALL_OK) {
 					r_error_str = "On call to '" + String(call->method) + "':";

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,7 +97,7 @@ struct SpatialIndexer {
 			}
 		}
 
-		while (!removed.empty()) {
+		while (!removed.is_empty()) {
 			p_notifier->_exit_camera(removed.front()->get());
 			removed.pop_front();
 		}
@@ -125,7 +125,7 @@ struct SpatialIndexer {
 			removed.push_back(E->key());
 		}
 
-		while (!removed.empty()) {
+		while (!removed.is_empty()) {
 			removed.front()->get()->_exit_camera(p_camera);
 			removed.pop_front();
 		}
@@ -175,12 +175,12 @@ struct SpatialIndexer {
 				}
 			}
 
-			while (!added.empty()) {
+			while (!added.is_empty()) {
 				added.front()->get()->_enter_camera(E->key());
 				added.pop_front();
 			}
 
-			while (!removed.empty()) {
+			while (!removed.is_empty()) {
 				E->get().notifiers.erase(removed.front()->get());
 				removed.front()->get()->_exit_camera(E->key());
 				removed.pop_front();
@@ -321,8 +321,8 @@ void World3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_fallback_environment", "get_fallback_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_effects", PROPERTY_HINT_RESOURCE_TYPE, "CameraEffects"), "set_camera_effects", "get_camera_effects");
-	ADD_PROPERTY(PropertyInfo(Variant::_RID, "space", PROPERTY_HINT_NONE, "", 0), "", "get_space");
-	ADD_PROPERTY(PropertyInfo(Variant::_RID, "scenario", PROPERTY_HINT_NONE, "", 0), "", "get_scenario");
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "space", PROPERTY_HINT_NONE, "", 0), "", "get_space");
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "scenario", PROPERTY_HINT_NONE, "", 0), "", "get_scenario");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectSpaceState3D", 0), "", "get_direct_space_state");
 }
 

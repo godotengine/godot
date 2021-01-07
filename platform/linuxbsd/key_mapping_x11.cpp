@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -185,7 +185,6 @@ struct _TranslatePair {
 };
 
 static _TranslatePair _scancode_to_keycode[] = {
-
 	{ KEY_ESCAPE, 0x09 },
 	{ KEY_1, 0x0A },
 	{ KEY_2, 0x0B },
@@ -354,7 +353,6 @@ struct _XTranslateUnicodePair {
 };
 
 enum {
-
 	_KEYSYM_MAX = 759
 };
 
@@ -1160,7 +1158,6 @@ struct _XTranslateUnicodePairReverse {
 };
 
 enum {
-
 	_UNICODE_MAX = 750
 };
 

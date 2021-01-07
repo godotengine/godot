@@ -12,6 +12,8 @@
 	</methods>
 	<members>
 		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" override="true" default="true" />
+		<member name="close_on_parent_focus" type="bool" setter="set_close_on_parent_focus" getter="get_close_on_parent_focus" default="true">
+		</member>
 		<member name="transient" type="bool" setter="set_transient" getter="is_transient" override="true" default="true" />
 		<member name="unresizable" type="bool" setter="set_flag" getter="get_flag" override="true" default="true" />
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" override="true" default="false" />

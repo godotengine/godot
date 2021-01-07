@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,13 +30,31 @@
 
 #include "localization_editor.h"
 
-#include "core/translation.h"
+#include "core/string/translation.h"
 #include "editor_node.h"
 #include "editor_translation_parser.h"
 #include "pot_generator.h"
 #include "scene/gui/control.h"
 
 void LocalizationEditor::_notification(int p_what) {
+	if (p_what == NOTIFICATION_TEXT_SERVER_CHANGED) {
+		ts_name->set_text(TTR("Text server: ") + TS->get_name());
+
+		FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+		if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+			if (file_check->file_exists("res://" + TS->get_support_data_filename())) {
+				ts_data_status->set_text(TTR("Support data: ") + TTR("Installed"));
+				ts_install->set_disabled(true);
+			} else {
+				ts_data_status->set_text(TTR("Support data: ") + TTR("Not installed"));
+				ts_install->set_disabled(false);
+			}
+		} else {
+			ts_data_status->set_text(TTR("Support data: ") + TTR("Not supported"));
+			ts_install->set_disabled(false);
+		}
+		ts_data_info->set_text(TTR("Info: ") + TS->get_support_data_info());
+	}
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		translation_list->connect("button_pressed", callable_mp(this, &LocalizationEditor::_translation_delete));
 		translation_pot_list->connect("button_pressed", callable_mp(this, &LocalizationEditor::_pot_delete));
@@ -60,18 +78,21 @@ void LocalizationEditor::_notification(int p_what) {
 }
 
 void LocalizationEditor::add_translation(const String &p_translation) {
-	_translation_add(p_translation);
+	PackedStringArray translations;
+	translations.push_back(p_translation);
+	_translation_add(translations);
 }
 
-void LocalizationEditor::_translation_add(const String &p_path) {
+void LocalizationEditor::_translation_add(const PackedStringArray &p_paths) {
 	PackedStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
-	if (translations.has(p_path)) {
-		return;
+	for (int i = 0; i < p_paths.size(); i++) {
+		if (!translations.has(p_paths[i])) {
+			// Don't add duplicate translation paths.
+			translations.push_back(p_paths[i]);
+		}
 	}
 
-	translations.push_back(p_path);
-
-	undo_redo->create_action(TTR("Add Translation"));
+	undo_redo->create_action(vformat(TTR("Add %d Translations"), p_paths.size()));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "locale/translations", translations);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "locale/translations", ProjectSettings::get_singleton()->get("locale/translations"));
 	undo_redo->add_do_method(this, "update_translations");
@@ -111,7 +132,7 @@ void LocalizationEditor::_translation_res_file_open() {
 	translation_res_file_open_dialog->popup_file_dialog();
 }
 
-void LocalizationEditor::_translation_res_add(const String &p_path) {
+void LocalizationEditor::_translation_res_add(const PackedStringArray &p_paths) {
 	Variant prev;
 	Dictionary remaps;
 
@@ -120,13 +141,14 @@ void LocalizationEditor::_translation_res_add(const String &p_path) {
 		prev = remaps;
 	}
 
-	if (remaps.has(p_path)) {
-		return; //pointless already has it
+	for (int i = 0; i < p_paths.size(); i++) {
+		if (!remaps.has(p_paths[i])) {
+			// Don't overwrite with an empty remap array if an array already exists for the given path.
+			remaps[p_paths[i]] = PackedStringArray();
+		}
 	}
 
-	remaps[p_path] = PackedStringArray();
-
-	undo_redo->create_action(TTR("Add Remapped Path"));
+	undo_redo->create_action(vformat(TTR("Translation Resource Remap: Add %d Path(s)"), p_paths.size()));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "locale/translation_remaps", remaps);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "locale/translation_remaps", prev);
 	undo_redo->add_do_method(this, "update_translations");
@@ -140,7 +162,7 @@ void LocalizationEditor::_translation_res_option_file_open() {
 	translation_res_option_file_open_dialog->popup_file_dialog();
 }
 
-void LocalizationEditor::_translation_res_option_add(const String &p_path) {
+void LocalizationEditor::_translation_res_option_add(const PackedStringArray &p_paths) {
 	ERR_FAIL_COND(!ProjectSettings::get_singleton()->has_setting("locale/translation_remaps"));
 
 	Dictionary remaps = ProjectSettings::get_singleton()->get("locale/translation_remaps");
@@ -152,10 +174,12 @@ void LocalizationEditor::_translation_res_option_add(const String &p_path) {
 
 	ERR_FAIL_COND(!remaps.has(key));
 	PackedStringArray r = remaps[key];
-	r.push_back(p_path + ":" + "en");
+	for (int i = 0; i < p_paths.size(); i++) {
+		r.push_back(p_paths[i] + ":" + "en");
+	}
 	remaps[key] = r;
 
-	undo_redo->create_action(TTR("Resource Remap Add Remap"));
+	undo_redo->create_action(vformat(TTR("Translation Resource Remap: Add %d Remap(s)"), p_paths.size()));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "locale/translation_remaps", remaps);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "locale/translation_remaps", ProjectSettings::get_singleton()->get("locale/translation_remaps"));
 	undo_redo->add_do_method(this, "update_translations");
@@ -319,7 +343,7 @@ void LocalizationEditor::_translation_filter_option_changed() {
 		}
 	}
 
-	f_locales = f_locales.sort();
+	f_locales.sort();
 
 	undo_redo->create_action(TTR("Changed Locale Filter"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "locale/locale_filter", f_locales_all);
@@ -363,17 +387,20 @@ void LocalizationEditor::_translation_filter_mode_changed(int p_mode) {
 	undo_redo->commit_action();
 }
 
-void LocalizationEditor::_pot_add(const String &p_path) {
+void LocalizationEditor::_pot_add(const PackedStringArray &p_paths) {
 	PackedStringArray pot_translations = ProjectSettings::get_singleton()->get("locale/translations_pot_files");
 
-	for (int i = 0; i < pot_translations.size(); i++) {
-		if (pot_translations[i] == p_path) {
-			return; //exists
+	for (int i = 0; i < p_paths.size(); i++) {
+		for (int j = 0; j < pot_translations.size(); j++) {
+			if (pot_translations[j] == p_paths[i]) {
+				continue; //exists
+			}
 		}
+
+		pot_translations.push_back(p_paths[i]);
 	}
 
-	pot_translations.push_back(p_path);
-	undo_redo->create_action(TTR("Add files for POT generation"));
+	undo_redo->create_action(vformat(TTR("Add %d file(s) for POT generation"), p_paths.size()));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "locale/translations_pot_files", pot_translations);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "locale/translations_pot_files", ProjectSettings::get_singleton()->get("locale/translations_pot_files"));
 	undo_redo->add_do_method(this, "update_translations");
@@ -622,6 +649,26 @@ void LocalizationEditor::update_translations() {
 	updating_translations = false;
 }
 
+void LocalizationEditor::_install_ts_data() {
+	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+		TS->save_support_data("res://" + TS->get_support_data_filename());
+	}
+
+	FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+		if (file_check->file_exists("res://" + TS->get_support_data_filename())) {
+			ts_data_status->set_text(TTR("Support data: ") + TTR("Installed"));
+			ts_install->set_disabled(true);
+		} else {
+			ts_data_status->set_text(TTR("Support data: ") + TTR("Not installed"));
+			ts_install->set_disabled(false);
+		}
+	} else {
+		ts_data_status->set_text(TTR("Support data: ") + TTR("Not supported"));
+		ts_install->set_disabled(false);
+	}
+}
+
 void LocalizationEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_translations"), &LocalizationEditor::update_translations);
 
@@ -647,8 +694,8 @@ LocalizationEditor::LocalizationEditor() {
 		translations->add_child(tvb);
 
 		HBoxContainer *thb = memnew(HBoxContainer);
-		thb->add_spacer();
 		thb->add_child(memnew(Label(TTR("Translations:"))));
+		thb->add_spacer();
 		tvb->add_child(thb);
 
 		Button *addtr = memnew(Button(TTR("Add...")));
@@ -664,8 +711,8 @@ LocalizationEditor::LocalizationEditor() {
 		tmc->add_child(translation_list);
 
 		translation_file_open = memnew(EditorFileDialog);
-		translation_file_open->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-		translation_file_open->connect("file_selected", callable_mp(this, &LocalizationEditor::_translation_add));
+		translation_file_open->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
+		translation_file_open->connect("files_selected", callable_mp(this, &LocalizationEditor::_translation_add));
 		add_child(translation_file_open);
 	}
 
@@ -694,8 +741,8 @@ LocalizationEditor::LocalizationEditor() {
 		tmc->add_child(translation_remap);
 
 		translation_res_file_open_dialog = memnew(EditorFileDialog);
-		translation_res_file_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-		translation_res_file_open_dialog->connect("file_selected", callable_mp(this, &LocalizationEditor::_translation_res_add));
+		translation_res_file_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
+		translation_res_file_open_dialog->connect("files_selected", callable_mp(this, &LocalizationEditor::_translation_res_add));
 		add_child(translation_res_file_open_dialog);
 
 		thb = memnew(HBoxContainer);
@@ -726,8 +773,8 @@ LocalizationEditor::LocalizationEditor() {
 		tmc->add_child(translation_remap_options);
 
 		translation_res_option_file_open_dialog = memnew(EditorFileDialog);
-		translation_res_option_file_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-		translation_res_option_file_open_dialog->connect("file_selected", callable_mp(this, &LocalizationEditor::_translation_res_option_add));
+		translation_res_option_file_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
+		translation_res_option_file_open_dialog->connect("files_selected", callable_mp(this, &LocalizationEditor::_translation_res_option_add));
 		add_child(translation_res_option_file_open_dialog);
 	}
 
@@ -787,8 +834,41 @@ LocalizationEditor::LocalizationEditor() {
 		add_child(pot_generate_dialog);
 
 		pot_file_open_dialog = memnew(EditorFileDialog);
-		pot_file_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-		pot_file_open_dialog->connect("file_selected", callable_mp(this, &LocalizationEditor::_pot_add));
+		pot_file_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
+		pot_file_open_dialog->connect("files_selected", callable_mp(this, &LocalizationEditor::_pot_add));
 		add_child(pot_file_open_dialog);
+	}
+
+	{
+		VBoxContainer *tvb = memnew(VBoxContainer);
+		tvb->set_name(TTR("Text Server Data"));
+		translations->add_child(tvb);
+
+		ts_name = memnew(Label(TTR("Text server: ") + TS->get_name()));
+		tvb->add_child(ts_name);
+
+		ts_data_status = memnew(Label(TTR("Support data: ")));
+		tvb->add_child(ts_data_status);
+
+		ts_data_info = memnew(Label(TTR("Info: ") + TS->get_support_data_info()));
+		tvb->add_child(ts_data_info);
+
+		ts_install = memnew(Button(TTR("Install support data...")));
+		ts_install->connect("pressed", callable_mp(this, &LocalizationEditor::_install_ts_data));
+		tvb->add_child(ts_install);
+
+		FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+		if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+			if (file_check->file_exists("res://" + TS->get_support_data_filename())) {
+				ts_data_status->set_text(TTR("Support data: ") + TTR("Installed"));
+				ts_install->set_disabled(true);
+			} else {
+				ts_data_status->set_text(TTR("Support data: ") + TTR("Not installed"));
+				ts_install->set_disabled(false);
+			}
+		} else {
+			ts_data_status->set_text(TTR("Support data: ") + TTR("Not supported"));
+			ts_install->set_disabled(false);
+		}
 	}
 }

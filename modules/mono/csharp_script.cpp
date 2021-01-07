@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #include <mono/metadata/threads.h>
 #include <stdint.h>
 
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/json.h"
@@ -40,7 +41,6 @@
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
-#include "core/project_settings.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/bindings_generator.h"
@@ -346,14 +346,18 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 							 "//  }\n"
 							 "}\n";
 
-	String base_class_name = get_base_class_name(p_base_class_name, p_class_name);
+	// Replaces all spaces in p_class_name with underscores to prevent
+	// erronous C# Script templates from being generated when the object name
+	// has spaces in it.
+	String class_name_no_spaces = p_class_name.replace(" ", "_");
+	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);
 	script_template = script_template.replace("%BASE%", base_class_name)
-							  .replace("%CLASS%", p_class_name);
+							  .replace("%CLASS%", class_name_no_spaces);
 
 	Ref<CSharpScript> script;
 	script.instance();
 	script->set_source_code(script_template);
-	script->set_name(p_class_name);
+	script->set_name(class_name_no_spaces);
 
 	return script;
 }
@@ -364,9 +368,10 @@ bool CSharpLanguage::is_using_templates() {
 
 void CSharpLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
 	String src = p_script->get_source_code();
-	String base_class_name = get_base_class_name(p_base_class_name, p_class_name);
+	String class_name_no_spaces = p_class_name.replace(" ", "_");
+	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);
 	src = src.replace("%BASE%", base_class_name)
-				  .replace("%CLASS%", p_class_name)
+				  .replace("%CLASS%", class_name_no_spaces)
 				  .replace("%TS%", _get_indentation());
 	p_script->set_source_code(src);
 }
@@ -395,7 +400,7 @@ bool CSharpLanguage::supports_builtin_mode() const {
 
 #ifdef TOOLS_ENABLED
 static String variant_type_to_managed_name(const String &p_var_type_name) {
-	if (p_var_type_name.empty()) {
+	if (p_var_type_name.is_empty()) {
 		return "object";
 	}
 
@@ -477,7 +482,7 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		Variant::COLOR,
 		Variant::STRING_NAME,
 		Variant::NODE_PATH,
-		Variant::_RID,
+		Variant::RID,
 		Variant::CALLABLE
 	};
 
@@ -757,7 +762,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 
 	String appname = ProjectSettings::get_singleton()->get("application/config/name");
 	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-	if (appname_safe.empty()) {
+	if (appname_safe.is_empty()) {
 		appname_safe = "UnnamedProject";
 	}
 
@@ -854,7 +859,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 		to_reload.push_back(script);
 
-		if (script->get_path().empty()) {
+		if (script->get_path().is_empty()) {
 			script->tied_class_name_for_reload = script->script_class->get_name_for_lookup();
 			script->tied_class_namespace_for_reload = script->script_class->get_namespace();
 		}
@@ -940,8 +945,6 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 				// Use a placeholder for now to avoid losing the state when saving a scene
 
-				obj->set_script(scr);
-
 				PlaceHolderScriptInstance *placeholder = scr->placeholder_instance_create(obj);
 				obj->set_script_instance(placeholder);
 
@@ -968,14 +971,13 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	for (List<Ref<CSharpScript>>::Element *E = to_reload.front(); E; E = E->next()) {
 		Ref<CSharpScript> script = E->get();
 
-		if (!script->get_path().empty()) {
 #ifdef TOOLS_ENABLED
-			script->exports_invalidated = true;
+		script->exports_invalidated = true;
 #endif
-			script->signals_invalidated = true;
+		script->signals_invalidated = true;
 
+		if (!script->get_path().is_empty()) {
 			script->reload(p_soft_reload);
-			script->update_exports();
 
 			if (!script->valid) {
 				script->pending_reload_instances.clear();
@@ -1444,7 +1446,7 @@ Map<Object *, CSharpScriptBinding>::Element *CSharpLanguage::insert_script_bindi
 void CSharpLanguage::free_instance_binding_data(void *p_data) {
 	if (GDMono::get_singleton() == nullptr) {
 #ifdef DEBUG_ENABLED
-		CRASH_COND(!script_bindings.empty());
+		CRASH_COND(!script_bindings.is_empty());
 #endif
 		// Mono runtime finalized, all the gchandle bindings were already released
 		return;
@@ -1950,6 +1952,7 @@ MonoObject *CSharpInstance::_internal_new_managed() {
 }
 
 void CSharpInstance::mono_object_disposed(MonoObject *p_obj) {
+	// Must make sure event signals are not left dangling
 	disconnect_event_signals();
 
 #ifdef DEBUG_ENABLED
@@ -1964,6 +1967,9 @@ void CSharpInstance::mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_f
 	CRASH_COND(!base_ref);
 	CRASH_COND(gchandle.is_released());
 #endif
+
+	// Must make sure event signals are not left dangling
+	disconnect_event_signals();
 
 	r_remove_script_instance = false;
 
@@ -2223,6 +2229,9 @@ CSharpInstance::~CSharpInstance() {
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
 	destructing_script_instance = true;
+
+	// Must make sure event signals are not left dangling
+	disconnect_event_signals();
 
 	if (!gchandle.is_released()) {
 		if (!predelete_notified && !ref_dying) {
@@ -2955,13 +2964,24 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 
 	CRASH_COND(p_script->native == nullptr);
 
+	p_script->valid = true;
+
+	update_script_class_info(p_script);
+
+#ifdef TOOLS_ENABLED
+	p_script->_update_member_info_no_exports();
+#endif
+}
+
+// Extract information about the script using the mono class.
+void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	GDMonoClass *base = p_script->script_class->get_parent_class();
 
+	// `base` should only be set if the script is a user defined type.
 	if (base != p_script->native) {
 		p_script->base = base;
 	}
 
-	p_script->valid = true;
 	p_script->tool = p_script->script_class->has_attribute(CACHED_CLASS(ToolAttribute));
 
 	if (!p_script->tool) {
@@ -2969,7 +2989,7 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 		p_script->tool = nesting_class && nesting_class->has_attribute(CACHED_CLASS(ToolAttribute));
 	}
 
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 	if (!p_script->tool) {
 		p_script->tool = p_script->script_class->get_assembly() == GDMono::get_singleton()->get_tools_assembly();
 	}
@@ -2996,17 +3016,74 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 
 	p_script->script_class->fetch_methods_with_godot_api_checks(p_script->native);
 
-	// Need to fetch method from base classes as well
+	p_script->rpc_functions.clear();
+	p_script->rpc_variables.clear();
+
 	GDMonoClass *top = p_script->script_class;
 	while (top && top != p_script->native) {
+		// Fetch methods from base classes as well
 		top->fetch_methods_with_godot_api_checks(p_script->native);
+
+		// Update RPC info
+		{
+			Vector<GDMonoMethod *> methods = top->get_all_methods();
+			for (int i = 0; i < methods.size(); i++) {
+				if (!methods[i]->is_static()) {
+					MultiplayerAPI::RPCMode mode = p_script->_member_get_rpc_mode(methods[i]);
+					if (MultiplayerAPI::RPC_MODE_DISABLED != mode) {
+						ScriptNetData nd;
+						nd.name = methods[i]->get_name();
+						nd.mode = mode;
+						if (-1 == p_script->rpc_functions.find(nd)) {
+							p_script->rpc_functions.push_back(nd);
+						}
+					}
+				}
+			}
+		}
+
+		{
+			Vector<GDMonoField *> fields = top->get_all_fields();
+			for (int i = 0; i < fields.size(); i++) {
+				if (!fields[i]->is_static()) {
+					MultiplayerAPI::RPCMode mode = p_script->_member_get_rpc_mode(fields[i]);
+					if (MultiplayerAPI::RPC_MODE_DISABLED != mode) {
+						ScriptNetData nd;
+						nd.name = fields[i]->get_name();
+						nd.mode = mode;
+						if (-1 == p_script->rpc_variables.find(nd)) {
+							p_script->rpc_variables.push_back(nd);
+						}
+					}
+				}
+			}
+		}
+
+		{
+			Vector<GDMonoProperty *> properties = top->get_all_properties();
+			for (int i = 0; i < properties.size(); i++) {
+				if (!properties[i]->is_static()) {
+					MultiplayerAPI::RPCMode mode = p_script->_member_get_rpc_mode(properties[i]);
+					if (MultiplayerAPI::RPC_MODE_DISABLED != mode) {
+						ScriptNetData nd;
+						nd.name = properties[i]->get_name();
+						nd.mode = mode;
+						if (-1 == p_script->rpc_variables.find(nd)) {
+							p_script->rpc_variables.push_back(nd);
+						}
+					}
+				}
+			}
+		}
+
 		top = top->get_parent_class();
 	}
 
+	// Sort so we are 100% that they are always the same.
+	p_script->rpc_functions.sort_custom<SortNetData>();
+	p_script->rpc_variables.sort_custom<SortNetData>();
+
 	p_script->load_script_signals(p_script->script_class, p_script->native);
-#ifdef TOOLS_ENABLED
-	p_script->_update_member_info_no_exports();
-#endif
 }
 
 bool CSharpScript::can_instance() const {
@@ -3051,7 +3128,7 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 		ERR_FAIL_COND_V_MSG(p_argcount == 0, nullptr,
 				"Cannot create script instance. The class '" + script_class->get_full_name() +
 						"' does not define a parameterless constructor." +
-						(get_path().empty() ? String() : " Path: '" + get_path() + "'."));
+						(get_path().is_empty() ? String() : " Path: '" + get_path() + "'."));
 
 		ERR_FAIL_V_MSG(nullptr, "Constructor not found.");
 	}
@@ -3206,7 +3283,7 @@ bool CSharpScript::instance_has(const Object *p_this) const {
 }
 
 bool CSharpScript::has_source_code() const {
-	return !source.empty();
+	return !source.is_empty();
 }
 
 String CSharpScript::get_source_code() const {
@@ -3305,123 +3382,14 @@ Error CSharpScript::reload(bool p_keep_state) {
 			print_verbose("Found class " + script_class->get_full_name() + " for script " + get_path());
 #endif
 
-			tool = script_class->has_attribute(CACHED_CLASS(ToolAttribute));
-
-			if (!tool) {
-				GDMonoClass *nesting_class = script_class->get_nesting_class();
-				tool = nesting_class && nesting_class->has_attribute(CACHED_CLASS(ToolAttribute));
-			}
-
-#if TOOLS_ENABLED
-			if (!tool) {
-				tool = script_class->get_assembly() == GDMono::get_singleton()->get_tools_assembly();
-			}
-#endif
-
 			native = GDMonoUtils::get_class_native_base(script_class);
 
 			CRASH_COND(native == nullptr);
 
-			GDMonoClass *base_class = script_class->get_parent_class();
+			update_script_class_info(this);
 
-			if (base_class != native) {
-				base = base_class;
-			}
-
-#ifdef DEBUG_ENABLED
-			// For debug builds, we must fetch from all native base methods as well.
-			// Native base methods must be fetched before the current class.
-			// Not needed if the script class itself is a native class.
-
-			if (script_class != native) {
-				GDMonoClass *native_top = native;
-				while (native_top) {
-					native_top->fetch_methods_with_godot_api_checks(native);
-
-					if (native_top == CACHED_CLASS(GodotObject)) {
-						break;
-					}
-
-					native_top = native_top->get_parent_class();
-				}
-			}
-#endif
-
-			script_class->fetch_methods_with_godot_api_checks(native);
-
-			// Need to fetch method from base classes as well
-			GDMonoClass *top = script_class;
-			while (top && top != native) {
-				top->fetch_methods_with_godot_api_checks(native);
-				top = top->get_parent_class();
-			}
-
-			load_script_signals(script_class, native);
 			_update_exports();
 		}
-
-		rpc_functions.clear();
-		rpc_variables.clear();
-
-		GDMonoClass *top = script_class;
-		while (top && top != native) {
-			{
-				Vector<GDMonoMethod *> methods = top->get_all_methods();
-				for (int i = 0; i < methods.size(); i++) {
-					if (!methods[i]->is_static()) {
-						MultiplayerAPI::RPCMode mode = _member_get_rpc_mode(methods[i]);
-						if (MultiplayerAPI::RPC_MODE_DISABLED != mode) {
-							ScriptNetData nd;
-							nd.name = methods[i]->get_name();
-							nd.mode = mode;
-							if (-1 == rpc_functions.find(nd)) {
-								rpc_functions.push_back(nd);
-							}
-						}
-					}
-				}
-			}
-
-			{
-				Vector<GDMonoField *> fields = top->get_all_fields();
-				for (int i = 0; i < fields.size(); i++) {
-					if (!fields[i]->is_static()) {
-						MultiplayerAPI::RPCMode mode = _member_get_rpc_mode(fields[i]);
-						if (MultiplayerAPI::RPC_MODE_DISABLED != mode) {
-							ScriptNetData nd;
-							nd.name = fields[i]->get_name();
-							nd.mode = mode;
-							if (-1 == rpc_variables.find(nd)) {
-								rpc_variables.push_back(nd);
-							}
-						}
-					}
-				}
-			}
-
-			{
-				Vector<GDMonoProperty *> properties = top->get_all_properties();
-				for (int i = 0; i < properties.size(); i++) {
-					if (!properties[i]->is_static()) {
-						MultiplayerAPI::RPCMode mode = _member_get_rpc_mode(properties[i]);
-						if (MultiplayerAPI::RPC_MODE_DISABLED != mode) {
-							ScriptNetData nd;
-							nd.name = properties[i]->get_name();
-							nd.mode = mode;
-							if (-1 == rpc_variables.find(nd)) {
-								rpc_variables.push_back(nd);
-							}
-						}
-					}
-				}
-			}
-
-			top = top->get_parent_class();
-		}
-
-		// Sort so we are 100% that they are always the same.
-		rpc_functions.sort_custom<SortNetData>();
-		rpc_variables.sort_custom<SortNetData>();
 
 		return OK;
 	}
@@ -3630,7 +3598,7 @@ Error CSharpScript::load_source_code(const String &p_path) {
 void CSharpScript::_update_name() {
 	String path = get_path();
 
-	if (!path.empty()) {
+	if (!path.is_empty()) {
 		name = get_path().get_file().get_basename();
 	}
 }

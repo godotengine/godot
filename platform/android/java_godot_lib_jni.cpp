@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,13 +37,12 @@
 #include "api/java_class_wrapper.h"
 #include "api/jni_singleton.h"
 #include "audio_driver_jandroid.h"
-#include "core/engine.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "core/project_settings.h"
 #include "dir_access_jandroid.h"
 #include "display_server_android.h"
 #include "file_access_android.h"
-#include "file_access_jandroid.h"
 #include "jni_utils.h"
 #include "main/main.h"
 #include "net_socket_android.h"
@@ -51,6 +50,7 @@
 #include "string_android.h"
 #include "thread_jandroid.h"
 
+#include <android/input.h>
 #include <unistd.h>
 
 #include <android/native_window_jni.h>
@@ -88,14 +88,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	godot_io_java = new GodotIOJavaWrapper(env, godot_java->get_member_object("io", "Lorg/godotengine/godot/GodotIO;", env));
 
 	ThreadAndroid::make_default(jvm);
-#ifdef USE_JAVA_FILE_ACCESS
-	FileAccessJAndroid::setup(godot_io_java->get_instance());
-#else
 
 	jobject amgr = env->NewGlobalRef(p_asset_manager);
 
 	FileAccessAndroid::asset_manager = AAssetManager_fromJava(env, amgr);
-#endif
 
 	DirAccessJAndroid::setup(godot_io_java->get_instance());
 	AudioDriverAndroid::setup(godot_io_java->get_instance());
@@ -237,40 +233,50 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jclass clazz, jint ev, jint pointer, jint count, jintArray positions) {
+void touch_preprocessing(JNIEnv *env, jclass clazz, jint input_device, jint ev, jint pointer, jint pointer_count, jfloatArray positions, jint buttons_mask, jfloat vertical_factor, jfloat horizontal_factor) {
 	if (step == 0)
 		return;
 
 	Vector<DisplayServerAndroid::TouchPos> points;
-	for (int i = 0; i < count; i++) {
-		jint p[3];
-		env->GetIntArrayRegion(positions, i * 3, 3, p);
+	for (int i = 0; i < pointer_count; i++) {
+		jfloat p[3];
+		env->GetFloatArrayRegion(positions, i * 3, 3, p);
 		DisplayServerAndroid::TouchPos tp;
 		tp.pos = Point2(p[1], p[2]);
-		tp.id = p[0];
+		tp.id = (int)p[0];
 		points.push_back(tp);
 	}
-
-	DisplayServerAndroid::get_singleton()->process_touch(ev, pointer, points);
-
-	/*
-	if (os_android)
-		os_android->process_touch(ev,pointer,points);
-	*/
+	if ((input_device & AINPUT_SOURCE_MOUSE) == AINPUT_SOURCE_MOUSE || (input_device & AINPUT_SOURCE_MOUSE_RELATIVE) == AINPUT_SOURCE_MOUSE_RELATIVE) {
+		DisplayServerAndroid::get_singleton()->process_mouse_event(input_device, ev, buttons_mask, points[0].pos, vertical_factor, horizontal_factor);
+	} else {
+		DisplayServerAndroid::get_singleton()->process_touch(ev, pointer, points);
+	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_hover(JNIEnv *env, jclass clazz, jint p_type, jint p_x, jint p_y) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch__IIII_3F(JNIEnv *env, jclass clazz, jint input_device, jint ev, jint pointer, jint pointer_count, jfloatArray position) {
+	touch_preprocessing(env, clazz, input_device, ev, pointer, pointer_count, position);
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch__IIII_3FI(JNIEnv *env, jclass clazz, jint input_device, jint ev, jint pointer, jint pointer_count, jfloatArray position, jint buttons_mask) {
+	touch_preprocessing(env, clazz, input_device, ev, pointer, pointer_count, position, buttons_mask);
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch__IIII_3FIFF(JNIEnv *env, jclass clazz, jint input_device, jint ev, jint pointer, jint pointer_count, jfloatArray position, jint buttons_mask, jfloat vertical_factor, jfloat horizontal_factor) {
+	touch_preprocessing(env, clazz, input_device, ev, pointer, pointer_count, position, buttons_mask, vertical_factor, horizontal_factor);
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_hover(JNIEnv *env, jclass clazz, jint p_type, jfloat p_x, jfloat p_y) {
 	if (step == 0)
 		return;
 
 	DisplayServerAndroid::get_singleton()->process_hover(p_type, Point2(p_x, p_y));
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_doubletap(JNIEnv *env, jclass clazz, jint p_x, jint p_y) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_doubleTap(JNIEnv *env, jclass clazz, jint p_button_mask, jint p_x, jint p_y) {
 	if (step == 0)
 		return;
 
-	DisplayServerAndroid::get_singleton()->process_double_tap(Point2(p_x, p_y));
+	DisplayServerAndroid::get_singleton()->process_double_tap(p_button_mask, Point2(p_x, p_y));
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_scroll(JNIEnv *env, jclass clazz, jint p_x, jint p_y) {

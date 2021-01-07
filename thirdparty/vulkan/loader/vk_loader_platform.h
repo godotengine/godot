@@ -28,17 +28,20 @@
 #include <winsock2.h>
 #endif  // _WIN32
 
+#if defined(__Fuchsia__)
+#include "dlopen_fuchsia.h"
+#endif  // defined(__Fuchsia__)
+
 #include "vulkan/vk_platform.h"
 #include "vulkan/vk_sdk_platform.h"
 
-#if defined(__linux__) || defined(__APPLE__)
+#if defined(__linux__) || defined(__APPLE__) || defined(__Fuchsia__)
 /* Linux-specific common code: */
 
 // Headers:
 //#ifndef _GNU_SOURCE
 //#define _GNU_SOURCE 1
 //#endif
-// TBD: Are the contents of the following file used?
 #include <unistd.h>
 // Note: The following file is for dynamic loading:
 #include <dlfcn.h>
@@ -100,16 +103,66 @@ static inline bool loader_platform_is_path_absolute(const char *path) {
 
 static inline char *loader_platform_dirname(char *path) { return dirname(path); }
 
+#if defined(__linux__)
+
+// find application path + name. Path cannot be longer than 1024, returns NULL if it is greater than that.
+static inline char *loader_platform_executable_path(char *buffer, size_t size) {
+    ssize_t count = readlink("/proc/self/exe", buffer, size);
+    if (count == -1) return NULL;
+    if (count == 0) return NULL;
+    buffer[count] = '\0';
+    return buffer;
+}
+#elif defined(__APPLE__)  // defined(__linux__)
+#include <libproc.h>
+static inline char *loader_platform_executable_path(char *buffer, size_t size) {
+    pid_t pid = getpid();
+    int ret = proc_pidpath(pid, buffer, size);
+    if (ret <= 0) return NULL;
+    buffer[ret] = '\0';
+    return buffer;
+}
+#elif defined(__Fuchsia__)
+static inline char *loader_platform_executable_path(char *buffer, size_t size) { return NULL; }
+#endif  // defined (__APPLE__)
+
+// Compatability with compilers that don't support __has_feature
+#ifndef __has_feature
+#define __has_feature(x) 0
+#endif
+
+#if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+#define LOADER_ADDRESS_SANITIZER
+#endif
+
 // Dynamic Loading of libraries:
 typedef void *loader_platform_dl_handle;
-static inline loader_platform_dl_handle loader_platform_open_library(const char *libPath) {
-    // When loading the library, we use RTLD_LAZY so that not all symbols have to be
-    // resolved at this time (which improves performance). Note that if not all symbols
-    // can be resolved, this could cause crashes later. Use the LD_BIND_NOW environment
-    // variable to force all symbols to be resolved here.
-    return dlopen(libPath, RTLD_LAZY | RTLD_LOCAL);
+// When loading the library, we use RTLD_LAZY so that not all symbols have to be
+// resolved at this time (which improves performance). Note that if not all symbols
+// can be resolved, this could cause crashes later. Use the LD_BIND_NOW environment
+// variable to force all symbols to be resolved here.
+#define LOADER_DLOPEN_MODE (RTLD_LAZY | RTLD_LOCAL)
+
+#if defined(__Fuchsia__)
+static inline loader_platform_dl_handle loader_platform_open_driver(const char *libPath) {
+    return dlopen_fuchsia(libPath, LOADER_DLOPEN_MODE, true);
 }
-static inline const char *loader_platform_open_library_error(const char *libPath) { return dlerror(); }
+static inline loader_platform_dl_handle loader_platform_open_library(const char *libPath) {
+    return dlopen_fuchsia(libPath, LOADER_DLOPEN_MODE, false);
+}
+#else
+static inline loader_platform_dl_handle loader_platform_open_library(const char *libPath) {
+    return dlopen(libPath, LOADER_DLOPEN_MODE);
+}
+#endif
+
+static inline const char *loader_platform_open_library_error(const char *libPath) {
+#ifdef __Fuchsia__
+    return dlerror_fuchsia();
+#else
+    return dlerror();
+#endif
+}
 static inline void loader_platform_close_library(loader_platform_dl_handle library) { dlclose(library); }
 static inline void *loader_platform_get_proc_address(loader_platform_dl_handle library, const char *name) {
     assert(library);
@@ -162,6 +215,7 @@ static inline void loader_platform_thread_cond_broadcast(loader_platform_thread_
 #include <io.h>
 #include <stdbool.h>
 #include <shlwapi.h>
+#include <direct.h>
 #ifdef __cplusplus
 #include <iostream>
 #include <string>
@@ -277,6 +331,14 @@ static inline char *loader_platform_dirname(char *path) {
         }
     }
     return path;
+}
+
+static inline char *loader_platform_executable_path(char *buffer, size_t size) {
+    DWORD ret = GetModuleFileName(NULL, buffer, (DWORD)size);
+    if (ret == 0) return NULL;
+    if (ret > size) return NULL;
+    buffer[ret] = '\0';
+    return buffer;
 }
 
 // Dynamic Loading:

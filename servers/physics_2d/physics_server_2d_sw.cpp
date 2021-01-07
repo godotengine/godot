@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,9 +33,9 @@
 #include "broad_phase_2d_basic.h"
 #include "broad_phase_2d_hash_grid.h"
 #include "collision_solver_2d_sw.h"
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #define FLUSH_QUERY_CHECK(m_object) \
 	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
@@ -149,24 +149,19 @@ void PhysicsServer2DSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &
 		return;
 	}
 
+	Vector2 rel_dir = (p_point_A - p_point_B);
+	real_t rel_length2 = rel_dir.length_squared();
 	if (cbk->valid_dir != Vector2()) {
-		if (p_point_A.distance_squared_to(p_point_B) > cbk->valid_depth * cbk->valid_depth) {
-			cbk->invalid_by_dir++;
-			return;
-		}
-		Vector2 rel_dir = (p_point_A - p_point_B).normalized();
-
-		if (cbk->valid_dir.dot(rel_dir) < Math_SQRT12) { //sqrt(2)/2.0 - 45 degrees
-			cbk->invalid_by_dir++;
-
-			/*
-			print_line("A: "+p_point_A);
-			print_line("B: "+p_point_B);
-			print_line("discard too angled "+rtos(cbk->valid_dir.dot((p_point_A-p_point_B))));
-			print_line("resnorm: "+(p_point_A-p_point_B).normalized());
-			print_line("distance: "+rtos(p_point_A.distance_to(p_point_B)));
-			*/
-			return;
+		if (cbk->valid_depth < 10e20) {
+			if (rel_length2 > cbk->valid_depth * cbk->valid_depth ||
+					(rel_length2 > CMP_EPSILON && cbk->valid_dir.dot(rel_dir.normalized()) < CMP_EPSILON)) {
+				cbk->invalid_by_dir++;
+				return;
+			}
+		} else {
+			if (rel_length2 > 0 && cbk->valid_dir.dot(rel_dir.normalized()) < CMP_EPSILON) {
+				return;
+			}
 		}
 	}
 
@@ -182,8 +177,7 @@ void PhysicsServer2DSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &
 			}
 		}
 
-		real_t d = p_point_A.distance_squared_to(p_point_B);
-		if (d < min_depth) {
+		if (rel_length2 < min_depth) {
 			return;
 		}
 		cbk->ptr[min_depth_idx * 2 + 0] = p_point_A;
@@ -554,7 +548,7 @@ void PhysicsServer2DSW::body_set_space(RID p_body, RID p_space) {
 		return; //pointless
 	}
 
-	body->clear_constraint_map();
+	body->clear_constraint_list();
 	body->set_space(space);
 };
 
@@ -1229,8 +1223,6 @@ void PhysicsServer2DSW::step(real_t p_step) {
 	}
 
 	_update_shapes();
-
-	doing_sync = false;
 
 	last_step = p_step;
 	PhysicsDirectBodyState2DSW::singleton->step = p_step;

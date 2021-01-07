@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 
 #include "audio_server.h"
 
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
@@ -905,6 +905,8 @@ bool AudioServer::is_bus_channel_active(int p_bus, int p_channel) const {
 }
 
 void AudioServer::set_global_rate_scale(float p_scale) {
+	ERR_FAIL_COND(p_scale <= 0);
+
 	global_rate_scale = p_scale;
 }
 

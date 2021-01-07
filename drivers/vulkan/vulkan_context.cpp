@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "vulkan_context.h"
 
-#include "core/engine.h"
-#include "core/project_settings.h"
-#include "core/ustring.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/string/ustring.h"
 #include "core/version.h"
 
 #include "vk_enum_string_helper.h"
@@ -154,7 +154,7 @@ VkBool32 VulkanContext::_check_layers(uint32_t check_count, const char **check_n
 			}
 		}
 		if (!found) {
-			ERR_PRINT("Can't find layer: " + String(check_names[i]));
+			WARN_PRINT("Can't find layer: " + String(check_names[i]));
 			return 0;
 		}
 	}
@@ -216,7 +216,6 @@ Error VulkanContext::_create_validation_layers() {
 }
 
 Error VulkanContext::_initialize_extensions() {
-	VkResult err;
 	uint32_t instance_extension_count = 0;
 
 	enabled_extension_count = 0;
@@ -226,13 +225,13 @@ Error VulkanContext::_initialize_extensions() {
 	VkBool32 platformSurfaceExtFound = 0;
 	memset(extension_names, 0, sizeof(extension_names));
 
-	err = vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, nullptr);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+	VkResult err = vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, nullptr);
+	ERR_FAIL_COND_V(err != VK_SUCCESS && err != VK_INCOMPLETE, ERR_CANT_CREATE);
 
 	if (instance_extension_count > 0) {
 		VkExtensionProperties *instance_extensions = (VkExtensionProperties *)malloc(sizeof(VkExtensionProperties) * instance_extension_count);
 		err = vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, instance_extensions);
-		if (err) {
+		if (err != VK_SUCCESS && err != VK_INCOMPLETE) {
 			free(instance_extensions);
 			ERR_FAIL_V(ERR_CANT_CREATE);
 		}
@@ -302,7 +301,7 @@ Error VulkanContext::_create_physical_device() {
 		/*flags*/ 0,
 		/*pApplicationInfo*/ &app,
 		/*enabledLayerCount*/ enabled_layer_count,
-		/*ppEnabledLayerNames*/ (const char *const *)instance_validation_layers,
+		/*ppEnabledLayerNames*/ (const char *const *)enabled_layers,
 		/*enabledExtensionCount*/ enabled_extension_count,
 		/*ppEnabledExtensionNames*/ (const char *const *)extension_names,
 	};
@@ -493,6 +492,8 @@ Error VulkanContext::_create_physical_device() {
 	//  If app has specific feature requirements it should check supported
 	//  features based on this query
 	vkGetPhysicalDeviceFeatures(gpu, &physical_device_features);
+
+	physical_device_features.robustBufferAccess = false; //turn off robust buffer access, which can hamper performance on some hardware
 
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                                            \
 	{                                                                                       \
@@ -707,7 +708,8 @@ Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, VkSurfa
 		// We use a single GPU, but we need a surface to initialize the
 		// queues, so this process must be deferred until a surface
 		// is created.
-		_initialize_queues(p_surface);
+		Error err = _initialize_queues(p_surface);
+		ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 	}
 
 	Window window;
@@ -1009,7 +1011,6 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 
 	{
 		const VkAttachmentDescription attachment = {
-
 			/*flags*/ 0,
 			/*format*/ format,
 			/*samples*/ VK_SAMPLE_COUNT_1_BIT,
@@ -1479,23 +1480,6 @@ VkPhysicalDeviceLimits VulkanContext::get_device_limits() const {
 	return gpu_props.limits;
 }
 
-VulkanContext::VulkanContext() {
-	queue_props = nullptr;
-	command_buffer_count = 0;
-	instance_validation_layers = nullptr;
-	use_validation_layers = true;
-	VK_KHR_incremental_present_enabled = true;
-	VK_GOOGLE_display_timing_enabled = true;
-
-	command_buffer_queue.resize(1); //first one is the setup command always
-	command_buffer_queue.write[0] = nullptr;
-	command_buffer_count = 1;
-	queues_initialized = false;
-
-	buffers_prepared = false;
-	swapchainImageCount = 0;
-}
-
 RID VulkanContext::local_device_create() {
 	LocalDevice ld;
 
@@ -1583,6 +1567,13 @@ void VulkanContext::local_device_free(RID p_local_device) {
 	local_device_owner.free(p_local_device);
 }
 
+VulkanContext::VulkanContext() {
+	use_validation_layers = Engine::get_singleton()->is_validation_layers_enabled();
+
+	command_buffer_queue.resize(1); // First one is always the setup command.
+	command_buffer_queue.write[0] = nullptr;
+}
+
 VulkanContext::~VulkanContext() {
 	if (queue_props) {
 		free(queue_props);
@@ -1596,7 +1587,7 @@ VulkanContext::~VulkanContext() {
 				vkDestroySemaphore(device, image_ownership_semaphores[i], nullptr);
 			}
 		}
-		if (inst_initialized) {
+		if (inst_initialized && use_validation_layers) {
 			DestroyDebugUtilsMessengerEXT(inst, dbg_messenger, nullptr);
 		}
 		vkDestroyDevice(device, nullptr);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -264,6 +264,7 @@ RigidBodyBullet::RigidBodyBullet() :
 	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, godotMotionState, nullptr, localInertia);
 
 	btBody = bulletnew(btRigidBody(cInfo));
+	btBody->setFriction(1.0);
 	reload_shapes();
 	setupBulletCollisionObject(btBody);
 
@@ -321,9 +322,6 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 	if (space) {
 		can_integrate_forces = false;
 		isScratchedSpaceOverrideModificator = false;
-
-		// Remove all eventual constraints
-		assert_no_constraints();
 
 		// Remove this object form the physics world
 		space->remove_rigid_body(this);
@@ -440,12 +438,6 @@ bool RigidBodyBullet::was_colliding(RigidBodyBullet *p_other_object) {
 		}
 	}
 	return false;
-}
-
-void RigidBodyBullet::assert_no_constraints() {
-	if (btBody->getNumConstraintRefs()) {
-		WARN_PRINT("A body with a joints is destroyed. Please check the implementation in order to destroy the joint before the body.");
-	}
 }
 
 void RigidBodyBullet::set_activation_state(bool p_active) {
@@ -743,7 +735,7 @@ void RigidBodyBullet::set_continuous_collision_detection(bool p_enable) {
 		}
 		btBody->setCcdSweptSphereRadius(radius * 0.2);
 	} else {
-		btBody->setCcdMotionThreshold(10000.0);
+		btBody->setCcdMotionThreshold(0.);
 		btBody->setCcdSweptSphereRadius(0.);
 	}
 }
@@ -823,7 +815,7 @@ void RigidBodyBullet::reload_shapes() {
 	btBody->updateInertiaTensor();
 
 	reload_kinematic_shapes();
-	set_continuous_collision_detection(btBody->getCcdMotionThreshold() < 9998.0);
+	set_continuous_collision_detection(is_continuous_collision_detection_enabled());
 	reload_body();
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,17 +30,12 @@
 
 #include "main_loop.h"
 
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 
 void MainLoop::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("init"), &MainLoop::init);
-	ClassDB::bind_method(D_METHOD("iteration", "delta"), &MainLoop::iteration);
-	ClassDB::bind_method(D_METHOD("idle", "delta"), &MainLoop::idle);
-	ClassDB::bind_method(D_METHOD("finish"), &MainLoop::finish);
-
 	BIND_VMETHOD(MethodInfo("_initialize"));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_iteration", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_idle", PropertyInfo(Variant::FLOAT, "delta")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_physics_process", PropertyInfo(Variant::FLOAT, "delta")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_process", PropertyInfo(Variant::FLOAT, "delta")));
 	BIND_VMETHOD(MethodInfo("_finalize"));
 
 	BIND_CONSTANT(NOTIFICATION_OS_MEMORY_WARNING);
@@ -52,17 +47,18 @@ void MainLoop::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_APPLICATION_PAUSED);
 	BIND_CONSTANT(NOTIFICATION_APPLICATION_FOCUS_IN);
 	BIND_CONSTANT(NOTIFICATION_APPLICATION_FOCUS_OUT);
+	BIND_CONSTANT(NOTIFICATION_TEXT_SERVER_CHANGED);
 
 	ADD_SIGNAL(MethodInfo("on_request_permissions_result", PropertyInfo(Variant::STRING, "permission"), PropertyInfo(Variant::BOOL, "granted")));
 };
 
-void MainLoop::set_init_script(const Ref<Script> &p_init_script) {
-	init_script = p_init_script;
+void MainLoop::set_initialize_script(const Ref<Script> &p_initialize_script) {
+	initialize_script = p_initialize_script;
 }
 
-void MainLoop::init() {
-	if (init_script.is_valid()) {
-		set_script(init_script);
+void MainLoop::initialize() {
+	if (initialize_script.is_valid()) {
+		set_script(initialize_script);
 	}
 
 	if (get_script_instance()) {
@@ -70,23 +66,23 @@ void MainLoop::init() {
 	}
 }
 
-bool MainLoop::iteration(float p_time) {
+bool MainLoop::physics_process(float p_time) {
 	if (get_script_instance()) {
-		return get_script_instance()->call("_iteration", p_time);
+		return get_script_instance()->call("_physics_process", p_time);
 	}
 
 	return false;
 }
 
-bool MainLoop::idle(float p_time) {
+bool MainLoop::process(float p_time) {
 	if (get_script_instance()) {
-		return get_script_instance()->call("_idle", p_time);
+		return get_script_instance()->call("_process", p_time);
 	}
 
 	return false;
 }
 
-void MainLoop::finish() {
+void MainLoop::finalize() {
 	if (get_script_instance()) {
 		get_script_instance()->call("_finalize");
 		set_script(Variant()); //clear script

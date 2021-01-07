@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,13 +30,13 @@
 
 #include "editor_file_system.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
-#include "core/variant_parser.h"
+#include "core/variant/variant_parser.h"
 #include "editor_node.h"
 #include "editor_resource_preview.h"
 #include "editor_settings.h"
@@ -117,6 +117,11 @@ Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
 bool EditorFileSystemDirectory::get_file_import_is_valid(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, files.size(), false);
 	return files[p_idx]->import_valid;
+}
+
+uint64_t EditorFileSystemDirectory::get_file_modified_time(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, files.size(), 0);
+	return files[p_idx]->modified_time;
 }
 
 String EditorFileSystemDirectory::get_file_script_class_name(int p_idx) const {
@@ -352,10 +357,12 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	List<String> to_check;
 
+	String importer_name;
 	String source_file = "";
 	String source_md5 = "";
 	Vector<String> dest_files;
 	String dest_md5 = "";
+	int version = 0;
 
 	while (true) {
 		assign = Variant();
@@ -379,6 +386,10 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 				for (int i = 0; i < fa.size(); i++) {
 					to_check.push_back(fa[i]);
 				}
+			} else if (assign == "importer_version") {
+				version = value;
+			} else if (assign == "importer") {
+				importer_name = value;
 			} else if (!p_only_imported_files) {
 				if (assign == "source_file") {
 					source_file = value;
@@ -393,6 +404,12 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	}
 
 	memdelete(f);
+
+	Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
+
+	if (importer->get_format_version() > version) {
+		return true; // version changed, reimport
+	}
 
 	// Read the md5's from a separate file (so the import parameters aren't dependent on the file version
 	String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_path);
@@ -794,6 +811,20 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 			}
 		}
 
+		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+			ScriptLanguage *lang = ScriptServer::get_language(i);
+			if (lang->supports_documentation() && fi->type == lang->get_type()) {
+				Ref<Script> script = ResourceLoader::load(path);
+				if (script == nullptr) {
+					continue;
+				}
+				const Vector<DocData::ClassDoc> &docs = script->get_documentation();
+				for (int j = 0; j < docs.size(); j++) {
+					EditorHelp::get_doc_data()->add_doc(docs[j]);
+				}
+			}
+		}
+
 		p_dir->files.push_back(fi);
 		p_progress.update(idx, total);
 	}
@@ -1011,10 +1042,6 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 		efs->_scan_fs_changes(efs->filesystem, sp);
 	}
 	efs->scanning_changes_done = true;
-}
-
-void EditorFileSystem::get_changed_sources(List<String> *r_changed) {
-	*r_changed = sources_changed;
 }
 
 void EditorFileSystem::scan_changes() {
@@ -1557,6 +1584,10 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		f->store_line("[remap]");
 		f->store_line("");
 		f->store_line("importer=\"" + importer->get_importer_name() + "\"");
+		int version = importer->get_format_version();
+		if (version > 0) {
+			f->store_line("importer_version=" + itos(version));
+		}
 		if (importer->get_resource_type() != "") {
 			f->store_line("type=\"" + importer->get_resource_type() + "\"");
 		}
@@ -1694,7 +1725,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 		importer = ResourceFormatImporter::get_singleton()->get_importer_by_extension(p_file.get_extension());
 		load_default = true;
 		if (importer.is_null()) {
-			ERR_PRINT("BUG: File queued for import, but can't be imported!");
+			ERR_PRINT("BUG: File queued for import, but can't be imported, importer for type '" + importer_name + "' not found.");
 			ERR_FAIL();
 		}
 	}
@@ -1741,6 +1772,10 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	f->store_line("[remap]");
 	f->store_line("");
 	f->store_line("importer=\"" + importer->get_importer_name() + "\"");
+	int version = importer->get_format_version();
+	if (version > 0) {
+		f->store_line("importer_version=" + itos(version));
+	}
 	if (importer->get_resource_type() != "") {
 		f->store_line("type=\"" + importer->get_resource_type() + "\"");
 	}

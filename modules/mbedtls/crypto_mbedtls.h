@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define CRYPTO_MBEDTLS_H
 
 #include "core/crypto/crypto.h"
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
@@ -101,12 +101,31 @@ public:
 	friend class SSLContextMbedTLS;
 };
 
+class HMACContextMbedTLS : public HMACContext {
+private:
+	HashingContext::HashType hash_type;
+	int hash_len = 0;
+	void *ctx = nullptr;
+
+public:
+	static HMACContext *create();
+	static void make_default() { HMACContext::_create = create; }
+	static void finalize() { HMACContext::_create = nullptr; }
+
+	static bool is_md_type_allowed(mbedtls_md_type_t p_md_type);
+
+	virtual Error start(HashingContext::HashType p_hash_type, PackedByteArray p_key);
+	virtual Error update(PackedByteArray p_data);
+	virtual PackedByteArray finish();
+
+	HMACContextMbedTLS() {}
+};
+
 class CryptoMbedTLS : public Crypto {
 private:
 	mbedtls_entropy_context entropy;
 	mbedtls_ctr_drbg_context ctr_drbg;
 	static X509CertificateMbedTLS *default_certs;
-	mbedtls_md_type_t _md_type_from_hashtype(HashingContext::HashType p_hash_type, int &r_size);
 
 public:
 	static Crypto *create();
@@ -114,6 +133,7 @@ public:
 	static void finalize_crypto();
 	static X509CertificateMbedTLS *get_default_certificates();
 	static void load_default_certificates(String p_path);
+	static mbedtls_md_type_t md_type_from_hashtype(HashingContext::HashType p_hash_type, int &r_size);
 
 	virtual PackedByteArray generate_random_bytes(int p_bytes);
 	virtual Ref<CryptoKey> generate_rsa(int p_bytes);

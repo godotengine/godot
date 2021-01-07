@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef JSON_H
 #define JSON_H
 
-#include "core/variant.h"
-
+#include "core/object/reference.h"
+#include "core/variant/variant.h"
 class JSON {
 	enum TokenType {
 		TK_CURLY_BRACKET_OPEN,
@@ -49,7 +49,6 @@ class JSON {
 	};
 
 	enum Expecting {
-
 		EXPECT_OBJECT,
 		EXPECT_OBJECT_KEY,
 		EXPECT_COLON,
@@ -73,6 +72,27 @@ class JSON {
 public:
 	static String print(const Variant &p_var, const String &p_indent = "", bool p_sort_keys = true);
 	static Error parse(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line);
+};
+
+class JSONParser : public Reference {
+	GDCLASS(JSONParser, Reference);
+
+	Variant data;
+	String string;
+	String err_text;
+	int err_line = 0;
+
+protected:
+	static void _bind_methods();
+
+public:
+	Error parse_string(const String &p_json_string);
+	String get_error_text() const;
+	int get_error_line() const;
+	Variant get_data() const;
+
+	Error decode_data(const Variant &p_data, const String &p_indent = "", bool p_sort_keys = true);
+	String get_string() const;
 };
 
 #endif // JSON_H

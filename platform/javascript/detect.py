@@ -1,6 +1,8 @@
 import os
+import sys
 
-from emscripten_helpers import run_closure_compiler, create_engine_file
+from emscripten_helpers import run_closure_compiler, create_engine_file, add_js_libraries, add_js_pre, add_js_externs
+from methods import get_compiler_version
 from SCons.Util import WhereIs
 
 
@@ -20,9 +22,17 @@ def get_opts():
     from SCons.Variables import BoolVariable
 
     return [
+        ("initial_memory", "Initial WASM memory (in MiB)", 16),
+        BoolVariable("use_assertions", "Use Emscripten runtime assertions", False),
+        BoolVariable("use_thinlto", "Use ThinLTO", False),
+        BoolVariable("use_ubsan", "Use Emscripten undefined behavior sanitizer (UBSAN)", False),
+        BoolVariable("use_asan", "Use Emscripten address sanitizer (ASAN)", False),
+        BoolVariable("use_lsan", "Use Emscripten leak sanitizer (LSAN)", False),
+        BoolVariable("use_safe_heap", "Use Emscripten SAFE_HEAP sanitizer", False),
         # eval() can be a security concern, so it can be disabled.
         BoolVariable("javascript_eval", "Enable JavaScript eval interface", True),
         BoolVariable("threads_enabled", "Enable WebAssembly Threads support (limited browser support)", False),
+        BoolVariable("gdnative_enabled", "Enable WebAssembly GDNative support (produces bigger binaries)", False),
         BoolVariable("use_closure_compiler", "Use closure compiler to minimize JavaScript code", False),
     ]
 
@@ -40,6 +50,9 @@ def get_flags():
 
 
 def configure(env):
+    if not isinstance(env["initial_memory"], int):
+        print("Initial memory must be a valid integer")
+        sys.exit(255)
 
     ## Build type
 
@@ -62,15 +75,20 @@ def configure(env):
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(CCFLAGS=["-O1", "-g"])
         env.Append(LINKFLAGS=["-O1", "-g"])
+        env["use_assertions"] = True
+
+    if env["use_assertions"]:
         env.Append(LINKFLAGS=["-s", "ASSERTIONS=1"])
 
     if env["tools"]:
         if not env["threads_enabled"]:
-            raise RuntimeError(
-                "Threads must be enabled to build the editor. Please add the 'threads_enabled=yes' option"
-            )
-        # Tools need more memory. Initial stack memory in bytes. See `src/settings.js` in emscripten repository (will be renamed to INITIAL_MEMORY).
-        env.Append(LINKFLAGS=["-s", "TOTAL_MEMORY=33554432"])
+            print("Threads must be enabled to build the editor. Please add the 'threads_enabled=yes' option")
+            sys.exit(255)
+        if env["initial_memory"] < 32:
+            print("Editor build requires at least 32MiB of initial memory. Forcing it.")
+            env["initial_memory"] = 32
+    elif env["builtin_icu"]:
+        env.Append(CCFLAGS=["-frtti"])
     else:
         # Disable exceptions and rtti on non-tools (template) builds
         # These flags help keep the file size down.
@@ -78,14 +96,32 @@ def configure(env):
         # Don't use dynamic_cast, necessary with no-rtti.
         env.Append(CPPDEFINES=["NO_SAFE_CAST"])
 
+    env.Append(LINKFLAGS=["-s", "INITIAL_MEMORY=%sMB" % env["initial_memory"]])
+
     ## Copy env variables.
     env["ENV"] = os.environ
 
     # LTO
-    if env["use_lto"]:
-        env.Append(CCFLAGS=["-s", "WASM_OBJECT_FILES=0"])
-        env.Append(LINKFLAGS=["-s", "WASM_OBJECT_FILES=0"])
-        env.Append(LINKFLAGS=["--llvm-lto", "1"])
+    if env["use_thinlto"]:
+        env.Append(CCFLAGS=["-flto=thin"])
+        env.Append(LINKFLAGS=["-flto=thin"])
+    elif env["use_lto"]:
+        env.Append(CCFLAGS=["-flto=full"])
+        env.Append(LINKFLAGS=["-flto=full"])
+
+    # Sanitizers
+    if env["use_ubsan"]:
+        env.Append(CCFLAGS=["-fsanitize=undefined"])
+        env.Append(LINKFLAGS=["-fsanitize=undefined"])
+    if env["use_asan"]:
+        env.Append(CCFLAGS=["-fsanitize=address"])
+        env.Append(LINKFLAGS=["-fsanitize=address"])
+    if env["use_lsan"]:
+        env.Append(CCFLAGS=["-fsanitize=leak"])
+        env.Append(LINKFLAGS=["-fsanitize=leak"])
+    if env["use_safe_heap"]:
+        env.Append(CCFLAGS=["-s", "SAFE_HEAP=1"])
+        env.Append(LINKFLAGS=["-s", "SAFE_HEAP=1"])
 
     # Closure compiler
     if env["use_closure_compiler"]:
@@ -95,6 +131,11 @@ def configure(env):
         jscc = env.Builder(generator=run_closure_compiler, suffix=".cc.js", src_suffix=".js")
         env.Append(BUILDERS={"BuildJS": jscc})
 
+    # Add helper method for adding libraries.
+    env.AddMethod(add_js_libraries, "AddJSLibraries")
+    env.AddMethod(add_js_pre, "AddJSPre")
+    env.AddMethod(add_js_externs, "AddJSExterns")
+
     # Add method that joins/compiles our Engine files.
     env.AddMethod(create_engine_file, "CreateEngineFile")
 
@@ -103,7 +144,6 @@ def configure(env):
 
     env["CC"] = "emcc"
     env["CXX"] = "em++"
-    env["LINK"] = "emcc"
 
     env["AR"] = "emar"
     env["RANLIB"] = "emranlib"
@@ -130,25 +170,34 @@ def configure(env):
     if env["javascript_eval"]:
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
 
+    if env["threads_enabled"] and env["gdnative_enabled"]:
+        print("Threads and GDNative support can't be both enabled due to WebAssembly limitations")
+        sys.exit(255)
+
     # Thread support (via SharedArrayBuffer).
     if env["threads_enabled"]:
         env.Append(CPPDEFINES=["PTHREAD_NO_RENAME"])
         env.Append(CCFLAGS=["-s", "USE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-s", "USE_PTHREADS=1"])
-        env.Append(LINKFLAGS=["-s", "PTHREAD_POOL_SIZE=4"])
+        env.Append(LINKFLAGS=["-s", "PTHREAD_POOL_SIZE=8"])
         env.Append(LINKFLAGS=["-s", "WASM_MEM_MAX=2048MB"])
         env.extra_suffix = ".threads" + env.extra_suffix
     else:
         env.Append(CPPDEFINES=["NO_THREADS"])
 
+    if env["gdnative_enabled"]:
+        major, minor, patch = get_compiler_version(env)
+        if major < 2 or (major == 2 and minor == 0 and patch < 10):
+            print("GDNative support requires emscripten >= 2.0.10, detected: %s.%s.%s" % (major, minor, patch))
+            sys.exit(255)
+        env.Append(CCFLAGS=["-s", "RELOCATABLE=1"])
+        env.Append(LINKFLAGS=["-s", "RELOCATABLE=1"])
+        env.extra_suffix = ".gdnative" + env.extra_suffix
+
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
     env.Append(LINKFLAGS=["-s", "ENVIRONMENT=web,worker"])
 
-    # We use IDBFS in javascript_main.cpp. Since Emscripten 1.39.1 it needs to
-    # be linked explicitly.
-    env.Append(LIBS=["idbfs.js"])
-
-    env.Append(LINKFLAGS=["-s", "BINARYEN=1"])
+    # Wrap the JavaScript support code around a closure named Godot.
     env.Append(LINKFLAGS=["-s", "MODULARIZE=1", "-s", "EXPORT_NAME='Godot'"])
 
     # Allow increasing memory buffer size during runtime. This is efficient
@@ -159,12 +208,14 @@ def configure(env):
     # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
     env.Append(LINKFLAGS=["-s", "USE_WEBGL2=1"])
 
+    # Do not call main immediately when the support code is ready.
     env.Append(LINKFLAGS=["-s", "INVOKE_RUN=0"])
 
     # Allow use to take control of swapping WebGL buffers.
     env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
 
-    # callMain for manual start, FS for preloading, PATH and ERRNO_CODES for BrowserFS.
-    env.Append(LINKFLAGS=["-s", "EXTRA_EXPORTED_RUNTIME_METHODS=['callMain', 'FS', 'PATH']"])
+    # callMain for manual start.
+    env.Append(LINKFLAGS=["-s", "EXTRA_EXPORTED_RUNTIME_METHODS=['callMain']"])
+
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-s", "EXIT_RUNTIME=1"])

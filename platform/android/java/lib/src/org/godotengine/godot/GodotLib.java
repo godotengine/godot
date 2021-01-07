@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -94,17 +94,19 @@ public class GodotLib {
 	/**
 	 * Forward touch events from the main thread to the GL thread.
 	 */
-	public static native void touch(int what, int pointer, int howmany, int[] arr);
+	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions);
+	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions, int buttonsMask);
+	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions, int buttonsMask, float verticalFactor, float horizontalFactor);
 
 	/**
 	 * Forward hover events from the main thread to the GL thread.
 	 */
-	public static native void hover(int type, int x, int y);
+	public static native void hover(int type, float x, float y);
 
 	/**
 	 * Forward double_tap events from the main thread to the GL thread.
 	 */
-	public static native void doubletap(int x, int y);
+	public static native void doubleTap(int buttonMask, int x, int y);
 
 	/**
 	 * Forward scroll events from the main thread to the GL thread.

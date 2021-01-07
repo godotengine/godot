@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -111,8 +111,8 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 		String dependency_folder;
 
 		bool operator<(const RemovedDependency &p_other) const {
-			if (dependency_folder.empty() != p_other.dependency_folder.empty()) {
-				return p_other.dependency_folder.empty();
+			if (dependency_folder.is_empty() != p_other.dependency_folder.is_empty()) {
+				return p_other.dependency_folder.is_empty();
 			} else {
 				return dependency < p_other.dependency;
 			}

@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_text_server_fb = env_modules.Clone()
+env_text_server_fb.Append(
+    CPPPATH=[
+        "#thirdparty/freetype/include",
+    ]
+)
+
+env_text_server_fb.add_source_files(env.modules_sources, "*.cpp")

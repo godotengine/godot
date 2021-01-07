@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef PHYSICS_SERVER_SW
 #define PHYSICS_SERVER_SW
 
-#include "core/rid_owner.h"
+#include "core/templates/rid_owner.h"
 #include "joints_3d_sw.h"
 #include "servers/physics_server_3d.h"
 #include "shape_3d_sw.h"
@@ -44,7 +44,6 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 	friend class PhysicsDirectSpaceState3DSW;
 	bool active;
 	int iterations;
-	bool doing_sync;
 	real_t last_step;
 
 	int island_count;
@@ -347,9 +346,6 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) override;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) override;
 
-	virtual void generic_6dof_joint_set_precision(RID p_joint, int precision) override {}
-	virtual int generic_6dof_joint_get_precision(RID p_joint) override { return 0; }
-
 	virtual JointType joint_get_type(RID p_joint) const override;
 
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority) override;
@@ -365,7 +361,6 @@ public:
 	virtual void set_active(bool p_active) override;
 	virtual void init() override;
 	virtual void step(real_t p_step) override;
-	virtual void sync() override {}
 	virtual void flush_queries() override;
 	virtual void finish() override;
 

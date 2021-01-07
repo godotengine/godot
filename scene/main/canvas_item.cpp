@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #include "canvas_item.h"
 
 #include "core/input/input.h"
-#include "core/message_queue.h"
-#include "core/method_bind_ext.gen.inc"
+#include "core/object/message_queue.h"
+#include "scene/2d/canvas_group.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
@@ -292,15 +292,10 @@ void CanvasItemMaterial::_bind_methods() {
 
 CanvasItemMaterial::CanvasItemMaterial() :
 		element(this) {
-	blend_mode = BLEND_MODE_MIX;
-	light_mode = LIGHT_MODE_NORMAL;
-	particles_animation = false;
-
 	set_particles_anim_h_frames(1);
 	set_particles_anim_v_frames(1);
 	set_particles_anim_loop(false);
 
-	current_key.key = 0;
 	current_key.invalid_key = 1;
 	_queue_shader_change();
 }
@@ -364,7 +359,7 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 	if (p_visible) {
 		update(); //todo optimize
 	} else {
-		emit_signal(SceneStringNames::get_singleton()->hide);
+		emit_signal(SceneStringNames::get_singleton()->hidden);
 	}
 	_block();
 
@@ -687,6 +682,8 @@ void CanvasItem::set_as_top_level(bool p_top_level) {
 	_exit_canvas();
 	top_level = p_top_level;
 	_enter_canvas();
+
+	_notify_transform();
 }
 
 bool CanvasItem::is_set_as_top_level() const {
@@ -740,21 +737,21 @@ void CanvasItem::draw_line(const Point2 &p_from, const Point2 &p_to, const Color
 	RenderingServer::get_singleton()->canvas_item_add_line(canvas_item, p_from, p_to, p_color, p_width);
 }
 
-void CanvasItem::draw_polyline(const Vector<Point2> &p_points, const Color &p_color, float p_width) {
+void CanvasItem::draw_polyline(const Vector<Point2> &p_points, const Color &p_color, float p_width, bool p_antialiased) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	Vector<Color> colors;
 	colors.push_back(p_color);
-	RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, colors, p_width);
+	RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, colors, p_width, p_antialiased);
 }
 
-void CanvasItem::draw_polyline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width) {
+void CanvasItem::draw_polyline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width, bool p_antialiased) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
-	RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, p_colors, p_width);
+	RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, p_colors, p_width, p_antialiased);
 }
 
-void CanvasItem::draw_arc(const Vector2 &p_center, float p_radius, float p_start_angle, float p_end_angle, int p_point_count, const Color &p_color, float p_width) {
+void CanvasItem::draw_arc(const Vector2 &p_center, float p_radius, float p_start_angle, float p_end_angle, int p_point_count, const Color &p_color, float p_width, bool p_antialiased) {
 	Vector<Point2> points;
 	points.resize(p_point_count);
 	const float delta_angle = p_end_angle - p_start_angle;
@@ -763,7 +760,7 @@ void CanvasItem::draw_arc(const Vector2 &p_center, float p_radius, float p_start
 		points.set(i, p_center + Vector2(Math::cos(theta), Math::sin(theta)) * p_radius);
 	}
 
-	draw_polyline(points, p_color, p_width);
+	draw_polyline(points, p_color, p_width, p_antialiased);
 }
 
 void CanvasItem::draw_multiline(const Vector<Point2> &p_points, const Color &p_color, float p_width) {
@@ -832,25 +829,25 @@ void CanvasItem::draw_circle(const Point2 &p_pos, float p_radius, const Color &p
 	RenderingServer::get_singleton()->canvas_item_add_circle(canvas_item, p_pos, p_radius, p_color);
 }
 
-void CanvasItem::draw_texture(const Ref<Texture2D> &p_texture, const Point2 &p_pos, const Color &p_modulate, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, TextureFilter p_texture_filter, TextureRepeat p_texture_repeat) {
+void CanvasItem::draw_texture(const Ref<Texture2D> &p_texture, const Point2 &p_pos, const Color &p_modulate) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	ERR_FAIL_COND(p_texture.is_null());
 
-	p_texture->draw(canvas_item, p_pos, p_modulate, false, p_normal_map, p_specular_map, p_specular_color_shininess, RS::CanvasItemTextureFilter(p_texture_filter), RS::CanvasItemTextureRepeat(p_texture_repeat));
+	p_texture->draw(canvas_item, p_pos, p_modulate, false);
 }
 
-void CanvasItem::draw_texture_rect(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, TextureFilter p_texture_filter, TextureRepeat p_texture_repeat) {
+void CanvasItem::draw_texture_rect(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	ERR_FAIL_COND(p_texture.is_null());
-	p_texture->draw_rect(canvas_item, p_rect, p_tile, p_modulate, p_transpose, p_normal_map, p_specular_map, p_specular_color_shininess, RS::CanvasItemTextureFilter(p_texture_filter), RS::CanvasItemTextureRepeat(p_texture_repeat));
+	p_texture->draw_rect(canvas_item, p_rect, p_tile, p_modulate, p_transpose);
 }
 
-void CanvasItem::draw_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, bool p_clip_uv, TextureFilter p_texture_filter, TextureRepeat p_texture_repeat) {
+void CanvasItem::draw_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 	ERR_FAIL_COND(p_texture.is_null());
-	p_texture->draw_rect_region(canvas_item, p_rect, p_src_rect, p_modulate, p_transpose, p_normal_map, p_specular_map, p_specular_color_shininess, RS::CanvasItemTextureFilter(p_texture_filter), RS::CanvasItemTextureRepeat(p_texture_repeat), p_clip_uv);
+	p_texture->draw_rect_region(canvas_item, p_rect, p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
 void CanvasItem::draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p_rect) {
@@ -861,14 +858,11 @@ void CanvasItem::draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p
 	p_style_box->draw(canvas_item, p_rect);
 }
 
-void CanvasItem::draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture, float p_width, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, TextureFilter p_texture_filter, TextureRepeat p_texture_repeat) {
+void CanvasItem::draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture, float p_width) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
-	RID rid_normal = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	RID rid_specular = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
-
-	RenderingServer::get_singleton()->canvas_item_add_primitive(canvas_item, p_points, p_colors, p_uvs, rid, p_width, rid_normal, rid_specular, p_specular_color_shininess, RS::CanvasItemTextureFilter(p_texture_filter), RS::CanvasItemTextureRepeat(p_texture_repeat));
+	RenderingServer::get_singleton()->canvas_item_add_primitive(canvas_item, p_points, p_colors, p_uvs, rid, p_width);
 }
 
 void CanvasItem::draw_set_transform(const Point2 &p_offset, float p_rot, const Size2 &p_scale) {
@@ -885,63 +879,54 @@ void CanvasItem::draw_set_transform_matrix(const Transform2D &p_matrix) {
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(canvas_item, p_matrix);
 }
 
-void CanvasItem::draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, TextureFilter p_texture_filter, TextureRepeat p_texture_repeat) {
+void CanvasItem::draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
-	RID rid_normal = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	RID rid_specular = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
 
-	RenderingServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, p_colors, p_uvs, rid, rid_normal, rid_specular, p_specular_color_shininess, RS::CanvasItemTextureFilter(p_texture_filter), RS::CanvasItemTextureRepeat(p_texture_repeat));
+	RenderingServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, p_colors, p_uvs, rid);
 }
 
-void CanvasItem::draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, TextureFilter p_texture_filter, TextureRepeat p_texture_repeat) {
+void CanvasItem::draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	Vector<Color> colors;
 	colors.push_back(p_color);
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
-	RID rid_normal = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	RID rid_specular = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
-
-	RenderingServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, colors, p_uvs, rid, rid_normal, rid_specular, p_specular_color_shininess, RS::CanvasItemTextureFilter(p_texture_filter), RS::CanvasItemTextureRepeat(p_texture_repeat));
+	RenderingServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, colors, p_uvs, rid);
 }
 
-void CanvasItem::draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, const Transform2D &p_transform, const Color &p_modulate, TextureFilter p_texture_filter, TextureRepeat p_texture_repeat) {
+void CanvasItem::draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture2D> &p_texture, const Transform2D &p_transform, const Color &p_modulate) {
 	ERR_FAIL_COND(p_mesh.is_null());
 	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
-	RID normal_map_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	RID specular_map_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
 
-	RenderingServer::get_singleton()->canvas_item_add_mesh(canvas_item, p_mesh->get_rid(), p_transform, p_modulate, texture_rid, normal_map_rid, specular_map_rid, p_specular_color_shininess, RS::CanvasItemTextureFilter(p_texture_filter), RS::CanvasItemTextureRepeat(p_texture_repeat));
+	RenderingServer::get_singleton()->canvas_item_add_mesh(canvas_item, p_mesh->get_rid(), p_transform, p_modulate, texture_rid);
 }
 
-void CanvasItem::draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, TextureFilter p_texture_filter, TextureRepeat p_texture_repeat) {
+void CanvasItem::draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture2D> &p_texture) {
 	ERR_FAIL_COND(p_multimesh.is_null());
 	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
-	RID normal_map_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	RID specular_map_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
-
-	RenderingServer::get_singleton()->canvas_item_add_multimesh(canvas_item, p_multimesh->get_rid(), texture_rid, normal_map_rid, specular_map_rid, p_specular_color_shininess, RS::CanvasItemTextureFilter(p_texture_filter), RS::CanvasItemTextureRepeat(p_texture_repeat));
+	RenderingServer::get_singleton()->canvas_item_add_multimesh(canvas_item, p_multimesh->get_rid(), texture_rid);
 }
 
-void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate, int p_clip_w) {
+void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HAlign p_align, float p_width, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint8_t p_flags) const {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
-
 	ERR_FAIL_COND(p_font.is_null());
-	p_font->draw(canvas_item, p_pos, p_text, p_modulate, p_clip_w);
+	p_font->draw_string(canvas_item, p_pos, p_text, p_align, p_width, p_size, p_modulate, p_outline_size, p_outline_modulate, p_flags);
 }
 
-float CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next, const Color &p_modulate) {
-	ERR_FAIL_COND_V_MSG(!drawing, 0, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+void CanvasItem::draw_multiline_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HAlign p_align, float p_width, int p_max_lines, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint8_t p_flags) const {
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+	ERR_FAIL_COND(p_font.is_null());
+	p_font->draw_multiline_string(canvas_item, p_pos, p_text, p_align, p_width, p_max_lines, p_size, p_modulate, p_outline_size, p_outline_modulate, p_flags);
+}
 
-	ERR_FAIL_COND_V(p_char.length() != 1, 0);
-	ERR_FAIL_COND_V(p_font.is_null(), 0);
+float CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate) const {
+	ERR_FAIL_COND_V_MSG(!drawing, 0.f, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+	ERR_FAIL_COND_V(p_font.is_null(), 0.f);
+	ERR_FAIL_COND_V(p_char.length() != 1, 0.f);
 
-	if (p_font->has_outline()) {
-		p_font->draw_char(canvas_item, p_pos, p_char[0], p_next.get_data()[0], Color(1, 1, 1), true);
-	}
-	return p_font->draw_char(canvas_item, p_pos, p_char[0], p_next.get_data()[0], p_modulate);
+	return p_font->draw_char(canvas_item, p_pos, p_char[0], p_next.get_data()[0], p_size, p_modulate, p_outline_size, p_outline_modulate);
 }
 
 void CanvasItem::_notify_transform(CanvasItem *p_node) {
@@ -1155,25 +1140,25 @@ void CanvasItem::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("get_transform"),&CanvasItem::get_transform);
 
 	ClassDB::bind_method(D_METHOD("draw_line", "from", "to", "color", "width"), &CanvasItem::draw_line, DEFVAL(1.0));
-	ClassDB::bind_method(D_METHOD("draw_polyline", "points", "color", "width"), &CanvasItem::draw_polyline, DEFVAL(1.0));
-	ClassDB::bind_method(D_METHOD("draw_polyline_colors", "points", "colors", "width"), &CanvasItem::draw_polyline_colors, DEFVAL(1.0));
-	ClassDB::bind_method(D_METHOD("draw_arc", "center", "radius", "start_angle", "end_angle", "point_count", "color", "width"), &CanvasItem::draw_arc, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("draw_polyline", "points", "color", "width", "antialiased"), &CanvasItem::draw_polyline, DEFVAL(1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_polyline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_polyline_colors, DEFVAL(1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_arc", "center", "radius", "start_angle", "end_angle", "point_count", "color", "width", "antialiased"), &CanvasItem::draw_arc, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_multiline", "points", "color", "width"), &CanvasItem::draw_multiline, DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("draw_multiline_colors", "points", "colors", "width"), &CanvasItem::draw_multiline_colors, DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("draw_rect", "rect", "color", "filled", "width"), &CanvasItem::draw_rect, DEFVAL(true), DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("draw_circle", "position", "radius", "color"), &CanvasItem::draw_circle);
-	ClassDB::bind_method(D_METHOD("draw_texture", "texture", "position", "modulate", "normal_map", "specular_map", "specular_shininess", "texture_filter", "texture_repeat"), &CanvasItem::draw_texture, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(TEXTURE_FILTER_PARENT_NODE), DEFVAL(TEXTURE_REPEAT_PARENT_NODE));
-	ClassDB::bind_method(D_METHOD("draw_texture_rect", "texture", "rect", "tile", "modulate", "transpose", "normal_map", "specular_map", "specular_shininess", "texture_filter", "texture_repeat"), &CanvasItem::draw_texture_rect, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false), DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(TEXTURE_FILTER_PARENT_NODE), DEFVAL(TEXTURE_REPEAT_PARENT_NODE));
-	ClassDB::bind_method(D_METHOD("draw_texture_rect_region", "texture", "rect", "src_rect", "modulate", "transpose", "normal_map", "specular_map", "specular_shininess", "clip_uv", "texture_filter", "texture_repeat"), &CanvasItem::draw_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false), DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(true), DEFVAL(TEXTURE_FILTER_PARENT_NODE), DEFVAL(TEXTURE_REPEAT_PARENT_NODE));
+	ClassDB::bind_method(D_METHOD("draw_texture", "texture", "position", "modulate"), &CanvasItem::draw_texture, DEFVAL(Color(1, 1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_texture_rect", "texture", "rect", "tile", "modulate", "transpose"), &CanvasItem::draw_texture_rect, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_texture_rect_region", "texture", "rect", "src_rect", "modulate", "transpose", "clip_uv"), &CanvasItem::draw_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("draw_style_box", "style_box", "rect"), &CanvasItem::draw_style_box);
-	ClassDB::bind_method(D_METHOD("draw_primitive", "points", "colors", "uvs", "texture", "width", "normal_map", "specular_map", "specular_shininess", "texture_filter", "texture_repeat"), &CanvasItem::draw_primitive, DEFVAL(Ref<Texture2D>()), DEFVAL(1.0), DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(TEXTURE_FILTER_PARENT_NODE), DEFVAL(TEXTURE_REPEAT_PARENT_NODE));
-	ClassDB::bind_method(D_METHOD("draw_polygon", "points", "colors", "uvs", "texture", "normal_map", "specular_map", "specular_shininess", "texture_filter", "texture_repeat"), &CanvasItem::draw_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(TEXTURE_FILTER_PARENT_NODE), DEFVAL(TEXTURE_REPEAT_PARENT_NODE));
-	ClassDB::bind_method(D_METHOD("draw_colored_polygon", "points", "color", "uvs", "texture", "normal_map", "specular_map", "specular_shininess", "texture_filter", "texture_repeat"), &CanvasItem::draw_colored_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(TEXTURE_FILTER_PARENT_NODE), DEFVAL(TEXTURE_REPEAT_PARENT_NODE));
-	ClassDB::bind_method(D_METHOD("draw_string", "font", "position", "text", "modulate", "clip_w"), &CanvasItem::draw_string, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("draw_char", "font", "position", "char", "next", "modulate"), &CanvasItem::draw_char, DEFVAL(Color(1, 1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_mesh", "mesh", "texture", "normal_map", "specular_map", "specular_shininess", "transform", "modulate", "texture_filter", "texture_repeat"), &CanvasItem::draw_mesh, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(Transform2D()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(TEXTURE_FILTER_PARENT_NODE), DEFVAL(TEXTURE_REPEAT_PARENT_NODE));
-	ClassDB::bind_method(D_METHOD("draw_multimesh", "multimesh", "texture", "normal_map", "specular_map", "specular_shininess", "texture_filter", "texture_repeat"), &CanvasItem::draw_multimesh, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(TEXTURE_FILTER_PARENT_NODE), DEFVAL(TEXTURE_REPEAT_PARENT_NODE));
-
+	ClassDB::bind_method(D_METHOD("draw_primitive", "points", "colors", "uvs", "texture", "width"), &CanvasItem::draw_primitive, DEFVAL(Ref<Texture2D>()), DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("draw_polygon", "points", "colors", "uvs", "texture"), &CanvasItem::draw_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()));
+	ClassDB::bind_method(D_METHOD("draw_colored_polygon", "points", "color", "uvs", "texture"), &CanvasItem::draw_colored_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()));
+	ClassDB::bind_method(D_METHOD("draw_string", "font", "pos", "text", "align", "width", "size", "modulate", "outline_size", "outline_modulate", "flags"), &CanvasItem::draw_string, DEFVAL(HALIGN_LEFT), DEFVAL(-1), DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
+	ClassDB::bind_method(D_METHOD("draw_multiline_string", "font", "pos", "text", "align", "width", "max_lines", "size", "modulate", "outline_size", "outline_modulate", "flags"), &CanvasItem::draw_multiline_string, DEFVAL(HALIGN_LEFT), DEFVAL(-1), DEFVAL(-1), DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
+	ClassDB::bind_method(D_METHOD("draw_char", "font", "pos", "char", "next", "size", "modulate", "outline_size", "outline_modulate"), &CanvasItem::draw_char, DEFVAL(""), DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)));
+	ClassDB::bind_method(D_METHOD("draw_mesh", "mesh", "texture", "transform", "modulate"), &CanvasItem::draw_mesh, DEFVAL(Transform2D()), DEFVAL(Color(1, 1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_multimesh", "multimesh", "texture"), &CanvasItem::draw_multimesh);
 	ClassDB::bind_method(D_METHOD("draw_set_transform", "position", "rotation", "scale"), &CanvasItem::draw_set_transform, DEFVAL(0.0), DEFVAL(Size2(1.0, 1.0)));
 	ClassDB::bind_method(D_METHOD("draw_set_transform_matrix", "xform"), &CanvasItem::draw_set_transform_matrix);
 	ClassDB::bind_method(D_METHOD("get_transform"), &CanvasItem::get_transform);
@@ -1211,6 +1196,9 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_repeat", "mode"), &CanvasItem::set_texture_repeat);
 	ClassDB::bind_method(D_METHOD("get_texture_repeat"), &CanvasItem::get_texture_repeat);
 
+	ClassDB::bind_method(D_METHOD("set_clip_children", "enable"), &CanvasItem::set_clip_children);
+	ClassDB::bind_method(D_METHOD("is_clipping_children"), &CanvasItem::is_clipping_children);
+
 	BIND_VMETHOD(MethodInfo("_draw"));
 
 	ADD_GROUP("Visibility", "");
@@ -1220,6 +1208,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_behind_parent"), "set_draw_behind_parent", "is_draw_behind_parent_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_on_top", PROPERTY_HINT_NONE, "", 0), "_set_on_top", "_is_on_top"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_children"), "set_clip_children", "is_clipping_children");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
 
 	ADD_GROUP("Texture", "texture_");
@@ -1233,7 +1222,7 @@ void CanvasItem::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("draw"));
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
-	ADD_SIGNAL(MethodInfo("hide"));
+	ADD_SIGNAL(MethodInfo("hidden"));
 	ADD_SIGNAL(MethodInfo("item_rect_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
@@ -1328,23 +1317,7 @@ void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
 		if (parent_item) {
 			texture_filter_cache = parent_item->texture_filter_cache;
 		} else {
-			//from viewport
-			switch (get_viewport()->get_default_canvas_item_texture_filter()) {
-				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST:
-					texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST;
-					break;
-				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR:
-					texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
-					break;
-				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS:
-					texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
-					break;
-				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
-					texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
-					break;
-				default: {
-				}
-			}
+			texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 		}
 	} else {
 		texture_filter_cache = RS::CanvasItemTextureFilter(texture_filter);
@@ -1385,20 +1358,7 @@ void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
 		if (parent_item) {
 			texture_repeat_cache = parent_item->texture_repeat_cache;
 		} else {
-			//from viewport
-			switch (get_viewport()->get_default_canvas_item_texture_repeat()) {
-				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED:
-					texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
-					break;
-				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED:
-					texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED;
-					break;
-				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR:
-					texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR;
-					break;
-				default: {
-				}
-			}
+			texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
 		}
 	} else {
 		texture_repeat_cache = RS::CanvasItemTextureRepeat(texture_repeat);
@@ -1424,37 +1384,182 @@ void CanvasItem::set_texture_repeat(TextureRepeat p_texture_repeat) {
 	_change_notify();
 }
 
+void CanvasItem::set_clip_children(bool p_enabled) {
+	if (clip_children == p_enabled) {
+		return;
+	}
+	clip_children = p_enabled;
+
+	if (Object::cast_to<CanvasGroup>(this) != nullptr) {
+		//avoid accidental bugs, make this not work on CanvasGroup
+		return;
+	}
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), clip_children ? RS::CANVAS_GROUP_MODE_OPAQUE : RS::CANVAS_GROUP_MODE_DISABLED);
+}
+bool CanvasItem::is_clipping_children() const {
+	return clip_children;
+}
+
 CanvasItem::TextureRepeat CanvasItem::get_texture_repeat() const {
 	return texture_repeat;
 }
 
 CanvasItem::CanvasItem() :
 		xform_change(this) {
-	window = nullptr;
 	canvas_item = RenderingServer::get_singleton()->canvas_item_create();
-	visible = true;
-	pending_update = false;
-	modulate = Color(1, 1, 1, 1);
-	self_modulate = Color(1, 1, 1, 1);
-	top_level = false;
-	first_draw = false;
-	drawing = false;
-	behind = false;
-	block_transform_notify = false;
-	canvas_layer = nullptr;
-	use_parent_material = false;
-	global_invalid = true;
-	notify_local_transform = false;
-	notify_transform = false;
-	light_mask = 1;
-	texture_repeat = TEXTURE_REPEAT_PARENT_NODE;
-	texture_filter = TEXTURE_FILTER_PARENT_NODE;
-	texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
-	texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
-
-	C = nullptr;
 }
 
 CanvasItem::~CanvasItem() {
 	RenderingServer::get_singleton()->free(canvas_item);
+}
+
+///////////////////////////////////////////////////////////////////
+
+void CanvasTexture::set_diffuse_texture(const Ref<Texture2D> &p_diffuse) {
+	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_diffuse.ptr()) != nullptr, "Cant self-assign a CanvasTexture");
+	diffuse_texture = p_diffuse;
+
+	RID tex_rid = diffuse_texture.is_valid() ? diffuse_texture->get_rid() : RID();
+	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RS::CANVAS_TEXTURE_CHANNEL_DIFFUSE, tex_rid);
+	emit_changed();
+}
+Ref<Texture2D> CanvasTexture::get_diffuse_texture() const {
+	return diffuse_texture;
+}
+
+void CanvasTexture::set_normal_texture(const Ref<Texture2D> &p_normal) {
+	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_normal.ptr()) != nullptr, "Cant self-assign a CanvasTexture");
+	normal_texture = p_normal;
+	RID tex_rid = normal_texture.is_valid() ? normal_texture->get_rid() : RID();
+	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RS::CANVAS_TEXTURE_CHANNEL_NORMAL, tex_rid);
+}
+Ref<Texture2D> CanvasTexture::get_normal_texture() const {
+	return normal_texture;
+}
+
+void CanvasTexture::set_specular_texture(const Ref<Texture2D> &p_specular) {
+	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_specular.ptr()) != nullptr, "Cant self-assign a CanvasTexture");
+	specular_texture = p_specular;
+	RID tex_rid = specular_texture.is_valid() ? specular_texture->get_rid() : RID();
+	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RS::CANVAS_TEXTURE_CHANNEL_SPECULAR, tex_rid);
+}
+Ref<Texture2D> CanvasTexture::get_specular_texture() const {
+	return specular_texture;
+}
+
+void CanvasTexture::set_specular_color(const Color &p_color) {
+	specular = p_color;
+	RS::get_singleton()->canvas_texture_set_shading_parameters(canvas_texture, specular, shininess);
+}
+Color CanvasTexture::get_specular_color() const {
+	return specular;
+}
+
+void CanvasTexture::set_specular_shininess(float p_shininess) {
+	shininess = p_shininess;
+	RS::get_singleton()->canvas_texture_set_shading_parameters(canvas_texture, specular, shininess);
+}
+float CanvasTexture::get_specular_shininess() const {
+	return shininess;
+}
+
+void CanvasTexture::set_texture_filter(CanvasItem::TextureFilter p_filter) {
+	texture_filter = p_filter;
+	RS::get_singleton()->canvas_texture_set_texture_filter(canvas_texture, RS::CanvasItemTextureFilter(p_filter));
+}
+CanvasItem::TextureFilter CanvasTexture::get_texture_filter() const {
+	return texture_filter;
+}
+
+void CanvasTexture::set_texture_repeat(CanvasItem::TextureRepeat p_repeat) {
+	texture_repeat = p_repeat;
+	RS::get_singleton()->canvas_texture_set_texture_repeat(canvas_texture, RS::CanvasItemTextureRepeat(p_repeat));
+}
+CanvasItem::TextureRepeat CanvasTexture::get_texture_repeat() const {
+	return texture_repeat;
+}
+
+int CanvasTexture::get_width() const {
+	if (diffuse_texture.is_valid()) {
+		return diffuse_texture->get_width();
+	} else {
+		return 1;
+	}
+}
+int CanvasTexture::get_height() const {
+	if (diffuse_texture.is_valid()) {
+		return diffuse_texture->get_height();
+	} else {
+		return 1;
+	}
+}
+
+bool CanvasTexture::is_pixel_opaque(int p_x, int p_y) const {
+	if (diffuse_texture.is_valid()) {
+		return diffuse_texture->is_pixel_opaque(p_x, p_y);
+	} else {
+		return false;
+	}
+}
+
+bool CanvasTexture::has_alpha() const {
+	if (diffuse_texture.is_valid()) {
+		return diffuse_texture->has_alpha();
+	} else {
+		return false;
+	}
+}
+
+Ref<Image> CanvasTexture::get_data() const {
+	if (diffuse_texture.is_valid()) {
+		return diffuse_texture->get_data();
+	} else {
+		return Ref<Image>();
+	}
+}
+
+RID CanvasTexture::get_rid() const {
+	return canvas_texture;
+}
+
+void CanvasTexture::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_diffuse_texture", "texture"), &CanvasTexture::set_diffuse_texture);
+	ClassDB::bind_method(D_METHOD("get_diffuse_texture"), &CanvasTexture::get_diffuse_texture);
+
+	ClassDB::bind_method(D_METHOD("set_normal_texture", "texture"), &CanvasTexture::set_normal_texture);
+	ClassDB::bind_method(D_METHOD("get_normal_texture"), &CanvasTexture::get_normal_texture);
+
+	ClassDB::bind_method(D_METHOD("set_specular_texture", "texture"), &CanvasTexture::set_specular_texture);
+	ClassDB::bind_method(D_METHOD("get_specular_texture"), &CanvasTexture::get_specular_texture);
+
+	ClassDB::bind_method(D_METHOD("set_specular_color", "color"), &CanvasTexture::set_specular_color);
+	ClassDB::bind_method(D_METHOD("get_specular_color"), &CanvasTexture::get_specular_color);
+
+	ClassDB::bind_method(D_METHOD("set_specular_shininess", "shininess"), &CanvasTexture::set_specular_shininess);
+	ClassDB::bind_method(D_METHOD("get_specular_shininess"), &CanvasTexture::get_specular_shininess);
+
+	ClassDB::bind_method(D_METHOD("set_texture_filter", "filter"), &CanvasTexture::set_texture_filter);
+	ClassDB::bind_method(D_METHOD("get_texture_filter"), &CanvasTexture::get_texture_filter);
+
+	ClassDB::bind_method(D_METHOD("set_texture_repeat", "repeat"), &CanvasTexture::set_texture_repeat);
+	ClassDB::bind_method(D_METHOD("get_texture_repeat"), &CanvasTexture::get_texture_repeat);
+
+	ADD_GROUP("Diffuse", "diffuse_");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "diffuse_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_diffuse_texture", "get_diffuse_texture");
+	ADD_GROUP("Normalmap", "normal_");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normal_texture", "get_normal_texture");
+	ADD_GROUP("Specular", "specular_");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "specular_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_specular_texture", "get_specular_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "specular_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_specular_color", "get_specular_color");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "specular_shininess", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_specular_shininess", "get_specular_shininess");
+	ADD_GROUP("Texture", "texture_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Inherit,Nearest,Linear,MipmapNearest,MipmapLinear,MipmapNearestAniso,MipmapLinearAniso"), "set_texture_filter", "get_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_repeat", PROPERTY_HINT_ENUM, "Inherit,Disabled,Enabled,Mirror"), "set_texture_repeat", "get_texture_repeat");
+}
+
+CanvasTexture::CanvasTexture() {
+	canvas_texture = RS::get_singleton()->canvas_texture_create();
+}
+CanvasTexture::~CanvasTexture() {
+	RS::get_singleton()->free(canvas_texture);
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "audio_stream_player_3d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "scene/3d/area_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/listener_3d.h"
@@ -327,9 +327,6 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 	return att;
 }
 
-void _update_sound() {
-}
-
 void AudioStreamPlayer3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		velocity_tracker->reset(get_global_transform().origin);
@@ -487,7 +484,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				if (area) {
 					if (area->is_overriding_audio_bus()) {
 						//override audio bus
-						StringName bus_name = area->get_audio_bus();
+						StringName bus_name = area->get_audio_bus_name();
 						output.bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus_name);
 					}
 

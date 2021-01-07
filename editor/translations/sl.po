@@ -1,6 +1,6 @@
 # Slovenian translation of the Godot Engine editor
-# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # matevž lapajne <sivar.lapajne@gmail.com>, 2016-2018.
 # Matjaž Vitas <matjaz.vitas@gmail.com>, 2017-2018.
@@ -1084,14 +1084,18 @@ msgstr "Lastniki:"
 
 #: editor/dependency_editor.cpp
 #, fuzzy
-msgid "Remove selected files from the project? (Can't be restored)"
+msgid ""
+"Remove selected files from the project? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr "Odstranim izbrane datoteke iz projekta? (brez vrnitve)"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
-"Remove them anyway? (no undo)"
+"Remove them anyway? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr ""
 "Izbrisane datoteke so potrebne za delovanje drugih virov.\n"
 "Ali jih vseeno odstranim? (brez vrnitve)"
@@ -1140,7 +1144,7 @@ msgstr "Raziskovalec Osamljenih Virov"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -1655,6 +1659,26 @@ msgid ""
 "Target platform requires 'ETC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
 
@@ -2390,19 +2414,25 @@ msgid "Error saving TileSet!"
 msgstr "Napaka pri shranjevanju PloščnegaNiza!"
 
 #: editor/editor_node.cpp
-msgid "Error trying to save layout!"
-msgstr "Napaka pri shranjevanju postavitev!"
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Default editor layout overridden."
-msgstr "Privzeti urejevalnik postavitev je bil prepisan."
+msgid ""
+"Default editor layout overridden.\n"
+"To restore the Default layout to its base settings, use the Delete Layout "
+"option and delete the Default layout."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Ime postavitve ni mogoče najti!"
 
 #: editor/editor_node.cpp
-msgid "Restored default layout to base settings."
+#, fuzzy
+msgid "Restored the Default layout to its base settings."
 msgstr "Privzeta postavitev je bila ponastavljena na osnovne nastaviteve."
 
 #: editor/editor_node.cpp
@@ -3062,8 +3092,7 @@ msgstr "Upravljaj Izvozne Predloge"
 msgid "Help"
 msgstr "Pomoč"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -3800,6 +3829,16 @@ msgid "Name contains invalid characters."
 msgstr "Ime vsebuje neveljavne znake."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr "Preimenovanje Datoteke:"
 
@@ -3852,14 +3891,6 @@ msgstr "Uredi Odvisnosti..."
 msgid "View Owners..."
 msgstr "Poglej Lastnike..."
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "Preimenuj..."
-
-#: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "Podvoji..."
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Premakni V..."
@@ -3892,11 +3923,17 @@ msgid "Collapse All"
 msgstr "Skrči vse"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
-msgstr "Preimenuj"
+msgid "Duplicate..."
+msgstr "Podvoji..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Move to Trash"
+msgstr "Premakni SamodejnoNalaganje"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "Preimenuj..."
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -3935,9 +3972,11 @@ msgid "Move"
 msgstr "Premakni"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
-msgid "There is already file or folder with the same name in this location."
-msgstr "Datoteka ali mapa s tem imenom že obstaja."
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "Preimenuj"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -4013,8 +4052,18 @@ msgstr "Shranjevanje..."
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Search complete"
-msgstr "Išči Besedilo"
+msgid "%d match in %d file."
+msgstr "Ni Zadetkov"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "Ni Zadetkov"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "Ni Zadetkov"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -4552,7 +4601,6 @@ msgid "Add Node to BlendTree"
 msgstr "Dodaj Gradnik(e) iz Drevesa"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Node Moved"
 msgstr "Način Premika"
@@ -5430,33 +5478,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "Ustvari nov vodoravni in navpični vodnik"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Move pivot"
-msgstr "Premakni Točko"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Rotate CanvasItem"
+msgid "Rotate %d CanvasItems"
 msgstr "Uredi Platno Stvari"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Move anchor"
-msgstr "Premakni Dejanje"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Resize CanvasItem"
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
 msgstr "Uredi Platno Stvari"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Scale CanvasItem"
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Uredi Platno Stvari"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "Uredi Platno Stvari"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Move CanvasItem"
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Uredi Platno Stvari"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "Uredi Platno Stvari"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Uredi Platno Stvari"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6764,12 +6829,21 @@ msgid "Move Points"
 msgstr "Odstrani točko"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Vrtenje"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "Povleci: Vrtenje"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Shift+Command: Scale"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl: Vrtenje"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6810,12 +6884,14 @@ msgid "Radius:"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr ""
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "Ustvarite Poligon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr ""
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Odstrani Poligon in Točko"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -7288,11 +7364,6 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr ""
 
@@ -7300,6 +7371,11 @@ msgstr ""
 #, fuzzy
 msgid "Breakpoints"
 msgstr "Izbriši točke"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -8432,6 +8508,12 @@ msgstr ""
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
 "Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+msgid ""
+"Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
 
@@ -8606,8 +8688,23 @@ msgstr "Ustvari Nov %s"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid "New Rectangle"
+msgstr "Nov Prizor"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "Create a new polygon."
 msgstr "Ustvarite Poligon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Polygon"
+msgstr "Uredi Poligon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "Izbriši Izbrano"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -8823,11 +8920,6 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "No commit message was provided"
-msgstr "Ime ni na voljo"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -8890,10 +8982,6 @@ msgstr "Izbriši Izbrano"
 #, fuzzy
 msgid "Stage All"
 msgstr "Zamenjaj Vse"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -9006,6 +9094,11 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
+msgid "Node(s) Moved"
+msgstr "Način Premika"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Duplicate Nodes"
 msgstr "Animacija Podvoji ključe"
 
@@ -9022,6 +9115,11 @@ msgstr "Izberi Gradnik"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "Preoblikovanje Sprememb"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9693,6 +9791,10 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr ""
 
@@ -9752,19 +9854,6 @@ msgstr "Spremebe v Shader"
 
 #: editor/project_export.cpp
 msgid "Runnable"
-msgstr ""
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Add initial export..."
-msgstr "Dodaj Vnos"
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
 msgstr ""
 
 #: editor/project_export.cpp
@@ -9855,19 +9944,6 @@ msgid ""
 "Filters to exclude files/folders from project\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr ""
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Pack File"
-msgstr " Datoteke"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -10067,6 +10143,10 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -12350,6 +12430,10 @@ msgid "Invalid Android SDK path for custom build in Editor Settings."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Missing 'platform-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -12391,6 +12475,22 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -12415,7 +12515,13 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
@@ -12600,6 +12706,26 @@ msgstr ""
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr ""
 
 #: scene/2d/light_2d.cpp
@@ -12867,6 +12993,26 @@ msgid ""
 "Change the size in children collision shapes instead."
 msgstr ""
 
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
@@ -13011,6 +13157,10 @@ msgstr "Opozorilo!"
 msgid "Please Confirm..."
 msgstr "Prosimo Potrdite..."
 
+#: scene/gui/graph_edit.cpp
+msgid "Enable grid minimap."
+msgstr ""
+
 #: scene/gui/popup.cpp
 #, fuzzy
 msgid ""
@@ -13084,6 +13234,44 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstante ni možno spreminjati."
+
+#, fuzzy
+#~ msgid "Search complete"
+#~ msgstr "Išči Besedilo"
+
+#, fuzzy
+#~ msgid "No commit message was provided"
+#~ msgstr "Ime ni na voljo"
+
+#, fuzzy
+#~ msgid "There is already file or folder with the same name in this location."
+#~ msgstr "Datoteka ali mapa s tem imenom že obstaja."
+
+#~ msgid "Error trying to save layout!"
+#~ msgstr "Napaka pri shranjevanju postavitev!"
+
+#~ msgid "Default editor layout overridden."
+#~ msgstr "Privzeti urejevalnik postavitev je bil prepisan."
+
+#, fuzzy
+#~ msgid "Move pivot"
+#~ msgstr "Premakni Točko"
+
+#, fuzzy
+#~ msgid "Move anchor"
+#~ msgstr "Premakni Dejanje"
+
+#, fuzzy
+#~ msgid "Resize CanvasItem"
+#~ msgstr "Uredi Platno Stvari"
+
+#, fuzzy
+#~ msgid "Add initial export..."
+#~ msgstr "Dodaj Vnos"
+
+#, fuzzy
+#~ msgid "Pack File"
+#~ msgstr " Datoteke"
 
 #, fuzzy
 #~ msgid "FileSystem and Import Docks"

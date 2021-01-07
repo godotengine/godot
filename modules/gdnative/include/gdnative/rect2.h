@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,7 +80,7 @@ godot_bool GDAPI godot_rect2_encloses(const godot_rect2 *p_self, const godot_rec
 
 godot_bool GDAPI godot_rect2_has_no_area(const godot_rect2 *p_self);
 
-godot_rect2 GDAPI godot_rect2_clip(const godot_rect2 *p_self, const godot_rect2 *p_b);
+godot_rect2 GDAPI godot_rect2_intersection(const godot_rect2 *p_self, const godot_rect2 *p_b);
 
 godot_rect2 GDAPI godot_rect2_merge(const godot_rect2 *p_self, const godot_rect2 *p_b);
 
@@ -90,7 +90,7 @@ godot_rect2 GDAPI godot_rect2_grow(const godot_rect2 *p_self, const godot_real p
 
 godot_rect2 GDAPI godot_rect2_grow_individual(const godot_rect2 *p_self, const godot_real p_left, const godot_real p_top, const godot_real p_right, const godot_real p_bottom);
 
-godot_rect2 GDAPI godot_rect2_grow_margin(const godot_rect2 *p_self, const godot_int p_margin, const godot_real p_by);
+godot_rect2 GDAPI godot_rect2_grow_side(const godot_rect2 *p_self, const godot_int p_margin, const godot_real p_by);
 
 godot_rect2 GDAPI godot_rect2_abs(const godot_rect2 *p_self);
 
@@ -123,7 +123,7 @@ godot_bool GDAPI godot_rect2i_encloses(const godot_rect2i *p_self, const godot_r
 
 godot_bool GDAPI godot_rect2i_has_no_area(const godot_rect2i *p_self);
 
-godot_rect2i GDAPI godot_rect2i_clip(const godot_rect2i *p_self, const godot_rect2i *p_b);
+godot_rect2i GDAPI godot_rect2i_intersection(const godot_rect2i *p_self, const godot_rect2i *p_b);
 
 godot_rect2i GDAPI godot_rect2i_merge(const godot_rect2i *p_self, const godot_rect2i *p_b);
 
@@ -133,7 +133,7 @@ godot_rect2i GDAPI godot_rect2i_grow(const godot_rect2i *p_self, const godot_int
 
 godot_rect2i GDAPI godot_rect2i_grow_individual(const godot_rect2i *p_self, const godot_int p_left, const godot_int p_top, const godot_int p_right, const godot_int p_bottom);
 
-godot_rect2i GDAPI godot_rect2i_grow_margin(const godot_rect2i *p_self, const godot_int p_margin, const godot_int p_by);
+godot_rect2i GDAPI godot_rect2i_grow_side(const godot_rect2i *p_self, const godot_int p_margin, const godot_int p_by);
 
 godot_rect2i GDAPI godot_rect2i_abs(const godot_rect2i *p_self);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "file_access_network.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/ip.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 //#define DEBUG_PRINT(m_p) print_line(m_p)
 //#define DEBUG_TIME(m_what) printf("MS: %s - %lli\n",m_what,OS::get_singleton()->get_ticks_usec());
@@ -350,7 +350,7 @@ void FileAccessNetwork::_queue_page(int p_page) const {
 	if (p_page >= pages.size()) {
 		return;
 	}
-	if (pages[p_page].buffer.empty() && !pages[p_page].queued) {
+	if (pages[p_page].buffer.is_empty() && !pages[p_page].queued) {
 		FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 		{
 			MutexLock lock(nc->blockrequest_mutex);
@@ -386,7 +386,7 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 
 		if (page != last_page) {
 			buffer_mutex.lock();
-			if (pages[page].buffer.empty()) {
+			if (pages[page].buffer.is_empty()) {
 				waiting_on_page = page;
 				for (int j = 0; j < read_ahead; j++) {
 					_queue_page(page + j);

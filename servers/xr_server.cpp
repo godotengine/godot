@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "xr_server.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "xr/xr_interface.h"
 #include "xr/xr_positional_tracker.h"
 
@@ -235,7 +235,7 @@ Array XRServer::get_interfaces() const {
 
 bool XRServer::is_tracker_id_in_use_for_type(TrackerType p_tracker_type, int p_tracker_id) const {
 	for (int i = 0; i < trackers.size(); i++) {
-		if (trackers[i]->get_type() == p_tracker_type && trackers[i]->get_tracker_id() == p_tracker_id) {
+		if (trackers[i]->get_tracker_type() == p_tracker_type && trackers[i]->get_tracker_id() == p_tracker_id) {
 			return true;
 		};
 	};
@@ -264,7 +264,7 @@ void XRServer::add_tracker(XRPositionalTracker *p_tracker) {
 	ERR_FAIL_NULL(p_tracker);
 
 	trackers.push_back(p_tracker);
-	emit_signal("tracker_added", p_tracker->get_name(), p_tracker->get_type(), p_tracker->get_tracker_id());
+	emit_signal("tracker_added", p_tracker->get_tracker_name(), p_tracker->get_tracker_type(), p_tracker->get_tracker_id());
 };
 
 void XRServer::remove_tracker(XRPositionalTracker *p_tracker) {
@@ -280,7 +280,7 @@ void XRServer::remove_tracker(XRPositionalTracker *p_tracker) {
 
 	ERR_FAIL_COND(idx == -1);
 
-	emit_signal("tracker_removed", p_tracker->get_name(), p_tracker->get_type(), p_tracker->get_tracker_id());
+	emit_signal("tracker_removed", p_tracker->get_tracker_name(), p_tracker->get_tracker_type(), p_tracker->get_tracker_id());
 	trackers.remove(idx);
 };
 
@@ -298,7 +298,7 @@ XRPositionalTracker *XRServer::find_by_type_and_id(TrackerType p_tracker_type, i
 	ERR_FAIL_COND_V(p_tracker_id == 0, nullptr);
 
 	for (int i = 0; i < trackers.size(); i++) {
-		if (trackers[i]->get_type() == p_tracker_type && trackers[i]->get_tracker_id() == p_tracker_id) {
+		if (trackers[i]->get_tracker_type() == p_tracker_type && trackers[i]->get_tracker_id() == p_tracker_id) {
 			return trackers[i];
 		};
 	};
@@ -336,7 +336,7 @@ uint64_t XRServer::get_last_frame_usec() {
 };
 
 void XRServer::_process() {
-	/* called from rendering_server_viewport.draw_viewports right before we start drawing our viewports */
+	/* called from renderer_viewport.draw_viewports right before we start drawing our viewports */
 
 	/* mark for our frame timing */
 	last_process_usec = OS::get_singleton()->get_ticks_usec();

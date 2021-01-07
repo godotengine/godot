@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -228,15 +228,6 @@ Ref<Texture2D> CPUParticles2D::get_texture() const {
 	return texture;
 }
 
-void CPUParticles2D::set_normalmap(const Ref<Texture2D> &p_normalmap) {
-	normalmap = p_normalmap;
-	update();
-}
-
-Ref<Texture2D> CPUParticles2D::get_normalmap() const {
-	return normalmap;
-}
-
 void CPUParticles2D::set_fixed_fps(int p_count) {
 	fixed_fps = p_count;
 }
@@ -406,14 +397,14 @@ Ref<Gradient> CPUParticles2D::get_color_ramp() const {
 	return color_ramp;
 }
 
-void CPUParticles2D::set_particle_flag(Flags p_flag, bool p_enable) {
-	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
-	flags[p_flag] = p_enable;
+void CPUParticles2D::set_particle_flag(ParticleFlags p_particle_flag, bool p_enable) {
+	ERR_FAIL_INDEX(p_particle_flag, PARTICLE_FLAG_MAX);
+	particle_flags[p_particle_flag] = p_enable;
 }
 
-bool CPUParticles2D::get_particle_flag(Flags p_flag) const {
-	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
-	return flags[p_flag];
+bool CPUParticles2D::get_particle_flag(ParticleFlags p_particle_flag) const {
+	ERR_FAIL_INDEX_V(p_particle_flag, PARTICLE_FLAG_MAX, false);
+	return particle_flags[p_particle_flag];
 }
 
 void CPUParticles2D::set_emission_shape(EmissionShape p_shape) {
@@ -752,7 +743,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 						Vector2 normal = emission_normals.get(random_idx);
 						Transform2D m2;
 						m2.set_axis(0, normal);
-						m2.set_axis(1, normal.tangent());
+						m2.set_axis(1, normal.orthogonal());
 						p.velocity = m2.basis_xform(p.velocity);
 					}
 
@@ -914,10 +905,10 @@ void CPUParticles2D::_particles_process(float p_delta) {
 
 		p.color *= p.base_color;
 
-		if (flags[FLAG_ALIGN_Y_TO_VELOCITY]) {
+		if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
 			if (p.velocity.length() > 0.0) {
 				p.transform.elements[1] = p.velocity.normalized();
-				p.transform.elements[0] = p.transform.elements[1].tangent();
+				p.transform.elements[0] = p.transform.elements[1].orthogonal();
 			}
 
 		} else {
@@ -1060,12 +1051,7 @@ void CPUParticles2D::_notification(int p_what) {
 			texrid = texture->get_rid();
 		}
 
-		RID normrid;
-		if (normalmap.is_valid()) {
-			normrid = normalmap->get_rid();
-		}
-
-		RS::get_singleton()->canvas_item_add_multimesh(get_canvas_item(), multimesh, texrid, normrid);
+		RS::get_singleton()->canvas_item_add_multimesh(get_canvas_item(), multimesh, texrid);
 	}
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
@@ -1144,7 +1130,7 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 		set_color_ramp(gt->get_gradient());
 	}
 
-	set_particle_flag(FLAG_ALIGN_Y_TO_VELOCITY, material->get_flag(ParticlesMaterial::FLAG_ALIGN_Y_TO_VELOCITY));
+	set_particle_flag(PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY, material->get_particle_flag(ParticlesMaterial::PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY));
 
 	set_emission_shape(EmissionShape(material->get_emission_shape()));
 	set_emission_sphere_radius(material->get_emission_sphere_radius());
@@ -1214,9 +1200,6 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &CPUParticles2D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &CPUParticles2D::get_texture);
 
-	ClassDB::bind_method(D_METHOD("set_normalmap", "normalmap"), &CPUParticles2D::set_normalmap);
-	ClassDB::bind_method(D_METHOD("get_normalmap"), &CPUParticles2D::get_normalmap);
-
 	ClassDB::bind_method(D_METHOD("restart"), &CPUParticles2D::restart);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
@@ -1236,7 +1219,6 @@ void CPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime"), "set_draw_order", "get_draw_order");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normalmap", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normalmap", "get_normalmap");
 
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);
@@ -1264,8 +1246,8 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color_ramp", "ramp"), &CPUParticles2D::set_color_ramp);
 	ClassDB::bind_method(D_METHOD("get_color_ramp"), &CPUParticles2D::get_color_ramp);
 
-	ClassDB::bind_method(D_METHOD("set_particle_flag", "flag", "enable"), &CPUParticles2D::set_particle_flag);
-	ClassDB::bind_method(D_METHOD("get_particle_flag", "flag"), &CPUParticles2D::get_particle_flag);
+	ClassDB::bind_method(D_METHOD("set_particle_flag", "particle_flag", "enable"), &CPUParticles2D::set_particle_flag);
+	ClassDB::bind_method(D_METHOD("get_particle_flag", "particle_flag"), &CPUParticles2D::get_particle_flag);
 
 	ClassDB::bind_method(D_METHOD("set_emission_shape", "shape"), &CPUParticles2D::set_emission_shape);
 	ClassDB::bind_method(D_METHOD("get_emission_shape"), &CPUParticles2D::get_emission_shape);
@@ -1297,8 +1279,8 @@ void CPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "emission_points"), "set_emission_points", "get_emission_points");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "emission_normals"), "set_emission_normals", "get_emission_normals");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "emission_colors"), "set_emission_colors", "get_emission_colors");
-	ADD_GROUP("Flags", "flag_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_align_y"), "set_particle_flag", "get_particle_flag", FLAG_ALIGN_Y_TO_VELOCITY);
+	ADD_GROUP("Particle Flags", "particle_flag_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_align_y"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY);
 	ADD_GROUP("Direction", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "direction"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spread", PROPERTY_HINT_RANGE, "0,180,0.01"), "set_spread", "get_spread");
@@ -1369,10 +1351,10 @@ void CPUParticles2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_ANIM_OFFSET);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
-	BIND_ENUM_CONSTANT(FLAG_ALIGN_Y_TO_VELOCITY);
-	BIND_ENUM_CONSTANT(FLAG_ROTATE_Y); // Unused, but exposed for consistency with 3D.
-	BIND_ENUM_CONSTANT(FLAG_DISABLE_Z); // Unused, but exposed for consistency with 3D.
-	BIND_ENUM_CONSTANT(FLAG_MAX);
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY);
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_ROTATE_Y); // Unused, but exposed for consistency with 3D.
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_DISABLE_Z); // Unused, but exposed for consistency with 3D.
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINT);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_SPHERE);
@@ -1433,8 +1415,8 @@ CPUParticles2D::CPUParticles2D() {
 		set_param_randomness(Parameter(i), 0);
 	}
 
-	for (int i = 0; i < FLAG_MAX; i++) {
-		flags[i] = false;
+	for (int i = 0; i < PARTICLE_FLAG_MAX; i++) {
+		particle_flags[i] = false;
 	}
 
 	set_color(Color(1, 1, 1, 1));

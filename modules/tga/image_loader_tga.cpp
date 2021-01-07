@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "image_loader_tga.h"
 
-#include "core/error_macros.h"
+#include "core/error/error_macros.h"
 #include "core/io/file_access_memory.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t p_pixel_size, uint8_t *p_uncompressed_buffer, size_t p_output_size) {
 	Error error;
@@ -313,9 +313,9 @@ void ImageLoaderTGA::get_recognized_extensions(List<String> *p_extensions) const
 	p_extensions->push_back("tga");
 }
 
-static Ref<Image> _tga_mem_loader_func(const uint8_t *p_png, int p_size) {
+static Ref<Image> _tga_mem_loader_func(const uint8_t *p_tga, int p_size) {
 	FileAccessMemory memfile;
-	Error open_memfile_error = memfile.open_custom(p_png, p_size);
+	Error open_memfile_error = memfile.open_custom(p_tga, p_size);
 	ERR_FAIL_COND_V_MSG(open_memfile_error, Ref<Image>(), "Could not create memfile for TGA image buffer.");
 	Ref<Image> img;
 	img.instance();

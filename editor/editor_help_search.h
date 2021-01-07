@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef EDITOR_HELP_SEARCH_H
 #define EDITOR_HELP_SEARCH_H
 
-#include "core/ordered_hash_map.h"
+#include "core/templates/ordered_hash_map.h"
 #include "editor/code_editor.h"
 #include "editor/editor_help.h"
 #include "editor/editor_plugin.h"
@@ -98,7 +98,7 @@ class EditorHelpSearch::Runner : public Reference {
 
 	struct ClassMatch {
 		DocData::ClassDoc *doc;
-		bool name;
+		bool name = false;
 		Vector<DocData::MethodDoc *> methods;
 		Vector<DocData::MethodDoc *> signals;
 		Vector<DocData::ConstantDoc *> constants;
@@ -118,12 +118,12 @@ class EditorHelpSearch::Runner : public Reference {
 	Ref<Texture2D> empty_icon;
 	Color disabled_color;
 
-	Map<String, DocData::ClassDoc>::Element *iterator_doc;
+	Map<String, DocData::ClassDoc>::Element *iterator_doc = nullptr;
 	Map<String, ClassMatch> matches;
-	Map<String, ClassMatch>::Element *iterator_match;
-	TreeItem *root_item;
+	Map<String, ClassMatch>::Element *iterator_match = nullptr;
+	TreeItem *root_item = nullptr;
 	Map<String, TreeItem *> class_items;
-	TreeItem *matched_item;
+	TreeItem *matched_item = nullptr;
 
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
 
@@ -140,12 +140,12 @@ class EditorHelpSearch::Runner : public Reference {
 	void _match_item(TreeItem *p_item, const String &p_text);
 	TreeItem *_create_class_hierarchy(const ClassMatch &p_match);
 	TreeItem *_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray);
-	TreeItem *_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc);
+	TreeItem *_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc);
 	TreeItem *_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc);
 	TreeItem *_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ConstantDoc *p_doc);
 	TreeItem *_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc);
 	TreeItem *_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc);
-	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_type, const String &p_metatype, const String &p_tooltip);
+	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip);
 
 public:
 	bool work(uint64_t slot = 100000);

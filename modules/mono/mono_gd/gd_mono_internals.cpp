@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -109,8 +109,6 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 	CSharpInstance *csharp_instance = CSharpInstance::create_for_managed_type(unmanaged, script.ptr(), gchandle);
 
 	unmanaged->set_script_and_instance(script, csharp_instance);
-
-	csharp_instance->connect_event_signals();
 }
 
 void unhandled_exception(MonoException *p_exc) {
@@ -129,5 +127,4 @@ void unhandled_exception(MonoException *p_exc) {
 #endif
 	}
 }
-
 } // namespace GDMonoInternals

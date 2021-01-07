@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "gdnative/string.h"
 
-#include "core/string_name.h"
-#include "core/ustring.h"
-#include "core/variant.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 
 #include <string.h>
 
@@ -1087,10 +1087,10 @@ godot_string GDAPI godot_string_sha256_text(const godot_string *p_self) {
 	return result;
 }
 
-godot_bool godot_string_empty(const godot_string *p_self) {
+godot_bool godot_string_is_empty(const godot_string *p_self) {
 	const String *self = (const String *)p_self;
 
-	return self->empty();
+	return self->is_empty();
 }
 
 // path functions
@@ -1112,7 +1112,7 @@ godot_string GDAPI godot_string_get_file(const godot_string *p_self) {
 	return result;
 }
 
-godot_string GDAPI godot_string_humanize_size(size_t p_size) {
+godot_string GDAPI godot_string_humanize_size(uint64_t p_size) {
 	godot_string result;
 	String return_value = String::humanize_size(p_size);
 	memnew_placement(&result, String(return_value));

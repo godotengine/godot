@@ -215,7 +215,7 @@ def configure(env):
     env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++abi/include"])
 
     # Disable exceptions and rtti on non-tools (template) builds
-    if env["tools"]:
+    if env["tools"] or env["builtin_icu"]:
         env.Append(CXXFLAGS=["-frtti"])
     else:
         env.Append(CXXFLAGS=["-fno-rtti", "-fno-exceptions"])
@@ -334,6 +334,6 @@ def get_ndk_version(path):
                 key_value = list(map(lambda x: x.strip(), line.split("=")))
                 if key_value[0] == "Pkg.Revision":
                     return key_value[1]
-    except:
+    except Exception:
         print("Could not read source prop file '%s'" % prop_file_path)
     return None

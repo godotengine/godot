@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,11 +38,7 @@
 #include "core/io/ip_address.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
-#include "core/ustring.h"
-
-#ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
-#endif
+#include "core/string/ustring.h"
 
 #include "tests/test_macros.h"
 
@@ -248,11 +244,11 @@ TEST_CASE("[String] Testing size and length of string") {
 }
 
 TEST_CASE("[String] Testing for empty string") {
-	CHECK(!String("Mellon").empty());
+	CHECK(!String("Mellon").is_empty());
 	// do this more than once, to check for string corruption
-	CHECK(String("").empty());
-	CHECK(String("").empty());
-	CHECK(String("").empty());
+	CHECK(String("").is_empty());
+	CHECK(String("").is_empty());
+	CHECK(String("").is_empty());
 }
 
 TEST_CASE("[String] Test chr") {
@@ -474,15 +470,6 @@ TEST_CASE("[String] Erasing") {
 	s.erase(s.find("cute "), String("cute ").length());
 	CHECK(s == "Josephine is such a girl!");
 }
-
-#ifdef MODULE_REGEX_ENABLED
-TEST_CASE("[String] Regex substitution") {
-	String s = "Double all the vowels.";
-	RegEx re("(?<vowel>[aeiou])");
-	s = re.sub(s, "$0$vowel", true);
-	CHECK(s == "Doouublee aall thee vooweels.");
-}
-#endif
 
 struct test_27_data {
 	char const *data;
@@ -1296,7 +1283,6 @@ TEST_CASE("[String] humanize_size") {
 	CHECK(String::humanize_size(100523550) == "95.86 MiB");
 	CHECK(String::humanize_size(5345555000) == "4.97 GiB");
 }
-
 } // namespace TestString
 
 #endif // TEST_STRING_H

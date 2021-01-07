@@ -3,7 +3,7 @@ def can_build(env, platform):
 
 
 def configure(env):
-    env.use_ptrcall = True
+    pass
 
 
 def get_doc_classes():

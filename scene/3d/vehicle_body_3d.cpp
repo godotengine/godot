@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -106,7 +106,7 @@ String VehicleWheel3D::get_configuration_warning() const {
 	String warning = Node3D::get_configuration_warning();
 
 	if (!Object::cast_to<VehicleBody3D>(get_parent())) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please use it as a child of a VehicleBody3D.");
@@ -634,7 +634,6 @@ VehicleBody3D::btVehicleWheelContactPoint::btVehicleWheelContactPoint(PhysicsDir
 
 	/* TODO: Why is this code unused?
 	if (body1) {
-
 		Vector3 r0 = frictionPosWorld - body1->get_global_transform().origin;
 		Vector3 c0 = (r0).cross(frictionDirectionWorld);
 		Vector3 vec = s->get_inverse_inertia_tensor().xform_inv(c0).cross(r0);

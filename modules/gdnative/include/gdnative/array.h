@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,6 +65,7 @@ void GDAPI godot_array_new_copy(godot_array *r_dest, const godot_array *p_src);
 void GDAPI godot_array_new_packed_color_array(godot_array *r_dest, const godot_packed_color_array *p_pca);
 void GDAPI godot_array_new_packed_vector3_array(godot_array *r_dest, const godot_packed_vector3_array *p_pv3a);
 void GDAPI godot_array_new_packed_vector2_array(godot_array *r_dest, const godot_packed_vector2_array *p_pv2a);
+void GDAPI godot_array_new_packed_vector2i_array(godot_array *r_dest, const godot_packed_vector2i_array *p_pv2a);
 void GDAPI godot_array_new_packed_string_array(godot_array *r_dest, const godot_packed_string_array *p_psa);
 void GDAPI godot_array_new_packed_float32_array(godot_array *r_dest, const godot_packed_float32_array *p_pra);
 void GDAPI godot_array_new_packed_float64_array(godot_array *r_dest, const godot_packed_float64_array *p_pra);
@@ -86,7 +87,7 @@ void GDAPI godot_array_clear(godot_array *p_self);
 
 godot_int GDAPI godot_array_count(const godot_array *p_self, const godot_variant *p_value);
 
-godot_bool GDAPI godot_array_empty(const godot_array *p_self);
+godot_bool GDAPI godot_array_is_empty(const godot_array *p_self);
 
 void GDAPI godot_array_erase(godot_array *p_self, const godot_variant *p_value);
 

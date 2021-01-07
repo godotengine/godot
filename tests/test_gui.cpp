@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 
 #include "core/io/image_loader.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
@@ -63,12 +63,12 @@ public:
 	virtual void request_quit() {
 		quit();
 	}
-	virtual void init() {
-		SceneTree::init();
+	virtual void initialize() {
+		SceneTree::initialize();
 
 		Panel *frame = memnew(Panel);
-		frame->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
-		frame->set_anchor(MARGIN_BOTTOM, Control::ANCHOR_END);
+		frame->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
+		frame->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
 		frame->set_end(Point2(0, 0));
 
 		Ref<Theme> t = memnew(Theme);
@@ -199,7 +199,7 @@ public:
 
 		richtext->set_position(Point2(600, 210));
 		richtext->set_size(Point2(180, 250));
-		richtext->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -20);
+		richtext->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -20);
 
 		frame->add_child(richtext);
 
@@ -265,7 +265,6 @@ public:
 MainLoop *test() {
 	return memnew(TestMainLoop);
 }
-
 } // namespace TestGUI
 
 #endif

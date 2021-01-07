@@ -20,10 +20,18 @@
 				Returns the [Texture2D] associated with the specified [enum DecalTexture]. This is a convenience method, in most cases you should access the texture directly.
 				For example, instead of [code]albedo_tex = $Decal.get_texture(Decal.TEXTURE_ALBEDO)[/code], use [code]albedo_tex = $Decal.texture_albedo[/code].
 				One case where this is better than accessing the texture directly is when you want to copy one Decal's textures to another. For example:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				for i in Decal.TEXTURE_MAX:
 				    $NewDecal.set_texture(i, $OldDecal.get_texture(i))
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				for (int i = 0; i &lt; (int)Decal.DecalTexture.Max; i++)
+				{
+				    GetNode&lt;Decal&gt;("NewDecal").SetTexture(i, GetNode&lt;Decal&gt;("OldDecal").GetTexture(i));
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="set_texture">
@@ -37,10 +45,18 @@
 				Sets the [Texture2D] associated with the specified [enum DecalTexture]. This is a convenience method, in most cases you should access the texture directly.
 				For example, instead of [code]$Decal.set_texture(Decal.TEXTURE_ALBEDO, albedo_tex)[/code], use [code]$Decal.texture_albedo = albedo_tex[/code].
 				One case where this is better than accessing the texture directly is when you want to copy one Decal's textures to another. For example:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				for i in Decal.TEXTURE_MAX:
 				    $NewDecal.set_texture(i, $OldDecal.get_texture(i))
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				for (int i = 0; i &lt; (int)Decal.DecalTexture.Max; i++)
+				{
+				    GetNode&lt;Decal&gt;("NewDecal").SetTexture(i, GetNode&lt;Decal&gt;("OldDecal").GetTexture(i));
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 	</methods>
@@ -82,7 +98,7 @@
 			[Texture2D] with the emission [Color] of the Decal. Either this or the [member texture_emission] must be set for the Decal to be visible. Use the alpha channel like a mask to smoothly blend the edges of the decal with the underlying object.
 		</member>
 		<member name="texture_normal" type="Texture2D" setter="set_texture" getter="get_texture">
-			[Texture2D] with the per-pixel normalmap for the decal. Use this to add extra detail to decals.
+			[Texture2D] with the per-pixel normal map for the decal. Use this to add extra detail to decals.
 		</member>
 		<member name="texture_orm" type="Texture2D" setter="set_texture" getter="get_texture">
 			[Texture2D] storing ambient occlusion, roughness, and metallic for the decal. Use this to add extra detail to decals.

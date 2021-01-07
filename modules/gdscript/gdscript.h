@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,9 +33,10 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/doc_data.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 #include "gdscript_function.h"
 
 class GDScriptNativeClass : public Reference {
@@ -71,8 +72,8 @@ class GDScript : public Script {
 	friend class GDScriptFunction;
 	friend class GDScriptAnalyzer;
 	friend class GDScriptCompiler;
-	friend class GDScriptFunctions;
 	friend class GDScriptLanguage;
+	friend struct GDScriptUtilityFunctionsDefinitions;
 
 	Ref<GDScriptNativeClass> native;
 	Ref<GDScript> base;
@@ -91,9 +92,7 @@ class GDScript : public Script {
 #ifdef TOOLS_ENABLED
 
 	Map<StringName, int> member_lines;
-
 	Map<StringName, Variant> member_default_values;
-
 	List<PropertyInfo> members_cache;
 	Map<StringName, Variant> member_default_values_cache;
 	Ref<GDScript> base_cache;
@@ -101,6 +100,20 @@ class GDScript : public Script {
 	bool source_changed_cache;
 	bool placeholder_fallback_enabled;
 	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
+
+	DocData::ClassDoc doc;
+	Vector<DocData::ClassDoc> docs;
+	String doc_brief_description;
+	String doc_description;
+	Vector<DocData::TutorialDoc> doc_tutorials;
+	Map<String, String> doc_functions;
+	Map<String, String> doc_variables;
+	Map<String, String> doc_constants;
+	Map<String, String> doc_signals;
+	Map<String, DocData::EnumDoc> doc_enums;
+	void _clear_doc();
+	void _update_doc();
+	void _add_doc(const DocData::ClassDoc &p_inner_class);
 
 #endif
 	Map<StringName, PropertyInfo> member_info;
@@ -140,6 +153,13 @@ class GDScript : public Script {
 
 	void _save_orphaned_subclasses();
 	void _init_rpc_methods_properties();
+
+	void _get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base) const;
+	void _get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const;
+	void _get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const;
+
+	// This method will map the class name from "Reference" to "MyClass.InnerClass".
+	static String _get_gdscript_reference_class_name(const GDScript *p_gdscript);
 
 protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -190,6 +210,12 @@ public:
 	virtual String get_source_code() const override;
 	virtual void set_source_code(const String &p_code) override;
 	virtual void update_exports() override;
+
+#ifdef TOOLS_ENABLED
+	virtual const Vector<DocData::ClassDoc> &get_documentation() const override {
+		return docs;
+	}
+#endif // TOOLS_ENABLED
 
 	virtual Error reload(bool p_keep_state = false) override;
 
@@ -244,8 +270,8 @@ public:
 class GDScriptInstance : public ScriptInstance {
 	friend class GDScript;
 	friend class GDScriptFunction;
-	friend class GDScriptFunctions;
 	friend class GDScriptCompiler;
+	friend struct GDScriptUtilityFunctionsDefinitions;
 
 	ObjectID owner_id;
 	Object *owner;
@@ -444,7 +470,8 @@ public:
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;
-	virtual bool can_inherit_from_file() { return true; }
+	virtual bool supports_documentation() const;
+	virtual bool can_inherit_from_file() const { return true; }
 	virtual int find_function(const String &p_function, const String &p_code) const;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const;
 	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint);

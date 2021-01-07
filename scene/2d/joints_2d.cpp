@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,39 @@
 
 #include "joints_2d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "physics_body_2d.h"
+#include "scene/scene_string_names.h"
 #include "servers/physics_server_2d.h"
+
+void Joint2D::_disconnect_signals() {
+	Node *node_a = get_node_or_null(a);
+	PhysicsBody2D *body_a = Object::cast_to<PhysicsBody2D>(node_a);
+	if (body_a) {
+		body_a->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Joint2D::_body_exit_tree));
+	}
+
+	Node *node_b = get_node_or_null(b);
+	PhysicsBody2D *body_b = Object::cast_to<PhysicsBody2D>(node_b);
+	if (body_b) {
+		body_b->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Joint2D::_body_exit_tree));
+	}
+}
+
+void Joint2D::_body_exit_tree(const ObjectID &p_body_id) {
+	_disconnect_signals();
+	Object *object = ObjectDB::get_instance(p_body_id);
+	PhysicsBody2D *body = Object::cast_to<PhysicsBody2D>(object);
+	ERR_FAIL_NULL(body);
+	RID body_rid = body->get_rid();
+	if (ba == body_rid) {
+		a = NodePath();
+	}
+	if (bb == body_rid) {
+		b = NodePath();
+	}
+	_update_joint();
+}
 
 void Joint2D::_update_joint(bool p_only_free) {
 	if (joint.is_valid()) {
@@ -47,33 +77,68 @@ void Joint2D::_update_joint(bool p_only_free) {
 	}
 
 	if (p_only_free || !is_inside_tree()) {
+		warning = String();
 		return;
 	}
 
-	Node *node_a = has_node(get_node_a()) ? get_node(get_node_a()) : (Node *)nullptr;
-	Node *node_b = has_node(get_node_b()) ? get_node(get_node_b()) : (Node *)nullptr;
-
-	if (!node_a || !node_b) {
-		return;
-	}
+	Node *node_a = get_node_or_null(a);
+	Node *node_b = get_node_or_null(b);
 
 	PhysicsBody2D *body_a = Object::cast_to<PhysicsBody2D>(node_a);
 	PhysicsBody2D *body_b = Object::cast_to<PhysicsBody2D>(node_b);
 
-	if (!body_a || !body_b) {
+	if (node_a && !body_a && node_b && !body_b) {
+		warning = TTR("Node A and Node B must be PhysicsBody2Ds");
+		update_configuration_warning();
 		return;
+	}
+
+	if (node_a && !body_a) {
+		warning = TTR("Node A must be a PhysicsBody2D");
+		update_configuration_warning();
+		return;
+	}
+
+	if (node_b && !body_b) {
+		warning = TTR("Node B must be a PhysicsBody2D");
+		update_configuration_warning();
+		return;
+	}
+
+	if (!body_a || !body_b) {
+		warning = TTR("Joint is not connected to two PhysicsBody2Ds");
+		update_configuration_warning();
+		return;
+	}
+
+	if (body_a == body_b) {
+		warning = TTR("Node A and Node B must be different PhysicsBody2Ds");
+		update_configuration_warning();
+		return;
+	}
+
+	warning = String();
+	update_configuration_warning();
+
+	if (body_a) {
+		body_a->force_update_transform();
+	}
+
+	if (body_b) {
+		body_b->force_update_transform();
 	}
 
 	joint = _configure_joint(body_a, body_b);
 
-	if (!joint.is_valid()) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(!joint.is_valid(), "Failed to configure the joint.");
 
 	PhysicsServer2D::get_singleton()->get_singleton()->joint_set_param(joint, PhysicsServer2D::JOINT_PARAM_BIAS, bias);
 
 	ba = body_a->get_rid();
 	bb = body_b->get_rid();
+
+	body_a->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Joint2D::_body_exit_tree), make_binds(body_a->get_instance_id()));
+	body_b->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Joint2D::_body_exit_tree), make_binds(body_b->get_instance_id()));
 
 	PhysicsServer2D::get_singleton()->joint_disable_collisions_between_bodies(joint, exclude_from_collision);
 }
@@ -81,6 +146,10 @@ void Joint2D::_update_joint(bool p_only_free) {
 void Joint2D::set_node_a(const NodePath &p_node_a) {
 	if (a == p_node_a) {
 		return;
+	}
+
+	if (joint.is_valid()) {
+		_disconnect_signals();
 	}
 
 	a = p_node_a;
@@ -95,6 +164,11 @@ void Joint2D::set_node_b(const NodePath &p_node_b) {
 	if (b == p_node_b) {
 		return;
 	}
+
+	if (joint.is_valid()) {
+		_disconnect_signals();
+	}
+
 	b = p_node_b;
 	_update_joint();
 }
@@ -110,6 +184,7 @@ void Joint2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (joint.is_valid()) {
+				_disconnect_signals();
 				_update_joint(true);
 			}
 		} break;
@@ -141,6 +216,19 @@ bool Joint2D::get_exclude_nodes_from_collision() const {
 	return exclude_from_collision;
 }
 
+String Joint2D::get_configuration_warning() const {
+	String node_warning = Node2D::get_configuration_warning();
+
+	if (!warning.is_empty()) {
+		if (!node_warning.is_empty()) {
+			node_warning += "\n\n";
+		}
+		node_warning += warning;
+	}
+
+	return node_warning;
+}
+
 void Joint2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_node_a", "node"), &Joint2D::set_node_a);
 	ClassDB::bind_method(D_METHOD("get_node_a"), &Joint2D::get_node_a);
@@ -154,8 +242,8 @@ void Joint2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclude_nodes_from_collision", "enable"), &Joint2D::set_exclude_nodes_from_collision);
 	ClassDB::bind_method(D_METHOD("get_exclude_nodes_from_collision"), &Joint2D::get_exclude_nodes_from_collision);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject2D"), "set_node_a", "get_node_a");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject2D"), "set_node_b", "get_node_b");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody2D"), "set_node_a", "get_node_a");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody2D"), "set_node_b", "get_node_b");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0,0.9,0.001"), "set_bias", "get_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_collision"), "set_exclude_nodes_from_collision", "get_exclude_nodes_from_collision");
 }

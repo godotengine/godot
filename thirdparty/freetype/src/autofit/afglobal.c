@@ -19,7 +19,7 @@
 #include "afglobal.h"
 #include "afranges.h"
 #include "afshaper.h"
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 
 
   /**************************************************************************
@@ -306,7 +306,7 @@
           if ( !( count % 10 ) )
             FT_TRACE4(( " " ));
 
-          FT_TRACE4(( " %d", idx ));
+          FT_TRACE4(( " %ld", idx ));
           count++;
 
           if ( !( count % 10 ) )

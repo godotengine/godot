@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,7 +97,7 @@ Error ResourceImporterTextureAtlas::import(const String &p_source_file, const St
 	return OK;
 }
 
-static void _plot_triangle(Vector2 *vertices, const Vector2 &p_offset, bool p_transposed, Ref<Image> p_image, const Ref<Image> &p_src_image) {
+static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_transposed, Ref<Image> p_image, const Ref<Image> &p_src_image) {
 	int width = p_image->get_width();
 	int height = p_image->get_height();
 	int src_width = p_src_image->get_width();
@@ -281,13 +281,13 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		for (int j = 0; j < pack_data.chart_pieces.size(); j++) {
 			const EditorAtlasPacker::Chart &chart = charts[pack_data.chart_pieces[j]];
 			for (int k = 0; k < chart.faces.size(); k++) {
-				Vector2 positions[3];
+				Vector2i positions[3];
 				for (int l = 0; l < 3; l++) {
 					int vertex_idx = chart.faces[k].vertex[l];
-					positions[l] = chart.vertices[vertex_idx];
+					positions[l] = Vector2i(chart.vertices[vertex_idx]);
 				}
 
-				_plot_triangle(positions, chart.final_offset, chart.transposed, new_atlas, pack_data.image);
+				_plot_triangle(positions, Vector2i(chart.final_offset), chart.transposed, new_atlas, pack_data.image);
 			}
 		}
 	}

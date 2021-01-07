@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -151,7 +151,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 	if (Object::cast_to<CSGShape3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 		CSGShape3D *csg_shape = Object::cast_to<CSGShape3D>(p_node);
 		Array meshes = csg_shape->get_meshes();
-		if (!meshes.empty()) {
+		if (!meshes.is_empty()) {
 			Ref<Mesh> mesh = meshes[1];
 			if (mesh.is_valid()) {
 				_add_mesh(mesh, p_accumulated_transform * csg_shape->get_transform(), p_verticies, p_indices);
@@ -176,10 +176,10 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 
 					BoxShape3D *box = Object::cast_to<BoxShape3D>(*s);
 					if (box) {
-						Ref<CubeMesh> cube_mesh;
-						cube_mesh.instance();
-						cube_mesh->set_size(box->get_extents() * 2.0);
-						mesh = cube_mesh;
+						Ref<BoxMesh> box_mesh;
+						box_mesh.instance();
+						box_mesh->set_size(box->get_size());
+						mesh = box_mesh;
 					}
 
 					CapsuleShape3D *capsule = Object::cast_to<CapsuleShape3D>(*s);

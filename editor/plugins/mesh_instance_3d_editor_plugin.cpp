@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,7 +63,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
-			if (selection.empty()) {
+			if (selection.is_empty()) {
 				Ref<Shape3D> shape = mesh->create_trimesh_shape();
 				if (shape.is_null()) {
 					err_dialog->set_text(TTR("Couldn't create a Trimesh collision shape."));
@@ -457,7 +457,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 
 	outline_dialog = memnew(ConfirmationDialog);
 	outline_dialog->set_title(TTR("Create Outline Mesh"));
-	outline_dialog->get_ok()->set_text(TTR("Create"));
+	outline_dialog->get_ok_button()->set_text(TTR("Create"));
 
 	VBoxContainer *outline_dialog_vbc = memnew(VBoxContainer);
 	outline_dialog->add_child(outline_dialog_vbc);
@@ -505,7 +505,7 @@ void MeshInstance3DEditorPlugin::make_visible(bool p_visible) {
 MeshInstance3DEditorPlugin::MeshInstance3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	mesh_editor = memnew(MeshInstance3DEditor);
-	editor->get_viewport()->add_child(mesh_editor);
+	editor->get_main_control()->add_child(mesh_editor);
 
 	mesh_editor->options->hide();
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -302,12 +302,12 @@ godot_int GDAPI godot_xr_add_controller(char *p_device_name, godot_int p_hand, g
 	ERR_FAIL_NULL_V(input, 0);
 
 	XRPositionalTracker *new_tracker = memnew(XRPositionalTracker);
-	new_tracker->set_name(p_device_name);
-	new_tracker->set_type(XRServer::TRACKER_CONTROLLER);
+	new_tracker->set_tracker_name(p_device_name);
+	new_tracker->set_tracker_type(XRServer::TRACKER_CONTROLLER);
 	if (p_hand == 1) {
-		new_tracker->set_hand(XRPositionalTracker::TRACKER_LEFT_HAND);
+		new_tracker->set_tracker_hand(XRPositionalTracker::TRACKER_HAND_LEFT);
 	} else if (p_hand == 2) {
-		new_tracker->set_hand(XRPositionalTracker::TRACKER_RIGHT_HAND);
+		new_tracker->set_tracker_hand(XRPositionalTracker::TRACKER_HAND_RIGHT);
 	}
 
 	// also register as joystick...

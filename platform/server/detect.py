@@ -21,7 +21,6 @@ def get_program_suffix():
 
 
 def can_build():
-
     if os.name != "posix":
         return False
 
@@ -39,14 +38,13 @@ def get_opts():
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN))", False),
         BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN))", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN))", False),
-        EnumVariable("debug_symbols", "Add debugging symbols to release builds", "yes", ("yes", "no", "full")),
+        EnumVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", "yes", ("yes", "no")),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
     ]
 
 
 def get_flags():
-
     return []
 
 
@@ -61,8 +59,6 @@ def configure(env):
             env.Prepend(CCFLAGS=["-Os"])
 
         if env["debug_symbols"] == "yes":
-            env.Prepend(CCFLAGS=["-g1"])
-        if env["debug_symbols"] == "full":
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "release_debug":
@@ -73,8 +69,6 @@ def configure(env):
         env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
 
         if env["debug_symbols"] == "yes":
-            env.Prepend(CCFLAGS=["-g1"])
-        if env["debug_symbols"] == "full":
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "debug":
@@ -98,8 +92,6 @@ def configure(env):
         if "clang++" not in os.path.basename(env["CXX"]):
             env["CC"] = "clang"
             env["CXX"] = "clang++"
-            env["LINK"] = "clang++"
-        env.Append(CPPDEFINES=["TYPED_METHOD_BIND"])
         env.extra_suffix = ".llvm" + env.extra_suffix
 
     if env["use_coverage"]:
@@ -144,13 +136,30 @@ def configure(env):
 
     # freetype depends on libpng and zlib, so bundling one of them while keeping others
     # as shared libraries leads to weird issues
-    if env["builtin_freetype"] or env["builtin_libpng"] or env["builtin_zlib"]:
+    if (
+        env["builtin_freetype"]
+        or env["builtin_libpng"]
+        or env["builtin_zlib"]
+        or env["builtin_graphite"]
+        or env["builtin_harfbuzz"]
+    ):
         env["builtin_freetype"] = True
         env["builtin_libpng"] = True
         env["builtin_zlib"] = True
+        env["builtin_graphite"] = True
+        env["builtin_harfbuzz"] = True
 
     if not env["builtin_freetype"]:
         env.ParseConfig("pkg-config freetype2 --cflags --libs")
+
+    if not env["builtin_graphite"]:
+        env.ParseConfig("pkg-config graphite2 --cflags --libs")
+
+    if not env["builtin_icu"]:
+        env.ParseConfig("pkg-config icu-uc --cflags --libs")
+
+    if not env["builtin_harfbuzz"]:
+        env.ParseConfig("pkg-config harfbuzz harfbuzz-icu --cflags --libs")
 
     if not env["builtin_libpng"]:
         env.ParseConfig("pkg-config libpng16 --cflags --libs")
@@ -239,7 +248,17 @@ def configure(env):
     env.Append(CPPDEFINES=["SERVER_ENABLED", "UNIX_ENABLED"])
 
     if platform.system() == "Darwin":
-        env.Append(LINKFLAGS=["-framework", "Cocoa", "-framework", "Carbon", "-lz", "-framework", "IOKit"])
+        env.Append(
+            LINKFLAGS=[
+                "-framework",
+                "Cocoa",
+                "-framework",
+                "Carbon",
+                "-lz",
+                "-framework",
+                "IOKit",
+            ]
+        )
 
     env.Append(LIBS=["pthread"])
 

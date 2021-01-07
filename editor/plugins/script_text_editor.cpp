@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,10 +84,10 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	set_title(TTR("Connections to method:"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
 	add_child(vbc);
 
 	method = memnew(Label);
@@ -349,7 +349,7 @@ void ScriptTextEditor::update_settings() {
 bool ScriptTextEditor::is_unsaved() {
 	const bool unsaved =
 			code_editor->get_text_editor()->get_version() != code_editor->get_text_editor()->get_saved_version() ||
-			script->get_path().empty(); // In memory.
+			script->get_path().is_empty(); // In memory.
 	return unsaved;
 }
 
@@ -427,7 +427,7 @@ String ScriptTextEditor::get_name() {
 	if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
 		name = script->get_path().get_file();
 		if (is_unsaved()) {
-			if (script->get_path().empty()) {
+			if (script->get_path().is_empty()) {
 				name = TTR("[unsaved]");
 			}
 			name += "(*)";
@@ -551,7 +551,7 @@ void ScriptTextEditor::_validate_script() {
 			if (safe_lines.has(i + 1)) {
 				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
 				last_is_safe = true;
-			} else if (last_is_safe && (te->is_line_comment(i) || te->get_line(i).strip_edges().empty())) {
+			} else if (last_is_safe && (te->is_line_comment(i) || te->get_line(i).strip_edges().is_empty())) {
 				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
 			} else {
 				te->set_line_gutter_item_color(i, line_number_gutter, default_line_number_color);
@@ -912,6 +912,7 @@ void ScriptTextEditor::update_toggle_scripts_button() {
 
 void ScriptTextEditor::_update_connected_methods() {
 	CodeEdit *text_edit = code_editor->get_text_editor();
+	text_edit->set_gutter_width(connection_gutter, text_edit->get_row_height());
 	for (int i = 0; i < text_edit->get_line_count(); i++) {
 		if (text_edit->get_line_gutter_metadata(i, connection_gutter) == "") {
 			continue;
@@ -1352,7 +1353,8 @@ void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
 
 void ScriptTextEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
 			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_row_height());
 		} break;
 		default:
@@ -1677,7 +1679,7 @@ void ScriptTextEditor::_enable_code_editor() {
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	add_child(editor_box);
-	editor_box->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	editor_box->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	editor_box->add_child(code_editor);
@@ -1697,6 +1699,8 @@ void ScriptTextEditor::_enable_code_editor() {
 	editor_box->add_child(warnings_panel);
 	warnings_panel->add_theme_font_override(
 			"normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("main", "EditorFonts"));
+	warnings_panel->add_theme_font_size_override(
+			"normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("main_size", "EditorFonts"));
 	warnings_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_warning_clicked));
 
 	add_child(context_menu);
@@ -1805,7 +1809,7 @@ void ScriptTextEditor::_enable_code_editor() {
 ScriptTextEditor::ScriptTextEditor() {
 	code_editor = memnew(CodeTextEditor);
 	code_editor->add_theme_constant_override("separation", 2);
-	code_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	code_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
 	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -1845,6 +1849,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->set_switch_on_hover(true);
+	edit_menu->set_shortcut_context(this);
 
 	convert_case = memnew(PopupMenu);
 	convert_case->set_name("convert_case");
@@ -1864,10 +1869,12 @@ ScriptTextEditor::ScriptTextEditor() {
 	search_menu = memnew(MenuButton);
 	search_menu->set_text(TTR("Search"));
 	search_menu->set_switch_on_hover(true);
+	search_menu->set_shortcut_context(this);
 
 	goto_menu = memnew(MenuButton);
 	goto_menu->set_text(TTR("Go To"));
 	goto_menu->set_switch_on_hover(true);
+	goto_menu->set_shortcut_context(this);
 
 	bookmarks_menu = memnew(PopupMenu);
 	bookmarks_menu->set_name("Bookmarks");

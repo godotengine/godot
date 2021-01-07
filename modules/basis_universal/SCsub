@@ -6,6 +6,9 @@ Import("env_modules")
 env_basisu = env_modules.Clone()
 
 # Thirdparty source files
+
+thirdparty_obj = []
+
 # Not unbundled so far since not widespread as shared library
 thirdparty_dir = "#thirdparty/basis_universal/"
 tool_sources = [
@@ -41,8 +44,16 @@ if env["target"] == "debug":
 env_thirdparty = env_basisu.Clone()
 env_thirdparty.disable_warnings()
 if env["tools"]:
-    env_thirdparty.add_source_files(env.modules_sources, tool_sources)
-env_thirdparty.add_source_files(env.modules_sources, transcoder_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, tool_sources)
+env_thirdparty.add_source_files(thirdparty_obj, transcoder_sources)
+env.modules_sources += thirdparty_obj
 
 # Godot source files
-env_basisu.add_source_files(env.modules_sources, "*.cpp")
+
+module_obj = []
+
+env_basisu.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

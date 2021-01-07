@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,15 +30,37 @@
 
 #include "graph_node.h"
 
-#include "core/method_bind_ext.gen.inc"
+#include "core/string/translation.h"
 
 bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
-	if (!p_name.operator String().begins_with("slot/")) {
+	String str = p_name;
+	if (str.begins_with("opentype_features/")) {
+		String name = str.get_slicec('/', 1);
+		int32_t tag = TS->name_to_tag(name);
+		double value = p_value;
+		if (value == -1) {
+			if (opentype_features.has(tag)) {
+				opentype_features.erase(tag);
+				_shape();
+				update();
+			}
+		} else {
+			if ((double)opentype_features[tag] != value) {
+				opentype_features[tag] = value;
+				_shape();
+				update();
+			}
+		}
+		_change_notify();
+		return true;
+	}
+
+	if (!str.begins_with("slot/")) {
 		return false;
 	}
 
-	int idx = p_name.operator String().get_slice("/", 1).to_int();
-	String what = p_name.operator String().get_slice("/", 2);
+	int idx = str.get_slice("/", 1).to_int();
+	String what = str.get_slice("/", 2);
 
 	Slot si;
 	if (slot_info.has(idx)) {
@@ -67,12 +89,25 @@ bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
-	if (!p_name.operator String().begins_with("slot/")) {
+	String str = p_name;
+	if (str.begins_with("opentype_features/")) {
+		String name = str.get_slicec('/', 1);
+		int32_t tag = TS->name_to_tag(name);
+		if (opentype_features.has(tag)) {
+			r_ret = opentype_features[tag];
+			return true;
+		} else {
+			r_ret = -1;
+			return true;
+		}
+	}
+
+	if (!str.begins_with("slot/")) {
 		return false;
 	}
 
-	int idx = p_name.operator String().get_slice("/", 1).to_int();
-	String what = p_name.operator String().get_slice("/", 2);
+	int idx = str.get_slice("/", 1).to_int();
+	String what = str.get_slice("/", 2);
 
 	Slot si;
 	if (slot_info.has(idx)) {
@@ -99,6 +134,12 @@ bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void GraphNode::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (const Variant *ftr = opentype_features.next(nullptr); ftr != nullptr; ftr = opentype_features.next(ftr)) {
+		String name = TS->tag_to_name(*ftr);
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "opentype_features/" + name));
+	}
+	p_list->push_back(PropertyInfo(Variant::NIL, "opentype_features/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+
 	int idx = 0;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -162,7 +203,7 @@ void GraphNode::_resort() {
 
 		Size2i size = c->get_combined_minimum_size();
 
-		Rect2 r(sb->get_margin(MARGIN_LEFT), sb->get_margin(MARGIN_TOP) + vofs, w, size.y);
+		Rect2 r(sb->get_margin(SIDE_LEFT), sb->get_margin(SIDE_TOP) + vofs, w, size.y);
 
 		fit_child_in_rect(c, r);
 		cache_y.push_back(vofs + size.y * 0.5);
@@ -183,7 +224,7 @@ bool GraphNode::has_point(const Point2 &p_point) const {
 			return true;
 		}
 
-		if (Rect2(0, 0, get_size().width, comment->get_margin(MARGIN_TOP)).has_point(p_point)) {
+		if (Rect2(0, 0, get_size().width, comment->get_margin(SIDE_TOP)).has_point(p_point)) {
 			return true;
 		}
 
@@ -215,13 +256,12 @@ void GraphNode::_notification(int p_what) {
 			int close_h_offset = get_theme_constant("close_h_offset");
 			Color close_color = get_theme_color("close_color");
 			Color resizer_color = get_theme_color("resizer_color");
-			Ref<Font> title_font = get_theme_font("title_font");
 			int title_offset = get_theme_constant("title_offset");
 			int title_h_offset = get_theme_constant("title_h_offset");
 			Color title_color = get_theme_color("title_color");
 			Point2i icofs = -port->get_size() * 0.5;
 			int edgeofs = get_theme_constant("port_offset");
-			icofs.y += sb->get_margin(MARGIN_TOP);
+			icofs.y += sb->get_margin(SIDE_TOP);
 
 			draw_style_box(sb, Rect2(Point2(), get_size()));
 
@@ -243,9 +283,10 @@ void GraphNode::_notification(int p_what) {
 				w -= close->get_width();
 			}
 
-			draw_string(title_font, Point2(sb->get_margin(MARGIN_LEFT) + title_h_offset, -title_font->get_height() + title_font->get_ascent() + title_offset), title, title_color, w);
+			title_buf->set_width(w);
+			title_buf->draw(get_canvas_item(), Point2(sb->get_margin(SIDE_LEFT) + title_h_offset, -title_buf->get_size().y + title_offset), title_color);
 			if (show_close) {
-				Vector2 cpos = Point2(w + sb->get_margin(MARGIN_LEFT) + close_h_offset, -close->get_height() + close_offset);
+				Vector2 cpos = Point2(w + sb->get_margin(SIDE_LEFT) + close_h_offset, -close->get_height() + close_offset);
 				draw_texture(close, cpos, close_color);
 				close_rect.position = cpos;
 				close_rect.size = close->get_size();
@@ -287,10 +328,28 @@ void GraphNode::_notification(int p_what) {
 			_resort();
 		} break;
 
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
+			_shape();
+
 			minimum_size_changed();
+			update();
 		} break;
 	}
+}
+
+void GraphNode::_shape() {
+	Ref<Font> font = get_theme_font("title_font");
+	int font_size = get_theme_font_size("title_font_size");
+
+	title_buf->clear();
+	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
+		title_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
+	} else {
+		title_buf->set_direction((TextServer::Direction)text_direction);
+	}
+	title_buf->add_string(title, font, font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
 }
 
 void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left, const Ref<Texture2D> &p_custom_right) {
@@ -370,14 +429,12 @@ Color GraphNode::get_slot_color_right(int p_idx) const {
 }
 
 Size2 GraphNode::get_minimum_size() const {
-	Ref<Font> title_font = get_theme_font("title_font");
-
 	int sep = get_theme_constant("separation");
 	Ref<StyleBox> sb = get_theme_stylebox("frame");
 	bool first = true;
 
 	Size2 minsize;
-	minsize.x = title_font->get_string_size(title).x;
+	minsize.x = title_buf->get_size().x;
 	if (show_close) {
 		Ref<Texture2D> close = get_theme_icon("close");
 		minsize.x += sep + close->get_width();
@@ -412,6 +469,8 @@ void GraphNode::set_title(const String &p_title) {
 		return;
 	}
 	title = p_title;
+	_shape();
+
 	update();
 	_change_notify("title");
 	minimum_size_changed();
@@ -421,14 +480,62 @@ String GraphNode::get_title() const {
 	return title;
 }
 
-void GraphNode::set_offset(const Vector2 &p_offset) {
-	offset = p_offset;
-	emit_signal("offset_changed");
+void GraphNode::set_text_direction(Control::TextDirection p_text_direction) {
+	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
+	if (text_direction != p_text_direction) {
+		text_direction = p_text_direction;
+		_shape();
+		update();
+	}
+}
+
+Control::TextDirection GraphNode::get_text_direction() const {
+	return text_direction;
+}
+
+void GraphNode::clear_opentype_features() {
+	opentype_features.clear();
+	_shape();
 	update();
 }
 
-Vector2 GraphNode::get_offset() const {
-	return offset;
+void GraphNode::set_opentype_feature(const String &p_name, int p_value) {
+	int32_t tag = TS->name_to_tag(p_name);
+	if (!opentype_features.has(tag) || (int)opentype_features[tag] != p_value) {
+		opentype_features[tag] = p_value;
+		_shape();
+		update();
+	}
+}
+
+int GraphNode::get_opentype_feature(const String &p_name) const {
+	int32_t tag = TS->name_to_tag(p_name);
+	if (!opentype_features.has(tag)) {
+		return -1;
+	}
+	return opentype_features[tag];
+}
+
+void GraphNode::set_language(const String &p_language) {
+	if (language != p_language) {
+		language = p_language;
+		_shape();
+		update();
+	}
+}
+
+String GraphNode::get_language() const {
+	return language;
+}
+
+void GraphNode::set_position_offset(const Vector2 &p_offset) {
+	position_offset = p_offset;
+	emit_signal("position_offset_changed");
+	update();
+}
+
+Vector2 GraphNode::get_position_offset() const {
+	return position_offset;
 }
 
 void GraphNode::set_selected(bool p_selected) {
@@ -442,9 +549,9 @@ bool GraphNode::is_selected() {
 
 void GraphNode::set_drag(bool p_drag) {
 	if (p_drag) {
-		drag_from = get_offset();
+		drag_from = get_position_offset();
 	} else {
-		emit_signal("dragged", drag_from, get_offset()); //useful for undo/redo
+		emit_signal("dragged", drag_from, get_position_offset()); //useful for undo/redo
 	}
 }
 
@@ -483,7 +590,7 @@ void GraphNode::_connpos_update() {
 
 		Size2i size = c->get_combined_minimum_size();
 
-		int y = sb->get_margin(MARGIN_TOP) + vofs;
+		int y = sb->get_margin(SIDE_TOP) + vofs;
 		int h = size.y;
 
 		if (slot_info.has(idx)) {
@@ -660,6 +767,14 @@ bool GraphNode::is_resizable() const {
 void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &GraphNode::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &GraphNode::get_title);
+	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &GraphNode::set_text_direction);
+	ClassDB::bind_method(D_METHOD("get_text_direction"), &GraphNode::get_text_direction);
+	ClassDB::bind_method(D_METHOD("set_opentype_feature", "tag", "value"), &GraphNode::set_opentype_feature);
+	ClassDB::bind_method(D_METHOD("get_opentype_feature", "tag"), &GraphNode::get_opentype_feature);
+	ClassDB::bind_method(D_METHOD("clear_opentype_features"), &GraphNode::clear_opentype_features);
+	ClassDB::bind_method(D_METHOD("set_language", "language"), &GraphNode::set_language);
+	ClassDB::bind_method(D_METHOD("get_language"), &GraphNode::get_language);
+
 	ClassDB::bind_method(D_METHOD("_gui_input"), &GraphNode::_gui_input);
 
 	ClassDB::bind_method(D_METHOD("set_slot", "idx", "enable_left", "type_left", "color_left", "enable_right", "type_right", "color_right", "custom_left", "custom_right"), &GraphNode::set_slot, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()));
@@ -672,8 +787,8 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_slot_type_right", "idx"), &GraphNode::get_slot_type_right);
 	ClassDB::bind_method(D_METHOD("get_slot_color_right", "idx"), &GraphNode::get_slot_color_right);
 
-	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &GraphNode::set_offset);
-	ClassDB::bind_method(D_METHOD("get_offset"), &GraphNode::get_offset);
+	ClassDB::bind_method(D_METHOD("set_position_offset", "offset"), &GraphNode::set_position_offset);
+	ClassDB::bind_method(D_METHOD("get_position_offset"), &GraphNode::get_position_offset);
 
 	ClassDB::bind_method(D_METHOD("set_comment", "comment"), &GraphNode::set_comment);
 	ClassDB::bind_method(D_METHOD("is_comment"), &GraphNode::is_comment);
@@ -701,14 +816,16 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_overlay"), &GraphNode::get_overlay);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,LTR,RTL,Inherited"), "set_text_direction", "get_text_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language"), "set_language", "get_language");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position_offset"), "set_position_offset", "get_position_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_close"), "set_show_close_button", "is_close_button_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resizable"), "set_resizable", "is_resizable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selected"), "set_selected", "is_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "comment"), "set_comment", "is_comment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "overlay", PROPERTY_HINT_ENUM, "Disabled,Breakpoint,Position"), "set_overlay", "get_overlay");
 
-	ADD_SIGNAL(MethodInfo("offset_changed"));
+	ADD_SIGNAL(MethodInfo("position_offset_changed"));
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
 	ADD_SIGNAL(MethodInfo("raise_request"));
 	ADD_SIGNAL(MethodInfo("close_request"));
@@ -720,6 +837,7 @@ void GraphNode::_bind_methods() {
 }
 
 GraphNode::GraphNode() {
+	title_buf.instance();
 	overlay = OVERLAY_DISABLED;
 	show_close = false;
 	connpos_dirty = true;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -224,6 +224,7 @@ void Path3DGizmo::redraw() {
 	Ref<StandardMaterial3D> path_material = gizmo_plugin->get_material("path_material", this);
 	Ref<StandardMaterial3D> path_thin_material = gizmo_plugin->get_material("path_thin_material", this);
 	Ref<StandardMaterial3D> handles_material = gizmo_plugin->get_material("handles");
+	Ref<StandardMaterial3D> sec_handles_material = gizmo_plugin->get_material("sec_handles");
 
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
@@ -281,7 +282,7 @@ void Path3DGizmo::redraw() {
 			add_handles(handles, handles_material);
 		}
 		if (sec_handles.size()) {
-			add_handles(sec_handles, handles_material, false, true);
+			add_handles(sec_handles, sec_handles_material, false, true);
 		}
 	}
 }
@@ -289,6 +290,8 @@ void Path3DGizmo::redraw() {
 Path3DGizmo::Path3DGizmo(Path3D *p_path) {
 	path = p_path;
 	set_spatial_node(p_path);
+	orig_in_length = 0;
+	orig_out_length = 0;
 }
 
 bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
@@ -606,7 +609,7 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	curve_edit->set_pressed(true);
 	/*
     collision_polygon_editor = memnew( PathEditor(p_node) );
-    editor->get_viewport()->add_child(collision_polygon_editor);
+    editor->get_main_control()->add_child(collision_polygon_editor);
     collision_polygon_editor->set_margin(MARGIN_LEFT,200);
     collision_polygon_editor->set_margin(MARGIN_RIGHT,230);
     collision_polygon_editor->set_margin(MARGIN_TOP,0);
@@ -629,7 +632,7 @@ Ref<EditorNode3DGizmo> Path3DGizmoPlugin::create_gizmo(Node3D *p_spatial) {
 	return ref;
 }
 
-String Path3DGizmoPlugin::get_name() const {
+String Path3DGizmoPlugin::get_gizmo_name() const {
 	return "Path3D";
 }
 
@@ -641,5 +644,6 @@ Path3DGizmoPlugin::Path3DGizmoPlugin() {
 	Color path_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/path", Color(0.5, 0.5, 1.0, 0.8));
 	create_material("path_material", path_color);
 	create_material("path_thin_material", Color(0.5, 0.5, 0.5));
-	create_handle_material("handles");
+	create_handle_material("handles", false, Node3DEditor::get_singleton()->get_theme_icon("EditorPathSmoothHandle", "EditorIcons"));
+	create_handle_material("sec_handles", false, Node3DEditor::get_singleton()->get_theme_icon("EditorCurveHandle", "EditorIcons"));
 }

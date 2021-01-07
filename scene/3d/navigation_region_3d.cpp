@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -182,6 +182,7 @@ void NavigationRegion3D::bake_navigation_mesh() {
 void NavigationRegion3D::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
 	set_navigation_mesh(p_nav_mesh);
 	bake_thread = nullptr;
+	emit_signal("bake_finished");
 }
 
 String NavigationRegion3D::get_configuration_warning() const {
@@ -192,7 +193,7 @@ String NavigationRegion3D::get_configuration_warning() const {
 	String warning = Node3D::get_configuration_warning();
 
 	if (!navmesh.is_valid()) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("A NavigationMesh resource must be set or created for this node to work.");
@@ -207,7 +208,7 @@ String NavigationRegion3D::get_configuration_warning() const {
 		c = Object::cast_to<Node3D>(c->get_parent());
 	}
 
-	if (!warning.empty()) {
+	if (!warning.is_empty()) {
 		warning += "\n\n";
 	}
 	return warning + TTR("NavigationRegion3D must be a child or grandchild to a Navigation3D node. It only provides navigation data.");

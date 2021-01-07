@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 
 #include "editor_settings.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/compression.h"
 #include "core/io/config_file.h"
@@ -42,7 +43,6 @@
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "core/version.h"
 #include "editor/doc_translations.gen.h"
 #include "editor/editor_node.h"
@@ -158,10 +158,10 @@ void EditorSettings::_initial_set(const StringName &p_name, const Variant &p_val
 
 struct _EVCSort {
 	String name;
-	Variant::Type type;
-	int order;
-	bool save;
-	bool restart_if_changed;
+	Variant::Type type = Variant::Type::NIL;
+	int order = 0;
+	bool save = false;
+	bool restart_if_changed = false;
 
 	bool operator<(const _EVCSort &p_vcs) const { return order < p_vcs.order; }
 };
@@ -262,13 +262,30 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		String host_lang = OS::get_singleton()->get_locale();
 		host_lang = TranslationServer::standardize_locale(host_lang);
 
-		// Some locales are not properly supported currently in Godot due to lack of font shaping
-		// (e.g. Arabic or Hindi), so even though we have work in progress translations for them,
-		// we skip them as they don't render properly. (GH-28577)
-		const Vector<String> locales_to_skip = String("ar,bn,fa,he,hi,ml,si,ta,te,ur").split(",");
+		// Skip locales if Text server lack required features.
+		Vector<String> locales_to_skip;
+		if (!TS->has_feature(TextServer::FEATURE_BIDI_LAYOUT) || !TS->has_feature(TextServer::FEATURE_SHAPING)) {
+			locales_to_skip.push_back("ar"); // Arabic
+			locales_to_skip.push_back("fa"); // Persian
+			locales_to_skip.push_back("ur"); // Urdu
+		}
+		if (!TS->has_feature(TextServer::FEATURE_BIDI_LAYOUT)) {
+			locales_to_skip.push_back("he"); // Hebrew
+		}
+		if (!TS->has_feature(TextServer::FEATURE_SHAPING)) {
+			locales_to_skip.push_back("bn"); // Bengali
+			locales_to_skip.push_back("hi"); // Hindi
+			locales_to_skip.push_back("ml"); // Malayalam
+			locales_to_skip.push_back("si"); // Sinhala
+			locales_to_skip.push_back("ta"); // Tamil
+			locales_to_skip.push_back("te"); // Telugu
+		}
+
+		if (!locales_to_skip.is_empty()) {
+			WARN_PRINT("Some locales are not properly supported by selected Text Server and are disabled.");
+		}
 
 		String best;
-
 		EditorTranslationList *etl = _editor_translations;
 
 		while (etl->data) {
@@ -316,6 +333,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/editor/main_font_size"] = PropertyInfo(Variant::INT, "interface/editor/main_font_size", PROPERTY_HINT_RANGE, "8,48,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/code_font_size", 14);
 	hints["interface/editor/code_font_size"] = PropertyInfo(Variant::INT, "interface/editor/code_font_size", PROPERTY_HINT_RANGE, "8,48,1", PROPERTY_USAGE_DEFAULT);
+	_initial_set("interface/editor/code_font_contextual_ligatures", 0);
+	hints["interface/editor/code_font_contextual_ligatures"] = PropertyInfo(Variant::INT, "interface/editor/code_font_contextual_ligatures", PROPERTY_HINT_ENUM, "Default,Disable contextual alternates (coding ligatures),Use custom OpenType feature set", PROPERTY_USAGE_DEFAULT);
+	_initial_set("interface/editor/code_font_custom_opentype_features", "");
+	_initial_set("interface/editor/code_font_custom_variations", "");
 	_initial_set("interface/editor/font_antialiased", true);
 	_initial_set("interface/editor/font_hinting", 0);
 	hints["interface/editor/font_hinting"] = PropertyInfo(Variant::INT, "interface/editor/font_hinting", PROPERTY_HINT_ENUM, "Auto,None,Light,Normal", PROPERTY_USAGE_DEFAULT);
@@ -386,15 +407,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["filesystem/file_dialog/display_mode"] = PropertyInfo(Variant::INT, "filesystem/file_dialog/display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
 	_initial_set("filesystem/file_dialog/thumbnail_size", 64);
 	hints["filesystem/file_dialog/thumbnail_size"] = PropertyInfo(Variant::INT, "filesystem/file_dialog/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
-
-	// Import
-	_initial_set("filesystem/import/pvrtc_texture_tool", "");
-#ifdef WINDOWS_ENABLED
-	hints["filesystem/import/pvrtc_texture_tool"] = PropertyInfo(Variant::STRING, "filesystem/import/pvrtc_texture_tool", PROPERTY_HINT_GLOBAL_FILE, "*.exe");
-#else
-	hints["filesystem/import/pvrtc_texture_tool"] = PropertyInfo(Variant::STRING, "filesystem/import/pvrtc_texture_tool", PROPERTY_HINT_GLOBAL_FILE, "");
-#endif
-	_initial_set("filesystem/import/pvrtc_fast_conversion", false);
 
 	/* Docks */
 
@@ -509,8 +521,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/3d/secondary_grid_color", Color(0.38, 0.38, 0.38, 0.5));
 	hints["editors/3d/secondary_grid_color"] = PropertyInfo(Variant::COLOR, "editors/3d/secondary_grid_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 
+	// Use a similar color to the 2D editor selection.
+	_initial_set("editors/3d/selection_box_color", Color(1.0, 0.5, 0));
+	hints["editors/3d/selection_box_color"] = PropertyInfo(Variant::COLOR, "editors/3d/selection_box_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+
 	// If a line is a multiple of this, it uses the primary grid color.
-	_initial_set("editors/3d/primary_grid_steps", 10);
+	// Use a power of 2 value by default as it's more common to use powers of 2 in level design.
+	_initial_set("editors/3d/primary_grid_steps", 8);
 	hints["editors/3d/primary_grid_steps"] = PropertyInfo(Variant::INT, "editors/3d/primary_grid_steps", PROPERTY_HINT_RANGE, "1,100,1", PROPERTY_USAGE_DEFAULT);
 
 	// At 1000, the grid mostly looks like it has no edge.
@@ -536,9 +553,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/3d/grid_xy_plane", false);
 	_initial_set("editors/3d/grid_yz_plane", false);
 
+	// Use a lower default FOV for the 3D camera compared to the
+	// Camera3D node as the 3D viewport doesn't span the whole screen.
+	// This means it's technically viewed from a further distance, which warrants a narrower FOV.
 	_initial_set("editors/3d/default_fov", 70.0);
+	hints["editors/3d/default_fov"] = PropertyInfo(Variant::FLOAT, "editors/3d/default_fov", PROPERTY_HINT_RANGE, "1,179,0.1");
 	_initial_set("editors/3d/default_z_near", 0.05);
-	_initial_set("editors/3d/default_z_far", 500.0);
+	hints["editors/3d/default_z_near"] = PropertyInfo(Variant::FLOAT, "editors/3d/default_z_near", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater");
+	_initial_set("editors/3d/default_z_far", 4000.0);
+	hints["editors/3d/default_z_far"] = PropertyInfo(Variant::FLOAT, "editors/3d/default_z_far", PROPERTY_HINT_RANGE, "0.1,4000,0.1,or_greater");
 
 	// 3D: Navigation
 	_initial_set("editors/3d/navigation/navigation_scheme", 0);
@@ -609,6 +632,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Animation
 	_initial_set("editors/animation/autorename_animation_tracks", true);
 	_initial_set("editors/animation/confirm_insert_track", true);
+	_initial_set("editors/animation/default_create_bezier_tracks", false);
+	_initial_set("editors/animation/default_create_reset_tracks", true);
 	_initial_set("editors/animation/onion_layers_past_color", Color(1, 0, 0));
 	_initial_set("editors/animation/onion_layers_future_color", Color(0, 1, 0));
 
@@ -1455,7 +1480,7 @@ bool EditorSettings::is_default_text_editor_theme() {
 Vector<String> EditorSettings::get_script_templates(const String &p_extension, const String &p_custom_path) {
 	Vector<String> templates;
 	String template_dir = get_script_templates_dir();
-	if (!p_custom_path.empty()) {
+	if (!p_custom_path.is_empty()) {
 		template_dir = p_custom_path;
 	}
 	DirAccess *d = DirAccess::open(template_dir);
@@ -1517,11 +1542,6 @@ Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
 
 	return sc;
 }
-
-struct ShortcutMapping {
-	const char *path;
-	uint32_t keycode;
-};
 
 Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
 #ifdef OSX_ENABLED

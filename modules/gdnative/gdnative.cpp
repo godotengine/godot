@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 
 #include "gdnative.h"
 
-#include "core/global_constants.h"
+#include "core/config/project_settings.h"
+#include "core/core_constants.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #include "scene/main/scene_tree.h"
 
@@ -286,7 +286,7 @@ bool GDNative::initialize() {
 	}
 
 	String lib_path = library->get_current_library_path();
-	if (lib_path.empty()) {
+	if (lib_path.is_empty()) {
 		ERR_PRINT("No library set for this platform");
 		return false;
 	}

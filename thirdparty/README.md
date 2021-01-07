@@ -6,24 +6,6 @@ readability.
 Subcategories (`###` level) where needed are separated by a single empty line.
 
 
-## assimp
-
-- Upstream: http://github.com/assimp/assimp
-- Version: git (308db73d0b3c2d1870cd3e465eaa283692a4cf23, 2019)
-- License: BSD-3-Clause
-
-Files extracted from upstream source:
-
-- Run `cmake .` in root folder to generate files
-- `code/{CApi,Common,FBX,Material,PostProcessing}/`
-- `contrib/utf8cpp/source/`
-- `include/`
-- `revision.h`
-- `CREDITS` and `LICENSE` files
-- `rm -f code/Common/ZipArchiveIOSystem.cpp include/assimp/ZipArchiveIOSystem.h
-   include/assimp/irrXMLWrapper.h`
-
-
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
@@ -40,10 +22,8 @@ Files extracted from upstream source:
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
-- Version: git pre-2.90 (cd8cf7521cbb8b7808126a6adebd47bb83ea166a, 2020)
+- Version: 3.08 (df09fd9ed37e365ceae884ca7f620b61607dae2e, 2020)
 - License: zlib
-
-Important: Synced with a pre-release version of bullet 2.90 from the master branch.
 
 Files extracted from upstream source:
 
@@ -76,14 +56,10 @@ Files extracted from upstream source:
 
 ## doctest
 - Upstream: https://github.com/onqtam/doctest
-- Version: 1c8da00 (2.4.0)
+- Version: 8424be5 (2.4.1)
 - License: MIT
 
 Extracted from .zip provided. Extracted license and header only.
-
-Important: Some files have Godot-made changes.
-They are marked with `// -- GODOT start --` and `// -- GODOT end --`
-comments.
 
 ## enet
 
@@ -147,11 +123,17 @@ Use UI font variant if available, because it has tight vertical metrics and good
 - Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
 - License: Apache 2.0
 
+### Tamsyn
+- Upstream: http://www.fial.com/~scott/tamsyn-font/
+- Version: 1.11
+- License: Tamsyn
+
+Extracted "0..9,A..F" characters for hex code printing.
 
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.10.2 (2020)
+- Version: 2.10.4 (2020)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -164,7 +146,7 @@ Files extracted from upstream source:
 ## glslang
 
 - Upstream: https://github.com/KhronosGroup/glslang
-- Version: git (4fc7a33910fb8e40b970d160e1b38ab3f67fe0f3, 2020)
+- Version: git (dd69df7f3dac26362e10b0f38efb9e47990f7537, 2020)
 - License: glslang
 
 Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
@@ -173,13 +155,46 @@ good glslang commit: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blo
 
 Files extracted from upstream source:
 
-- `glslang`, `OGLCompilersDLL`, `SPIRV`
+- `glslang` (except `glslang/HLSL`), `OGLCompilersDLL`, `SPIRV`
+- `StandAlone/{DirStackFileIncluder.h,ResourceLimits.{cpp,h}}`
+- Run `cmake . && make` and copy generated `include/glslang/build_info.h`
+  to `glslang/build_info.h`
 - `LICENSE.txt`
-- Unnecessary files like `CMakeLists.txt`, `revision.template` and
-  `updateGrammar` removed.
+- Unnecessary files like `CMakeLists.txt` and `updateGrammar` removed.
 
-Patches in the `patches` directory should be re-applied after updates.
+## Graphite engine
 
+- Upstream: https://github.com/silnrsi/graphite
+- Version: 1.3.14
+- License: MPL-2.0
+
+Files extracted from upstream source:
+- the `include` folder
+- the `src` folder
+- `COPYING`, `ChangeLog`
+
+## HarfBuzz
+
+- Upstream: https://github.com/harfbuzz/harfbuzz
+- Version: 2.7.4
+- License: HarfBuzz
+
+Files extracted from upstream source:
+- the `src` folder
+- `AUTHORS`, `COPYING`, `NEWS`, `THANKS`
+
+## International Components for Unicode
+
+- Upstream: https://github.com/unicode-org/icu
+- Version: 68.2
+- License: Unicode
+
+Files extracted from upstream source:
+- the `common` folder
+- `APIChangeReport.md`, `LICENSE`
+
+Files generated from upstream source:
+- the `icudt68l.dat` built with the provided `godot_data.json` config file (see https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md for instructions)
 
 ## jpeg-compressor
 
@@ -304,7 +319,7 @@ changes are marked with `// -- GODOT --` comments.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.16.8 (2020)
+- Version: 2.16.9 (2020)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -320,6 +335,15 @@ File extracted from upstream release tarball:
 - Added 2 files `godot_core_mbedtls_platform.{c,h}` providing configuration
   for light bundling with core.
 
+
+## meshoptimizer
+
+- Upstream: https://github.com/zeux/meshoptimizer
+- Version: git (e4e43fe36e7a8705e602e7ca2f9fb795ded1d0b9, 2020)
+- License: MIT
+
+- File extracted from upstream tarball:
+- All files in `src/`.
 
 ## miniupnpc
 
@@ -376,7 +400,7 @@ Collection of single-file libraries used in Godot components.
   * License: Apache 2.0
 - `open-simplex-noise.{c,h}`
   * Upstream: https://github.com/smcameron/open-simplex-noise-in-c
-  * Version: git (0d555e7f40527d0870906fe9469a3b1bb4020b7f, 2015) + custom changes
+  * Version: git (826f1dd1724e6fb3ff45f58e48c0fbae864c3403, 2020) + custom changes
   * License: Unlicense
 - `pcg.{cpp,h}`
   * Upstream: http://www.pcg-random.org
@@ -433,7 +457,7 @@ Collection of single-file libraries used in Godot components.
 ## nanosvg
 
 - Upstream: https://github.com/memononen/nanosvg
-- Version: git (25241c5a8f8451d41ab1b02ab2d865b01600d949, 2019)
+- Version: git (3e403ec72a9145cbbcc6c63d94a4caf079aafec2, 2020)
 - License: zlib
 
 Files extracted from the upstream source:
@@ -592,7 +616,7 @@ folder.
 ## vulkan
 
 - Upstream: https://github.com/KhronosGroup/Vulkan-Loader
-- Version: sdk-1.2.131.2 (2020)
+- Version: sdk-1.2.162.0 (2020)
 - License: Apache 2.0
 
 Unless there is a specific reason to package a more recent version, please stick
@@ -610,11 +634,10 @@ Files extracted from upstream source:
 
 `vk_enum_string_helper.h` is taken from the matching `Vulkan-ValidationLayers`
 SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
-Includes custom change to disable MSVC pragma, might be upstreamed via:
-https://github.com/KhronosGroup/Vulkan-ValidationLayers/pull/1666
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
 Version: 2.3.0 (2019)
+`vk_mem_alloc.cpp` and `android/vk_mem_alloc.cpp` are Godot files and should be preserved on updates.
 
 Patches in the `patches` directory should be re-applied after updates.
 
@@ -635,7 +658,7 @@ File extracted from upstream release tarball:
 ## xatlas
 
 - Upstream: https://github.com/jpcy/xatlas
-- Version: git (470576d3516f7e6d8b4554e7c941194a935969fd, 2020)
+- Version: git (5571fc7ef0d06832947c0a935ccdcf083f7a9264, 2020)
 - License: MIT
 
 Files extracted from upstream source:

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "settings_config_dialog.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
-#include "core/project_settings.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor_file_system.h"
 #include "editor_log.h"
@@ -275,8 +275,8 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		last_wait_for_key = Ref<InputEventKey>();
 		press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 		//press_a_key->grab_focus();
-		press_a_key->get_ok()->set_focus_mode(Control::FOCUS_NONE);
-		press_a_key->get_cancel()->set_focus_mode(Control::FOCUS_NONE);
+		press_a_key->get_ok_button()->set_focus_mode(Control::FOCUS_NONE);
+		press_a_key->get_cancel_button()->set_focus_mode(Control::FOCUS_NONE);
 		shortcut_configured = item;
 
 	} else if (p_idx == 1) { //erase
@@ -471,10 +471,10 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	Label *l = memnew(Label);
 	l->set_text(TTR("Press a Key..."));
-	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	l->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	l->set_align(Label::ALIGN_CENTER);
-	l->set_margin(MARGIN_TOP, 20);
-	l->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_BEGIN, 30);
+	l->set_offset(SIDE_TOP, 20);
+	l->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_BEGIN, 30);
 	press_a_key_label = l;
 	press_a_key->add_child(l);
 	press_a_key->connect("window_input", callable_mp(this, &EditorSettingsDialog::_wait_for_key));
@@ -488,7 +488,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	timer->set_one_shot(true);
 	add_child(timer);
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSettingsDialog::_settings_changed));
-	get_ok()->set_text(TTR("Close"));
+	get_ok_button()->set_text(TTR("Close"));
 
 	updating = false;
 }

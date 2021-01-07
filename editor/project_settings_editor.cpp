@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "project_settings_editor.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
@@ -98,7 +98,8 @@ void ProjectSettingsEditor::_add_setting() {
 	// Initialize the property with the default value for the given type.
 	// The type list starts at 1 (as we exclude Nil), so add 1 to the selected value.
 	Callable::CallError ce;
-	const Variant value = Variant::construct(Variant::Type(type->get_selected() + 1), nullptr, 0, ce);
+	Variant value;
+	Variant::construct(Variant::Type(type->get_selected() + 1), value, nullptr, 0, ce);
 
 	undo_redo->create_action(TTR("Add Project Setting"));
 	undo_redo->add_do_property(ps, setting, value);
@@ -155,7 +156,7 @@ void ProjectSettingsEditor::_update_advanced_bar() {
 	bool disable_add = true;
 	bool disable_del = true;
 
-	if (!property_box->get_text().empty()) {
+	if (!property_box->get_text().is_empty()) {
 		const String setting = _get_setting_name();
 		bool setting_exists = ps->has_setting(setting);
 		if (setting_exists) {
@@ -196,7 +197,7 @@ void ProjectSettingsEditor::_update_advanced_bar() {
 
 String ProjectSettingsEditor::_get_setting_name() const {
 	const String cat = category_box->get_text();
-	const String name = (cat.empty() ? "global" : cat.strip_edges()).plus_file(property_box->get_text().strip_edges());
+	const String name = (cat.is_empty() ? "global" : cat.strip_edges()).plus_file(property_box->get_text().strip_edges());
 	const String feature = feature_override->get_item_text(feature_override->get_selected());
 
 	return (feature == "") ? name : (name + "." + feature);
@@ -477,6 +478,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	del_confirmation->connect("confirmed", callable_mp(this, &ProjectSettingsEditor::_delete_setting), varray(true));
 	add_child(del_confirmation);
 
-	get_ok()->set_text(TTR("Close"));
+	get_ok_button()->set_text(TTR("Close"));
 	set_hide_on_ok(true);
 }

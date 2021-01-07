@@ -48,6 +48,9 @@
 		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
 			The [CheckBox] text's font color when it's pressed.
 		</theme_item>
+		<theme_item name="font_size" type="int">
+			Font size of the [CheckBox]'s text.
+		</theme_item>
 		<theme_item name="hover" type="StyleBox">
 			The [StyleBox] to display as a background when the [CheckBox] is hovered.
 		</theme_item>

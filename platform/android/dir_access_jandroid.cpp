@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "dir_access_jandroid.h"
-#include "core/print_string.h"
-#include "file_access_jandroid.h"
+#include "core/string/print_string.h"
+#include "file_access_android.h"
 #include "string_android.h"
 #include "thread_jandroid.h"
 
@@ -146,7 +146,7 @@ bool DirAccessJAndroid::file_exists(String p_file) {
 	else
 		sd = current_dir.plus_file(p_file);
 
-	FileAccessJAndroid *f = memnew(FileAccessJAndroid);
+	FileAccessAndroid *f = memnew(FileAccessAndroid);
 	bool exists = f->file_exists(sd);
 	memdelete(f);
 

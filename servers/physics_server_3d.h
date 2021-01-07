@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef PHYSICS_SERVER_H
 #define PHYSICS_SERVER_H
 
-#include "core/object.h"
-#include "core/resource.h"
+#include "core/io/resource.h"
+#include "core/object/class_db.h"
 
 class PhysicsDirectSpaceState3D;
 
@@ -259,7 +259,6 @@ public:
 	virtual bool space_is_active(RID p_space) const = 0;
 
 	enum SpaceParameter {
-
 		SPACE_PARAM_CONTACT_RECYCLE_RADIUS,
 		SPACE_PARAM_CONTACT_MAX_SEPARATION,
 		SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION,
@@ -578,7 +577,6 @@ public:
 	/* JOINT API */
 
 	enum JointType {
-
 		JOINT_PIN,
 		JOINT_HINGE,
 		JOINT_SLIDER,
@@ -613,7 +611,6 @@ public:
 	virtual Vector3 pin_joint_get_local_b(RID p_joint) const = 0;
 
 	enum HingeJointParam {
-
 		HINGE_JOINT_BIAS,
 		HINGE_JOINT_LIMIT_UPPER,
 		HINGE_JOINT_LIMIT_LOWER,
@@ -714,7 +711,6 @@ public:
 	};
 
 	enum G6DOFJointAxisFlag {
-
 		G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT,
 		G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT,
 		G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING,
@@ -732,9 +728,6 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) = 0;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) = 0;
 
-	virtual void generic_6dof_joint_set_precision(RID p_joint, int precision) = 0;
-	virtual int generic_6dof_joint_get_precision(RID p_joint) = 0;
-
 	/* QUERY API */
 
 	enum AreaBodyStatus {
@@ -749,14 +742,12 @@ public:
 	virtual void set_active(bool p_active) = 0;
 	virtual void init() = 0;
 	virtual void step(float p_step) = 0;
-	virtual void sync() = 0;
 	virtual void flush_queries() = 0;
 	virtual void finish() = 0;
 
 	virtual bool is_flushing_queries() const = 0;
 
 	enum ProcessInfo {
-
 		INFO_ACTIVE_OBJECTS,
 		INFO_COLLISION_PAIRS,
 		INFO_ISLAND_COUNT

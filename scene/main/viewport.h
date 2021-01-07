@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -142,6 +142,7 @@ public:
 		DEBUG_DRAW_SDFGI,
 		DEBUG_DRAW_SDFGI_PROBES,
 		DEBUG_DRAW_GI_BUFFER,
+		DEBUG_DRAW_DISABLE_LOD,
 	};
 
 	enum DefaultCanvasItemTextureFilter {
@@ -157,6 +158,21 @@ public:
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED,
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR,
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX,
+	};
+
+	enum SDFOversize {
+		SDF_OVERSIZE_100_PERCENT,
+		SDF_OVERSIZE_120_PERCENT,
+		SDF_OVERSIZE_150_PERCENT,
+		SDF_OVERSIZE_200_PERCENT,
+		SDF_OVERSIZE_MAX
+	};
+
+	enum SDFScale {
+		SDF_SCALE_100_PERCENT,
+		SDF_SCALE_50_PERCENT,
+		SDF_SCALE_25_PERCENT,
+		SDF_SCALE_MAX
 	};
 
 	enum {
@@ -225,6 +241,8 @@ private:
 	bool gen_mipmaps;
 
 	bool snap_controls_to_pixels;
+	bool snap_2d_transforms_to_pixel;
+	bool snap_2d_vertices_to_pixel;
 
 	bool physics_object_picking;
 	List<Ref<InputEvent>> physics_picking_events;
@@ -279,8 +297,14 @@ private:
 
 	MSAA msaa;
 	ScreenSpaceAA screen_space_aa;
+	bool use_debanding = false;
+	float lod_threshold = 1.0;
+
 	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture *> viewport_textures;
+
+	SDFOversize sdf_oversize;
+	SDFScale sdf_scale;
 
 	enum SubWindowDrag {
 		SUB_WINDOW_DRAG_DISABLED,
@@ -320,7 +344,7 @@ private:
 		Control *mouse_over;
 		Control *drag_mouse_over;
 		Vector2 drag_mouse_over_pos;
-		Control *tooltip;
+		Control *tooltip_control;
 		Window *tooltip_popup;
 		Label *tooltip_label;
 		Point2 tooltip_pos;
@@ -356,9 +380,6 @@ private:
 	DefaultCanvasItemTextureFilter default_canvas_item_texture_filter;
 	DefaultCanvasItemTextureRepeat default_canvas_item_texture_repeat;
 
-	void _propagate_update_default_filter(Node *p_node);
-	void _propagate_update_default_repeat(Node *p_node);
-
 	bool disable_input;
 
 	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
@@ -382,7 +403,7 @@ private:
 
 	void _gui_remove_root_control(List<Control *>::Element *RI);
 
-	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_which = nullptr);
+	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_tooltip_owner = nullptr);
 	void _gui_cancel_tooltip();
 	void _gui_show_tooltip();
 
@@ -521,6 +542,12 @@ public:
 	void set_screen_space_aa(ScreenSpaceAA p_screen_space_aa);
 	ScreenSpaceAA get_screen_space_aa() const;
 
+	void set_use_debanding(bool p_use_debanding);
+	bool is_using_debanding() const;
+
+	void set_lod_threshold(float p_pixels);
+	float get_lod_threshold() const;
+
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
 
@@ -555,6 +582,12 @@ public:
 	void set_snap_controls_to_pixels(bool p_enable);
 	bool is_snap_controls_to_pixels_enabled() const;
 
+	void set_snap_2d_transforms_to_pixel(bool p_enable);
+	bool is_snap_2d_transforms_to_pixel_enabled() const;
+
+	void set_snap_2d_vertices_to_pixel(bool p_enable);
+	bool is_snap_2d_vertices_to_pixel_enabled() const;
+
 	void set_input_as_handled();
 	bool is_input_handled() const;
 
@@ -562,6 +595,12 @@ public:
 	bool is_handling_input_locally() const;
 
 	bool gui_is_dragging() const;
+
+	void set_sdf_oversize(SDFOversize p_sdf_oversize);
+	SDFOversize get_sdf_oversize() const;
+
+	void set_sdf_scale(SDFScale p_sdf_scale);
+	SDFScale get_sdf_scale() const;
 
 	void set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFilter p_filter);
 	DefaultCanvasItemTextureFilter get_default_canvas_item_texture_filter() const;
@@ -589,10 +628,9 @@ class SubViewport : public Viewport {
 
 public:
 	enum ClearMode {
-
 		CLEAR_MODE_ALWAYS,
 		CLEAR_MODE_NEVER,
-		CLEAR_MODE_ONLY_NEXT_FRAME
+		CLEAR_MODE_ONCE
 	};
 
 	enum UpdateMode {
@@ -642,6 +680,8 @@ VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
 VARIANT_ENUM_CAST(Viewport::ScreenSpaceAA);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);
+VARIANT_ENUM_CAST(Viewport::SDFScale);
+VARIANT_ENUM_CAST(Viewport::SDFOversize);
 VARIANT_ENUM_CAST(SubViewport::ClearMode);
 VARIANT_ENUM_CAST(Viewport::RenderInfo);
 VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureFilter);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,9 +32,9 @@
 
 #include "bullet_utilities.h"
 #include "cone_twist_joint_bullet.h"
-#include "core/class_db.h"
-#include "core/error_macros.h"
-#include "core/ustring.h"
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
 #include "generic_6dof_joint_bullet.h"
 #include "hinge_joint_bullet.h"
 #include "pin_joint_bullet.h"
@@ -1463,22 +1463,6 @@ bool BulletPhysicsServer3D::generic_6dof_joint_get_flag(RID p_joint, Vector3::Ax
 	return generic_6dof_joint->get_flag(p_axis, p_flag);
 }
 
-void BulletPhysicsServer3D::generic_6dof_joint_set_precision(RID p_joint, int p_precision) {
-	JointBullet *joint = joint_owner.getornull(p_joint);
-	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_6DOF);
-	Generic6DOFJointBullet *generic_6dof_joint = static_cast<Generic6DOFJointBullet *>(joint);
-	generic_6dof_joint->set_precision(p_precision);
-}
-
-int BulletPhysicsServer3D::generic_6dof_joint_get_precision(RID p_joint) {
-	JointBullet *joint = joint_owner.getornull(p_joint);
-	ERR_FAIL_COND_V(!joint, 0);
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_6DOF, 0);
-	Generic6DOFJointBullet *generic_6dof_joint = static_cast<Generic6DOFJointBullet *>(joint);
-	return generic_6dof_joint->get_precision();
-}
-
 void BulletPhysicsServer3D::free(RID p_rid) {
 	if (shape_owner.owns(p_rid)) {
 		ShapeBullet *shape = shape_owner.getornull(p_rid);
@@ -1551,9 +1535,6 @@ void BulletPhysicsServer3D::step(float p_deltaTime) {
 	for (int i = 0; i < active_spaces_count; ++i) {
 		active_spaces[i]->step(p_deltaTime);
 	}
-}
-
-void BulletPhysicsServer3D::sync() {
 }
 
 void BulletPhysicsServer3D::flush_queries() {

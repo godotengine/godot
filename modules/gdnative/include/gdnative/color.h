@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,8 +92,6 @@ godot_int GDAPI godot_color_to_rgba64(const godot_color *p_self);
 godot_int GDAPI godot_color_to_argb32(const godot_color *p_self);
 
 godot_color GDAPI godot_color_inverted(const godot_color *p_self);
-
-godot_color GDAPI godot_color_contrasted(const godot_color *p_self);
 
 godot_color GDAPI godot_color_lerp(const godot_color *p_self, const godot_color *p_b, const godot_real p_t);
 

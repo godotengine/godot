@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -96,10 +96,10 @@ class InspectorDock : public VBoxContainer {
 	void _load_resource(const String &p_type = "");
 	void _open_resource_selector() { _load_resource(); }; // just used to call from arg-less signal
 	void _resource_file_selected(String p_file);
-	void _save_resource(bool save_as) const;
-	void _unref_resource() const;
-	void _copy_resource() const;
-	void _paste_resource() const;
+	void _save_resource(bool save_as);
+	void _unref_resource();
+	void _copy_resource();
+	void _paste_resource();
 
 	void _warning_pressed();
 	void _resource_created();

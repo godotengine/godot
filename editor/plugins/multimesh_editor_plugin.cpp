@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -337,7 +337,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	vbc->add_margin_child(TTR("Scale:"), populate_scale);
 
 	populate_amount = memnew(SpinBox);
-	populate_amount->set_anchor(MARGIN_RIGHT, ANCHOR_END);
+	populate_amount->set_anchor(SIDE_RIGHT, ANCHOR_END);
 	populate_amount->set_begin(Point2(20, 232));
 	populate_amount->set_end(Point2(-5, 237));
 	populate_amount->set_min(1);
@@ -345,9 +345,9 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_amount->set_value(128);
 	vbc->add_margin_child(TTR("Amount:"), populate_amount);
 
-	populate_dialog->get_ok()->set_text(TTR("Populate"));
+	populate_dialog->get_ok_button()->set_text(TTR("Populate"));
 
-	populate_dialog->get_ok()->connect("pressed", callable_mp(this, &MultiMeshEditor::_populate));
+	populate_dialog->get_ok_button()->connect("pressed", callable_mp(this, &MultiMeshEditor::_populate));
 	std = memnew(SceneTreeDialog);
 	populate_dialog->add_child(std);
 	std->connect("selected", callable_mp(this, &MultiMeshEditor::_browsed));
@@ -378,7 +378,7 @@ void MultiMeshEditorPlugin::make_visible(bool p_visible) {
 MultiMeshEditorPlugin::MultiMeshEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	multimesh_editor = memnew(MultiMeshEditor);
-	editor->get_viewport()->add_child(multimesh_editor);
+	editor->get_main_control()->add_child(multimesh_editor);
 
 	multimesh_editor->options->hide();
 }

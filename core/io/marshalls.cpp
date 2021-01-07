@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "marshalls.h"
 
+#include "core/object/reference.h"
 #include "core/os/keyboard.h"
-#include "core/print_string.h"
-#include "core/reference.h"
+#include "core/string/print_string.h"
 
 #include <limits.h>
 #include <stdio.h>
@@ -420,7 +420,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::_RID: {
+		case Variant::RID: {
 			r_variant = RID();
 		} break;
 		case Variant::OBJECT: {
@@ -1003,10 +1003,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 		} break;
-		case Variant::STRING: {
-			_encode_string(p_variant, buf, r_len);
-
-		} break;
+		case Variant::STRING:
 		case Variant::STRING_NAME: {
 			_encode_string(p_variant, buf, r_len);
 
@@ -1172,7 +1169,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 * 4;
 
 		} break;
-		case Variant::_RID: {
+		case Variant::RID: {
 		} break;
 		case Variant::CALLABLE: {
 		} break;

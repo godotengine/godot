@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,116 +37,32 @@
 #include "core/io/json.h"
 #include "emscripten.h"
 
-extern "C" {
-EMSCRIPTEN_KEEPALIVE void _emrtc_on_ice_candidate(void *obj, char *p_MidName, int p_MlineIndexName, char *p_sdpName) {
-	WebRTCPeerConnectionJS *peer = static_cast<WebRTCPeerConnectionJS *>(obj);
-	peer->emit_signal("ice_candidate_created", String(p_MidName), p_MlineIndexName, String(p_sdpName));
+void WebRTCPeerConnectionJS::_on_ice_candidate(void *p_obj, const char *p_mid_name, int p_mline_idx, const char *p_candidate) {
+	WebRTCPeerConnectionJS *peer = static_cast<WebRTCPeerConnectionJS *>(p_obj);
+	peer->emit_signal("ice_candidate_created", String(p_mid_name), p_mline_idx, String(p_candidate));
 }
 
-EMSCRIPTEN_KEEPALIVE void _emrtc_session_description_created(void *obj, char *p_type, char *p_offer) {
-	WebRTCPeerConnectionJS *peer = static_cast<WebRTCPeerConnectionJS *>(obj);
-	peer->emit_signal("session_description_created", String(p_type), String(p_offer));
+void WebRTCPeerConnectionJS::_on_session_created(void *p_obj, const char *p_type, const char *p_session) {
+	WebRTCPeerConnectionJS *peer = static_cast<WebRTCPeerConnectionJS *>(p_obj);
+	peer->emit_signal("session_description_created", String(p_type), String(p_session));
 }
 
-EMSCRIPTEN_KEEPALIVE void _emrtc_on_connection_state_changed(void *obj) {
-	WebRTCPeerConnectionJS *peer = static_cast<WebRTCPeerConnectionJS *>(obj);
-	peer->_on_connection_state_changed();
+void WebRTCPeerConnectionJS::_on_connection_state_changed(void *p_obj, int p_state) {
+	WebRTCPeerConnectionJS *peer = static_cast<WebRTCPeerConnectionJS *>(p_obj);
+	peer->_conn_state = (ConnectionState)p_state;
 }
 
-EMSCRIPTEN_KEEPALIVE void _emrtc_on_error() {
+void WebRTCPeerConnectionJS::_on_error(void *p_obj) {
 	ERR_PRINT("RTCPeerConnection error!");
 }
 
-EMSCRIPTEN_KEEPALIVE void _emrtc_emit_channel(void *obj, int p_id) {
-	WebRTCPeerConnectionJS *peer = static_cast<WebRTCPeerConnectionJS *>(obj);
+void WebRTCPeerConnectionJS::_on_data_channel(void *p_obj, int p_id) {
+	WebRTCPeerConnectionJS *peer = static_cast<WebRTCPeerConnectionJS *>(p_obj);
 	peer->emit_signal("data_channel_received", Ref<WebRTCDataChannelJS>(new WebRTCDataChannelJS(p_id)));
-}
-}
-
-void _emrtc_create_pc(int p_id, const Dictionary &p_config) {
-	String config = JSON::print(p_config);
-	/* clang-format off */
-	EM_ASM({
-		var dict = Module.IDHandler.get($0);
-		var c_ptr = dict["ptr"];
-		var config = JSON.parse(UTF8ToString($1));
-		// Setup local connaction
-		var conn = null;
-		try {
-			conn = new RTCPeerConnection(config);
-		} catch (e) {
-			console.log(e);
-			return;
-		}
-		conn.oniceconnectionstatechange = function(event) {
-			if (!Module.IDHandler.get($0)) return;
-			ccall("_emrtc_on_connection_state_changed", "void", ["number"], [c_ptr]);
-		};
-		conn.onicecandidate = function(event) {
-			if (!Module.IDHandler.get($0)) return;
-			if (!event.candidate) return;
-
-			var c = event.candidate;
-			// should emit on ice candidate
-			ccall("_emrtc_on_ice_candidate",
-				"void",
-				["number", "string", "number", "string"],
-				[c_ptr, c.sdpMid, c.sdpMLineIndex, c.candidate]
-			);
-		};
-		conn.ondatachannel = function (evt) {
-			var dict = Module.IDHandler.get($0);
-			if (!dict) {
-				return;
-			}
-			var id = Module.IDHandler.add({"channel": evt.channel, "ptr": null});
-			ccall("_emrtc_emit_channel",
-				"void",
-				["number", "number"],
-				[c_ptr, id]
-			);
-		};
-		dict["conn"] = conn;
-	}, p_id, config.utf8().get_data());
-	/* clang-format on */
-}
-
-void WebRTCPeerConnectionJS::_on_connection_state_changed() {
-	/* clang-format off */
-	_conn_state = (ConnectionState)EM_ASM_INT({
-		var dict = Module.IDHandler.get($0);
-		if (!dict) return 5; // CLOSED
-		var conn = dict["conn"];
-		switch(conn.iceConnectionState) {
-			case "new":
-				return 0;
-			case "checking":
-				return 1;
-			case "connected":
-			case "completed":
-				return 2;
-			case "disconnected":
-				return 3;
-			case "failed":
-				return 4;
-			case "closed":
-				return 5;
-		}
-		return 5; // CLOSED
-	}, _js_id);
-	/* clang-format on */
 }
 
 void WebRTCPeerConnectionJS::close() {
-	/* clang-format off */
-	EM_ASM({
-		var dict = Module.IDHandler.get($0);
-		if (!dict) return;
-		if (dict["conn"]) {
-			dict["conn"].close();
-		}
-	}, _js_id);
-	/* clang-format on */
+	godot_js_rtc_pc_close(_js_id);
 	_conn_state = STATE_CLOSED;
 }
 
@@ -154,46 +70,12 @@ Error WebRTCPeerConnectionJS::create_offer() {
 	ERR_FAIL_COND_V(_conn_state != STATE_NEW, FAILED);
 
 	_conn_state = STATE_CONNECTING;
-	/* clang-format off */
-	EM_ASM({
-		var dict = Module.IDHandler.get($0);
-		var conn = dict["conn"];
-		var c_ptr = dict["ptr"];
-		var onError = function(error) {
-			console.error(error);
-			ccall("_emrtc_on_error", "void", [], []);
-		};
-		var onCreated = function(offer) {
-			ccall("_emrtc_session_description_created",
-				"void",
-				["number", "string", "string"],
-				[c_ptr, offer.type, offer.sdp]
-			);
-		};
-		conn.createOffer().then(onCreated).catch(onError);
-	}, _js_id);
-	/* clang-format on */
+	godot_js_rtc_pc_offer_create(_js_id, this, &_on_session_created, &_on_error);
 	return OK;
 }
 
 Error WebRTCPeerConnectionJS::set_local_description(String type, String sdp) {
-	/* clang-format off */
-	EM_ASM({
-		var dict = Module.IDHandler.get($0);
-		var conn = dict["conn"];
-		var c_ptr = dict["ptr"];
-		var type = UTF8ToString($1);
-		var sdp = UTF8ToString($2);
-		var onError = function(error) {
-			console.error(error);
-			ccall("_emrtc_on_error", "void", [], []);
-		};
-		conn.setLocalDescription({
-			"sdp": sdp,
-			"type": type
-		}).catch(onError);
-	}, _js_id, type.utf8().get_data(), sdp.utf8().get_data());
-	/* clang-format on */
+	godot_js_rtc_pc_local_description_set(_js_id, type.utf8().get_data(), sdp.utf8().get_data(), this, &_on_error);
 	return OK;
 }
 
@@ -202,83 +84,32 @@ Error WebRTCPeerConnectionJS::set_remote_description(String type, String sdp) {
 		ERR_FAIL_COND_V(_conn_state != STATE_NEW, FAILED);
 		_conn_state = STATE_CONNECTING;
 	}
-	/* clang-format off */
-	EM_ASM({
-		var dict = Module.IDHandler.get($0);
-		var conn = dict["conn"];
-		var c_ptr = dict["ptr"];
-		var type = UTF8ToString($1);
-		var sdp = UTF8ToString($2);
-
-		var onError = function(error) {
-			console.error(error);
-			ccall("_emrtc_on_error", "void", [], []);
-		};
-		var onCreated = function(offer) {
-			ccall("_emrtc_session_description_created",
-				"void",
-				["number", "string", "string"],
-				[c_ptr, offer.type, offer.sdp]
-			);
-		};
-		var onSet = function() {
-			if (type != "offer") {
-				return;
-			}
-			conn.createAnswer().then(onCreated);
-		};
-		conn.setRemoteDescription({
-			"sdp": sdp,
-			"type": type
-		}).then(onSet).catch(onError);
-	}, _js_id, type.utf8().get_data(), sdp.utf8().get_data());
-	/* clang-format on */
+	godot_js_rtc_pc_remote_description_set(_js_id, type.utf8().get_data(), sdp.utf8().get_data(), this, &_on_session_created, &_on_error);
 	return OK;
 }
 
 Error WebRTCPeerConnectionJS::add_ice_candidate(String sdpMidName, int sdpMlineIndexName, String sdpName) {
-	/* clang-format off */
-	EM_ASM({
-		var dict = Module.IDHandler.get($0);
-		var conn = dict["conn"];
-		var c_ptr = dict["ptr"];
-		var sdpMidName = UTF8ToString($1);
-		var sdpMlineIndexName = UTF8ToString($2);
-		var sdpName = UTF8ToString($3);
-		conn.addIceCandidate(new RTCIceCandidate({
-			"candidate": sdpName,
-			"sdpMid": sdpMidName,
-			"sdpMlineIndex": sdpMlineIndexName
-		}));
-	}, _js_id, sdpMidName.utf8().get_data(), sdpMlineIndexName, sdpName.utf8().get_data());
-	/* clang-format on */
+	godot_js_rtc_pc_ice_candidate_add(_js_id, sdpMidName.utf8().get_data(), sdpMlineIndexName, sdpName.utf8().get_data());
 	return OK;
 }
 
 Error WebRTCPeerConnectionJS::initialize(Dictionary p_config) {
-	_emrtc_create_pc(_js_id, p_config);
-	return OK;
+	if (_js_id) {
+		godot_js_rtc_pc_destroy(_js_id);
+		_js_id = 0;
+	}
+	_conn_state = STATE_NEW;
+
+	String config = JSON::print(p_config);
+	_js_id = godot_js_rtc_pc_create(config.utf8().get_data(), this, &_on_connection_state_changed, &_on_ice_candidate, &_on_data_channel);
+	return _js_id ? OK : FAILED;
 }
 
 Ref<WebRTCDataChannel> WebRTCPeerConnectionJS::create_data_channel(String p_channel, Dictionary p_channel_config) {
+	ERR_FAIL_COND_V(_conn_state != STATE_NEW, nullptr);
+
 	String config = JSON::print(p_channel_config);
-	/* clang-format off */
-	int id = EM_ASM_INT({
-		try {
-			var dict = Module.IDHandler.get($0);
-			if (!dict) return 0;
-			var label = UTF8ToString($1);
-			var config = JSON.parse(UTF8ToString($2));
-			var conn = dict["conn"];
-			return Module.IDHandler.add({
-				"channel": conn.createDataChannel(label, config),
-				"ptr": null
-			})
-		} catch (e) {
-			return 0;
-		}
-	}, _js_id, p_channel.utf8().get_data(), config.utf8().get_data());
-	/* clang-format on */
+	int id = godot_js_rtc_pc_datachannel_create(_js_id, p_channel.utf8().get_data(), config.utf8().get_data());
 	ERR_FAIL_COND_V(id == 0, nullptr);
 	return memnew(WebRTCDataChannelJS(id));
 }
@@ -293,22 +124,17 @@ WebRTCPeerConnection::ConnectionState WebRTCPeerConnectionJS::get_connection_sta
 
 WebRTCPeerConnectionJS::WebRTCPeerConnectionJS() {
 	_conn_state = STATE_NEW;
+	_js_id = 0;
 
-	/* clang-format off */
-	_js_id = EM_ASM_INT({
-		return Module.IDHandler.add({"conn": null, "ptr": $0});
-	}, this);
-	/* clang-format on */
 	Dictionary config;
-	_emrtc_create_pc(_js_id, config);
+	initialize(config);
 }
 
 WebRTCPeerConnectionJS::~WebRTCPeerConnectionJS() {
 	close();
-	/* clang-format off */
-	EM_ASM({
-		Module.IDHandler.remove($0);
-	}, _js_id);
-	/* clang-format on */
+	if (_js_id) {
+		godot_js_rtc_pc_destroy(_js_id);
+		_js_id = 0;
+	}
 };
 #endif

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #import "godot_view.h"
 #include "core/os/keyboard.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 #import "display_layer.h"
 #include "display_server_iphone.h"
 #import "godot_view_gesture_recognizer.h"
@@ -42,7 +42,6 @@ static const int max_touches = 8;
 
 @interface GodotView () {
 	UITouch *godot_touches[max_touches];
-	String keyboard_text;
 }
 
 @property(assign, nonatomic) BOOL isActive;
@@ -277,40 +276,6 @@ static const int max_touches = 8;
 }
 
 // MARK: - Input
-
-// MARK: Keyboard
-
-- (BOOL)canBecomeFirstResponder {
-	return YES;
-}
-
-- (BOOL)becomeFirstResponderWithString:(String)p_existing {
-	keyboard_text = p_existing;
-	return [self becomeFirstResponder];
-}
-
-- (BOOL)resignFirstResponder {
-	keyboard_text = String();
-	return [super resignFirstResponder];
-}
-
-- (void)deleteBackward {
-	if (keyboard_text.length()) {
-		keyboard_text.erase(keyboard_text.length() - 1, 1);
-	}
-	DisplayServerIPhone::get_singleton()->key(KEY_BACKSPACE, true);
-}
-
-- (BOOL)hasText {
-	return keyboard_text.length() > 0;
-}
-
-- (void)insertText:(NSString *)p_text {
-	String character;
-	character.parse_utf8([p_text UTF8String]);
-	keyboard_text = keyboard_text + character;
-	DisplayServerIPhone::get_singleton()->key(character[0] == 10 ? KEY_ENTER : character[0], true);
-}
 
 // MARK: Touches
 

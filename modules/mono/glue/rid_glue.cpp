@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #ifdef MONO_GLUE_ENABLED
 
-#include "core/object.h"
-#include "core/resource.h"
-#include "core/rid.h"
+#include "core/io/resource.h"
+#include "core/object/class_db.h"
+#include "core/templates/rid.h"
 
 #include "../mono_gd/gd_mono_marshal.h"
 
@@ -56,9 +56,9 @@ uint32_t godot_icall_RID_get_id(RID *p_ptr) {
 }
 
 void godot_register_rid_icalls() {
-	mono_add_internal_call("Godot.RID::godot_icall_RID_Ctor", (void *)godot_icall_RID_Ctor);
-	mono_add_internal_call("Godot.RID::godot_icall_RID_Dtor", (void *)godot_icall_RID_Dtor);
-	mono_add_internal_call("Godot.RID::godot_icall_RID_get_id", (void *)godot_icall_RID_get_id);
+	GDMonoUtils::add_internal_call("Godot.RID::godot_icall_RID_Ctor", godot_icall_RID_Ctor);
+	GDMonoUtils::add_internal_call("Godot.RID::godot_icall_RID_Dtor", godot_icall_RID_Dtor);
+	GDMonoUtils::add_internal_call("Godot.RID::godot_icall_RID_get_id", godot_icall_RID_get_id);
 }
 
 #endif // MONO_GLUE_ENABLED

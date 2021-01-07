@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,8 +35,8 @@
 #ifndef NAVIGATION_2D_SERVER_H
 #define NAVIGATION_2D_SERVER_H
 
-#include "core/object.h"
-#include "core/rid.h"
+#include "core/object/class_db.h"
+#include "core/templates/rid.h"
 #include "scene/2d/navigation_region_2d.h"
 
 // This server exposes the `NavigationServer3D` features in the 2D world.

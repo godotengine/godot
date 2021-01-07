@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,10 +76,6 @@ class FabrikInverseKinematic {
 		ChainTip(ChainItem *p_chain_item, const EndEffector *p_end_effector) :
 				chain_item(p_chain_item),
 				end_effector(p_end_effector) {}
-
-		ChainTip(const ChainTip &p_other_ct) :
-				chain_item(p_other_ct.chain_item),
-				end_effector(p_other_ct.end_effector) {}
 	};
 
 	struct Chain {

@@ -40,6 +40,13 @@ while IFS= read -rd '' f; do
     perl -i -ple 's/\s*$//g' "$f"
     # Remove the character sequence "== true" if it has a leading space.
     perl -i -pe 's/\x20== true//g' "$f"
+
+    if [[ $(uname) == "Linux" ]] && [[ "$f" != *"xml" ]]; then
+        # Remove empty lines after the opening brace of indented blocks.
+        sed -z -i 's/\x7B\x0A\x0A\x09/\x7B\x0A\x09/g' "$f"
+        # Remove empty lines before the closing brace (in some cases).
+        sed -z -i 's/\x0A\x0A\x7D/\x0A\x7D/g' "$f"
+    fi
 done
 
 git diff > patch.patch

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,9 +34,9 @@ void CodeEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
-			set_gutter_width(main_gutter, cache.row_height);
-			set_gutter_width(line_number_gutter, (line_number_digits + 1) * cache.font->get_char_size('0').width);
-			set_gutter_width(fold_gutter, cache.row_height / 1.2);
+			set_gutter_width(main_gutter, get_row_height());
+			set_gutter_width(line_number_gutter, (line_number_digits + 1) * cache.font->get_char_size('0', 0, cache.font_size).width);
+			set_gutter_width(fold_gutter, get_row_height() / 1.2);
 
 			breakpoint_color = get_theme_color("breakpoint_color");
 			breakpoint_icon = get_theme_icon("breakpoint");
@@ -132,6 +132,7 @@ void CodeEdit::set_line_as_breakpoint(int p_line, bool p_breakpointed) {
 		breakpointed_lines.erase(p_line);
 	}
 	emit_signal("breakpoint_toggled", p_line);
+	update();
 }
 
 bool CodeEdit::is_line_breakpointed(int p_line) const {
@@ -160,6 +161,7 @@ Array CodeEdit::get_breakpointed_lines() const {
 void CodeEdit::set_line_as_bookmarked(int p_line, bool p_bookmarked) {
 	int mask = get_line_gutter_metadata(p_line, main_gutter);
 	set_line_gutter_metadata(p_line, main_gutter, p_bookmarked ? mask | MAIN_GUTTER_BOOKMARK : mask & ~MAIN_GUTTER_BOOKMARK);
+	update();
 }
 
 bool CodeEdit::is_line_bookmarked(int p_line) const {
@@ -188,6 +190,7 @@ Array CodeEdit::get_bookmarked_lines() const {
 void CodeEdit::set_line_as_executing(int p_line, bool p_executing) {
 	int mask = get_line_gutter_metadata(p_line, main_gutter);
 	set_line_gutter_metadata(p_line, main_gutter, p_executing ? mask | MAIN_GUTTER_EXECUTING : mask & ~MAIN_GUTTER_EXECUTING);
+	update();
 }
 
 bool CodeEdit::is_line_executing(int p_line) const {
@@ -231,14 +234,16 @@ bool CodeEdit::is_line_numbers_zero_padded() const {
 }
 
 void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
-	String fc = String::num(p_line + 1).lpad(line_number_digits, line_number_padding);
-
-	int yofs = p_region.position.y + (cache.row_height - cache.font->get_height()) / 2;
+	String fc = TS->format_number(String::num(p_line + 1).lpad(line_number_digits, line_number_padding));
+	Ref<TextLine> tl;
+	tl.instance();
+	tl->add_string(fc, cache.font, cache.font_size);
+	int yofs = p_region.position.y + (get_row_height() - tl->get_size().y) / 2;
 	Color number_color = get_line_gutter_item_color(p_line, line_number_gutter);
 	if (number_color == Color(1, 1, 1)) {
 		number_color = line_number_color;
 	}
-	cache.font->draw(get_canvas_item(), Point2(p_region.position.x, yofs + cache.font->get_ascent()), fc, number_color);
+	tl->draw(get_canvas_item(), Point2(p_region.position.x, yofs), number_color);
 }
 
 /* Fold Gutter */
@@ -338,7 +343,10 @@ void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 	}
 
 	if (p_gutter == line_number_gutter) {
-		cursor_set_line(p_line);
+		set_selection_mode(TextEdit::SelectionMode::SELECTION_MODE_LINE, p_line, 0);
+		select(p_line, 0, p_line + 1, 0);
+		cursor_set_line(p_line + 1);
+		cursor_set_column(0);
 		return;
 	}
 
@@ -362,7 +370,7 @@ void CodeEdit::_lines_edited_from(int p_from_line, int p_to_line) {
 	while (lc /= 10) {
 		line_number_digits++;
 	}
-	set_gutter_width(line_number_gutter, (line_number_digits + 1) * cache.font->get_char_size('0').width);
+	set_gutter_width(line_number_gutter, (line_number_digits + 1) * cache.font->get_char_size('0', 0, cache.font_size).width);
 
 	int from_line = MIN(p_from_line, p_to_line);
 	int line_count = (p_to_line - p_from_line);
@@ -404,6 +412,10 @@ void CodeEdit::_update_gutter_indexes() {
 }
 
 CodeEdit::CodeEdit() {
+	/* Text Direction */
+	set_layout_direction(LAYOUT_DIRECTION_LTR);
+	set_text_direction(TEXT_DIRECTION_LTR);
+
 	/* Gutters */
 	int gutter_idx = 0;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,7 +64,7 @@ public:
 	RD_SETGET(uint32_t, depth)
 	RD_SETGET(uint32_t, array_layers)
 	RD_SETGET(uint32_t, mipmaps)
-	RD_SETGET(RD::TextureType, type)
+	RD_SETGET(RD::TextureType, texture_type)
 	RD_SETGET(RD::TextureSamples, samples)
 	RD_SETGET(uint32_t, usage_bits)
 
@@ -79,7 +79,7 @@ protected:
 		RD_BIND(Variant::INT, RDTextureFormat, depth);
 		RD_BIND(Variant::INT, RDTextureFormat, array_layers);
 		RD_BIND(Variant::INT, RDTextureFormat, mipmaps);
-		RD_BIND(Variant::INT, RDTextureFormat, type);
+		RD_BIND(Variant::INT, RDTextureFormat, texture_type);
 		RD_BIND(Variant::INT, RDTextureFormat, samples);
 		RD_BIND(Variant::INT, RDTextureFormat, usage_bits);
 		ClassDB::bind_method(D_METHOD("add_shareable_format", "format"), &RDTextureFormat::add_shareable_format);
@@ -392,7 +392,7 @@ class RDUniform : public Reference {
 	RD::Uniform base;
 
 public:
-	RD_SETGET(RD::UniformType, type)
+	RD_SETGET(RD::UniformType, uniform_type)
 	RD_SETGET(int32_t, binding)
 
 	void add_id(const RID &p_id) { base.ids.push_back(p_id); }
@@ -415,7 +415,7 @@ protected:
 		}
 	}
 	static void _bind_methods() {
-		RD_BIND(Variant::INT, RDUniform, type);
+		RD_BIND(Variant::INT, RDUniform, uniform_type);
 		RD_BIND(Variant::INT, RDUniform, binding);
 		ClassDB::bind_method(D_METHOD("add_id", "id"), &RDUniform::add_id);
 		ClassDB::bind_method(D_METHOD("clear_ids"), &RDUniform::clear_ids);

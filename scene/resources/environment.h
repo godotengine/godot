@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef ENVIRONMENT_H
 #define ENVIRONMENT_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering_server.h"
@@ -68,13 +68,6 @@ public:
 		TONE_MAPPER_REINHARDT,
 		TONE_MAPPER_FILMIC,
 		TONE_MAPPER_ACES,
-	};
-
-	enum SSAOBlur {
-		SSAO_BLUR_DISABLED,
-		SSAO_BLUR_1x1,
-		SSAO_BLUR_2x2,
-		SSAO_BLUR_3x3,
 	};
 
 	enum SDFGICascades {
@@ -148,12 +141,13 @@ private:
 	// SSAO
 	bool ssao_enabled = false;
 	float ssao_radius = 1.0;
-	float ssao_intensity = 1.0;
-	float ssao_bias = 0.01;
+	float ssao_intensity = 2.0;
+	float ssao_power = 1.5;
+	float ssao_detail = 0.5;
+	float ssao_horizon = 0.06;
+	float ssao_sharpness = 0.98;
 	float ssao_direct_light_affect = 0.0;
 	float ssao_ao_channel_affect = 0.0;
-	SSAOBlur ssao_blur = SSAO_BLUR_3x3;
-	float ssao_edge_sharpness = 4.0;
 	void _update_ssao();
 
 	// SDFGI
@@ -171,7 +165,8 @@ private:
 
 	// Glow
 	bool glow_enabled = false;
-	int glow_levels = (1 << 2) | (1 << 4);
+	Vector<float> glow_levels;
+	bool glow_normalize_levels = false;
 	float glow_intensity = 0.8;
 	float glow_strength = 1.0;
 	float glow_mix = 0.05;
@@ -190,6 +185,7 @@ private:
 	float fog_density = 0.001;
 	float fog_height = 0.0;
 	float fog_height_density = 0.0; //can be negative to invert effect
+	float fog_aerial_perspective = 0.0;
 
 	void _update_fog();
 
@@ -209,7 +205,8 @@ private:
 	float adjustment_brightness = 1.0;
 	float adjustment_contrast = 1.0;
 	float adjustment_saturation = 1.0;
-	Ref<Texture2D> adjustment_color_correction;
+	bool use_1d_color_correction = true;
+	Ref<Texture> adjustment_color_correction;
 	void _update_adjustment();
 
 protected:
@@ -292,16 +289,18 @@ public:
 	float get_ssao_radius() const;
 	void set_ssao_intensity(float p_intensity);
 	float get_ssao_intensity() const;
-	void set_ssao_bias(float p_bias);
-	float get_ssao_bias() const;
+	void set_ssao_power(float p_power);
+	float get_ssao_power() const;
+	void set_ssao_detail(float p_detail);
+	float get_ssao_detail() const;
+	void set_ssao_horizon(float p_horizon);
+	float get_ssao_horizon() const;
+	void set_ssao_sharpness(float p_sharpness);
+	float get_ssao_sharpness() const;
 	void set_ssao_direct_light_affect(float p_direct_light_affect);
 	float get_ssao_direct_light_affect() const;
 	void set_ssao_ao_channel_affect(float p_ao_channel_affect);
 	float get_ssao_ao_channel_affect() const;
-	void set_ssao_blur(SSAOBlur p_blur);
-	SSAOBlur get_ssao_blur() const;
-	void set_ssao_edge_sharpness(float p_edge_sharpness);
-	float get_ssao_edge_sharpness() const;
 
 	// SDFGI
 	void set_sdfgi_enabled(bool p_enabled);
@@ -332,8 +331,10 @@ public:
 	// Glow
 	void set_glow_enabled(bool p_enabled);
 	bool is_glow_enabled() const;
-	void set_glow_level_enabled(int p_level, bool p_enabled);
-	bool is_glow_level_enabled(int p_level) const;
+	void set_glow_level(int p_level, float p_intensity);
+	float get_glow_level(int p_level) const;
+	void set_glow_normalized(bool p_normalized);
+	bool is_glow_normalized() const;
 	void set_glow_intensity(float p_intensity);
 	float get_glow_intensity() const;
 	void set_glow_strength(float p_strength);
@@ -368,6 +369,8 @@ public:
 	float get_fog_height() const;
 	void set_fog_height_density(float p_amount);
 	float get_fog_height_density() const;
+	void set_fog_aerial_perspective(float p_aerial_perspective);
+	float get_fog_aerial_perspective() const;
 
 	// Volumetric Fog
 	void set_volumetric_fog_enabled(bool p_enable);
@@ -396,8 +399,8 @@ public:
 	float get_adjustment_contrast() const;
 	void set_adjustment_saturation(float p_saturation);
 	float get_adjustment_saturation() const;
-	void set_adjustment_color_correction(const Ref<Texture2D> &p_ramp);
-	Ref<Texture2D> get_adjustment_color_correction() const;
+	void set_adjustment_color_correction(Ref<Texture> p_color_correction);
+	Ref<Texture> get_adjustment_color_correction() const;
 
 	Environment();
 	~Environment();
@@ -407,7 +410,6 @@ VARIANT_ENUM_CAST(Environment::BGMode)
 VARIANT_ENUM_CAST(Environment::AmbientSource)
 VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
-VARIANT_ENUM_CAST(Environment::SSAOBlur)
 VARIANT_ENUM_CAST(Environment::SDFGICascades)
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)

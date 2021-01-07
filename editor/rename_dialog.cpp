@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "rename_dialog.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
@@ -286,7 +286,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	// ---- Dialog related
 
 	set_min_size(Size2(383, 0));
-	get_ok()->set_text(TTR("Rename"));
+	get_ok_button()->set_text(TTR("Rename"));
 	Button *but_reset = add_button(TTR("Reset"));
 
 	eh.errfunc = _error_handler;
@@ -572,7 +572,7 @@ void RenameDialog::rename() {
 	// Forward recursive as opposed to the actual renaming.
 	_iterate_scene(root_node, selected_node_list, &global_count);
 
-	if (undo_redo && !to_rename.empty()) {
+	if (undo_redo && !to_rename.is_empty()) {
 		undo_redo->create_action(TTR("Batch Rename"));
 
 		// Make sure to iterate reversed so that child nodes will find parents.

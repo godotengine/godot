@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,9 @@
 class SectionedInspectorFilter : public Object {
 	GDCLASS(SectionedInspectorFilter, Object);
 
-	Object *edited;
+	Object *edited = nullptr;
 	String section;
-	bool allow_sub;
+	bool allow_sub = false;
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
 		if (!edited) {
@@ -122,10 +122,6 @@ public:
 	void set_edited(Object *p_edited) {
 		edited = p_edited;
 		_change_notify();
-	}
-
-	SectionedInspectorFilter() {
-		edited = nullptr;
 	}
 };
 
@@ -238,7 +234,7 @@ void SectionedInspector::update_category_list() {
 			continue;
 		}
 
-		if (!filter.empty() && pi.name.findn(filter) == -1 && pi.name.replace("/", " ").capitalize().findn(filter) == -1) {
+		if (!filter.is_empty() && pi.name.findn(filter) == -1 && pi.name.replace("/", " ").capitalize().findn(filter) == -1) {
 			continue;
 		}
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "gdnative/color.h"
 
-#include "core/color.h"
-#include "core/variant.h"
+#include "core/math/color.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -145,13 +145,6 @@ godot_color GDAPI godot_color_inverted(const godot_color *p_self) {
 	godot_color dest;
 	const Color *self = (const Color *)p_self;
 	*((Color *)&dest) = self->inverted();
-	return dest;
-}
-
-godot_color GDAPI godot_color_contrasted(const godot_color *p_self) {
-	godot_color dest;
-	const Color *self = (const Color *)p_self;
-	*((Color *)&dest) = self->contrasted();
 	return dest;
 }
 

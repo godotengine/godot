@@ -3,6 +3,7 @@
 	<brief_description>
 	</brief_description>
 	<description>
+		[b]Note[/b]: By default [CodeEdit] always use left-to-right text direction to correcly display source code.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -109,6 +110,9 @@
 		</member>
 		<member name="draw_line_numbers" type="bool" setter="set_draw_line_numbers" getter="is_draw_line_numbers_enabled" default="false">
 		</member>
+		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" override="true" enum="Control.LayoutDirection" default="2" />
+		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" override="true" default="[  ]" />
+		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" override="true" enum="Control.TextDirection" default="1" />
 		<member name="zero_pad_line_numbers" type="bool" setter="set_line_numbers_zero_padded" getter="is_line_numbers_zero_padded" default="false">
 		</member>
 	</members>
@@ -178,6 +182,9 @@
 		<theme_item name="font_color_readonly" type="Color" default="Color( 0.88, 0.88, 0.88, 0.5 )">
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color" default="Color( 0, 0, 0, 1 )">
+		</theme_item>
+		<theme_item name="font_size" type="int">
+			Font size of the [CodeEdit]'s text.
 		</theme_item>
 		<theme_item name="line_number_color" type="Color" default="Color( 0.67, 0.67, 0.67, 0.4 )">
 		</theme_item>

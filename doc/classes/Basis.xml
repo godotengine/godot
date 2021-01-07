@@ -19,26 +19,23 @@
 		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
 	</tutorials>
 	<methods>
-		<method name="Basis">
+		<method name="Basis" qualifiers="constructor">
 			<return type="Basis">
 			</return>
-			<argument index="0" name="from" type="Quat">
-			</argument>
 			<description>
-				Constructs a pure rotation basis matrix from the given quaternion.
+				Constructs a default-initialized [Basis] set to [constant IDENTITY].
 			</description>
 		</method>
-		<method name="Basis">
+		<method name="Basis" qualifiers="constructor">
 			<return type="Basis">
 			</return>
-			<argument index="0" name="from" type="Vector3">
+			<argument index="0" name="from" type="Basis">
 			</argument>
 			<description>
-				Constructs a pure rotation basis matrix from the given Euler angles (in the YXZ convention: when *composing*, first Y, then X, and Z last), given in the vector format as (X angle, Y angle, Z angle).
-				Consider using the [Quat] constructor instead, which uses a quaternion instead of Euler angles.
+				Constructs a [Basis] as a copy of the given [Basis].
 			</description>
 		</method>
-		<method name="Basis">
+		<method name="Basis" qualifiers="constructor">
 			<return type="Basis">
 			</return>
 			<argument index="0" name="axis" type="Vector3">
@@ -49,7 +46,26 @@
 				Constructs a pure rotation basis matrix, rotated around the given [code]axis[/code] by [code]phi[/code], in radians. The axis must be a normalized vector.
 			</description>
 		</method>
-		<method name="Basis">
+		<method name="Basis" qualifiers="constructor">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="euler" type="Vector3">
+			</argument>
+			<description>
+				Constructs a pure rotation basis matrix from the given Euler angles (in the YXZ convention: when *composing*, first Y, then X, and Z last), given in the vector format as (X angle, Y angle, Z angle).
+				Consider using the [Quat] constructor instead, which uses a quaternion instead of Euler angles.
+			</description>
+		</method>
+		<method name="Basis" qualifiers="constructor">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="from" type="Quat">
+			</argument>
+			<description>
+				Constructs a pure rotation basis matrix from the given quaternion.
+			</description>
+		</method>
+		<method name="Basis" qualifiers="constructor">
 			<return type="Basis">
 			</return>
 			<argument index="0" name="x_axis" type="Vector3">
@@ -115,6 +131,46 @@
 				Returns [code]true[/code] if this basis and [code]b[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Basis">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="right" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="right" type="Basis">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Basis">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="orthonormalized">
 			<return type="Basis">
 			</return>
@@ -145,9 +201,9 @@
 		<method name="slerp">
 			<return type="Basis">
 			</return>
-			<argument index="0" name="b" type="Basis">
+			<argument index="0" name="to" type="Basis">
 			</argument>
-			<argument index="1" name="t" type="float">
+			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
 				Assuming that the matrix is a proper rotation matrix, slerp performs a spherical-linear interpolation with another rotation matrix.
@@ -185,25 +241,6 @@
 			</return>
 			<description>
 				Returns the transposed version of the matrix.
-			</description>
-		</method>
-		<method name="xform">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="v" type="Vector3">
-			</argument>
-			<description>
-				Returns a vector transformed (multiplied) by the matrix.
-			</description>
-		</method>
-		<method name="xform_inv">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="v" type="Vector3">
-			</argument>
-			<description>
-				Returns a vector transformed (multiplied) by the transposed basis matrix.
-				[b]Note:[/b] This results in a multiplication by the inverse of the matrix only if it represents a rotation-reflection.
 			</description>
 		</method>
 	</methods>

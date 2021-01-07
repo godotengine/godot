@@ -6,7 +6,6 @@ android_files = [
     "os_android.cpp",
     "file_access_android.cpp",
     "audio_driver_opensl.cpp",
-    "file_access_jandroid.cpp",
     "dir_access_jandroid.cpp",
     "thread_jandroid.cpp",
     "net_socket_android.cpp",
@@ -14,6 +13,7 @@ android_files = [
     "java_godot_lib_jni.cpp",
     "java_class_wrapper.cpp",
     "java_godot_wrapper.cpp",
+    "java_godot_view_wrapper.cpp",
     "java_godot_io_wrapper.cpp",
     "jni_utils.cpp",
     "android_keys_utils.cpp",
@@ -29,9 +29,13 @@ for x in android_files:
 
 env_thirdparty = env_android.Clone()
 env_thirdparty.disable_warnings()
-android_objects.append(env_thirdparty.SharedObject("#thirdparty/misc/ifaddrs-android.cc"))
+thirdparty_obj = env_thirdparty.SharedObject("#thirdparty/misc/ifaddrs-android.cc")
+android_objects.append(thirdparty_obj)
 
 lib = env_android.add_shared_library("#bin/libgodot", [android_objects], SHLIBSUFFIX=env["SHLIBSUFFIX"])
+
+# Needed to force rebuilding the platform files when the thirdparty code is updated.
+env.Depends(lib, thirdparty_obj)
 
 lib_arch_dir = ""
 if env["android_arch"] == "armv7":

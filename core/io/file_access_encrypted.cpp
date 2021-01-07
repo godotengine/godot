@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,8 @@
 
 #include "core/crypto/crypto_core.h"
 #include "core/os/copymem.h"
-#include "core/print_string.h"
-#include "core/variant.h"
+#include "core/string/print_string.h"
+#include "core/variant/variant.h"
 
 #include <stdio.h>
 
@@ -256,7 +256,7 @@ Error FileAccessEncrypted::get_error() const {
 }
 
 void FileAccessEncrypted::store_buffer(const uint8_t *p_src, int p_length) {
-	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
 	if (pos < data.size()) {
 		for (int i = 0; i < p_length; i++) {
@@ -272,13 +272,13 @@ void FileAccessEncrypted::store_buffer(const uint8_t *p_src, int p_length) {
 }
 
 void FileAccessEncrypted::flush() {
-	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
 	// encrypted files keep data in memory till close()
 }
 
 void FileAccessEncrypted::store_8(uint8_t p_dest) {
-	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
 	if (pos < data.size()) {
 		data.write[pos] = p_dest;

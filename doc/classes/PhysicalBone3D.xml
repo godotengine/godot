@@ -117,9 +117,6 @@
 		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">
 			The body's mass.
 		</member>
-		<member name="weight" type="float" setter="set_weight" getter="get_weight" default="9.8">
-			The body's weight based on its mass and the global 3D gravity. Global values are set in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b].
-		</member>
 	</members>
 	<constants>
 		<constant name="JOINT_TYPE_NONE" value="0" enum="JointType">

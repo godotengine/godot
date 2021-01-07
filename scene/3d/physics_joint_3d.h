@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,8 +46,11 @@ class Joint3D : public Node3D {
 
 	int solver_priority;
 	bool exclude_from_collision;
+	String warning;
 
 protected:
+	void _disconnect_signals();
+	void _body_exit_tree(const ObjectID &p_body_id);
 	void _update_joint(bool p_only_free = false);
 
 	void _notification(int p_what);
@@ -57,6 +60,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual String get_configuration_warning() const override;
+
 	void set_node_a(const NodePath &p_node_a);
 	NodePath get_node_a() const;
 
@@ -203,7 +208,6 @@ class ConeTwistJoint3D : public Joint3D {
 
 public:
 	enum Param {
-
 		PARAM_SWING_SPAN,
 		PARAM_TWIST_SPAN,
 		PARAM_BIAS,
@@ -237,7 +241,6 @@ class Generic6DOFJoint3D : public Joint3D {
 
 public:
 	enum Param {
-
 		PARAM_LINEAR_LOWER_LIMIT = PhysicsServer3D::G6DOF_JOINT_LINEAR_LOWER_LIMIT,
 		PARAM_LINEAR_UPPER_LIMIT = PhysicsServer3D::G6DOF_JOINT_LINEAR_UPPER_LIMIT,
 		PARAM_LINEAR_LIMIT_SOFTNESS = PhysicsServer3D::G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS,
@@ -299,8 +302,6 @@ protected:
 	float params_z[PARAM_MAX];
 	bool flags_z[FLAG_MAX];
 
-	int precision = 1;
-
 	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
@@ -322,11 +323,6 @@ public:
 
 	void set_flag_z(Flag p_flag, bool p_enabled);
 	bool get_flag_z(Flag p_flag) const;
-
-	void set_precision(int p_precision);
-	int get_precision() const {
-		return precision;
-	}
 
 	Generic6DOFJoint3D();
 };

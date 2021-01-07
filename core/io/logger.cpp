@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,10 @@
 
 #include "logger.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define sprintf sprintf_s
@@ -152,7 +153,7 @@ void RotatedFileLogger::rotate_file() {
 			char timestamp[21];
 			OS::Date date = OS::get_singleton()->get_date();
 			OS::Time time = OS::get_singleton()->get_time();
-			sprintf(timestamp, "_%04d-%02d-%02d_%02d-%02d-%02d", date.year, date.month, date.day, time.hour, time.min, time.sec);
+			sprintf(timestamp, "_%04d-%02d-%02d_%02d.%02d.%02d", date.year, date.month, date.day, time.hour, time.min, time.sec);
 
 			String backup_name = base_path.get_basename() + timestamp;
 			if (base_path.get_extension() != String()) {
@@ -201,15 +202,14 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		}
 		va_end(list_copy);
 		file->store_buffer((uint8_t *)buf, len);
+
 		if (len >= static_buf_size) {
 			Memory::free_static(buf);
 		}
-#ifdef DEBUG_ENABLED
-		const bool need_flush = true;
-#else
-		bool need_flush = p_err;
-#endif
-		if (need_flush) {
+
+		if (p_err || GLOBAL_GET("application/run/flush_stdout_on_print")) {
+			// Don't always flush when printing stdout to avoid performance
+			// issues when `print()` is spammed in release builds.
 			file->flush();
 		}
 	}
@@ -228,9 +228,11 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		vfprintf(stderr, p_format, p_list);
 	} else {
 		vprintf(p_format, p_list);
-#ifdef DEBUG_ENABLED
-		fflush(stdout);
-#endif
+		if (GLOBAL_GET("application/run/flush_stdout_on_print")) {
+			// Don't always flush when printing stdout to avoid performance
+			// issues when `print()` is spammed in release builds.
+			fflush(stdout);
+		}
 	}
 }
 

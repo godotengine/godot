@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -531,21 +531,15 @@ void EditorAudioBus::_effect_add(int p_which) {
 }
 
 void EditorAudioBus::_gui_input(const Ref<InputEvent> &p_event) {
-	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_DELETE && !k->is_echo()) {
-		accept_event();
-		emit_signal("delete_request");
-	}
-
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->get_button_index() == 2 && mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
 		Vector2 pos = Vector2(mb->get_position().x, mb->get_position().y);
 		bus_popup->set_position(get_global_position() + pos);
 		bus_popup->popup();
 	}
 }
 
-void EditorAudioBus::_unhandled_key_input(Ref<InputEvent> p_event) {
+void EditorAudioBus::_effects_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == KEY_DELETE) {
 		TreeItem *current_effect = effects->get_selected();
@@ -749,7 +743,6 @@ void EditorAudioBus::_bind_methods() {
 	ClassDB::bind_method("update_bus", &EditorAudioBus::update_bus);
 	ClassDB::bind_method("update_send", &EditorAudioBus::update_send);
 	ClassDB::bind_method("_gui_input", &EditorAudioBus::_gui_input);
-	ClassDB::bind_method("_unhandled_key_input", &EditorAudioBus::_unhandled_key_input);
 	ClassDB::bind_method("get_drag_data_fw", &EditorAudioBus::get_drag_data_fw);
 	ClassDB::bind_method("can_drop_data_fw", &EditorAudioBus::can_drop_data_fw);
 	ClassDB::bind_method("drop_data_fw", &EditorAudioBus::drop_data_fw);
@@ -773,7 +766,6 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	add_child(vb);
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
-	set_process_unhandled_key_input(true);
 
 	track_name = memnew(LineEdit);
 	track_name->connect("text_entered", callable_mp(this, &EditorAudioBus::_name_changed));
@@ -804,12 +796,6 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	bypass->connect("pressed", callable_mp(this, &EditorAudioBus::_bypass_toggled));
 	hbc->add_child(bypass);
 	hbc->add_spacer();
-
-	bus_options = memnew(MenuButton);
-	bus_options->set_h_size_flags(SIZE_SHRINK_END);
-	bus_options->set_anchor(MARGIN_RIGHT, 0.0);
-	bus_options->set_tooltip(TTR("Bus options"));
-	hbc->add_child(bus_options);
 
 	Ref<StyleBoxEmpty> sbempty = memnew(StyleBoxEmpty);
 	for (int i = 0; i < hbc->get_child_count(); i++) {
@@ -865,15 +851,15 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 
 	cc = 0;
 	for (int i = 0; i < CHANNELS_MAX; i++) {
-		channel[i].vu_l = memnew(TextureProgress);
-		channel[i].vu_l->set_fill_mode(TextureProgress::FILL_BOTTOM_TO_TOP);
+		channel[i].vu_l = memnew(TextureProgressBar);
+		channel[i].vu_l->set_fill_mode(TextureProgressBar::FILL_BOTTOM_TO_TOP);
 		hb->add_child(channel[i].vu_l);
 		channel[i].vu_l->set_min(-80);
 		channel[i].vu_l->set_max(24);
 		channel[i].vu_l->set_step(0.1);
 
-		channel[i].vu_r = memnew(TextureProgress);
-		channel[i].vu_r->set_fill_mode(TextureProgress::FILL_BOTTOM_TO_TOP);
+		channel[i].vu_r = memnew(TextureProgressBar);
+		channel[i].vu_r->set_fill_mode(TextureProgressBar::FILL_BOTTOM_TO_TOP);
 		hb->add_child(channel[i].vu_r);
 		channel[i].vu_r->set_min(-80);
 		channel[i].vu_r->set_max(24);
@@ -906,6 +892,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	effects->set_allow_rmb_select(true);
 	effects->set_focus_mode(FOCUS_CLICK);
 	effects->set_allow_reselect(true);
+	effects->connect("gui_input", callable_mp(this, &EditorAudioBus::_effects_gui_input));
 
 	send = memnew(OptionButton);
 	send->set_clip_text(true);
@@ -932,9 +919,16 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		effect_options->set_item_icon(effect_options->get_item_count() - 1, icon);
 	}
 
+	bus_options = memnew(MenuButton);
+	bus_options->set_shortcut_context(this);
+	bus_options->set_h_size_flags(SIZE_SHRINK_END);
+	bus_options->set_anchor(SIDE_RIGHT, 0.0);
+	bus_options->set_tooltip(TTR("Bus options"));
+	hbc->add_child(bus_options);
+
 	bus_popup = bus_options->get_popup();
-	bus_popup->add_item(TTR("Duplicate"));
-	bus_popup->add_item(TTR("Delete"));
+	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/duplicate_selected_bus", TTR("Duplicate Bus"), KEY_MASK_CMD | KEY_D));
+	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/delete_selected_bus", TTR("Delete Bus"), KEY_DELETE));
 	bus_popup->set_item_disabled(1, is_master);
 	bus_popup->add_item(TTR("Reset Volume"));
 	bus_popup->connect("index_pressed", callable_mp(this, &EditorAudioBus::_bus_popup_pressed));
@@ -1379,14 +1373,15 @@ void EditorAudioMeterNotches::add_notch(float p_normalized_offset, float p_db_va
 
 Size2 EditorAudioMeterNotches::get_minimum_size() const {
 	Ref<Font> font = get_theme_font("font", "Label");
-	float font_height = font->get_height();
+	int font_size = get_theme_font_size("font_size", "Label");
+	float font_height = font->get_height(font_size);
 
 	float width = 0;
 	float height = top_padding + btm_padding;
 
 	for (int i = 0; i < notches.size(); i++) {
 		if (notches[i].render_db_value) {
-			width = MAX(width, font->get_string_size(String::num(Math::abs(notches[i].db_value)) + "dB").x);
+			width = MAX(width, font->get_string_size(String::num(Math::abs(notches[i].db_value)) + "dB", font_size).x);
 			height += font_height;
 		}
 	}
@@ -1413,7 +1408,8 @@ void EditorAudioMeterNotches::_notification(int p_what) {
 
 void EditorAudioMeterNotches::_draw_audio_notches() {
 	Ref<Font> font = get_theme_font("font", "Label");
-	float font_height = font->get_height();
+	int font_size = get_theme_font_size("font_size", "Label");
+	float font_height = font->get_height(font_size);
 
 	for (int i = 0; i < notches.size(); i++) {
 		AudioNotch n = notches[i];
@@ -1427,6 +1423,7 @@ void EditorAudioMeterNotches::_draw_audio_notches() {
 					Vector2(line_length + label_space,
 							(1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + (font_height / 4) + top_padding),
 					String::num(Math::abs(n.db_value)) + "dB",
+					HALIGN_LEFT, -1, font_size,
 					notch_color);
 		}
 	}

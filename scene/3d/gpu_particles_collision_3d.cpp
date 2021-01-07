@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "gpu_particles_collision_3d.h"
-#include "core/thread_work_pool.h"
+
+#include "core/templates/thread_work_pool.h"
 #include "mesh_instance_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/main/viewport.h"
@@ -663,6 +664,9 @@ void GPUParticlesCollisionHeightField::_bind_methods() {
 	BIND_ENUM_CONSTANT(RESOLUTION_4096);
 	BIND_ENUM_CONSTANT(RESOLUTION_8192);
 	BIND_ENUM_CONSTANT(RESOLUTION_MAX);
+
+	BIND_ENUM_CONSTANT(UPDATE_MODE_WHEN_MOVED);
+	BIND_ENUM_CONSTANT(UPDATE_MODE_ALWAYS);
 }
 
 void GPUParticlesCollisionHeightField::set_follow_camera_push_ratio(float p_follow_camera_push_ratio) {

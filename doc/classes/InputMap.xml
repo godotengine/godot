@@ -120,7 +120,7 @@
 				Returns [code]true[/code] if the [InputMap] has a registered action with the given name.
 			</description>
 		</method>
-		<method name="load_from_globals">
+		<method name="load_from_project_settings">
 			<return type="void">
 			</return>
 			<description>

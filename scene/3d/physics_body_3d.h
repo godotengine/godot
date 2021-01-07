@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef PHYSICS_BODY_3D_H
 #define PHYSICS_BODY_3D_H
 
-#include "core/vset.h"
+#include "core/templates/vset.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/resources/physics_material.h"
 #include "servers/physics_server_3d.h"
@@ -42,9 +42,6 @@ class PhysicsBody3D : public CollisionObject3D {
 
 	uint32_t collision_layer;
 	uint32_t collision_mask;
-
-	void _set_layers(uint32_t p_mask);
-	uint32_t _get_layers() const;
 
 protected:
 	static void _bind_methods();
@@ -187,9 +184,6 @@ public:
 	real_t get_mass() const;
 
 	virtual float get_inverse_mass() const override { return 1.0 / mass; }
-
-	void set_weight(real_t p_weight);
-	real_t get_weight() const;
 
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
 	Ref<PhysicsMaterial> get_physics_material_override() const;
@@ -376,7 +370,7 @@ public:
 		virtual JointType get_joint_type() { return JOINT_TYPE_NONE; }
 
 		/// "j" is used to set the parameter inside the PhysicsServer3D
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -386,7 +380,7 @@ public:
 	struct PinJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_PIN; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -400,7 +394,7 @@ public:
 	struct ConeJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_CONE; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -417,7 +411,7 @@ public:
 	struct HingeJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_HINGE; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -437,7 +431,7 @@ public:
 	struct SliderJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_SLIDER; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -484,7 +478,7 @@ public:
 
 		virtual JointType get_joint_type() { return JOINT_TYPE_6DOF; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -574,9 +568,6 @@ public:
 
 	void set_mass(real_t p_mass);
 	real_t get_mass() const;
-
-	void set_weight(real_t p_weight);
-	real_t get_weight() const;
 
 	void set_friction(real_t p_friction);
 	real_t get_friction() const;

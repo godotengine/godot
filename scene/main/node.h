@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,12 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include "core/class_db.h"
-#include "core/map.h"
-#include "core/node_path.h"
-#include "core/object.h"
-#include "core/project_settings.h"
-#include "core/script_language.h"
-#include "core/typed_array.h"
+#include "core/config/project_settings.h"
+#include "core/object/class_db.h"
+#include "core/object/script_language.h"
+#include "core/string/node_path.h"
+#include "core/templates/map.h"
+#include "core/variant/typed_array.h"
 #include "scene/main/scene_tree.h"
 
 class Viewport;
@@ -48,14 +47,12 @@ class Node : public Object {
 
 public:
 	enum PauseMode {
-
 		PAUSE_MODE_INHERIT,
 		PAUSE_MODE_STOP,
 		PAUSE_MODE_PROCESS
 	};
 
 	enum DuplicateFlags {
-
 		DUPLICATE_SIGNALS = 1,
 		DUPLICATE_GROUPS = 2,
 		DUPLICATE_SCRIPTS = 4,
@@ -77,9 +74,8 @@ public:
 
 private:
 	struct GroupData {
-		bool persistent;
-		SceneTree::Group *group;
-		GroupData() { persistent = false; }
+		bool persistent = false;
+		SceneTree::Group *group = nullptr;
 	};
 
 	struct NetData {
@@ -94,54 +90,54 @@ private:
 
 		HashMap<NodePath, int> editable_instances;
 
-		Node *parent;
-		Node *owner;
-		Vector<Node *> children; // list of children
-		int pos;
-		int depth;
-		int blocked; // safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
+		Node *parent = nullptr;
+		Node *owner = nullptr;
+		Vector<Node *> children;
+		int pos = -1;
+		int depth = -1;
+		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
-		SceneTree *tree;
-		bool inside_tree;
-		bool ready_notified; //this is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification
-		bool ready_first;
+		SceneTree *tree = nullptr;
+		bool inside_tree = false;
+		bool ready_notified = false; // This is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification.
+		bool ready_first = true;
 #ifdef TOOLS_ENABLED
-		NodePath import_path; //path used when imported, used by scene editors to keep tracking
+		NodePath import_path; // Path used when imported, used by scene editors to keep tracking.
 #endif
 
-		Viewport *viewport;
+		Viewport *viewport = nullptr;
 
 		Map<StringName, GroupData> grouped;
-		List<Node *>::Element *OW; // owned element
+		List<Node *>::Element *OW = nullptr; // Owned element.
 		List<Node *> owned;
 
-		PauseMode pause_mode;
-		Node *pause_owner;
+		PauseMode pause_mode = PAUSE_MODE_INHERIT;
+		Node *pause_owner = nullptr;
 
-		int network_master;
+		int network_master = 1; // Server by default.
 		Vector<NetData> rpc_methods;
 		Vector<NetData> rpc_properties;
 
-		// variables used to properly sort the node when processing, ignored otherwise
-		//should move all the stuff below to bits
-		bool physics_process;
-		bool idle_process;
-		int process_priority;
+		// Variables used to properly sort the node when processing, ignored otherwise.
+		// TODO: Should move all the stuff below to bits.
+		bool physics_process = false;
+		bool process = false;
+		int process_priority = 0;
 
-		bool physics_process_internal;
-		bool idle_process_internal;
+		bool physics_process_internal = false;
+		bool process_internal = false;
 
-		bool input;
-		bool unhandled_input;
-		bool unhandled_key_input;
+		bool input = false;
+		bool unhandled_input = false;
+		bool unhandled_key_input = false;
 
-		bool parent_owned;
-		bool in_constructor;
-		bool use_placeholder;
+		bool parent_owned = false;
+		bool in_constructor = true;
+		bool use_placeholder = false;
 
-		bool display_folded;
+		bool display_folded = false;
 
-		mutable NodePath *path_cache;
+		mutable NodePath *path_cache = nullptr;
 
 	} data;
 
@@ -219,7 +215,6 @@ protected:
 
 public:
 	enum {
-
 		// you can make your own, but don't use the same numbers as other notifications in other nodes
 		NOTIFICATION_ENTER_TREE = 10,
 		NOTIFICATION_EXIT_TREE = 11,
@@ -258,8 +253,8 @@ public:
 		NOTIFICATION_APPLICATION_RESUMED = MainLoop::NOTIFICATION_APPLICATION_RESUMED,
 		NOTIFICATION_APPLICATION_PAUSED = MainLoop::NOTIFICATION_APPLICATION_PAUSED,
 		NOTIFICATION_APPLICATION_FOCUS_IN = MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN,
-		NOTIFICATION_APPLICATION_FOCUS_OUT = MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT
-
+		NOTIFICATION_APPLICATION_FOCUS_OUT = MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT,
+		NOTIFICATION_TEXT_SERVER_CHANGED = MainLoop::NOTIFICATION_TEXT_SERVER_CHANGED,
 	};
 
 	/* NODE/TREE */
@@ -344,14 +339,14 @@ public:
 	float get_physics_process_delta_time() const;
 	bool is_physics_processing() const;
 
-	void set_process(bool p_idle_process);
+	void set_process(bool p_process);
 	float get_process_delta_time() const;
 	bool is_processing() const;
 
 	void set_physics_process_internal(bool p_process_internal);
 	bool is_physics_processing_internal() const;
 
-	void set_process_internal(bool p_idle_process_internal);
+	void set_process_internal(bool p_process_internal);
 	bool is_processing_internal() const;
 
 	void set_process_priority(int p_priority);

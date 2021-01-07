@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "scene/resources/bit_map.h"
-#include "scene/resources/dynamic_font.h"
+#include "scene/resources/font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "servers/audio/audio_stream.h"
@@ -106,7 +106,7 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Siz
 		}
 	}
 
-	if (img.is_null() || img->empty()) {
+	if (img.is_null() || img->is_empty()) {
 		return Ref<Texture2D>();
 	}
 
@@ -150,7 +150,7 @@ bool EditorImagePreviewPlugin::handles(const String &p_type) const {
 Ref<Texture2D> EditorImagePreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
 	Ref<Image> img = p_from;
 
-	if (img.is_null() || img->empty()) {
+	if (img.is_null() || img->is_empty()) {
 		return Ref<Image>();
 	}
 
@@ -798,25 +798,79 @@ void EditorFontPreviewPlugin::_bind_methods() {
 }
 
 bool EditorFontPreviewPlugin::handles(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "DynamicFontData") || ClassDB::is_parent_class(p_type, "DynamicFont");
+	return ClassDB::is_parent_class(p_type, "FontData") || ClassDB::is_parent_class(p_type, "Font");
 }
+
+struct FSample {
+	String script;
+	String sample;
+};
+
+static FSample _samples[] = {
+	{ "hani", U"漢語" },
+	{ "armn", U"Աբ" },
+	{ "copt", U"Αα" },
+	{ "cyrl", U"Аб" },
+	{ "grek", U"Αα" },
+	{ "hebr", U"אב" },
+	{ "arab", U"اب" },
+	{ "syrc", U"ܐܒ" },
+	{ "thaa", U"ހށ" },
+	{ "deva", U"आ" },
+	{ "beng", U"আ" },
+	{ "guru", U"ਆ" },
+	{ "gujr", U"આ" },
+	{ "orya", U"ଆ" },
+	{ "taml", U"ஆ" },
+	{ "telu", U"ఆ" },
+	{ "knda", U"ಆ" },
+	{ "mylm", U"ആ" },
+	{ "sinh", U"ආ" },
+	{ "thai", U"กิ" },
+	{ "laoo", U"ກິ" },
+	{ "tibt", U"ༀ" },
+	{ "mymr", U"က" },
+	{ "geor", U"Ⴀა" },
+	{ "hang", U"한글" },
+	{ "ethi", U"ሀ" },
+	{ "cher", U"Ꭳ" },
+	{ "cans", U"ᐁ" },
+	{ "ogam", U"ᚁ" },
+	{ "runr", U"ᚠ" },
+	{ "tglg", U"ᜀ" },
+	{ "hano", U"ᜠ" },
+	{ "buhd", U"ᝀ" },
+	{ "tagb", U"ᝠ" },
+	{ "khmr", U"ក" },
+	{ "mong", U"ᠠ" },
+	{ "limb", U"ᤁ" },
+	{ "tale", U"ᥐ" },
+	{ "latn", U"Ab" },
+	{ "zyyy", U"😀" },
+	{ "", U"" }
+};
 
 Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path, const Size2 &p_size) const {
 	RES res = ResourceLoader::load(p_path);
-	Ref<DynamicFont> sampled_font;
-	if (res->is_class("DynamicFont")) {
+	Ref<Font> sampled_font;
+	if (res->is_class("Font")) {
 		sampled_font = res->duplicate();
-		if (sampled_font->get_outline_color() == Color(1, 1, 1, 1)) {
-			sampled_font->set_outline_color(Color(0, 0, 0, 1));
-		}
-	} else if (res->is_class("DynamicFontData")) {
+	} else if (res->is_class("FontData")) {
 		sampled_font.instance();
-		sampled_font->set_font_data(res);
+		sampled_font->add_data(res->duplicate());
 	}
-	sampled_font->set_size(50);
 
-	String sampled_text = "Abg";
-	Vector2 size = sampled_font->get_string_size(sampled_text);
+	String sample;
+	for (int j = 0; j < sampled_font->get_data_count(); j++) {
+		for (int i = 0; _samples[i].script != String(); i++) {
+			if (sampled_font->get_data(j)->is_script_supported(_samples[i].script)) {
+				if (sampled_font->get_data(j)->has_char(_samples[i].sample[0])) {
+					sample += _samples[i].sample;
+				}
+			}
+		}
+	}
+	Vector2 size = sampled_font->get_string_size(sample, 50);
 
 	Vector2 pos;
 
@@ -825,7 +879,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 
 	Ref<Font> font = sampled_font;
 
-	font->draw(canvas_item, pos, sampled_text);
+	font->draw_string(canvas_item, pos, sample, HALIGN_LEFT, -1.f, 50, Color(1, 1, 1));
 
 	preview_done = false;
 	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture

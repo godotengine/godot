@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "file_access_pack.h"
 
 #include "core/io/file_access_encrypted.h"
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 #include "core/version.h"
 
 #include <stdio.h>
@@ -89,7 +89,7 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 		}
 		String filename = path.get_file();
 		// Don't add as a file if the path points to a directory
-		if (!filename.empty()) {
+		if (!filename.is_empty()) {
 			cd->files.insert(filename);
 		}
 	}
@@ -442,8 +442,14 @@ String DirAccessPack::get_drive(int p_drive) {
 	return "";
 }
 
-Error DirAccessPack::change_dir(String p_dir) {
+PackedData::PackedDir *DirAccessPack::_find_dir(String p_dir) {
 	String nd = p_dir.replace("\\", "/");
+
+	// Special handling since simplify_path() will forbid it
+	if (p_dir == "..") {
+		return current->parent;
+	}
+
 	bool absolute = false;
 	if (nd.begins_with("res://")) {
 		nd = nd.replace_first("res://", "");
@@ -483,13 +489,21 @@ Error DirAccessPack::change_dir(String p_dir) {
 			pd = pd->subdirs[p];
 
 		} else {
-			return ERR_INVALID_PARAMETER;
+			return nullptr;
 		}
 	}
 
-	current = pd;
+	return pd;
+}
 
-	return OK;
+Error DirAccessPack::change_dir(String p_dir) {
+	PackedData::PackedDir *pd = _find_dir(p_dir);
+	if (pd) {
+		current = pd;
+		return OK;
+	} else {
+		return ERR_INVALID_PARAMETER;
+	}
 }
 
 String DirAccessPack::get_current_dir(bool p_include_drive) {
@@ -507,13 +521,17 @@ String DirAccessPack::get_current_dir(bool p_include_drive) {
 bool DirAccessPack::file_exists(String p_file) {
 	p_file = fix_path(p_file);
 
-	return current->files.has(p_file);
+	PackedData::PackedDir *pd = _find_dir(p_file.get_base_dir());
+	if (!pd) {
+		return false;
+	}
+	return pd->files.has(p_file.get_file());
 }
 
 bool DirAccessPack::dir_exists(String p_dir) {
 	p_dir = fix_path(p_dir);
 
-	return current->subdirs.has(p_dir);
+	return _find_dir(p_dir) != nullptr;
 }
 
 Error DirAccessPack::make_dir(String p_dir) {

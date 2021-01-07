@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,12 @@
 
 #include "display_server_iphone.h"
 #import "app_delegate.h"
+#include "core/config/project_settings.h"
 #include "core/io/file_access_pack.h"
-#include "core/project_settings.h"
 #import "device_metrics.h"
 #import "godot_view.h"
 #include "ios.h"
+#import "keyboard_input_view.h"
 #import "native_video_view.h"
 #include "os_iphone.h"
 #import "view_controller.h"
@@ -72,7 +73,7 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Displ
 			//        return ERR_UNAVAILABLE;
 		}
 
-		//    rendering_server = memnew(RenderingServerRaster);
+		//    rendering_server = memnew(RenderingServerDefault);
 		//    // FIXME: Reimplement threaded rendering
 		//    if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		//        rendering_server = memnew(RenderingServerWrapMT(rendering_server,
@@ -117,7 +118,7 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Displ
 		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
 		rendering_device_vulkan->initialize(context_vulkan);
 
-		RasterizerRD::make_current();
+		RendererCompositorRD::make_current();
 	}
 #endif
 
@@ -529,11 +530,17 @@ bool DisplayServerIPhone::screen_is_touchscreen(int p_screen) const {
 }
 
 void DisplayServerIPhone::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_length, int p_cursor_start, int p_cursor_end) {
-	[AppDelegate.viewController.godotView becomeFirstResponderWithString:p_existing_text];
+	NSString *existingString = [[NSString alloc] initWithUTF8String:p_existing_text.utf8().get_data()];
+
+	[AppDelegate.viewController.keyboardView
+			becomeFirstResponderWithString:existingString
+								 multiline:p_multiline
+							   cursorStart:p_cursor_start
+								 cursorEnd:p_cursor_end];
 }
 
 void DisplayServerIPhone::virtual_keyboard_hide() {
-	[AppDelegate.viewController.godotView resignFirstResponder];
+	[AppDelegate.viewController.keyboardView resignFirstResponder];
 }
 
 void DisplayServerIPhone::virtual_keyboard_set_height(int height) {
