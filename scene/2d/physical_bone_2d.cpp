@@ -31,7 +31,6 @@
 #include "physical_bone_2d.h"
 
 void PhysicalBone2D::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
 		// Position the RigidBody in the correct position
 		if (follow_bone_when_simulating) {
@@ -43,7 +42,6 @@ void PhysicalBone2D::_notification(int p_what) {
 			child_joint->set_global_position(get_global_position());
 		}
 	}
-
 // Only in the editor: keep the PhysicalBone2D at the Bone2D position (if there is one) at all times.
 #ifdef TOOLS_ENABLED
 	else if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
@@ -52,7 +50,7 @@ void PhysicalBone2D::_notification(int p_what) {
 		}
 	}
 #endif //TOOLS_ENABLED
-	
+
 	else if (p_what == NOTIFICATION_READY) {
 		_find_skeleton_parent();
 		_find_joint_child();
@@ -77,7 +75,7 @@ void PhysicalBone2D::_position_at_bone2d() {
 	// Reset to Bone2D position
 	if (parent_skeleton) {
 		Bone2D *bone_to_use = parent_skeleton->get_bone(bone2d_index);
-		ERR_FAIL_COND_MSG(bone_to_use==nullptr, "It's not possible to position the bone with ID: " + itos(bone2d_index));
+		ERR_FAIL_COND_MSG(bone_to_use == nullptr, "It's not possible to position the bone with ID: " + itos(bone2d_index));
 		set_global_transform(bone_to_use->get_global_transform());
 	}
 }
@@ -193,7 +191,7 @@ void PhysicalBone2D::_stop_physics_simulation() {
 
 		// Reset to Bone2D position
 		_position_at_bone2d();
-		
+
 		set_physics_process_internal(false);
 		PhysicsServer2D::get_singleton()->body_set_collision_layer(get_rid(), 0);
 		PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), 0);

@@ -178,7 +178,6 @@ void Bone2D::_notification(int p_what) {
 			calculate_length_and_rotation();
 		}
 	}
-
 #ifdef TOOLS_ENABLED
 	else if (p_what == NOTIFICATION_EDITOR_PRE_SAVE || p_what == NOTIFICATION_EDITOR_POST_SAVE) {
 		Transform2D tmp_trans = get_transform();
@@ -329,7 +328,7 @@ bool Bone2D::_editor_get_bone_shape(Vector<Vector2> *shape, Vector<Vector2> *out
 		rel = rel.rotated(-get_rotation()); // Undo Bone2D node's rotation so its drawn correctly regardless of the node's rotation
 	}
 
-	Vector2 relt = relt.rotated(Math_PI).normalized() * bone_width;
+	Vector2 relt = rel.rotated(Math_PI * 0.5).normalized() * bone_width;
 	Vector2 reln = rel.normalized();
 	Vector2 reltn = relt.normalized();
 

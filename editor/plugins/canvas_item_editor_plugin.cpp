@@ -2263,7 +2263,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			// Retrieve the canvas items
 			selection = Vector<_SelectResult>();
 			_get_canvas_items_at_pos(click, selection);
-			if (!selection.empty()) {
+			if (!selection.is_empty()) {
 				canvas_item = selection[0].item;
 			}
 
