@@ -32,7 +32,7 @@
 			<argument index="1" name="height" type="int">
 			</argument>
 			<description>
-				Generate a noise image with the requested [code]width[/code] and [code]height[/code], based on the current noise parameters.
+				Generate a noise image in [constant Image.FORMAT_L8] format with the requested [code]width[/code] and [code]height[/code], based on the current noise parameters.
 			</description>
 		</method>
 		<method name="get_noise_1d" qualifiers="const">
@@ -108,7 +108,7 @@
 			<argument index="0" name="size" type="int">
 			</argument>
 			<description>
-				Generate a tileable noise image, based on the current noise parameters. Generated seamless images are always square ([code]size[/code] × [code]size[/code]).
+				Generate a tileable noise image in [constant Image.FORMAT_L8] format, based on the current noise parameters. Generated seamless images are always square ([code]size[/code] × [code]size[/code]).
 			</description>
 		</method>
 	</methods>
