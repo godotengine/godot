@@ -35,7 +35,7 @@
 #define POSITION_CORRECTION
 #define ACCUMULATE_IMPULSES
 
-void BodyPair2DSW::_add_contact(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_self) {
+void BodyPair2DSW::_add_contact(const Vector2 &p_point_A, const Vector2 &p_point_B, const Vector2 &normal, void *p_self) {
 
 	BodyPair2DSW *self = (BodyPair2DSW *)p_self;
 

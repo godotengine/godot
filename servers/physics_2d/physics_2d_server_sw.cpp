@@ -160,7 +160,7 @@ real_t Physics2DServerSW::shape_get_custom_solver_bias(RID p_shape) const {
 	return shape->get_custom_bias();
 }
 
-void Physics2DServerSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata) {
+void Physics2DServerSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &p_point_B, const Vector2 &normal, void *p_userdata) {
 
 	CollCbkData *cbk = (CollCbkData *)p_userdata;
 
@@ -168,23 +168,33 @@ void Physics2DServerSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &
 		return;
 
 	if (cbk->valid_dir != Vector2()) {
-		if (p_point_A.distance_squared_to(p_point_B) > cbk->valid_depth * cbk->valid_depth) {
+		Vector2 valid_dir = cbk->valid_dir.normalized();
+		Vector2 rel_dir = p_point_A - p_point_B;
+
+		// Don't collide if the length of the intersecting vector is greater than the valid depth
+		if (rel_dir.length() > cbk->valid_depth) {
 			cbk->invalid_by_dir++;
 			return;
 		}
-		Vector2 rel_dir = (p_point_A - p_point_B).normalized();
 
-		if (cbk->valid_dir.dot(rel_dir) < Math_SQRT12) { //sqrt(2)/2.0 - 45 degrees
+		// Don't collide if the intersection normal is within 90 degrees of the valid direction
+		Vector2 normal_to_check = normal != Vector2() ? normal.normalized() : -rel_dir.normalized();
+		if (valid_dir.dot(normal_to_check) > -CMP_EPSILON) {
 			cbk->invalid_by_dir++;
-
-			/*
-			print_line("A: "+p_point_A);
-			print_line("B: "+p_point_B);
-			print_line("discard too angled "+rtos(cbk->valid_dir.dot((p_point_A-p_point_B))));
-			print_line("resnorm: "+(p_point_A-p_point_B).normalized());
-			print_line("distance: "+rtos(p_point_A.distance_to(p_point_B)));
-			*/
 			return;
+		}
+
+		// Don't collide if the test object isn't moving towards the collision edge
+		// and the collision object isn't trying to catch up and collide with
+		// the test object by moving towards its collision edge faster
+		// Unless trying to unstick, if so, consider for collision if
+		// the relative velocity between the two objects is zero
+		if (cbk->check_motion && cbk->p_motion.normalized().dot(normal_to_check) > -CMP_EPSILON) {
+			real_t motion_dot = (cbk->p_motion - cbk->obj_motion).normalized().dot(normal_to_check);
+			if (motion_dot >= CMP_EPSILON || (!cbk->unstick && Math::abs(motion_dot) < CMP_EPSILON)) {
+				cbk->invalid_by_dir++;
+				return;
+			}
 		}
 	}
 
