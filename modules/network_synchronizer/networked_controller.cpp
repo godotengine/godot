@@ -536,7 +536,6 @@ void ServerController::set_enabled(bool p_enable) {
 	// ~~ On state change, reset everything to avoid accumulate old data. ~~
 
 	// Client inputs reset.
-	current_input_buffer_id = UINT32_MAX;
 	ghost_input_count = 0;
 	last_sent_state_input_id = 0;
 	client_tick_additional_speed = 0.0;

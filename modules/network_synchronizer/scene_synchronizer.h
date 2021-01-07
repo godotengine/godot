@@ -227,6 +227,8 @@ public:
 	/// Make peers as dirty, so they will be reloaded next frame.
 	void dirty_peers();
 
+	void set_enabled(bool p_enable);
+
 	void set_peer_networking_enable(int p_peer, bool p_enable);
 	bool is_peer_networking_enable(int p_peer) const;
 
@@ -240,6 +242,7 @@ public:
 
 	void _rpc_send_state(Variant p_snapshot);
 	void _rpc_notify_need_full_snapshot();
+	void _rpc_set_network_enabled(bool p_enabled);
 	void _rpc_notify_peer_status(bool p_enabled);
 
 	void update_peers();
@@ -379,6 +382,7 @@ class ClientSynchronizer : public Synchronizer {
 	std::deque<NetUtility::Snapshot> server_snapshots;
 	uint32_t last_checked_input = 0;
 	bool enabled = true;
+	bool want_to_enable = false;
 
 	bool need_full_snapshot_notified = false;
 

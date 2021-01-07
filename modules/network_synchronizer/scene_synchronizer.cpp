@@ -92,6 +92,7 @@ void SceneSynchronizer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_state_notify"), &SceneSynchronizer::force_state_notify);
 
+	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SceneSynchronizer::set_enabled);
 	ClassDB::bind_method(D_METHOD("set_peer_networking_enable", "peer", "enabled"), &SceneSynchronizer::set_peer_networking_enable);
 	ClassDB::bind_method(D_METHOD("get_peer_networking_enable", "peer"), &SceneSynchronizer::is_peer_networking_enable);
 
@@ -106,6 +107,7 @@ void SceneSynchronizer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_rpc_send_state"), &SceneSynchronizer::_rpc_send_state);
 	ClassDB::bind_method(D_METHOD("_rpc_notify_need_full_snapshot"), &SceneSynchronizer::_rpc_notify_need_full_snapshot);
+	ClassDB::bind_method(D_METHOD("_rpc_set_network_enabled", "enabled"), &SceneSynchronizer::_rpc_set_network_enabled);
 	ClassDB::bind_method(D_METHOD("_rpc_notify_peer_status", "enabled"), &SceneSynchronizer::_rpc_notify_peer_status);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "server_notify_state_interval", PROPERTY_HINT_RANGE, "0.001,10.0,0.0001"), "set_server_notify_state_interval", "get_server_notify_state_interval");
@@ -186,6 +188,7 @@ void SceneSynchronizer::_notification(int p_what) {
 SceneSynchronizer::SceneSynchronizer() {
 	rpc_config("_rpc_send_state", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_notify_need_full_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
+	rpc_config("_rpc_set_network_enabled", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_notify_peer_status", MultiplayerAPI::RPC_MODE_REMOTE);
 
 	// Avoid too much useless re-allocations.
@@ -727,8 +730,23 @@ void SceneSynchronizer::dirty_peers() {
 	peer_dirty = true;
 }
 
-void SceneSynchronizer::set_peer_networking_enable(int p_peer, bool p_enable) {
+void SceneSynchronizer::set_enabled(bool p_enable) {
+	ERR_FAIL_COND_MSG(synchronizer_type == SYNCHRONIZER_TYPE_SERVER, "The server is always enabled.");
+	if (synchronizer_type == SYNCHRONIZER_TYPE_CLIENT) {
+		rpc_id(1, "_rpc_set_network_enabled", p_enable);
+		if (p_enable == false) {
+			// If the peer want to disable, we can disable it locally
+			// immediately. When it wants to enable the networking, the server
+			// must be notified so it decides when to start the networking
+			// again.
+			static_cast<ClientSynchronizer *>(synchronizer)->set_enabled(p_enable);
+		}
+	} else if (synchronizer_type == SYNCHRONIZER_TYPE_NONETWORK) {
+		set_peer_networking_enable(0, p_enable);
+	}
+}
 
+void SceneSynchronizer::set_peer_networking_enable(int p_peer, bool p_enable) {
 	if (synchronizer_type == SYNCHRONIZER_TYPE_SERVER) {
 		ERR_FAIL_COND_MSG(p_peer == 1, "Disable the server is not possible.");
 
@@ -741,6 +759,9 @@ void SceneSynchronizer::set_peer_networking_enable(int p_peer, bool p_enable) {
 		}
 
 		pd->enabled = p_enable;
+		// Set to true, so next time this peer connects a full snapshot is sent.
+		pd->force_notify_snapshot = true;
+		pd->need_full_snapshot = true;
 
 		dirty_peers();
 
@@ -892,6 +913,13 @@ void SceneSynchronizer::_rpc_notify_need_full_snapshot() {
 	NetUtility::PeerData *pd = peer_data.lookup_ptr(sender_peer);
 	ERR_FAIL_COND(pd == nullptr);
 	pd->need_full_snapshot = true;
+}
+
+void SceneSynchronizer::_rpc_set_network_enabled(bool p_enabled) {
+	ERR_FAIL_COND_MSG(is_server() == false, "The peer status is supposed to be received by the server.");
+	set_peer_networking_enable(
+			get_multiplayer()->get_rpc_sender_id(),
+			p_enabled);
 }
 
 void SceneSynchronizer::_rpc_notify_peer_status(bool p_enabled) {
@@ -1687,12 +1715,12 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 			// This peer still does not have a `NetworkedController`.
 			continue;
 		}
-		if (peer_it.value->force_notify_snapshot == false && notify_state == false) {
-			// Nothing to do.
-			continue;
-		}
 		if (unlikely(peer_it.value->enabled == false)) {
 			// This peer is disabled.
+			continue;
+		}
+		if (peer_it.value->force_notify_snapshot == false && notify_state == false) {
+			// Nothing to do.
 			continue;
 		}
 
@@ -2724,16 +2752,29 @@ void ClientSynchronizer::set_enabled(bool p_enabled) {
 		return;
        }
 
-	enabled = p_enabled;
-
-	if (enabled) {
-		scene_synchronizer->emit_signal("sync_started");
+	if (p_enabled) {
+		// Postpone enabling when the next server snapshot is received.
+		want_to_enable = true;
 	} else {
+		// Disabling happens immediately.
+		enabled = false;
+		want_to_enable = false;
 		scene_synchronizer->emit_signal("sync_paused");
 	}
 }
 
 bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
+
+	if (want_to_enable) {
+		if (enabled) {
+			NET_DEBUG_ERR("At this point the client is supposed to be disabled. This is a bug that must be solved.");
+		}
+		// The netwroking is disabled and we can re-enable it.
+               	enabled = true;
+               	want_to_enable = false;
+               	scene_synchronizer->emit_signal("sync_started");
+	}
+
 	need_full_snapshot_notified = false;
 	last_received_snapshot.input_id = UINT32_MAX;
 
@@ -2811,6 +2852,8 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 		NET_DEBUG_PRINT(p_snapshot);
 		return false;
 	} else {
+		// Success.
+
 		return true;
 	}
 }
