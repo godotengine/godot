@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,8 @@ public:
 
 	enum {
 		SDFGI_MAX_CASCADES = 8,
-		SDFGI_MAX_REGIONS_PER_CASCADE = 3
+		SDFGI_MAX_REGIONS_PER_CASCADE = 3,
+		MAX_INSTANCE_PAIRS = 32
 	};
 
 	uint64_t render_pass = 0;
@@ -240,7 +241,10 @@ public:
 		uint32_t flags = 0;
 		uint32_t layer_mask = 0; //for fast layer-mask discard
 		RID base_rid;
-		RID instance_data_rid;
+		union {
+			uint64_t instance_data_rid;
+			RendererSceneRender::GeometryInstance *instance_geometry;
+		};
 		Instance *instance = nullptr;
 	};
 
@@ -286,7 +290,7 @@ public:
 	static void _instance_pair(Instance *p_A, Instance *p_B);
 	static void _instance_unpair(Instance *p_A, Instance *p_B);
 
-	static void _instance_update_mesh_instance(Instance *p_instance);
+	void _instance_update_mesh_instance(Instance *p_instance);
 
 	virtual RID scenario_create();
 
@@ -315,7 +319,55 @@ public:
 		virtual ~InstanceBaseData() {}
 	};
 
-	struct Instance : RendererSceneRender::InstanceBase {
+	struct Instance {
+		RS::InstanceType base_type;
+		RID base;
+
+		RID skeleton;
+		RID material_override;
+
+		RID mesh_instance; //only used for meshes and when skeleton/blendshapes exist
+
+		Transform transform;
+
+		float lod_bias;
+
+		Vector<RID> materials;
+
+		RS::ShadowCastingSetting cast_shadows;
+
+		uint32_t layer_mask;
+		//fit in 32 bits
+		bool mirror : 8;
+		bool receive_shadows : 8;
+		bool visible : 8;
+		bool baked_light : 2; //this flag is only to know if it actually did use baked light
+		bool dynamic_gi : 2; //same above for dynamic objects
+		bool redraw_if_visible : 4;
+
+		Instance *lightmap;
+		Rect2 lightmap_uv_scale;
+		int lightmap_slice_index;
+		uint32_t lightmap_cull_index;
+		Vector<Color> lightmap_sh; //spherical harmonic
+
+		AABB aabb;
+		AABB transformed_aabb;
+		AABB prev_transformed_aabb;
+
+		struct InstanceShaderParameter {
+			int32_t index = -1;
+			Variant value;
+			Variant default_value;
+			PropertyInfo info;
+		};
+
+		Map<StringName, InstanceShaderParameter> instance_shader_parameters;
+		bool instance_allocated_shader_parameters = false;
+		int32_t instance_allocated_shader_parameters_offset = -1;
+
+		//
+
 		RID self;
 		//scenario stuff
 		DynamicBVH::ID indexer_id;
@@ -350,24 +402,91 @@ public:
 		SelfList<InstancePair>::List pairs;
 		uint64_t pair_check = 0;
 
-		virtual void dependency_deleted(RID p_dependency) {
-			if (p_dependency == base) {
-				singleton->instance_set_base(self, RID());
-			} else if (p_dependency == skeleton) {
-				singleton->instance_attach_skeleton(self, RID());
-			} else {
-				singleton->_instance_queue_update(this, false, true);
+		RendererStorage::DependencyTracker dependency_tracker;
+
+		static void dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *tracker) {
+			Instance *instance = (Instance *)tracker->userdata;
+			switch (p_notification) {
+				case RendererStorage::DEPENDENCY_CHANGED_SKELETON_DATA:
+				case RendererStorage::DEPENDENCY_CHANGED_AABB: {
+					singleton->_instance_queue_update(instance, true, false);
+
+				} break;
+				case RendererStorage::DEPENDENCY_CHANGED_MATERIAL: {
+					singleton->_instance_queue_update(instance, false, true);
+				} break;
+				case RendererStorage::DEPENDENCY_CHANGED_MESH:
+				case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH:
+				case RendererStorage::DEPENDENCY_CHANGED_DECAL:
+				case RendererStorage::DEPENDENCY_CHANGED_LIGHT:
+				case RendererStorage::DEPENDENCY_CHANGED_REFLECTION_PROBE: {
+					singleton->_instance_queue_update(instance, true, true);
+				} break;
+				case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES:
+				case RendererStorage::DEPENDENCY_CHANGED_SKELETON_BONES: {
+					//ignored
+				} break;
 			}
 		}
 
-		virtual void dependency_changed(bool p_aabb, bool p_dependencies) {
-			singleton->_instance_queue_update(this, p_aabb, p_dependencies);
+		static void dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *tracker) {
+			Instance *instance = (Instance *)tracker->userdata;
+
+			if (p_dependency == instance->base) {
+				singleton->instance_set_base(instance->self, RID());
+			} else if (p_dependency == instance->skeleton) {
+				singleton->instance_attach_skeleton(instance->self, RID());
+			} else {
+				singleton->_instance_queue_update(instance, false, true);
+			}
 		}
 
 		Instance() :
 				scenario_item(this),
 				update_item(this) {
+<<<<<<< HEAD
 			visible = true;
+=======
+			base_type = RS::INSTANCE_NONE;
+			cast_shadows = RS::SHADOW_CASTING_SETTING_ON;
+			receive_shadows = true;
+			visible = true;
+			layer_mask = 1;
+			baked_light = false;
+			dynamic_gi = false;
+			redraw_if_visible = false;
+			lightmap_slice_index = 0;
+			lightmap = nullptr;
+			lightmap_cull_index = 0;
+			lod_bias = 1.0;
+
+			scenario = nullptr;
+
+			update_aabb = false;
+			update_dependencies = false;
+
+			extra_margin = 0;
+
+			visible = true;
+
+			lod_begin = 0;
+			lod_end = 0;
+			lod_begin_hysteresis = 0;
+			lod_end_hysteresis = 0;
+
+			last_frame_pass = 0;
+			version = 1;
+			base_data = nullptr;
+
+			custom_aabb = nullptr;
+
+			pair_check = 0;
+			array_index = -1;
+
+			dependency_tracker.userdata = this;
+			dependency_tracker.changed_callback = dependency_changed;
+			dependency_tracker.deleted_callback = dependency_deleted;
+>>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 		}
 
 		~Instance() {
@@ -384,6 +503,7 @@ public:
 	void _instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_dependencies = false);
 
 	struct InstanceGeometryData : public InstanceBaseData {
+		RendererSceneRender::GeometryInstance *geometry_instance = nullptr;
 		Set<Instance *> lights;
 		bool can_cast_shadows = true;
 		bool material_is_animated = true;
@@ -420,6 +540,10 @@ public:
 	};
 
 	SelfList<InstanceReflectionProbeData>::List reflection_probe_render_list;
+
+	struct InstanceParticlesCollisionData : public InstanceBaseData {
+		RID instance;
+	};
 
 	struct InstanceLightData : public InstanceBaseData {
 		RID instance;
@@ -477,6 +601,7 @@ public:
 	SelfList<InstanceGIProbeData>::List gi_probe_update_list;
 
 	struct InstanceLightmapData : public InstanceBaseData {
+		RID instance;
 		Set<Instance *> geometries;
 		Set<Instance *> users;
 
@@ -541,38 +666,142 @@ public:
 		}
 	};
 
-	struct CullResult {
-		PagedArray<Instance *> *result;
-		_FORCE_INLINE_ bool operator()(void *p_data) {
-			Instance *p_instance = (Instance *)p_data;
-			result->push_back(p_instance);
-			return false;
-		}
-	};
-
 	Set<Instance *> heightfield_particle_colliders_update_list;
 
 	PagedArrayPool<Instance *> instance_cull_page_pool;
-	PagedArrayPool<RendererSceneRender::InstanceBase *> base_instance_cull_page_pool;
+	PagedArrayPool<RendererSceneRender::GeometryInstance *> geometry_instance_cull_page_pool;
 	PagedArrayPool<RID> rid_cull_page_pool;
 
 	PagedArray<Instance *> instance_cull_result;
-	PagedArray<RID> mesh_instance_cull_result;
-	PagedArray<RendererSceneRender::InstanceBase *> geometry_instances_to_render;
 	PagedArray<Instance *> instance_shadow_cull_result;
-	PagedArray<RendererSceneRender::InstanceBase *> geometry_instances_to_shadow_render;
-	PagedArray<Instance *> instance_sdfgi_cull_result;
-	PagedArray<Instance *> light_cull_result;
-	PagedArray<RendererSceneRender::InstanceBase *> lightmap_cull_result;
-	PagedArray<RID> reflection_probe_instance_cull_result;
-	PagedArray<RID> light_instance_cull_result;
+	PagedArray<RendererSceneRender::GeometryInstance *> geometry_instances_to_shadow_render;
 
-	PagedArray<RID> gi_probe_instance_cull_result;
-	PagedArray<RID> decal_instance_cull_result;
+	struct FrustumCullResult {
+		PagedArray<RendererSceneRender::GeometryInstance *> geometry_instances;
+		PagedArray<Instance *> lights;
+		PagedArray<RID> light_instances;
+		PagedArray<RID> lightmaps;
+		PagedArray<RID> reflections;
+		PagedArray<RID> decals;
+		PagedArray<RID> gi_probes;
+		PagedArray<RID> mesh_instances;
+
+		struct DirectionalShadow {
+			PagedArray<RendererSceneRender::GeometryInstance *> cascade_geometry_instances[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES];
+		} directional_shadows[RendererSceneRender::MAX_DIRECTIONAL_LIGHTS];
+
+		PagedArray<RendererSceneRender::GeometryInstance *> sdfgi_region_geometry_instances[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE];
+		PagedArray<RID> sdfgi_cascade_lights[SDFGI_MAX_CASCADES];
+
+		void clear() {
+			geometry_instances.clear();
+			lights.clear();
+			light_instances.clear();
+			lightmaps.clear();
+			reflections.clear();
+			decals.clear();
+			gi_probes.clear();
+			mesh_instances.clear();
+			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
+				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
+					directional_shadows[i].cascade_geometry_instances[j].clear();
+				}
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
+				sdfgi_region_geometry_instances[i].clear();
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES; i++) {
+				sdfgi_cascade_lights[i].clear();
+			}
+		}
+
+		void reset() {
+			geometry_instances.reset();
+			lights.reset();
+			light_instances.reset();
+			lightmaps.reset();
+			reflections.reset();
+			decals.reset();
+			gi_probes.reset();
+			mesh_instances.reset();
+			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
+				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
+					directional_shadows[i].cascade_geometry_instances[j].reset();
+				}
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
+				sdfgi_region_geometry_instances[i].reset();
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES; i++) {
+				sdfgi_cascade_lights[i].reset();
+			}
+		}
+
+		void append_from(FrustumCullResult &p_cull_result) {
+			geometry_instances.merge_unordered(p_cull_result.geometry_instances);
+			lights.merge_unordered(p_cull_result.lights);
+			light_instances.merge_unordered(p_cull_result.light_instances);
+			lightmaps.merge_unordered(p_cull_result.lightmaps);
+			reflections.merge_unordered(p_cull_result.reflections);
+			decals.merge_unordered(p_cull_result.decals);
+			gi_probes.merge_unordered(p_cull_result.gi_probes);
+			mesh_instances.merge_unordered(p_cull_result.mesh_instances);
+
+			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
+				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
+					directional_shadows[i].cascade_geometry_instances[j].merge_unordered(p_cull_result.directional_shadows[i].cascade_geometry_instances[j]);
+				}
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
+				sdfgi_region_geometry_instances[i].merge_unordered(p_cull_result.sdfgi_region_geometry_instances[i]);
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES; i++) {
+				sdfgi_cascade_lights[i].merge_unordered(p_cull_result.sdfgi_cascade_lights[i]);
+			}
+		}
+
+		void init(PagedArrayPool<RID> *p_rid_pool, PagedArrayPool<RendererSceneRender::GeometryInstance *> *p_geometry_instance_pool, PagedArrayPool<Instance *> *p_instance_pool) {
+			geometry_instances.set_page_pool(p_geometry_instance_pool);
+			light_instances.set_page_pool(p_rid_pool);
+			lights.set_page_pool(p_instance_pool);
+			lightmaps.set_page_pool(p_rid_pool);
+			reflections.set_page_pool(p_rid_pool);
+			decals.set_page_pool(p_rid_pool);
+			mesh_instances.set_page_pool(p_rid_pool);
+			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
+				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
+					directional_shadows[i].cascade_geometry_instances[j].set_page_pool(p_geometry_instance_pool);
+				}
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
+				sdfgi_region_geometry_instances[i].set_page_pool(p_geometry_instance_pool);
+			}
+
+			for (int i = 0; i < SDFGI_MAX_CASCADES; i++) {
+				sdfgi_cascade_lights[i].set_page_pool(p_rid_pool);
+			}
+		}
+	};
+
+	FrustumCullResult frustum_cull_result;
+	LocalVector<FrustumCullResult> frustum_cull_result_threads;
+
+	uint32_t thread_cull_threshold = 200;
 
 	RID_PtrOwner<Instance> instance_owner;
 
+<<<<<<< HEAD
 	bool pair_volumes_to_mesh = false; // used in traditional forward, unnecesary on clustered
+=======
+	uint32_t geometry_instance_pair_mask; // used in traditional forward, unnecesary on clustered
+>>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 
 	virtual RID instance_create();
 
@@ -606,7 +835,7 @@ public:
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias);
 
-	void _update_instance_shader_parameters_from_material(Map<StringName, RendererSceneRender::InstanceBase::InstanceShaderParameter> &isparams, const Map<StringName, RendererSceneRender::InstanceBase::InstanceShaderParameter> &existing_isparams, RID p_material);
+	void _update_instance_shader_parameters_from_material(Map<StringName, Instance::InstanceShaderParameter> &isparams, const Map<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material);
 
 	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value);
 	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const;
@@ -640,8 +869,6 @@ public:
 				real_t range_begin;
 				Vector2 uv_scale;
 
-				PagedArray<RendererSceneRender::InstanceBase *> cull_result;
-
 			} cascades[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES]; //max 4 cascades
 			uint32_t cascade_count = 0;
 
@@ -651,6 +878,7 @@ public:
 
 		struct SDFGI {
 			//have arrays here because SDFGI functions expects this, plus regions can have areas
+<<<<<<< HEAD
 			PagedArray<RendererSceneRender::InstanceBase *> region_cull_result[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE] = {};
 			AABB region_aabb[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE] = {}; //max 3 regions per cascade
 			uint32_t region_cascade[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE] = {}; //max 3 regions per cascade
@@ -658,6 +886,13 @@ public:
 
 			PagedArray<RID> cascade_lights[SDFGI_MAX_CASCADES] = {};
 			uint32_t cascade_light_index[SDFGI_MAX_CASCADES] = {};
+=======
+			AABB region_aabb[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
+			uint32_t region_cascade[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
+			uint32_t region_count = 0;
+
+			uint32_t cascade_light_index[SDFGI_MAX_CASCADES];
+>>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 			uint32_t cascade_light_count = 0;
 
 		} sdfgi;
@@ -666,6 +901,18 @@ public:
 
 		Frustum frustum;
 	} cull;
+
+	struct FrustumCullData {
+		Cull *cull;
+		Scenario *scenario;
+		RID shadow_atlas;
+		Transform cam_transform;
+		uint32_t visible_layers;
+		Instance *render_reflection_probe;
+	};
+
+	void _frustum_cull_threaded(uint32_t p_thread, FrustumCullData *cull_data);
+	void _frustum_cull(FrustumCullData &cull_data, FrustumCullResult &cull_result, uint64_t p_from, uint64_t p_to);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
 	void _prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, float p_screen_lod_threshold, bool p_using_shadows = true);
@@ -780,6 +1027,8 @@ public:
 	virtual void update();
 
 	bool free(RID p_rid);
+
+	void set_scene_render(RendererSceneRender *p_scene_render);
 
 	RendererSceneCull();
 	virtual ~RendererSceneCull();

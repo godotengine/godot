@@ -242,7 +242,7 @@
 			</return>
 			<description>
 				Returns the object's unique instance ID.
-				This ID can be saved in [EncodedObjectAsID], and can be used to retrieve the object instance with [method @GDScript.instance_from_id].
+				This ID can be saved in [EncodedObjectAsID], and can be used to retrieve the object instance with [method @GlobalScope.instance_from_id].
 			</description>
 		</method>
 		<method name="get_meta" qualifiers="const">

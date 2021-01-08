@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1285,8 +1285,7 @@ void TextEdit::_notification(int p_what) {
 						if (draw_tabs && ((glyphs[j].flags & TextServer::GRAPHEME_IS_TAB) == TextServer::GRAPHEME_IS_TAB)) {
 							int yofs = (text_height - cache.tab_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
 							cache.tab_icon->draw(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + yofs), current_color);
-						}
-						if (draw_spaces && ((glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE)) {
+						} else if (draw_spaces && ((glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE)) {
 							int yofs = (text_height - cache.space_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
 							int xofs = (glyphs[j].advance * glyphs[j].repeat - cache.space_icon->get_width()) / 2;
 							cache.space_icon->draw(ci, Point2(char_ofs + char_margin + ofs_x + xofs, ofs_y + yofs), current_color);
@@ -3619,7 +3618,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 
-		if (!keycode_handled && (!k->get_command() || (k->get_command() && k->get_alt()))) { // For German keyboards.
+		if (!keycode_handled && !k->get_command()) { // For German keyboards.
 
 			if (k->get_unicode() >= 32) {
 				if (readonly) {

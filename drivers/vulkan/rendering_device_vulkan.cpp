@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -2134,7 +2134,16 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 		VK_IMAGE_VIEW_TYPE_2D,
 	};
 
-	image_view_create_info.viewType = p_slice_type == TEXTURE_SLICE_CUBEMAP ? VK_IMAGE_VIEW_TYPE_CUBE : (p_slice_type == TEXTURE_SLICE_3D ? VK_IMAGE_VIEW_TYPE_3D : view_types[texture.type]);
+	image_view_create_info.viewType = view_types[texture.type];
+
+	if (p_slice_type == TEXTURE_SLICE_CUBEMAP) {
+		image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+	} else if (p_slice_type == TEXTURE_SLICE_3D) {
+		image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_3D;
+	} else if (p_slice_type == TEXTURE_SLICE_2D_ARRAY) {
+		image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+	}
+
 	if (p_view.format_override == DATA_FORMAT_MAX || p_view.format_override == texture.format) {
 		image_view_create_info.format = vulkan_formats[texture.format];
 	} else {
@@ -5629,7 +5638,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(Di
 
 	vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
-	return ID_TYPE_DRAW_LIST;
+	return int64_t(ID_TYPE_DRAW_LIST) << ID_BASE_SHIFT;
 }
 
 Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, VkFramebuffer *r_framebuffer, VkRenderPass *r_render_pass) {
@@ -5896,7 +5905,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 	vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
 	draw_list->viewport = Rect2i(viewport_offset, viewport_size);
-	return ID_TYPE_DRAW_LIST;
+	return int64_t(ID_TYPE_DRAW_LIST) << ID_BASE_SHIFT;
 }
 
 Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const Vector<RID> &p_storage_textures) {
@@ -5993,7 +6002,7 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 
 	for (uint32_t i = 0; i < p_splits; i++) {
 		//take a command buffer and initialize it
-		VkCommandBuffer command_buffer = split_draw_list_allocators[p_splits].command_buffers[frame];
+		VkCommandBuffer command_buffer = split_draw_list_allocators[i].command_buffers[frame];
 
 		VkCommandBufferInheritanceInfo inheritance_info;
 		inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -6051,7 +6060,7 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 		scissor.extent.height = viewport_size.height;
 
 		vkCmdSetScissor(command_buffer, 0, 1, &scissor);
-		r_split_ids[i] = (DrawListID(1) << DrawListID(ID_TYPE_SPLIT_DRAW_LIST)) + i;
+		r_split_ids[i] = (int64_t(ID_TYPE_SPLIT_DRAW_LIST) << ID_BASE_SHIFT) + i;
 
 		draw_list[i].viewport = Rect2i(viewport_offset, viewport_size);
 	}
@@ -6066,7 +6075,7 @@ RenderingDeviceVulkan::DrawList *RenderingDeviceVulkan::_get_draw_list_ptr(DrawL
 
 	if (!draw_list) {
 		return nullptr;
-	} else if (p_id == ID_TYPE_DRAW_LIST) {
+	} else if (p_id == (int64_t(ID_TYPE_DRAW_LIST) << ID_BASE_SHIFT)) {
 		if (draw_list_split) {
 			return nullptr;
 		}
@@ -6433,8 +6442,8 @@ void RenderingDeviceVulkan::draw_list_end() {
 		//send all command buffers
 		VkCommandBuffer *command_buffers = (VkCommandBuffer *)alloca(sizeof(VkCommandBuffer) * draw_list_count);
 		for (uint32_t i = 0; i < draw_list_count; i++) {
-			vkEndCommandBuffer(draw_list->command_buffer);
-			command_buffers[i] = draw_list->command_buffer;
+			vkEndCommandBuffer(draw_list[i].command_buffer);
+			command_buffers[i] = draw_list[i].command_buffer;
 		}
 
 		vkCmdExecuteCommands(frames[frame].draw_command_buffer, draw_list_count, command_buffers);

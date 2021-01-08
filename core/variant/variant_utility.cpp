@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -291,7 +291,7 @@ struct VariantUtilityFunctions {
 		Variant ret;
 		for (int i = 1; i < p_argcount; i++) {
 			bool valid;
-			Variant::evaluate(Variant::OP_GREATER, base, *p_args[i], ret, valid);
+			Variant::evaluate(Variant::OP_LESS, base, *p_args[i], ret, valid);
 			if (!valid) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.expected = base.get_type();
@@ -324,7 +324,7 @@ struct VariantUtilityFunctions {
 		Variant ret;
 		for (int i = 1; i < p_argcount; i++) {
 			bool valid;
-			Variant::evaluate(Variant::OP_LESS, base, *p_args[i], ret, valid);
+			Variant::evaluate(Variant::OP_GREATER, base, *p_args[i], ret, valid);
 			if (!valid) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.expected = base.get_type();

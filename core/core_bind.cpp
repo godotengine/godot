@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -587,10 +587,7 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
 	List<Ref<Resource>> resources;
 	ResourceCache::get_cached_resources(&resources);
 
-	List<Ref<Resource>> rsrc;
-	ResourceCache::get_cached_resources(&rsrc);
-
-	for (List<Ref<Resource>>::Element *E = rsrc.front(); E; E = E->next()) {
+	for (List<Ref<Resource>>::Element *E = resources.front(); E; E = E->next()) {
 		Ref<Resource> r = E->get();
 
 		bool found = false;

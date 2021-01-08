@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -584,7 +584,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 			if (handled) {
 				accept_event();
-			} else if (!k->get_command() || (k->get_command() && k->get_alt())) {
+			} else if (!k->get_command()) {
 				if (k->get_unicode() >= 32 && k->get_keycode() != KEY_DELETE) {
 					if (editable) {
 						selection_delete();

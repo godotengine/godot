@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -182,9 +182,12 @@ struct Color {
 	static Color html(const String &p_rgba);
 	static bool html_is_valid(const String &p_color);
 	static Color named(const String &p_name);
+	static Color named(const String &p_name, const Color &p_default);
+	static int find_named_color(const String &p_name);
 	static int get_named_color_count();
 	static String get_named_color_name(int p_idx);
 	static Color get_named_color(int p_idx);
+	static Color from_string(const String &p_string, const Color &p_default);
 	String to_html(bool p_alpha = true) const;
 	Color from_hsv(float p_h, float p_s, float p_v, float p_a) const;
 	static Color from_rgbe9995(uint32_t p_rgbe);

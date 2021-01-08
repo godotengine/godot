@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "editor/editor_data.h"
 #include "editor/editor_export.h"
 #include "editor/editor_folding.h"
+#include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_run.h"
 #include "editor/inspector_dock.h"
 #include "editor/property_editor.h"
@@ -125,7 +126,6 @@ private:
 		FILE_SAVE_SCENE,
 		FILE_SAVE_AS_SCENE,
 		FILE_SAVE_ALL_SCENES,
-		FILE_SAVE_BEFORE_RUN,
 		FILE_SAVE_AND_RUN,
 		FILE_SHOW_IN_FILESYSTEM,
 		FILE_IMPORT_SUBSCENE,
@@ -322,6 +322,8 @@ private:
 	CheckBox *file_export_lib_merge;
 	String current_path;
 	MenuButton *update_spinner;
+
+	EditorNativeShaderSourceVisualizer *native_shader_source_visualizer;
 
 	String defer_load_scene;
 	Node *_last_instanced_scene;

@@ -1,7 +1,7 @@
 import os
 import sys
 
-from emscripten_helpers import run_closure_compiler, create_engine_file, add_js_libraries
+from emscripten_helpers import run_closure_compiler, create_engine_file, add_js_libraries, add_js_pre, add_js_externs
 from methods import get_compiler_version
 from SCons.Util import WhereIs
 
@@ -133,6 +133,8 @@ def configure(env):
 
     # Add helper method for adding libraries.
     env.AddMethod(add_js_libraries, "AddJSLibraries")
+    env.AddMethod(add_js_pre, "AddJSPre")
+    env.AddMethod(add_js_externs, "AddJSExterns")
 
     # Add method that joins/compiles our Engine files.
     env.AddMethod(create_engine_file, "CreateEngineFile")

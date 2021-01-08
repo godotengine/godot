@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,10 +42,10 @@
 
 #include "tests/test_macros.h"
 
-#define TEST_COND DOCTEST_CHECK_FALSE_MESSAGE
-#define TEST_FAIL DOCTEST_FAIL
-#define TEST_FAIL_COND DOCTEST_REQUIRE_FALSE_MESSAGE
-#define TEST_FAIL_COND_WARN DOCTEST_WARN_FALSE_MESSAGE
+#define TEST_COND(cond, msg) DOCTEST_CHECK_FALSE_MESSAGE(cond, String(msg))
+#define TEST_FAIL(cond, msg) DOCTEST_FAIL(cond, String(msg))
+#define TEST_FAIL_COND(cond, msg) DOCTEST_REQUIRE_FALSE_MESSAGE(cond, String(msg))
+#define TEST_FAIL_COND_WARN(cond, msg) DOCTEST_WARN_FALSE_MESSAGE(cond, String(msg))
 
 namespace TestClassDB {
 

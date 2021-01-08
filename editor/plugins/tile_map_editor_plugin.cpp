@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,10 @@
 #include "scene/gui/split_container.h"
 
 void TileMapEditor::_node_removed(Node *p_node) {
-	if (p_node == node) {
+	if (p_node == node && node) {
+		// Fixes #44824, which describes a situation where you can reselect a TileMap node without first de-selecting it when switching scenes.
+		node->disconnect("settings_changed", callable_mp(this, &TileMapEditor::_tileset_settings_changed));
+
 		node = nullptr;
 	}
 }

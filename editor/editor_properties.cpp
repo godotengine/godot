@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,16 +68,18 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 	}
 
 	if (string_name) {
-		emit_changed(get_edited_property(), StringName(p_string), "", false);
+		emit_changed(get_edited_property(), StringName(p_string), "", true);
 	} else {
-		emit_changed(get_edited_property(), p_string, "", false);
+		emit_changed(get_edited_property(), p_string, "", true);
 	}
 }
 
 void EditorPropertyText::update_property() {
 	String s = get_edited_object()->get(get_edited_property());
 	updating = true;
-	text->set_text(s);
+	if (text->get_text() != s) {
+		text->set_text(s);
+	}
 	text->set_editable(!is_read_only());
 	updating = false;
 }
@@ -133,9 +135,11 @@ void EditorPropertyMultilineText::_open_big_text() {
 
 void EditorPropertyMultilineText::update_property() {
 	String t = get_edited_object()->get(get_edited_property());
-	text->set_text(t);
-	if (big_text && big_text->is_visible_in_tree()) {
-		big_text->set_text(t);
+	if (text->get_text() != t) {
+		text->set_text(t);
+		if (big_text && big_text->is_visible_in_tree()) {
+			big_text->set_text(t);
+		}
 	}
 }
 
@@ -725,12 +729,12 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 	for (int i = 0; i < 20; i++) {
 		String name;
 
-		if (ProjectSettings::get_singleton()->has_setting(basename + "/layer_" + itos(i + 1))) {
-			name = ProjectSettings::get_singleton()->get(basename + "/layer_" + itos(i + 1));
+		if (ProjectSettings::get_singleton()->has_setting(basename + vformat("/layer_%d", i))) {
+			name = ProjectSettings::get_singleton()->get(basename + vformat("/layer_%d", i));
 		}
 
 		if (name == "") {
-			name = TTR("Layer") + " " + itos(i + 1);
+			name = vformat(TTR("Layer %d"), i);
 		}
 
 		names.push_back(name);
@@ -2144,10 +2148,6 @@ void EditorPropertyColor::_color_changed(const Color &p_color) {
 	emit_changed(get_edited_property(), p_color, "", true);
 }
 
-void EditorPropertyColor::_popup_closed() {
-	emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
-}
-
 void EditorPropertyColor::_picker_created() {
 	// get default color picker mode from editor settings
 	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
@@ -2191,7 +2191,6 @@ EditorPropertyColor::EditorPropertyColor() {
 	add_child(picker);
 	picker->set_flat(true);
 	picker->connect("color_changed", callable_mp(this, &EditorPropertyColor::_color_changed));
-	picker->connect("popup_closed", callable_mp(this, &EditorPropertyColor::_popup_closed));
 	picker->connect("picker_created", callable_mp(this, &EditorPropertyColor::_picker_created));
 }
 
@@ -2545,35 +2544,32 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				return;
 			}
 
-			Object *obj = nullptr;
-			RES res_temp;
+			Variant obj;
 
 			if (ScriptServer::is_global_class(intype)) {
 				obj = ClassDB::instance(ScriptServer::get_global_class_native_base(intype));
 				if (obj) {
-					res_temp = obj;
 					Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(intype));
 					if (script.is_valid()) {
-						obj->set_script(Variant(script));
+						((Object *)obj)->set_script(script);
 					}
 				}
 			} else {
 				obj = ClassDB::instance(intype);
-				res_temp = obj;
 			}
 
 			if (!obj) {
 				obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
-				res_temp = obj;
 			}
 
-			ERR_BREAK(!res_temp.is_valid());
+			Resource *resp = Object::cast_to<Resource>(obj);
+			ERR_BREAK(!resp);
 			if (get_edited_object() && base_type != String() && base_type == "Script") {
 				//make visual script the right type
-				res_temp->call("set_instance_base_type", get_edited_object()->get_class());
+				resp->call("set_instance_base_type", get_edited_object()->get_class());
 			}
 
-			res = res_temp;
+			res = RES(resp);
 			emit_changed(get_edited_property(), res);
 			update_property();
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -127,6 +127,8 @@ public:
 		virtual bool is_animated() const = 0;
 		virtual bool casts_shadows() const = 0;
 		virtual Variant get_default_parameter(const StringName &p_parameter) const = 0;
+		virtual RS::ShaderNativeSourceCode get_native_source_code() const { return RS::ShaderNativeSourceCode(); }
+
 		virtual ~ShaderData() {}
 	};
 
@@ -360,14 +362,22 @@ private:
 		Shader *shader = nullptr;
 		//shortcut to shader data and type
 		ShaderType shader_type;
+<<<<<<< HEAD
 		bool update_requested = false;
 		bool uniform_dirty = false;
 		bool texture_dirty = false;
 		Material *update_next = nullptr;
+=======
+		uint32_t shader_id = 0;
+		bool update_requested;
+		bool uniform_dirty;
+		bool texture_dirty;
+		Material *update_next;
+>>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 		Map<StringName, Variant> params;
 		int32_t priority = 0;
 		RID next_pass;
-		RendererStorage::InstanceDependency instance_dependency;
+		Dependency dependency;
 	};
 
 	MaterialDataRequestFunction material_data_request_func[SHADER_TYPE_MAX];
@@ -460,7 +470,7 @@ private:
 
 		List<MeshInstance *> instances;
 
-		RendererStorage::InstanceDependency instance_dependency;
+		Dependency dependency;
 	};
 
 	mutable RID_Owner<Mesh> mesh_owner;
@@ -563,7 +573,7 @@ private:
 		bool dirty = false;
 		MultiMesh *dirty_list = nullptr;
 
-		RendererStorage::InstanceDependency instance_dependency;
+		Dependency dependency;
 	};
 
 	mutable RID_Owner<MultiMesh> multimesh_owner;
@@ -734,11 +744,11 @@ private:
 		ParticleEmissionBuffer *emission_buffer = nullptr;
 		RID emission_storage_buffer;
 
-		Set<RendererSceneRender::InstanceBase *> collisions;
+		Set<RID> collisions;
 
 		Particles() {	}
 
-		RendererStorage::InstanceDependency instance_dependency;
+		Dependency dependency;
 
 		ParticlesFrameParams frame_params;
 	};
@@ -816,6 +826,8 @@ private:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual Variant get_default_parameter(const StringName &p_parameter) const;
+		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+
 		ParticlesShaderData();
 		virtual ~ParticlesShaderData();
 	};
@@ -866,10 +878,18 @@ private:
 
 		RS::ParticlesCollisionHeightfieldResolution heightfield_resolution = RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024;
 
-		RendererStorage::InstanceDependency instance_dependency;
+		Dependency dependency;
 	};
 
 	mutable RID_Owner<ParticlesCollision> particles_collision_owner;
+
+	struct ParticlesCollisionInstance {
+		RID collision;
+		Transform transform;
+		bool active = false;
+	};
+
+	mutable RID_Owner<ParticlesCollisionInstance> particles_collision_instance_owner;
 
 	/* Skeleton */
 
@@ -888,7 +908,7 @@ private:
 
 		uint64_t version = 1;
 
-		RendererStorage::InstanceDependency instance_dependency;
+		Dependency dependency;
 	};
 
 	mutable RID_Owner<Skeleton> skeleton_owner;
@@ -920,7 +940,7 @@ private:
 		bool directional_sky_only = false;
 		uint64_t version = 0;
 
-		RendererStorage::InstanceDependency instance_dependency;
+		Dependency dependency;
 	};
 
 	mutable RID_Owner<Light> light_owner;
@@ -943,7 +963,7 @@ private:
 		uint32_t cull_mask = (1 << 20) - 1;
 		float lod_threshold = 0.01;
 
-		RendererStorage::InstanceDependency instance_dependency;
+		Dependency dependency;
 	};
 
 	mutable RID_Owner<ReflectionProbe> reflection_probe_owner;
@@ -964,7 +984,7 @@ private:
 		float distance_fade_length = 1;
 		float normal_fade = 0.0;
 
-		RendererStorage::InstanceDependency instance_dependency;
+		Dependency dependency;
 	};
 
 	mutable RID_Owner<Decal> decal_owner;
@@ -1002,7 +1022,7 @@ private:
 		uint32_t version = 1;
 		uint32_t data_version = 1;
 
-		RendererStorage::InstanceDependency instance_dependency;
+		Dependency dependency;
 	};
 
 	GiprobeSdfShaderRD giprobe_sdf_shader;
@@ -1031,7 +1051,7 @@ private:
 			int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
 		};
 
-		RendererStorage::InstanceDependency instance_dependency;
+		Dependency dependency;
 	};
 
 	bool using_lightmap_array = false; //high end uses this
@@ -1307,6 +1327,8 @@ public:
 	Variant shader_get_param_default(RID p_shader, const StringName &p_param) const;
 	void shader_set_data_request_function(ShaderType p_shader_type, ShaderDataRequestFunction p_function);
 
+	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const;
+
 	/* COMMON MATERIAL API */
 
 	RID material_create();
@@ -1324,10 +1346,15 @@ public:
 
 	void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters);
 
-	void material_update_dependency(RID p_material, InstanceBaseDependency *p_instance);
+	void material_update_dependency(RID p_material, DependencyTracker *p_instance);
 	void material_force_update_textures(RID p_material, ShaderType p_shader_type);
 
 	void material_set_data_request_function(ShaderType p_shader_type, MaterialDataRequestFunction p_function);
+
+	_FORCE_INLINE_ uint32_t material_get_shader_id(RID p_material) {
+		Material *material = material_owner.getornull(p_material);
+		return material->shader_id;
+	}
 
 	_FORCE_INLINE_ MaterialData *material_get_data(RID p_material, ShaderType p_shader_type) {
 		Material *material = material_owner.getornull(p_material);
@@ -1641,6 +1668,10 @@ public:
 	void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform);
 	Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
 
+	_FORCE_INLINE_ bool skeleton_is_valid(RID p_skeleton) {
+		return skeleton_owner.getornull(p_skeleton) != nullptr;
+	}
+
 	_FORCE_INLINE_ RID skeleton_get_3d_uniform_set(RID p_skeleton, RID p_shader, uint32_t p_set) const {
 		Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 		ERR_FAIL_COND_V(!skeleton, RID());
@@ -1804,8 +1835,8 @@ public:
 	Color reflection_probe_get_ambient_color(RID p_probe) const;
 	float reflection_probe_get_ambient_color_energy(RID p_probe) const;
 
-	void base_update_dependency(RID p_base, InstanceBaseDependency *p_instance);
-	void skeleton_update_dependency(RID p_skeleton, InstanceBaseDependency *p_instance);
+	void base_update_dependency(RID p_base, DependencyTracker *p_instance);
+	void skeleton_update_dependency(RID p_skeleton, DependencyTracker *p_instance);
 
 	/* DECAL API */
 
@@ -1954,7 +1985,11 @@ public:
 	_FORCE_INLINE_ float lightmap_get_probe_capture_update_speed() const {
 		return lightmap_probe_capture_update_speed;
 	}
-
+	_FORCE_INLINE_ RID lightmap_get_texture(RID p_lightmap) const {
+		const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+		ERR_FAIL_COND_V(!lm, RID());
+		return lm->light_texture;
+	}
 	_FORCE_INLINE_ int32_t lightmap_get_array_index(RID p_lightmap) const {
 		ERR_FAIL_COND_V(!using_lightmap_array, -1); //only for arrays
 		const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
@@ -2055,8 +2090,8 @@ public:
 		return particles->particles_transforms_buffer_uniform_set;
 	}
 
-	virtual void particles_add_collision(RID p_particles, InstanceBaseDependency *p_instance);
-	virtual void particles_remove_collision(RID p_particles, InstanceBaseDependency *p_instance);
+	virtual void particles_add_collision(RID p_particles, RID p_particles_collision_instance);
+	virtual void particles_remove_collision(RID p_particles, RID p_particles_collision_instance);
 
 	/* PARTICLES COLLISION */
 
@@ -2075,6 +2110,11 @@ public:
 	virtual Vector3 particles_collision_get_extents(RID p_particles_collision) const;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const;
 	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const;
+
+	//used from 2D and 3D
+	virtual RID particles_collision_instance_create(RID p_collision);
+	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform &p_transform);
+	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active);
 
 	/* GLOBAL VARIABLES API */
 

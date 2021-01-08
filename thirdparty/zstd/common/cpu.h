@@ -16,8 +16,6 @@
  * https://github.com/facebook/folly/blob/master/folly/CpuId.h
  */
 
-#include <string.h>
-
 #include "mem.h"
 
 #ifdef _MSC_VER

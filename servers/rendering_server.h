@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,7 @@
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "servers/display_server.h"
+#include "servers/rendering/renderer_thread_pool.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/shader_language.h"
 
@@ -51,6 +52,8 @@ class RenderingServer : public Object {
 	bool render_loop_enabled = true;
 
 	Array _get_array_from_surface(uint32_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len) const;
+
+	RendererThreadPool *thread_pool = nullptr;
 
 protected:
 	RID _make_test_cube();
@@ -130,11 +133,11 @@ public:
 	virtual void texture_set_detect_normal_callback(RID p_texture, TextureDetectCallback p_callback, void *p_userdata) = 0;
 
 	enum TextureDetectRoughnessChannel {
-		TEXTURE_DETECT_ROUGNHESS_R,
-		TEXTURE_DETECT_ROUGNHESS_G,
-		TEXTURE_DETECT_ROUGNHESS_B,
-		TEXTURE_DETECT_ROUGNHESS_A,
-		TEXTURE_DETECT_ROUGNHESS_GRAY,
+		TEXTURE_DETECT_ROUGHNESS_R,
+		TEXTURE_DETECT_ROUGHNESS_G,
+		TEXTURE_DETECT_ROUGHNESS_B,
+		TEXTURE_DETECT_ROUGHNESS_A,
+		TEXTURE_DETECT_ROUGHNESS_GRAY,
 	};
 
 	typedef void (*TextureDetectRoughnessCallback)(void *, const String &, TextureDetectRoughnessChannel);
@@ -175,6 +178,19 @@ public:
 
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) = 0;
 	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const = 0;
+
+	struct ShaderNativeSourceCode {
+		struct Version {
+			struct Stage {
+				String name;
+				String code;
+			};
+			Vector<Stage> stages;
+		};
+		Vector<Version> versions;
+	};
+
+	virtual ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
 
 	/* COMMON MATERIAL API */
 
