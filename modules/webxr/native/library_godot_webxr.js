@@ -601,7 +601,13 @@ const GodotWebXR = {
 		const buf = GodotRuntime.malloc((axes_count + 1) * 4);
 		GodotRuntime.setHeapValue(buf, axes_count, 'i32');
 		for (let i = 0; i < axes_count; i++) {
-			GodotRuntime.setHeapValue(buf + 4 + (i * 4), controller.gamepad.axes[i], 'float');
+			let value = controller.gamepad.axes[i];
+			if (i === 1 || i === 3) {
+				// Invert the Y-axis on thumbsticks and trackpads, in order to
+				// match OpenXR and other XR platform SDKs.
+				value *= -1.0;
+			}
+			GodotRuntime.setHeapValue(buf + 4 + (i * 4), value, 'float');
 		}
 		return buf;
 	},
