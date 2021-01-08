@@ -340,7 +340,14 @@ void validate_property(const Context &p_context, const ExposedClass &p_class, co
 	if (prop_class) {
 		TEST_COND(prop_class->is_singleton,
 				"Property type is a singleton: '", p_class.name, ".", String(p_prop.name), "'.");
+
+		if (p_class.api_type == ClassDB::API_CORE) {
+			TEST_COND(prop_class->api_type == ClassDB::API_EDITOR,
+					"Property '", p_class.name, ".", p_prop.name, "' has type '", prop_class->name,
+					"' from the editor API. Core API cannot have dependencies on the editor API.");
+		}
 	} else {
+		// Look for types that don't inherit Object
 		TEST_FAIL_COND(!p_context.has_type(prop_type_ref),
 				"Property type '", prop_type_ref.name, "' not found: '", p_class.name, ".", String(p_prop.name), "'.");
 	}
@@ -370,10 +377,22 @@ void validate_property(const Context &p_context, const ExposedClass &p_class, co
 }
 
 void validate_method(const Context &p_context, const ExposedClass &p_class, const MethodData &p_method) {
-	const ExposedClass *return_class = p_context.find_exposed_class(p_method.return_type);
-	if (return_class) {
-		TEST_COND(return_class->is_singleton,
-				"Method return type is a singleton: '", p_class.name, ".", p_method.name, "'.");
+	if (p_method.return_type.name != StringName()) {
+		const ExposedClass *return_class = p_context.find_exposed_class(p_method.return_type);
+		if (return_class) {
+			TEST_COND(return_class->is_singleton,
+					"Method return type is a singleton: '", p_class.name, ".", p_method.name, "'.");
+
+			if (p_class.api_type == ClassDB::API_CORE) {
+				TEST_COND(return_class->api_type == ClassDB::API_EDITOR,
+						"Method '", p_class.name, ".", p_method.name, "' has return type '", return_class->name,
+						"' from the editor API. Core API cannot have dependencies on the editor API.");
+			}
+		} else {
+			// Look for types that don't inherit Object
+			TEST_FAIL_COND(!p_context.has_type(p_method.return_type),
+					"Method return type '", p_method.return_type.name, "' not found: '", p_class.name, ".", p_method.name, "'.");
+		}
 	}
 
 	for (const List<ArgumentData>::Element *F = p_method.arguments.front(); F; F = F->next()) {
@@ -383,7 +402,14 @@ void validate_method(const Context &p_context, const ExposedClass &p_class, cons
 		if (arg_class) {
 			TEST_COND(arg_class->is_singleton,
 					"Argument type is a singleton: '", arg.name, "' of method '", p_class.name, ".", p_method.name, "'.");
+
+			if (p_class.api_type == ClassDB::API_CORE) {
+				TEST_COND(arg_class->api_type == ClassDB::API_EDITOR,
+						"Argument '", arg.name, "' of method '", p_class.name, ".", p_method.name, "' has type '",
+						arg_class->name, "' from the editor API. Core API cannot have dependencies on the editor API.");
+			}
 		} else {
+			// Look for types that don't inherit Object
 			TEST_FAIL_COND(!p_context.has_type(arg.type),
 					"Argument type '", arg.type.name, "' not found: '", arg.name, "' of method", p_class.name, ".", p_method.name, "'.");
 		}
@@ -407,8 +433,15 @@ void validate_signal(const Context &p_context, const ExposedClass &p_class, cons
 		const ExposedClass *arg_class = p_context.find_exposed_class(arg.type);
 		if (arg_class) {
 			TEST_COND(arg_class->is_singleton,
-					"Argument class is a singleton: '", arg.name, "' of signal", p_class.name, ".", p_signal.name, "'.");
+					"Argument class is a singleton: '", arg.name, "' of signal '", p_class.name, ".", p_signal.name, "'.");
+
+			if (p_class.api_type == ClassDB::API_CORE) {
+				TEST_COND(arg_class->api_type == ClassDB::API_EDITOR,
+						"Argument '", arg.name, "' of signal '", p_class.name, ".", p_signal.name, "' has type '",
+						arg_class->name, "' from the editor API. Core API cannot have dependencies on the editor API.");
+			}
 		} else {
+			// Look for types that don't inherit Object
 			TEST_FAIL_COND(!p_context.has_type(arg.type),
 					"Argument type '", arg.type.name, "' not found: '", arg.name, "' of signal", p_class.name, ".", p_signal.name, "'.");
 		}
