@@ -514,7 +514,7 @@ Files extracted from upstream source:
 ## pcre2
 
 - Upstream: http://www.pcre.org
-- Version: 10.34 (r1189, 2019)
+- Version: 10.36 (r1288, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -523,7 +523,7 @@ Files extracted from upstream source:
 - All .h files in src/ apart from pcre2posix.h
 - src/pcre2_jit_match.c
 - src/pcre2_jit_misc.c
-- src/sljit/*
+- src/sljit/
 - AUTHORS and LICENCE
 
 
