@@ -2431,9 +2431,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						return 0;
 
 					if (motion > 0)
-						mb->set_button_index(BUTTON_WHEEL_UP);
+						mb->set_button_index(MOUSE_BUTTON_WHEEL_UP);
 					else
-						mb->set_button_index(BUTTON_WHEEL_DOWN);
+						mb->set_button_index(MOUSE_BUTTON_WHEEL_DOWN);
 
 				} break;
 				case WM_MOUSEHWHEEL: {
@@ -2443,33 +2443,33 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						return 0;
 
 					if (motion < 0) {
-						mb->set_button_index(BUTTON_WHEEL_LEFT);
+						mb->set_button_index(MOUSE_BUTTON_WHEEL_LEFT);
 						mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 					} else {
-						mb->set_button_index(BUTTON_WHEEL_RIGHT);
+						mb->set_button_index(MOUSE_BUTTON_WHEEL_RIGHT);
 						mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 					}
 				} break;
 				case WM_XBUTTONDOWN: {
 					mb->set_pressed(true);
 					if (HIWORD(wParam) == XBUTTON1)
-						mb->set_button_index(BUTTON_XBUTTON1);
+						mb->set_button_index(MOUSE_BUTTON_XBUTTON1);
 					else
-						mb->set_button_index(BUTTON_XBUTTON2);
+						mb->set_button_index(MOUSE_BUTTON_XBUTTON2);
 				} break;
 				case WM_XBUTTONUP: {
 					mb->set_pressed(false);
 					if (HIWORD(wParam) == XBUTTON1)
-						mb->set_button_index(BUTTON_XBUTTON1);
+						mb->set_button_index(MOUSE_BUTTON_XBUTTON1);
 					else
-						mb->set_button_index(BUTTON_XBUTTON2);
+						mb->set_button_index(MOUSE_BUTTON_XBUTTON2);
 				} break;
 				case WM_XBUTTONDBLCLK: {
 					mb->set_pressed(true);
 					if (HIWORD(wParam) == XBUTTON1)
-						mb->set_button_index(BUTTON_XBUTTON1);
+						mb->set_button_index(MOUSE_BUTTON_XBUTTON1);
 					else
-						mb->set_button_index(BUTTON_XBUTTON2);
+						mb->set_button_index(MOUSE_BUTTON_XBUTTON2);
 					mb->set_doubleclick(true);
 				} break;
 				default: {

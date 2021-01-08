@@ -316,7 +316,7 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 			set_handle_clicked(false);
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->get_control()))) {
+		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->get_control()))) {
 			//click into curve, break it down
 			Vector<Vector3> v3a = c->tessellate();
 			int idx = 0;
@@ -411,7 +411,7 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 				//add new at pos
 			}
 
-		} else if (mb->is_pressed() && ((mb->get_button_index() == BUTTON_LEFT && curve_del->is_pressed()) || (mb->get_button_index() == BUTTON_RIGHT && curve_edit->is_pressed()))) {
+		} else if (mb->is_pressed() && ((mb->get_button_index() == MOUSE_BUTTON_LEFT && curve_del->is_pressed()) || (mb->get_button_index() == MOUSE_BUTTON_RIGHT && curve_edit->is_pressed()))) {
 			for (int i = 0; i < c->get_point_count(); i++) {
 				real_t dist_to_p = p_camera->unproject_position(gt.xform(c->get_point_position(i))).distance_to(mbpos);
 				real_t dist_to_p_out = p_camera->unproject_position(gt.xform(c->get_point_position(i) + c->get_point_out(i))).distance_to(mbpos);

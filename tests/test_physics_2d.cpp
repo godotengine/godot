@@ -216,10 +216,10 @@ protected:
 		if (mm.is_valid()) {
 			Point2 p = mm->get_position();
 
-			if (mm->get_button_mask() & BUTTON_MASK_LEFT) {
+			if (mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
 				ray_to = p;
 				_do_ray_query();
-			} else if (mm->get_button_mask() & BUTTON_MASK_RIGHT) {
+			} else if (mm->get_button_mask() & MOUSE_BUTTON_MASK_RIGHT) {
 				ray_from = p;
 				_do_ray_query();
 			}

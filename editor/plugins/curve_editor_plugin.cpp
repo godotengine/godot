@@ -115,22 +115,22 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			switch (mb.get_button_index()) {
-				case BUTTON_RIGHT:
+				case MOUSE_BUTTON_RIGHT:
 					_context_click_pos = mpos;
 					open_context_menu(get_global_transform().xform(mpos));
 					break;
 
-				case BUTTON_MIDDLE:
+				case MOUSE_BUTTON_MIDDLE:
 					remove_point(_hover_point);
 					break;
 
-				case BUTTON_LEFT:
+				case MOUSE_BUTTON_LEFT:
 					_dragging = true;
 					break;
 			}
 		}
 
-		if (!mb.is_pressed() && _dragging && mb.get_button_index() == BUTTON_LEFT) {
+		if (!mb.is_pressed() && _dragging && mb.get_button_index() == MOUSE_BUTTON_LEFT) {
 			_dragging = false;
 			if (_has_undo_data) {
 				UndoRedo &ur = *EditorNode::get_singleton()->get_undo_redo();

@@ -3298,7 +3298,7 @@ void DisplayServerX11::process_events() {
 				if (xi.pressure_supported) {
 					mm->set_pressure(xi.pressure);
 				} else {
-					mm->set_pressure((mouse_get_button_state() & (1 << (BUTTON_LEFT - 1))) ? 1.0f : 0.0f);
+					mm->set_pressure((mouse_get_button_state() & (1 << (MOUSE_BUTTON_LEFT - 1))) ? 1.0f : 0.0f);
 				}
 				mm->set_tilt(xi.tilt);
 

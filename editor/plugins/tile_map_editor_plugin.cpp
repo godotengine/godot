@@ -233,11 +233,11 @@ void TileMapEditor::_palette_input(const Ref<InputEvent> &p_event) {
 
 	// Zoom in/out using Ctrl + mouse wheel.
 	if (mb.is_valid() && mb->is_pressed() && mb->get_command()) {
-		if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_UP) {
+		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 			size_slider->set_value(size_slider->get_value() + 0.2);
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
 			size_slider->set_value(size_slider->get_value() - 0.2);
 		}
 	}
@@ -1027,7 +1027,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == BUTTON_LEFT) {
+		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			if (mb->is_pressed()) {
 				if (Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
 					return false; // Drag.
@@ -1177,7 +1177,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					return true;
 				}
 			}
-		} else if (mb->get_button_index() == BUTTON_RIGHT) {
+		} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
 			if (mb->is_pressed()) {
 				if (tool == TOOL_SELECTING || selection_active) {
 					tool = TOOL_NONE;
@@ -1462,7 +1462,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			return true;
 		}
-		if (tool == TOOL_PICKING && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+		if (tool == TOOL_PICKING && Input::get_singleton()->is_mouse_button_pressed(MOUSE_BUTTON_LEFT)) {
 			_pick_tile(over_tile);
 
 			return true;

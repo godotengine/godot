@@ -693,7 +693,7 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
 		}
-		bool button_left = me->get_button_mask() & BUTTON_MASK_LEFT;
+		bool button_left = me->get_button_mask() & MOUSE_BUTTON_MASK_LEFT;
 
 		bool new_keying_hover = keying_rect.has_point(mpos) && !button_left;
 		if (new_keying_hover != keying_hover) {
@@ -722,7 +722,7 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		Vector2 mpos = mb->get_position();
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
@@ -1359,7 +1359,7 @@ void EditorInspectorSection::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		Ref<Font> font = get_theme_font("font", "Tree");
 		int font_size = get_theme_font_size("font_size", "Tree");
 		if (mb->get_position().y > font->get_height(font_size)) { //clicked outside

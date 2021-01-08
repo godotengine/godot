@@ -76,7 +76,7 @@ void SpinBox::_line_edit_input(const Ref<InputEvent> &p_event) {
 }
 
 void SpinBox::_range_click_timeout() {
-	if (!drag.enabled && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+	if (!drag.enabled && Input::get_singleton()->is_mouse_button_pressed(MOUSE_BUTTON_LEFT)) {
 		bool up = get_local_mouse_position().y < (get_size().height / 2);
 		set_value(get_value() + (up ? get_step() : -get_step()));
 
@@ -110,7 +110,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 		bool up = mb->get_position().y < (get_size().height / 2);
 
 		switch (mb->get_button_index()) {
-			case BUTTON_LEFT: {
+			case MOUSE_BUTTON_LEFT: {
 				line_edit->grab_focus();
 
 				set_value(get_value() + (up ? get_step() : -get_step()));
@@ -122,17 +122,17 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 				drag.allowed = true;
 				drag.capture_pos = mb->get_position();
 			} break;
-			case BUTTON_RIGHT: {
+			case MOUSE_BUTTON_RIGHT: {
 				line_edit->grab_focus();
 				set_value((up ? get_max() : get_min()));
 			} break;
-			case BUTTON_WHEEL_UP: {
+			case MOUSE_BUTTON_WHEEL_UP: {
 				if (line_edit->has_focus()) {
 					set_value(get_value() + get_step() * mb->get_factor());
 					accept_event();
 				}
 			} break;
-			case BUTTON_WHEEL_DOWN: {
+			case MOUSE_BUTTON_WHEEL_DOWN: {
 				if (line_edit->has_focus()) {
 					set_value(get_value() - get_step() * mb->get_factor());
 					accept_event();
@@ -141,7 +141,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		//set_default_cursor_shape(CURSOR_ARROW);
 		range_click_timer->stop();
 		_release_mouse();
@@ -150,7 +150,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 
-	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
 		if (drag.enabled) {
 			drag.diff_y += mm->get_relative().y;
 			float diff_y = -0.01 * Math::pow(ABS(drag.diff_y), 1.8f) * SGN(drag.diff_y);

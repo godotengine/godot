@@ -723,9 +723,9 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid()) {
 		if (mb->is_pressed() && mb->get_command()) {
-			if (mb->get_button_index() == BUTTON_WHEEL_UP) {
+			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 				_zoom_in();
-			} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+			} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
 				_zoom_out();
 			}
 		}
@@ -1548,7 +1548,7 @@ void CodeTextEditor::validate_script() {
 
 void CodeTextEditor::_warning_label_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		_warning_button_pressed();
 	}
 }
@@ -1572,7 +1572,7 @@ void CodeTextEditor::_toggle_scripts_pressed() {
 
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		goto_error();
 	}
 }
