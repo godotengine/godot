@@ -460,8 +460,7 @@ OS::ScreenOrientation OS::get_screen_orientation() const {
 	return (OS::ScreenOrientation)_orientation;
 }
 
-void OS::_ensure_user_data_dir() {
-
+void OS::ensure_user_data_dir() {
 	String dd = get_user_data_dir();
 	DirAccess *da = DirAccess::open(dd);
 	if (da) {

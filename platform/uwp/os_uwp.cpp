@@ -340,8 +340,6 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 				ref new TypedEventHandler<Gyrometer ^, GyrometerReadingChangedEventArgs ^>(managed_object, &ManagedType::on_gyroscope_reading_changed);
 	}
 
-	_ensure_user_data_dir();
-
 	if (is_keep_screen_on())
 		display_request->RequestActive();
 

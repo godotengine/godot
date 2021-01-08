@@ -97,8 +97,6 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 	power_manager = memnew(PowerX11);
 #endif
 
-	_ensure_user_data_dir();
-
 	resource_loader_dummy.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_dummy);
 

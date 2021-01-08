@@ -1774,8 +1774,6 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	power_manager = memnew(PowerOSX);
 
-	_ensure_user_data_dir();
-
 	restore_rect = Rect2(get_window_position(), get_window_size());
 
 	if (p_desired.layered) {

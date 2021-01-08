@@ -140,7 +140,6 @@ protected:
 
 	virtual void set_cmdline(const char *p_execpath, const List<String> &p_args);
 
-	void _ensure_user_data_dir();
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
 
 public:
@@ -304,6 +303,8 @@ public:
 	virtual String get_name() const = 0;
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
 	virtual String get_model_name() const;
+
+	void ensure_user_data_dir();
 
 	virtual MainLoop *get_main_loop() const = 0;
 
