@@ -2865,17 +2865,18 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 				}
 			}
 			push_cell();
+			const Color fallback_color = Color(0, 0, 0, 0);
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "border") {
-						Color color = _get_color_from_string(subtag_a[1], Color(0, 0, 0, 0));
+						Color color = Color::from_string(subtag_a[1], fallback_color);
 						set_cell_border_color(color);
 					} else if (subtag_a[0] == "bg") {
 						Vector<String> subtag_b = subtag_a[1].split(",");
 						if (subtag_b.size() == 2) {
-							Color color1 = _get_color_from_string(subtag_b[0], Color(0, 0, 0, 0));
-							Color color2 = _get_color_from_string(subtag_b[1], Color(0, 0, 0, 0));
+							Color color1 = Color::from_string(subtag_b[0], fallback_color);
+							Color color2 = Color::from_string(subtag_b[1], fallback_color);
 							set_cell_row_background_color(color1, color2);
 						}
 					}
@@ -3091,9 +3092,9 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 					} else if (subtag_a[0] == "outline_size") {
 						outline_size = subtag_a[1].to_int();
 					} else if (subtag_a[0] == "color") {
-						color = _get_color_from_string(subtag_a[1], color);
+						color = Color::from_string(subtag_a[1], color);
 					} else if (subtag_a[0] == "outline_color") {
-						outline_color = _get_color_from_string(subtag_a[1], outline_color);
+						outline_color = Color::from_string(subtag_a[1], outline_color);
 					}
 				}
 			}
@@ -3172,7 +3173,7 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 
 		} else if (tag.begins_with("outline_color=")) {
 			String color_str = tag.substr(14, tag.length());
-			Color color = _get_color_from_string(color_str, base_color);
+			Color color = Color::from_string(color_str, base_color);
 			push_outline_color(color);
 			pos = brk_end + 1;
 			tag_stack.push_front("outline_color");
