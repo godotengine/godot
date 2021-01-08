@@ -3,7 +3,6 @@
 Please keep categories (`##` level) listed alphabetically and matching their
 respective folder names. Use two empty lines to separate categories for
 readability.
-Subcategories (`###` level) where needed are separated by a single empty line.
 
 
 ## basis_universal
@@ -46,7 +45,7 @@ as it's generated on the user's system.)
 ## cvtt
 
 - Upstream: https://github.com/elasota/cvtt
-- Version: 1.0.0-beta4 (2018)
+- Version: 1.0.0-beta4 (cc8472a04ba110fe999c686d07af40f7839051fd, 2018)
 - License: MIT
 
 Files extracted from upstream source:
@@ -105,37 +104,31 @@ comments.
 
 ## fonts
 
-### Noto Sans
+- `NotoSans*.ttf`, `NotoNaskhArabicUI_Regular.ttf`:
+  * Upstream: https://github.com/googlei18n/noto-fonts
+  * Version: 1.06 (2017)
+  * License: OFL-1.1
+  * Comment: Use UI font variant if available, because it has tight vertical metrics and
+    good for UI.
+- `Hack_Regular.ttf`:
+  * Upstream: https://github.com/source-foundry/Hack
+  * Version: 3.003 (2018)
+  * License: MIT + Bitstream Vera License
+- `DroidSans*.ttf`:
+  * Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
+  * Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
+  * License: Apache 2.0
+- `Tamsyn*.png`:
+  * Upstream: http://www.fial.com/~scott/tamsyn-font/
+  * Version: 1.11 (2015)
+  * License: Tamsyn
+  * Comment: Extracted "0..9,A..F" characters for hex code printing.
 
-- Upstream: https://github.com/googlei18n/noto-fonts
-- Version: 1.06 (2017)
-- License: OFL-1.1
-
-Use UI font variant if available, because it has tight vertical metrics and good for UI.
-
-### Hack Regular
-
-- Upstream: https://github.com/source-foundry/Hack
-- Version: 3.003 (2018)
-- License: MIT + Bitstream Vera License
-
-### DroidSans*.ttf
-
-- Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
-- Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
-- License: Apache 2.0
-
-### Tamsyn
-- Upstream: http://www.fial.com/~scott/tamsyn-font/
-- Version: 1.11
-- License: Tamsyn
-
-Extracted "0..9,A..F" characters for hex code printing.
 
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.10.4 (2020)
+- Version: 2.10.4 (6a2b3e4007e794bfc6c91030d0ed987f925164a8, 2020)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -164,45 +157,55 @@ Files extracted from upstream source:
 - `LICENSE.txt`
 - Unnecessary files like `CMakeLists.txt` and `updateGrammar` removed.
 
-## Graphite engine
+
+## graphite
 
 - Upstream: https://github.com/silnrsi/graphite
-- Version: 1.3.14
+- Version: 1.3.14 (92f59dcc52f73ce747f1cdc831579ed2546884aa, 2020)
 - License: MPL-2.0
 
 Files extracted from upstream source:
+
 - the `include` folder
 - the `src` folder
 - `COPYING`, `ChangeLog`
 
-## HarfBuzz
+
+## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 2.7.4
-- License: HarfBuzz
+- Version: 2.7.4 (7236c7e29cef1c2d76c7a284c5081ff4d3aa1127, 2020)
+- License: MIT
 
 Files extracted from upstream source:
+
 - the `src` folder
 - `AUTHORS`, `COPYING`, `NEWS`, `THANKS`
 
-## International Components for Unicode
+
+## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 68.2
+- Version: 68.2 (84e1f26ea77152936e70d53178a816dbfbf69989, 2020)
 - License: Unicode
 
 Files extracted from upstream source:
+
 - the `common` folder
 - `APIChangeReport.md`, `LICENSE`
 
 Files generated from upstream source:
-- the `icudt68l.dat` built with the provided `godot_data.json` config file (see https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md for instructions)
+
+- the `icudt68l.dat` built with the provided `godot_data.json` config file (see
+  https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md
+  for instructions)
+
 
 ## jpeg-compressor
 
 - Upstream: https://github.com/richgel999/jpeg-compressor
 - Version: 2.00 (aeb7d3b463aa8228b87a28013c15ee50a7e6fcf3, 2020)
-- License: Public domain
+- License: Public domain or MIT
 
 Files extracted from upstream source:
 
@@ -225,7 +228,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.37 (2019)
+- Version: 1.6.37 (a40189cf881e9f0db80511c382292a5604c3c3d1, 2019)
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -305,7 +308,7 @@ from the Android NDK r18.
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.1.0 (2020)
+- Version: 1.1.0 (d7844e9762b61c9638c263657bd49e1690184832, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -321,7 +324,7 @@ changes are marked with `// -- GODOT --` comments.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.16.9 (2020)
+- Version: 2.16.9 (3fac0bae4a50113989b3d015cd2d948f51a6d9ac, 2020)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -344,8 +347,11 @@ File extracted from upstream release tarball:
 - Version: git (e4e43fe36e7a8705e602e7ca2f9fb795ded1d0b9, 2020)
 - License: MIT
 
-- File extracted from upstream tarball:
+Files extracted from upstream repository:
+
 - All files in `src/`.
+- `LICENSE.md`.
+
 
 ## miniupnpc
 
@@ -382,8 +388,6 @@ comments and a patch is provided in the minizip/ folder.
 
 Collection of single-file libraries used in Godot components.
 
-### core
-
 - `clipper.{cpp,hpp}`
   * Upstream: https://sourceforge.net/projects/polyclipping
   * Version: 6.4.2 (2017) + Godot changes (added optional exceptions handling)
@@ -392,6 +396,10 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://research.activision.com/publications/archives/fast-filtering-of-reflection-probes
     File coeffs_const_8.txt (retrieved April 2020)
   * License: MIT
+- `easing_equations.cpp`
+  * Upstream: http://robertpenner.com/easing/ via https://github.com/jesusgollonet/ofpennereasing (modified to fit Godot types)
+  * Version: git (af72c147c3a74e7e872aa28c7e2abfcced04fdce, 2008) + Godot types and style changes
+  * License: BSD-3-Clause
 - `fastlz.{c,h}`
   * Upstream: https://github.com/ariya/FastLZ
   * Version: 0.5.0 (4f20f54d46f5a6dd4fae4def134933369b7602d2, 2020)
@@ -400,10 +408,18 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/brunexgeek/hqx
   * Version: TBD, file structure differs
   * License: Apache 2.0
+- `ifaddrs-android.{cc,h}`
+  * Upstream: https://chromium.googlesource.com/external/webrtc/stable/talk/+/master/base/ifaddrs-android.h
+  * Version: git (5976650443d68ccfadf1dea24999ee459dd2819d, 2013)
+  * License: BSD-3-Clause
+- `mikktspace.{c,h}`
+  * Upstream: https://archive.blender.org/wiki/index.php/Dev:Shading/Tangent_Space_Normal_Maps/
+  * Version: 1.0 (2011)
+  * License: zlib
 - `open-simplex-noise.{c,h}`
   * Upstream: https://github.com/smcameron/open-simplex-noise-in-c
   * Version: git (826f1dd1724e6fb3ff45f58e48c0fbae864c3403, 2020) + custom changes
-  * License: Unlicense
+  * License: Public Domain or Unlicense
 - `pcg.{cpp,h}`
   * Upstream: http://www.pcg-random.org
   * Version: minimal C implementation, http://www.pcg-random.org/download.html
@@ -411,49 +427,28 @@ Collection of single-file libraries used in Godot components.
 - `r128.h`
   * Upstream: https://github.com/fahickman/r128
   * Version: git (423f693617faafd01de21e92818add4208eb8bd1, 2020)
-  * License: Public Domain
+  * License: Public Domain or Unlicense
 - `smaz.{c,h}`
   * Upstream: https://github.com/antirez/smaz
-  * Version: git (150e125cbae2e8fd20dd332432776ce13395d4d4, 2009)
+  * Version: git (2f625846a775501fb69456567409a8b12f10ea25, 2012)
   * License: BSD-3-Clause
   * Modifications: use `const char*` instead of `char*` for input string
 - `stb_rect_pack.h`
   * Upstream: https://github.com/nothings/stb
-  * Version: 1.00 (2019)
-  * License: Public Domain (Unlicense) or MIT
+  * Version: 1.00 (2bb4a0accd4003c1db4c24533981e01b1adfd656, 2019)
+  * License: Public Domain or Unlicense or MIT
+- `stb_vorbis.c`
+  * Upstream: https://github.com/nothings/stb
+  * Version: 1.20 (314d0a6f9af5af27e585336eecea333e95c5a2d8, 2020)
+  * License: Public Domain or Unlicense or MIT
 - `triangulator.{cpp,h}`
   * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.cpp`)
   * Version: TBD, class was renamed
   * License: MIT
-
-### modules
-
 - `yuv2rgb.h`
   * Upstream: http://wss.co.uk/pinknoise/yuv2rgb/ (to check)
   * Version: ?
   * License: BSD
-
-### platform
-
-- `ifaddrs-android.{cc,h}`
-  * Upstream: https://chromium.googlesource.com/external/webrtc/stable/talk/+/master/base/ifaddrs-android.h
-  * Version: git (5976650443d68ccfadf1dea24999ee459dd2819d, 2013)
-  * License: BSD-3-Clause
-
-### scene
-
-- `easing_equations.cpp`
-  * Upstream: http://robertpenner.com/easing/ via https://github.com/jesusgollonet/ofpennereasing (modified to fit Godot types)
-  * Version: git (af72c147c3a74e7e872aa28c7e2abfcced04fdce, 2008) + Godot types and style changes
-  * License: BSD-3-Clause
-- `mikktspace.{c,h}`
-  * Upstream: https://archive.blender.org/wiki/index.php/Dev:Shading/Tangent_Space_Normal_Maps/
-  * Version: 1.0 (2011)
-  * License: zlib
-- `stb_vorbis.c`
-  * Upstream: https://github.com/nothings/stb
-  * Version: 1.20
-  * License: Public Domain (Unlicense) or MIT
 
 
 ## nanosvg
@@ -476,27 +471,27 @@ Files extracted from the upstream source:
 
 Files extracted from upstream source:
 
-common/* (except tasking.* and CMakeLists.txt)
-core/*
-include/OpenImageDenoise/* (except version.h.in)
-LICENSE.txt
-mkl-dnn/include/*
-mkl-dnn/src/* (except CMakeLists.txt)
-weights/rtlightmap_hdr.tza
-scripts/resource_to_cpp.py
+- common/* (except tasking.* and CMakeLists.txt)
+- core/*
+- include/OpenImageDenoise/* (except version.h.in)
+- LICENSE.txt
+- mkl-dnn/include/*
+- mkl-dnn/src/* (except CMakeLists.txt)
+- weights/rtlightmap_hdr.tza
+- scripts/resource_to_cpp.py
 
 Modified files:
 Modifications are marked with `// -- GODOT start --` and `// -- GODOT end --`.
 Patch files are provided in `oidn/patches/`.
 
-core/autoencoder.cpp
-core/autoencoder.h
-core/common.h
-core/device.cpp
-core/device.h
-core/transfer_function.cpp
+- core/autoencoder.cpp
+- core/autoencoder.h
+- core/common.h
+- core/device.cpp
+- core/device.h
+- core/transfer_function.cpp
 
-scripts/resource_to_cpp.py (used in modules/denoise/resource_to_cpp.py)
+- scripts/resource_to_cpp.py (used in modules/denoise/resource_to_cpp.py)
 
 
 ## opus
@@ -519,7 +514,7 @@ Files extracted from upstream source:
 ## pcre2
 
 - Upstream: http://www.pcre.org
-- Version: 10.34 (2019)
+- Version: 10.34 (r1189, 2019)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -534,7 +529,8 @@ Files extracted from upstream source:
 
 ## pvrtccompressor
 
-- Upstream: https://bitbucket.org/jthlim/pvrtccompressor
+- Upstream: https://bitbucket.org/jthlim/pvrtccompressor (dead link)
+  Unofficial backup fork: https://github.com/LibreGamesArchive/PVRTCCompressor
 - Version: hg (cf7177748ee0dcdccfe89716dc11a47d2dc81af5, 2015)
 - License: BSD-3-Clause
 
@@ -558,8 +554,8 @@ Files extracted from upstream source:
 
 ## rvo2
 
-- Upstream: http://gamma.cs.unc.edu/RVO2/
-- Version: 3D - 1.0.1 (2016)
+- Upstream: https://github.com/snape/RVO2-3D
+- Version: 1.0.1 (e3883f288a9e55ecfed3633a01af3e12778c6acf, 2016)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -572,10 +568,22 @@ originally proposed by this library and better integrate this library with
 Godot. Please check the file to know what's new.
 
 
+## spirv-reflect
+
+- Upstream: https://github.com/KhronosGroup/SPIRV-Reflect
+- Version: git (bc3c0d63b6dadcde3f08bcd6fdc5ab98a31354da, 2019)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- `spirv_reflect.{c,h}`
+- `include` folder
+
+
 ## squish
 
 - Upstream: https://sourceforge.net/projects/libsquish
-- Version: 1.15 (2017)
+- Version: 1.15 (r104, 2017)
 - License: MIT
 
 Files extracted from upstream source:
@@ -618,7 +626,7 @@ folder.
 ## vulkan
 
 - Upstream: https://github.com/KhronosGroup/Vulkan-Loader
-- Version: sdk-1.2.162.0 (2020)
+- Version: sdk-1.2.162.0 (7a313093b5c4af964d50a5a64e73d7df6152ea3f, 2020)
 - License: Apache 2.0
 
 Unless there is a specific reason to package a more recent version, please stick
@@ -647,7 +655,7 @@ Patches in the `patches` directory should be re-applied after updates.
 ## wslay
 
 - Upstream: https://github.com/tatsuhiro-t/wslay
-- Version: 1.1.1 (2020)
+- Version: 1.1.1 (c9a84aa6df8512584c77c8cd15be9536b89c35aa, 2020)
 - License: MIT
 
 File extracted from upstream release tarball:
@@ -683,7 +691,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.4.8 (2020)
+- Version: 1.4.8 (97a3da1df009d4dc67251de0c4b1c9d7fe286fc1, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
