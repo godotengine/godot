@@ -73,8 +73,8 @@ TEST_CASE_MAY_FAIL("[RandomNumberGenerator] Integer 32 bit") {
 			break;
 		}
 	}
-	INFO("Current seed: " << rng->get_seed());
-	INFO("Current iteration: " << i);
+	INFO("Current seed: ", rng->get_seed());
+	INFO("Current iteration: ", i);
 	CHECK_MESSAGE(higher, "Given current seed, this should give an integer higher than 0x0fff'ffff at least once.");
 }
 
@@ -185,13 +185,13 @@ TEST_CASE("[RandomNumberGenerator] Zero for first number immediately after seedi
 	rng->set_seed(0);
 	uint32_t n1 = rng->randi();
 	uint32_t n2 = rng->randi();
-	INFO("Initial random values: " << n1 << " " << n2);
+	INFO("Initial random values: ", n1, " ", n2);
 	CHECK(n1 != 0);
 
 	rng->set_seed(1);
 	uint32_t n3 = rng->randi();
 	uint32_t n4 = rng->randi();
-	INFO("Values after changing the seed: " << n3 << " " << n4);
+	INFO("Values after changing the seed: ", n3, " ", n4);
 	CHECK(n3 != 0);
 }
 
@@ -199,7 +199,7 @@ TEST_CASE("[RandomNumberGenerator] Restore state") {
 	Ref<RandomNumberGenerator> rng = memnew(RandomNumberGenerator);
 	rng->randomize();
 	uint64_t last_seed = rng->get_seed();
-	INFO("Current seed: " << last_seed);
+	INFO("Current seed: ", last_seed);
 
 	rng->randi();
 	rng->randi();
@@ -208,18 +208,18 @@ TEST_CASE("[RandomNumberGenerator] Restore state") {
 			"The seed should remain the same after generating some numbers");
 
 	uint64_t saved_state = rng->get_state();
-	INFO("Current state: " << saved_state);
+	INFO("Current state: ", saved_state);
 
 	real_t f1_before = rng->randf();
 	real_t f2_before = rng->randf();
-	INFO("This seed produces: " << f1_before << " " << f2_before);
+	INFO("This seed produces: ", f1_before, " ", f2_before);
 
 	// Restore now.
 	rng->set_state(saved_state);
 
 	real_t f1_after = rng->randf();
 	real_t f2_after = rng->randf();
-	INFO("Resetting the state produces: " << f1_after << " " << f2_after);
+	INFO("Resetting the state produces: ", f1_after, " ", f2_after);
 
 	String msg = "Should restore the sequence of numbers after resetting the state";
 	CHECK_MESSAGE(f1_before == f1_after, msg);
@@ -229,22 +229,22 @@ TEST_CASE("[RandomNumberGenerator] Restore state") {
 TEST_CASE("[RandomNumberGenerator] Restore from seed") {
 	Ref<RandomNumberGenerator> rng = memnew(RandomNumberGenerator);
 	rng->set_seed(0);
-	INFO("Current seed: " << rng->get_seed());
+	INFO("Current seed: ", rng->get_seed());
 	uint32_t s0_1_before = rng->randi();
 	uint32_t s0_2_before = rng->randi();
-	INFO("This seed produces: " << s0_1_before << " " << s0_2_before);
+	INFO("This seed produces: ", s0_1_before, " ", s0_2_before);
 
 	rng->set_seed(9000);
-	INFO("Current seed: " << rng->get_seed());
+	INFO("Current seed: ", rng->get_seed());
 	uint32_t s9000_1 = rng->randi();
 	uint32_t s9000_2 = rng->randi();
-	INFO("This seed produces: " << s9000_1 << " " << s9000_2);
+	INFO("This seed produces: ", s9000_1, " ", s9000_2);
 
 	rng->set_seed(0);
-	INFO("Current seed: " << rng->get_seed());
+	INFO("Current seed: ", rng->get_seed());
 	uint32_t s0_1_after = rng->randi();
 	uint32_t s0_2_after = rng->randi();
-	INFO("This seed produces: " << s0_1_after << " " << s0_2_after);
+	INFO("This seed produces: ", s0_1_after, " ", s0_2_after);
 
 	String msg = "Should restore the sequence of numbers after resetting the seed";
 	CHECK_MESSAGE(s0_1_before == s0_1_after, msg);

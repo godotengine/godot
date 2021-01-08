@@ -179,10 +179,8 @@ TEST_SUITE("Validate tests") {
 		color_arr.push_back(Color(2, 2, 2));
 		INFO(color_arr);
 
-		INFO("doctest insertion operator << "
-				<< var << " " << vec2 << " " << rect2 << " " << color);
-
-		CHECK(true); // So all above prints.
+		// doctest string concatenation.
+		CHECK_MESSAGE(true, var, " ", vec2, " ", rect2, " ", color);
 	}
 }
 

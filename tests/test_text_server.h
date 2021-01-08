@@ -45,7 +45,7 @@ TEST_SUITE("[[TextServer]") {
 		SUBCASE("[TextServer] Init") {
 			for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
 				TextServer *ts = TextServerManager::initialize(i, err);
-				TEST_FAIL_COND((err != OK || ts == nullptr), "Text server " + TextServerManager::get_interface_name(i) + " init failed.");
+				TEST_FAIL_COND((err != OK || ts == nullptr), "Text server ", TextServerManager::get_interface_name(i), " init failed.");
 			}
 		}
 
