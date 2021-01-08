@@ -45,7 +45,7 @@ public:
 	};
 
 private:
-	int button_mask = BUTTON_MASK_LEFT;
+	int button_mask = MOUSE_BUTTON_MASK_LEFT;
 	bool toggle_mode = false;
 	bool shortcut_in_tooltip = true;
 	bool keep_pressed_outside = false;

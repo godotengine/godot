@@ -621,7 +621,7 @@ public:
 
 		const Ref<InputEventMouseButton> mb = p_ev;
 
-		if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed() && hovered_index >= 0) {
+		if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed() && hovered_index >= 0) {
 			// Toggle the flag.
 			// We base our choice on the hovered flag, so that it always matches the hovered flag.
 			if (value & (1 << hovered_index)) {
@@ -927,11 +927,11 @@ EditorPropertyFloat::EditorPropertyFloat() {
 void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 	const Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid()) {
-		if (mb->is_doubleclick() && mb->get_button_index() == BUTTON_LEFT) {
+		if (mb->is_doubleclick() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			_setup_spin();
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
+		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
 			preset->set_position(easing_draw->get_screen_transform().xform(mb->get_position()));
 			preset->popup();
 
@@ -940,7 +940,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 			easing_draw->update();
 		}
 
-		if (mb->get_button_index() == BUTTON_LEFT) {
+		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			dragging = mb->is_pressed();
 			// Update to display the correct dragging color
 			easing_draw->update();
@@ -949,7 +949,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 
 	const Ref<InputEventMouseMotion> mm = p_ev;
 
-	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
 		float rel = mm->get_relative().x;
 		if (rel == 0) {
 			return;
@@ -2814,7 +2814,7 @@ void EditorPropertyResource::_sub_inspector_object_id_selected(int p_id) {
 void EditorPropertyResource::_button_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
+		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
 			_update_menu_items();
 			Vector2 pos = get_screen_position() + mb->get_position();
 			//pos = assign->get_global_transform().xform(pos);

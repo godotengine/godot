@@ -357,10 +357,10 @@ void TextEdit::_update_scrollbars() {
 }
 
 void TextEdit::_click_selection_held() {
-	// Warning: is_mouse_button_pressed(BUTTON_LEFT) returns false for double+ clicks, so this doesn't work for MODE_WORD
+	// Warning: is_mouse_button_pressed(MOUSE_BUTTON_LEFT) returns false for double+ clicks, so this doesn't work for MODE_WORD
 	// and MODE_LINE. However, moving the mouse triggers _gui_input, which calls these functions too, so that's not a huge problem.
 	// I'm unsure if there's an actual fix that doesn't have a ton of side effects.
-	if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && selection.selecting_mode != SelectionMode::SELECTION_MODE_NONE) {
+	if (Input::get_singleton()->is_mouse_button_pressed(MOUSE_BUTTON_LEFT) && selection.selecting_mode != SelectionMode::SELECTION_MODE_NONE) {
 		switch (selection.selecting_mode) {
 			case SelectionMode::SELECTION_MODE_POINTER: {
 				_update_selection_mode_pointer();
@@ -2873,14 +2873,14 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				return;
 			}
 
-			if (mb->get_button_index() == BUTTON_WHEEL_UP) {
+			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 				if (completion_index > 0) {
 					completion_index--;
 					completion_current = completion_options[completion_index];
 					update();
 				}
 			}
-			if (mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
 				if (completion_index < completion_options.size() - 1) {
 					completion_index++;
 					completion_current = completion_options[completion_index];
@@ -2888,7 +2888,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 			}
 
-			if (mb->get_button_index() == BUTTON_LEFT) {
+			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 				completion_index = CLAMP(completion_line_ofs + (mpos.y - completion_rect.position.y) / get_row_height(), 0, completion_options.size() - 1);
 
 				completion_current = completion_options[completion_index];
@@ -2904,27 +2904,27 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		if (mb->is_pressed()) {
-			if (mb->get_button_index() == BUTTON_WHEEL_UP && !mb->get_command()) {
+			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && !mb->get_command()) {
 				if (mb->get_shift()) {
 					h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
 				} else if (v_scroll->is_visible()) {
 					_scroll_up(3 * mb->get_factor());
 				}
 			}
-			if (mb->get_button_index() == BUTTON_WHEEL_DOWN && !mb->get_command()) {
+			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && !mb->get_command()) {
 				if (mb->get_shift()) {
 					h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
 				} else if (v_scroll->is_visible()) {
 					_scroll_down(3 * mb->get_factor());
 				}
 			}
-			if (mb->get_button_index() == BUTTON_WHEEL_LEFT) {
+			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_LEFT) {
 				h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
 			}
-			if (mb->get_button_index() == BUTTON_WHEEL_RIGHT) {
+			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_RIGHT) {
 				h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
 			}
-			if (mb->get_button_index() == BUTTON_LEFT) {
+			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 				_reset_caret_blink_timer();
 
 				int row, col;
@@ -3031,7 +3031,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				update();
 			}
 
-			if (mb->get_button_index() == BUTTON_RIGHT && context_menu_enabled) {
+			if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && context_menu_enabled) {
 				_reset_caret_blink_timer();
 
 				int row, col;
@@ -3062,7 +3062,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				grab_focus();
 			}
 		} else {
-			if (mb->get_button_index() == BUTTON_LEFT) {
+			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 				if (mb->get_command() && highlighted_word != String()) {
 					int row, col;
 					_get_mouse_pos(Point2i(mpos.x, mpos.y), row, col);
@@ -3118,7 +3118,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		}
 
-		if (mm->get_button_mask() & BUTTON_MASK_LEFT && get_viewport()->gui_get_drag_data() == Variant()) { // Ignore if dragging.
+		if (mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT && get_viewport()->gui_get_drag_data() == Variant()) { // Ignore if dragging.
 			_reset_caret_blink_timer();
 
 			if (draw_minimap && !dragging_selection) {

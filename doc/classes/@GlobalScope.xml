@@ -2061,46 +2061,46 @@
 		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824" enum="KeyModifierMask">
 			Group Switch key mask.
 		</constant>
-		<constant name="BUTTON_LEFT" value="1" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_LEFT" value="1" enum="ButtonList">
 			Left mouse button.
 		</constant>
-		<constant name="BUTTON_RIGHT" value="2" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_RIGHT" value="2" enum="ButtonList">
 			Right mouse button.
 		</constant>
-		<constant name="BUTTON_MIDDLE" value="3" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_MIDDLE" value="3" enum="ButtonList">
 			Middle mouse button.
 		</constant>
-		<constant name="BUTTON_XBUTTON1" value="8" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_XBUTTON1" value="8" enum="ButtonList">
 			Extra mouse button 1 (only present on some mice).
 		</constant>
-		<constant name="BUTTON_XBUTTON2" value="9" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_XBUTTON2" value="9" enum="ButtonList">
 			Extra mouse button 2 (only present on some mice).
 		</constant>
-		<constant name="BUTTON_WHEEL_UP" value="4" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_WHEEL_UP" value="4" enum="ButtonList">
 			Mouse wheel up.
 		</constant>
-		<constant name="BUTTON_WHEEL_DOWN" value="5" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_WHEEL_DOWN" value="5" enum="ButtonList">
 			Mouse wheel down.
 		</constant>
-		<constant name="BUTTON_WHEEL_LEFT" value="6" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_WHEEL_LEFT" value="6" enum="ButtonList">
 			Mouse wheel left button (only present on some mice).
 		</constant>
-		<constant name="BUTTON_WHEEL_RIGHT" value="7" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_WHEEL_RIGHT" value="7" enum="ButtonList">
 			Mouse wheel right button (only present on some mice).
 		</constant>
-		<constant name="BUTTON_MASK_LEFT" value="1" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_MASK_LEFT" value="1" enum="ButtonList">
 			Left mouse button mask.
 		</constant>
-		<constant name="BUTTON_MASK_RIGHT" value="2" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_MASK_RIGHT" value="2" enum="ButtonList">
 			Right mouse button mask.
 		</constant>
-		<constant name="BUTTON_MASK_MIDDLE" value="4" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_MASK_MIDDLE" value="4" enum="ButtonList">
 			Middle mouse button mask.
 		</constant>
-		<constant name="BUTTON_MASK_XBUTTON1" value="128" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_MASK_XBUTTON1" value="128" enum="ButtonList">
 			Extra mouse button 1 mask.
 		</constant>
-		<constant name="BUTTON_MASK_XBUTTON2" value="256" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_MASK_XBUTTON2" value="256" enum="ButtonList">
 			Extra mouse button 2 mask.
 		</constant>
 		<constant name="JOY_BUTTON_INVALID" value="-1" enum="JoyButtonList">
