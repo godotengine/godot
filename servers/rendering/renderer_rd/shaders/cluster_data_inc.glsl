@@ -6,12 +6,18 @@
 struct LightData { //this structure needs to be as packed as possible
 	vec3 position;
 	float inv_radius;
+
 	vec3 direction;
 	float size;
-	uint attenuation_energy; //attenuation
-	uint color_specular; //rgb color, a specular (8 bit unorm)
-	uint cone_attenuation_angle; // attenuation and angle, (16bit float)
-	uint shadow_color_enabled; //shadow rgb color, a>0.5 enabled (8bit unorm)
+
+	vec3 color;
+	float attenuation;
+
+	float cone_attenuation;
+	float cone_angle;
+	float specular_amount;
+	bool shadow_enabled;
+
 	vec4 atlas_rect; // rect in the shadow atlas
 	mat4 shadow_matrix;
 	float shadow_bias;
@@ -34,9 +40,13 @@ struct ReflectionData {
 	float index;
 	vec3 box_offset;
 	uint mask;
-	vec4 params; // intensity, 0, interior , boxproject
 	vec3 ambient; // ambient color
+	float intensity;
+	bool exterior;
+	bool box_project;
 	uint ambient_mode;
+	uint pad;
+	//0-8 is intensity,8-9 is ambient, mode
 	mat4 local_matrix; // up to here for spot and omni, rest is for directional
 	// notes: for ambientblend, use distance to edge to blend between already existing global environment
 };

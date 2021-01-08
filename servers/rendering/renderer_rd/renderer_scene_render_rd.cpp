@@ -6062,22 +6062,17 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 		reflection_ubo.box_offset[2] = origin_offset.z;
 		reflection_ubo.mask = storage->reflection_probe_get_cull_mask(base_probe);
 
-		float intensity = storage->reflection_probe_get_intensity(base_probe);
-		bool interior = storage->reflection_probe_is_interior(base_probe);
-		bool box_projection = storage->reflection_probe_is_box_projection(base_probe);
+		reflection_ubo.intensity = storage->reflection_probe_get_intensity(base_probe);
+		reflection_ubo.ambient_mode = storage->reflection_probe_get_ambient_mode(base_probe);
 
-		reflection_ubo.params[0] = intensity;
-		reflection_ubo.params[1] = 0;
-		reflection_ubo.params[2] = interior ? 1.0 : 0.0;
-		reflection_ubo.params[3] = box_projection ? 1.0 : 0.0;
+		reflection_ubo.exterior = !storage->reflection_probe_is_interior(base_probe);
+		reflection_ubo.box_project = storage->reflection_probe_is_box_projection(base_probe);
 
 		Color ambient_linear = storage->reflection_probe_get_ambient_color(base_probe).to_linear();
 		float interior_ambient_energy = storage->reflection_probe_get_ambient_color_energy(base_probe);
-		uint32_t ambient_mode = storage->reflection_probe_get_ambient_mode(base_probe);
 		reflection_ubo.ambient[0] = ambient_linear.r * interior_ambient_energy;
 		reflection_ubo.ambient[1] = ambient_linear.g * interior_ambient_energy;
 		reflection_ubo.ambient[2] = ambient_linear.b * interior_ambient_energy;
-		reflection_ubo.ambient_mode = ambient_mode;
 
 		Transform transform = reflection_probe_instance_get_transform(rpi);
 		Transform proj = (p_camera_inverse_transform * transform).inverse();
@@ -6300,13 +6295,14 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 				float sign = storage->light_is_negative(base) ? -1 : 1;
 				Color linear_col = storage->light_get_color(base).to_linear();
 
-				light_data.attenuation_energy[0] = Math::make_half_float(storage->light_get_param(base, RS::LIGHT_PARAM_ATTENUATION));
-				light_data.attenuation_energy[1] = Math::make_half_float(sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * Math_PI);
+				light_data.attenuation = storage->light_get_param(base, RS::LIGHT_PARAM_ATTENUATION);
 
-				light_data.color_specular[0] = MIN(uint32_t(linear_col.r * 255), 255);
-				light_data.color_specular[1] = MIN(uint32_t(linear_col.g * 255), 255);
-				light_data.color_specular[2] = MIN(uint32_t(linear_col.b * 255), 255);
-				light_data.color_specular[3] = MIN(uint32_t(storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR) * 255), 255);
+				float energy = sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * Math_PI;
+
+				light_data.color[0] = linear_col.r * energy;
+				light_data.color[1] = linear_col.g * energy;
+				light_data.color[2] = linear_col.b * energy;
+				light_data.specular_amount = storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR);
 
 				float radius = MAX(0.001, storage->light_get_param(base, RS::LIGHT_PARAM_RANGE));
 				light_data.inv_radius = 1.0 / radius;
@@ -6327,9 +6323,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 				light_data.size = size;
 
-				light_data.cone_attenuation_angle[0] = Math::make_half_float(storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ATTENUATION));
+				light_data.cone_attenuation = storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ATTENUATION);
 				float spot_angle = storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ANGLE);
-				light_data.cone_attenuation_angle[1] = Math::make_half_float(Math::cos(Math::deg2rad(spot_angle)));
+				light_data.cone_angle = Math::cos(Math::deg2rad(spot_angle));
 
 				light_data.mask = storage->light_get_cull_mask(base);
 
@@ -6364,12 +6360,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 				if (p_using_shadows && p_shadow_atlas.is_valid() && shadow_atlas_owns_light_instance(p_shadow_atlas, li)) {
 					// fill in the shadow information
 
-					Color shadow_color = storage->light_get_shadow_color(base);
-
-					light_data.shadow_color_enabled[0] = MIN(uint32_t(shadow_color.r * 255), 255);
-					light_data.shadow_color_enabled[1] = MIN(uint32_t(shadow_color.g * 255), 255);
-					light_data.shadow_color_enabled[2] = MIN(uint32_t(shadow_color.b * 255), 255);
-					light_data.shadow_color_enabled[3] = 255;
+					light_data.shadow_enabled = true;
 
 					if (type == RS::LIGHT_SPOT) {
 						light_data.shadow_bias = (storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) * radius / 10.0);
@@ -6427,7 +6418,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 						}
 					}
 				} else {
-					light_data.shadow_color_enabled[3] = 0;
+					light_data.shadow_enabled = false;
 				}
 
 				light_instance_set_index(li, light_count);
@@ -6763,7 +6754,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		cluster.lights_shadow_rect_cache_count = 0;
 
 		for (int i = 0; i < p_positional_light_count; i++) {
-			if (cluster.lights[i].shadow_color_enabled[3] > 127) {
+			if (cluster.lights[i].shadow_enabled != 0) {
 				RID li = cluster.lights_instances[i];
 
 				ERR_CONTINUE(!shadow_atlas->shadow_owners.has(li));
@@ -8499,7 +8490,6 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 	{ //reflections
 		uint32_t reflection_buffer_size;
 		if (uniform_max_size < 65536) {
-			//Yes, you guessed right, ARM again
 			reflection_buffer_size = uniform_max_size;
 		} else {
 			reflection_buffer_size = 65536;
