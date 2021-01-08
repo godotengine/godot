@@ -77,14 +77,12 @@
 *  Includes & Memory related functions
 ***************************************/
 /* Modify the local functions below should you wish to use some other memory routines */
-/* for malloc(), free() */
-#include <stdlib.h>
-#include <stddef.h>     /* size_t */
-static void* XXH_malloc(size_t s) { return malloc(s); }
-static void  XXH_free  (void* p)  { free(p); }
-/* for memcpy() */
-#include <string.h>
-static void* XXH_memcpy(void* dest, const void* src, size_t size) { return memcpy(dest,src,size); }
+/* for ZSTD_malloc(), ZSTD_free() */
+#define ZSTD_DEPS_NEED_MALLOC
+#include "zstd_deps.h"  /* size_t, ZSTD_malloc, ZSTD_free, ZSTD_memcpy */
+static void* XXH_malloc(size_t s) { return ZSTD_malloc(s); }
+static void  XXH_free  (void* p)  { ZSTD_free(p); }
+static void* XXH_memcpy(void* dest, const void* src, size_t size) { return ZSTD_memcpy(dest,src,size); }
 
 #ifndef XXH_STATIC_LINKING_ONLY
 #  define XXH_STATIC_LINKING_ONLY
@@ -95,49 +93,13 @@ static void* XXH_memcpy(void* dest, const void* src, size_t size) { return memcp
 /* *************************************
 *  Compiler Specific Options
 ***************************************/
-#if (defined(__GNUC__) && !defined(__STRICT_ANSI__)) || defined(__cplusplus) || defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L   /* C99 */
-#  define INLINE_KEYWORD inline
-#else
-#  define INLINE_KEYWORD
-#endif
-
-#if defined(__GNUC__) || defined(__ICCARM__)
-#  define FORCE_INLINE_ATTR __attribute__((always_inline))
-#elif defined(_MSC_VER)
-#  define FORCE_INLINE_ATTR __forceinline
-#else
-#  define FORCE_INLINE_ATTR
-#endif
-
-#define FORCE_INLINE_TEMPLATE static INLINE_KEYWORD FORCE_INLINE_ATTR
-
-
-#ifdef _MSC_VER
-#  pragma warning(disable : 4127)      /* disable: C4127: conditional expression is constant */
-#endif
+#include "compiler.h"
 
 
 /* *************************************
 *  Basic Types
 ***************************************/
-#ifndef MEM_MODULE
-# define MEM_MODULE
-# if !defined (__VMS) && (defined (__cplusplus) || (defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */) )
-#   include <stdint.h>
-    typedef uint8_t  BYTE;
-    typedef uint16_t U16;
-    typedef uint32_t U32;
-    typedef  int32_t S32;
-    typedef uint64_t U64;
-#  else
-    typedef unsigned char      BYTE;
-    typedef unsigned short     U16;
-    typedef unsigned int       U32;
-    typedef   signed int       S32;
-    typedef unsigned long long U64;   /* if your compiler doesn't support unsigned long long, replace by another 64-bit type here. Note that xxhash.h will also need to be updated. */
-#  endif
-#endif
-
+#include "mem.h"  /* BYTE, U32, U64, size_t */
 
 #if (defined(XXH_FORCE_MEMORY_ACCESS) && (XXH_FORCE_MEMORY_ACCESS==2))
 
@@ -163,14 +125,14 @@ static U64 XXH_read64(const void* ptr) { return ((const unalign*)ptr)->u64; }
 static U32 XXH_read32(const void* memPtr)
 {
     U32 val;
-    memcpy(&val, memPtr, sizeof(val));
+    ZSTD_memcpy(&val, memPtr, sizeof(val));
     return val;
 }
 
 static U64 XXH_read64(const void* memPtr)
 {
     U64 val;
-    memcpy(&val, memPtr, sizeof(val));
+    ZSTD_memcpy(&val, memPtr, sizeof(val));
     return val;
 }
 
@@ -307,12 +269,12 @@ XXH_PUBLIC_API unsigned XXH_versionNumber (void) { return XXH_VERSION_NUMBER; }
 ****************************/
 XXH_PUBLIC_API void XXH32_copyState(XXH32_state_t* restrict dstState, const XXH32_state_t* restrict srcState)
 {
-    memcpy(dstState, srcState, sizeof(*dstState));
+    ZSTD_memcpy(dstState, srcState, sizeof(*dstState));
 }
 
 XXH_PUBLIC_API void XXH64_copyState(XXH64_state_t* restrict dstState, const XXH64_state_t* restrict srcState)
 {
-    memcpy(dstState, srcState, sizeof(*dstState));
+    ZSTD_memcpy(dstState, srcState, sizeof(*dstState));
 }
 
 
@@ -554,12 +516,12 @@ XXH_PUBLIC_API XXH_errorcode XXH64_freeState(XXH64_state_t* statePtr)
 XXH_PUBLIC_API XXH_errorcode XXH32_reset(XXH32_state_t* statePtr, unsigned int seed)
 {
     XXH32_state_t state;   /* using a local state to memcpy() in order to avoid strict-aliasing warnings */
-    memset(&state, 0, sizeof(state)-4);   /* do not write into reserved, for future removal */
+    ZSTD_memset(&state, 0, sizeof(state)-4);   /* do not write into reserved, for future removal */
     state.v1 = seed + PRIME32_1 + PRIME32_2;
     state.v2 = seed + PRIME32_2;
     state.v3 = seed + 0;
     state.v4 = seed - PRIME32_1;
-    memcpy(statePtr, &state, sizeof(state));
+    ZSTD_memcpy(statePtr, &state, sizeof(state));
     return XXH_OK;
 }
 
@@ -567,12 +529,12 @@ XXH_PUBLIC_API XXH_errorcode XXH32_reset(XXH32_state_t* statePtr, unsigned int s
 XXH_PUBLIC_API XXH_errorcode XXH64_reset(XXH64_state_t* statePtr, unsigned long long seed)
 {
     XXH64_state_t state;   /* using a local state to memcpy() in order to avoid strict-aliasing warnings */
-    memset(&state, 0, sizeof(state)-8);   /* do not write into reserved, for future removal */
+    ZSTD_memset(&state, 0, sizeof(state)-8);   /* do not write into reserved, for future removal */
     state.v1 = seed + PRIME64_1 + PRIME64_2;
     state.v2 = seed + PRIME64_2;
     state.v3 = seed + 0;
     state.v4 = seed - PRIME64_1;
-    memcpy(statePtr, &state, sizeof(state));
+    ZSTD_memcpy(statePtr, &state, sizeof(state));
     return XXH_OK;
 }
 
@@ -843,14 +805,14 @@ XXH_PUBLIC_API void XXH32_canonicalFromHash(XXH32_canonical_t* dst, XXH32_hash_t
 {
     XXH_STATIC_ASSERT(sizeof(XXH32_canonical_t) == sizeof(XXH32_hash_t));
     if (XXH_CPU_LITTLE_ENDIAN) hash = XXH_swap32(hash);
-    memcpy(dst, &hash, sizeof(*dst));
+    ZSTD_memcpy(dst, &hash, sizeof(*dst));
 }
 
 XXH_PUBLIC_API void XXH64_canonicalFromHash(XXH64_canonical_t* dst, XXH64_hash_t hash)
 {
     XXH_STATIC_ASSERT(sizeof(XXH64_canonical_t) == sizeof(XXH64_hash_t));
     if (XXH_CPU_LITTLE_ENDIAN) hash = XXH_swap64(hash);
-    memcpy(dst, &hash, sizeof(*dst));
+    ZSTD_memcpy(dst, &hash, sizeof(*dst));
 }
 
 XXH_PUBLIC_API XXH32_hash_t XXH32_hashFromCanonical(const XXH32_canonical_t* src)
