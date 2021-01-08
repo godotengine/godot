@@ -66,7 +66,7 @@ Extracted from .zip provided. Extracted license and header only.
 ## enet
 
 - Upstream: http://enet.bespin.org
-- Version: 1.3.15 (224f31101fc60939c02f6bbe8e8fc810a7db306b, 2020)
+- Version: 1.3.17 (e0e7045b7e056b454b5093cb34df49dc4cee0bee, 2020)
 - License: MIT
 
 Files extracted from upstream source:
@@ -76,11 +76,11 @@ Files extracted from upstream source:
 - LICENSE file
 
 Important: enet.h, host.c, protocol.c have been slightly modified
-to be usable by godot socket implementation and allow IPv6 and DTLS.
+to be usable by Godot's socket implementation and allow IPv6 and DTLS.
 Apply the patches in the `patches/` folder when syncing on newer upstream
 commits.
 
-Two files (godot.cpp and enet/godot.h) have been added to provide
+Three files (godot.cpp, enet/godot.h, enet/godot_ext.h) have been added to provide
 enet socket implementation using Godot classes.
 
 It is still possible to build against a system wide ENet but doing so
