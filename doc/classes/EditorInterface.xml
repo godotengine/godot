@@ -40,19 +40,19 @@
 				Returns the edited (current) scene's root [Node].
 			</description>
 		</method>
-		<method name="get_editor_settings">
-			<return type="EditorSettings">
-			</return>
-			<description>
-				Returns the editor's [EditorSettings] instance.
-			</description>
-		</method>
 		<method name="get_editor_main_control">
 			<return type="Control">
 			</return>
 			<description>
 				Returns the main editor control. Use this as a parent for main screens.
 				[b]Note:[/b] This returns the main editor control containing the whole editor, not the 2D or 3D viewports specifically.
+			</description>
+		</method>
+		<method name="get_editor_settings">
+			<return type="EditorSettings">
+			</return>
+			<description>
+				Returns the editor's [EditorSettings] instance.
 			</description>
 		</method>
 		<method name="get_file_system_dock">

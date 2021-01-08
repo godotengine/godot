@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -339,6 +339,14 @@ private:
 		bool no_focus = false;
 		bool window_has_focus = false;
 
+		// Used to transfer data between events using timer.
+		WPARAM saved_wparam;
+		LPARAM saved_lparam;
+
+		// Timers.
+		uint32_t move_timer_id = 0U;
+		uint32_t focus_timer_id = 0U;
+
 		HANDLE wtctx;
 		LOGCONTEXTW wtlc;
 		int min_pressure;
@@ -387,8 +395,6 @@ private:
 
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 
-	uint32_t move_timer_id;
-
 	HCURSOR hCursor;
 
 	WNDPROC user_proc = nullptr;
@@ -424,6 +430,7 @@ private:
 
 	void _set_mouse_mode_impl(MouseMode p_mode);
 
+	void _process_activate_event(WindowID p_window_id, WPARAM wParam, LPARAM lParam);
 	void _process_key_events();
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);

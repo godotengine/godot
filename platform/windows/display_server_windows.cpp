@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1876,27 +1876,16 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			break;
 		}
-		case WM_ACTIVATE: // Watch For Window Activate Message
-		{
-			windows[window_id].minimized = HIWORD(wParam) != 0;
+		case WM_ACTIVATE: { // Watch For Window Activate Message
+			if (!windows[window_id].window_focused) {
+				_process_activate_event(window_id, wParam, lParam);
+			} else {
+				windows[window_id].saved_wparam = wParam;
+				windows[window_id].saved_lparam = lParam;
 
-			if (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE) {
-				_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_IN);
-				windows[window_id].window_focused = true;
-				alt_mem = false;
-				control_mem = false;
-				shift_mem = false;
-			} else { // WM_INACTIVE
-				Input::get_singleton()->release_pressed_events();
-				_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_OUT);
-				windows[window_id].window_focused = false;
-				alt_mem = false;
-			};
-
-			if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
-				wintab_WTEnable(windows[window_id].wtctx, GET_WM_ACTIVATE_STATE(wParam, lParam));
+				// Run a timer to prevent event catching warning if the focused window is closing.
+				windows[window_id].focus_timer_id = SetTimer(windows[window_id].hWnd, 2, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
 			}
-
 			return 0; // Return  To The Message Loop
 		}
 		case WM_GETMINMAXINFO: {
@@ -1937,6 +1926,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		case WM_CLOSE: // Did We Receive A Close Message?
 		{
+			if (windows[window_id].focus_timer_id != 0U) {
+				KillTimer(windows[window_id].hWnd, windows[window_id].focus_timer_id);
+			}
 			_send_window_event(windows[window_id], WINDOW_EVENT_CLOSE_REQUEST);
 
 			return 0; // Jump Back
@@ -2619,17 +2611,21 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		case WM_ENTERSIZEMOVE: {
 			Input::get_singleton()->release_pressed_events();
-			move_timer_id = SetTimer(windows[window_id].hWnd, 1, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
+			windows[window_id].move_timer_id = SetTimer(windows[window_id].hWnd, 1, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
 		} break;
 		case WM_EXITSIZEMOVE: {
-			KillTimer(windows[window_id].hWnd, move_timer_id);
+			KillTimer(windows[window_id].hWnd, windows[window_id].move_timer_id);
 		} break;
 		case WM_TIMER: {
-			if (wParam == move_timer_id) {
+			if (wParam == windows[window_id].move_timer_id) {
 				_process_key_events();
 				if (!Main::is_iterating()) {
 					Main::iteration();
 				}
+			} else if (wParam == windows[window_id].focus_timer_id) {
+				_process_activate_event(window_id, windows[window_id].saved_wparam, windows[window_id].saved_lparam);
+				KillTimer(windows[window_id].hWnd, wParam);
+				windows[window_id].focus_timer_id = 0U;
 			}
 		} break;
 
@@ -2784,6 +2780,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		return ds_win->WndProc(hWnd, uMsg, wParam, lParam);
 	else
 		return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+}
+
+void DisplayServerWindows::_process_activate_event(WindowID p_window_id, WPARAM wParam, LPARAM lParam) {
+	if (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE) {
+		_send_window_event(windows[p_window_id], WINDOW_EVENT_FOCUS_IN);
+		windows[p_window_id].window_focused = true;
+		alt_mem = false;
+		control_mem = false;
+		shift_mem = false;
+	} else { // WM_INACTIVE
+		Input::get_singleton()->release_pressed_events();
+		_send_window_event(windows[p_window_id], WINDOW_EVENT_FOCUS_OUT);
+		windows[p_window_id].window_focused = false;
+		alt_mem = false;
+	}
+
+	if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[p_window_id].wtctx) {
+		wintab_WTEnable(windows[p_window_id].wtctx, GET_WM_ACTIVATE_STATE(wParam, lParam));
+	}
 }
 
 void DisplayServerWindows::_process_key_events() {
@@ -3212,8 +3227,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		RendererCompositorRD::make_current();
 	}
 #endif
-
-	move_timer_id = 1;
 
 	//set_ime_active(false);
 

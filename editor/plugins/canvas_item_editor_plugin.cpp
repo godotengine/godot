@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -963,8 +963,23 @@ void CanvasItemEditor::_restore_canvas_item_state(List<CanvasItem *> p_canvas_it
 }
 
 void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_items, String action_name, bool commit_bones) {
-	undo_redo->create_action(action_name);
+	List<CanvasItem *> modified_canvas_items;
 	for (List<CanvasItem *>::Element *E = p_canvas_items.front(); E; E = E->next()) {
+		CanvasItem *canvas_item = E->get();
+		Dictionary old_state = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item)->undo_state;
+		Dictionary new_state = canvas_item->_edit_get_state();
+
+		if (old_state.hash() != new_state.hash()) {
+			modified_canvas_items.push_back(canvas_item);
+		}
+	}
+
+	if (modified_canvas_items.is_empty()) {
+		return;
+	}
+
+	undo_redo->create_action(action_name);
+	for (List<CanvasItem *>::Element *E = modified_canvas_items.front(); E; E = E->next()) {
 		CanvasItem *canvas_item = E->get();
 		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 		undo_redo->add_do_method(canvas_item, "_edit_set_state", canvas_item->_edit_get_state());

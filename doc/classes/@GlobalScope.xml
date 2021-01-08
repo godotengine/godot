@@ -668,7 +668,7 @@
 		</method>
 		<method name="print" qualifiers="vararg">
 			<description>
-				Converts one or more arguments to strings in the best way possible and prints them to the console.
+				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
 				[codeblock]
 				a = [1, 2, 3]
 				print("a", "b", a) # Prints ab[1, 2, 3]
@@ -944,6 +944,22 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="snapped">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="step" type="float">
+			</argument>
+			<description>
+				Snaps float value [code]x[/code] to a given [code]step[/code]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				[codeblock]
+				snapped(100, 32) # Returns 96
+				snapped(3.14159, 0.01) # Returns 3.14
+				[/codeblock]
+				See also [method ceil], [method floor], and [method round].
+			</description>
+		</method>
 		<method name="sqrt">
 			<return type="float">
 			</return>
@@ -974,27 +990,11 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="snapped">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
-			<argument index="1" name="step" type="float">
-			</argument>
-			<description>
-				Snaps float value [code]x[/code] to a given [code]step[/code]. This can also be used to round a floating point number to an arbitrary number of decimals.
-				[codeblock]
-				snapped(100, 32) # Returns 96
-				snapped(3.14159, 0.01) # Returns 3.14
-				[/codeblock]
-				See also [method ceil], [method floor], and [method round].
-			</description>
-		</method>
 		<method name="str" qualifiers="vararg">
 			<return type="String">
 			</return>
 			<description>
-				Converts one or more arguments to string in the best way possible.
+				Converts one or more arguments of any type to string in the best way possible.
 			</description>
 		</method>
 		<method name="str2var">

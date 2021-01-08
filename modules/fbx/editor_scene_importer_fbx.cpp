@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -180,10 +180,12 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 			}
 
 			if (is_blender_fbx) {
-				WARN_PRINT("Blender FBX files will not work properly with keyframes or skeletons until we make fixes. Please stand by.");
+				WARN_PRINT("We don't officially support Blender FBX animations yet, due to issues with upstream Blender,\n"
+						   "so please wait for us to work around remaining issues. We will continue to import the file but it may be broken.\n"
+						   "For minimal breakage, please export FBX from Blender with -Z forward, and Y up.");
 			}
 
-			Node3D *spatial = _generate_scene(p_path, &doc, p_flags, p_bake_fps, 8);
+			Node3D *spatial = _generate_scene(p_path, &doc, p_flags, p_bake_fps, 8, is_blender_fbx);
 			// todo: move to document shutdown (will need to be validated after moving; this code has been validated already)
 			for (FBXDocParser::TokenPtr token : tokens) {
 				if (token) {
@@ -327,8 +329,10 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 		const FBXDocParser::Document *p_document,
 		const uint32_t p_flags,
 		int p_bake_fps,
-		const int32_t p_max_bone_weights) {
+		const int32_t p_max_bone_weights,
+		bool p_is_blender_fbx) {
 	ImportState state;
+	state.is_blender_fbx = p_is_blender_fbx;
 	state.path = p_path;
 	state.animation_player = NULL;
 

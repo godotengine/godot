@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -2123,7 +2123,10 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 		if (scene->get_filename() == "") {
 			current_option = -1;
-			_menu_option_confirm(FILE_SAVE_BEFORE_RUN, false);
+			_menu_option(FILE_SAVE_AS_SCENE);
+			// Set the option to save and run so when the dialog is accepted, the scene runs.
+			current_option = FILE_SAVE_AND_RUN;
+			file->set_title(TTR("Save scene before running..."));
 			return;
 		}
 
@@ -2313,7 +2316,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			int scene_idx = (p_option == FILE_SAVE_SCENE) ? -1 : tab_closing;
 
 			Node *scene = editor_data.get_edited_scene_root(scene_idx);
-			if (scene && scene->get_filename() != "") {
+			if (scene && scene->get_filename() != "" && FileAccess::exists(scene->get_filename())) {
 				if (scene_idx != editor_data.get_edited_scene()) {
 					_save_scene_with_preview(scene->get_filename(), scene_idx);
 				} else {
@@ -2358,11 +2361,12 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 
 			if (scene->get_filename() != "") {
-				file->set_current_path(scene->get_filename());
+				String path = scene->get_filename();
+				file->set_current_path(path);
 				if (extensions.size()) {
-					String ext = scene->get_filename().get_extension().to_lower();
+					String ext = path.get_extension().to_lower();
 					if (extensions.find(ext) == nullptr) {
-						file->set_current_path(scene->get_filename().replacen("." + ext, "." + extensions.front()->get()));
+						file->set_current_path(path.replacen("." + ext, "." + extensions.front()->get()));
 					}
 				}
 			} else {
@@ -2380,18 +2384,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case FILE_SAVE_ALL_SCENES: {
 			_save_all_scenes();
-		} break;
-		case FILE_SAVE_BEFORE_RUN: {
-			if (!p_confirmed) {
-				confirmation->get_cancel_button()->set_text(TTR("No"));
-				confirmation->get_ok_button()->set_text(TTR("Yes"));
-				confirmation->set_text(TTR("This scene has never been saved. Save before running?"));
-				confirmation->popup_centered();
-				break;
-			}
-
-			_menu_option(FILE_SAVE_AS_SCENE);
-			_menu_option_confirm(FILE_SAVE_AND_RUN, false);
 		} break;
 
 		case FILE_EXPORT_PROJECT: {
@@ -6526,6 +6518,9 @@ EditorNode::EditorNode() {
 	old_split_ofs = 0;
 
 	center_split->connect("resized", callable_mp(this, &EditorNode::_vp_resized));
+
+	native_shader_source_visualizer = memnew(EditorNativeShaderSourceVisualizer);
+	gui_base->add_child(native_shader_source_visualizer);
 
 	orphan_resources = memnew(OrphanResourcesDialog);
 	gui_base->add_child(orphan_resources);

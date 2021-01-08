@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,6 +64,7 @@ struct FBXSkeleton;
 struct ImportState {
 	bool enable_material_import = true;
 	bool enable_animation_import = true;
+	bool is_blender_fbx = false;
 
 	Map<StringName, Ref<Texture>> cached_image_searches;
 	Map<uint64_t, Ref<Material>> cached_materials;

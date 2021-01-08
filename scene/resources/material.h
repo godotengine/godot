@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,8 @@ class Material : public Resource {
 	Ref<Material> next_pass;
 	int render_priority;
 
+	void inspect_native_shader_code();
+
 protected:
 	_FORCE_INLINE_ RID _get_material() const { return material; }
 	static void _bind_methods();
@@ -66,6 +68,7 @@ public:
 	int get_render_priority() const;
 
 	virtual RID get_rid() const override;
+	virtual RID get_shader_rid() const = 0;
 
 	virtual Shader::Mode get_shader_mode() const = 0;
 	Material();
@@ -99,6 +102,8 @@ public:
 	Variant get_shader_param(const StringName &p_param) const;
 
 	virtual Shader::Mode get_shader_mode() const override;
+
+	virtual RID get_shader_rid() const override;
 
 	ShaderMaterial();
 	~ShaderMaterial();
@@ -736,7 +741,7 @@ public:
 
 	static RID get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard = false, bool p_billboard_y = false);
 
-	RID get_shader_rid() const;
+	virtual RID get_shader_rid() const override;
 
 	virtual Shader::Mode get_shader_mode() const override;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,43 +37,65 @@ class RendererStorage {
 	Color default_clear_color;
 
 public:
-	struct InstanceBaseDependency;
-
-	struct InstanceDependency {
-		void instance_notify_changed(bool p_aabb, bool p_dependencies);
-		void instance_notify_deleted(RID p_deleted);
-
-		~InstanceDependency();
-
-	private:
-		friend struct InstanceBaseDependency;
-		Map<InstanceBaseDependency *, uint32_t> instances;
+	enum DependencyChangedNotification {
+		DEPENDENCY_CHANGED_AABB,
+		DEPENDENCY_CHANGED_MATERIAL,
+		DEPENDENCY_CHANGED_MESH,
+		DEPENDENCY_CHANGED_MULTIMESH,
+		DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES,
+		DEPENDENCY_CHANGED_DECAL,
+		DEPENDENCY_CHANGED_SKELETON_DATA,
+		DEPENDENCY_CHANGED_SKELETON_BONES,
+		DEPENDENCY_CHANGED_LIGHT,
+		DEPENDENCY_CHANGED_REFLECTION_PROBE,
 	};
 
+	struct DependencyTracker;
+
+protected:
+	struct Dependency {
+		void changed_notify(DependencyChangedNotification p_notification);
+		void deleted_notify(const RID &p_rid);
+
+		~Dependency();
+
+	private:
+		friend struct DependencyTracker;
+		Map<DependencyTracker *, uint32_t> instances;
+	};
+
+<<<<<<< HEAD
 	struct InstanceBaseDependency {
 		uint32_t instance_version = 0;
 		Set<InstanceDependency *> dependencies;
+=======
+public:
+	struct DependencyTracker {
+		void *userdata = nullptr;
+		typedef void (*ChangedCallback)(DependencyChangedNotification, DependencyTracker *);
+		typedef void (*DeletedCallback)(const RID &, DependencyTracker *);
+>>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 
-		virtual void dependency_deleted(RID p_dependency) {}
-		virtual void dependency_changed(bool p_aabb, bool p_dependencies) {}
+		ChangedCallback changed_callback = nullptr;
+		DeletedCallback deleted_callback = nullptr;
 
-		void instance_increase_version() {
+		void update_begin() { // call before updating dependencies
 			instance_version++;
 		}
 
-		void update_dependency(InstanceDependency *p_dependency) {
+		void update_dependency(Dependency *p_dependency) { //called internally, can't be used directly, use update functions in Storage
 			dependencies.insert(p_dependency);
 			p_dependency->instances[this] = instance_version;
 		}
 
-		void clean_up_dependencies() {
-			List<Pair<InstanceDependency *, Map<InstanceBaseDependency *, uint32_t>::Element *>> to_clean_up;
-			for (Set<InstanceDependency *>::Element *E = dependencies.front(); E; E = E->next()) {
-				InstanceDependency *dep = E->get();
-				Map<InstanceBaseDependency *, uint32_t>::Element *F = dep->instances.find(this);
+		void update_end() { //call after updating dependencies
+			List<Pair<Dependency *, Map<DependencyTracker *, uint32_t>::Element *>> to_clean_up;
+			for (Set<Dependency *>::Element *E = dependencies.front(); E; E = E->next()) {
+				Dependency *dep = E->get();
+				Map<DependencyTracker *, uint32_t>::Element *F = dep->instances.find(this);
 				ERR_CONTINUE(!F);
 				if (F->get() != instance_version) {
-					Pair<InstanceDependency *, Map<InstanceBaseDependency *, uint32_t>::Element *> p;
+					Pair<Dependency *, Map<DependencyTracker *, uint32_t>::Element *> p;
 					p.first = dep;
 					p.second = F;
 					to_clean_up.push_back(p);
@@ -86,15 +108,20 @@ public:
 			}
 		}
 
-		void clear_dependencies() {
-			for (Set<InstanceDependency *>::Element *E = dependencies.front(); E; E = E->next()) {
-				InstanceDependency *dep = E->get();
+		void clear() { // clear all dependencies
+			for (Set<Dependency *>::Element *E = dependencies.front(); E; E = E->next()) {
+				Dependency *dep = E->get();
 				dep->instances.erase(this);
 			}
 			dependencies.clear();
 		}
 
-		virtual ~InstanceBaseDependency() { clear_dependencies(); }
+		~DependencyTracker() { clear(); }
+
+	private:
+		friend struct Dependency;
+		uint32_t instance_version = 0;
+		Set<Dependency *> dependencies;
 	};
 
 	/* TEXTURE API */
@@ -158,6 +185,8 @@ public:
 	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const = 0;
 	virtual Variant shader_get_param_default(RID p_material, const StringName &p_param) const = 0;
 
+	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
+
 	/* COMMON MATERIAL API */
 
 	virtual RID material_create() = 0;
@@ -181,7 +210,7 @@ public:
 
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) = 0;
 
-	virtual void material_update_dependency(RID p_material, InstanceBaseDependency *p_instance) = 0;
+	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) = 0;
 
 	/* MESH API */
 
@@ -349,8 +378,8 @@ public:
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const = 0;
 	virtual float reflection_probe_get_lod_threshold(RID p_probe) const = 0;
 
-	virtual void base_update_dependency(RID p_base, InstanceBaseDependency *p_instance) = 0;
-	virtual void skeleton_update_dependency(RID p_base, InstanceBaseDependency *p_instance) = 0;
+	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;
+	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;
 
 	/* DECAL API */
 
@@ -474,8 +503,8 @@ public:
 
 	virtual void particles_set_view_axis(RID p_particles, const Vector3 &p_axis) = 0;
 
-	virtual void particles_add_collision(RID p_particles, InstanceBaseDependency *p_instance) = 0;
-	virtual void particles_remove_collision(RID p_particles, InstanceBaseDependency *p_instance) = 0;
+	virtual void particles_add_collision(RID p_particles, RID p_particles_collision_instance) = 0;
+	virtual void particles_remove_collision(RID p_particles, RID p_particles_collision_instance) = 0;
 
 	virtual void update_particles() = 0;
 
@@ -495,6 +524,11 @@ public:
 	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const = 0;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const = 0;
 	virtual RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const = 0;
+
+	//used from 2D and 3D
+	virtual RID particles_collision_instance_create(RID p_collision) = 0;
+	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform &p_transform) = 0;
+	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) = 0;
 
 	/* GLOBAL VARIABLES */
 

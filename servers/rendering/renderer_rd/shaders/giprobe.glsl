@@ -208,6 +208,15 @@ float raymarch(float distance, float distance_adv, vec3 from, vec3 direction) {
 	return occlusion; //max(0.0,distance);
 }
 
+float get_omni_attenuation(float distance, float inv_range, float decay) {
+	float nd = distance * inv_range;
+	nd *= nd;
+	nd *= nd; // nd^4
+	nd = max(1.0 - nd, 0.0);
+	nd *= nd; // nd^2
+	return nd * pow(max(distance, 0.0001), -decay);
+}
+
 bool compute_light_vector(uint light, vec3 pos, out float attenuation, out vec3 light_pos) {
 	if (lights.data[light].type == LIGHT_TYPE_DIRECTIONAL) {
 		light_pos = pos - lights.data[light].direction * length(vec3(params.limits));
@@ -220,7 +229,7 @@ bool compute_light_vector(uint light, vec3 pos, out float attenuation, out vec3 
 			return false;
 		}
 
-		attenuation = pow(clamp(1.0 - distance / lights.data[light].radius, 0.0001, 1.0), lights.data[light].attenuation);
+		attenuation = get_omni_attenuation(distance, 1.0 / lights.data[light].radius, lights.data[light].attenuation);
 
 		if (lights.data[light].type == LIGHT_TYPE_SPOT) {
 			vec3 rel = normalize(pos - light_pos);

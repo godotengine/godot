@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -72,9 +72,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		}
 
 		size.width += items[i].text_buf->get_size().x;
-		if (i > 0) {
-			size.height += vseparation;
-		}
+		size.height += vseparation;
 
 		if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->is_valid())) {
 			int accel_w = hseparation * 2;
@@ -152,9 +150,7 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	}
 
 	for (int i = 0; i < items.size(); i++) {
-		if (i > 0) {
-			ofs.y += vseparation;
-		}
+		ofs.y += i > 0 ? vseparation : (float)vseparation / 2;
 
 		ofs.y += MAX(items[i].get_icon_size().height, items[i].text_buf->get_size().y);
 
@@ -506,10 +502,8 @@ void PopupMenu::_draw_items() {
 
 	// Loop through all items and draw each.
 	for (int i = 0; i < items.size(); i++) {
-		// If not the first item, add the separation space between items.
-		if (i > 0) {
-			ofs.y += vseparation;
-		}
+		// For the first item only add half a separation. For all other items, add a whole separation to the offset.
+		ofs.y += i > 0 ? vseparation : (float)vseparation / 2;
 
 		_shape_item(i);
 
@@ -519,9 +513,9 @@ void PopupMenu::_draw_items() {
 
 		if (i == mouse_over) {
 			if (rtl) {
-				hover->draw(ci, Rect2(item_ofs + Point2(-hseparation + scroll_width, -vseparation / 2), Size2(display_width + hseparation * 2, h + vseparation)));
+				hover->draw(ci, Rect2(item_ofs + Point2(scroll_width, -vseparation / 2), Size2(display_width, h + vseparation)));
 			} else {
-				hover->draw(ci, Rect2(item_ofs + Point2(-hseparation, -vseparation / 2), Size2(display_width + hseparation * 2, h + vseparation)));
+				hover->draw(ci, Rect2(item_ofs + Point2(0, -vseparation / 2), Size2(display_width, h + vseparation)));
 			}
 		}
 
@@ -1636,7 +1630,6 @@ void PopupMenu::_bind_methods() {
 void PopupMenu::popup(const Rect2 &p_bounds) {
 	moved = Vector2();
 	popup_time_msec = OS::get_singleton()->get_ticks_msec();
-	set_as_minsize();
 	Popup::popup(p_bounds);
 }
 
