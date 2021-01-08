@@ -1549,46 +1549,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			tag_stack.push_front(tag);
 		} else if (tag.begins_with("color=")) {
 			String col = tag.substr(6, tag.length());
-			Color color;
-
-			if (col.begins_with("#")) {
-				color = Color::html(col);
-			} else if (col == "aqua") {
-				color = Color(0, 1, 1);
-			} else if (col == "black") {
-				color = Color(0, 0, 0);
-			} else if (col == "blue") {
-				color = Color(0, 0, 1);
-			} else if (col == "fuchsia") {
-				color = Color(1, 0, 1);
-			} else if (col == "gray" || col == "grey") {
-				color = Color(0.5, 0.5, 0.5);
-			} else if (col == "green") {
-				color = Color(0, 0.5, 0);
-			} else if (col == "lime") {
-				color = Color(0, 1, 0);
-			} else if (col == "maroon") {
-				color = Color(0.5, 0, 0);
-			} else if (col == "navy") {
-				color = Color(0, 0, 0.5);
-			} else if (col == "olive") {
-				color = Color(0.5, 0.5, 0);
-			} else if (col == "purple") {
-				color = Color(0.5, 0, 0.5);
-			} else if (col == "red") {
-				color = Color(1, 0, 0);
-			} else if (col == "silver") {
-				color = Color(0.75, 0.75, 0.75);
-			} else if (col == "teal") {
-				color = Color(0, 0.5, 0.5);
-			} else if (col == "white") {
-				color = Color(1, 1, 1);
-			} else if (col == "yellow") {
-				color = Color(1, 1, 0);
-			} else {
-				color = Color(0, 0, 0); //base_color;
-			}
-
+			Color color = Color::from_string(col, Color());
 			p_rt->push_color(color);
 			pos = brk_end + 1;
 			tag_stack.push_front("color");

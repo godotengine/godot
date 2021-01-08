@@ -421,8 +421,6 @@ private:
 	bool _find_layout_subitem(Item *from, Item *to);
 	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
 
-	static Color _get_color_from_string(const String &p_color_str, const Color &p_default_color);
-
 	void _update_scroll();
 	void _update_fx(ItemFrame *p_frame, float p_delta_time);
 	void _scroll_changed(double);
