@@ -1580,7 +1580,8 @@ void Viewport::_gui_show_tooltip() {
 	Point2 tooltip_offset = ProjectSettings::get_singleton()->get("display/mouse_cursor/tooltip_position_offset");
 	Rect2 r(gui.tooltip_pos + tooltip_offset, gui.tooltip_popup->get_contents_minimum_size());
 
-	Rect2i vr = gui.tooltip_popup->get_usable_parent_rect();
+	Window *window = gui.tooltip_popup->get_parent_visible_window();
+	Rect2i vr = window->get_usable_parent_rect();
 
 	if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
 		r.position.x = vr.position.x + vr.size.x - r.size.x;
@@ -1594,6 +1595,7 @@ void Viewport::_gui_show_tooltip() {
 		r.position.y = vr.position.y;
 	}
 
+	gui.tooltip_popup->set_current_screen(window->get_current_screen());
 	gui.tooltip_popup->set_position(r.position);
 	gui.tooltip_popup->set_size(r.size);
 
