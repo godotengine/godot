@@ -340,7 +340,7 @@ void SceneSynchronizer::unregister_variable(Node *p_node, StringName p_variable)
 	nd->vars[index].change_listeners.clear();
 }
 
-void SceneSynchronizer::start_node_sync(Node *p_node) {
+void SceneSynchronizer::start_node_sync(const Node *p_node) {
 	ERR_FAIL_COND(p_node == nullptr);
 
 	NetUtility::NodeData *nd = find_node_data(p_node);
@@ -349,7 +349,7 @@ void SceneSynchronizer::start_node_sync(Node *p_node) {
 	nd->sync_enabled = true;
 }
 
-void SceneSynchronizer::stop_node_sync(Node *p_node) {
+void SceneSynchronizer::stop_node_sync(const Node *p_node) {
 	ERR_FAIL_COND(p_node == nullptr);
 
 	NetUtility::NodeData *nd = find_node_data(p_node);

@@ -187,9 +187,9 @@ public:
 	void unregister_variable(Node *p_node, StringName p_variable);
 
 	/// Start local node sync.
-	void start_node_sync(Node *p_node);
+	void start_node_sync(const Node *p_node);
 	/// Stop local node sync.
-	void stop_node_sync(Node *p_node);
+	void stop_node_sync(const Node *p_node);
 	bool is_node_sync(const Node *p_node) const;
 
 	/// Returns the variable ID relative to the `Node`.
