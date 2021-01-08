@@ -35,7 +35,7 @@ size_t ZSTD_noCompressLiterals (void* dst, size_t dstCapacity, const void* src, 
             assert(0);
     }
 
-    memcpy(ostart + flSize, src, srcSize);
+    ZSTD_memcpy(ostart + flSize, src, srcSize);
     DEBUGLOG(5, "Raw literals: %u -> %u", (U32)srcSize, (U32)(srcSize + flSize));
     return srcSize + flSize;
 }
@@ -86,7 +86,7 @@ size_t ZSTD_compressLiterals (ZSTD_hufCTables_t const* prevHuf,
                 disableLiteralCompression, (U32)srcSize);
 
     /* Prepare nextEntropy assuming reusing the existing table */
-    memcpy(nextHuf, prevHuf, sizeof(*prevHuf));
+    ZSTD_memcpy(nextHuf, prevHuf, sizeof(*prevHuf));
 
     if (disableLiteralCompression)
         return ZSTD_noCompressLiterals(dst, dstCapacity, src, srcSize);
@@ -118,11 +118,11 @@ size_t ZSTD_compressLiterals (ZSTD_hufCTables_t const* prevHuf,
     }
 
     if ((cLitSize==0) | (cLitSize >= srcSize - minGain) | ERR_isError(cLitSize)) {
-        memcpy(nextHuf, prevHuf, sizeof(*prevHuf));
+        ZSTD_memcpy(nextHuf, prevHuf, sizeof(*prevHuf));
         return ZSTD_noCompressLiterals(dst, dstCapacity, src, srcSize);
     }
     if (cLitSize==1) {
-        memcpy(nextHuf, prevHuf, sizeof(*prevHuf));
+        ZSTD_memcpy(nextHuf, prevHuf, sizeof(*prevHuf));
         return ZSTD_compressRleLiteralsBlock(dst, dstCapacity, src, srcSize);
     }
 

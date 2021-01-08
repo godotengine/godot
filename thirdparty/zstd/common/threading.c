@@ -78,11 +78,12 @@ int ZSTD_pthread_join(ZSTD_pthread_t thread, void **value_ptr)
 
 #if defined(ZSTD_MULTITHREAD) && DEBUGLEVEL >= 1 && !defined(_WIN32)
 
-#include <stdlib.h>
+#define ZSTD_DEPS_NEED_MALLOC
+#include "zstd_deps.h"
 
 int ZSTD_pthread_mutex_init(ZSTD_pthread_mutex_t* mutex, pthread_mutexattr_t const* attr)
 {
-    *mutex = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
+    *mutex = (pthread_mutex_t*)ZSTD_malloc(sizeof(pthread_mutex_t));
     if (!*mutex)
         return 1;
     return pthread_mutex_init(*mutex, attr);
@@ -94,14 +95,14 @@ int ZSTD_pthread_mutex_destroy(ZSTD_pthread_mutex_t* mutex)
         return 0;
     {
         int const ret = pthread_mutex_destroy(*mutex);
-        free(*mutex);
+        ZSTD_free(*mutex);
         return ret;
     }
 }
 
 int ZSTD_pthread_cond_init(ZSTD_pthread_cond_t* cond, pthread_condattr_t const* attr)
 {
-    *cond = (pthread_cond_t*)malloc(sizeof(pthread_cond_t));
+    *cond = (pthread_cond_t*)ZSTD_malloc(sizeof(pthread_cond_t));
     if (!*cond)
         return 1;
     return pthread_cond_init(*cond, attr);
@@ -113,7 +114,7 @@ int ZSTD_pthread_cond_destroy(ZSTD_pthread_cond_t* cond)
         return 0;
     {
         int const ret = pthread_cond_destroy(*cond);
-        free(*cond);
+        ZSTD_free(*cond);
         return ret;
     }
 }

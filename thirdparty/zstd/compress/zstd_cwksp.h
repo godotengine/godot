@@ -45,6 +45,16 @@ typedef enum {
 } ZSTD_cwksp_alloc_phase_e;
 
 /**
+ * Used to describe whether the workspace is statically allocated (and will not
+ * necessarily ever be freed), or if it's dynamically allocated and we can
+ * expect a well-formed caller to free this.
+ */
+typedef enum {
+    ZSTD_cwksp_dynamic_alloc,
+    ZSTD_cwksp_static_alloc
+} ZSTD_cwksp_static_alloc_e;
+
+/**
  * Zstd fits all its internal datastructures into a single continuous buffer,
  * so that it only needs to perform a single OS allocation (or so that a buffer
  * can be provided to it and it can perform no allocations at all). This buffer
@@ -92,7 +102,7 @@ typedef enum {
  *
  * - Static objects: this is optionally the enclosing ZSTD_CCtx or ZSTD_CDict,
  *   so that literally everything fits in a single buffer. Note: if present,
- *   this must be the first object in the workspace, since ZSTD_free{CCtx,
+ *   this must be the first object in the workspace, since ZSTD_customFree{CCtx,
  *   CDict}() rely on a pointer comparison to see whether one or two frees are
  *   required.
  *
@@ -137,9 +147,10 @@ typedef struct {
     void* tableValidEnd;
     void* allocStart;
 
-    int allocFailed;
+    BYTE allocFailed;
     int workspaceOversizedDuration;
     ZSTD_cwksp_alloc_phase_e phase;
+    ZSTD_cwksp_static_alloc_e isStatic;
 } ZSTD_cwksp;
 
 /*-*************************************
@@ -178,7 +189,9 @@ MEM_STATIC size_t ZSTD_cwksp_align(size_t size, size_t const align) {
  * else is though.
  */
 MEM_STATIC size_t ZSTD_cwksp_alloc_size(size_t size) {
-#if defined (ADDRESS_SANITIZER) && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
+    if (size == 0)
+        return 0;
+#if ZSTD_ADDRESS_SANITIZER && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
     return size + 2 * ZSTD_CWKSP_ASAN_REDZONE_SIZE;
 #else
     return size;
@@ -228,7 +241,10 @@ MEM_STATIC void* ZSTD_cwksp_reserve_internal(
     ZSTD_cwksp_internal_advance_phase(ws, phase);
     alloc = (BYTE *)ws->allocStart - bytes;
 
-#if defined (ADDRESS_SANITIZER) && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
+    if (bytes == 0)
+        return NULL;
+
+#if ZSTD_ADDRESS_SANITIZER && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
     /* over-reserve space */
     alloc = (BYTE *)alloc - 2 * ZSTD_CWKSP_ASAN_REDZONE_SIZE;
 #endif
@@ -247,11 +263,13 @@ MEM_STATIC void* ZSTD_cwksp_reserve_internal(
     }
     ws->allocStart = alloc;
 
-#if defined (ADDRESS_SANITIZER) && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
+#if ZSTD_ADDRESS_SANITIZER && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
     /* Move alloc so there's ZSTD_CWKSP_ASAN_REDZONE_SIZE unused space on
      * either size. */
     alloc = (BYTE *)alloc + ZSTD_CWKSP_ASAN_REDZONE_SIZE;
-    __asan_unpoison_memory_region(alloc, bytes);
+    if (ws->isStatic == ZSTD_cwksp_dynamic_alloc) {
+        __asan_unpoison_memory_region(alloc, bytes);
+    }
 #endif
 
     return alloc;
@@ -296,8 +314,10 @@ MEM_STATIC void* ZSTD_cwksp_reserve_table(ZSTD_cwksp* ws, size_t bytes) {
     }
     ws->tableEnd = end;
 
-#if defined (ADDRESS_SANITIZER) && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
-    __asan_unpoison_memory_region(alloc, bytes);
+#if ZSTD_ADDRESS_SANITIZER && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
+    if (ws->isStatic == ZSTD_cwksp_dynamic_alloc) {
+        __asan_unpoison_memory_region(alloc, bytes);
+    }
 #endif
 
     return alloc;
@@ -311,7 +331,7 @@ MEM_STATIC void* ZSTD_cwksp_reserve_object(ZSTD_cwksp* ws, size_t bytes) {
     void* alloc = ws->objectEnd;
     void* end = (BYTE*)alloc + roundedBytes;
 
-#if defined (ADDRESS_SANITIZER) && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
+#if ZSTD_ADDRESS_SANITIZER && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
     /* over-reserve space */
     end = (BYTE *)end + 2 * ZSTD_CWKSP_ASAN_REDZONE_SIZE;
 #endif
@@ -332,11 +352,13 @@ MEM_STATIC void* ZSTD_cwksp_reserve_object(ZSTD_cwksp* ws, size_t bytes) {
     ws->tableEnd = end;
     ws->tableValidEnd = end;
 
-#if defined (ADDRESS_SANITIZER) && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
+#if ZSTD_ADDRESS_SANITIZER && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
     /* Move alloc so there's ZSTD_CWKSP_ASAN_REDZONE_SIZE unused space on
      * either size. */
     alloc = (BYTE *)alloc + ZSTD_CWKSP_ASAN_REDZONE_SIZE;
-    __asan_unpoison_memory_region(alloc, bytes);
+    if (ws->isStatic == ZSTD_cwksp_dynamic_alloc) {
+        __asan_unpoison_memory_region(alloc, bytes);
+    }
 #endif
 
     return alloc;
@@ -345,7 +367,7 @@ MEM_STATIC void* ZSTD_cwksp_reserve_object(ZSTD_cwksp* ws, size_t bytes) {
 MEM_STATIC void ZSTD_cwksp_mark_tables_dirty(ZSTD_cwksp* ws) {
     DEBUGLOG(4, "cwksp: ZSTD_cwksp_mark_tables_dirty");
 
-#if defined (MEMORY_SANITIZER) && !defined (ZSTD_MSAN_DONT_POISON_WORKSPACE)
+#if ZSTD_MEMORY_SANITIZER && !defined (ZSTD_MSAN_DONT_POISON_WORKSPACE)
     /* To validate that the table re-use logic is sound, and that we don't
      * access table space that we haven't cleaned, we re-"poison" the table
      * space every time we mark it dirty. */
@@ -380,7 +402,7 @@ MEM_STATIC void ZSTD_cwksp_clean_tables(ZSTD_cwksp* ws) {
     assert(ws->tableValidEnd >= ws->objectEnd);
     assert(ws->tableValidEnd <= ws->allocStart);
     if (ws->tableValidEnd < ws->tableEnd) {
-        memset(ws->tableValidEnd, 0, (BYTE*)ws->tableEnd - (BYTE*)ws->tableValidEnd);
+        ZSTD_memset(ws->tableValidEnd, 0, (BYTE*)ws->tableEnd - (BYTE*)ws->tableValidEnd);
     }
     ZSTD_cwksp_mark_tables_clean(ws);
 }
@@ -392,8 +414,12 @@ MEM_STATIC void ZSTD_cwksp_clean_tables(ZSTD_cwksp* ws) {
 MEM_STATIC void ZSTD_cwksp_clear_tables(ZSTD_cwksp* ws) {
     DEBUGLOG(4, "cwksp: clearing tables!");
 
-#if defined (ADDRESS_SANITIZER) && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
-    {
+#if ZSTD_ADDRESS_SANITIZER && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
+    /* We don't do this when the workspace is statically allocated, because
+     * when that is the case, we have no capability to hook into the end of the
+     * workspace's lifecycle to unpoison the memory.
+     */
+    if (ws->isStatic == ZSTD_cwksp_dynamic_alloc) {
         size_t size = (BYTE*)ws->tableValidEnd - (BYTE*)ws->objectEnd;
         __asan_poison_memory_region(ws->objectEnd, size);
     }
@@ -410,7 +436,7 @@ MEM_STATIC void ZSTD_cwksp_clear_tables(ZSTD_cwksp* ws) {
 MEM_STATIC void ZSTD_cwksp_clear(ZSTD_cwksp* ws) {
     DEBUGLOG(4, "cwksp: clearing!");
 
-#if defined (MEMORY_SANITIZER) && !defined (ZSTD_MSAN_DONT_POISON_WORKSPACE)
+#if ZSTD_MEMORY_SANITIZER && !defined (ZSTD_MSAN_DONT_POISON_WORKSPACE)
     /* To validate that the context re-use logic is sound, and that we don't
      * access stuff that this compression hasn't initialized, we re-"poison"
      * the workspace (or at least the non-static, non-table parts of it)
@@ -421,8 +447,12 @@ MEM_STATIC void ZSTD_cwksp_clear(ZSTD_cwksp* ws) {
     }
 #endif
 
-#if defined (ADDRESS_SANITIZER) && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
-    {
+#if ZSTD_ADDRESS_SANITIZER && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
+    /* We don't do this when the workspace is statically allocated, because
+     * when that is the case, we have no capability to hook into the end of the
+     * workspace's lifecycle to unpoison the memory.
+     */
+    if (ws->isStatic == ZSTD_cwksp_dynamic_alloc) {
         size_t size = (BYTE*)ws->workspaceEnd - (BYTE*)ws->objectEnd;
         __asan_poison_memory_region(ws->objectEnd, size);
     }
@@ -442,7 +472,7 @@ MEM_STATIC void ZSTD_cwksp_clear(ZSTD_cwksp* ws) {
  * Any existing values in the workspace are ignored (the previously managed
  * buffer, if present, must be separately freed).
  */
-MEM_STATIC void ZSTD_cwksp_init(ZSTD_cwksp* ws, void* start, size_t size) {
+MEM_STATIC void ZSTD_cwksp_init(ZSTD_cwksp* ws, void* start, size_t size, ZSTD_cwksp_static_alloc_e isStatic) {
     DEBUGLOG(4, "cwksp: init'ing workspace with %zd bytes", size);
     assert(((size_t)start & (sizeof(void*)-1)) == 0); /* ensure correct alignment */
     ws->workspace = start;
@@ -450,24 +480,25 @@ MEM_STATIC void ZSTD_cwksp_init(ZSTD_cwksp* ws, void* start, size_t size) {
     ws->objectEnd = ws->workspace;
     ws->tableValidEnd = ws->objectEnd;
     ws->phase = ZSTD_cwksp_alloc_objects;
+    ws->isStatic = isStatic;
     ZSTD_cwksp_clear(ws);
     ws->workspaceOversizedDuration = 0;
     ZSTD_cwksp_assert_internal_consistency(ws);
 }
 
 MEM_STATIC size_t ZSTD_cwksp_create(ZSTD_cwksp* ws, size_t size, ZSTD_customMem customMem) {
-    void* workspace = ZSTD_malloc(size, customMem);
+    void* workspace = ZSTD_customMalloc(size, customMem);
     DEBUGLOG(4, "cwksp: creating new workspace with %zd bytes", size);
     RETURN_ERROR_IF(workspace == NULL, memory_allocation, "NULL pointer!");
-    ZSTD_cwksp_init(ws, workspace, size);
+    ZSTD_cwksp_init(ws, workspace, size, ZSTD_cwksp_dynamic_alloc);
     return 0;
 }
 
 MEM_STATIC void ZSTD_cwksp_free(ZSTD_cwksp* ws, ZSTD_customMem customMem) {
     void *ptr = ws->workspace;
     DEBUGLOG(4, "cwksp: freeing workspace");
-    memset(ws, 0, sizeof(ZSTD_cwksp));
-    ZSTD_free(ptr, customMem);
+    ZSTD_memset(ws, 0, sizeof(ZSTD_cwksp));
+    ZSTD_customFree(ptr, customMem);
 }
 
 /**
@@ -476,11 +507,16 @@ MEM_STATIC void ZSTD_cwksp_free(ZSTD_cwksp* ws, ZSTD_customMem customMem) {
  */
 MEM_STATIC void ZSTD_cwksp_move(ZSTD_cwksp* dst, ZSTD_cwksp* src) {
     *dst = *src;
-    memset(src, 0, sizeof(ZSTD_cwksp));
+    ZSTD_memset(src, 0, sizeof(ZSTD_cwksp));
 }
 
 MEM_STATIC size_t ZSTD_cwksp_sizeof(const ZSTD_cwksp* ws) {
     return (size_t)((BYTE*)ws->workspaceEnd - (BYTE*)ws->workspace);
+}
+
+MEM_STATIC size_t ZSTD_cwksp_used(const ZSTD_cwksp* ws) {
+    return (size_t)((BYTE*)ws->tableEnd - (BYTE*)ws->workspace)
+         + (size_t)((BYTE*)ws->workspaceEnd - (BYTE*)ws->allocStart);
 }
 
 MEM_STATIC int ZSTD_cwksp_reserve_failed(const ZSTD_cwksp* ws) {

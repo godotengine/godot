@@ -38,8 +38,31 @@ const char* HUF_getErrorName(size_t code) { return ERR_getErrorName(code); }
 /*-**************************************************************
 *  FSE NCount encoding-decoding
 ****************************************************************/
-size_t FSE_readNCount (short* normalizedCounter, unsigned* maxSVPtr, unsigned* tableLogPtr,
-                 const void* headerBuffer, size_t hbSize)
+static U32 FSE_ctz(U32 val)
+{
+    assert(val != 0);
+    {
+#   if defined(_MSC_VER)   /* Visual */
+        unsigned long r=0;
+        return _BitScanForward(&r, val) ? (unsigned)r : 0;
+#   elif defined(__GNUC__) && (__GNUC__ >= 3)   /* GCC Intrinsic */
+        return __builtin_ctz(val);
+#   elif defined(__ICCARM__)    /* IAR Intrinsic */
+        return __CTZ(val);
+#   else   /* Software version */
+        U32 count = 0;
+        while ((val & 1) == 0) {
+            val >>= 1;
+            ++count;
+        }
+        return count;
+#   endif
+    }
+}
+
+FORCE_INLINE_TEMPLATE
+size_t FSE_readNCount_body(short* normalizedCounter, unsigned* maxSVPtr, unsigned* tableLogPtr,
+                           const void* headerBuffer, size_t hbSize)
 {
     const BYTE* const istart = (const BYTE*) headerBuffer;
     const BYTE* const iend = istart + hbSize;
@@ -50,23 +73,23 @@ size_t FSE_readNCount (short* normalizedCounter, unsigned* maxSVPtr, unsigned* t
     U32 bitStream;
     int bitCount;
     unsigned charnum = 0;
+    unsigned const maxSV1 = *maxSVPtr + 1;
     int previous0 = 0;
 
-    if (hbSize < 4) {
-        /* This function only works when hbSize >= 4 */
-        char buffer[4];
-        memset(buffer, 0, sizeof(buffer));
-        memcpy(buffer, headerBuffer, hbSize);
+    if (hbSize < 8) {
+        /* This function only works when hbSize >= 8 */
+        char buffer[8] = {0};
+        ZSTD_memcpy(buffer, headerBuffer, hbSize);
         {   size_t const countSize = FSE_readNCount(normalizedCounter, maxSVPtr, tableLogPtr,
                                                     buffer, sizeof(buffer));
             if (FSE_isError(countSize)) return countSize;
             if (countSize > hbSize) return ERROR(corruption_detected);
             return countSize;
     }   }
-    assert(hbSize >= 4);
+    assert(hbSize >= 8);
 
     /* init */
-    memset(normalizedCounter, 0, (*maxSVPtr+1) * sizeof(normalizedCounter[0]));   /* all symbols not present in NCount have a frequency of 0 */
+    ZSTD_memset(normalizedCounter, 0, (*maxSVPtr+1) * sizeof(normalizedCounter[0]));   /* all symbols not present in NCount have a frequency of 0 */
     bitStream = MEM_readLE32(ip);
     nbBits = (bitStream & 0xF) + FSE_MIN_TABLELOG;   /* extract tableLog */
     if (nbBits > FSE_TABLELOG_ABSOLUTE_MAX) return ERROR(tableLog_tooLarge);
@@ -77,36 +100,58 @@ size_t FSE_readNCount (short* normalizedCounter, unsigned* maxSVPtr, unsigned* t
     threshold = 1<<nbBits;
     nbBits++;
 
-    while ((remaining>1) & (charnum<=*maxSVPtr)) {
+    for (;;) {
         if (previous0) {
-            unsigned n0 = charnum;
-            while ((bitStream & 0xFFFF) == 0xFFFF) {
-                n0 += 24;
-                if (ip < iend-5) {
-                    ip += 2;
-                    bitStream = MEM_readLE32(ip) >> bitCount;
+            /* Count the number of repeats. Each time the
+             * 2-bit repeat code is 0b11 there is another
+             * repeat.
+             * Avoid UB by setting the high bit to 1.
+             */
+            int repeats = FSE_ctz(~bitStream | 0x80000000) >> 1;
+            while (repeats >= 12) {
+                charnum += 3 * 12;
+                if (LIKELY(ip <= iend-7)) {
+                    ip += 3;
                 } else {
-                    bitStream >>= 16;
-                    bitCount   += 16;
-            }   }
-            while ((bitStream & 3) == 3) {
-                n0 += 3;
-                bitStream >>= 2;
-                bitCount += 2;
+                    bitCount -= (int)(8 * (iend - 7 - ip));
+                    bitCount &= 31;
+                    ip = iend - 4;
+                }
+                bitStream = MEM_readLE32(ip) >> bitCount;
+                repeats = FSE_ctz(~bitStream | 0x80000000) >> 1;
             }
-            n0 += bitStream & 3;
+            charnum += 3 * repeats;
+            bitStream >>= 2 * repeats;
+            bitCount += 2 * repeats;
+
+            /* Add the final repeat which isn't 0b11. */
+            assert((bitStream & 3) < 3);
+            charnum += bitStream & 3;
             bitCount += 2;
-            if (n0 > *maxSVPtr) return ERROR(maxSymbolValue_tooSmall);
-            while (charnum < n0) normalizedCounter[charnum++] = 0;
-            if ((ip <= iend-7) || (ip + (bitCount>>3) <= iend-4)) {
+
+            /* This is an error, but break and return an error
+             * at the end, because returning out of a loop makes
+             * it harder for the compiler to optimize.
+             */
+            if (charnum >= maxSV1) break;
+
+            /* We don't need to set the normalized count to 0
+             * because we already memset the whole buffer to 0.
+             */
+
+            if (LIKELY(ip <= iend-7) || (ip + (bitCount>>3) <= iend-4)) {
                 assert((bitCount >> 3) <= 3); /* For first condition to work */
                 ip += bitCount>>3;
                 bitCount &= 7;
-                bitStream = MEM_readLE32(ip) >> bitCount;
             } else {
-                bitStream >>= 2;
-        }   }
-        {   int const max = (2*threshold-1) - remaining;
+                bitCount -= (int)(8 * (iend - 4 - ip));
+                bitCount &= 31;
+                ip = iend - 4;
+            }
+            bitStream = MEM_readLE32(ip) >> bitCount;
+        }
+        {
+            int const max = (2*threshold-1) - remaining;
             int count;
 
             if ((bitStream & (threshold-1)) < (U32)max) {
@@ -119,29 +164,85 @@ size_t FSE_readNCount (short* normalizedCounter, unsigned* maxSVPtr, unsigned* t
             }
 
             count--;   /* extra accuracy */
-            remaining -= count < 0 ? -count : count;   /* -1 means +1 */
+            /* When it matters (small blocks), this is a
+             * predictable branch, because we don't use -1.
+             */
+            if (count >= 0) {
+                remaining -= count;
+            } else {
+                assert(count == -1);
+                remaining += count;
+            }
             normalizedCounter[charnum++] = (short)count;
             previous0 = !count;
-            while (remaining < threshold) {
-                nbBits--;
-                threshold >>= 1;
-            }
 
-            if ((ip <= iend-7) || (ip + (bitCount>>3) <= iend-4)) {
+            assert(threshold > 1);
+            if (remaining < threshold) {
+                /* This branch can be folded into the
+                 * threshold update condition because we
+                 * know that threshold > 1.
+                 */
+                if (remaining <= 1) break;
+                nbBits = BIT_highbit32(remaining) + 1;
+                threshold = 1 << (nbBits - 1);
+            }
+            if (charnum >= maxSV1) break;
+
+            if (LIKELY(ip <= iend-7) || (ip + (bitCount>>3) <= iend-4)) {
                 ip += bitCount>>3;
                 bitCount &= 7;
             } else {
                 bitCount -= (int)(8 * (iend - 4 - ip));
+                bitCount &= 31;
                 ip = iend - 4;
             }
-            bitStream = MEM_readLE32(ip) >> (bitCount & 31);
-    }   }   /* while ((remaining>1) & (charnum<=*maxSVPtr)) */
+            bitStream = MEM_readLE32(ip) >> bitCount;
+    }   }
     if (remaining != 1) return ERROR(corruption_detected);
+    /* Only possible when there are too many zeros. */
+    if (charnum > maxSV1) return ERROR(maxSymbolValue_tooSmall);
     if (bitCount > 32) return ERROR(corruption_detected);
     *maxSVPtr = charnum-1;
 
     ip += (bitCount+7)>>3;
     return ip-istart;
+}
+
+/* Avoids the FORCE_INLINE of the _body() function. */
+static size_t FSE_readNCount_body_default(
+        short* normalizedCounter, unsigned* maxSVPtr, unsigned* tableLogPtr,
+        const void* headerBuffer, size_t hbSize)
+{
+    return FSE_readNCount_body(normalizedCounter, maxSVPtr, tableLogPtr, headerBuffer, hbSize);
+}
+
+#if DYNAMIC_BMI2
+TARGET_ATTRIBUTE("bmi2") static size_t FSE_readNCount_body_bmi2(
+        short* normalizedCounter, unsigned* maxSVPtr, unsigned* tableLogPtr,
+        const void* headerBuffer, size_t hbSize)
+{
+    return FSE_readNCount_body(normalizedCounter, maxSVPtr, tableLogPtr, headerBuffer, hbSize);
+}
+#endif
+
+size_t FSE_readNCount_bmi2(
+        short* normalizedCounter, unsigned* maxSVPtr, unsigned* tableLogPtr,
+        const void* headerBuffer, size_t hbSize, int bmi2)
+{
+#if DYNAMIC_BMI2
+    if (bmi2) {
+        return FSE_readNCount_body_bmi2(normalizedCounter, maxSVPtr, tableLogPtr, headerBuffer, hbSize);
+    }
+#endif
+    (void)bmi2;
+    return FSE_readNCount_body_default(normalizedCounter, maxSVPtr, tableLogPtr, headerBuffer, hbSize);
+}
+
+size_t FSE_readNCount(
+        short* normalizedCounter, unsigned* maxSVPtr, unsigned* tableLogPtr,
+        const void* headerBuffer, size_t hbSize)
+{
+    return FSE_readNCount_bmi2(normalizedCounter, maxSVPtr, tableLogPtr, headerBuffer, hbSize, /* bmi2 */ 0);
 }
 
 
@@ -156,6 +257,17 @@ size_t HUF_readStats(BYTE* huffWeight, size_t hwSize, U32* rankStats,
                      U32* nbSymbolsPtr, U32* tableLogPtr,
                      const void* src, size_t srcSize)
 {
+    U32 wksp[HUF_READ_STATS_WORKSPACE_SIZE_U32];
+    return HUF_readStats_wksp(huffWeight, hwSize, rankStats, nbSymbolsPtr, tableLogPtr, src, srcSize, wksp, sizeof(wksp), /* bmi2 */ 0);
+}
+
+FORCE_INLINE_TEMPLATE size_t
+HUF_readStats_body(BYTE* huffWeight, size_t hwSize, U32* rankStats,
+                   U32* nbSymbolsPtr, U32* tableLogPtr,
+                   const void* src, size_t srcSize,
+                   void* workSpace, size_t wkspSize,
+                   int bmi2)
+{
     U32 weightTotal;
     const BYTE* ip = (const BYTE*) src;
     size_t iSize;
@@ -163,7 +275,7 @@ size_t HUF_readStats(BYTE* huffWeight, size_t hwSize, U32* rankStats,
 
     if (!srcSize) return ERROR(srcSize_wrong);
     iSize = ip[0];
-    /* memset(huffWeight, 0, hwSize);   *//* is not necessary, even though some analyzer complain ... */
+    /* ZSTD_memset(huffWeight, 0, hwSize);   *//* is not necessary, even though some analyzer complain ... */
 
     if (iSize >= 128) {  /* special header */
         oSize = iSize - 127;
@@ -177,14 +289,14 @@ size_t HUF_readStats(BYTE* huffWeight, size_t hwSize, U32* rankStats,
                 huffWeight[n+1] = ip[n/2] & 15;
     }   }   }
     else  {   /* header compressed with FSE (normal case) */
-        FSE_DTable fseWorkspace[FSE_DTABLE_SIZE_U32(6)];  /* 6 is max possible tableLog for HUF header (maybe even 5, to be tested) */
         if (iSize+1 > srcSize) return ERROR(srcSize_wrong);
-        oSize = FSE_decompress_wksp(huffWeight, hwSize-1, ip+1, iSize, fseWorkspace, 6);   /* max (hwSize-1) values decoded, as last one is implied */
+        /* max (hwSize-1) values decoded, as last one is implied */
+        oSize = FSE_decompress_wksp_bmi2(huffWeight, hwSize-1, ip+1, iSize, 6, workSpace, wkspSize, bmi2);
         if (FSE_isError(oSize)) return oSize;
     }
 
     /* collect weight stats */
-    memset(rankStats, 0, (HUF_TABLELOG_MAX + 1) * sizeof(U32));
+    ZSTD_memset(rankStats, 0, (HUF_TABLELOG_MAX + 1) * sizeof(U32));
     weightTotal = 0;
     {   U32 n; for (n=0; n<oSize; n++) {
             if (huffWeight[n] >= HUF_TABLELOG_MAX) return ERROR(corruption_detected);
@@ -213,4 +325,38 @@ size_t HUF_readStats(BYTE* huffWeight, size_t hwSize, U32* rankStats,
     /* results */
     *nbSymbolsPtr = (U32)(oSize+1);
     return iSize+1;
+}
+
+/* Avoids the FORCE_INLINE of the _body() function. */
+static size_t HUF_readStats_body_default(BYTE* huffWeight, size_t hwSize, U32* rankStats,
+                     U32* nbSymbolsPtr, U32* tableLogPtr,
+                     const void* src, size_t srcSize,
+                     void* workSpace, size_t wkspSize)
+{
+    return HUF_readStats_body(huffWeight, hwSize, rankStats, nbSymbolsPtr, tableLogPtr, src, srcSize, workSpace, wkspSize, 0);
+}
+
+#if DYNAMIC_BMI2
+static TARGET_ATTRIBUTE("bmi2") size_t HUF_readStats_body_bmi2(BYTE* huffWeight, size_t hwSize, U32* rankStats,
+                     U32* nbSymbolsPtr, U32* tableLogPtr,
+                     const void* src, size_t srcSize,
+                     void* workSpace, size_t wkspSize)
+{
+    return HUF_readStats_body(huffWeight, hwSize, rankStats, nbSymbolsPtr, tableLogPtr, src, srcSize, workSpace, wkspSize, 1);
+}
+#endif
+
+size_t HUF_readStats_wksp(BYTE* huffWeight, size_t hwSize, U32* rankStats,
+                     U32* nbSymbolsPtr, U32* tableLogPtr,
+                     const void* src, size_t srcSize,
+                     void* workSpace, size_t wkspSize,
+                     int bmi2)
+{
+#if DYNAMIC_BMI2
+    if (bmi2) {
+        return HUF_readStats_body_bmi2(huffWeight, hwSize, rankStats, nbSymbolsPtr, tableLogPtr, src, srcSize, workSpace, wkspSize);
+    }
+#endif
+    (void)bmi2;
+    return HUF_readStats_body_default(huffWeight, hwSize, rankStats, nbSymbolsPtr, tableLogPtr, src, srcSize, workSpace, wkspSize);
 }

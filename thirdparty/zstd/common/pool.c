@@ -10,9 +10,9 @@
 
 
 /* ======   Dependencies   ======= */
-#include <stddef.h>    /* size_t */
+#include "zstd_deps.h" /* size_t */
 #include "debug.h"     /* assert */
-#include "zstd_internal.h"  /* ZSTD_malloc, ZSTD_free */
+#include "zstd_internal.h"  /* ZSTD_customMalloc, ZSTD_customFree */
 #include "pool.h"
 
 /* ======   Compiler specifics   ====== */
@@ -105,6 +105,10 @@ static void* POOL_thread(void* opaque) {
     assert(0);  /* Unreachable */
 }
 
+POOL_ctx* ZSTD_createThreadPool(size_t numThreads) {
+    return POOL_create (numThreads, 0);
+}
+
 POOL_ctx* POOL_create(size_t numThreads, size_t queueSize) {
     return POOL_create_advanced(numThreads, queueSize, ZSTD_defaultCMem);
 }
@@ -115,14 +119,14 @@ POOL_ctx* POOL_create_advanced(size_t numThreads, size_t queueSize,
     /* Check parameters */
     if (!numThreads) { return NULL; }
     /* Allocate the context and zero initialize */
-    ctx = (POOL_ctx*)ZSTD_calloc(sizeof(POOL_ctx), customMem);
+    ctx = (POOL_ctx*)ZSTD_customCalloc(sizeof(POOL_ctx), customMem);
     if (!ctx) { return NULL; }
     /* Initialize the job queue.
      * It needs one extra space since one space is wasted to differentiate
      * empty and full queues.
      */
     ctx->queueSize = queueSize + 1;
-    ctx->queue = (POOL_job*)ZSTD_malloc(ctx->queueSize * sizeof(POOL_job), customMem);
+    ctx->queue = (POOL_job*)ZSTD_customMalloc(ctx->queueSize * sizeof(POOL_job), customMem);
     ctx->queueHead = 0;
     ctx->queueTail = 0;
     ctx->numThreadsBusy = 0;
@@ -136,7 +140,7 @@ POOL_ctx* POOL_create_advanced(size_t numThreads, size_t queueSize,
     }
     ctx->shutdown = 0;
     /* Allocate space for the thread handles */
-    ctx->threads = (ZSTD_pthread_t*)ZSTD_malloc(numThreads * sizeof(ZSTD_pthread_t), customMem);
+    ctx->threads = (ZSTD_pthread_t*)ZSTD_customMalloc(numThreads * sizeof(ZSTD_pthread_t), customMem);
     ctx->threadCapacity = 0;
     ctx->customMem = customMem;
     /* Check for errors */
@@ -179,12 +183,14 @@ void POOL_free(POOL_ctx *ctx) {
     ZSTD_pthread_mutex_destroy(&ctx->queueMutex);
     ZSTD_pthread_cond_destroy(&ctx->queuePushCond);
     ZSTD_pthread_cond_destroy(&ctx->queuePopCond);
-    ZSTD_free(ctx->queue, ctx->customMem);
-    ZSTD_free(ctx->threads, ctx->customMem);
-    ZSTD_free(ctx, ctx->customMem);
+    ZSTD_customFree(ctx->queue, ctx->customMem);
+    ZSTD_customFree(ctx->threads, ctx->customMem);
+    ZSTD_customFree(ctx, ctx->customMem);
 }
 
-
+void ZSTD_freeThreadPool (ZSTD_threadPool* pool) {
+  POOL_free (pool);
+}
 
 size_t POOL_sizeof(POOL_ctx *ctx) {
     if (ctx==NULL) return 0;  /* supports sizeof NULL */
@@ -203,11 +209,11 @@ static int POOL_resize_internal(POOL_ctx* ctx, size_t numThreads)
         return 0;
     }
     /* numThreads > threadCapacity */
-    {   ZSTD_pthread_t* const threadPool = (ZSTD_pthread_t*)ZSTD_malloc(numThreads * sizeof(ZSTD_pthread_t), ctx->customMem);
+    {   ZSTD_pthread_t* const threadPool = (ZSTD_pthread_t*)ZSTD_customMalloc(numThreads * sizeof(ZSTD_pthread_t), ctx->customMem);
         if (!threadPool) return 1;
         /* replace existing thread pool */
-        memcpy(threadPool, ctx->threads, ctx->threadCapacity * sizeof(*threadPool));
-        ZSTD_free(ctx->threads, ctx->customMem);
+        ZSTD_memcpy(threadPool, ctx->threads, ctx->threadCapacity * sizeof(*threadPool));
+        ZSTD_customFree(ctx->threads, ctx->customMem);
         ctx->threads = threadPool;
         /* Initialize additional threads */
         {   size_t threadId;
@@ -301,7 +307,7 @@ int POOL_tryAdd(POOL_ctx* ctx, POOL_function function, void* opaque)
 struct POOL_ctx_s {
     int dummy;
 };
-static POOL_ctx g_ctx;
+static POOL_ctx g_poolCtx;
 
 POOL_ctx* POOL_create(size_t numThreads, size_t queueSize) {
     return POOL_create_advanced(numThreads, queueSize, ZSTD_defaultCMem);
@@ -311,11 +317,11 @@ POOL_ctx* POOL_create_advanced(size_t numThreads, size_t queueSize, ZSTD_customM
     (void)numThreads;
     (void)queueSize;
     (void)customMem;
-    return &g_ctx;
+    return &g_poolCtx;
 }
 
 void POOL_free(POOL_ctx* ctx) {
-    assert(!ctx || ctx == &g_ctx);
+    assert(!ctx || ctx == &g_poolCtx);
     (void)ctx;
 }
 
@@ -337,7 +343,7 @@ int POOL_tryAdd(POOL_ctx* ctx, POOL_function function, void* opaque) {
 
 size_t POOL_sizeof(POOL_ctx* ctx) {
     if (ctx==NULL) return 0;  /* supports sizeof NULL */
-    assert(ctx == &g_ctx);
+    assert(ctx == &g_poolCtx);
     return sizeof(*ctx);
 }
 

@@ -13,8 +13,8 @@
 /*-*************************************
 *  Dependencies
 ***************************************/
-#include <stdlib.h>      /* malloc, calloc, free */
-#include <string.h>      /* memset */
+#define ZSTD_DEPS_NEED_MALLOC
+#include "zstd_deps.h"   /* ZSTD_malloc, ZSTD_calloc, ZSTD_free, ZSTD_memset */
 #include "error_private.h"
 #include "zstd_internal.h"
 
@@ -53,31 +53,31 @@ const char* ZSTD_getErrorString(ZSTD_ErrorCode code) { return ERR_getErrorString
 /*=**************************************************************
 *  Custom allocator
 ****************************************************************/
-void* ZSTD_malloc(size_t size, ZSTD_customMem customMem)
+void* ZSTD_customMalloc(size_t size, ZSTD_customMem customMem)
 {
     if (customMem.customAlloc)
         return customMem.customAlloc(customMem.opaque, size);
-    return malloc(size);
+    return ZSTD_malloc(size);
 }
 
-void* ZSTD_calloc(size_t size, ZSTD_customMem customMem)
+void* ZSTD_customCalloc(size_t size, ZSTD_customMem customMem)
 {
     if (customMem.customAlloc) {
         /* calloc implemented as malloc+memset;
          * not as efficient as calloc, but next best guess for custom malloc */
         void* const ptr = customMem.customAlloc(customMem.opaque, size);
-        memset(ptr, 0, size);
+        ZSTD_memset(ptr, 0, size);
         return ptr;
     }
-    return calloc(1, size);
+    return ZSTD_calloc(1, size);
 }
 
-void ZSTD_free(void* ptr, ZSTD_customMem customMem)
+void ZSTD_customFree(void* ptr, ZSTD_customMem customMem)
 {
     if (ptr!=NULL) {
         if (customMem.customFree)
             customMem.customFree(customMem.opaque, ptr);
         else
-            free(ptr);
+            ZSTD_free(ptr);
     }
 }
