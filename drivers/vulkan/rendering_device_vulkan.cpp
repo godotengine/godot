@@ -4061,6 +4061,10 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 							layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
 							info.type = UNIFORM_TYPE_INPUT_ATTACHMENT;
 						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR: {
+							ERR_PRINT("Acceleration structure not supported.");
+							continue;
+						} break;
 					}
 
 					if (need_array_dimensions) {
