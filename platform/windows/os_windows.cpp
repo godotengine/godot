@@ -1687,8 +1687,6 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 	RegisterTouchWindow(hWnd, 0);
 
-	_ensure_user_data_dir();
-
 	DragAcceptFiles(hWnd, true);
 
 	move_timer_id = 1;
