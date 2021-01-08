@@ -1297,14 +1297,23 @@ private:
 	struct Cluster {
 		/* Scene State UBO */
 
-		struct ReflectionData { //should always be 128 bytes
+		enum {
+			REFLECTION_AMBIENT_DISABLED = 0,
+			REFLECTION_AMBIENT_ENVIRONMENT = 1,
+			REFLECTION_AMBIENT_COLOR = 2,
+		};
+
+		struct ReflectionData {
 			float box_extents[3];
 			float index;
 			float box_offset[3];
 			uint32_t mask;
-			float params[4]; // intensity, 0, interior , boxproject
 			float ambient[3]; // ambient color,
+			float intensity;
+			bool exterior;
+			bool box_project;
 			uint32_t ambient_mode;
+			uint32_t pad;
 			float local_matrix[16]; // up to here for spot and omni, rest is for directional
 		};
 
@@ -1313,10 +1322,15 @@ private:
 			float inv_radius;
 			float direction[3];
 			float size;
-			uint16_t attenuation_energy[2]; //16 bits attenuation, then energy
-			uint8_t color_specular[4]; //rgb color, a specular (8 bit unorm)
-			uint16_t cone_attenuation_angle[2]; // attenuation and angle, (16bit float)
-			uint8_t shadow_color_enabled[4]; //shadow rgb color, a>0.5 enabled (8bit unorm)
+
+			float color[3];
+			float attenuation;
+
+			float cone_attenuation;
+			float cone_angle;
+			float specular_amount;
+			uint32_t shadow_enabled;
+
 			float atlas_rect[4]; // in omni, used for atlas uv, in spot, used for projector uv
 			float shadow_matrix[16];
 			float shadow_bias;

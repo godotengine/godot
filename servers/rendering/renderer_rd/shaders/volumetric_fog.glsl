@@ -280,19 +280,14 @@ void main() {
 
 		vec3 light_pos = lights.data[i].position;
 		float d = distance(lights.data[i].position, view_pos);
-		vec3 shadow_attenuation = vec3(1.0);
+		float shadow_attenuation = 1.0;
 
 		if (d * lights.data[i].inv_radius < 1.0) {
-			vec2 attenuation_energy = unpackHalf2x16(lights.data[i].attenuation_energy);
-			vec4 color_specular = unpackUnorm4x8(lights.data[i].color_specular);
+			float attenuation = get_omni_attenuation(d, lights.data[i].inv_radius, lights.data[i].attenuation);
 
-			float attenuation = get_omni_attenuation(d, lights.data[i].inv_radius, attenuation_energy.x);
+			vec3 light = lights.data[i].color / M_PI;
 
-			vec3 light = attenuation_energy.y * color_specular.rgb / M_PI;
-
-			vec4 shadow_color_enabled = unpackUnorm4x8(lights.data[i].shadow_color_enabled);
-
-			if (shadow_color_enabled.a > 0.5) {
+			if (lights.data[i].shadow_enabled) {
 				//has shadow
 				vec4 v = vec4(view_pos, 1.0);
 
@@ -319,9 +314,8 @@ void main() {
 				splane.w = 1.0; //needed? i think it should be 1 already
 
 				float depth = texture(sampler2D(shadow_atlas, linear_sampler), splane.xy).r;
-				float shadow = exp(min(0.0, (depth - splane.z)) / lights.data[i].inv_radius * lights.data[i].shadow_volumetric_fog_fade);
 
-				shadow_attenuation = mix(shadow_color_enabled.rgb, vec3(1.0), shadow);
+				shadow_attenuation = exp(min(0.0, (depth - splane.z)) / lights.data[i].inv_radius * lights.data[i].shadow_volumetric_fog_fade);
 			}
 			total_light += light * attenuation * shadow_attenuation;
 		}
@@ -336,25 +330,19 @@ void main() {
 		vec3 light_pos = lights.data[i].position;
 		vec3 light_rel_vec = lights.data[i].position - view_pos;
 		float d = length(light_rel_vec);
-		vec3 shadow_attenuation = vec3(1.0);
+		float shadow_attenuation = 1.0;
 
 		if (d * lights.data[i].inv_radius < 1.0) {
-			vec2 attenuation_energy = unpackHalf2x16(lights.data[i].attenuation_energy);
-			vec4 color_specular = unpackUnorm4x8(lights.data[i].color_specular);
-
-			float attenuation = get_omni_attenuation(d, lights.data[i].inv_radius, attenuation_energy.x);
+			float attenuation = get_omni_attenuation(d, lights.data[i].inv_radius, lights.data[i].attenuation);
 
 			vec3 spot_dir = lights.data[i].direction;
-			vec2 spot_att_angle = unpackHalf2x16(lights.data[i].cone_attenuation_angle);
-			float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_att_angle.y);
-			float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_att_angle.y));
-			attenuation *= 1.0 - pow(spot_rim, spot_att_angle.x);
+			float scos = max(dot(-normalize(light_rel_vec), spot_dir), lights.data[i].cone_angle);
+			float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - lights.data[i].cone_angle));
+			attenuation *= 1.0 - pow(spot_rim, lights.data[i].cone_attenuation);
 
-			vec3 light = attenuation_energy.y * color_specular.rgb / M_PI;
+			vec3 light = lights.data[i].color / M_PI;
 
-			vec4 shadow_color_enabled = unpackUnorm4x8(lights.data[i].shadow_color_enabled);
-
-			if (shadow_color_enabled.a > 0.5) {
+			if (lights.data[i].shadow_enabled) {
 				//has shadow
 				vec4 v = vec4(view_pos, 1.0);
 
@@ -362,9 +350,8 @@ void main() {
 				splane /= splane.w;
 
 				float depth = texture(sampler2D(shadow_atlas, linear_sampler), splane.xy).r;
-				float shadow = exp(min(0.0, (depth - splane.z)) / lights.data[i].inv_radius * lights.data[i].shadow_volumetric_fog_fade);
 
-				shadow_attenuation = mix(shadow_color_enabled.rgb, vec3(1.0), shadow);
+				shadow_attenuation = exp(min(0.0, (depth - splane.z)) / lights.data[i].inv_radius * lights.data[i].shadow_volumetric_fog_fade);
 			}
 
 			total_light += light * attenuation * shadow_attenuation;
