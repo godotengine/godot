@@ -24,15 +24,19 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _SLJIT_CONFIG_H_
-#define _SLJIT_CONFIG_H_
+#ifndef SLJIT_CONFIG_H_
+#define SLJIT_CONFIG_H_
 
-/* --------------------------------------------------------------------- */
-/*  Custom defines                                                       */
-/* --------------------------------------------------------------------- */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/* Put your custom defines here. This empty section will never change
-   which helps maintaining patches (with diff / patch utilities). */
+/*
+  This file contains the basic configuration options for the SLJIT compiler
+  and their default values. These options can be overridden in the
+  sljitConfigPre.h header file when SLJIT_HAVE_CONFIG_PRE is set to a
+  non-zero value.
+*/
 
 /* --------------------------------------------------------------------- */
 /*  Architecture                                                         */
@@ -50,7 +54,7 @@
 /* #define SLJIT_CONFIG_MIPS_32 1 */
 /* #define SLJIT_CONFIG_MIPS_64 1 */
 /* #define SLJIT_CONFIG_SPARC_32 1 */
-/* #define SLJIT_CONFIG_TILEGX 1 */
+/* #define SLJIT_CONFIG_S390X 1 */
 
 /* #define SLJIT_CONFIG_AUTO 1 */
 /* #define SLJIT_CONFIG_UNSUPPORTED 1 */
@@ -59,16 +63,17 @@
 /*  Utilities                                                            */
 /* --------------------------------------------------------------------- */
 
-/* Useful for thread-safe compiling of global functions. */
-#ifndef SLJIT_UTIL_GLOBAL_LOCK
-/* Enabled by default */
-#define SLJIT_UTIL_GLOBAL_LOCK 1
-#endif
-
-/* Implements a stack like data structure (by using mmap / VirtualAlloc). */
+/* Implements a stack like data structure (by using mmap / VirtualAlloc  */
+/* or a custom allocator). */
 #ifndef SLJIT_UTIL_STACK
 /* Enabled by default */
 #define SLJIT_UTIL_STACK 1
+#endif
+
+/* Uses user provided allocator to allocate the stack (see SLJIT_UTIL_STACK) */
+#ifndef SLJIT_UTIL_SIMPLE_STACK_ALLOCATION
+/* Disabled by default */
+#define SLJIT_UTIL_SIMPLE_STACK_ALLOCATION 0
 #endif
 
 /* Single threaded application. Does not require any locks. */
@@ -97,14 +102,30 @@
 
 /* When SLJIT_PROT_EXECUTABLE_ALLOCATOR is enabled SLJIT uses
    an allocator which does not set writable and executable
-   permission flags at the same time. The trade-of is increased
-   memory consumption and disabled dynamic code modifications. */
+   permission flags at the same time.
+   Instead, it creates a shared memory segment (usually backed by a file)
+   and maps it twice, with different permissions, depending on the use
+   case.
+   The trade-off is increased use of virtual memory, incompatibility with
+   fork(), and some possible additional security risks by the use of
+   publicly accessible files for the generated code. */
 #ifndef SLJIT_PROT_EXECUTABLE_ALLOCATOR
 /* Disabled by default. */
 #define SLJIT_PROT_EXECUTABLE_ALLOCATOR 0
 #endif
 
+/* When SLJIT_WX_EXECUTABLE_ALLOCATOR is enabled SLJIT uses an
+   allocator which does not set writable and executable permission
+   flags at the same time.
+   Instead, it creates a new independent map on each invocation and
+   switches permissions at the underlying pages as needed.
+   The trade-off is increased memory use and degraded performance. */
+#ifndef SLJIT_WX_EXECUTABLE_ALLOCATOR
+/* Disabled by default. */
+#define SLJIT_WX_EXECUTABLE_ALLOCATOR 0
 #endif
+
+#endif /* !SLJIT_EXECUTABLE_ALLOCATOR */
 
 /* Force cdecl calling convention even if a better calling
    convention (e.g. fastcall) is supported by the C compiler.
@@ -144,4 +165,8 @@
 
 /* For further configurations, see the beginning of sljitConfigInternal.h */
 
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
+
+#endif /* SLJIT_CONFIG_H_ */
