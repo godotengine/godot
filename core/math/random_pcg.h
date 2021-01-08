@@ -61,7 +61,7 @@ static int __bsr_clz32(uint32_t x) {
 
 class RandomPCG {
 	pcg32_random_t pcg;
-	uint64_t current_seed; // seed with this to get the same state
+	uint64_t current_seed; // The seed the current generator state started from.
 	uint64_t current_inc;
 
 public:
@@ -75,6 +75,9 @@ public:
 		pcg32_srandom_r(&pcg, current_seed, current_inc);
 	}
 	_FORCE_INLINE_ uint64_t get_seed() { return current_seed; }
+
+	_FORCE_INLINE_ void set_state(uint64_t p_state) { pcg.state = p_state; }
+	_FORCE_INLINE_ uint64_t get_state() const { return pcg.state; }
 
 	void randomize();
 	_FORCE_INLINE_ uint32_t rand() {
