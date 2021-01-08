@@ -76,6 +76,9 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_enter(struct sljit_compiler *compi
 	CHECK(check_sljit_emit_enter(compiler, options, arg_types, scratches, saveds, fscratches, fsaveds, local_size));
 	set_emit_enter(compiler, options, arg_types, scratches, saveds, fscratches, fsaveds, local_size);
 
+	/* Emit ENDBR32 at function entry if needed.  */
+	FAIL_IF(emit_endbranch(compiler));
+
 	args = get_arg_count(arg_types);
 	compiler->args = args;
 
@@ -307,13 +310,10 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_return(struct sljit_compiler *comp
 		SLJIT_SP, 0, SLJIT_SP, 0, SLJIT_IMM, compiler->local_size));
 #endif
 
-	size = 2 + (compiler->scratches > 7 ? (compiler->scratches - 7) : 0) +
+	size = 2 + (compiler->scratches > 9 ? (compiler->scratches - 9) : 0) +
 		(compiler->saveds <= 3 ? compiler->saveds : 3);
 #if (defined SLJIT_X86_32_FASTCALL && SLJIT_X86_32_FASTCALL)
 	if (compiler->args > 2)
-		size += 2;
-#else
-	if (compiler->args > 0)
 		size += 2;
 #endif
 	inst = (sljit_u8*)ensure_buf(compiler, 1 + size);
@@ -367,6 +367,8 @@ static sljit_u8* emit_x86_instruction(struct sljit_compiler *compiler, sljit_s32
 	SLJIT_ASSERT((flags & (EX86_PREF_F2 | EX86_PREF_F3)) != (EX86_PREF_F2 | EX86_PREF_F3)
 		&& (flags & (EX86_PREF_F2 | EX86_PREF_66)) != (EX86_PREF_F2 | EX86_PREF_66)
 		&& (flags & (EX86_PREF_F3 | EX86_PREF_66)) != (EX86_PREF_F3 | EX86_PREF_66));
+	/* We don't support (%ebp). */
+	SLJIT_ASSERT(!(b & SLJIT_MEM) || immb || reg_map[b & REG_MASK] != 5);
 
 	size &= 0xf;
 	inst_size = size;
@@ -863,13 +865,9 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_enter(struct sljit_compiler *
 	return SLJIT_SUCCESS;
 }
 
-SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_return(struct sljit_compiler *compiler, sljit_s32 src, sljit_sw srcw)
+static sljit_s32 emit_fast_return(struct sljit_compiler *compiler, sljit_s32 src, sljit_sw srcw)
 {
 	sljit_u8 *inst;
-
-	CHECK_ERROR();
-	CHECK(check_sljit_emit_fast_return(compiler, src, srcw));
-	ADJUST_LOCAL_OFFSET(src, srcw);
 
 	CHECK_EXTRA_REGS(src, srcw, (void)0);
 
@@ -893,4 +891,38 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_return(struct sljit_compiler 
 
 	RET();
 	return SLJIT_SUCCESS;
+}
+
+static sljit_s32 skip_frames_before_return(struct sljit_compiler *compiler)
+{
+	sljit_s32 size, saved_size;
+	sljit_s32 has_f64_aligment;
+
+	/* Don't adjust shadow stack if it isn't enabled.  */
+	if (!cpu_has_shadow_stack ())
+		return SLJIT_SUCCESS;
+
+	SLJIT_ASSERT(compiler->args >= 0);
+	SLJIT_ASSERT(compiler->local_size > 0);
+
+#if !defined(__APPLE__)
+	has_f64_aligment = compiler->options & SLJIT_F64_ALIGNMENT;
+#else
+	has_f64_aligment = 0;
+#endif
+
+	size = compiler->local_size;
+	saved_size = (1 + (compiler->scratches > 9 ? (compiler->scratches - 9) : 0) + (compiler->saveds <= 3 ? compiler->saveds : 3)) * sizeof(sljit_uw);
+	if (has_f64_aligment) {
+		/* mov TMP_REG1, [esp + local_size].  */
+		EMIT_MOV(compiler, TMP_REG1, 0, SLJIT_MEM1(SLJIT_SP), size);
+		/* mov TMP_REG1, [TMP_REG1+ saved_size].  */
+		EMIT_MOV(compiler, TMP_REG1, 0, SLJIT_MEM1(TMP_REG1), saved_size);
+		/* Move return address to [esp]. */
+		EMIT_MOV(compiler, SLJIT_MEM1(SLJIT_SP), 0, TMP_REG1, 0);
+		size = 0;
+	} else
+		size += saved_size;
+
+	return adjust_shadow_stack(compiler, SLJIT_UNUSED, 0, SLJIT_SP, size);
 }

@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2017 University of Cambridge
+          New API code Copyright (c) 2016-2020 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -347,7 +347,7 @@ for (p = string; length > 0; p++)
     length--;
     if ((*p & 0xfc00) != 0xdc00)
       {
-      *erroroffset = p - string;
+      *erroroffset = p - string - 1;
       return PCRE2_ERROR_UTF16_ERR2;
       }
     }

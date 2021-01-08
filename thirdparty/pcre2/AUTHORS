@@ -2,13 +2,13 @@ THE MAIN PCRE2 LIBRARY CODE
 ---------------------------
 
 Written by:       Philip Hazel
-Email local part: ph10
-Email domain:     cam.ac.uk
+Email local part: Philip.Hazel
+Email domain:     gmail.com
 
 University of Cambridge Computing Service,
 Cambridge, England.
 
-Copyright (c) 1997-2019 University of Cambridge
+Copyright (c) 1997-2020 University of Cambridge
 All rights reserved
 
 
@@ -19,7 +19,7 @@ Written by:       Zoltan Herczeg
 Email local part: hzmester
 Emain domain:     freemail.hu
 
-Copyright(c) 2010-2019 Zoltan Herczeg
+Copyright(c) 2010-2020 Zoltan Herczeg
 All rights reserved.
 
 
@@ -30,7 +30,7 @@ Written by:       Zoltan Herczeg
 Email local part: hzmester
 Emain domain:     freemail.hu
 
-Copyright(c) 2009-2019 Zoltan Herczeg
+Copyright(c) 2009-2020 Zoltan Herczeg
 All rights reserved.
 
 ####
