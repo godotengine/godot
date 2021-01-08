@@ -60,6 +60,7 @@ void SceneSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("register_node", "node"), &SceneSynchronizer::register_node);
 	ClassDB::bind_method(D_METHOD("unregister_node", "node"), &SceneSynchronizer::unregister_node);
 	ClassDB::bind_method(D_METHOD("get_node_id", "node"), &SceneSynchronizer::get_node_id);
+	ClassDB::bind_method(D_METHOD("get_node_from_id", "id"), &SceneSynchronizer::get_node_from_id);
 
 	ClassDB::bind_method(D_METHOD("register_variable", "node", "variable", "on_change_notify", "flags"), &SceneSynchronizer::register_variable, DEFVAL(StringName()), DEFVAL(NetEventFlag::DEFAULT));
 	ClassDB::bind_method(D_METHOD("unregister_variable", "node", "variable"), &SceneSynchronizer::unregister_variable);
@@ -270,6 +271,12 @@ uint32_t SceneSynchronizer::get_node_id(Node *p_node) {
 	NetUtility::NodeData *nd = find_node_data(p_node);
 	ERR_FAIL_COND_V_MSG(nd == nullptr, UINT32_MAX, "This node " + p_node->get_path() + " is not yet registered, so there is not an available ID.");
 	return nd->id;
+}
+
+Node *SceneSynchronizer::get_node_from_id(uint32_t p_id) {
+	NetUtility::NodeData *nd = get_node_data(p_id);
+	ERR_FAIL_COND_V_MSG(nd == nullptr, nullptr, "The ID " + itos(p_id) + " is not assigned to any node.");
+	return nd->node;
 }
 
 void SceneSynchronizer::register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify, NetEventFlag p_flags) {

@@ -182,6 +182,7 @@ public:
 	/// - The node is not registered.
 	/// - The client doesn't know the ID yet.
 	uint32_t get_node_id(Node *p_node);
+	Node *get_node_from_id(uint32_t p_id);
 
 	void register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify_to = StringName(), NetEventFlag p_flags = NetEventFlag::DEFAULT);
 	void unregister_variable(Node *p_node, StringName p_variable);
