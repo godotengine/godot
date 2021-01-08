@@ -75,7 +75,7 @@ public:
 private:
 	struct ExcludedShapeSW {
 		Shape2DSW *local_shape = nullptr;
-		const CollisionObject2DSW *against_object;
+		const CollisionObject2DSW *against_object = nullptr;
 		int against_shape_index = 0;
 	};
 

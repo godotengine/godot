@@ -100,7 +100,7 @@ public:
 
 	float pitch_scale = 0.0;
 	int oversampling = 0;
-	FFT_Size fft_size;
+	FFT_Size fft_size = FFT_SIZE_MAX;
 	float wet = 0.0;
 	float dry = 0.0;
 	bool filter = false;

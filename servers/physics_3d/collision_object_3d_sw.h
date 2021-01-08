@@ -52,7 +52,7 @@ public:
 	};
 
 private:
-	Type type;
+	Type type = TYPE_BODY;
 	RID self;
 	ObjectID instance_id;
 	uint32_t collision_layer = 0;

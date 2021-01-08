@@ -46,7 +46,7 @@ public:
 	};
 
 private:
-	Type type;
+	Type type = TYPE_BODY;
 	RID self;
 	ObjectID instance_id;
 	ObjectID canvas_instance_id;

@@ -70,7 +70,7 @@ public:
 	float cutoff = 0.0;
 	float resonance = 0.0;
 	float gain = 0.0;
-	FilterDB db;
+	FilterDB db = FILTER_24DB;
 
 protected:
 	static void _bind_methods();

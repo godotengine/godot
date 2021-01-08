@@ -345,7 +345,7 @@ public:
 			TYPE_STRUCT,
 		};
 
-		Type type;
+		Type type = TYPE_VARIABLE;
 
 		virtual DataType get_datatype() const { return TYPE_VOID; }
 		virtual String get_datatype_name() const { return ""; }

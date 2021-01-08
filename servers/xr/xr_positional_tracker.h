@@ -55,7 +55,7 @@ public:
 	};
 
 private:
-	XRServer::TrackerType type; // type of tracker
+	XRServer::TrackerType type = TRACKER_UNKNOWN; // type of tracker
 	StringName name; // (unique) name of the tracker
 	int tracker_id = 0; // tracker index id that is unique per type
 	int joy_id = 0; // if we also have a related joystick entity, the id of the joystick
@@ -64,7 +64,7 @@ private:
 	bool tracking_position = false; // do we track position?
 	Vector3 rw_position; // our position "in the real world, so without world_scale applied"
 	Ref<Mesh> mesh; // when available, a mesh that can be used to render this tracker
-	TrackerHand hand; // if known, the hand this tracker is held in
+	TrackerHand hand = TRACKER_HAND_UNKNOWN; // if known, the hand this tracker is held in
 	real_t rumble; // rumble strength, 0.0 is off, 1.0 is maximum, note that we only record here, xr_interface is responsible for execution
 
 protected:

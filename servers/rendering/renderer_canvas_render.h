@@ -157,7 +157,7 @@ public:
 			};
 
 			Command *next = nullptr;
-			Type type;
+			Type type = TYPE_CLIP_IGNORE;
 			virtual ~Command() {}
 		};
 

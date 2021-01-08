@@ -78,7 +78,7 @@ private:
 	float gain = 0.0;
 	float sampling_rate = 0.0;
 	int stages = 0;
-	Mode mode;
+	Mode mode = PEAK;
 
 public:
 	float get_response(float p_freq, Coeffs *p_coeffs);
