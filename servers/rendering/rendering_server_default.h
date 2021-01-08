@@ -52,11 +52,11 @@ class RenderingServerDefault : public RenderingServer {
 
 	};
 
-	static int changes;
+	static int changes = 0;
 	RID test_cube;
 
-	int black_margin[4];
-	RID black_image[4];
+	int black_margin[4] = {};
+	RID black_image[4] = {};
 
 	struct FrameDrawnCallbacks {
 		ObjectID object;
@@ -69,10 +69,10 @@ class RenderingServerDefault : public RenderingServer {
 	void _draw_margins();
 	static void _changes_changed() {}
 
-	uint64_t frame_profile_frame;
+	uint64_t frame_profile_frame = 0;
 	Vector<FrameProfileArea> frame_profile;
 
-	float frame_setup_time = 0;
+	float frame_setup_time = 0.0;
 
 public:
 	//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()

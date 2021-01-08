@@ -71,7 +71,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		ShaderCompilerRD compiler;
 	} shader;
 
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 
 	/* Material */
 
@@ -115,9 +115,9 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
 		};
 
-		bool valid;
+		bool valid = false;
 		RID version;
-		uint32_t vertex_input_mask;
+		uint32_t vertex_input_mask = 0;
 		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][SHADER_VERSION_MAX];
 
 		String path;
@@ -126,7 +126,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
 		String code;
 		Map<StringName, RID> default_texture_params;
@@ -134,25 +134,25 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		DepthDraw depth_draw;
 		DepthTest depth_test;
 
-		bool uses_point_size;
-		bool uses_alpha;
-		bool uses_blend_alpha;
-		bool uses_alpha_clip;
-		bool uses_depth_pre_pass;
-		bool uses_discard;
-		bool uses_roughness;
-		bool uses_normal;
+		bool uses_point_size = false;
+		bool uses_alpha = false;
+		bool uses_blend_alpha = false;
+		bool uses_alpha_clip = false;
+		bool uses_depth_pre_pass = false;
+		bool uses_discard = false;
+		bool uses_roughness = false;
+		bool uses_normal = false;
 
-		bool unshaded;
-		bool uses_vertex;
-		bool uses_sss;
-		bool uses_transmittance;
-		bool uses_screen_texture;
-		bool uses_depth_texture;
-		bool uses_normal_texture;
-		bool uses_time;
-		bool writes_modelview_or_projection;
-		bool uses_world_coordinates;
+		bool unshaded = false;
+		bool uses_vertex = false;
+		bool uses_sss = false;
+		bool uses_transmittance = false;
+		bool uses_screen_texture = false;
+		bool uses_depth_texture = false;
+		bool uses_normal_texture = false;
+		bool uses_time = false;
+		bool writes_modelview_or_projection = false;
+		bool uses_world_coordinates = false;
 
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
@@ -176,8 +176,8 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	}
 
 	struct MaterialData : public RendererStorageRD::MaterialData {
-		uint64_t last_frame;
-		ShaderData *shader_data;
+		uint64_t last_frame = 0;
+		ShaderData *shader_data = nullptr;
 		RID uniform_buffer;
 		RID uniform_set;
 		Vector<RID> texture_cache;
@@ -185,7 +185,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
 		RID next_pass;
-		uint8_t priority;
+		uint8_t priority = 0;
 		virtual void set_render_priority(int p_priority);
 		virtual void set_next_pass(RID p_pass);
 		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
@@ -200,9 +200,9 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	/* Push Constant */
 
 	struct PushConstant {
-		uint32_t index;
-		uint32_t pad;
-		float bake_uv2_offset[2];
+		uint32_t index = 0;
+		uint32_t pad = 0;
+		float bake_uv2_offset[2] = {};
 	};
 
 	/* Framebuffer */
@@ -235,7 +235,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		RID color_fb;
 		RID color_specular_fb;
 		RID specular_only_fb;
-		int width, height;
+		int width = 0, height = 0;
 
 		RID render_sdfgi_uniform_set;
 		void ensure_specular();
@@ -269,11 +269,11 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	RID _setup_render_pass_uniform_set(RID p_render_buffers, RID p_radiance_texture, RID p_shadow_atlas, RID p_reflection_atlas, const PagedArray<RID> &p_gi_probes);
 
 	struct LightmapData {
-		float normal_xform[12];
+		float normal_xform[12] = {};
 	};
 
 	struct LightmapCaptureData {
-		float sh[9 * 4];
+		float sh[9 * 4] = {};
 	};
 
 	enum {
@@ -293,109 +293,109 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	};
 
 	struct InstanceData {
-		float transform[16];
-		float normal_transform[16];
-		uint32_t flags;
-		uint32_t instance_uniforms_ofs; //instance_offset in instancing/skeleton buffer
-		uint32_t gi_offset; //GI information when using lightmapping (VCT or lightmap)
-		uint32_t mask;
-		float lightmap_uv_scale[4];
+		float transform[16] = {};
+		float normal_transform[16] = {};
+		uint32_t flags = 0;
+		uint32_t instance_uniforms_ofs = 0; //instance_offset in instancing/skeleton buffer
+		uint32_t gi_offset = 0; //GI information when using lightmapping (VCT or lightmap)
+		uint32_t mask = 0;
+		float lightmap_uv_scale[4] = {};
 	};
 
 	struct SceneState {
 		struct UBO {
-			float projection_matrix[16];
-			float inv_projection_matrix[16];
+			float projection_matrix[16] = {};
+			float inv_projection_matrix[16] = {};
 
-			float camera_matrix[16];
-			float inv_camera_matrix[16];
+			float camera_matrix[16] = {};
+			float inv_camera_matrix[16] = {};
 
-			float viewport_size[2];
-			float screen_pixel_size[2];
+			float viewport_size[2] = {};
+			float screen_pixel_size[2] = {};
 
-			float directional_penumbra_shadow_kernel[128]; //32 vec4s
-			float directional_soft_shadow_kernel[128];
-			float penumbra_shadow_kernel[128];
-			float soft_shadow_kernel[128];
+			float directional_penumbra_shadow_kernel[128] = {}; //32 vec4s
+			float directional_soft_shadow_kernel[128] = {};
+			float penumbra_shadow_kernel[128] = {};
+			float soft_shadow_kernel[128] = {};
 
-			uint32_t directional_penumbra_shadow_samples;
-			uint32_t directional_soft_shadow_samples;
-			uint32_t penumbra_shadow_samples;
-			uint32_t soft_shadow_samples;
+			uint32_t directional_penumbra_shadow_samples = 0;
+			uint32_t directional_soft_shadow_samples = 0;
+			uint32_t penumbra_shadow_samples = 0;
+			uint32_t soft_shadow_samples = 0;
 
-			float ambient_light_color_energy[4];
+			float ambient_light_color_energy[4] = {};
 
-			float ambient_color_sky_mix;
-			uint32_t use_ambient_light;
-			uint32_t use_ambient_cubemap;
-			uint32_t use_reflection_cubemap;
+			float ambient_color_sky_mix = 0.0;
+			uint32_t use_ambient_light = 0;
+			uint32_t use_ambient_cubemap = 0;
+			uint32_t use_reflection_cubemap = 0;
 
-			float radiance_inverse_xform[12];
+			float radiance_inverse_xform[12] = {};
 
-			float shadow_atlas_pixel_size[2];
-			float directional_shadow_pixel_size[2];
+			float shadow_atlas_pixel_size[2] = {};
+			float directional_shadow_pixel_size[2] = {};
 
-			uint32_t directional_light_count;
-			float dual_paraboloid_side;
-			float z_far;
-			float z_near;
+			uint32_t directional_light_count = 0;
+			float dual_paraboloid_side = 0.0;
+			float z_far = 0.0;
+			float z_near = 0.0;
 
-			uint32_t ssao_enabled;
-			float ssao_light_affect;
-			float ssao_ao_affect;
-			uint32_t roughness_limiter_enabled;
+			uint32_t ssao_enabled = 0;
+			float ssao_light_affect = 0.0;
+			float ssao_ao_affect = 0.0;
+			uint32_t roughness_limiter_enabled = 0;
 
-			float roughness_limiter_amount;
-			float roughness_limiter_limit;
-			uint32_t roughness_limiter_pad[2];
+			float roughness_limiter_amount = 0.0;
+			float roughness_limiter_limit = 0.0;
+			uint32_t roughness_limiter_pad[2] = {};
 
-			float ao_color[4];
+			float ao_color[4] = {};
 
-			float sdf_to_bounds[16];
+			float sdf_to_bounds[16] = {};
 
-			int32_t sdf_offset[3];
-			uint32_t material_uv2_mode;
+			int32_t sdf_offset[3] = {};
+			uint32_t material_uv2_mode = 0;
 
-			int32_t sdf_size[3];
-			uint32_t gi_upscale_for_msaa;
+			int32_t sdf_size[3] = {};
+			uint32_t gi_upscale_for_msaa = 0;
 
-			uint32_t volumetric_fog_enabled;
-			float volumetric_fog_inv_length;
-			float volumetric_fog_detail_spread;
-			uint32_t volumetric_fog_pad;
+			uint32_t volumetric_fog_enabled = 0;
+			float volumetric_fog_inv_length = 0.0;
+			float volumetric_fog_detail_spread = 0.0;
+			uint32_t volumetric_fog_pad = 0;
 
 			// Fog
-			uint32_t fog_enabled;
-			float fog_density;
-			float fog_height;
-			float fog_height_density;
+			uint32_t fog_enabled = 0;
+			float fog_density = 0.0;
+			float fog_height = 0.0;
+			float fog_height_density = 0.0;
 
-			float fog_light_color[3];
-			float fog_sun_scatter;
+			float fog_light_color[3] = {};
+			float fog_sun_scatter = 0.0;
 
-			float fog_aerial_perspective;
+			float fog_aerial_perspective = 0.0;
 
-			float time;
-			float reflection_multiplier;
+			float time = 0.0;
+			float reflection_multiplier = 0.0;
 
-			uint32_t pancake_shadows;
+			uint32_t pancake_shadows = 0;
 		};
 
 		UBO ubo;
 
 		RID uniform_buffer;
 
-		LightmapData *lightmaps;
-		uint32_t max_lightmaps;
+		LightmapData *lightmaps = nullptr;
+		uint32_t max_lightmaps = 0;
 		RID lightmap_buffer;
 
-		LightmapCaptureData *lightmap_captures;
-		uint32_t max_lightmap_captures;
+		LightmapCaptureData *lightmap_captures = nullptr;
+		uint32_t max_lightmap_captures = 0;
 		RID lightmap_capture_buffer;
 
 		RID instance_buffer;
-		InstanceData *instances;
-		uint32_t max_instances;
+		InstanceData *instances = nullptr;
+		uint32_t max_instances = 0;
 
 		bool used_screen_texture = false;
 		bool used_normal_texture = false;
@@ -409,11 +409,11 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	/* Render List */
 
 	struct RenderList {
-		int max_elements;
+		int max_elements = 0;
 
 		struct Element {
-			RendererSceneRender::InstanceBase *instance;
-			MaterialData *material;
+			RendererSceneRender::InstanceBase *instance = nullptr;
+			MaterialData *material = nullptr;
 			union {
 				struct {
 					//from least significant to most significant in sort, TODO: should be endian swapped on big endian
@@ -427,16 +427,16 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 					uint64_t priority : 8;
 				};
 
-				uint64_t sort_key;
+				uint64_t sort_key = 0;
 			};
-			uint32_t surface_index;
+			uint32_t surface_index = 0;
 		};
 
-		Element *base_elements;
-		Element **elements;
+		Element *base_elements = nullptr;
+		Element **elements = nulltpr;
 
-		int element_count;
-		int alpha_element_count;
+		int element_count = 0;
+		int alpha_element_count = 0;
 
 		void clear() {
 			element_count = 0;
@@ -526,9 +526,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 			}
 		}
 
-		RenderList() {
-			max_elements = 0;
-		}
+		RenderList() {	}
 
 		~RenderList() {
 			memdelete_arr(elements);
@@ -538,9 +536,9 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 	RenderList render_list;
 
-	static RendererSceneRenderForward *singleton;
-	uint64_t render_pass;
-	double time;
+	static RendererSceneRenderForward *singleton = nullptr;
+	uint64_t render_pass = 0;
+	double time = 0.0;
 	RID default_shader;
 	RID default_material;
 	RID overdraw_material_shader;

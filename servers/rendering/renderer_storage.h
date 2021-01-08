@@ -51,7 +51,7 @@ public:
 	};
 
 	struct InstanceBaseDependency {
-		uint32_t instance_version;
+		uint32_t instance_version = 0;
 		Set<InstanceDependency *> dependencies;
 
 		virtual void dependency_deleted(RID p_dependency) {}
@@ -175,7 +175,7 @@ public:
 
 	struct InstanceShaderParam {
 		PropertyInfo info;
-		int index;
+		int index = 0;
 		Variant default_value;
 	};
 

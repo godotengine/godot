@@ -37,7 +37,7 @@
 
 class RenderingServerWrapMT : public RenderingServer {
 	// the real visual server
-	mutable RenderingServer *rendering_server;
+	mutable RenderingServer *rendering_server = nullptr;
 
 	mutable CommandQueueMT command_queue;
 
@@ -45,12 +45,12 @@ class RenderingServerWrapMT : public RenderingServer {
 	void thread_loop();
 
 	Thread::ID server_thread;
-	volatile bool exit;
-	Thread *thread;
-	volatile bool draw_thread_up;
-	bool create_thread;
+	volatile bool exit = false;
+	Thread *thread = nullptr;
+	volatile bool draw_thread_up = false;
+	bool create_thread = false;
 
-	uint64_t draw_pending;
+	uint64_t draw_pending = 0;
 	void thread_draw(bool p_swap_buffers, double frame_step);
 	void thread_flush();
 
@@ -58,11 +58,11 @@ class RenderingServerWrapMT : public RenderingServer {
 
 	Mutex alloc_mutex;
 
-	int pool_max_size;
+	int pool_max_size = 0;
 
 	//#define DEBUG_SYNC
 
-	static RenderingServerWrapMT *singleton_mt;
+	static RenderingServerWrapMT *singleton_mt = nullptr;
 
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));

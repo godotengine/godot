@@ -207,8 +207,8 @@ public:
 protected:
 	static void _bind_methods();
 
-	static Vector3 hex_code_box_font_size[2];
-	static Ref<CanvasTexture> hex_code_box_font_tex[2];
+	static Vector3 hex_code_box_font_size[2] = {};
+	static Ref<CanvasTexture> hex_code_box_font_tex[2] = {};
 
 public:
 	static void initialize_hex_code_box_fonts();
@@ -400,8 +400,8 @@ protected:
 	static void _bind_methods();
 
 private:
-	static TextServerManager *singleton;
-	static TextServer *server;
+	static TextServerManager *singleton = nullptr;
+	static TextServer *server = nullptr;
 	enum {
 		MAX_SERVERS = 64
 	};
@@ -414,8 +414,8 @@ private:
 		void *user_data = nullptr;
 	};
 
-	static TextServerCreate server_create_functions[MAX_SERVERS];
-	static int server_create_count;
+	static TextServerCreate server_create_functions[MAX_SERVERS] = {};
+	static int server_create_count = 0;
 
 public:
 	_FORCE_INLINE_ static TextServerManager *get_singleton() {

@@ -145,10 +145,10 @@ public:
 
 		Transform transform;
 
-		float lod_bias;
+		float lod_bias = 1.0;
 
-		int depth_layer;
-		uint32_t layer_mask;
+		int depth_layer = 0;
+		uint32_t layer_mask = 1;
 
 		//RID sampled_light;
 
@@ -167,12 +167,12 @@ public:
 		bool dynamic_gi : 2; //this flag is only to know if it actually did use baked light
 		bool redraw_if_visible : 4;
 
-		float depth; //used for sorting
+		float depth = 0.0; //used for sorting
 
-		InstanceBase *lightmap;
+		InstanceBase *lightmap = nullptr;
 		Rect2 lightmap_uv_scale;
-		int lightmap_slice_index;
-		uint32_t lightmap_cull_index;
+		int lightmap_slice_index = 0;
+		uint32_t lightmap_cull_index = 0;
 		Vector<Color> lightmap_sh; //spherical harmonic
 
 		AABB aabb;
@@ -195,16 +195,10 @@ public:
 			cast_shadows = RS::SHADOW_CASTING_SETTING_ON;
 			receive_shadows = true;
 			visible = true;
-			depth_layer = 0;
-			layer_mask = 1;
 			instance_version = 0;
 			baked_light = false;
 			dynamic_gi = false;
 			redraw_if_visible = false;
-			lightmap_slice_index = 0;
-			lightmap = nullptr;
-			lightmap_cull_index = 0;
-			lod_bias = 1.0;
 		}
 
 		virtual ~InstanceBase() {

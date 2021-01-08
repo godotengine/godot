@@ -363,7 +363,7 @@ public:
 		return node;
 	}
 
-	Node *nodes;
+	Node *nodes = nullptr;
 
 	struct OperatorNode : public Node {
 		DataType return_cache = TYPE_VOID;
@@ -398,7 +398,7 @@ public:
 
 		struct Declaration {
 			StringName name;
-			Node *initializer;
+			Node *initializer = nullptr;
 		};
 
 		Vector<Declaration> declarations;
@@ -442,7 +442,7 @@ public:
 
 		struct Declaration {
 			StringName name;
-			uint32_t size;
+			uint32_t size = 0;
 			Vector<Node *> initializer;
 		};
 
@@ -459,10 +459,10 @@ public:
 		int array_size = 0;
 
 		union Value {
-			bool boolean;
-			float real;
-			int32_t sint;
-			uint32_t uint;
+			bool boolean = false;
+			float real = 0.0;
+			int32_t sint = 0;
+			uint32_t uint = 0;
 		};
 
 		Vector<Value> values;
@@ -495,9 +495,9 @@ public:
 			DataType type;
 			StringName struct_name;
 			DataPrecision precision;
-			int line; //for completion
-			int array_size;
-			bool is_const;
+			int line = 0; //for completion
+			int array_size = 0;
+			bool is_const = false;
 			ConstantNode::Value value;
 		};
 
@@ -553,12 +553,12 @@ public:
 			StringName type_str;
 			DataPrecision precision;
 			//for passing textures as arguments
-			bool tex_argument_check;
+			bool tex_argument_check = false;
 			TextureFilter tex_argument_filter;
 			TextureRepeat tex_argument_repeat;
-			bool tex_builtin_check;
+			bool tex_builtin_check = false;
 			StringName tex_builtin;
-			bool is_const;
+			bool is_const = false;
 
 			Map<StringName, Set<int>> tex_argument_connect;
 		};
@@ -581,20 +581,20 @@ public:
 			DataType type;
 			StringName type_str;
 			DataPrecision precision;
-			ConstantNode *initializer;
-			int array_size;
+			ConstantNode *initializer = nullptr;
+			int array_size = 0;
 		};
 
 		struct Function {
 			StringName name;
-			FunctionNode *function;
+			FunctionNode *function = nullptr;
 			Set<StringName> uses_function;
-			bool callable;
+			bool callable = false;
 		};
 
 		struct Struct {
 			StringName name;
-			StructNode *shader_struct;
+			StructNode *shader_struct = nullptr;
 		};
 
 		struct Varying {
@@ -666,10 +666,10 @@ public:
 	};
 
 	struct Expression {
-		bool is_op;
+		bool is_op = false;
 		union {
 			Operator op;
-			Node *node;
+			Node *node = nullptr;
 		};
 	};
 
@@ -692,8 +692,8 @@ public:
 	struct Token {
 		TokenType type;
 		StringName text;
-		double constant;
-		uint16_t line;
+		double constant = 0.0;
+		uint16_t line = 0;
 	};
 
 	static String get_operator_text(Operator p_op);
@@ -753,7 +753,7 @@ public:
 		Map<StringName, BuiltInInfo> built_ins;
 		Map<StringName, StageFunctionInfo> stage_functions;
 
-		bool can_discard;
+		bool can_discard = false;
 	};
 	static bool has_builtin(const Map<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name);
 
@@ -762,27 +762,27 @@ public:
 private:
 	struct KeyWord {
 		TokenType token;
-		const char *text;
+		const char *text = nullptr;
 	};
 
 	static const KeyWord keyword_list[];
 
 	GlobalVariableGetTypeFunc global_var_get_type_func;
 
-	bool error_set;
+	bool error_set = false;
 	String error_str;
-	int error_line;
+	int error_line = 0;
 
 	String code;
-	int char_idx;
-	int tk_line;
+	int char_idx = 0;
+	int tk_line = 0;
 
 	StringName current_function;
 	bool last_const = false;
 
 	struct TkPos {
-		int char_idx;
-		int tk_line;
+		int char_idx = 0;
+		int tk_line = 0;
 	};
 
 	TkPos _get_tkpos() {
@@ -812,7 +812,7 @@ private:
 	Token _make_token(TokenType p_type, const StringName &p_text = StringName());
 	Token _get_token();
 
-	ShaderNode *shader;
+	ShaderNode *shader = nullptr;
 
 	enum IdentifierType {
 		IDENTIFIER_FUNCTION,
@@ -844,13 +844,13 @@ private:
 	};
 
 	CompletionType completion_type;
-	int completion_line;
-	BlockNode *completion_block;
+	int completion_line = 0;
+	BlockNode *completion_block = nullptr;
 	DataType completion_base;
 	SubClassTag completion_class;
 	StringName completion_function;
 	StringName completion_struct;
-	int completion_argument;
+	int completion_argument = 0;
 	const Map<StringName, FunctionInfo> *stages = nullptr;
 
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
