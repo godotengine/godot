@@ -42,10 +42,10 @@
 
 #include "tests/test_macros.h"
 
-#define TEST_COND DOCTEST_CHECK_FALSE_MESSAGE
-#define TEST_FAIL DOCTEST_FAIL
-#define TEST_FAIL_COND DOCTEST_REQUIRE_FALSE_MESSAGE
-#define TEST_FAIL_COND_WARN DOCTEST_WARN_FALSE_MESSAGE
+#define TEST_COND(cond, msg) DOCTEST_CHECK_FALSE_MESSAGE(cond, String(msg))
+#define TEST_FAIL(cond, msg) DOCTEST_FAIL(cond, String(msg))
+#define TEST_FAIL_COND(cond, msg) DOCTEST_REQUIRE_FALSE_MESSAGE(cond, String(msg))
+#define TEST_FAIL_COND_WARN(cond, msg) DOCTEST_WARN_FALSE_MESSAGE(cond, String(msg))
 
 namespace TestClassDB {
 

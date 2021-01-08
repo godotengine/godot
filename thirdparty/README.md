@@ -55,11 +55,13 @@ Files extracted from upstream source:
 
 
 ## doctest
+
 - Upstream: https://github.com/onqtam/doctest
-- Version: 8424be5 (2.4.1)
+- Version: 2.4.4 (97d5a9447e66cd5e107b7a6c463be4a468a40496, 2020)
 - License: MIT
 
 Extracted from .zip provided. Extracted license and header only.
+
 
 ## enet
 
