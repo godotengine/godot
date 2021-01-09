@@ -1400,7 +1400,7 @@ size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices, 
 	return result_count;
 }
 
-size_t meshopt_simplifySloppy(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count)
+size_t meshopt_simplifySloppy(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float* out_result_error)
 {
 	using namespace meshopt;
 
@@ -1411,9 +1411,6 @@ size_t meshopt_simplifySloppy(unsigned int* destination, const unsigned int* ind
 
 	// we expect to get ~2 triangles/vertex in the output
 	size_t target_cell_count = target_index_count / 6;
-
-	if (target_cell_count == 0)
-		return 0;
 
 	meshopt_Allocator allocator;
 
@@ -1431,18 +1428,25 @@ size_t meshopt_simplifySloppy(unsigned int* destination, const unsigned int* ind
 	const int kInterpolationPasses = 5;
 
 	// invariant: # of triangles in min_grid <= target_count
-	int min_grid = 0;
+	int min_grid = int(1.f / (target_error < 1e-3f ? 1e-3f : target_error));
 	int max_grid = 1025;
 	size_t min_triangles = 0;
 	size_t max_triangles = index_count / 3;
+
+	// when we're error-limited, we compute the triangle count for the min. size; this accelerates convergence and provides the correct answer when we can't use a larger grid
+	if (min_grid > 1)
+	{
+		computeVertexIds(vertex_ids, vertex_positions, vertex_count, min_grid);
+		min_triangles = countTriangles(vertex_ids, indices, index_count);
+	}
 
 	// instead of starting in the middle, let's guess as to what the answer might be! triangle count usually grows as a square of grid size...
 	int next_grid_size = int(sqrtf(float(target_cell_count)) + 0.5f);
 
 	for (int pass = 0; pass < 10 + kInterpolationPasses; ++pass)
 	{
-		assert(min_triangles < target_index_count / 3);
-		assert(max_grid - min_grid > 1);
+		if (min_triangles >= target_index_count / 3 || max_grid - min_grid <= 1)
+			break;
 
 		// we clamp the prediction of the grid size to make sure that the search converges
 		int grid_size = next_grid_size;
@@ -1471,16 +1475,18 @@ size_t meshopt_simplifySloppy(unsigned int* destination, const unsigned int* ind
 			max_triangles = triangles;
 		}
 
-		if (triangles == target_index_count / 3 || max_grid - min_grid <= 1)
-			break;
-
 		// we start by using interpolation search - it usually converges faster
 		// however, interpolation search has a worst case of O(N) so we switch to binary search after a few iterations which converges in O(logN)
 		next_grid_size = (pass < kInterpolationPasses) ? int(tip + 0.5f) : (min_grid + max_grid) / 2;
 	}
 
 	if (min_triangles == 0)
+	{
+		if (out_result_error)
+			*out_result_error = 1.f;
+
 		return 0;
+	}
 
 	// build vertex->cell association by mapping all vertices with the same quantized position to the same cell
 	size_t table_size = hashBuckets2(vertex_count);
@@ -1503,17 +1509,25 @@ size_t meshopt_simplifySloppy(unsigned int* destination, const unsigned int* ind
 
 	fillCellRemap(cell_remap, cell_errors, cell_count, vertex_cells, cell_quadrics, vertex_positions, vertex_count);
 
+	// compute error
+	float result_error = 0.f;
+
+	for (size_t i = 0; i < cell_count; ++i)
+		result_error = result_error < cell_errors[i] ? cell_errors[i] : result_error;
+
 	// collapse triangles!
 	// note that we need to filter out triangles that we've already output because we very frequently generate redundant triangles between cells :(
 	size_t tritable_size = hashBuckets2(min_triangles);
 	unsigned int* tritable = allocator.allocate<unsigned int>(tritable_size);
 
 	size_t write = filterTriangles(destination, tritable, tritable_size, indices, index_count, vertex_cells, cell_remap);
-	assert(write <= target_index_count);
 
 #if TRACE
-	printf("result: %d cells, %d triangles (%d unfiltered)\n", int(cell_count), int(write / 3), int(min_triangles));
+	printf("result: %d cells, %d triangles (%d unfiltered), error %e\n", int(cell_count), int(write / 3), int(min_triangles), sqrtf(result_error));
 #endif
+
+	if (out_result_error)
+		*out_result_error = sqrtf(result_error);
 
 	return write;
 }
