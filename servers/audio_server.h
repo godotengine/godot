@@ -71,8 +71,8 @@ protected:
 #endif
 
 public:
-	double get_time_since_last_mix() const; //useful for video -> audio sync
-	double get_time_to_next_mix() const;
+	double get_time_since_last_mix(); //useful for video -> audio sync
+	double get_time_to_next_mix();
 
 	enum SpeakerMode {
 		SPEAKER_MODE_STEREO,
