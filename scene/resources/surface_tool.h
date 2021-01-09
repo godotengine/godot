@@ -78,6 +78,10 @@ public:
 	static OptimizeVertexCacheFunc optimize_vertex_cache_func;
 	typedef size_t (*SimplifyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *r_error);
 	static SimplifyFunc simplify_func;
+	typedef float (*SimplifyScaleFunc)(const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
+	static SimplifyScaleFunc simplify_scale_func;
+	typedef size_t (*SimplifySloppyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *out_result_error);
+	static SimplifySloppyFunc simplify_sloppy_func;
 
 private:
 	struct VertexHasher {
