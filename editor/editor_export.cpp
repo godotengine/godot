@@ -732,6 +732,26 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 			_export_find_dependencies(files[i], paths);
 		}
+
+		// Add autoload resources and their dependencies
+		List<PropertyInfo> props;
+		ProjectSettings::get_singleton()->get_property_list(&props);
+
+		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+			const PropertyInfo &pi = E->get();
+
+			if (!pi.name.begins_with("autoload/")) {
+				continue;
+			}
+
+			String autoload_path = ProjectSettings::get_singleton()->get(pi.name);
+
+			if (autoload_path.begins_with("*")) {
+				autoload_path = autoload_path.substr(1);
+			}
+
+			_export_find_dependencies(autoload_path, paths);
+		}
 	}
 
 	//add native icons to non-resource include list
