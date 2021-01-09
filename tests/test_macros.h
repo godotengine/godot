@@ -44,6 +44,12 @@
 // The test case is marked as failed, but does not fail the entire test run.
 #define TEST_CASE_MAY_FAIL(name) TEST_CASE(name *doctest::may_fail())
 
+// Provide aliases to conform with Godot naming conventions (see error macros).
+#define TEST_COND(cond, ...) DOCTEST_CHECK_FALSE_MESSAGE(cond, __VA_ARGS__)
+#define TEST_FAIL(cond, ...) DOCTEST_FAIL(cond, __VA_ARGS__)
+#define TEST_FAIL_COND(cond, ...) DOCTEST_REQUIRE_FALSE_MESSAGE(cond, __VA_ARGS__)
+#define TEST_FAIL_COND_WARN(cond, ...) DOCTEST_WARN_FALSE_MESSAGE(cond, __VA_ARGS__)
+
 // Temporarily disable error prints to test failure paths.
 // This allows to avoid polluting the test summary with error messages.
 // The `_print_error_enabled` boolean is defined in `core/print_string.cpp` and
