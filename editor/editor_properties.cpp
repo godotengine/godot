@@ -1921,6 +1921,12 @@ void EditorPropertyColor::_color_changed(const Color &p_color) {
 	emit_changed(get_edited_property(), p_color, "", true);
 }
 
+void EditorPropertyColor::_popup_closed() {
+	if (picker->get_pick_color() != last_color) {
+		emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
+	}
+}
+
 void EditorPropertyColor::_picker_created() {
 	// get default color picker mode from editor settings
 	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
@@ -1930,10 +1936,16 @@ void EditorPropertyColor::_picker_created() {
 		picker->get_picker()->set_raw_mode(true);
 }
 
+void EditorPropertyColor::_picker_opening() {
+	last_color = picker->get_pick_color();
+}
+
 void EditorPropertyColor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_color_changed"), &EditorPropertyColor::_color_changed);
+	ClassDB::bind_method(D_METHOD("_popup_closed"), &EditorPropertyColor::_popup_closed);
 	ClassDB::bind_method(D_METHOD("_picker_created"), &EditorPropertyColor::_picker_created);
+	ClassDB::bind_method(D_METHOD("_picker_opening"), &EditorPropertyColor::_picker_opening);
 }
 
 void EditorPropertyColor::update_property() {
@@ -1968,7 +1980,9 @@ EditorPropertyColor::EditorPropertyColor() {
 	add_child(picker);
 	picker->set_flat(true);
 	picker->connect("color_changed", this, "_color_changed");
+	picker->connect("popup_closed", this, "_popup_closed");
 	picker->connect("picker_created", this, "_picker_created");
+	picker->get_popup()->connect("about_to_popup", this, "_picker_opening");
 }
 
 ////////////// NODE PATH //////////////////////
