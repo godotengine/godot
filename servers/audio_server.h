@@ -42,7 +42,7 @@ class AudioStream;
 class AudioStreamSample;
 
 class AudioDriver {
-	static AudioDriver *singleton = nullptr;
+	static AudioDriver *singleton;
 	uint64_t _last_mix_time = 0;
 	uint64_t _last_mix_frames = 0;
 
@@ -220,7 +220,7 @@ private:
 
 	void _update_bus_effects(int p_bus);
 
-	static AudioServer *singleton = nullptr;
+	static AudioServer *singleton;
 
 	void init_channels_and_buffers();
 

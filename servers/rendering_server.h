@@ -46,7 +46,7 @@
 class RenderingServer : public Object {
 	GDCLASS(RenderingServer, Object);
 
-	static RenderingServer *singleton = nullptr;
+	static RenderingServer *singleton;
 
 	int mm_policy = 0;
 	bool render_loop_enabled = true;

@@ -460,9 +460,9 @@ public:
 
 		union Value {
 			bool boolean = false;
-			float real = 0.0;
-			int32_t sint = 0;
-			uint32_t uint = 0;
+			float real;
+			int32_t sint;
+			uint32_t uint;
 		};
 
 		Vector<Value> values;
