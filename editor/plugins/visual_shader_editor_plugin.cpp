@@ -2799,13 +2799,33 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 void VisualShaderEditor::_show_preview_text() {
 	preview_showed = !preview_showed;
-	preview_vbox->set_visible(preview_showed);
 	if (preview_showed) {
+		if (preview_first) {
+			preview_window->set_size(Size2(400 * EDSCALE, 600 * EDSCALE));
+			preview_window->popup_centered();
+			preview_first = false;
+		} else {
+			preview_window->popup();
+		}
+		_preview_size_changed();
+
 		if (pending_update_preview) {
 			_update_preview();
 			pending_update_preview = false;
 		}
+	} else {
+		preview_window->hide();
 	}
+}
+
+void VisualShaderEditor::_preview_close_requested() {
+	preview_showed = false;
+	preview_window->hide();
+	preview_shader->set_pressed(false);
+}
+
+void VisualShaderEditor::_preview_size_changed() {
+	preview_vbox->set_custom_minimum_size(preview_window->get_size());
 }
 
 static ShaderLanguage::DataType _get_global_variable_type(const StringName &p_variable) {
@@ -2843,6 +2863,16 @@ void VisualShaderEditor::_update_preview() {
 	}
 }
 
+void VisualShaderEditor::_visibility_changed() {
+	if (!is_visible()) {
+		if (preview_window->is_visible()) {
+			preview_shader->set_pressed(false);
+			preview_window->hide();
+			preview_showed = false;
+		}
+	}
+}
+
 void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_update_graph", &VisualShaderEditor::_update_graph);
 	ClassDB::bind_method("_update_options_menu", &VisualShaderEditor::_update_options_menu);
@@ -2873,7 +2903,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	saved_node_pos = Point2(0, 0);
 	ShaderLanguage::get_keyword_list(&keyword_list);
 
-	preview_showed = false;
 	pending_update_preview = false;
 	shader_error = false;
 
@@ -2882,16 +2911,11 @@ VisualShaderEditor::VisualShaderEditor() {
 	from_node = -1;
 	from_slot = -1;
 
-	main_box = memnew(HSplitContainer);
-	main_box->set_v_size_flags(SIZE_EXPAND_FILL);
-	main_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	add_child(main_box);
-
 	graph = memnew(GraphEdit);
 	graph->get_zoom_hbox()->set_h_size_flags(SIZE_EXPAND_FILL);
 	graph->set_v_size_flags(SIZE_EXPAND_FILL);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
-	main_box->add_child(graph);
+	add_child(graph);
 	graph->set_drag_forwarding(this);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_SCALAR_INT);
@@ -2912,6 +2936,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("gui_input", callable_mp(this, &VisualShaderEditor::_graph_gui_input));
 	graph->connect("connection_to_empty", callable_mp(this, &VisualShaderEditor::_connection_to_empty));
 	graph->connect("connection_from_empty", callable_mp(this, &VisualShaderEditor::_connection_from_empty));
+	graph->connect("visibility_changed", callable_mp(this, &VisualShaderEditor::_visibility_changed));
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR_INT);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_VECTOR);
@@ -2966,29 +2991,35 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_shader = memnew(Button);
 	preview_shader->set_flat(true);
 	preview_shader->set_toggle_mode(true);
-	preview_shader->set_tooltip(TTR("Show resulted shader code."));
+	preview_shader->set_tooltip(TTR("Show generated shader code."));
 	graph->get_zoom_hbox()->add_child(preview_shader);
 	preview_shader->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_preview_text));
 
 	///////////////////////////////////////
-	// PREVIEW PANEL
+	// PREVIEW WINDOW
 	///////////////////////////////////////
 
+	preview_window = memnew(Window);
+	preview_window->set_title(TTR("Generated shader code"));
+	preview_window->set_visible(preview_showed);
+	preview_window->connect("close_requested", callable_mp(this, &VisualShaderEditor::_preview_close_requested));
+	preview_window->connect("size_changed", callable_mp(this, &VisualShaderEditor::_preview_size_changed));
+	add_child(preview_window);
+
 	preview_vbox = memnew(VBoxContainer);
-	preview_vbox->set_visible(preview_showed);
-	main_box->add_child(preview_vbox);
+	preview_window->add_child(preview_vbox);
+
 	preview_text = memnew(CodeEdit);
 	syntax_highlighter.instance();
 	preview_vbox->add_child(preview_text);
-	preview_text->set_h_size_flags(SIZE_EXPAND_FILL);
-	preview_text->set_v_size_flags(SIZE_EXPAND_FILL);
-	preview_text->set_custom_minimum_size(Size2(400 * EDSCALE, 0));
+	preview_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	preview_text->set_syntax_highlighter(syntax_highlighter);
 	preview_text->set_draw_line_numbers(true);
 	preview_text->set_readonly(true);
 
 	error_text = memnew(Label);
 	preview_vbox->add_child(error_text);
+	error_text->set_autowrap(true);
 	error_text->set_visible(false);
 
 	///////////////////////////////////////
