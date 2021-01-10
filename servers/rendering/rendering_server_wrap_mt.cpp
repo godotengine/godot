@@ -124,7 +124,7 @@ void RenderingServerWrapMT::set_use_vsync_callback(bool p_enable) {
 
 RenderingServerWrapMT *RenderingServerWrapMT::singleton_mt = nullptr;
 
-RenderingServerWrapMT::RenderingServerWrapMT(RenderingServer *p_contained, bool p_create_thread) :
+RenderingServerWrapMT::RenderingServerWrapMT(RenderingServerReserving *p_contained, bool p_create_thread) :
 		command_queue(p_create_thread) {
 	singleton_mt = this;
 	DisplayServer::switch_vsync_function = set_use_vsync_callback; //as this goes to another thread, make sure it goes properly

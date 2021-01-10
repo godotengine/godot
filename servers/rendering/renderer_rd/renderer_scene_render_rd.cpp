@@ -1873,8 +1873,8 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 	RD::get_singleton()->draw_command_end_label();
 }
 
-RID RendererSceneRenderRD::sky_create() {
-	return sky_owner.make_rid(Sky());
+RID RendererSceneRenderRD::sky_create(RID p_reserved_rid) {
+	return sky_owner.make_rid(Sky(), p_reserved_rid);
 }
 
 void RendererSceneRenderRD::_sky_invalidate(Sky *p_sky) {
@@ -2898,8 +2898,8 @@ RendererStorageRD::MaterialData *RendererSceneRenderRD::_create_sky_material_fun
 	return material_data;
 }
 
-RID RendererSceneRenderRD::environment_create() {
-	return environment_owner.make_rid(Environment());
+RID RendererSceneRenderRD::environment_create(RID p_reserved_rid) {
+	return environment_owner.make_rid(Environment(), p_reserved_rid);
 }
 
 void RendererSceneRenderRD::environment_set_background(RID p_env, RS::EnvironmentBG p_bg) {
@@ -3333,7 +3333,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 
 ////////////////////////////////////////////////////////////
 
-RID RendererSceneRenderRD::reflection_atlas_create() {
+RID RendererSceneRenderRD::reflection_atlas_create(RID p_reserved_rid) {
 	ReflectionAtlas ra;
 	ra.count = GLOBAL_GET("rendering/quality/reflection_atlas/reflection_count");
 	ra.size = GLOBAL_GET("rendering/quality/reflection_atlas/reflection_size");
@@ -3342,7 +3342,7 @@ RID RendererSceneRenderRD::reflection_atlas_create() {
 	ra.cluster_builder->set_shared(&cluster_builder_shared);
 	ra.cluster_builder->setup(Size2i(ra.size, ra.size), max_cluster_elements, RID(), RID(), RID());
 
-	return reflection_atlas_owner.make_rid(ra);
+	return reflection_atlas_owner.make_rid(ra, p_reserved_rid);
 }
 
 void RendererSceneRenderRD::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) {
@@ -3616,8 +3616,8 @@ RID RendererSceneRenderRD::reflection_probe_instance_get_depth_framebuffer(RID p
 
 ///////////////////////////////////////////////////////////
 
-RID RendererSceneRenderRD::shadow_atlas_create() {
-	return shadow_atlas_owner.make_rid(ShadowAtlas());
+RID RendererSceneRenderRD::shadow_atlas_create(RID p_reserved_rid) {
+	return shadow_atlas_owner.make_rid(ShadowAtlas(), p_reserved_rid);
 }
 
 void RendererSceneRenderRD::_update_shadow_atlas(ShadowAtlas *shadow_atlas) {
@@ -4005,8 +4005,8 @@ int RendererSceneRenderRD::get_directional_light_shadow_size(RID p_light_intance
 
 //////////////////////////////////////////////////
 
-RID RendererSceneRenderRD::camera_effects_create() {
-	return camera_effects_owner.make_rid(CameraEffects());
+RID RendererSceneRenderRD::camera_effects_create(RID p_reserved_rid) {
+	return camera_effects_owner.make_rid(CameraEffects(), p_reserved_rid);
 }
 
 void RendererSceneRenderRD::camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter) {
@@ -5097,10 +5097,10 @@ void RendererSceneRenderRD::_debug_sdfgi_probes(RID p_render_buffers, RD::DrawLi
 }
 
 ////////////////////////////////
-RID RendererSceneRenderRD::render_buffers_create() {
+RID RendererSceneRenderRD::render_buffers_create(RID p_reserved_rid) {
 	RenderBuffers rb;
 	rb.data = _create_render_buffer_data();
-	return render_buffers_owner.make_rid(rb);
+	return render_buffers_owner.make_rid(rb, p_reserved_rid);
 }
 
 void RendererSceneRenderRD::_allocate_blur_textures(RenderBuffers *rb) {

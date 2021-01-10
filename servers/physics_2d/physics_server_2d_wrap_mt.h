@@ -34,7 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
-#include "servers/physics_server_2d.h"
+#include "servers/physics_server_2d_reserving.h"
 
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
@@ -43,7 +43,7 @@
 #endif
 
 class PhysicsServer2DWrapMT : public PhysicsServer2D {
-	mutable PhysicsServer2D *physics_2d_server;
+	mutable PhysicsServer2DReserving *physics_2d_server;
 
 	mutable CommandQueueMT command_queue;
 
@@ -67,7 +67,7 @@ class PhysicsServer2DWrapMT : public PhysicsServer2D {
 	bool first_frame;
 
 public:
-#define ServerName PhysicsServer2D
+#define ServerName PhysicsServer2DReserving
 #define ServerNameWrapMT PhysicsServer2DWrapMT
 #define server_name physics_2d_server
 #include "servers/server_wrap_mt_common.h"
@@ -309,7 +309,7 @@ public:
 		return physics_2d_server->get_process_info(p_info);
 	}
 
-	PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool p_create_thread);
+	PhysicsServer2DWrapMT(PhysicsServer2DReserving *p_contained, bool p_create_thread);
 	~PhysicsServer2DWrapMT();
 
 	template <class T>

@@ -333,7 +333,7 @@ private:
 	uint32_t sky_ggx_samples_quality;
 	bool sky_use_cubemap_array;
 
-	mutable RID_Owner<Sky> sky_owner;
+	mutable RID_Owner<Sky, true> sky_owner;
 
 	/* REFLECTION ATLAS */
 
@@ -356,7 +356,7 @@ private:
 		ClusterBuilderRD *cluster_builder = nullptr;
 	};
 
-	mutable RID_Owner<ReflectionAtlas> reflection_atlas_owner;
+	mutable RID_Owner<ReflectionAtlas, true> reflection_atlas_owner;
 
 	/* REFLECTION PROBE INSTANCE */
 
@@ -595,7 +595,7 @@ private:
 		Vector<ShadowShrinkStage> shrink_stages;
 	};
 
-	RID_Owner<ShadowAtlas> shadow_atlas_owner;
+	RID_Owner<ShadowAtlas, true> shadow_atlas_owner;
 
 	void _update_shadow_atlas(ShadowAtlas *shadow_atlas);
 
@@ -817,7 +817,7 @@ private:
 
 	static uint64_t auto_exposure_counter;
 
-	mutable RID_Owner<Environment> environment_owner;
+	mutable RID_Owner<Environment, true> environment_owner;
 
 	/* CAMERA EFFECTS */
 
@@ -843,7 +843,7 @@ private:
 	float sss_scale = 0.05;
 	float sss_depth_scale = 0.01;
 
-	mutable RID_Owner<CameraEffects> camera_effects_owner;
+	mutable RID_Owner<CameraEffects, true> camera_effects_owner;
 
 	/* RENDER BUFFERS */
 
@@ -1326,7 +1326,7 @@ private:
 	float screen_space_roughness_limiter_amount = 0.25;
 	float screen_space_roughness_limiter_limit = 0.18;
 
-	mutable RID_Owner<RenderBuffers> render_buffers_owner;
+	mutable RID_Owner<RenderBuffers, true> render_buffers_owner;
 
 	void _free_render_buffer_data(RenderBuffers *rb);
 	void _allocate_blur_textures(RenderBuffers *rb);
@@ -1624,7 +1624,9 @@ public:
 
 	/* SHADOW ATLAS API */
 
-	RID shadow_atlas_create();
+	RID shadow_atlas_create(RID p_reserved_rid = RID());
+	RID shadow_atlas_reserve_rid() { return shadow_atlas_owner.reserve_rid(); }
+
 	void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = false);
 	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision);
 	bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version);
@@ -1668,7 +1670,9 @@ public:
 	RID sdfgi_get_ubo() const { return gi.sdfgi_ubo; }
 	/* SKY API */
 
-	RID sky_create();
+	RID sky_create(RID p_reserved_rid = RID());
+	RID sky_reserve_rid() { return sky_owner.reserve_rid(); }
+
 	void sky_set_radiance_size(RID p_sky, int p_radiance_size);
 	void sky_set_mode(RID p_sky, RS::SkyMode p_mode);
 	void sky_set_material(RID p_sky, RID p_material);
@@ -1680,7 +1684,8 @@ public:
 
 	/* ENVIRONMENT API */
 
-	RID environment_create();
+	RID environment_create(RID p_reserved_rid = RID());
+	RID environment_reserve_rid() { return environment_owner.reserve_rid(); }
 
 	void environment_set_background(RID p_env, RS::EnvironmentBG p_bg);
 	void environment_set_sky(RID p_env, RID p_sky);
@@ -1750,7 +1755,8 @@ public:
 
 	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size);
 
-	virtual RID camera_effects_create();
+	virtual RID camera_effects_create(RID p_reserved_rid = RID());
+	virtual RID camera_effects_reserve_rid() { return camera_effects_owner.reserve_rid(); }
 
 	virtual void camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter);
 	virtual void camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape);
@@ -1889,7 +1895,8 @@ public:
 		return li->light_type;
 	}
 
-	virtual RID reflection_atlas_create();
+	virtual RID reflection_atlas_create(RID p_reserved_rid = RID());
+	virtual RID reflection_atlas_reserve_rid() { return reflection_atlas_owner.reserve_rid(); }
 	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count);
 	virtual int reflection_atlas_get_size(RID p_ref_atlas) const;
 
@@ -2037,7 +2044,9 @@ public:
 		return g_probe->last_pass;
 	}
 */
-	RID render_buffers_create();
+	RID render_buffers_create(RID p_reserved_rid = RID());
+	RID render_buffers_reserve_rid() { return render_buffers_owner.reserve_rid(); }
+
 	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding);
 	void gi_set_use_half_resolution(bool p_enable);
 

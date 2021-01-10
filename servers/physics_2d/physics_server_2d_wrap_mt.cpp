@@ -115,7 +115,7 @@ void PhysicsServer2DWrapMT::finish() {
 	}
 }
 
-PhysicsServer2DWrapMT::PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool p_create_thread) :
+PhysicsServer2DWrapMT::PhysicsServer2DWrapMT(PhysicsServer2DReserving *p_contained, bool p_create_thread) :
 		command_queue(p_create_thread) {
 	physics_2d_server = p_contained;
 	create_thread = p_create_thread;

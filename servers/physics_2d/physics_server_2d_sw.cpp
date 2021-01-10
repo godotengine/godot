@@ -40,7 +40,7 @@
 #define FLUSH_QUERY_CHECK(m_object) \
 	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
 
-RID PhysicsServer2DSW::_shape_create(ShapeType p_shape) {
+RID PhysicsServer2DSW::_shape_create(ShapeType p_shape, RID p_reserved_rid) {
 	Shape2DSW *shape = nullptr;
 	switch (p_shape) {
 		case SHAPE_LINE: {
@@ -73,42 +73,42 @@ RID PhysicsServer2DSW::_shape_create(ShapeType p_shape) {
 		} break;
 	}
 
-	RID id = shape_owner.make_rid(shape);
+	RID id = shape_owner.make_rid(shape, p_reserved_rid);
 	shape->set_self(id);
 
 	return id;
 }
 
-RID PhysicsServer2DSW::line_shape_create() {
-	return _shape_create(SHAPE_LINE);
+RID PhysicsServer2DSW::line_shape_create_reserved(RID p_reserved_rid) {
+	return _shape_create(SHAPE_LINE, p_reserved_rid);
 }
 
-RID PhysicsServer2DSW::ray_shape_create() {
-	return _shape_create(SHAPE_RAY);
+RID PhysicsServer2DSW::ray_shape_create_reserved(RID p_reserved_rid) {
+	return _shape_create(SHAPE_RAY, p_reserved_rid);
 }
 
-RID PhysicsServer2DSW::segment_shape_create() {
-	return _shape_create(SHAPE_SEGMENT);
+RID PhysicsServer2DSW::segment_shape_create_reserved(RID p_reserved_rid) {
+	return _shape_create(SHAPE_SEGMENT, p_reserved_rid);
 }
 
-RID PhysicsServer2DSW::circle_shape_create() {
-	return _shape_create(SHAPE_CIRCLE);
+RID PhysicsServer2DSW::circle_shape_create_reserved(RID p_reserved_rid) {
+	return _shape_create(SHAPE_CIRCLE, p_reserved_rid);
 }
 
-RID PhysicsServer2DSW::rectangle_shape_create() {
-	return _shape_create(SHAPE_RECTANGLE);
+RID PhysicsServer2DSW::rectangle_shape_create_reserved(RID p_reserved_rid) {
+	return _shape_create(SHAPE_RECTANGLE, p_reserved_rid);
 }
 
-RID PhysicsServer2DSW::capsule_shape_create() {
-	return _shape_create(SHAPE_CAPSULE);
+RID PhysicsServer2DSW::capsule_shape_create_reserved(RID p_reserved_rid) {
+	return _shape_create(SHAPE_CAPSULE, p_reserved_rid);
 }
 
-RID PhysicsServer2DSW::convex_polygon_shape_create() {
-	return _shape_create(SHAPE_CONVEX_POLYGON);
+RID PhysicsServer2DSW::convex_polygon_shape_create_reserved(RID p_reserved_rid) {
+	return _shape_create(SHAPE_CONVEX_POLYGON, p_reserved_rid);
 }
 
-RID PhysicsServer2DSW::concave_polygon_shape_create() {
-	return _shape_create(SHAPE_CONCAVE_POLYGON);
+RID PhysicsServer2DSW::concave_polygon_shape_create_reserved(RID p_reserved_rid) {
+	return _shape_create(SHAPE_CONCAVE_POLYGON, p_reserved_rid);
 }
 
 void PhysicsServer2DSW::shape_set_data(RID p_shape, const Variant &p_data) {
@@ -213,9 +213,9 @@ bool PhysicsServer2DSW::shape_collide(RID p_shape_A, const Transform2D &p_xform_
 	return res;
 }
 
-RID PhysicsServer2DSW::space_create() {
+RID PhysicsServer2DSW::space_create_reserved(RID p_reserved_rid) {
 	Space2DSW *space = memnew(Space2DSW);
-	RID id = space_owner.make_rid(space);
+	RID id = space_owner.make_rid(space, p_reserved_rid);
 	space->set_self(id);
 	RID area_id = area_create();
 	Area2DSW *area = area_owner.getornull(area_id);
@@ -283,9 +283,9 @@ PhysicsDirectSpaceState2D *PhysicsServer2DSW::space_get_direct_state(RID p_space
 	return space->get_direct_state();
 }
 
-RID PhysicsServer2DSW::area_create() {
+RID PhysicsServer2DSW::area_create_reserved(RID p_reserved_rid) {
 	Area2DSW *area = memnew(Area2DSW);
-	RID rid = area_owner.make_rid(area);
+	RID rid = area_owner.make_rid(area, p_reserved_rid);
 	area->set_self(rid);
 	return rid;
 };
@@ -528,9 +528,9 @@ void PhysicsServer2DSW::area_set_area_monitor_callback(RID p_area, Object *p_rec
 
 /* BODY API */
 
-RID PhysicsServer2DSW::body_create() {
+RID PhysicsServer2DSW::body_create_reserved(RID p_reserved_rid) {
 	Body2DSW *body = memnew(Body2DSW);
-	RID rid = body_owner.make_rid(body);
+	RID rid = body_owner.make_rid(body, p_reserved_rid);
 	body->set_self(rid);
 	return rid;
 }

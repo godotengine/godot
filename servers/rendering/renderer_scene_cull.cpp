@@ -39,9 +39,9 @@
 
 /* CAMERA API */
 
-RID RendererSceneCull::camera_create() {
+RID RendererSceneCull::camera_create(RID p_reserved_rid) {
 	Camera *camera = memnew(Camera);
-	return camera_owner.make_rid(camera);
+	return camera_owner.make_rid(camera, p_reserved_rid);
 }
 
 void RendererSceneCull::camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far) {
@@ -290,10 +290,10 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 	}
 }
 
-RID RendererSceneCull::scenario_create() {
+RID RendererSceneCull::scenario_create(RID p_reserved_rid) {
 	Scenario *scenario = memnew(Scenario);
 	ERR_FAIL_COND_V(!scenario, RID());
-	RID scenario_rid = scenario_owner.make_rid(scenario);
+	RID scenario_rid = scenario_owner.make_rid(scenario, p_reserved_rid);
 	scenario->self = scenario_rid;
 
 	scenario->reflection_probe_shadow_atlas = scene_render->shadow_atlas_create();
@@ -367,11 +367,11 @@ void RendererSceneCull::_instance_queue_update(Instance *p_instance, bool p_upda
 	_instance_update_list.add(&p_instance->update_item);
 }
 
-RID RendererSceneCull::instance_create() {
+RID RendererSceneCull::instance_create(RID p_reserved_rid) {
 	Instance *instance = memnew(Instance);
 	ERR_FAIL_COND_V(!instance, RID());
 
-	RID instance_rid = instance_owner.make_rid(instance);
+	RID instance_rid = instance_owner.make_rid(instance, p_reserved_rid);
 	instance->self = instance_rid;
 
 	return instance_rid;

@@ -40,186 +40,70 @@
 		}                                                                       \
 	}
 
-#define FUNCRID(m_type)                                                                    \
-	List<RID> m_type##_id_pool;                                                            \
-	int m_type##allocn() {                                                                 \
-		for (int i = 0; i < pool_max_size; i++) {                                          \
-			m_type##_id_pool.push_back(server_name->m_type##_create());                    \
-		}                                                                                  \
-		return 0;                                                                          \
-	}                                                                                      \
-	void m_type##_free_cached_ids() {                                                      \
-		while (m_type##_id_pool.size()) {                                                  \
-			server_name->free(m_type##_id_pool.front()->get());                            \
-			m_type##_id_pool.pop_front();                                                  \
-		}                                                                                  \
-	}                                                                                      \
-	virtual RID m_type##_create() {                                                        \
-		if (Thread::get_caller_id() != server_thread) {                                    \
-			RID rid;                                                                       \
-			MutexLock lock(alloc_mutex);                                                   \
-			if (m_type##_id_pool.size() == 0) {                                            \
-				int ret;                                                                   \
-				command_queue.push_and_ret(this, &ServerNameWrapMT::m_type##allocn, &ret); \
-				SYNC_DEBUG                                                                 \
-			}                                                                              \
-			rid = m_type##_id_pool.front()->get();                                         \
-			m_type##_id_pool.pop_front();                                                  \
-			return rid;                                                                    \
-		} else {                                                                           \
-			return server_name->m_type##_create();                                         \
-		}                                                                                  \
+#define FUNCRID(m_type)                                                                  \
+	virtual RID m_type##_create() {                                                      \
+		if (Thread::get_caller_id() != server_thread) {                                  \
+			RID rid = server_name->m_type##_reserve_rid();                               \
+			command_queue.push(server_name, &ServerName::m_type##_create_reserved, rid); \
+			return rid;                                                                  \
+		} else {                                                                         \
+			return server_name->m_type##_create();                                       \
+		}                                                                                \
 	}
 
-#define FUNC1RID(m_type, m_arg1)                                                               \
-	int m_type##allocn() {                                                                     \
-		for (int i = 0; i < m_type##_pool_max_size; i++) {                                     \
-			m_type##_id_pool.push_back(server_name->m_type##_create());                        \
-		}                                                                                      \
-		return 0;                                                                              \
-	}                                                                                          \
-	void m_type##_free_cached_ids() {                                                          \
-		while (m_type##_id_pool.size()) {                                                      \
-			free(m_type##_id_pool.front()->get());                                             \
-			m_type##_id_pool.pop_front();                                                      \
-		}                                                                                      \
-	}                                                                                          \
-	virtual RID m_type##_create(m_arg1 p1) {                                                   \
-		if (Thread::get_caller_id() != server_thread) {                                        \
-			RID rid;                                                                           \
-			MutexLock lock(alloc_mutex);                                                       \
-			if (m_type##_id_pool.size() == 0) {                                                \
-				int ret;                                                                       \
-				command_queue.push_and_ret(this, &ServerNameWrapMT::m_type##allocn, p1, &ret); \
-				SYNC_DEBUG                                                                     \
-			}                                                                                  \
-			rid = m_type##_id_pool.front()->get();                                             \
-			m_type##_id_pool.pop_front();                                                      \
-			return rid;                                                                        \
-		} else {                                                                               \
-			return server_name->m_type##_create(p1);                                           \
-		}                                                                                      \
+#define FUNC1RID(m_type, m_arg1)                                                             \
+	virtual RID m_type##_create(m_arg1 p1) {                                                 \
+		if (Thread::get_caller_id() != server_thread) {                                      \
+			RID rid = server_name->m_type##_reserve_rid();                                   \
+			command_queue.push(server_name, &ServerName::m_type##_create_reserved, p1, rid); \
+			return rid;                                                                      \
+		} else {                                                                             \
+			return server_name->m_type##_create(p1);                                         \
+		}                                                                                    \
 	}
 
-#define FUNC2RID(m_type, m_arg1, m_arg2)                                                           \
-	int m_type##allocn() {                                                                         \
-		for (int i = 0; i < m_type##_pool_max_size; i++) {                                         \
-			m_type##_id_pool.push_back(server_name->m_type##_create());                            \
-		}                                                                                          \
-		return 0;                                                                                  \
-	}                                                                                              \
-	void m_type##_free_cached_ids() {                                                              \
-		while (m_type##_id_pool.size()) {                                                          \
-			free(m_type##_id_pool.front()->get());                                                 \
-			m_type##_id_pool.pop_front();                                                          \
-		}                                                                                          \
-	}                                                                                              \
-	virtual RID m_type##_create(m_arg1 p1, m_arg2 p2) {                                            \
-		if (Thread::get_caller_id() != server_thread) {                                            \
-			RID rid;                                                                               \
-			MutexLock lock(alloc_mutex);                                                           \
-			if (m_type##_id_pool.size() == 0) {                                                    \
-				int ret;                                                                           \
-				command_queue.push_and_ret(this, &ServerNameWrapMT::m_type##allocn, p1, p2, &ret); \
-				SYNC_DEBUG                                                                         \
-			}                                                                                      \
-			rid = m_type##_id_pool.front()->get();                                                 \
-			m_type##_id_pool.pop_front();                                                          \
-			return rid;                                                                            \
-		} else {                                                                                   \
-			return server_name->m_type##_create(p1, p2);                                           \
-		}                                                                                          \
+#define FUNC2RID(m_type, m_arg1, m_arg2)                                                         \
+	virtual RID m_type##_create(m_arg1 p1, m_arg2 p2) {                                          \
+		if (Thread::get_caller_id() != server_thread) {                                          \
+			RID rid = server_name->m_type##_reserve_rid();                                       \
+			command_queue.push(server_name, &ServerName::m_type##_create_reserved, p1, p2, rid); \
+			return rid;                                                                          \
+		} else {                                                                                 \
+			return server_name->m_type##_create(p1, p2);                                         \
+		}                                                                                        \
 	}
 
-#define FUNC3RID(m_type, m_arg1, m_arg2, m_arg3)                                                       \
-	int m_type##allocn() {                                                                             \
-		for (int i = 0; i < m_type##_pool_max_size; i++) {                                             \
-			m_type##_id_pool.push_back(server_name->m_type##_create());                                \
-		}                                                                                              \
-		return 0;                                                                                      \
-	}                                                                                                  \
-	void m_type##_free_cached_ids() {                                                                  \
-		while (m_type##_id_pool.size()) {                                                              \
-			free(m_type##_id_pool.front()->get());                                                     \
-			m_type##_id_pool.pop_front();                                                              \
-		}                                                                                              \
-	}                                                                                                  \
-	virtual RID m_type##_create(m_arg1 p1, m_arg2 p2, m_arg3 p3) {                                     \
-		if (Thread::get_caller_id() != server_thread) {                                                \
-			RID rid;                                                                                   \
-			MutexLock lock(alloc_mutex);                                                               \
-			if (m_type##_id_pool.size() == 0) {                                                        \
-				int ret;                                                                               \
-				command_queue.push_and_ret(this, &ServerNameWrapMT::m_type##allocn, p1, p2, p3, &ret); \
-				SYNC_DEBUG                                                                             \
-			}                                                                                          \
-			rid = m_type##_id_pool.front()->get();                                                     \
-			m_type##_id_pool.pop_front();                                                              \
-			return rid;                                                                                \
-		} else {                                                                                       \
-			return server_name->m_type##_create(p1, p2, p3);                                           \
-		}                                                                                              \
+#define FUNC3RID(m_type, m_arg1, m_arg2, m_arg3)                                                     \
+	virtual RID m_type##_create(m_arg1 p1, m_arg2 p2, m_arg3 p3) {                                   \
+		if (Thread::get_caller_id() != server_thread) {                                              \
+			RID rid = server_name->m_type##_reserve_rid();                                           \
+			command_queue.push(server_name, &ServerName::m_type##_create_reserved, p1, p2, p3, rid); \
+			return rid;                                                                              \
+		} else {                                                                                     \
+			return server_name->m_type##_create(p1, p2, p3);                                         \
+		}                                                                                            \
 	}
 
-#define FUNC4RID(m_type, m_arg1, m_arg2, m_arg3, m_arg4)                                                   \
-	int m_type##allocn() {                                                                                 \
-		for (int i = 0; i < m_type##_pool_max_size; i++) {                                                 \
-			m_type##_id_pool.push_back(server_name->m_type##_create());                                    \
-		}                                                                                                  \
-		return 0;                                                                                          \
-	}                                                                                                      \
-	void m_type##_free_cached_ids() {                                                                      \
-		while (m_type##_id_pool.size()) {                                                                  \
-			free(m_type##_id_pool.front()->get());                                                         \
-			m_type##_id_pool.pop_front();                                                                  \
-		}                                                                                                  \
-	}                                                                                                      \
-	virtual RID m_type##_create(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) {                              \
-		if (Thread::get_caller_id() != server_thread) {                                                    \
-			RID rid;                                                                                       \
-			MutexLock lock(alloc_mutex);                                                                   \
-			if (m_type##_id_pool.size() == 0) {                                                            \
-				int ret;                                                                                   \
-				command_queue.push_and_ret(this, &ServerNameWrapMT::m_type##allocn, p1, p2, p3, p4, &ret); \
-				SYNC_DEBUG                                                                                 \
-			}                                                                                              \
-			rid = m_type##_id_pool.front()->get();                                                         \
-			m_type##_id_pool.pop_front();                                                                  \
-			return rid;                                                                                    \
-		} else {                                                                                           \
-			return server_name->m_type##_create(p1, p2, p3, p4);                                           \
-		}                                                                                                  \
+#define FUNC4RID(m_type, m_arg1, m_arg2, m_arg3, m_arg4)                                                 \
+	virtual RID m_type##_create(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) {                            \
+		if (Thread::get_caller_id() != server_thread) {                                                  \
+			RID rid = server_name->m_type##_reserve_rid();                                               \
+			command_queue.push(server_name, &ServerName::m_type##_create_reserved, p1, p2, p3, p4, rid); \
+			return rid;                                                                                  \
+		} else {                                                                                         \
+			return server_name->m_type##_create(p1, p2, p3, p4);                                         \
+		}                                                                                                \
 	}
 
-#define FUNC5RID(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)                                               \
-	List<RID> m_type##_id_pool;                                                                                \
-	int m_type##allocn(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) {                                \
-		for (int i = 0; i < pool_max_size; i++) {                                                              \
-			m_type##_id_pool.push_back(server_name->m_type##_create(p1, p2, p3, p4, p5));                      \
-		}                                                                                                      \
-		return 0;                                                                                              \
-	}                                                                                                          \
-	void m_type##_free_cached_ids() {                                                                          \
-		while (m_type##_id_pool.size()) {                                                                      \
-			free(m_type##_id_pool.front()->get());                                                             \
-			m_type##_id_pool.pop_front();                                                                      \
-		}                                                                                                      \
-	}                                                                                                          \
-	virtual RID m_type##_create(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) {                       \
-		if (Thread::get_caller_id() != server_thread) {                                                        \
-			RID rid;                                                                                           \
-			MutexLock lock(alloc_mutex);                                                                       \
-			if (m_type##_id_pool.size() == 0) {                                                                \
-				int ret;                                                                                       \
-				command_queue.push_and_ret(this, &ServerNameWrapMT::m_type##allocn, p1, p2, p3, p4, p5, &ret); \
-				SYNC_DEBUG                                                                                     \
-			}                                                                                                  \
-			rid = m_type##_id_pool.front()->get();                                                             \
-			m_type##_id_pool.pop_front();                                                                      \
-			return rid;                                                                                        \
-		} else {                                                                                               \
-			return server_name->m_type##_create(p1, p2, p3, p4, p5);                                           \
-		}                                                                                                      \
+#define FUNC5RID(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)                                             \
+	virtual RID m_type##_create(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) {                     \
+		if (Thread::get_caller_id() != server_thread) {                                                      \
+			RID rid = server_name->m_type##_reserve_rid();                                                   \
+			command_queue.push(server_name, &ServerName::m_type##_create_reserved, p1, p2, p3, p4, p5, rid); \
+			return rid;                                                                                      \
+		} else {                                                                                             \
+			return server_name->m_type##_create(p1, p2, p3, p4, p5);                                         \
+		}                                                                                                    \
 	}
 
 #define FUNC0RC(m_r, m_type)                                                    \

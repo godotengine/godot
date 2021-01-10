@@ -221,7 +221,7 @@ private:
 		~CanvasTexture();
 	};
 
-	RID_PtrOwner<CanvasTexture> canvas_texture_owner;
+	RID_PtrOwner<CanvasTexture, true> canvas_texture_owner;
 
 	/* TEXTURE API */
 	struct Texture {
@@ -367,7 +367,7 @@ private:
 	};
 
 	ShaderDataRequestFunction shader_data_request_func[SHADER_TYPE_MAX];
-	mutable RID_Owner<Shader> shader_owner;
+	mutable RID_Owner<Shader, true> shader_owner;
 
 	/* Material */
 
@@ -389,7 +389,7 @@ private:
 	};
 
 	MaterialDataRequestFunction material_data_request_func[SHADER_TYPE_MAX];
-	mutable RID_Owner<Material> material_owner;
+	mutable RID_Owner<Material, true> material_owner;
 
 	Material *material_update_list;
 	void _material_queue_update(Material *material, bool p_uniform, bool p_texture);
@@ -484,7 +484,7 @@ private:
 		Dependency dependency;
 	};
 
-	mutable RID_Owner<Mesh> mesh_owner;
+	mutable RID_Owner<Mesh, true> mesh_owner;
 
 	struct MeshInstance {
 		Mesh *mesh;
@@ -587,7 +587,7 @@ private:
 		Dependency dependency;
 	};
 
-	mutable RID_Owner<MultiMesh> multimesh_owner;
+	mutable RID_Owner<MultiMesh, true> multimesh_owner;
 
 	MultiMesh *multimesh_dirty_list = nullptr;
 
@@ -893,7 +893,7 @@ private:
 
 	void update_particles();
 
-	mutable RID_Owner<Particles> particles_owner;
+	mutable RID_Owner<Particles, true> particles_owner;
 
 	/* Particles Collision */
 
@@ -915,7 +915,7 @@ private:
 		Dependency dependency;
 	};
 
-	mutable RID_Owner<ParticlesCollision> particles_collision_owner;
+	mutable RID_Owner<ParticlesCollision, true> particles_collision_owner;
 
 	struct ParticlesCollisionInstance {
 		RID collision;
@@ -945,7 +945,7 @@ private:
 		Dependency dependency;
 	};
 
-	mutable RID_Owner<Skeleton> skeleton_owner;
+	mutable RID_Owner<Skeleton, true> skeleton_owner;
 
 	_FORCE_INLINE_ void _skeleton_make_dirty(Skeleton *skeleton);
 
@@ -977,7 +977,7 @@ private:
 		Dependency dependency;
 	};
 
-	mutable RID_Owner<Light> light_owner;
+	mutable RID_Owner<Light, true> light_owner;
 
 	/* REFLECTION PROBE */
 
@@ -1000,7 +1000,7 @@ private:
 		Dependency dependency;
 	};
 
-	mutable RID_Owner<ReflectionProbe> reflection_probe_owner;
+	mutable RID_Owner<ReflectionProbe, true> reflection_probe_owner;
 
 	/* DECAL */
 
@@ -1021,7 +1021,7 @@ private:
 		Dependency dependency;
 	};
 
-	mutable RID_Owner<Decal> decal_owner;
+	mutable RID_Owner<Decal, true> decal_owner;
 
 	/* GI PROBE */
 
@@ -1064,7 +1064,7 @@ private:
 	RID giprobe_sdf_shader_version_shader;
 	RID giprobe_sdf_shader_pipeline;
 
-	mutable RID_Owner<GIProbe> gi_probe_owner;
+	mutable RID_Owner<GIProbe, true> gi_probe_owner;
 
 	/* REFLECTION PROBE */
 
@@ -1095,7 +1095,7 @@ private:
 
 	uint64_t lightmap_array_version = 0;
 
-	mutable RID_Owner<Lightmap> lightmap_owner;
+	mutable RID_Owner<Lightmap, true> lightmap_owner;
 
 	float lightmap_probe_capture_update_speed = 4;
 
@@ -1145,7 +1145,7 @@ private:
 		Color clear_color;
 	};
 
-	mutable RID_Owner<RenderTarget> render_target_owner;
+	mutable RID_Owner<RenderTarget, true> render_target_owner;
 
 	void _clear_render_target(RenderTarget *rt);
 	void _update_render_target(RenderTarget *rt);
@@ -1338,7 +1338,8 @@ public:
 
 	/* CANVAS TEXTURE API */
 
-	virtual RID canvas_texture_create();
+	virtual RID canvas_texture_create(RID p_reserved_rid = RID());
+	virtual RID canvas_texture_reserve_rid() { return canvas_texture_owner.reserve_rid(); }
 
 	virtual void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture);
 	virtual void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_specular_color, float p_shininess);
@@ -1350,7 +1351,8 @@ public:
 
 	/* SHADER API */
 
-	RID shader_create();
+	RID shader_create(RID p_reserved_rid = RID());
+	RID shader_reserve_rid() { return shader_owner.reserve_rid(); }
 
 	void shader_set_code(RID p_shader, const String &p_code);
 	String shader_get_code(RID p_shader) const;
@@ -1365,7 +1367,8 @@ public:
 
 	/* COMMON MATERIAL API */
 
-	RID material_create();
+	RID material_create(RID p_reserved_rid = RID());
+	RID material_reserve_rid() { return material_owner.reserve_rid(); }
 
 	void material_set_shader(RID p_material, RID p_shader);
 
@@ -1401,7 +1404,8 @@ public:
 
 	/* MESH API */
 
-	virtual RID mesh_create();
+	virtual RID mesh_create(RID p_reserved_rid = RID());
+	virtual RID mesh_reserve_rid() { return mesh_owner.reserve_rid(); }
 
 	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count);
 
@@ -1622,7 +1626,8 @@ public:
 
 	/* MULTIMESH API */
 
-	RID multimesh_create();
+	RID multimesh_create(RID p_reserved_rid = RID());
+	RID multimesh_reserve_rid() { return multimesh_owner.reserve_rid(); }
 
 	void multimesh_allocate(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false);
 	int multimesh_get_instance_count(RID p_multimesh) const;
@@ -1688,7 +1693,8 @@ public:
 
 	/* IMMEDIATE API */
 
-	RID immediate_create() { return RID(); }
+	RID immediate_create(RID p_reserved_rid = RID()) { return RID(); }
+	RID immediate_reserve_rid() { return RID(); }
 	void immediate_begin(RID p_immediate, RS::PrimitiveType p_rimitive, RID p_texture = RID()) {}
 	void immediate_vertex(RID p_immediate, const Vector3 &p_vertex) {}
 	void immediate_normal(RID p_immediate, const Vector3 &p_normal) {}
@@ -1704,7 +1710,9 @@ public:
 
 	/* SKELETON API */
 
-	RID skeleton_create();
+	RID skeleton_create(RID p_reserved_rid = RID());
+	RID skeleton_reserve_rid() { return skeleton_owner.reserve_rid(); }
+
 	void skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d_skeleton = false);
 	void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform);
 	void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform &p_world_transform);
@@ -1739,11 +1747,11 @@ public:
 	}
 	/* Light API */
 
-	RID light_create(RS::LightType p_type);
+	RID light_create(RS::LightType p_type, RID p_reserved_rid);
 
-	RID directional_light_create() { return light_create(RS::LIGHT_DIRECTIONAL); }
-	RID omni_light_create() { return light_create(RS::LIGHT_OMNI); }
-	RID spot_light_create() { return light_create(RS::LIGHT_SPOT); }
+	RID directional_light_reserve_rid() { return light_owner.reserve_rid(); }
+	RID omni_light_reserve_rid() { return light_owner.reserve_rid(); }
+	RID spot_light_reserve_rid() { return light_owner.reserve_rid(); }
 
 	void light_set_color(RID p_light, const Color &p_color);
 	void light_set_param(RID p_light, RS::LightParam p_param, float p_value);
@@ -1846,7 +1854,10 @@ public:
 
 	/* PROBE API */
 
-	RID reflection_probe_create();
+	RID reflection_probe_create(RID p_reserved_rid = RID());
+	RID reflection_probe_reserve_rid() {
+		return reflection_probe_owner.reserve_rid();
+	}
 
 	void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode);
 	void reflection_probe_set_intensity(RID p_probe, float p_intensity);
@@ -1886,7 +1897,10 @@ public:
 
 	/* DECAL API */
 
-	virtual RID decal_create();
+	virtual RID decal_create(RID p_reserved_rid = RID());
+	virtual RID decal_reserve_rid() {
+		return decal_owner.reserve_rid();
+	}
 	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents);
 	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture);
 	virtual void decal_set_emission_energy(RID p_decal, float p_energy);
@@ -1961,7 +1975,10 @@ public:
 
 	/* GI PROBE API */
 
-	RID gi_probe_create();
+	RID gi_probe_create(RID p_reserved_rid = RID());
+	RID gi_probe_reserve_rid() {
+		return gi_probe_owner.reserve_rid();
+	}
 
 	void gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts);
 
@@ -2014,7 +2031,10 @@ public:
 
 	/* LIGHTMAP CAPTURE */
 
-	virtual RID lightmap_create();
+	virtual RID lightmap_create(RID p_reserved_rid = RID());
+	virtual RID lightmap_reserve_rid() {
+		return lightmap_owner.reserve_rid();
+	}
 
 	virtual void lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics);
 	virtual void lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds);
@@ -2063,7 +2083,10 @@ public:
 
 	/* PARTICLES */
 
-	RID particles_create();
+	RID particles_create(RID p_reserved_rid = RID());
+	RID particles_reserve_rid() {
+		return particles_owner.reserve_rid();
+	}
 
 	void particles_set_emitting(RID p_particles, bool p_emitting);
 	void particles_set_amount(RID p_particles, int p_amount);
@@ -2141,7 +2164,10 @@ public:
 
 	/* PARTICLES COLLISION */
 
-	virtual RID particles_collision_create();
+	virtual RID particles_collision_create(RID p_reserved_rid = RID());
+	virtual RID particles_collision_reserve_rid() {
+		return particles_collision_owner.reserve_rid();
+	}
 	virtual void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type);
 	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask);
 	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius); //for spheres
@@ -2185,7 +2211,9 @@ public:
 
 	/* RENDER TARGET API */
 
-	RID render_target_create();
+	RID render_target_create(RID p_reserved_rid = RID());
+	RID render_target_reserve_rid() { return render_target_owner.reserve_rid(); }
+
 	void render_target_set_position(RID p_render_target, int p_x, int p_y);
 	void render_target_set_size(RID p_render_target, int p_width, int p_height);
 	RID render_target_get_texture(RID p_render_target);
@@ -2235,11 +2263,19 @@ public:
 
 	void render_info_begin_capture() {}
 	void render_info_end_capture() {}
-	int get_captured_render_info(RS::RenderInfo p_info) { return 0; }
+	int get_captured_render_info(RS::RenderInfo p_info) {
+		return 0;
+	}
 
-	int get_render_info(RS::RenderInfo p_info) { return 0; }
-	String get_video_adapter_name() const { return String(); }
-	String get_video_adapter_vendor() const { return String(); }
+	int get_render_info(RS::RenderInfo p_info) {
+		return 0;
+	}
+	String get_video_adapter_name() const {
+		return String();
+	}
+	String get_video_adapter_vendor() const {
+		return String();
+	}
 
 	virtual void capture_timestamps_begin();
 	virtual void capture_timestamp(const String &p_name);
@@ -2249,7 +2285,9 @@ public:
 	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const;
 	virtual String get_captured_timestamp_name(uint32_t p_index) const;
 
-	RID get_default_rd_storage_buffer() { return default_rd_storage_buffer; }
+	RID get_default_rd_storage_buffer() {
+		return default_rd_storage_buffer;
+	}
 
 	static RendererStorageRD *base_singleton;
 

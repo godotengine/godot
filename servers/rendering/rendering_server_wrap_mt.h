@@ -33,11 +33,11 @@
 
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering_server_reserving.h"
 
 class RenderingServerWrapMT : public RenderingServer {
 	// the real visual server
-	mutable RenderingServer *rendering_server;
+	mutable RenderingServerReserving *rendering_server;
 
 	mutable CommandQueueMT command_queue;
 
@@ -67,7 +67,7 @@ class RenderingServerWrapMT : public RenderingServer {
 #endif
 
 public:
-#define ServerName RenderingServer
+#define ServerName RenderingServerReserving
 #define ServerNameWrapMT RenderingServerWrapMT
 #define server_name rendering_server
 #include "servers/server_wrap_mt_common.h"
@@ -790,7 +790,7 @@ public:
 		rendering_server->set_print_gpu_profile(p_enable);
 	}
 
-	RenderingServerWrapMT(RenderingServer *p_contained, bool p_create_thread);
+	RenderingServerWrapMT(RenderingServerReserving *p_contained, bool p_create_thread);
 	~RenderingServerWrapMT();
 
 #undef ServerName

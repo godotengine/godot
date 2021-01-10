@@ -33,12 +33,17 @@
 
 #include "core/templates/rid_owner.h"
 #include "joints_2d_sw.h"
-#include "servers/physics_server_2d.h"
+#include "servers/physics_server_2d_reserving.h"
 #include "shape_2d_sw.h"
 #include "space_2d_sw.h"
 #include "step_2d_sw.h"
 
-class PhysicsServer2DSW : public PhysicsServer2D {
+#define BASIC_RID_API(m_type, m_owner)                                                 \
+	virtual RID m_type##_create() override { return m_type##_create_reserved(RID()); } \
+	virtual RID m_type##_create_reserved(RID p_reserved_rid) override;                 \
+	virtual RID m_type##_reserve_rid() override { return m_owner##_owner.reserve_rid(); };
+
+class PhysicsServer2DSW : public PhysicsServer2DReserving {
 	GDCLASS(PhysicsServer2DSW, PhysicsServer2D);
 
 	friend class PhysicsDirectSpaceState2DSW;
@@ -61,10 +66,10 @@ class PhysicsServer2DSW : public PhysicsServer2D {
 
 	PhysicsDirectBodyState2DSW *direct_state;
 
-	mutable RID_PtrOwner<Shape2DSW> shape_owner;
-	mutable RID_PtrOwner<Space2DSW> space_owner;
-	mutable RID_PtrOwner<Area2DSW> area_owner;
-	mutable RID_PtrOwner<Body2DSW> body_owner;
+	mutable RID_PtrOwner<Shape2DSW, true> shape_owner;
+	mutable RID_PtrOwner<Space2DSW, true> space_owner;
+	mutable RID_PtrOwner<Area2DSW, true> area_owner;
+	mutable RID_PtrOwner<Body2DSW, true> body_owner;
 	mutable RID_PtrOwner<Joint2DSW> joint_owner;
 
 	static PhysicsServer2DSW *singletonsw;
@@ -74,7 +79,7 @@ class PhysicsServer2DSW : public PhysicsServer2D {
 	SelfList<CollisionObject2DSW>::List pending_shape_update_list;
 	void _update_shapes();
 
-	RID _shape_create(ShapeType p_shape);
+	RID _shape_create(ShapeType p_shape, RID p_reserved_rid);
 
 public:
 	struct CollCbkData {
@@ -87,14 +92,14 @@ public:
 		Vector2 *ptr;
 	};
 
-	virtual RID line_shape_create() override;
-	virtual RID ray_shape_create() override;
-	virtual RID segment_shape_create() override;
-	virtual RID circle_shape_create() override;
-	virtual RID rectangle_shape_create() override;
-	virtual RID capsule_shape_create() override;
-	virtual RID convex_polygon_shape_create() override;
-	virtual RID concave_polygon_shape_create() override;
+	BASIC_RID_API(line_shape, shape)
+	BASIC_RID_API(ray_shape, shape)
+	BASIC_RID_API(segment_shape, shape)
+	BASIC_RID_API(circle_shape, shape)
+	BASIC_RID_API(rectangle_shape, shape)
+	BASIC_RID_API(capsule_shape, shape)
+	BASIC_RID_API(convex_polygon_shape, shape)
+	BASIC_RID_API(concave_polygon_shape, shape)
 
 	static void _shape_col_cbk(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata);
 
@@ -109,7 +114,7 @@ public:
 
 	/* SPACE API */
 
-	virtual RID space_create() override;
+	BASIC_RID_API(space, space)
 	virtual void space_set_active(RID p_space, bool p_active) override;
 	virtual bool space_is_active(RID p_space) const override;
 
@@ -125,7 +130,7 @@ public:
 
 	/* AREA API */
 
-	virtual RID area_create() override;
+	BASIC_RID_API(area, area)
 
 	virtual void area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode) override;
 	virtual AreaSpaceOverrideMode area_get_space_override_mode(RID p_area) const override;
@@ -169,7 +174,7 @@ public:
 	/* BODY API */
 
 	// create a body of a given type
-	virtual RID body_create() override;
+	BASIC_RID_API(body, body)
 
 	virtual void body_set_space(RID p_body, RID p_space) override;
 	virtual RID body_get_space(RID p_body) const override;
@@ -290,5 +295,7 @@ public:
 	PhysicsServer2DSW();
 	~PhysicsServer2DSW() {}
 };
+
+#undef BASIC_RID_API
 
 #endif

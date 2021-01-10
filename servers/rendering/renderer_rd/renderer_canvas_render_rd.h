@@ -270,7 +270,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		} shadow;
 	};
 
-	RID_Owner<CanvasLight> canvas_light_owner;
+	RID_Owner<CanvasLight, true> canvas_light_owner;
 
 	struct ShadowRenderPushConstant {
 		float projection[16];
@@ -314,7 +314,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		float atlas_rect[4];
 	};
 
-	RID_Owner<OccluderPolygon> occluder_polygon_owner;
+	RID_Owner<OccluderPolygon, true> occluder_polygon_owner;
 
 	enum ShadowRenderMode {
 		SHADOW_RENDER_MODE_SHADOW,

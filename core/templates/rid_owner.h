@@ -79,12 +79,7 @@ class RID_Alloc : public RID_AllocBase {
 
 	SpinLock spin_lock;
 
-public:
-	RID make_rid(const T &p_value) {
-		if (THREAD_SAFE) {
-			spin_lock.lock();
-		}
-
+	uint64_t _allocate_element(T **r_ptr = nullptr) {
 		if (alloc_count == max_alloc) {
 			//allocate a new chunk
 			uint32_t chunk_count = alloc_count == 0 ? 0 : (max_alloc / elements_in_chunk);
@@ -115,29 +110,24 @@ public:
 		uint32_t free_chunk = free_index / elements_in_chunk;
 		uint32_t free_element = free_index % elements_in_chunk;
 
-		T *ptr = &chunks[free_chunk][free_element];
-		memnew_placement(ptr, T(p_value));
-
+		//keep MSB as a flag meaning reserved (allocated, but not initialized)
 		uint32_t validator = (uint32_t)(_gen_id() & 0xFFFFFFFF);
-		uint64_t id = validator;
-		id <<= 32;
-		id |= free_index;
+		uint64_t id = (uint64_t(validator) << 32) | free_index;
 
+		if (r_ptr) {
+			*r_ptr = &chunks[free_chunk][free_element];
+		} else {
+			//only reserving
+			validator |= 0x80000000;
+		}
 		validator_chunks[free_chunk][free_element] = validator;
 		alloc_count++;
 
-		if (THREAD_SAFE) {
-			spin_lock.unlock();
-		}
-
-		return _make_from_id(id);
+		return id;
 	}
 
-	_FORCE_INLINE_ T *getornull(const RID &p_rid) {
-		if (THREAD_SAFE) {
-			spin_lock.lock();
-		}
-
+	template <bool FOR_RESERVED = false>
+	_FORCE_INLINE_ T *_getornull(const RID &p_rid) {
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
 		if (unlikely(idx >= max_alloc)) {
@@ -151,14 +141,72 @@ public:
 		uint32_t idx_element = idx % elements_in_chunk;
 
 		uint32_t validator = uint32_t(id >> 32);
+		if (FOR_RESERVED) {
+			validator |= 0x80000000;
+		}
 		if (unlikely(validator_chunks[idx_chunk][idx_element] != validator)) {
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
 			return nullptr;
 		}
+		if (FOR_RESERVED) {
+			//mark now as initialized
+			validator_chunks[idx_chunk][idx_element] &= 0x7FFFFFFF;
+		}
 
-		T *ptr = &chunks[idx_chunk][idx_element];
+		return &chunks[idx_chunk][idx_element];
+	}
+
+public:
+	RID make_rid(const T &p_value, RID p_reserved_rid) {
+		if (THREAD_SAFE) {
+			spin_lock.lock();
+		}
+
+		RID rid;
+		T *ptr;
+		if (p_reserved_rid.is_null()) {
+			uint64_t id = _allocate_element(&ptr);
+			memnew_placement(ptr, T(p_value));
+			rid = _make_from_id(id);
+		} else {
+			ptr = _getornull<true>(p_reserved_rid);
+			if (likely(ptr)) { //otherwise, reserved RID not found!
+				memnew_placement(ptr, T(p_value));
+				rid = p_reserved_rid;
+			}
+		}
+
+		if (THREAD_SAFE) {
+			spin_lock.unlock();
+		}
+
+		ERR_FAIL_COND_V(!ptr, RID());
+
+		return rid;
+	}
+
+	RID reserve_rid() {
+		if (THREAD_SAFE) {
+			spin_lock.lock();
+		}
+
+		uint64_t id = _allocate_element();
+
+		if (THREAD_SAFE) {
+			spin_lock.unlock();
+		}
+
+		return _make_from_id(id);
+	}
+
+	_FORCE_INLINE_ T *getornull(const RID &p_rid) {
+		if (THREAD_SAFE) {
+			spin_lock.lock();
+		}
+
+		T *ptr = _getornull(p_rid);
 
 		if (THREAD_SAFE) {
 			spin_lock.unlock();
@@ -186,7 +234,8 @@ public:
 
 		uint32_t validator = uint32_t(id >> 32);
 
-		bool owned = validator_chunks[idx_chunk][idx_element] == validator;
+		//considering reserved RIDs are owned
+		bool owned = (validator_chunks[idx_chunk][idx_element] & 0x7FFFFFFF) == validator;
 
 		if (THREAD_SAFE) {
 			spin_lock.unlock();
@@ -213,14 +262,17 @@ public:
 		uint32_t idx_element = idx % elements_in_chunk;
 
 		uint32_t validator = uint32_t(id >> 32);
-		if (unlikely(validator_chunks[idx_chunk][idx_element] != validator)) {
+		if (unlikely((validator_chunks[idx_chunk][idx_element] & 0x7FFFFFFF) != validator)) {
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
 			ERR_FAIL();
 		}
 
-		chunks[idx_chunk][idx_element].~T();
+		//destruct only if initialized (not only reserved)
+		if (!(validator_chunks[idx_chunk][idx_element] & 0x80000000)) {
+			chunks[idx_chunk][idx_element].~T();
+		}
 		validator_chunks[idx_chunk][idx_element] = 0xFFFFFFFF; // go invalid
 
 		alloc_count--;
@@ -242,9 +294,16 @@ public:
 		}
 		uint64_t idx = free_list_chunks[p_index / elements_in_chunk][p_index % elements_in_chunk];
 		T *ptr = &chunks[idx / elements_in_chunk][idx % elements_in_chunk];
+#ifdef DEBUG_ENABLED
+		uint64_t validator = validator_chunks[idx / elements_in_chunk][idx % elements_in_chunk];
+#endif
 		if (THREAD_SAFE) {
 			spin_lock.unlock();
 		}
+#ifdef DEBUG_ENABLED
+		//reserved, but not initialized
+		ERR_FAIL_COND_V(validator & 0x80000000, nullptr);
+#endif
 		return ptr;
 	}
 
@@ -256,7 +315,7 @@ public:
 		uint64_t idx = free_list_chunks[p_index / elements_in_chunk][p_index % elements_in_chunk];
 		uint64_t validator = validator_chunks[idx / elements_in_chunk][idx % elements_in_chunk];
 
-		RID rid = _make_from_id((validator << 32) | idx);
+		RID rid = _make_from_id(((validator & 0x7FFFFFFF) << 32) | idx);
 		if (THREAD_SAFE) {
 			spin_lock.unlock();
 		}
@@ -270,7 +329,7 @@ public:
 		for (size_t i = 0; i < max_alloc; i++) {
 			uint64_t validator = validator_chunks[i / elements_in_chunk][i % elements_in_chunk];
 			if (validator != 0xFFFFFFFF) {
-				p_owned->push_back(_make_from_id((validator << 32) | i));
+				p_owned->push_back(_make_from_id(((validator & 0x7FFFFFFF) << 32) | i));
 			}
 		}
 		if (THREAD_SAFE) {
@@ -300,7 +359,8 @@ public:
 
 			for (size_t i = 0; i < max_alloc; i++) {
 				uint64_t validator = validator_chunks[i / elements_in_chunk][i % elements_in_chunk];
-				if (validator != 0xFFFFFFFF) {
+				//destruct only if initialized (not only reserved)
+				if (validator != 0xFFFFFFFF && !(validator & 0x80000000)) {
 					chunks[i / elements_in_chunk][i % elements_in_chunk].~T();
 				}
 			}
@@ -326,8 +386,13 @@ class RID_PtrOwner {
 	RID_Alloc<T *, THREAD_SAFE> alloc;
 
 public:
-	_FORCE_INLINE_ RID make_rid(T *p_ptr) {
-		return alloc.make_rid(p_ptr);
+	template <bool VALID = THREAD_SAFE> //only safe for multithreaded servers if this is thread-safe itself
+	_FORCE_INLINE_ RID reserve_rid(typename std::enable_if<VALID, int>::type = 0) {
+		return alloc.reserve_rid();
+	}
+
+	_FORCE_INLINE_ RID make_rid(T *p_ptr, RID p_reserved_rid = RID()) {
+		return alloc.make_rid(p_ptr, p_reserved_rid);
 	}
 
 	_FORCE_INLINE_ T *getornull(const RID &p_rid) {
@@ -375,8 +440,13 @@ class RID_Owner {
 	RID_Alloc<T, THREAD_SAFE> alloc;
 
 public:
-	_FORCE_INLINE_ RID make_rid(const T &p_ptr) {
-		return alloc.make_rid(p_ptr);
+	template <bool VALID = THREAD_SAFE> //only safe for multithreaded servers if this is thread-safe itself
+	_FORCE_INLINE_ RID reserve_rid(typename std::enable_if<VALID, int>::type = 0) {
+		return alloc.reserve_rid();
+	}
+
+	_FORCE_INLINE_ RID make_rid(const T &p_value, RID p_reserved_rid = RID()) {
+		return alloc.make_rid(p_value, p_reserved_rid);
 	}
 
 	_FORCE_INLINE_ T *getornull(const RID &p_rid) {

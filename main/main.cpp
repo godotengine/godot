@@ -1570,9 +1570,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	/* Initialize Visual Server */
 
-	rendering_server = memnew(RenderingServerDefault);
-	if (OS::get_singleton()->get_render_thread_mode() != OS::RENDER_THREAD_UNSAFE) {
-		rendering_server = memnew(RenderingServerWrapMT(rendering_server,
+	if (OS::get_singleton()->get_render_thread_mode() == OS::RENDER_THREAD_UNSAFE) {
+		rendering_server = memnew(RenderingServerDefault);
+	} else {
+		rendering_server = memnew(RenderingServerWrapMT(memnew(RenderingServerDefault),
 				OS::get_singleton()->get_render_thread_mode() ==
 						OS::RENDER_SEPARATE_THREAD));
 	}

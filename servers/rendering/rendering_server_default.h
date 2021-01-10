@@ -38,9 +38,9 @@
 #include "renderer_viewport.h"
 #include "rendering_server_globals.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering_server_reserving.h"
 
-class RenderingServerDefault : public RenderingServer {
+class RenderingServerDefault : public RenderingServerReserving {
 	enum {
 		MAX_INSTANCE_CULL = 8192,
 		MAX_INSTANCE_LIGHTS = 4,
@@ -101,6 +101,11 @@ public:
 #define DISPLAY_CHANGED \
 	changes++;
 #endif
+
+#define BINDRID(m_name)                                                                                            \
+	virtual RID m_name##_create() { return BINDBASE->m_name##_create(); }                                          \
+	virtual RID m_name##_create_reserved(RID p_reserved_rid) { return BINDBASE->m_name##_create(p_reserved_rid); } \
+	virtual RID m_name##_reserve_rid() { return BINDBASE->m_name##_reserve_rid(); }
 
 #define BIND0R(m_r, m_name) \
 	m_r m_name() { return BINDBASE->m_name(); }
@@ -215,7 +220,7 @@ public:
 
 	/* SHADER API */
 
-	BIND0R(RID, shader_create)
+	BINDRID(shader)
 
 	BIND2(shader_set_code, RID, const String &)
 	BIND1RC(String, shader_get_code, RID)
@@ -230,7 +235,7 @@ public:
 
 	/* COMMON MATERIAL API */
 
-	BIND0R(RID, material_create)
+	BINDRID(material)
 
 	BIND2(material_set_shader, RID, RID)
 
@@ -253,7 +258,7 @@ public:
 
 	BIND2(mesh_set_blend_shape_count, RID, int)
 
-	BIND0R(RID, mesh_create)
+	BINDRID(mesh)
 
 	BIND2(mesh_add_surface, RID, const SurfaceData &)
 
@@ -280,7 +285,7 @@ public:
 
 	/* MULTIMESH API */
 
-	BIND0R(RID, multimesh_create)
+	BINDRID(multimesh)
 
 	BIND5(multimesh_allocate, RID, int, MultimeshTransformFormat, bool, bool)
 	BIND1RC(int, multimesh_get_instance_count, RID)
@@ -307,7 +312,7 @@ public:
 
 	/* IMMEDIATE API */
 
-	BIND0R(RID, immediate_create)
+	BINDRID(immediate)
 	BIND3(immediate_begin, RID, PrimitiveType, RID)
 	BIND2(immediate_vertex, RID, const Vector3 &)
 	BIND2(immediate_normal, RID, const Vector3 &)
@@ -322,7 +327,7 @@ public:
 
 	/* SKELETON API */
 
-	BIND0R(RID, skeleton_create)
+	BINDRID(skeleton)
 	BIND3(skeleton_allocate, RID, int, bool)
 	BIND1RC(int, skeleton_get_bone_count, RID)
 	BIND3(skeleton_bone_set_transform, RID, int, const Transform &)
@@ -333,9 +338,9 @@ public:
 
 	/* Light API */
 
-	BIND0R(RID, directional_light_create)
-	BIND0R(RID, omni_light_create)
-	BIND0R(RID, spot_light_create)
+	BINDRID(directional_light)
+	BINDRID(omni_light)
+	BINDRID(spot_light)
 
 	BIND2(light_set_color, RID, const Color &)
 	BIND3(light_set_param, RID, LightParam, float)
@@ -357,7 +362,7 @@ public:
 
 	/* PROBE API */
 
-	BIND0R(RID, reflection_probe_create)
+	BINDRID(reflection_probe)
 
 	BIND2(reflection_probe_set_update_mode, RID, ReflectionProbeUpdateMode)
 	BIND2(reflection_probe_set_intensity, RID, float)
@@ -376,7 +381,7 @@ public:
 
 	/* DECAL API */
 
-	BIND0R(RID, decal_create)
+	BINDRID(decal)
 
 	BIND2(decal_set_extents, RID, const Vector3 &)
 	BIND3(decal_set_texture, RID, DecalTexture, RID)
@@ -390,7 +395,7 @@ public:
 
 	/* BAKED LIGHT API */
 
-	BIND0R(RID, gi_probe_create)
+	BINDRID(gi_probe)
 
 	BIND8(gi_probe_allocate, RID, const Transform &, const AABB &, const Vector3i &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<int> &)
 
@@ -434,7 +439,7 @@ public:
 
 	/* LIGHTMAP */
 
-	BIND0R(RID, lightmap_create)
+	BINDRID(lightmap)
 
 	BIND3(lightmap_set_textures, RID, RID, bool)
 	BIND2(lightmap_set_probe_bounds, RID, const AABB &)
@@ -448,7 +453,7 @@ public:
 
 	/* PARTICLES */
 
-	BIND0R(RID, particles_create)
+	BINDRID(particles)
 
 	BIND2(particles_set_emitting, RID, bool)
 	BIND1R(bool, particles_get_emitting, RID)
@@ -481,7 +486,7 @@ public:
 
 	/* PARTICLES COLLISION */
 
-	BIND0R(RID, particles_collision_create)
+	BINDRID(particles_collision)
 
 	BIND2(particles_collision_set_collision_type, RID, ParticlesCollisionType)
 	BIND2(particles_collision_set_cull_mask, RID, uint32_t)
@@ -500,7 +505,7 @@ public:
 
 	/* CAMERA API */
 
-	BIND0R(RID, camera_create)
+	BINDRID(camera)
 	BIND4(camera_set_perspective, RID, float, float, float)
 	BIND4(camera_set_orthogonal, RID, float, float, float)
 	BIND5(camera_set_frustum, RID, float, Vector2, float, float)
@@ -516,7 +521,7 @@ public:
 
 	/* VIEWPORT TARGET API */
 
-	BIND0R(RID, viewport_create)
+	BINDRID(viewport)
 
 	BIND2(viewport_set_use_xr, RID, bool)
 	BIND3(viewport_set_size, RID, int, int)
@@ -579,13 +584,13 @@ public:
 
 	/* SKY API */
 
-	BIND0R(RID, sky_create)
+	BINDRID(sky)
 	BIND2(sky_set_radiance_size, RID, int)
 	BIND2(sky_set_mode, RID, SkyMode)
 	BIND2(sky_set_material, RID, RID)
 	BIND4R(Ref<Image>, sky_bake_panorama, RID, float, bool, const Size2i &)
 
-	BIND0R(RID, environment_create)
+	BINDRID(environment)
 
 	BIND2(environment_set_background, RID, EnvironmentBG)
 	BIND2(environment_set_sky, RID, RID)
@@ -635,7 +640,7 @@ public:
 
 	/* CAMERA EFFECTS */
 
-	BIND0R(RID, camera_effects_create)
+	BINDRID(camera_effects)
 
 	BIND2(camera_effects_set_dof_blur_quality, DOFBlurQuality, bool)
 	BIND1(camera_effects_set_dof_blur_bokeh_shape, DOFBokehShape)
@@ -651,7 +656,7 @@ public:
 #undef BINDBASE
 #define BINDBASE RSG::scene
 
-	BIND0R(RID, scenario_create)
+	BINDRID(scenario)
 
 	BIND2(scenario_set_debug, RID, ScenarioDebugMode)
 	BIND2(scenario_set_environment, RID, RID)
@@ -659,7 +664,7 @@ public:
 	BIND2(scenario_set_fallback_environment, RID, RID)
 
 	/* INSTANCING API */
-	BIND0R(RID, instance_create)
+	BINDRID(instance)
 
 	BIND2(instance_set_base, RID, RID)
 	BIND2(instance_set_scenario, RID, RID)
@@ -706,20 +711,20 @@ public:
 
 	/* CANVAS (2D) */
 
-	BIND0R(RID, canvas_create)
+	BINDRID(canvas)
 	BIND3(canvas_set_item_mirroring, RID, RID, const Point2 &)
 	BIND2(canvas_set_modulate, RID, const Color &)
 	BIND3(canvas_set_parent, RID, RID, float)
 	BIND1(canvas_set_disable_scale, bool)
 
-	BIND0R(RID, canvas_texture_create)
+	BINDRID(canvas_texture)
 	BIND3(canvas_texture_set_channel, RID, CanvasTextureChannel, RID)
 	BIND3(canvas_texture_set_shading_parameters, RID, const Color &, float)
 
 	BIND2(canvas_texture_set_texture_filter, RID, CanvasItemTextureFilter)
 	BIND2(canvas_texture_set_texture_repeat, RID, CanvasItemTextureRepeat)
 
-	BIND0R(RID, canvas_item_create)
+	BINDRID(canvas_item)
 	BIND2(canvas_item_set_parent, RID, RID)
 
 	BIND2(canvas_item_set_default_texture_filter, RID, CanvasItemTextureFilter)
@@ -770,7 +775,7 @@ public:
 
 	BIND6(canvas_item_set_canvas_group_mode, RID, CanvasGroupMode, float, bool, float, bool)
 
-	BIND0R(RID, canvas_light_create)
+	BINDRID(canvas_light)
 
 	BIND2(canvas_light_set_mode, RID, CanvasLightMode)
 
@@ -796,7 +801,7 @@ public:
 	BIND2(canvas_light_set_shadow_color, RID, const Color &)
 	BIND2(canvas_light_set_shadow_smooth, RID, float)
 
-	BIND0R(RID, canvas_light_occluder_create)
+	BINDRID(canvas_light_occluder)
 	BIND2(canvas_light_occluder_attach_to_canvas, RID, RID)
 	BIND2(canvas_light_occluder_set_enabled, RID, bool)
 	BIND2(canvas_light_occluder_set_polygon, RID, RID)
@@ -804,7 +809,7 @@ public:
 	BIND2(canvas_light_occluder_set_transform, RID, const Transform2D &)
 	BIND2(canvas_light_occluder_set_light_mask, RID, int)
 
-	BIND0R(RID, canvas_occluder_polygon_create)
+	BINDRID(canvas_occluder_polygon)
 	BIND3(canvas_occluder_polygon_set_shape, RID, const Vector<Vector2> &, bool)
 
 	BIND2(canvas_occluder_polygon_set_cull_mode, RID, CanvasOccluderPolygonCullMode)

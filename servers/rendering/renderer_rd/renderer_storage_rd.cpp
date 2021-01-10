@@ -1223,8 +1223,8 @@ RendererStorageRD::CanvasTexture::~CanvasTexture() {
 	clear_sets();
 }
 
-RID RendererStorageRD::canvas_texture_create() {
-	return canvas_texture_owner.make_rid(memnew(CanvasTexture));
+RID RendererStorageRD::canvas_texture_create(RID p_reserved_rid) {
+	return canvas_texture_owner.make_rid(memnew(CanvasTexture), p_reserved_rid);
 }
 
 void RendererStorageRD::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {
@@ -1365,12 +1365,12 @@ bool RendererStorageRD::canvas_texture_get_uniform_set(RID p_texture, RS::Canvas
 
 /* SHADER API */
 
-RID RendererStorageRD::shader_create() {
+RID RendererStorageRD::shader_create(RID p_reserved_rid) {
 	Shader shader;
 	shader.data = nullptr;
 	shader.type = SHADER_TYPE_MAX;
 
-	return shader_owner.make_rid(shader);
+	return shader_owner.make_rid(shader, p_reserved_rid);
 }
 
 void RendererStorageRD::shader_set_code(RID p_shader, const String &p_code) {
@@ -1510,7 +1510,7 @@ RS::ShaderNativeSourceCode RendererStorageRD::shader_get_native_source_code(RID 
 
 /* COMMON MATERIAL API */
 
-RID RendererStorageRD::material_create() {
+RID RendererStorageRD::material_create(RID p_reserved_rid) {
 	Material material;
 	material.data = nullptr;
 	material.shader = nullptr;
@@ -1520,7 +1520,7 @@ RID RendererStorageRD::material_create() {
 	material.uniform_dirty = false;
 	material.texture_dirty = false;
 	material.priority = 0;
-	RID id = material_owner.make_rid(material);
+	RID id = material_owner.make_rid(material, p_reserved_rid);
 	{
 		Material *material_ptr = material_owner.getornull(id);
 		material_ptr->self = id;
@@ -2399,8 +2399,8 @@ void RendererStorageRD::_update_queued_materials() {
 
 /* MESH API */
 
-RID RendererStorageRD::mesh_create() {
-	return mesh_owner.make_rid(Mesh());
+RID RendererStorageRD::mesh_create(RID p_reserved_rid) {
+	return mesh_owner.make_rid(Mesh(), p_reserved_rid);
 }
 
 void RendererStorageRD::mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) {
@@ -3298,8 +3298,8 @@ void RendererStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Surf
 
 ////////////////// MULTIMESH
 
-RID RendererStorageRD::multimesh_create() {
-	return multimesh_owner.make_rid(MultiMesh());
+RID RendererStorageRD::multimesh_create(RID p_reserved_rid) {
+	return multimesh_owner.make_rid(MultiMesh(), p_reserved_rid);
 }
 
 void RendererStorageRD::multimesh_allocate(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data) {
@@ -3849,8 +3849,8 @@ void RendererStorageRD::_update_dirty_multimeshes() {
 
 /* PARTICLES */
 
-RID RendererStorageRD::particles_create() {
-	return particles_owner.make_rid(Particles());
+RID RendererStorageRD::particles_create(RID p_reserved_rid) {
+	return particles_owner.make_rid(Particles(), p_reserved_rid);
 }
 
 void RendererStorageRD::particles_set_emitting(RID p_particles, bool p_emitting) {
@@ -4984,8 +4984,8 @@ RendererStorageRD::MaterialData *RendererStorageRD::_create_particles_material_f
 
 /* PARTICLES COLLISION API */
 
-RID RendererStorageRD::particles_collision_create() {
-	return particles_collision_owner.make_rid(ParticlesCollision());
+RID RendererStorageRD::particles_collision_create(RID p_reserved_rid) {
+	return particles_collision_owner.make_rid(ParticlesCollision(), p_reserved_rid);
 }
 
 RID RendererStorageRD::particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const {
@@ -5164,8 +5164,8 @@ void RendererStorageRD::particles_collision_instance_set_active(RID p_collision_
 
 /* SKELETON API */
 
-RID RendererStorageRD::skeleton_create() {
-	return skeleton_owner.make_rid(Skeleton());
+RID RendererStorageRD::skeleton_create(RID p_reserved_rid) {
+	return skeleton_owner.make_rid(Skeleton(), p_reserved_rid);
 }
 
 void RendererStorageRD::_skeleton_make_dirty(Skeleton *skeleton) {
@@ -5350,7 +5350,7 @@ void RendererStorageRD::_update_dirty_skeletons() {
 
 /* LIGHT */
 
-RID RendererStorageRD::light_create(RS::LightType p_type) {
+RID RendererStorageRD::light_create(RS::LightType p_type, RID p_reserved_rid) {
 	Light light;
 	light.type = p_type;
 
@@ -5374,7 +5374,7 @@ RID RendererStorageRD::light_create(RS::LightType p_type) {
 	light.param[RS::LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE] = 1.0;
 	light.param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
 
-	return light_owner.make_rid(light);
+	return light_owner.make_rid(light, p_reserved_rid);
 }
 
 void RendererStorageRD::light_set_color(RID p_light, const Color &p_color) {
@@ -5612,8 +5612,8 @@ AABB RendererStorageRD::light_get_aabb(RID p_light) const {
 
 /* REFLECTION PROBE */
 
-RID RendererStorageRD::reflection_probe_create() {
-	return reflection_probe_owner.make_rid(ReflectionProbe());
+RID RendererStorageRD::reflection_probe_create(RID p_reserved_rid) {
+	return reflection_probe_owner.make_rid(ReflectionProbe(), p_reserved_rid);
 }
 
 void RendererStorageRD::reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) {
@@ -5835,8 +5835,8 @@ float RendererStorageRD::reflection_probe_get_ambient_color_energy(RID p_probe) 
 	return reflection_probe->ambient_color_energy;
 }
 
-RID RendererStorageRD::decal_create() {
-	return decal_owner.make_rid(Decal());
+RID RendererStorageRD::decal_create(RID p_reserved_rid) {
+	return decal_owner.make_rid(Decal(), p_reserved_rid);
 }
 
 void RendererStorageRD::decal_set_extents(RID p_decal, const Vector3 &p_extents) {
@@ -5923,8 +5923,8 @@ AABB RendererStorageRD::decal_get_aabb(RID p_decal) const {
 	return AABB(-decal->extents, decal->extents * 2.0);
 }
 
-RID RendererStorageRD::gi_probe_create() {
-	return gi_probe_owner.make_rid(GIProbe());
+RID RendererStorageRD::gi_probe_create(RID p_reserved_rid) {
+	return gi_probe_owner.make_rid(GIProbe(), p_reserved_rid);
 }
 
 void RendererStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
@@ -6276,8 +6276,8 @@ RID RendererStorageRD::gi_probe_get_sdf_texture(RID p_gi_probe) {
 
 /* LIGHTMAP API */
 
-RID RendererStorageRD::lightmap_create() {
-	return lightmap_owner.make_rid(Lightmap());
+RID RendererStorageRD::lightmap_create(RID p_reserved_rid) {
+	return lightmap_owner.make_rid(Lightmap(), p_reserved_rid);
 }
 
 void RendererStorageRD::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) {
@@ -6613,7 +6613,7 @@ void RendererStorageRD::_create_render_target_backbuffer(RenderTarget *rt) {
 	}
 }
 
-RID RendererStorageRD::render_target_create() {
+RID RendererStorageRD::render_target_create(RID p_reserved_rid) {
 	RenderTarget render_target;
 
 	render_target.was_used = false;
@@ -6623,7 +6623,7 @@ RID RendererStorageRD::render_target_create() {
 		render_target.flags[i] = false;
 	}
 	_update_render_target(&render_target);
-	return render_target_owner.make_rid(render_target);
+	return render_target_owner.make_rid(render_target, p_reserved_rid);
 }
 
 void RendererStorageRD::render_target_set_position(RID p_render_target, int p_x, int p_y) {

@@ -608,10 +608,10 @@ void RendererViewport::draw_viewports() {
 	}
 }
 
-RID RendererViewport::viewport_create() {
+RID RendererViewport::viewport_create(RID p_reserved_rid) {
 	Viewport *viewport = memnew(Viewport);
 
-	RID rid = viewport_owner.make_rid(viewport);
+	RID rid = viewport_owner.make_rid(viewport, p_reserved_rid);
 
 	viewport->self = rid;
 	viewport->hide_scenario = false;

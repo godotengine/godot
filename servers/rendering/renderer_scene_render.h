@@ -71,9 +71,9 @@ public:
 
 	/* SHADOW ATLAS API */
 
-	virtual RID
-	shadow_atlas_create() = 0;
-	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = false) = 0;
+	virtual RID shadow_atlas_create(RID p_reserved_rid = RID()) = 0;
+	virtual RID shadow_atlas_reserve_rid() = 0;
+	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_use_16_bits = false) = 0;
 	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) = 0;
 	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) = 0;
 
@@ -90,7 +90,8 @@ public:
 
 	/* SKY API */
 
-	virtual RID sky_create() = 0;
+	virtual RID sky_create(RID p_reserved_rid = RID()) = 0;
+	virtual RID sky_reserve_rid() = 0;
 	virtual void sky_set_radiance_size(RID p_sky, int p_radiance_size) = 0;
 	virtual void sky_set_mode(RID p_sky, RS::SkyMode p_samples) = 0;
 	virtual void sky_set_material(RID p_sky, RID p_material) = 0;
@@ -98,7 +99,8 @@ public:
 
 	/* ENVIRONMENT API */
 
-	virtual RID environment_create() = 0;
+	virtual RID environment_create(RID p_reserved_rid = RID()) = 0;
+	virtual RID environment_reserve_rid() = 0;
 
 	virtual void environment_set_background(RID p_env, RS::EnvironmentBG p_bg) = 0;
 	virtual void environment_set_sky(RID p_env, RID p_sky) = 0;
@@ -149,7 +151,8 @@ public:
 	virtual RS::EnvironmentBG environment_get_background(RID p_env) const = 0;
 	virtual int environment_get_canvas_max_layer(RID p_env) const = 0;
 
-	virtual RID camera_effects_create() = 0;
+	virtual RID camera_effects_create(RID p_reserved_rid = RID()) = 0;
+	virtual RID camera_effects_reserve_rid() = 0;
 
 	virtual void camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter) = 0;
 	virtual void camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape) = 0;
@@ -169,7 +172,8 @@ public:
 		return true;
 	}
 
-	virtual RID reflection_atlas_create() = 0;
+	virtual RID reflection_atlas_create(RID p_reserved_rid = RID()) = 0;
+	virtual RID reflection_atlas_reserve_rid() = 0;
 	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) = 0;
 	virtual int reflection_atlas_get_size(RID p_ref_atlas) const = 0;
 
@@ -225,7 +229,8 @@ public:
 	virtual void set_time(double p_time, double p_step) = 0;
 	virtual void set_debug_draw_mode(RS::ViewportDebugDraw p_debug_draw) = 0;
 
-	virtual RID render_buffers_create() = 0;
+	virtual RID render_buffers_create(RID p_reserved_rid = RID()) = 0;
+	virtual RID render_buffers_reserve_rid() = 0;
 	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding) = 0;
 	virtual void gi_set_use_half_resolution(bool p_enable) = 0;
 
