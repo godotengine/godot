@@ -655,7 +655,7 @@ public:
 
 	FUNC6(canvas_item_set_canvas_group_mode, RID, CanvasGroupMode, float, bool, float, bool)
 
-	FUNC0R(RID, canvas_light_create)
+	FUNCRID(canvas_light)
 
 	FUNC2(canvas_light_set_mode, RID, CanvasLightMode)
 
