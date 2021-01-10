@@ -375,11 +375,11 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 	if (godot_webxr_is_controller_connected(p_controller_id)) {
 		if (tracker == nullptr) {
 			tracker = memnew(XRPositionalTracker);
-			tracker->set_type(XRServer::TRACKER_CONTROLLER);
+			tracker->set_tracker_type(XRServer::TRACKER_CONTROLLER);
 			// Controller id's 0 and 1 are always the left and right hands.
 			if (p_controller_id < 2) {
-				tracker->set_name(p_controller_id == 0 ? "Left" : "Right");
-				tracker->set_hand(p_controller_id == 0 ? XRPositionalTracker::TRACKER_LEFT_HAND : XRPositionalTracker::TRACKER_RIGHT_HAND);
+				tracker->set_tracker_name(p_controller_id == 0 ? "Left" : "Right");
+				tracker->set_tracker_hand(p_controller_id == 0 ? XRPositionalTracker::TRACKER_HAND_LEFT : XRPositionalTracker::TRACKER_HAND_RIGHT);
 			}
 			// Use the ids we're giving to our "virtual" gamepads.
 			tracker->set_joy_id(p_controller_id + 100);
