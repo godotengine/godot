@@ -36,6 +36,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/compression.h"
+#include "core/variant/variant.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -184,6 +185,18 @@ Error X509CertificateMbedTLS::save(String p_path) {
 		crt = crt->next;
 	}
 	memdelete(f);
+	return OK;
+}
+
+Error X509CertificateMbedTLS::set_certificate(String p_key) {
+	create();
+	PackedByteArray certificate = p_key.to_ascii_buffer();
+
+	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is in use");
+	int ret = mbedtls_x509_crt_parse(&cert, certificate.ptr(), certificate.size());	
+	mbedtls_platform_zeroize(certificate.ptrw(), certificate.size());
+	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing some certificates: " + itos(ret));
+
 	return OK;
 }
 
@@ -455,4 +468,26 @@ Vector<uint8_t> CryptoMbedTLS::decrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_c
 	out.resize(size);
 	memcpy(out.ptrw(), buf, size);
 	return out;
+}
+
+String X509CertificateMbedTLS::get_certificate() {
+	mbedtls_x509_crt *crt = &cert;
+	Vector<unsigned char> certificate_buffer;
+	while (crt) {
+		unsigned char w[4096];
+		size_t wrote = 0;
+		int ret = mbedtls_pem_write_buffer(PEM_BEGIN_CRT, PEM_END_CRT, cert.raw.p, cert.raw.len, w, sizeof(w), &wrote);
+		if (ret != 0 || wrote == 0) {
+			ERR_FAIL_V_MSG("", "Error writing certificate '" + itos(ret) + "'.");
+		}
+		Vector<unsigned char> buffer;
+		buffer.resize(wrote - 1);
+		memcpy(buffer.ptrw(), w, wrote - 1);
+		certificate_buffer.append_array(buffer);
+		crt = crt->next;
+	}
+	String certificate;
+	bool err = certificate.parse_utf8((const char *)certificate_buffer.ptr(), certificate_buffer.size());
+	ERR_FAIL_COND_V_MSG(err, "", "Error writing certificate '" + itos(err) + "'." );
+	return certificate;
 }

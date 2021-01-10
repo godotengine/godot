@@ -63,6 +63,9 @@ X509Certificate *X509Certificate::create() {
 void X509Certificate::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save", "path"), &X509Certificate::save);
 	ClassDB::bind_method(D_METHOD("load", "path"), &X509Certificate::load);
+	ClassDB::bind_method(D_METHOD("set_certificate", "string"), &X509Certificate::set_certificate);
+	ClassDB::bind_method(D_METHOD("get_certificate"), &X509Certificate::get_certificate);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "certificate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_certificate", "get_certificate");
 }
 
 /// HMACContext
