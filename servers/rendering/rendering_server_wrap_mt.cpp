@@ -110,32 +110,6 @@ void RenderingServerWrapMT::init() {
 }
 
 void RenderingServerWrapMT::finish() {
-	sky_free_cached_ids();
-	shader_free_cached_ids();
-	material_free_cached_ids();
-	mesh_free_cached_ids();
-	multimesh_free_cached_ids();
-	immediate_free_cached_ids();
-	skeleton_free_cached_ids();
-	directional_light_free_cached_ids();
-	omni_light_free_cached_ids();
-	spot_light_free_cached_ids();
-	reflection_probe_free_cached_ids();
-	gi_probe_free_cached_ids();
-	lightmap_free_cached_ids();
-	particles_free_cached_ids();
-	particles_collision_free_cached_ids();
-	camera_free_cached_ids();
-	viewport_free_cached_ids();
-	environment_free_cached_ids();
-	camera_effects_free_cached_ids();
-	scenario_free_cached_ids();
-	instance_free_cached_ids();
-	canvas_free_cached_ids();
-	canvas_item_free_cached_ids();
-	canvas_light_occluder_free_cached_ids();
-	canvas_occluder_polygon_free_cached_ids();
-
 	if (create_thread) {
 		command_queue.push(this, &RenderingServerWrapMT::thread_exit);
 		thread.wait_to_finish();
@@ -159,7 +133,6 @@ RenderingServerWrapMT::RenderingServerWrapMT(RenderingServer *p_contained, bool 
 	create_thread = p_create_thread;
 	draw_pending = 0;
 	draw_thread_up = false;
-	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
 
 	if (!p_create_thread) {
 		server_thread = Thread::get_caller_id();

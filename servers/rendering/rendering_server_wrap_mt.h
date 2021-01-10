@@ -56,10 +56,6 @@ class RenderingServerWrapMT : public RenderingServer {
 
 	void thread_exit();
 
-	Mutex alloc_mutex;
-
-	int pool_max_size;
-
 	//#define DEBUG_SYNC
 
 	static RenderingServerWrapMT *singleton_mt;
