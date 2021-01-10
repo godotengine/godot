@@ -1509,20 +1509,21 @@ void EditorFileSystem::update_file(const String &p_file) {
 	String type = ResourceLoader::get_resource_type(p_file);
 
 	if (cpos == -1) {
+		// The file did not exist, it was added.
 
-		//the file did not exist, it was added
-
-		late_added_files.insert(p_file); //remember that it was added. This mean it will be scanned and imported on editor restart
+		late_added_files.insert(p_file); // Remember that it was added. This mean it will be scanned and imported on editor restart.
 		int idx = 0;
+		String file_name = p_file.get_file();
 
 		for (int i = 0; i < fs->files.size(); i++) {
-			if (p_file < fs->files[i]->file)
+			if (file_name < fs->files[i]->file) {
 				break;
+			}
 			idx++;
 		}
 
 		EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
-		fi->file = p_file.get_file();
+		fi->file = file_name;
 		fi->import_modified_time = 0;
 		fi->import_valid = ResourceLoader::is_import_valid(p_file);
 
