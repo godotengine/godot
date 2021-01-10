@@ -22,18 +22,12 @@ def create_engine_file(env, target, source, externs):
 
 
 def add_js_libraries(env, libraries):
-    if "JS_LIBS" not in env:
-        env["JS_LIBS"] = []
     env.Append(JS_LIBS=env.File(libraries))
 
 
 def add_js_pre(env, js_pre):
-    if "JS_PRE" not in env:
-        env["JS_PRE"] = []
     env.Append(JS_PRE=env.File(js_pre))
 
 
 def add_js_externs(env, externs):
-    if "JS_EXTERNS" not in env:
-        env["JS_EXTERNS"] = []
     env.Append(JS_EXTERNS=env.File(externs))
