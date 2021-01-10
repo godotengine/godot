@@ -195,7 +195,7 @@ private:
 			Vector<AudioFrame> buffer;
 			Vector<Ref<AudioEffectInstance>> effect_instances;
 			uint64_t last_mix_with_audio = 0;
-			Channel() {	}
+			Channel() {}
 		};
 
 		Vector<Channel> channels;
@@ -379,7 +379,7 @@ class AudioBusLayout : public Resource {
 		float volume_db = 0.0;
 		StringName send;
 
-		Bus() {	}
+		Bus() {}
 	};
 
 	Vector<Bus> buses;

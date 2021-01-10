@@ -228,7 +228,7 @@ class PhysicsTestMotionResult2D;
 class PhysicsServer2D : public Object {
 	GDCLASS(PhysicsServer2D, Object);
 
-	static PhysicsServer2D *singleton = nullptr;
+	static PhysicsServer2D *singleton;
 
 	virtual bool _body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin = 0.08, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>());
 

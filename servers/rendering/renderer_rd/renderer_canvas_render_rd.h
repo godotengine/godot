@@ -201,7 +201,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	struct MaterialData : public RendererStorageRD::MaterialData {
 		uint64_t last_frame = 0;
-		ShaderData *shader_data = nulltpr;
+		ShaderData *shader_data = nullptr;
 		RID uniform_buffer;
 		RID uniform_set;
 		Vector<RID> texture_cache;

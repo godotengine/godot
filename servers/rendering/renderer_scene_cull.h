@@ -444,9 +444,6 @@ public:
 		Instance() :
 				scenario_item(this),
 				update_item(this) {
-<<<<<<< HEAD
-			visible = true;
-=======
 			base_type = RS::INSTANCE_NONE;
 			cast_shadows = RS::SHADOW_CASTING_SETTING_ON;
 			receive_shadows = true;
@@ -486,7 +483,6 @@ public:
 			dependency_tracker.userdata = this;
 			dependency_tracker.changed_callback = dependency_changed;
 			dependency_tracker.deleted_callback = dependency_deleted;
->>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 		}
 
 		~Instance() {
@@ -797,11 +793,7 @@ public:
 
 	RID_PtrOwner<Instance> instance_owner;
 
-<<<<<<< HEAD
-	bool pair_volumes_to_mesh = false; // used in traditional forward, unnecesary on clustered
-=======
 	uint32_t geometry_instance_pair_mask; // used in traditional forward, unnecesary on clustered
->>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 
 	virtual RID instance_create();
 
@@ -878,21 +870,11 @@ public:
 
 		struct SDFGI {
 			//have arrays here because SDFGI functions expects this, plus regions can have areas
-<<<<<<< HEAD
-			PagedArray<RendererSceneRender::InstanceBase *> region_cull_result[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE] = {};
 			AABB region_aabb[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE] = {}; //max 3 regions per cascade
 			uint32_t region_cascade[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE] = {}; //max 3 regions per cascade
 			uint32_t region_count = 0;
 
-			PagedArray<RID> cascade_lights[SDFGI_MAX_CASCADES] = {};
 			uint32_t cascade_light_index[SDFGI_MAX_CASCADES] = {};
-=======
-			AABB region_aabb[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
-			uint32_t region_cascade[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
-			uint32_t region_count = 0;
-
-			uint32_t cascade_light_index[SDFGI_MAX_CASCADES];
->>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 			uint32_t cascade_light_count = 0;
 
 		} sdfgi;
