@@ -220,13 +220,13 @@ Error HTTPClient::poll() {
 				has_polled = true;
 			} else {
 				// forcing synchronous requests is not possible on the web
-				if (last_polling_frame == Engine::get_singleton()->get_idle_frames()) {
+				if (last_polling_frame == Engine::get_singleton()->get_process_frames()) {
 					WARN_PRINT("HTTPClient polled multiple times in one frame, "
 							   "but request cannot progress more than once per "
 							   "frame on the HTML5 platform.");
 				}
 			}
-			last_polling_frame = Engine::get_singleton()->get_idle_frames();
+			last_polling_frame = Engine::get_singleton()->get_process_frames();
 #endif
 
 			polled_response_code = godot_xhr_get_status(xhr_id);
