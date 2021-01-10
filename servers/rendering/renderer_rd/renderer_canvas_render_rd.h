@@ -399,9 +399,9 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			};
 			//primitive
 			struct {
-				float points[6] = {}; // vec2 points[3]
-				float uvs[6] = {}; // vec2 points[3]
-				uint32_t colors[6] = {}; // colors encoded as half
+				float points[6]; // vec2 points[3]
+				float uvs[6]; // vec2 points[3]
+				uint32_t colors[6]; // colors encoded as half
 			};
 		};
 		float color_texture_pixel_size[2] = {};

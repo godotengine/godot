@@ -202,17 +202,6 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		return static_cast<RendererSceneRenderForward *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
 	}
 
-<<<<<<< HEAD
-	/* Push Constant */
-
-	struct PushConstant {
-		uint32_t index = 0;
-		uint32_t pad = 0;
-		float bake_uv2_offset[2] = {};
-	};
-
-=======
->>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 	/* Framebuffer */
 
 	struct RenderBufferDataForward : public RenderBufferData {
@@ -300,19 +289,6 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		INSTANCE_DATA_FLAG_SKELETON = 1 << 19,
 	};
 
-<<<<<<< HEAD
-	struct InstanceData {
-		float transform[16] = {};
-		float normal_transform[16] = {};
-		uint32_t flags = 0;
-		uint32_t instance_uniforms_ofs = 0; //instance_offset in instancing/skeleton buffer
-		uint32_t gi_offset = 0; //GI information when using lightmapping (VCT or lightmap)
-		uint32_t mask = 0;
-		float lightmap_uv_scale[4] = {};
-	};
-
-=======
->>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 	struct SceneState {
 		struct UBO {
 			float projection_matrix[16] = {};
@@ -396,30 +372,19 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 		RID uniform_buffer;
 
-<<<<<<< HEAD
-		LightmapData *lightmaps = nullptr;
-		uint32_t max_lightmaps = 0;
-=======
 		LightmapData lightmaps[MAX_LIGHTMAPS];
 		RID lightmap_ids[MAX_LIGHTMAPS];
 		bool lightmap_has_sh[MAX_LIGHTMAPS];
 		uint32_t lightmaps_used = 0;
 		uint32_t max_lightmaps;
->>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 		RID lightmap_buffer;
 
 		LightmapCaptureData *lightmap_captures = nullptr;
 		uint32_t max_lightmap_captures = 0;
 		RID lightmap_capture_buffer;
 
-<<<<<<< HEAD
-		RID instance_buffer;
-		InstanceData *instances = nullptr;
-		uint32_t max_instances = 0;
-=======
 		RID giprobe_ids[MAX_GI_PROBES];
 		uint32_t giprobes_used = 0;
->>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 
 		bool used_screen_texture = false;
 		bool used_normal_texture = false;
@@ -440,38 +405,10 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	RID default_shader_rd;
 	RID default_shader_sdfgi_rd;
 
-<<<<<<< HEAD
-	struct RenderList {
-		int max_elements = 0;
-
-		struct Element {
-			RendererSceneRender::InstanceBase *instance = nullptr;
-			MaterialData *material = nullptr;
-			union {
-				struct {
-					//from least significant to most significant in sort, TODO: should be endian swapped on big endian
-					uint64_t geometry_index : 20;
-					uint64_t material_index : 15;
-					uint64_t shader_index : 12;
-					uint64_t uses_instancing : 1;
-					uint64_t uses_forward_gi : 1;
-					uint64_t uses_lightmap : 1;
-					uint64_t depth_layer : 4;
-					uint64_t priority : 8;
-				};
-
-				uint64_t sort_key = 0;
-			};
-			uint32_t surface_index = 0;
-		};
-
-		Element *base_elements = nullptr;
-		Element **elements = nulltpr;
-=======
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
 
-	enum PassMode {
+	enum PassMode{
 		PASS_MODE_COLOR,
 		PASS_MODE_COLOR_SPECULAR,
 		PASS_MODE_COLOR_TRANSPARENT,
@@ -671,7 +608,6 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		int max_elements;
 
 		GeometryInstanceSurfaceDataCache **elements = nullptr;
->>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 
 		int element_count = 0;
 		int alpha_element_count = 0;
@@ -753,7 +689,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 			elements = memnew_arr(GeometryInstanceSurfaceDataCache *, max_elements);
 		}
 
-		RenderList() {	}
+		RenderList() {}
 
 		~RenderList() {
 			memdelete_arr(elements);

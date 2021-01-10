@@ -485,7 +485,7 @@ public:
 		RID collider;
 		int collider_shape = 0;
 		Variant collider_metadata;
-		MotionResult() {	}
+		MotionResult() {}
 	};
 
 	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) = 0;

@@ -40,7 +40,7 @@ public:
 		RID parent; // canvas it belongs to
 		List<Item *>::Element *E = nullptr;
 		int z_index = 0;
-		bool z_relative= false;
+		bool z_relative = false;
 		bool sort_y = false;
 		Color modulate;
 		Color self_modulate;

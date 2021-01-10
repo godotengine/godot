@@ -553,12 +553,12 @@ private:
 				uint64_t fog_version = 0; // used for fog
 				uint64_t alloc_tick = 0;
 
-				Shadow() {	}
+				Shadow() {}
 			};
 
 			Vector<Shadow> shadows;
 
-			Quadrant() {	}
+			Quadrant() {}
 
 		} quadrants[4];
 
@@ -912,7 +912,7 @@ private:
 		struct Cascade {
 			struct UBO {
 				float offset[3] = {};
-				float to_cell  = 0.0;
+				float to_cell = 0.0;
 				int32_t probe_offset[3] = {};
 				uint32_t pad = 0;
 			};
@@ -1351,7 +1351,7 @@ private:
 			float shadow_color3[4] = {};
 			float shadow_color4[4] = {};
 			float uv_scale1[2] = {};
-			float uv_scale2[2 = {}];
+			float uv_scale2[2] = {};
 			float uv_scale3[2] = {};
 			float uv_scale4[2] = {};
 		};

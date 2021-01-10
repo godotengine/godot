@@ -397,7 +397,7 @@ public:
 		uint32_t usage_bits = 0;
 		Vector<DataFormat> shareable_formats;
 
-		TextureFormat() {	}
+		TextureFormat() {}
 	};
 
 	struct TextureView {
@@ -407,7 +407,7 @@ public:
 		TextureSwizzle swizzle_b = TEXTURE_SWIZZLE_B;
 		TextureSwizzle swizzle_a = TEXTURE_SWIZZLE_A;
 
-		TextureView() {	}
+		TextureView() {}
 	};
 
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>()) = 0;
@@ -501,7 +501,7 @@ public:
 		SamplerBorderColor border_color = SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
 		bool unnormalized_uvw = false;
 
-		SamplerState() {	}
+		SamplerState() {}
 	};
 
 	virtual RID sampler_create(const SamplerState &p_state) = 0;
@@ -521,7 +521,7 @@ public:
 		DataFormat format = DATA_FORMAT_MAX;
 		uint32_t stride = 0;
 		VertexFrequency frequency = VERTEX_FREQUENCY_VERTEX;
-		VertexAttribute() {	}
+		VertexAttribute() {}
 	};
 	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_as_storage = false) = 0;
 
@@ -552,7 +552,7 @@ public:
 		ShaderStage shader_stage = SHADER_STAGE_VERTEX;
 		Vector<uint8_t> spir_v;
 
-		ShaderStageData() {	}
+		ShaderStageData() {}
 	};
 
 	RID shader_create_from_bytecode(const Ref<RDShaderBytecode> &p_bytecode);
@@ -596,7 +596,7 @@ public:
 		//accepted IDs are: Sampler, Texture, Uniform Buffer and Texture Buffer
 		Vector<RID> ids;
 
-		Uniform() {	}
+		Uniform() {}
 	};
 
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) = 0;
@@ -713,7 +713,7 @@ public:
 		float depth_bias_slope_factor = 0.0;
 		float line_width = 1.0;
 		uint32_t patch_control_points = 1;
-		PipelineRasterizationState() {	}
+		PipelineRasterizationState() {}
 	};
 
 	struct PipelineMultisampleState {
@@ -724,7 +724,7 @@ public:
 		bool enable_alpha_to_coverage = false;
 		bool enable_alpha_to_one = false;
 
-		PipelineMultisampleState() {	}
+		PipelineMultisampleState() {}
 	};
 
 	struct PipelineDepthStencilState {
@@ -745,13 +745,13 @@ public:
 			uint32_t write_mask = 0;
 			uint32_t reference = 0;
 
-			StencilOperationState() { }
+			StencilOperationState() {}
 		};
 
 		StencilOperationState front_op;
 		StencilOperationState back_op;
 
-		PipelineDepthStencilState() {	}
+		PipelineDepthStencilState() {}
 	};
 
 	struct PipelineColorBlendState {
@@ -769,7 +769,7 @@ public:
 			bool write_g = true;
 			bool write_b = true;
 			bool write_a = true;
-			Attachment() {	}
+			Attachment() {}
 		};
 
 		static PipelineColorBlendState create_disabled(int p_attachments = 1) {

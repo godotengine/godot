@@ -107,7 +107,7 @@ public:
 				}
 				return stacking < p_canvas.stacking;
 			}
-			CanvasKey() {	}
+			CanvasKey() {}
 			CanvasKey(const RID &p_canvas, int p_layer, int p_sublayer) {
 				canvas = p_canvas;
 				int64_t sign = p_layer < 0 ? -1 : 1;

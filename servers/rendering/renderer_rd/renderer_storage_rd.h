@@ -362,18 +362,11 @@ private:
 		Shader *shader = nullptr;
 		//shortcut to shader data and type
 		ShaderType shader_type;
-<<<<<<< HEAD
+		uint32_t shader_id = 0;
 		bool update_requested = false;
 		bool uniform_dirty = false;
 		bool texture_dirty = false;
 		Material *update_next = nullptr;
-=======
-		uint32_t shader_id = 0;
-		bool update_requested;
-		bool uniform_dirty;
-		bool texture_dirty;
-		Material *update_next;
->>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 		Map<StringName, Variant> params;
 		int32_t priority = 0;
 		RID next_pass;
@@ -690,7 +683,7 @@ private:
 		float explosiveness = 0.0;
 		float randomness = 0.0;
 		bool restart_request = false;
-		AABB custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8))
+		AABB custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8));
 		bool use_local_coords = true;
 		RID process_material;
 
@@ -746,7 +739,7 @@ private:
 
 		Set<RID> collisions;
 
-		Particles() {	}
+		Particles() {}
 
 		Dependency dependency;
 

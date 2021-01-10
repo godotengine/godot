@@ -81,7 +81,7 @@ public:
 
 		Transform transform;
 
-		Camera() { }
+		Camera() {}
 	};
 
 	mutable RID_PtrOwner<Camera> camera_owner;
@@ -513,7 +513,7 @@ public:
 		Set<Instance *> gi_probes;
 		Set<Instance *> lightmap_captures;
 
-		InstanceGeometryData() { }
+		InstanceGeometryData() {}
 	};
 
 	struct InstanceReflectionProbeData : public InstanceBaseData {
@@ -527,7 +527,7 @@ public:
 		int render_step = -1;
 
 		InstanceReflectionProbeData() :
-				update_list(this) {	}
+				update_list(this) {}
 	};
 
 	struct InstanceDecalData : public InstanceBaseData {
@@ -536,7 +536,7 @@ public:
 
 		Set<Instance *> geometries;
 
-		InstanceDecalData() {	}
+		InstanceDecalData() {}
 	};
 
 	SelfList<InstanceReflectionProbeData>::List reflection_probe_render_list;
@@ -559,7 +559,7 @@ public:
 		RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DISABLED;
 		uint32_t max_sdfgi_cascade = 2;
 
-		InstanceLightData() {	}
+		InstanceLightData() {}
 	};
 
 	struct InstanceGIProbeData : public InstanceBaseData {
@@ -595,7 +595,7 @@ public:
 		SelfList<InstanceGIProbeData> update_element;
 
 		InstanceGIProbeData() :
-				update_element(this) {	}
+				update_element(this) {}
 	};
 
 	SelfList<InstanceGIProbeData>::List gi_probe_update_list;
@@ -605,7 +605,7 @@ public:
 		Set<Instance *> geometries;
 		Set<Instance *> users;
 
-		InstanceLightmapData() {	}
+		InstanceLightmapData() {}
 	};
 
 	uint64_t pair_pass = 1;
