@@ -134,7 +134,6 @@ class VisualShaderEditor : public VBoxContainer {
 	int editing_port;
 
 	Ref<VisualShader> visual_shader;
-	HSplitContainer *main_box;
 	GraphEdit *graph;
 	Button *add_node;
 	Button *preview_shader;
@@ -148,6 +147,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	bool pending_update_preview;
 	bool shader_error;
+	Window *preview_window;
 	VBoxContainer *preview_vbox;
 	CodeEdit *preview_text;
 	Ref<CodeHighlighter> syntax_highlighter;
@@ -161,7 +161,8 @@ class VisualShaderEditor : public VBoxContainer {
 	PopupMenu *popup_menu;
 	MenuButton *tools;
 
-	bool preview_showed;
+	bool preview_first = true;
+	bool preview_showed = false;
 	bool particles_mode;
 
 	enum TypeFlags {
@@ -277,6 +278,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _set_mode(int p_which);
 
 	void _show_preview_text();
+	void _preview_close_requested();
+	void _preview_size_changed();
 	void _update_preview();
 	String _get_description(int p_idx);
 
@@ -387,6 +390,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _update_created_node(GraphNode *node);
 	void _update_uniforms(bool p_update_refs);
 	void _update_uniform_refs(Set<String> &p_names);
+
+	void _visibility_changed();
 
 protected:
 	void _notification(int p_what);
