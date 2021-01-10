@@ -115,6 +115,7 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if this basis and [code]b[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+				[b]Note:[/b] For complicated reasons, the epsilon argument is always discarded. Don't use the epsilon argument, it does nothing.
 			</description>
 		</method>
 		<method name="orthonormalized">
