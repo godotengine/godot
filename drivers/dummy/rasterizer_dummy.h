@@ -40,6 +40,29 @@
 
 class RasterizerSceneDummy : public RendererSceneRender {
 public:
+	GeometryInstance *geometry_instance_create(RID p_base) override { return nullptr; }
+	void geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton) override {}
+	void geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override) override {}
+	void geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_material) override {}
+	void geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) override {}
+	void geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabbb) override {}
+	void geometry_instance_set_layer_mask(GeometryInstance *p_geometry_instance, uint32_t p_layer_mask) override {}
+	void geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias) override {}
+	void geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) override {}
+	void geometry_instance_set_use_dynamic_gi(GeometryInstance *p_geometry_instance, bool p_enable) override {}
+	void geometry_instance_set_use_lightmap(GeometryInstance *p_geometry_instance, RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override {}
+	void geometry_instance_set_lightmap_capture(GeometryInstance *p_geometry_instance, const Color *p_sh9) override {}
+	void geometry_instance_set_instance_shader_parameters_offset(GeometryInstance *p_geometry_instance, int32_t p_offset) override {}
+	void geometry_instance_set_cast_double_sided_shadows(GeometryInstance *p_geometry_instance, bool p_enable) override {}
+
+	uint32_t geometry_instance_get_pair_mask() override { return 0; }
+	void geometry_instance_pair_light_instances(GeometryInstance *p_geometry_instance, const RID *p_light_instances, uint32_t p_light_instance_count) override {}
+	void geometry_instance_pair_reflection_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override {}
+	void geometry_instance_pair_decal_instances(GeometryInstance *p_geometry_instance, const RID *p_decal_instances, uint32_t p_decal_instance_count) override {}
+	void geometry_instance_pair_gi_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_gi_probe_instances, uint32_t p_gi_probe_instance_count) override {}
+
+	void geometry_instance_free(GeometryInstance *p_geometry_instance) override {}
+
 	/* SHADOW ATLAS API */
 
 	RID shadow_atlas_create() override { return RID(); }
@@ -57,7 +80,7 @@ public:
 	int sdfgi_get_pending_region_count(RID p_render_buffers) const override { return 0; }
 	AABB sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const override { return AABB(); }
 	uint32_t sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const override { return 0; }
-	void sdfgi_update_probes(RID p_render_buffers, RID p_environment, const RID *p_directional_light_instances, uint32_t p_directional_light_count, const RID *p_positional_light_instances, uint32_t p_positional_light_count) override {}
+	void sdfgi_update_probes(RID p_render_buffers, RID p_environment, const Vector<RID> &p_directional_lights, const RID *p_positional_light_instances, uint32_t p_positional_light_count) override {}
 
 	/* SKY API */
 
@@ -129,6 +152,7 @@ public:
 	void light_instance_mark_visible(RID p_light_instance) override {}
 
 	RID reflection_atlas_create() override { return RID(); }
+	int reflection_atlas_get_size(RID p_ref_atlas) const override { return 0; }
 	void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) override {}
 
 	RID reflection_probe_instance_create(RID p_probe) override { return RID(); }
@@ -142,19 +166,22 @@ public:
 	RID decal_instance_create(RID p_decal) override { return RID(); }
 	void decal_instance_set_transform(RID p_decal, const Transform &p_transform) override {}
 
+	RID lightmap_instance_create(RID p_lightmap) override { return RID(); }
+	void lightmap_instance_set_transform(RID p_lightmap, const Transform &p_transform) override {}
+
 	RID gi_probe_instance_create(RID p_gi_probe) override { return RID(); }
 	void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform) override {}
 	bool gi_probe_needs_update(RID p_probe) const override { return false; }
-	void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, int p_dynamic_object_count, InstanceBase **p_dynamic_objects) override {}
+	void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects) override {}
 
 	void gi_probe_set_quality(RS::GIProbeQuality) override {}
 
-	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) override {}
-	void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) override {}
-	void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) override {}
-	void render_sdfgi(RID p_render_buffers, int p_region, InstanceBase **p_cull_result, int p_cull_count) override {}
-	void render_sdfgi_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const RID **p_positional_light_cull_result, const uint32_t *p_positional_light_cull_count) override {}
-	void render_particle_collider_heightfield(RID p_collider, const Transform &p_transform, InstanceBase **p_cull_result, int p_cull_count) override {}
+	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold) override {}
+	void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<GeometryInstance *> &p_instances, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0, float p_screen_lod_threshold = 0.0) override {}
+	void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override {}
+	void render_sdfgi(RID p_render_buffers, int p_region, const PagedArray<GeometryInstance *> &p_instances) override {}
+	void render_sdfgi_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_lights) override {}
+	void render_particle_collider_heightfield(RID p_collider, const Transform &p_transform, const PagedArray<GeometryInstance *> &p_instances) override {}
 
 	void set_scene_pass(uint64_t p_pass) override {}
 	void set_time(double p_time, double p_step) override {}
@@ -370,6 +397,8 @@ public:
 	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const override { return RID(); }
 	Variant shader_get_param_default(RID p_material, const StringName &p_param) const override { return Variant(); }
 
+	RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override { return RS::ShaderNativeSourceCode(); };
+
 	/* COMMON MATERIAL API */
 
 	RID material_create() override { return RID(); }
@@ -385,7 +414,7 @@ public:
 	bool material_is_animated(RID p_material) override { return false; }
 	bool material_casts_shadows(RID p_material) override { return false; }
 	void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override {}
-	void material_update_dependency(RID p_material, InstanceBaseDependency *p_instance) override {}
+	void material_update_dependency(RID p_material, DependencyTracker *p_instance) override {}
 
 	/* MESH API */
 
@@ -396,6 +425,16 @@ public:
 		mesh->blend_shape_mode = RS::BLEND_SHAPE_MODE_NORMALIZED;
 		return mesh_owner.make_rid(mesh);
 	}
+
+	void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) override {}
+	bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) override { return false; }
+	RID mesh_instance_create(RID p_base) override { return RID(); }
+	void mesh_instance_set_skeleton(RID p_mesh_instance, RID p_skeleton) override {}
+	void mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) override {}
+	void mesh_instance_check_for_update(RID p_mesh_instance) override {}
+	void update_mesh_instances() override {}
+	void reflection_probe_set_lod_threshold(RID p_probe, float p_ratio) override {}
+	float reflection_probe_get_lod_threshold(RID p_probe) const override { return 0.0; }
 
 	void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) override {}
 
@@ -644,8 +683,8 @@ public:
 	float reflection_probe_get_origin_max_distance(RID p_probe) const override { return 0.0; }
 	bool reflection_probe_renders_shadows(RID p_probe) const override { return false; }
 
-	void base_update_dependency(RID p_base, InstanceBaseDependency *p_instance) override {}
-	void skeleton_update_dependency(RID p_base, InstanceBaseDependency *p_instance) override {}
+	void base_update_dependency(RID p_base, DependencyTracker *p_instance) override {}
+	void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) override {}
 
 	/* DECAL API */
 
@@ -712,10 +751,10 @@ public:
 	/* LIGHTMAP CAPTURE */
 #if 0
 	struct Instantiable {
-		SelfList<RendererSceneRender::InstanceBase>::List instance_list;
+		SelfList<RendererSceneRender::GeometryInstance>::List instance_list;
 
 		_FORCE_INLINE_ void instance_change_notify(bool p_aabb = true, bool p_materials = true) override {
-			SelfList<RendererSceneRender::InstanceBase> *instances = instance_list.first();
+			SelfList<RendererSceneRender::GeometryInstance> *instances = instance_list.first();
 			while (instances) override {
 				//instances->self()->base_changed(p_aabb, p_materials);
 				instances = instances->next();
@@ -723,9 +762,9 @@ public:
 		}
 
 		_FORCE_INLINE_ void instance_remove_deps() override {
-			SelfList<RendererSceneRender::InstanceBase> *instances = instance_list.first();
+			SelfList<RendererSceneRender::GeometryInstance> *instances = instance_list.first();
 			while (instances) override {
-				SelfList<RendererSceneRender::InstanceBase> *next = instances->next();
+				SelfList<RendererSceneRender::GeometryInstance> *next = instances->next();
 				//instances->self()->base_removed();
 				instances = next;
 			}
@@ -828,8 +867,8 @@ public:
 	int particles_get_draw_passes(RID p_particles) const override { return 0; }
 	RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const override { return RID(); }
 
-	void particles_add_collision(RID p_particles, InstanceBaseDependency *p_instance) override {}
-	void particles_remove_collision(RID p_particles, InstanceBaseDependency *p_instance) override {}
+	void particles_add_collision(RID p_particles, RID p_instance) override {}
+	void particles_remove_collision(RID p_particles, RID p_instance) override {}
 
 	void update_particles() override {}
 
@@ -849,6 +888,10 @@ public:
 	AABB particles_collision_get_aabb(RID p_particles_collision) const override { return AABB(); }
 	bool particles_collision_is_heightfield(RID p_particles_collision) const override { return false; }
 	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const override { return RID(); }
+
+	RID particles_collision_instance_create(RID p_collision) override { return RID(); };
+	void particles_collision_instance_set_transform(RID p_collision_instance, const Transform &p_transform) override{};
+	void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) override{};
 
 	/* GLOBAL VARIABLES */
 
