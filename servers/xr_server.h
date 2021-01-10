@@ -90,7 +90,7 @@ private:
 	uint64_t last_frame_usec = 0; /* time it took between process and committing, we should probably average this over the last x frames */
 
 protected:
-	static XRServer *singleton = nullptr;
+	static XRServer *singleton;
 
 	static void _bind_methods();
 

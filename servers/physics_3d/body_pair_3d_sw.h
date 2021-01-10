@@ -45,7 +45,7 @@ class BodyPair3DSW : public Constraint3DSW {
 			Body3DSW *B = nullptr;
 		};
 
-		Body3DSW *_arr[2] = {};
+		Body3DSW *_arr[2];
 	};
 
 	int shape_A = 0;

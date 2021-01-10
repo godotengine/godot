@@ -69,7 +69,7 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 	void _update_shapes();
 
 public:
-	static PhysicsServer3DSW *singleton = nullptr;
+	static PhysicsServer3DSW *singleton;
 
 	struct CollCbkData {
 		int max = 0;

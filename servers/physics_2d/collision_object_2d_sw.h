@@ -62,7 +62,7 @@ private:
 		bool disabled = false;
 		bool one_way_collision = false;
 		float one_way_collision_margin = 0.0;
-		Shape() {	}
+		Shape() {}
 	};
 
 	Vector<Shape> shapes;

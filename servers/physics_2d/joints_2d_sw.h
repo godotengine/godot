@@ -64,7 +64,7 @@ class PinJoint2DSW : public Joint2DSW {
 			Body2DSW *B = nullptr;
 		};
 
-		Body2DSW *_arr[2] = {};
+		Body2DSW *_arr[2];
 	};
 
 	Transform2D M;

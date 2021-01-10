@@ -39,7 +39,7 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 		bool colliding = false;
 		int rc = 1;
 		void *ud = nullptr;
-		PairData() { }
+		PairData() {}
 	};
 
 	struct Element {
@@ -64,7 +64,7 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 			return ref;
 		}
 
-		_FORCE_INLINE_ RC() {	}
+		_FORCE_INLINE_ RC() {}
 	};
 
 	Map<ID, Element> element_map;
