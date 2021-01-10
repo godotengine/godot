@@ -43,7 +43,7 @@ class ShaderTypes {
 
 	Map<RS::ShaderMode, Type> shader_modes;
 
-	static ShaderTypes *singleton = nullptr;
+	static ShaderTypes *singleton;
 
 	Set<String> shader_types;
 

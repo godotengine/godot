@@ -142,7 +142,7 @@ protected:
 private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 	double time_step = 0;
-	static RendererSceneRenderRD *singleton = nullptr;
+	static RendererSceneRenderRD *singleton;
 
 	int roughness_layers = 0;
 
@@ -795,7 +795,7 @@ private:
 	bool glow_high_quality = false;
 	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGNESS_QUALITY_LOW;
 
-	static uint64_t auto_exposure_counter = 0;
+	static uint64_t auto_exposure_counter;
 
 	mutable RID_Owner<Environment> environment_owner;
 

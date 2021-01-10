@@ -59,7 +59,7 @@ public:
 
 	uint64_t render_pass = 0;
 
-	static RendererSceneCull *singleton = nullptr;
+	static RendererSceneCull *singleton;
 
 	/* CAMERA API */
 

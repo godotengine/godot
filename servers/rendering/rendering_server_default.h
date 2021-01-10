@@ -52,7 +52,7 @@ class RenderingServerDefault : public RenderingServer {
 
 	};
 
-	static int changes = 0;
+	static int changes;
 	RID test_cube;
 
 	int black_margin[4] = {};

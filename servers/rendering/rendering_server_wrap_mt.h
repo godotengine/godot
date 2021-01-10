@@ -62,7 +62,7 @@ class RenderingServerWrapMT : public RenderingServer {
 
 	//#define DEBUG_SYNC
 
-	static RenderingServerWrapMT *singleton_mt = nullptr;
+	static RenderingServerWrapMT *singleton_mt;
 
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));

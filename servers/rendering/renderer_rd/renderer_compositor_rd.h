@@ -55,7 +55,7 @@ protected:
 	double time = 0.0;
 	float delta = 0.0;
 
-	static uint64_t frame = 0;
+	static uint64_t frame;
 
 public:
 	RendererStorage *get_storage() { return storage; }
