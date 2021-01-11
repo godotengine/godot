@@ -41,11 +41,6 @@
 #include "scene_synchronizer.h"
 
 void register_network_synchronizer_types() {
-	ClassDB::register_class<DataBuffer>();
-	ClassDB::register_class<SceneDiff>();
-	ClassDB::register_class<Interpolator>();
-	ClassDB::register_class<NetworkedController>();
-	ClassDB::register_class<SceneSynchronizer>();
 
 	NetworkedController::sn_rpc_server_send_inputs = "_rpc_server_send_inputs";
 	NetworkedController::sn_rpc_send_tick_additional_speed = "_rpc_send_tick_additional_speed";
@@ -60,6 +55,12 @@ void register_network_synchronizer_types() {
 	NetworkedController::sn_setup_interpolator = "setup_interpolator";
 	NetworkedController::sn_parse_epoch_data = "parse_epoch_data";
 	NetworkedController::sn_apply_epoch = "apply_epoch";
+
+	ClassDB::register_class<DataBuffer>();
+	ClassDB::register_class<SceneDiff>();
+	ClassDB::register_class<Interpolator>();
+	ClassDB::register_class<NetworkedController>();
+	ClassDB::register_class<SceneSynchronizer>();
 
 	GLOBAL_DEF("NetworkSynchronizer/debug_server_speedup", false);
 	GLOBAL_DEF("NetworkSynchronizer/debug_doll_speedup", false);
