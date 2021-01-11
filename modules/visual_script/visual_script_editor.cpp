@@ -251,6 +251,19 @@ protected:
 			undo_redo->create_action(TTR("Set Variable Type"));
 			undo_redo->add_do_method(script.ptr(), "set_variable_info", var, dc);
 			undo_redo->add_undo_method(script.ptr(), "set_variable_info", var, d);
+
+			// Setting the default value.
+			Variant::Type type = (Variant::Type)(int)p_value;
+			if (type != Variant::NIL) {
+				Variant default_value;
+				Variant::CallError ce;
+				default_value = Variant::construct(type, NULL, 0, ce);
+				if (ce.error == Variant::CallError::CALL_OK) {
+					undo_redo->add_do_method(script.ptr(), "set_variable_default_value", var, default_value);
+					undo_redo->add_undo_method(script.ptr(), "set_variable_default_value", var, dc["value"]);
+				}
+			}
+
 			undo_redo->add_do_method(this, "_var_changed");
 			undo_redo->add_undo_method(this, "_var_changed");
 			undo_redo->commit_action();
