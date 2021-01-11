@@ -219,6 +219,13 @@ private:
 	/// `doll_min_frames_delay` and `doll_max_frames_delay`.
 	real_t doll_net_sensitivity = 0.2;
 
+	/// Just after a bad connection phase, may happen that all the sent epochs
+	/// are received at once. To make sure the actor is always the more uptodate
+	/// possible, the number of epochs the actor has to fetch is clamped.
+	/// When `doll_max_delay` is surpassed the doll is teleported forward the
+	/// timeline so to be the more update possible.
+	uint64_t doll_max_delay = 60;
+
 	ControllerType controller_type = CONTROLLER_TYPE_NULL;
 	Controller *controller = nullptr;
 	DataBuffer inputs_buffer;
@@ -278,6 +285,9 @@ public:
 
 	void set_doll_net_sensitivity(real_t p_sensitivity);
 	real_t get_doll_net_sensitivity() const;
+
+	void set_doll_max_delay(uint32_t p_max_delay);
+	uint32_t get_doll_max_delay() const;
 
 	uint32_t get_current_input_id() const;
 

@@ -105,6 +105,12 @@ void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_doll_connection_stats_frame_span", "speedup"), &NetworkedController::set_doll_connection_stats_frame_span);
 	ClassDB::bind_method(D_METHOD("get_doll_connection_stats_frame_span"), &NetworkedController::get_doll_connection_stats_frame_span);
 
+	ClassDB::bind_method(D_METHOD("set_doll_net_sensitivity", "sensitivity"), &NetworkedController::set_doll_net_sensitivity);
+	ClassDB::bind_method(D_METHOD("get_doll_net_sensitivity"), &NetworkedController::get_doll_net_sensitivity);
+
+	ClassDB::bind_method(D_METHOD("set_doll_max_delay", "max_delay"), &NetworkedController::set_doll_max_delay);
+	ClassDB::bind_method(D_METHOD("get_doll_max_delay"), &NetworkedController::get_doll_max_delay);
+
 	ClassDB::bind_method(D_METHOD("get_current_input_id"), &NetworkedController::get_current_input_id);
 
 	ClassDB::bind_method(D_METHOD("player_get_pretended_delta", "iterations_per_seconds"), &NetworkedController::player_get_pretended_delta);
@@ -148,6 +154,8 @@ void NetworkedController::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doll_max_frames_delay", PROPERTY_HINT_RANGE, "0,10,1"), "set_doll_max_frames_delay", "get_doll_max_frames_delay");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_interpolation_max_speedup", PROPERTY_HINT_RANGE, "0.01,5.0,0.01"), "set_doll_interpolation_max_speedup", "get_doll_interpolation_max_speedup");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doll_connection_stats_frame_span", PROPERTY_HINT_RANGE, "0,1000,1"), "set_doll_connection_stats_frame_span", "get_doll_connection_stats_frame_span");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_net_sensitivity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_doll_net_sensitivity", "get_doll_net_sensitivity");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "doll_max_delay", PROPERTY_HINT_RANGE, "1,1000,1"), "set_doll_max_delay", "get_doll_max_delay");
 
 	ADD_SIGNAL(MethodInfo("doll_sync_started"));
 	ADD_SIGNAL(MethodInfo("doll_sync_paused"));
@@ -278,6 +286,14 @@ void NetworkedController::set_doll_net_sensitivity(real_t p_sensitivity) {
 
 real_t NetworkedController::get_doll_net_sensitivity() const {
 	return doll_net_sensitivity;
+}
+
+void NetworkedController::set_doll_max_delay(uint32_t p_max_delay) {
+	doll_max_delay = p_max_delay;
+}
+
+uint32_t NetworkedController::get_doll_max_delay() const {
+	return doll_max_delay;
 }
 
 uint32_t NetworkedController::get_current_input_id() const {
@@ -1495,12 +1511,12 @@ uint32_t DollController::next_epoch(real_t p_delta) {
 	CRASH_COND(oldest_epoch < current_epoch);
 #endif
 
-	const uint64_t max_virtual_delay = 60; // TODO make this a parameter
+	const uint64_t max_delay = node->get_doll_max_delay();
 
-	if (unlikely((oldest_epoch - current_epoch) > max_virtual_delay)) {
+	if (unlikely((oldest_epoch - current_epoch) > max_delay)) {
 		// This client seems too much behind at this point. Teleport forward.
 		const uint32_t youngest_epoch = interpolator.get_youngest_epoch();
-		current_epoch = MAX(oldest_epoch - max_virtual_delay, youngest_epoch);
+		current_epoch = MAX(oldest_epoch - max_delay, youngest_epoch);
 	} else {
 		advancing_epoch += 1.0 + additional_speed;
 	}
