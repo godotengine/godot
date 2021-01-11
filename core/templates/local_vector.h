@@ -82,6 +82,19 @@ public:
 		}
 	}
 
+	/// Removes the item copying the last value into the position of the one to
+	/// remove. It's generally faster than `remove`.
+	void remove_unordered(U p_index) {
+		ERR_FAIL_INDEX(p_index, count);
+		count--;
+		if (count > p_index) {
+			data[p_index] = data[count];
+		}
+		if (!__has_trivial_destructor(T) && !force_trivial) {
+			data[count].~T();
+		}
+	}
+
 	void erase(const T &p_val) {
 		int64_t idx = find(p_val);
 		if (idx >= 0) {
@@ -105,6 +118,7 @@ public:
 		}
 	}
 	_FORCE_INLINE_ bool is_empty() const { return count == 0; }
+	_FORCE_INLINE_ U get_capacity() const { return capacity; }
 	_FORCE_INLINE_ void reserve(U p_size) {
 		p_size = nearest_power_of_2_templated(p_size);
 		if (p_size > capacity) {
