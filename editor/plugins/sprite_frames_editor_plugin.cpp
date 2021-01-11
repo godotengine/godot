@@ -31,6 +31,8 @@
 #include "sprite_frames_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -861,7 +863,11 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 		PoolVector<String> files = d["files"];
 
-		_file_load_request(files, at_pos);
+		if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+			_prepare_sprite_sheet(files[0]);
+		} else {
+			_file_load_request(files, at_pos);
+		}
 	}
 }
 
