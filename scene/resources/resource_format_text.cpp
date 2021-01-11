@@ -1505,7 +1505,10 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 	for (int i = 0; i < sorted_er.size(); i++) {
 		String p = sorted_er[i].resource->get_path();
-
+		String pp = sorted_er[i].resource->get_project_path();
+		if (!pp.empty()) {
+			p = "res:/" + p.replace(pp, "");
+		}
 		f->store_string("[ext_resource path=\"" + p + "\" type=\"" + sorted_er[i].resource->get_save_class() + "\" id=" + itos(sorted_er[i].index) + "]\n"); //bundled
 	}
 

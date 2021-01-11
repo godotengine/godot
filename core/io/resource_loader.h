@@ -103,7 +103,9 @@ class ResourceLoader {
 	static bool abort_on_missing_resource;
 	static HashMap<String, Vector<String>> translation_remaps;
 	static HashMap<String, String> path_remaps;
+	static List<String> subproject_paths;
 
+	static String _localize_path(const String &p_path, String *r_subproject_path = nullptr);
 	static String _path_remap(const String &p_path, bool *r_translation_remapped = nullptr);
 	friend class Resource;
 
@@ -152,6 +154,11 @@ public:
 	static String get_import_group_file(const String &p_path);
 	static bool is_imported(const String &p_path);
 	static int get_import_order(const String &p_path);
+
+	static void add_subproject_path(const String &p_path) { subproject_paths.push_back(p_path); }
+	static void clear_subproject_paths() { subproject_paths.clear(); }
+	static void save_subproject_paths();
+	static void load_subproject_paths();
 
 	static void set_timestamp_on_load(bool p_timestamp) { timestamp_on_load = p_timestamp; }
 	static bool get_timestamp_on_load() { return timestamp_on_load; }

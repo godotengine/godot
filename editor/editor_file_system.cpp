@@ -295,6 +295,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	d->change_dir("res://");
+	ResourceLoader::clear_subproject_paths();
 	_scan_new_dir(new_filesystem, d, sp);
 
 	file_cache.clear(); //clear caches, no longer needed
@@ -666,6 +667,10 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 		if (da->current_is_dir()) {
 			if (f.begins_with(".")) { // Ignore special and . / ..
 				continue;
+			}
+
+			if (FileAccess::exists(cd.plus_file(f).plus_file("project.godot"))) {
+				ResourceLoader::add_subproject_path(cd.plus_file(f));
 			}
 
 			if (_should_skip_directory(cd.plus_file(f))) {
@@ -1409,6 +1414,9 @@ void EditorFileSystem::update_script_classes() {
 	ScriptServer::save_global_classes();
 	EditorNode::get_editor_data().script_class_save_icon_paths();
 
+	// Save subproject paths here. TODO: move to another method.
+	ResourceLoader::save_subproject_paths();
+
 	// Rescan custom loaders and savers.
 	// Doing the following here because the `filesystem_changed` signal fires multiple times and isn't always followed by script classes update.
 	// So I thought it's better to do this when script classes really get updated
@@ -1991,10 +1999,6 @@ Error EditorFileSystem::_resource_import(const String &p_path) {
 
 bool EditorFileSystem::_should_skip_directory(const String &p_path) {
 	if (p_path.begins_with(ProjectSettings::get_singleton()->get_project_data_path())) {
-		return true;
-	}
-
-	if (FileAccess::exists(p_path.plus_file("project.godot"))) { // skip if another project inside this
 		return true;
 	}
 

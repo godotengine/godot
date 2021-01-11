@@ -1439,6 +1439,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	ResourceLoader::load_translation_remaps(); //load remaps for resources
 
 	ResourceLoader::load_path_remaps();
+	ResourceLoader::load_subproject_paths();
 
 	MAIN_PRINT("Main: Load Scene Types");
 

@@ -57,6 +57,7 @@ class Resource : public Reference {
 
 	String name;
 	String path_cache;
+	String project_path;
 	int subindex;
 
 #ifdef TOOLS_ENABLED
@@ -96,6 +97,9 @@ public:
 
 	virtual void set_path(const String &p_path, bool p_take_over = false);
 	String get_path() const;
+
+	void set_project_path(const String &p_path);
+	String get_project_path() const { return project_path; }
 
 	void set_subindex(int p_sub_index);
 	int get_subindex() const;
