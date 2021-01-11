@@ -391,11 +391,11 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		union {
 			//rect
 			struct {
-				float modulation[4] = {};
-				float ninepatch_margins[4] = {};
-				float dst_rect[4] = {};
-				float src_rect[4] = {};
-				float pad[2] = {};
+				float modulation[4];
+				float ninepatch_margins[4];
+				float dst_rect[4];
+				float src_rect[4];
+				float pad[2];
 			};
 			//primitive
 			struct {

@@ -119,7 +119,7 @@ public:
 	Vector3 m_damping = Vector3(1, 1, 1) * real_t(1.0f); //!< Damping for linear limit
 	Vector3 m_restitution = Vector3(1, 1, 1) * real_t(0.5f); //! Bounce parameter for linear limit
 	//!@}
-	bool enable_limit[3] = {true, true, true};
+	bool enable_limit[3] = { true, true, true };
 
 	G6DOFTranslationalLimitMotor3DSW() {}
 
