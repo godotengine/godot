@@ -40,7 +40,6 @@
 #include "interpolator.h"
 #include "net_utilities.h"
 #include <deque>
-#include <vector>
 
 #ifndef NETWORKED_CONTROLLER_H
 #define NETWORKED_CONTROLLER_H
@@ -455,7 +454,7 @@ struct PlayerController : public Controller {
 	bool streaming_paused = false;
 
 	std::deque<FrameSnapshot> frames_snapshot;
-	std::vector<uint8_t> cached_packet_data;
+	LocalVector<uint8_t> cached_packet_data;
 
 	PlayerController(NetworkedController *p_node);
 

@@ -1203,7 +1203,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 	// Let's store the ID of the first snapshot.
 	MAKE_ROOM(4);
 	const uint32_t first_input_id = frames_snapshot[frames_snapshot.size() - inputs_count].id;
-	ofs += encode_uint32(first_input_id, cached_packet_data.data() + ofs);
+	ofs += encode_uint32(first_input_id, cached_packet_data.ptr() + ofs);
 
 	uint32_t previous_input_id = UINT32_MAX;
 	uint32_t previous_input_similarity = UINT32_MAX;
@@ -1281,7 +1281,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 			const int buffer_size = frames_snapshot[i].inputs_buffer.get_bytes().size();
 			MAKE_ROOM(buffer_size);
 			copymem(
-					cached_packet_data.data() + ofs,
+					cached_packet_data.ptr() + ofs,
 					frames_snapshot[i].inputs_buffer.get_bytes().ptr(),
 					buffer_size);
 			ofs += buffer_size;
@@ -1301,12 +1301,11 @@ void PlayerController::send_frame_input_buffer_to_server() {
 
 	// Make the packet data.
 	Vector<uint8_t> packet_data;
-	// TODO cache this?
 	packet_data.resize(ofs);
 
 	copymem(
 			packet_data.ptrw(),
-			cached_packet_data.data(),
+			cached_packet_data.ptr(),
 			ofs);
 
 	const int server_peer_id = 1;
