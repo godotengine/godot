@@ -1564,6 +1564,7 @@ void RasterizerStorageGLES3::texture_debug_usage(List<VS::TextureInfo> *r_info) 
 		if (!t)
 			continue;
 		VS::TextureInfo tinfo;
+		tinfo.texture = E->get();
 		tinfo.path = t->path;
 		tinfo.format = t->format;
 		tinfo.width = t->alloc_width;
