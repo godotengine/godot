@@ -370,6 +370,13 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 		Array bmeshes = p_at_node->call("get_bake_meshes");
 		if (bmeshes.size() && (bmeshes.size() & 1) == 0) {
 			Transform xf = get_global_transform().affine_inverse() * s->get_global_transform();
+			Ref<Material> all_override;
+
+			GeometryInstance *gi = Object::cast_to<GeometryInstance>(p_at_node);
+			if (gi) {
+				all_override = mi->get_material_override();
+			}
+
 			for (int i = 0; i < bmeshes.size(); i += 2) {
 				Ref<Mesh> mesh = bmeshes[i];
 				if (!mesh.is_valid()) {
@@ -384,6 +391,18 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 				mf.subindex = i / 2;
 				mf.lightmap_scale = 1;
 				mf.mesh = mesh;
+
+				if (gi) {
+					mf.cast_shadows = mi->get_cast_shadows_setting() != GeometryInstance::SHADOW_CASTING_SETTING_OFF;
+					mf.generate_lightmap = mi->get_generate_lightmap();
+				} else {
+					mf.cast_shadows = true;
+					mf.generate_lightmap = true;
+				}
+
+				for (int j = 0; j < mesh->get_surface_count(); j++) {
+					mf.overrides.push_back(all_override);
+				}
 
 				meshes.push_back(mf);
 			}

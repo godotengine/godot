@@ -2446,9 +2446,6 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF(sz_balance_render_tree, 0.0f);
 	ProjectSettings::get_singleton()->set_custom_property_info(sz_balance_render_tree, PropertyInfo(Variant::REAL, sz_balance_render_tree, PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
 
-	GLOBAL_DEF("rendering/quality/lightmapping/use_bicubic_sampling", true);
-	GLOBAL_DEF("rendering/quality/lightmapping/use_bicubic_sampling.mobile", false);
-
 	GLOBAL_DEF("rendering/quality/2d/use_software_skinning", true);
 	GLOBAL_DEF("rendering/quality/2d/ninepatch_mode", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/2d/ninepatch_mode", PropertyInfo(Variant::INT, "rendering/quality/2d/ninepatch_mode", PROPERTY_HINT_ENUM, "Default,Scaling"));

@@ -1488,7 +1488,7 @@ float h1(float a) {
 	return 1.0 + w3(a) / (w2(a) + w3(a));
 }
 
-vec4 texture2D_bicubic(sampler2D tex, vec2 uv) {
+vec4 texture_bicubic(sampler2D tex, vec2 uv) {
 	vec2 texel_size = vec2(1.0) / lightmap_texture_size;
 
 	uv = uv * lightmap_texture_size + vec2(0.5);
@@ -1508,11 +1508,11 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv) {
 	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5)) * texel_size;
 	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5)) * texel_size;
 
-	return (g0(fuv.y) * (g0x * texture2D(tex, p0) + g1x * texture2D(tex, p1))) +
-		   (g1(fuv.y) * (g0x * texture2D(tex, p2) + g1x * texture2D(tex, p3)));
+	return (g0(fuv.y) * (g0x * texture(tex, p0) + g1x * texture(tex, p1))) +
+		   (g1(fuv.y) * (g0x * texture(tex, p2) + g1x * texture(tex, p3)));
 }
 
-vec4 texture_bicubic(sampler2DArray tex, vec3 uv) {
+vec4 textureArray_bicubic(sampler2DArray tex, vec3 uv) {
 	vec2 texel_size = vec2(1.0) / lightmap_texture_size;
 
 	uv.xy = uv.xy * lightmap_texture_size + vec2(0.5);
@@ -1536,11 +1536,11 @@ vec4 texture_bicubic(sampler2DArray tex, vec3 uv) {
 		   (g1(fuv.y) * (g0x * texture(tex, vec3(p2, uv.z)) + g1x * texture(tex, vec3(p3, uv.z))));
 }
 
-#define LIGHTMAP_TEXTURE_SAMPLE(m_tex, m_uv) texture2D_bicubic(m_tex, m_uv)
-#define LIGHTMAP_TEXTURE_LAYERED_SAMPLE(m_tex, m_uv) texture_bicubic(m_tex, m_uv)
+#define LIGHTMAP_TEXTURE_SAMPLE(m_tex, m_uv) texture_bicubic(m_tex, m_uv)
+#define LIGHTMAP_TEXTURE_LAYERED_SAMPLE(m_tex, m_uv) textureArray_bicubic(m_tex, m_uv)
 
 #else //!USE_LIGHTMAP_FILTER_BICUBIC
-#define LIGHTMAP_TEXTURE_SAMPLE(m_tex, m_uv) texture2D(m_tex, m_uv)
+#define LIGHTMAP_TEXTURE_SAMPLE(m_tex, m_uv) texture(m_tex, m_uv)
 #define LIGHTMAP_TEXTURE_LAYERED_SAMPLE(m_tex, m_uv) texture(m_tex, m_uv)
 
 #endif //USE_LIGHTMAP_FILTER_BICUBIC

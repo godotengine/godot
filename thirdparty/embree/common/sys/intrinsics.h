@@ -11,6 +11,12 @@
 
 #include <immintrin.h>
 
+// -- GODOT start --
+#if defined(__WIN32__) && defined(__MINGW32__)
+#include <unistd.h>
+#endif
+// -- GODOT end --
+
 #if defined(__BMI__) && defined(__GNUC__) && !defined(__INTEL_COMPILER)
   #if !defined(_tzcnt_u32)
     #define _tzcnt_u32 __tzcnt_u32
@@ -419,8 +425,16 @@ namespace embree
   
   __forceinline void pause_cpu(const size_t N = 8)
   {
+// -- GODOT start --
     for (size_t i=0; i<N; i++)
+#if !(defined(__WIN32__) && defined(__MINGW32__))
+// -- GODOT end --
       _mm_pause();    
+// -- GODOT start --
+#else
+      usleep(1);
+#endif
+// -- GODOT end --
   }
   
   /* prefetches */

@@ -4050,14 +4050,16 @@ void RasterizerSceneGLES2::initialize() {
 		}
 	}
 
+	if (storage->config.use_lightmap_filter_bicubic) {
+		state.scene_shader.add_custom_define("#define USE_LIGHTMAP_FILTER_BICUBIC\n");
+	}
+
 	shadow_filter_mode = SHADOW_FILTER_NEAREST;
 
 	glFrontFace(GL_CW);
 }
 
 void RasterizerSceneGLES2::iteration() {
-	storage->config.use_lightmap_filter_bicubic = GLOBAL_GET("rendering/quality/lightmapping/use_bicubic_sampling");
-	state.scene_shader.set_conditional(SceneShaderGLES2::USE_LIGHTMAP_FILTER_BICUBIC, storage->config.use_lightmap_filter_bicubic);
 	shadow_filter_mode = ShadowFilterMode(int(GLOBAL_GET("rendering/quality/shadows/filter_mode")));
 }
 

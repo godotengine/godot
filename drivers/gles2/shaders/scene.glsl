@@ -890,7 +890,7 @@ void reflection_process(samplerCube reflection_map,
 uniform mediump sampler2D lightmap; //texunit:-4
 uniform mediump float lightmap_energy;
 
-#ifdef USE_LIGHTMAP_FILTER_BICUBIC
+#if defined(USE_LIGHTMAP_FILTER_BICUBIC)
 uniform mediump vec2 lightmap_texture_size;
 
 // w0, w1, w2, and w3 are the four cubic B-spline basis functions
@@ -951,11 +951,6 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv) {
 	return (g0(fuv.y) * (g0x * texture2D(tex, p0) + g1x * texture2D(tex, p1))) +
 		   (g1(fuv.y) * (g0x * texture2D(tex, p2) + g1x * texture2D(tex, p3)));
 }
-#define LIGHTMAP_TEXTURE_SAMPLE(m_tex, m_uv) texture2D_bicubic(m_tex, m_uv)
-
-#else //!USE_LIGHTMAP_FILTER_BICUBIC
-#define LIGHTMAP_TEXTURE_SAMPLE(m_tex, m_uv) texture2D(m_tex, m_uv)
-
 #endif //USE_LIGHTMAP_FILTER_BICUBIC
 #endif
 
@@ -1728,8 +1723,12 @@ FRAGMENT_SHADER_CODE
 	}
 
 #ifdef USE_LIGHTMAP
-	//ambient light will come entirely from lightmap is lightmap is used
-	ambient_light = LIGHTMAP_TEXTURE_SAMPLE(lightmap, uv2_interp).rgb * lightmap_energy;
+//ambient light will come entirely from lightmap is lightmap is used
+#if defined(USE_LIGHTMAP_FILTER_BICUBIC)
+	ambient_light = texture2D_bicubic(lightmap, uv2_interp).rgb * lightmap_energy;
+#else
+	ambient_light = texture2D(lightmap, uv2_interp).rgb * lightmap_energy;
+#endif
 #endif
 
 #ifdef USE_LIGHTMAP_CAPTURE

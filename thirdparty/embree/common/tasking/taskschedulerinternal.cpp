@@ -361,7 +361,15 @@ namespace embree
           if ((loopIndex % LOOP_YIELD_THRESHOLD) == 0)
             yield();
           else
+// -- GODOT start --
+#if !defined(__MINGW32__)
+// -- GODOT end --
             _mm_pause();
+// -- GODOT start --
+#else
+            usleep(1);
+#endif
+// -- GODOT end --
 	  loopIndex++;
 #else
           yield();
