@@ -488,7 +488,6 @@ private:
 	void _instance_request(const Vector<String> &p_files);
 
 	void _display_top_editors(bool p_display);
-	void _set_top_editors(Vector<EditorPlugin *> p_editor_plugins_over);
 	void _set_editing_top_editors(Object *p_current_object);
 
 	void _quick_opened();
@@ -726,10 +725,10 @@ public:
 	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
-	void edit_item(Object *p_object);
-	void edit_item_resource(RES p_resource);
+	void edit_item(Object *p_object, Object *p_owner = nullptr);
+	void edit_item_resource(RES p_resource, Object *p_owner);
 	bool item_has_editor(Object *p_object);
-	void hide_top_editors();
+	void hide_unused_editors();
 
 	void select_editor_by_name(const String &p_name);
 
@@ -892,15 +891,19 @@ struct EditorProgress {
 };
 
 class EditorPluginList : public Object {
-private:
-	Vector<EditorPlugin *> plugins_list;
-
 public:
-	void set_plugins_list(Vector<EditorPlugin *> p_plugins_list) {
+	struct ActiveEditor {
+		EditorPlugin *plugin;
+		ObjectID owner;
+		bool operator==(const ActiveEditor ae) const { return plugin == ae.plugin && owner == ae.owner; }
+	};
+	void verify_top_editors(Vector<ActiveEditor> &p_editors);
+
+	void set_plugins_list(Vector<ActiveEditor> p_plugins_list) {
 		plugins_list = p_plugins_list;
 	}
 
-	Vector<EditorPlugin *> &get_plugins_list() {
+	Vector<ActiveEditor> &get_plugins_list() {
 		return plugins_list;
 	}
 
@@ -912,13 +915,16 @@ public:
 	bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled);
 	void forward_spatial_draw_over_viewport(Control *p_overlay);
 	void forward_spatial_force_draw_over_viewport(Control *p_overlay);
-	void add_plugin(EditorPlugin *p_plugin);
-	void remove_plugin(EditorPlugin *p_plugin);
+	void add_plugin(EditorPlugin *p_plugin, Object *p_owner);
+	void remove_plugin(EditorPlugin *p_plugin, Object *p_owner);
 	void clear();
 	bool is_empty();
 
 	EditorPluginList();
 	~EditorPluginList();
+
+private:
+	Vector<ActiveEditor> plugins_list;
 };
 
 struct EditorProgressBG {

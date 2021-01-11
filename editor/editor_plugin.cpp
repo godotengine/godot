@@ -507,13 +507,13 @@ void EditorPlugin::remove_tool_menu_item(const String &p_name) {
 void EditorPlugin::set_input_event_forwarding_always_enabled() {
 	input_event_forwarding_always_enabled = true;
 	EditorPluginList *always_input_forwarding_list = EditorNode::get_singleton()->get_editor_plugins_force_input_forwarding();
-	always_input_forwarding_list->add_plugin(this);
+	always_input_forwarding_list->add_plugin(this, nullptr);
 }
 
 void EditorPlugin::set_force_draw_over_forwarding_enabled() {
 	force_draw_over_forwarding_enabled = true;
 	EditorPluginList *always_draw_over_forwarding_list = EditorNode::get_singleton()->get_editor_plugins_force_over();
-	always_draw_over_forwarding_list->add_plugin(this);
+	always_draw_over_forwarding_list->add_plugin(this, nullptr);
 }
 
 void EditorPlugin::notify_scene_changed(const Node *scn_root) {

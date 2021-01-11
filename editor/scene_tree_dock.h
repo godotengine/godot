@@ -155,6 +155,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _do_create(Node *p_parent);
 	Node *scene_root;
 	Node *edited_scene;
+	Object *last_pushed_item;
 	EditorNode *editor;
 
 	VBoxContainer *create_root_dialog;
@@ -187,6 +188,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _node_renamed();
 	void _script_created(Ref<Script> p_script);
 	void _script_creation_closed();
+	void _push_editor_item(Object *p_node);
 
 	void _delete_confirm(bool p_cut = false);
 
@@ -263,6 +265,7 @@ public:
 	void perform_node_renames(Node *p_base, List<Pair<NodePath, NodePath>> *p_renames, Map<Ref<Animation>, Set<int>> *r_rem_anims = nullptr);
 	SceneTreeEditor *get_tree_editor() { return scene_tree; }
 	EditorData *get_editor_data() { return editor_data; }
+	Object *get_last_pushed_item() const;
 
 	void add_remote_tree_editor(Control *p_remote);
 	void show_remote_tree();

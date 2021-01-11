@@ -1888,8 +1888,8 @@ bool EditorNode::item_has_editor(Object *p_object) {
 	return editor_data.get_subeditors(p_object).size() > 0;
 }
 
-void EditorNode::edit_item_resource(RES p_resource) {
-	edit_item(p_resource.ptr());
+void EditorNode::edit_item_resource(RES p_resource, Object *p_owner) {
+	edit_item(p_resource.ptr(), p_owner);
 }
 
 bool EditorNode::_is_class_editor_disabled_by_feature_profile(const StringName &p_class) {
@@ -1913,7 +1913,7 @@ bool EditorNode::_is_class_editor_disabled_by_feature_profile(const StringName &
 	return false;
 }
 
-void EditorNode::edit_item(Object *p_object) {
+void EditorNode::edit_item(Object *p_object, Object *p_owner) {
 	Vector<EditorPlugin *> sub_plugins;
 
 	if (p_object) {
@@ -1923,11 +1923,22 @@ void EditorNode::edit_item(Object *p_object) {
 		sub_plugins = editor_data.get_subeditors(p_object);
 	}
 
-	if (!sub_plugins.is_empty()) {
+	Vector<EditorPluginList::ActiveEditor> sub_editors;
+	for (int i = 0; i < sub_plugins.size(); i++) {
+		EditorPluginList::ActiveEditor item;
+		item.plugin = sub_plugins[i];
+		item.owner = p_owner->get_instance_id();
+		sub_editors.append(item);
+	}
+
+	sub_editors.append_array(editor_plugins_over->get_plugins_list());
+	editor_plugins_over->verify_top_editors(sub_editors);
+
+	if (!sub_editors.is_empty()) {
 		bool same = true;
-		if (sub_plugins.size() == editor_plugins_over->get_plugins_list().size()) {
-			for (int i = 0; i < sub_plugins.size(); i++) {
-				if (sub_plugins[i] != editor_plugins_over->get_plugins_list()[i]) {
+		if (sub_editors.size() == editor_plugins_over->get_plugins_list().size()) {
+			for (int i = 0; i < sub_editors.size(); i++) {
+				if (sub_editors[i].plugin != editor_plugins_over->get_plugins_list()[i].plugin) {
 					same = false;
 				}
 			}
@@ -1936,12 +1947,12 @@ void EditorNode::edit_item(Object *p_object) {
 		}
 		if (!same) {
 			_display_top_editors(false);
-			_set_top_editors(sub_plugins);
+			editor_plugins_over->set_plugins_list(sub_editors);
 		}
 		_set_editing_top_editors(p_object);
 		_display_top_editors(true);
 	} else {
-		hide_top_editors();
+		hide_unused_editors();
 	}
 }
 
@@ -1979,18 +1990,18 @@ void EditorNode::_save_default_environment() {
 	}
 }
 
-void EditorNode::hide_top_editors() {
-	_display_top_editors(false);
-
-	editor_plugins_over->clear();
+void EditorNode::hide_unused_editors() {
+	Vector<EditorPluginList::ActiveEditor> prev_editors(editor_plugins_over->get_plugins_list());
+	editor_plugins_over->verify_top_editors(editor_plugins_over->get_plugins_list());
+	for (int i = 0; i < prev_editors.size(); i++) {
+		if (!editor_plugins_over->get_plugins_list().has(prev_editors[i])) {
+			prev_editors[i].plugin->make_visible(false);
+		}
+	}
 }
 
 void EditorNode::_display_top_editors(bool p_display) {
 	editor_plugins_over->make_visible(p_display);
-}
-
-void EditorNode::_set_top_editors(Vector<EditorPlugin *> p_editor_plugins_over) {
-	editor_plugins_over->set_plugins_list(p_editor_plugins_over);
 }
 
 void EditorNode::_set_editing_top_editors(Object *p_current_object) {
@@ -2182,14 +2193,25 @@ void EditorNode::_edit_current() {
 			sub_plugins = editor_data.get_subeditors(current_obj);
 		}
 
-		if (!sub_plugins.is_empty()) {
+		Vector<EditorPluginList::ActiveEditor> sub_editors;
+		for (int i = 0; i < sub_plugins.size(); i++) {
+			EditorPluginList::ActiveEditor item;
+			item.plugin = sub_plugins[i];
+			item.owner = current_obj->get_instance_id();
+			sub_editors.append(item);
+		}
+
+		sub_editors.append_array(editor_plugins_over->get_plugins_list());
+		editor_plugins_over->verify_top_editors(sub_editors);
+
+		if (!sub_editors.is_empty()) {
 			_display_top_editors(false);
 
-			_set_top_editors(sub_plugins);
+			editor_plugins_over->set_plugins_list(sub_editors);
 			_set_editing_top_editors(current_obj);
 			_display_top_editors(true);
 		} else if (!editor_plugins_over->get_plugins_list().is_empty()) {
-			hide_top_editors();
+			hide_unused_editors();
 		}
 	}
 
@@ -3085,10 +3107,11 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_chan
 	if (p_config_changed) {
 		p_editor->disable_plugin();
 	}
-	singleton->editor_plugins_over->get_plugins_list().erase(p_editor);
+
+	singleton->editor_plugins_over->remove_plugin(p_editor, nullptr);
 	singleton->remove_child(p_editor);
 	singleton->editor_data.remove_editor_plugin(p_editor);
-	singleton->get_editor_plugins_force_input_forwarding()->remove_plugin(p_editor);
+	singleton->get_editor_plugins_force_input_forwarding()->remove_plugin(p_editor, nullptr);
 }
 
 void EditorNode::_update_addon_config() {
@@ -7001,15 +7024,43 @@ EditorNode::~EditorNode() {
  * EDITOR PLUGIN LIST
  */
 
+void EditorPluginList::verify_top_editors(Vector<ActiveEditor> &p_editors) {
+	int i = 0;
+	while (i < p_editors.size()) {
+		bool discard = true;
+		Object *owner = ObjectDB::get_instance(p_editors[i].owner);
+
+		if (discard) {
+			EditorPropertyResource *property = Object::cast_to<EditorPropertyResource>(owner);
+			if (property) {
+				discard = !property->is_visible_in_tree() || !property->get_edited_object()->editor_is_section_unfolded(property->get_edited_property());
+			}
+		}
+
+		if (discard) {
+			Node *node = Object::cast_to<Node>(owner);
+			if (node) {
+				discard = (EditorNode::get_singleton()->get_scene_tree_dock()->get_last_pushed_item() != node);
+			}
+		}
+
+		if (discard) {
+			p_editors.remove(i);
+		} else {
+			i++;
+		}
+	}
+}
+
 void EditorPluginList::make_visible(bool p_visible) {
 	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->make_visible(p_visible);
+		plugins_list[i].plugin->make_visible(p_visible);
 	}
 }
 
 void EditorPluginList::edit(Object *p_object) {
 	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->edit(p_object);
+		plugins_list[i].plugin->edit(p_object);
 	}
 }
 
@@ -7017,7 +7068,7 @@ bool EditorPluginList::forward_gui_input(const Ref<InputEvent> &p_event) {
 	bool discard = false;
 
 	for (int i = 0; i < plugins_list.size(); i++) {
-		if (plugins_list[i]->forward_canvas_gui_input(p_event)) {
+		if (plugins_list[i].plugin->forward_canvas_gui_input(p_event)) {
 			discard = true;
 		}
 	}
@@ -7029,11 +7080,11 @@ bool EditorPluginList::forward_spatial_gui_input(Camera3D *p_camera, const Ref<I
 	bool discard = false;
 
 	for (int i = 0; i < plugins_list.size(); i++) {
-		if ((!serve_when_force_input_enabled) && plugins_list[i]->is_input_event_forwarding_always_enabled()) {
+		if ((!serve_when_force_input_enabled) && plugins_list[i].plugin->is_input_event_forwarding_always_enabled()) {
 			continue;
 		}
 
-		if (plugins_list[i]->forward_spatial_gui_input(p_camera, p_event)) {
+		if (plugins_list[i].plugin->forward_spatial_gui_input(p_camera, p_event)) {
 			discard = true;
 		}
 	}
@@ -7043,34 +7094,46 @@ bool EditorPluginList::forward_spatial_gui_input(Camera3D *p_camera, const Ref<I
 
 void EditorPluginList::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_canvas_draw_over_viewport(p_overlay);
+		plugins_list[i].plugin->forward_canvas_draw_over_viewport(p_overlay);
 	}
 }
 
 void EditorPluginList::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
 	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_canvas_force_draw_over_viewport(p_overlay);
+		plugins_list[i].plugin->forward_canvas_force_draw_over_viewport(p_overlay);
 	}
 }
 
 void EditorPluginList::forward_spatial_draw_over_viewport(Control *p_overlay) {
 	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_spatial_draw_over_viewport(p_overlay);
+		plugins_list[i].plugin->forward_spatial_draw_over_viewport(p_overlay);
 	}
 }
 
 void EditorPluginList::forward_spatial_force_draw_over_viewport(Control *p_overlay) {
 	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_spatial_force_draw_over_viewport(p_overlay);
+		plugins_list[i].plugin->forward_spatial_force_draw_over_viewport(p_overlay);
 	}
 }
 
-void EditorPluginList::add_plugin(EditorPlugin *p_plugin) {
-	plugins_list.push_back(p_plugin);
+void EditorPluginList::add_plugin(EditorPlugin *p_plugin, Object *p_owner) {
+	ActiveEditor entry;
+	entry.plugin = p_plugin;
+	if (p_owner) {
+		entry.owner = p_owner->get_instance_id();
+	}
+	plugins_list.push_back(entry);
 }
 
-void EditorPluginList::remove_plugin(EditorPlugin *p_plugin) {
-	plugins_list.erase(p_plugin);
+void EditorPluginList::remove_plugin(EditorPlugin *p_plugin, Object *p_owner) {
+	int i = 0;
+	while (i < plugins_list.size()) {
+		if (plugins_list[i].plugin == p_plugin && (!p_owner || plugins_list[i].owner == p_owner->get_instance_id())) {
+			plugins_list.remove(i);
+		} else {
+			i++;
+		}
+	}
 }
 
 bool EditorPluginList::is_empty() {

@@ -2828,7 +2828,7 @@ void EditorPropertyResource::_button_input(const Ref<InputEvent> &p_event) {
 void EditorPropertyResource::_open_editor_pressed() {
 	RES res = get_edited_object()->get(get_edited_property());
 	if (res.is_valid()) {
-		EditorNode::get_singleton()->call_deferred("edit_item_resource", res); //may clear the editor so do it deferred
+		EditorNode::get_singleton()->call_deferred("edit_item_resource", res, this); //may clear the editor so do it deferred
 	}
 }
 
@@ -2836,16 +2836,22 @@ void EditorPropertyResource::_fold_other_editors(Object *p_self) {
 	if (this == p_self) {
 		return;
 	}
+	EditorPropertyResource *self_prop = Object::cast_to<EditorPropertyResource>(p_self);
+	if (!self_prop) {
+		return;
+	}
 
+	RES self_res = self_prop->get_edited_object()->get(self_prop->get_edited_property());
 	RES res = get_edited_object()->get(get_edited_property());
 
 	if (!res.is_valid()) {
 		return;
 	}
+
 	bool use_editor = false;
 	for (int i = 0; i < EditorNode::get_editor_data().get_editor_plugin_count(); i++) {
 		EditorPlugin *ep = EditorNode::get_editor_data().get_editor_plugin(i);
-		if (ep->handles(res.ptr())) {
+		if (ep->handles(res.ptr()) && ep->handles(self_res.ptr())) {
 			use_editor = true;
 		}
 	}
@@ -2962,10 +2968,8 @@ void EditorPropertyResource::update_property() {
 				memdelete(sub_inspector_vbox);
 				sub_inspector = nullptr;
 				sub_inspector_vbox = nullptr;
-				if (opened_editor) {
-					EditorNode::get_singleton()->hide_top_editors();
-					opened_editor = false;
-				}
+				opened_editor = false;
+				EditorNode::get_singleton()->hide_unused_editors();
 				_update_property_bg();
 			}
 		}
