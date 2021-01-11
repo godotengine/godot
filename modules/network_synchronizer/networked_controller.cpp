@@ -154,8 +154,6 @@ void NetworkedController::_bind_methods() {
 }
 
 NetworkedController::NetworkedController() {
-	// TODO convert all these to `StringName` recreate each time a string names
-	// is bad.
 	rpc_config(sn_rpc_server_send_inputs, MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config(sn_rpc_send_tick_additional_speed, MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config(sn_rpc_doll_notify_sync_pause, MultiplayerAPI::RPC_MODE_REMOTE);
