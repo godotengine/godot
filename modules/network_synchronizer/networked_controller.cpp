@@ -48,6 +48,20 @@
 // 2%
 #define TICK_SPEED_CHANGE_NOTIF_THRESHOLD 4
 
+StringName NetworkedController::sn_rpc_server_send_inputs;
+StringName NetworkedController::sn_rpc_send_tick_additional_speed;
+StringName NetworkedController::sn_rpc_doll_notify_sync_pause;
+StringName NetworkedController::sn_rpc_doll_send_epoch_batch;
+
+StringName NetworkedController::sn_controller_process;
+StringName NetworkedController::sn_count_input_size;
+StringName NetworkedController::sn_are_inputs_different;
+StringName NetworkedController::sn_collect_epoch_data;
+StringName NetworkedController::sn_collect_inputs;
+StringName NetworkedController::sn_setup_interpolator;
+StringName NetworkedController::sn_parse_epoch_data;
+StringName NetworkedController::sn_apply_epoch;
+
 void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_player_input_storage_size", "size"), &NetworkedController::set_player_input_storage_size);
 	ClassDB::bind_method(D_METHOD("get_player_input_storage_size"), &NetworkedController::get_player_input_storage_size);
@@ -142,10 +156,10 @@ void NetworkedController::_bind_methods() {
 NetworkedController::NetworkedController() {
 	// TODO convert all these to `StringName` recreate each time a string names
 	// is bad.
-	rpc_config("_rpc_server_send_inputs", MultiplayerAPI::RPC_MODE_REMOTE);
-	rpc_config("_rpc_send_tick_additional_speed", MultiplayerAPI::RPC_MODE_REMOTE);
-	rpc_config("_rpc_doll_notify_sync_pause", MultiplayerAPI::RPC_MODE_REMOTE);
-	rpc_config("_rpc_doll_send_epoch_batch", MultiplayerAPI::RPC_MODE_REMOTE);
+	rpc_config(sn_rpc_server_send_inputs, MultiplayerAPI::RPC_MODE_REMOTE);
+	rpc_config(sn_rpc_send_tick_additional_speed, MultiplayerAPI::RPC_MODE_REMOTE);
+	rpc_config(sn_rpc_doll_notify_sync_pause, MultiplayerAPI::RPC_MODE_REMOTE);
+	rpc_config(sn_rpc_doll_send_epoch_batch, MultiplayerAPI::RPC_MODE_REMOTE);
 }
 
 void NetworkedController::set_player_input_storage_size(int p_size) {
@@ -314,7 +328,7 @@ void NetworkedController::set_doll_peer_active(int p_peer_id, bool p_active) {
 	if (p_active == false) {
 		// Notify the doll only for deactivations. The activations are automatically
 		// handled when the first epoch is received.
-		rpc_id(p_peer_id, "_rpc_doll_notify_sync_pause", server_controller->epoch);
+		rpc_id(p_peer_id, sn_rpc_doll_notify_sync_pause, server_controller->epoch);
 	}
 }
 
@@ -326,7 +340,7 @@ void NetworkedController::pause_notify_dolls() {
 	for (uint32_t i = 0; i < server_controller->peers.size(); i += 1) {
 		if (server_controller->peers[i].active) {
 			// Notify this actor is no more active.
-			rpc_id(server_controller->peers[i].peer, "_rpc_doll_notify_sync_pause", server_controller->epoch);
+			rpc_id(server_controller->peers[i].peer, sn_rpc_doll_notify_sync_pause, server_controller->epoch);
 		}
 	}
 }
@@ -500,7 +514,10 @@ void ServerController::process(real_t p_delta) {
 
 	node->get_inputs_buffer_mut().begin_read();
 	node->get_inputs_buffer_mut().seek(METADATA_SIZE);
-	node->call("controller_process", p_delta, &node->get_inputs_buffer_mut());
+	node->call(
+			NetworkedController::sn_controller_process,
+			p_delta,
+			&node->get_inputs_buffer_mut());
 
 	doll_sync(p_delta);
 
@@ -624,7 +641,7 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 		// Read metadata
 		const bool has_data = pir.read_bool();
 
-		const int input_size_in_bits = (has_data ? int(node->call("count_input_size", &pir)) : 0) + METADATA_SIZE;
+		const int input_size_in_bits = (has_data ? int(node->call(NetworkedController::sn_count_input_size, &pir)) : 0) + METADATA_SIZE;
 		// Pad to 8 bits.
 		const int input_size_padded =
 				Math::ceil((static_cast<float>(input_size_in_bits)) / 8.0);
@@ -807,7 +824,7 @@ bool ServerController::fetch_next_input() {
 						pir_B.begin_read();
 						pir_B.seek(METADATA_SIZE);
 
-						const bool is_meaningful = node->call("are_inputs_different", &pir_A, &pir_B);
+						const bool is_meaningful = node->call(NetworkedController::sn_are_inputs_different, &pir_A, &pir_B);
 						if (is_meaningful) {
 							break;
 						}
@@ -875,7 +892,7 @@ void ServerController::doll_sync(real_t p_delta) {
 			if (epoch_state_collected == false) {
 				epoch_state_data_cache.begin_write(0);
 				epoch_state_data_cache.add_int(epoch, DataBuffer::COMPRESSION_LEVEL_1);
-				node->call("collect_epoch_data", &epoch_state_data_cache);
+				node->call(NetworkedController::sn_collect_epoch_data, &epoch_state_data_cache);
 				epoch_state_data_cache.dry();
 				epoch_state_collected = true;
 			}
@@ -938,7 +955,7 @@ void ServerController::doll_sync(real_t p_delta) {
 				// Send the data
 				node->rpc_unreliable_id(
 						peers[i].peer,
-						"_rpc_doll_send_epoch_batch",
+						NetworkedController::sn_rpc_doll_send_epoch_batch,
 						data);
 			}
 		}
@@ -1005,7 +1022,7 @@ void ServerController::adjust_player_tick_rate(real_t p_delta) {
 
 		node->rpc_unreliable_id(
 				node->get_network_master(),
-				"_rpc_send_tick_additional_speed",
+				NetworkedController::sn_rpc_send_tick_additional_speed,
 				packet_data);
 	}
 }
@@ -1040,7 +1057,7 @@ void PlayerController::process(real_t p_delta) {
 		node->get_inputs_buffer_mut().begin_write(METADATA_SIZE);
 
 		node->get_inputs_buffer_mut().seek(1);
-		node->call("collect_inputs", p_delta, &node->get_inputs_buffer_mut());
+		node->call(NetworkedController::sn_collect_inputs, p_delta, &node->get_inputs_buffer_mut());
 
 		// Set metadata data.
 		node->get_inputs_buffer_mut().seek(0);
@@ -1060,7 +1077,7 @@ void PlayerController::process(real_t p_delta) {
 
 	// The physics process is always emitted, because we still need to simulate
 	// the character motion even if we don't store the player inputs.
-	node->call("controller_process", p_delta, &node->get_inputs_buffer());
+	node->call(NetworkedController::sn_controller_process, p_delta, &node->get_inputs_buffer());
 
 	node->player_set_has_new_input(false);
 	if (accept_new_inputs) {
@@ -1145,7 +1162,7 @@ bool PlayerController::process_instant(int p_i, real_t p_delta) {
 		ib.force_set_size(METADATA_SIZE, frames_snapshot[i].buffer_size_bit - METADATA_SIZE);
 		ib.begin_read();
 		ib.seek(METADATA_SIZE);
-		node->call("controller_process", p_delta, &ib);
+		node->call(NetworkedController::sn_controller_process, p_delta, &ib);
 		return (i + 1) < frames_snapshot.size();
 	} else {
 		return false;
@@ -1220,7 +1237,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 					pir_B.begin_read();
 					pir_B.seek(METADATA_SIZE);
 
-					const bool are_different = node->call("are_inputs_different", &pir_A, &pir_B);
+					const bool are_different = node->call(NetworkedController::sn_are_inputs_different, &pir_A, &pir_B);
 					is_similar = are_different == false;
 
 				} else if (frames_snapshot[i].similarity == previous_input_similarity) {
@@ -1295,7 +1312,10 @@ void PlayerController::send_frame_input_buffer_to_server() {
 			ofs);
 
 	const int server_peer_id = 1;
-	node->rpc_unreliable_id(server_peer_id, "_rpc_server_send_inputs", packet_data);
+	node->rpc_unreliable_id(
+			server_peer_id,
+			NetworkedController::sn_rpc_server_send_inputs,
+			packet_data);
 }
 
 bool PlayerController::can_accept_new_inputs() const {
@@ -1312,7 +1332,9 @@ DollController::~DollController() {
 
 void DollController::ready() {
 	interpolator.reset();
-	node->call("setup_interpolator", &interpolator);
+	node->call(
+			NetworkedController::sn_setup_interpolator,
+			&interpolator);
 	interpolator.terminate_init();
 }
 
@@ -1325,7 +1347,10 @@ void DollController::process(real_t p_delta) {
 	}
 
 	const real_t fractional_part = advancing_epoch;
-	node->call("apply_epoch", p_delta, interpolator.pop_epoch(frame_epoch, fractional_part));
+	node->call(
+			NetworkedController::sn_apply_epoch,
+			p_delta,
+			interpolator.pop_epoch(frame_epoch, fractional_part));
 }
 
 uint32_t DollController::get_current_input_id() const {
@@ -1424,7 +1449,7 @@ uint32_t DollController::receive_epoch(Vector<uint8_t> p_data) {
 	}
 
 	interpolator.begin_write(epoch);
-	node->call("parse_epoch_data", &interpolator, &buffer);
+	node->call(NetworkedController::sn_parse_epoch_data, &interpolator, &buffer);
 	interpolator.end_write();
 
 	return epoch;
@@ -1517,10 +1542,10 @@ NoNetController::NoNetController(NetworkedController *p_node) :
 
 void NoNetController::process(real_t p_delta) {
 	node->get_inputs_buffer_mut().begin_write(0); // No need of meta in this case.
-	node->call("collect_inputs", p_delta, &node->get_inputs_buffer_mut());
+	node->call(NetworkedController::sn_collect_inputs, p_delta, &node->get_inputs_buffer_mut());
 	node->get_inputs_buffer_mut().dry();
 	node->get_inputs_buffer_mut().begin_read();
-	node->call("controller_process", p_delta, &node->get_inputs_buffer_mut());
+	node->call(NetworkedController::sn_controller_process, p_delta, &node->get_inputs_buffer_mut());
 	frame_id += 1;
 }
 

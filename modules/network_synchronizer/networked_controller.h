@@ -84,6 +84,20 @@ public:
 		CONTROLLER_TYPE_DOLL
 	};
 
+	static StringName sn_rpc_server_send_inputs;
+	static StringName sn_rpc_send_tick_additional_speed;
+	static StringName sn_rpc_doll_notify_sync_pause;
+	static StringName sn_rpc_doll_send_epoch_batch;
+
+	static StringName sn_controller_process;
+	static StringName sn_count_input_size;
+	static StringName sn_are_inputs_different;
+	static StringName sn_collect_epoch_data;
+	static StringName sn_collect_inputs;
+	static StringName sn_setup_interpolator;
+	static StringName sn_parse_epoch_data;
+	static StringName sn_apply_epoch;
+
 private:
 	/// The input storage size is used to cap the amount of inputs collected by
 	/// the `PlayerController`.
