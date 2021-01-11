@@ -1503,12 +1503,9 @@ GDScriptParser::AssertNode *GDScriptParser::parse_assert() {
 
 	if (match(GDScriptTokenizer::Token::COMMA)) {
 		// Error message.
-		if (consume(GDScriptTokenizer::Token::LITERAL, R"(Expected error message for assert after ",".)")) {
-			assert->message = parse_literal();
-			if (assert->message->value.get_type() != Variant::STRING) {
-				push_error(R"(Expected string for assert error message.)");
-			}
-		} else {
+		assert->message = parse_expression(false);
+		if (assert->message == nullptr) {
+			push_error(R"(Expected error message for assert after ",".)");
 			return nullptr;
 		}
 	}
