@@ -83,7 +83,6 @@ void CollisionShape::_notification(int p_what) {
 				if (shape.is_valid()) {
 					parent->shape_owner_add_shape(owner_id, shape);
 				}
-				_update_in_shape_owner();
 			}
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
@@ -170,7 +169,9 @@ void CollisionShape::_bind_methods() {
 }
 
 void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
-
+	if (p_shape == shape) {
+		return;
+	}
 	if (!shape.is_null()) {
 		shape->unregister_owner(this);
 		shape->disconnect("changed", this, "_shape_changed");

@@ -205,6 +205,7 @@ void CollisionPolygon2D::set_polygon(const Vector<Point2> &p_polygon) {
 
 	if (parent) {
 		_build_polygon();
+		_update_in_shape_owner();
 	}
 	update();
 	update_configuration_warning();
@@ -221,6 +222,7 @@ void CollisionPolygon2D::set_build_mode(BuildMode p_mode) {
 	build_mode = p_mode;
 	if (parent) {
 		_build_polygon();
+		_update_in_shape_owner();
 	}
 }
 
