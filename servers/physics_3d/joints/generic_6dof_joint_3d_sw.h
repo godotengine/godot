@@ -86,7 +86,7 @@ public:
 	real_t m_accumulatedImpulse = 0.f;
 	//!@}
 
-	G6DOFRotationalLimitMotor3DSW() {	}
+	G6DOFRotationalLimitMotor3DSW() {}
 
 	//! Is limited
 	bool isLimited() {
@@ -121,7 +121,7 @@ public:
 	//!@}
 	bool enable_limit[3] = {true, true, true};
 
-	G6DOFTranslationalLimitMotor3DSW() {	}
+	G6DOFTranslationalLimitMotor3DSW() {}
 
 	//! Test limit
 	/*!

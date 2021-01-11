@@ -55,7 +55,7 @@ public:
 	};
 
 private:
-	XRServer::TrackerType type = TRACKER_UNKNOWN; // type of tracker
+	XRServer::TrackerType type = XRServer::TRACKER_UNKNOWN; // type of tracker
 	StringName name; // (unique) name of the tracker
 	int tracker_id = 0; // tracker index id that is unique per type
 	int joy_id = 0; // if we also have a related joystick entity, the id of the joystick

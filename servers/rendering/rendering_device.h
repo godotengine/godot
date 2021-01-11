@@ -441,7 +441,7 @@ public:
 		DataFormat format = DATA_FORMAT_R8G8B8A8_UNORM;
 		TextureSamples samples = TEXTURE_SAMPLES_1;
 		uint32_t usage_flags = 0;
-		AttachmentFormat() { }
+		AttachmentFormat() {}
 	};
 
 	typedef int64_t FramebufferFormatID;

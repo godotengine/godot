@@ -408,7 +408,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
 
-	enum PassMode{
+	enum PassMode {
 		PASS_MODE_COLOR,
 		PASS_MODE_COLOR_SPECULAR,
 		PASS_MODE_COLOR_TRANSPARENT,

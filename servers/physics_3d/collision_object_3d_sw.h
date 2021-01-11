@@ -67,7 +67,7 @@ private:
 		Shape3DSW *shape = nullptr;
 		bool disabled = false;
 
-		Shape() { }
+		Shape() {}
 	};
 
 	Vector<Shape> shapes;
