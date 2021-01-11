@@ -377,7 +377,7 @@ class PhysicsDirectBodyState3DSW : public PhysicsDirectBodyState3D {
 	GDCLASS(PhysicsDirectBodyState3DSW, PhysicsDirectBodyState3D);
 
 public:
-	static PhysicsDirectBodyState3DSW *singleton = nullptr;
+	static PhysicsDirectBodyState3DSW *singleton;
 	Body3DSW *body = nullptr;
 	real_t step;
 
