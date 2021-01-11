@@ -72,6 +72,11 @@ by drag and dropping the file in the GitHub edition field.
 We recommend always attaching a minimal reproduction project, even if the issue
 may seem simple to reproduce manually.
 
+**Note for C# users:** If your issue is not Mono-specific, please upload a
+minimal reproduction project written in GDScript or VisualScript.
+This will make it easier for contributors to reproduce the issue
+locally as not everyone has a Mono setup available.
+
 **If you've been asked by a maintainer to upload a minimal reproduction project,
 you *must* do so within 7 days.** Otherwise, your bug report will be closed as
 it'll be considered too difficult to diagnose.
