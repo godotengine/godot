@@ -1752,6 +1752,8 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 				// Those are stored by reference so not suited for compile-time construction.
 				// Because in this case they would be the same reference in all constructed values.
 				case Variant::OBJECT:
+				case Variant::DICTIONARY:
+				case Variant::ARRAY:
 				case Variant::PACKED_BYTE_ARRAY:
 				case Variant::PACKED_INT32_ARRAY:
 				case Variant::PACKED_INT64_ARRAY:
