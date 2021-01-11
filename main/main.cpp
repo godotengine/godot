@@ -1648,6 +1648,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	}
 
 	rendering_server->init();
+	rendering_server->call_set_use_vsync(OS::get_singleton()->_use_vsync);
 	rendering_server->set_render_loop_enabled(!disable_render_loop);
 
 	OS::get_singleton()->initialize_joypads();

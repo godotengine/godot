@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "display_server_x11.h"
+#include "drivers/gles_common/rasterizer_platforms.h"
 
 #ifdef X11_ENABLED
 
@@ -4114,7 +4115,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		}
 		driver_found = true;
 
-		//		gl_manager->set_use_vsync(current_videomode.use_vsync);
+		//gl_manager->set_use_vsync(current_videomode.use_vsync);
 
 		if (true) {
 			//		if (RasterizerGLES2::is_viable() == OK) {
@@ -4329,6 +4330,12 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	_update_real_mouse_position(windows[MAIN_WINDOW_ID]);
 
 	r_error = OK;
+}
+
+void DisplayServerX11::_set_use_vsync(bool p_enable) {
+	if (gl_manager) {
+		gl_manager->set_use_vsync(p_enable);
+	}
 }
 
 DisplayServerX11::~DisplayServerX11() {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,17 +108,9 @@ public:
 	void window_destroy(DisplayServer::WindowID p_window_id);
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 
-	// get directly from the cached GLWindow
-	//	int window_get_width(DisplayServer::WindowID p_window_id = 0);
-	//	int window_get_height(DisplayServer::WindowID p_window_id = 0);
-
 	void release_current();
 	void make_current();
 	void swap_buffers();
-
-	// not used .. .legacy .. but left in case we need to swap to getting from x windows
-	//	int get_x_window_width();
-	//	int get_x_window_height();
 
 	void window_make_current(DisplayServer::WindowID p_window_id);
 

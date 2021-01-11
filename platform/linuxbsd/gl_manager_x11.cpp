@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -257,14 +257,6 @@ void GLManager_X11::window_resize(DisplayServer::WindowID p_window_id, int p_wid
 	get_window(p_window_id).height = p_height;
 }
 
-//int GLManager_X11::window_get_width(DisplayServer::WindowID p_window_id) {
-//	return get_window(p_window_id).width;
-//}
-
-//int GLManager_X11::window_get_height(DisplayServer::WindowID p_window_id) {
-//	return get_window(p_window_id).height;
-//}
-
 void GLManager_X11::window_destroy(DisplayServer::WindowID p_window_id) {
 	GLWindow &win = get_window(p_window_id);
 	win.in_use = false;
@@ -275,22 +267,6 @@ void GLManager_X11::window_destroy(DisplayServer::WindowID p_window_id) {
 		_x_windisp.x11_window = -1;
 	}
 }
-
-//int GLManager_X11::get_x_window_width() {
-//	if (!_current_window)
-//		return 0;
-//	XWindowAttributes xwa;
-//	XGetWindowAttributes(_x_windisp.x11_display, _x_windisp.x11_window, &xwa);
-//	return xwa.width;
-//}
-
-//int GLManager_X11::get_x_window_height() {
-//	if (!_current_window)
-//		return 0;
-//	XWindowAttributes xwa;
-//	XGetWindowAttributes(_x_windisp.x11_display, _x_windisp.x11_window, &xwa);
-//	return xwa.height;
-//}
 
 void GLManager_X11::release_current() {
 	if (!_current_window)
@@ -354,15 +330,25 @@ Error GLManager_X11::initialize() {
 }
 
 void GLManager_X11::set_use_vsync(bool p_use) {
-	/*
 	static bool setup = false;
 	static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = nullptr;
 	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalMESA = nullptr;
 	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalSGI = nullptr;
 
+	// force vsync in the editor for now, as a safety measure
+	bool is_editor = Engine::get_singleton()->is_editor_hint();
+	if (is_editor) {
+		p_use = true;
+	}
+
+	// we need an active window to get a display to set the vsync
+	if (!_current_window)
+		return;
+	const GLDisplay &disp = get_current_display();
+
 	if (!setup) {
 		setup = true;
-		String extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
+		String extensions = glXQueryExtensionsString(disp.x11_display, DefaultScreen(disp.x11_display));
 		if (extensions.find("GLX_EXT_swap_control") != -1)
 			glXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalEXT");
 		if (extensions.find("GLX_MESA_swap_control") != -1)
@@ -377,11 +363,10 @@ void GLManager_X11::set_use_vsync(bool p_use) {
 		glXSwapIntervalSGI(val);
 	} else if (glXSwapIntervalEXT) {
 		GLXDrawable drawable = glXGetCurrentDrawable();
-		glXSwapIntervalEXT(x11_display, drawable, val);
+		glXSwapIntervalEXT(disp.x11_display, drawable, val);
 	} else
 		return;
 	use_vsync = p_use;
-	*/
 }
 
 bool GLManager_X11::is_using_vsync() const {
