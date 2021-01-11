@@ -3355,7 +3355,7 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
 		actions.global_buffer_array_variable = "global_variables.data";
-		actions.instance_uniform_index_variable = "instances.data[instance_index].instance_uniforms_ofs";
+		actions.instance_uniform_index_variable = "draw_call.instance_uniforms_ofs";
 
 		shader.compiler.initialize(actions);
 	}
