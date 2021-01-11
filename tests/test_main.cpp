@@ -48,6 +48,7 @@
 #include "test_gui.h"
 #include "test_json.h"
 #include "test_list.h"
+#include "test_local_vector.h"
 #include "test_lru.h"
 #include "test_math.h"
 #include "test_method_bind.h"
