@@ -1163,24 +1163,26 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant) {
 	GDScriptParser::DataType type;
 
-	reduce_expression(p_constant->initializer);
-	if (p_constant->initializer->type == GDScriptParser::Node::ARRAY) {
-		const_fold_array(static_cast<GDScriptParser::ArrayNode *>(p_constant->initializer));
-	} else if (p_constant->initializer->type == GDScriptParser::Node::DICTIONARY) {
-		const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(p_constant->initializer));
-	}
+	if (p_constant->initializer != nullptr) {
+		reduce_expression(p_constant->initializer);
+		if (p_constant->initializer->type == GDScriptParser::Node::ARRAY) {
+			const_fold_array(static_cast<GDScriptParser::ArrayNode *>(p_constant->initializer));
+		} else if (p_constant->initializer->type == GDScriptParser::Node::DICTIONARY) {
+			const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(p_constant->initializer));
+		}
 
-	if (!p_constant->initializer->is_constant) {
-		push_error(vformat(R"(Assigned value for constant "%s" isn't a constant expression.)", p_constant->identifier->name), p_constant->initializer);
-	}
+		if (!p_constant->initializer->is_constant) {
+			push_error(vformat(R"(Assigned value for constant "%s" isn't a constant expression.)", p_constant->identifier->name), p_constant->initializer);
+		}
 
-	type = p_constant->initializer->get_datatype();
+		type = p_constant->initializer->get_datatype();
 
 #ifdef DEBUG_ENABLED
-	if (p_constant->initializer->type == GDScriptParser::Node::CALL && type.kind == GDScriptParser::DataType::BUILTIN && type.builtin_type == Variant::NIL) {
-		parser->push_warning(p_constant->initializer, GDScriptWarning::VOID_ASSIGNMENT, static_cast<GDScriptParser::CallNode *>(p_constant->initializer)->function_name);
-	}
+		if (p_constant->initializer->type == GDScriptParser::Node::CALL && type.kind == GDScriptParser::DataType::BUILTIN && type.builtin_type == Variant::NIL) {
+			parser->push_warning(p_constant->initializer, GDScriptWarning::VOID_ASSIGNMENT, static_cast<GDScriptParser::CallNode *>(p_constant->initializer)->function_name);
+		}
 #endif
+	}
 
 	if (p_constant->datatype_specifier != nullptr) {
 		GDScriptParser::DataType explicit_type = resolve_datatype(p_constant->datatype_specifier);
