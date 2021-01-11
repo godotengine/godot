@@ -1215,16 +1215,31 @@ void SceneSynchronizer::drop_node_data(NetUtility::NodeData *p_node_data) {
 	}
 
 	for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
-		const uint32_t index = node_data_controllers[i]->dependency_nodes.find(p_node_data);
-		node_data_controllers[i]->dependency_nodes.remove(index);
-		node_data_controllers[i]->dependency_nodes_end.remove(index);
+		const int64_t index = node_data_controllers[i]->dependency_nodes.find(p_node_data);
+		if (index != -1) {
+			node_data_controllers[i]->dependency_nodes.remove_unordered(index);
+			node_data_controllers[i]->dependency_nodes_end.remove_unordered(index);
+		}
 	}
 
 	// Remove this `NodeData` from any event listener.
 	for (uint32_t i = 0; i < event_listener.size(); i += 1) {
-		for (int v = event_listener[i].watching_vars.size() - 1; v >= 0; v -= 1) {
-			if (event_listener[i].watching_vars[v].node_data == p_node_data) {
-				event_listener[i].watching_vars.remove(v);
+		while (true) {
+			uint32_t index_to_remove = UINT32_MAX;
+
+			// Search.
+			for (uint32_t v = 0; v < event_listener[i].watching_vars.size(); v += 1) {
+				if (event_listener[i].watching_vars[v].node_data == p_node_data) {
+					index_to_remove = v;
+					break;
+				}
+			}
+
+			if (index_to_remove == UINT32_MAX) {
+				// Nothing more to do.
+				break;
+			} else {
+				event_listener[i].watching_vars.remove_unordered(index_to_remove);
 			}
 		}
 	}
@@ -1445,8 +1460,8 @@ void SceneSynchronizer::purge_node_dependencies() {
 			if (node_data_controllers[i]->dependency_nodes_end[d] < client_sync->last_checked_input) {
 				// This controller dependency can be cleared because the server
 				// snapshot check has
-				node_data_controllers[i]->dependency_nodes.remove(d); // TODO use remove_fast
-				node_data_controllers[i]->dependency_nodes_end.remove(d); // TODO use remove fast.
+				node_data_controllers[i]->dependency_nodes.remove_unordered(d);
+				node_data_controllers[i]->dependency_nodes_end.remove_unordered(d);
 				d -= 1;
 			}
 		}
