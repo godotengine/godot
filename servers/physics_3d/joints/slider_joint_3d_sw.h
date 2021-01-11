@@ -73,7 +73,7 @@ protected:
 			Body3DSW *B = nullptr;
 		};
 
-		Body3DSW *_arr[2] = {};
+		Body3DSW *_arr[2];
 	};
 
 	Transform m_frameInA;

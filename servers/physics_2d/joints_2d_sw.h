@@ -95,7 +95,7 @@ class GrooveJoint2DSW : public Joint2DSW {
 			Body2DSW *B = nullptr;
 		};
 
-		Body2DSW *_arr[2] = {};
+		Body2DSW *_arr[2];
 	};
 
 	Vector2 A_groove_1;
@@ -129,7 +129,7 @@ class DampedSpringJoint2DSW : public Joint2DSW {
 			Body2DSW *B = nullptr;
 		};
 
-		Body2DSW *_arr[2] = {};
+		Body2DSW *_arr[2];
 	};
 
 	Vector2 anchor_A;

@@ -242,7 +242,7 @@ public:
 		uint32_t layer_mask = 0; //for fast layer-mask discard
 		RID base_rid;
 		union {
-			uint64_t instance_data_rid;
+			uint64_t instance_data_rid = 0;
 			RendererSceneRender::GeometryInstance *instance_geometry;
 		};
 		Instance *instance = nullptr;

@@ -52,7 +52,7 @@ class BroadPhase3DBasic : public BroadPhase3DSW {
 				ID a = 0;
 				ID b = 0;
 			};
-			uint64_t key = 0;
+			uint64_t key;
 		};
 
 		_FORCE_INLINE_ bool operator<(const PairKey &p_key) const {

@@ -152,7 +152,7 @@ protected:
 			Body3DSW *B = nullptr;
 		};
 
-		Body3DSW *_arr[2] = {};
+		Body3DSW *_arr[2];
 	};
 
 	//! relative_frames

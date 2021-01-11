@@ -80,7 +80,7 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 				ID a = 0;
 				ID b = 0;
 			};
-			uint64_t key = 0;
+			uint64_t key;
 		};
 
 		_FORCE_INLINE_ bool operator<(const PairKey &p_key) const {
@@ -120,7 +120,7 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 				int32_t x = 0;
 				int32_t y = 0;
 			};
-			uint64_t key = 0;
+			uint64_t key;
 		};
 
 		_FORCE_INLINE_ uint32_t hash() const {
