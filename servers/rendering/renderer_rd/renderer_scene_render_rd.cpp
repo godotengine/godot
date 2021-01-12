@@ -4416,7 +4416,10 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 							}
 						}
 
-						dmap.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, giprobe_lighting_shader_version_shaders[(write && plot) ? GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE_PLOT : write ? GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE : GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_PLOT], 0);
+						dmap.uniform_set = RD::get_singleton()->uniform_set_create(
+								uniforms,
+								giprobe_lighting_shader_version_shaders[(write && plot) ? GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE_PLOT : (write ? GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE : GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_PLOT)],
+								0);
 					}
 
 					gi_probe->dynamic_maps.push_back(dmap);
@@ -4850,7 +4853,16 @@ void RendererSceneRenderRD::_debug_giprobe(RID p_gi_probe, RD::DrawListID p_draw
 	}
 
 	giprobe_debug_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, giprobe_debug_shader_version_shaders[0], 0);
-	RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, giprobe_debug_shader_version_pipelines[p_emission ? GI_PROBE_DEBUG_EMISSION : p_lighting ? (gi_probe->has_dynamic_object_data ? GI_PROBE_DEBUG_LIGHT_FULL : GI_PROBE_DEBUG_LIGHT) : GI_PROBE_DEBUG_COLOR].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
+
+	int giprobe_debug_pipeline = GI_PROBE_DEBUG_COLOR;
+	if (p_emission) {
+		giprobe_debug_pipeline = GI_PROBE_DEBUG_EMISSION;
+	} else if (p_lighting) {
+		giprobe_debug_pipeline = gi_probe->has_dynamic_object_data ? GI_PROBE_DEBUG_LIGHT_FULL : GI_PROBE_DEBUG_LIGHT;
+	}
+	RD::get_singleton()->draw_list_bind_render_pipeline(
+			p_draw_list,
+			giprobe_debug_shader_version_pipelines[giprobe_debug_pipeline].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, giprobe_debug_uniform_set, 0);
 	RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(GIProbeDebugPushConstant));
 	RD::get_singleton()->draw_list_draw(p_draw_list, false, cell_count, 36);

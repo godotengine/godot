@@ -790,8 +790,8 @@ Quat Basis::get_quat() const {
 		temp[2] = ((m.elements[1][0] - m.elements[0][1]) * s);
 	} else {
 		int i = m.elements[0][0] < m.elements[1][1] ?
-						(m.elements[1][1] < m.elements[2][2] ? 2 : 1) :
-						(m.elements[0][0] < m.elements[2][2] ? 2 : 0);
+						  (m.elements[1][1] < m.elements[2][2] ? 2 : 1) :
+						  (m.elements[0][0] < m.elements[2][2] ? 2 : 0);
 		int j = (i + 1) % 3;
 		int k = (i + 2) % 3;
 

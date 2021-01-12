@@ -132,7 +132,7 @@ real_t G6DOFRotationalLimitMotor3DSW::solveAngularLimits(
 
 	real_t oldaccumImpulse = m_accumulatedImpulse;
 	real_t sum = oldaccumImpulse + clippedMotorImpulse;
-	m_accumulatedImpulse = sum > hi ? real_t(0.) : sum < lo ? real_t(0.) : sum;
+	m_accumulatedImpulse = sum > hi ? real_t(0.) : (sum < lo ? real_t(0.) : sum);
 
 	clippedMotorImpulse = m_accumulatedImpulse - oldaccumImpulse;
 
@@ -201,7 +201,7 @@ real_t G6DOFTranslationalLimitMotor3DSW::solveLinearAxis(
 
 	real_t oldNormalImpulse = m_accumulatedImpulse[limit_index];
 	real_t sum = oldNormalImpulse + normalImpulse;
-	m_accumulatedImpulse[limit_index] = sum > hi ? real_t(0.) : sum < lo ? real_t(0.) : sum;
+	m_accumulatedImpulse[limit_index] = sum > hi ? real_t(0.) : (sum < lo ? real_t(0.) : sum);
 	normalImpulse = m_accumulatedImpulse[limit_index] - oldNormalImpulse;
 
 	Vector3 impulse_vector = axis_normal_on_a * normalImpulse;

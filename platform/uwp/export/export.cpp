@@ -760,7 +760,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		result = result.replace("$version_string$", version);
 
 		Platform arch = (Platform)(int)p_preset->get("architecture/target");
-		String architecture = arch == ARM ? "arm" : arch == X86 ? "x86" : "x64";
+		String architecture = arch == ARM ? "arm" : (arch == X86 ? "x86" : "x64");
 		result = result.replace("$architecture$", architecture);
 
 		result = result.replace("$display_name$", String(p_preset->get("package/display_name")).is_empty() ? (String)ProjectSettings::get_singleton()->get("application/config/name") : String(p_preset->get("package/display_name")));
