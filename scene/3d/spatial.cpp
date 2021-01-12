@@ -248,8 +248,8 @@ void Spatial::set_global_transform(const Transform &p_transform) {
 
 	Transform xform =
 			(data.parent && !data.toplevel_active) ?
-					data.parent->get_global_transform().affine_inverse() * p_transform :
-					p_transform;
+					  data.parent->get_global_transform().affine_inverse() * p_transform :
+					  p_transform;
 
 	set_transform(xform);
 }
