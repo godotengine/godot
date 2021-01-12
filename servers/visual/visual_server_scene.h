@@ -33,6 +33,7 @@
 
 #include "servers/visual/rasterizer.h"
 
+#include "core/math/bvh.h"
 #include "core/math/geometry.h"
 #include "core/math/octree.h"
 #include "core/os/semaphore.h"
@@ -52,6 +53,7 @@ public:
 	};
 
 	uint64_t render_pass;
+	bool _use_bvh;
 
 	static VisualServerScene *singleton;
 
@@ -103,12 +105,82 @@ public:
 
 	struct Instance;
 
+	// common interface for all spatial partitioning schemes
+	// this is a bit excessive boilerplatewise but can be removed if we decide to stick with one method
+
+	// note this is actually the BVH id +1, so that visual server can test against zero
+	// for validity to maintain compatibility with octree (where 0 indicates invalid)
+	typedef uint32_t SpatialPartitionID;
+
+	class SpatialPartitioningScene {
+	public:
+		virtual SpatialPartitionID create(Instance *p_userdata, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t pairable_mask = 1) = 0;
+		virtual void erase(SpatialPartitionID p_handle) = 0;
+		virtual void move(SpatialPartitionID p_handle, const AABB &p_aabb) = 0;
+		virtual void update() {}
+		virtual void set_pairable(SpatialPartitionID p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) = 0;
+		virtual int cull_convex(const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, uint32_t p_mask = 0xFFFFFFFF) = 0;
+		virtual int cull_aabb(const AABB &p_aabb, Instance **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) = 0;
+		virtual int cull_segment(const Vector3 &p_from, const Vector3 &p_to, Instance **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) = 0;
+
+		typedef void *(*PairCallback)(void *, uint32_t, Instance *, int, uint32_t, Instance *, int);
+		typedef void (*UnpairCallback)(void *, uint32_t, Instance *, int, uint32_t, Instance *, int, void *);
+
+		virtual void set_pair_callback(PairCallback p_callback, void *p_userdata) = 0;
+		virtual void set_unpair_callback(UnpairCallback p_callback, void *p_userdata) = 0;
+
+		// bvh specific
+		virtual void params_set_node_expansion(real_t p_value) {}
+		virtual void params_set_pairing_expansion(real_t p_value) {}
+
+		// octree specific
+		virtual void set_balance(float p_balance) {}
+
+		virtual ~SpatialPartitioningScene() {}
+	};
+
+	class SpatialPartitioningScene_Octree : public SpatialPartitioningScene {
+		Octree_CL<Instance, true> _octree;
+
+	public:
+		SpatialPartitionID create(Instance *p_userdata, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t pairable_mask = 1);
+		void erase(SpatialPartitionID p_handle);
+		void move(SpatialPartitionID p_handle, const AABB &p_aabb);
+		void set_pairable(SpatialPartitionID p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask);
+		int cull_convex(const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, uint32_t p_mask = 0xFFFFFFFF);
+		int cull_aabb(const AABB &p_aabb, Instance **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF);
+		int cull_segment(const Vector3 &p_from, const Vector3 &p_to, Instance **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF);
+		void set_pair_callback(PairCallback p_callback, void *p_userdata);
+		void set_unpair_callback(UnpairCallback p_callback, void *p_userdata);
+		void set_balance(float p_balance);
+	};
+
+	class SpatialPartitioningScene_BVH : public SpatialPartitioningScene {
+		// Note that SpatialPartitionIDs are +1 based when stored in visual server, to enable 0 to indicate invalid ID.
+		BVH_Manager<Instance, true, 256> _bvh;
+
+	public:
+		SpatialPartitionID create(Instance *p_userdata, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1);
+		void erase(SpatialPartitionID p_handle);
+		void move(SpatialPartitionID p_handle, const AABB &p_aabb);
+		void update();
+		void set_pairable(SpatialPartitionID p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask);
+		int cull_convex(const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, uint32_t p_mask = 0xFFFFFFFF);
+		int cull_aabb(const AABB &p_aabb, Instance **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF);
+		int cull_segment(const Vector3 &p_from, const Vector3 &p_to, Instance **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF);
+		void set_pair_callback(PairCallback p_callback, void *p_userdata);
+		void set_unpair_callback(UnpairCallback p_callback, void *p_userdata);
+
+		void params_set_node_expansion(real_t p_value) { _bvh.params_set_node_expansion(p_value); }
+		void params_set_pairing_expansion(real_t p_value) { _bvh.params_set_pairing_expansion(p_value); }
+	};
+
 	struct Scenario : RID_Data {
 
 		VS::ScenarioDebugMode debug;
 		RID self;
 
-		Octree_CL<Instance, true> octree;
+		SpatialPartitioningScene *sps;
 
 		List<Instance *> directional_lights;
 		RID environment;
@@ -118,13 +190,14 @@ public:
 
 		SelfList<Instance>::List instances;
 
-		Scenario() { debug = VS::SCENARIO_DEBUG_DISABLED; }
+		Scenario();
+		~Scenario() { memdelete(sps); }
 	};
 
 	mutable RID_Owner<Scenario> scenario_owner;
 
-	static void *_instance_pair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int);
-	static void _instance_unpair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int, void *);
+	static void *_instance_pair(void *p_self, SpatialPartitionID, Instance *p_A, int, SpatialPartitionID, Instance *p_B, int);
+	static void _instance_unpair(void *p_self, SpatialPartitionID, Instance *p_A, int, SpatialPartitionID, Instance *p_B, int, void *);
 
 	virtual RID scenario_create();
 
@@ -144,7 +217,7 @@ public:
 
 		RID self;
 		//scenario stuff
-		OctreeElementID octree_id;
+		SpatialPartitionID spatial_partition_id;
 		Scenario *scenario;
 		SelfList<Instance> scenario_item;
 
@@ -187,7 +260,7 @@ public:
 				scenario_item(this),
 				update_item(this) {
 
-			octree_id = 0;
+			spatial_partition_id = 0;
 			scenario = NULL;
 
 			update_aabb = false;

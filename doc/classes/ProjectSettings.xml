@@ -996,6 +996,9 @@
 			The default linear damp in 3D.
 			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
+		<member name="physics/3d/godot_physics/use_bvh" type="bool" setter="" getter="" default="false">
+			Enables the use of bounding volume hierarchy instead of octree for physics spatial partitioning. This may give better performance.
+		</member>
 		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use for 3D physics.
 			"DEFAULT" is currently the [url=https://bulletphysics.org]Bullet[/url] physics engine. The "GodotPhysics" engine is still supported as an alternative.
@@ -1243,6 +1246,9 @@
 		<member name="rendering/quality/spatial_partitioning/render_tree_balance" type="float" setter="" getter="" default="0.0">
 			The rendering octree balance can be changed to favor smaller ([code]0[/code]), or larger ([code]1[/code]) branches.
 			Larger branches can increase performance significantly in some projects.
+		</member>
+		<member name="rendering/quality/spatial_partitioning/use_bvh" type="bool" setter="" getter="" default="false">
+			Enables the use of bounding volume hierarchy instead of octree for rendering spatial partitioning. This may give better performance.
 		</member>
 		<member name="rendering/quality/subsurface_scattering/follow_surface" type="bool" setter="" getter="" default="false">
 			Improves quality of subsurface scattering, but cost significantly increases.

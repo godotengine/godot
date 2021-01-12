@@ -335,6 +335,10 @@ void World::_bind_methods() {
 
 World::World() {
 
+	// These defaults must be created BEFORE creating the scenario, because the BVH reads
+	// the defaults at that point.
+	GLOBAL_DEF("physics/3d/godot_physics/use_bvh", true);
+
 	space = PhysicsServer::get_singleton()->space_create();
 	scenario = VisualServer::get_singleton()->scenario_create();
 
