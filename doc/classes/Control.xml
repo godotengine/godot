@@ -16,6 +16,7 @@
 	<tutorials>
 		<link title="GUI tutorial index">https://docs.godotengine.org/en/3.2/tutorials/gui/index.html</link>
 		<link title="Custom drawing in 2D">https://docs.godotengine.org/en/3.2/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link title="Control node gallery">https://docs.godotengine.org/en/latest/tutorials/ui/control_node_gallery.html</link>
 		<link title="All GUI Demos">https://github.com/godotengine/godot-demo-projects/tree/master/gui</link>
 	</tutorials>
 	<methods>
