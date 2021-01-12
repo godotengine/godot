@@ -6,6 +6,7 @@ env:
   GODOT_BASE_BRANCH: 3.2
   SCONSFLAGS: platform=android verbose=yes warnings=all werror=yes --jobs=2
   SCONS_CACHE_LIMIT: 4096
+  ANDROID_NDK_VERSION: 21.1.6352462
 
 jobs:
   android-template:
@@ -27,6 +28,10 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 8
+
+      - name: Install Android NDK r21
+        run: |
+          sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install 'ndk;${{env.ANDROID_NDK_VERSION}}'
 
       # Upload cache on completion and check it out now
       - name: Load .scons_cache directory
@@ -59,7 +64,7 @@ jobs:
       - name: Compilation
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
-          ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk-bundle
+          ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/${{env.ANDROID_NDK_VERSION}}/
         run: |
           scons target=release tools=no android_arch=armv7
           scons target=release tools=no android_arch=arm64v8
