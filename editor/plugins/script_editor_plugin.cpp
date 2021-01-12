@@ -2059,6 +2059,9 @@ void ScriptEditor::_update_script_names() {
 		_update_members_overview();
 		_update_help_overview();
 	} else {
+		call_deferred("_update_members_overview");
+		call_deferred("_update_help_overview");
+
 		waiting_update_names = false;
 	}
 	_update_members_overview_visibility();
@@ -3247,6 +3250,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_live_auto_reload_running_scripts", &ScriptEditor::_live_auto_reload_running_scripts);
 	ClassDB::bind_method("_unhandled_key_input", &ScriptEditor::_unhandled_key_input);
 	ClassDB::bind_method("_update_members_overview", &ScriptEditor::_update_members_overview);
+	ClassDB::bind_method("_update_help_overview", &ScriptEditor::_update_help_overview);
 	ClassDB::bind_method("_update_recent_scripts", &ScriptEditor::_update_recent_scripts);
 
 	ClassDB::bind_method("get_current_editor", &ScriptEditor::_get_current_editor);
