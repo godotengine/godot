@@ -52,6 +52,11 @@ class RasterizerCanvasGLES2;
 class RasterizerSceneGLES2;
 
 class RasterizerStorageGLES2 : public StubsStorage {
+	friend class RasterizerGLES2;
+
+	Thread::ID _main_thread_id = 0;
+	bool _is_main_thread();
+
 public:
 	RasterizerCanvasGLES2 *canvas;
 	RasterizerSceneGLES2 *scene;

@@ -391,13 +391,7 @@ public:
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
 
-<<<<<<< HEAD
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
-=======
-	virtual void _set_use_vsync(bool p_enable) override;
-
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
->>>>>>> f2a5753997... Added GLES2 vsync support
 	static Vector<String> get_rendering_drivers_func();
 
 	static void register_x11_driver();

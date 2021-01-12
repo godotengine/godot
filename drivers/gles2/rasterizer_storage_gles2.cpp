@@ -592,7 +592,17 @@ void RasterizerStorageGLES2::texture_replace(RID p_texture, RID p_by_texture) {
 	}
 }
 
+bool RasterizerStorageGLES2::_is_main_thread() {
+	//#if defined DEBUG_ENABLED && defined TOOLS_ENABLED
+	// must be called from main thread in OpenGL
+	bool is_main_thread = _main_thread_id == Thread::get_caller_id();
+	//#endif
+	return is_main_thread;
+}
+
 RID RasterizerStorageGLES2::texture_create() {
+	ERR_FAIL_COND_V(!_is_main_thread(), RID());
+
 	Texture *texture = memnew(Texture);
 	ERR_FAIL_COND_V(!texture, RID());
 	glGenTextures(1, &texture->tex_id);
@@ -602,7 +612,13 @@ RID RasterizerStorageGLES2::texture_create() {
 	return texture_owner.make_rid(texture);
 }
 
+<<<<<<< HEAD
 void RasterizerStorageGLES2::_texture_allocate_internal(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, GD_RD::TextureType p_type, uint32_t p_flags) {
+=======
+void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, GD_RD::TextureType p_type, uint32_t p_flags) {
+	ERR_FAIL_COND(!_is_main_thread());
+
+>>>>>>> 0e52a6f1ad... GLES2 tidying, TIME and bootscreen
 	//	GLenum format;
 	//	GLenum internal_format;
 	//	GLenum type;
@@ -720,6 +736,8 @@ void RasterizerStorageGLES2::_texture_allocate_internal(RID p_texture, int p_wid
 
 void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer) {
 	Texture *texture = texture_owner.getornull(p_texture);
+
+	ERR_FAIL_COND(!_is_main_thread());
 
 	ERR_FAIL_COND(!texture);
 	if (texture->target == GL_TEXTURE_3D) {

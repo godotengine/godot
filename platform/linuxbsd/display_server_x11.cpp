@@ -44,12 +44,11 @@
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 
-#include <limits.h>
-
 #if defined(GLES_X11_ENABLED)
 #include "drivers/gles2/rasterizer_gles2.h"
 #endif
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

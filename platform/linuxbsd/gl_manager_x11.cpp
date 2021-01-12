@@ -65,19 +65,6 @@ static int ctxErrorHandler(Display *dpy, XErrorEvent *ev) {
 	return 0;
 }
 
-//static void set_class_hint(Display *p_display, Window p_window) {
-//	XClassHint *classHint;
-
-//	/* set the name and class hints for the window manager to use */
-//	classHint = XAllocClassHint();
-//	if (classHint) {
-//		classHint->res_name = (char *)"Godot_Engine";
-//		classHint->res_class = (char *)"Godot";
-//	}
-//	XSetClassHint(p_display, p_window, classHint);
-//	XFree(classHint);
-//}
-
 int GLManager_X11::_find_or_create_display(Display *p_x11_display) {
 	for (unsigned int n = 0; n < _displays.size(); n++) {
 		const GLDisplay &d = _displays[n];

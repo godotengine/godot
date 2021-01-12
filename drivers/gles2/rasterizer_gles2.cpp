@@ -87,6 +87,36 @@
 #define strcpy strcpy_s
 #endif
 
+void RasterizerGLES2::begin_frame(double frame_step) {
+	frame++;
+	delta = frame_step;
+
+	// from 3.2
+	time_total += frame_step * time_scale;
+
+	if (frame_step == 0) {
+		//to avoid hiccups
+		frame_step = 0.001;
+	}
+
+	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
+	time_total = Math::fmod(time_total, time_roll_over);
+
+	storage.frame.time[0] = time_total;
+	storage.frame.time[1] = Math::fmod(time_total, 3600);
+	storage.frame.time[2] = Math::fmod(time_total, 900);
+	storage.frame.time[3] = Math::fmod(time_total, 60);
+	storage.frame.count++;
+	storage.frame.delta = frame_step;
+
+	storage.update_dirty_resources();
+
+	storage.info.render_final = storage.info.render;
+	storage.info.render.reset();
+
+	//scene->iteration();
+}
+
 void RasterizerGLES2::end_frame(bool p_swap_buffers) {
 	//	if (OS::get_singleton()->is_layered_allowed()) {
 	//		if (!OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
@@ -168,6 +198,8 @@ typedef void (*DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userP
 
 void RasterizerGLES2::initialize() {
 	print_verbose("Using GLES2 video driver");
+
+	storage._main_thread_id = Thread::get_caller_id();
 
 #ifdef GLAD_ENABLED
 	if (!gladLoadGL()) {
@@ -279,6 +311,64 @@ void RasterizerGLES2::blit_render_targets_to_screen(DisplayServer::WindowID p_sc
 		Rect2 dst_rect = blit.dst_rect;
 		_blit_render_target_to_screen(rid_rt, dst_rect);
 	}
+}
+
+void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+	if (p_image.is_null() || p_image->is_empty())
+		return;
+
+	int window_w = 640; //OS::get_singleton()->get_video_mode(0).width;
+	int window_h = 480; //OS::get_singleton()->get_video_mode(0).height;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, window_w, window_h);
+	glDisable(GL_BLEND);
+	glDepthMask(GL_FALSE);
+	if (false) {
+		//	if (OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+	} else {
+		glClearColor(p_color.r, p_color.g, p_color.b, 1.0);
+	}
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	canvas.canvas_begin();
+
+	RID texture = storage.texture_create();
+	//storage.texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_use_filter ? VS::TEXTURE_FLAG_FILTER : 0);
+	storage.texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), GD_RD::TEXTURE_TYPE_2D);
+	storage.texture_set_data(texture, p_image);
+
+	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
+	Rect2 screenrect;
+	if (p_scale) {
+		if (window_w > window_h) {
+			//scale horizontally
+			screenrect.size.y = window_h;
+			screenrect.size.x = imgrect.size.x * window_h / imgrect.size.y;
+			screenrect.position.x = (window_w - screenrect.size.x) / 2;
+
+		} else {
+			//scale vertically
+			screenrect.size.x = window_w;
+			screenrect.size.y = imgrect.size.y * window_w / imgrect.size.x;
+			screenrect.position.y = (window_h - screenrect.size.y) / 2;
+		}
+	} else {
+		screenrect = imgrect;
+		screenrect.position += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
+	}
+
+	RasterizerStorageGLES2::Texture *t = storage.texture_owner.getornull(texture);
+	glActiveTexture(GL_TEXTURE0 + storage.config.max_texture_image_units - 1);
+	glBindTexture(GL_TEXTURE_2D, t->tex_id);
+	canvas.draw_generic_textured_rect(screenrect, Rect2(0, 0, 1, 1));
+	glBindTexture(GL_TEXTURE_2D, 0);
+	canvas.canvas_end();
+
+	storage.free(texture);
+
+	end_frame(true);
 }
 
 #endif // GLES2_BACKEND_ENABLED

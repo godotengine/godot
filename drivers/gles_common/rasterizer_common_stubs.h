@@ -317,11 +317,12 @@ public:
 	// MESH API 
 
 	RID mesh_create() override {
-		DummyMesh *mesh = memnew(DummyMesh);
-		ERR_FAIL_COND_V(!mesh, RID());
-		mesh->blend_shape_count = 0;
-		mesh->blend_shape_mode = RS::BLEND_SHAPE_MODE_NORMALIZED;
-		return mesh_owner.make_rid(mesh);
+		return RID();
+		//		DummyMesh *mesh = memnew(DummyMesh);
+		//		ERR_FAIL_COND_V(!mesh, RID());
+		//		mesh->blend_shape_count = 0;
+		//		mesh->blend_shape_mode = RS::BLEND_SHAPE_MODE_NORMALIZED;
+		//		return mesh_owner.make_rid(mesh);
 	}
 
 	void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) override {}
@@ -360,9 +361,9 @@ public:
 	}
 
 	void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
-		m->blend_shape_mode = p_mode;
+		//		DummyMesh *m = mesh_owner.getornull(p_mesh);
+		//		ERR_FAIL_COND(!m);
+		//		m->blend_shape_mode = p_mode;
 	}
 	RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const override {
 		DummyMesh *m = mesh_owner.getornull(p_mesh);
