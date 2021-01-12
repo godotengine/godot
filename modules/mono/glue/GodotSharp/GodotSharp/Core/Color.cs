@@ -649,7 +649,7 @@ namespace Godot
             name = name.Replace("_", String.Empty);
             name = name.Replace("'", String.Empty);
             name = name.Replace(".", String.Empty);
-            name = name.ToLower();
+            name = name.ToUpper();
 
             if (!Colors.namedColors.ContainsKey(name))
             {
