@@ -44,6 +44,9 @@ private:
 	uint64_t frame = 1;
 	float delta = 0;
 
+	double time_total = 0.0;
+	double time_scale = 1.0;
+
 protected:
 	RasterizerCanvasGLES2 canvas;
 	RasterizerStorageGLES2 storage;
@@ -56,13 +59,10 @@ public:
 	RendererCanvasRender *get_canvas() { return &canvas; }
 	RendererSceneRender *get_scene() { return &scene; }
 
-	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) {}
+	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
 
 	void initialize();
-	void begin_frame(double frame_step) {
-		frame++;
-		delta = frame_step;
-	}
+	void begin_frame(double frame_step);
 
 	void prepare_for_blitting_render_targets();
 	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
