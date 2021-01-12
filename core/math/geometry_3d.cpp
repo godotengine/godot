@@ -33,7 +33,7 @@
 #include "core/string/print_string.h"
 
 #include "thirdparty/misc/clipper.hpp"
-#include "thirdparty/misc/triangulator.h"
+#include "thirdparty/misc/polypartition.h"
 
 void Geometry3D::MeshData::optimize_vertices() {
 	Map<int, int> vtx_remap;

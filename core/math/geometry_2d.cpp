@@ -31,7 +31,7 @@
 #include "geometry_2d.h"
 
 #include "thirdparty/misc/clipper.hpp"
-#include "thirdparty/misc/triangulator.h"
+#include "thirdparty/misc/polypartition.h"
 #define STB_RECT_PACK_IMPLEMENTATION
 #include "thirdparty/misc/stb_rect_pack.h"
 
@@ -39,16 +39,16 @@
 
 Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(Vector<Point2> polygon) {
 	Vector<Vector<Vector2>> decomp;
-	List<TriangulatorPoly> in_poly, out_poly;
+	List<TPPLPoly> in_poly, out_poly;
 
-	TriangulatorPoly inp;
+	TPPLPoly inp;
 	inp.Init(polygon.size());
 	for (int i = 0; i < polygon.size(); i++) {
 		inp.GetPoint(i) = polygon[i];
 	}
-	inp.SetOrientation(TRIANGULATOR_CCW);
+	inp.SetOrientation(TPPL_ORIENTATION_CCW);
 	in_poly.push_back(inp);
-	TriangulatorPartition tpart;
+	TPPLPartition tpart;
 	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { // Failed.
 		ERR_PRINT("Convex decomposing failed!");
 		return decomp;
@@ -56,8 +56,8 @@ Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(Vector<Point2> p
 
 	decomp.resize(out_poly.size());
 	int idx = 0;
-	for (List<TriangulatorPoly>::Element *I = out_poly.front(); I; I = I->next()) {
-		TriangulatorPoly &tp = I->get();
+	for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {
+		TPPLPoly &tp = I->get();
 
 		decomp.write[idx].resize(tp.GetNumPoints());
 

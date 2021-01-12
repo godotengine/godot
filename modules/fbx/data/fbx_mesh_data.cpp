@@ -34,7 +34,7 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
 
-#include "thirdparty/misc/triangulator.h"
+#include "thirdparty/misc/polypartition.h"
 
 template <class T>
 T collect_first(const Vector<VertexData<T>> *p_data, T p_fall_back) {
@@ -930,30 +930,30 @@ void FBXMeshData::triangulate_polygon(Ref<SurfaceTool> st, Vector<int> p_polygon
 			}
 		}
 
-		TriangulatorPoly triangulator_poly;
-		triangulator_poly.Init(polygon_vertex_count);
+		TPPLPoly tppl_poly;
+		tppl_poly.Init(polygon_vertex_count);
 		std::vector<Vector2> projected_vertices(polygon_vertex_count);
 		for (int i = 0; i < polygon_vertex_count; i += 1) {
 			const Vector2 pv(poly_vertices[i][axis_1_coord], poly_vertices[i][axis_2_coord]);
 			projected_vertices[i] = pv;
-			triangulator_poly.GetPoint(i) = pv;
+			tppl_poly.GetPoint(i) = pv;
 		}
-		triangulator_poly.SetOrientation(TRIANGULATOR_CCW);
+		tppl_poly.SetOrientation(TPPL_ORIENTATION_CCW);
 
-		List<TriangulatorPoly> out_poly;
+		List<TPPLPoly> out_poly;
 
-		TriangulatorPartition triangulator_partition;
-		if (triangulator_partition.Triangulate_OPT(&triangulator_poly, &out_poly) == 0) { // Good result.
-			if (triangulator_partition.Triangulate_EC(&triangulator_poly, &out_poly) == 0) { // Medium result.
-				if (triangulator_partition.Triangulate_MONO(&triangulator_poly, &out_poly) == 0) { // Really poor result.
+		TPPLPartition tppl_partition;
+		if (tppl_partition.Triangulate_OPT(&tppl_poly, &out_poly) == 0) { // Good result.
+			if (tppl_partition.Triangulate_EC(&tppl_poly, &out_poly) == 0) { // Medium result.
+				if (tppl_partition.Triangulate_MONO(&tppl_poly, &out_poly) == 0) { // Really poor result.
 					ERR_FAIL_MSG("The triangulation of this polygon failed, please try to triangulate your mesh or check if it has broken polygons.");
 				}
 			}
 		}
 
 		std::vector<Vector2> tris(out_poly.size());
-		for (List<TriangulatorPoly>::Element *I = out_poly.front(); I; I = I->next()) {
-			TriangulatorPoly &tp = I->get();
+		for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {
+			TPPLPoly &tp = I->get();
 
 			ERR_FAIL_COND_MSG(tp.GetNumPoints() != 3, "The triangulator retuned more points, how this is possible?");
 			// Find Index
