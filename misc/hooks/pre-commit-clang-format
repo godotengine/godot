@@ -74,23 +74,37 @@ else
     against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
 fi
 
+# To get consistent formatting, we recommend contributors to use the same
+# clang-format version as CI.
+RECOMMENDED_CLANG_FORMAT_MAJOR="11"
+
 if [ ! -x "$CLANG_FORMAT" ] ; then
+	message="Error: clang-format executable not found. Please install clang-format $RECOMMENDED_CLANG_FORMAT_MAJOR.x.x."
+
     if [ ! -t 1 ] ; then
         if [ -x "$ZENITY" ] ; then
-            $ZENITY --error --title="Error" --text="Error: clang-format executable not found."
+            $ZENITY --error --title="Error" --text="$message"
             exit 1
         elif [ -x "$XMSG" ] ; then
-            $XMSG -center -title "Error" "Error: clang-format executable not found."
+            $XMSG -center -title "Error" "$message"
             exit 1
         elif [ \( \( "$OSTYPE" = "msys" \) -o \( "$OSTYPE" = "win32" \) \) -a \( -x "$PWSH" \) ]; then
             winmessage="$(canonicalize_filename "./.git/hooks/winmessage.ps1")"
-            $PWSH -noprofile -executionpolicy bypass -file "$winmessage" -center -title "Error" --text "Error: clang-format executable not found."
+            $PWSH -noprofile -executionpolicy bypass -file "$winmessage" -center -title "Error" --text "$message"
             exit 1
         fi
     fi
-    printf "Error: clang-format executable not found.\n"
+    printf "$message\n"
     printf "Set the correct path in $(canonicalize_filename "$0").\n"
     exit 1
+fi
+
+CLANG_FORMAT_VERSION="$(clang-format --version | cut -d' ' -f3)"
+CLANG_FORMAT_MAJOR="$(echo "$CLANG_FORMAT_VERSION" | cut -d'.' -f1)"
+
+if [ "$CLANG_FORMAT_MAJOR" != "$RECOMMENDED_CLANG_FORMAT_MAJOR" ]; then
+    echo "Warning: Your clang-format binary is the wrong version ($CLANG_FORMAT_VERSION, expected $CLANG_FORMAT_MAJOR.x.x)."
+    echo "         Consider upgrading or downgrading clang-format as formatting may not be applied correctly."
 fi
 
 # create a random filename to store our generated patch
