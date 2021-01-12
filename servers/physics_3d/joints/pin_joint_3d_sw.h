@@ -56,11 +56,11 @@ subject to the following restrictions:
 class PinJoint3DSW : public Joint3DSW {
 	union {
 		struct {
-			Body3DSW *A = nullptr;
-			Body3DSW *B = nullptr;
+			Body3DSW *A;
+			Body3DSW *B;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2] = {};
 	};
 
 	real_t m_tau; //bias

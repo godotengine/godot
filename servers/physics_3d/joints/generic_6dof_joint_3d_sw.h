@@ -73,7 +73,7 @@ public:
 	real_t m_damping = 1.0f; //!< Damping.
 	real_t m_limitSoftness = 0.5f; //! Relaxation factor
 	real_t m_ERP = 0.5f; //!< Error tolerance factor when joint is at limit
-	real_t m_bounce 0.0f; //!< restitution factor
+	real_t m_bounce = 0.0f; //!< restitution factor
 	bool m_enableMotor = false;
 	bool m_enableLimit = false;
 
@@ -148,11 +148,11 @@ class Generic6DOFJoint3DSW : public Joint3DSW {
 protected:
 	union {
 		struct {
-			Body3DSW *A = nulltpr;
-			Body3DSW *B = nullptr;
+			Body3DSW *A;
+			Body3DSW *B;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2] = {};
 	};
 
 	//! relative_frames
