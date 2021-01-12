@@ -84,6 +84,7 @@ private:
 	void _pop_history_tail();
 	void _process_operation_list(List<Operation>::Element *E);
 	void _discard_redo();
+	bool _redo(bool p_execute);
 
 	CommitNotifyCallback callback = nullptr;
 	void *callback_ud = nullptr;
@@ -109,11 +110,15 @@ public:
 	void add_undo_reference(Object *p_object);
 
 	bool is_committing_action() const;
-	void commit_action();
+	void commit_action(bool p_execute = true);
 
 	bool redo();
 	bool undo();
 	String get_current_action_name() const;
+
+	int get_history_count();
+	int get_current_action();
+	String get_action_name(int p_id);
 	void clear_history(bool p_increase_version = true);
 
 	bool has_undo();
