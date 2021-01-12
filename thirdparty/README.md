@@ -424,6 +424,11 @@ Collection of single-file libraries used in Godot components.
   * Upstream: http://www.pcg-random.org
   * Version: minimal C implementation, http://www.pcg-random.org/download.html
   * License: Apache 2.0
+- `polypartition.{cpp,h}`
+  * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.{cpp,h}`)
+  * Version: git (7bdffb428b2b19ad1c43aa44c714dcc104177e84, 2021)
+  * Modifications: Change from STL to Godot types (see provided patch).
+  * License: MIT
 - `r128.h`
   * Upstream: https://github.com/fahickman/r128
   * Version: 1.4.4 (cf2e88fc3e7d7dfe99189686f914874cd0bda15e, 2020)
@@ -441,10 +446,6 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/nothings/stb
   * Version: 1.20 (314d0a6f9af5af27e585336eecea333e95c5a2d8, 2020)
   * License: Public Domain or Unlicense or MIT
-- `triangulator.{cpp,h}`
-  * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.cpp`)
-  * Version: TBD, class was renamed
-  * License: MIT
 - `yuv2rgb.h`
   * Upstream: http://wss.co.uk/pinknoise/yuv2rgb/ (to check)
   * Version: ?
