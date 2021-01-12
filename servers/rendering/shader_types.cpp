@@ -347,7 +347,7 @@ ShaderTypes::ShaderTypes() {
 		emit_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("custom", ShaderLanguage::TYPE_VEC4));
 		emit_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("flags", ShaderLanguage::TYPE_UINT));
 		emit_vertex_func.return_type = ShaderLanguage::TYPE_BOOL; //whether it could emit
-		shader_modes[RS::SHADER_PARTICLES].functions["compute"].stage_functions["emit_particle"] = emit_vertex_func;
+		shader_modes[RS::SHADER_PARTICLES].functions["compute"].stage_functions["emit_subparticle"] = emit_vertex_func;
 	}
 
 	shader_modes[RS::SHADER_PARTICLES].modes.push_back("collision_use_scale");
