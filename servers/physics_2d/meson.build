@@ -1,0 +1,18 @@
+SOURCES += files([
+    'area_2d_sw.cpp',
+    'area_pair_2d_sw.cpp',
+    'body_2d_sw.cpp',
+    'body_pair_2d_sw.cpp',
+    'broad_phase_2d_basic.cpp',
+    'broad_phase_2d_hash_grid.cpp',
+    'broad_phase_2d_sw.cpp',
+    'collision_object_2d_sw.cpp',
+    'collision_solver_2d_sat.cpp',
+    'collision_solver_2d_sw.cpp',
+    'joints_2d_sw.cpp',
+    'physics_server_2d_sw.cpp',
+    'physics_server_2d_wrap_mt.cpp',
+    'shape_2d_sw.cpp',
+    'space_2d_sw.cpp',
+    'step_2d_sw.cpp',
+])

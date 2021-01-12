@@ -61,6 +61,8 @@
 #include <X11/extensions/Xrandr.h>
 #include <X11/keysym.h>
 
+class Thread;
+
 typedef struct _xrr_monitor_info {
 	Atom name;
 	Bool primary = false;

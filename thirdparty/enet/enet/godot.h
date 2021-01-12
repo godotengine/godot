@@ -35,11 +35,11 @@
 #ifndef __ENET_GODOT_H__
 #define __ENET_GODOT_H__
 
-#ifdef WINDOWS_ENABLED
+#ifdef GODOT_ENET_WINDOWS_ENABLED
 #include <stdint.h>
 #include <winsock2.h>
 #endif
-#ifdef UNIX_ENABLED
+#ifdef GODOT_ENET_UNIX_ENABLED
 #include <arpa/inet.h>
 #endif
 

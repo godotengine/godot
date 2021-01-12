@@ -38,6 +38,7 @@
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
+#include "core/variant/method_ptrcall.h"
 
 template <class T>
 struct PtrConstruct {};

@@ -33,6 +33,8 @@
 
 #include "core/math/vector3.h"
 
+#include <map>
+
 // Generic keyframes 99.99 percent of files will be vector3, except if quat interp is used, or visibility tracks
 // FBXTrack is used in a map in the implementation in fbx/editor_scene_importer_fbx.cpp
 // to avoid having to rewrite the entire logic I refactored this into the code instead.

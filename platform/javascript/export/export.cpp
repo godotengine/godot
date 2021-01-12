@@ -33,9 +33,9 @@
 #include "core/io/zip_io.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
-#include "main/splash.gen.h"
 #include "platform/javascript/logo.gen.h"
 #include "platform/javascript/run_icon.gen.h"
+#include "splash/splash.gen.h"
 
 class EditorHTTPServer : public Reference {
 private:

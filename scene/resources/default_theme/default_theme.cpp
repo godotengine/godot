@@ -30,10 +30,10 @@
 
 #include "default_theme.h"
 
+#include "scene/resources/default_theme/theme_data.gen.h"
 #include "scene/resources/theme.h"
 
 #include "core/os/os.h"
-#include "theme_data.h"
 
 #include "font_hidpi.inc"
 #include "font_lodpi.inc"

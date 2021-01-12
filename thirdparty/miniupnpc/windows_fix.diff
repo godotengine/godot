@@ -14,3 +14,16 @@ index 29f8110155..ea9af02e1f 100644
  			if(mc_if.s_addr != INADDR_NONE)
  			{
  				((struct sockaddr_in *)&sockudp_r)->sin_addr.s_addr = mc_if.s_addr;
+
+
+--- a/thirdparty/miniupnpc/miniupnpc/miniupnpcstrings.h
++++ b/thirdparty/miniupnpc/miniupnpc/miniupnpcstrings.h
+@@ -683,11 +683,7 @@ #ifndef MINIUPNPCSTRINGS_H_INCLUDED
+#define MINIUPNPCSTRINGS_H_INCLUDED
+
++#define OS_STRING "Godot Engine/1.0"
+#define MINIUPNPC_VERSION_STRING "2.1"
+
+#if 0
+/* according to "UPnP Device Architecture 1.0" */
+#define UPNP_VERSION_STRING "UPnP/1.0"

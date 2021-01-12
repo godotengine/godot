@@ -51,6 +51,7 @@
 #include <unicode/uloc.h>
 #include <unicode/uscript.h>
 #include <unicode/ustring.h>
+#include <unicode/utf16.h>
 #include <unicode/utypes.h>
 
 #include <hb-icu.h>

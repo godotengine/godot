@@ -1,0 +1,71 @@
+option('tools', type: 'boolean', value: true, description: 'Build the tools (a.k.a. the Godot editor)')
+option('tests', type: 'boolean', value: false, description: 'Build the unit tests')
+
+# Compile options
+option('godot_warnings', type: 'boolean', value: false, description: 'Enable godot-compile time warnings (#warning, #pragma warning)')
+option('use_lto', type: 'boolean', value: false, description: 'Use link-time optimiziation')
+
+# Components
+option('deprecated', type: 'boolean', value: true, description: 'Enable deprecated features')
+option('minizip', type: 'boolean', value: true, description: 'Enable ZIP archive support using minizip')
+option('xaudio2', type: 'boolean', value: false, description: 'Enable the XAudio2 audio driver')
+option('android_neon', type: 'boolean', value: true, description: 'Enable NEON support (armv7 only)')
+option('custom_modules', type: 'array', value: [], description: 'A list of comma-separated directory paths containing custom modules to build')
+# add text_server_fb to disabled modules
+option('disabled_modules', type: 'array', value: ['mono', 'text_server_fb'], description: 'A list of modules that are to be disabled')
+option('disable_all_modules', type: 'boolean', value: false, description: 'A boolean that disables ALL modules.')
+
+# Advanced options
+option('use_precise_math_checks', type: 'boolean', value: false, description: 'Math checks use very precise epsilon (debug option)')
+option('disable_3d', type: 'boolean', value: false, description: 'Disable 3D nodes for a smaller executable')
+option('disable_advanced_gui', type: 'boolean', value: false, description: 'Disabled advanced GUI nodes and behaviors')
+option('no_editor_splash', type: 'boolean', value: false, description: 'Don\'t use the custom spash screen for the editor')
+option('system_certs_path', type: 'string', value: '', description: 'Use this path as SSL certificates default for editor (for package maintainers)')
+
+# Windows options
+option('windows_version', type: 'string', value: '0x0601', description: 'Targeted Windows version, >= 0x0601 (Windows 7)')
+option('windows_subsystem', type: 'combo', value: 'console', choices: ['console', 'gui'], description: 'Windows subsystem')
+
+# Thirdparty libraries
+option('builtin_bullet', type: 'boolean', value: true, description: 'Use the built-in Bullet library')
+option('builtin_certs', type: 'boolean', value: true, description: 'Use the built-in SSL certificates bundles')
+option('builtin_enet', type: 'boolean', value: true, description: 'Use the built-in ENet library')
+option('builtin_freetype', type: 'boolean', value: true, description: 'Use the built-in FreeType librar')
+option('builtin_glslang', type: 'boolean', value: true, description: 'Use the built-in glslang library')
+option('builtin_libogg', type: 'boolean', value: true, description: 'Use the built-in libogg library')
+option('builtin_libpng', type: 'boolean', value: true, description: 'Use the built-in libpng library')
+option('builtin_libtheora', type: 'boolean', value: true, description: 'Use the built-in libtheora library')
+option('builtin_libvorbis', type: 'boolean', value: true, description: 'Use the built-in libvorbis library')
+option('builtin_libwebp', type: 'boolean', value: true, description: 'Use the built-in libwebp library')
+option('builtin_wslay', type: 'boolean', value: true, description: 'Use the built-in wslay library')
+option('builtin_mbedtls', type: 'boolean', value: true, description: 'Use the built-in mbedTLS library')
+option('builtin_miniupnpc', type: 'boolean', value: true, description: 'Use the built-in miniupnpc library')
+option('builtin_opus', type: 'boolean', value: true, description: 'Use the built-in Opus library')
+option('builtin_pcre2', type: 'boolean', value: true, description: 'Use the built-in PCRE2 library')
+option('builtin_pcre2_with_jit', type: 'boolean', value: true, description: 'Use JIT compiler for the built-in PCRE2 library')
+option('builtin_squish', type: 'boolean', value: true, description: 'Use the built-in squish library')
+option('builtin_vulkan', type: 'boolean', value: true, description: 'Use the built-in Vulkan loader library and headers')
+option('builtin_wslay', type: 'boolean', value: true, description: 'Use the built-in wslay library')
+option('builtin_zlib', type: 'boolean', value: true, description: 'Use the built-in zlib library')
+option('builtin_zstd', type: 'boolean', value: true, description: 'Use the built-in zstd library')
+
+option('builtin_harfbuzz', type: 'boolean', value: true, description: 'Use the built-in harfbuzz library')
+option('builtin_graphite', type: 'boolean', value: true, description: 'Use the built-in graphite library')
+option('builtin_icu', type: 'boolean', value: true, description: 'Use the built-in icu library')
+
+# Mono options
+option('mono_glue', type: 'boolean', value: true, description: 'Enable mono glue')
+
+# Javascript Options
+option('initial_wasm_memory', type: 'integer', value: 16, description: 'Initial WASM memory (in MiB)')
+option('use_assertions', type: 'boolean', value: false, description: 'Use Emscripten runtime assertions')
+option('use_thinlto', type: 'boolean', value: false, description: 'Use ThinLTO')
+option('use_ubsan', type: 'boolean', value: false, description: 'Use Emscripten undefined behavior sanitizer (UBSAN)')
+option('use_asan', type: 'boolean', value: false, description: 'Use Emscripten address sanitizer (ASAN)')
+option('use_lsan', type: 'boolean', value: false, description: 'Use Emscripten leak sanitizer (LSAN)')
+option('use_safe_heap', type: 'boolean', value: false, description: 'Use Emscripten SAFE_HEAP sanitizer')
+# eval() can be a security concern, so it can be disabled.
+option('javascript_eval', type: 'boolean', value: true, description: 'Enable JavaScript eval interface')
+option('threads_enabled', type: 'boolean', value: false, description: 'Enable WebAssembly Threads support (limited browser support)')
+option('gdnative_enabled', type: 'boolean', value: false, description: 'Enable WebAssembly GDNative support (produces bigger binaries)')
+option('use_closure_compiler', type: 'boolean', value: false, description: 'Use closure compiler to minimize JavaScript code')
