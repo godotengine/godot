@@ -586,6 +586,9 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 					// TODO: Move this out into a routine specific to validate annotations.
 					if (member.variable->export_info.hint == PROPERTY_HINT_TYPE_STRING) {
 						// @export annotation.
+						if (member.variable->export_info.type == Variant::NIL) {
+							member.variable->export_info.type = datatype.builtin_type;
+						}
 						switch (datatype.kind) {
 							case GDScriptParser::DataType::BUILTIN:
 								member.variable->export_info.hint_string = Variant::get_type_name(datatype.builtin_type);
