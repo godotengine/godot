@@ -157,7 +157,7 @@
 			<argument index="2" name="stream" type="Resource">
 			</argument>
 			<description>
-				Sets the stream of the key identified by [code]key_idx[/code] to value [code]offset[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
+				Sets the stream of the key identified by [code]key_idx[/code] to value [code]stream[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_in_handle" qualifiers="const">
