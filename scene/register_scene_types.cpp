@@ -75,6 +75,7 @@
 #include "scene/animation/root_motion_view.h"
 #include "scene/animation/tween.h"
 #include "scene/audio/audio_stream_player.h"
+#include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
@@ -303,6 +304,7 @@ void register_scene_types() {
 	ClassDB::register_class<ColorRect>();
 	ClassDB::register_class<NinePatchRect>();
 	ClassDB::register_class<ReferenceRect>();
+	ClassDB::register_class<AspectRatioContainer>();
 	ClassDB::register_class<TabContainer>();
 	ClassDB::register_class<Tabs>();
 	ClassDB::register_virtual_class<Separator>();
