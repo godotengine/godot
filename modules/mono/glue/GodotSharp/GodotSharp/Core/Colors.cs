@@ -9,301 +9,301 @@ namespace Godot
     /// </summary>
     public static class Colors
     {
-        // Color names and values are derived from core/color_names.inc
+        // Color names and values are derived from core/math/color_names.inc
         internal static readonly Dictionary<string, Color> namedColors = new Dictionary<string, Color> {
-            {"aliceblue", new Color(0.94f, 0.97f, 1.00f)},
-            {"antiquewhite", new Color(0.98f, 0.92f, 0.84f)},
-            {"aqua", new Color(0.00f, 1.00f, 1.00f)},
-            {"aquamarine", new Color(0.50f, 1.00f, 0.83f)},
-            {"azure", new Color(0.94f, 1.00f, 1.00f)},
-            {"beige", new Color(0.96f, 0.96f, 0.86f)},
-            {"bisque", new Color(1.00f, 0.89f, 0.77f)},
-            {"black", new Color(0.00f, 0.00f, 0.00f)},
-            {"blanchedalmond", new Color(1.00f, 0.92f, 0.80f)},
-            {"blue", new Color(0.00f, 0.00f, 1.00f)},
-            {"blueviolet", new Color(0.54f, 0.17f, 0.89f)},
-            {"brown", new Color(0.65f, 0.16f, 0.16f)},
-            {"burlywood", new Color(0.87f, 0.72f, 0.53f)},
-            {"cadetblue", new Color(0.37f, 0.62f, 0.63f)},
-            {"chartreuse", new Color(0.50f, 1.00f, 0.00f)},
-            {"chocolate", new Color(0.82f, 0.41f, 0.12f)},
-            {"coral", new Color(1.00f, 0.50f, 0.31f)},
-            {"cornflower", new Color(0.39f, 0.58f, 0.93f)},
-            {"cornsilk", new Color(1.00f, 0.97f, 0.86f)},
-            {"crimson", new Color(0.86f, 0.08f, 0.24f)},
-            {"cyan", new Color(0.00f, 1.00f, 1.00f)},
-            {"darkblue", new Color(0.00f, 0.00f, 0.55f)},
-            {"darkcyan", new Color(0.00f, 0.55f, 0.55f)},
-            {"darkgoldenrod", new Color(0.72f, 0.53f, 0.04f)},
-            {"darkgray", new Color(0.66f, 0.66f, 0.66f)},
-            {"darkgreen", new Color(0.00f, 0.39f, 0.00f)},
-            {"darkkhaki", new Color(0.74f, 0.72f, 0.42f)},
-            {"darkmagenta", new Color(0.55f, 0.00f, 0.55f)},
-            {"darkolivegreen", new Color(0.33f, 0.42f, 0.18f)},
-            {"darkorange", new Color(1.00f, 0.55f, 0.00f)},
-            {"darkorchid", new Color(0.60f, 0.20f, 0.80f)},
-            {"darkred", new Color(0.55f, 0.00f, 0.00f)},
-            {"darksalmon", new Color(0.91f, 0.59f, 0.48f)},
-            {"darkseagreen", new Color(0.56f, 0.74f, 0.56f)},
-            {"darkslateblue", new Color(0.28f, 0.24f, 0.55f)},
-            {"darkslategray", new Color(0.18f, 0.31f, 0.31f)},
-            {"darkturquoise", new Color(0.00f, 0.81f, 0.82f)},
-            {"darkviolet", new Color(0.58f, 0.00f, 0.83f)},
-            {"deeppink", new Color(1.00f, 0.08f, 0.58f)},
-            {"deepskyblue", new Color(0.00f, 0.75f, 1.00f)},
-            {"dimgray", new Color(0.41f, 0.41f, 0.41f)},
-            {"dodgerblue", new Color(0.12f, 0.56f, 1.00f)},
-            {"firebrick", new Color(0.70f, 0.13f, 0.13f)},
-            {"floralwhite", new Color(1.00f, 0.98f, 0.94f)},
-            {"forestgreen", new Color(0.13f, 0.55f, 0.13f)},
-            {"fuchsia", new Color(1.00f, 0.00f, 1.00f)},
-            {"gainsboro", new Color(0.86f, 0.86f, 0.86f)},
-            {"ghostwhite", new Color(0.97f, 0.97f, 1.00f)},
-            {"gold", new Color(1.00f, 0.84f, 0.00f)},
-            {"goldenrod", new Color(0.85f, 0.65f, 0.13f)},
-            {"gray", new Color(0.75f, 0.75f, 0.75f)},
-            {"green", new Color(0.00f, 1.00f, 0.00f)},
-            {"greenyellow", new Color(0.68f, 1.00f, 0.18f)},
-            {"honeydew", new Color(0.94f, 1.00f, 0.94f)},
-            {"hotpink", new Color(1.00f, 0.41f, 0.71f)},
-            {"indianred", new Color(0.80f, 0.36f, 0.36f)},
-            {"indigo", new Color(0.29f, 0.00f, 0.51f)},
-            {"ivory", new Color(1.00f, 1.00f, 0.94f)},
-            {"khaki", new Color(0.94f, 0.90f, 0.55f)},
-            {"lavender", new Color(0.90f, 0.90f, 0.98f)},
-            {"lavenderblush", new Color(1.00f, 0.94f, 0.96f)},
-            {"lawngreen", new Color(0.49f, 0.99f, 0.00f)},
-            {"lemonchiffon", new Color(1.00f, 0.98f, 0.80f)},
-            {"lightblue", new Color(0.68f, 0.85f, 0.90f)},
-            {"lightcoral", new Color(0.94f, 0.50f, 0.50f)},
-            {"lightcyan", new Color(0.88f, 1.00f, 1.00f)},
-            {"lightgoldenrod", new Color(0.98f, 0.98f, 0.82f)},
-            {"lightgray", new Color(0.83f, 0.83f, 0.83f)},
-            {"lightgreen", new Color(0.56f, 0.93f, 0.56f)},
-            {"lightpink", new Color(1.00f, 0.71f, 0.76f)},
-            {"lightsalmon", new Color(1.00f, 0.63f, 0.48f)},
-            {"lightseagreen", new Color(0.13f, 0.70f, 0.67f)},
-            {"lightskyblue", new Color(0.53f, 0.81f, 0.98f)},
-            {"lightslategray", new Color(0.47f, 0.53f, 0.60f)},
-            {"lightsteelblue", new Color(0.69f, 0.77f, 0.87f)},
-            {"lightyellow", new Color(1.00f, 1.00f, 0.88f)},
-            {"lime", new Color(0.00f, 1.00f, 0.00f)},
-            {"limegreen", new Color(0.20f, 0.80f, 0.20f)},
-            {"linen", new Color(0.98f, 0.94f, 0.90f)},
-            {"magenta", new Color(1.00f, 0.00f, 1.00f)},
-            {"maroon", new Color(0.69f, 0.19f, 0.38f)},
-            {"mediumaquamarine", new Color(0.40f, 0.80f, 0.67f)},
-            {"mediumblue", new Color(0.00f, 0.00f, 0.80f)},
-            {"mediumorchid", new Color(0.73f, 0.33f, 0.83f)},
-            {"mediumpurple", new Color(0.58f, 0.44f, 0.86f)},
-            {"mediumseagreen", new Color(0.24f, 0.70f, 0.44f)},
-            {"mediumslateblue", new Color(0.48f, 0.41f, 0.93f)},
-            {"mediumspringgreen", new Color(0.00f, 0.98f, 0.60f)},
-            {"mediumturquoise", new Color(0.28f, 0.82f, 0.80f)},
-            {"mediumvioletred", new Color(0.78f, 0.08f, 0.52f)},
-            {"midnightblue", new Color(0.10f, 0.10f, 0.44f)},
-            {"mintcream", new Color(0.96f, 1.00f, 0.98f)},
-            {"mistyrose", new Color(1.00f, 0.89f, 0.88f)},
-            {"moccasin", new Color(1.00f, 0.89f, 0.71f)},
-            {"navajowhite", new Color(1.00f, 0.87f, 0.68f)},
-            {"navyblue", new Color(0.00f, 0.00f, 0.50f)},
-            {"oldlace", new Color(0.99f, 0.96f, 0.90f)},
-            {"olive", new Color(0.50f, 0.50f, 0.00f)},
-            {"olivedrab", new Color(0.42f, 0.56f, 0.14f)},
-            {"orange", new Color(1.00f, 0.65f, 0.00f)},
-            {"orangered", new Color(1.00f, 0.27f, 0.00f)},
-            {"orchid", new Color(0.85f, 0.44f, 0.84f)},
-            {"palegoldenrod", new Color(0.93f, 0.91f, 0.67f)},
-            {"palegreen", new Color(0.60f, 0.98f, 0.60f)},
-            {"paleturquoise", new Color(0.69f, 0.93f, 0.93f)},
-            {"palevioletred", new Color(0.86f, 0.44f, 0.58f)},
-            {"papayawhip", new Color(1.00f, 0.94f, 0.84f)},
-            {"peachpuff", new Color(1.00f, 0.85f, 0.73f)},
-            {"peru", new Color(0.80f, 0.52f, 0.25f)},
-            {"pink", new Color(1.00f, 0.75f, 0.80f)},
-            {"plum", new Color(0.87f, 0.63f, 0.87f)},
-            {"powderblue", new Color(0.69f, 0.88f, 0.90f)},
-            {"purple", new Color(0.63f, 0.13f, 0.94f)},
-            {"rebeccapurple", new Color(0.40f, 0.20f, 0.60f)},
-            {"red", new Color(1.00f, 0.00f, 0.00f)},
-            {"rosybrown", new Color(0.74f, 0.56f, 0.56f)},
-            {"royalblue", new Color(0.25f, 0.41f, 0.88f)},
-            {"saddlebrown", new Color(0.55f, 0.27f, 0.07f)},
-            {"salmon", new Color(0.98f, 0.50f, 0.45f)},
-            {"sandybrown", new Color(0.96f, 0.64f, 0.38f)},
-            {"seagreen", new Color(0.18f, 0.55f, 0.34f)},
-            {"seashell", new Color(1.00f, 0.96f, 0.93f)},
-            {"sienna", new Color(0.63f, 0.32f, 0.18f)},
-            {"silver", new Color(0.75f, 0.75f, 0.75f)},
-            {"skyblue", new Color(0.53f, 0.81f, 0.92f)},
-            {"slateblue", new Color(0.42f, 0.35f, 0.80f)},
-            {"slategray", new Color(0.44f, 0.50f, 0.56f)},
-            {"snow", new Color(1.00f, 0.98f, 0.98f)},
-            {"springgreen", new Color(0.00f, 1.00f, 0.50f)},
-            {"steelblue", new Color(0.27f, 0.51f, 0.71f)},
-            {"tan", new Color(0.82f, 0.71f, 0.55f)},
-            {"teal", new Color(0.00f, 0.50f, 0.50f)},
-            {"thistle", new Color(0.85f, 0.75f, 0.85f)},
-            {"tomato", new Color(1.00f, 0.39f, 0.28f)},
-            {"transparent", new Color(1.00f, 1.00f, 1.00f, 0.00f)},
-            {"turquoise", new Color(0.25f, 0.88f, 0.82f)},
-            {"violet", new Color(0.93f, 0.51f, 0.93f)},
-            {"webgreen", new Color(0.00f, 0.50f, 0.00f)},
-            {"webgray", new Color(0.50f, 0.50f, 0.50f)},
-            {"webmaroon", new Color(0.50f, 0.00f, 0.00f)},
-            {"webpurple", new Color(0.50f, 0.00f, 0.50f)},
-            {"wheat", new Color(0.96f, 0.87f, 0.70f)},
-            {"white", new Color(1.00f, 1.00f, 1.00f)},
-            {"whitesmoke", new Color(0.96f, 0.96f, 0.96f)},
-            {"yellow", new Color(1.00f, 1.00f, 0.00f)},
-            {"yellowgreen", new Color(0.60f, 0.80f, 0.20f)},
+            {"ALICEBLUE", new Color(0.94f, 0.97f, 1.00f)},
+            {"ANTIQUEWHITE", new Color(0.98f, 0.92f, 0.84f)},
+            {"AQUA", new Color(0.00f, 1.00f, 1.00f)},
+            {"AQUAMARINE", new Color(0.50f, 1.00f, 0.83f)},
+            {"AZURE", new Color(0.94f, 1.00f, 1.00f)},
+            {"BEIGE", new Color(0.96f, 0.96f, 0.86f)},
+            {"BISQUE", new Color(1.00f, 0.89f, 0.77f)},
+            {"BLACK", new Color(0.00f, 0.00f, 0.00f)},
+            {"BLANCHEDALMOND", new Color(1.00f, 0.92f, 0.80f)},
+            {"BLUE", new Color(0.00f, 0.00f, 1.00f)},
+            {"BLUEVIOLET", new Color(0.54f, 0.17f, 0.89f)},
+            {"BROWN", new Color(0.65f, 0.16f, 0.16f)},
+            {"BURLYWOOD", new Color(0.87f, 0.72f, 0.53f)},
+            {"CADETBLUE", new Color(0.37f, 0.62f, 0.63f)},
+            {"CHARTREUSE", new Color(0.50f, 1.00f, 0.00f)},
+            {"CHOCOLATE", new Color(0.82f, 0.41f, 0.12f)},
+            {"CORAL", new Color(1.00f, 0.50f, 0.31f)},
+            {"CORNFLOWERBLUE", new Color(0.39f, 0.58f, 0.93f)},
+            {"CORNSILK", new Color(1.00f, 0.97f, 0.86f)},
+            {"CRIMSON", new Color(0.86f, 0.08f, 0.24f)},
+            {"CYAN", new Color(0.00f, 1.00f, 1.00f)},
+            {"DARKBLUE", new Color(0.00f, 0.00f, 0.55f)},
+            {"DARKCYAN", new Color(0.00f, 0.55f, 0.55f)},
+            {"DARKGOLDENROD", new Color(0.72f, 0.53f, 0.04f)},
+            {"DARKGRAY", new Color(0.66f, 0.66f, 0.66f)},
+            {"DARKGREEN", new Color(0.00f, 0.39f, 0.00f)},
+            {"DARKKHAKI", new Color(0.74f, 0.72f, 0.42f)},
+            {"DARKMAGENTA", new Color(0.55f, 0.00f, 0.55f)},
+            {"DARKOLIVEGREEN", new Color(0.33f, 0.42f, 0.18f)},
+            {"DARKORANGE", new Color(1.00f, 0.55f, 0.00f)},
+            {"DARKORCHID", new Color(0.60f, 0.20f, 0.80f)},
+            {"DARKRED", new Color(0.55f, 0.00f, 0.00f)},
+            {"DARKSALMON", new Color(0.91f, 0.59f, 0.48f)},
+            {"DARKSEAGREEN", new Color(0.56f, 0.74f, 0.56f)},
+            {"DARKSLATEBLUE", new Color(0.28f, 0.24f, 0.55f)},
+            {"DARKSLATEGRAY", new Color(0.18f, 0.31f, 0.31f)},
+            {"DARKTURQUOISE", new Color(0.00f, 0.81f, 0.82f)},
+            {"DARKVIOLET", new Color(0.58f, 0.00f, 0.83f)},
+            {"DEEPPINK", new Color(1.00f, 0.08f, 0.58f)},
+            {"DEEPSKYBLUE", new Color(0.00f, 0.75f, 1.00f)},
+            {"DIMGRAY", new Color(0.41f, 0.41f, 0.41f)},
+            {"DODGERBLUE", new Color(0.12f, 0.56f, 1.00f)},
+            {"FIREBRICK", new Color(0.70f, 0.13f, 0.13f)},
+            {"FLORALWHITE", new Color(1.00f, 0.98f, 0.94f)},
+            {"FORESTGREEN", new Color(0.13f, 0.55f, 0.13f)},
+            {"FUCHSIA", new Color(1.00f, 0.00f, 1.00f)},
+            {"GAINSBORO", new Color(0.86f, 0.86f, 0.86f)},
+            {"GHOSTWHITE", new Color(0.97f, 0.97f, 1.00f)},
+            {"GOLD", new Color(1.00f, 0.84f, 0.00f)},
+            {"GOLDENROD", new Color(0.85f, 0.65f, 0.13f)},
+            {"GRAY", new Color(0.75f, 0.75f, 0.75f)},
+            {"GREEN", new Color(0.00f, 1.00f, 0.00f)},
+            {"GREENYELLOW", new Color(0.68f, 1.00f, 0.18f)},
+            {"HONEYDEW", new Color(0.94f, 1.00f, 0.94f)},
+            {"HOTPINK", new Color(1.00f, 0.41f, 0.71f)},
+            {"INDIANRED", new Color(0.80f, 0.36f, 0.36f)},
+            {"INDIGO", new Color(0.29f, 0.00f, 0.51f)},
+            {"IVORY", new Color(1.00f, 1.00f, 0.94f)},
+            {"KHAKI", new Color(0.94f, 0.90f, 0.55f)},
+            {"LAVENDER", new Color(0.90f, 0.90f, 0.98f)},
+            {"LAVENDERBLUSH", new Color(1.00f, 0.94f, 0.96f)},
+            {"LAWNGREEN", new Color(0.49f, 0.99f, 0.00f)},
+            {"LEMONCHIFFON", new Color(1.00f, 0.98f, 0.80f)},
+            {"LIGHTBLUE", new Color(0.68f, 0.85f, 0.90f)},
+            {"LIGHTCORAL", new Color(0.94f, 0.50f, 0.50f)},
+            {"LIGHTCYAN", new Color(0.88f, 1.00f, 1.00f)},
+            {"LIGHTGOLDENROD", new Color(0.98f, 0.98f, 0.82f)},
+            {"LIGHTGRAY", new Color(0.83f, 0.83f, 0.83f)},
+            {"LIGHTGREEN", new Color(0.56f, 0.93f, 0.56f)},
+            {"LIGHTPINK", new Color(1.00f, 0.71f, 0.76f)},
+            {"LIGHTSALMON", new Color(1.00f, 0.63f, 0.48f)},
+            {"LIGHTSEAGREEN", new Color(0.13f, 0.70f, 0.67f)},
+            {"LIGHTSKYBLUE", new Color(0.53f, 0.81f, 0.98f)},
+            {"LIGHTSLATEGRAY", new Color(0.47f, 0.53f, 0.60f)},
+            {"LIGHTSTEELBLUE", new Color(0.69f, 0.77f, 0.87f)},
+            {"LIGHTYELLOW", new Color(1.00f, 1.00f, 0.88f)},
+            {"LIME", new Color(0.00f, 1.00f, 0.00f)},
+            {"LIMEGREEN", new Color(0.20f, 0.80f, 0.20f)},
+            {"LINEN", new Color(0.98f, 0.94f, 0.90f)},
+            {"MAGENTA", new Color(1.00f, 0.00f, 1.00f)},
+            {"MAROON", new Color(0.69f, 0.19f, 0.38f)},
+            {"MEDIUMAQUAMARINE", new Color(0.40f, 0.80f, 0.67f)},
+            {"MEDIUMBLUE", new Color(0.00f, 0.00f, 0.80f)},
+            {"MEDIUMORCHID", new Color(0.73f, 0.33f, 0.83f)},
+            {"MEDIUMPURPLE", new Color(0.58f, 0.44f, 0.86f)},
+            {"MEDIUMSEAGREEN", new Color(0.24f, 0.70f, 0.44f)},
+            {"MEDIUMSLATEBLUE", new Color(0.48f, 0.41f, 0.93f)},
+            {"MEDIUMSPRINGGREEN", new Color(0.00f, 0.98f, 0.60f)},
+            {"MEDIUMTURQUOISE", new Color(0.28f, 0.82f, 0.80f)},
+            {"MEDIUMVIOLETRED", new Color(0.78f, 0.08f, 0.52f)},
+            {"MIDNIGHTBLUE", new Color(0.10f, 0.10f, 0.44f)},
+            {"MINTCREAM", new Color(0.96f, 1.00f, 0.98f)},
+            {"MISTYROSE", new Color(1.00f, 0.89f, 0.88f)},
+            {"MOCCASIN", new Color(1.00f, 0.89f, 0.71f)},
+            {"NAVAJOWHITE", new Color(1.00f, 0.87f, 0.68f)},
+            {"NAVYBLUE", new Color(0.00f, 0.00f, 0.50f)},
+            {"OLDLACE", new Color(0.99f, 0.96f, 0.90f)},
+            {"OLIVE", new Color(0.50f, 0.50f, 0.00f)},
+            {"OLIVEDRAB", new Color(0.42f, 0.56f, 0.14f)},
+            {"ORANGE", new Color(1.00f, 0.65f, 0.00f)},
+            {"ORANGERED", new Color(1.00f, 0.27f, 0.00f)},
+            {"ORCHID", new Color(0.85f, 0.44f, 0.84f)},
+            {"PALEGOLDENROD", new Color(0.93f, 0.91f, 0.67f)},
+            {"PALEGREEN", new Color(0.60f, 0.98f, 0.60f)},
+            {"PALETURQUOISE", new Color(0.69f, 0.93f, 0.93f)},
+            {"PALEVIOLETRED", new Color(0.86f, 0.44f, 0.58f)},
+            {"PAPAYAWHIP", new Color(1.00f, 0.94f, 0.84f)},
+            {"PEACHPUFF", new Color(1.00f, 0.85f, 0.73f)},
+            {"PERU", new Color(0.80f, 0.52f, 0.25f)},
+            {"PINK", new Color(1.00f, 0.75f, 0.80f)},
+            {"PLUM", new Color(0.87f, 0.63f, 0.87f)},
+            {"POWDERBLUE", new Color(0.69f, 0.88f, 0.90f)},
+            {"PURPLE", new Color(0.63f, 0.13f, 0.94f)},
+            {"REBECCAPURPLE", new Color(0.40f, 0.20f, 0.60f)},
+            {"RED", new Color(1.00f, 0.00f, 0.00f)},
+            {"ROSYBROWN", new Color(0.74f, 0.56f, 0.56f)},
+            {"ROYALBLUE", new Color(0.25f, 0.41f, 0.88f)},
+            {"SADDLEBROWN", new Color(0.55f, 0.27f, 0.07f)},
+            {"SALMON", new Color(0.98f, 0.50f, 0.45f)},
+            {"SANDYBROWN", new Color(0.96f, 0.64f, 0.38f)},
+            {"SEAGREEN", new Color(0.18f, 0.55f, 0.34f)},
+            {"SEASHELL", new Color(1.00f, 0.96f, 0.93f)},
+            {"SIENNA", new Color(0.63f, 0.32f, 0.18f)},
+            {"SILVER", new Color(0.75f, 0.75f, 0.75f)},
+            {"SKYBLUE", new Color(0.53f, 0.81f, 0.92f)},
+            {"SLATEBLUE", new Color(0.42f, 0.35f, 0.80f)},
+            {"SLATEGRAY", new Color(0.44f, 0.50f, 0.56f)},
+            {"SNOW", new Color(1.00f, 0.98f, 0.98f)},
+            {"SPRINGGREEN", new Color(0.00f, 1.00f, 0.50f)},
+            {"STEELBLUE", new Color(0.27f, 0.51f, 0.71f)},
+            {"TAN", new Color(0.82f, 0.71f, 0.55f)},
+            {"TEAL", new Color(0.00f, 0.50f, 0.50f)},
+            {"THISTLE", new Color(0.85f, 0.75f, 0.85f)},
+            {"TOMATO", new Color(1.00f, 0.39f, 0.28f)},
+            {"TRANSPARENT", new Color(1.00f, 1.00f, 1.00f, 0.00f)},
+            {"TURQUOISE", new Color(0.25f, 0.88f, 0.82f)},
+            {"VIOLET", new Color(0.93f, 0.51f, 0.93f)},
+            {"WEBGRAY", new Color(0.50f, 0.50f, 0.50f)},
+            {"WEBGREEN", new Color(0.00f, 0.50f, 0.00f)},
+            {"WEBMAROON", new Color(0.50f, 0.00f, 0.00f)},
+            {"WEBPURPLE", new Color(0.50f, 0.00f, 0.50f)},
+            {"WHEAT", new Color(0.96f, 0.87f, 0.70f)},
+            {"WHITE", new Color(1.00f, 1.00f, 1.00f)},
+            {"WHITESMOKE", new Color(0.96f, 0.96f, 0.96f)},
+            {"YELLOW", new Color(1.00f, 1.00f, 0.00f)},
+            {"YELLOWGREEN", new Color(0.60f, 0.80f, 0.20f)},
         };
 
-        public static Color AliceBlue { get { return namedColors["aliceblue"]; } }
-        public static Color AntiqueWhite { get { return namedColors["antiquewhite"]; } }
-        public static Color Aqua { get { return namedColors["aqua"]; } }
-        public static Color Aquamarine { get { return namedColors["aquamarine"]; } }
-        public static Color Azure { get { return namedColors["azure"]; } }
-        public static Color Beige { get { return namedColors["beige"]; } }
-        public static Color Bisque { get { return namedColors["bisque"]; } }
-        public static Color Black { get { return namedColors["black"]; } }
-        public static Color BlanchedAlmond { get { return namedColors["blanchedalmond"]; } }
-        public static Color Blue { get { return namedColors["blue"]; } }
-        public static Color BlueViolet { get { return namedColors["blueviolet"]; } }
-        public static Color Brown { get { return namedColors["brown"]; } }
-        public static Color BurlyWood { get { return namedColors["burlywood"]; } }
-        public static Color CadetBlue { get { return namedColors["cadetblue"]; } }
-        public static Color Chartreuse { get { return namedColors["chartreuse"]; } }
-        public static Color Chocolate { get { return namedColors["chocolate"]; } }
-        public static Color Coral { get { return namedColors["coral"]; } }
-        public static Color Cornflower { get { return namedColors["cornflower"]; } }
-        public static Color Cornsilk { get { return namedColors["cornsilk"]; } }
-        public static Color Crimson { get { return namedColors["crimson"]; } }
-        public static Color Cyan { get { return namedColors["cyan"]; } }
-        public static Color DarkBlue { get { return namedColors["darkblue"]; } }
-        public static Color DarkCyan { get { return namedColors["darkcyan"]; } }
-        public static Color DarkGoldenrod { get { return namedColors["darkgoldenrod"]; } }
-        public static Color DarkGray { get { return namedColors["darkgray"]; } }
-        public static Color DarkGreen { get { return namedColors["darkgreen"]; } }
-        public static Color DarkKhaki { get { return namedColors["darkkhaki"]; } }
-        public static Color DarkMagenta { get { return namedColors["darkmagenta"]; } }
-        public static Color DarkOliveGreen { get { return namedColors["darkolivegreen"]; } }
-        public static Color DarkOrange { get { return namedColors["darkorange"]; } }
-        public static Color DarkOrchid { get { return namedColors["darkorchid"]; } }
-        public static Color DarkRed { get { return namedColors["darkred"]; } }
-        public static Color DarkSalmon { get { return namedColors["darksalmon"]; } }
-        public static Color DarkSeaGreen { get { return namedColors["darkseagreen"]; } }
-        public static Color DarkSlateBlue { get { return namedColors["darkslateblue"]; } }
-        public static Color DarkSlateGray { get { return namedColors["darkslategray"]; } }
-        public static Color DarkTurquoise { get { return namedColors["darkturquoise"]; } }
-        public static Color DarkViolet { get { return namedColors["darkviolet"]; } }
-        public static Color DeepPink { get { return namedColors["deeppink"]; } }
-        public static Color DeepSkyBlue { get { return namedColors["deepskyblue"]; } }
-        public static Color DimGray { get { return namedColors["dimgray"]; } }
-        public static Color DodgerBlue { get { return namedColors["dodgerblue"]; } }
-        public static Color Firebrick { get { return namedColors["firebrick"]; } }
-        public static Color FloralWhite { get { return namedColors["floralwhite"]; } }
-        public static Color ForestGreen { get { return namedColors["forestgreen"]; } }
-        public static Color Fuchsia { get { return namedColors["fuchsia"]; } }
-        public static Color Gainsboro { get { return namedColors["gainsboro"]; } }
-        public static Color GhostWhite { get { return namedColors["ghostwhite"]; } }
-        public static Color Gold { get { return namedColors["gold"]; } }
-        public static Color Goldenrod { get { return namedColors["goldenrod"]; } }
-        public static Color Gray { get { return namedColors["gray"]; } }
-        public static Color Green { get { return namedColors["green"]; } }
-        public static Color GreenYellow { get { return namedColors["greenyellow"]; } }
-        public static Color Honeydew { get { return namedColors["honeydew"]; } }
-        public static Color HotPink { get { return namedColors["hotpink"]; } }
-        public static Color IndianRed { get { return namedColors["indianred"]; } }
-        public static Color Indigo { get { return namedColors["indigo"]; } }
-        public static Color Ivory { get { return namedColors["ivory"]; } }
-        public static Color Khaki { get { return namedColors["khaki"]; } }
-        public static Color Lavender { get { return namedColors["lavender"]; } }
-        public static Color LavenderBlush { get { return namedColors["lavenderblush"]; } }
-        public static Color LawnGreen { get { return namedColors["lawngreen"]; } }
-        public static Color LemonChiffon { get { return namedColors["lemonchiffon"]; } }
-        public static Color LightBlue { get { return namedColors["lightblue"]; } }
-        public static Color LightCoral { get { return namedColors["lightcoral"]; } }
-        public static Color LightCyan { get { return namedColors["lightcyan"]; } }
-        public static Color LightGoldenrod { get { return namedColors["lightgoldenrod"]; } }
-        public static Color LightGray { get { return namedColors["lightgray"]; } }
-        public static Color LightGreen { get { return namedColors["lightgreen"]; } }
-        public static Color LightPink { get { return namedColors["lightpink"]; } }
-        public static Color LightSalmon { get { return namedColors["lightsalmon"]; } }
-        public static Color LightSeaGreen { get { return namedColors["lightseagreen"]; } }
-        public static Color LightSkyBlue { get { return namedColors["lightskyblue"]; } }
-        public static Color LightSlateGray { get { return namedColors["lightslategray"]; } }
-        public static Color LightSteelBlue { get { return namedColors["lightsteelblue"]; } }
-        public static Color LightYellow { get { return namedColors["lightyellow"]; } }
-        public static Color Lime { get { return namedColors["lime"]; } }
-        public static Color Limegreen { get { return namedColors["limegreen"]; } }
-        public static Color Linen { get { return namedColors["linen"]; } }
-        public static Color Magenta { get { return namedColors["magenta"]; } }
-        public static Color Maroon { get { return namedColors["maroon"]; } }
-        public static Color MediumAquamarine { get { return namedColors["mediumaquamarine"]; } }
-        public static Color MediumBlue { get { return namedColors["mediumblue"]; } }
-        public static Color MediumOrchid { get { return namedColors["mediumorchid"]; } }
-        public static Color MediumPurple { get { return namedColors["mediumpurple"]; } }
-        public static Color MediumSeaGreen { get { return namedColors["mediumseagreen"]; } }
-        public static Color MediumSlateBlue { get { return namedColors["mediumslateblue"]; } }
-        public static Color MediumSpringGreen { get { return namedColors["mediumspringgreen"]; } }
-        public static Color MediumTurquoise { get { return namedColors["mediumturquoise"]; } }
-        public static Color MediumVioletRed { get { return namedColors["mediumvioletred"]; } }
-        public static Color MidnightBlue { get { return namedColors["midnightblue"]; } }
-        public static Color MintCream { get { return namedColors["mintcream"]; } }
-        public static Color MistyRose { get { return namedColors["mistyrose"]; } }
-        public static Color Moccasin { get { return namedColors["moccasin"]; } }
-        public static Color NavajoWhite { get { return namedColors["navajowhite"]; } }
-        public static Color NavyBlue { get { return namedColors["navyblue"]; } }
-        public static Color OldLace { get { return namedColors["oldlace"]; } }
-        public static Color Olive { get { return namedColors["olive"]; } }
-        public static Color OliveDrab { get { return namedColors["olivedrab"]; } }
-        public static Color Orange { get { return namedColors["orange"]; } }
-        public static Color OrangeRed { get { return namedColors["orangered"]; } }
-        public static Color Orchid { get { return namedColors["orchid"]; } }
-        public static Color PaleGoldenrod { get { return namedColors["palegoldenrod"]; } }
-        public static Color PaleGreen { get { return namedColors["palegreen"]; } }
-        public static Color PaleTurquoise { get { return namedColors["paleturquoise"]; } }
-        public static Color PaleVioletRed { get { return namedColors["palevioletred"]; } }
-        public static Color PapayaWhip { get { return namedColors["papayawhip"]; } }
-        public static Color PeachPuff { get { return namedColors["peachpuff"]; } }
-        public static Color Peru { get { return namedColors["peru"]; } }
-        public static Color Pink { get { return namedColors["pink"]; } }
-        public static Color Plum { get { return namedColors["plum"]; } }
-        public static Color PowderBlue { get { return namedColors["powderblue"]; } }
-        public static Color Purple { get { return namedColors["purple"]; } }
-        public static Color RebeccaPurple { get { return namedColors["rebeccapurple"]; } }
-        public static Color Red { get { return namedColors["red"]; } }
-        public static Color RosyBrown { get { return namedColors["rosybrown"]; } }
-        public static Color RoyalBlue { get { return namedColors["royalblue"]; } }
-        public static Color SaddleBrown { get { return namedColors["saddlebrown"]; } }
-        public static Color Salmon { get { return namedColors["salmon"]; } }
-        public static Color SandyBrown { get { return namedColors["sandybrown"]; } }
-        public static Color SeaGreen { get { return namedColors["seagreen"]; } }
-        public static Color SeaShell { get { return namedColors["seashell"]; } }
-        public static Color Sienna { get { return namedColors["sienna"]; } }
-        public static Color Silver { get { return namedColors["silver"]; } }
-        public static Color SkyBlue { get { return namedColors["skyblue"]; } }
-        public static Color SlateBlue { get { return namedColors["slateblue"]; } }
-        public static Color SlateGray { get { return namedColors["slategray"]; } }
-        public static Color Snow { get { return namedColors["snow"]; } }
-        public static Color SpringGreen { get { return namedColors["springgreen"]; } }
-        public static Color SteelBlue { get { return namedColors["steelblue"]; } }
-        public static Color Tan { get { return namedColors["tan"]; } }
-        public static Color Teal { get { return namedColors["teal"]; } }
-        public static Color Thistle { get { return namedColors["thistle"]; } }
-        public static Color Tomato { get { return namedColors["tomato"]; } }
-        public static Color Transparent { get { return namedColors["transparent"]; } }
-        public static Color Turquoise { get { return namedColors["turquoise"]; } }
-        public static Color Violet { get { return namedColors["violet"]; } }
-        public static Color WebGreen { get { return namedColors["webgreen"]; } }
-        public static Color WebGray { get { return namedColors["webgray"]; } }
-        public static Color WebMaroon { get { return namedColors["webmaroon"]; } }
-        public static Color WebPurple { get { return namedColors["webpurple"]; } }
-        public static Color Wheat { get { return namedColors["wheat"]; } }
-        public static Color White { get { return namedColors["white"]; } }
-        public static Color WhiteSmoke { get { return namedColors["whitesmoke"]; } }
-        public static Color Yellow { get { return namedColors["yellow"]; } }
-        public static Color YellowGreen { get { return namedColors["yellowgreen"]; } }
+        public static Color AliceBlue { get { return namedColors["ALICEBLUE"]; } }
+        public static Color AntiqueWhite { get { return namedColors["ANTIQUEWHITE"]; } }
+        public static Color Aqua { get { return namedColors["AQUA"]; } }
+        public static Color Aquamarine { get { return namedColors["AQUAMARINE"]; } }
+        public static Color Azure { get { return namedColors["AZURE"]; } }
+        public static Color Beige { get { return namedColors["BEIGE"]; } }
+        public static Color Bisque { get { return namedColors["BISQUE"]; } }
+        public static Color Black { get { return namedColors["BLACK"]; } }
+        public static Color BlanchedAlmond { get { return namedColors["BLANCHEDALMOND"]; } }
+        public static Color Blue { get { return namedColors["BLUE"]; } }
+        public static Color BlueViolet { get { return namedColors["BLUEVIOLET"]; } }
+        public static Color Brown { get { return namedColors["BROWN"]; } }
+        public static Color Burlywood { get { return namedColors["BURLYWOOD"]; } }
+        public static Color CadetBlue { get { return namedColors["CADETBLUE"]; } }
+        public static Color Chartreuse { get { return namedColors["CHARTREUSE"]; } }
+        public static Color Chocolate { get { return namedColors["CHOCOLATE"]; } }
+        public static Color Coral { get { return namedColors["CORAL"]; } }
+        public static Color CornflowerBlue { get { return namedColors["CORNFLOWERBLUE"]; } }
+        public static Color Cornsilk { get { return namedColors["CORNSILK"]; } }
+        public static Color Crimson { get { return namedColors["CRIMSON"]; } }
+        public static Color Cyan { get { return namedColors["CYAN"]; } }
+        public static Color DarkBlue { get { return namedColors["DARKBLUE"]; } }
+        public static Color DarkCyan { get { return namedColors["DARKCYAN"]; } }
+        public static Color DarkGoldenrod { get { return namedColors["DARKGOLDENROD"]; } }
+        public static Color DarkGray { get { return namedColors["DARKGRAY"]; } }
+        public static Color DarkGreen { get { return namedColors["DARKGREEN"]; } }
+        public static Color DarkKhaki { get { return namedColors["DARKKHAKI"]; } }
+        public static Color DarkMagenta { get { return namedColors["DARKMAGENTA"]; } }
+        public static Color DarkOliveGreen { get { return namedColors["DARKOLIVEGREEN"]; } }
+        public static Color DarkOrange { get { return namedColors["DARKORANGE"]; } }
+        public static Color DarkOrchid { get { return namedColors["DARKORCHID"]; } }
+        public static Color DarkRed { get { return namedColors["DARKRED"]; } }
+        public static Color DarkSalmon { get { return namedColors["DARKSALMON"]; } }
+        public static Color DarkSeaGreen { get { return namedColors["DARKSEAGREEN"]; } }
+        public static Color DarkSlateBlue { get { return namedColors["DARKSLATEBLUE"]; } }
+        public static Color DarkSlateGray { get { return namedColors["DARKSLATEGRAY"]; } }
+        public static Color DarkTurquoise { get { return namedColors["DARKTURQUOISE"]; } }
+        public static Color DarkViolet { get { return namedColors["DARKVIOLET"]; } }
+        public static Color DeepPink { get { return namedColors["DEEPPINK"]; } }
+        public static Color DeepSkyBlue { get { return namedColors["DEEPSKYBLUE"]; } }
+        public static Color DimGray { get { return namedColors["DIMGRAY"]; } }
+        public static Color DodgerBlue { get { return namedColors["DODGERBLUE"]; } }
+        public static Color Firebrick { get { return namedColors["FIREBRICK"]; } }
+        public static Color FloralWhite { get { return namedColors["FLORALWHITE"]; } }
+        public static Color ForestGreen { get { return namedColors["FORESTGREEN"]; } }
+        public static Color Fuchsia { get { return namedColors["FUCHSIA"]; } }
+        public static Color Gainsboro { get { return namedColors["GAINSBORO"]; } }
+        public static Color GhostWhite { get { return namedColors["GHOSTWHITE"]; } }
+        public static Color Gold { get { return namedColors["GOLD"]; } }
+        public static Color Goldenrod { get { return namedColors["GOLDENROD"]; } }
+        public static Color Gray { get { return namedColors["GRAY"]; } }
+        public static Color Green { get { return namedColors["GREEN"]; } }
+        public static Color GreenYellow { get { return namedColors["GREENYELLOW"]; } }
+        public static Color Honeydew { get { return namedColors["HONEYDEW"]; } }
+        public static Color HotPink { get { return namedColors["HOTPINK"]; } }
+        public static Color IndianRed { get { return namedColors["INDIANRED"]; } }
+        public static Color Indigo { get { return namedColors["INDIGO"]; } }
+        public static Color Ivory { get { return namedColors["IVORY"]; } }
+        public static Color Khaki { get { return namedColors["KHAKI"]; } }
+        public static Color Lavender { get { return namedColors["LAVENDER"]; } }
+        public static Color LavenderBlush { get { return namedColors["LAVENDERBLUSH"]; } }
+        public static Color LawnGreen { get { return namedColors["LAWNGREEN"]; } }
+        public static Color LemonChiffon { get { return namedColors["LEMONCHIFFON"]; } }
+        public static Color LightBlue { get { return namedColors["LIGHTBLUE"]; } }
+        public static Color LightCoral { get { return namedColors["LIGHTCORAL"]; } }
+        public static Color LightCyan { get { return namedColors["LIGHTCYAN"]; } }
+        public static Color LightGoldenrod { get { return namedColors["LIGHTGOLDENROD"]; } }
+        public static Color LightGray { get { return namedColors["LIGHTGRAY"]; } }
+        public static Color LightGreen { get { return namedColors["LIGHTGREEN"]; } }
+        public static Color LightPink { get { return namedColors["LIGHTPINK"]; } }
+        public static Color LightSalmon { get { return namedColors["LIGHTSALMON"]; } }
+        public static Color LightSeaGreen { get { return namedColors["LIGHTSEAGREEN"]; } }
+        public static Color LightSkyBlue { get { return namedColors["LIGHTSKYBLUE"]; } }
+        public static Color LightSlateGray { get { return namedColors["LIGHTSLATEGRAY"]; } }
+        public static Color LightSteelBlue { get { return namedColors["LIGHTSTEELBLUE"]; } }
+        public static Color LightYellow { get { return namedColors["LIGHTYELLOW"]; } }
+        public static Color Lime { get { return namedColors["LIME"]; } }
+        public static Color LimeGreen { get { return namedColors["LIMEGREEN"]; } }
+        public static Color Linen { get { return namedColors["LINEN"]; } }
+        public static Color Magenta { get { return namedColors["MAGENTA"]; } }
+        public static Color Maroon { get { return namedColors["MAROON"]; } }
+        public static Color MediumAquamarine { get { return namedColors["MEDIUMAQUAMARINE"]; } }
+        public static Color MediumBlue { get { return namedColors["MEDIUMBLUE"]; } }
+        public static Color MediumOrchid { get { return namedColors["MEDIUMORCHID"]; } }
+        public static Color MediumPurple { get { return namedColors["MEDIUMPURPLE"]; } }
+        public static Color MediumSeaGreen { get { return namedColors["MEDIUMSEAGREEN"]; } }
+        public static Color MediumSlateBlue { get { return namedColors["MEDIUMSLATEBLUE"]; } }
+        public static Color MediumSpringGreen { get { return namedColors["MEDIUMSPRINGGREEN"]; } }
+        public static Color MediumTurquoise { get { return namedColors["MEDIUMTURQUOISE"]; } }
+        public static Color MediumVioletRed { get { return namedColors["MEDIUMVIOLETRED"]; } }
+        public static Color MidnightBlue { get { return namedColors["MIDNIGHTBLUE"]; } }
+        public static Color MintCream { get { return namedColors["MINTCREAM"]; } }
+        public static Color MistyRose { get { return namedColors["MISTYROSE"]; } }
+        public static Color Moccasin { get { return namedColors["MOCCASIN"]; } }
+        public static Color NavajoWhite { get { return namedColors["NAVAJOWHITE"]; } }
+        public static Color NavyBlue { get { return namedColors["NAVYBLUE"]; } }
+        public static Color OldLace { get { return namedColors["OLDLACE"]; } }
+        public static Color Olive { get { return namedColors["OLIVE"]; } }
+        public static Color OliveDrab { get { return namedColors["OLIVEDRAB"]; } }
+        public static Color Orange { get { return namedColors["ORANGE"]; } }
+        public static Color OrangeRed { get { return namedColors["ORANGERED"]; } }
+        public static Color Orchid { get { return namedColors["ORCHID"]; } }
+        public static Color PaleGoldenrod { get { return namedColors["PALEGOLDENROD"]; } }
+        public static Color PaleGreen { get { return namedColors["PALEGREEN"]; } }
+        public static Color PaleTurquoise { get { return namedColors["PALETURQUOISE"]; } }
+        public static Color PaleVioletRed { get { return namedColors["PALEVIOLETRED"]; } }
+        public static Color PapayaWhip { get { return namedColors["PAPAYAWHIP"]; } }
+        public static Color PeachPuff { get { return namedColors["PEACHPUFF"]; } }
+        public static Color Peru { get { return namedColors["PERU"]; } }
+        public static Color Pink { get { return namedColors["PINK"]; } }
+        public static Color Plum { get { return namedColors["PLUM"]; } }
+        public static Color PowderBlue { get { return namedColors["POWDERBLUE"]; } }
+        public static Color Purple { get { return namedColors["PURPLE"]; } }
+        public static Color RebeccaPurple { get { return namedColors["REBECCAPURPLE"]; } }
+        public static Color Red { get { return namedColors["RED"]; } }
+        public static Color RosyBrown { get { return namedColors["ROSYBROWN"]; } }
+        public static Color RoyalBlue { get { return namedColors["ROYALBLUE"]; } }
+        public static Color SaddleBrown { get { return namedColors["SADDLEBROWN"]; } }
+        public static Color Salmon { get { return namedColors["SALMON"]; } }
+        public static Color SandyBrown { get { return namedColors["SANDYBROWN"]; } }
+        public static Color SeaGreen { get { return namedColors["SEAGREEN"]; } }
+        public static Color Seashell { get { return namedColors["SEASHELL"]; } }
+        public static Color Sienna { get { return namedColors["SIENNA"]; } }
+        public static Color Silver { get { return namedColors["SILVER"]; } }
+        public static Color SkyBlue { get { return namedColors["SKYBLUE"]; } }
+        public static Color SlateBlue { get { return namedColors["SLATEBLUE"]; } }
+        public static Color SlateGray { get { return namedColors["SLATEGRAY"]; } }
+        public static Color Snow { get { return namedColors["SNOW"]; } }
+        public static Color SpringGreen { get { return namedColors["SPRINGGREEN"]; } }
+        public static Color SteelBlue { get { return namedColors["STEELBLUE"]; } }
+        public static Color Tan { get { return namedColors["TAN"]; } }
+        public static Color Teal { get { return namedColors["TEAL"]; } }
+        public static Color Thistle { get { return namedColors["THISTLE"]; } }
+        public static Color Tomato { get { return namedColors["TOMATO"]; } }
+        public static Color Transparent { get { return namedColors["TRANSPARENT"]; } }
+        public static Color Turquoise { get { return namedColors["TURQUOISE"]; } }
+        public static Color Violet { get { return namedColors["VIOLET"]; } }
+        public static Color WebGray { get { return namedColors["WEBGRAY"]; } }
+        public static Color WebGreen { get { return namedColors["WEBGREEN"]; } }
+        public static Color WebMaroon { get { return namedColors["WEBMAROON"]; } }
+        public static Color WebPurple { get { return namedColors["WEBPURPLE"]; } }
+        public static Color Wheat { get { return namedColors["WHEAT"]; } }
+        public static Color White { get { return namedColors["WHITE"]; } }
+        public static Color WhiteSmoke { get { return namedColors["WHITESMOKE"]; } }
+        public static Color Yellow { get { return namedColors["YELLOW"]; } }
+        public static Color YellowGreen { get { return namedColors["YELLOWGREEN"]; } }
     }
 }
