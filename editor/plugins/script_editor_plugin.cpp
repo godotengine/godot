@@ -1954,7 +1954,20 @@ void ScriptEditor::_update_script_names() {
 		Vector<String> disambiguated_script_names;
 		Vector<String> full_script_paths;
 		for (int j = 0; j < sedata.size(); j++) {
-			disambiguated_script_names.append(sedata[j].name.replace("(*)", "").get_file());
+			String name = sedata[j].name.replace("(*)", "");
+			ScriptListName script_display = (ScriptListName)(int)EditorSettings::get_singleton()->get("text_editor/script_list/list_script_names_as");
+			switch (script_display) {
+				case DISPLAY_NAME: {
+					name = name.get_file();
+				} break;
+				case DISPLAY_DIR_AND_NAME: {
+					name = name.get_base_dir().get_file().plus_file(name.get_file());
+				} break;
+				default:
+					break;
+			}
+
+			disambiguated_script_names.append(name);
 			full_script_paths.append(sedata[j].tooltip);
 		}
 
