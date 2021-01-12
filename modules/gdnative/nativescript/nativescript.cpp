@@ -1257,6 +1257,15 @@ void NativeScriptLanguage::init() {
 		}
 		exit(0);
 	}
+
+	E = args.find("--gdnative-generate-json-builtin-api");
+
+	if (E && E->next()) {
+		if (generate_c_builtin_api(E->next()->get()) != OK) {
+			ERR_PRINT("Failed to generate C builtin API\n");
+		}
+		exit(0);
+	}
 #endif
 
 #ifdef TOOLS_ENABLED

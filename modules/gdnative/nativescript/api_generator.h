@@ -35,5 +35,6 @@
 #include "core/typedefs.h"
 
 Error generate_c_api(const String &p_path);
+Error generate_c_builtin_api(const String &p_path);
 
 #endif // API_GENERATOR_H
