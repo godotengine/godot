@@ -265,27 +265,27 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("General options:\n");
-	OS::get_singleton()->print("  -h, --help                       Display this help message.\n");
-	OS::get_singleton()->print("  --version                        Display the version string.\n");
-	OS::get_singleton()->print("  -v, --verbose                    Use verbose stdout mode.\n");
-	OS::get_singleton()->print("  --quiet                          Quiet mode, silences stdout messages. Errors are still displayed.\n");
+	OS::get_singleton()->print("  -h, --help                                   Display this help message.\n");
+	OS::get_singleton()->print("  --version                                    Display the version string.\n");
+	OS::get_singleton()->print("  -v, --verbose                                Use verbose stdout mode.\n");
+	OS::get_singleton()->print("  --quiet                                      Quiet mode, silences stdout messages. Errors are still displayed.\n");
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Run options:\n");
 #ifdef TOOLS_ENABLED
-	OS::get_singleton()->print("  -e, --editor                     Start the editor instead of running the scene.\n");
-	OS::get_singleton()->print("  -p, --project-manager            Start the project manager, even if a project is auto-detected.\n");
+	OS::get_singleton()->print("  -e, --editor                                 Start the editor instead of running the scene.\n");
+	OS::get_singleton()->print("  -p, --project-manager                        Start the project manager, even if a project is auto-detected.\n");
 #endif
-	OS::get_singleton()->print("  -q, --quit                       Quit after the first iteration.\n");
-	OS::get_singleton()->print("  -l, --language <locale>          Use a specific locale (<locale> being a two-letter code).\n");
-	OS::get_singleton()->print("  --path <directory>               Path to a project (<directory> must contain a 'project.godot' file).\n");
-	OS::get_singleton()->print("  -u, --upwards                    Scan folders upwards for project.godot file.\n");
-	OS::get_singleton()->print("  --main-pack <file>               Path to a pack (.pck) file to load.\n");
-	OS::get_singleton()->print("  --render-thread <mode>           Render thread mode ('unsafe', 'safe', 'separate').\n");
-	OS::get_singleton()->print("  --remote-fs <address>            Remote filesystem (<host/IP>[:<port>] address).\n");
-	OS::get_singleton()->print("  --remote-fs-password <password>  Password for remote filesystem.\n");
+	OS::get_singleton()->print("  -q, --quit                                   Quit after the first iteration.\n");
+	OS::get_singleton()->print("  -l, --language <locale>                      Use a specific locale (<locale> being a two-letter code).\n");
+	OS::get_singleton()->print("  --path <directory>                           Path to a project (<directory> must contain a 'project.godot' file).\n");
+	OS::get_singleton()->print("  -u, --upwards                                Scan folders upwards for project.godot file.\n");
+	OS::get_singleton()->print("  --main-pack <file>                           Path to a pack (.pck) file to load.\n");
+	OS::get_singleton()->print("  --render-thread <mode>                       Render thread mode ('unsafe', 'safe', 'separate').\n");
+	OS::get_singleton()->print("  --remote-fs <address>                        Remote filesystem (<host/IP>[:<port>] address).\n");
+	OS::get_singleton()->print("  --remote-fs-password <password>              Password for remote filesystem.\n");
 
-	OS::get_singleton()->print("  --audio-driver <driver>          Audio driver [");
+	OS::get_singleton()->print("  --audio-driver <driver>                      Audio driver [");
 	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
 		if (i > 0) {
 			OS::get_singleton()->print(", ");
@@ -294,7 +294,7 @@ void Main::print_help(const char *p_binary) {
 	}
 	OS::get_singleton()->print("].\n");
 
-	OS::get_singleton()->print("  --display-driver <driver>        Display driver (and rendering driver) [");
+	OS::get_singleton()->print("  --display-driver <driver>                    Display driver (and rendering driver) [");
 	for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 		if (i > 0) {
 			OS::get_singleton()->print(", ");
@@ -311,26 +311,26 @@ void Main::print_help(const char *p_binary) {
 	}
 	OS::get_singleton()->print("].\n");
 
-	OS::get_singleton()->print("  --rendering-driver <driver>      Rendering driver (depends on display driver).\n");
+	OS::get_singleton()->print("  --rendering-driver <driver>                  Rendering driver (depends on display driver).\n");
 
-	OS::get_singleton()->print("  --text-driver <driver>           Text driver (Fonts, BiDi, shaping)\n");
+	OS::get_singleton()->print("  --text-driver <driver>                       Text driver (Fonts, BiDi, shaping)\n");
 
 	OS::get_singleton()->print("\n");
 
 #ifndef SERVER_ENABLED
 	OS::get_singleton()->print("Display options:\n");
-	OS::get_singleton()->print("  -f, --fullscreen                 Request fullscreen mode.\n");
-	OS::get_singleton()->print("  -m, --maximized                  Request a maximized window.\n");
-	OS::get_singleton()->print("  -w, --windowed                   Request windowed mode.\n");
-	OS::get_singleton()->print("  -t, --always-on-top              Request an always-on-top window.\n");
-	OS::get_singleton()->print("  --resolution <W>x<H>             Request window resolution.\n");
-	OS::get_singleton()->print("  --position <X>,<Y>               Request window position.\n");
-	OS::get_singleton()->print("  --low-dpi                        Force low-DPI mode (macOS and Windows only).\n");
-	OS::get_singleton()->print("  --no-window                      Disable window creation (Windows only). Useful together with --script.\n");
-	OS::get_singleton()->print("  --enable-vsync-via-compositor    When vsync is enabled, vsync via the OS' window compositor (Windows only).\n");
-	OS::get_singleton()->print("  --disable-vsync-via-compositor   Disable vsync via the OS' window compositor (Windows only).\n");
-	OS::get_singleton()->print("  --single-window                  Use a single window (no separate subwindows).\n");
-	OS::get_singleton()->print("  --tablet-driver                  Tablet input driver (");
+	OS::get_singleton()->print("  -f, --fullscreen                             Request fullscreen mode.\n");
+	OS::get_singleton()->print("  -m, --maximized                              Request a maximized window.\n");
+	OS::get_singleton()->print("  -w, --windowed                               Request windowed mode.\n");
+	OS::get_singleton()->print("  -t, --always-on-top                          Request an always-on-top window.\n");
+	OS::get_singleton()->print("  --resolution <W>x<H>                         Request window resolution.\n");
+	OS::get_singleton()->print("  --position <X>,<Y>                           Request window position.\n");
+	OS::get_singleton()->print("  --low-dpi                                    Force low-DPI mode (macOS and Windows only).\n");
+	OS::get_singleton()->print("  --no-window                                  Disable window creation (Windows only). Useful together with --script.\n");
+	OS::get_singleton()->print("  --enable-vsync-via-compositor                When vsync is enabled, vsync via the OS' window compositor (Windows only).\n");
+	OS::get_singleton()->print("  --disable-vsync-via-compositor               Disable vsync via the OS' window compositor (Windows only).\n");
+	OS::get_singleton()->print("  --single-window                              Use a single window (no separate subwindows).\n");
+	OS::get_singleton()->print("  --tablet-driver                              Tablet input driver (");
 	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
 		if (i != 0)
 			OS::get_singleton()->print(", ");
@@ -341,43 +341,44 @@ void Main::print_help(const char *p_binary) {
 #endif
 
 	OS::get_singleton()->print("Debug options:\n");
-	OS::get_singleton()->print("  -d, --debug                      Debug (local stdout debugger).\n");
-	OS::get_singleton()->print("  -b, --breakpoints                Breakpoint list as source::line comma-separated pairs, no spaces (use %%20 instead).\n");
-	OS::get_singleton()->print("  --profiling                      Enable profiling in the script debugger.\n");
-	OS::get_singleton()->print("  --vk-layers                      Enable Vulkan Validation layers for debugging.\n");
+	OS::get_singleton()->print("  -d, --debug                                  Debug (local stdout debugger).\n");
+	OS::get_singleton()->print("  -b, --breakpoints                            Breakpoint list as source::line comma-separated pairs, no spaces (use %%20 instead).\n");
+	OS::get_singleton()->print("  --profiling                                  Enable profiling in the script debugger.\n");
+	OS::get_singleton()->print("  --vk-layers                                  Enable Vulkan Validation layers for debugging.\n");
 #if DEBUG_ENABLED
-	OS::get_singleton()->print("  --gpu-abort                      Abort on GPU errors (usually validation layer errors), may help see the problem if your system freezes.\n");
+	OS::get_singleton()->print("  --gpu-abort                                  Abort on GPU errors (usually validation layer errors), may help see the problem if your system freezes.\n");
 #endif
-	OS::get_singleton()->print("  --remote-debug <uri>             Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
+	OS::get_singleton()->print("  --remote-debug <uri>                         Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
 #if defined(DEBUG_ENABLED) && !defined(SERVER_ENABLED)
-	OS::get_singleton()->print("  --debug-collisions               Show collision shapes when running the scene.\n");
-	OS::get_singleton()->print("  --debug-navigation               Show navigation polygons when running the scene.\n");
+	OS::get_singleton()->print("  --debug-collisions                           Show collision shapes when running the scene.\n");
+	OS::get_singleton()->print("  --debug-navigation                           Show navigation polygons when running the scene.\n");
 #endif
-	OS::get_singleton()->print("  --frame-delay <ms>               Simulate high CPU load (delay each frame by <ms> milliseconds).\n");
-	OS::get_singleton()->print("  --time-scale <scale>             Force time scale (higher values are faster, 1.0 is normal speed).\n");
-	OS::get_singleton()->print("  --disable-render-loop            Disable render loop so rendering only occurs when called explicitly from script.\n");
-	OS::get_singleton()->print("  --disable-crash-handler          Disable crash handler when supported by the platform code.\n");
-	OS::get_singleton()->print("  --fixed-fps <fps>                Force a fixed number of frames per second. This setting disables real-time synchronization.\n");
-	OS::get_singleton()->print("  --print-fps                      Print the frames per second to the stdout.\n");
-	OS::get_singleton()->print("  --profile-gpu                    Show a simple profile of the tasks that took more time during frame rendering.\n");
+	OS::get_singleton()->print("  --frame-delay <ms>                           Simulate high CPU load (delay each frame by <ms> milliseconds).\n");
+	OS::get_singleton()->print("  --time-scale <scale>                         Force time scale (higher values are faster, 1.0 is normal speed).\n");
+	OS::get_singleton()->print("  --disable-render-loop                        Disable render loop so rendering only occurs when called explicitly from script.\n");
+	OS::get_singleton()->print("  --disable-crash-handler                      Disable crash handler when supported by the platform code.\n");
+	OS::get_singleton()->print("  --fixed-fps <fps>                            Force a fixed number of frames per second. This setting disables real-time synchronization.\n");
+	OS::get_singleton()->print("  --print-fps                                  Print the frames per second to the stdout.\n");
+	OS::get_singleton()->print("  --profile-gpu                                Show a simple profile of the tasks that took more time during frame rendering.\n");
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Standalone tools:\n");
-	OS::get_singleton()->print("  -s, --script <script>            Run a script.\n");
-	OS::get_singleton()->print("  --check-only                     Only parse for errors and quit (use with --script).\n");
+	OS::get_singleton()->print("  -s, --script <script>                        Run a script.\n");
+	OS::get_singleton()->print("  --check-only                                 Only parse for errors and quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
-	OS::get_singleton()->print("  --export <preset> <path>         Export the project using the given preset and matching release template. The preset name should match one defined in export_presets.cfg.\n");
-	OS::get_singleton()->print("                                   <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe'). The target directory should exist.\n");
-	OS::get_singleton()->print("  --export-debug <preset> <path>   Same as --export, but using the debug template.\n");
-	OS::get_singleton()->print("  --export-pack <preset> <path>    Same as --export, but only export the game pack for the given preset. The <path> extension determines whether it will be in PCK or ZIP format.\n");
-	OS::get_singleton()->print("  --doctool <path>                 Dump the engine API reference to the given <path> in XML format, merging if existing files are found.\n");
-	OS::get_singleton()->print("  --no-docbase                     Disallow dumping the base types (used with --doctool).\n");
-	OS::get_singleton()->print("  --build-solutions                Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
+	OS::get_singleton()->print("  --export <preset> <path>                     Export the project using the given preset and matching release template. The preset name should match one defined in export_presets.cfg.\n");
+	OS::get_singleton()->print("                                               <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe'). The target directory should exist.\n");
+	OS::get_singleton()->print("  --export-debug <preset> <path>               Same as --export, but using the debug template.\n");
+	OS::get_singleton()->print("  --export-pack <preset> <path>                Same as --export, but only export the game pack for the given preset. The <path> extension determines whether it will be in PCK or ZIP format.\n");
+	OS::get_singleton()->print("  --doctool <path>                             Dump the engine API reference to the given <path> in XML format, merging if existing files are found.\n");
+	OS::get_singleton()->print("  --no-docbase                                 Disallow dumping the base types (used with --doctool).\n");
+	OS::get_singleton()->print("  --build-solutions                            Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
 #ifdef DEBUG_METHODS_ENABLED
-	OS::get_singleton()->print("  --gdnative-generate-json-api     Generate JSON dump of the Godot API for GDNative bindings.\n");
+	OS::get_singleton()->print("  --gdnative-generate-json-api <path>          Generate JSON dump of the Godot API for GDNative bindings and save it on the file specified in <path>.\n");
+	OS::get_singleton()->print("  --gdnative-generate-json-builtin-api <path>  Generate JSON dump of the Godot API of the builtin Variant types and utility functions for GDNative bindings and save it on the file specified in <path>.\n");
 #endif
 #ifdef TESTS_ENABLED
-	OS::get_singleton()->print("  --test [--help]                  Run unit tests. Use --test --help for more information.\n");
+	OS::get_singleton()->print("  --test [--help]                              Run unit tests. Use --test --help for more information.\n");
 #endif
 	OS::get_singleton()->print("\n");
 #endif
@@ -879,7 +880,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			auto_build_solutions = true;
 			editor = true;
 #ifdef DEBUG_METHODS_ENABLED
-		} else if (I->get() == "--gdnative-generate-json-api") {
+		} else if (I->get() == "--gdnative-generate-json-api" || I->get() == "--gdnative-generate-json-builtin-api") {
 			// Register as an editor instance to use low-end fallback if relevant.
 			editor = true;
 
