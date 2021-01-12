@@ -320,6 +320,12 @@ Comment: Minimal PCG32 implementation
 Copyright: 2014, M.E. O'Neill
 License: Apache-2.0
 
+Files: ./thirdparty/misc/polypartition.cpp
+ ./thirdparty/misc/polypartition.h
+Comment: PolyPartition / Triangulator
+Copyright: 2011-2021, Ivan Fratric and contributors
+License: Expat
+
 Files: ./thirdparty/misc/r128.c
  ./thirdparty/misc/r128.h
 Comment: r128 library
@@ -337,12 +343,6 @@ Files: ./thirdparty/misc/stb_rect_pack.h
 Comment: stb libraries
 Copyright: Sean Barrett
 License: public-domain or Unlicense or Expat
-
-Files: ./thirdparty/misc/triangulator.cpp
- ./thirdparty/misc/triangulator.h
-Comment: PolyPartition
-Copyright: 2011, Ivan Fratric
-License: Expat
 
 Files: ./thirdparty/misc/yuv2rgb.h
 Comment: YUV2RGB
