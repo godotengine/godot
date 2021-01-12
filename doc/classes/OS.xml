@@ -25,6 +25,29 @@
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="create_process">
+			<return type="int">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="arguments" type="PackedStringArray">
+			</argument>
+			<description>
+				Creates a new process that runs independently of Godot. It will not terminate if Godot terminates. The file specified in [code]path[/code] must exist and be executable. Platform path resolution will be used. The [code]arguments[/code] are used in the given order and separated by a space.
+				If the process creation succeeds, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process creation fails, the method will return [code]-1[/code].
+				For example, running another instance of the project:
+				[codeblocks]
+				[gdscript]
+				var pid = OS.create_process(OS.get_executable_path(), [])
+				[/gdscript]
+				[csharp]
+				var pid = OS.CreateProcess(OS.GetExecutablePath(), new string[] {});
+				[/csharp]
+				[/codeblocks]
+				See [method execute] if you wish to run an external command and retrieve the results.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="delay_msec" qualifiers="const">
 			<return type="void">
 			</return>
@@ -71,48 +94,34 @@
 			</argument>
 			<argument index="1" name="arguments" type="PackedStringArray">
 			</argument>
-			<argument index="2" name="blocking" type="bool" default="true">
+			<argument index="2" name="output" type="Array" default="[  ]">
 			</argument>
-			<argument index="3" name="output" type="Array" default="[  ]">
-			</argument>
-			<argument index="4" name="read_stderr" type="bool" default="false">
+			<argument index="3" name="read_stderr" type="bool" default="false">
 			</argument>
 			<description>
-				Execute the file at the given path with the arguments passed as an array of strings. Platform path resolution will take place. The resolved file must exist and be executable.
-				The arguments are used in the given order and separated by a space, so [code]OS.execute("ping", ["-w", "3", "godotengine.org"], false)[/code] will resolve to [code]ping -w 3 godotengine.org[/code] in the system's shell.
-				This method has slightly different behavior based on whether the [code]blocking[/code] mode is enabled.
-				If [code]blocking[/code] is [code]true[/code], the Godot thread will pause its execution while waiting for the process to terminate. The shell output of the process will be written to the [code]output[/code] array as a single string. When the process terminates, the Godot thread will resume execution.
-				If [code]blocking[/code] is [code]false[/code], the Godot thread will continue while the new process runs. It is not possible to retrieve the shell output in non-blocking mode, so [code]output[/code] will be empty.
-				The return value also depends on the blocking mode. When blocking, the method will return an exit code of the process. When non-blocking, the method returns a process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process forking (non-blocking) or opening (blocking) fails, the method will return [code]-1[/code] or another exit code.
-				Example of blocking mode and retrieving the shell output:
+				Executes a command. The file specified in [code]path[/code] must exist and be executable. Platform path resolution will be used. The [code]arguments[/code] are used in the given order and separated by a space. If an [code]output[/code] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [code]output[/code]. If [code]read_stderr[/code] is [code]true[/code], the output to the standard error stream will be included too.
+				If the command is successfully executed, the method will return the exit code of the command, or [code]-1[/code] if it fails.
+				[b]Note:[/b] The Godot thread will pause its execution until the executed command terminates. Use [Thread] to create a separate thread that will not pause the Godot thread, or use [method create_process] to create a completely independent process.
+				For example, to retrieve a list of the working directory's contents:
 				[codeblocks]
 				[gdscript]
 				var output = []
-				var exit_code = OS.execute("ls", ["-l", "/tmp"], true, output)
+				var exit_code = OS.execute("ls", ["-l", "/tmp"], output)
 				[/gdscript]
 				[csharp]
 				var output = new Godot.Collections.Array();
-				int exitCode = OS.Execute("ls", new string[] {"-l", "/tmp"}, true, output);
+				int exitCode = OS.Execute("ls", new string[] {"-l", "/tmp"}, output);
 				[/csharp]
 				[/codeblocks]
-				Example of non-blocking mode, running another instance of the project and storing its process ID:
-				[codeblocks]
-				[gdscript]
-				var pid = OS.execute(OS.get_executable_path(), [], false)
-				[/gdscript]
-				[csharp]
-				var pid = OS.Execute(OS.GetExecutablePath(), new string[] {}, false);
-				[/csharp]
-				[/codeblocks]
-				If you wish to access a shell built-in or perform a composite command, a platform-specific shell can be invoked. For example:
+				To execute a composite command, a platform-specific shell can be invoked. For example:
 				[codeblocks]
 				[gdscript]
 				var output = []
-				OS.execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], true, output)
+				OS.execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], output)
 				[/gdscript]
 				[csharp]
 				var output = new Godot.Collections.Array();
-				OS.Execute("CMD.exe", new string[] {"/C", "cd %TEMP% &amp;&amp; dir"}, true, output);
+				OS.Execute("CMD.exe", new string[] {"/C", "cd %TEMP% &amp;&amp; dir"}, output);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.

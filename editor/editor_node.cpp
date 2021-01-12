@@ -2855,8 +2855,7 @@ void EditorNode::_discard_changes(const String &p_str) {
 			args.push_back(exec.get_base_dir());
 			args.push_back("--project-manager");
 
-			OS::ProcessID pid = 0;
-			Error err = OS::get_singleton()->execute(exec, args, false, &pid);
+			Error err = OS::get_singleton()->create_process(exec, args);
 			ERR_FAIL_COND(err);
 		} break;
 	}
@@ -5139,9 +5138,7 @@ void EditorNode::_global_menu_new_window(const Variant &p_tag) {
 		List<String> args;
 		args.push_back("-p");
 		String exec = OS::get_singleton()->get_executable_path();
-
-		OS::ProcessID pid = 0;
-		OS::get_singleton()->execute(exec, args, false, &pid);
+		OS::get_singleton()->create_process(exec, args);
 	}
 }
 
@@ -5467,7 +5464,7 @@ void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_err
 
 static void _execute_thread(void *p_ud) {
 	EditorNode::ExecuteThreadArgs *eta = (EditorNode::ExecuteThreadArgs *)p_ud;
-	Error err = OS::get_singleton()->execute(eta->path, eta->args, true, nullptr, &eta->output, &eta->exitcode, true, &eta->execute_output_mutex);
+	Error err = OS::get_singleton()->execute(eta->path, eta->args, &eta->output, &eta->exitcode, true, &eta->execute_output_mutex);
 	print_verbose("Thread exit status: " + itos(eta->exitcode));
 	if (err != OK) {
 		eta->exitcode = err;

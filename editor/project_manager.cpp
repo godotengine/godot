@@ -1297,9 +1297,7 @@ void ProjectList::_global_menu_new_window(const Variant &p_tag) {
 	List<String> args;
 	args.push_back("-p");
 	String exec = OS::get_singleton()->get_executable_path();
-
-	OS::ProcessID pid = 0;
-	OS::get_singleton()->execute(exec, args, false, &pid);
+	OS::get_singleton()->create_process(exec, args);
 }
 
 void ProjectList::_global_menu_open_project(const Variant &p_tag) {
@@ -1310,9 +1308,7 @@ void ProjectList::_global_menu_open_project(const Variant &p_tag) {
 		List<String> args;
 		args.push_back(conf);
 		String exec = OS::get_singleton()->get_executable_path();
-
-		OS::ProcessID pid = 0;
-		OS::get_singleton()->execute(exec, args, false, &pid);
+		OS::get_singleton()->create_process(exec, args);
 	}
 }
 
@@ -2055,9 +2051,7 @@ void ProjectManager::_open_selected_projects() {
 		}
 
 		String exec = OS::get_singleton()->get_executable_path();
-
-		OS::ProcessID pid = 0;
-		Error err = OS::get_singleton()->execute(exec, args, false, &pid);
+		Error err = OS::get_singleton()->create_process(exec, args);
 		ERR_FAIL_COND(err);
 	}
 
@@ -2143,9 +2137,7 @@ void ProjectManager::_run_project_confirm() {
 		}
 
 		String exec = OS::get_singleton()->get_executable_path();
-
-		OS::ProcessID pid = 0;
-		Error err = OS::get_singleton()->execute(exec, args, false, &pid);
+		Error err = OS::get_singleton()->create_process(exec, args);
 		ERR_FAIL_COND(err);
 	}
 }
@@ -2270,8 +2262,7 @@ void ProjectManager::_language_selected(int p_id) {
 void ProjectManager::_restart_confirm() {
 	List<String> args = OS::get_singleton()->get_cmdline_args();
 	String exec = OS::get_singleton()->get_executable_path();
-	OS::ProcessID pid = 0;
-	Error err = OS::get_singleton()->execute(exec, args, false, &pid);
+	Error err = OS::get_singleton()->create_process(exec, args);
 	ERR_FAIL_COND(err);
 
 	_dim_window();
