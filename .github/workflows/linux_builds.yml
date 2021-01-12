@@ -190,7 +190,6 @@ jobs:
         run: |
           scons tools=yes target=debug use_asan=yes use_ubsan=yes
           ls -l bin/
-#          scons tools=no target=release debug_symbols=full use_ubsan=yes use_asan=yes
 
       # Download and test project to check leaks and invalid memory usage.
       # CI has no audio device, so use the Dummy audio driver to avoid spurious error messages.
@@ -200,30 +199,10 @@ jobs:
           unzip 3.2.zip
           mv "RegressionTestProject-3.2" "test_project"
 
-          echo "----- Open editor to import all project resources -----"
-          DRI_PRIME=0 timeout 25s xvfb-run bin/godot.x11.tools.64s --audio-driver Dummy -e --path test_project 2>&1 | tee sanitizers_log.txt || true
-          misc/scripts/check_ci_log.py sanitizers_log.txt
-
-          echo "----- Open the editor again, because this doesn't always work -----"
-          DRI_PRIME=0 timeout 25s xvfb-run bin/godot.x11.tools.64s --audio-driver Dummy -e --path test_project 2>&1 | tee sanitizers_log.txt || true
-          misc/scripts/check_ci_log.py sanitizers_log.txt
-
-          echo "----- Open the editor a third time, this time without timeout but with the -q flag -----"
+          echo "----- Open editor to check for memory leaks -----"
           DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s --audio-driver Dummy -e -q --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
 
           echo "----- Run and test project -----"
-          DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s 20 --video-driver GLES3 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
+          DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s 30 --video-driver GLES3 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
-
-#      # Export project and run it to check for possible leaks and invalid memory usage
-#      - name: Exporting and running project
-#        run: |
-#          mkdir exported_project
-#          sed -i 's:PATH_TO_CHANGE:'`pwd`/bin/godot.x11.debug.64s':' test_project/export_presets.cfg
-#          cd test_project
-#          DRI_PRIME=0 xvfb-run ../bin/godot.x11.tools.64s --export-debug "Linux/X11" ../exported_project/test_project 2>&1 | tee sanitizers_log.txt || true
-#          cd ..
-#          misc/scripts/check_ci_log.py sanitizers_log.txt
-#          DRI_PRIME=0 xvfb-run exported_project/test_project 20 2>&1 | tee sanitizers_log.txt || true
-#          misc/scripts/check_ci_log.py sanitizers_log.txt
