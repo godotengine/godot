@@ -618,11 +618,11 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 	}
 }
 
-void RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &p_shadow_ofs) {
+int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &p_shadow_ofs) {
 	Vector2 off;
 
-	ERR_FAIL_COND(p_frame == nullptr);
-	ERR_FAIL_COND(p_line < 0 || p_line >= p_frame->lines.size());
+	ERR_FAIL_COND_V(p_frame == nullptr, 0);
+	ERR_FAIL_COND_V(p_line < 0 || p_line >= p_frame->lines.size(), 0);
 
 	Line &l = p_frame->lines.write[p_line];
 
@@ -631,7 +631,7 @@ void RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_
 	Variant meta;
 
 	if (it_from == nullptr) {
-		return;
+		return 0;
 	}
 
 	RID ci = get_canvas_item();
@@ -699,14 +699,24 @@ void RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_
 	}
 	l.text_buf->draw_dropcap(ci, p_ofs + ((rtl) ? Vector2() : Vector2(l.offset.x, 0)), l.dc_color);
 
+	int line_count = 0;
+	Size2 ctrl_size = get_size();
 	// Draw text.
 	for (int line = 0; line < l.text_buf->get_line_count(); line++) {
 		RID rid = l.text_buf->get_line_rid(line);
+		if (p_ofs.y + off.y >= ctrl_size.height) {
+			break;
+		}
+		if (p_ofs.y + off.y + TS->shaped_text_get_size(rid).y <= 0) {
+			off.y += TS->shaped_text_get_size(rid).y;
+			continue;
+		}
 
 		float width = l.text_buf->get_width();
 		float length = TS->shaped_text_get_width(rid);
 
 		// Draw line.
+		line_count++;
 
 		if (rtl) {
 			off.x = p_width - l.offset.x - width;
@@ -1068,6 +1078,8 @@ void RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_
 		}
 		off.y += TS->shaped_text_get_descent(rid);
 	}
+
+	return line_count;
 }
 
 void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool *r_outside) {
@@ -1392,13 +1404,14 @@ void RichTextLabel::_notification(int p_what) {
 			bool use_outline = get_theme_constant("shadow_as_outline");
 			Point2 shadow_ofs(get_theme_constant("shadow_offset_x"), get_theme_constant("shadow_offset_y"));
 
+			visible_paragraph_count = 0;
 			visible_line_count = 0;
 
 			// New cache draw.
 			Point2 ofs = text_rect.get_position() + Vector2(0, main->lines[from_line].offset.y - vofs);
 			while (ofs.y < size.height && from_line < main->lines.size()) {
-				visible_line_count++;
-				_draw_line(main, from_line, ofs, text_rect.size.x, base_color, outline_size, outline_color, font_color_shadow, use_outline, shadow_ofs);
+				visible_paragraph_count++;
+				visible_line_count += _draw_line(main, from_line, ofs, text_rect.size.x, base_color, outline_size, outline_color, font_color_shadow, use_outline, shadow_ofs);
 				ofs.y += main->lines[from_line].text_buf->get_size().y;
 				from_line++;
 			}
@@ -3367,14 +3380,46 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 	return OK;
 }
 
-void RichTextLabel::scroll_to_line(int p_line) {
-	ERR_FAIL_INDEX(p_line, main->lines.size());
+void RichTextLabel::scroll_to_paragraph(int p_paragraph) {
+	ERR_FAIL_INDEX(p_paragraph, main->lines.size());
 	_validate_line_caches(main);
-	vscroll->set_value(main->lines[p_line].offset.y);
+	vscroll->set_value(main->lines[p_paragraph].offset.y);
+}
+
+int RichTextLabel::get_paragraph_count() const {
+	return current_frame->lines.size();
+}
+
+int RichTextLabel::get_visible_paragraph_count() const {
+	if (!is_visible()) {
+		return 0;
+	}
+	return visible_paragraph_count;
+}
+
+void RichTextLabel::scroll_to_line(int p_line) {
+	_validate_line_caches(main);
+
+	int line_count = 0;
+	for (int i = 0; i < main->lines.size(); i++) {
+		if ((line_count <= p_line) && (line_count + main->lines[i].text_buf->get_line_count() >= p_line)) {
+			float line_offset = 0.f;
+			for (int j = 0; j < p_line - line_count; j++) {
+				line_offset += main->lines[i].text_buf->get_line_size(j).y;
+			}
+			vscroll->set_value(main->lines[i].offset.y + line_offset);
+			return;
+		}
+		line_count += main->lines[i].text_buf->get_line_count();
+	}
 }
 
 int RichTextLabel::get_line_count() const {
-	return current_frame->lines.size();
+	int line_count = 0;
+	for (int i = 0; i < main->lines.size(); i++) {
+		line_count += main->lines[i].text_buf->get_line_count();
+	}
+	return line_count;
 }
 
 int RichTextLabel::get_visible_line_count() const {
@@ -3783,6 +3828,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_v_scroll"), &RichTextLabel::get_v_scroll);
 
 	ClassDB::bind_method(D_METHOD("scroll_to_line", "line"), &RichTextLabel::scroll_to_line);
+	ClassDB::bind_method(D_METHOD("scroll_to_paragraph", "paragraph"), &RichTextLabel::scroll_to_paragraph);
 
 	ClassDB::bind_method(D_METHOD("set_tab_size", "spaces"), &RichTextLabel::set_tab_size);
 	ClassDB::bind_method(D_METHOD("get_tab_size"), &RichTextLabel::get_tab_size);
@@ -3812,6 +3858,9 @@ void RichTextLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_line_count"), &RichTextLabel::get_line_count);
 	ClassDB::bind_method(D_METHOD("get_visible_line_count"), &RichTextLabel::get_visible_line_count);
+
+	ClassDB::bind_method(D_METHOD("get_paragraph_count"), &RichTextLabel::get_paragraph_count);
+	ClassDB::bind_method(D_METHOD("get_visible_paragraph_count"), &RichTextLabel::get_visible_paragraph_count);
 
 	ClassDB::bind_method(D_METHOD("get_content_height"), &RichTextLabel::get_content_height);
 
