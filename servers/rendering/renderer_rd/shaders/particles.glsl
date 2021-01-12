@@ -173,7 +173,7 @@ uint hash(uint x) {
 	return x;
 }
 
-bool emit_particle(mat4 p_xform, vec3 p_velocity, vec4 p_color, vec4 p_custom, uint p_flags) {
+bool emit_subparticle(mat4 p_xform, vec3 p_velocity, vec4 p_color, vec4 p_custom, uint p_flags) {
 	if (!params.can_emit) {
 		return false;
 	}
