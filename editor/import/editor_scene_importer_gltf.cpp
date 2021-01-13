@@ -425,7 +425,9 @@ Error EditorSceneImporterGLTF::_parse_buffers(GLTFState &state, const String &p_
 
 Error EditorSceneImporterGLTF::_parse_buffer_views(GLTFState &state) {
 
-	ERR_FAIL_COND_V(!state.json.has("bufferViews"), ERR_FILE_CORRUPT);
+	if (!state.json.has("bufferViews"))
+		return OK;
+
 	const Array &buffers = state.json["bufferViews"];
 	for (GLTFBufferViewIndex i = 0; i < buffers.size(); i++) {
 
@@ -483,7 +485,9 @@ EditorSceneImporterGLTF::GLTFType EditorSceneImporterGLTF::_get_type_from_str(co
 
 Error EditorSceneImporterGLTF::_parse_accessors(GLTFState &state) {
 
-	ERR_FAIL_COND_V(!state.json.has("accessors"), ERR_FILE_CORRUPT);
+	if (!state.json.has("accessors"))
+		return OK;
+
 	const Array &accessors = state.json["accessors"];
 	for (GLTFAccessorIndex i = 0; i < accessors.size(); i++) {
 
