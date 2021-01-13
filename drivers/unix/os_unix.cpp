@@ -308,7 +308,8 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 
 		execvp(p_path.utf8().get_data(), &args[0]);
 		// The execvp() function only returns if an error occurs.
-		CRASH_NOW_MSG("Could not create child process: " + p_path);
+		ERR_PRINT("Could not create child process: " + p_path);
+		raise(SIGKILL);
 	}
 
 	int status;
@@ -344,7 +345,8 @@ Error OS_Unix::create_process(const String &p_path, const List<String> &p_argume
 
 		execvp(p_path.utf8().get_data(), &args[0]);
 		// The execvp() function only returns if an error occurs.
-		CRASH_NOW_MSG("Could not create child process: " + p_path);
+		ERR_PRINT("Could not create child process: " + p_path);
+		raise(SIGKILL);
 	}
 
 	if (r_child_id) {
