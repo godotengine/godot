@@ -112,21 +112,22 @@ void Joint::_update_joint(bool p_only_free) {
 		return;
 	}
 
-	if (!body_a) {
-		SWAP(body_a, body_b);
-	}
-
 	warning = String();
 	update_configuration_warning();
 
-	joint = _configure_joint(body_a, body_b);
+	if (body_a)
+		joint = _configure_joint(body_a, body_b);
+	else if (body_b)
+		joint = _configure_joint(body_b, nullptr);
 
 	ERR_FAIL_COND_MSG(!joint.is_valid(), "Failed to configure the joint.");
 
 	PhysicsServer::get_singleton()->joint_set_solver_priority(joint, solver_priority);
 
-	ba = body_a->get_rid();
-	body_a->connect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree, make_binds(body_a->get_instance_id()));
+	if (body_a) {
+		ba = body_a->get_rid();
+		body_a->connect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree, make_binds(body_a->get_instance_id()));
+	}
 
 	if (body_b) {
 		bb = body_b->get_rid();
