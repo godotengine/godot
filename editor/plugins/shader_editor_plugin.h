@@ -33,11 +33,18 @@
 
 #include "editor/code_editor.h"
 #include "editor/editor_plugin.h"
+#include "editor/editor_properties.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/subviewport_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
+#include "scene/resources/primitive_meshes.h"
 #include "scene/resources/shader.h"
 #include "servers/rendering/shader_language.h"
 
@@ -54,6 +61,7 @@ protected:
 	virtual void _load_theme_settings() override;
 
 	virtual void _code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options) override;
+	virtual bool _is_shader_editor() const override { return true; }
 
 public:
 	virtual void _validate_script() override;
@@ -69,6 +77,9 @@ class ShaderEditor : public PanelContainer {
 	GDCLASS(ShaderEditor, PanelContainer);
 
 	enum {
+		FILE_CLOSE,
+		FILE_CLOSE_ALL,
+		FILE_CLOSE_OTHER_TABS,
 		EDIT_UNDO,
 		EDIT_REDO,
 		EDIT_CUT,
@@ -93,8 +104,10 @@ class ShaderEditor : public PanelContainer {
 		BOOKMARK_GOTO_PREV,
 		BOOKMARK_REMOVE_ALL,
 		HELP_DOCS,
+		TOGGLE_SHADERS_PANEL,
 	};
 
+	MenuButton *file_menu;
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
 	PopupMenu *bookmarks_menu;
@@ -106,16 +119,77 @@ class ShaderEditor : public PanelContainer {
 	ConfirmationDialog *erase_tab_confirm;
 	ConfirmationDialog *disk_changed;
 
+	// Shaders list
+	HSplitContainer *main_splitbox;
+	HBoxContainer *main_hbox;
+	HSplitContainer *left_splitbox;
+	VBoxContainer *left_vbox;
+	VBoxContainer *right_vbox;
+	VBoxContainer *shaders_vbox;
+	LineEdit *filter_shaders;
+	ItemList *shader_list;
+	ItemList *shader_filtered_list;
+
 	ShaderTextEditor *shader_editor;
+
+	// Scene Viewport
+	Node3DEditorViewportContainer *scene_viewport_base = nullptr;
+	Node *scene_viewport_parent = nullptr;
+	int scene_viewport_pos = -1;
+
+	// Local 3D-Viewport
+	SubViewportContainer *local_viewport_base;
+	SubViewport *local_viewport;
+	Camera3D *camera;
+	DirectionalLight3D *light1;
+	DirectionalLight3D *light2;
+	Ref<ShaderMaterial> material;
+
+	Map<String, Ref<Shader>> recent_shaders_map;
+
+	Ref<QuadMesh> quad_mesh;
+	Ref<SphereMesh> sphere_mesh;
+	Ref<BoxMesh> box_mesh;
+	Ref<CylinderMesh> cylinder_mesh;
+
+	MeshInstance3D *quad_mesh_instance;
+	MeshInstance3D *sphere_mesh_instance;
+	MeshInstance3D *box_mesh_instance;
+	MeshInstance3D *cylinder_mesh_instance;
+
+	HBoxContainer *spatial_hbox;
+	Button *scene_button;
+	Button *quad_button;
+	Button *sphere_button;
+	Button *box_button;
+	Button *cylinder_button;
+
+	enum PreviewNode3DType {
+		NODE3D_SCENE,
+		NODE3D_QUAD,
+		NODE3D_SPHERE,
+		NODE3D_BOX,
+		NODE3D_CYLINDER,
+	};
+	int last_option = 0;
+	Map<int, MeshInstance3D *> mesh_instances;
+	void _preview_3d_option(int p_option);
+	void _preview_viewport_option(int p_viewport_idx);
 
 	void _menu_option(int p_option);
 	void _params_changed();
 	mutable Ref<Shader> shader;
 
+	void _apply_to_preview();
+	void _update_filtered_shader_list();
+	void _filter_shaders_text_changed(const String &p_newtext);
 	void _editor_settings_changed();
 
 	void _check_for_external_edit();
 	void _reload_shader_from_disk();
+	void _shader_list_item_selected(int p_which, bool p_filtered);
+
+	static ShaderEditor *shader_editor_singleton;
 
 protected:
 	void _notification(int p_what);
@@ -127,6 +201,13 @@ protected:
 	void _bookmark_item_pressed(int p_idx);
 
 public:
+	static ShaderEditor *get_singleton() { return shader_editor_singleton; }
+
+	bool toggle_shaders_panel();
+	bool is_shaders_panel_toggled() const;
+
+	void attach_scene_viewport();
+	void detach_scene_viewport();
 	void apply_shaders();
 
 	void ensure_select_current();
@@ -143,14 +224,13 @@ public:
 class ShaderEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderEditorPlugin, EditorPlugin);
 
-	bool _2d;
+	bool _2d = false;
 	ShaderEditor *shader_editor;
 	EditorNode *editor;
-	Button *button;
 
 public:
 	virtual String get_name() const override { return "Shader"; }
-	bool has_main_screen() const override { return false; }
+	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

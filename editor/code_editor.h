@@ -199,6 +199,7 @@ protected:
 	void _line_col_changed();
 	void _notification(int);
 	static void _bind_methods();
+	virtual bool _is_shader_editor() const { return false; }
 
 	bool is_warnings_panel_opened;
 

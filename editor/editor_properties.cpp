@@ -3673,7 +3673,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 					String type = open_in_new.get_slicec(',', i).strip_edges();
 					for (int j = 0; j < p_hint_text.get_slice_count(","); j++) {
 						String inherits = p_hint_text.get_slicec(',', j);
-						if (ClassDB::is_parent_class(inherits, type)) {
+						if (ClassDB::is_parent_class(inherits, type) || inherits == "Shader") {
 							editor->set_use_sub_inspector(false);
 						}
 					}

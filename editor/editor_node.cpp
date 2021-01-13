@@ -414,6 +414,8 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 			_editor_select(EDITOR_3D);
 		} else if (ED_IS_SHORTCUT("editor/editor_script", p_event)) {
 			_editor_select(EDITOR_SCRIPT);
+		} else if (ED_IS_SHORTCUT("editor/editor_shader", p_event)) {
+			_editor_select(EDITOR_SHADER);
 		} else if (ED_IS_SHORTCUT("editor/editor_help", p_event)) {
 			emit_signal("request_help_search", "");
 		} else if (ED_IS_SHORTCUT("editor/editor_assetlib", p_event) && StreamPeerSSL::is_available()) {
@@ -1941,6 +1943,10 @@ void EditorNode::_edit_current() {
 		inspector_dock->update(nullptr);
 		EditorNode::get_singleton()->get_import_dock()->set_edit_path(current_res->get_path());
 
+		if (current_res->get_class_name() == "Shader") {
+			main_editor_buttons[EDITOR_SHADER]->set_visible(true);
+		}
+
 		int subr_idx = current_res->get_path().find("::");
 		if (subr_idx != -1) {
 			String base_path = current_res->get_path().substr(0, subr_idx);
@@ -2040,14 +2046,17 @@ void EditorNode::_edit_current() {
 		}
 
 		if (main_plugin) {
+			bool script_editor_disabled = !ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus();
+			bool shader_editor_disabled = !ShaderEditor::get_singleton() || !ShaderEditor::get_singleton()->is_visible_in_tree();
+
 			// special case if use of external editor is true
-			if (main_plugin->get_name() == "Script" && current_obj->get_class_name() != StringName("VisualScript") && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
+			if ((main_plugin->get_name() == "Script" || main_plugin->get_name() == "Shader") && current_obj->get_class_name() != StringName("VisualScript") && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
 				if (!changing_scene) {
 					main_plugin->edit(current_obj);
 				}
 			}
 
-			else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
+			else if (main_plugin != editor_plugin_screen && script_editor_disabled && shader_editor_disabled) {
 				// update screen main_plugin
 
 				if (!changing_scene) {
@@ -2908,6 +2917,10 @@ void EditorNode::_editor_select(int p_which) {
 
 	if (editor_plugin_screen) {
 		editor_plugin_screen->make_visible(false);
+
+		if (p_which != EDITOR_SHADER) {
+			main_editor_buttons[EDITOR_SHADER]->set_visible(false);
+		}
 	}
 
 	editor_plugin_screen = new_editor;
@@ -2920,7 +2933,7 @@ void EditorNode::_editor_select(int p_which) {
 	}
 
 	if (EditorSettings::get_singleton()->get("interface/editor/separate_distraction_mode")) {
-		if (p_which == EDITOR_SCRIPT) {
+		if (p_which == EDITOR_SCRIPT || p_which == EDITOR_SHADER) {
 			set_distraction_free_mode(script_distraction);
 		} else {
 			set_distraction_free_mode(scene_distraction);
@@ -2975,7 +2988,11 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_chan
 		for (int i = 0; i < singleton->main_editor_buttons.size(); i++) {
 			if (p_editor->get_name() == singleton->main_editor_buttons[i]->get_text()) {
 				if (singleton->main_editor_buttons[i]->is_pressed()) {
-					singleton->_editor_select(EDITOR_SCRIPT);
+					if (i == EDITOR_SCRIPT) {
+						singleton->_editor_select(EDITOR_SCRIPT);
+					} else if (i == EDITOR_SHADER) {
+						singleton->_editor_select(EDITOR_SHADER);
+					}
 				}
 
 				memdelete(singleton->main_editor_buttons[i]);
@@ -4701,9 +4718,7 @@ void EditorNode::_scene_tab_closed(int p_tab, int option) {
 		return;
 	}
 
-	bool unsaved = (p_tab == editor_data.get_edited_scene()) ?
-							 saved_version != editor_data.get_undo_redo().get_version() :
-							 editor_data.get_scene_version(p_tab) != 0;
+	bool unsaved = (p_tab == editor_data.get_edited_scene()) ? saved_version != editor_data.get_undo_redo().get_version() : editor_data.get_scene_version(p_tab) != 0;
 	if (unsaved) {
 		save_confirmation->get_ok_button()->set_text(TTR("Save & Close"));
 		save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), scene->get_filename() != "" ? scene->get_filename() : "unsaved scene"));
@@ -4953,7 +4968,7 @@ void EditorNode::_toggle_distraction_free_mode() {
 			}
 		}
 
-		if (screen == EDITOR_SCRIPT) {
+		if (screen == EDITOR_SCRIPT || screen == EDITOR_SHADER) {
 			script_distraction = !script_distraction;
 			set_distraction_free_mode(script_distraction);
 		} else {
@@ -6604,10 +6619,13 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(Node3DEditorPlugin(this)));
 	add_editor_plugin(memnew(ScriptEditorPlugin(this)));
 
-	EditorAudioBuses *audio_bus_editor = EditorAudioBuses::register_editor();
-
 	ScriptTextEditor::register_editor(); //register one for text scripts
 	TextEditor::register_editor();
+
+	add_editor_plugin(memnew(ShaderEditorPlugin(this)));
+	main_editor_buttons[EDITOR_SHADER]->set_visible(false); // hide by default
+
+	EditorAudioBuses *audio_bus_editor = EditorAudioBuses::register_editor();
 
 	if (StreamPeerSSL::is_available()) {
 		add_editor_plugin(memnew(AssetLibraryEditorPlugin(this)));
@@ -6624,10 +6642,8 @@ EditorNode::EditorNode() {
 	raise_bottom_panel_item(AnimationPlayerEditor::singleton);
 
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
-	add_editor_plugin(memnew(ShaderEditorPlugin(this)));
 	add_editor_plugin(memnew(ShaderFileEditorPlugin(this)));
 	add_editor_plugin(memnew(VisualShaderEditorPlugin(this)));
-
 	add_editor_plugin(memnew(Camera3DEditorPlugin(this)));
 	add_editor_plugin(memnew(ThemeEditorPlugin(this)));
 	add_editor_plugin(memnew(MultiMeshEditorPlugin(this)));
@@ -6827,14 +6843,16 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT("editor/editor_2d", TTR("Open 2D Editor"), KEY_MASK_ALT | KEY_1);
 	ED_SHORTCUT("editor/editor_3d", TTR("Open 3D Editor"), KEY_MASK_ALT | KEY_2);
 	ED_SHORTCUT("editor/editor_script", TTR("Open Script Editor"), KEY_MASK_ALT | KEY_3);
-	ED_SHORTCUT("editor/editor_assetlib", TTR("Open Asset Library"), KEY_MASK_ALT | KEY_4);
+	ED_SHORTCUT("editor/editor_shader", TTR("Open Shader Editor"), KEY_MASK_ALT | KEY_4);
+	ED_SHORTCUT("editor/editor_assetlib", TTR("Open Asset Library"), KEY_MASK_ALT | KEY_5);
 	ED_SHORTCUT("editor/editor_help", TTR("Search Help"), KEY_MASK_ALT | KEY_SPACE);
 #else
 	// Use the Ctrl modifier so F2 can be used to rename nodes in the scene tree dock.
 	ED_SHORTCUT("editor/editor_2d", TTR("Open 2D Editor"), KEY_MASK_CTRL | KEY_F1);
 	ED_SHORTCUT("editor/editor_3d", TTR("Open 3D Editor"), KEY_MASK_CTRL | KEY_F2);
 	ED_SHORTCUT("editor/editor_script", TTR("Open Script Editor"), KEY_MASK_CTRL | KEY_F3);
-	ED_SHORTCUT("editor/editor_assetlib", TTR("Open Asset Library"), KEY_MASK_CTRL | KEY_F4);
+	ED_SHORTCUT("editor/editor_shader", TTR("Open Shader Editor"), KEY_MASK_CTRL | KEY_F4);
+	ED_SHORTCUT("editor/editor_assetlib", TTR("Open Asset Library"), KEY_MASK_CTRL | KEY_F5);
 	ED_SHORTCUT("editor/editor_help", TTR("Search Help"), KEY_F1);
 #endif
 	ED_SHORTCUT("editor/editor_next", TTR("Open the next Editor"));

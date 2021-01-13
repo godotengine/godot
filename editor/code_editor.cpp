@@ -34,6 +34,7 @@
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "editor/editor_scale.h"
+#include "editor/plugins/shader_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "scene/gui/margin_container.h"
@@ -1563,10 +1564,18 @@ void CodeTextEditor::_set_show_warnings_panel(bool p_show) {
 }
 
 void CodeTextEditor::_toggle_scripts_pressed() {
-	if (is_layout_rtl()) {
-		toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->toggle_scripts_panel() ? get_theme_icon("Forward", "EditorIcons") : get_theme_icon("Back", "EditorIcons"));
+	if (_is_shader_editor()) {
+		if (is_layout_rtl()) {
+			toggle_scripts_button->set_icon(ShaderEditor::get_singleton()->toggle_shaders_panel() ? get_theme_icon("Forward", "EditorIcons") : get_theme_icon("Back", "EditorIcons"));
+		} else {
+			toggle_scripts_button->set_icon(ShaderEditor::get_singleton()->toggle_shaders_panel() ? get_theme_icon("Back", "EditorIcons") : get_theme_icon("Forward", "EditorIcons"));
+		}
 	} else {
-		toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->toggle_scripts_panel() ? get_theme_icon("Back", "EditorIcons") : get_theme_icon("Forward", "EditorIcons"));
+		if (is_layout_rtl()) {
+			toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->toggle_scripts_panel() ? get_theme_icon("Forward", "EditorIcons") : get_theme_icon("Back", "EditorIcons"));
+		} else {
+			toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->toggle_scripts_panel() ? get_theme_icon("Back", "EditorIcons") : get_theme_icon("Forward", "EditorIcons"));
+		}
 	}
 }
 
@@ -1688,12 +1697,21 @@ void CodeTextEditor::show_toggle_scripts_button() {
 }
 
 void CodeTextEditor::update_toggle_scripts_button() {
-	if (is_layout_rtl()) {
-		toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? get_theme_icon("Forward", "EditorIcons") : get_theme_icon("Back", "EditorIcons"));
+	if (_is_shader_editor()) {
+		if (is_layout_rtl()) {
+			toggle_scripts_button->set_icon(ShaderEditor::get_singleton()->is_shaders_panel_toggled() ? get_theme_icon("Forward", "EditorIcons") : get_theme_icon("Back", "EditorIcons"));
+		} else {
+			toggle_scripts_button->set_icon(ShaderEditor::get_singleton()->is_shaders_panel_toggled() ? get_theme_icon("Back", "EditorIcons") : get_theme_icon("Forward", "EditorIcons"));
+		}
+		toggle_scripts_button->set_tooltip(TTR("Toggle Shaders Panel") + " (" + ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text() + ")");
 	} else {
-		toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? get_theme_icon("Back", "EditorIcons") : get_theme_icon("Forward", "EditorIcons"));
+		if (is_layout_rtl()) {
+			toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? get_theme_icon("Forward", "EditorIcons") : get_theme_icon("Back", "EditorIcons"));
+		} else {
+			toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? get_theme_icon("Back", "EditorIcons") : get_theme_icon("Forward", "EditorIcons"));
+		}
+		toggle_scripts_button->set_tooltip(TTR("Toggle Scripts Panel") + " (" + ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text() + ")");
 	}
-	toggle_scripts_button->set_tooltip(TTR("Toggle Scripts Panel") + " (" + ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text() + ")");
 }
 
 CodeTextEditor::CodeTextEditor() {

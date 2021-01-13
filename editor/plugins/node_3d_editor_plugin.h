@@ -255,6 +255,7 @@ private:
 	AABB *preview_bounds;
 	Vector<String> selected_files;
 	AcceptDialog *accept;
+	bool reattaching = false;
 
 	Node *target_node;
 	Point2 drop_pos;
@@ -463,6 +464,13 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_reattaching(bool p_reattaching) {
+		reattaching = p_reattaching;
+	}
+	bool is_reattaching() const {
+		return reattaching;
+	}
+
 	void update_surface() { surface->update(); }
 	void update_transform_gizmo_view();
 
@@ -581,6 +589,7 @@ private:
 	Node3DEditorViewport *viewports[VIEWPORTS_COUNT];
 	VSplitContainer *shader_split;
 	HSplitContainer *palette_split;
+	bool reattaching = false;
 
 	/////
 
@@ -797,10 +806,22 @@ public:
 	void set_over_gizmo_handle(int idx) { over_gizmo_handle = idx; }
 
 	void set_can_preview(Camera3D *p_preview);
-
+	Node3DEditorViewportContainer *get_editor_viewport_base() const {
+		return viewport_base;
+	}
 	Node3DEditorViewport *get_editor_viewport(int p_idx) {
 		ERR_FAIL_INDEX_V(p_idx, static_cast<int>(VIEWPORTS_COUNT), nullptr);
 		return viewports[p_idx];
+	}
+
+	void set_viewports_reattaching(bool p_reattaching) {
+		for (int i = 0; i < static_cast<int>(VIEWPORTS_COUNT); i++) {
+			viewports[i]->set_reattaching(p_reattaching);
+		}
+		reattaching = p_reattaching;
+	}
+	bool is_viewports_reattaching() const {
+		return reattaching;
 	}
 
 	void add_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin);

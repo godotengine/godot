@@ -34,6 +34,7 @@
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -248,10 +249,77 @@ ShaderTextEditor::ShaderTextEditor() {
 	get_text_editor()->set_syntax_highlighter(syntax_highlighter);
 }
 
-/*** SCRIPT EDITOR ******/
+/*** SHADER EDITOR ******/
+
+ShaderEditor *ShaderEditor::shader_editor_singleton = nullptr;
+
+void ShaderEditor::_preview_3d_option(int p_option) {
+	if (last_option == p_option) {
+		return;
+	}
+	if (last_option == NODE3D_QUAD) {
+		camera->set_transform(Transform(Basis(), Vector3(0, 0, 10))); // restore camera transform for standard mesh
+	}
+	last_option = p_option;
+
+	if (p_option == NODE3D_SCENE) {
+		local_viewport_base->hide();
+		scene_viewport_base->show();
+	} else {
+		local_viewport_base->show();
+		scene_viewport_base->hide();
+
+		if (p_option == NODE3D_QUAD) {
+			camera->set_transform(Transform(Basis(), Vector3(0, 0, 2)));
+		}
+		for (Map<int, MeshInstance3D *>::Element *E = mesh_instances.front(); E; E = E->next()) {
+			E->get()->set_visible(p_option == E->key());
+		}
+	}
+}
 
 void ShaderEditor::_menu_option(int p_option) {
 	switch (p_option) {
+		case FILE_CLOSE: {
+			if (shader.is_valid()) {
+				int index = shader_list->get_selected_items()[0];
+
+				String id = shader_list->get_item_metadata(index);
+				shader_list->remove_item(index);
+
+				recent_shaders_map.erase(id);
+
+				if (shader_filtered_list->is_visible()) {
+					_update_filtered_shader_list();
+				}
+				if (shader_list->get_item_count() > 0) {
+					edit(recent_shaders_map[shader_list->get_item_metadata(shader_list->get_item_count() - 1)]);
+				} else {
+					edit(nullptr);
+				}
+			}
+		} break;
+		case FILE_CLOSE_ALL: {
+			shader_list->clear();
+			shader_filtered_list->clear();
+			recent_shaders_map.clear();
+			edit(nullptr);
+		} break;
+		case FILE_CLOSE_OTHER_TABS: {
+			if (shader.is_valid()) {
+				String tab_name = shader_list->get_item_text(shader_list->get_selected_items()[0]);
+				shader_list->clear();
+				recent_shaders_map.clear();
+				recent_shaders_map.insert(shader->get_path(), shader);
+				shader_list->add_item(tab_name, get_theme_icon("Shader", "EditorIcons"));
+				shader_list->set_item_metadata(0, shader->get_path());
+				shader_list->select(0);
+
+				if (shader_filtered_list->is_visible()) {
+					_update_filtered_shader_list();
+				}
+			}
+		} break;
 		case EDIT_UNDO: {
 			shader_editor->get_text_editor()->undo();
 		} break;
@@ -341,13 +409,32 @@ void ShaderEditor::_menu_option(int p_option) {
 		case HELP_DOCS: {
 			OS::get_singleton()->shell_open("https://docs.godotengine.org/en/latest/tutorials/shaders/shader_reference/index.html");
 		} break;
+		case TOGGLE_SHADERS_PANEL: {
+			toggle_shaders_panel();
+			shader_editor->update_toggle_scripts_button();
+		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
 		shader_editor->get_text_editor()->call_deferred("grab_focus");
 	}
 }
 
+bool ShaderEditor::toggle_shaders_panel() {
+	shaders_vbox->set_visible(!shaders_vbox->is_visible());
+	return shaders_vbox->is_visible();
+}
+
+bool ShaderEditor::is_shaders_panel_toggled() const {
+	return shaders_vbox->is_visible();
+}
+
 void ShaderEditor::_notification(int p_what) {
+	if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_THEME_CHANGED) {
+		quad_button->set_icon(get_theme_icon("QuadMesh", "EditorIcons"));
+		sphere_button->set_icon(get_theme_icon("SphereMesh", "EditorIcons"));
+		box_button->set_icon(get_theme_icon("BoxMesh", "EditorIcons"));
+		cylinder_button->set_icon(get_theme_icon("CylinderMesh", "EditorIcons"));
+	}
 	if (p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN) {
 		_check_for_external_edit();
 	}
@@ -415,8 +502,11 @@ void ShaderEditor::_reload_shader_from_disk() {
 
 void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 	if (p_shader.is_null() || !p_shader->is_text_shader()) {
+		shader = Ref<Shader>();
+		main_splitbox->hide();
 		return;
 	}
+	main_splitbox->show();
 
 	if (shader == p_shader) {
 		return;
@@ -425,9 +515,63 @@ void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 	shader = p_shader;
 
 	shader_editor->set_edited_shader(p_shader);
+	_apply_to_preview();
+
+	if (!recent_shaders_map.has(p_shader->get_path())) {
+		String shader_name = p_shader->get_path().get_file();
+		int count = 0;
+		for (Map<String, Ref<Shader>>::Element *E = recent_shaders_map.front(); E; E = E->next()) {
+			if (E->key() == p_shader->get_path()) {
+				count++;
+			}
+		}
+		if (count > 0) {
+			shader_name += ":" + itos(count);
+		}
+		recent_shaders_map.insert(p_shader->get_path(), p_shader);
+
+		shader_list->add_item(shader_name, get_theme_icon("Shader", "EditorIcons"));
+		shader_list->set_item_metadata(shader_list->get_item_count() - 1, p_shader->get_path());
+		shader_list->select(shader_list->get_item_count() - 1);
+
+		if (shader_filtered_list->is_visible()) {
+			_update_filtered_shader_list();
+		}
+	} else {
+		for (int i = 0; i < shader_list->get_item_count(); i++) {
+			if (shader_list->get_item_metadata(i) == p_shader->get_path()) {
+				shader_list->select(i);
+				break;
+			}
+		}
+	}
 
 	//vertex_editor->set_edited_shader(shader,ShaderLanguage::SHADER_MATERIAL_VERTEX);
 	// see if already has it
+}
+
+void ShaderEditor::_update_filtered_shader_list() {
+	_filter_shaders_text_changed(filter_shaders->get_text());
+}
+
+void ShaderEditor::_filter_shaders_text_changed(const String &p_newtext) {
+	if (p_newtext == "") {
+		shader_list->show();
+		shader_filtered_list->hide();
+		return;
+	}
+
+	shader_list->hide();
+	shader_filtered_list->show();
+	shader_filtered_list->clear();
+
+	for (int i = 0; i < shader_list->get_item_count(); i++) {
+		String shader_name = shader_list->get_item_text(i);
+		if (shader_name.get_basename().find(p_newtext) != -1) {
+			shader_filtered_list->add_item(shader_name);
+			shader_filtered_list->set_item_metadata(shader_filtered_list->get_item_count() - 1, shader_list->get_item_metadata(i));
+		}
+	}
 }
 
 void ShaderEditor::save_external_data(const String &p_str) {
@@ -445,11 +589,61 @@ void ShaderEditor::save_external_data(const String &p_str) {
 	disk_changed->hide();
 }
 
+void ShaderEditor::attach_scene_viewport() {
+	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
+	if (profile.is_valid()) {
+		if (profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
+			spatial_hbox->hide();
+			return;
+		}
+	}
+
+	spatial_hbox->show();
+	scene_viewport_base = Node3DEditor::get_singleton()->get_editor_viewport_base();
+	scene_viewport_parent = scene_viewport_base->get_parent();
+
+	if (last_option != NODE3D_SCENE) {
+		scene_viewport_base->hide();
+	}
+
+	Node3DEditor::get_singleton()->set_viewports_reattaching(true);
+
+	scene_viewport_pos = scene_viewport_base->get_index();
+	scene_viewport_parent->remove_child(scene_viewport_base);
+	right_vbox->add_child(scene_viewport_base);
+
+	Node3DEditor::get_singleton()->set_viewports_reattaching(false);
+}
+
+void ShaderEditor::detach_scene_viewport() {
+	if (!scene_viewport_base) {
+		return;
+	}
+
+	Node3DEditor::get_singleton()->set_viewports_reattaching(true);
+
+	right_vbox->remove_child(scene_viewport_base);
+	scene_viewport_parent->add_child(scene_viewport_base);
+	scene_viewport_parent->move_child(scene_viewport_base, scene_viewport_pos);
+	scene_viewport_base->show();
+
+	Node3DEditor::get_singleton()->set_viewports_reattaching(false);
+	scene_viewport_base = nullptr;
+}
+
+void ShaderEditor::_apply_to_preview() {
+	material->set_shader(shader);
+	for (Map<int, MeshInstance3D *>::Element *E = mesh_instances.front(); E; E = E->next()) {
+		E->get()->set_material_override(material);
+	}
+}
+
 void ShaderEditor::apply_shaders() {
 	if (shader.is_valid()) {
 		String shader_code = shader->get_code();
 		String editor_code = shader_editor->get_text_editor()->get_text();
 		if (shader_code != editor_code) {
+			_apply_to_preview();
 			shader->set_code(editor_code);
 			shader->set_edited(true);
 		}
@@ -530,6 +724,16 @@ void ShaderEditor::_bookmark_item_pressed(int p_idx) {
 	}
 }
 
+void ShaderEditor::_shader_list_item_selected(int p_which, bool p_filtered) {
+	String id;
+	if (!p_filtered) {
+		id = shader_list->get_item_metadata(p_which);
+	} else {
+		id = shader_filtered_list->get_item_metadata(p_which);
+	}
+	edit(recent_shaders_map[id]);
+}
+
 void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->clear();
 	if (p_selection) {
@@ -555,7 +759,10 @@ void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 }
 
 ShaderEditor::ShaderEditor(EditorNode *p_node) {
+	shader_editor_singleton = this;
+
 	shader_editor = memnew(ShaderTextEditor);
+	shader_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 	shader_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	shader_editor->add_theme_constant_override("separation", 0);
 	shader_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
@@ -570,6 +777,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	shader_editor->get_text_editor()->set_select_identifiers_on_hover(true);
 	shader_editor->get_text_editor()->set_context_menu_enabled(false);
 	shader_editor->get_text_editor()->connect("gui_input", callable_mp(this, &ShaderEditor::_text_edit_gui_input));
+	shader_editor->show_toggle_scripts_button();
 
 	shader_editor->update_editor_settings();
 
@@ -579,6 +787,17 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
 	HBoxContainer *hbc = memnew(HBoxContainer);
+
+	file_menu = memnew(MenuButton);
+	file_menu->set_shortcut_context(this);
+	file_menu->set_text(TTR("File"));
+	file_menu->set_switch_on_hover(true);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close", TTR("Close"), KEY_MASK_CMD | KEY_W), FILE_CLOSE);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_all", TTR("Close All")), FILE_CLOSE_ALL);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_other_tabs", TTR("Close Other Tabs")), FILE_CLOSE_OTHER_TABS);
+	file_menu->get_popup()->add_separator();
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Shaders Panel"), KEY_MASK_CMD | KEY_BACKSLASH), TOGGLE_SHADERS_PANEL);
+	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
 
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_shortcut_context(this);
@@ -639,14 +858,188 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	help_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_theme_icon("Instance", "EditorIcons"), TTR("Online Docs"), HELP_DOCS);
 	help_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
 
+	/////////////////////////////////////////////
+
 	add_child(main_container);
-	main_container->add_child(hbc);
+
+	main_splitbox = memnew(HSplitContainer);
+	main_splitbox->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_splitbox->set_split_offset(600 * EDSCALE);
+	main_container->add_child(main_splitbox);
+
+	left_vbox = memnew(VBoxContainer);
+	main_splitbox->add_child(left_vbox);
+
+	right_vbox = memnew(VBoxContainer);
+	main_splitbox->add_child(right_vbox);
+
+	hbc->add_child(file_menu);
 	hbc->add_child(search_menu);
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
 	hbc->add_theme_style_override("panel", p_node->get_gui_base()->get_theme_stylebox("ScriptEditorPanel", "EditorStyles"));
-	main_container->add_child(shader_editor);
+	left_vbox->add_child(hbc);
+
+	HBoxContainer *hbc2 = memnew(HBoxContainer);
+	right_vbox->add_child(hbc2);
+	hbc2->add_theme_style_override("panel", p_node->get_gui_base()->get_theme_stylebox("ScriptEditorPanel", "EditorStyles"));
+
+	spatial_hbox = memnew(HBoxContainer);
+	hbc2->add_child(spatial_hbox);
+
+	Ref<ButtonGroup> preview_btn_group;
+	preview_btn_group.instance();
+
+	scene_button = memnew(Button);
+	spatial_hbox->add_child(scene_button);
+	scene_button->set_button_group(preview_btn_group);
+	scene_button->set_toggle_mode(true);
+	scene_button->set_text(TTR("Scene"));
+	scene_button->set_tooltip(TTR("Show scene viewport."));
+	scene_button->set_pressed(true);
+	scene_button->connect("pressed", callable_mp(this, &ShaderEditor::_preview_3d_option), varray(NODE3D_SCENE));
+
+	spatial_hbox->add_child(memnew(VSeparator));
+
+	quad_button = memnew(Button);
+	spatial_hbox->add_child(quad_button);
+	quad_button->set_button_group(preview_btn_group);
+	quad_button->set_toggle_mode(true);
+	quad_button->set_tooltip(TTR("Show quad mesh in the viewport."));
+	quad_button->connect("pressed", callable_mp(this, &ShaderEditor::_preview_3d_option), varray(NODE3D_QUAD));
+
+	sphere_button = memnew(Button);
+	spatial_hbox->add_child(sphere_button);
+	sphere_button->set_button_group(preview_btn_group);
+	sphere_button->set_toggle_mode(true);
+	sphere_button->set_tooltip(TTR("Show sphere mesh in the viewport."));
+	sphere_button->connect("pressed", callable_mp(this, &ShaderEditor::_preview_3d_option), varray(NODE3D_SPHERE));
+
+	box_button = memnew(Button);
+	spatial_hbox->add_child(box_button);
+	box_button->set_button_group(preview_btn_group);
+	box_button->set_toggle_mode(true);
+	box_button->set_tooltip(TTR("Show box mesh in the viewport."));
+	box_button->connect("pressed", callable_mp(this, &ShaderEditor::_preview_3d_option), varray(NODE3D_BOX));
+
+	cylinder_button = memnew(Button);
+	spatial_hbox->add_child(cylinder_button);
+	cylinder_button->set_button_group(preview_btn_group);
+	cylinder_button->set_toggle_mode(true);
+	cylinder_button->set_tooltip(TTR("Show cylinder mesh in the viewport."));
+	cylinder_button->connect("pressed", callable_mp(this, &ShaderEditor::_preview_3d_option), varray(NODE3D_CYLINDER));
+
+	spatial_hbox->add_child(memnew(VSeparator));
+	hbc2->add_spacer();
+
+	left_splitbox = memnew(HSplitContainer);
+	left_splitbox->set_v_size_flags(SIZE_EXPAND_FILL);
+	left_vbox->add_child(left_splitbox);
+
+	shaders_vbox = memnew(VBoxContainer);
+	shaders_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	filter_shaders = memnew(LineEdit);
+	filter_shaders->set_placeholder(TTR("Filter shaders"));
+	filter_shaders->set_clear_button_enabled(true);
+	filter_shaders->connect("text_changed", callable_mp(this, &ShaderEditor::_filter_shaders_text_changed));
+	shaders_vbox->add_child(filter_shaders);
+
+	shader_list = memnew(ItemList);
+	shaders_vbox->add_child(shader_list);
+	shader_list->set_custom_minimum_size(Size2(150, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
+	shader_list->set_v_size_flags(SIZE_EXPAND_FILL);
+	shader_list->connect("item_selected", callable_mp(this, &ShaderEditor::_shader_list_item_selected), varray(false));
+
+	shader_filtered_list = memnew(ItemList);
+	shaders_vbox->add_child(shader_filtered_list);
+	shader_filtered_list->set_custom_minimum_size(Size2(150, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
+	shader_filtered_list->set_v_size_flags(SIZE_EXPAND_FILL);
+	shader_filtered_list->connect("item_selected", callable_mp(this, &ShaderEditor::_shader_list_item_selected), varray(true));
+	shader_filtered_list->hide();
+
+	left_splitbox->add_child(shaders_vbox);
+	left_splitbox->add_child(shader_editor);
+
+	local_viewport_base = memnew(SubViewportContainer);
+	local_viewport_base->set_stretch(true);
+	right_vbox->add_child(local_viewport_base);
+	local_viewport_base->set_custom_minimum_size(Size2(250, 200) * EDSCALE);
+	local_viewport_base->set_v_size_flags(SIZE_EXPAND_FILL);
+	local_viewport_base->hide();
+
+	material.instance();
+
+	/////////////////////////////////////////////
+
+	local_viewport = memnew(SubViewport);
+	local_viewport_base->add_child(local_viewport);
+
+	Ref<World3D> world_3d;
+	world_3d.instance();
+	world_3d->set_environment(Node3DEditor::get_singleton()->get_viewport_environment());
+	local_viewport->set_world_3d(world_3d); //use own world
+	local_viewport->set_handle_input_locally(true);
+	local_viewport->set_transparent_background(true);
+
+	camera = memnew(Camera3D);
+	camera->set_transform(Transform(Basis(), Vector3(0, 0, 10)));
+	camera->set_perspective(45, 0.01, 1000.0);
+	camera->make_current();
+	local_viewport->add_child(camera);
+
+	light1 = memnew(DirectionalLight3D);
+	light1->set_transform(Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
+	local_viewport->add_child(light1);
+
+	light2 = memnew(DirectionalLight3D);
+	light2->set_transform(Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
+	light2->set_color(Color(0.7, 0.7, 0.7));
+	local_viewport->add_child(light2);
+
+	quad_mesh_instance = memnew(MeshInstance3D);
+	local_viewport->add_child(quad_mesh_instance);
+
+	sphere_mesh_instance = memnew(MeshInstance3D);
+	local_viewport->add_child(sphere_mesh_instance);
+
+	box_mesh_instance = memnew(MeshInstance3D);
+	local_viewport->add_child(box_mesh_instance);
+
+	cylinder_mesh_instance = memnew(MeshInstance3D);
+	local_viewport->add_child(cylinder_mesh_instance);
+
+	quad_mesh.instance();
+	quad_mesh_instance->set_mesh(quad_mesh);
+	quad_mesh_instance->hide();
+	mesh_instances.insert(NODE3D_QUAD, quad_mesh_instance);
+
+	Transform initial_transform;
+	initial_transform.basis.rotate(Vector3(1, 0, 0), Math::deg2rad(45.0));
+	initial_transform.basis = initial_transform.basis * Basis().rotated(Vector3(0, 1, 0), Math::deg2rad(-45.0));
+	initial_transform.basis.scale(Vector3(0.8, 0.8, 0.8));
+	initial_transform.origin.y = 0.2;
+
+	sphere_mesh.instance();
+	sphere_mesh_instance->set_transform(initial_transform);
+	sphere_mesh_instance->set_mesh(sphere_mesh);
+	sphere_mesh_instance->hide();
+	mesh_instances.insert(NODE3D_SPHERE, sphere_mesh_instance);
+
+	box_mesh.instance();
+	box_mesh_instance->set_transform(initial_transform);
+	box_mesh_instance->set_mesh(box_mesh);
+	box_mesh_instance->hide();
+	mesh_instances.insert(NODE3D_BOX, box_mesh_instance);
+
+	cylinder_mesh.instance();
+	cylinder_mesh_instance->set_transform(initial_transform);
+	cylinder_mesh_instance->set_mesh(cylinder_mesh);
+	cylinder_mesh_instance->hide();
+	mesh_instances.insert(NODE3D_CYLINDER, cylinder_mesh_instance);
+
+	/////////////////////////////////////////////
 
 	goto_line_dialog = memnew(GotoLineDialog);
 	add_child(goto_line_dialog);
@@ -683,15 +1076,14 @@ bool ShaderEditorPlugin::handles(Object *p_object) const {
 
 void ShaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		button->show();
-		editor->make_bottom_panel_item_visible(shader_editor);
-
+		shader_editor->attach_scene_viewport();
+		shader_editor->show();
+		shader_editor->set_process(true);
+		shader_editor->ensure_select_current();
 	} else {
-		button->hide();
-		if (shader_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
-		}
-		shader_editor->apply_shaders();
+		shader_editor->detach_scene_viewport();
+		shader_editor->hide();
+		shader_editor->set_process(false);
 	}
 }
 
@@ -710,12 +1102,9 @@ void ShaderEditorPlugin::apply_changes() {
 ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	shader_editor = memnew(ShaderEditor(p_node));
-
-	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = editor->add_bottom_panel_item(TTR("Shader"), shader_editor);
-	button->hide();
-
-	_2d = false;
+	editor->get_main_control()->add_child(shader_editor);
+	shader_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	shader_editor->hide();
 }
 
 ShaderEditorPlugin::~ShaderEditorPlugin() {

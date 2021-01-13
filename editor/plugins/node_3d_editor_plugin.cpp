@@ -2570,19 +2570,21 @@ void Node3DEditorViewport::_notification(int p_what) {
 		}
 	}
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		surface->connect("draw", callable_mp(this, &Node3DEditorViewport::_draw));
-		surface->connect("gui_input", callable_mp(this, &Node3DEditorViewport::_sinput));
-		surface->connect("mouse_entered", callable_mp(this, &Node3DEditorViewport::_surface_mouse_enter));
-		surface->connect("mouse_exited", callable_mp(this, &Node3DEditorViewport::_surface_mouse_exit));
-		surface->connect("focus_entered", callable_mp(this, &Node3DEditorViewport::_surface_focus_enter));
-		surface->connect("focus_exited", callable_mp(this, &Node3DEditorViewport::_surface_focus_exit));
+	if (!reattaching) {
+		if (p_what == NOTIFICATION_ENTER_TREE) {
+			surface->connect("draw", callable_mp(this, &Node3DEditorViewport::_draw));
+			surface->connect("gui_input", callable_mp(this, &Node3DEditorViewport::_sinput));
+			surface->connect("mouse_entered", callable_mp(this, &Node3DEditorViewport::_surface_mouse_enter));
+			surface->connect("mouse_exited", callable_mp(this, &Node3DEditorViewport::_surface_mouse_exit));
+			surface->connect("focus_entered", callable_mp(this, &Node3DEditorViewport::_surface_focus_enter));
+			surface->connect("focus_exited", callable_mp(this, &Node3DEditorViewport::_surface_focus_exit));
 
-		_init_gizmo_instance(index);
-	}
+			_init_gizmo_instance(index);
+		}
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		_finish_gizmo_instances();
+		if (p_what == NOTIFICATION_EXIT_TREE) {
+			_finish_gizmo_instances();
+		}
 	}
 
 	if (p_what == NOTIFICATION_THEME_CHANGED) {
