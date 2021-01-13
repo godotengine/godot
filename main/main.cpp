@@ -170,6 +170,10 @@ static String get_full_version_string() {
 // FIXME: Could maybe be moved to PhysicsServerManager and Physics2DServerManager directly
 // to have less code in main.cpp.
 void initialize_physics() {
+
+	// This must be defined BEFORE the 3d physics server is created
+	GLOBAL_DEF("physics/3d/godot_physics/use_bvh", true);
+
 	/// 3D Physics Server
 	physics_server = PhysicsServerManager::new_server(ProjectSettings::get_singleton()->get(PhysicsServerManager::setting_property_name));
 	if (!physics_server) {
