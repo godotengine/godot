@@ -192,7 +192,7 @@
 			Number of islands in the 3D physics engine. [i]Lower is better.[/i]
 		</constant>
 		<constant name="AUDIO_OUTPUT_LATENCY" value="23" enum="Monitor">
-			Output latency of the [AudioServer]. [i]Lower is better.[/i]
+			Output latency of the [AudioServer]. Equivalent to calling [method AudioServer.get_output_latency], it is not recommended to call this every frame.
 		</constant>
 		<constant name="NAVIGATION_ACTIVE_MAPS" value="24" enum="Monitor">
 			Number of active navigation maps in the [NavigationServer3D]. This also includes the two empty default navigation maps created by World2D and World3D.
