@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -120,7 +120,10 @@ AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
 Ref<AudioStreamPlayback> AudioStreamMP3::instance_playback() {
 	Ref<AudioStreamPlaybackMP3> mp3s;
 
-	ERR_FAIL_COND_V(data == nullptr, mp3s);
+	ERR_FAIL_COND_V_MSG(data == nullptr, mp3s,
+			"This AudioStreamMP3 does not have an audio file assigned "
+			"to it. AudioStreamMP3 should not be created from the "
+			"inspector or with `.new()`. Instead, load an audio file.");
 
 	mp3s.instance();
 	mp3s->mp3_stream = Ref<AudioStreamMP3>(this);

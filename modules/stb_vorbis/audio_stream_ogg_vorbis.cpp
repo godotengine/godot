@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -130,7 +130,10 @@ Ref<AudioStreamPlayback> AudioStreamOGGVorbis::instance_playback() {
 
 	Ref<AudioStreamPlaybackOGGVorbis> ovs;
 
-	ERR_FAIL_COND_V(data == NULL, ovs);
+	ERR_FAIL_COND_V_MSG(data == NULL, ovs,
+			"This AudioStreamOGGVorbis does not have an audio file assigned "
+			"to it. AudioStreamOGGVorbis should not be created from the "
+			"inspector or with `.new()`. Instead, load an audio file.");
 
 	ovs.instance();
 	ovs->vorbis_stream = Ref<AudioStreamOGGVorbis>(this);

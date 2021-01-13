@@ -585,7 +585,8 @@
 			<argument index="0" name="chars" type="String">
 			</argument>
 			<description>
-				Returns a copy of the string with characters removed from the left.
+				Returns a copy of the string with characters removed from the left. The [code]chars[/code] argument is a string specifying the set of characters to be removed.
+				[b]Note:[/b] The [code]chars[/code] is not a prefix. See [method trim_prefix] method that will remove a single prefix string rather than a set of characters.
 			</description>
 		</method>
 		<method name="match">
@@ -773,7 +774,8 @@
 			<argument index="0" name="chars" type="String">
 			</argument>
 			<description>
-				Returns a copy of the string with characters removed from the right.
+				Returns a copy of the string with characters removed from the right. The [code]chars[/code] argument is a string specifying the set of characters to be removed.
+				[b]Note:[/b] The [code]chars[/code] is not a suffix. See [method trim_suffix] method that will remove a single suffix string rather than a set of characters.
 			</description>
 		</method>
 		<method name="sha1_buffer">

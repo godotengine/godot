@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -703,6 +703,26 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				continue;
 
 			_export_find_dependencies(files[i], paths);
+		}
+
+		// Add autoload resources and their dependencies
+		List<PropertyInfo> props;
+		ProjectSettings::get_singleton()->get_property_list(&props);
+
+		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+			const PropertyInfo &pi = E->get();
+
+			if (!pi.name.begins_with("autoload/")) {
+				continue;
+			}
+
+			String autoload_path = ProjectSettings::get_singleton()->get(pi.name);
+
+			if (autoload_path.begins_with("*")) {
+				autoload_path = autoload_path.substr(1);
+			}
+
+			_export_find_dependencies(autoload_path, paths);
 		}
 	}
 

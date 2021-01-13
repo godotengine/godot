@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -124,7 +124,6 @@ private:
 		FILE_SAVE_SCENE,
 		FILE_SAVE_AS_SCENE,
 		FILE_SAVE_ALL_SCENES,
-		FILE_SAVE_BEFORE_RUN,
 		FILE_SAVE_AND_RUN,
 		FILE_SHOW_IN_FILESYSTEM,
 		FILE_IMPORT_SUBSCENE,

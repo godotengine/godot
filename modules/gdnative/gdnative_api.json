@@ -5847,7 +5847,7 @@
         "name": "godot_string_humanize_size",
         "return_type": "godot_string",
         "arguments": [
-          ["size_t", "p_size"]
+          ["uint64_t", "p_size"]
         ]
       },
       {

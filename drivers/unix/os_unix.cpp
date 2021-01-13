@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -257,9 +257,11 @@ OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
 }
 
 void OS_Unix::delay_usec(uint32_t p_usec) const {
-
-	struct timespec rem = { static_cast<time_t>(p_usec / 1000000), (static_cast<long>(p_usec) % 1000000) * 1000 };
-	while (nanosleep(&rem, &rem) == EINTR) {
+	struct timespec requested = { static_cast<time_t>(p_usec / 1000000), (static_cast<long>(p_usec) % 1000000) * 1000 };
+	struct timespec remaining;
+	while (nanosleep(&requested, &remaining) == -1 && errno == EINTR) {
+		requested.tv_sec = remaining.tv_sec;
+		requested.tv_nsec = remaining.tv_nsec;
 	}
 }
 uint64_t OS_Unix::get_ticks_usec() const {

@@ -344,6 +344,136 @@ if (common->utf && offset > 0)
 #endif
 }
 
+#define JIT_HAS_FAST_REQUESTED_CHAR_SIMD (sljit_has_cpu_feature(SLJIT_HAS_SSE2))
+
+static jump_list *fast_requested_char_simd(compiler_common *common, PCRE2_UCHAR char1, PCRE2_UCHAR char2)
+{
+DEFINE_COMPILER;
+struct sljit_label *start;
+struct sljit_jump *quit;
+jump_list *not_found = NULL;
+sse2_compare_type compare_type = sse2_compare_match1;
+sljit_u8 instruction[8];
+sljit_s32 tmp1_reg_ind = sljit_get_register_index(TMP1);
+sljit_s32 str_ptr_reg_ind = sljit_get_register_index(STR_PTR);
+sljit_s32 data_ind = 0;
+sljit_s32 tmp_ind = 1;
+sljit_s32 cmp1_ind = 2;
+sljit_s32 cmp2_ind = 3;
+sljit_u32 bit = 0;
+int i;
+
+if (char1 != char2)
+  {
+  bit = char1 ^ char2;
+  compare_type = sse2_compare_match1i;
+
+  if (!is_powerof2(bit))
+    {
+    bit = 0;
+    compare_type = sse2_compare_match2;
+    }
+  }
+
+add_jump(compiler, &not_found, CMP(SLJIT_GREATER_EQUAL, TMP1, 0, STR_END, 0));
+OP1(SLJIT_MOV, TMP2, 0, TMP1, 0);
+OP1(SLJIT_MOV, TMP3, 0, STR_PTR, 0);
+
+/* First part (unaligned start) */
+
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, character_to_int32(char1 | bit));
+
+SLJIT_ASSERT(tmp1_reg_ind < 8);
+
+/* MOVD xmm, r/m32 */
+instruction[0] = 0x66;
+instruction[1] = 0x0f;
+instruction[2] = 0x6e;
+instruction[3] = 0xc0 | (cmp1_ind << 3) | tmp1_reg_ind;
+sljit_emit_op_custom(compiler, instruction, 4);
+
+if (char1 != char2)
+  {
+  OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, character_to_int32(bit != 0 ? bit : char2));
+
+  /* MOVD xmm, r/m32 */
+  instruction[3] = 0xc0 | (cmp2_ind << 3) | tmp1_reg_ind;
+  sljit_emit_op_custom(compiler, instruction, 4);
+  }
+
+OP1(SLJIT_MOV, STR_PTR, 0, TMP2, 0);
+
+/* PSHUFD xmm1, xmm2/m128, imm8 */
+/* instruction[0] = 0x66; */
+/* instruction[1] = 0x0f; */
+instruction[2] = 0x70;
+instruction[3] = 0xc0 | (cmp1_ind << 3) | cmp1_ind;
+instruction[4] = 0;
+sljit_emit_op_custom(compiler, instruction, 5);
+
+if (char1 != char2)
+  {
+  /* PSHUFD xmm1, xmm2/m128, imm8 */
+  instruction[3] = 0xc0 | (cmp2_ind << 3) | cmp2_ind;
+  sljit_emit_op_custom(compiler, instruction, 5);
+  }
+
+OP2(SLJIT_AND, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, ~0xf);
+OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xf);
+
+load_from_mem_sse2(compiler, data_ind, str_ptr_reg_ind, 0);
+for (i = 0; i < 4; i++)
+  fast_forward_char_pair_sse2_compare(compiler, compare_type, i, data_ind, cmp1_ind, cmp2_ind, tmp_ind);
+
+/* PMOVMSKB reg, xmm */
+/* instruction[0] = 0x66; */
+/* instruction[1] = 0x0f; */
+instruction[2] = 0xd7;
+instruction[3] = 0xc0 | (tmp1_reg_ind << 3) | data_ind;
+sljit_emit_op_custom(compiler, instruction, 4);
+
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, TMP2, 0);
+OP2(SLJIT_LSHR, TMP1, 0, TMP1, 0, TMP2, 0);
+
+quit = CMP(SLJIT_NOT_ZERO, TMP1, 0, SLJIT_IMM, 0);
+
+OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, TMP2, 0);
+
+/* Second part (aligned) */
+start = LABEL();
+
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, 16);
+
+add_jump(compiler, &not_found, CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0));
+
+load_from_mem_sse2(compiler, data_ind, str_ptr_reg_ind, 0);
+for (i = 0; i < 4; i++)
+  fast_forward_char_pair_sse2_compare(compiler, compare_type, i, data_ind, cmp1_ind, cmp2_ind, tmp_ind);
+
+/* PMOVMSKB reg, xmm */
+/* instruction[0] = 0x66; */
+/* instruction[1] = 0x0f; */
+instruction[2] = 0xd7;
+instruction[3] = 0xc0 | (tmp1_reg_ind << 3) | data_ind;
+sljit_emit_op_custom(compiler, instruction, 4);
+
+CMPTO(SLJIT_ZERO, TMP1, 0, SLJIT_IMM, 0, start);
+
+JUMPHERE(quit);
+
+/* BSF r32, r/m32 */
+instruction[0] = 0x0f;
+instruction[1] = 0xbc;
+instruction[2] = 0xc0 | (tmp1_reg_ind << 3) | tmp1_reg_ind;
+sljit_emit_op_custom(compiler, instruction, 3);
+
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, STR_PTR, 0);
+add_jump(compiler, &not_found, CMP(SLJIT_GREATER_EQUAL, TMP1, 0, STR_END, 0));
+
+OP1(SLJIT_MOV, STR_PTR, 0, TMP3, 0);
+return not_found;
+}
+
 #ifndef _WIN64
 
 static SLJIT_INLINE sljit_u32 max_fast_forward_char_pair_offset(void)

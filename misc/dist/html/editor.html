@@ -7,6 +7,14 @@
 	<title></title>
 	<style type='text/css'>
 
+		*:focus {
+			/* More visible outline for better keyboard navigation. */
+			outline: 0.125rem solid hsl(220, 100%, 62.5%);
+			/* Make the outline always appear above other elements. */
+			/* Otherwise, one of its sides can be hidden by tabs in the Download and More layouts. */
+			position: relative;
+		}
+
 		body {
 			touch-action: none;
 			font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -16,6 +24,20 @@
 			text-align: center;
 			background-color: #333b4f;
 			overflow: hidden;
+		}
+
+		a {
+			color: hsl(205, 100%, 75%);
+			text-decoration-color: hsla(205, 100%, 75%, 0.3);
+			text-decoration-thickness: 0.125rem;
+		}
+
+		a:hover {
+			filter: brightness(117.5%);
+		}
+
+		a:active {
+			filter: brightness(82.5%);
 		}
 
 		#canvas, #gameCanvas {
@@ -43,10 +65,6 @@
 			border: 1px solid #202531;
 			padding: 0.5rem 1rem;
 			margin: 0 0.5rem;
-		}
-
-		.btn:focus {
-			outline: 1px solid #699ce8;
 		}
 
 		.btn:not(:disabled):hover {

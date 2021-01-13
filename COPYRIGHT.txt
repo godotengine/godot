@@ -43,8 +43,8 @@ Source: https://github.com/godotengine/godot
 
 Files: *
 Comment: Godot Engine
-Copyright: 2007-2020, Juan Linietsky, Ariel Manzur.
- 2014-2020, Godot Engine contributors.
+Copyright: 2007-2021, Juan Linietsky, Ariel Manzur.
+ 2014-2021, Godot Engine contributors.
 License: Expat
 
 Files: ./icon.png
@@ -56,18 +56,18 @@ Copyright: 2017, Andrea Calabró
 License: CC-BY-4.0
 
 Files: ./modules/fbx/fbx_parser/
-Comment: Open Asset Import Library (assimp)
-Copyright: 2006-2016, assimp team
- 2007-2020, Juan Linietsky, Ariel Manzur.
- 2014-2020, Godot Engine contributors.
-License: BSD-3-clause and Expat
+Comment: Open Asset Import Library (FBX parser)
+Copyright: 2006-2020, assimp team
+ 2007-2021, Juan Linietsky, Ariel Manzur.
+ 2014-2021, Godot Engine contributors.
+License: BSD-3-clause
 
-Files: ./platform/android/java/aidl/com/android/vending/billing/IInAppBillingService.aidl
- ./platform/android/java/res/layout/status_bar_ongoing_event_progress_bar.xml
- ./platform/android/java/src/com/google/android/vending/expansion/downloader/*
- ./platform/android/java/src/com/google/android/vending/licensing/*
- ./platform/android/java/src/org/godotengine/godot/input/InputManagerCompat.java
- ./platform/android/java/src/org/godotengine/godot/input/InputManagerV16.java
+Files: ./platform/android/java/lib/aidl/com/android/vending/licensing/
+ ./platform/android/java/lib/res/layout/status_bar_ongoing_event_progress_bar.xml
+ ./platform/android/java/lib/src/com/google/android/vending/expansion/downloader/
+ ./platform/android/java/lib/src/com/google/android/vending/licensing/
+ ./platform/android/java/lib/src/org/godotengine/godot/input/InputManagerCompat.java
+ ./platform/android/java/lib/src/org/godotengine/godot/input/InputManagerV16.java
 Comment: The Android Open Source Project
 Copyright: 2008-2013, The Android Open Source Project
 License: Apache-2.0
@@ -84,14 +84,9 @@ Files: ./platform/android/power_android.cpp
  ./platform/x11/power_x11.cpp
 Comment: Simple DirectMedia Layer
 Copyright: 1997-2017, Sam Lantinga
- 2007-2020, Juan Linietsky, Ariel Manzur.
- 2014-2020, Godot Engine contributors.
+ 2007-2021, Juan Linietsky, Ariel Manzur.
+ 2014-2021, Godot Engine contributors.
 License: Expat and Zlib
-
-Files: ./scene/animation/tween_interpolaters.cpp
-Comment: Penner Easing
-Copyright: 2001, Robert Penner
-License: BSD-3-clause
 
 Files: ./servers/physics/gjk_epa.cpp
  ./servers/physics/joints/generic_6dof_joint_sw.cpp
@@ -105,16 +100,16 @@ Files: ./servers/physics/gjk_epa.cpp
  ./servers/physics/joints/slider_joint_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
- 2007-2020, Juan Linietsky, Ariel Manzur.
- 2014-2020, Godot Engine contributors.
+ 2007-2021, Juan Linietsky, Ariel Manzur.
+ 2014-2021, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./servers/physics/joints/cone_twist_joint_sw.cpp
  ./servers/physics/joints/cone_twist_joint_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
- 2007-2020, Juan Linietsky, Ariel Manzur.
- 2014-2020, Godot Engine contributors.
+ 2007-2021, Juan Linietsky, Ariel Manzur.
+ 2014-2021, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./thirdparty/bullet/
@@ -166,13 +161,14 @@ License: FTL
 
 Files: ./thirdparty/glad/
 Comment: glad
-Copyright: 2013-2019, David Herberth
+Copyright: 2013-2020, David Herberth
+ 2007-2020 The Khronos Group Inc.
 License: Expat
 
-Files: ./thirdparty/jpeg_compressor/
+Files: ./thirdparty/jpeg-compressor/
 Comment: jpeg-compressor
 Copyright: 2012, Rich Geldreich
-License: public-domain
+License: public-domain or Apache-2.0
 
 Files: ./thirdparty/libogg/
 Comment: OggVorbis
@@ -226,12 +222,17 @@ License: BSD-3-clause
 
 Files: ./thirdparty/mbedtls/
 Comment: Mbed TLS
-Copyright: 2006-2018, Arm Limited (or its affiliates)
+Copyright: The Mbed TLS Contributors
 License: Apache-2.0
+
+Files: ./thirdparty/minimp3/
+Comment: MiniMP3
+Copyright: lieff
+License: CC0-1.0
 
 Files: ./thirdparty/miniupnpc/
 Comment: MiniUPnPc
-Copyright: 2005-2018, Thomas Bernard
+Copyright: 2005-2019, Thomas Bernard
 License: BSD-3-clause
 
 Files: ./thirdparty/minizip/
@@ -276,6 +277,12 @@ Comment: Tangent Space Normal Maps implementation
 Copyright: 2011, Morten S. Mikkelsen
 License: Zlib
 
+Files: ./thirdparty/misc/open-simplex-noise.c
+ ./thirdparty/misc/open-simplex-noise.h
+Comment: OpenSimplex Noise
+Copyright: 2014, Stephen M. Cameron
+License: public-domain or Unlicense
+
 Files: ./thirdparty/misc/pcg.cpp
  ./thirdparty/misc/pcg.h
 Comment: Minimal PCG32 implementation
@@ -287,6 +294,11 @@ Files: ./thirdparty/misc/smaz.c
 Comment: SMAZ
 Copyright: 2006-2009, Salvatore Sanfilippo
 License: BSD-3-clause
+
+Files: ./thirdparty/misc/stb_vorbis.c
+Comment: stb libraries
+Copyright: Sean Barrett
+License: public-domain or Unlicense or Expat
 
 Files: ./thirdparty/misc/triangulator.cpp
  ./thirdparty/misc/triangulator.h
@@ -314,8 +326,8 @@ License: BSD-3-clause
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
-Copyright: 1997-2019, University of Cambridge,
- 2009-2019, Zoltan Herczeg
+Copyright: 1997-2020, University of Cambridge
+ 2009-2020, Zoltan Herczeg
 License: BSD-3-clause
 
 Files: ./thirdparty/pvrtccompressor/
@@ -347,7 +359,7 @@ License: BSD-3-clause
 
 Files: ./thirdparty/wslay/
 Comment: Wslay
-Copyright: 2011-2015, Tatsuhiro Tsujikawa
+Copyright: 2011, 2012, 2015, Tatsuhiro Tsujikawa
 License: Expat
 
 Files: ./thirdparty/xatlas/
@@ -498,6 +510,121 @@ License: BSL-1.0
  FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  DEALINGS IN THE SOFTWARE.
+
+License: CC0-1.0
+ CC0 1.0 Universal
+ .
+ Statement of Purpose
+ .
+ The laws of most jurisdictions throughout the world automatically confer
+ exclusive Copyright and Related Rights (defined below) upon the creator and
+ subsequent owner(s) (each and all, an "owner") of an original work of
+ authorship and/or a database (each, a "Work").
+ .
+ Certain owners wish to permanently relinquish those rights to a Work for the
+ purpose of contributing to a commons of creative, cultural and scientific
+ works ("Commons") that the public can reliably and without fear of later
+ claims of infringement build upon, modify, incorporate in other works, reuse
+ and redistribute as freely as possible in any form whatsoever and for any
+ purposes, including without limitation commercial purposes. These owners may
+ contribute to the Commons to promote the ideal of a free culture and the
+ further production of creative, cultural and scientific works, or to gain
+ reputation or greater distribution for their Work in part through the use and
+ efforts of others.
+ .
+ For these and/or other purposes and motivations, and without any expectation
+ of additional consideration or compensation, the person associating CC0 with a
+ Work (the "Affirmer"), to the extent that he or she is an owner of Copyright
+ and Related Rights in the Work, voluntarily elects to apply CC0 to the Work
+ and publicly distribute the Work under its terms, with knowledge of his or her
+ Copyright and Related Rights in the Work and the meaning and intended legal
+ effect of CC0 on those rights.
+ .
+ 1. Copyright and Related Rights. A Work made available under CC0 may be
+ protected by copyright and related or neighboring rights ("Copyright and
+ Related Rights"). Copyright and Related Rights include, but are not limited
+ to, the following:
+ .
+ i. the right to reproduce, adapt, distribute, perform, display, communicate,
+ and translate a Work;
+ .
+ ii. moral rights retained by the original author(s) and/or performer(s);
+ .
+ iii. publicity and privacy rights pertaining to a person's image or likeness
+ depicted in a Work;
+ .
+ iv. rights protecting against unfair competition in regards to a Work,
+ subject to the limitations in paragraph 4(a), below;
+ .
+ v. rights protecting the extraction, dissemination, use and reuse of data in
+ a Work;
+ .
+ vi. database rights (such as those arising under Directive 96/9/EC of the
+ European Parliament and of the Council of 11 March 1996 on the legal
+ protection of databases, and under any national implementation thereof,
+ including any amended or successor version of such directive); and
+ .
+ vii. other similar, equivalent or corresponding rights throughout the world
+ based on applicable law or treaty, and any national implementations thereof.
+ .
+ 2. Waiver. To the greatest extent permitted by, but not in contravention of,
+ applicable law, Affirmer hereby overtly, fully, permanently, irrevocably and
+ unconditionally waives, abandons, and surrenders all of Affirmer's Copyright
+ and Related Rights and associated claims and causes of action, whether now
+ known or unknown (including existing as well as future claims and causes of
+ action), in the Work (i) in all territories worldwide, (ii) for the maximum
+ duration provided by applicable law or treaty (including future time
+ extensions), (iii) in any current or future medium and for any number of
+ copies, and (iv) for any purpose whatsoever, including without limitation
+ commercial, advertising or promotional purposes (the "Waiver"). Affirmer makes
+ the Waiver for the benefit of each member of the public at large and to the
+ detriment of Affirmer's heirs and successors, fully intending that such Waiver
+ shall not be subject to revocation, rescission, cancellation, termination, or
+ any other legal or equitable action to disrupt the quiet enjoyment of the Work
+ by the public as contemplated by Affirmer's express Statement of Purpose.
+ .
+ 3. Public License Fallback. Should any part of the Waiver for any reason be
+ judged legally invalid or ineffective under applicable law, then the Waiver
+ shall be preserved to the maximum extent permitted taking into account
+ Affirmer's express Statement of Purpose. In addition, to the extent the Waiver
+ is so judged Affirmer hereby grants to each affected person a royalty-free,
+ non transferable, non sublicensable, non exclusive, irrevocable and
+ unconditional license to exercise Affirmer's Copyright and Related Rights in
+ the Work (i) in all territories worldwide, (ii) for the maximum duration
+ provided by applicable law or treaty (including future time extensions), (iii)
+ in any current or future medium and for any number of copies, and (iv) for any
+ purpose whatsoever, including without limitation commercial, advertising or
+ promotional purposes (the "License"). The License shall be deemed effective as
+ of the date CC0 was applied by Affirmer to the Work. Should any part of the
+ License for any reason be judged legally invalid or ineffective under
+ applicable law, such partial invalidity or ineffectiveness shall not
+ invalidate the remainder of the License, and in such case Affirmer hereby
+ affirms that he or she will not (i) exercise any of his or her remaining
+ Copyright and Related Rights in the Work or (ii) assert any associated claims
+ and causes of action with respect to the Work, in either case contrary to
+ Affirmer's express Statement of Purpose.
+ .
+ 4. Limitations and Disclaimers.
+ .
+ a. No trademark or patent rights held by Affirmer are waived, abandoned,
+ surrendered, licensed or otherwise affected by this document.
+ .
+ b. Affirmer offers the Work as-is and makes no representations or warranties
+ of any kind concerning the Work, express, implied, statutory or otherwise,
+ including without limitation warranties of title, merchantability, fitness
+ for a particular purpose, non infringement, or the absence of latent or
+ other defects, accuracy, or the present or absence of errors, whether or not
+ discoverable, all to the greatest extent permissible under applicable law.
+ .
+ c. Affirmer disclaims responsibility for clearing rights of other persons
+ that may apply to the Work or any use thereof, including without limitation
+ any person's Copyright and Related Rights in the Work. Further, Affirmer
+ disclaims responsibility for obtaining any necessary consents, permissions
+ or other rights required for any use of the Work.
+ .
+ d. Affirmer understands and acknowledges that Creative Commons is not a
+ party to this document and has no duty or obligation with respect to this
+ CC0 or use of the Work.
 
 License: CC-BY-4.0
  Creative Commons Attribution 4.0 International Public License
@@ -1451,6 +1578,32 @@ License: OFL-1.1
  INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
  DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE.
+
+License: Unlicense
+ This is free and unencumbered software released into the public domain.
+ .
+ Anyone is free to copy, modify, publish, use, compile, sell, or
+ distribute this software, either in source code form or as a compiled
+ binary, for any purpose, commercial or non-commercial, and by any
+ means.
+ .
+ In jurisdictions that recognize copyright laws, the author or authors
+ of this software dedicate any and all copyright interest in the
+ software to the public domain. We make this dedication for the benefit
+ of the public at large and to the detriment of our heirs and
+ successors. We intend this dedication to be an overt act of
+ relinquishment in perpetuity of all present and future rights to this
+ software under copyright law.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+ .
+ For more information, please refer to <https://unlicense.org/>
 
 License: Zlib
  This software is provided 'as-is', without any express or implied

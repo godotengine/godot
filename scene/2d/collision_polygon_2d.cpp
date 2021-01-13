@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -205,6 +205,7 @@ void CollisionPolygon2D::set_polygon(const Vector<Point2> &p_polygon) {
 
 	if (parent) {
 		_build_polygon();
+		_update_in_shape_owner();
 	}
 	update();
 	update_configuration_warning();
@@ -221,6 +222,7 @@ void CollisionPolygon2D::set_build_mode(BuildMode p_mode) {
 	build_mode = p_mode;
 	if (parent) {
 		_build_polygon();
+		_update_in_shape_owner();
 	}
 }
 

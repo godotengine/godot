@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -647,6 +647,10 @@ Control *TabContainer::get_current_tab_control() const {
 void TabContainer::remove_child_notify(Node *p_child) {
 
 	Container::remove_child_notify(p_child);
+
+	if (!Object::cast_to<Control>(p_child)) {
+		return;
+	}
 
 	call_deferred("_update_current_tab");
 

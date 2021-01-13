@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -602,7 +602,13 @@ const GodotWebXR = {
 		const buf = GodotRuntime.malloc((axes_count + 1) * 4);
 		GodotRuntime.setHeapValue(buf, axes_count, 'i32');
 		for (let i = 0; i < axes_count; i++) {
-			GodotRuntime.setHeapValue(buf + 4 + (i * 4), controller.gamepad.axes[i], 'float');
+			let value = controller.gamepad.axes[i];
+			if (i === 1 || i === 3) {
+				// Invert the Y-axis on thumbsticks and trackpads, in order to
+				// match OpenXR and other XR platform SDKs.
+				value *= -1.0;
+			}
+			GodotRuntime.setHeapValue(buf + 4 + (i * 4), value, 'float');
 		}
 		return buf;
 	},

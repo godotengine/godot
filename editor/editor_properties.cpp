@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,7 +70,9 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 void EditorPropertyText::update_property() {
 	String s = get_edited_object()->get(get_edited_property());
 	updating = true;
-	text->set_text(s);
+	if (text->get_text() != s) {
+		text->set_text(s);
+	}
 	text->set_editable(!is_read_only());
 	updating = false;
 }
@@ -125,9 +127,11 @@ void EditorPropertyMultilineText::_open_big_text() {
 
 void EditorPropertyMultilineText::update_property() {
 	String t = get_edited_object()->get(get_edited_property());
-	text->set_text(t);
-	if (big_text && big_text->is_visible_in_tree()) {
-		big_text->set_text(t);
+	if (text->get_text() != t) {
+		text->set_text(t);
+		if (big_text && big_text->is_visible_in_tree()) {
+			big_text->set_text(t);
+		}
 	}
 }
 
@@ -1917,6 +1921,12 @@ void EditorPropertyColor::_color_changed(const Color &p_color) {
 	emit_changed(get_edited_property(), p_color, "", true);
 }
 
+void EditorPropertyColor::_popup_closed() {
+	if (picker->get_pick_color() != last_color) {
+		emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
+	}
+}
+
 void EditorPropertyColor::_picker_created() {
 	// get default color picker mode from editor settings
 	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
@@ -1926,10 +1936,16 @@ void EditorPropertyColor::_picker_created() {
 		picker->get_picker()->set_raw_mode(true);
 }
 
+void EditorPropertyColor::_picker_opening() {
+	last_color = picker->get_pick_color();
+}
+
 void EditorPropertyColor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_color_changed"), &EditorPropertyColor::_color_changed);
+	ClassDB::bind_method(D_METHOD("_popup_closed"), &EditorPropertyColor::_popup_closed);
 	ClassDB::bind_method(D_METHOD("_picker_created"), &EditorPropertyColor::_picker_created);
+	ClassDB::bind_method(D_METHOD("_picker_opening"), &EditorPropertyColor::_picker_opening);
 }
 
 void EditorPropertyColor::update_property() {
@@ -1964,7 +1980,9 @@ EditorPropertyColor::EditorPropertyColor() {
 	add_child(picker);
 	picker->set_flat(true);
 	picker->connect("color_changed", this, "_color_changed");
+	picker->connect("popup_closed", this, "_popup_closed");
 	picker->connect("picker_created", this, "_picker_created");
+	picker->get_popup()->connect("about_to_popup", this, "_picker_opening");
 }
 
 ////////////// NODE PATH //////////////////////

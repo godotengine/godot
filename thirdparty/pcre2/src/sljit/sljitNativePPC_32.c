@@ -258,21 +258,18 @@ static SLJIT_INLINE sljit_s32 emit_const(struct sljit_compiler *compiler, sljit_
 SLJIT_API_FUNC_ATTRIBUTE void sljit_set_jump_addr(sljit_uw addr, sljit_uw new_target, sljit_sw executable_offset)
 {
 	sljit_ins *inst = (sljit_ins *)addr;
+	SLJIT_UNUSED_ARG(executable_offset);
 
+	SLJIT_UPDATE_WX_FLAGS(inst, inst + 2, 0);
 	SLJIT_ASSERT((inst[0] & 0xfc1f0000) == ADDIS && (inst[1] & 0xfc000000) == ORI);
 	inst[0] = (inst[0] & 0xffff0000) | ((new_target >> 16) & 0xffff);
 	inst[1] = (inst[1] & 0xffff0000) | (new_target & 0xffff);
+	SLJIT_UPDATE_WX_FLAGS(inst, inst + 2, 1);
 	inst = (sljit_ins *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
 	SLJIT_CACHE_FLUSH(inst, inst + 2);
 }
 
 SLJIT_API_FUNC_ATTRIBUTE void sljit_set_const(sljit_uw addr, sljit_sw new_constant, sljit_sw executable_offset)
 {
-	sljit_ins *inst = (sljit_ins *)addr;
-
-	SLJIT_ASSERT((inst[0] & 0xfc1f0000) == ADDIS && (inst[1] & 0xfc000000) == ORI);
-	inst[0] = (inst[0] & 0xffff0000) | ((new_constant >> 16) & 0xffff);
-	inst[1] = (inst[1] & 0xffff0000) | (new_constant & 0xffff);
-	inst = (sljit_ins *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
-	SLJIT_CACHE_FLUSH(inst, inst + 2);
+	sljit_set_jump_addr(addr, new_constant, executable_offset);
 }

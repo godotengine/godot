@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1907,7 +1907,20 @@ void ScriptEditor::_update_script_names() {
 		Vector<String> disambiguated_script_names;
 		Vector<String> full_script_paths;
 		for (int j = 0; j < sedata.size(); j++) {
-			disambiguated_script_names.push_back(sedata[j].name.replace("(*)", "").get_file());
+			String name = sedata[j].name.replace("(*)", "");
+			ScriptListName script_display = (ScriptListName)(int)EditorSettings::get_singleton()->get("text_editor/script_list/list_script_names_as");
+			switch (script_display) {
+				case DISPLAY_NAME: {
+					name = name.get_file();
+				} break;
+				case DISPLAY_DIR_AND_NAME: {
+					name = name.get_base_dir().get_file().plus_file(name.get_file());
+				} break;
+				default:
+					break;
+			}
+
+			disambiguated_script_names.push_back(name);
 			full_script_paths.push_back(sedata[j].tooltip);
 		}
 

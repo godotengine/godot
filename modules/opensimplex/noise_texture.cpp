@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -101,7 +101,7 @@ void NoiseTexture::_validate_property(PropertyInfo &property) const {
 void NoiseTexture::_set_texture_data(const Ref<Image> &p_image) {
 	data = p_image;
 	if (data.is_valid()) {
-		VS::get_singleton()->texture_allocate(texture, size.x, size.y, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_2D, flags);
+		VS::get_singleton()->texture_allocate(texture, size.x, size.y, 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, flags);
 		VS::get_singleton()->texture_set_data(texture, p_image);
 	}
 	emit_changed();

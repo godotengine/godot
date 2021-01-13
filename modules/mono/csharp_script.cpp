@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -3361,9 +3361,9 @@ Error CSharpScript::load_source_code(const String &p_path) {
 
 	ERR_FAIL_COND_V_MSG(ferr != OK, ferr,
 			ferr == ERR_INVALID_DATA ?
-					"Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded."
+					  "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded."
 										  " Please ensure that scripts are saved in valid UTF-8 unicode." :
-					"Failed to read file: '" + p_path + "'.");
+					  "Failed to read file: '" + p_path + "'.");
 
 #ifdef TOOLS_ENABLED
 	source_changed_cache = true;
