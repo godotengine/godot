@@ -173,7 +173,7 @@ String find_msbuild_tools_path() {
 
 	String output;
 	int exit_code;
-	OS::get_singleton()->execute(vswhere_path, vswhere_args, true, nullptr, &output, &exit_code);
+	OS::get_singleton()->execute(vswhere_path, vswhere_args, &output, &exit_code);
 
 	if (exit_code == 0) {
 		Vector<String> lines = output.split("\n");
