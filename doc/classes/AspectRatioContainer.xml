@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AspectRatioContainer" inherits="Container" version="4.0">
+<class name="AspectRatioContainer" inherits="Container" version="3.2">
 	<brief_description>
 		Container that preserves its child controls' aspect ratio.
 	</brief_description>
