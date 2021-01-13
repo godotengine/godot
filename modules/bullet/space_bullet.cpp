@@ -477,7 +477,7 @@ void SpaceBullet::add_rigid_body(RigidBodyBullet *p_body) {
 	}
 }
 
-void SpaceBullet::remove_rigid_body(RigidBodyBullet *p_body) {
+void SpaceBullet::remove_rigid_body_constraints(RigidBodyBullet *p_body) {
 	btRigidBody *btBody = p_body->get_bt_rigid_body();
 
 	int constraints = btBody->getNumConstraintRefs();
@@ -487,6 +487,10 @@ void SpaceBullet::remove_rigid_body(RigidBodyBullet *p_body) {
 			dynamicsWorld->removeConstraint(btBody->getConstraintRef(i));
 		}
 	}
+}
+
+void SpaceBullet::remove_rigid_body(RigidBodyBullet *p_body) {
+	btRigidBody *btBody = p_body->get_bt_rigid_body();
 
 	if (p_body->is_static()) {
 		dynamicsWorld->removeCollisionObject(btBody);
