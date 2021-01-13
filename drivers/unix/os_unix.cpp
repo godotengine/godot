@@ -299,10 +299,15 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 
 	if (pid == 0) {
 		// The child process
-		Vector<char *> args;
-		args.push_back((char *)p_path.utf8().get_data());
+		Vector<CharString> cs;
+		cs.push_back(p_path.utf8());
 		for (int i = 0; i < p_arguments.size(); i++) {
-			args.push_back((char *)p_arguments[i].utf8().get_data());
+			cs.push_back(p_arguments[i].utf8());
+		}
+
+		Vector<char *> args;
+		for (int i = 0; i < cs.size(); i++) {
+			args.push_back((char *)cs[i].get_data());
 		}
 		args.push_back(0);
 
@@ -335,10 +340,15 @@ Error OS_Unix::create_process(const String &p_path, const List<String> &p_argume
 		// This ensures the process won't go zombie at the end.
 		setsid();
 
-		Vector<char *> args;
-		args.push_back((char *)p_path.utf8().get_data());
+		Vector<CharString> cs;
+		cs.push_back(p_path.utf8());
 		for (int i = 0; i < p_arguments.size(); i++) {
-			args.push_back((char *)p_arguments[i].utf8().get_data());
+			cs.push_back(p_arguments[i].utf8());
+		}
+
+		Vector<char *> args;
+		for (int i = 0; i < cs.size(); i++) {
+			args.push_back((char *)cs[i].get_data());
 		}
 		args.push_back(0);
 
