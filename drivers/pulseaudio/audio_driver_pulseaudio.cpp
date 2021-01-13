@@ -353,27 +353,24 @@ Error AudioDriverPulseAudio::init() {
 }
 
 float AudioDriverPulseAudio::get_latency() {
-	if (latency == 0) { //only do this once since it's approximate anyway
-		lock();
+	lock();
 
-		pa_usec_t palat = 0;
-		if (pa_stream_get_state(pa_str) == PA_STREAM_READY) {
-			int negative = 0;
+	pa_usec_t pa_lat = 0;
+	if (pa_stream_get_state(pa_str) == PA_STREAM_READY) {
+		int negative = 0;
 
-			if (pa_stream_get_latency(pa_str, &palat, &negative) >= 0) {
-				if (negative) {
-					palat = 0;
-				}
+		if (pa_stream_get_latency(pa_str, &pa_lat, &negative) >= 0) {
+			if (negative) {
+				pa_lat = 0;
 			}
 		}
-
-		if (palat > 0) {
-			latency = double(palat) / 1000000.0;
-		}
-
-		unlock();
 	}
 
+	if (pa_lat > 0) {
+		latency = double(pa_lat) / 1000000.0;
+	}
+
+	unlock();
 	return latency;
 }
 
