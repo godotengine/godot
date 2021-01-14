@@ -35,37 +35,37 @@
 BroadPhaseSW::ID BroadPhaseBVH::create(CollisionObjectSW *p_object, int p_subindex) {
 
 	ID oid = bvh.create(p_object, AABB(), p_subindex, false, 1 << p_object->get_type(), 0);
-	return oid;
+	return oid + 1;
 }
 
 void BroadPhaseBVH::move(ID p_id, const AABB &p_aabb) {
 
-	bvh.move(p_id, p_aabb);
+	bvh.move(p_id - 1, p_aabb);
 }
 
 void BroadPhaseBVH::set_static(ID p_id, bool p_static) {
 
-	CollisionObjectSW *it = bvh.get(p_id);
-	bvh.set_pairable(p_id, !p_static, 1 << it->get_type(), p_static ? 0 : 0xFFFFF); //pair everything, don't care 1?
+	CollisionObjectSW *it = bvh.get(p_id - 1);
+	bvh.set_pairable(p_id - 1, !p_static, 1 << it->get_type(), p_static ? 0 : 0xFFFFF); //pair everything, don't care 1?
 }
 void BroadPhaseBVH::remove(ID p_id) {
 
-	bvh.erase(p_id);
+	bvh.erase(p_id - 1);
 }
 
 CollisionObjectSW *BroadPhaseBVH::get_object(ID p_id) const {
 
-	CollisionObjectSW *it = bvh.get(p_id);
+	CollisionObjectSW *it = bvh.get(p_id - 1);
 	ERR_FAIL_COND_V(!it, NULL);
 	return it;
 }
 bool BroadPhaseBVH::is_static(ID p_id) const {
 
-	return !bvh.is_pairable(p_id);
+	return !bvh.is_pairable(p_id - 1);
 }
 int BroadPhaseBVH::get_subindex(ID p_id) const {
 
-	return bvh.get_subindex(p_id);
+	return bvh.get_subindex(p_id - 1);
 }
 
 int BroadPhaseBVH::cull_point(const Vector3 &p_point, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices) {

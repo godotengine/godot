@@ -2,7 +2,7 @@ public:
 BVHHandle item_add(T *p_userdata, const AABB &p_aabb, int32_t p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask, bool p_invisible = false) {
 #ifdef BVH_VERBOSE_TREE
 	VERBOSE_PRINT("\nitem_add BEFORE");
-	_recursive_print_tree();
+	_debug_recursive_print_tree(0);
 	VERBOSE_PRINT("\n");
 #endif
 
@@ -182,7 +182,7 @@ void item_remove(BVHHandle p_handle) {
 	//refit_all(_current_tree);
 
 #ifdef BVH_VERBOSE_TREE
-	_recursive_print_tree(tree_id);
+	_debug_recursive_print_tree(_current_tree);
 #endif
 }
 
@@ -281,6 +281,7 @@ void incremental_optimize() {
 	_logic_item_remove_and_reinsert(ref_id);
 
 #ifdef BVH_VERBOSE
+	/*
 	// memory use
 	int mem_refs = _refs.estimate_memory_use();
 	int mem_nodes = _nodes.estimate_memory_use();
@@ -292,7 +293,7 @@ void incremental_optimize() {
 	sz += "mem_leaves : " + itos(mem_leaves) + " ";
 	sz += ", num nodes : " + itos(_nodes.size());
 	print_line(sz);
-
+	*/
 #endif
 }
 
