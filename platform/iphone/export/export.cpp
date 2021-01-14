@@ -59,7 +59,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Thread *check_for_changes_thread;
 	volatile bool quit_request;
 	Mutex *plugins_lock;
-	Vector<PluginConfig> plugins;
+	Vector<PluginConfigIOS> plugins;
 
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
 	static Error _walk_dir_recursive(DirAccess *p_da, FileHandler p_handler, void *p_userdata);
@@ -150,7 +150,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 
 				ea->plugins_lock->lock();
 
-				Vector<PluginConfig> loaded_plugins = get_plugins();
+				Vector<PluginConfigIOS> loaded_plugins = get_plugins();
 
 				if (ea->plugins.size() != loaded_plugins.size()) {
 					ea->plugins_changed = true;
@@ -249,7 +249,7 @@ public:
 					continue;
 				}
 
-				if (file.ends_with(PLUGIN_CONFIG_EXT)) {
+				if (file.ends_with(PluginConfigIOS::PLUGIN_CONFIG_EXT)) {
 					dir_files.push_back(file);
 				}
 			}
@@ -259,8 +259,8 @@ public:
 		return dir_files;
 	}
 
-	static Vector<PluginConfig> get_plugins() {
-		Vector<PluginConfig> loaded_plugins;
+	static Vector<PluginConfigIOS> get_plugins() {
+		Vector<PluginConfigIOS> loaded_plugins;
 
 		String plugins_dir = ProjectSettings::get_singleton()->get_resource_path().plus_file("ios/plugins");
 
@@ -270,7 +270,7 @@ public:
 			if (!plugins_filenames.empty()) {
 				Ref<ConfigFile> config_file = memnew(ConfigFile);
 				for (int i = 0; i < plugins_filenames.size(); i++) {
-					PluginConfig config = load_plugin_config(config_file, plugins_dir.plus_file(plugins_filenames[i]));
+					PluginConfigIOS config = load_plugin_config(config_file, plugins_dir.plus_file(plugins_filenames[i]));
 					if (config.valid_config) {
 						loaded_plugins.push_back(config);
 					} else {
@@ -283,11 +283,11 @@ public:
 		return loaded_plugins;
 	}
 
-	static Vector<PluginConfig> get_enabled_plugins(const Ref<EditorExportPreset> &p_presets) {
-		Vector<PluginConfig> enabled_plugins;
-		Vector<PluginConfig> all_plugins = get_plugins();
+	static Vector<PluginConfigIOS> get_enabled_plugins(const Ref<EditorExportPreset> &p_presets) {
+		Vector<PluginConfigIOS> enabled_plugins;
+		Vector<PluginConfigIOS> all_plugins = get_plugins();
 		for (int i = 0; i < all_plugins.size(); i++) {
-			PluginConfig plugin = all_plugins[i];
+			PluginConfigIOS plugin = all_plugins[i];
 			bool enabled = p_presets->get("plugins/" + plugin.name);
 			if (enabled) {
 				enabled_plugins.push_back(plugin);
@@ -366,8 +366,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
 
-	Vector<PluginConfig> found_plugins = get_plugins();
-
+	Vector<PluginConfigIOS> found_plugins = get_plugins();
 	for (int i = 0; i < found_plugins.size(); i++) {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + found_plugins[i].name), false));
 	}
@@ -1219,7 +1218,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 	Vector<String> plugin_embedded_dependencies;
 	Vector<String> plugin_files;
 
-	Vector<PluginConfig> enabled_plugins = get_enabled_plugins(p_preset);
+	Vector<PluginConfigIOS> enabled_plugins = get_enabled_plugins(p_preset);
 
 	Vector<String> added_linked_dependenciy_names;
 	Vector<String> added_embedded_dependenciy_names;
@@ -1228,7 +1227,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 	Error err;
 
 	for (int i = 0; i < enabled_plugins.size(); i++) {
-		PluginConfig plugin = enabled_plugins[i];
+		PluginConfigIOS plugin = enabled_plugins[i];
 
 		// Export plugin binary.
 		if (!plugin.supports_targets) {

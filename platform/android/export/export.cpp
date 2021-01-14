@@ -264,7 +264,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		EditorProgress *ep;
 	};
 
-	Vector<PluginConfig> plugins;
+	Vector<PluginConfigAndroid> plugins;
 	String last_plugin_names;
 	uint64_t last_custom_build_time = 0;
 	volatile bool plugins_changed;
@@ -283,7 +283,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			{
 				// Nothing to do if we already know the plugins have changed.
 				if (!ea->plugins_changed) {
-					Vector<PluginConfig> loaded_plugins = get_plugins();
+					Vector<PluginConfigAndroid> loaded_plugins = get_plugins();
 
 					ea->plugins_lock->lock();
 
@@ -640,7 +640,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					continue;
 				}
 
-				if (file.ends_with(PLUGIN_CONFIG_EXT)) {
+				if (file.ends_with(PluginConfigAndroid::PLUGIN_CONFIG_EXT)) {
 					dir_files.push_back(file);
 				}
 			}
@@ -650,8 +650,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		return dir_files;
 	}
 
-	static Vector<PluginConfig> get_plugins() {
-		Vector<PluginConfig> loaded_plugins;
+	static Vector<PluginConfigAndroid> get_plugins() {
+		Vector<PluginConfigAndroid> loaded_plugins;
 
 		String plugins_dir = ProjectSettings::get_singleton()->get_resource_path().plus_file("android/plugins");
 
@@ -664,7 +664,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			if (!plugins_filenames.empty()) {
 				Ref<ConfigFile> config_file = memnew(ConfigFile);
 				for (int i = 0; i < plugins_filenames.size(); i++) {
-					PluginConfig config = load_plugin_config(config_file, plugins_dir.plus_file(plugins_filenames[i]));
+					PluginConfigAndroid config = load_plugin_config(config_file, plugins_dir.plus_file(plugins_filenames[i]));
 					if (config.valid_config) {
 						loaded_plugins.push_back(config);
 					} else {
@@ -677,11 +677,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		return loaded_plugins;
 	}
 
-	static Vector<PluginConfig> get_enabled_plugins(const Ref<EditorExportPreset> &p_presets) {
-		Vector<PluginConfig> enabled_plugins;
-		Vector<PluginConfig> all_plugins = get_plugins();
+	static Vector<PluginConfigAndroid> get_enabled_plugins(const Ref<EditorExportPreset> &p_presets) {
+		Vector<PluginConfigAndroid> enabled_plugins;
+		Vector<PluginConfigAndroid> all_plugins = get_plugins();
 		for (int i = 0; i < all_plugins.size(); i++) {
-			PluginConfig plugin = all_plugins[i];
+			PluginConfigAndroid plugin = all_plugins[i];
 			bool enabled = p_presets->get("plugins/" + plugin.name);
 			if (enabled) {
 				enabled_plugins.push_back(plugin);
@@ -1655,7 +1655,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "custom_template/use_custom_build"), false));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "custom_template/export_format", PROPERTY_HINT_ENUM, "Export APK,Export AAB"), EXPORT_FORMAT_APK));
 
-		Vector<PluginConfig> plugins_configs = get_plugins();
+		Vector<PluginConfigAndroid> plugins_configs = get_plugins();
 		for (int i = 0; i < plugins_configs.size(); i++) {
 			print_verbose("Found Android plugin " + plugins_configs[i].name);
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + plugins_configs[i].name), false));
@@ -2487,7 +2487,7 @@ public:
 		}
 	}
 
-	inline bool is_clean_build_required(Vector<PluginConfig> enabled_plugins) {
+	inline bool is_clean_build_required(Vector<PluginConfigAndroid> enabled_plugins) {
 		String plugin_names = get_plugins_names(enabled_plugins);
 		bool first_build = last_custom_build_time == 0;
 		bool have_plugins_changed = false;
@@ -2797,9 +2797,9 @@ public:
 			String sign_flag = should_sign ? "true" : "false";
 			String zipalign_flag = "true";
 
-			Vector<PluginConfig> enabled_plugins = get_enabled_plugins(p_preset);
-			String local_plugins_binaries = get_plugins_binaries(BINARY_TYPE_LOCAL, enabled_plugins);
-			String remote_plugins_binaries = get_plugins_binaries(BINARY_TYPE_REMOTE, enabled_plugins);
+			Vector<PluginConfigAndroid> enabled_plugins = get_enabled_plugins(p_preset);
+			String local_plugins_binaries = get_plugins_binaries(PluginConfigAndroid::BINARY_TYPE_LOCAL, enabled_plugins);
+			String remote_plugins_binaries = get_plugins_binaries(PluginConfigAndroid::BINARY_TYPE_REMOTE, enabled_plugins);
 			String custom_maven_repos = get_plugins_custom_maven_repos(enabled_plugins);
 			bool clean_build_required = is_clean_build_required(enabled_plugins);
 
