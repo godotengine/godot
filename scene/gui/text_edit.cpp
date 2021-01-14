@@ -1263,33 +1263,38 @@ void TextEdit::_notification(int p_what) {
 							}
 						}
 
-						if (brace_matching_enabled) {
-							if ((brace_open_match_line == line && brace_open_match_column == glyphs[j].start) ||
-									(cursor.column == glyphs[j].start && cursor.line == line && cursor_wrap_index == line_wrap_index && (brace_open_matching || brace_open_mismatch))) {
-								if (brace_open_mismatch) {
-									current_color = cache.brace_mismatch_color;
+						int char_pos = char_ofs + char_margin + ofs_x;
+						if (char_pos >= xmargin_beg) {
+							if (brace_matching_enabled) {
+								if ((brace_open_match_line == line && brace_open_match_column == glyphs[j].start) ||
+										(cursor.column == glyphs[j].start && cursor.line == line && cursor_wrap_index == line_wrap_index && (brace_open_matching || brace_open_mismatch))) {
+									if (brace_open_mismatch) {
+										current_color = cache.brace_mismatch_color;
+									}
+									Rect2 rect = Rect2(char_pos, ofs_y + cache.font->get_underline_position(cache.font_size), glyphs[j].advance * glyphs[j].repeat, cache.font->get_underline_thickness(cache.font_size));
+									draw_rect(rect, current_color);
 								}
-								Rect2 rect = Rect2(char_ofs + char_margin + ofs_x, ofs_y + cache.font->get_underline_position(cache.font_size), glyphs[j].advance * glyphs[j].repeat, cache.font->get_underline_thickness(cache.font_size));
-								draw_rect(rect, current_color);
+
+								if ((brace_close_match_line == line && brace_close_match_column == glyphs[j].start) ||
+										(cursor.column == glyphs[j].start + 1 && cursor.line == line && cursor_wrap_index == line_wrap_index && (brace_close_matching || brace_close_mismatch))) {
+									if (brace_close_mismatch) {
+										current_color = cache.brace_mismatch_color;
+									}
+									Rect2 rect = Rect2(char_pos, ofs_y + cache.font->get_underline_position(cache.font_size), glyphs[j].advance * glyphs[j].repeat, cache.font->get_underline_thickness(cache.font_size));
+									draw_rect(rect, current_color);
+								}
 							}
 
-							if ((brace_close_match_line == line && brace_close_match_column == glyphs[j].start) ||
-									(cursor.column == glyphs[j].start + 1 && cursor.line == line && cursor_wrap_index == line_wrap_index && (brace_close_matching || brace_close_mismatch))) {
-								if (brace_close_mismatch) {
-									current_color = cache.brace_mismatch_color;
-								}
-								Rect2 rect = Rect2(char_ofs + char_margin + ofs_x, ofs_y + cache.font->get_underline_position(cache.font_size), glyphs[j].advance * glyphs[j].repeat, cache.font->get_underline_thickness(cache.font_size));
-								draw_rect(rect, current_color);
+							if (draw_tabs && ((glyphs[j].flags & TextServer::GRAPHEME_IS_TAB) == TextServer::GRAPHEME_IS_TAB)) {
+								int yofs = (text_height - cache.tab_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
+								cache.tab_icon->draw(ci, Point2(char_pos, ofs_y + yofs), current_color);
+							} else if (draw_spaces && ((glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE)) {
+								int yofs = (text_height - cache.space_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
+								int xofs = (glyphs[j].advance * glyphs[j].repeat - cache.space_icon->get_width()) / 2;
+								cache.space_icon->draw(ci, Point2(char_pos + xofs, ofs_y + yofs), current_color);
 							}
 						}
-						if (draw_tabs && ((glyphs[j].flags & TextServer::GRAPHEME_IS_TAB) == TextServer::GRAPHEME_IS_TAB)) {
-							int yofs = (text_height - cache.tab_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
-							cache.tab_icon->draw(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + yofs), current_color);
-						} else if (draw_spaces && ((glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE)) {
-							int yofs = (text_height - cache.space_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
-							int xofs = (glyphs[j].advance * glyphs[j].repeat - cache.space_icon->get_width()) / 2;
-							cache.space_icon->draw(ci, Point2(char_ofs + char_margin + ofs_x + xofs, ofs_y + yofs), current_color);
-						}
+
 						for (int k = 0; k < glyphs[j].repeat; k++) {
 							if ((char_ofs + char_margin) >= xmargin_beg && (char_ofs + glyphs[j].advance + char_margin) <= xmargin_end) {
 								if (glyphs[j].font_rid != RID()) {
@@ -1306,11 +1311,13 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					if (line_wrap_index == line_wrap_amount && is_folded(line)) {
-						int yofs = (text_height - cache.folded_eol_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
-						int xofs = cache.folded_eol_icon->get_width() / 2;
-						Color eol_color = cache.code_folding_color;
-						eol_color.a = 1;
-						cache.folded_eol_icon->draw(ci, Point2(char_ofs + char_margin + xofs + ofs_x, ofs_y + yofs), eol_color);
+						int xofs = char_ofs + char_margin + ofs_x + (cache.folded_eol_icon->get_width() / 2);
+						if (xofs >= xmargin_beg && xofs < xmargin_end) {
+							int yofs = (text_height - cache.folded_eol_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
+							Color eol_color = cache.code_folding_color;
+							eol_color.a = 1;
+							cache.folded_eol_icon->draw(ci, Point2(xofs, ofs_y + yofs), eol_color);
+						}
 					}
 
 					// Carets
@@ -1345,7 +1352,7 @@ void TextEdit::_notification(int p_what) {
 								cursor_pos.x = char_margin + ofs_x + t_caret.position.x;
 							}
 
-							if (draw_caret) {
+							if (draw_caret && cursor_pos.x >= xmargin_beg && cursor_pos.x < xmargin_end) {
 								if (block_caret || insert_mode) {
 									//Block or underline caret, draw trailing carets at full height.
 									int h = cache.font->get_height(cache.font_size);
