@@ -991,11 +991,7 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 		r_collision.local_shape = result.collision_local_shape;
 	}
 
-	for (int i = 0; i < 3; i++) {
-		if (locked_axis & (1 << i)) {
-			result.motion[i] = 0;
-		}
-	}
+	_apply_axis_lock(result.motion);
 
 	if (!p_test_only) {
 		gt.origin += result.motion;
@@ -1013,11 +1009,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 	Vector3 body_velocity_normal = body_velocity.normalized();
 	Vector3 up_direction = p_up_direction.normalized();
 
-	for (int i = 0; i < 3; i++) {
-		if (locked_axis & (1 << i)) {
-			body_velocity[i] = 0;
-		}
-	}
+	_apply_axis_lock(body_velocity);
 
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
 	Vector3 motion = (floor_velocity + body_velocity) * (Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time());
@@ -1084,11 +1076,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 				motion = motion.slide(collision.normal);
 				body_velocity = body_velocity.slide(collision.normal);
 
-				for (int j = 0; j < 3; j++) {
-					if (locked_axis & (1 << j)) {
-						body_velocity[j] = 0;
-					}
-				}
+				_apply_axis_lock(body_velocity);
 			}
 		}
 
@@ -1209,6 +1197,18 @@ bool KinematicBody::get_axis_lock(PhysicsServer::BodyAxis p_axis) const {
 	return PhysicsServer::get_singleton()->body_is_axis_locked(get_rid(), p_axis);
 }
 
+void KinematicBody::_apply_axis_lock(Vector3 &p_motion) const {
+	if (get_axis_lock(PhysicsServer::BODY_AXIS_LINEAR_X)) {
+		p_motion.x = 0.0f;
+	}
+	if (get_axis_lock(PhysicsServer::BODY_AXIS_LINEAR_Y)) {
+		p_motion.y = 0.0f;
+	}
+	if (get_axis_lock(PhysicsServer::BODY_AXIS_LINEAR_Z)) {
+		p_motion.z = 0.0f;
+	}
+}
+
 void KinematicBody::set_safe_margin(float p_margin) {
 	margin = p_margin;
 	PhysicsServer::get_singleton()->body_set_kinematic_safe_margin(get_rid(), margin);
@@ -1284,7 +1284,6 @@ void KinematicBody::_bind_methods() {
 
 KinematicBody::KinematicBody() :
 		PhysicsBody(PhysicsServer::BODY_MODE_KINEMATIC) {
-	locked_axis = 0;
 	on_floor = false;
 	on_ceiling = false;
 	on_wall = false;
@@ -1303,6 +1302,7 @@ KinematicBody::~KinematicBody() {
 		}
 	}
 }
+
 ///////////////////////////////////////
 
 Vector3 KinematicCollision::get_position() const {
