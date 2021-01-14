@@ -48,8 +48,7 @@ protected:
 
 	Ref<KinematicCollision3D> motion_cache;
 
-	uint16_t locked_axis = 0;
-
+	void _apply_axis_lock(Vector3 &p_motion) const;
 	Ref<KinematicCollision3D> _move(const Vector3 &p_motion, bool p_test_only = false, real_t p_margin = 0.001);
 
 public:
