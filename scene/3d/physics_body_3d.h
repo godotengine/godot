@@ -48,9 +48,8 @@ protected:
 
 	Ref<KinematicCollision3D> motion_cache;
 
-	uint16_t locked_axis = 0;
-
 	Ref<KinematicCollision3D> _move(const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false, real_t p_margin = 0.001);
+	void _apply_axis_lock(Vector3 &p_motion) const;
 
 public:
 	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer3D::MotionResult &r_result, real_t p_margin, bool p_exclude_raycast_shapes = true, bool p_test_only = false, bool p_cancel_sliding = true);
