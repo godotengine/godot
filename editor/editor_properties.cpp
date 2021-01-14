@@ -1982,7 +1982,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	picker->connect("color_changed", this, "_color_changed");
 	picker->connect("popup_closed", this, "_popup_closed");
 	picker->connect("picker_created", this, "_picker_created");
-	picker->get_popup()->connect("about_to_popup", this, "_picker_opening");
+	picker->get_popup()->connect("about_to_show", this, "_picker_opening");
 }
 
 ////////////// NODE PATH //////////////////////
