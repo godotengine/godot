@@ -7,19 +7,19 @@ void _debug_recursive_print_tree(int p_tree_id) const {
 
 String _debug_aabb_to_string(const BVH_ABB &aabb) const {
 	String sz = "(";
-	sz += itos(-aabb.neg_min.x);
+	sz += itos(aabb.min.x);
 	sz += " ~ ";
-	sz += itos(aabb.max.x);
+	sz += itos(-aabb.neg_max.x);
 	sz += ") (";
 
-	sz += itos(-aabb.neg_min.y);
+	sz += itos(aabb.min.y);
 	sz += " ~ ";
-	sz += itos(aabb.max.y);
+	sz += itos(-aabb.neg_max.y);
 	sz += ") (";
 
-	sz += itos(-aabb.neg_min.z);
+	sz += itos(aabb.min.z);
 	sz += " ~ ";
-	sz += itos(aabb.max.z);
+	sz += itos(-aabb.neg_max.z);
 	sz += ") ";
 
 	Vector3 size = aabb.calculate_size();
@@ -41,14 +41,14 @@ void _debug_recursive_print_tree_node(uint32_t p_node_id, int depth = 0) const {
 	if (tnode.is_leaf()) {
 		sz += " L";
 		sz += itos(tnode.height) + " ";
-		const TLeaf *leaf = node_get_leaf(tnode);
+		const TLeaf &leaf = _node_get_leaf(tnode);
 
 		sz += "[";
-		for (int n = 0; n < leaf->num_items; n++) {
+		for (int n = 0; n < leaf.num_items; n++) {
 			if (n)
 				sz += ", ";
 			sz += "r";
-			sz += itos(leaf->get_item_ref_id(n));
+			sz += itos(leaf.get_item_ref_id(n));
 		}
 		sz += "]  ";
 	} else {
