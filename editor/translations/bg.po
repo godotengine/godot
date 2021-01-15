@@ -11,13 +11,13 @@
 # Whod <whodizhod@gmail.com>, 2020.
 # Stoyan <stoyan.stoyanov99@protonmail.com>, 2020.
 # zooid <the.zooid@gmail.com>, 2020.
-# Любомир Василев <lyubomirv@gmx.com>, 2020.
+# Любомир Василев <lyubomirv@gmx.com>, 2020, 2021.
 # Ziv D <wizdavid@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-07 08:11+0000\n"
+"PO-Revision-Date: 2021-01-15 15:38+0000\n"
 "Last-Translator: Любомир Василев <lyubomirv@gmx.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1904,10 +1904,6 @@ msgstr ""
 msgid "File:"
 msgstr "Файл:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "Трябва да се използва правилно разширение."
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr ""
@@ -2311,6 +2307,10 @@ msgid "There is no defined scene to run."
 msgstr ""
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr ""
 
@@ -2353,18 +2353,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "Запазване на сцената като..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "Не"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "Тази сцена не е била запазвана преди. Запазване преди изпълнението?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2411,6 +2399,10 @@ msgstr "Бързо пускане на сцена..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "Изход"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -3981,15 +3973,15 @@ msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Save the currently edited resource."
-msgstr ""
+msgstr "Запазване на текущо редактирания ресурс."
 
 #: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
-msgstr ""
+msgstr "Преминаване към предходния редактиран обект в историята."
 
 #: editor/inspector_dock.cpp
 msgid "Go to the next edited object in history."
-msgstr ""
+msgstr "Преминаване към следващия редактиран обект в историята."
 
 #: editor/inspector_dock.cpp
 msgid "History of recently edited objects."
@@ -4013,7 +4005,7 @@ msgstr ""
 
 #: editor/node_dock.cpp
 msgid "Select a single node to edit its signals and groups."
-msgstr ""
+msgstr "Изберете един възел, за да редактирате сигналите и групите му."
 
 #: editor/plugin_config_dialog.cpp
 msgid "Edit a Plugin"
@@ -4075,11 +4067,11 @@ msgstr "Редактиране на полигона"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Insert Point"
-msgstr ""
+msgstr "Вмъкване на точка"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Edit Polygon (Remove Point)"
-msgstr ""
+msgstr "Редактиране на полигона (премахване на точка)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Remove Polygon And Point"
@@ -4118,6 +4110,7 @@ msgstr ""
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr ""
+"Този тип възел не може да бъде използван. Разрешени са само коренни възли."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4145,11 +4138,14 @@ msgid ""
 "AnimationTree is inactive.\n"
 "Activate to enable playback, check node warnings if activation fails."
 msgstr ""
+"AnimationTree не е активен.\n"
+"Активирайте го, за да включите възпроизвеждането. Ако не стане, проверете "
+"дали има предупредителни съобщения относно възлите."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Set the blending position within the space"
-msgstr ""
+msgstr "Задаване на точката на смесване в пространството"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4159,12 +4155,12 @@ msgstr "Избиране и преместване на точки; създав
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
 msgid "Enable snap and show grid."
-msgstr ""
+msgstr "Включване на прилепването и показване на решетката."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Point"
-msgstr ""
+msgstr "Точка"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4209,7 +4205,7 @@ msgstr "BlendSpace2D не принадлежи на възел от тип Anima
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "No triangles exist, so no blending can take place."
-msgstr ""
+msgstr "Смесването е невъзможно, тъй като няма нито един триъгълник."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Toggle Auto Triangles"
@@ -4217,24 +4213,24 @@ msgstr "Превключване на автоматичните триъгъл�
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
-msgstr ""
+msgstr "Създаване на триъгълници чрез свързване на точки."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Erase points and triangles."
-msgstr ""
+msgstr "Изтриване на точки и триъгълници."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Generate blend triangles automatically (instead of manually)"
-msgstr ""
+msgstr "Създаване на триъгълници за смесване автоматично (а не ръчно)"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend:"
-msgstr ""
+msgstr "Смесване:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Parameter Changed"
-msgstr ""
+msgstr "Параметърът е променен"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -4256,6 +4252,8 @@ msgstr "Възелът е преместен"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
 msgstr ""
+"Свързването е невъзможно. Портът може би е зает, или връзката да е "
+"неправилна."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -4279,7 +4277,7 @@ msgstr "Изтриване на възела"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
-msgstr ""
+msgstr "Изтриване на възела/възлите"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Toggle Filter On/Off"
@@ -4287,7 +4285,7 @@ msgstr "Превключване на филтъра ВКЛ/ИЗКЛ"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Change Filter"
-msgstr ""
+msgstr "Промяна на филтъра"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
@@ -4984,8 +4982,7 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -4999,8 +4996,28 @@ msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "Избор на шаблонен файл"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6087,6 +6104,11 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "Превръщане в Polygon2D"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr ""
@@ -6147,10 +6169,6 @@ msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
-msgstr ""
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -10441,9 +10459,8 @@ msgid "Reparent to New Node"
 msgstr "Преместване под нов възел"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Make Scene Root"
-msgstr "Запазване на сцената"
+msgstr "Превръщане на сцената в коренна"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -10462,9 +10479,8 @@ msgid "Delete (No Confirm)"
 msgstr "Изтриване (без потвърждение)"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Add/Create a New Node."
-msgstr "Създай нови възли."
+msgstr "Добавяне/създаване на нов възел."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -10481,9 +10497,8 @@ msgid "Detach the script from the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Remote"
-msgstr "Затваряне на всичко"
+msgstr "Отдалечен"
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -10498,14 +10513,12 @@ msgid "Toggle Visible"
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Unlock Node"
-msgstr "Избиране на всичко"
+msgstr "Отключване на възела"
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Button Group"
-msgstr "Копче 7"
+msgstr "Група бутони"
 
 #: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
@@ -10589,38 +10602,35 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Path is not local."
-msgstr ""
+msgstr "Пътят не е локален."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid base path."
 msgstr "Неправилен базов път."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "A directory with the same name exists."
-msgstr "Вече съществува файл или папка с това име."
+msgstr "Вече съществува папка с това име."
 
 #: editor/script_create_dialog.cpp
 msgid "File does not exist."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid extension."
-msgstr "Трябва да се използва правилно разширение."
+msgstr "Неправилно разширение."
 
 #: editor/script_create_dialog.cpp
 msgid "Wrong extension chosen."
-msgstr ""
+msgstr "Избрано е грешно разширение."
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading template '%s'"
 msgstr "Грешка при зареждане на шаблона „%s“"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Error - Could not create script in filesystem."
-msgstr "Неуспешно създаване на папка."
+msgstr "Грешка: скриптът не може да бъде създаден във файловата система."
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading script from %s"
@@ -11196,6 +11206,36 @@ msgstr "Поставяне на възелите"
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Generate buffers"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "Направления"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Indirect lighting"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Post processing"
+msgstr "Задаване на израз"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Plotting lightmaps"
+msgstr ""
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr ""
@@ -11708,11 +11748,13 @@ msgid "Select device from the list"
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
+msgid "Unable to find the 'apksigner' tool."
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -11724,11 +11766,11 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
+msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -11736,9 +11778,19 @@ msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -12162,28 +12214,29 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
+msgid "Finding meshes and lights"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
+msgid "Preparing geometry (%d/%d)"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
+msgid "Preparing environment"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr ""
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
+msgid "Generating capture"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
+msgid "Saving lightmaps"
 msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Done"
+msgstr "Готово!"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12242,6 +12295,10 @@ msgstr ""
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
+msgstr ""
+
+#: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
 msgstr ""
 
 #: scene/3d/gi_probe.cpp
@@ -12465,6 +12522,10 @@ msgstr "Тревога!"
 msgid "Please Confirm..."
 msgstr "Моля, потвърдете..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "Трябва да се използва правилно разширение."
+
 #: scene/gui/graph_edit.cpp
 msgid "Enable grid minimap."
 msgstr ""
@@ -12510,6 +12571,12 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr ""
 
@@ -12536,6 +12603,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Константите не могат да бъдат променени."
+
+#~ msgid "No"
+#~ msgstr "Не"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "Тази сцена не е била запазвана преди. Запазване преди изпълнението?"
 
 #~ msgid "Search complete"
 #~ msgstr "Търсенето е завършено"

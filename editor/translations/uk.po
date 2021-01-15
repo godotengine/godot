@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-14 11:03+0000\n"
+"PO-Revision-Date: 2020-12-29 21:52+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -30,7 +30,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1965,10 +1965,6 @@ msgstr "Попередній перегляд:"
 msgid "File:"
 msgstr "Файл:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "Необхідно використовувати допустиме розширення."
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "Сканувати сирці"
@@ -2404,6 +2400,10 @@ msgid "There is no defined scene to run."
 msgstr "Немає визначеної сцени для виконання."
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Не вдалося запустити підпроцес!"
 
@@ -2446,18 +2446,6 @@ msgstr "Для того, щоб можна було зберегти сцену,
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "Зберегти сцену як..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "Ні"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "Так"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "Ця сцена ніколи не була збережена. Зберегти перед запуском?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2507,6 +2495,10 @@ msgstr "Швидкий запуск сцени..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "Вийти"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr "Так"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -3936,19 +3928,16 @@ msgid "Searching..."
 msgstr "Шукаємо…"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d match in %d file."
-msgstr "%d відповідників."
+msgstr "%d відповдіник у %d файлі."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d file."
-msgstr "%d відповідників."
+msgstr "%d відповідників у %d файлі."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d files."
-msgstr "%d відповідників."
+msgstr "%d відповідників у %d файлах."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -5189,10 +5178,10 @@ msgid "Assets ZIP File"
 msgstr "ZIP файл ресурсів"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 "Не вдається визначити шлях для збереження карт освітлення.\n"
 "Збережіть вашу сцену (щоб зображення були збережені в одній теці), або "
@@ -5213,8 +5202,28 @@ msgstr ""
 "запису."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Запікати карти освітлення"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "Виберіть файл шаблону"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6309,6 +6318,11 @@ msgstr ""
 "Поставити точку можна тільки в процедурному матеріалі ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "Перетворити на CPUParticles"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Час генерації (сек):"
@@ -6367,10 +6381,6 @@ msgstr "Створення AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
-msgstr "Генерувати AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
 msgstr "Генерувати AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -11593,6 +11603,39 @@ msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
 "Додайте ресурс MeshLibrary до цього GridMap, щоб скористатися його сітками."
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Generate buffers"
+msgstr "Генерувати AABB"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "Напрямки"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Indirect lighting"
+msgstr "Збільшити відступ"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Post processing"
+msgstr "Пост-обробка"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "Побудова світла:"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Назвою класу не може бути зарезервоване ключове слово"
@@ -12107,12 +12150,17 @@ msgid "Select device from the list"
 msgstr "Вибрати пристрій зі списку"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "У параметрах редактора не налаштовано виконуваного файла ADB."
+#, fuzzy
+msgid "Unable to find the 'apksigner' tool."
+msgstr "Не вдалося знайти програму zipalign."
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "У параметрах редактора не налаштовано jarsigner з OpenJDK."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr ""
+"У проєкті не встановлено шаблон збирання Android. Встановіть його за "
+"допомогою меню «Проєкт»."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12126,13 +12174,15 @@ msgstr ""
 "У шаблоні експортування неправильно налаштовано сховище ключів випуску."
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#, fuzzy
+msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
-"Нетипове збирання потребує коректного шляху до SDK для Android у параметрах "
+"Некоректний шлях до SDK для Android для нетипового збирання у параметрах "
 "редактора."
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+#, fuzzy
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr ""
 "Некоректний шлях до SDK для Android для нетипового збирання у параметрах "
 "редактора."
@@ -12142,12 +12192,23 @@ msgid "Missing 'platform-tools' directory!"
 msgstr "Не знайдено каталогу «platform-tools»!"
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
-"У проєкті не встановлено шаблон збирання Android. Встановіть його за "
-"допомогою меню «Проєкт»."
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr ""
+"Некоректний шлях до SDK для Android для нетипового збирання у параметрах "
+"редактора."
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr "Не знайдено каталогу «build-tools»!"
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12634,28 +12695,32 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin повинен мати дочірній вузол ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(Лишилося часу: %d:%02d с)"
+#, fuzzy
+msgid "Preparing geometry (%d/%d)"
+msgstr "Аналіз геометрії..."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "Побудова сітки: "
+#, fuzzy
+msgid "Preparing environment"
+msgstr "Перегляд середовища"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "Побудова світла:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "Завершальна ділянка"
+#, fuzzy
+msgid "Generating capture"
+msgstr "Створення карт освітлення"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr "Освітлення сітки: "
+#, fuzzy
+msgid "Saving lightmaps"
+msgstr "Створення карт освітлення"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Done"
+msgstr "Зроблено"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12730,6 +12795,10 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "Побудова сітки"
+
+#: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "Завершальна ділянка"
 
 #: scene/3d/gi_probe.cpp
 msgid ""
@@ -12991,10 +13060,13 @@ msgstr "Увага!"
 msgid "Please Confirm..."
 msgstr "Будь ласка, підтвердьте..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "Необхідно використовувати допустиме розширення."
+
 #: scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Enable grid minimap."
-msgstr "Дозволити прилипання"
+msgstr "Увімкнути мінікарту ґратки."
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -13052,6 +13124,12 @@ msgstr ""
 "за 0."
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Некоректне джерело для попереднього перегляду."
 
@@ -13079,6 +13157,35 @@ msgstr "Змінні величини можна пов'язувати лише 
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
 
+#~ msgid "No"
+#~ msgstr "Ні"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "Ця сцена ніколи не була збережена. Зберегти перед запуском?"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "У параметрах редактора не налаштовано виконуваного файла ADB."
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr "У параметрах редактора не налаштовано jarsigner з OpenJDK."
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr ""
+#~ "Нетипове збирання потребує коректного шляху до SDK для Android у "
+#~ "параметрах редактора."
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(Лишилося часу: %d:%02d с)"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "Побудова сітки: "
+
+#~ msgid "Lighting Meshes: "
+#~ msgstr "Освітлення сітки: "
+
 #~ msgid "Search complete"
 #~ msgstr "Пошук завершено"
 
@@ -13090,12 +13197,6 @@ msgstr "Сталі не можна змінювати."
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "У вказаному каталозі вже міститься тека або файл із вказано назвою."
-
-#~ msgid "Missing 'build-tools' directory!"
-#~ msgstr "Не знайдено каталогу «build-tools»!"
-
-#~ msgid "Unable to find the zipalign tool."
-#~ msgstr "Не вдалося знайти програму zipalign."
 
 #~ msgid "Aligning APK..."
 #~ msgstr "Вирівнюємо APK..."
@@ -13443,9 +13544,6 @@ msgstr "Сталі не можна змінювати."
 
 #~ msgid "Failed to save solution."
 #~ msgstr "Не вдалося зберегти розв'язок."
-
-#~ msgid "Done"
-#~ msgstr "Зроблено"
 
 #~ msgid "Failed to create C# project."
 #~ msgstr "Не вдалося створити проєкт C#."

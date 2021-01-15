@@ -1991,10 +1991,6 @@ msgstr "Voorbeeld:"
 msgid "File:"
 msgstr "Bestand:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "Een geldige extensie moet gebruikt worden."
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "Scan Bronnen"
@@ -2433,6 +2429,10 @@ msgid "There is no defined scene to run."
 msgstr "Er is geen startscène ingesteld."
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Kon het subproces niet opstarten!"
 
@@ -2475,18 +2475,6 @@ msgstr "Een wortelknoop is nodig om de scène op te slaan."
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "Scène opslaan als..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "Nee"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "Ja"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "Deze scene is nooit opgeslagen. Sla op voor het uitvoeren?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2536,6 +2524,10 @@ msgstr "Scène snel starten..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "Afsluiten"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr "Ja"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -5207,10 +5199,10 @@ msgid "Assets ZIP File"
 msgstr "Assets ZIP Bestand"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 "Kan geen opslag pad voor de lichtmappen bepalen.\n"
 "Sla jouw scène op (om lichtmappen op te slaan in dezelfde map) of kies een "
@@ -5231,8 +5223,28 @@ msgstr ""
 "beschrijfbaar is."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Bak Lichtmappen"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "Selecteer sjabloonbestand"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6335,6 +6347,11 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "Kan punt alleen plaatsen in een PartikelsMateriaal proces materiaal"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "Zet om in CPUParticles"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Genereer Tijd (sec):"
@@ -6394,10 +6411,6 @@ msgstr "AABB Genereren"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "Genereer Zichtbaarheid AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "Genereer AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -11638,6 +11651,39 @@ msgstr "Filter Meshes"
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "Voeg een MeshLibrary aan deze GridMap toe om meshes te gebruiken."
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Generate buffers"
+msgstr "Genereer AABB"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "Richtingen"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Indirect lighting"
+msgstr "Rechts Inspringen"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Post processing"
+msgstr "Post-Process"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "Plotten Light:"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Klassennaam kan geen gereserveerd sleutelwoord zijn"
@@ -12155,12 +12201,16 @@ msgid "Select device from the list"
 msgstr "Selecteer apparaat uit de lijst"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "ADB niet ingesteld in Editor Settings."
+msgid "Unable to find the 'apksigner' tool."
+msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "OpenJDK niet ingesteld in Editor Settings."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr ""
+"Geen Android bouwsjabloon geïnstalleerd in dit project. Vanuit het "
+"projectmenu kan het geïnstalleerd worden."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12171,12 +12221,13 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr "Release-Keystore is verkeerd ingesteld in de exportinstelingen."
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
-msgstr ""
-"Eigen build vereist een geldige Android SDK pad in de Editorinstellingen."
+#, fuzzy
+msgid "A valid Android SDK path is required in Editor Settings."
+msgstr "Ongeldig Android SDK pad voor custom build in Editor Settings."
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+#, fuzzy
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr "Ongeldig Android SDK pad voor custom build in Editor Settings."
 
 #: platform/android/export/export.cpp
@@ -12184,12 +12235,21 @@ msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
-"Geen Android bouwsjabloon geïnstalleerd in dit project. Vanuit het "
-"projectmenu kan het geïnstalleerd worden."
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr "Ongeldig Android SDK pad voor custom build in Editor Settings."
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12657,28 +12717,33 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin heeft een ARVRCamera nodig als kind."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(Tijd resterend: %d:%02d s)"
+#, fuzzy
+msgid "Preparing geometry (%d/%d)"
+msgstr "Geometrie aan het ontleden..."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "Plotten Meshes: "
+#, fuzzy
+msgid "Preparing environment"
+msgstr "Bekijk Omgeving"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "Plotten Light:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "Plotten Voltooid"
+#, fuzzy
+msgid "Generating capture"
+msgstr "Bouw Lightmappen"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr "Light Meshes: "
+#, fuzzy
+msgid "Saving lightmaps"
+msgstr "Bouw Lightmappen"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Done"
+msgstr "Klaar!"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12751,6 +12816,10 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "Plotten van Meshes"
+
+#: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "Plotten Voltooid"
 
 #: scene/3d/gi_probe.cpp
 msgid ""
@@ -13010,6 +13079,10 @@ msgstr "Alarm!"
 msgid "Please Confirm..."
 msgstr "Bevestig alstublieft..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "Een geldige extensie moet gebruikt worden."
+
 #: scene/gui/graph_edit.cpp
 #, fuzzy
 msgid "Enable grid minimap."
@@ -13069,6 +13142,12 @@ msgstr ""
 "De grootte van een Viewport moet groter zijn dan 0 om iets weer te geven."
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Ongeldige bron voor voorvertoning."
 
@@ -13095,6 +13174,34 @@ msgstr "Varyings kunnen alleen worden toegewezenin vertex functies."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constanten kunnen niet worden aangepast."
+
+#~ msgid "No"
+#~ msgstr "Nee"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "Deze scene is nooit opgeslagen. Sla op voor het uitvoeren?"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "ADB niet ingesteld in Editor Settings."
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr "OpenJDK niet ingesteld in Editor Settings."
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr ""
+#~ "Eigen build vereist een geldige Android SDK pad in de Editorinstellingen."
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(Tijd resterend: %d:%02d s)"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "Plotten Meshes: "
+
+#~ msgid "Lighting Meshes: "
+#~ msgstr "Light Meshes: "
 
 #~ msgid "Search complete"
 #~ msgstr "Zoek Compleet"

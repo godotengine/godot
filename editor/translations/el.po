@@ -1958,10 +1958,6 @@ msgstr "Προεπισκόπηση:"
 msgid "File:"
 msgstr "Αρχείο:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "Απαιτείται η χρήση έγκυρης επέκτασης."
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "Σάρωση πηγών"
@@ -2396,6 +2392,10 @@ msgid "There is no defined scene to run."
 msgstr "Δεν υπάρχει καθορισμένη σκηνή για εκτελέση."
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Αδύνατη η εκκίνηση της υπό-εργασίας!"
 
@@ -2438,18 +2438,6 @@ msgstr "Απαιτείται ριζικός κόμβος για την αποθ�
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "Αποθήκευση σκηνή ως..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "Όχι"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "Ναι"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "Αυτή η σκηνή δεν έχει αποθηκευτεί. Αποθήκευση πριν από την εκτέλεση;"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2500,6 +2488,10 @@ msgstr "Γρήγορη εκτέλεση σκηνής..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "Έξοδος"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr "Ναι"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -5186,10 +5178,10 @@ msgid "Assets ZIP File"
 msgstr "Αρχείο ZIP των Στοιχείων"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 "Δεν ήταν δυνατός ο προσδιορισμός διαδρομής αποθήκευσης για εικόνες "
 "lightmap.\n"
@@ -5212,8 +5204,28 @@ msgstr ""
 "είναι εγγράψιμη."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Προετοιμασία Lightmaps"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "Επιλογή Αρχείου Προτύπων"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6324,6 +6336,11 @@ msgstr ""
 "ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "Μετατροπή σε σωματίδια CPU"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Χρόνος Παραγωγής (sec):"
@@ -6383,10 +6400,6 @@ msgstr "Δημιουρία AABB"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "Δημιουρία AABB ορατότητας"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "Δημιουρία AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -11628,6 +11641,39 @@ msgstr "Φιλτράρισμα πλεγμάτων"
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "Ορίστε έναν πόρο MeshLibrary στο GridMap για χρήση των πλεγμάτων του."
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Generate buffers"
+msgstr "Δημιουρία AABB"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "Κατευθήνσεις"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Indirect lighting"
+msgstr "Στοιχειοθέτηση Δεξιά"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Post processing"
+msgstr "Μετεπεξεργασία"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "Τοποθέτηση φώτων:"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Το όνομα της κλάσης δεν μπορεί να είναι λέξη-κλειδί"
@@ -12149,13 +12195,16 @@ msgid "Select device from the list"
 msgstr "Επιλέξτε συσκευή από την λίστα"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
+msgid "Unable to find the 'apksigner' tool."
 msgstr ""
-"Το εκτελέσιμο αρχείο ADB δεν έχει ρυθμιστεί στις Ρυθμίσεις Επεξεργαστή."
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "Το OpenJDK jarsigner δεν έχει ρυθμιστεί στις Ρυθμίσεις Επεξεργαστή."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr ""
+"Λείπει το πρότυπο δόμησης Android από το έργο. Εγκαταστήστε το από το μενού "
+"«Έργο»."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12169,13 +12218,15 @@ msgstr ""
 "Εσφαλμένη ρύθμιση αποθετηρίου κλειδιών διανομής στην διαμόρφωση εξαγωγής."
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#, fuzzy
+msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
-"Η προσαρμοσμένη δόμηση απαιτεί μια έγκυρη διαδρομή για το Android SDK στις "
-"Ρυθμίσεις Επεξεργαστή."
+"Μη έγκυρη διαδρομή Android SDK για προσαρμοσμένη δόμηση στις Ρυθμίσεις "
+"Επεξεργαστή."
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+#, fuzzy
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr ""
 "Μη έγκυρη διαδρομή Android SDK για προσαρμοσμένη δόμηση στις Ρυθμίσεις "
 "Επεξεργαστή."
@@ -12185,12 +12236,23 @@ msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
-"Λείπει το πρότυπο δόμησης Android από το έργο. Εγκαταστήστε το από το μενού "
-"«Έργο»."
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr ""
+"Μη έγκυρη διαδρομή Android SDK για προσαρμοσμένη δόμηση στις Ρυθμίσεις "
+"Επεξεργαστή."
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12660,28 +12722,32 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "Το ARVROrigin απαιτεί γονικό κόμβο ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(Ολοκλήρωση σε: %d:%02d s)"
+#, fuzzy
+msgid "Preparing geometry (%d/%d)"
+msgstr "Ανάλυση γεωμετρίας..."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "Τοποθέτηση πλεγμάτων: "
+#, fuzzy
+msgid "Preparing environment"
+msgstr "Εμφάνιση περιβάλλοντος"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "Τοποθέτηση φώτων:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "Ολοκλήρωση σχεδιαγράμματος"
+#, fuzzy
+msgid "Generating capture"
+msgstr "Δημιουργία χαρτών φωτός"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr "Φώτηση πλεγμάτων: "
+#, fuzzy
+msgid "Saving lightmaps"
+msgstr "Δημιουργία χαρτών φωτός"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Done"
+msgstr "Τέλος"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12758,6 +12824,10 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "Τοποθέτηση πλεγμάτων"
+
+#: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "Ολοκλήρωση σχεδιαγράμματος"
 
 #: scene/3d/gi_probe.cpp
 msgid ""
@@ -13019,6 +13089,10 @@ msgstr "Ειδοποίηση!"
 msgid "Please Confirm..."
 msgstr "Παρακαλώ επιβεβαιώστε..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "Απαιτείται η χρήση έγκυρης επέκτασης."
+
 #: scene/gui/graph_edit.cpp
 #, fuzzy
 msgid "Enable grid minimap."
@@ -13082,6 +13156,12 @@ msgstr ""
 "απόδοση."
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Άκυρη πηγή για προεπισκόπηση."
 
@@ -13108,6 +13188,37 @@ msgstr "Τα «varying» μπορούν να ανατεθούν μόνο στη�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
+
+#~ msgid "No"
+#~ msgstr "Όχι"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr ""
+#~ "Αυτή η σκηνή δεν έχει αποθηκευτεί. Αποθήκευση πριν από την εκτέλεση;"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr ""
+#~ "Το εκτελέσιμο αρχείο ADB δεν έχει ρυθμιστεί στις Ρυθμίσεις Επεξεργαστή."
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr "Το OpenJDK jarsigner δεν έχει ρυθμιστεί στις Ρυθμίσεις Επεξεργαστή."
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr ""
+#~ "Η προσαρμοσμένη δόμηση απαιτεί μια έγκυρη διαδρομή για το Android SDK "
+#~ "στις Ρυθμίσεις Επεξεργαστή."
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(Ολοκλήρωση σε: %d:%02d s)"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "Τοποθέτηση πλεγμάτων: "
+
+#~ msgid "Lighting Meshes: "
+#~ msgstr "Φώτηση πλεγμάτων: "
 
 #~ msgid "Search complete"
 #~ msgstr "Ολοκλήρωση αναζήτησης"
@@ -13461,9 +13572,6 @@ msgstr "Οι σταθερές δεν μπορούν να τροποποιηθο�
 
 #~ msgid "Failed to save solution."
 #~ msgstr "Απέτυχε η αποθήκευση της λύσης."
-
-#~ msgid "Done"
-#~ msgstr "Τέλος"
 
 #~ msgid "Failed to create C# project."
 #~ msgstr "Απέτυχε η δημιουργία έργου C#."

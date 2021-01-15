@@ -9,7 +9,7 @@
 # Abhay Patel <abhay111patel@gmail.com>, 2019.
 # Lakshmi-Jayakumar <lakshmi.jayakumar.tkm@gmail.com>, 2019.
 # Devashishsingh98 <devashishsingh98@gmail.com>, 2019.
-# Shirious <sad3119823@gmail.com>, 2020.
+# Shirious <sad3119823@gmail.com>, 2020, 2021.
 # Abhay Patel <Traumaticbean@protonmail.com>, 2020.
 # Bishwajeet Parhi <bishwajeet.techmaster@gmail.com>, 2020.
 # l4KKY <greenforcesave@gmail.com>, 2020.
@@ -17,8 +17,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-19 04:29+0000\n"
-"Last-Translator: l4KKY <greenforcesave@gmail.com>\n"
+"PO-Revision-Date: 2021-01-06 18:29+0000\n"
+"Last-Translator: Shirious <sad3119823@gmail.com>\n"
 "Language-Team: Hindi <https://hosted.weblate.org/projects/godot-engine/godot/"
 "hi/>\n"
 "Language: hi\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1477,7 +1477,7 @@ msgstr "औटोलोड पुनर्व्यवस्थित करे�
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "औटोलोड नहीं डाल सकते:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1944,10 +1944,6 @@ msgstr "पूर्व दर्शन:"
 msgid "File:"
 msgstr "फ़ाइल:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "मान्य एक्सटेनशन इस्तेमाल कीजिये."
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "स्रोतस्कैन कीजिये"
@@ -2303,6 +2299,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"लेआउट सेव करते वक़्त एरर आ रहा है|\n"
+"एडीटर का पाथ writeable है ये सुनिश्चित किजिये|"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2310,6 +2308,8 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"मूल एडीटर लेआउट ओवराईड हो चुका है.\n"
+"मूल लेआउट को पुन: स्थापित करने के लिये, डिलिट लेआउट पर्याय का प्रयोग करे."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
@@ -2373,6 +2373,10 @@ msgid "There is no defined scene to run."
 msgstr "चलाने के लिए कोई परिभाषित दृश्य नहीं है ।"
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "उपप्रक्रिया शुरू नहीं कर सका!"
 
@@ -2416,18 +2420,6 @@ msgstr "दृश्य को बचाने के लिए एक रूट
 msgid "Save Scene As..."
 msgstr "दृश्य के रूप में सहेजें ..."
 
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "नहीं"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "हाँ"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "इस सीन को कभी नहीं बचाया गया। दौड़ने से पहले सहेजें?"
-
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
 msgstr "यह ऑपरेशन बिना किसी दृश्य के नहीं किया जा सकता है।"
@@ -2466,6 +2458,8 @@ msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"वर्तमान सीन मे कुछ अनसेव्ड बदलाव है|\n"
+"फिर भी सीन रेलोड करे? यह क्रिया पूर्ववत नहीं की जा सकती|"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2474,6 +2468,10 @@ msgstr "क्विक रन सीन..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "छोड़ना"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr "हाँ"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -2810,6 +2808,10 @@ msgid ""
 "mobile device).\n"
 "You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
+"जब यह पर्याय सक्रिय होता है, तब यह one-click deploy एक्सयुटेबल को इस कोम्पुटर के IP "
+"को जोडने कि कोशिश करेगा ताकि चालु प्रोजेक्ट डिबग हो सके|\n"
+"यह पर्याय रिमोट डिबगींग (कोई और मशीन, आम तौर पर मोबाईल) के लिये उद्देशित है|\n"
+"इसे GDScript इसि मशीन पर डिबग करने के लिये इसे सक्रिय करने कि जरुरत नही|"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -3395,7 +3397,7 @@ msgstr "क्या आप '_run' विधि को भूल गए?"
 
 #: editor/editor_spin_slider.cpp
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
-msgstr ""
+msgstr "पूर्णांक के लिए Ctrl दबाए रखें. सटीक अंक के लिये Shift दबाए रखें."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3678,6 +3680,11 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"निम्नलिखित फ़ाइले या फ़ोल्डर दिये हुए जगह '%s' के समान है:\n"
+"\n"
+"%s\n"
+"\n"
+"क्या आप उस पर लिखना चाहते है ?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3709,7 +3716,7 @@ msgstr "खुले दृश्य"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
-msgstr ""
+msgstr "इनस्टन्स"
 
 #: editor/filesystem_dock.cpp
 msgid "Add to Favorites"
@@ -3725,11 +3732,11 @@ msgstr "निर्भरित फ़ाइलें संपादित क
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners..."
-msgstr ""
+msgstr "ओनर्स देखे..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
-msgstr ""
+msgstr "मे ले जाएँ..."
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -3737,7 +3744,7 @@ msgstr "नया दृश्य..."
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "New Script..."
-msgstr ""
+msgstr "नई स्क्रिप्ट..."
 
 #: editor/filesystem_dock.cpp
 msgid "New Resource..."
@@ -3746,12 +3753,12 @@ msgstr "नया संसाधन..."
 #: editor/filesystem_dock.cpp editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Expand All"
-msgstr ""
+msgstr "सभी बढाय"
 
 #: editor/filesystem_dock.cpp editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Collapse All"
-msgstr ""
+msgstr "सभी ढहाय"
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicate..."
@@ -3764,23 +3771,23 @@ msgstr "औटोलोड हिलाइये"
 
 #: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Rename..."
-msgstr ""
+msgstr "नाम बदली..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
-msgstr ""
+msgstr "पिछला फ़ोल्डर/फ़ाइल"
 
 #: editor/filesystem_dock.cpp
 msgid "Next Folder/File"
-msgstr ""
+msgstr "अ‍गला फ़ोल्डर/फ़ाइल"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
-msgstr ""
+msgstr "फाइलसिस्टेम पुन:स्कैन करे"
 
 #: editor/filesystem_dock.cpp
 msgid "Toggle Split Mode"
-msgstr ""
+msgstr "स्प्लिट मोड टॉगल कीजिये"
 
 #: editor/filesystem_dock.cpp
 msgid "Search files"
@@ -3791,76 +3798,79 @@ msgid ""
 "Scanning Files,\n"
 "Please Wait..."
 msgstr ""
+"फ़ाइले स्कैन कर रहा है,\n"
+"कृपया रुकिये..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
-msgstr ""
+msgstr "हिलाइये"
 
 #: editor/filesystem_dock.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/project_manager.cpp editor/rename_dialog.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Rename"
-msgstr ""
+msgstr "नाम बदली"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
-msgstr ""
+msgstr "मौजूदा के ऊपर लिखे"
 
 #: editor/filesystem_dock.cpp
 msgid "Create Scene"
-msgstr "दृश्य बनाएं"
+msgstr "सीन बनाएं"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
-msgstr ""
+msgstr "स्क्रिप्ट बनाइये"
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Find in Files"
-msgstr ""
+msgstr "फ़ाइलों मे तलाशिये"
 
 #: editor/find_in_files.cpp
 msgid "Find:"
-msgstr ""
+msgstr "तलाशिये:"
 
 #: editor/find_in_files.cpp
 msgid "Folder:"
-msgstr ""
+msgstr "फ़ोल्डर:"
 
 #: editor/find_in_files.cpp
 msgid "Filters:"
-msgstr ""
+msgstr "फिल्टर:"
 
 #: editor/find_in_files.cpp
 msgid ""
 "Include the files with the following extensions. Add or remove them in "
 "ProjectSettings."
 msgstr ""
+"निम्नलिखित एक्सटेंशन कि फ़ाइले शामिल कि गई है. इन्हे प्रोजेक्ट सेटिंग्स मे डालिये या निकालिये."
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find..."
-msgstr ""
+msgstr "तलाशिये..."
 
 #: editor/find_in_files.cpp editor/plugins/script_text_editor.cpp
 msgid "Replace..."
-msgstr ""
+msgstr "बदली करे..."
 
 #: editor/find_in_files.cpp editor/progress_dialog.cpp scene/gui/dialogs.cpp
 msgid "Cancel"
-msgstr ""
+msgstr "रद्द करें"
 
 #: editor/find_in_files.cpp
 msgid "Find: "
-msgstr ""
+msgstr "तलाशिये: "
 
 #: editor/find_in_files.cpp
 msgid "Replace: "
-msgstr ""
+msgstr "बदली करे: "
 
 #: editor/find_in_files.cpp
 msgid "Replace all (no undo)"
-msgstr ""
+msgstr "सभी बदली करे (इसे अंडू नहीं किया जा सकता है)"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
@@ -3883,15 +3893,15 @@ msgstr "%d मिल गया।"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
-msgstr ""
+msgstr "ग्रुप मे ऐड करे"
 
 #: editor/groups_editor.cpp
 msgid "Remove from Group"
-msgstr ""
+msgstr "ग्रुप मे से निकालिये"
 
 #: editor/groups_editor.cpp
 msgid "Group name already exists."
-msgstr ""
+msgstr "ग्रुप इस नाम से पहले से मौजूद."
 
 #: editor/groups_editor.cpp
 msgid "Invalid group name."
@@ -3907,24 +3917,24 @@ msgstr "ग्रुप डिलीट करें"
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
-msgstr ""
+msgstr "अनेक ग्रुप"
 
 #: editor/groups_editor.cpp
 msgid "Nodes Not in Group"
-msgstr ""
+msgstr "नोड ग्रुप मे नहीं"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
 #: editor/scene_tree_editor.cpp
 msgid "Filter nodes"
-msgstr ""
+msgstr "नोड फिल्टर किजिये"
 
 #: editor/groups_editor.cpp
 msgid "Nodes in Group"
-msgstr ""
+msgstr "ग्रुप मे से नोड"
 
 #: editor/groups_editor.cpp
 msgid "Empty groups will be automatically removed."
-msgstr ""
+msgstr "खाली ग्रुप अपनेआप निकाले जायेंगे."
 
 #: editor/groups_editor.cpp
 msgid "Group Editor"
@@ -3932,72 +3942,72 @@ msgstr "समूह संपादक"
 
 #: editor/groups_editor.cpp
 msgid "Manage Groups"
-msgstr ""
+msgstr "ग्रुप व्यवस्थापन कीजिये"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
-msgstr ""
+msgstr "अकेले सीन कि तरह इंपोर्ट किजिये"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Animations"
-msgstr ""
+msgstr "अलग अलग अ‍ॅनिमेशन के साथ इंपोर्ट किजिये"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials"
-msgstr ""
+msgstr "अलग अलग मटेरियल के साथ इंपोर्ट किजिये"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects"
-msgstr ""
+msgstr "अलग अलग ओब्जेक्ट के साथ इंपोर्ट किजिये"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials"
-msgstr ""
+msgstr "अलग अलग ओब्जेक्ट+मटेरियल के साथ इंपोर्ट किजिये"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Animations"
-msgstr ""
+msgstr "अलग अलग ओब्जेक्ट+अ‍ॅनिमेशन के साथ इंपोर्ट किजिये"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials+Animations"
-msgstr ""
+msgstr "अलग अलग मटेरियल+अ‍ॅनिमेशन के साथ इंपोर्ट किजिये"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials+Animations"
-msgstr ""
+msgstr "अलग अलग ओब्जेक्ट+मटेरियल+अ‍ॅनिमेशन के साथ इंपोर्ट किजिये"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
-msgstr ""
+msgstr "अनेक सीन के रुप इंपोर्ट किजिये"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes+Materials"
-msgstr ""
+msgstr "अनेक सीन+मटेरियल के रुप इंपोर्ट किजिये"
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Import Scene"
-msgstr ""
+msgstr "सीन इंपोर्ट किजिये"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene..."
-msgstr ""
+msgstr "सीन इंपोर्ट कर रहा है..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
-msgstr ""
+msgstr "लाईटमॅप बना रहा है"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating for Mesh: "
-msgstr ""
+msgstr "मेश के लिये बना रहा है: "
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
-msgstr ""
+msgstr "कस्टम स्क्रिप्ट चला रहा है..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
-msgstr ""
+msgstr "इंपोर्ट-पश्चात कि स्क्रिप्ट नहीं लोड कर पाय:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Invalid/broken script for post-import (check console):"
@@ -5097,8 +5107,7 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -5112,8 +5121,28 @@ msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "टेम्पलेट फ़ाइल का चयन करें"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6175,6 +6204,11 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "सदस्यता बनाएं"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr ""
@@ -6233,10 +6267,6 @@ msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
-msgstr ""
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -11342,6 +11372,36 @@ msgstr ""
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Generate buffers"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "निर्देशों"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Indirect lighting"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Post processing"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "लाईटमॅप बना रहा है"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr ""
@@ -11851,11 +11911,13 @@ msgid "Select device from the list"
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
+msgid "Unable to find the 'apksigner' tool."
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -11867,11 +11929,11 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
+msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -11879,9 +11941,19 @@ msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -12279,27 +12351,29 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
+msgid "Finding meshes and lights"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
+msgid "Preparing geometry (%d/%d)"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
+msgid "Preparing environment"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr ""
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr ""
+#, fuzzy
+msgid "Generating capture"
+msgstr "लाईटमॅप बना रहा है"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
+#, fuzzy
+msgid "Saving lightmaps"
+msgstr "लाईटमॅप बना रहा है"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Done"
 msgstr ""
 
 #: scene/3d/collision_object.cpp
@@ -12356,6 +12430,10 @@ msgstr ""
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
+msgstr ""
+
+#: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
 msgstr ""
 
 #: scene/3d/gi_probe.cpp
@@ -12574,6 +12652,10 @@ msgstr ""
 msgid "Please Confirm..."
 msgstr ""
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "मान्य एक्सटेनशन इस्तेमाल कीजिये."
+
 #: scene/gui/graph_edit.cpp
 msgid "Enable grid minimap."
 msgstr ""
@@ -12619,6 +12701,12 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for preview."
 msgstr "गलत फॉण्ट का आकार |"
@@ -12648,6 +12736,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "No"
+#~ msgstr "नहीं"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "इस सीन को कभी नहीं बचाया गया। दौड़ने से पहले सहेजें?"
 
 #~ msgid "Error trying to save layout!"
 #~ msgstr "लेआउट को बचाने की कोशिश कर रहा त्रुटि!"

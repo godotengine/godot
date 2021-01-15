@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-14 11:03+0000\n"
+"PO-Revision-Date: 2020-12-29 21:52+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1949,10 +1949,6 @@ msgstr "Esikatselu:"
 msgid "File:"
 msgstr "Tiedosto:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "Käytä sopivaa tiedostopäätettä."
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "Selaa lähdetiedostoja"
@@ -2387,6 +2383,10 @@ msgid "There is no defined scene to run."
 msgstr "Suoritettavaa skeneä ei ole määritetty."
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Aliprosessia ei voitu käynnistää!"
 
@@ -2429,18 +2429,6 @@ msgstr "Skenen tallentaminen edellyttää, että sillä on juurisolmu."
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "Tallenna skene nimellä..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "Ei"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "Kyllä"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "Tätä skeneä ei ole koskaan tallennettu. Tallenna ennen suorittamista?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2490,6 +2478,10 @@ msgstr "Skenen pikakäynnistys..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "Lopeta"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr "Kyllä"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -3906,19 +3898,16 @@ msgid "Searching..."
 msgstr "Haetaan..."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d match in %d file."
-msgstr "%d osumaa."
+msgstr "%d osuma %d tiedostossa."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d file."
-msgstr "%d osumaa."
+msgstr "%d osumaa %d tiedostossa."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d files."
-msgstr "%d osumaa."
+msgstr "%d osumaa %d tiedostossa."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -5158,10 +5147,10 @@ msgid "Assets ZIP File"
 msgstr "Assettien zip-tiedosto"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 "Lightmap-kuvien tallennuspolun määrittäminen ei onnistu.\n"
 "Tallenna skenesi (jotta kuvat tallentuisivat samaan hakemistoon), tai "
@@ -5182,8 +5171,28 @@ msgstr ""
 "kirjoituskelpoinen."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Kehitä Lightmapit"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "Valitse mallitiedosto"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6279,6 +6288,11 @@ msgstr ""
 "Piste voidaan asettaa ainoastaan ParticlesMaterial käsittelyn materiaaliin"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "Muunna CPUPartikkeleiksi"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Luontiaika (s):"
@@ -6338,10 +6352,6 @@ msgstr "Luodaan AABB"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "Kartoita näkyvä alue"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "Luo AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -11554,6 +11564,39 @@ msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
 "Anna MeshLibrary resurssi tälle GridMap solmulle käyttääksesi sen meshejä."
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Generate buffers"
+msgstr "Luo AABB"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "Suunnat"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Indirect lighting"
+msgstr "Sisennä oikealle"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Post processing"
+msgstr "Jälkikäsittely"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "Piirretään valoja:"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Luokan nimi ei voi olla varattu avainsana"
@@ -12066,12 +12109,17 @@ msgid "Select device from the list"
 msgstr "Valitse laite listasta"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "ADB käynnistystiedostoa ei ole määritetty editorin asetuksissa."
+#, fuzzy
+msgid "Unable to find the 'apksigner' tool."
+msgstr "zipalign työkalua ei löydy."
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "OpenJDK jarsigner ei ole määritettynä editorin asetuksissa."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr ""
+"Android-käännösmallia ei ole asennettu projektiin. Asenna se Projekti-"
+"valikosta."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12083,13 +12131,15 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr "Release keystore on konfiguroitu väärin viennin esiasetuksissa."
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#, fuzzy
+msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
-"Mukautettu käännös edellyttää kelvollista Android SDK -polkua editorin "
+"Virheellinen Android SDK -polku mukautettu käännöstä varten editorin "
 "asetuksissa."
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+#, fuzzy
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr ""
 "Virheellinen Android SDK -polku mukautettu käännöstä varten editorin "
 "asetuksissa."
@@ -12099,12 +12149,23 @@ msgid "Missing 'platform-tools' directory!"
 msgstr "'platform-tools' hakemisto puuttuu!"
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
-"Android-käännösmallia ei ole asennettu projektiin. Asenna se Projekti-"
-"valikosta."
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr ""
+"Virheellinen Android SDK -polku mukautettu käännöstä varten editorin "
+"asetuksissa."
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr "'build-tools' hakemisto puuttuu!"
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12577,28 +12638,32 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin solmu tarvitsee ARVRCamera alisolmun."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(Aikaa jäljellä: %d:%02d s)"
+#, fuzzy
+msgid "Preparing geometry (%d/%d)"
+msgstr "Jäsentää geometriaa…"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "Piirretään meshejä: "
+#, fuzzy
+msgid "Preparing environment"
+msgstr "Näytä ympäristö"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "Piirretään valoja:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "Viimeistellään piirto"
+#, fuzzy
+msgid "Generating capture"
+msgstr "Luodaan Lightmappeja"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr "Valaistaan meshejä: "
+#, fuzzy
+msgid "Saving lightmaps"
+msgstr "Luodaan Lightmappeja"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Done"
+msgstr "Valmis"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12672,6 +12737,10 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "Piirretään meshejä"
+
+#: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "Viimeistellään piirto"
 
 #: scene/3d/gi_probe.cpp
 msgid ""
@@ -12932,10 +13001,13 @@ msgstr "Huomio!"
 msgid "Please Confirm..."
 msgstr "Ole hyvä ja vahvista..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "Käytä sopivaa tiedostopäätettä."
+
 #: scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Enable grid minimap."
-msgstr "Käytä tarttumista"
+msgstr "Käytä ruudukon pienoiskarttaa."
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -12991,6 +13063,12 @@ msgstr ""
 "Näyttöruudun koko on oltava suurempi kuin 0, jotta mitään renderöidään."
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Virheellinen lähde esikatselulle."
 
@@ -13018,6 +13096,36 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
 
+#~ msgid "No"
+#~ msgstr "Ei"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr ""
+#~ "Tätä skeneä ei ole koskaan tallennettu. Tallenna ennen suorittamista?"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "ADB käynnistystiedostoa ei ole määritetty editorin asetuksissa."
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr "OpenJDK jarsigner ei ole määritettynä editorin asetuksissa."
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr ""
+#~ "Mukautettu käännös edellyttää kelvollista Android SDK -polkua editorin "
+#~ "asetuksissa."
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(Aikaa jäljellä: %d:%02d s)"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "Piirretään meshejä: "
+
+#~ msgid "Lighting Meshes: "
+#~ msgstr "Valaistaan meshejä: "
+
 #~ msgid "Search complete"
 #~ msgstr "Haku valmis"
 
@@ -13029,12 +13137,6 @@ msgstr "Vakioita ei voi muokata."
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "Tästä sijainnista löytyy jo samanniminen tiedosto tai kansio."
-
-#~ msgid "Missing 'build-tools' directory!"
-#~ msgstr "'build-tools' hakemisto puuttuu!"
-
-#~ msgid "Unable to find the zipalign tool."
-#~ msgstr "zipalign työkalua ei löydy."
 
 #~ msgid "Aligning APK..."
 #~ msgstr "Tasataan APK:ta..."
@@ -13376,9 +13478,6 @@ msgstr "Vakioita ei voi muokata."
 
 #~ msgid "Failed to save solution."
 #~ msgstr "Ratkaisun tallennus epäonnistui."
-
-#~ msgid "Done"
-#~ msgstr "Valmis"
 
 #~ msgid "Failed to create C# project."
 #~ msgstr "C# projektin luonti epäonnistui."

@@ -2130,10 +2130,6 @@ msgstr "Преглед:"
 msgid "File:"
 msgstr "Датотека:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "Мора се користити важећа екстензија."
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "Скенирање извора"
@@ -2609,6 +2605,10 @@ msgid "There is no defined scene to run."
 msgstr "Не постоји дефинисана сцена за покретање."
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Не могу покренути подпроцес!"
 
@@ -2654,18 +2654,6 @@ msgstr "За памћене сцене неопходан је корени но
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "Сачувај сцену као..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "Не"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "Да"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "Ова сцена није сачувана. Сачувај пре покретања?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2713,6 +2701,10 @@ msgstr "Брзо покретање сцене..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "Изађи"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr "Да"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -5641,8 +5633,7 @@ msgstr "Ресурси ЗИП датотека"
 #, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 "Неуспело одређивање путање памћења за слике МапеСенчења.\n"
 "Упамти сцену (за слике да буду сачуване у истом директоријуму), или одабери "
@@ -5664,9 +5655,29 @@ msgstr ""
 "Неуспешно креирање слике МапеСенчења, провери да ли могуће уписивање путање."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 #, fuzzy
 msgid "Bake Lightmaps"
 msgstr "Изпеци МапеСенчења"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "Одабери шаблонску датотеку"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6878,6 +6889,11 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "Тачка се само може поставити у ParticlesMaterial процесни материјал"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "Претвори у CPU честице"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Време генерисања (сек.):"
@@ -6942,10 +6958,6 @@ msgstr "Генерисање осног поравнаног граничнио�
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "Генериши осно поравнан гранични оквир (AABB) видљивости"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "Генериши осно поравнан гранични оквир (AABB)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -13029,6 +13041,39 @@ msgstr "Пробери мреже"
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "Дај БиблиотециМрежа ресурс ове МапеМреже да користи њене мреже."
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Generate buffers"
+msgstr "Генериши осно поравнан гранични оквир (AABB)"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "Смерови"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Indirect lighting"
+msgstr "Увучи десно"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Post processing"
+msgstr "Након-Обраде"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "Скована Светла:"
+
 #: modules/mono/csharp_script.cpp
 #, fuzzy
 msgid "Class name can't be a reserved keyword"
@@ -13593,14 +13638,17 @@ msgid "Select device from the list"
 msgstr "Одабери уређај са листе"
 
 #: platform/android/export/export.cpp
-#, fuzzy
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "ADB извршна датотека није подешена у Подешавањима Уредника."
+msgid "Unable to find the 'apksigner' tool."
+msgstr ""
 
 #: platform/android/export/export.cpp
 #, fuzzy
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "OpenJDK jar потписник није подешен у Подешавањима Уредника."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr ""
+"Android нацрт изградње није инсталиран у пројекат. Инсталирај га из Пројекат "
+"менија."
 
 #: platform/android/export/export.cpp
 #, fuzzy
@@ -13618,14 +13666,13 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 #, fuzzy
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
+msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
-"Произвољна изградња захтева важећу путању до Android SDK у Подешавањима "
-"Уредника."
+"Неважећа Android SDK путања за произвољну изградњу у Подешавањима Уредника."
 
 #: platform/android/export/export.cpp
 #, fuzzy
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr ""
 "Неважећа Android SDK путања за произвољну изградњу у Подешавањима Уредника."
 
@@ -13634,13 +13681,22 @@ msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
 #: platform/android/export/export.cpp
-#, fuzzy
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
-"Android нацрт изградње није инсталиран у пројекат. Инсталирај га из Пројекат "
-"менија."
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr ""
+"Неважећа Android SDK путања за произвољну изградњу у Подешавањима Уредника."
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr ""
 
 #: platform/android/export/export.cpp
 #, fuzzy
@@ -14149,34 +14205,33 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin захтева ARVRCamera дете чвор."
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
-msgid "(Time Left: %d:%02d s)"
-msgstr "(Време преостало: %d:%02d с)"
+msgid "Preparing geometry (%d/%d)"
+msgstr "Анализирање геометрије..."
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
-msgid "Plotting Meshes: "
-msgstr "Сковане Мреже:"
+msgid "Preparing environment"
+msgstr "Прикажи околину"
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
-msgid "Plotting Lights:"
-msgstr "Скована Светла:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-#, fuzzy
-msgid "Finishing Plot"
-msgstr "Завршни Ков"
+msgid "Generating capture"
+msgstr "Генерисање осног поравнаног граничниог оквира (AABB)"
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
-msgid "Lighting Meshes: "
-msgstr "Светлосне Мреже:"
+msgid "Saving lightmaps"
+msgstr "Генерисање осног поравнаног граничниог оквира (AABB)"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Done"
+msgstr "Готово!"
 
 #: scene/3d/collision_object.cpp
 #, fuzzy
@@ -14260,6 +14315,11 @@ msgstr ""
 #, fuzzy
 msgid "Plotting Meshes"
 msgstr "Сковане Мреже"
+
+#: scene/3d/gi_probe.cpp
+#, fuzzy
+msgid "Finishing Plot"
+msgstr "Завршни Ков"
 
 #: scene/3d/gi_probe.cpp
 #, fuzzy
@@ -14547,6 +14607,10 @@ msgstr "Узбуна!"
 msgid "Please Confirm..."
 msgstr "Молимо Потврди..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "Мора се користити важећа екстензија."
+
 #: scene/gui/graph_edit.cpp
 #, fuzzy
 msgid "Enable grid minimap."
@@ -14613,6 +14677,12 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr "Величина Viewport-а мора бити већа од 0 да би се нешто исцртало."
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for preview."
 msgstr "Неважећи извор за преглед."
@@ -14646,6 +14716,42 @@ msgstr "Варијације могу само бити одређене у фу
 #, fuzzy
 msgid "Constants cannot be modified."
 msgstr "Константе није могуће мењати."
+
+#~ msgid "No"
+#~ msgstr "Не"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "Ова сцена није сачувана. Сачувај пре покретања?"
+
+#, fuzzy
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "ADB извршна датотека није подешена у Подешавањима Уредника."
+
+#, fuzzy
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr "OpenJDK jar потписник није подешен у Подешавањима Уредника."
+
+#, fuzzy
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr ""
+#~ "Произвољна изградња захтева важећу путању до Android SDK у Подешавањима "
+#~ "Уредника."
+
+#, fuzzy
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#, fuzzy
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(Време преостало: %d:%02d с)"
+
+#, fuzzy
+#~ msgid "Plotting Meshes: "
+#~ msgstr "Сковане Мреже:"
+
+#, fuzzy
+#~ msgid "Lighting Meshes: "
+#~ msgstr "Светлосне Мреже:"
 
 #, fuzzy
 #~ msgid "Search complete"
@@ -14921,10 +15027,6 @@ msgstr "Константе није могуће мењати."
 #, fuzzy
 #~ msgid "Failed to save solution."
 #~ msgstr "Грешка при учитавању ресурса."
-
-#, fuzzy
-#~ msgid "Done"
-#~ msgstr "Готово!"
 
 #, fuzzy
 #~ msgid "Failed to create C# project."

@@ -1956,10 +1956,6 @@ msgstr "미리 보기:"
 msgid "File:"
 msgstr "파일:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "올바른 확장자를 사용해야 합니다."
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "소스 스캔중"
@@ -2387,6 +2383,10 @@ msgid "There is no defined scene to run."
 msgstr "실행할 씬이 설정되지 않았습니다."
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "하위 프로세스를 시작할 수 없습니다!"
 
@@ -2429,18 +2429,6 @@ msgstr "씬을 저장하려면 루트 노드가 필요합니다."
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "씬을 다른 이름으로 저장..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "아니오"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "예"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "이 씬은 아직 저장하지 않았습니다. 실행하기 전에 저장할까요?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2489,6 +2477,10 @@ msgstr "씬 빠른 실행..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "종료"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr "예"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -5138,10 +5130,10 @@ msgid "Assets ZIP File"
 msgstr "애셋 ZIP 파일"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 "라이트맵 이미지의 저장 경로를 파악할 수 없습니다.\n"
 "(같은 경로에 이미지를 저장할 수 있도록) 씬을 저장하거나, BakedLightmap 속성에"
@@ -5160,8 +5152,28 @@ msgid "Failed creating lightmap images, make sure path is writable."
 msgstr "라이트맵 이미지 생성 실패. 작성 가능한 경로인지 확인해주세요."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "라이트맵 굽기"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "템플릿 파일 선택"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6252,6 +6264,11 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "ParticlesMaterial 프로세스 머티리얼 안에만 점을 설정할 수 있습니다"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "CPU파티클로 변환"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "생성 시간 (초):"
@@ -6311,10 +6328,6 @@ msgstr "AABB 만드는 중"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "가시성 AABB 만들기"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "AABB 만들기"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -11488,6 +11501,39 @@ msgstr "메시 필터"
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "메시를 사용하려면 이 GridMap에 MeshLibrary 리소스를 주세요."
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Generate buffers"
+msgstr "AABB 만들기"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "방향"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Indirect lighting"
+msgstr "들여쓰기"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Post processing"
+msgstr "후처리"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "구분하는 조명:"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "클래스 이름은 키워드가 될 수 없습니다"
@@ -11999,12 +12045,16 @@ msgid "Select device from the list"
 msgstr "목록에서 기기 선택"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "ADB 실행 파일을 편집기 설정에서 설정하지 않았습니다."
+msgid "Unable to find the 'apksigner' tool."
+msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "OpenJDK jarsigner를 편집기 설정에서 설정하지 않았습니다."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr ""
+"프로젝트에 안드로이드 빌드 템플릿을 설치하지 않았습니다. 프로젝트 메뉴에서 설"
+"치하세요."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12015,11 +12065,13 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr "내보내기 프리셋에 배포 keystorke가 잘못 설정되어 있습니다."
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
-msgstr "맞춤 빌드에는 편집기 설정에서 올바른 안드로이드 SDK 경로가 필요합니다."
+#, fuzzy
+msgid "A valid Android SDK path is required in Editor Settings."
+msgstr "편집기 설정에서 맞춤 빌드에 잘못된 안드로이드 SDK 경로입니다."
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+#, fuzzy
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr "편집기 설정에서 맞춤 빌드에 잘못된 안드로이드 SDK 경로입니다."
 
 #: platform/android/export/export.cpp
@@ -12027,12 +12079,21 @@ msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
-"프로젝트에 안드로이드 빌드 템플릿을 설치하지 않았습니다. 프로젝트 메뉴에서 설"
-"치하세요."
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr "편집기 설정에서 맞춤 빌드에 잘못된 안드로이드 SDK 경로입니다."
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12481,28 +12542,32 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin은 자식으로 ARVRCamera 노드가 필요합니다."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(남은 시간: %d:%02d 초)"
+#, fuzzy
+msgid "Preparing geometry (%d/%d)"
+msgstr "형태 분석 중..."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "구분하는 메시: "
+#, fuzzy
+msgid "Preparing environment"
+msgstr "환경 보기"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "구분하는 조명:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "구분 끝남"
+#, fuzzy
+msgid "Generating capture"
+msgstr "라이트맵 생성 중"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr "조명 메시: "
+#, fuzzy
+msgid "Saving lightmaps"
+msgstr "라이트맵 생성 중"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Done"
+msgstr "완료"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12576,6 +12641,10 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "메시 구분"
+
+#: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "구분 끝남"
 
 #: scene/3d/gi_probe.cpp
 msgid ""
@@ -12830,6 +12899,10 @@ msgstr "경고!"
 msgid "Please Confirm..."
 msgstr "확인해주세요..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "올바른 확장자를 사용해야 합니다."
+
 #: scene/gui/graph_edit.cpp
 #, fuzzy
 msgid "Enable grid minimap."
@@ -12887,6 +12960,12 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr "무엇이든 렌더링하려면 뷰포트 크기가 0보다 커야 합니다."
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "미리 보기에 잘못된 소스."
 
@@ -12913,6 +12992,34 @@ msgstr "Varying은 꼭짓점 함수에만 지정할 수 있습니다."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없습니다."
+
+#~ msgid "No"
+#~ msgstr "아니오"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "이 씬은 아직 저장하지 않았습니다. 실행하기 전에 저장할까요?"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "ADB 실행 파일을 편집기 설정에서 설정하지 않았습니다."
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr "OpenJDK jarsigner를 편집기 설정에서 설정하지 않았습니다."
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr ""
+#~ "맞춤 빌드에는 편집기 설정에서 올바른 안드로이드 SDK 경로가 필요합니다."
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(남은 시간: %d:%02d 초)"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "구분하는 메시: "
+
+#~ msgid "Lighting Meshes: "
+#~ msgstr "조명 메시: "
 
 #~ msgid "Search complete"
 #~ msgstr "검색 완료"
@@ -13252,9 +13359,6 @@ msgstr "상수는 수정할 수 없습니다."
 
 #~ msgid "Failed to save solution."
 #~ msgstr "솔루션 저장 실패."
-
-#~ msgid "Done"
-#~ msgstr "완료"
 
 #~ msgid "Failed to create C# project."
 #~ msgstr "C# 프로젝트 생성 실패."

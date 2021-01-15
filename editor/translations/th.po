@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-14 11:03+0000\n"
-"Last-Translator: Kongfa Warorot <gongpha@hotmail.com>\n"
+"PO-Revision-Date: 2020-12-31 07:09+0000\n"
+"Last-Translator: Thanachart Monpassorn <nunf_2539@hotmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1928,10 +1928,6 @@ msgstr "ตัวอย่าง:"
 msgid "File:"
 msgstr "ไฟล์:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "นามสกุลไฟล์ไม่ถูกต้อง"
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "สแกนต้นฉบับ"
@@ -2350,6 +2346,10 @@ msgid "There is no defined scene to run."
 msgstr "ยังไม่ได้เลือกฉากที่จะเล่น"
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "ไม่สามารถเริ่มขั้นตอนย่อย!"
 
@@ -2392,18 +2392,6 @@ msgstr "โหนดแม่จำเป็นต้องทำการบั
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "บันทึกฉากเป็น..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "ไม่"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "ใช่"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "ฉากนี้ยังไม่ได้บันทึก บันทึกก่อนเริ่ม?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2452,6 +2440,10 @@ msgstr "เริ่มฉากด่วน..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "ออก"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr "ใช่"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -3838,19 +3830,16 @@ msgid "Searching..."
 msgstr "กำลังค้นหา..."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d match in %d file."
-msgstr "%d ตรงกัน"
+msgstr "%d ตรงกับไฟล์ %d"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d file."
-msgstr "%d ตรงกัน"
+msgstr "%d ตรงกับไฟล์ %d"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d files."
-msgstr "%d ตรงกัน"
+msgstr "%d ตรงกับไฟล์ %d"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -5074,10 +5063,10 @@ msgid "Assets ZIP File"
 msgstr "ทรัพยากรไฟล์ ZIP"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 "ไม่สามารถเลือกตำแหน่งที่จะบันทึกภาพ lightmap\n"
 "กรุณาบันทึกฉาก (เพื่อบันทึกภาพในโฟลเดอร์เดียวกัน) หรือระบุตำแหน่งในคุณสมบัติของ BakedLightmap"
@@ -5094,8 +5083,28 @@ msgid "Failed creating lightmap images, make sure path is writable."
 msgstr "ผิดพลาดขณะสร้างภาพ lightmap กรุณาตรวจสอบว่าสามารถเขียนไฟล์ในตำแหน่งที่บันทึกได้"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "สร้าง Lightmaps"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "เลือกไฟล์เทมเพลต"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6175,6 +6184,11 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "สามารถกำหนดจุดให้แก่ ParticlesMaterial เท่านั้น"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "แปลงเป็น CPUParticles"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "เวลาในการสร้าง (วินาที):"
@@ -6234,10 +6248,6 @@ msgstr "กำลังสร้าง AABB"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "สร้างการมองเห็น AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "สร้าง AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -11370,6 +11380,39 @@ msgstr "ตัวกรอง mesh"
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "มอบทรัพยากร MeshLibrary ให้กับ GridMap นี้เพื่อใช้ mesh"
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Generate buffers"
+msgstr "สร้าง AABB"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "ทิศทาง"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Indirect lighting"
+msgstr "ย่อหน้าขวา"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Post processing"
+msgstr "หลังประมวลผล"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "วางแนวแสง:"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "ชื่อคลาสไม่สามารถมีคีย์เวิร์ดได้"
@@ -11868,12 +11911,15 @@ msgid "Select device from the list"
 msgstr "เลือกอุปกรณ์จากรายชื่อ"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "ADB executable ยังไม่ได้กำหนดค่าในตั้งค่าเอดิเตอร์"
+#, fuzzy
+msgid "Unable to find the 'apksigner' tool."
+msgstr "ไม่สามารถหา zipalign tool"
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "OpenJDK jarsigner ยังไม่ได้กำหนดค่าในตั้งค่าเอดิเตอร์"
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr "เทมเพลตการสร้างสำหรับแอนดรอยด์ไม่ถูกติดตั้ง สามารถติดตั้งจากเมนูโปรเจกต์"
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -11884,11 +11930,13 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr "Release keystore กำหนดค่าไว้อย่างไม่ถูกต้องในพรีเซ็ตสำหรับการส่งออก"
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
-msgstr "การสร้างแบบกำหนดเองต้องมีที่อยู่ Android SDK ในการตั้งค่าเอดิเตอร์"
+#, fuzzy
+msgid "A valid Android SDK path is required in Editor Settings."
+msgstr "ที่อยู่ Android SDK ผิดพลาดสำหรับการสร้างแบบกำหนดเองในการตั้งค่าเอดิเตอร์"
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+#, fuzzy
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr "ที่อยู่ Android SDK ผิดพลาดสำหรับการสร้างแบบกำหนดเองในการตั้งค่าเอดิเตอร์"
 
 #: platform/android/export/export.cpp
@@ -11896,10 +11944,21 @@ msgid "Missing 'platform-tools' directory!"
 msgstr "ไดเร็กทอรี 'platform-tools' หายไป!"
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
-msgstr "เทมเพลตการสร้างสำหรับแอนดรอยด์ไม่ถูกติดตั้ง สามารถติดตั้งจากเมนูโปรเจกต์"
+msgid "Unable to find Android SDK platform-tools' adb command."
+msgstr ""
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr "ที่อยู่ Android SDK ผิดพลาดสำหรับการสร้างแบบกำหนดเองในการตั้งค่าเอดิเตอร์"
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr "ไดเร็กทอรี 'build-tools' หายไป!"
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12331,28 +12390,32 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin จำเป็นต้องมี ARVRCamera เป็นโหนดลูก"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(เหลืออีก: %d:%02d วิ)"
+#, fuzzy
+msgid "Preparing geometry (%d/%d)"
+msgstr "วิเคราะห์พื้นผิว..."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "วางแนว meshes: "
+#, fuzzy
+msgid "Preparing environment"
+msgstr "แสดงสภาพแวดล้อม"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "วางแนวแสง:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "เสร็จสิ้นการวางแนว"
+#, fuzzy
+msgid "Generating capture"
+msgstr "กำลังสร้าง Lightmaps"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr "ส่องแสงบนพื้นผิว: "
+#, fuzzy
+msgid "Saving lightmaps"
+msgstr "กำลังสร้าง Lightmaps"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Done"
+msgstr "เสร็จสิ้น"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12417,6 +12480,10 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "วางแนว meshes"
+
+#: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "เสร็จสิ้นการวางแนว"
 
 #: scene/3d/gi_probe.cpp
 msgid ""
@@ -12660,10 +12727,13 @@ msgstr "แจ้งเตือน!"
 msgid "Please Confirm..."
 msgstr "กรุณายืนยัน..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "นามสกุลไฟล์ไม่ถูกต้อง"
+
 #: scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Enable grid minimap."
-msgstr "จำกัดการเคลื่อนย้าย"
+msgstr "เปิดเส้นกริดมินิแมพ"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -12715,6 +12785,12 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr "ขนาดวิวพอร์ตจะต้องมากกว่า 0 เพื่อที่จะเรนเดอร์ได้"
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "แหล่งที่มาไม่ถูกต้องสำหรับการแสดงตัวอย่าง"
 
@@ -12742,6 +12818,33 @@ msgstr "Varyings สามารถกำหนดในังก์ชันเ
 msgid "Constants cannot be modified."
 msgstr "ค่าคงที่ไม่สามารถแก้ไขได้"
 
+#~ msgid "No"
+#~ msgstr "ไม่"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "ฉากนี้ยังไม่ได้บันทึก บันทึกก่อนเริ่ม?"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "ADB executable ยังไม่ได้กำหนดค่าในตั้งค่าเอดิเตอร์"
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr "OpenJDK jarsigner ยังไม่ได้กำหนดค่าในตั้งค่าเอดิเตอร์"
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr "การสร้างแบบกำหนดเองต้องมีที่อยู่ Android SDK ในการตั้งค่าเอดิเตอร์"
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(เหลืออีก: %d:%02d วิ)"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "วางแนว meshes: "
+
+#~ msgid "Lighting Meshes: "
+#~ msgstr "ส่องแสงบนพื้นผิว: "
+
 #~ msgid "Search complete"
 #~ msgstr "ค้นหาสำเร็จ"
 
@@ -12753,12 +12856,6 @@ msgstr "ค่าคงที่ไม่สามารถแก้ไขได
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "มีไฟล์หรือโฟลเดอร์ชื่อเดียวกันอยู่แล้ว"
-
-#~ msgid "Missing 'build-tools' directory!"
-#~ msgstr "ไดเร็กทอรี 'build-tools' หายไป!"
-
-#~ msgid "Unable to find the zipalign tool."
-#~ msgstr "ไม่สามารถหา zipalign tool"
 
 #~ msgid "Aligning APK..."
 #~ msgstr "จัดเรียง APK..."
@@ -13076,9 +13173,6 @@ msgstr "ค่าคงที่ไม่สามารถแก้ไขได
 
 #~ msgid "Failed to save solution."
 #~ msgstr "ผิดพลาดในการบันทึก solution"
-
-#~ msgid "Done"
-#~ msgstr "เสร็จสิ้น"
 
 #~ msgid "Failed to create C# project."
 #~ msgstr "ผิดพลาดในการสร้างโปรเจกต์ C#"
