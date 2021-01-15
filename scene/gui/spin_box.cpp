@@ -300,7 +300,6 @@ SpinBox::SpinBox() {
 	line_edit->connect("text_entered", this, "_text_entered", Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("focus_exited", this, "_line_edit_focus_exit", Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("gui_input", this, "_line_edit_input");
-	drag.enabled = false;
 
 	range_click_timer = memnew(Timer);
 	range_click_timer->connect("timeout", this, "_range_click_timeout");
