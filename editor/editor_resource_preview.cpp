@@ -228,109 +228,174 @@ void EditorResourcePreview::_thread() {
 				}
 
 				_preview_ready(path, cache[item.path].preview, cache[item.path].small_preview, item.id, item.function, item.userdata);
+//void EditorResourcePreview::_iterate() {
+//	preview_mutex.lock();
 
-				preview_mutex.unlock();
-			} else {
-				preview_mutex.unlock();
+//	if (queue.size()) {
+//		QueueItem item = queue.front()->get();
+//		queue.pop_front();
 
-				Ref<ImageTexture> texture;
-				Ref<ImageTexture> small_texture;
+//		if (cache.has(item.path)) {
+//			//already has it because someone loaded it, just let it know it's ready
+//			String path = item.path;
+//			if (item.resource.is_valid()) {
+//				path += ":" + itos(cache[item.path].last_hash); //keep last hash (see description of what this is in condition below)
+//			}
 
-				int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
-				thumbnail_size *= EDSCALE;
+			//_preview_ready(path, cache[item.path].preview, cache[item.path].small_preview, item.id, item.function, item.userdata);
 
-				if (item.resource.is_valid()) {
-					_generate_preview(texture, small_texture, item, String());
+			preview_mutex.unlock();
+		} else {
+			preview_mutex.unlock();
 
-					//adding hash to the end of path (should be ID:<objid>:<hash>) because of 5 argument limit to call_deferred
-					_preview_ready(item.path + ":" + itos(item.resource->hash_edited_version()), texture, small_texture, item.id, item.function, item.userdata);
+			Ref<ImageTexture> texture;
+			Ref<ImageTexture> small_texture;
+
+			int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+			thumbnail_size *= EDSCALE;
+
+			if (item.resource.is_valid()) {
+				_generate_preview(texture, small_texture, item, String());
 
 				} else {
 					String temp_path = EditorPaths::get_singleton()->get_cache_dir();
 					String cache_base = ProjectSettings::get_singleton()->globalize_path(item.path).md5_text();
 					cache_base = temp_path.plus_file("resthumb-" + cache_base);
+				// JARJAR TODO
+				//adding hash to the end of path (should be ID:<objid>:<hash>) because of 5 argument limit to call_deferred
+//				_preview_ready(item.path + ":" + itos(item.resource->hash_edited_version()), texture, small_texture, item.id, item.function, item.userdata);
 
-					//does not have it, try to load a cached thumbnail
+			} else {
+				String temp_path = EditorSettings::get_singleton()->get_cache_dir();
+				String cache_base = ProjectSettings::get_singleton()->globalize_path(item.path).md5_text();
+				cache_base = temp_path.plus_file("resthumb-" + cache_base);
 
-					String file = cache_base + ".txt";
-					FileAccess *f = FileAccess::open(file, FileAccess::READ);
-					if (!f) {
-						// No cache found, generate
-						_generate_preview(texture, small_texture, item, cache_base);
-					} else {
-						uint64_t modtime = FileAccess::get_modified_time(item.path);
-						int tsize = f->get_line().to_int();
-						bool has_small_texture = f->get_line().to_int();
-						uint64_t last_modtime = f->get_line().to_int();
+				//does not have it, try to load a cached thumbnail
 
-						bool cache_valid = true;
+				String file = cache_base + ".txt";
+				FileAccess *f = FileAccess::open(file, FileAccess::READ);
+				if (!f) {
+					// No cache found, generate
+					_generate_preview(texture, small_texture, item, cache_base);
+				} else {
+					uint64_t modtime = FileAccess::get_modified_time(item.path);
+					int tsize = f->get_line().to_int();
+					bool has_small_texture = f->get_line().to_int();
+					uint64_t last_modtime = f->get_line().to_int();
 
-						if (tsize != thumbnail_size) {
+					bool cache_valid = true;
+
+					if (tsize != thumbnail_size) {
+						cache_valid = false;
+						memdelete(f);
+					} else if (last_modtime != modtime) {
+						String last_md5 = f->get_line();
+						String md5 = FileAccess::get_md5(item.path);
+						memdelete(f);
+
+						if (last_md5 != md5) {
 							cache_valid = false;
-							memdelete(f);
-						} else if (last_modtime != modtime) {
-							String last_md5 = f->get_line();
-							String md5 = FileAccess::get_md5(item.path);
-							memdelete(f);
 
-							if (last_md5 != md5) {
-								cache_valid = false;
-
-							} else {
-								//update modified time
-
-								f = FileAccess::open(file, FileAccess::WRITE);
-								if (!f) {
-									// Not returning as this would leave the thread hanging and would require
-									// some proper cleanup/disabling of resource preview generation.
-									ERR_PRINT("Cannot create file '" + file + "'. Check user write permissions.");
-								} else {
-									f->store_line(itos(thumbnail_size));
-									f->store_line(itos(has_small_texture));
-									f->store_line(itos(modtime));
-									f->store_line(md5);
-									memdelete(f);
-								}
-							}
 						} else {
-							memdelete(f);
-						}
+							//update modified time
 
-						if (cache_valid) {
-							Ref<Image> img;
-							img.instantiate();
-							Ref<Image> small_img;
-							small_img.instantiate();
-
-							if (img->load(cache_base + ".png") != OK) {
-								cache_valid = false;
+							f = FileAccess::open(file, FileAccess::WRITE);
+							if (!f) {
+								// Not returning as this would leave the thread hanging and would require
+								// some proper cleanup/disabling of resource preview generation.
+								ERR_PRINT("Cannot create file '" + file + "'. Check user write permissions.");
 							} else {
-								texture.instantiate();
-								texture->create_from_image(img);
-
-								if (has_small_texture) {
-									if (small_img->load(cache_base + "_small.png") != OK) {
-										cache_valid = false;
-									} else {
-										small_texture.instantiate();
-										small_texture->create_from_image(small_img);
-									}
-								}
+								f->store_line(itos(thumbnail_size));
+								f->store_line(itos(has_small_texture));
+								f->store_line(itos(modtime));
+								f->store_line(md5);
+								memdelete(f);
 							}
 						}
+					} else {
+						memdelete(f);
+					}
 
-						if (!cache_valid) {
-							_generate_preview(texture, small_texture, item, cache_base);
+//						if (cache_valid) {
+//							Ref<Image> img;
+//							img.instantiate();
+//							Ref<Image> small_img;
+//							small_img.instantiate();
+
+//							if (img->load(cache_base + ".png") != OK) {
+//								cache_valid = false;
+//							} else {
+//								texture.instantiate();
+//								texture->create_from_image(img);
+
+//								if (has_small_texture) {
+//									if (small_img->load(cache_base + "_small.png") != OK) {
+//										cache_valid = false;
+//									} else {
+//										small_texture.instantiate();
+//										small_texture->create_from_image(small_img);
+//									}
+					if (cache_valid) {
+						Ref<Image> img;
+						img.instance();
+						Ref<Image> small_img;
+						small_img.instance();
+
+						if (img->load(cache_base + ".png") != OK) {
+							cache_valid = false;
+						} else {
+							texture.instance();
+							texture->create_from_image(img);
+
+							if (has_small_texture) {
+								if (small_img->load(cache_base + "_small.png") != OK) {
+									cache_valid = false;
+								} else {
+									small_texture.instance();
+									small_texture->create_from_image(small_img);
+								}
+							}
 						}
 					}
-					_preview_ready(item.path, texture, small_texture, item.id, item.function, item.userdata);
-				}
-			}
 
-		} else {
-			preview_mutex.unlock();
+					if (!cache_valid) {
+						_generate_preview(texture, small_texture, item, cache_base);
+					}
+				}
+				_preview_ready(item.path, texture, small_texture, item.id, item.function, item.userdata);
+			}
+		}
+
+	} else {
+		preview_mutex.unlock();
+	}
+}
+
+void EditorResourcePreview::update() {
+	if (!_mainthread_only) {
+		return;
+	}
+
+	if (!exit) {
+		// no need to even lock the mutex if the size is zero
+		// there is no problem if queue.size() is wrong, even if
+		// there was a race condition.
+		if (queue.size()) {
+			_iterate();
 		}
 	}
+	exited.set();
+}
+
+void EditorResourcePreview::_thread() {
+	exited.clear();
+	//exited = false;
+	while (!exit) {
+		preview_sem.wait();
+
+		_iterate();
+	}
+	//exited = true;
 	exited.set();
 }
 
@@ -429,8 +494,14 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 }
 
 void EditorResourcePreview::start() {
-	ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
-	thread.start(_thread_func, this);
+//	ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
+//	thread.start(_thread_func, this);
+	if (OS::get_singleton()->get_render_main_thread_mode() == OS::RENDER_ANY_THREAD) {
+		ERR_FAIL_COND_MSG(thread, "Thread already started.");
+		thread = Thread::create(_thread_func, this);
+	} else {
+		_mainthread_only = true;
+	}
 }
 
 void EditorResourcePreview::stop() {

@@ -590,6 +590,12 @@ void EditorNode::_notification(int p_what) {
 				settings_changed = false;
 				emit_signal(SNAME("project_settings_changed"));
 			}
+
+			ResourceImporterTexture::get_singleton()->update_imports();
+
+			// if using a main thread only renderer, we need to update the resource previews
+			EditorResourcePreview::get_singleton()->update();
+
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {

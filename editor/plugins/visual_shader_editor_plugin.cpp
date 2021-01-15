@@ -1246,11 +1246,7 @@ void VisualShaderEditor::_update_options_menu() {
 	Color unsupported_color = get_theme_color(SNAME("error_color"), SNAME("Editor"));
 	Color supported_color = get_theme_color(SNAME("warning_color"), SNAME("Editor"));
 
-	//<<<<<<< HEAD
-	//	static bool low_driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name") == "GLES2";
-	//=======
 	static bool low_driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name") == "GLES2";
-	//>>>>>>> 7959f4f6d1... Godot 4 GLES2 2D renderer + linux display manager
 
 	Map<String, TreeItem *> folders;
 
