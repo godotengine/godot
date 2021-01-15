@@ -256,6 +256,9 @@ void RasterizerGLES2::initialize() {
 	storage.initialize();
 	canvas.initialize();
 	//	scene.initialize();
+
+	// make sure the OS knows to only access the renderer from the main thread
+	OS::get_singleton()->set_render_main_thread_mode(OS::RENDER_MAIN_THREAD_ONLY);
 }
 
 RasterizerGLES2::RasterizerGLES2() {
