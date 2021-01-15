@@ -117,10 +117,10 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	struct PosKey {
 		union {
 			struct {
-				int32_t x = 0;
-				int32_t y = 0;
+				int32_t x;
+				int32_t y;
 			};
-			uint64_t key;
+			uint64_t key = 0;
 		};
 
 		_FORCE_INLINE_ uint32_t hash() const {
