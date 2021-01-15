@@ -6902,7 +6902,7 @@ bool EditorPluginList::forward_spatial_gui_input(Camera3D *p_camera, const Ref<I
 			continue;
 		}
 
-		if (plugins_list[i]->forward_spatial_gui_input(p_camera, p_event)) {
+		if (plugins_list[i]->forward_node_3d_gui_input(p_camera, p_event)) {
 			discard = true;
 		}
 	}
@@ -6924,13 +6924,13 @@ void EditorPluginList::forward_canvas_force_draw_over_viewport(Control *p_overla
 
 void EditorPluginList::forward_spatial_draw_over_viewport(Control *p_overlay) {
 	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_spatial_draw_over_viewport(p_overlay);
+		plugins_list[i]->forward_node_3d_draw_over_viewport(p_overlay);
 	}
 }
 
 void EditorPluginList::forward_spatial_force_draw_over_viewport(Control *p_overlay) {
 	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_spatial_force_draw_over_viewport(p_overlay);
+		plugins_list[i]->forward_node_3d_force_draw_over_viewport(p_overlay);
 	}
 }
 

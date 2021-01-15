@@ -1066,8 +1066,8 @@ void SceneTreeDock::_notification(int p_what) {
 			}
 
 			Node3DEditorPlugin *spatial_editor_plugin = Object::cast_to<Node3DEditorPlugin>(editor_data->get_editor("3D"));
-			spatial_editor_plugin->get_spatial_editor()->connect("item_lock_status_changed", Callable(scene_tree, "_update_tree"));
-			spatial_editor_plugin->get_spatial_editor()->connect("item_group_status_changed", Callable(scene_tree, "_update_tree"));
+			spatial_editor_plugin->get_node_3d_editor()->connect("item_lock_status_changed", Callable(scene_tree, "_update_tree"));
+			spatial_editor_plugin->get_node_3d_editor()->connect("item_group_status_changed", Callable(scene_tree, "_update_tree"));
 
 			button_add->set_icon(get_theme_icon("Add", "EditorIcons"));
 			button_instance->set_icon(get_theme_icon("Instance", "EditorIcons"));
@@ -2573,7 +2573,7 @@ void SceneTreeDock::_focus_node() {
 		editor->get_canvas_item_editor()->focus_selection();
 	} else {
 		Node3DEditorPlugin *editor = Object::cast_to<Node3DEditorPlugin>(editor_data->get_editor("3D"));
-		editor->get_spatial_editor()->get_editor_viewport(0)->focus_selection();
+		editor->get_node_3d_editor()->get_editor_viewport(0)->focus_selection();
 	}
 }
 

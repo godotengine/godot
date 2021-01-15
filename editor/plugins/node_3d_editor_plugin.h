@@ -86,10 +86,10 @@ public:
 	bool hidden;
 	Node3D *base;
 	Vector<Instance> instances;
-	Node3D *spatial_node;
+	Node3D *node_3d;
 	EditorNode3DGizmoPlugin *gizmo_plugin;
 
-	void _set_spatial_node(Node *p_node) { set_spatial_node(Object::cast_to<Node3D>(p_node)); }
+	void _set_node_3d(Node *p_node) { set_node_3d(Object::cast_to<Node3D>(p_node)); }
 
 protected:
 	static void _bind_methods();
@@ -109,8 +109,8 @@ public:
 	virtual void set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_point);
 	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
 
-	void set_spatial_node(Node3D *p_node);
-	Node3D *get_spatial_node() const { return spatial_node; }
+	void set_node_3d(Node3D *p_node);
+	Node3D *get_node_3d() const { return node_3d; }
 	Ref<EditorNode3DGizmoPlugin> get_plugin() const { return gizmo_plugin; }
 	Vector3 get_handle_pos(int p_idx) const;
 	bool intersect_frustum(const Camera3D *p_camera, const Vector<Plane> &p_frustum);
@@ -430,7 +430,7 @@ private:
 
 	void _sinput(const Ref<InputEvent> &p_event);
 	void _update_freelook(real_t delta);
-	Node3DEditor *spatial_editor;
+	Node3DEditor *node_3d_editor;
 
 	Camera3D *previewing;
 	Camera3D *preview;
@@ -448,7 +448,7 @@ private:
 	Point2i _get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const;
 
 	Vector3 _get_instance_position(const Point2 &p_pos) const;
-	static AABB _calculate_spatial_bounds(const Node3D *p_parent, bool p_exclude_top_level_transform = true);
+	static AABB _calculate_node_3d_bounds(const Node3D *p_parent, bool p_exclude_top_level_transform = true);
 	void _create_preview(const Vector<String> &files) const;
 	void _remove_preview();
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
@@ -482,7 +482,7 @@ public:
 	SubViewport *get_viewport_node() { return viewport; }
 	Camera3D *get_camera() { return camera; } // return the default camera object.
 
-	Node3DEditorViewport(Node3DEditor *p_spatial_editor, EditorNode *p_editor, int p_index);
+	Node3DEditorViewport(Node3DEditor *p_node_3d_editor, EditorNode *p_editor, int p_index);
 	~Node3DEditorViewport();
 };
 
@@ -806,7 +806,7 @@ public:
 	void add_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin);
 	void remove_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin);
 
-	void edit(Node3D *p_spatial);
+	void edit(Node3D *p_node_3d);
 	void clear();
 
 	Node3DEditor(EditorNode *p_editor);
@@ -816,7 +816,7 @@ public:
 class Node3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Node3DEditorPlugin, EditorPlugin);
 
-	Node3DEditor *spatial_editor;
+	Node3DEditor *node_3d_editor;
 	EditorNode *editor;
 
 protected:
@@ -825,7 +825,7 @@ protected:
 public:
 	void snap_cursor_to_plane(const Plane &p_plane);
 
-	Node3DEditor *get_spatial_editor() { return spatial_editor; }
+	Node3DEditor *get_node_3d_editor() { return node_3d_editor; }
 	virtual String get_name() const override { return "3D"; }
 	bool has_main_screen() const override { return true; }
 	virtual void make_visible(bool p_visible) override;
@@ -834,7 +834,7 @@ public:
 
 	virtual Dictionary get_state() const override;
 	virtual void set_state(const Dictionary &p_state) override;
-	virtual void clear() override { spatial_editor->clear(); }
+	virtual void clear() override { node_3d_editor->clear(); }
 
 	virtual void edited_scene_changed() override;
 
@@ -856,8 +856,8 @@ protected:
 	HashMap<String, Vector<Ref<StandardMaterial3D>>> materials;
 
 	static void _bind_methods();
-	virtual bool has_gizmo(Node3D *p_spatial);
-	virtual Ref<EditorNode3DGizmo> create_gizmo(Node3D *p_spatial);
+	virtual bool has_gizmo(Node3D *p_node_3d);
+	virtual Ref<EditorNode3DGizmo> create_gizmo(Node3D *p_node_3d);
 
 public:
 	void create_material(const String &p_name, const Color &p_color, bool p_billboard = false, bool p_on_top = false, bool p_use_vertex_color = false);
@@ -879,7 +879,7 @@ public:
 	virtual void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
 	virtual bool is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
 
-	Ref<EditorNode3DGizmo> get_gizmo(Node3D *p_spatial);
+	Ref<EditorNode3DGizmo> get_gizmo(Node3D *p_node_3d);
 	void set_state(int p_state);
 	int get_state() const;
 	void unregister_gizmo(EditorNode3DGizmo *p_gizmo);

@@ -19180,7 +19180,7 @@ msgstr ""
 #: doc/classes/EditorPlugin.xml:502
 msgid ""
 "Use this method if you always want to receive inputs from 3D view screen "
-"inside [method forward_spatial_gui_input]. It might be especially usable if "
+"inside [method forward_node_3d_gui_input]. It might be especially usable if "
 "your plugin will want to use raycast in the scene."
 msgstr ""
 

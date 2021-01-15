@@ -56,7 +56,7 @@ class Path3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Path3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 protected:
-	Ref<EditorNode3DGizmo> create_gizmo(Node3D *p_spatial) override;
+	Ref<EditorNode3DGizmo> create_gizmo(Node3D *p_node_3d) override;
 
 public:
 	String get_gizmo_name() const override;
@@ -98,7 +98,7 @@ public:
 	Path3D *get_edited_path() { return path; }
 
 	static Path3DEditorPlugin *singleton;
-	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
+	virtual bool forward_node_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
 	virtual String get_name() const override { return "Path3D"; }
 	bool has_main_screen() const override { return false; }

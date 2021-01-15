@@ -575,23 +575,23 @@ int EditorPlugin::update_overlays() const {
 	}
 }
 
-bool EditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
-	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_gui_input")) {
-		return get_script_instance()->call("forward_spatial_gui_input", p_camera, p_event);
+bool EditorPlugin::forward_node_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
+	if (get_script_instance() && get_script_instance()->has_method("forward_node_3d_gui_input")) {
+		return get_script_instance()->call("forward_node_3d_gui_input", p_camera, p_event);
 	}
 
 	return false;
 }
 
-void EditorPlugin::forward_spatial_draw_over_viewport(Control *p_overlay) {
-	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_draw_over_viewport")) {
-		get_script_instance()->call("forward_spatial_draw_over_viewport", p_overlay);
+void EditorPlugin::forward_node_3d_draw_over_viewport(Control *p_overlay) {
+	if (get_script_instance() && get_script_instance()->has_method("forward_node_3d_draw_over_viewport")) {
+		get_script_instance()->call("forward_node_3d_draw_over_viewport", p_overlay);
 	}
 }
 
-void EditorPlugin::forward_spatial_force_draw_over_viewport(Control *p_overlay) {
-	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_force_draw_over_viewport")) {
-		get_script_instance()->call("forward_spatial_force_draw_over_viewport", p_overlay);
+void EditorPlugin::forward_node_3d_force_draw_over_viewport(Control *p_overlay) {
+	if (get_script_instance() && get_script_instance()->has_method("forward_node_3d_force_draw_over_viewport")) {
+		get_script_instance()->call("forward_node_3d_force_draw_over_viewport", p_overlay);
 	}
 }
 
@@ -719,11 +719,11 @@ void EditorPlugin::remove_export_plugin(const Ref<EditorExportPlugin> &p_exporte
 	EditorExport::get_singleton()->remove_export_plugin(p_exporter);
 }
 
-void EditorPlugin::add_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
+void EditorPlugin::add_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
 	Node3DEditor::get_singleton()->add_gizmo_plugin(p_gizmo_plugin);
 }
 
-void EditorPlugin::remove_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
+void EditorPlugin::remove_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
 	Node3DEditor::get_singleton()->remove_gizmo_plugin(p_gizmo_plugin);
 }
 
@@ -850,8 +850,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_scene_import_plugin", "scene_importer"), &EditorPlugin::remove_scene_import_plugin);
 	ClassDB::bind_method(D_METHOD("add_export_plugin", "plugin"), &EditorPlugin::add_export_plugin);
 	ClassDB::bind_method(D_METHOD("remove_export_plugin", "plugin"), &EditorPlugin::remove_export_plugin);
-	ClassDB::bind_method(D_METHOD("add_spatial_gizmo_plugin", "plugin"), &EditorPlugin::add_spatial_gizmo_plugin);
-	ClassDB::bind_method(D_METHOD("remove_spatial_gizmo_plugin", "plugin"), &EditorPlugin::remove_spatial_gizmo_plugin);
+	ClassDB::bind_method(D_METHOD("add_node_3d_gizmo_plugin", "plugin"), &EditorPlugin::add_node_3d_gizmo_plugin);
+	ClassDB::bind_method(D_METHOD("remove_node_3d_gizmo_plugin", "plugin"), &EditorPlugin::remove_node_3d_gizmo_plugin);
 	ClassDB::bind_method(D_METHOD("add_inspector_plugin", "plugin"), &EditorPlugin::add_inspector_plugin);
 	ClassDB::bind_method(D_METHOD("remove_inspector_plugin", "plugin"), &EditorPlugin::remove_inspector_plugin);
 	ClassDB::bind_method(D_METHOD("set_input_event_forwarding_always_enabled"), &EditorPlugin::set_input_event_forwarding_always_enabled);
@@ -865,9 +865,9 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_canvas_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_canvas_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_canvas_force_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_spatial_gui_input", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera3D"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_spatial_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_spatial_force_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_node_3d_gui_input", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera3D"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_node_3d_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_node_3d_force_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_plugin_name"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "get_plugin_icon"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "has_main_screen"));
