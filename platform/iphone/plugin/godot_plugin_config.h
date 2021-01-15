@@ -35,23 +35,6 @@
 #include "core/io/config_file.h"
 #include "core/string/ustring.h"
 
-static const char *PLUGIN_CONFIG_EXT = ".gdip";
-
-static const char *CONFIG_SECTION = "config";
-static const char *CONFIG_NAME_KEY = "name";
-static const char *CONFIG_BINARY_KEY = "binary";
-static const char *CONFIG_INITIALIZE_KEY = "initialization";
-static const char *CONFIG_DEINITIALIZE_KEY = "deinitialization";
-
-static const char *DEPENDENCIES_SECTION = "dependencies";
-static const char *DEPENDENCIES_LINKED_KEY = "linked";
-static const char *DEPENDENCIES_EMBEDDED_KEY = "embedded";
-static const char *DEPENDENCIES_SYSTEM_KEY = "system";
-static const char *DEPENDENCIES_CAPABILITIES_KEY = "capabilities";
-static const char *DEPENDENCIES_FILES_KEY = "files";
-
-static const char *PLIST_SECTION = "plist";
-
 /*
  The `config` section and fields are required and defined as follow:
 - **name**: name of the plugin
@@ -68,7 +51,24 @@ The `plist` section are optional.
 - **key**: key and value that would be added in Info.plist file.
  */
 
-struct PluginConfig {
+struct PluginConfigIOS {
+	inline static const char *PLUGIN_CONFIG_EXT = ".gdip";
+
+	inline static const char *CONFIG_SECTION = "config";
+	inline static const char *CONFIG_NAME_KEY = "name";
+	inline static const char *CONFIG_BINARY_KEY = "binary";
+	inline static const char *CONFIG_INITIALIZE_KEY = "initialization";
+	inline static const char *CONFIG_DEINITIALIZE_KEY = "deinitialization";
+
+	inline static const char *DEPENDENCIES_SECTION = "dependencies";
+	inline static const char *DEPENDENCIES_LINKED_KEY = "linked";
+	inline static const char *DEPENDENCIES_EMBEDDED_KEY = "embedded";
+	inline static const char *DEPENDENCIES_SYSTEM_KEY = "system";
+	inline static const char *DEPENDENCIES_CAPABILITIES_KEY = "capabilities";
+	inline static const char *DEPENDENCIES_FILES_KEY = "files";
+
+	inline static const char *PLIST_SECTION = "plist";
+
 	// Set to true when the config file is properly loaded.
 	bool valid_config = false;
 	bool supports_targets = false;
@@ -159,7 +159,7 @@ static inline Vector<String> resolve_system_dependencies(Vector<String> p_paths)
 	return paths;
 }
 
-static inline bool validate_plugin(PluginConfig &plugin_config) {
+static inline bool validate_plugin(PluginConfigIOS &plugin_config) {
 	bool valid_name = !plugin_config.name.is_empty();
 	bool valid_binary_name = !plugin_config.binary.is_empty();
 	bool valid_initialize = !plugin_config.initialization_method.is_empty();
@@ -185,7 +185,7 @@ static inline bool validate_plugin(PluginConfig &plugin_config) {
 	return plugin_config.valid_config;
 }
 
-static inline uint64_t get_plugin_modification_time(const PluginConfig &plugin_config, const String &config_path) {
+static inline uint64_t get_plugin_modification_time(const PluginConfigIOS &plugin_config, const String &config_path) {
 	uint64_t last_updated = FileAccess::get_modified_time(config_path);
 
 	if (!plugin_config.supports_targets) {
@@ -203,8 +203,8 @@ static inline uint64_t get_plugin_modification_time(const PluginConfig &plugin_c
 	return last_updated;
 }
 
-static inline PluginConfig load_plugin_config(Ref<ConfigFile> config_file, const String &path) {
-	PluginConfig plugin_config = {};
+static inline PluginConfigIOS load_plugin_config(Ref<ConfigFile> config_file, const String &path) {
+	PluginConfigIOS plugin_config = {};
 
 	if (!config_file.is_valid()) {
 		return plugin_config;
@@ -218,18 +218,18 @@ static inline PluginConfig load_plugin_config(Ref<ConfigFile> config_file, const
 
 	String config_base_dir = path.get_base_dir();
 
-	plugin_config.name = config_file->get_value(CONFIG_SECTION, CONFIG_NAME_KEY, String());
-	plugin_config.initialization_method = config_file->get_value(CONFIG_SECTION, CONFIG_INITIALIZE_KEY, String());
-	plugin_config.deinitialization_method = config_file->get_value(CONFIG_SECTION, CONFIG_DEINITIALIZE_KEY, String());
+	plugin_config.name = config_file->get_value(PluginConfigIOS::CONFIG_SECTION, PluginConfigIOS::CONFIG_NAME_KEY, String());
+	plugin_config.initialization_method = config_file->get_value(PluginConfigIOS::CONFIG_SECTION, PluginConfigIOS::CONFIG_INITIALIZE_KEY, String());
+	plugin_config.deinitialization_method = config_file->get_value(PluginConfigIOS::CONFIG_SECTION, PluginConfigIOS::CONFIG_DEINITIALIZE_KEY, String());
 
-	String binary_path = config_file->get_value(CONFIG_SECTION, CONFIG_BINARY_KEY, String());
+	String binary_path = config_file->get_value(PluginConfigIOS::CONFIG_SECTION, PluginConfigIOS::CONFIG_BINARY_KEY, String());
 	plugin_config.binary = resolve_local_dependency_path(config_base_dir, binary_path);
 
-	if (config_file->has_section(DEPENDENCIES_SECTION)) {
-		Vector<String> linked_dependencies = config_file->get_value(DEPENDENCIES_SECTION, DEPENDENCIES_LINKED_KEY, Vector<String>());
-		Vector<String> embedded_dependencies = config_file->get_value(DEPENDENCIES_SECTION, DEPENDENCIES_EMBEDDED_KEY, Vector<String>());
-		Vector<String> system_dependencies = config_file->get_value(DEPENDENCIES_SECTION, DEPENDENCIES_SYSTEM_KEY, Vector<String>());
-		Vector<String> files = config_file->get_value(DEPENDENCIES_SECTION, DEPENDENCIES_FILES_KEY, Vector<String>());
+	if (config_file->has_section(PluginConfigIOS::DEPENDENCIES_SECTION)) {
+		Vector<String> linked_dependencies = config_file->get_value(PluginConfigIOS::DEPENDENCIES_SECTION, PluginConfigIOS::DEPENDENCIES_LINKED_KEY, Vector<String>());
+		Vector<String> embedded_dependencies = config_file->get_value(PluginConfigIOS::DEPENDENCIES_SECTION, PluginConfigIOS::DEPENDENCIES_EMBEDDED_KEY, Vector<String>());
+		Vector<String> system_dependencies = config_file->get_value(PluginConfigIOS::DEPENDENCIES_SECTION, PluginConfigIOS::DEPENDENCIES_SYSTEM_KEY, Vector<String>());
+		Vector<String> files = config_file->get_value(PluginConfigIOS::DEPENDENCIES_SECTION, PluginConfigIOS::DEPENDENCIES_FILES_KEY, Vector<String>());
 
 		plugin_config.linked_dependencies = resolve_local_dependencies(config_base_dir, linked_dependencies);
 		plugin_config.embedded_dependencies = resolve_local_dependencies(config_base_dir, embedded_dependencies);
@@ -237,15 +237,15 @@ static inline PluginConfig load_plugin_config(Ref<ConfigFile> config_file, const
 
 		plugin_config.files_to_copy = resolve_local_dependencies(config_base_dir, files);
 
-		plugin_config.capabilities = config_file->get_value(DEPENDENCIES_SECTION, DEPENDENCIES_CAPABILITIES_KEY, Vector<String>());
+		plugin_config.capabilities = config_file->get_value(PluginConfigIOS::DEPENDENCIES_SECTION, PluginConfigIOS::DEPENDENCIES_CAPABILITIES_KEY, Vector<String>());
 	}
 
-	if (config_file->has_section(PLIST_SECTION)) {
+	if (config_file->has_section(PluginConfigIOS::PLIST_SECTION)) {
 		List<String> keys;
-		config_file->get_section_keys(PLIST_SECTION, &keys);
+		config_file->get_section_keys(PluginConfigIOS::PLIST_SECTION, &keys);
 
 		for (int i = 0; i < keys.size(); i++) {
-			String value = config_file->get_value(PLIST_SECTION, keys[i], String());
+			String value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], String());
 
 			if (value.is_empty()) {
 				continue;
