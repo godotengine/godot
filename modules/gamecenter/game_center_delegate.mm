@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  game_center_delegate.mm                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#import "game_center_delegate.h"
 
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(OSX_ENABLED)
-#include "camera_osx.h"
-#endif
+#include "game_center.h"
 
-void register_camera_types() {
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(OSX_ENABLED)
-	CameraServer::make_default<CameraOSX>();
-#endif
+@implementation GodotGameCenterDelegate
+
+- (void)gameCenterViewControllerDidFinish:(GKGameCenterViewController *)gameCenterViewController {
+	//[gameCenterViewController dismissViewControllerAnimated:YES completion:^{GameCenter::get_singleton()->game_center_closed();}];//version for signaling when overlay is completely gone
+	if (GameCenter::get_singleton()) {
+		GameCenter::get_singleton()->game_center_closed();
+	}
+	[gameCenterViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
-void unregister_camera_types() {
-}
+@end

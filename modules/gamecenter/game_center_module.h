@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  game_center.h                                                        */
+/*  game_center_module.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,5 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef GAME_CENTER_ENABLED
-
-#ifndef GAME_CENTER_H
-#define GAME_CENTER_H
-
-#include "core/object.h"
-
-class GameCenter : public Object {
-
-	GDCLASS(GameCenter, Object);
-
-	static GameCenter *instance;
-	static void _bind_methods();
-
-	List<Variant> pending_events;
-
-	bool authenticated;
-
-	void return_connect_error(const char *p_error_description);
-
-public:
-	Error authenticate();
-	bool is_authenticated();
-
-	Error post_score(Variant p_score);
-	Error award_achievement(Variant p_params);
-	void reset_achievements();
-	void request_achievements();
-	void request_achievement_descriptions();
-	Error show_game_center(Variant p_params);
-	Error request_identity_verification_signature();
-
-	void game_center_closed();
-
-	int get_pending_event_count();
-	Variant pop_pending_event();
-
-	static GameCenter *get_singleton();
-
-	GameCenter();
-	~GameCenter();
-};
-
-#endif
-
-#endif
+void register_gamecenter_types();
+void unregister_gamecenter_types();

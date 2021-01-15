@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  game_center.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef GAME_CENTER_H
+#define GAME_CENTER_H
 
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(OSX_ENABLED)
-#include "camera_osx.h"
-#endif
+#include "core/object.h"
 
-void register_camera_types() {
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(OSX_ENABLED)
-	CameraServer::make_default<CameraOSX>();
-#endif
-}
+class GameCenter : public Object {
 
-void unregister_camera_types() {
-}
+	GDCLASS(GameCenter, Object);
+
+	static GameCenter *instance;
+	static void _bind_methods();
+
+	List<Variant> pending_events;
+
+	bool authenticated;
+
+	void return_connect_error(const char *p_error_description);
+
+public:
+	Error authenticate();
+	bool is_authenticated();
+
+	Error post_score(Variant p_score);
+	Error award_achievement(Variant p_params);
+	void reset_achievements();
+	void request_achievements();
+	void request_achievement_descriptions();
+	Error show_game_center(Variant p_params);
+	Error request_identity_verification_signature();
+
+	void game_center_closed();
+
+	int get_pending_event_count();
+	Variant pop_pending_event();
+
+	static GameCenter *get_singleton();
+
+	GameCenter();
+	~GameCenter();
+};
+
+#endif

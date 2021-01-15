@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  camera_module.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,22 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#include "camera_module.h"
 
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(OSX_ENABLED)
-#include "camera_osx.h"
-#endif
+#include "camera_ios.h"
 
 void register_camera_types() {
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(OSX_ENABLED)
-	CameraServer::make_default<CameraOSX>();
-#endif
+	CameraServer::make_default<CameraIOS>();
 }
 
 void unregister_camera_types() {

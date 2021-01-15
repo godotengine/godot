@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  game_center_module.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#include "game_center_module.h"
 
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(OSX_ENABLED)
-#include "camera_osx.h"
-#endif
+#include "core/engine.h"
 
-void register_camera_types() {
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(OSX_ENABLED)
-	CameraServer::make_default<CameraOSX>();
-#endif
+#include "game_center.h"
+
+GameCenter *game_center;
+
+void register_gamecenter_types() {
+	game_center = memnew(GameCenter);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("GameCenter", game_center));
 }
 
-void unregister_camera_types() {
+void unregister_gamecenter_types() {
+	if (game_center) {
+		memdelete(game_center);
+	}
 }

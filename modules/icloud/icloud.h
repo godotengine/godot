@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  icloud.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef ICLOUD_H
+#define ICLOUD_H
 
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(OSX_ENABLED)
-#include "camera_osx.h"
-#endif
+#include "core/object.h"
 
-void register_camera_types() {
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(OSX_ENABLED)
-	CameraServer::make_default<CameraOSX>();
-#endif
-}
+class ICloud : public Object {
 
-void unregister_camera_types() {
-}
+	GDCLASS(ICloud, Object);
+
+	static ICloud *instance;
+	static void _bind_methods();
+
+	List<Variant> pending_events;
+
+public:
+	Error remove_key(Variant p_param);
+	Variant set_key_values(Variant p_param);
+	Variant get_key_value(Variant p_param);
+	Error synchronize_key_values();
+	Variant get_all_key_values();
+
+	int get_pending_event_count();
+	Variant pop_pending_event();
+
+	static ICloud *get_singleton();
+
+	ICloud();
+	~ICloud();
+};
+
+#endif
