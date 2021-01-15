@@ -1977,10 +1977,6 @@ msgstr "إستعراض:"
 msgid "File:"
 msgstr "الملف:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "يجب أن يستخدم صيغة صحيحة."
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "فحص المصادر"
@@ -2409,6 +2405,10 @@ msgid "There is no defined scene to run."
 msgstr "ليس هناك مشهد محدد ليتم تشغيله."
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "لا يمكن بدء عملية جانبية!"
 
@@ -2451,18 +2451,6 @@ msgstr "يتطلب حفظ المشهد توافر عُقدة رئيسة."
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "حفظ المشهد كـ…"
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "لا"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "نعم"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "هذا المشهد لم يتم حفظه. هل تود حفظه قبل تشغيله؟"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2511,6 +2499,10 @@ msgstr "تشغيل مشهد بسرعة..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "إنهاء"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr "نعم"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -5169,10 +5161,10 @@ msgid "Assets ZIP File"
 msgstr "ملف أصول مضغوط"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 "لا يمكن تحديد مسار حفظ لصور خرائط الضوء.\n"
 "احفظ مشهدك (لكي تحفظ الصور في المسار ذاته), او اختر مسار حفظ لخصائص خرائط "
@@ -5191,8 +5183,28 @@ msgid "Failed creating lightmap images, make sure path is writable."
 msgstr "لا يمكن انشاء خرائط الضوء, تاكد من ان المسار صحيح."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "إعداد خرائط الضوء"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "حدد ملف القالب"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6284,6 +6296,11 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "لا يمكن إنشاء سوى نقطة وحيدة داخل ParticlesMaterial معالج المواد"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "تحويل إلى %s"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "وقت التوليد (تانية):"
@@ -6343,10 +6360,6 @@ msgstr "توليد AABB"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "ولد رؤية AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "ولد AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -11563,6 +11576,39 @@ msgstr ""
 "امنح مكتبة السطوح MeshLibrary وصولاً لخريطة الشبكة لتستخدم السطوح المجسمة "
 "الخاصة بها meshes."
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Generate buffers"
+msgstr "ولد AABB"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "الاتجاهات"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Indirect lighting"
+msgstr "المسافة البادئة يميناً"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Post processing"
+msgstr "المعالجة-اللاحقة Post-Process"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "تخطيط الإضاءات:"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "لا يمكن أن يكون اسم الصف كلمة محجوزة"
@@ -12071,14 +12117,15 @@ msgid "Select device from the list"
 msgstr "اختر جهازاً من القائمة"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "لم يتم تهيئة مُنفّذ ADB في إعدادات المُحرر."
+msgid "Unable to find the 'apksigner' tool."
+msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
 msgstr ""
-"‌مُوقّع ملفات الجار jarsigner المفتوح الخاص بحزمة التطوير OpenJDK غير مُهيّئ في "
-"إعدادات المُحرر."
+"لم يتم تنزيل قالب بناء Android لهذا المشروع. نزّل واحداً من قائمة المشروع."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12091,12 +12138,14 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr "تحرر مخزن المفاتيح غير مُهيئ بشكل صحيح في إعدادت المسبقة للتصدير."
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#, fuzzy
+msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
-"البُنى المخصوصة تتطلب مساراً لحزمة تطوير Android SDK صالحة في إعدادات المُحرر."
+"مسار حزمة تطوير Android SDK للبُنى المخصوصة، غير صالح في إعدادات المُحرر."
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+#, fuzzy
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr ""
 "مسار حزمة تطوير Android SDK للبُنى المخصوصة، غير صالح في إعدادات المُحرر."
 
@@ -12105,11 +12154,22 @@ msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
-"لم يتم تنزيل قالب بناء Android لهذا المشروع. نزّل واحداً من قائمة المشروع."
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr ""
+"مسار حزمة تطوير Android SDK للبُنى المخصوصة، غير صالح في إعدادات المُحرر."
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12589,28 +12649,32 @@ msgstr ""
 "(KinematicBody2D)، وما إلى ذلك لمنحهم شكلاً."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(الوقت المتبقي: %d:%02d ثانية)"
+#, fuzzy
+msgid "Preparing geometry (%d/%d)"
+msgstr "توزيع الأشكال الهندسية..."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "تخطيط المجسمات: "
+#, fuzzy
+msgid "Preparing environment"
+msgstr "عرض البيئة"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "تخطيط الإضاءات:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "الانتهاء من التخطيط"
+#, fuzzy
+msgid "Generating capture"
+msgstr "انشاء خارطة الضوء"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr "إضاءة المجسمات: "
+#, fuzzy
+msgid "Saving lightmaps"
+msgstr "انشاء خارطة الضوء"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Done"
+msgstr "تم"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12686,6 +12750,10 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "تخطيط المجسمات"
+
+#: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "الانتهاء من التخطيط"
 
 #: scene/3d/gi_probe.cpp
 msgid ""
@@ -12944,6 +13012,10 @@ msgstr "تنبيه!"
 msgid "Please Confirm..."
 msgstr "يُرجى التأكيد..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "يجب أن يستخدم صيغة صحيحة."
+
 #: scene/gui/graph_edit.cpp
 #, fuzzy
 msgid "Enable grid minimap."
@@ -13001,6 +13073,12 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr "ينبغي أن يكون حجم إطار العرض أكبر من 0 ليتم الإخراج البصري لأي شيء."
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "مصدر غير صالح للمعاينة."
 
@@ -13027,6 +13105,37 @@ msgstr "يمكن تعيين المتغيرات فقط في الذروة ."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "لا يمكن تعديل الثوابت."
+
+#~ msgid "No"
+#~ msgstr "لا"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "هذا المشهد لم يتم حفظه. هل تود حفظه قبل تشغيله؟"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "لم يتم تهيئة مُنفّذ ADB في إعدادات المُحرر."
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr ""
+#~ "‌مُوقّع ملفات الجار jarsigner المفتوح الخاص بحزمة التطوير OpenJDK غير مُهيّئ "
+#~ "في إعدادات المُحرر."
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr ""
+#~ "البُنى المخصوصة تتطلب مساراً لحزمة تطوير Android SDK صالحة في إعدادات "
+#~ "المُحرر."
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(الوقت المتبقي: %d:%02d ثانية)"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "تخطيط المجسمات: "
+
+#~ msgid "Lighting Meshes: "
+#~ msgstr "إضاءة المجسمات: "
 
 #~ msgid "Search complete"
 #~ msgstr "إكتمل البحث"
@@ -13261,9 +13370,6 @@ msgstr "لا يمكن تعديل الثوابت."
 
 #~ msgid "Failed to save solution."
 #~ msgstr "فشل حفظ الحل."
-
-#~ msgid "Done"
-#~ msgstr "تم"
 
 #~ msgid "Failed to create C# project."
 #~ msgstr "فشل إنشاء مشروع C#‎."

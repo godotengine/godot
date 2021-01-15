@@ -1969,10 +1969,6 @@ msgstr "Pratinjau:"
 msgid "File:"
 msgstr "File:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "Harus menggunakan ekstensi yang sah."
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "Sumber Pemindaian"
@@ -2405,6 +2401,10 @@ msgid "There is no defined scene to run."
 msgstr "Tidak ada skena yang didefinisikan untuk dijalankan."
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Tidak dapat memulai subproses!"
 
@@ -2447,18 +2447,6 @@ msgstr "Node akar diperlukan untuk menyimpan skena."
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "Simpan Skena Sebagai..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "Tidak"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "Ya"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "Skena ini belum pernah disimpan. Simpan sebelum menjalankan?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2508,6 +2496,10 @@ msgstr "Jalankan Cepat Skena..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "Keluar"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr "Ya"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -5177,10 +5169,10 @@ msgid "Assets ZIP File"
 msgstr "Berkas Aset ZIP"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 "Tidak dapat menentukan lokasi penyimpanan untuk gambar lightmap.\n"
 "Simpan skena Anda (untuk gambar yang akan disimpan di direktori yang sama), "
@@ -5199,8 +5191,28 @@ msgid "Failed creating lightmap images, make sure path is writable."
 msgstr "Gagal membuat gambar lightmap, pastikan path dapat ditulis."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Panggang Lightmaps"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "Pilih berkas templat"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6305,6 +6317,11 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "Hanya dapat mengatur titik ke dalam material proses ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "Konversikan menjadi CPUParticles"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Waktu Pembuatan (detik):"
@@ -6364,10 +6381,6 @@ msgstr "Membuat AABB"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "Buat Penampakan AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "Buat AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -11603,6 +11616,39 @@ msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
 "Berikan resource MeshLibrary ke GridMap ini untuk menggunakan mesh-nya."
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Generate buffers"
+msgstr "Buat AABB"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "Arah"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Indirect lighting"
+msgstr "Indentasi Kanan"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Post processing"
+msgstr "Pasca Proses"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "Plotting Lights:"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Nama kelas tidak boleh reserved keyword"
@@ -12116,12 +12162,16 @@ msgid "Select device from the list"
 msgstr "Pilih perangkat pada daftar"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "Lokasi executable ADB belum dikonfigurasi dalam Pengaturan Editor."
+msgid "Unable to find the 'apksigner' tool."
+msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "Lokasi jarsigner OpenJDK belum dikonfigurasi dalam Pengaturan Editor."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr ""
+"Templat build Android belum terpasang dalam proyek. Pasanglah dari menu "
+"Proyek."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12137,13 +12187,15 @@ msgstr ""
 "prasetel proyek."
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#, fuzzy
+msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
-"Membangun kustom APK memerlukan lokasi Android SDK yang valid dalam "
-"Pengaturan Editor."
+"Lokasi Android SDK tidak valid untuk membuat kustom APK dalam Pengaturan "
+"Editor."
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+#, fuzzy
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr ""
 "Lokasi Android SDK tidak valid untuk membuat kustom APK dalam Pengaturan "
 "Editor."
@@ -12153,12 +12205,23 @@ msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
-"Templat build Android belum terpasang dalam proyek. Pasanglah dari menu "
-"Proyek."
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr ""
+"Lokasi Android SDK tidak valid untuk membuat kustom APK dalam Pengaturan "
+"Editor."
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12618,29 +12681,33 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin membutuhkan node anak ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
-
-#: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(Waktu tersisa: %d:%02d s)"
-
-#: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "Plotting Meshes: "
-
-#: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "Plotting Lights:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "Menyelesaikan Pemetaan"
+msgid "Finding meshes and lights"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
-msgid "Lighting Meshes: "
-msgstr "Lighting Meshes: "
+msgid "Preparing geometry (%d/%d)"
+msgstr "Mengurai Geometri..."
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Preparing environment"
+msgstr "Tampilkan Lingkungan"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Generating capture"
+msgstr "Membuat Pemetaan Cahaya"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Saving lightmaps"
+msgstr "Membuat Pemetaan Cahaya"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Done"
+msgstr "Selesai!"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12708,6 +12775,10 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "Memetakan Mesh"
+
+#: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "Menyelesaikan Pemetaan"
 
 #: scene/3d/gi_probe.cpp
 msgid ""
@@ -12957,6 +13028,10 @@ msgstr "Peringatan!"
 msgid "Please Confirm..."
 msgstr "Mohon konfirmasi..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "Harus menggunakan ekstensi yang sah."
+
 #: scene/gui/graph_edit.cpp
 #, fuzzy
 msgid "Enable grid minimap."
@@ -13019,6 +13094,12 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr "Ukuran viewport harus lebih besar dari 0 untuk me-render apa pun."
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Sumber tidak sah untuk pratinjau."
 
@@ -13045,6 +13126,37 @@ msgstr "Variasi hanya bisa ditetapkan dalam fungsi vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
+
+#~ msgid "No"
+#~ msgstr "Tidak"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "Skena ini belum pernah disimpan. Simpan sebelum menjalankan?"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "Lokasi executable ADB belum dikonfigurasi dalam Pengaturan Editor."
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr ""
+#~ "Lokasi jarsigner OpenJDK belum dikonfigurasi dalam Pengaturan Editor."
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr ""
+#~ "Membangun kustom APK memerlukan lokasi Android SDK yang valid dalam "
+#~ "Pengaturan Editor."
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(Waktu tersisa: %d:%02d s)"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "Plotting Meshes: "
+
+#, fuzzy
+#~ msgid "Lighting Meshes: "
+#~ msgstr "Lighting Meshes: "
 
 #~ msgid "Search complete"
 #~ msgstr "Pencarian selesai"
