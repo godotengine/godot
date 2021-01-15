@@ -2,7 +2,7 @@
 # Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
-# Allan Nordhøy <epost@anotheragency.no>, 2017-2018, 2019, 2020.
+# Allan Nordhøy <epost@anotheragency.no>, 2017-2018, 2019, 2020, 2021.
 # Anonymous <GentleSaucepan@protonmail.com>, 2017.
 # Elias <eliasnykrem@gmail.com>, 2018.
 # flesk <eivindkn@gmail.com>, 2017, 2019.
@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-10-09 05:49+0000\n"
+"PO-Revision-Date: 2021-01-12 13:32+0000\n"
 "Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2059,10 +2059,6 @@ msgstr "Forhåndsvisning:"
 msgid "File:"
 msgstr "Fil:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "Må ha en gyldig filutvidelse."
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "Gjennomsøk kilder"
@@ -2521,6 +2517,10 @@ msgid "There is no defined scene to run."
 msgstr "Det er ingen definert scene å kjøre."
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Kunne ikke starta subprosess!"
 
@@ -2565,18 +2565,6 @@ msgstr "En rotnode kreves for å lagre scenen."
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "Lagre Scene Som..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "Nei"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "Ja"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "Denne scene har aldri blitt lagret. Lagre før kjøring?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2624,6 +2612,10 @@ msgstr "Hurtigkjør Scene..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "Avslutt"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr "Ja"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -2745,14 +2737,14 @@ msgstr ""
 "'applikasjon'."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "Selected scene '%s' is not a scene file, select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Valgte scene '%s' er ikke en scenefil, velg en gyldig én?\n"
-"Du kan endre dette senere i \"Prosjekt Instillinger\" under 'applikasjon' "
-"kategorien."
+"Den valgte scenen «%s» er ikke en scenefil, velg en gyldig scenefil?\n"
+"Du kan endre dette senere i «Prosjektinnstillinger» i «program»-kategorien."
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
@@ -3071,9 +3063,8 @@ msgid "Editor"
 msgstr "Redigeringsverktøy"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Editor Settings..."
-msgstr "Redigeringsverktøy-instillinger"
+msgstr "Innstillinger for redigeringsverktøy …"
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
@@ -3085,9 +3076,8 @@ msgid "Take Screenshot"
 msgstr "Lagre Scene"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Redigeringsverktøy-instillinger"
+msgstr "Skjermavbildninger lagres i redigeringsdata/innstillingsmappen."
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
@@ -3099,18 +3089,16 @@ msgid "Toggle System Console"
 msgstr "Veksle modus"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Editor Data/Settings Folder"
-msgstr "Redigeringsverktøy-instillinger"
+msgstr "Åpne data for redigeringsverktøy/innstillingsmappe"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
 msgstr "Åpne Redigererdatamappen"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Editor Settings Folder"
-msgstr "Redigeringsverktøy-instillinger"
+msgstr "Åpne mappe for redigeringsverktøyinnstillinger"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -5458,8 +5446,7 @@ msgstr "Assets ZIP-Fil"
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -5473,8 +5460,28 @@ msgid "Failed creating lightmap images, make sure path is writable."
 msgstr "Laging av lysmapbilder feilet, forsikre om at stien er skrivbar."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "Velg malfil"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6624,6 +6631,11 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "Konverter til store versaler"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr ""
@@ -6682,10 +6694,6 @@ msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
-msgstr ""
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -6999,9 +7007,8 @@ msgid "Clear UV"
 msgstr "Fjern UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Grid Settings"
-msgstr "Redigeringsverktøy-instillinger"
+msgstr "Rutenettsinnstillinger"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Snap"
@@ -8050,9 +8057,8 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Settings..."
-msgstr "Redigeringsverktøy-instillinger"
+msgstr "Innstillinger …"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -8222,9 +8228,8 @@ msgid "Update Preview"
 msgstr "Forhåndsvis"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Settings:"
-msgstr "Redigeringsverktøy-instillinger"
+msgstr "Innstillinger:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #, fuzzy
@@ -11725,7 +11730,7 @@ msgstr "Endre Anker"
 
 #: editor/settings_config_dialog.cpp
 msgid "Editor Settings"
-msgstr "Redigeringsverktøy-instillinger"
+msgstr "Innstillinger for redigeringsverktøy"
 
 #: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
@@ -12041,6 +12046,38 @@ msgstr "Lim inn Noder"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Generate buffers"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "Retninger"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Indirect lighting"
+msgstr "Innrykk Høyre"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Post processing"
+msgstr "Gjeldende Versjon:"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "Genererer Lyskart"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -12577,11 +12614,13 @@ msgid "Select device from the list"
 msgstr "Velg enhet fra listen"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
+msgid "Unable to find the 'apksigner' tool."
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -12593,11 +12632,11 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
+msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -12605,9 +12644,19 @@ msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -13011,28 +13060,31 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
+msgid "Finding meshes and lights"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
+msgid "Preparing geometry (%d/%d)"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
+msgid "Preparing environment"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr ""
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr ""
+#, fuzzy
+msgid "Generating capture"
+msgstr "Genererer Lyskart"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr ""
+#, fuzzy
+msgid "Saving lightmaps"
+msgstr "Genererer Lyskart"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Done"
+msgstr "Ferdig!"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -13088,6 +13140,10 @@ msgstr ""
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
+msgstr ""
+
+#: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
 msgstr ""
 
 #: scene/3d/gi_probe.cpp
@@ -13309,6 +13365,10 @@ msgstr ""
 msgid "Please Confirm..."
 msgstr ""
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "Må ha en gyldig filutvidelse."
+
 #: scene/gui/graph_edit.cpp
 #, fuzzy
 msgid "Enable grid minimap."
@@ -13355,6 +13415,12 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for preview."
 msgstr "Ugyldig fontstørrelse."
@@ -13383,6 +13449,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanter kan ikke endres."
+
+#~ msgid "No"
+#~ msgstr "Nei"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "Denne scene har aldri blitt lagret. Lagre før kjøring?"
 
 #, fuzzy
 #~ msgid "Search complete"
@@ -13612,10 +13684,6 @@ msgstr "Konstanter kan ikke endres."
 #, fuzzy
 #~ msgid "Failed to save solution."
 #~ msgstr "Kunne ikke laste ressurs."
-
-#, fuzzy
-#~ msgid "Done"
-#~ msgstr "Ferdig!"
 
 #, fuzzy
 #~ msgid "Failed to create C# project."

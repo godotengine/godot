@@ -18,7 +18,7 @@
 # sugusan <sugusan.development@gmail.com>, 2018, 2019.
 # Nathan Lovato <nathan.lovato.art@gmail.com>, 2018.
 # nyanode <akaruooyagi@yahoo.co.jp>, 2018.
-# nitenook <admin@alterbaum.net>, 2018, 2019, 2020.
+# nitenook <admin@alterbaum.net>, 2018, 2019, 2020, 2021.
 # Rob Matych <robertsmatych@gmail.com>, 2018.
 # Hidetsugu Takahashi <manzyun@gmail.com>, 2019.
 # Wataru Onuki <watonu@magadou.com>, 2019.
@@ -29,14 +29,14 @@
 # Tarou Yamada <mizuningyou@yahoo.co.jp>, 2019.
 # kazuma kondo <kazmax7@gmail.com>, 2019.
 # Akihiro Ogoshi <technical@palsystem-game.com>, 2019, 2020.
-# Wataru Onuki <bettawat@yahoo.co.jp>, 2020.
+# Wataru Onuki <bettawat@yahoo.co.jp>, 2020, 2021.
 # sporeball <sporeballdev@gmail.com>, 2020.
 # BinotaLIU <me@binota.org>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-27 02:25+0000\n"
+"PO-Revision-Date: 2021-01-06 18:29+0000\n"
 "Last-Translator: nitenook <admin@alterbaum.net>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -1973,10 +1973,6 @@ msgstr "プレビュー:"
 msgid "File:"
 msgstr "ファイル:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "有効な拡張子を使用する必要があります。"
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "スキャンソース"
@@ -2413,6 +2409,10 @@ msgid "There is no defined scene to run."
 msgstr "実行するシーンが定義されていません。"
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "サブプロセスを開始できませんでした!"
 
@@ -2455,18 +2455,6 @@ msgstr "シーンを保存するにはルートノードが必要です。"
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "名前を付けてシーンを保存..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "いいえ"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "はい"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "このシーンは一度も保存されていません。実行する前に保存しますか？"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2515,6 +2503,10 @@ msgstr "シーンをクイック実行する..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "終了"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr "はい"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -3933,19 +3925,16 @@ msgid "Searching..."
 msgstr "検索中..."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d match in %d file."
-msgstr "%d件の一致が見つかりました。"
+msgstr "%d 件の一致が見つかりました (%d 個のファイル内)。"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d file."
-msgstr "%d件の一致が見つかりました。"
+msgstr "%d 件の一致が見つかりました (%d 個のファイル内)。"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d files."
-msgstr "%d件の一致が見つかりました。"
+msgstr "%d 件の一致が見つかりました (%d 個のファイル内)。"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -5179,10 +5168,10 @@ msgid "Assets ZIP File"
 msgstr "アセットのzipファイル"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 "ライトマップ画像の保存パスを確定できません。\n"
 "シーンを保存する (画像が同じディレクトリに保存される) か、BakedLightmapプロパ"
@@ -5203,8 +5192,28 @@ msgstr ""
 "ください。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "ライトマップを焼き込む"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "テンプレートファイルを選択"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6298,6 +6307,11 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "ParticlesMaterialプロセスマテリアルにのみ点を設定できます"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "CPUパーティクルに変換"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "生成時間 (秒):"
@@ -6357,10 +6371,6 @@ msgstr "AABBを生成中"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "可視性のAABBを生成"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "AABBを生成"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -7466,7 +7476,7 @@ msgstr "オーディオリスナー"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Enable Doppler"
-msgstr "ドップラー効果を有効化する"
+msgstr "ドップラー効果を有効化"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Cinematic Preview"
@@ -11560,6 +11570,39 @@ msgstr ""
 "メッシュを使うにはメッシュライブラリリソースをこのグリッドマップに設定してく"
 "ださい。"
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Generate buffers"
+msgstr "AABBを生成"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "方向"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Indirect lighting"
+msgstr "右インデント"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Post processing"
+msgstr "ポストプロセス"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "光源を描画中:"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "クラス名を予約キーワードにすることはできません"
@@ -12074,12 +12117,17 @@ msgid "Select device from the list"
 msgstr "一覧からデバイスを選択"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "ADB実行可能ファイルがエディタ設定で設定されていません。"
+#, fuzzy
+msgid "Unable to find the 'apksigner' tool."
+msgstr "zipalign ツールが見つかりません。"
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "OpenJDK jarsignerがエディタ設定で設定されていません。"
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr ""
+"Android ビルド テンプレートがプロジェクトにインストールされていません。[プロ"
+"ジェクト] メニューからインストールします。"
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12090,11 +12138,13 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr "エクスポート設定にてリリース キーストアが誤って設定されています。"
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
-msgstr "カスタムビルドにはエディタ設定で有効なAndroid SDKパスが必要です。"
+#, fuzzy
+msgid "A valid Android SDK path is required in Editor Settings."
+msgstr "エディタ設定のカスタムビルドのAndroid SDKパスが無効です。"
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+#, fuzzy
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr "エディタ設定のカスタムビルドのAndroid SDKパスが無効です。"
 
 #: platform/android/export/export.cpp
@@ -12102,12 +12152,21 @@ msgid "Missing 'platform-tools' directory!"
 msgstr "'platform-tools' ディレクトリがありません！"
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
-"Android ビルド テンプレートがプロジェクトにインストールされていません。[プロ"
-"ジェクト] メニューからインストールします。"
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr "エディタ設定のカスタムビルドのAndroid SDKパスが無効です。"
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr "'build-tools' ディレクトリがありません！"
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12580,28 +12639,32 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROriginは子ノードにARVRCameraが必要です。"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(Time Left: %d分%02d秒)"
+#, fuzzy
+msgid "Preparing geometry (%d/%d)"
+msgstr "ジオメトリを解析しています..."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "メッシュを描画中: "
+#, fuzzy
+msgid "Preparing environment"
+msgstr "環境を表示"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "光源を描画中:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "描画完了"
+#, fuzzy
+msgid "Generating capture"
+msgstr "ライトマップの生成"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr "ライティングメッシュ: "
+#, fuzzy
+msgid "Saving lightmaps"
+msgstr "ライトマップの生成"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Done"
+msgstr "完了"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12676,6 +12739,10 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "メッシュのプロット"
+
+#: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "描画完了"
 
 #: scene/3d/gi_probe.cpp
 msgid ""
@@ -12934,10 +13001,13 @@ msgstr "警告!"
 msgid "Please Confirm..."
 msgstr "確認..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "有効な拡張子を使用する必要があります。"
+
 #: scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Enable grid minimap."
-msgstr "スナップを有効にする"
+msgstr "グリッドミニマップを有効にする。"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -12992,6 +13062,12 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr "レンダーするにはビューポートのサイズが 0 より大きい必要があります。"
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "プレビューのソースが無効です。"
 
@@ -13019,6 +13095,33 @@ msgstr "Varying変数は頂点関数にのみ割り当てることができま�
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
 
+#~ msgid "No"
+#~ msgstr "いいえ"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "このシーンは一度も保存されていません。実行する前に保存しますか？"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "ADB実行可能ファイルがエディタ設定で設定されていません。"
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr "OpenJDK jarsignerがエディタ設定で設定されていません。"
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr "カスタムビルドにはエディタ設定で有効なAndroid SDKパスが必要です。"
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(Time Left: %d分%02d秒)"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "メッシュを描画中: "
+
+#~ msgid "Lighting Meshes: "
+#~ msgstr "ライティングメッシュ: "
+
 #~ msgid "Search complete"
 #~ msgstr "検索完了"
 
@@ -13030,12 +13133,6 @@ msgstr "定数は変更できません。"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "このパスには、既に同名のファイルかフォルダがあります。"
-
-#~ msgid "Missing 'build-tools' directory!"
-#~ msgstr "'build-tools' ディレクトリがありません！"
-
-#~ msgid "Unable to find the zipalign tool."
-#~ msgstr "zipalign ツールが見つかりません。"
 
 #~ msgid "Aligning APK..."
 #~ msgstr "APKを最適化..."
@@ -13381,9 +13478,6 @@ msgstr "定数は変更できません。"
 
 #~ msgid "Failed to save solution."
 #~ msgstr "ソリューションの保存に失敗しました。"
-
-#~ msgid "Done"
-#~ msgstr "完了"
 
 #~ msgid "Failed to create C# project."
 #~ msgstr "C#プロジェクトの生成に失敗しました。"

@@ -42,8 +42,21 @@
 
 void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 	Vector2 line = (to - from).normalized() * 10;
+
+	// Draw a translucent background line to make the foreground line visible on any background.
+	edit_draw->draw_line(
+			from,
+			to,
+			EditorNode::get_singleton()->get_theme_base()->get_color("mono_color", "Editor").inverted() * Color(1, 1, 1, 0.5),
+			Math::round(2 * EDSCALE));
+
 	while ((to - from).length_squared() > 200) {
-		edit_draw->draw_line(from, from + line, EditorNode::get_singleton()->get_theme_base()->get_color("mono_color", "Editor"), 2);
+		edit_draw->draw_line(
+				from,
+				from + line,
+				EditorNode::get_singleton()->get_theme_base()->get_color("mono_color", "Editor"),
+				Math::round(2 * EDSCALE));
+
 		from += line * 2;
 	}
 }

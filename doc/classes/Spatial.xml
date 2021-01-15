@@ -245,7 +245,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Sets whether the node notifies about its global and local transformation changes. [Spatial] will not propagate this by default.
+				Sets whether the node notifies about its global and local transformation changes. [Spatial] will not propagate this by default, unless it is in the editor context and it has a valid gizmo.
 			</description>
 		</method>
 		<method name="show">
@@ -337,7 +337,7 @@
 	<constants>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000">
 			Spatial nodes receives this notification when their global transform changes. This means that either the current or a parent node changed its transform.
-			In order for [constant NOTIFICATION_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_transform].
+			In order for [constant NOTIFICATION_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_transform]. The notification is also sent if the node is in the editor context and it has a valid gizmo.
 		</constant>
 		<constant name="NOTIFICATION_ENTER_WORLD" value="41">
 			Spatial nodes receives this notification when they are registered to new [World] resource.
