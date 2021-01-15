@@ -740,8 +740,12 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 	}
 	ERR_FAIL_COND(!texture->active);
 	ERR_FAIL_COND(texture->render_target);
-	ERR_FAIL_COND(texture->format != p_image->get_format());
 	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND(texture->format != p_image->get_format());
+
+	ERR_FAIL_COND(!p_image->get_width());
+	ERR_FAIL_COND(!p_image->get_height());
+
 	//	ERR_FAIL_COND(texture->type == GD_VS::TEXTURE_TYPE_EXTERNAL);
 
 	GLenum type;
