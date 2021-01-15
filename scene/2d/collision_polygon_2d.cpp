@@ -36,7 +36,7 @@
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 
-#include "thirdparty/misc/triangulator.h"
+#include "thirdparty/misc/polypartition.h"
 
 void CollisionPolygon2D::_build_polygon() {
 	parent->shape_owner_clear_shapes(owner_id);
@@ -194,6 +194,7 @@ void CollisionPolygon2D::set_polygon(const Vector<Point2> &p_polygon) {
 
 	if (parent) {
 		_build_polygon();
+		_update_in_shape_owner();
 	}
 	update();
 	update_configuration_warning();
@@ -208,6 +209,7 @@ void CollisionPolygon2D::set_build_mode(BuildMode p_mode) {
 	build_mode = p_mode;
 	if (parent) {
 		_build_polygon();
+		_update_in_shape_owner();
 	}
 }
 

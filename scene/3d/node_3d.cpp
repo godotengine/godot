@@ -239,8 +239,8 @@ void Node3D::set_transform(const Transform &p_transform) {
 void Node3D::set_global_transform(const Transform &p_transform) {
 	Transform xform =
 			(data.parent && !data.top_level_active) ?
-					data.parent->get_global_transform().affine_inverse() * p_transform :
-					p_transform;
+					  data.parent->get_global_transform().affine_inverse() * p_transform :
+					  p_transform;
 
 	set_transform(xform);
 }

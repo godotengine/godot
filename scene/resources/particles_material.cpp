@@ -646,7 +646,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "	for(int i=0;i<emit_count;i++) {\n";
 		code += "		uint flags = FLAG_EMIT_POSITION|FLAG_EMIT_ROT_SCALE;\n";
 		code += "		if (sub_emitter_keep_velocity) flags|=FLAG_EMIT_VELOCITY;\n";
-		code += "		emit_particle(TRANSFORM,VELOCITY,vec4(0.0),vec4(0.0),flags);\n";
+		code += "		emit_subparticle(TRANSFORM,VELOCITY,vec4(0.0),vec4(0.0),flags);\n";
 		code += "	}";
 	}
 

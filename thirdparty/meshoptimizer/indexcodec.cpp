@@ -108,7 +108,7 @@ static unsigned int decodeVByte(const unsigned char*& data)
 	for (int i = 0; i < 4; ++i)
 	{
 		unsigned char group = *data++;
-		result |= (group & 127) << shift;
+		result |= unsigned(group & 127) << shift;
 		shift += 7;
 
 		if (group < 128)
