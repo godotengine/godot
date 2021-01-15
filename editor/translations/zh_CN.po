@@ -77,7 +77,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-12-25 12:29+0000\n"
+"PO-Revision-Date: 2020-12-31 07:09+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -1987,10 +1987,6 @@ msgstr "预览:"
 msgid "File:"
 msgstr "文件:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "必须使用有效的扩展名。"
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "扫描源文件"
@@ -2413,6 +2409,10 @@ msgid "There is no defined scene to run."
 msgstr "没有设置要运行的场景。"
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "无法启动子进程！"
 
@@ -2455,18 +2455,6 @@ msgstr "必须有根节点才可保存场景。"
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "场景另存为..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "否"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "是"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "此场景尚未保存。是否在运行前保存？"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2515,6 +2503,10 @@ msgstr "快速运行场景..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "退出"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr "是"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -3893,19 +3885,16 @@ msgid "Searching..."
 msgstr "搜索中..."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d match in %d file."
-msgstr "%d 个匹配。"
+msgstr "%d 处匹配，共 %d 个文件。"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d file."
-msgstr "%d 个匹配。"
+msgstr "%d 处匹配，共 %d 个文件。"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d files."
-msgstr "%d 个匹配。"
+msgstr "%d 处匹配，共 %d 个文件。"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -5129,10 +5118,10 @@ msgid "Assets ZIP File"
 msgstr "素材 ZIP 文件"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 "无法确定光照贴图的保存路径。\n"
 "请先保存场景（光照贴图将被存在同一目录下）或从属性面板中手动保存 "
@@ -5149,8 +5138,28 @@ msgid "Failed creating lightmap images, make sure path is writable."
 msgstr "创建光照贴图失败，切确保文件是可写的。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "烘焙光照贴图"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "选择模板文件"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6230,6 +6239,11 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "只可设为指向 ParticlesMaterial 处理材料"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "转换为 CPUParticles"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "生成时间（秒）："
@@ -6289,10 +6303,6 @@ msgstr "正在生成 AABB"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "生成可见的 AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "生成 AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -11413,6 +11423,39 @@ msgstr "筛选网格"
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "向此 GridMap 提供网格库资源以使用其网格。"
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Generate buffers"
+msgstr "生成 AABB"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "方向"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Indirect lighting"
+msgstr "向右缩进"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Post processing"
+msgstr "后期处理"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "正在绘制灯光："
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "类名不能是保留关键字"
@@ -11912,12 +11955,15 @@ msgid "Select device from the list"
 msgstr "从列表中选择设备"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "未在编辑器设置中配置 ADB 可执行文件。"
+#, fuzzy
+msgid "Unable to find the 'apksigner' tool."
+msgstr "未找到 zipalign 工具。"
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "未在编辑器设置中配置 OpenJDK Jarsigner。"
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr "未在项目中安装 Android 构建模板。从项目菜单安装它。"
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -11928,11 +11974,13 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr "用于发布的密钥存储在导出预设中未被正确设置。"
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
-msgstr "自定义构建需要在 “编辑器设置” 中使用有效的 Android SDK 路径。"
+#, fuzzy
+msgid "A valid Android SDK path is required in Editor Settings."
+msgstr "用于 “编辑器设置” 中自定义构建的 Android SDK 路径是无效的。"
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+#, fuzzy
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr "用于 “编辑器设置” 中自定义构建的 Android SDK 路径是无效的。"
 
 #: platform/android/export/export.cpp
@@ -11940,10 +11988,21 @@ msgid "Missing 'platform-tools' directory!"
 msgstr "缺失“platform-tools”目录！"
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
-msgstr "未在项目中安装 Android 构建模板。从项目菜单安装它。"
+msgid "Unable to find Android SDK platform-tools' adb command."
+msgstr ""
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr "用于 “编辑器设置” 中自定义构建的 Android SDK 路径是无效的。"
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr "缺失“build-tools”目录！"
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12372,28 +12431,32 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin 需要一个 ARVRCamera 子节点。"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "（剩余时间：%d:%02d 秒）"
+#, fuzzy
+msgid "Preparing geometry (%d/%d)"
+msgstr "解析多边形中..."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "正在绘制网格： "
+#, fuzzy
+msgid "Preparing environment"
+msgstr "查看环境"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "正在绘制灯光："
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "正在完成划分"
+#, fuzzy
+msgid "Generating capture"
+msgstr "正在生成光照贴图"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr "正在对网格进行照明 "
+#, fuzzy
+msgid "Saving lightmaps"
+msgstr "正在生成光照贴图"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Done"
+msgstr "完成"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12459,6 +12522,10 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "正在绘制网格"
+
+#: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "正在完成划分"
 
 #: scene/3d/gi_probe.cpp
 msgid ""
@@ -12705,10 +12772,13 @@ msgstr "警告！"
 msgid "Please Confirm..."
 msgstr "请确认..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "必须使用有效的扩展名。"
+
 #: scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Enable grid minimap."
-msgstr "启用吸附"
+msgstr "启用网格小地图。"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -12761,6 +12831,12 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr "Viewport 大小大于 0 时才能进行渲染。"
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "预览的源资源无效。"
 
@@ -12788,6 +12864,33 @@ msgstr "变量只能在顶点函数中指定。"
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
 
+#~ msgid "No"
+#~ msgstr "否"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "此场景尚未保存。是否在运行前保存？"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "未在编辑器设置中配置 ADB 可执行文件。"
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr "未在编辑器设置中配置 OpenJDK Jarsigner。"
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr "自定义构建需要在 “编辑器设置” 中使用有效的 Android SDK 路径。"
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "（剩余时间：%d:%02d 秒）"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "正在绘制网格： "
+
+#~ msgid "Lighting Meshes: "
+#~ msgstr "正在对网格进行照明 "
+
 #~ msgid "Search complete"
 #~ msgstr "搜索完毕"
 
@@ -12799,12 +12902,6 @@ msgstr "不允许修改常量。"
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "当前位置已存在同名文件或文件夹。"
-
-#~ msgid "Missing 'build-tools' directory!"
-#~ msgstr "缺失“build-tools”目录！"
-
-#~ msgid "Unable to find the zipalign tool."
-#~ msgstr "未找到 zipalign 工具。"
 
 #~ msgid "Aligning APK..."
 #~ msgstr "对齐 APK..."
@@ -13138,9 +13235,6 @@ msgstr "不允许修改常量。"
 
 #~ msgid "Failed to save solution."
 #~ msgstr "保存解决方案失败。"
-
-#~ msgid "Done"
-#~ msgstr "完成"
 
 #~ msgid "Failed to create C# project."
 #~ msgstr "创建C#项目失败。"
