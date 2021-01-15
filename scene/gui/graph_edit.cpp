@@ -414,7 +414,14 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 
 	Control::remove_child_notify(p_child);
 
-	if (is_inside_tree()) {
+	if (p_child == top_layer) {
+		top_layer = nullptr;
+		minimap = nullptr;
+	} else if (p_child == connections_layer) {
+		connections_layer = nullptr;
+	}
+
+	if (top_layer != nullptr && is_inside_tree()) {
 		top_layer->call_deferred("raise"); // Top layer always on top!
 	}
 
@@ -422,8 +429,14 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 	if (gn) {
 		gn->disconnect("offset_changed", this, "_graph_node_moved");
 		gn->disconnect("raise_request", this, "_graph_node_raised");
-		gn->disconnect("item_rect_changed", connections_layer, "update");
-		gn->disconnect("item_rect_changed", minimap, "update");
+
+		// In case of the whole GraphEdit being destroyed these references can already be freed.
+		if (connections_layer != nullptr && connections_layer->is_inside_tree()) {
+			gn->disconnect("item_rect_changed", connections_layer, "update");
+		}
+		if (minimap != nullptr && minimap->is_inside_tree()) {
+			gn->disconnect("item_rect_changed", minimap, "update");
+		}
 	}
 }
 
