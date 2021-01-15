@@ -191,14 +191,16 @@
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				Emitted when a body enters into contact with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
+				Emitted when a collision with another [PhysicsBody2D] or [TileMap] occurs. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
 			</description>
 		</signal>
 		<signal name="body_exited">
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				Emitted when a body exits contact with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
+				Emitted when the collision with another [PhysicsBody2D] or [TileMap] ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
@@ -211,7 +213,11 @@
 			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a body enters into contact with this one. Reports colliding shape information. See [CollisionObject2D] for shape index information. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
+				Emitted when one of this RigidBody2D's [Shape2D]s collides with another [PhysicsBody2D] or [TileMap]'s [Shape2D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				[code]body_id[/code] the [RID] of the other [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [Physics2DServer].
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
+				[code]body_shape[/code] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMap] used by the [Physics2DServer].
+				[code]local_shape[/code] the index of the [Shape2D] of this RigidBody2D used by the [Physics2DServer].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -224,7 +230,11 @@
 			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a body shape exits contact with this one. Reports colliding shape information. See [CollisionObject2D] for shape index information. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
+				Emitted when the collision between one of this RigidBody2D's [Shape2D]s and another [PhysicsBody2D] or [TileMap]'s [Shape2D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				[code]body_id[/code] the [RID] of the other [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [Physics2DServer].
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
+				[code]body_shape[/code] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMap] used by the [Physics2DServer].
+				[code]local_shape[/code] the index of the [Shape2D] of this RigidBody2D used by the [Physics2DServer].
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">

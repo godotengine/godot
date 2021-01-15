@@ -150,14 +150,16 @@
 			<argument index="0" name="area" type="Area">
 			</argument>
 			<description>
-				Emitted when another area enters.
+				Emitted when another Area enters this Area. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area[/code] the other Area.
 			</description>
 		</signal>
 		<signal name="area_exited">
 			<argument index="0" name="area" type="Area">
 			</argument>
 			<description>
-				Emitted when another area exits.
+				Emitted when another Area exits this Area. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area[/code] the other Area.
 			</description>
 		</signal>
 		<signal name="area_shape_entered">
@@ -167,10 +169,14 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="self_shape" type="int">
+			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when another area enters, reporting which areas overlapped. [code]shape_owner_get_owner(shape_find_owner(shape))[/code] returns the parent object of the owner of the [code]shape[/code].
+				Emitted when one of another Area's [Shape]s enters one of this Area's [Shape]s. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area_id[/code] the [RID] of the other Area's [CollisionObject] used by the [PhysicsServer].
+				[code]area[/code] the other Area.
+				[code]area_shape[/code] the index of the [Shape] of the other Area used by the [PhysicsServer].
+				[code]local_shape[/code] the index of the [Shape] of this Area used by the [PhysicsServer].
 			</description>
 		</signal>
 		<signal name="area_shape_exited">
@@ -180,26 +186,30 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="self_shape" type="int">
+			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when another area exits, reporting which areas were overlapping.
+				Emitted when one of another Area's [Shape]s enters one of this Area's [Shape]s. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area_id[/code] the [RID] of the other Area's [CollisionObject] used by the [PhysicsServer].
+				[code]area[/code] the other Area.
+				[code]area_shape[/code] the index of the [Shape] of the other Area used by the [PhysicsServer].
+				[code]local_shape[/code] the index of the [Shape] of this Area used by the [PhysicsServer].
 			</description>
 		</signal>
 		<signal name="body_entered">
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				Emitted when a physics body enters.
-				The [code]body[/code] argument can either be a [PhysicsBody] or a [GridMap] instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when a [PhysicsBody] or [GridMap] enters this Area. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody] or [GridMap].
 			</description>
 		</signal>
 		<signal name="body_exited">
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				Emitted when a physics body exits.
-				The [code]body[/code] argument can either be a [PhysicsBody] or a [GridMap] instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when a [PhysicsBody] or [GridMap] exits this Area. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody] or [GridMap].
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
@@ -209,11 +219,14 @@
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a physics body enters, reporting which shapes overlapped.
-				The [code]body[/code] argument can either be a [PhysicsBody] or a [GridMap] instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when one of a [PhysicsBody] or [GridMap]'s [Shape]s enters one of this Area's [Shape]s. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
+				[code]body_id[/code] the [RID] of the [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer].
+				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody] or [GridMap].
+				[code]body_shape[/code] the index of the [Shape] of the [PhysicsBody] or [GridMap] used by the [PhysicsServer].
+				[code]local_shape[/code] the index of the [Shape] of this Area used by the [PhysicsServer].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -223,11 +236,14 @@
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a physics body exits, reporting which shapes were overlapping.
-				The [code]body[/code] argument can either be a [PhysicsBody] or a [GridMap] instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when one of a [PhysicsBody] or [GridMap]'s [Shape]s enters one of this Area's [Shape]s. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
+				[code]body_id[/code] the [RID] of the [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer].
+				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody] or [GridMap].
+				[code]body_shape[/code] the index of the [Shape] of the [PhysicsBody] or [GridMap] used by the [PhysicsServer].
+				[code]local_shape[/code] the index of the [Shape] of this Area used by the [PhysicsServer].
 			</description>
 		</signal>
 	</signals>

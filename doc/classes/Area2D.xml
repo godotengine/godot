@@ -140,14 +140,16 @@
 			<argument index="0" name="area" type="Area2D">
 			</argument>
 			<description>
-				Emitted when another area enters.
+				Emitted when another Area2D enters this Area2D. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area[/code] the other Area2D.
 			</description>
 		</signal>
 		<signal name="area_exited">
 			<argument index="0" name="area" type="Area2D">
 			</argument>
 			<description>
-				Emitted when another area exits.
+				Emitted when another Area2D exits this Area2D. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area[/code] the other Area2D.
 			</description>
 		</signal>
 		<signal name="area_shape_entered">
@@ -157,10 +159,14 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="self_shape" type="int">
+			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when another area enters, reporting which shapes overlapped. [code]shape_owner_get_owner(shape_find_owner(shape))[/code] returns the parent object of the owner of the [code]shape[/code].
+				Emitted when one of another Area2D's [Shape2D]s enters one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area_id[/code] the [RID] of the other Area2D's [CollisionObject2D] used by the [Physics2DServer].
+				[code]area[/code] the other Area2D.
+				[code]area_shape[/code] the index of the [Shape2D] of the other Area2D used by the [Physics2DServer].
+				[code]local_shape[/code] the index of the [Shape2D] of this Area2D used by the [Physics2DServer].
 			</description>
 		</signal>
 		<signal name="area_shape_exited">
@@ -170,26 +176,30 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="self_shape" type="int">
+			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when another area exits, reporting which shapes were overlapping.
+				Emitted when one of another Area2D's [Shape2D]s exits one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area_id[/code] the [RID] of the other Area2D's [CollisionObject2D] used by the [Physics2DServer].
+				[code]area[/code] the other Area2D.
+				[code]area_shape[/code] the index of the [Shape2D] of the other Area2D used by the [Physics2DServer].
+				[code]local_shape[/code] the index of the [Shape2D] of this Area2D used by the [Physics2DServer].
 			</description>
 		</signal>
 		<signal name="body_entered">
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				Emitted when a physics body enters.
-				The [code]body[/code] argument can either be a [PhysicsBody2D] or a [TileMap] instance (while TileMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when a [PhysicsBody2D] or [TileMap] enters this Area2D. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
 			</description>
 		</signal>
 		<signal name="body_exited">
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				Emitted when a physics body exits.
-				The [code]body[/code] argument can either be a [PhysicsBody2D] or a [TileMap] instance (while TileMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when a [PhysicsBody2D] or [TileMap] exits this Area2D. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
@@ -199,11 +209,14 @@
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a physics body enters, reporting which shapes overlapped.
-				The [code]body[/code] argument can either be a [PhysicsBody2D] or a [TileMap] instance (while TileMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when one of a [PhysicsBody2D] or [TileMap]'s [Shape2D]s enters one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				[code]body_id[/code] the [RID] of the [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [Physics2DServer].
+				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody2D] or [TileMap].
+				[code]body_shape[/code] the index of the [Shape2D] of the [PhysicsBody2D] or [TileMap] used by the [Physics2DServer].
+				[code]local_shape[/code] the index of the [Shape2D] of this Area2D used by the [Physics2DServer].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -213,11 +226,14 @@
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a physics body exits, reporting which shapes were overlapping.
-				The [code]body[/code] argument can either be a [PhysicsBody2D] or a [TileMap] instance (while TileMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when one of a [PhysicsBody2D] or [TileMap]'s [Shape2D]s exits one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				[code]body_id[/code] the [RID] of the [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [Physics2DServer].
+				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody2D] or [TileMap].
+				[code]body_shape[/code] the index of the [Shape2D] of the [PhysicsBody2D] or [TileMap] used by the [Physics2DServer].
+				[code]local_shape[/code] the index of the [Shape2D] of this Area2D used by the [Physics2DServer].
 			</description>
 		</signal>
 	</signals>
