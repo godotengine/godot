@@ -2387,6 +2387,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			menu_point = graph->get_local_mouse_position();
 			Point2 gpos = Input::get_singleton()->get_mouse_position();
 			popup_menu->set_position(gpos);
+			popup_menu->set_size(Size2(-1, -1));
 			popup_menu->popup();
 		}
 	}
