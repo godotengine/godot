@@ -496,6 +496,7 @@ void VisualShader::replace_node(Type p_type, int p_id, const StringName &p_new_c
 		return;
 	}
 	VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instance(p_new_class));
+	vsn->connect("changed", callable_mp(this, &VisualShader::_queue_update));
 	g->nodes[p_id].node = Ref<VisualShaderNode>(vsn);
 
 	_queue_update();
