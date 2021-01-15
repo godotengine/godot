@@ -201,6 +201,14 @@ Vector3 Vector3::lerp(const Vector3 &p_to, real_t p_weight) const {
 			z + (p_weight * (p_to.z - z)));
 }
 
+Vector3 Vector3::linear_interpolate(const Vector3 &p_b, real_t p_t) const {
+
+	return Vector3(
+			x + (p_t * (p_b.x - x)),
+			y + (p_t * (p_b.y - y)),
+			z + (p_t * (p_b.z - z)));
+}
+
 Vector3 Vector3::slerp(const Vector3 &p_to, real_t p_weight) const {
 	real_t theta = angle_to(p_to);
 	return rotated(cross(p_to).normalized(), theta * p_weight);
