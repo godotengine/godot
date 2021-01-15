@@ -1039,6 +1039,9 @@ void Window::popup_centered_ratio(float p_ratio) {
 void Window::popup(const Rect2i &p_screen_rect) {
 	emit_signal("about_to_popup");
 
+	// Update window size to calculate the actual window size based on contents minimum size and minimum size.
+	_update_window_size();
+
 	if (p_screen_rect != Rect2i()) {
 		set_position(p_screen_rect.position);
 		set_size(p_screen_rect.size);
