@@ -1057,6 +1057,18 @@
 			The amount of UV contraction. This figure is divided by 1000000, and is a proportion of the total texture dimensions, where the width and height are both ranged from 0.0 to 1.0.
 			Use the default unless correcting for a problem on particular hardware.
 		</member>
+		<member name="rendering/cpu_lightmapper/quality/high_quality_ray_count" type="int" setter="" getter="" default="512">
+			Amount of light samples taken when using [constant BakedLightmap.BAKE_QUALITY_HIGH].
+		</member>
+		<member name="rendering/cpu_lightmapper/quality/low_quality_ray_count" type="int" setter="" getter="" default="64">
+			Amount of light samples taken when using [constant BakedLightmap.BAKE_QUALITY_LOW].
+		</member>
+		<member name="rendering/cpu_lightmapper/quality/medium_quality_ray_count" type="int" setter="" getter="" default="256">
+			Amount of light samples taken when using [constant BakedLightmap.BAKE_QUALITY_MEDIUM].
+		</member>
+		<member name="rendering/cpu_lightmapper/quality/ultra_quality_ray_count" type="int" setter="" getter="" default="1024">
+			Amount of light samples taken when using [constant BakedLightmap.BAKE_QUALITY_ULTRA].
+		</member>
 		<member name="rendering/environment/default_clear_color" type="Color" setter="" getter="" default="Color( 0.3, 0.3, 0.3, 1 )">
 			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method VisualServer.set_default_clear_color].
 		</member>
@@ -1168,6 +1180,12 @@
 		</member>
 		<member name="rendering/quality/intended_usage/framebuffer_allocation.mobile" type="int" setter="" getter="" default="3">
 			Lower-end override for [member rendering/quality/intended_usage/framebuffer_allocation] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/quality/lightmapping/use_bicubic_sampling" type="bool" setter="" getter="" default="true">
+			Enable usage of bicubic sampling in baked lightmaps. This results in smoother looking lighting at the expense of more bandwidth usage. On GLES2, changes to this setting will only be applied upon restarting the application.
+		</member>
+		<member name="rendering/quality/lightmapping/use_bicubic_sampling.mobile" type="bool" setter="" getter="" default="false">
+			Lower-end override for [member rendering/quality/lightmapping/use_bicubic_sampling] on mobile devices, in order to reduce bandwidth usage.
 		</member>
 		<member name="rendering/quality/reflections/atlas_size" type="int" setter="" getter="" default="2048">
 			Size of the atlas used by reflection probes. A larger size can result in higher visual quality, while a smaller size will be faster and take up less memory.

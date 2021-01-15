@@ -484,7 +484,7 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 				InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(instance->base_data);
 				//erase dependencies, since no longer a lightmap
 				while (lightmap_capture->users.front()) {
-					instance_set_use_lightmap(lightmap_capture->users.front()->get()->self, RID(), RID());
+					instance_set_use_lightmap(lightmap_capture->users.front()->get()->self, RID(), RID(), -1, Rect2(0, 0, 1, 1));
 				}
 			} break;
 			case VS::INSTANCE_GI_PROBE: {
@@ -805,7 +805,7 @@ inline bool is_geometry_instance(VisualServer::InstanceType p_type) {
 	return p_type == VS::INSTANCE_MESH || p_type == VS::INSTANCE_MULTIMESH || p_type == VS::INSTANCE_PARTICLES || p_type == VS::INSTANCE_IMMEDIATE;
 }
 
-void VisualServerScene::instance_set_use_lightmap(RID p_instance, RID p_lightmap_instance, RID p_lightmap) {
+void VisualServerScene::instance_set_use_lightmap(RID p_instance, RID p_lightmap_instance, RID p_lightmap, int p_lightmap_slice, const Rect2 &p_lightmap_uv_rect) {
 
 	Instance *instance = instance_owner.get(p_instance);
 	ERR_FAIL_COND(!instance);
@@ -814,6 +814,8 @@ void VisualServerScene::instance_set_use_lightmap(RID p_instance, RID p_lightmap
 		InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(((Instance *)instance->lightmap_capture)->base_data);
 		lightmap_capture->users.erase(instance);
 		instance->lightmap = RID();
+		instance->lightmap_slice = -1;
+		instance->lightmap_uv_rect = Rect2(0, 0, 1, 1);
 		instance->lightmap_capture = NULL;
 	}
 
@@ -826,6 +828,8 @@ void VisualServerScene::instance_set_use_lightmap(RID p_instance, RID p_lightmap
 		InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(((Instance *)instance->lightmap_capture)->base_data);
 		lightmap_capture->users.insert(instance);
 		instance->lightmap = p_lightmap;
+		instance->lightmap_slice = p_lightmap_slice;
+		instance->lightmap_uv_rect = p_lightmap_uv_rect;
 	}
 }
 
@@ -3618,7 +3622,7 @@ bool VisualServerScene::free(RID p_rid) {
 
 		Instance *instance = instance_owner.get(p_rid);
 
-		instance_set_use_lightmap(p_rid, RID(), RID());
+		instance_set_use_lightmap(p_rid, RID(), RID(), -1, Rect2(0, 0, 1, 1));
 		instance_set_scenario(p_rid, RID());
 		instance_set_base(p_rid, RID());
 		instance_geometry_set_material_override(p_rid, RID());

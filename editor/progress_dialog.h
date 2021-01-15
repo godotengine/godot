@@ -77,13 +77,13 @@ class ProgressDialog : public Popup {
 		VBoxContainer *vb;
 		ProgressBar *progress;
 		Label *state;
+		uint64_t last_progress_tick;
 	};
 	HBoxContainer *cancel_hb;
 	Button *cancel;
 
 	Map<String, Task> tasks;
 	VBoxContainer *main;
-	uint64_t last_progress_tick;
 
 	static ProgressDialog *singleton;
 	void _popup();

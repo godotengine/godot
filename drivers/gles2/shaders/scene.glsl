@@ -889,6 +889,69 @@ void reflection_process(samplerCube reflection_map,
 #ifdef USE_LIGHTMAP
 uniform mediump sampler2D lightmap; //texunit:-4
 uniform mediump float lightmap_energy;
+
+#if defined(USE_LIGHTMAP_FILTER_BICUBIC)
+uniform mediump vec2 lightmap_texture_size;
+
+// w0, w1, w2, and w3 are the four cubic B-spline basis functions
+float w0(float a) {
+	return (1.0 / 6.0) * (a * (a * (-a + 3.0) - 3.0) + 1.0);
+}
+
+float w1(float a) {
+	return (1.0 / 6.0) * (a * a * (3.0 * a - 6.0) + 4.0);
+}
+
+float w2(float a) {
+	return (1.0 / 6.0) * (a * (a * (-3.0 * a + 3.0) + 3.0) + 1.0);
+}
+
+float w3(float a) {
+	return (1.0 / 6.0) * (a * a * a);
+}
+
+// g0 and g1 are the two amplitude functions
+float g0(float a) {
+	return w0(a) + w1(a);
+}
+
+float g1(float a) {
+	return w2(a) + w3(a);
+}
+
+// h0 and h1 are the two offset functions
+float h0(float a) {
+	return -1.0 + w1(a) / (w0(a) + w1(a));
+}
+
+float h1(float a) {
+	return 1.0 + w3(a) / (w2(a) + w3(a));
+}
+
+vec4 texture2D_bicubic(sampler2D tex, vec2 uv) {
+	vec2 texel_size = vec2(1.0) / lightmap_texture_size;
+
+	uv = uv * lightmap_texture_size + vec2(0.5);
+
+	vec2 iuv = floor(uv);
+	vec2 fuv = fract(uv);
+
+	float g0x = g0(fuv.x);
+	float g1x = g1(fuv.x);
+	float h0x = h0(fuv.x);
+	float h1x = h1(fuv.x);
+	float h0y = h0(fuv.y);
+	float h1y = h1(fuv.y);
+
+	vec2 p0 = (vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5)) * texel_size;
+	vec2 p1 = (vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5)) * texel_size;
+	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5)) * texel_size;
+	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5)) * texel_size;
+
+	return (g0(fuv.y) * (g0x * texture2D(tex, p0) + g1x * texture2D(tex, p1))) +
+		   (g1(fuv.y) * (g0x * texture2D(tex, p2) + g1x * texture2D(tex, p3)));
+}
+#endif //USE_LIGHTMAP_FILTER_BICUBIC
 #endif
 
 #ifdef USE_LIGHTMAP_CAPTURE
@@ -1660,8 +1723,12 @@ FRAGMENT_SHADER_CODE
 	}
 
 #ifdef USE_LIGHTMAP
-	//ambient light will come entirely from lightmap is lightmap is used
+//ambient light will come entirely from lightmap is lightmap is used
+#if defined(USE_LIGHTMAP_FILTER_BICUBIC)
+	ambient_light = texture2D_bicubic(lightmap, uv2_interp).rgb * lightmap_energy;
+#else
 	ambient_light = texture2D(lightmap, uv2_interp).rgb * lightmap_energy;
+#endif
 #endif
 
 #ifdef USE_LIGHTMAP_CAPTURE

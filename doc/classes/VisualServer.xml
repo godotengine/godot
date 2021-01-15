@@ -2045,6 +2045,10 @@
 			</argument>
 			<argument index="2" name="lightmap" type="RID">
 			</argument>
+			<argument index="3" name="lightmap_slice" type="int" default="-1">
+			</argument>
+			<argument index="4" name="lightmap_uv_rect" type="Rect2" default="Rect2( 0, 0, 1, 1 )">
+			</argument>
 			<description>
 				Sets the lightmap to use with this instance.
 			</description>

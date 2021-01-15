@@ -107,7 +107,7 @@
 	</methods>
 	<members>
 		<member name="lightmap_size_hint" type="Vector2" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint" default="Vector2( 0, 0 )">
-			Sets a hint to be used for lightmap resolution in [BakedLightmap]. Overrides [member BakedLightmap.bake_default_texels_per_unit].
+			Sets a hint to be used for lightmap resolution in [BakedLightmap]. Overrides [member BakedLightmap.default_texels_per_unit].
 		</member>
 	</members>
 	<constants>

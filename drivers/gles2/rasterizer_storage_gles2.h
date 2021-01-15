@@ -57,6 +57,7 @@ public:
 		bool shrink_textures_x2;
 		bool use_fast_texture_filter;
 		bool use_skeleton_software;
+		bool use_lightmap_filter_bicubic;
 
 		int max_vertex_texture_image_units;
 		int max_texture_image_units;

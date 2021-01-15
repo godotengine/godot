@@ -6299,6 +6299,9 @@ void RasterizerStorageGLES2::initialize() {
 
 	config.force_vertex_shading = GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
 	config.use_fast_texture_filter = GLOBAL_GET("rendering/quality/filters/use_nearest_mipmap_filter");
+	GLOBAL_DEF_RST("rendering/quality/lightmapping/use_bicubic_sampling", true);
+	GLOBAL_DEF_RST("rendering/quality/lightmapping/use_bicubic_sampling.mobile", false);
+	config.use_lightmap_filter_bicubic = GLOBAL_GET("rendering/quality/lightmapping/use_bicubic_sampling");
 }
 
 void RasterizerStorageGLES2::finalize() {

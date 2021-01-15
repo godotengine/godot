@@ -46,6 +46,12 @@
 		<member name="extra_cull_margin" type="float" setter="set_extra_cull_margin" getter="get_extra_cull_margin" default="0.0">
 			The extra distance added to the GeometryInstance's bounding box ([AABB]) to increase its cull box.
 		</member>
+		<member name="generate_lightmap" type="bool" setter="set_generate_lightmap" getter="get_generate_lightmap" default="true">
+			When disabled, the mesh will be taken into account when computing indirect lighting, but the resulting lightmap will not be saved. Useful for emissive only materials or shadow casters.
+		</member>
+		<member name="lightmap_scale" type="int" setter="set_lightmap_scale" getter="get_lightmap_scale" enum="GeometryInstance.LightmapScale" default="0">
+			Scale factor for the generated baked lightmap. Useful for adding detail to certain mesh instances.
+		</member>
 		<member name="lod_max_distance" type="float" setter="set_lod_max_distance" getter="get_lod_max_distance" default="0.0">
 			The GeometryInstance's max LOD distance.
 			[b]Note:[/b] This property currently has no effect.
@@ -71,6 +77,20 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="LIGHTMAP_SCALE_1X" value="0" enum="LightmapScale">
+			The generated lightmap texture will have the original size.
+		</constant>
+		<constant name="LIGHTMAP_SCALE_2X" value="1" enum="LightmapScale">
+			The generated lightmap texture will be twice as large, on each axis.
+		</constant>
+		<constant name="LIGHTMAP_SCALE_4X" value="2" enum="LightmapScale">
+			The generated lightmap texture will be 4 times as large, on each axis.
+		</constant>
+		<constant name="LIGHTMAP_SCALE_8X" value="3" enum="LightmapScale">
+			The generated lightmap texture will be 8 times as large, on each axis.
+		</constant>
+		<constant name="LIGHTMAP_SCALE_MAX" value="4" enum="LightmapScale">
+		</constant>
 		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="ShadowCastingSetting">
 			Will not cast any shadows.
 		</constant>

@@ -2572,6 +2572,9 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 		if (rebind_lightmap && lightmap) {
 			state.scene_shader.set_uniform(SceneShaderGLES2::LIGHTMAP_ENERGY, lightmap_energy);
+			if (storage->config.use_lightmap_filter_bicubic) {
+				state.scene_shader.set_uniform(SceneShaderGLES2::LIGHTMAP_TEXTURE_SIZE, Vector2(lightmap->width, lightmap->height));
+			}
 		}
 
 		state.scene_shader.set_uniform(SceneShaderGLES2::WORLD_TRANSFORM, e->instance->transform);
@@ -4045,6 +4048,10 @@ void RasterizerSceneGLES2::initialize() {
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			ERR_PRINT("Directional shadow framebuffer status invalid");
 		}
+	}
+
+	if (storage->config.use_lightmap_filter_bicubic) {
+		state.scene_shader.add_custom_define("#define USE_LIGHTMAP_FILTER_BICUBIC\n");
 	}
 
 	shadow_filter_mode = SHADOW_FILTER_NEAREST;

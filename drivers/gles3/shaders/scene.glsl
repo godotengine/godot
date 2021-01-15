@@ -109,6 +109,10 @@ layout(std140) uniform SceneData { // ubo:0
 
 uniform highp mat4 world_transform;
 
+#ifdef USE_LIGHTMAP
+uniform highp vec4 lightmap_uv_rect;
+#endif
+
 #ifdef USE_LIGHT_DIRECTIONAL
 
 layout(std140) uniform DirectionalLightData { //ubo:3
@@ -346,7 +350,9 @@ void main() {
 	uv_interp = uv_attrib;
 #endif
 
-#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
+#if defined(USE_LIGHTMAP)
+	uv2_interp = lightmap_uv_rect.zw * uv2_attrib + lightmap_uv_rect.xy;
+#elif defined(ENABLE_UV2_INTERP)
 	uv2_interp = uv2_attrib;
 #endif
 
@@ -1435,8 +1441,109 @@ void reflection_process(int idx, vec3 vertex, vec3 normal, vec3 binormal, vec3 t
 }
 
 #ifdef USE_LIGHTMAP
+#ifdef USE_LIGHTMAP_LAYERED
+uniform mediump sampler2DArray lightmap; //texunit:-9
+uniform int lightmap_layer;
+#else
 uniform mediump sampler2D lightmap; //texunit:-9
+#endif
+
 uniform mediump float lightmap_energy;
+
+#ifdef USE_LIGHTMAP_FILTER_BICUBIC
+uniform vec2 lightmap_texture_size;
+
+// w0, w1, w2, and w3 are the four cubic B-spline basis functions
+float w0(float a) {
+	return (1.0 / 6.0) * (a * (a * (-a + 3.0) - 3.0) + 1.0);
+}
+
+float w1(float a) {
+	return (1.0 / 6.0) * (a * a * (3.0 * a - 6.0) + 4.0);
+}
+
+float w2(float a) {
+	return (1.0 / 6.0) * (a * (a * (-3.0 * a + 3.0) + 3.0) + 1.0);
+}
+
+float w3(float a) {
+	return (1.0 / 6.0) * (a * a * a);
+}
+
+// g0 and g1 are the two amplitude functions
+float g0(float a) {
+	return w0(a) + w1(a);
+}
+
+float g1(float a) {
+	return w2(a) + w3(a);
+}
+
+// h0 and h1 are the two offset functions
+float h0(float a) {
+	return -1.0 + w1(a) / (w0(a) + w1(a));
+}
+
+float h1(float a) {
+	return 1.0 + w3(a) / (w2(a) + w3(a));
+}
+
+vec4 texture_bicubic(sampler2D tex, vec2 uv) {
+	vec2 texel_size = vec2(1.0) / lightmap_texture_size;
+
+	uv = uv * lightmap_texture_size + vec2(0.5);
+
+	vec2 iuv = floor(uv);
+	vec2 fuv = fract(uv);
+
+	float g0x = g0(fuv.x);
+	float g1x = g1(fuv.x);
+	float h0x = h0(fuv.x);
+	float h1x = h1(fuv.x);
+	float h0y = h0(fuv.y);
+	float h1y = h1(fuv.y);
+
+	vec2 p0 = (vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5)) * texel_size;
+	vec2 p1 = (vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5)) * texel_size;
+	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5)) * texel_size;
+	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5)) * texel_size;
+
+	return (g0(fuv.y) * (g0x * texture(tex, p0) + g1x * texture(tex, p1))) +
+		   (g1(fuv.y) * (g0x * texture(tex, p2) + g1x * texture(tex, p3)));
+}
+
+vec4 textureArray_bicubic(sampler2DArray tex, vec3 uv) {
+	vec2 texel_size = vec2(1.0) / lightmap_texture_size;
+
+	uv.xy = uv.xy * lightmap_texture_size + vec2(0.5);
+
+	vec2 iuv = floor(uv.xy);
+	vec2 fuv = fract(uv.xy);
+
+	float g0x = g0(fuv.x);
+	float g1x = g1(fuv.x);
+	float h0x = h0(fuv.x);
+	float h1x = h1(fuv.x);
+	float h0y = h0(fuv.y);
+	float h1y = h1(fuv.y);
+
+	vec2 p0 = (vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5)) * texel_size;
+	vec2 p1 = (vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5)) * texel_size;
+	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5)) * texel_size;
+	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5)) * texel_size;
+
+	return (g0(fuv.y) * (g0x * texture(tex, vec3(p0, uv.z)) + g1x * texture(tex, vec3(p1, uv.z)))) +
+		   (g1(fuv.y) * (g0x * texture(tex, vec3(p2, uv.z)) + g1x * texture(tex, vec3(p3, uv.z))));
+}
+
+#define LIGHTMAP_TEXTURE_SAMPLE(m_tex, m_uv) texture_bicubic(m_tex, m_uv)
+#define LIGHTMAP_TEXTURE_LAYERED_SAMPLE(m_tex, m_uv) textureArray_bicubic(m_tex, m_uv)
+
+#else //!USE_LIGHTMAP_FILTER_BICUBIC
+#define LIGHTMAP_TEXTURE_SAMPLE(m_tex, m_uv) texture(m_tex, m_uv)
+#define LIGHTMAP_TEXTURE_LAYERED_SAMPLE(m_tex, m_uv) texture(m_tex, m_uv)
+
+#endif //USE_LIGHTMAP_FILTER_BICUBIC
 #endif
 
 #ifdef USE_LIGHTMAP_CAPTURE
@@ -1823,7 +1930,11 @@ FRAGMENT_SHADER_CODE
 #endif
 
 #ifdef USE_LIGHTMAP
-	ambient_light = texture(lightmap, uv2).rgb * lightmap_energy;
+#ifdef USE_LIGHTMAP_LAYERED
+	ambient_light = LIGHTMAP_TEXTURE_LAYERED_SAMPLE(lightmap, vec3(uv2, float(lightmap_layer))).rgb * lightmap_energy;
+#else
+	ambient_light = LIGHTMAP_TEXTURE_SAMPLE(lightmap, uv2).rgb * lightmap_energy;
+#endif
 #endif
 
 #ifdef USE_LIGHTMAP_CAPTURE
