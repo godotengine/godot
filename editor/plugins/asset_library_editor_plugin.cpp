@@ -1423,10 +1423,18 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(memnew(Label(TTR("Site:") + " ")));
 	repository = memnew(OptionButton);
 
-	repository->add_item("godotengine.org");
-	repository->set_item_metadata(0, "https://godotengine.org/asset-library/api");
-	repository->add_item("localhost");
-	repository->set_item_metadata(1, "http://127.0.0.1/asset-library/api");
+	{
+		Dictionary default_urls;
+		default_urls["godotengine.org"] = "https://godotengine.org/asset-library/api";
+		default_urls["localhost"] = "http://127.0.0.1/asset-library/api";
+		Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
+		Array keys = available_urls.keys();
+		for (int i = 0; i < available_urls.size(); i++) {
+			String key = keys[i];
+			repository->add_item(key);
+			repository->set_item_metadata(i, available_urls[key]);
+		}
+	}
 
 	repository->connect("item_selected", this, "_repository_changed");
 
