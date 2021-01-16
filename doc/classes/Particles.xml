@@ -106,7 +106,8 @@
 			Speed scaling ratio. A value of [code]0[/code] can be used to pause the particles.
 		</member>
 		<member name="visibility_aabb" type="AABB" setter="set_visibility_aabb" getter="get_visibility_aabb" default="AABB( -4, -4, -4, 8, 8, 8 )">
-			The [AABB] that determines the area of the world part of which needs to be visible on screen for the particle system to be active.
+			The [AABB] that determines the node's region which needs to be visible on screen for the particle system to be active.
+			Grow the box if particles suddenly appear/disappear when the node enters/exits the screen. The [AABB] can be grown via code or with the [b]Particles → Generate AABB[/b] editor tool.
 			[b]Note:[/b] If the [ParticlesMaterial] in use is configured to cast shadows, you may want to enlarge this AABB to ensure the shadow is updated when particles are off-screen.
 		</member>
 	</members>
