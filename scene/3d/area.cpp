@@ -385,7 +385,7 @@ void Area::_area_inout(int p_status, const RID &p_area, int p_instance, int p_ar
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_area_enter_tree);
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_area_exit_tree);
-				if (E->get().in_tree) {
+				if (in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->area_exited, obj);
 				}
 			}
