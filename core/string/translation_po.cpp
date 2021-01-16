@@ -275,7 +275,7 @@ void TranslationPO::erase_message(const StringName &p_src_text, const StringName
 }
 
 void TranslationPO::get_message_list(List<StringName> *r_messages) const {
-	// PHashTranslation uses this function to get the list of msgid.
+	// OptimizedTranslation uses this function to get the list of msgid.
 	// Return all the keys of translation_map under "" context.
 
 	List<StringName> context_l;

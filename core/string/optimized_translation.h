@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  compressed_translation.h                                             */
+/*  optimized_translation.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COMPRESSED_TRANSLATION_H
-#define COMPRESSED_TRANSLATION_H
+#ifndef OPTIMIZED_TRANSLATION_H
+#define OPTIMIZED_TRANSLATION_H
 
 #include "core/string/translation.h"
 
-class PHashTranslation : public Translation {
-	GDCLASS(PHashTranslation, Translation);
+class OptimizedTranslation : public Translation {
+	GDCLASS(OptimizedTranslation, Translation);
 
 	//this translation uses a sort of modified perfect hash algorithm
 	//it requires hashing strings twice and then does a binary search,
@@ -83,7 +83,7 @@ public:
 	virtual StringName get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context = "") const override;
 	void generate(const Ref<Translation> &p_from);
 
-	PHashTranslation() {}
+	OptimizedTranslation() {}
 };
 
-#endif // COMPRESSED_TRANSLATION_H
+#endif // OPTIMIZED_TRANSLATION_H

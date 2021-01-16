@@ -37,7 +37,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/string/compressed_translation.h"
+#include "core/string/optimized_translation.h"
 #include "editor_data.h"
 #include "editor_node.h"
 #include "editor_scale.h"
