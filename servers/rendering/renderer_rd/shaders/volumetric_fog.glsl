@@ -4,6 +4,15 @@
 
 VERSION_DEFINES
 
+/* Do not use subgroups here, seems there is not much advantage and causes glitches
+#extension GL_KHR_shader_subgroup_ballot: enable
+#extension GL_KHR_shader_subgroup_arithmetic: enable
+
+#if defined(GL_KHR_shader_subgroup_ballot) && defined(GL_KHR_shader_subgroup_arithmetic)
+#define USE_SUBGROUPS
+#endif
+*/
+
 #if defined(MODE_FOG) || defined(MODE_FILTER)
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
@@ -23,22 +32,25 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(set = 0, binding = 1) uniform texture2D shadow_atlas;
 layout(set = 0, binding = 2) uniform texture2D directional_shadow_atlas;
 
-layout(set = 0, binding = 3, std430) restrict readonly buffer Lights {
+layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
 	LightData data[];
 }
-lights;
+omni_lights;
 
-layout(set = 0, binding = 4, std140) uniform DirectionalLights {
+layout(set = 0, binding = 4, std430) restrict readonly buffer SpotLights {
+	LightData data[];
+}
+spot_lights;
+
+layout(set = 0, binding = 5, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
 directional_lights;
 
-layout(set = 0, binding = 5) uniform utexture3D cluster_texture;
-
-layout(set = 0, binding = 6, std430) restrict readonly buffer ClusterData {
-	uint indices[];
+layout(set = 0, binding = 6, std430) buffer restrict readonly ClusterBuffer {
+	uint data[];
 }
-cluster_data;
+cluster_buffer;
 
 layout(set = 0, binding = 7) uniform sampler linear_sampler;
 
@@ -132,7 +144,7 @@ layout(set = 1, binding = 2) uniform texture3D sdfgi_occlusion_texture;
 
 #endif //SDFGI
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(set = 0, binding = 14, std140) uniform Params {
 	vec2 fog_frustum_size_begin;
 	vec2 fog_frustum_size_end;
 
@@ -150,7 +162,14 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	float detail_spread;
 	float gi_inject;
 	uint max_gi_probes;
-	uint pad;
+	uint cluster_type_size;
+
+	vec2 screen_size;
+	uint cluster_shift;
+	uint cluster_width;
+
+	uvec3 cluster_pad;
+	uint max_cluster_element_count_div_32;
 
 	mat3x4 cam_rotation;
 }
@@ -178,6 +197,22 @@ float get_omni_attenuation(float distance, float inv_range, float decay) {
 	return nd * pow(max(distance, 0.0001), -decay);
 }
 
+void cluster_get_item_range(uint p_offset, out uint item_min, out uint item_max, out uint item_from, out uint item_to) {
+	uint item_min_max = cluster_buffer.data[p_offset];
+	item_min = item_min_max & 0xFFFF;
+	item_max = item_min_max >> 16;
+	;
+
+	item_from = item_min >> 5;
+	item_to = (item_max == 0) ? 0 : ((item_max - 1) >> 5) + 1; //side effect of how it is stored, as item_max 0 means no elements
+}
+
+uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
+	int local_min = clamp(int(z_min) - int(i) * 32, 0, 31);
+	int mask_width = min(int(z_max) - int(z_min), 32 - local_min);
+	return bitfieldInsert(uint(0), uint(0xFFFFFFFF), local_min, mask_width);
+}
+
 void main() {
 	vec3 fog_cell_size = 1.0 / vec3(params.fog_volume_size);
 
@@ -193,12 +228,20 @@ void main() {
 	//posf += mix(vec3(0.0),vec3(1.0),0.3) * hash3f(uvec3(pos)) * 2.0 - 1.0;
 
 	vec3 fog_unit_pos = posf * fog_cell_size + fog_cell_size * 0.5; //center of voxels
+
+	uvec2 screen_pos = uvec2(fog_unit_pos.xy * params.screen_size);
+	uvec2 cluster_pos = screen_pos >> params.cluster_shift;
+	uint cluster_offset = (params.cluster_width * cluster_pos.y + cluster_pos.x) * (params.max_cluster_element_count_div_32 + 32);
+	//positions in screen are too spread apart, no hopes for optimizing with subgroups
+
 	fog_unit_pos.z = pow(fog_unit_pos.z, params.detail_spread);
 
 	vec3 view_pos;
 	view_pos.xy = (fog_unit_pos.xy * 2.0 - 1.0) * mix(params.fog_frustum_size_begin, params.fog_frustum_size_end, vec2(fog_unit_pos.z));
 	view_pos.z = -params.fog_frustum_end * fog_unit_pos.z;
 	view_pos.y = -view_pos.y;
+
+	uint cluster_z = uint(clamp((abs(view_pos.z) / params.z_far) * 32.0, 0.0, 31.0));
 
 	vec3 total_light = params.light_color;
 
@@ -266,95 +309,160 @@ void main() {
 
 	//compute lights from cluster
 
-	vec3 cluster_pos;
-	cluster_pos.xy = fog_unit_pos.xy;
-	cluster_pos.z = clamp((abs(view_pos.z) - params.z_near) / (params.z_far - params.z_near), 0.0, 1.0);
+	{ //omni lights
 
-	uvec4 cluster_cell = texture(usampler3D(cluster_texture, linear_sampler), cluster_pos);
+		uint cluster_omni_offset = cluster_offset;
 
-	uint omni_light_count = cluster_cell.x >> CLUSTER_COUNTER_SHIFT;
-	uint omni_light_pointer = cluster_cell.x & CLUSTER_POINTER_MASK;
+		uint item_min;
+		uint item_max;
+		uint item_from;
+		uint item_to;
 
-	for (uint i = 0; i < omni_light_count; i++) {
-		uint light_index = cluster_data.indices[omni_light_pointer + i];
+		cluster_get_item_range(cluster_omni_offset + params.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
 
-		vec3 light_pos = lights.data[i].position;
-		float d = distance(lights.data[i].position, view_pos);
-		float shadow_attenuation = 1.0;
+#ifdef USE_SUBGROUPS
+		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
+		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
+#endif
 
-		if (d * lights.data[i].inv_radius < 1.0) {
-			float attenuation = get_omni_attenuation(d, lights.data[i].inv_radius, lights.data[i].attenuation);
+		for (uint i = item_from; i < item_to; i++) {
+			uint mask = cluster_buffer.data[cluster_omni_offset + i];
+			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+#ifdef USE_SUBGROUPS
+			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
+#else
+			uint merged_mask = mask;
+#endif
 
-			vec3 light = lights.data[i].color / M_PI;
-
-			if (lights.data[i].shadow_enabled) {
-				//has shadow
-				vec4 v = vec4(view_pos, 1.0);
-
-				vec4 splane = (lights.data[i].shadow_matrix * v);
-				float shadow_len = length(splane.xyz); //need to remember shadow len from here
-
-				splane.xyz = normalize(splane.xyz);
-				vec4 clamp_rect = lights.data[i].atlas_rect;
-
-				if (splane.z >= 0.0) {
-					splane.z += 1.0;
-
-					clamp_rect.y += clamp_rect.w;
-
-				} else {
-					splane.z = 1.0 - splane.z;
+			while (merged_mask != 0) {
+				uint bit = findMSB(merged_mask);
+				merged_mask &= ~(1 << bit);
+#ifdef USE_SUBGROUPS
+				if (((1 << bit) & mask) == 0) { //do not process if not originally here
+					continue;
 				}
+#endif
+				uint light_index = 32 * i + bit;
 
-				splane.xy /= splane.z;
+				//if (!bool(omni_omni_lights.data[light_index].mask & draw_call.layer_mask)) {
+				//	continue; //not masked
+				//}
 
-				splane.xy = splane.xy * 0.5 + 0.5;
-				splane.z = shadow_len * lights.data[i].inv_radius;
-				splane.xy = clamp_rect.xy + splane.xy * clamp_rect.zw;
-				splane.w = 1.0; //needed? i think it should be 1 already
+				vec3 light_pos = omni_lights.data[light_index].position;
+				float d = distance(omni_lights.data[light_index].position, view_pos);
+				float shadow_attenuation = 1.0;
 
-				float depth = texture(sampler2D(shadow_atlas, linear_sampler), splane.xy).r;
+				if (d * omni_lights.data[light_index].inv_radius < 1.0) {
+					float attenuation = get_omni_attenuation(d, omni_lights.data[light_index].inv_radius, omni_lights.data[light_index].attenuation);
 
-				shadow_attenuation = exp(min(0.0, (depth - splane.z)) / lights.data[i].inv_radius * lights.data[i].shadow_volumetric_fog_fade);
+					vec3 light = omni_lights.data[light_index].color / M_PI;
+
+					if (omni_lights.data[light_index].shadow_enabled) {
+						//has shadow
+						vec4 v = vec4(view_pos, 1.0);
+
+						vec4 splane = (omni_lights.data[light_index].shadow_matrix * v);
+						float shadow_len = length(splane.xyz); //need to remember shadow len from here
+
+						splane.xyz = normalize(splane.xyz);
+						vec4 clamp_rect = omni_lights.data[light_index].atlas_rect;
+
+						if (splane.z >= 0.0) {
+							splane.z += 1.0;
+
+							clamp_rect.y += clamp_rect.w;
+
+						} else {
+							splane.z = 1.0 - splane.z;
+						}
+
+						splane.xy /= splane.z;
+
+						splane.xy = splane.xy * 0.5 + 0.5;
+						splane.z = shadow_len * omni_lights.data[light_index].inv_radius;
+						splane.xy = clamp_rect.xy + splane.xy * clamp_rect.zw;
+						splane.w = 1.0; //needed? i think it should be 1 already
+
+						float depth = texture(sampler2D(shadow_atlas, linear_sampler), splane.xy).r;
+
+						shadow_attenuation = exp(min(0.0, (depth - splane.z)) / omni_lights.data[light_index].inv_radius * omni_lights.data[light_index].shadow_volumetric_fog_fade);
+					}
+					total_light += light * attenuation * shadow_attenuation;
+				}
 			}
-			total_light += light * attenuation * shadow_attenuation;
 		}
 	}
 
-	uint spot_light_count = cluster_cell.y >> CLUSTER_COUNTER_SHIFT;
-	uint spot_light_pointer = cluster_cell.y & CLUSTER_POINTER_MASK;
+	{ //spot lights
 
-	for (uint i = 0; i < spot_light_count; i++) {
-		uint light_index = cluster_data.indices[spot_light_pointer + i];
+		uint cluster_spot_offset = cluster_offset + params.cluster_type_size;
 
-		vec3 light_pos = lights.data[i].position;
-		vec3 light_rel_vec = lights.data[i].position - view_pos;
-		float d = length(light_rel_vec);
-		float shadow_attenuation = 1.0;
+		uint item_min;
+		uint item_max;
+		uint item_from;
+		uint item_to;
 
-		if (d * lights.data[i].inv_radius < 1.0) {
-			float attenuation = get_omni_attenuation(d, lights.data[i].inv_radius, lights.data[i].attenuation);
+		cluster_get_item_range(cluster_spot_offset + params.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
 
-			vec3 spot_dir = lights.data[i].direction;
-			float scos = max(dot(-normalize(light_rel_vec), spot_dir), lights.data[i].cone_angle);
-			float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - lights.data[i].cone_angle));
-			attenuation *= 1.0 - pow(spot_rim, lights.data[i].cone_attenuation);
+#ifdef USE_SUBGROUPS
+		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
+		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
+#endif
 
-			vec3 light = lights.data[i].color / M_PI;
+		for (uint i = item_from; i < item_to; i++) {
+			uint mask = cluster_buffer.data[cluster_spot_offset + i];
+			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+#ifdef USE_SUBGROUPS
+			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
+#else
+			uint merged_mask = mask;
+#endif
 
-			if (lights.data[i].shadow_enabled) {
-				//has shadow
-				vec4 v = vec4(view_pos, 1.0);
+			while (merged_mask != 0) {
+				uint bit = findMSB(merged_mask);
+				merged_mask &= ~(1 << bit);
+#ifdef USE_SUBGROUPS
+				if (((1 << bit) & mask) == 0) { //do not process if not originally here
+					continue;
+				}
+#endif
 
-				vec4 splane = (lights.data[i].shadow_matrix * v);
-				splane /= splane.w;
+				//if (!bool(omni_lights.data[light_index].mask & draw_call.layer_mask)) {
+				//	continue; //not masked
+				//}
 
-				float depth = texture(sampler2D(shadow_atlas, linear_sampler), splane.xy).r;
+				uint light_index = 32 * i + bit;
 
-				shadow_attenuation = exp(min(0.0, (depth - splane.z)) / lights.data[i].inv_radius * lights.data[i].shadow_volumetric_fog_fade);
+				vec3 light_pos = omni_lights.data[light_index].position;
+				vec3 light_rel_vec = omni_lights.data[light_index].position - view_pos;
+				float d = length(light_rel_vec);
+				float shadow_attenuation = 1.0;
+
+				if (d * omni_lights.data[light_index].inv_radius < 1.0) {
+					float attenuation = get_omni_attenuation(d, omni_lights.data[light_index].inv_radius, omni_lights.data[light_index].attenuation);
+
+					vec3 spot_dir = omni_lights.data[light_index].direction;
+					float scos = max(dot(-normalize(light_rel_vec), spot_dir), omni_lights.data[light_index].cone_angle);
+					float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - omni_lights.data[light_index].cone_angle));
+					attenuation *= 1.0 - pow(spot_rim, omni_lights.data[light_index].cone_attenuation);
+
+					vec3 light = omni_lights.data[light_index].color / M_PI;
+
+					if (omni_lights.data[light_index].shadow_enabled) {
+						//has shadow
+						vec4 v = vec4(view_pos, 1.0);
+
+						vec4 splane = (omni_lights.data[light_index].shadow_matrix * v);
+						splane /= splane.w;
+
+						float depth = texture(sampler2D(shadow_atlas, linear_sampler), splane.xy).r;
+
+						shadow_attenuation = exp(min(0.0, (depth - splane.z)) / omni_lights.data[light_index].inv_radius * omni_lights.data[light_index].shadow_volumetric_fog_fade);
+					}
+
+					total_light += light * attenuation * shadow_attenuation;
+				}
 			}
-
-			total_light += light * attenuation * shadow_attenuation;
 		}
 	}
 
