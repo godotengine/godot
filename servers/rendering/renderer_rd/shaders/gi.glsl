@@ -99,7 +99,7 @@ layout(push_constant, binding = 0, std430) uniform Params {
 
 	uint max_giprobes;
 	bool high_quality_vct;
-	bool use_sdfgi;
+	uint pad2;
 	bool orthogonal;
 
 	vec3 ao_color;
@@ -331,7 +331,7 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 		}
 
 		ambient_light.rgb = diffuse;
-#if 1
+
 		if (roughness < 0.2) {
 			vec3 pos_to_uvw = 1.0 / sdfgi.grid_size;
 			vec4 light_accum = vec4(0.0);
@@ -363,7 +363,6 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 				//ray_pos += ray_dir * (bias / sdfgi.cascades[cascade].to_cell); //bias to avoid self occlusion
 				ray_pos += (ray_dir * 1.0 / max(abs_ray_dir.x, max(abs_ray_dir.y, abs_ray_dir.z)) + cam_normal * 1.4) * bias / sdfgi.cascades[cascade].to_cell;
 			}
-
 			float softness = 0.2 + min(1.0, roughness * 5.0) * 4.0; //approximation to roughness so it does not seem like a hard fade
 			while (length(ray_pos) < max_distance) {
 				for (uint i = 0; i < sdfgi.max_cascades; i++) {
@@ -433,8 +432,6 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 				specular = (light * alpha * sa + specular * b) / reflection_light.a;
 			}
 		}
-
-#endif
 
 		reflection_light.rgb = specular;
 
@@ -621,11 +618,12 @@ void main() {
 
 		vec3 reflection = normalize(reflect(normalize(vertex), normal));
 
-		if (params.use_sdfgi) {
-			sdfgi_process(vertex, normal, reflection, roughness, ambient_light, reflection_light);
-		}
+#ifdef USE_SDFGI
+		sdfgi_process(vertex, normal, reflection, roughness, ambient_light, reflection_light);
+#endif
 
-		if (params.max_giprobes > 0) {
+#ifdef USE_GIPROBES
+		{
 			uvec2 giprobe_tex = texelFetch(usampler2D(giprobe_buffer, linear_sampler), pos, 0).rg;
 			roughness *= roughness;
 			//find arbitrary tangent and bitangent, then build a matrix
@@ -656,6 +654,7 @@ void main() {
 				ambient_light = amb_accum;
 			}
 		}
+#endif
 	}
 
 	imageStore(ambient_buffer, pos, ambient_light);

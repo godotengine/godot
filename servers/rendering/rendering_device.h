@@ -468,11 +468,11 @@ public:
 
 	// This ID is warranted to be unique for the same formats, does not need to be freed
 	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format) = 0;
-	virtual FramebufferFormatID framebuffer_format_create_empty(const Size2i &p_size) = 0;
+	virtual FramebufferFormatID framebuffer_format_create_empty(TextureSamples p_samples = TEXTURE_SAMPLES_1) = 0;
 	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format) = 0;
 
 	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID) = 0;
-	virtual RID framebuffer_create_empty(const Size2i &p_size, FramebufferFormatID p_format_check = INVALID_ID) = 0;
+	virtual RID framebuffer_create_empty(const Size2i &p_size, TextureSamples p_samples = TEXTURE_SAMPLES_1, FramebufferFormatID p_format_check = INVALID_ID) = 0;
 
 	virtual FramebufferFormatID framebuffer_get_format(RID p_framebuffer) = 0;
 
@@ -650,6 +650,7 @@ public:
 	virtual bool uniform_set_is_valid(RID p_uniform_set) = 0;
 
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the beginning of the frame, unless sync with draw is used, which is used to mix updates with draw calls
+	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, bool p_sync_with_draw = false) = 0;
 	virtual Vector<uint8_t> buffer_get_data(RID p_buffer) = 0; //this causes stall, only use to retrieve large buffers for saving
 
 	/*************************/

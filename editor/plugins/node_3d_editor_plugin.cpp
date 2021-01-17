@@ -3043,7 +3043,11 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_DISPLAY_DEBUG_SDFGI:
 		case VIEW_DISPLAY_DEBUG_SDFGI_PROBES:
 		case VIEW_DISPLAY_DEBUG_GI_BUFFER:
-		case VIEW_DISPLAY_DEBUG_DISABLE_LOD: {
+		case VIEW_DISPLAY_DEBUG_DISABLE_LOD:
+		case VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS:
+		case VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS:
+		case VIEW_DISPLAY_DEBUG_CLUSTER_DECALS:
+		case VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES: {
 			static const int display_options[] = {
 				VIEW_DISPLAY_NORMAL,
 				VIEW_DISPLAY_WIREFRAME,
@@ -3065,6 +3069,10 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				VIEW_DISPLAY_DEBUG_DECAL_ATLAS,
 				VIEW_DISPLAY_DEBUG_SDFGI,
 				VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
+				VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
+				VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS,
+				VIEW_DISPLAY_DEBUG_CLUSTER_DECALS,
+				VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
 				VIEW_MAX
 			};
 			static const Viewport::DebugDraw debug_draw_modes[] = {
@@ -3088,6 +3096,10 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_DECAL_ATLAS,
 				Viewport::DEBUG_DRAW_SDFGI,
 				Viewport::DEBUG_DRAW_SDFGI_PROBES,
+				Viewport::DEBUG_DRAW_CLUSTER_OMNI_LIGHTS,
+				Viewport::DEBUG_DRAW_CLUSTER_SPOT_LIGHTS,
+				Viewport::DEBUG_DRAW_CLUSTER_DECALS,
+				Viewport::DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
 			};
 
 			int idx = 0;
@@ -3991,6 +4003,12 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	display_submenu->add_radio_check_item(TTR("GI Buffer"), VIEW_DISPLAY_DEBUG_GI_BUFFER);
 	display_submenu->add_separator();
 	display_submenu->add_radio_check_item(TTR("Disable LOD"), VIEW_DISPLAY_DEBUG_DISABLE_LOD);
+	display_submenu->add_separator();
+	display_submenu->add_radio_check_item(TTR("Omni Light Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS);
+	display_submenu->add_radio_check_item(TTR("Spot Light Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS);
+	display_submenu->add_radio_check_item(TTR("Decal Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_DECALS);
+	display_submenu->add_radio_check_item(TTR("Reflection Probe Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES);
+
 	display_submenu->set_name("display_advanced");
 	view_menu->get_popup()->add_submenu_item(TTR("Display Advanced..."), "display_advanced", VIEW_DISPLAY_ADVANCED);
 	view_menu->get_popup()->add_separator();

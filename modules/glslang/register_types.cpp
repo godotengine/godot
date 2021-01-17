@@ -53,7 +53,7 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	int ClientInputSemanticsVersion = 100; // maps to, say, #define VULKAN 100
 
 	glslang::EShTargetClientVersion VulkanClientVersion = glslang::EShTargetVulkan_1_0;
-	glslang::EShTargetLanguageVersion TargetVersion = glslang::EShTargetSpv_1_0;
+	glslang::EShTargetLanguageVersion TargetVersion = glslang::EShTargetSpv_1_3;
 	glslang::TShader::ForbidIncluder includer;
 
 	glslang::TShader shader(stages[p_stage]);

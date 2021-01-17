@@ -74,6 +74,15 @@ Plane CameraMatrix::xform4(const Plane &p_vec4) const {
 	return ret;
 }
 
+void CameraMatrix::adjust_perspective_znear(real_t p_new_znear) {
+	real_t zfar = get_z_far();
+	real_t znear = p_new_znear;
+
+	real_t deltaZ = zfar - znear;
+	matrix[2][2] = -(zfar + znear) / deltaZ;
+	matrix[3][2] = -2 * znear * zfar / deltaZ;
+}
+
 void CameraMatrix::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov) {
 	if (p_flip_fov) {
 		p_fovy_degrees = get_fovy(p_fovy_degrees, 1.0 / p_aspect);

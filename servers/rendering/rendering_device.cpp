@@ -262,10 +262,10 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_resolve_multisample", "from_texture", "to_texture", "sync_with_draw"), &RenderingDevice::texture_resolve_multisample, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("framebuffer_format_create", "attachments"), &RenderingDevice::_framebuffer_format_create);
-	ClassDB::bind_method(D_METHOD("framebuffer_format_create_empty", "size"), &RenderingDevice::framebuffer_format_create_empty);
+	ClassDB::bind_method(D_METHOD("framebuffer_format_create_empty", "samples"), &RenderingDevice::framebuffer_format_create_empty, DEFVAL(TEXTURE_SAMPLES_1));
 	ClassDB::bind_method(D_METHOD("framebuffer_format_get_texture_samples", "format"), &RenderingDevice::framebuffer_format_get_texture_samples);
 	ClassDB::bind_method(D_METHOD("framebuffer_create", "textures", "validate_with_format"), &RenderingDevice::_framebuffer_create, DEFVAL(INVALID_FORMAT_ID));
-	ClassDB::bind_method(D_METHOD("framebuffer_create_empty", "size", "validate_with_format"), &RenderingDevice::framebuffer_create_empty, DEFVAL(INVALID_FORMAT_ID));
+	ClassDB::bind_method(D_METHOD("framebuffer_create_empty", "size", "samples", "validate_with_format"), &RenderingDevice::framebuffer_create_empty, DEFVAL(TEXTURE_SAMPLES_1), DEFVAL(INVALID_FORMAT_ID));
 	ClassDB::bind_method(D_METHOD("framebuffer_get_format", "framebuffer"), &RenderingDevice::framebuffer_get_format);
 
 	ClassDB::bind_method(D_METHOD("sampler_create", "state"), &RenderingDevice::_sampler_create);
@@ -288,6 +288,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("uniform_set_is_valid", "uniform_set"), &RenderingDevice::uniform_set_is_valid);
 
 	ClassDB::bind_method(D_METHOD("buffer_update", "buffer", "offset", "size_bytes", "data", "sync_with_draw"), &RenderingDevice::_buffer_update, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("buffer_clear", "buffer", "offset", "size_bytes", "sync_with_draw"), &RenderingDevice::_buffer_update, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("buffer_get_data", "buffer"), &RenderingDevice::buffer_get_data);
 
 	ClassDB::bind_method(D_METHOD("render_pipeline_create", "shader", "framebuffer_format", "vertex_format", "primitive", "rasterization_state", "multisample_state", "stencil_state", "color_blend_state", "dynamic_state_flags"), &RenderingDevice::_render_pipeline_create, DEFVAL(0));
