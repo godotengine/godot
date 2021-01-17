@@ -14,8 +14,6 @@ project(
         ])
 
 
-message(get_option('buildtype'))
-
 # The list of modules that will not be included in the build
 
 ################################################################################
@@ -90,7 +88,7 @@ subdir('scripts')
 # Figure out what modules we are building
 ################################################################################
 
-MODULE_SEARCH_PATHS = ['modules/']
+MODULE_SEARCH_PATHS = ['modules/'] + get_option('module_search_paths')
 MODULES_DB_FILE = meson.project_build_root() / 'modules_db.json'
 
 # Create the modules_db file
@@ -128,7 +126,7 @@ if _module_enabled_output.returncode() != 0
 endif
 
 MODULES_ENABLED = _module_enabled_output.stdout().strip().split(',')
-message('Modules Enabled - ', MODULES_ENABLED)
+
 
 # Get the list of disabled modules
 _module_disabled_output = run_command(SCRIPT_MODULE_DB, ['get_disabled_modules', MODULES_DB_FILE])
@@ -137,7 +135,6 @@ if _module_disabled_output.returncode() != 0
 endif
 
 MODULES_DISABLED = _module_disabled_output.stdout().strip().split(',')
-message('Modules Disabled - ', MODULES_DISABLED)
 
 _module_get_build_paths = run_command(SCRIPT_MODULE_DB, ['get_module_build_paths', MODULES_DB_FILE])
 MODULE_BUILD_PATHS = _module_get_build_paths.stdout().strip().split(',')
@@ -270,11 +267,12 @@ subdir('core')
 subdir('scene')
 subdir('drivers')
 subdir('servers')
-subdir('modules')
 subdir('editor')
-
 # generate our splashes
 subdir('splash')
+
+# generate the module include files
+subdir('modules')
 
 _godot_all = library('godot_all', SOURCES + HEADERS, include_directories: INCDIRS, dependencies: DEPENDENCIES, cpp_args: CPP_ARGS, link_args: LINK_ARGS)
 
@@ -291,3 +289,7 @@ subdir('main')
 
 # assemble our exe
 EXEC_GODOT = executable('godot', MAIN_SOURCES, dependencies: [DEP_GODOT_ALL, MODULE_DEPENDENCIES, DEPENDENCIES])
+
+# Output some final messages to the users
+message('Modules Enabled: ' + ', '.join(MODULES_ENABLED))
+message('Modules Disabled: ' + ', '.join(MODULES_DISABLED))

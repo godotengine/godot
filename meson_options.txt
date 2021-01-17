@@ -21,6 +21,7 @@ option('disable_3d', type: 'boolean', value: false, description: 'Disable 3D nod
 option('disable_advanced_gui', type: 'boolean', value: false, description: 'Disabled advanced GUI nodes and behaviors')
 option('no_editor_splash', type: 'boolean', value: false, description: 'Don\'t use the custom spash screen for the editor')
 option('system_certs_path', type: 'string', value: '', description: 'Use this path as SSL certificates default for editor (for package maintainers)')
+option('module_search_paths', type: 'array', value: [], description: 'List of additional subdirectories scan for modules.')
 
 # Windows options
 option('windows_version', type: 'string', value: '0x0601', description: 'Targeted Windows version, >= 0x0601 (Windows 7)')

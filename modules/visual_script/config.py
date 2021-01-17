@@ -1,3 +1,7 @@
+def get_name() -> str:
+    return 'visual_script'
+    
+
 def can_build(env: dict) -> bool:
     return True
 

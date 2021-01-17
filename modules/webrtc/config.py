@@ -1,3 +1,6 @@
+def get_name() -> str:
+    return 'webrtc'
+    
 def can_build(env: dict) -> bool:
     return True
 

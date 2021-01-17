@@ -1,3 +1,6 @@
+def get_name() -> str:
+    return 'denoise'
+
 def can_build(env: dict) -> bool:
     # Thirdparty dependency OpenImage Denoise includes oneDNN library
     # which only supports 64-bit architectures.

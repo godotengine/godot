@@ -13,6 +13,8 @@ from typing import Dict, Set
 from types import SimpleNamespace
 from collections import defaultdict
 
+def error(*args):
+    print(args, file=sys.stderr)
 
 class Environment:
     def __init__(self):
@@ -189,17 +191,27 @@ def write_db(out_file: str, mdb: ModuleDb):
 
 def __parse_module_config(config_path: str, env: Environment) -> Module:
     module_path = os.path.dirname(config_path)
-    module_name = module_path.split(os.sep)[-1]
+
+    config = runpy.run_path(config_path)
+
+    module_name = ''
+    if 'get_name' in config:
+        module_name = config['get_name']()
+    else:
+        error('%s has no get_name() method' % config_path)
+        return None
 
     module: Module = Module(name=module_name, path=module_path, build=True)
 
-    config = runpy.run_path(config_path)
 
     if 'can_build' in config:
         can_build = config['can_build'](env)
         module.build &= can_build
         if not can_build:
             module.build_info.append('The can_build() check failed.')
+    else:
+        error('%s has no can_build() method' % config_path)
+        return None
 
     if 'module_dependencies' in config:
         module.module_dependencies = config['module_dependencies']()
@@ -276,7 +288,10 @@ def __create_db_file(args):
         env.tools_enabled = args.tools_enabled
 
         module: Module = __parse_module_config(config, env)
-        mdb.modules[module.name] = module
+        if module:
+            mdb.modules[module.name] = module
+        else:
+            error('Failed to parse module config file: %s' % config)
 
     for module in mdb.get_modules():
         if module.name in modules_disabled:
@@ -336,7 +351,7 @@ if __name__ == "__main__":
         '--tools_enabled', dest='tools_enabled', action='store_true', help='Whether or not tooling is enabled for this build.'
     )
     create_db_parser.add_argument(
-        '--module_search_path', type=str, nargs='+', help="The module search paths to check for config.py's\n"
+        '--module_search_path', type=str, nargs='+', action='append', help="The module search paths to check for config.py's\n"
         "This can be specified multiple times for each path, but must be specified at least once."
     )
     create_db_parser.add_argument(
@@ -371,6 +386,7 @@ if __name__ == "__main__":
     # Go through each module and check its configuration
     if args.command == 'create_db':
         args.module_disabled = [x[0] for x in args.module_disabled]
+        args.module_search_path = [x[0] for x in args.module_search_path]
 
         __create_db_file(args)
 
