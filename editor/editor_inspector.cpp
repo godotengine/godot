@@ -128,8 +128,8 @@ void EditorProperty::_notification(int p_what) {
 				}
 
 				Size2 minsize = c->get_combined_minimum_size();
-				child_room = MAX(child_room, minsize.width);
-				height = MAX(height, minsize.height);
+				child_room = MAX(child_room, (int)minsize.width);
+				height = MAX(height, (int)minsize.height);
 				no_children = false;
 			}
 
@@ -137,7 +137,7 @@ void EditorProperty::_notification(int p_what) {
 				text_size = size.width;
 				rect = Rect2(size.width - 1, 0, 1, height);
 			} else {
-				text_size = MAX(0, size.width - (child_room + 4 * EDSCALE));
+				text_size = MAX(0.0f, size.width - (child_room + 4 * EDSCALE));
 				if (is_layout_rtl()) {
 					rect = Rect2(1, 0, child_room, height);
 				} else {
@@ -1122,7 +1122,7 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 	ms.width = 1;
 	ms.height = font->get_height(font_size);
 	if (icon.is_valid()) {
-		ms.height = MAX(icon->get_height(), ms.height);
+		ms.height = MAX((float)icon->get_height(), ms.height);
 	}
 	ms.height += get_theme_constant("vseparation", "Tree");
 
@@ -1172,7 +1172,7 @@ void EditorInspectorSection::_notification(int p_what) {
 		Point2 offset;
 		offset.y = font->get_height(font_size);
 		if (arrow.is_valid()) {
-			offset.y = MAX(offset.y, arrow->get_height());
+			offset.y = MAX(offset.y, (float)arrow->get_height());
 		}
 
 		offset.y += get_theme_constant("vseparation", "Tree");

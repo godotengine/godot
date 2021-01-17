@@ -841,7 +841,7 @@ bool Window::is_wrapping_controls() const {
 }
 
 Size2 Window::_get_contents_minimum_size() const {
-	Size2 max;
+	Size2i max;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -854,7 +854,7 @@ Size2 Window::_get_contents_minimum_size() const {
 		}
 	}
 
-	return max;
+	return (Size2)max;
 }
 
 void Window::_update_child_controls() {

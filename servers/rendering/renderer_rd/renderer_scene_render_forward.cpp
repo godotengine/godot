@@ -1461,7 +1461,7 @@ void RendererSceneRenderForward::_fill_render_list(const PagedArray<GeometryInst
 }
 
 void RendererSceneRenderForward::_setup_giprobes(const PagedArray<RID> &p_giprobes) {
-	scene_state.giprobes_used = MIN(p_giprobes.size(), uint32_t(MAX_GI_PROBES));
+	scene_state.giprobes_used = MIN(p_giprobes.size(), uint64_t(MAX_GI_PROBES));
 	for (uint32_t i = 0; i < scene_state.giprobes_used; i++) {
 		scene_state.giprobe_ids[i] = p_giprobes[i];
 	}

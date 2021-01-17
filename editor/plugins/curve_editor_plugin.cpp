@@ -817,7 +817,7 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 	for (int x = 0; x < im.get_width(); ++x) {
 		float t = static_cast<float>(x) / im.get_width();
 		float v = (curve.interpolate_baked(t) - curve.get_min_value()) / range_y;
-		int y = CLAMP(im.get_height() - v * im.get_height(), 0, im.get_height());
+		int y = CLAMP(int(im.get_height() - v * im.get_height()), 0, im.get_height());
 
 		// Plot point
 		if (y >= 0 && y < im.get_height()) {

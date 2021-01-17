@@ -199,8 +199,8 @@ Point2 TextureProgressBar::get_relative_center() {
 	p += rad_center_off;
 	p.x /= progress->get_width();
 	p.y /= progress->get_height();
-	p.x = CLAMP(p.x, 0, 1);
-	p.y = CLAMP(p.y, 0, 1);
+	p.x = CLAMP(p.x, 0.0f, 1.0f);
+	p.y = CLAMP(p.y, 0.0f, 1.0f);
 	return p;
 }
 
@@ -454,7 +454,7 @@ float TextureProgressBar::get_radial_initial_angle() {
 }
 
 void TextureProgressBar::set_fill_degrees(float p_angle) {
-	rad_max_degrees = CLAMP(p_angle, 0, 360);
+	rad_max_degrees = CLAMP(p_angle, 0.0f, 360.0f);
 	update();
 }
 

@@ -810,7 +810,7 @@ bool Environment::is_volumetric_fog_enabled() const {
 	return volumetric_fog_enabled;
 }
 void Environment::set_volumetric_fog_density(float p_density) {
-	p_density = CLAMP(p_density, 0.0000001, 1.0);
+	p_density = CLAMP(p_density, 0.0000001f, 1.0f);
 	volumetric_fog_density = p_density;
 	_update_volumetric_fog();
 }

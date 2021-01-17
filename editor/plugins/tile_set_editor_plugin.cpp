@@ -2359,20 +2359,20 @@ void TileSetEditor::_set_edited_collision_shape(const Ref<Shape2D> &p_shape) {
 }
 
 void TileSetEditor::_set_snap_step(Vector2 p_val) {
-	snap_step.x = CLAMP(p_val.x, 1, 256);
-	snap_step.y = CLAMP(p_val.y, 1, 256);
+	snap_step.x = CLAMP(p_val.x, 1.0f, 256.0f);
+	snap_step.y = CLAMP(p_val.y, 1.0f, 256.0f);
 	workspace->update();
 }
 
 void TileSetEditor::_set_snap_off(Vector2 p_val) {
-	snap_offset.x = CLAMP(p_val.x, 0, 256 + WORKSPACE_MARGIN.x);
-	snap_offset.y = CLAMP(p_val.y, 0, 256 + WORKSPACE_MARGIN.y);
+	snap_offset.x = CLAMP(p_val.x, 0.0f, 256 + (float)WORKSPACE_MARGIN.x);
+	snap_offset.y = CLAMP(p_val.y, 0.0f, 256 + (float)WORKSPACE_MARGIN.y);
 	workspace->update();
 }
 
 void TileSetEditor::_set_snap_sep(Vector2 p_val) {
-	snap_separation.x = CLAMP(p_val.x, 0, 256);
-	snap_separation.y = CLAMP(p_val.y, 0, 256);
+	snap_separation.x = CLAMP(p_val.x, 0.0f, 256.0f);
+	snap_separation.y = CLAMP(p_val.y, 0.0f, 256.0f);
 	workspace->update();
 }
 
@@ -2474,10 +2474,10 @@ void TileSetEditor::draw_highlight_current_tile() {
 			workspace->draw_rect(Rect2(0, 0, workspace->get_rect().size.x, region.position.y), shadow_color);
 		}
 		if (region.position.x >= 0) {
-			workspace->draw_rect(Rect2(0, MAX(0, region.position.y), region.position.x, MIN(workspace->get_rect().size.y - region.position.y, MIN(region.size.y, region.position.y + region.size.y))), shadow_color);
+			workspace->draw_rect(Rect2(0, MAX(0.0f, region.position.y), region.position.x, MIN(workspace->get_rect().size.y - region.position.y, MIN(region.size.y, region.position.y + region.size.y))), shadow_color);
 		}
 		if (region.position.x + region.size.x <= workspace->get_rect().size.x) {
-			workspace->draw_rect(Rect2(region.position.x + region.size.x, MAX(0, region.position.y), workspace->get_rect().size.x - region.position.x - region.size.x, MIN(workspace->get_rect().size.y - region.position.y, MIN(region.size.y, region.position.y + region.size.y))), shadow_color);
+			workspace->draw_rect(Rect2(region.position.x + region.size.x, MAX(0.0f, region.position.y), workspace->get_rect().size.x - region.position.x - region.size.x, MIN(workspace->get_rect().size.y - region.position.y, MIN(region.size.y, region.position.y + region.size.y))), shadow_color);
 		}
 		if (region.position.y + region.size.y <= workspace->get_rect().size.y) {
 			workspace->draw_rect(Rect2(0, region.position.y + region.size.y, workspace->get_rect().size.x, workspace->get_rect().size.y - region.size.y - region.position.y), shadow_color);
@@ -2501,10 +2501,10 @@ void TileSetEditor::draw_highlight_subtile(Vector2 coord, const Vector<Vector2> 
 		workspace->draw_rect(Rect2(0, 0, workspace->get_rect().size.x, coord.y), shadow_color);
 	}
 	if (coord.x >= 0) {
-		workspace->draw_rect(Rect2(0, MAX(0, coord.y), coord.x, MIN(workspace->get_rect().size.y - coord.y, MIN(size.y, coord.y + size.y))), shadow_color);
+		workspace->draw_rect(Rect2(0, MAX(0.0f, coord.y), coord.x, MIN(workspace->get_rect().size.y - coord.y, MIN(size.y, coord.y + size.y))), shadow_color);
 	}
 	if (coord.x + size.x <= workspace->get_rect().size.x) {
-		workspace->draw_rect(Rect2(coord.x + size.x, MAX(0, coord.y), workspace->get_rect().size.x - coord.x - size.x, MIN(workspace->get_rect().size.y - coord.y, MIN(size.y, coord.y + size.y))), shadow_color);
+		workspace->draw_rect(Rect2(coord.x + size.x, MAX(0.0f, coord.y), workspace->get_rect().size.x - coord.x - size.x, MIN(workspace->get_rect().size.y - coord.y, MIN(size.y, coord.y + size.y))), shadow_color);
 	}
 	if (coord.y + size.y <= workspace->get_rect().size.y) {
 		workspace->draw_rect(Rect2(0, coord.y + size.y, workspace->get_rect().size.x, workspace->get_rect().size.y - size.y - coord.y), shadow_color);
@@ -3233,7 +3233,7 @@ void TileSetEditor::update_texture_list_icon() {
 		RID rid = texture_list->get_item_metadata(current_idx);
 		texture_list->set_item_icon(current_idx, texture_map[rid]);
 		Size2 texture_size = texture_map[rid]->get_size();
-		texture_list->set_item_icon_region(current_idx, Rect2(0, 0, MIN(texture_size.x, 150), MIN(texture_size.y, 100)));
+		texture_list->set_item_icon_region(current_idx, Rect2(0, 0, MIN(texture_size.x, 150.0f), MIN(texture_size.y, 100.0f)));
 	}
 	texture_list->update();
 }

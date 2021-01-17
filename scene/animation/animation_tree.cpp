@@ -1103,7 +1103,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							}
 						}
 
-						float db = Math::linear2db(MAX(blend, 0.00001));
+						float db = Math::linear2db(MAX(blend, 0.00001f));
 						if (t->object->has_method("set_unit_db")) {
 							t->object->call("set_unit_db", db);
 						} else {

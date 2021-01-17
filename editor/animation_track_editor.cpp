@@ -1349,9 +1349,9 @@ int AnimationTimelineEdit::get_buttons_width() const {
 int AnimationTimelineEdit::get_name_limit() const {
 	Ref<Texture2D> hsize_icon = get_theme_icon("Hsize", "EditorIcons");
 
-	int limit = MAX(name_limit, add_track->get_minimum_size().width + hsize_icon->get_width());
+	int limit = MAX(name_limit, (int)add_track->get_minimum_size().width + hsize_icon->get_width());
 
-	limit = MIN(limit, get_size().width - get_buttons_width() - 1);
+	limit = MIN(limit, (int)get_size().width - get_buttons_width() - 1);
 
 	return limit;
 }
@@ -2294,7 +2294,7 @@ Size2 AnimationTrackEdit::get_minimum_size() const {
 	int font_size = get_theme_font_size("font_size", "Label");
 	int separation = get_theme_constant("vseparation", "ItemList");
 
-	int max_h = MAX(texture->get_height(), font->get_height(font_size));
+	int max_h = MAX(texture->get_height(), (int)font->get_height(font_size));
 	max_h = MAX(max_h, get_key_height());
 
 	return Vector2(1, max_h + separation);
@@ -3074,7 +3074,7 @@ Size2 AnimationTrackEditGroup::get_minimum_size() const {
 	int font_size = get_theme_font_size("font_size", "Label");
 	int separation = get_theme_constant("vseparation", "ItemList");
 
-	return Vector2(0, MAX(font->get_height(font_size), icon->get_height()) + separation);
+	return Vector2(0, MAX((int)font->get_height(font_size), icon->get_height()) + separation);
 }
 
 void AnimationTrackEditGroup::set_timeline(AnimationTimelineEdit *p_timeline) {

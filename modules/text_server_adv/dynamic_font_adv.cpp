@@ -164,7 +164,7 @@ DynamicFontDataAdvanced::DataAtSize *DynamicFontDataAdvanced::get_data_for_size(
 
 				if (variations.has(var.tag)) {
 					var.value = variations[var.tag];
-					coords.write[i] = CLAMP(variations[var.tag] * 65536.f, amaster->axis[i].minimum, amaster->axis[i].maximum);
+					coords.write[i] = CLAMP((FT_Fixed)(variations[var.tag] * 65536.f), amaster->axis[i].minimum, amaster->axis[i].maximum);
 				}
 
 				hb_vars.push_back(var);
@@ -303,7 +303,7 @@ DynamicFontDataAdvanced::TexturePosition DynamicFontDataAdvanced::find_texture_p
 		ret.x = 0;
 		ret.y = 0;
 
-		int texsize = MAX(p_data->size * oversampling * 8, 256);
+		int texsize = MAX(p_data->size * oversampling * 8, 256.0f);
 		if (mw > texsize) {
 			texsize = mw; //special case, adapt to it?
 		}

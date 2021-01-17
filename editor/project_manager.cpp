@@ -2418,7 +2418,7 @@ ProjectManager::ProjectManager() {
 		DisplayServer::get_singleton()->window_set_min_size(Size2(750, 420) * EDSCALE);
 
 		// TODO: Resize windows on hiDPI displays on Windows and Linux and remove the line below
-		DisplayServer::get_singleton()->window_set_size(DisplayServer::get_singleton()->window_get_size() * MAX(1, EDSCALE));
+		DisplayServer::get_singleton()->window_set_size(DisplayServer::get_singleton()->window_get_size() * MAX(1.0f, EDSCALE));
 	}
 
 	// TRANSLATORS: This refers to the application where users manage their Godot projects.

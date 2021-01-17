@@ -300,7 +300,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				TextLine text_buf = TextLine(text, font, font_size);
 				text_buf.set_width(limit - ofs - hsep);
 
-				int h = MAX(text_buf.get_size().y, icon->get_height());
+				int h = MAX((int)text_buf.get_size().y, icon->get_height());
 
 				draw_texture(icon, Point2(ofs, vofs + int(h - icon->get_height()) / 2));
 

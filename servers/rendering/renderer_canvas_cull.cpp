@@ -171,7 +171,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	}
 
 	if (ci->z_relative) {
-		p_z = CLAMP(p_z + ci->z_index, RS::CANVAS_ITEM_Z_MIN, RS::CANVAS_ITEM_Z_MAX);
+		p_z = CLAMP(p_z + ci->z_index, (int)RS::CANVAS_ITEM_Z_MIN, (int)RS::CANVAS_ITEM_Z_MAX);
 	} else {
 		p_z = ci->z_index;
 	}

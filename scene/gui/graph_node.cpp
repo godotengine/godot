@@ -179,7 +179,7 @@ void GraphNode::_resort() {
 		Size2i size = c->get_combined_minimum_size();
 
 		minsize.y += size.y;
-		minsize.x = MAX(minsize.x, size.x);
+		minsize.x = MAX((int)minsize.x, size.x);
 
 		if (first) {
 			first = false;
@@ -452,7 +452,7 @@ Size2 GraphNode::get_minimum_size() const {
 		Size2i size = c->get_combined_minimum_size();
 
 		minsize.y += size.y;
-		minsize.x = MAX(minsize.x, size.x);
+		minsize.x = MAX((int)minsize.x, size.x);
 
 		if (first) {
 			first = false;

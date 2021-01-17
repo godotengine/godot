@@ -509,7 +509,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 	if (bg_color.a == 0) {
 		bg_color = Color(0, 0, 0, 0);
 	}
-	bg_color.a = MAX(bg_color.a, 0.2); // some background
+	bg_color.a = MAX(bg_color.a, 0.2f); // some background
 
 	for (int i = 0; i < thumbnail_size; i++) {
 		for (int j = 0; j < thumbnail_size; j++) {
@@ -642,8 +642,8 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const
 			min = MIN(min, frames[j].r);
 		}
 
-		int pfrom = CLAMP((min * 0.5 + 0.5) * h / 2, 0, h / 2) + h / 4;
-		int pto = CLAMP((max * 0.5 + 0.5) * h / 2, 0, h / 2) + h / 4;
+		int pfrom = CLAMP(int(min * 0.5 + 0.5) * h / 2, 0, h / 2) + h / 4;
+		int pto = CLAMP(int(max * 0.5 + 0.5) * h / 2, 0, h / 2) + h / 4;
 
 		for (int j = 0; j < h; j++) {
 			uint8_t *p = &imgw[(j * w + i) * 3];

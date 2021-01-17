@@ -739,7 +739,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	ExcludedShapeSW excluded_shape_pairs[max_excluded_shape_pairs];
 	int excluded_shape_pair_count = 0;
 
-	float separation_margin = MIN(p_margin, MAX(0.0, p_motion.length() - CMP_EPSILON)); //don't separate by more than the intended motion
+	float separation_margin = MIN(p_margin, (real_t)MAX(0.0, p_motion.length() - CMP_EPSILON)); //don't separate by more than the intended motion
 
 	Transform2D body_transform = p_from;
 
@@ -806,7 +806,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 								Vector2 motion = lv * PhysicsDirectBodyState2DSW::singleton->step;
 								float motion_len = motion.length();
 								motion.normalize();
-								cbk.valid_depth += motion_len * MAX(motion.dot(-cbk.valid_dir), 0.0);
+								cbk.valid_depth += motion_len * MAX(motion.dot(-cbk.valid_dir), 0.0f);
 							}
 						}
 					} else {

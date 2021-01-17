@@ -55,9 +55,9 @@ static Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quali
 	uint8_t *dst_buff = nullptr;
 	size_t dst_size = 0;
 	if (img->get_format() == Image::FORMAT_RGB8) {
-		dst_size = WebPEncodeRGB(r, s.width, s.height, 3 * s.width, CLAMP(p_quality * 100.0, 0, 100.0), &dst_buff);
+		dst_size = WebPEncodeRGB(r, s.width, s.height, 3 * s.width, CLAMP(p_quality * 100.0f, 0.0f, 100.0f), &dst_buff);
 	} else {
-		dst_size = WebPEncodeRGBA(r, s.width, s.height, 4 * s.width, CLAMP(p_quality * 100.0, 0, 100.0), &dst_buff);
+		dst_size = WebPEncodeRGBA(r, s.width, s.height, 4 * s.width, CLAMP(p_quality * 100.0f, 0.0f, 100.0f), &dst_buff);
 	}
 
 	ERR_FAIL_COND_V(dst_size == 0, Vector<uint8_t>());

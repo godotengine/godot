@@ -977,7 +977,7 @@ void ItemList::_notification(int p_what) {
 						items.write[i].rect_cache.size.x = max_column_width;
 					}
 					items.write[i].rect_cache.position = ofs;
-					max_h = MAX(max_h, items[i].rect_cache.size.y);
+					max_h = MAX(max_h, (int)items[i].rect_cache.size.y);
 					ofs.x += items[i].rect_cache.size.x + hseparation;
 					col++;
 					if (col == current_columns) {
@@ -1001,7 +1001,7 @@ void ItemList::_notification(int p_what) {
 				}
 
 				if (all_fit) {
-					float page = MAX(0, size.height - bg->get_minimum_size().height);
+					float page = MAX(0.0f, size.height - bg->get_minimum_size().height);
 					float max = MAX(page, ofs.y + max_h);
 					if (auto_height) {
 						auto_height_value = ofs.y + max_h + bg->get_minimum_size().height;
@@ -1208,7 +1208,7 @@ void ItemList::_notification(int p_what) {
 					items[i].text_buf->draw(get_canvas_item(), text_ofs, modulate);
 				} else {
 					if (fixed_column_width > 0) {
-						size2.x = MIN(size2.x, fixed_column_width);
+						size2.x = MIN(size2.x, (float)fixed_column_width);
 					}
 
 					if (icon_mode == ICON_MODE_TOP) {

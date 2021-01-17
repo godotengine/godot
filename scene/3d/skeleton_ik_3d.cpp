@@ -307,7 +307,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 			const Vector3 rot_axis(initial_ori.cross(ci->current_ori).normalized());
 
 			if (rot_axis[0] != 0 && rot_axis[1] != 0 && rot_axis[2] != 0) {
-				const real_t rot_angle(Math::acos(CLAMP(initial_ori.dot(ci->current_ori), -1, 1)));
+				const real_t rot_angle(Math::acos(CLAMP(initial_ori.dot(ci->current_ori), -1.0f, 1.0f)));
 				new_bone_pose.basis.rotate(rot_axis, rot_angle);
 			}
 		} else {

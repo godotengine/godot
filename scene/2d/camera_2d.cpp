@@ -105,8 +105,8 @@ Transform2D Camera2D::get_camera_transform() {
 	if (!first) {
 		if (anchor_mode == ANCHOR_MODE_DRAG_CENTER) {
 			if (drag_horizontal_enabled && !Engine::get_singleton()->is_editor_hint() && !drag_horizontal_offset_changed) {
-				camera_pos.x = MIN(camera_pos.x, (new_camera_pos.x + screen_size.x * 0.5 * zoom.x * drag_margin[SIDE_LEFT]));
-				camera_pos.x = MAX(camera_pos.x, (new_camera_pos.x - screen_size.x * 0.5 * zoom.x * drag_margin[SIDE_RIGHT]));
+				camera_pos.x = MIN(camera_pos.x, (new_camera_pos.x + screen_size.x * 0.5f * zoom.x * drag_margin[SIDE_LEFT]));
+				camera_pos.x = MAX(camera_pos.x, (new_camera_pos.x - screen_size.x * 0.5f * zoom.x * drag_margin[SIDE_RIGHT]));
 			} else {
 				if (drag_horizontal_offset < 0) {
 					camera_pos.x = new_camera_pos.x + screen_size.x * 0.5 * drag_margin[SIDE_RIGHT] * drag_horizontal_offset;
@@ -118,8 +118,8 @@ Transform2D Camera2D::get_camera_transform() {
 			}
 
 			if (drag_vertical_enabled && !Engine::get_singleton()->is_editor_hint() && !drag_vertical_offset_changed) {
-				camera_pos.y = MIN(camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5 * zoom.y * drag_margin[SIDE_TOP]));
-				camera_pos.y = MAX(camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5 * zoom.y * drag_margin[SIDE_BOTTOM]));
+				camera_pos.y = MIN(camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5f * zoom.y * drag_margin[SIDE_TOP]));
+				camera_pos.y = MAX(camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5f * zoom.y * drag_margin[SIDE_BOTTOM]));
 
 			} else {
 				if (drag_vertical_offset < 0) {

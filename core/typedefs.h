@@ -87,25 +87,30 @@
 #endif
 
 // Generic ABS function, for math uses please use Math::abs.
-#ifndef ABS
-#define ABS(m_v) (((m_v) < 0) ? (-(m_v)) : (m_v))
-#endif
+template <typename T>
+constexpr T ABS(T m_v) {
+	return m_v < 0 ? -m_v : m_v;
+}
 
-#ifndef SGN
-#define SGN(m_v) (((m_v) == 0) ? (0.0) : (((m_v) < 0) ? (-1.0) : (+1.0)))
-#endif
+template <typename T>
+constexpr const T SGN(const T m_v) {
+	return m_v == 0 ? 0.0 : m_v < 0 ? -1.0 : +1.0;
+}
 
-#ifndef MIN
-#define MIN(m_a, m_b) (((m_a) < (m_b)) ? (m_a) : (m_b))
-#endif
+template <typename T>
+constexpr const T MIN(const T m_a, const T m_b) {
+	return m_a < m_b ? m_a : m_b;
+}
 
-#ifndef MAX
-#define MAX(m_a, m_b) (((m_a) > (m_b)) ? (m_a) : (m_b))
-#endif
+template <typename T>
+constexpr const T MAX(const T m_a, const T m_b) {
+	return m_a > m_b ? m_a : m_b;
+}
 
-#ifndef CLAMP
-#define CLAMP(m_a, m_min, m_max) (((m_a) < (m_min)) ? (m_min) : (((m_a) > (m_max)) ? m_max : m_a))
-#endif
+template <typename T>
+constexpr const T CLAMP(const T m_a, const T m_min, const T m_max) {
+	return m_a < m_min ? m_min : m_a > m_max ? m_max : m_a;
+}
 
 // Generic swap template.
 #ifndef SWAP

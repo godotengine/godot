@@ -1183,8 +1183,8 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 						sd->ascent = MAX(sd->ascent, MAX(fd->get_ascent(gl.font_size), -gl.y_off));
 						sd->descent = MAX(sd->descent, MAX(fd->get_descent(gl.font_size), gl.y_off));
 					} else {
-						sd->ascent = MAX(sd->ascent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
-						sd->descent = MAX(sd->descent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
+						sd->ascent = MAX(sd->ascent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5f));
+						sd->descent = MAX(sd->descent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5f));
 					}
 					sd->upos = MAX(sd->upos, font_get_underline_position(gl.font_rid, gl.font_size));
 					sd->uthk = MAX(sd->uthk, font_get_underline_thickness(gl.font_rid, gl.font_size));
@@ -1366,8 +1366,8 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 									new_sd->ascent = MAX(new_sd->ascent, MAX(fd->get_ascent(gl.font_size), -gl.y_off));
 									new_sd->descent = MAX(new_sd->descent, MAX(fd->get_descent(gl.font_size), gl.y_off));
 								} else {
-									new_sd->ascent = MAX(new_sd->ascent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
-									new_sd->descent = MAX(new_sd->descent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
+									new_sd->ascent = MAX(new_sd->ascent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5f));
+									new_sd->descent = MAX(new_sd->descent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5f));
 								}
 							} else if (new_sd->preserve_invalid || (new_sd->preserve_control && is_control(gl.index))) {
 								// Glyph not found, replace with hex code box.
@@ -1526,7 +1526,7 @@ float TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 					if ((gl.flags & GRAPHEME_IS_VIRTUAL) == GRAPHEME_IS_VIRTUAL) {
 						gl.advance = Math::round(MAX(gl.advance + delta_width_per_space, 0.f));
 					} else {
-						gl.advance = Math::round(MAX(gl.advance + delta_width_per_space, 0.05 * gl.font_size));
+						gl.advance = Math::round(MAX(gl.advance + delta_width_per_space, 0.05f * gl.font_size));
 					}
 					sd->width += (gl.advance - old_adv);
 				}
@@ -2077,8 +2077,8 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 						p_sd->ascent = MAX(p_sd->ascent, -w[i + j].y_off);
 						p_sd->descent = MAX(p_sd->descent, w[i + j].y_off);
 					} else {
-						p_sd->ascent = MAX(p_sd->ascent, Math::round(fd->get_advance(w[i + j].index, fs).x * 0.5));
-						p_sd->descent = MAX(p_sd->descent, Math::round(fd->get_advance(w[i + j].index, fs).x * 0.5));
+						p_sd->ascent = MAX(p_sd->ascent, Math::round(fd->get_advance(w[i + j].index, fs).x * 0.5f));
+						p_sd->descent = MAX(p_sd->descent, Math::round(fd->get_advance(w[i + j].index, fs).x * 0.5f));
 					}
 					p_sd->width += w[i + j].advance;
 					p_sd->glyphs.push_back(w[i + j]);

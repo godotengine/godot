@@ -134,7 +134,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		if (grabbed != -1) {
 			int total_w = get_size().width - get_size().height - SPACING;
 			Gradient::Point newPoint = points[grabbed];
-			newPoint.offset = CLAMP(x / float(total_w), 0, 1);
+			newPoint.offset = CLAMP(x / float(total_w), 0.0f, 1.0f);
 
 			points.push_back(newPoint);
 			points.sort();
@@ -172,7 +172,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 		//insert
 		Gradient::Point newPoint;
-		newPoint.offset = CLAMP(x / float(total_w), 0, 1);
+		newPoint.offset = CLAMP(x / float(total_w), 0.0f, 1.0f);
 
 		Gradient::Point prev;
 		Gradient::Point next;
@@ -232,7 +232,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 		int x = mm->get_position().x;
 
-		float newofs = CLAMP(x / float(total_w), 0, 1);
+		float newofs = CLAMP(x / float(total_w), 0.0f, 1.0f);
 
 		// Snap to "round" coordinates if holding Ctrl.
 		// Be more precise if holding Shift as well
@@ -263,7 +263,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 				} else {
 					newofs = points[nearest_point].offset - 0.00001;
 				}
-				newofs = CLAMP(newofs, 0, 1);
+				newofs = CLAMP(newofs, 0.0f, 1.0f);
 			}
 		}
 

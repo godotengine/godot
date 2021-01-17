@@ -133,9 +133,9 @@ RID RenderingServer::get_test_texture() {
 					c.b = y;
 				}
 
-				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 0] = uint8_t(CLAMP(c.r * 255, 0, 255));
-				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 1] = uint8_t(CLAMP(c.g * 255, 0, 255));
-				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 2] = uint8_t(CLAMP(c.b * 255, 0, 255));
+				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 0] = uint8_t(CLAMP(int(c.r * 255), 0, 255));
+				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 1] = uint8_t(CLAMP(int(c.g * 255), 0, 255));
+				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 2] = uint8_t(CLAMP(int(c.b * 255), 0, 255));
 			}
 		}
 	}
@@ -549,7 +549,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 					uint16_t data[8];
 					for (int i = 0; i < p_vertex_array_len; i++) {
 						for (uint32_t j = 0; j < bone_count; j++) {
-							data[j] = CLAMP(src[i * bone_count + j] * 65535, 0, 65535);
+							data[j] = CLAMP(int(src[i * bone_count + j] * 65535), 0, 65535);
 						}
 
 						copymem(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
@@ -573,7 +573,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				for (int i = 0; i < p_vertex_array_len; i++) {
 					for (uint32_t j = 0; j < bone_count; j++) {
 						data[j] = src[i * bone_count + j];
-						max_bone = MAX(data[j], max_bone);
+						max_bone = MAX((int)data[j], max_bone);
 					}
 
 					copymem(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);

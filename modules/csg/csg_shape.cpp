@@ -1775,7 +1775,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			break;
 		case MODE_PATH: {
 			float bl = curve->get_baked_length();
-			int splits = MAX(2, Math::ceil(bl / path_interval));
+			int splits = MAX(2.0f, Math::ceil(bl / path_interval));
 			if (path_joined) {
 				face_count = splits * final_polygon.size() * 2;
 			} else {
@@ -1984,7 +1984,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			} break;
 			case MODE_PATH: {
 				float bl = curve->get_baked_length();
-				int splits = MAX(2, Math::ceil(bl / path_interval));
+				int splits = MAX(2.0f, Math::ceil(bl / path_interval));
 				float u1 = 0.0;
 				float u2 = path_continuous_u ? 0.0 : 1.0;
 

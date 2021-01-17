@@ -227,7 +227,7 @@ void ColorPicker::_update_color(bool p_update_sliders) {
 				} else {
 					scroll[i]->set_step(1);
 					const float byte_value = color.components[i] * 255.0;
-					scroll[i]->set_max(next_power_of_2(MAX(255, byte_value)) - 1);
+					scroll[i]->set_max(next_power_of_2(MAX(255.0f, byte_value)) - 1);
 					scroll[i]->set_value(byte_value);
 				}
 			}
@@ -435,8 +435,8 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 		col.a = 0;
 		colors2.push_back(col);
 		c->draw_polygon(points, colors2);
-		int x = CLAMP(c->get_size().x * s, 0, c->get_size().x);
-		int y = CLAMP(c->get_size().y - c->get_size().y * v, 0, c->get_size().y);
+		int x = CLAMP(c->get_size().x * s, 0.0f, c->get_size().x);
+		int y = CLAMP(c->get_size().y - c->get_size().y * v, 0.0f, c->get_size().y);
 		col = color;
 		col.a = 1;
 		c->draw_line(Point2(x, 0), Point2(x, c->get_size().y), col.inverted());
@@ -458,8 +458,8 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event) {
 	if (bev.is_valid()) {
 		if (bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
 			changing_color = true;
-			float x = CLAMP((float)bev->get_position().x, 0, uv_edit->get_size().width);
-			float y = CLAMP((float)bev->get_position().y, 0, uv_edit->get_size().height);
+			float x = CLAMP((float)bev->get_position().x, 0.0f, uv_edit->get_size().width);
+			float y = CLAMP((float)bev->get_position().y, 0.0f, uv_edit->get_size().height);
 			s = x / uv_edit->get_size().width;
 			v = 1.0 - y / uv_edit->get_size().height;
 			color.set_hsv(h, s, v, color.a);
@@ -483,8 +483,8 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event) {
 		if (!changing_color) {
 			return;
 		}
-		float x = CLAMP((float)mev->get_position().x, 0, uv_edit->get_size().width);
-		float y = CLAMP((float)mev->get_position().y, 0, uv_edit->get_size().height);
+		float x = CLAMP((float)mev->get_position().x, 0.0f, uv_edit->get_size().width);
+		float y = CLAMP((float)mev->get_position().y, 0.0f, uv_edit->get_size().height);
 		s = x / uv_edit->get_size().width;
 		v = 1.0 - y / uv_edit->get_size().height;
 		color.set_hsv(h, s, v, color.a);
@@ -503,7 +503,7 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 	if (bev.is_valid()) {
 		if (bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
 			changing_color = true;
-			float y = CLAMP((float)bev->get_position().y, 0, w_edit->get_size().height);
+			float y = CLAMP((float)bev->get_position().y, 0.0f, w_edit->get_size().height);
 			h = y / w_edit->get_size().height;
 		} else {
 			changing_color = false;
@@ -525,7 +525,7 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 		if (!changing_color) {
 			return;
 		}
-		float y = CLAMP((float)mev->get_position().y, 0, w_edit->get_size().height);
+		float y = CLAMP((float)mev->get_position().y, 0.0f, w_edit->get_size().height);
 		h = y / w_edit->get_size().height;
 		color.set_hsv(h, s, v, color.a);
 		last_hsv = color;
@@ -895,7 +895,7 @@ void ColorPickerButton::pressed() {
 		if (i & 1) {
 			cp_rect.position.x = get_screen_position().x;
 		} else {
-			cp_rect.position.x = get_screen_position().x - MAX(0, (cp_rect.size.x - get_size().x));
+			cp_rect.position.x = get_screen_position().x - MAX(0.0f, (cp_rect.size.x - get_size().x));
 		}
 
 		if (usable_rect.encloses(cp_rect)) {

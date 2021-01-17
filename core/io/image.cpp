@@ -880,7 +880,7 @@ static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict 
 
 		float x_scale = float(src_width) / float(dst_width);
 
-		float scale_factor = MAX(x_scale, 1); // A larger kernel is required only when downscaling
+		float scale_factor = MAX(x_scale, 1.0f); // A larger kernel is required only when downscaling
 		int32_t half_kernel = LANCZOS_TYPE * scale_factor;
 
 		float *kernel = memnew_arr(float, half_kernel * 2);
@@ -930,7 +930,7 @@ static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict 
 
 		float y_scale = float(src_height) / float(dst_height);
 
-		float scale_factor = MAX(y_scale, 1);
+		float scale_factor = MAX(y_scale, 1.0f);
 		int32_t half_kernel = LANCZOS_TYPE * scale_factor;
 
 		float *kernel = memnew_arr(float, half_kernel * 2);
@@ -982,7 +982,7 @@ static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict 
 }
 
 static void _overlay(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, float p_alpha, uint32_t p_width, uint32_t p_height, uint32_t p_pixel_size) {
-	uint16_t alpha = MIN((uint16_t)(p_alpha * 256.0f), 256);
+	uint16_t alpha = MIN((int)(p_alpha * 256.0f), 256);
 
 	for (uint32_t i = 0; i < p_width * p_height * p_pixel_size; i++) {
 		p_dst[i] = (p_dst[i] * (256 - alpha) + p_src[i] * alpha) >> 8;
@@ -1491,8 +1491,8 @@ template <class Component, int CC, bool renormalize,
 		void (*renormalize_func)(Component *)>
 static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint32_t p_width, uint32_t p_height) {
 	//fast power of 2 mipmap generation
-	uint32_t dst_w = MAX(p_width >> 1, 1);
-	uint32_t dst_h = MAX(p_height >> 1, 1);
+	uint32_t dst_w = MAX(p_width >> 1, (uint32_t)1);
+	uint32_t dst_h = MAX(p_height >> 1, (uint32_t)1);
 
 	int right_step = (p_width == 1) ? 0 : CC;
 	int down_step = (p_height == 1) ? 0 : (p_width * CC);
@@ -2143,7 +2143,7 @@ void Image::create(const char **p_xpm) {
 					ERR_FAIL_COND(!colorptr);
 					uint8_t pixel[4];
 					for (uint32_t i = 0; i < pixel_size; i++) {
-						pixel[i] = CLAMP((*colorptr)[i] * 255, 0, 255);
+						pixel[i] = CLAMP((*colorptr)[i] * 255, 0.0f, 255.0f);
 					}
 					_put_pixelb(x, y, pixel_size, data_write, pixel);
 				}
@@ -2493,7 +2493,7 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 		return;
 	}
 
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Point2 src_underscan = Point2(MIN(0.0f, p_src_rect.position.x), MIN(0.0f, p_src_rect.position.y));
 	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	uint8_t *wp = data.ptrw();
@@ -2548,7 +2548,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 		return;
 	}
 
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Point2 src_underscan = Point2(MIN(0.0f, p_src_rect.position.x), MIN(0.0f, p_src_rect.position.y));
 	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	uint8_t *wp = data.ptrw();
@@ -2602,7 +2602,7 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 		return;
 	}
 
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Point2 src_underscan = Point2(MIN(0.0f, p_src_rect.position.x), MIN(0.0f, p_src_rect.position.y));
 	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	Ref<Image> img = p_src;
@@ -2651,7 +2651,7 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 		return;
 	}
 
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Point2 src_underscan = Point2(MIN(0.0f, p_src_rect.position.x), MIN(0.0f, p_src_rect.position.y));
 	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	Ref<Image> img = p_src;
@@ -2869,38 +2869,38 @@ Color Image::_get_color_at_ofs(const uint8_t *ptr, uint32_t ofs) const {
 void Image::_set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color) {
 	switch (format) {
 		case FORMAT_L8: {
-			ptr[ofs] = uint8_t(CLAMP(p_color.get_v() * 255.0, 0, 255));
+			ptr[ofs] = uint8_t(CLAMP(p_color.get_v() * 255.0, 0.0, 255.0));
 		} break;
 		case FORMAT_LA8: {
-			ptr[ofs * 2 + 0] = uint8_t(CLAMP(p_color.get_v() * 255.0, 0, 255));
-			ptr[ofs * 2 + 1] = uint8_t(CLAMP(p_color.a * 255.0, 0, 255));
+			ptr[ofs * 2 + 0] = uint8_t(CLAMP(p_color.get_v() * 255.0, 0.0, 255.0));
+			ptr[ofs * 2 + 1] = uint8_t(CLAMP(p_color.a * 255.0, 0.0, 255.0));
 		} break;
 		case FORMAT_R8: {
-			ptr[ofs] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
+			ptr[ofs] = uint8_t(CLAMP(p_color.r * 255.0, 0.0, 255.0));
 		} break;
 		case FORMAT_RG8: {
-			ptr[ofs * 2 + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
-			ptr[ofs * 2 + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0, 255));
+			ptr[ofs * 2 + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0.0, 255.0));
+			ptr[ofs * 2 + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0.0, 255.0));
 		} break;
 		case FORMAT_RGB8: {
-			ptr[ofs * 3 + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
-			ptr[ofs * 3 + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0, 255));
-			ptr[ofs * 3 + 2] = uint8_t(CLAMP(p_color.b * 255.0, 0, 255));
+			ptr[ofs * 3 + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0.0, 255.0));
+			ptr[ofs * 3 + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0.0, 255.0));
+			ptr[ofs * 3 + 2] = uint8_t(CLAMP(p_color.b * 255.0, 0.0, 255.0));
 		} break;
 		case FORMAT_RGBA8: {
-			ptr[ofs * 4 + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
-			ptr[ofs * 4 + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0, 255));
-			ptr[ofs * 4 + 2] = uint8_t(CLAMP(p_color.b * 255.0, 0, 255));
-			ptr[ofs * 4 + 3] = uint8_t(CLAMP(p_color.a * 255.0, 0, 255));
+			ptr[ofs * 4 + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0.0, 255.0));
+			ptr[ofs * 4 + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0.0, 255.0));
+			ptr[ofs * 4 + 2] = uint8_t(CLAMP(p_color.b * 255.0, 0.0, 255.0));
+			ptr[ofs * 4 + 3] = uint8_t(CLAMP(p_color.a * 255.0, 0.0, 255.0));
 
 		} break;
 		case FORMAT_RGBA4444: {
 			uint16_t rgba = 0;
 
-			rgba = uint16_t(CLAMP(p_color.r * 15.0, 0, 15)) << 12;
-			rgba |= uint16_t(CLAMP(p_color.g * 15.0, 0, 15)) << 8;
-			rgba |= uint16_t(CLAMP(p_color.b * 15.0, 0, 15)) << 4;
-			rgba |= uint16_t(CLAMP(p_color.a * 15.0, 0, 15));
+			rgba = uint16_t(CLAMP(p_color.r * 15.0, 0.0, 15.0)) << 12;
+			rgba |= uint16_t(CLAMP(p_color.g * 15.0, 0.0, 15.0)) << 8;
+			rgba |= uint16_t(CLAMP(p_color.b * 15.0, 0.0, 15.0)) << 4;
+			rgba |= uint16_t(CLAMP(p_color.a * 15.0, 0.0, 15.0));
 
 			((uint16_t *)ptr)[ofs] = rgba;
 
@@ -2908,9 +2908,9 @@ void Image::_set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color) 
 		case FORMAT_RGB565: {
 			uint16_t rgba = 0;
 
-			rgba = uint16_t(CLAMP(p_color.r * 31.0, 0, 31));
-			rgba |= uint16_t(CLAMP(p_color.g * 63.0, 0, 33)) << 5;
-			rgba |= uint16_t(CLAMP(p_color.b * 31.0, 0, 31)) << 11;
+			rgba = uint16_t(CLAMP(p_color.r * 31.0, 0.0, 31.0));
+			rgba |= uint16_t(CLAMP(p_color.g * 63.0, 0.0, 33.0)) << 5;
+			rgba |= uint16_t(CLAMP(p_color.b * 31.0, 0.0, 31.0)) << 11;
 
 			((uint16_t *)ptr)[ofs] = rgba;
 

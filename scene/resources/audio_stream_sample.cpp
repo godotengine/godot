@@ -266,7 +266,7 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 	float srate = base->mix_rate;
 	srate *= p_rate_scale;
 	float fincrement = srate / base_rate;
-	int32_t increment = int32_t(MAX(fincrement * MIX_FRAC_LEN, 1));
+	int32_t increment = int32_t(MAX(fincrement * MIX_FRAC_LEN, 1.0f));
 	increment *= sign;
 
 	//looping

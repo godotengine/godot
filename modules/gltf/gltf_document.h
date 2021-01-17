@@ -294,8 +294,8 @@ private:
 			}
 		}
 		for (int32_t type_i = 0; type_i < element_count; type_i++) {
-			type_max.write[type_i] = MAX(attribs[(i * element_count) + type_i], type_max[type_i]);
-			type_min.write[type_i] = MIN(attribs[(i * element_count) + type_i], type_min[type_i]);
+			type_max.write[type_i] = MAX((double)attribs[(i * element_count) + type_i], type_max[type_i]);
+			type_min.write[type_i] = MIN((double)attribs[(i * element_count) + type_i], type_min[type_i]);
 			type_max.write[type_i] = _filter_number(type_max.write[type_i]);
 			type_min.write[type_i] = _filter_number(type_min.write[type_i]);
 		}

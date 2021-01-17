@@ -179,11 +179,11 @@ double Range::get_as_ratio() const {
 		float value = CLAMP(get_value(), shared->min, shared->max);
 		double v = Math::log(value) / Math::log((double)2);
 
-		return CLAMP((v - exp_min) / (exp_max - exp_min), 0, 1);
+		return CLAMP((v - exp_min) / (exp_max - exp_min), 0.0, 1.0);
 
 	} else {
 		float value = CLAMP(get_value(), shared->min, shared->max);
-		return CLAMP((value - get_min()) / (get_max() - get_min()), 0, 1);
+		return CLAMP((value - get_min()) / (get_max() - get_min()), 0.0, 1.0);
 	}
 }
 

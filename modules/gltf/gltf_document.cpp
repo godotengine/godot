@@ -3590,8 +3590,8 @@ void GLTFDocument::spec_gloss_to_metal_base_color(const Color &p_specular_factor
 	const float brightness_specular = get_perceived_brightness(specular);
 	r_metallic = solve_metallic(dielectric_specular_red, brightness_diffuse, brightness_specular, one_minus_specular_strength);
 	const float one_minus_metallic = 1.0f - r_metallic;
-	const Color base_color_from_diffuse = p_diffuse * (one_minus_specular_strength / (1.0f - dielectric_specular_red) / MAX(one_minus_metallic, CMP_EPSILON));
-	const Color base_color_from_specular = (specular - (DIELECTRIC_SPECULAR * (one_minus_metallic))) * (1.0f / MAX(r_metallic, CMP_EPSILON));
+	const Color base_color_from_diffuse = p_diffuse * (one_minus_specular_strength / (1.0f - dielectric_specular_red) / MAX(one_minus_metallic, (float)CMP_EPSILON));
+	const Color base_color_from_specular = (specular - (DIELECTRIC_SPECULAR * (one_minus_metallic))) * (1.0f / MAX(r_metallic, (float)CMP_EPSILON));
 	r_base_color.r = Math::lerp(base_color_from_diffuse.r, base_color_from_specular.r, r_metallic * r_metallic);
 	r_base_color.g = Math::lerp(base_color_from_diffuse.g, base_color_from_specular.g, r_metallic * r_metallic);
 	r_base_color.b = Math::lerp(base_color_from_diffuse.b, base_color_from_specular.b, r_metallic * r_metallic);
@@ -4970,7 +4970,7 @@ Light3D *GLTFDocument::_generate_light(Ref<GLTFState> state, Node *scene_parent,
 		return light;
 	}
 
-	const float range = CLAMP(l->range, 0, 4096);
+	const float range = CLAMP(l->range, 0.0f, 4096.0f);
 	// Doubling the range will double the effective brightness, so we need double attenuation (half brightness).
 	// We want to have double intensity give double brightness, so we need half the attenuation.
 	const float attenuation = range / intensity;
@@ -5064,7 +5064,7 @@ GLTFLightIndex GLTFDocument::_convert_light(Ref<GLTFState> state, Light3D *p_lig
 
 		// This equation is the inverse of the import equation (which has a desmos link).
 		float angle_ratio = 1 - (0.2 / (0.1 + light->get_param(SpotLight3D::PARAM_SPOT_ATTENUATION)));
-		angle_ratio = MAX(0, angle_ratio);
+		angle_ratio = MAX(0.0f, angle_ratio);
 		l->inner_cone_angle = l->outer_cone_angle * angle_ratio;
 	}
 

@@ -101,7 +101,7 @@ public:
 	_FORCE_INLINE_ void expand_to(const Vector3 &p_vector); /** expand to contain a point if necessary */
 
 	_FORCE_INLINE_ AABB abs() const {
-		return AABB(Vector3(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0), position.z + MIN(size.z, 0)), size.abs());
+		return AABB(Vector3(position.x + MIN(size.x, 0.0f), position.y + MIN(size.y, 0.0f), position.z + MIN(size.z, 0.0f)), size.abs());
 	}
 
 	Variant intersects_segment_bind(const Vector3 &p_from, const Vector3 &p_to) const;

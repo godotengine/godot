@@ -448,7 +448,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 				float multiplier = Math::db2linear(_get_attenuation_db(dist));
 				if (max_distance > 0) {
-					multiplier *= MAX(0, 1.0 - (dist / max_distance));
+					multiplier *= MAX(0.0, 1.0 - (dist / max_distance));
 				}
 
 				Output output;
@@ -456,7 +456,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				output.reverb_bus_index = -1; //no reverb by default
 				output.viewport = vp;
 
-				float db_att = (1.0 - MIN(1.0, multiplier)) * attenuation_filter_db;
+				float db_att = (1.0 - MIN(1.0f, multiplier)) * attenuation_filter_db;
 
 				if (emission_angle_enabled) {
 					Vector3 listenertopos = global_pos - listener_node->get_global_transform().origin;
@@ -576,7 +576,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 						float speed_of_sound = 343.0;
 
 						output.pitch_scale = speed_of_sound / (speed_of_sound + velocity * approaching);
-						output.pitch_scale = CLAMP(output.pitch_scale, (1 / 8.0), 8.0); //avoid crazy stuff
+						output.pitch_scale = CLAMP(output.pitch_scale, (1 / 8.0f), 8.0f); //avoid crazy stuff
 					}
 
 				} else {

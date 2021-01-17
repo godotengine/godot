@@ -1440,7 +1440,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		}
 
 		float texel_size = p_options["meshes/lightmap_texel_size"];
-		texel_size = MAX(0.001, texel_size);
+		texel_size = MAX(0.001f, texel_size);
 
 		Map<String, unsigned int> used_unwraps;
 

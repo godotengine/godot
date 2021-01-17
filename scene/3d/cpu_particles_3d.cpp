@@ -686,7 +686,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 
 				Vector3 direction_xz = Vector3(Math::sin(angle1_rad), 0, Math::cos(angle1_rad));
 				Vector3 direction_yz = Vector3(0, Math::sin(angle2_rad), Math::cos(angle2_rad));
-				direction_yz.z = direction_yz.z / MAX(0.0001, Math::sqrt(ABS(direction_yz.z))); //better uniform distribution
+				direction_yz.z = direction_yz.z / MAX(0.0001f, Math::sqrt(ABS(direction_yz.z))); //better uniform distribution
 				Vector3 direction = Vector3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);
 				direction.normalize();
 				p.velocity = direction * parameters[PARAM_INITIAL_LINEAR_VELOCITY] * Math::lerp(1.0f, float(Math::randf()), randomness[PARAM_INITIAL_LINEAR_VELOCITY]);

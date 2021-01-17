@@ -1462,7 +1462,7 @@ void TextEdit::_notification(int p_what) {
 
 				if (completion_options_size < 50) {
 					for (int i = 0; i < completion_options_size; i++) {
-						int w2 = MIN(cache.font->get_string_size(completion_options[i].display, cache.font_size).x, cmax_width);
+						int w2 = MIN((int)cache.font->get_string_size(completion_options[i].display, cache.font_size).x, cmax_width);
 						if (w2 > w) {
 							w = w2;
 						}
@@ -1515,7 +1515,7 @@ void TextEdit::_notification(int p_what) {
 				}
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(completion_rect.position.x, completion_rect.position.y + (completion_index - line_from) * get_row_height()), Size2(completion_rect.size.width, get_row_height())), cache.completion_selected_color);
 
-				draw_rect(Rect2(completion_rect.position + Vector2(icon_area_size.x + icon_hsep, 0), Size2(MIN(nofs, completion_rect.size.width - (icon_area_size.x + icon_hsep)), completion_rect.size.height)), cache.completion_existing_color);
+				draw_rect(Rect2(completion_rect.position + Vector2(icon_area_size.x + icon_hsep, 0), Size2(MIN((float)nofs, completion_rect.size.width - (icon_area_size.x + icon_hsep)), completion_rect.size.height)), cache.completion_existing_color);
 
 				for (int i = 0; i < lines; i++) {
 					int l = line_from + i;
@@ -6161,13 +6161,13 @@ double TextEdit::get_visible_rows_offset() const {
 	double total = _get_control_height();
 	total /= (double)get_row_height();
 	total = total - floor(total);
-	total = -CLAMP(total, 0.001, 1) + 1;
+	total = -CLAMP(total, 0.001, 1.0) + 1;
 	return total;
 }
 
 double TextEdit::get_v_scroll_offset() const {
 	double val = get_v_scroll() - floor(get_v_scroll());
-	return CLAMP(val, 0, 1);
+	return CLAMP(val, 0.0, 1.0);
 }
 
 double TextEdit::get_v_scroll() const {

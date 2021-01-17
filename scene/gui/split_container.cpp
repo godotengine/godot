@@ -98,7 +98,7 @@ void SplitContainer::_resort() {
 	// Compute the final middle separation
 	middle_sep = no_offset_middle_sep;
 	if (!collapsed) {
-		int clamped_split_offset = CLAMP(split_offset, ms_first[axis] - no_offset_middle_sep, (get_size()[axis] - ms_second[axis] - sep) - no_offset_middle_sep);
+		int clamped_split_offset = CLAMP((float)split_offset, ms_first[axis] - no_offset_middle_sep, (get_size()[axis] - ms_second[axis] - sep) - no_offset_middle_sep);
 		middle_sep += clamped_split_offset;
 		if (should_clamp_split_offset) {
 			split_offset = clamped_split_offset;
@@ -152,10 +152,10 @@ Size2 SplitContainer::get_minimum_size() const {
 
 		if (vertical) {
 			minimum.height += ms.height;
-			minimum.width = MAX(minimum.width, ms.width);
+			minimum.width = MAX(minimum.width, (int)ms.width);
 		} else {
 			minimum.width += ms.width;
-			minimum.height = MAX(minimum.height, ms.height);
+			minimum.height = MAX(minimum.height, (int)ms.height);
 		}
 	}
 

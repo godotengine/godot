@@ -48,7 +48,7 @@ void AudioEffectReverbInstance::process(const AudioFrame *p_src_frames, AudioFra
 	int offset = 0;
 
 	while (todo) {
-		int to_mix = MIN(todo, Reverb::INPUT_BUFFER_MAX_SIZE);
+		int to_mix = MIN(todo, (int)Reverb::INPUT_BUFFER_MAX_SIZE);
 
 		for (int j = 0; j < to_mix; j++) {
 			tmp_src[j] = p_src_frames[offset + j].l;
@@ -91,7 +91,7 @@ void AudioEffectReverb::set_predelay_msec(float p_msec) {
 }
 
 void AudioEffectReverb::set_predelay_feedback(float p_feedback) {
-	predelay_fb = CLAMP(p_feedback, 0, 0.98);
+	predelay_fb = CLAMP(p_feedback, 0.0f, 0.98f);
 }
 
 void AudioEffectReverb::set_room_size(float p_size) {

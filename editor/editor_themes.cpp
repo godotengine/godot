@@ -461,7 +461,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Highlighted tabs and border width
 	Color tab_color = highlight_tabs ? base_color.lerp(font_color, contrast) : base_color;
 	// Ensure borders are visible when using an editor scale below 100%.
-	const int border_width = CLAMP(border_size, 0, 3) * MAX(1, EDSCALE);
+	const int border_width = CLAMP(border_size, 0, 3) * MAX(1.0f, EDSCALE);
 
 	const int default_margin_size = 4;
 	const int margin_size_extra = default_margin_size + CLAMP(border_size, 0, 3);
@@ -505,26 +505,26 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_popup->set_default_margin(SIDE_RIGHT, popup_margin_size);
 	style_popup->set_default_margin(SIDE_BOTTOM, popup_margin_size);
 	style_popup->set_border_color(contrast_color_1);
-	style_popup->set_border_width_all(MAX(EDSCALE, border_width));
+	style_popup->set_border_width_all(MAX((int)EDSCALE, border_width));
 	const Color shadow_color = Color(0, 0, 0, dark_theme ? 0.3 : 0.1);
 	style_popup->set_shadow_color(shadow_color);
 	style_popup->set_shadow_size(4 * EDSCALE);
 
 	Ref<StyleBoxLine> style_popup_separator(memnew(StyleBoxLine));
 	style_popup_separator->set_color(separator_color);
-	style_popup_separator->set_grow_begin(popup_margin_size - MAX(EDSCALE, border_width));
-	style_popup_separator->set_grow_end(popup_margin_size - MAX(EDSCALE, border_width));
-	style_popup_separator->set_thickness(MAX(EDSCALE, border_width));
+	style_popup_separator->set_grow_begin(popup_margin_size - MAX(EDSCALE, (float)border_width));
+	style_popup_separator->set_grow_end(popup_margin_size - MAX(EDSCALE, (float)border_width));
+	style_popup_separator->set_thickness(MAX((int)EDSCALE, border_width));
 
 	Ref<StyleBoxLine> style_popup_labeled_separator_left(memnew(StyleBoxLine));
-	style_popup_labeled_separator_left->set_grow_begin(popup_margin_size - MAX(EDSCALE, border_width));
+	style_popup_labeled_separator_left->set_grow_begin(popup_margin_size - MAX(EDSCALE, (float)border_width));
 	style_popup_labeled_separator_left->set_color(separator_color);
-	style_popup_labeled_separator_left->set_thickness(MAX(EDSCALE, border_width));
+	style_popup_labeled_separator_left->set_thickness(MAX((int)EDSCALE, border_width));
 
 	Ref<StyleBoxLine> style_popup_labeled_separator_right(memnew(StyleBoxLine));
-	style_popup_labeled_separator_right->set_grow_end(popup_margin_size - MAX(EDSCALE, border_width));
+	style_popup_labeled_separator_right->set_grow_end(popup_margin_size - MAX(EDSCALE, (float)border_width));
 	style_popup_labeled_separator_right->set_color(separator_color);
-	style_popup_labeled_separator_right->set_thickness(MAX(EDSCALE, border_width));
+	style_popup_labeled_separator_right->set_thickness(MAX((int)EDSCALE, border_width));
 
 	Ref<StyleBoxEmpty> style_empty = make_empty_stylebox(default_margin_size, default_margin_size, default_margin_size, default_margin_size);
 
@@ -1054,7 +1054,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// TooltipPanel
 	Ref<StyleBoxFlat> style_tooltip = style_popup->duplicate();
-	float v = MAX(border_size * EDSCALE, 1.0);
+	float v = MAX(border_size * EDSCALE, 1.0f);
 	style_tooltip->set_default_margin(SIDE_LEFT, v);
 	style_tooltip->set_default_margin(SIDE_TOP, v);
 	style_tooltip->set_default_margin(SIDE_RIGHT, v);

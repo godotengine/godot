@@ -232,7 +232,7 @@ void EditorNode3DGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Mate
 	if (p_billboard) {
 		float md = 0;
 		for (int i = 0; i < p_lines.size(); i++) {
-			md = MAX(0, p_lines[i].length());
+			md = MAX(0.0f, p_lines[i].length());
 		}
 		if (md) {
 			mesh->set_custom_aabb(AABB(Vector3(-md, -md, -md), Vector3(md, md, md) * 2.0));
@@ -291,7 +291,7 @@ void EditorNode3DGizmo::add_unscaled_billboard(const Ref<Material> &p_material, 
 
 	float md = 0;
 	for (int i = 0; i < vs.size(); i++) {
-		md = MAX(0, vs[i].length());
+		md = MAX(0.0f, vs[i].length());
 	}
 	if (md) {
 		mesh->set_custom_aabb(AABB(Vector3(-md, -md, -md), Vector3(md, md, md) * 2.0));
@@ -365,7 +365,7 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 	if (p_billboard) {
 		float md = 0;
 		for (int i = 0; i < p_handles.size(); i++) {
-			md = MAX(0, p_handles[i].length());
+			md = MAX(0.0f, p_handles[i].length());
 		}
 		if (md) {
 			mesh->set_custom_aabb(AABB(Vector3(-md, -md, -md), Vector3(md, md, md) * 2.0));
@@ -887,7 +887,7 @@ void Light3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camer
 
 	} else if (p_idx == 1) {
 		float a = _find_closest_angle_to_half_pi_arc(s[0], s[1], light->get_param(Light3D::PARAM_RANGE), gt);
-		light->set_param(Light3D::PARAM_SPOT_ANGLE, CLAMP(a, 0.01, 89.99));
+		light->set_param(Light3D::PARAM_SPOT_ANGLE, CLAMP(a, 0.01f, 89.99f));
 	}
 }
 
@@ -1237,7 +1237,7 @@ void Camera3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Came
 	if (camera->get_projection() == Camera3D::PROJECTION_PERSPECTIVE) {
 		Transform gt2 = camera->get_global_transform();
 		float a = _find_closest_angle_to_half_pi_arc(s[0], s[1], 1.0, gt2);
-		camera->set("fov", CLAMP(a * 2.0, 1, 179));
+		camera->set("fov", CLAMP(a * 2.0, 1.0, 179.0));
 	} else {
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(Vector3(0, 0, -1), Vector3(4096, 0, -1), s[0], s[1], ra, rb);
@@ -1246,7 +1246,7 @@ void Camera3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Came
 			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		d = CLAMP(d, 0.1, 16384);
+		d = CLAMP(d, 0.1f, 16384.0f);
 
 		camera->set("size", d);
 	}
@@ -4490,7 +4490,7 @@ void JointGizmosDrawer::draw_cone(const Transform &p_offset, const Basis &p_base
 
 	/// Twist
 	float ts = Math::rad2deg(p_twist);
-	ts = MIN(ts, 720);
+	ts = MIN(ts, 720.0f);
 
 	for (int i = 0; i < int(ts); i += 5) {
 		float ra = Math::deg2rad((float)i);

@@ -326,7 +326,7 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					float yofs = frame->padding.position.y;
 					for (int i = 0; i < frame->lines.size(); i++) {
 						frame->lines.write[i].text_buf->set_width(table->columns[column].width);
-						table->columns.write[column].width = MAX(table->columns.write[column].width, ceil(frame->lines[i].text_buf->get_size().x));
+						table->columns.write[column].width = MAX(table->columns.write[column].width, (int)ceil(frame->lines[i].text_buf->get_size().x));
 
 						if (i > 0) {
 							frame->lines.write[i].offset.y = frame->lines[i - 1].offset.y + frame->lines[i - 1].text_buf->get_size().y;
@@ -483,8 +483,8 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 						l.char_count += cell_ch;
 						t_char_count += cell_ch;
 
-						table->columns.write[column].min_width = MAX(table->columns[column].min_width, ceil(frame->lines[i].text_buf->get_size().x));
-						table->columns.write[column].max_width = MAX(table->columns[column].max_width, ceil(frame->lines[i].text_buf->get_non_wraped_size().x));
+						table->columns.write[column].min_width = MAX(table->columns[column].min_width, (int)ceil(frame->lines[i].text_buf->get_size().x));
+						table->columns.write[column].max_width = MAX(table->columns[column].max_width, (int)ceil(frame->lines[i].text_buf->get_non_wraped_size().x));
 					}
 					idx++;
 				}
@@ -565,7 +565,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 					float yofs = frame->padding.position.y;
 					for (int i = 0; i < frame->lines.size(); i++) {
 						frame->lines.write[i].text_buf->set_width(table->columns[column].width);
-						table->columns.write[column].width = MAX(table->columns.write[column].width, ceil(frame->lines[i].text_buf->get_size().x));
+						table->columns.write[column].width = MAX(table->columns.write[column].width, (int)ceil(frame->lines[i].text_buf->get_size().x));
 
 						if (i > 0) {
 							frame->lines.write[i].offset.y = frame->lines[i - 1].offset.y + frame->lines[i - 1].text_buf->get_size().y;

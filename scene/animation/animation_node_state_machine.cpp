@@ -368,7 +368,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 			if (!p_seek) {
 				fading_pos += p_time;
 			}
-			fade_blend = MIN(1.0, fading_pos / fading_time);
+			fade_blend = MIN(1.0f, fading_pos / fading_time);
 			if (fade_blend >= 1.0) {
 				fading_from = StringName();
 			}

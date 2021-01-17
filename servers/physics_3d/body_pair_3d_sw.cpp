@@ -202,7 +202,7 @@ bool BodyPair3DSW::_test_ccd(real_t p_step, Body3DSW *p_A, int p_shape_A, const 
 }
 
 real_t combine_bounce(Body3DSW *A, Body3DSW *B) {
-	return CLAMP(A->get_bounce() + B->get_bounce(), 0, 1);
+	return CLAMP(A->get_bounce() + B->get_bounce(), 0.0f, 1.0f);
 }
 
 real_t combine_friction(Body3DSW *A, Body3DSW *B) {

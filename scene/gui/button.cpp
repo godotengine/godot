@@ -48,7 +48,7 @@ Size2 Button::get_minimum_size() const {
 		}
 
 		if (!_icon.is_null()) {
-			minsize.height = MAX(minsize.height, _icon->get_height());
+			minsize.height = MAX(minsize.height, (float)_icon->get_height());
 			minsize.width += _icon->get_width();
 			if (xl_text != "") {
 				minsize.width += get_theme_constant("hseparation");
@@ -246,7 +246,7 @@ void Button::_notification(int p_what) {
 			int text_clip = size.width - style->get_minimum_size().width - icon_ofs.width;
 			text_buf->set_width(clip_text ? text_clip : -1);
 
-			int text_width = clip_text ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x;
+			int text_width = clip_text ? MIN((float)text_clip, text_buf->get_size().x) : text_buf->get_size().x;
 
 			if (_internal_margin[SIDE_LEFT] > 0) {
 				text_clip -= _internal_margin[SIDE_LEFT] + get_theme_constant("hseparation");

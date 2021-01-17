@@ -66,13 +66,13 @@ void AudioEffectDelayInstance::_process_chunk(const AudioFrame *p_src_frames, Au
 
 	AudioFrame tap1_vol = AudioFrame(tap_1_level_f, tap_1_level_f);
 
-	tap1_vol.l *= CLAMP(1.0 - base->tap_1_pan, 0, 1);
-	tap1_vol.r *= CLAMP(1.0 + base->tap_1_pan, 0, 1);
+	tap1_vol.l *= CLAMP(1.0 - base->tap_1_pan, 0.0, 1.0);
+	tap1_vol.r *= CLAMP(1.0 + base->tap_1_pan, 0.0, 1.0);
 
 	AudioFrame tap2_vol = AudioFrame(tap_2_level_f, tap_2_level_f);
 
-	tap2_vol.l *= CLAMP(1.0 - base->tap_2_pan, 0, 1);
-	tap2_vol.r *= CLAMP(1.0 + base->tap_2_pan, 0, 1);
+	tap2_vol.l *= CLAMP(1.0 - base->tap_2_pan, 0.0, 1.0);
+	tap2_vol.r *= CLAMP(1.0 + base->tap_2_pan, 0.0, 1.0);
 
 	// feedback lowpass here
 	float lpf_c = expf(-2.0 * Math_PI * base->feedback_lowpass / mix_rate); // 0 .. 10khz

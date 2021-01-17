@@ -504,9 +504,9 @@ void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_colo
 		}
 		float clip_l;
 		if (TS->shaped_text_get_orientation(lines[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-			clip_l = MAX(0, p_pos.x - ofs.x);
+			clip_l = MAX(0.0f, p_pos.x - ofs.x);
 		} else {
-			clip_l = MAX(0, p_pos.y - ofs.y);
+			clip_l = MAX(0.0f, p_pos.y - ofs.y);
 		}
 		TS->shaped_text_draw(lines[i], p_canvas, ofs, clip_l, clip_l + l_width, p_color);
 		if (TS->shaped_text_get_orientation(lines[i]) == TextServer::ORIENTATION_HORIZONTAL) {
@@ -588,9 +588,9 @@ void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outli
 		}
 		float clip_l;
 		if (TS->shaped_text_get_orientation(lines[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-			clip_l = MAX(0, p_pos.x - ofs.x);
+			clip_l = MAX(0.0f, p_pos.x - ofs.x);
 		} else {
-			clip_l = MAX(0, p_pos.y - ofs.y);
+			clip_l = MAX(0.0f, p_pos.y - ofs.y);
 		}
 		TS->shaped_text_draw_outline(lines[i], p_canvas, ofs, clip_l, clip_l + l_width, p_outline_size, p_color);
 		if (TS->shaped_text_get_orientation(lines[i]) == TextServer::ORIENTATION_HORIZONTAL) {

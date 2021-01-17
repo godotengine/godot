@@ -100,7 +100,7 @@ public:
 			if (i >= datamax) {
 				xm_sample = 0;
 			} else {
-				xm_sample = CLAMP(in[i] * 32767.0, -32768, 32767);
+				xm_sample = CLAMP(in[i] * 32767.0, -32768.0, 32767.0);
 				/*
 				if (xm_sample==32767 || xm_sample==-32768)
 					printf("clippy!\n",xm_sample);
