@@ -132,6 +132,7 @@ Error DynamicFontAtSize::_load() {
 		f->get_buffer(font->_fontdata.ptrw(), len);
 		font->set_font_ptr(font->_fontdata.ptr(), len);
 		f->close();
+		memdelete(f);
 	}
 
 	if (font->font_mem) {
