@@ -37,6 +37,15 @@
 // However BVH also adds facilities for pairing, to maintain compatibility with Godot 3.2.
 // Pairing is a collision pairing system, on top of the basic BVH.
 
+// Some notes on the use of BVH / Octree from Godot 3.2.
+// This is not well explained elsewhere.
+// The rendering tree mask and types that are sent to the BVH are NOT layer masks.
+// They are INSTANCE_TYPES (defined in visual_server.h), e.g. MESH, MULTIMESH, PARTICLES etc.
+// Thus the lights do no cull by layer mask in the BVH.
+
+// Layer masks are implemented in the renderers as a later step, and light_cull_mask appears to be
+// implemented in GLES3 but not GLES2. Layer masks are not yet implemented for directional lights.
+
 #include "bvh_tree.h"
 
 #define BVHTREE_CLASS BVH_Tree<T, 2, MAX_ITEMS, USE_PAIRS>
@@ -168,8 +177,22 @@ public:
 
 	// prefer calling this directly as type safe
 	void set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
-		// unpair callback if already paired? NYI
 		tree.item_set_pairable(p_handle, p_pairable, p_pairable_type, p_pairable_mask);
+
+		if (USE_PAIRS) {
+			// when the pairable state changes, we need to force a collision check because newly pairable
+			// items may be in collision, and unpairable items might move out of collision.
+			// We cannot depend on waiting for the next update, because that may come much later.
+			AABB aabb;
+			item_get_AABB(p_handle, aabb);
+
+			// passing false disables the optimization which prevents collision checks if
+			// the aabb hasn't changed
+			_add_changed_item(p_handle, aabb, false);
+
+			// force an immediate collision check (probably just for this one item)
+			_check_for_collisions();
+		}
 	}
 
 	// cull tests
@@ -181,6 +204,7 @@ public:
 		params.result_array = p_result_array;
 		params.subindex_array = p_subindex_array;
 		params.mask = p_mask;
+		params.pairable_type = 0;
 		params.test_pairable_only = false;
 		params.abb.from(p_aabb);
 
@@ -197,6 +221,7 @@ public:
 		params.result_array = p_result_array;
 		params.subindex_array = p_subindex_array;
 		params.mask = p_mask;
+		params.pairable_type = 0;
 
 		params.segment.from = p_from;
 		params.segment.to = p_to;
@@ -214,6 +239,7 @@ public:
 		params.result_array = p_result_array;
 		params.subindex_array = p_subindex_array;
 		params.mask = p_mask;
+		params.pairable_type = 0;
 
 		params.point = p_point;
 
@@ -235,6 +261,7 @@ public:
 		params.result_array = p_result_array;
 		params.subindex_array = nullptr;
 		params.mask = p_mask;
+		params.pairable_type = 0;
 
 		params.hull.planes = &p_convex[0];
 		params.hull.num_planes = p_convex.size();
@@ -258,6 +285,7 @@ private:
 		params.result_array = nullptr;
 		params.subindex_array = nullptr;
 		params.mask = 0xFFFFFFFF;
+		params.pairable_type = 0;
 
 		for (unsigned int n = 0; n < changed_items.size(); n++) {
 			const BVHHandle &h = changed_items[n];
@@ -435,7 +463,7 @@ private:
 		_tick++;
 	}
 
-	void _add_changed_item(BVHHandle p_handle, const AABB &aabb) {
+	void _add_changed_item(BVHHandle p_handle, const AABB &aabb, bool p_check_aabb = true) {
 
 		// only if uses pairing
 		// no .. non pairable items seem to be able to pair with pairable
@@ -443,7 +471,11 @@ private:
 		// aabb check with expanded aabb. This greatly decreases processing
 		// at the cost of slightly less accurate pairing checks
 		AABB &expanded_aabb = tree._pairs[p_handle.id()].expanded_aabb;
-		if (expanded_aabb.encloses(aabb))
+
+		// passing p_check_aabb false disables the optimization which prevents collision checks if
+		// the aabb hasn't changed. This is needed where set_pairable has been called, but the position
+		// has not changed.
+		if (p_check_aabb && expanded_aabb.encloses(aabb))
 			return;
 
 		uint32_t &last_updated_tick = tree._extra[p_handle.id()].last_updated_tick;

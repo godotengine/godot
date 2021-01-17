@@ -8,7 +8,10 @@ struct CullParams {
 	int result_max;
 	T **result_array;
 	int *subindex_array;
+
+	// nobody truly understands how masks are intended to work.
 	uint32_t mask;
+	uint32_t pairable_type;
 
 	// optional components for different tests
 	Vector3 point;
@@ -138,8 +141,14 @@ void _cull_hit(uint32_t p_ref_id, CullParams &p) {
 	if (USE_PAIRS) {
 		const ItemExtra &ex = _extra[p_ref_id];
 
-		if (!(p.mask & ex.pairable_type))
-			return;
+		// double check this as a possible source of bugs in future.
+		bool from_match_to = p.mask & ex.pairable_type;
+
+		if (!from_match_to) {
+			bool to_match_from = ex.pairable_mask & p.pairable_type;
+			if (!to_match_from)
+				return;
+		}
 	}
 
 	_cull_hits.push_back(p_ref_id);
