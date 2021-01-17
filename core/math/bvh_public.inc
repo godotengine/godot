@@ -196,6 +196,7 @@ void item_fill_cullparams(BVHHandle p_handle, CullParams &r_params) const {
 
 	// we take into account the mask of the item testing from
 	r_params.mask = extra.pairable_mask;
+	r_params.pairable_type = extra.pairable_type;
 }
 
 bool item_is_pairable(const BVHHandle &p_handle) {
