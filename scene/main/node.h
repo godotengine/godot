@@ -88,8 +88,6 @@ private:
 		Ref<SceneState> instance_state;
 		Ref<SceneState> inherited_state;
 
-		HashMap<NodePath, int> editable_instances;
-
 		Node *parent = nullptr;
 		Node *owner = nullptr;
 		Vector<Node *> children;
@@ -136,6 +134,7 @@ private:
 		bool use_placeholder = false;
 
 		bool display_folded = false;
+		bool editable_instance = false;
 
 		mutable NodePath *path_cache = nullptr;
 
@@ -325,8 +324,6 @@ public:
 
 	void set_editable_instance(Node *p_node, bool p_editable);
 	bool is_editable_instance(const Node *p_node) const;
-	void set_editable_instances(const HashMap<NodePath, int> &p_editable_instances);
-	HashMap<NodePath, int> get_editable_instances() const;
 
 	/* NOTIFICATIONS */
 
