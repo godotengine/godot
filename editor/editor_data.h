@@ -111,7 +111,7 @@ public:
 	struct EditedScene {
 		Node *root = nullptr;
 		String path;
-		uint64_t file_modified_time;
+		uint64_t file_modified_time = 0;
 		Dictionary editor_states;
 		List<Node *> selection;
 		Vector<EditorHistory::History> history_stored;

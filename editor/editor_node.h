@@ -646,6 +646,7 @@ private:
 	void _resources_changed(const Vector<String> &p_resources);
 	void _scan_external_changes();
 	void _reload_modified_scenes();
+	void _reload_project_settings();
 	void _resave_scenes(String p_str);
 
 	void _feature_profile_changed();

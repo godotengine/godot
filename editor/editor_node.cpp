@@ -904,6 +904,13 @@ void EditorNode::_scan_external_changes() {
 		}
 	}
 
+	String project_settings_path = ProjectSettings::get_singleton()->get_resource_path().plus_file("project.godot");
+	if (FileAccess::get_modified_time(project_settings_path) > ProjectSettings::get_singleton()->get_last_saved_time()) {
+		TreeItem *ti = disk_changed_list->create_item(r);
+		ti->set_text(0, "project.godot");
+		need_reload = true;
+	}
+
 	if (need_reload) {
 		disk_changed->call_deferred("popup_centered_ratio", 0.5);
 	}
@@ -911,6 +918,7 @@ void EditorNode::_scan_external_changes() {
 
 void EditorNode::_resave_scenes(String p_str) {
 	save_all_scenes();
+	ProjectSettings::get_singleton()->save();
 	disk_changed->hide();
 }
 
@@ -932,7 +940,7 @@ void EditorNode::_reload_modified_scenes() {
 
 			Error err = load_scene(filename, false, false, true, false, true);
 			if (err != OK) {
-				ERR_PRINT("Failed to load scene");
+				ERR_PRINT(vformat("Failed to load scene: %s", filename));
 			}
 			editor_data.move_edited_scene_to_index(i);
 		}
@@ -942,6 +950,10 @@ void EditorNode::_reload_modified_scenes() {
 	set_current_scene(current_idx);
 	_update_scene_tabs();
 	disk_changed->hide();
+}
+
+void EditorNode::_reload_project_settings() {
+	ProjectSettings::get_singleton()->setup(ProjectSettings::get_singleton()->get_resource_path(), String(), true);
 }
 
 void EditorNode::_vp_resized() {
@@ -6681,6 +6693,7 @@ EditorNode::EditorNode() {
 		disk_changed_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 		disk_changed->connect("confirmed", callable_mp(this, &EditorNode::_reload_modified_scenes));
+		disk_changed->connect("confirmed", callable_mp(this, &EditorNode::_reload_project_settings));
 		disk_changed->get_ok_button()->set_text(TTR("Reload"));
 
 		disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
