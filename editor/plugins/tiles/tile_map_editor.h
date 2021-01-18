@@ -62,7 +62,7 @@ private:
 	ItemList *sources_list;
 	TileAtlasView *tile_atlas_view;
 	Ref<Texture2D> missing_texture_texture;
-	void _update_tile_set_sources_list();
+	void _update_tile_set_atlas_sources_list();
 	void _update_atlas_view();
 
 	void _update_fix_selected_and_hovered();
@@ -84,7 +84,7 @@ private:
 	void _tile_alternatives_control_gui_input(const Ref<InputEvent> &p_event);
 
 	// --- TileMap ---
-	TileMap *tile_map;
+	TileMap *tile_map = nullptr;
 
 	HBoxContainer *tilemap_toolbar;
 
@@ -109,15 +109,16 @@ private:
 	enum DragType {
 		DRAG_TYPE_NONE = 0,
 		DRAG_TYPE_PAINT,
+		DRAG_TYPE_LINE
 	};
-	DragType drag_type;
+	DragType drag_type = DRAG_TYPE_NONE;
 	Vector2 drag_start_mouse_pos;
 	Vector2 drag_last_mouse_pos;
 	Map<Vector2i, TileMapCell> drag_modified;
 
 	void _mouse_exited_viewport();
 
-	void _dragging_paint(Vector2 p_last_mouse_pos, Vector2i p_new_mouse_pos);
+	void _draw_line(Vector2 p_last_mouse_pos, Vector2i p_new_mouse_pos);
 
 	void _tile_map_changed();
 

@@ -319,12 +319,19 @@ void TileSetEditorSourcesTab::_update_atlas_sources_list() {
 	for (int i = 0; i < sources_list->get_item_count(); i++) {
 		if ((int)sources_list->get_item_metadata(i) == old_current_id) {
 			sources_list->set_current(i);
+			sources_list->emit_signal("item_selected", sources_list->get_current());
 			break;
 		}
 	}
 
+	// If nothing is selected, select the first entry.
+	if (sources_list->get_current() < 0 && sources_list->get_item_count() > 0) {
+		sources_list->set_current(0);
+		sources_list->emit_signal("item_selected", sources_list->get_current());
+	}
+
 	// Synchronize the lists.
-	TilesEditor::get_singleton()->synchronize_sources_lists(sources_list->get_current());
+	TilesEditor::get_singleton()->set_atlas_sources_lists_current(sources_list->get_current());
 }
 
 void TileSetEditorSourcesTab::_update_source_inspector() {
@@ -421,6 +428,10 @@ void TileSetEditorSourcesTab::_update_alternative_tile_inspector() {
 }
 
 void TileSetEditorSourcesTab::_update_atlas_view() {
+	if (!tile_set) {
+		return;
+	}
+
 	// Update the atlas display.
 	int source_index = sources_list->get_current();
 	if (source_index >= 0) {
@@ -1607,8 +1618,9 @@ TileSetEditorSourcesTab::TileSetEditorSourcesTab() {
 	sources_list->set_fixed_icon_size(Size2i(60, 60) * EDSCALE);
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	sources_list->connect("item_selected", callable_mp(this, &TileSetEditorSourcesTab::_source_selected));
+	sources_list->connect("item_selected", callable_mp(TilesEditor::get_singleton(), &TilesEditor::set_atlas_sources_lists_current));
+	sources_list->connect("visibility_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::synchronize_atlas_sources_lists), varray(sources_list));
 	sources_list->set_drag_forwarding(this);
-	TilesEditor::get_singleton()->register_atlas_source_list_for_synchronization(sources_list);
 	split_container_left_side->add_child(sources_list);
 
 	HBoxContainer *sources_bottom_actions = memnew(HBoxContainer);
@@ -1823,6 +1835,7 @@ TileSetEditorSourcesTab::TileSetEditorSourcesTab() {
 }
 
 TileSetEditorSourcesTab::~TileSetEditorSourcesTab() {
+	edit(nullptr);
 	memdelete(tile_proxy_object);
 	memdelete(alternative_tile_proxy_object);
 	memdelete(atlas_source_proxy_object);

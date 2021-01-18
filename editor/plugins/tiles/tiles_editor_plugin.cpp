@@ -95,25 +95,28 @@ void TilesEditor::_update_editors() {
 		}
 	}
 
-	if (tile_map || !tile_set.is_valid()) {
-		// If tile_map is not edited, we change the edited only if we are not editing a tile_set.
-		tilemap_editor->edit(tile_map);
-	}
+	// If tile_map is not edited, we change the edited only if we are not editing a tile_set.
+	tilemap_editor->edit(tile_map);
 	tileset_editor->edit(*tile_set);
 
 	// Update the viewport
 	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
-void TilesEditor::synchronize_sources_lists(int p_current) {
-	if (p_current >= 0) {
-		sources_lists_current = p_current;
-	}
+void TilesEditor::set_atlas_sources_lists_current(int p_current) {
+	atlas_sources_lists_current = p_current;
+}
 
-	for (Set<ItemList *>::Element *E = sources_lists.front(); E; E = E->next()) {
-		ItemList *item_list = E->get();
-		if (sources_lists_current < item_list->get_item_count()) {
-			item_list->set_current(sources_lists_current);
+void TilesEditor::synchronize_atlas_sources_lists(Object *p_current) {
+	ItemList *item_list = Object::cast_to<ItemList>(p_current);
+	ERR_FAIL_COND(!item_list);
+
+	if (item_list->is_visible_in_tree()) {
+		if (atlas_sources_lists_current < 0 || atlas_sources_lists_current >= item_list->get_item_count()) {
+			item_list->deselect_all();
+		} else {
+			item_list->set_current(atlas_sources_lists_current);
+			item_list->emit_signal("item_selected", atlas_sources_lists_current);
 		}
 	}
 }
@@ -144,27 +147,33 @@ void TilesEditor::register_atlas_view_for_synchronization(TileAtlasView *p_atlas
 	p_atlas_view->get_v_scrollbar()->connect("value_changed", callable_mp(this, &TilesEditor::_synchronize_atlas_views), varray(p_atlas_view));
 }
 
-void TilesEditor::register_atlas_source_list_for_synchronization(ItemList *p_source_list) {
-	sources_lists.insert(p_source_list);
-	p_source_list->connect("item_selected", callable_mp(this, &TilesEditor::synchronize_sources_lists));
+void TilesEditor::clear() {
+	edit(nullptr);
 }
 
 void TilesEditor::edit(Object *p_object) {
+	// Disconnect.
+	if (tile_map) {
+		tile_map->disconnect("tree_exiting", callable_mp(this, &TilesEditor::clear));
+	}
+
 	// Update edited objects.
 	tile_map = nullptr;
 	tile_set = Ref<TileSet>();
-	if (p_object->is_class("TileMap")) {
-		tile_map = (TileMap *)p_object;
-		tile_set = tile_map->get_tileset();
-	} else if (p_object->is_class("TileSet")) {
-		tile_set = Ref<TileSet>(p_object);
-	}
+	if (p_object) {
+		if (p_object->is_class("TileMap")) {
+			tile_map = (TileMap *)p_object;
+			tile_set = tile_map->get_tileset();
+		} else if (p_object->is_class("TileSet")) {
+			tile_set = Ref<TileSet>(p_object);
+		}
 
-	// Update pressed status button.
-	if (p_object->is_class("TileMap")) {
-		tileset_tilemap_switch_button->set_pressed(false);
-	} else if (p_object->is_class("TileSet")) {
-		tileset_tilemap_switch_button->set_pressed(true);
+		// Update pressed status button.
+		if (p_object->is_class("TileMap")) {
+			tileset_tilemap_switch_button->set_pressed(false);
+		} else if (p_object->is_class("TileSet")) {
+			tileset_tilemap_switch_button->set_pressed(true);
+		}
 	}
 
 	// Update the editors.
@@ -174,6 +183,7 @@ void TilesEditor::edit(Object *p_object) {
 	// Add change listener.
 	if (tile_map) {
 		tile_map->connect("changed", callable_mp(this, &TilesEditor::_tile_map_changed));
+		tile_map->connect("tree_exiting", callable_mp(this, &TilesEditor::clear));
 	}
 }
 

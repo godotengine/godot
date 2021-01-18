@@ -144,6 +144,18 @@ void TileMap::update_dirty_quadrants() {
 		return;
 	}
 
+	// Update the coords cache.
+	for (SelfList<TileMapQuadrant> *q = dirty_quadrant_list.first(); q; q = q->next()) {
+		q->self()->map_to_world.clear();
+		q->self()->world_to_map.clear();
+		for (Set<Vector2i>::Element *E = q->self()->cells.front(); E; E = E->next()) {
+			Vector2i pk = E->get();
+			Vector2i pk_world_coords = map_to_world(pk);
+			q->self()->map_to_world[pk] = pk_world_coords;
+			q->self()->world_to_map[pk_world_coords] = pk;
+		}
+	}
+
 	// Call the update_dirty_quadrant method on plugins
 	for (int i = 0; i < tile_set->get_tile_set_atlas_plugins().size(); i++) {
 		tile_set->get_tile_set_atlas_plugins()[i]->update_dirty_quadrants(this, dirty_quadrant_list);
@@ -206,17 +218,16 @@ Map<Vector2i, TileMapQuadrant>::Element *TileMap::_create_quadrant(const Vector2
 
 void TileMap::_erase_quadrant(Map<Vector2i, TileMapQuadrant>::Element *Q) {
 	// Remove a quadrant.
-	TileMapQuadrant &q = Q->get();
+	TileMapQuadrant *q = &(Q->get());
 
-	// Free the canvas item..
-	for (List<RID>::Element *E = q.canvas_items.front(); E; E = E->next()) {
-		RenderingServer::get_singleton()->free(E->get());
+	// Call the cleanup_quadrant method on plugins.
+	for (int i = 0; i < tile_set->get_tile_set_atlas_plugins().size(); i++) {
+		tile_set->get_tile_set_atlas_plugins()[i]->cleanup_quadrant(this, q);
 	}
-	q.canvas_items.clear();
 
-	// Remove the quadrant from the dirty_list if it is there
-	if (q.dirty_list_element.in_list()) {
-		dirty_quadrant_list.remove(&q.dirty_list_element);
+	// Remove the quadrant from the dirty_list if it is there.
+	if (q->dirty_list_element.in_list()) {
+		dirty_quadrant_list.remove(&(q->dirty_list_element));
 	}
 
 	quadrant_map.erase(Q);
@@ -264,8 +275,6 @@ void TileMap::_make_quadrant_dirty(Map<Vector2i, TileMapQuadrant>::Element *Q, b
 }
 
 void TileMap::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) {
-	print_line(vformat("Setting tile at position: (%s). Tile set ids: %d (%s) %d", p_coords, p_source_id, p_atlas_coords, p_alternative_tile));
-
 	// Set the current cell tile (using integer position)
 	Vector2i pk(p_coords);
 	Map<Vector2i, TileMapCell>::Element *E = tile_map.find(pk);
@@ -286,10 +295,8 @@ void TileMap::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i
 		// Erase existing cell in the quadrant.
 		ERR_FAIL_COND(!Q);
 		TileMapQuadrant &q = Q->get();
-		Vector2i pk_world_coords = q.map_to_world[pk];
+
 		q.cells.erase(pk);
-		q.map_to_world.erase(pk);
-		q.world_to_map.erase(pk_world_coords);
 
 		// Remove or make the quadrant dirty.
 		if (q.cells.size() == 0) {
@@ -310,9 +317,7 @@ void TileMap::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i
 			}
 			TileMapQuadrant &q = Q->get();
 			q.cells.insert(pk);
-			Vector2i pk_world_coords = map_to_world(pk);
-			q.map_to_world[pk] = pk_world_coords;
-			q.world_to_map[pk_world_coords] = pk;
+
 		} else {
 			ERR_FAIL_COND(!Q); // TileMapQuadrant should exist...
 
@@ -398,9 +403,7 @@ void TileMap::_recreate_quadrants() {
 
 		Vector2i pk = E->key();
 		Q->get().cells.insert(pk);
-		Vector2i pk_world_coords = map_to_world(pk);
-		Q->get().map_to_world[pk] = pk_world_coords;
-		Q->get().world_to_map[pk_world_coords] = pk;
+
 		_make_quadrant_dirty(Q, false);
 	}
 
@@ -949,6 +952,7 @@ void TileMap::_bind_methods() {
 
 void TileMap::_tile_set_changed() {
 	emit_signal("changed");
+	_make_all_quadrants_dirty(true);
 }
 
 TileMap::TileMap() {

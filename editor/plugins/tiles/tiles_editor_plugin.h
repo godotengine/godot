@@ -44,7 +44,7 @@ class TilesEditor : public VBoxContainer {
 	static TilesEditor *singleton;
 
 private:
-	TileMap *tile_map;
+	TileMap *tile_map = nullptr;
 	Ref<TileSet> tile_set;
 
 	Button *tileset_tilemap_switch_button;
@@ -58,9 +58,7 @@ private:
 	void _update_editors();
 
 	// For synchronization.
-	int sources_lists_current = -1;
-	Set<ItemList *> sources_lists;
-	void _source_list_changed();
+	int atlas_sources_lists_current = 0;
 	Set<TileAtlasView *> atlases_views;
 	void _synchronize_atlas_views(Variant p_unused, Object *p_emitter); // TODO: remove the unused argument when connecting supports unbinding arguments with connect(...).
 
@@ -76,10 +74,13 @@ public:
 	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return tilemap_editor->forward_canvas_gui_input(p_event); }
 	void forward_canvas_draw_over_viewport(Control *p_overlay) { tilemap_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
-	void synchronize_sources_lists(int p_current = -1);
-	void register_atlas_view_for_synchronization(TileAtlasView *p_atlas_view);
-	void register_atlas_source_list_for_synchronization(ItemList *p_source_list);
+	// To synchronize the atlas sources lists.
+	void set_atlas_sources_lists_current(int p_current);
+	void synchronize_atlas_sources_lists(Object *p_current);
 
+	void register_atlas_view_for_synchronization(TileAtlasView *p_atlas_view);
+
+	void clear();
 	void edit(Object *p_object);
 
 	TilesEditor(EditorNode *p_editor);

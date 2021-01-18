@@ -38,6 +38,7 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/split_container.h"
 
+#include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 
@@ -63,7 +64,7 @@ void TileMapEditor::_notification(int p_what) {
 			if (is_visible_in_tree() && tileset_changed_needs_update) {
 				_update_fix_selected_and_hovered();
 				_update_bottom_panel();
-				_update_tile_set_sources_list();
+				_update_tile_set_atlas_sources_list();
 				_update_atlas_view();
 				tileset_changed_needs_update = false;
 			}
@@ -87,7 +88,7 @@ void TileMapEditor::_update_bottom_panel() {
 	atlas_sources_split_container->set_visible(valid_sources);
 }
 
-void TileMapEditor::_update_tile_set_sources_list() {
+void TileMapEditor::_update_tile_set_atlas_sources_list() {
 	// Update the atlas sources.
 
 	int old_current = sources_list->get_current();
@@ -118,14 +119,13 @@ void TileMapEditor::_update_tile_set_sources_list() {
 			// Keep the current selected item if needed.
 			sources_list->set_current(CLAMP(old_current, 0, sources_list->get_item_count() - 1));
 		} else {
-			// Select the first item otherwise (if there is at least one source though).
 			sources_list->set_current(0);
 		}
 		sources_list->emit_signal("item_selected", sources_list->get_current());
 	}
 
-	// Synchronize sources lists.
-	TilesEditor::get_singleton()->synchronize_sources_lists(sources_list->get_current());
+	// Synchronize
+	TilesEditor::get_singleton()->set_atlas_sources_lists_current(sources_list->get_current());
 }
 
 void TileMapEditor::_update_atlas_view() {
@@ -183,7 +183,7 @@ void TileMapEditor::_mouse_exited_viewport() {
 	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
-void TileMapEditor::_dragging_paint(Vector2 p_last_mouse_pos, Vector2i p_new_mouse_pos) {
+void TileMapEditor::_draw_line(Vector2 p_from_mouse_pos, Vector2i p_to_mouse_pos) {
 	if (!tile_map) {
 		return;
 	}
@@ -193,26 +193,21 @@ void TileMapEditor::_dragging_paint(Vector2 p_last_mouse_pos, Vector2i p_new_mou
 		return;
 	}
 
+	// Get or create the pattern.
+	TilePattern pattern;
 	if (erase_button->is_pressed()) {
-		Vector2i last_hovered_cell = tile_map->world_to_map(p_last_mouse_pos);
-		Vector2i new_hovered_cell = tile_map->world_to_map(p_new_mouse_pos);
-		Vector<Vector2i> line = Geometry2D::bresenham_line(last_hovered_cell, new_hovered_cell);
+		pattern.size = Vector2i(1, 1);
+		pattern.pattern[Vector2i(0, 0)] = TileMapCell(-1, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
+	} else {
+		pattern = _get_pattern_from_set(tile_set_selection);
+	}
 
-		for (int i = 0; i < line.size(); i++) {
-			Vector2i coords = line[i];
-			if (!drag_modified.has(coords)) {
-				drag_modified.insert(coords, TileMapCell(tile_map->get_cell_source_id(coords), tile_map->get_cell_atlas_coords(coords), tile_map->get_cell_alternative_tile(coords)));
-			}
-			tile_map->set_cell(line[i], TileSet::SOURCE_TYPE_INVALID, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
-		}
-	} else if (!tile_set_selection.is_empty()) {
-		TilePattern pattern = _get_pattern_from_set(tile_set_selection);
-
+	if (!pattern.pattern.is_empty()) {
 		// If we paint several tiles, we virtually move the mouse as if it was in the center of the "brush"
 		Vector2 mouse_offset = (Vector2(pattern.size) / 2.0 - Vector2(0.5, 0.5)) * tile_set->get_tile_size();
 
-		Vector2i last_hovered_cell = tile_map->world_to_map(p_last_mouse_pos - mouse_offset);
-		Vector2i new_hovered_cell = tile_map->world_to_map(p_new_mouse_pos - mouse_offset);
+		Vector2i last_hovered_cell = tile_map->world_to_map(p_from_mouse_pos - mouse_offset);
+		Vector2i new_hovered_cell = tile_map->world_to_map(p_to_mouse_pos - mouse_offset);
 		Vector2i drag_start_cell = tile_map->world_to_map(drag_start_mouse_pos - mouse_offset);
 		Vector2i offset = Vector2i(Math::posmod(drag_start_cell.x, pattern.size.x), Math::posmod(drag_start_cell.y, pattern.size.y)); // Note: no posmodv for Vector2i for now. Meh.
 		Vector<Vector2i> line = Geometry2D::bresenham_line((last_hovered_cell - offset) / pattern.size, (new_hovered_cell - offset) / pattern.size);
@@ -248,7 +243,7 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 		Vector2 mpos = xform.affine_inverse().xform(mm->get_position());
 
 		if (drag_type == DRAG_TYPE_PAINT) {
-			_dragging_paint(drag_last_mouse_pos, mpos);
+			_draw_line(drag_last_mouse_pos, mpos);
 		}
 
 		drag_last_mouse_pos = mpos;
@@ -267,15 +262,26 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 			if (mb->is_pressed()) {
 				// Pressed
 				if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_paint_tool_button) {
-					// TODO: hanle undo/redo
 					drag_type = DRAG_TYPE_PAINT;
 					drag_start_mouse_pos = mpos;
 					drag_modified.clear();
-					_dragging_paint(mpos, mpos);
+					_draw_line(mpos, mpos);
+				} else if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_line_tool_button) {
+					drag_type = DRAG_TYPE_LINE;
+					drag_start_mouse_pos = mpos;
+					drag_modified.clear();
 				}
 			} else {
 				// Released
 				if (drag_type == DRAG_TYPE_PAINT) {
+					undo_redo->create_action("Paint tiles");
+					for (Map<Vector2i, TileMapCell>::Element *E = drag_modified.front(); E; E = E->next()) {
+						undo_redo->add_do_method(tile_map, "set_cell", E->key(), tile_map->get_cell_source_id(E->key()), tile_map->get_cell_atlas_coords(E->key()), tile_map->get_cell_alternative_tile(E->key()));
+						undo_redo->add_undo_method(tile_map, "set_cell", E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+					}
+					undo_redo->commit_action(false);
+				} else if (drag_type == DRAG_TYPE_LINE) {
+					_draw_line(drag_start_mouse_pos, mpos);
 					undo_redo->create_action("Paint tiles");
 					for (Map<Vector2i, TileMapCell>::Element *E = drag_modified.front(); E; E = E->next()) {
 						undo_redo->add_do_method(tile_map, "set_cell", E->key(), tile_map->get_cell_source_id(E->key()), tile_map->get_cell_atlas_coords(E->key()), tile_map->get_cell_alternative_tile(E->key()));
@@ -398,45 +404,83 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 	// Paint the preview of the tiles to be placed.
 	if (is_visible_in_tree() && has_mouse) { // Only if the tilemap editor is opened and the viewport is hovered.
-		if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_paint_tool_button) {
+		Map<Vector2i, TileMapCell> preview;
+
+		if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_paint_tool_button && !Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+			// Get or create the pattern.
+			TilePattern pattern;
 			if (erase_button->is_pressed()) {
-				// Draw a square.
-				Vector2 mpos = drag_last_mouse_pos;
-				Vector2i hovered_cell = tile_map->world_to_map(mpos);
-				Vector2i size = tile_set->get_tile_size();
-				Vector2 position = tile_map->map_to_world(hovered_cell) - size / 2;
-				p_overlay->draw_rect(xform.xform(Rect2i(position, size)), Color(0.0, 0.0, 0.0, 0.5), true);
-
+				pattern.size = Vector2i(1, 1);
+				pattern.pattern[Vector2i(0, 0)] = TileMapCell(-1, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
 			} else {
-				// Draw the pattern.
-				TilePattern pattern = _get_pattern_from_set(tile_set_selection);
+				pattern = _get_pattern_from_set(tile_set_selection);
+			}
 
+			if (!pattern.pattern.is_empty()) {
 				// Offset the preview position.
 				Vector2 mpos = drag_last_mouse_pos;
 				mpos -= (Vector2(pattern.size) / 2.0 - Vector2(0.5, 0.5)) * tile_set->get_tile_size(); // If we paint several tiles, we vitually move the mouse as if it was in the center of the "brush"
 				Vector2i hovered_cell = tile_map->world_to_map(mpos);
 
-				// Draw the textures preview.
+				// Add tiles to the preview.
 				for (Map<Vector2i, TileMapCell>::Element *E = pattern.pattern.front(); E; E = E->next()) {
-					switch (tile_set->get_source_type(E->get().source_id)) {
-						case TileSet::SOURCE_TYPE_ATLAS: {
-							TileAtlasSource *atlas = tile_set->get_atlas_source(E->get().source_id);
-							Vector2i cell_coords = hovered_cell + E->key();
+					Vector2i cell_coords = hovered_cell + E->key();
+					preview[cell_coords] = E->get();
+				}
+			}
+		} else if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_line_tool_button && drag_type == DRAG_TYPE_LINE) {
+			// Get or create the pattern.
+			TilePattern pattern;
+			if (erase_button->is_pressed()) {
+				pattern.size = Vector2i(1, 1);
+				pattern.pattern[Vector2i(0, 0)] = TileMapCell(-1, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
+			} else {
+				pattern = _get_pattern_from_set(tile_set_selection);
+			}
 
-							Rect2 tile_region = atlas->get_tile_texture_region(E->get().get_atlas_coords());
-							Vector2i tile_offset = tile_set->get_tile_effective_texture_offset(E->get().source_id, E->get().get_atlas_coords(), 0);
-							Vector2 position = tile_map->map_to_world(cell_coords) - tile_region.size / 2 - tile_offset;
-							Rect2 cell_region = xform.xform(Rect2(position, tile_region.size));
+			if (!pattern.pattern.is_empty()) {
+				// If we paint several tiles, we virtually move the mouse as if it was in the center of the "brush"
+				Vector2 mouse_offset = (Vector2(pattern.size) / 2.0 - Vector2(0.5, 0.5)) * tile_set->get_tile_size();
 
-							p_overlay->draw_texture_rect_region(atlas->get_texture(), cell_region, tile_region, Color(1.0, 1.0, 1.0, 0.5));
-						} break;
-						case TileSet::SOURCE_TYPE_SCENE:
-							// TODO
-							break;
-						default:
-							break;
+				Vector2i last_hovered_cell = tile_map->world_to_map(drag_start_mouse_pos - mouse_offset);
+				Vector2i new_hovered_cell = tile_map->world_to_map(drag_last_mouse_pos - mouse_offset);
+				Vector2i drag_start_cell = tile_map->world_to_map(drag_start_mouse_pos - mouse_offset);
+				Vector2i offset = Vector2i(Math::posmod(drag_start_cell.x, pattern.size.x), Math::posmod(drag_start_cell.y, pattern.size.y)); // Note: no posmodv for Vector2i for now. Meh.
+				Vector<Vector2i> line = Geometry2D::bresenham_line((last_hovered_cell - offset) / pattern.size, (new_hovered_cell - offset) / pattern.size);
+
+				// Add tiles to the preview.
+				for (int i = 0; i < line.size(); i++) {
+					Vector2i top_left = line[i] * pattern.size + offset;
+					for (Map<Vector2i, TileMapCell>::Element *E = pattern.pattern.front(); E; E = E->next()) {
+						Vector2i cell_coords = top_left + E->key();
+						preview[cell_coords] = E->get();
 					}
 				}
+			}
+		}
+
+		// Draw the preview.
+		for (Map<Vector2i, TileMapCell>::Element *E = preview.front(); E; E = E->next()) {
+			switch (tile_set->get_source_type(E->get().source_id)) {
+				case TileSet::SOURCE_TYPE_ATLAS: {
+					TileAtlasSource *atlas = tile_set->get_atlas_source(E->get().source_id);
+					Rect2 tile_region = atlas->get_tile_texture_region(E->get().get_atlas_coords());
+					Vector2i tile_offset = tile_set->get_tile_effective_texture_offset(E->get().source_id, E->get().get_atlas_coords(), 0);
+					Vector2 position = tile_map->map_to_world(E->key()) - tile_region.size / 2 - tile_offset;
+					Rect2 cell_region = xform.xform(Rect2(position, tile_region.size));
+
+					p_overlay->draw_texture_rect_region(atlas->get_texture(), cell_region, tile_region, Color(1.0, 1.0, 1.0, 0.5));
+				} break;
+				case TileSet::SOURCE_TYPE_SCENE:
+					// TODO
+					break;
+				default:
+					Vector2i size = tile_set->get_tile_size();
+					Vector2 position = tile_map->map_to_world(E->key()) - size / 2;
+					Rect2 cell_region = xform.xform(Rect2(position, size));
+
+					p_overlay->draw_rect(cell_region, Color(0.0, 0.0, 0.0, 0.5), true);
+					break;
 			}
 		}
 	}
@@ -932,7 +976,6 @@ TileMapEditor::TileMapEditor() {
 
 	// Disable tools not available yet.
 	tilemap_select_tool_button->set_disabled(true);
-	tilemap_line_tool_button->set_disabled(true);
 	tilemap_rect_tool_button->set_disabled(true);
 	tilemap_bucket_tool_button->set_disabled(true);
 	tilemap_picker_tool_button->set_disabled(true);
@@ -982,8 +1025,9 @@ TileMapEditor::TileMapEditor() {
 	sources_list->set_custom_minimum_size(Size2i(70, 0) * EDSCALE);
 	sources_list->connect("item_selected", callable_mp(this, &TileMapEditor::_update_fix_selected_and_hovered).unbind(1));
 	sources_list->connect("item_selected", callable_mp(this, &TileMapEditor::_update_atlas_view).unbind(1));
+	sources_list->connect("item_selected", callable_mp(TilesEditor::get_singleton(), &TilesEditor::set_atlas_sources_lists_current));
+	sources_list->connect("visibility_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::synchronize_atlas_sources_lists), varray(sources_list));
 	//sources_list->set_drag_forwarding(this);
-	TilesEditor::get_singleton()->register_atlas_source_list_for_synchronization(sources_list);
 	atlas_sources_split_container->add_child(sources_list);
 
 	tile_atlas_view = memnew(TileAtlasView);

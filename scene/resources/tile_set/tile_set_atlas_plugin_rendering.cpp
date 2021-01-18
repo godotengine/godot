@@ -220,7 +220,7 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 				Vector2i tile_offset = tile_set->get_tile_effective_texture_offset(c.source_id, c.get_atlas_coords(), c.alternative_tile);
 				Vector2 offset = E->key() - source_tile_size / 2 - q.pos - tile_offset;
 
-				// Compute the rectangle in the texture.
+				// Compute the destination rectangle in the CanvasItem.
 				Rect2 rect;
 				rect.position = offset.floor();
 				rect.size = s;
@@ -301,6 +301,11 @@ void TileSetAtlasPluginRendering::create_quadrant(TileMap *p_tile_map, const Vec
 }
 
 void TileSetAtlasPluginRendering::cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) {
+	// Free the canvas item..
+	for (List<RID>::Element *E = p_quadrant->canvas_items.front(); E; E = E->next()) {
+		RenderingServer::get_singleton()->free(E->get());
+	}
+	p_quadrant->canvas_items.clear();
 }
 
 /*
