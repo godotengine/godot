@@ -2708,32 +2708,99 @@ void Node3DEditorViewport::_draw() {
 				handle_color,
 				Math::round(2 * EDSCALE));
 	}
-	if (previewing) {
-		Size2 ss = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
-		float aspect = ss.aspect();
-		Size2 s = get_size();
+	if (previewing && EDITOR_GET("editors/3d/show_camera_preview_guides")) {
+		// Draw a rectangle matching the aspect ratio configured in the Projet Settings.
+		// This helps the user figure out what is visible on the camera.
+		const Size2 ss = Size2(
+				ProjectSettings::get_singleton()->get("display/window/size/width"),
+				ProjectSettings::get_singleton()->get("display/window/size/height"));
+		const float aspect = ss.aspect();
+		const Size2 size = get_size();
 
 		Rect2 draw_rect;
 
 		switch (previewing->get_keep_aspect_mode()) {
 			case Camera3D::KEEP_WIDTH: {
-				draw_rect.size = Size2(s.width, s.width / aspect);
+				draw_rect.size = Size2(size.width, size.width / aspect);
 				draw_rect.position.x = 0;
-				draw_rect.position.y = (s.height - draw_rect.size.y) * 0.5;
+				draw_rect.position.y = (size.height - draw_rect.size.y) * 0.5;
 
 			} break;
 			case Camera3D::KEEP_HEIGHT: {
-				draw_rect.size = Size2(s.height * aspect, s.height);
+				draw_rect.size = Size2(size.height * aspect, size.height);
 				draw_rect.position.y = 0;
-				draw_rect.position.x = (s.width - draw_rect.size.x) * 0.5;
+				draw_rect.position.x = (size.width - draw_rect.size.x) * 0.5;
 
 			} break;
 		}
 
-		draw_rect = Rect2(Vector2(), s).intersection(draw_rect);
+		draw_rect = Rect2(Vector2(), size).intersection(draw_rect);
 
-		surface->draw_rect(draw_rect, Color(0.6, 0.6, 0.1, 0.5), false, Math::round(2 * EDSCALE));
+		const float one_third = 1.0 / 3.0;
+		const float two_thirds = 2.0 / 3.0;
+		const Vector2 rect_position = draw_rect.get_position();
+		const Vector2 rect_end = draw_rect.get_end();
 
+		// Darken the area outside the project-defined aspect ratio.
+		// This helps position the camera for things like cutscenes.
+
+		// Left.
+		surface->draw_rect(
+				Rect2(0, 0, rect_position.x, rect_end.y),
+				Color(0, 0, 0, 0.4));
+		// Right.
+		surface->draw_rect(
+				Rect2(rect_end.x, 0, size.x - rect_end.x, rect_end.y),
+				Color(0, 0, 0, 0.4));
+		// Top.
+		surface->draw_rect(
+				Rect2(0, 0, size.x, rect_position.y),
+				Color(0, 0, 0, 0.4));
+		// Bottom.
+		surface->draw_rect(
+				Rect2(0, rect_end.y, size.x, size.y - rect_end.y),
+				Color(0, 0, 0, 0.4));
+
+		// Draw a black line then a white line so the lines are visible on any background.
+		for (int brightness = 0; brightness < 2; brightness++) {
+			const Color color = Color(brightness, brightness, brightness, 0.2);
+			// Offset white lines by one pixel on both axes so that they're
+			// visible. The offset is negative so that white lines appear on top
+			// of black ones, which looks more natural given lighting generally
+			// comes from above.
+			const Vector2 offset = -Vector2(brightness, brightness) * Math::round(EDSCALE);
+
+			// Main rectangle.
+			surface->draw_rect(
+					draw_rect.grow_individual(offset.x, offset.y, -offset.x, -offset.y),
+					color,
+					false,
+					Math::round(2 * EDSCALE));
+
+			// Draw rule of thirds guides for easier visual composition.
+			// Horizontal lines.
+			surface->draw_line(
+					Vector2(rect_position.x, Math::lerp(rect_position.y, rect_end.y, one_third)) + offset,
+					Vector2(rect_end.x, Math::lerp(rect_position.y, rect_end.y, one_third)) + offset,
+					color,
+					Math::round(EDSCALE));
+			surface->draw_line(
+					Vector2(rect_position.x, Math::lerp(rect_position.y, rect_end.y, two_thirds)) + offset,
+					Vector2(rect_end.x, Math::lerp(rect_position.y, rect_end.y, two_thirds)) + offset,
+					color,
+					Math::round(EDSCALE));
+			// Vertical lines.
+			surface->draw_line(
+					Vector2(Math::lerp(rect_position.x, rect_end.x, one_third), rect_position.y) + offset,
+					Vector2(Math::lerp(rect_position.x, rect_end.x, one_third), rect_end.y) + offset,
+					color,
+					Math::round(EDSCALE));
+			surface->draw_line(
+					Vector2(Math::lerp(rect_position.x, rect_end.x, two_thirds), rect_position.y) + offset,
+					Vector2(Math::lerp(rect_position.x, rect_end.x, two_thirds), rect_end.y) + offset,
+					color,
+					Math::round(EDSCALE));
+		}
 	} else {
 		if (zoom_indicator_delay > 0.0) {
 			if (is_freelook_active()) {
