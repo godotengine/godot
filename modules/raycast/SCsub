@@ -77,6 +77,8 @@ env_embree.Append(
 
 if not env_embree.msvc:
     env_embree.Append(CPPFLAGS=["-mxsave"])
+    if env["platform"] == "windows":
+        env_embree.Append(CPPFLAGS=["-mstackrealign"])
 
 if env["platform"] == "windows":
     if env.msvc:
