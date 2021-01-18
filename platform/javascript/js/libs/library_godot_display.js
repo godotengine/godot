@@ -269,13 +269,140 @@ const GodotDisplayCursor = {
 };
 mergeInto(LibraryManager.library, GodotDisplayCursor);
 
+/*
+ * Display Gamepad API helper.
+ */
+const GodotDisplayGamepads = {
+	$GodotDisplayGamepads__deps: ['$GodotRuntime', '$GodotDisplayListeners'],
+	$GodotDisplayGamepads: {
+		samples: [],
+
+		get_pads: function () {
+			try {
+				// Will throw in iframe when permission is denied.
+				// Will throw/warn in the future for insecure contexts.
+				// See https://github.com/w3c/gamepad/pull/120
+				const pads = navigator.getGamepads();
+				if (pads) {
+					return pads;
+				}
+				return [];
+			} catch (e) {
+				return [];
+			}
+		},
+
+		get_samples: function () {
+			return GodotDisplayGamepads.samples;
+		},
+
+		get_sample: function (index) {
+			const samples = GodotDisplayGamepads.samples;
+			return index < samples.length ? samples[index] : null;
+		},
+
+		sample: function () {
+			const pads = GodotDisplayGamepads.get_pads();
+			const samples = [];
+			for (let i = 0; i < pads.length; i++) {
+				const pad = pads[i];
+				if (!pad) {
+					samples.push(null);
+					continue;
+				}
+				const s = {
+					standard: pad.mapping === 'standard',
+					buttons: [],
+					axes: [],
+					connected: pad.connected,
+				};
+				for (let b = 0; b < pad.buttons.length; b++) {
+					s.buttons.push(pad.buttons[b].value);
+				}
+				for (let a = 0; a < pad.axes.length; a++) {
+					s.axes.push(pad.axes[a]);
+				}
+				samples.push(s);
+			}
+			GodotDisplayGamepads.samples = samples;
+		},
+
+		init: function (onchange) {
+			GodotDisplayListeners.samples = [];
+			function add(pad) {
+				const guid = GodotDisplayGamepads.get_guid(pad);
+				const c_id = GodotRuntime.allocString(pad.id);
+				const c_guid = GodotRuntime.allocString(guid);
+				onchange(pad.index, 1, c_id, c_guid);
+				GodotRuntime.free(c_id);
+				GodotRuntime.free(c_guid);
+			}
+			const pads = GodotDisplayGamepads.get_pads();
+			for (let i = 0; i < pads.length; i++) {
+				// Might be reserved space.
+				if (pads[i]) {
+					add(pads[i]);
+				}
+			}
+			GodotDisplayListeners.add(window, 'gamepadconnected', function (evt) {
+				add(evt.gamepad);
+			}, false);
+			GodotDisplayListeners.add(window, 'gamepaddisconnected', function (evt) {
+				onchange(evt.gamepad.index, 0);
+			}, false);
+		},
+
+		get_guid: function (pad) {
+			if (pad.mapping) {
+				return pad.mapping;
+			}
+			const ua = navigator.userAgent;
+			let os = 'Unknown';
+			if (ua.indexOf('Android') >= 0) {
+				os = 'Android';
+			} else if (ua.indexOf('Linux') >= 0) {
+				os = 'Linux';
+			} else if (ua.indexOf('iPhone') >= 0) {
+				os = 'iOS';
+			} else if (ua.indexOf('Macintosh') >= 0) {
+				// Updated iPads will fall into this category.
+				os = 'MacOSX';
+			} else if (ua.indexOf('Windows') >= 0) {
+				os = 'Windows';
+			}
+
+			const id = pad.id;
+			// Chrom* style: NAME (Vendor: xxxx Product: xxxx)
+			const exp1 = /vendor: ([0-9a-f]{4}) product: ([0-9a-f]{4})/i;
+			// Firefox/Safari style (safari may remove leading zeores)
+			const exp2 = /^([0-9a-f]+)-([0-9a-f]+)-/i;
+			let vendor = '';
+			let product = '';
+			if (exp1.test(id)) {
+				const match = exp1.exec(id);
+				vendor = match[1].padStart(4, '0');
+				product = match[2].padStart(4, '0');
+			} else if (exp2.test(id)) {
+				const match = exp2.exec(id);
+				vendor = match[1].padStart(4, '0');
+				product = match[2].padStart(4, '0');
+			}
+			if (!vendor || !product) {
+				return `${os}Unknown`;
+			}
+			return os + vendor + product;
+		},
+	},
+};
+mergeInto(LibraryManager.library, GodotDisplayGamepads);
+
 /**
  * Display server interface.
  *
  * Exposes all the functions needed by DisplayServer implementation.
  */
 const GodotDisplay = {
-	$GodotDisplay__deps: ['$GodotConfig', '$GodotRuntime', '$GodotDisplayCursor', '$GodotDisplayListeners', '$GodotDisplayDragDrop'],
+	$GodotDisplay__deps: ['$GodotConfig', '$GodotRuntime', '$GodotDisplayCursor', '$GodotDisplayListeners', '$GodotDisplayDragDrop', '$GodotDisplayGamepads'],
 	$GodotDisplay: {
 		window_icon: '',
 	},
@@ -490,6 +617,49 @@ const GodotDisplay = {
 			ev.preventDefault();
 		}, false);
 		GodotDisplayListeners.add(canvas, 'drop', GodotDisplayDragDrop.handler(dropFiles));
+	},
+
+	/*
+	 * Gamepads
+	 */
+	godot_js_display_gamepad_cb__sig: 'vi',
+	godot_js_display_gamepad_cb: function (change_cb) {
+		const onchange = GodotRuntime.get_func(change_cb);
+		GodotDisplayGamepads.init(onchange);
+	},
+
+	godot_js_display_gamepad_sample_count__sig: 'i',
+	godot_js_display_gamepad_sample_count: function () {
+		return GodotDisplayGamepads.get_samples().length;
+	},
+
+	godot_js_display_gamepad_sample__sig: 'i',
+	godot_js_display_gamepad_sample: function () {
+		GodotDisplayGamepads.sample();
+		return 0;
+	},
+
+	godot_js_display_gamepad_sample_get__sig: 'iiiiiii',
+	godot_js_display_gamepad_sample_get: function (p_index, r_btns, r_btns_num, r_axes, r_axes_num, r_standard) {
+		const sample = GodotDisplayGamepads.get_sample(p_index);
+		if (!sample || !sample.connected) {
+			return 1;
+		}
+		const btns = sample.buttons;
+		const btns_len = btns.length < 16 ? btns.length : 16;
+		for (let i = 0; i < btns_len; i++) {
+			GodotRuntime.setHeapValue(r_btns + (i << 2), btns[i], 'float');
+		}
+		GodotRuntime.setHeapValue(r_btns_num, btns_len, 'i32');
+		const axes = sample.axes;
+		const axes_len = axes.length < 10 ? axes.length : 10;
+		for (let i = 0; i < axes_len; i++) {
+			GodotRuntime.setHeapValue(r_axes + (i << 2), axes[i], 'float');
+		}
+		GodotRuntime.setHeapValue(r_axes_num, axes_len, 'i32');
+		const is_standard = sample.standard ? 1 : 0;
+		GodotRuntime.setHeapValue(r_standard, is_standard, 'i32');
+		return 0;
 	},
 };
 
