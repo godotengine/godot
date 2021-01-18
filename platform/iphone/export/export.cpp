@@ -1232,8 +1232,9 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 		// Export plugin binary.
 		String plugin_main_binary = get_plugin_main_binary(plugin, p_debug);
 		String plugin_binary_result_file = plugin.binary.get_file();
-
-		err = _copy_asset(dest_dir, plugin_main_binary, &plugin_binary_result_file, true, true, r_exported_assets);
+		// We shouldn't embed .xcframework that contains static libraries.
+		// Static libraries are not embedded anyway.
+		err = _copy_asset(dest_dir, plugin_main_binary, &plugin_binary_result_file, true, false, r_exported_assets);
 
 		ERR_FAIL_COND_V(err, err);
 
