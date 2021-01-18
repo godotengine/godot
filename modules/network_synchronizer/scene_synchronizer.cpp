@@ -794,6 +794,15 @@ void SceneSynchronizer::set_enabled(bool p_enable) {
 	}
 }
 
+bool SceneSynchronizer::is_enabled() const {
+	ERR_FAIL_COND_V_MSG(synchronizer_type == SYNCHRONIZER_TYPE_SERVER, false, "The server is always enabled.");
+	if (synchronizer_type == SYNCHRONIZER_TYPE_CLIENT) {
+		return static_cast<ClientSynchronizer *>(synchronizer)->enabled;
+	} else {
+		return static_cast<NoNetSynchronizer *>(synchronizer)->enabled;
+	}
+}
+
 void SceneSynchronizer::set_peer_networking_enable(int p_peer, bool p_enable) {
 	if (synchronizer_type == SYNCHRONIZER_TYPE_SERVER) {
 		ERR_FAIL_COND_MSG(p_peer == 1, "Disable the server is not possible.");
@@ -1211,6 +1220,7 @@ void SceneSynchronizer::drop_node_data(NetUtility::NodeData *p_node_data) {
 
 	if (p_node_data->is_controller) {
 		// This is a controller, make sure to reset the peers.
+		static_cast<NetworkedController *>(p_node_data->node)->set_scene_synchronizer(nullptr);
 		dirty_peers();
 		node_data_controllers.erase(p_node_data);
 	}

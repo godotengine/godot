@@ -236,6 +236,7 @@ public:
 	void dirty_peers();
 
 	void set_enabled(bool p_enable);
+	bool is_enabled() const;
 
 	void set_peer_networking_enable(int p_peer, bool p_enable);
 	bool is_peer_networking_enable(int p_peer) const;

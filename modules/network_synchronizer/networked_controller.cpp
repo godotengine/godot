@@ -131,6 +131,8 @@ void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_doll_controller"), &NetworkedController::is_doll_controller);
 	ClassDB::bind_method(D_METHOD("is_nonet_controller"), &NetworkedController::is_nonet_controller);
 
+	ClassDB::bind_method(D_METHOD("__on_sync_paused"), &NetworkedController::__on_sync_paused);
+
 	BIND_VMETHOD(MethodInfo("collect_inputs", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
 	BIND_VMETHOD(MethodInfo("controller_process", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "are_inputs_different", PropertyInfo(Variant::OBJECT, "inputs_A", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer"), PropertyInfo(Variant::OBJECT, "inputs_B", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
@@ -426,7 +428,15 @@ void NetworkedController::set_inputs_buffer(const BitArray &p_new_buffer, uint32
 }
 
 void NetworkedController::set_scene_synchronizer(SceneSynchronizer *p_synchronizer) {
+	if (scene_synchronizer) {
+		scene_synchronizer->disconnect("sync_paused", Callable(this, "__on_sync_paused"));
+	}
+
 	scene_synchronizer = p_synchronizer;
+
+	if (scene_synchronizer) {
+		scene_synchronizer->connect("sync_paused", Callable(this, "__on_sync_paused"));
+	}
 }
 
 SceneSynchronizer *NetworkedController::get_scene_synchronizer() const {
@@ -472,6 +482,13 @@ void NetworkedController::player_set_has_new_input(bool p_has) {
 
 bool NetworkedController::player_has_new_input() const {
 	return has_player_new_input;
+}
+
+void NetworkedController::__on_sync_paused() {
+	if (controller_type == CONTROLLER_TYPE_DOLL) {
+		DollController *doll = static_cast<DollController *>(controller);
+		doll->pause(doll->current_epoch);
+	}
 }
 
 void NetworkedController::_notification(int p_what) {
@@ -1371,6 +1388,10 @@ uint32_t DollController::get_current_input_id() const {
 }
 
 void DollController::receive_batch(Vector<uint8_t> p_data) {
+	if (unlikely(node->get_scene_synchronizer()->is_enabled() == false)) {
+		// The sync is disabled, nothing to do.
+		return;
+	}
 
 	// Take the epochs befoe the batch is applied.
 	const uint32_t youngest_epoch = interpolator.get_youngest_epoch();
