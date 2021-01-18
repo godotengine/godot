@@ -417,7 +417,7 @@ private:
 	WNDCLASSEXW wc;
 
 	HCURSOR cursors[CURSOR_MAX] = { nullptr };
-	CursorShape cursor_shape;
+	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 	Map<CursorShape, Vector<Variant>> cursors_cache;
 
 	void _drag_event(WindowID p_window, float p_x, float p_y, int idx);
