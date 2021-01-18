@@ -2604,7 +2604,7 @@ void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_nati
 			MonoCustomAttrInfo *event_attrs = mono_custom_attrs_from_event(top->get_mono_ptr(), raw_event);
 			if (event_attrs) {
 				if (mono_custom_attrs_has_attr(event_attrs, CACHED_CLASS(SignalAttribute)->get_mono_ptr())) {
-					const char *event_name = mono_event_get_name(raw_event);
+					String event_name = String::utf8(mono_event_get_name(raw_event));
 					found_event_signals.push_back(StringName(event_name));
 				}
 
@@ -2808,7 +2808,7 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 				name_only_hint_string += ",";
 			}
 
-			String enum_field_name = mono_field_get_name(field);
+			String enum_field_name = String::utf8(mono_field_get_name(field));
 			r_hint_string += enum_field_name;
 			name_only_hint_string += enum_field_name;
 
