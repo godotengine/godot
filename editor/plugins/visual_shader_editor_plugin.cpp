@@ -44,6 +44,7 @@
 #include "scene/gui/panel.h"
 #include "scene/main/window.h"
 #include "scene/resources/visual_shader_nodes.h"
+#include "scene/resources/visual_shader_sdf_nodes.h"
 #include "servers/display_server.h"
 #include "servers/rendering/shader_types.h"
 
@@ -3671,7 +3672,17 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("FloatUniform", "Scalar", "Variables", "VisualShaderNodeFloatUniform", TTR("Scalar floating-point uniform."), -1, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("IntUniform", "Scalar", "Variables", "VisualShaderNodeIntUniform", TTR("Scalar integer uniform."), -1, VisualShaderNode::PORT_TYPE_SCALAR_INT));
 
+	// SDF
+	{
+		add_options.push_back(AddOption("ScreenUVToSDF", "SDF", "", "VisualShaderNodeScreenUVToSDF", TTR("Converts screen UV to a SDF."), -1, VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+		add_options.push_back(AddOption("SDFRaymarch", "SDF", "", "VisualShaderNodeSDFRaymarch", TTR("Casts a ray against the screen SDF and returns the distance travelled."), -1, -1, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+		add_options.push_back(AddOption("SDFToScreenUV", "SDF", "", "VisualShaderNodeSDFToScreenUV", TTR("Converts a SDF to screen UV."), -1, VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+		add_options.push_back(AddOption("TextureSDF", "SDF", "", "VisualShaderNodeTextureSDF", TTR("Performs a SDF texture lookup."), -1, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+		add_options.push_back(AddOption("TextureSDFNormal", "SDF", "", "VisualShaderNodeTextureSDFNormal", TTR("Performs a SDF normal texture lookup."), -1, VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+	}
+
 	// TEXTURES
+
 	cubemap_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubemap", TTR("Perform the cubic texture lookup."), -1, -1));
 	curve_node_option_idx = add_options.size();
