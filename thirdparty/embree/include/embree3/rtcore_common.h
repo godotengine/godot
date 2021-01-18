@@ -19,7 +19,7 @@ typedef int ssize_t;
 #endif
 #endif
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER)
 #  define RTC_ALIGN(...) __declspec(align(__VA_ARGS__))
 #else
 #  define RTC_ALIGN(...) __attribute__((aligned(__VA_ARGS__)))

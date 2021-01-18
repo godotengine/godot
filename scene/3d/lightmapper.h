@@ -35,7 +35,7 @@
 
 #if !defined(__aligned)
 
-#if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)) && !defined(__CYGWIN__)
+#if defined(_WIN32) && defined(_MSC_VER)
 #define __aligned(...) __declspec(align(__VA_ARGS__))
 #else
 #define __aligned(...) __attribute__((aligned(__VA_ARGS__)))
