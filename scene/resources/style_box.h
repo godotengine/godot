@@ -191,7 +191,7 @@ public:
 
 	//CORNER
 	void set_corner_radius_all(int radius);
-	void set_corner_radius_individual(const int radius_top_left, const int radius_top_right, const int radius_botton_right, const int radius_bottom_left);
+	void set_corner_radius_individual(const int radius_top_left, const int radius_top_right, const int radius_bottom_right, const int radius_bottom_left);
 	int get_corner_radius_min() const;
 
 	void set_corner_radius(Corner p_corner, const int radius);

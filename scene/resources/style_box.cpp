@@ -440,10 +440,10 @@ void StyleBoxFlat::set_corner_radius_all(int radius) {
 
 	emit_changed();
 }
-void StyleBoxFlat::set_corner_radius_individual(const int radius_top_left, const int radius_top_right, const int radius_botton_right, const int radius_bottom_left) {
+void StyleBoxFlat::set_corner_radius_individual(const int radius_top_left, const int radius_top_right, const int radius_bottom_right, const int radius_bottom_left) {
 	corner_radius[0] = radius_top_left;
 	corner_radius[1] = radius_top_right;
-	corner_radius[2] = radius_botton_right;
+	corner_radius[2] = radius_bottom_right;
 	corner_radius[3] = radius_bottom_left;
 
 	emit_changed();
