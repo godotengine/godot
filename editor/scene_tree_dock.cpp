@@ -2183,7 +2183,6 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 	if (n == edited_scene) {
 		edited_scene = newnode;
 		editor->set_edited_scene(newnode);
-		newnode->set_editable_instances(n->get_editable_instances());
 	}
 
 	//small hack to make collisionshapes and other kind of nodes to work

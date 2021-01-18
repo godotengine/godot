@@ -1901,37 +1901,23 @@ String Node::get_editor_description() const {
 }
 
 void Node::set_editable_instance(Node *p_node, bool p_editable) {
-
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_COND(!is_a_parent_of(p_node));
-	NodePath p = get_path_to(p_node);
 	if (!p_editable) {
-		data.editable_instances.erase(p);
+		p_node->data.editable_instance = false;
 		// Avoid this flag being needlessly saved;
 		// also give more visual feedback if editable children is re-enabled
 		set_display_folded(false);
 	} else {
-		data.editable_instances[p] = true;
+		p_node->data.editable_instance = true;
 	}
 }
 
 bool Node::is_editable_instance(const Node *p_node) const {
-
 	if (!p_node)
 		return false; //easier, null is never editable :)
 	ERR_FAIL_COND_V(!is_a_parent_of(p_node), false);
-	NodePath p = get_path_to(p_node);
-	return data.editable_instances.has(p);
-}
-
-void Node::set_editable_instances(const HashMap<NodePath, int> &p_editable_instances) {
-
-	data.editable_instances = p_editable_instances;
-}
-
-HashMap<NodePath, int> Node::get_editable_instances() const {
-
-	return data.editable_instances;
+	return p_node->data.editable_instance;
 }
 
 void Node::set_scene_instance_state(const Ref<SceneState> &p_state) {
@@ -2970,6 +2956,7 @@ Node::Node() {
 	data.use_placeholder = false;
 	data.display_folded = false;
 	data.ready_first = true;
+	data.editable_instance = false;
 
 	orphan_node_count++;
 }
