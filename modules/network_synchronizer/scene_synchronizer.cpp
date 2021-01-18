@@ -796,10 +796,12 @@ void SceneSynchronizer::set_enabled(bool p_enable) {
 
 bool SceneSynchronizer::is_enabled() const {
 	ERR_FAIL_COND_V_MSG(synchronizer_type == SYNCHRONIZER_TYPE_SERVER, false, "The server is always enabled.");
-	if (synchronizer_type == SYNCHRONIZER_TYPE_CLIENT) {
+	if (likely(synchronizer_type == SYNCHRONIZER_TYPE_CLIENT)) {
 		return static_cast<ClientSynchronizer *>(synchronizer)->enabled;
-	} else {
+	} else if (synchronizer_type == SYNCHRONIZER_TYPE_NONETWORK) {
 		return static_cast<NoNetSynchronizer *>(synchronizer)->enabled;
+	} else {
+		return true;
 	}
 }
 
