@@ -2354,11 +2354,33 @@ void Node3DEditorViewport::_project_settings_changed() {
 	viewport->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
 	viewport->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
 
-	bool shrink = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION));
-
-	if (shrink != (subviewport_container->get_stretch_shrink() > 1)) {
-		subviewport_container->set_stretch_shrink(shrink ? 2 : 1);
+	int shrink_factor;
+	switch (int(EDITOR_GET("editors/3d/viewport_resolution_scale"))) {
+		case 0:
+			// Auto (DPI-specific).
+			// Use 1:2 render scale on hiDPI displays to improve performance, especially on integrated graphics.
+			shrink_factor = EDSCALE >= 1.667 ? 2 : 1;
+			break;
+		case 1:
+			// Very Low (1:4).
+			shrink_factor = 4;
+			break;
+		case 2:
+			// Low (1:3).
+			shrink_factor = 3;
+			break;
+		case 3:
+			// Medium (1:2).
+			shrink_factor = 2;
+			break;
+		case 4:
+		default:
+			// Full (1:1).
+			shrink_factor = 1;
+			break;
 	}
+
+	subviewport_container->set_stretch_shrink(shrink_factor);
 
 	// Update MSAA, screen-space AA and debanding if changed
 
@@ -3034,12 +3056,6 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			view_menu->get_popup()->set_item_checked(idx, current);
 
 		} break;
-		case VIEW_HALF_RESOLUTION: {
-			int idx = view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION);
-			bool current = view_menu->get_popup()->is_item_checked(idx);
-			current = !current;
-			view_menu->get_popup()->set_item_checked(idx, current);
-		} break;
 		case VIEW_INFORMATION: {
 			int idx = view_menu->get_popup()->get_item_index(VIEW_INFORMATION);
 			bool current = view_menu->get_popup()->is_item_checked(idx);
@@ -3481,12 +3497,6 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 			_menu_option(VIEW_FRAME_TIME);
 		}
 	}
-	if (p_state.has("half_res")) {
-		bool half_res = p_state["half_res"];
-
-		int idx = view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION);
-		view_menu->get_popup()->set_item_checked(idx, half_res);
-	}
 	if (p_state.has("cinematic_preview")) {
 		previewing_cinema = p_state["cinematic_preview"];
 
@@ -3537,7 +3547,6 @@ Dictionary Node3DEditorViewport::get_state() const {
 	d["gizmos"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_GIZMOS));
 	d["information"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 	d["frame_time"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FRAME_TIME));
-	d["half_res"] = subviewport_container->get_stretch_shrink() > 1;
 	d["cinematic_preview"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
 	if (previewing) {
 		d["previewing"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(previewing);
@@ -4065,8 +4074,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_information", TTR("View Information")), VIEW_INFORMATION);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_fps", TTR("View Frame Time")), VIEW_FRAME_TIME);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_ENVIRONMENT), true);
-	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_half_resolution", TTR("Half Resolution")), VIEW_HALF_RESOLUTION);
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_audio_listener", TTR("Audio Listener")), VIEW_AUDIO_LISTENER);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_audio_doppler", TTR("Enable Doppler")), VIEW_AUDIO_DOPPLER);
