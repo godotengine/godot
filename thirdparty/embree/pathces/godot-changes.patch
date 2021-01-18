@@ -2,15 +2,24 @@ diff --git a/common/math/math.h b/common/math/math.h
 index 5af0691a2..1982c27c1 100644
 --- a/common/math/math.h
 +++ b/common/math/math.h
-@@ -12,7 +12,7 @@
- #include <xmmintrin.h>
+@@ -13,7 +13,7 @@
  #include <immintrin.h>
  
--#if defined(__WIN32__)
-+#if defined(__WIN32__) && !defined(__MINGW32__)
- #if (__MSV_VER <= 1700)
+ #if defined(__WIN32__)
+-#if (__MSV_VER <= 1700)
++#if defined(_MSC_VER) && (_MSC_VER <= 1700)
  namespace std
  {
+   __forceinline bool isinf ( const float x ) { return _finite(x) == 0; }
+@@ -86,7 +86,7 @@
+     return _mm_cvtss_f32(c);
+   }
+ 
+-#if defined(__WIN32__) && (__MSC_VER <= 1700)
++#if defined(__WIN32__) && defined(_MSC_VER) && (_MSC_VER <= 1700)
+   __forceinline float nextafter(float x, float y) { if ((x<y) == (x>0)) return x*(1.1f+float(ulp)); else return x*(0.9f-float(ulp)); }
+   __forceinline double nextafter(double x, double y) { return _nextafter(x, y); }
+   __forceinline int roundf(float f) { return (int)(f + 0.5f); }
 diff --git a/common/sys/intrinsics.h b/common/sys/intrinsics.h
 index 3f0619cac..58f5c3bb4 100644
 --- a/common/sys/intrinsics.h
@@ -190,3 +199,15 @@ index 98dba2687..369e5edf0 100644
  #endif
  
  // We need to define these to avoid implicit linkage against
+diff a/include/embree3/rtcore_common.h b/include/embree3/rtcore_common.h
+--- a/include/embree3/rtcore_common.h
++++ b/include/embree3/rtcore_common.h
+@@ -19,7 +19,7 @@
+ #endif
+ #endif
+ 
+-#ifdef _WIN32
++#if defined(_WIN32) && defined(_MSC_VER)
+ #  define RTC_ALIGN(...) __declspec(align(__VA_ARGS__))
+ #else
+ #  define RTC_ALIGN(...) __attribute__((aligned(__VA_ARGS__)))
