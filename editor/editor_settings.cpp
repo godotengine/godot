@@ -357,7 +357,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/editor/single_window_mode"] = PropertyInfo(Variant::BOOL, "interface/editor/single_window_mode", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/hide_console_window", false);
 	_initial_set("interface/editor/save_each_scene_on_quit", true); // Regression
-	_initial_set("interface/editor/quit_confirmation", true);
 
 	// Theme
 	_initial_set("interface/theme/preset", "Default");
