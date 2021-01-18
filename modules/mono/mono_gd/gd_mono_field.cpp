@@ -574,7 +574,7 @@ IMonoClassMember::Visibility GDMonoField::get_visibility() {
 GDMonoField::GDMonoField(MonoClassField *p_mono_field, GDMonoClass *p_owner) {
 	owner = p_owner;
 	mono_field = p_mono_field;
-	name = mono_field_get_name(mono_field);
+	name = String::utf8(mono_field_get_name(mono_field));
 	MonoType *field_type = mono_field_get_type(mono_field);
 	type.type_encoding = mono_type_get_type(field_type);
 	MonoClass *field_type_class = mono_class_from_mono_type(field_type);

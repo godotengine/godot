@@ -2696,7 +2696,7 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 				name_only_hint_string += ",";
 			}
 
-			String enum_field_name = mono_field_get_name(field);
+			String enum_field_name = String::utf8(mono_field_get_name(field));
 			r_hint_string += enum_field_name;
 			name_only_hint_string += enum_field_name;
 

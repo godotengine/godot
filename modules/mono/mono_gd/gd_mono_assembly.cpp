@@ -377,8 +377,8 @@ GDMonoClass *GDMonoAssembly::get_class(MonoClass *p_mono_class) {
 	if (match)
 		return match->value();
 
-	StringName namespace_name = mono_class_get_namespace(p_mono_class);
-	StringName class_name = mono_class_get_name(p_mono_class);
+	StringName namespace_name = String::utf8(mono_class_get_namespace(p_mono_class));
+	StringName class_name = String::utf8(mono_class_get_name(p_mono_class));
 
 	GDMonoClass *wrapped_class = memnew(GDMonoClass(namespace_name, class_name, p_mono_class, this));
 
