@@ -2371,6 +2371,8 @@ ProjectManager::ProjectManager() {
 		switch (display_scale) {
 			case 0: {
 				// Try applying a suitable display scale automatically.
+				// The code below is adapted in `editor/editor_settings.cpp` and `editor/editor_node.cpp`.
+				// Make sure to update those when modifying the code below.
 #ifdef OSX_ENABLED
 				editor_set_scale(DisplayServer::get_singleton()->screen_get_max_scale());
 #else
