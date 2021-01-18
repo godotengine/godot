@@ -1596,19 +1596,32 @@ void RichTextLabel::add_text(const String &p_text) {
 		else
 			line = p_text.substr(pos, end - pos);
 
-		if (line.length() > 0) {
-
-			if (current->subitems.size() && current->subitems.back()->get()->type == ITEM_TEXT) {
-				//append text condition!
-				ItemText *ti = static_cast<ItemText *>(current->subitems.back()->get());
-				ti->text += line;
-				_invalidate_current_line(main);
-
-			} else {
-				//append item condition
+		while (lipos < line.length()) {
+			if (line[lipos] >= 0x3040 && line[lipos] < 0xfaff) {
+				//Chinese or Japanese word condition
 				ItemText *item = memnew(ItemText);
-				item->text = line;
+				item->text = line.substr(lipos, 1);
 				_add_item(item, false);
+				//append one by one
+				lipos++;
+			} else {
+				//English word condition
+				int o;//length of English words
+				for (o = 1; o < (line.length() - lipos) && (line[lipos + o] < 0x3040 || line[lipos + o] > 0xfaff); o++) {
+				}
+				if (current->subitems.size() && current->subitems.back()->get()->type == ITEM_TEXT) {
+					//append text condition!
+					ItemText *ti = static_cast<ItemText *>(current->subitems.back()->get());
+					ti->text += line.substr(lipos, o);
+					_invalidate_current_line(main);
+
+				} else {
+					//append item condition
+					ItemText *item = memnew(ItemText);
+					item->text = line.substr(lipos, o);
+					_add_item(item, false);
+				}
+				lipos += o;
 			}
 		}
 
