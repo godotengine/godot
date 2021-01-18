@@ -41,16 +41,16 @@
 #include "modules/svg/image_loader_svg.h"
 #endif
 
-static Ref<StyleBoxTexture> make_stylebox(Ref<Texture2D> p_texture, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_draw_center = true) {
+static Ref<StyleBoxTexture> make_stylebox(Ref<Texture2D> p_texture, float p_left, float p_top, float p_right, float p_bottom, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, bool p_draw_center = true) {
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
 	style->set_texture(p_texture);
 	style->set_margin_size(SIDE_LEFT, p_left * EDSCALE);
 	style->set_margin_size(SIDE_RIGHT, p_right * EDSCALE);
-	style->set_margin_size(SIDE_BOTTOM, p_botton * EDSCALE);
+	style->set_margin_size(SIDE_BOTTOM, p_bottom * EDSCALE);
 	style->set_margin_size(SIDE_TOP, p_top * EDSCALE);
 	style->set_default_margin(SIDE_LEFT, p_margin_left * EDSCALE);
 	style->set_default_margin(SIDE_RIGHT, p_margin_right * EDSCALE);
-	style->set_default_margin(SIDE_BOTTOM, p_margin_botton * EDSCALE);
+	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * EDSCALE);
 	style->set_default_margin(SIDE_TOP, p_margin_top * EDSCALE);
 	style->set_draw_center(p_draw_center);
 	return style;
