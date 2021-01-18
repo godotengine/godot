@@ -44,19 +44,4 @@ public:
 	static void make_default();
 };
 
-class RWLockDummy : public RWLock {
-	static RWLock *create();
-
-public:
-	virtual void read_lock() {}
-	virtual void read_unlock() {}
-	virtual Error read_try_lock() { return OK; }
-
-	virtual void write_lock() {}
-	virtual void write_unlock() {}
-	virtual Error write_try_lock() { return OK; }
-
-	static void make_default();
-};
-
 #endif // THREAD_DUMMY_H

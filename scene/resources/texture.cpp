@@ -2136,20 +2136,11 @@ AnimatedTexture::AnimatedTexture() {
 	pause = false;
 	oneshot = false;
 	RenderingServer::get_singleton()->connect("frame_pre_draw", callable_mp(this, &AnimatedTexture::_update_proxy));
-
-#ifndef NO_THREADS
-	rw_lock = RWLock::create();
-#else
-	rw_lock = nullptr;
-#endif
 }
 
 AnimatedTexture::~AnimatedTexture() {
 	RS::get_singleton()->free(proxy);
 	RS::get_singleton()->free(proxy_ph);
-	if (rw_lock) {
-		memdelete(rw_lock);
-	}
 }
 
 ///////////////////////////////
