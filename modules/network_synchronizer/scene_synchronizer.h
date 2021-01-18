@@ -175,6 +175,7 @@ public:
 
 	/// Register a new node and returns its `NodeData`.
 	NetUtility::NodeData *register_node(Node *p_node);
+	uint32_t register_node_gdscript(Node *p_node);
 	void unregister_node(Node *p_node);
 
 	/// Returns the node ID.

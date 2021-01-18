@@ -57,7 +57,7 @@ void SceneSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_comparison_float_tolerance", "tolerance"), &SceneSynchronizer::set_comparison_float_tolerance);
 	ClassDB::bind_method(D_METHOD("get_comparison_float_tolerance"), &SceneSynchronizer::get_comparison_float_tolerance);
 
-	ClassDB::bind_method(D_METHOD("register_node", "node"), &SceneSynchronizer::register_node);
+	ClassDB::bind_method(D_METHOD("register_node", "node"), &SceneSynchronizer::register_node_gdscript);
 	ClassDB::bind_method(D_METHOD("unregister_node", "node"), &SceneSynchronizer::unregister_node);
 	ClassDB::bind_method(D_METHOD("get_node_id", "node"), &SceneSynchronizer::get_node_id);
 	ClassDB::bind_method(D_METHOD("get_node_from_id", "id"), &SceneSynchronizer::get_node_from_id);
@@ -252,6 +252,14 @@ NetUtility::NodeData *SceneSynchronizer::register_node(Node *p_node) {
 	}
 
 	return nd;
+}
+
+uint32_t SceneSynchronizer::register_node_gdscript(Node *p_node) {
+	NetUtility::NodeData *nd = register_node(p_node);
+	if (unlikely(nd == nullptr)) {
+		return UINT32_MAX;
+	}
+	return nd->id;
 }
 
 void SceneSynchronizer::unregister_node(Node *p_node) {
