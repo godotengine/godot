@@ -103,7 +103,6 @@ void register_core_types() {
 	static_assert(sizeof(Callable) <= 16);
 
 	ObjectDB::setup();
-	ResourceCache::setup();
 
 	StringName::setup();
 	ResourceLoader::initialize();

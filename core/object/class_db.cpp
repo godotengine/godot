@@ -983,9 +983,9 @@ void ClassDB::add_property_subgroup(StringName p_class, const String &p_name, co
 
 // NOTE: For implementation simplicity reasons, this method doesn't allow setters to have optional arguments at the end.
 void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index) {
-	lock->read_lock();
+	lock.read_lock();
 	ClassInfo *type = classes.getptr(p_class);
-	lock->read_unlock();
+	lock.read_unlock();
 
 	ERR_FAIL_COND(!type);
 
@@ -1541,11 +1541,7 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 	return var;
 }
 
-RWLock *ClassDB::lock = nullptr;
-
-void ClassDB::init() {
-	lock = RWLock::create();
-}
+RWLock ClassDB::lock;
 
 void ClassDB::cleanup_defaults() {
 	default_values.clear();
@@ -1568,8 +1564,6 @@ void ClassDB::cleanup() {
 	classes.clear();
 	resource_base_extensions.clear();
 	compat_classes.clear();
-
-	memdelete(lock);
 }
 
 //

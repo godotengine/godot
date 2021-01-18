@@ -388,8 +388,6 @@ Error Main::test_setup() {
 
 	engine = memnew(Engine);
 
-	ClassDB::init();
-
 	register_core_types();
 	register_core_driver_types();
 
@@ -506,8 +504,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->initialize();
 
 	engine = memnew(Engine);
-
-	ClassDB::init();
 
 	MAIN_PRINT("Main: Initialize CORE");
 

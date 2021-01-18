@@ -52,29 +52,29 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 	}
 
 	if (path_cache != "") {
-		ResourceCache::lock->write_lock();
+		ResourceCache::lock.write_lock();
 		ResourceCache::resources.erase(path_cache);
-		ResourceCache::lock->write_unlock();
+		ResourceCache::lock.write_unlock();
 	}
 
 	path_cache = "";
 
-	ResourceCache::lock->read_lock();
+	ResourceCache::lock.read_lock();
 	bool has_path = ResourceCache::resources.has(p_path);
-	ResourceCache::lock->read_unlock();
+	ResourceCache::lock.read_unlock();
 
 	if (has_path) {
 		if (p_take_over) {
-			ResourceCache::lock->write_lock();
+			ResourceCache::lock.write_lock();
 			Resource **res = ResourceCache::resources.getptr(p_path);
 			if (res) {
 				(*res)->set_name("");
 			}
-			ResourceCache::lock->write_unlock();
+			ResourceCache::lock.write_unlock();
 		} else {
-			ResourceCache::lock->read_lock();
+			ResourceCache::lock.read_lock();
 			bool exists = ResourceCache::resources.has(p_path);
-			ResourceCache::lock->read_unlock();
+			ResourceCache::lock.read_unlock();
 
 			ERR_FAIL_COND_MSG(exists, "Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
 		}
@@ -82,9 +82,9 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 	path_cache = p_path;
 
 	if (path_cache != "") {
-		ResourceCache::lock->write_lock();
+		ResourceCache::lock.write_lock();
 		ResourceCache::resources[path_cache] = this;
-		ResourceCache::lock->write_unlock();
+		ResourceCache::lock.write_unlock();
 	}
 
 	_change_notify("resource_path");
@@ -315,9 +315,7 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 		return;
 	}
 
-	if (ResourceCache::lock) {
-		ResourceCache::lock->write_lock();
-	}
+	ResourceCache::lock.write_lock();
 
 	if (p_remapped) {
 		ResourceLoader::remapped_list.add(&remapped_list);
@@ -325,9 +323,7 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 		ResourceLoader::remapped_list.remove(&remapped_list);
 	}
 
-	if (ResourceCache::lock) {
-		ResourceCache::lock->write_unlock();
-	}
+	ResourceCache::lock.write_unlock();
 }
 
 bool Resource::is_translation_remapped() const {
@@ -338,38 +334,24 @@ bool Resource::is_translation_remapped() const {
 //helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 void Resource::set_id_for_path(const String &p_path, int p_id) {
 	if (p_id == -1) {
-		if (ResourceCache::path_cache_lock) {
-			ResourceCache::path_cache_lock->write_lock();
-		}
+		ResourceCache::path_cache_lock.write_lock();
 		ResourceCache::resource_path_cache[p_path].erase(get_path());
-		if (ResourceCache::path_cache_lock) {
-			ResourceCache::path_cache_lock->write_unlock();
-		}
+		ResourceCache::path_cache_lock.write_unlock();
 	} else {
-		if (ResourceCache::path_cache_lock) {
-			ResourceCache::path_cache_lock->write_lock();
-		}
+		ResourceCache::path_cache_lock.write_lock();
 		ResourceCache::resource_path_cache[p_path][get_path()] = p_id;
-		if (ResourceCache::path_cache_lock) {
-			ResourceCache::path_cache_lock->write_unlock();
-		}
+		ResourceCache::path_cache_lock.write_unlock();
 	}
 }
 
 int Resource::get_id_for_path(const String &p_path) const {
-	if (ResourceCache::path_cache_lock) {
-		ResourceCache::path_cache_lock->read_lock();
-	}
+	ResourceCache::path_cache_lock.read_lock();
 	if (ResourceCache::resource_path_cache[p_path].has(get_path())) {
 		int result = ResourceCache::resource_path_cache[p_path][get_path()];
-		if (ResourceCache::path_cache_lock) {
-			ResourceCache::path_cache_lock->read_unlock();
-		}
+		ResourceCache::path_cache_lock.read_unlock();
 		return result;
 	} else {
-		if (ResourceCache::path_cache_lock) {
-			ResourceCache::path_cache_lock->read_unlock();
-		}
+		ResourceCache::path_cache_lock.read_unlock();
 		return -1;
 	}
 }
@@ -403,9 +385,9 @@ Resource::Resource() :
 
 Resource::~Resource() {
 	if (path_cache != "") {
-		ResourceCache::lock->write_lock();
+		ResourceCache::lock.write_lock();
 		ResourceCache::resources.erase(path_cache);
-		ResourceCache::lock->write_unlock();
+		ResourceCache::lock.write_unlock();
 	}
 	if (owners.size()) {
 		WARN_PRINT("Resource is still owned.");
@@ -417,17 +399,10 @@ HashMap<String, Resource *> ResourceCache::resources;
 HashMap<String, HashMap<String, int>> ResourceCache::resource_path_cache;
 #endif
 
-RWLock *ResourceCache::lock = nullptr;
+RWLock ResourceCache::lock;
 #ifdef TOOLS_ENABLED
-RWLock *ResourceCache::path_cache_lock = nullptr;
+RWLock ResourceCache::path_cache_lock;
 #endif
-
-void ResourceCache::setup() {
-	lock = RWLock::create();
-#ifdef TOOLS_ENABLED
-	path_cache_lock = RWLock::create();
-#endif
-}
 
 void ResourceCache::clear() {
 	if (resources.size()) {
@@ -442,29 +417,25 @@ void ResourceCache::clear() {
 	}
 
 	resources.clear();
-	memdelete(lock);
-#ifdef TOOLS_ENABLED
-	memdelete(path_cache_lock);
-#endif
 }
 
 void ResourceCache::reload_externals() {
 }
 
 bool ResourceCache::has(const String &p_path) {
-	lock->read_lock();
+	lock.read_lock();
 	bool b = resources.has(p_path);
-	lock->read_unlock();
+	lock.read_unlock();
 
 	return b;
 }
 
 Resource *ResourceCache::get(const String &p_path) {
-	lock->read_lock();
+	lock.read_lock();
 
 	Resource **res = resources.getptr(p_path);
 
-	lock->read_unlock();
+	lock.read_unlock();
 
 	if (!res) {
 		return nullptr;
@@ -474,26 +445,26 @@ Resource *ResourceCache::get(const String &p_path) {
 }
 
 void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
-	lock->read_lock();
+	lock.read_lock();
 	const String *K = nullptr;
 	while ((K = resources.next(K))) {
 		Resource *r = resources[*K];
 		p_resources->push_back(Ref<Resource>(r));
 	}
-	lock->read_unlock();
+	lock.read_unlock();
 }
 
 int ResourceCache::get_cached_resource_count() {
-	lock->read_lock();
+	lock.read_lock();
 	int rc = resources.size();
-	lock->read_unlock();
+	lock.read_unlock();
 
 	return rc;
 }
 
 void ResourceCache::dump(const char *p_file, bool p_short) {
 #ifdef DEBUG_ENABLED
-	lock->read_lock();
+	lock.read_lock();
 
 	Map<String, int> type_count;
 
@@ -530,6 +501,6 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 		memdelete(f);
 	}
 
-	lock->read_unlock();
+	lock.read_unlock();
 #endif
 }
