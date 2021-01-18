@@ -1596,6 +1596,7 @@ void RichTextLabel::add_text(const String &p_text) {
 		else
 			line = p_text.substr(pos, end - pos);
 
+		int lipos = 0;
 		while (lipos < line.length()) {
 			if (line[lipos] >= 0x3040 && line[lipos] < 0xfaff) {
 				//Chinese or Japanese word condition
