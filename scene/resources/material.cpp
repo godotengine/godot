@@ -879,7 +879,13 @@ void SpatialMaterial::_update_shader() {
 		code += "\tALPHA = 1.0;\n";
 
 	} else if (features[FEATURE_TRANSPARENT] || flags[FLAG_USE_ALPHA_SCISSOR] || flags[FLAG_USE_SHADOW_TO_OPACITY] || (distance_fade == DISTANCE_FADE_PIXEL_ALPHA) || proximity_fade_enabled) {
-		code += "\tALPHA = albedo.a * albedo_tex.a;\n";
+		if (ddm == DEPTH_DRAW_ALPHA_OPAQUE_PREPASS) {
+			code += "\tif (alpha_scissor_threshold > albedo.a * albedo_tex.a) {\n";
+			code += "\t\tdiscard;\n";
+			code += "\t}\n";
+		} else {
+			code += "\tALPHA = albedo.a * albedo_tex.a;\n";
+		}
 	}
 
 	if (proximity_fade_enabled) {
@@ -1041,10 +1047,6 @@ void SpatialMaterial::_update_shader() {
 		code += "\tvec3 detail_norm = mix(NORMALMAP,detail_norm_tex.rgb,detail_tex.a);\n";
 		code += "\tNORMALMAP = mix(NORMALMAP,detail_norm,detail_mask_tex.r);\n";
 		code += "\tALBEDO.rgb = mix(ALBEDO.rgb,detail,detail_mask_tex.r);\n";
-	}
-
-	if (flags[FLAG_USE_ALPHA_SCISSOR]) {
-		code += "\tALPHA_SCISSOR=alpha_scissor_threshold;\n";
 	}
 
 	code += "}\n";
