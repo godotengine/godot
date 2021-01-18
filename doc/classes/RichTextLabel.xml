@@ -70,7 +70,14 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the total number of newlines in the tag stack's text tags. Considers wrapped text as one line.
+				Returns the total number of lines in the text. Wrapped text is counted as multiple lines.
+			</description>
+		</method>
+		<method name="get_paragraph_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the total number of paragraphs (newlines or [code]p[/code] tags in the tag stack's text tags). Considers wrapped text as one paragraph.
 			</description>
 		</method>
 		<method name="get_total_character_count" qualifiers="const">
@@ -92,6 +99,13 @@
 			</return>
 			<description>
 				Returns the number of visible lines.
+			</description>
+		</method>
+		<method name="get_visible_paragraph_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of visible paragraphs. A paragraph is considered visible if at least one of its lines is visible.
 			</description>
 		</method>
 		<method name="install_effect">
@@ -340,6 +354,15 @@
 			</argument>
 			<description>
 				Scrolls the window's top line to match [code]line[/code].
+			</description>
+		</method>
+		<method name="scroll_to_paragraph">
+			<return type="void">
+			</return>
+			<argument index="0" name="paragraph" type="int">
+			</argument>
+			<description>
+				Scrolls the window's top line to match first line of the [code]paragraph[/code].
 			</description>
 		</method>
 		<method name="set_cell_border_color">
