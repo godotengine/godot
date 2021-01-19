@@ -49,10 +49,10 @@ class BroadPhase3DBasic : public BroadPhase3DSW {
 	struct PairKey {
 		union {
 			struct {
-				ID a = 0;
-				ID b = 0;
+				ID a;
+				ID b;
 			};
-			uint64_t key;
+			uint64_t key = 0;
 		};
 
 		_FORCE_INLINE_ bool operator<(const PairKey &p_key) const {
