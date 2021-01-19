@@ -133,6 +133,22 @@ bool _cull_hits_full(const CullParams &p) {
 	return (int)_cull_hits.size() >= p.result_max;
 }
 
+// write this logic once for use in all routines
+// double check this as a possible source of bugs in future.
+bool _cull_pairing_mask_test_hit(uint32_t p_maskA, uint32_t p_typeA, uint32_t p_maskB, uint32_t p_typeB) const {
+	// double check this as a possible source of bugs in future.
+	bool A_match_B = p_maskA & p_typeB;
+
+	if (!A_match_B) {
+		bool B_match_A = p_maskB & p_typeA;
+		if (!B_match_A) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void _cull_hit(uint32_t p_ref_id, CullParams &p) {
 
 	// take into account masks etc
@@ -141,13 +157,8 @@ void _cull_hit(uint32_t p_ref_id, CullParams &p) {
 	if (USE_PAIRS) {
 		const ItemExtra &ex = _extra[p_ref_id];
 
-		// double check this as a possible source of bugs in future.
-		bool from_match_to = p.mask & ex.pairable_type;
-
-		if (!from_match_to) {
-			bool to_match_from = ex.pairable_mask & p.pairable_type;
-			if (!to_match_from)
-				return;
+		if (!_cull_pairing_mask_test_hit(p.mask, p.pairable_type, ex.pairable_mask, ex.pairable_type)) {
+			return;
 		}
 	}
 
