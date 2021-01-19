@@ -3323,11 +3323,8 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	return id;
 }
 
-RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_create_empty(const Size2i &p_size) {
-	ERR_FAIL_COND_V(p_size.width <= 0 || p_size.height <= 0, INVALID_FORMAT_ID);
-
+RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_create_empty(TextureSamples p_samples) {
 	FramebufferFormatKey key;
-	key.empty_size = p_size;
 
 	const Map<FramebufferFormatKey, FramebufferFormatID>::Element *E = framebuffer_format_cache.find(key);
 	if (E) {
@@ -3375,7 +3372,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	fb_format.E = E;
 	fb_format.color_attachments = 0;
 	fb_format.render_pass = render_pass;
-	fb_format.samples = TEXTURE_SAMPLES_1;
+	fb_format.samples = p_samples;
 	framebuffer_formats[id] = fb_format;
 	return id;
 }
@@ -3391,10 +3388,10 @@ RenderingDevice::TextureSamples RenderingDeviceVulkan::framebuffer_format_get_te
 /**** RENDER TARGET ****/
 /***********************/
 
-RID RenderingDeviceVulkan::framebuffer_create_empty(const Size2i &p_size, FramebufferFormatID p_format_check) {
+RID RenderingDeviceVulkan::framebuffer_create_empty(const Size2i &p_size, TextureSamples p_samples, FramebufferFormatID p_format_check) {
 	_THREAD_SAFE_METHOD_
 	Framebuffer framebuffer;
-	framebuffer.format_id = framebuffer_format_create_empty(p_size);
+	framebuffer.format_id = framebuffer_format_create_empty(p_samples);
 	ERR_FAIL_COND_V(p_format_check != INVALID_FORMAT_ID && framebuffer.format_id != p_format_check, RID());
 	framebuffer.size = p_size;
 
@@ -5072,6 +5069,40 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, p_sync_with_draw);
 #endif
 	return err;
+}
+
+Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, bool p_sync_with_draw) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V_MSG((p_size % 4) != 0, ERR_INVALID_PARAMETER,
+			"Size must be a multiple of four");
+	ERR_FAIL_COND_V_MSG(draw_list && p_sync_with_draw, ERR_INVALID_PARAMETER,
+			"Updating buffers in 'sync to draw' mode is forbidden during creation of a draw list");
+	ERR_FAIL_COND_V_MSG(compute_list && p_sync_with_draw, ERR_INVALID_PARAMETER,
+			"Updating buffers in 'sync to draw' mode is forbidden during creation of a compute list");
+
+	// Protect subsequent updates...
+	VkPipelineStageFlags dst_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	VkAccessFlags dst_access = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+	Buffer *buffer = _get_buffer_from_owner(p_buffer, dst_stage_mask, dst_access);
+	if (!buffer) {
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Buffer argument is not a valid buffer of any type.");
+	}
+
+	ERR_FAIL_COND_V_MSG(p_offset + p_size > buffer->size, ERR_INVALID_PARAMETER,
+			"Attempted to write buffer (" + itos((p_offset + p_size) - buffer->size) + " bytes) past the end.");
+
+	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, dst_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_access, VK_ACCESS_TRANSFER_WRITE_BIT, p_sync_with_draw);
+
+	vkCmdFillBuffer(p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, buffer->buffer, p_offset, p_size, 0);
+
+#ifdef FORCE_FULL_BARRIER
+	_full_barrier(p_sync_with_draw);
+#else
+	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, p_sync_with_draw);
+#endif
+	return OK;
 }
 
 Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {

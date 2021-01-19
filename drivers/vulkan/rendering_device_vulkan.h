@@ -228,13 +228,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// used for the render pipelines.
 
 	struct FramebufferFormatKey {
-		Size2i empty_size;
 		Vector<AttachmentFormat> attachments;
 		bool operator<(const FramebufferFormatKey &p_key) const {
-			if (empty_size != p_key.empty_size) {
-				return empty_size < p_key.empty_size;
-			}
-
 			int as = attachments.size();
 			int bs = p_key.attachments.size();
 			if (as != bs) {
@@ -934,11 +929,11 @@ public:
 	/*********************/
 
 	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format);
-	virtual FramebufferFormatID framebuffer_format_create_empty(const Size2i &p_size);
+	virtual FramebufferFormatID framebuffer_format_create_empty(TextureSamples p_samples = TEXTURE_SAMPLES_1);
 	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format);
 
 	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID);
-	virtual RID framebuffer_create_empty(const Size2i &p_size, FramebufferFormatID p_format_check = INVALID_ID);
+	virtual RID framebuffer_create_empty(const Size2i &p_size, TextureSamples p_samples = TEXTURE_SAMPLES_1, FramebufferFormatID p_format_check = INVALID_ID);
 
 	virtual FramebufferFormatID framebuffer_get_format(RID p_framebuffer);
 
@@ -981,6 +976,7 @@ public:
 	virtual bool uniform_set_is_valid(RID p_uniform_set);
 
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_sync_with_draw = false); //works for any buffer
+	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, bool p_sync_with_draw = false);
 	virtual Vector<uint8_t> buffer_get_data(RID p_buffer);
 
 	/*************************/
