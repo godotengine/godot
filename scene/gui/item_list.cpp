@@ -1194,7 +1194,6 @@ void ItemList::_notification(int p_what) {
 				}
 
 				if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
-					text_ofs = text_ofs.floor();
 					text_ofs += base_ofs;
 					text_ofs += items[i].rect_cache.position;
 
@@ -1217,7 +1216,6 @@ void ItemList::_notification(int p_what) {
 						text_ofs.y += (items[i].rect_cache.size.height - size2.y) / 2;
 					}
 
-					text_ofs = text_ofs.floor();
 					text_ofs += base_ofs;
 					text_ofs += items[i].rect_cache.position;
 
