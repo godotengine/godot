@@ -946,7 +946,7 @@ Vector2 DynamicFontDataAdvanced::draw_glyph(RID p_canvas, int p_size, const Vect
 		ERR_FAIL_COND_V(ch.texture_idx < -1 || ch.texture_idx >= fds->textures.size(), Vector2());
 
 		if (ch.texture_idx != -1) {
-			Point2 cpos = p_pos;
+			Point2i cpos = p_pos;
 			cpos += ch.align;
 			Color modulate = p_color;
 			if (FT_HAS_COLOR(fds->face)) {
@@ -977,7 +977,7 @@ Vector2 DynamicFontDataAdvanced::draw_glyph_outline(RID p_canvas, int p_size, in
 		ERR_FAIL_COND_V(ch.texture_idx < -1 || ch.texture_idx >= fds->textures.size(), Vector2());
 
 		if (ch.texture_idx != -1) {
-			Point2 cpos = p_pos;
+			Point2i cpos = p_pos;
 			cpos += ch.align;
 			Color modulate = p_color;
 			if (FT_HAS_COLOR(fds->face)) {

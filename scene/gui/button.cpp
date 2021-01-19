@@ -306,10 +306,10 @@ void Button::_notification(int p_what) {
 			Color font_outline_color = get_theme_color("font_outline_color");
 			int outline_size = get_theme_constant("outline_size");
 			if (outline_size > 0 && font_outline_color.a > 0) {
-				text_buf->draw_outline(ci, text_ofs.floor(), outline_size, font_outline_color);
+				text_buf->draw_outline(ci, text_ofs, outline_size, font_outline_color);
 			}
 
-			text_buf->draw(ci, text_ofs.floor(), color);
+			text_buf->draw(ci, text_ofs, color);
 
 			if (!_icon.is_null() && icon_region.size.width > 0) {
 				draw_texture_rect_region(_icon, icon_region, Rect2(Point2(), _icon->get_size()), color_icon);
