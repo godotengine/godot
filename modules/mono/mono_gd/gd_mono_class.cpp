@@ -175,7 +175,7 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 	void *iter = NULL;
 	MonoMethod *raw_method = NULL;
 	while ((raw_method = mono_class_get_methods(get_mono_ptr(), &iter)) != NULL) {
-		StringName name = mono_method_get_name(raw_method);
+		StringName name = String::utf8(mono_method_get_name(raw_method));
 
 		// get_method implicitly fetches methods and adds them to this->methods
 		GDMonoMethod *method = get_method(raw_method, name);
@@ -318,7 +318,7 @@ GDMonoMethod *GDMonoClass::get_method(MonoMethod *p_raw_method) {
 	MonoMethodSignature *sig = mono_method_signature(p_raw_method);
 
 	int params_count = mono_signature_get_param_count(sig);
-	StringName method_name = mono_method_get_name(p_raw_method);
+	StringName method_name = String::utf8(mono_method_get_name(p_raw_method));
 
 	return get_method(p_raw_method, method_name, params_count);
 }
@@ -391,7 +391,7 @@ const Vector<GDMonoField *> &GDMonoClass::get_all_fields() {
 	void *iter = NULL;
 	MonoClassField *raw_field = NULL;
 	while ((raw_field = mono_class_get_fields(mono_class, &iter)) != NULL) {
-		StringName name = mono_field_get_name(raw_field);
+		StringName name = String::utf8(mono_field_get_name(raw_field));
 
 		Map<StringName, GDMonoField *>::Element *match = fields.find(name);
 
@@ -439,7 +439,7 @@ const Vector<GDMonoProperty *> &GDMonoClass::get_all_properties() {
 	void *iter = NULL;
 	MonoProperty *raw_property = NULL;
 	while ((raw_property = mono_class_get_properties(mono_class, &iter)) != NULL) {
-		StringName name = mono_property_get_name(raw_property);
+		StringName name = String::utf8(mono_property_get_name(raw_property));
 
 		Map<StringName, GDMonoProperty *>::Element *match = properties.find(name);
 
@@ -465,14 +465,14 @@ const Vector<GDMonoClass *> &GDMonoClass::get_all_delegates() {
 	MonoClass *raw_class = NULL;
 	while ((raw_class = mono_class_get_nested_types(mono_class, &iter)) != NULL) {
 		if (mono_class_is_delegate(raw_class)) {
-			StringName name = mono_class_get_name(raw_class);
+			StringName name = String::utf8(mono_class_get_name(raw_class));
 
 			Map<StringName, GDMonoClass *>::Element *match = delegates.find(name);
 
 			if (match) {
 				delegates_list.push_back(match->get());
 			} else {
-				GDMonoClass *delegate = memnew(GDMonoClass(mono_class_get_namespace(raw_class), mono_class_get_name(raw_class), raw_class, assembly));
+				GDMonoClass *delegate = memnew(GDMonoClass(String::utf8(mono_class_get_namespace(raw_class)), String::utf8(mono_class_get_name(raw_class)), raw_class, assembly));
 				delegates.insert(name, delegate);
 				delegates_list.push_back(delegate);
 			}
@@ -490,7 +490,7 @@ const Vector<GDMonoMethod *> &GDMonoClass::get_all_methods() {
 		void *iter = NULL;
 		MonoMethod *raw_method = NULL;
 		while ((raw_method = mono_class_get_methods(get_mono_ptr(), &iter)) != NULL) {
-			method_list.push_back(memnew(GDMonoMethod(mono_method_get_name(raw_method), raw_method)));
+			method_list.push_back(memnew(GDMonoMethod(String::utf8(mono_method_get_name(raw_method)), raw_method)));
 		}
 
 		method_list_fetched = true;
