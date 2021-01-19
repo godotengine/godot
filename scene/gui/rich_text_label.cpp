@@ -1599,13 +1599,13 @@ void RichTextLabel::add_text(const String &p_text) {
 			line = p_text.substr(pos, end - pos);
 
 #define IS_CJK(index) ((line[index] >= 0x3040 && line[index] <= 0x9fbf) || (line[index] >= 0xf900 && line[index] <= 0xfaff))
-//add more rule here,to support more languages
+		//add more rule here,to support more languages
 
 		int lipos = 0;
 		while (lipos < line.length()) {
 			if (IS_CJK(lipos)) {
 				//Chinese or Japanese word condition
-				int o;//length of CJK
+				int o; //length of CJK
 				for (o = 1; o < (line.length() - lipos) && IS_CJK(lipos + o); o++) {
 				}
 				ItemText *item = memnew(ItemText);
@@ -1615,11 +1615,11 @@ void RichTextLabel::add_text(const String &p_text) {
 				lipos += o;
 			} else {
 				//English word condition
-				int o;//length of English words
+				int o; //length of English words
 				for (o = 1; o < (line.length() - lipos) && !(IS_CJK(lipos + o)); o++) {
 				}
 				if (lipos == 0 && current->subitems.size() && current->subitems.back()->get()->type == ITEM_TEXT &&
-					!(static_cast<ItemText *>(current->subitems.back()->get())->isCJK)) {
+						!(static_cast<ItemText *>(current->subitems.back()->get())->isCJK)) {
 					//append text condition!
 					ItemText *ti = static_cast<ItemText *>(current->subitems.back()->get());
 					ti->text += line.substr(lipos, o);
