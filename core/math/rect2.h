@@ -242,7 +242,7 @@ struct Rect2 {
 	}
 
 	_FORCE_INLINE_ Rect2 abs() const {
-		return Rect2(Point2(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0)), size.abs());
+		return Rect2(Point2(position.x + MIN(size.x, 0.0f), position.y + MIN(size.y, 0.0f)), size.abs());
 	}
 
 	Vector2 get_support(const Vector2 &p_normal) const {

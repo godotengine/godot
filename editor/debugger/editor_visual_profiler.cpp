@@ -68,7 +68,7 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 
 	updating_frame = true;
 	cursor_metric_edit->set_max(frame_metrics[last_metric].frame_number);
-	cursor_metric_edit->set_min(MAX(frame_metrics[last_metric].frame_number - frame_metrics.size(), 0));
+	cursor_metric_edit->set_min(MAX(frame_metrics[last_metric].frame_number - frame_metrics.size(), (uint64_t)0));
 
 	if (!seeking) {
 		cursor_metric_edit->set_value(frame_metrics[last_metric].frame_number);
@@ -264,9 +264,9 @@ void EditorVisualProfiler::_update_plot() {
 					g = 0;
 					b = 0;
 				} else {
-					r = CLAMP((column_cpu[j].r / column_cpu[j].a) * 255.0, 0, 255);
-					g = CLAMP((column_cpu[j].g / column_cpu[j].a) * 255.0, 0, 255);
-					b = CLAMP((column_cpu[j].b / column_cpu[j].a) * 255.0, 0, 255);
+					r = CLAMP((column_cpu[j].r / column_cpu[j].a) * 255.0, 0.0, 255.0);
+					g = CLAMP((column_cpu[j].g / column_cpu[j].a) * 255.0, 0.0, 255.0);
+					b = CLAMP((column_cpu[j].b / column_cpu[j].a) * 255.0, 0.0, 255.0);
 				}
 
 				int widx = (j * w + i) * 4;
@@ -284,9 +284,9 @@ void EditorVisualProfiler::_update_plot() {
 					g = 0;
 					b = 0;
 				} else {
-					r = CLAMP((column_gpu[j].r / column_gpu[j].a) * 255.0, 0, 255);
-					g = CLAMP((column_gpu[j].g / column_gpu[j].a) * 255.0, 0, 255);
-					b = CLAMP((column_gpu[j].b / column_gpu[j].a) * 255.0, 0, 255);
+					r = CLAMP((column_gpu[j].r / column_gpu[j].a) * 255.0, 0.0, 255.0);
+					g = CLAMP((column_gpu[j].g / column_gpu[j].a) * 255.0, 0.0, 255.0);
+					b = CLAMP((column_gpu[j].b / column_gpu[j].a) * 255.0, 0.0, 255.0);
 				}
 
 				int widx = (j * w + w / 2 + i) * 4;

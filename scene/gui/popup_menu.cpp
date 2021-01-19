@@ -531,10 +531,10 @@ void PopupMenu::_draw_items() {
 				int text_left = text_center - text_size / 2;
 				int text_right = text_center + text_size / 2;
 				if (text_left > item_ofs.x) {
-					labeled_separator_left->draw(ci, Rect2(item_ofs + Point2(0, Math::floor((h - sep_h) / 2.0)), Size2(MAX(0, text_left - item_ofs.x), sep_h)));
+					labeled_separator_left->draw(ci, Rect2(item_ofs + Point2(0, Math::floor((h - sep_h) / 2.0)), Size2(MAX(0.0f, text_left - item_ofs.x), sep_h)));
 				}
 				if (text_right < display_width) {
-					labeled_separator_right->draw(ci, Rect2(Point2(text_right, item_ofs.y + Math::floor((h - sep_h) / 2.0)), Size2(MAX(0, display_width - text_right), sep_h)));
+					labeled_separator_right->draw(ci, Rect2(Point2(text_right, item_ofs.y + Math::floor((h - sep_h) / 2.0)), Size2(MAX(0.0f, display_width - text_right), sep_h)));
 				}
 			} else {
 				separator->draw(ci, Rect2(item_ofs + Point2(0, Math::floor((h - sep_h) / 2.0)), Size2(display_width, sep_h)));

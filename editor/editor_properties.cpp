@@ -974,7 +974,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 
 		// Limit to a reasonable value to prevent the curve going into infinity,
 		// which can cause crashes and other issues.
-		val = CLAMP(val, -1'000'000, 1'000'000);
+		val = CLAMP(val, -1'000'000.0f, 1'000'000.0f);
 
 		emit_changed(get_edited_property(), val);
 		easing_draw->update();
@@ -1065,7 +1065,7 @@ void EditorPropertyEasing::_spin_value_changed(double p_value) {
 
 	// Limit to a reasonable value to prevent the curve going into infinity,
 	// which can cause crashes and other issues.
-	p_value = CLAMP(p_value, -1'000'000, 1'000'000);
+	p_value = CLAMP(p_value, -1'000'000.0, 1'000'000.0);
 
 	emit_changed(get_edited_property(), p_value);
 	_spin_focus_exited();

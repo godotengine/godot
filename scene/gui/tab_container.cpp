@@ -54,7 +54,7 @@ int TabContainer::_get_top_margin() const {
 
 	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
-		content_height = MAX(content_height, text_buf[i]->get_size().y);
+		content_height = MAX(content_height, (int)text_buf[i]->get_size().y);
 
 		Control *c = tabs[i];
 		if (!c->has_meta("_tab_icon")) {
@@ -65,7 +65,7 @@ int TabContainer::_get_top_margin() const {
 		if (!tex.is_valid()) {
 			continue;
 		}
-		content_height = MAX(content_height, tex->get_size().height);
+		content_height = MAX(content_height, (int)tex->get_size().height);
 	}
 
 	return tab_height + content_height;

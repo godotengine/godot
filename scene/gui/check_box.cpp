@@ -43,13 +43,13 @@ Size2 CheckBox::get_icon_size() const {
 		tex_size = Size2(checked->get_width(), checked->get_height());
 	}
 	if (!unchecked.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, unchecked->get_width()), MAX(tex_size.height, unchecked->get_height()));
+		tex_size = Size2(MAX(tex_size.width, (float)unchecked->get_width()), MAX(tex_size.height, (float)unchecked->get_height()));
 	}
 	if (!radio_checked.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, radio_checked->get_width()), MAX(tex_size.height, radio_checked->get_height()));
+		tex_size = Size2(MAX(tex_size.width, (float)radio_checked->get_width()), MAX(tex_size.height, (float)radio_checked->get_height()));
 	}
 	if (!radio_unchecked.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, radio_unchecked->get_width()), MAX(tex_size.height, radio_unchecked->get_height()));
+		tex_size = Size2(MAX(tex_size.width, (float)radio_unchecked->get_width()), MAX(tex_size.height, (float)radio_unchecked->get_height()));
 	}
 	return tex_size;
 }

@@ -142,8 +142,8 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 				min = MIN(min, mix_chunk[j].r);
 			}
 
-			uint8_t pfrom = CLAMP((min * 0.5 + 0.5) * 255, 0, 255);
-			uint8_t pto = CLAMP((max * 0.5 + 0.5) * 255, 0, 255);
+			uint8_t pfrom = CLAMP((int)(min * 0.5 + 0.5) * 255, 0, 255);
+			uint8_t pto = CLAMP((int)(max * 0.5 + 0.5) * 255, 0, 255);
 
 			preview->preview->preview.write[(ofs_write + i) * 2 + 0] = pfrom;
 			preview->preview->preview.write[(ofs_write + i) * 2 + 1] = pto;

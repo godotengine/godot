@@ -192,7 +192,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	if (btResult.hasHit()) {
 		const btScalar l = bt_motion.length();
 		r_closest_unsafe = btResult.m_closestHitFraction;
-		r_closest_safe = MAX(r_closest_unsafe - (1 - ((l - 0.01) / l)), 0);
+		r_closest_safe = MAX(r_closest_unsafe - (1.0 - ((l - 0.01) / l)), 0.0);
 		if (r_info) {
 			if (btCollisionObject::CO_RIGID_BODY == btResult.m_hitCollisionObject->getInternalType()) {
 				B_TO_G(static_cast<const btRigidBody *>(btResult.m_hitCollisionObject)->getVelocityInLocalPoint(btResult.m_hitPointWorld), r_info->linear_velocity);
@@ -580,7 +580,7 @@ BulletPhysicsDirectSpaceState *SpaceBullet::get_direct_state() {
 }
 
 btScalar calculateGodotCombinedRestitution(const btCollisionObject *body0, const btCollisionObject *body1) {
-	return CLAMP(body0->getRestitution() + body1->getRestitution(), 0, 1);
+	return CLAMP(body0->getRestitution() + body1->getRestitution(), 0.0f, 1.0f);
 }
 
 btScalar calculateGodotCombinedFriction(const btCollisionObject *body0, const btCollisionObject *body1) {

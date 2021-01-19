@@ -313,7 +313,7 @@ void PathFollow2D::set_offset(float p_offset) {
 					offset = path_length;
 				}
 			} else {
-				offset = CLAMP(offset, 0, path_length);
+				offset = CLAMP(offset, 0.0f, path_length);
 			}
 		}
 

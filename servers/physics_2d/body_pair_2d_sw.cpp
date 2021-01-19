@@ -212,7 +212,7 @@ bool BodyPair2DSW::_test_ccd(real_t p_step, Body2DSW *p_A, int p_shape_A, const 
 }
 
 real_t combine_bounce(Body2DSW *A, Body2DSW *B) {
-	return CLAMP(A->get_bounce() + B->get_bounce(), 0, 1);
+	return CLAMP(A->get_bounce() + B->get_bounce(), 0.0f, 1.0f);
 }
 
 real_t combine_friction(Body2DSW *A, Body2DSW *B) {

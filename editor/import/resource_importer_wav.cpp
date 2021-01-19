@@ -497,10 +497,10 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			int ds = data.size();
 			for (int i = 0; i < ds; i++) {
 				if (is16) {
-					int16_t v = CLAMP(data[i] * 32768, -32768, 32767);
+					int16_t v = CLAMP((int)(data[i] * 32768), -32768, 32767);
 					encode_uint16(v, &w[i * 2]);
 				} else {
-					int8_t v = CLAMP(data[i] * 128, -128, 127);
+					int8_t v = CLAMP((int)(data[i] * 128), -128, 127);
 					w[i] = v;
 				}
 			}

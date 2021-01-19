@@ -70,7 +70,7 @@ int Label::get_line_height(int p_line) const {
 	} else if (lines_rid.size() > 0) {
 		int h = 0;
 		for (int i = 0; i < lines_rid.size(); i++) {
-			h = MAX(h, TS->shaped_text_get_size(lines_rid[i]).y) + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM);
+			h = MAX(h, int(TS->shaped_text_get_size(lines_rid[i]).y) + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM));
 		}
 		return h;
 	} else {

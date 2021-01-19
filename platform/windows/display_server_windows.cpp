@@ -1336,8 +1336,8 @@ void DisplayServerWindows::cursor_set_custom_image(const RES &p_cursor, CursorSh
 			int column_index = (index % int(texture_size.width)) + atlas_rect.position.x;
 
 			if (atlas_texture.is_valid()) {
-				column_index = MIN(column_index, atlas_rect.size.width - 1);
-				row_index = MIN(row_index, atlas_rect.size.height - 1);
+				column_index = MIN(column_index, (int)(atlas_rect.size.width - 1));
+				row_index = MIN(row_index, (int)(atlas_rect.size.height - 1));
 			}
 
 			*(buffer + index) = image->get_pixel(column_index, row_index).to_argb32();

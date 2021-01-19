@@ -236,7 +236,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		}
 
 		while (to_write > 0) {
-			int read = src->get_buffer(buf, MIN(to_write, buf_max));
+			int read = src->get_buffer(buf, MIN((uint32_t)to_write, buf_max));
 			ftmp->store_buffer(buf, read);
 			to_write -= read;
 		}

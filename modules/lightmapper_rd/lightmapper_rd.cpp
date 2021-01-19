@@ -389,9 +389,9 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 			box.min_bounds[0] = taabb.position.x;
 			box.min_bounds[1] = taabb.position.y;
 			box.min_bounds[2] = taabb.position.z;
-			box.max_bounds[0] = taabb.position.x + MAX(taabb.size.x, 0.0001);
-			box.max_bounds[1] = taabb.position.y + MAX(taabb.size.y, 0.0001);
-			box.max_bounds[2] = taabb.position.z + MAX(taabb.size.z, 0.0001);
+			box.max_bounds[0] = taabb.position.x + MAX(taabb.size.x, 0.0001f);
+			box.max_bounds[1] = taabb.position.y + MAX(taabb.size.y, 0.0001f);
+			box.max_bounds[2] = taabb.position.z + MAX(taabb.size.z, 0.0001f);
 			box.pad0 = box.pad1 = 0; //make valgrind not complain
 			box_array.push_back(box);
 
@@ -1238,7 +1238,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			} break;
 		}
 
-		push_constant.ray_count = CLAMP(push_constant.ray_count, 16, 8192);
+		push_constant.ray_count = CLAMP(push_constant.ray_count, 16u, 8192u);
 
 		int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/gpu_lightmapper/performance/region_size")));
 		int max_rays = GLOBAL_GET("rendering/gpu_lightmapper/performance/max_rays_per_pass");
@@ -1361,7 +1361,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		}
 
 		push_constant.atlas_size[0] = probe_positions.size();
-		push_constant.ray_count = CLAMP(push_constant.ray_count, 16, 8192);
+		push_constant.ray_count = CLAMP(push_constant.ray_count, 16u, 8192u);
 
 		int max_rays = GLOBAL_GET("rendering/gpu_lightmapper/performance/max_rays_per_probe_pass");
 		int ray_iterations = (push_constant.ray_count - 1) / max_rays + 1;

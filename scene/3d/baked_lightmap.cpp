@@ -714,9 +714,9 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 				uint8_t *w_albedo = albedom.ptrw();
 
 				for (uint32_t i = 0; i < len; i += 4) {
-					w_albedo[i + 0] = uint8_t(CLAMP(float(r_aa[i + 0]) * (1.0 - float(r_orm[i + 2] / 255.0)), 0, 255));
-					w_albedo[i + 1] = uint8_t(CLAMP(float(r_aa[i + 1]) * (1.0 - float(r_orm[i + 2] / 255.0)), 0, 255));
-					w_albedo[i + 2] = uint8_t(CLAMP(float(r_aa[i + 2]) * (1.0 - float(r_orm[i + 2] / 255.0)), 0, 255));
+					w_albedo[i + 0] = uint8_t(CLAMP(float(r_aa[i + 0]) * (1.0f - float(r_orm[i + 2] / 255.0f)), 0.0f, 255.0f));
+					w_albedo[i + 1] = uint8_t(CLAMP(float(r_aa[i + 1]) * (1.0f - float(r_orm[i + 2] / 255.0f)), 0.0f, 255.0f));
+					w_albedo[i + 2] = uint8_t(CLAMP(float(r_aa[i + 2]) * (1.0f - float(r_orm[i + 2] / 255.0f)), 0.0f, 255.0f));
 					w_albedo[i + 3] = 255;
 				}
 

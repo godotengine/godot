@@ -88,8 +88,8 @@ void RendererSceneRenderRD::_update_reflection_data(ReflectionData &rd, int p_si
 
 				layer.views.write[j] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer + i * 6, j, RD::TEXTURE_SLICE_CUBEMAP);
 
-				mmw = MAX(1, mmw >> 1);
-				mmh = MAX(1, mmh >> 1);
+				mmw = MAX(1u, mmw >> 1);
+				mmh = MAX(1u, mmh >> 1);
 			}
 
 			rd.layers.push_back(layer);
@@ -116,8 +116,8 @@ void RendererSceneRenderRD::_update_reflection_data(ReflectionData &rd, int p_si
 
 			layer.views.write[j] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer, j, RD::TEXTURE_SLICE_CUBEMAP);
 
-			mmw = MAX(1, mmw >> 1);
-			mmh = MAX(1, mmh >> 1);
+			mmw = MAX(1u, mmw >> 1);
+			mmh = MAX(1u, mmh >> 1);
 		}
 
 		rd.layers.push_back(layer);
@@ -145,8 +145,8 @@ void RendererSceneRenderRD::_update_reflection_data(ReflectionData &rd, int p_si
 			mm.size.height = mmh;
 			mm.view = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rd.downsampled_radiance_cubemap, 0, j, RD::TEXTURE_SLICE_CUBEMAP);
 
-			mmw = MAX(1, mmw >> 1);
-			mmh = MAX(1, mmh >> 1);
+			mmw = MAX(1u, mmw >> 1);
+			mmh = MAX(1u, mmh >> 1);
 		}
 	}
 }
@@ -6272,7 +6272,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					}
 
 					float fade_start = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_FADE_START);
-					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999); //using 1.0 would break smoothstep
+					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999f); //using 1.0 would break smoothstep
 					light_data.fade_to = -light_data.shadow_split_offsets[3];
 					light_data.shadow_volumetric_fog_fade = 1.0 / storage->light_get_shadow_volumetric_fog_fade(base);
 
@@ -6303,12 +6303,12 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 				light_data.attenuation_energy[0] = Math::make_half_float(storage->light_get_param(base, RS::LIGHT_PARAM_ATTENUATION));
 				light_data.attenuation_energy[1] = Math::make_half_float(sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * Math_PI);
 
-				light_data.color_specular[0] = MIN(uint32_t(linear_col.r * 255), 255);
-				light_data.color_specular[1] = MIN(uint32_t(linear_col.g * 255), 255);
-				light_data.color_specular[2] = MIN(uint32_t(linear_col.b * 255), 255);
-				light_data.color_specular[3] = MIN(uint32_t(storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR) * 255), 255);
+				light_data.color_specular[0] = MIN(uint32_t(linear_col.r * 255), (uint32_t)255);
+				light_data.color_specular[1] = MIN(uint32_t(linear_col.g * 255), (uint32_t)255);
+				light_data.color_specular[2] = MIN(uint32_t(linear_col.b * 255), (uint32_t)255);
+				light_data.color_specular[3] = MIN(uint32_t(storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR) * 255), (uint32_t)255);
 
-				float radius = MAX(0.001, storage->light_get_param(base, RS::LIGHT_PARAM_RANGE));
+				float radius = MAX(0.001f, storage->light_get_param(base, RS::LIGHT_PARAM_RANGE));
 				light_data.inv_radius = 1.0 / radius;
 
 				Vector3 pos = p_camera_inverse_transform.xform(light_transform.origin);
@@ -6366,9 +6366,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 					Color shadow_color = storage->light_get_shadow_color(base);
 
-					light_data.shadow_color_enabled[0] = MIN(uint32_t(shadow_color.r * 255), 255);
-					light_data.shadow_color_enabled[1] = MIN(uint32_t(shadow_color.g * 255), 255);
-					light_data.shadow_color_enabled[2] = MIN(uint32_t(shadow_color.b * 255), 255);
+					light_data.shadow_color_enabled[0] = MIN(uint32_t(shadow_color.r * 255), (uint32_t)255);
+					light_data.shadow_color_enabled[1] = MIN(uint32_t(shadow_color.g * 255), (uint32_t)255);
+					light_data.shadow_color_enabled[2] = MIN(uint32_t(shadow_color.b * 255), (uint32_t)255);
 					light_data.shadow_color_enabled[3] = 255;
 
 					if (type == RS::LIGHT_SPOT) {
@@ -8511,7 +8511,7 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 	}
 
 	{ //lights
-		cluster.max_lights = MIN(1024 * 1024, uniform_max_size) / sizeof(Cluster::LightData); //1mb of lights
+		cluster.max_lights = MIN(1024u * 1024u, uniform_max_size) / sizeof(Cluster::LightData); //1mb of lights
 		uint32_t light_buffer_size = cluster.max_lights * sizeof(Cluster::LightData);
 		cluster.lights = memnew_arr(Cluster::LightData, cluster.max_lights);
 		cluster.light_buffer = RD::get_singleton()->storage_buffer_create(light_buffer_size);
@@ -8526,7 +8526,7 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 	}
 
 	{ //decals
-		cluster.max_decals = MIN(1024 * 1024, uniform_max_size) / sizeof(Cluster::DecalData); //1mb of decals
+		cluster.max_decals = MIN(1024u * 1024u, uniform_max_size) / sizeof(Cluster::DecalData); //1mb of decals
 		uint32_t decal_buffer_size = cluster.max_decals * sizeof(Cluster::DecalData);
 		cluster.decals = memnew_arr(Cluster::DecalData, cluster.max_decals);
 		cluster.decal_buffer = RD::get_singleton()->storage_buffer_create(decal_buffer_size);

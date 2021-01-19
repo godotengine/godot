@@ -668,8 +668,8 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	Color border_color_inner = blend_on ? border_color_blend : border_color;
 
 	//adapt borders (prevent weird overlapping/glitchy drawings)
-	int width = MAX(style_rect.size.width, 0);
-	int height = MAX(style_rect.size.height, 0);
+	int width = MAX(style_rect.size.width, 0.0f);
+	int height = MAX(style_rect.size.height, 0.0f);
 	int adapted_border[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
 	adapt_values(SIDE_TOP, SIDE_BOTTOM, adapted_border, border_width, height, height, height);
 	adapt_values(SIDE_LEFT, SIDE_RIGHT, adapted_border, border_width, width, width, width);

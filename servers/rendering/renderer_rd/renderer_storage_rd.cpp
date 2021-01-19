@@ -3780,14 +3780,14 @@ void RendererStorageRD::_update_dirty_multimeshes() {
 
 				if (multimesh->data_cache_used_dirty_regions > 32 || multimesh->data_cache_used_dirty_regions > visible_region_count / 2) {
 					//if there too many dirty regions, or represent the majority of regions, just copy all, else transfer cost piles up too much
-					RD::get_singleton()->buffer_update(multimesh->buffer, 0, MIN(visible_region_count * region_size, multimesh->instances * multimesh->stride_cache * sizeof(float)), data, false);
+					RD::get_singleton()->buffer_update(multimesh->buffer, 0, MIN(visible_region_count * region_size, uint32_t(multimesh->instances * multimesh->stride_cache * sizeof(float))), data, false);
 				} else {
 					//not that many regions? update them all
 					for (uint32_t i = 0; i < visible_region_count; i++) {
 						if (multimesh->data_cache_dirty_regions[i]) {
 							uint64_t offset = i * region_size;
 							uint64_t size = multimesh->stride_cache * multimesh->instances * sizeof(float);
-							RD::get_singleton()->buffer_update(multimesh->buffer, offset, MIN(region_size, size - offset), &data[i * region_size], false);
+							RD::get_singleton()->buffer_update(multimesh->buffer, offset, MIN((uint64_t)region_size, size - offset), &data[i * region_size], false);
 						}
 					}
 				}
@@ -6397,7 +6397,7 @@ void RendererStorageRD::lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_p
 	Color barycentric = Geometry3D::tetrahedron_get_barycentric_coords(points[0], points[1], points[2], points[3], p_point);
 
 	for (int i = 0; i < 4; i++) {
-		float c = CLAMP(barycentric[i], 0.0, 1.0);
+		float c = CLAMP(barycentric[i], 0.0f, 1.0f);
 		for (int j = 0; j < 9; j++) {
 			r_sh[j] += sh_colors[i][j] * c;
 		}
@@ -8295,7 +8295,7 @@ RendererStorageRD::RendererStorageRD() {
 	static_assert(sizeof(GlobalVariables::Value) == 16);
 
 	global_variables.buffer_size = GLOBAL_GET("rendering/high_end/global_shader_variables_buffer_size");
-	global_variables.buffer_size = MAX(4096, global_variables.buffer_size);
+	global_variables.buffer_size = MAX(4096u, global_variables.buffer_size);
 	global_variables.buffer_values = memnew_arr(GlobalVariables::Value, global_variables.buffer_size);
 	zeromem(global_variables.buffer_values, sizeof(GlobalVariables::Value) * global_variables.buffer_size);
 	global_variables.buffer_usage = memnew_arr(GlobalVariables::ValueUsage, global_variables.buffer_size);

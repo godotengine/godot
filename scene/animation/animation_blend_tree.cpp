@@ -91,7 +91,7 @@ float AnimationNodeAnimation::process(float p_time, bool p_seek) {
 		time = p_time;
 		step = 0;
 	} else {
-		time = MAX(0, time + p_time);
+		time = MAX(0.0f, time + p_time);
 		step = p_time;
 	}
 
@@ -439,9 +439,9 @@ bool AnimationNodeAdd3::has_filter() const {
 
 float AnimationNodeAdd3::process(float p_time, bool p_seek) {
 	float amount = get_parameter(add_amount);
-	blend_input(0, p_time, p_seek, MAX(0, -amount), FILTER_PASS, !sync);
+	blend_input(0, p_time, p_seek, MAX(0.0f, -amount), FILTER_PASS, !sync);
 	float rem0 = blend_input(1, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
-	blend_input(2, p_time, p_seek, MAX(0, amount), FILTER_PASS, !sync);
+	blend_input(2, p_time, p_seek, MAX(0.0f, amount), FILTER_PASS, !sync);
 
 	return rem0;
 }
@@ -534,9 +534,9 @@ bool AnimationNodeBlend3::is_using_sync() const {
 
 float AnimationNodeBlend3::process(float p_time, bool p_seek) {
 	float amount = get_parameter(blend_amount);
-	float rem0 = blend_input(0, p_time, p_seek, MAX(0, -amount), FILTER_IGNORE, !sync);
+	float rem0 = blend_input(0, p_time, p_seek, MAX(0.0f, -amount), FILTER_IGNORE, !sync);
 	float rem1 = blend_input(1, p_time, p_seek, 1.0 - ABS(amount), FILTER_IGNORE, !sync);
-	float rem2 = blend_input(2, p_time, p_seek, MAX(0, amount), FILTER_IGNORE, !sync);
+	float rem2 = blend_input(2, p_time, p_seek, MAX(0.0f, amount), FILTER_IGNORE, !sync);
 
 	return amount > 0.5 ? rem2 : (amount < -0.5 ? rem0 : rem1); //hacky but good enough
 }

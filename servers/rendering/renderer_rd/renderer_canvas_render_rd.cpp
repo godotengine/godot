@@ -263,10 +263,10 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			for (uint32_t i = 0; i < vertex_count; i++) {
 				uint16_t *weight16w = (uint16_t *)&uptr[base_offset + i * stride];
 
-				weight16w[0] = CLAMP(weight_ptr[i * 4 + 0] * 65535, 0, 65535);
-				weight16w[1] = CLAMP(weight_ptr[i * 4 + 1] * 65535, 0, 65535);
-				weight16w[2] = CLAMP(weight_ptr[i * 4 + 2] * 65535, 0, 65535);
-				weight16w[3] = CLAMP(weight_ptr[i * 4 + 3] * 65535, 0, 65535);
+				weight16w[0] = CLAMP(uint16_t(weight_ptr[i * 4 + 0] * 65535), (uint16_t)0, (uint16_t)65535);
+				weight16w[1] = CLAMP(uint16_t(weight_ptr[i * 4 + 1] * 65535), (uint16_t)0, (uint16_t)65535);
+				weight16w[2] = CLAMP(uint16_t(weight_ptr[i * 4 + 2] * 65535), (uint16_t)0, (uint16_t)65535);
+				weight16w[3] = CLAMP(uint16_t(weight_ptr[i * 4 + 3] * 65535), (uint16_t)0, (uint16_t)65535);
 			}
 
 			base_offset += 2;
@@ -376,10 +376,10 @@ void RendererCanvasRenderRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RI
 		push_constant.flags &= ~FLAGS_DEFAULT_NORMAL_MAP_USED;
 	}
 
-	push_constant.specular_shininess = uint32_t(CLAMP(specular_shininess.a * 255.0, 0, 255)) << 24;
-	push_constant.specular_shininess |= uint32_t(CLAMP(specular_shininess.b * 255.0, 0, 255)) << 16;
-	push_constant.specular_shininess |= uint32_t(CLAMP(specular_shininess.g * 255.0, 0, 255)) << 8;
-	push_constant.specular_shininess |= uint32_t(CLAMP(specular_shininess.r * 255.0, 0, 255));
+	push_constant.specular_shininess = uint32_t(CLAMP(specular_shininess.a * 255.0, 0.0, 255.0)) << 24;
+	push_constant.specular_shininess |= uint32_t(CLAMP(specular_shininess.b * 255.0, 0.0, 255.0)) << 16;
+	push_constant.specular_shininess |= uint32_t(CLAMP(specular_shininess.g * 255.0, 0.0, 255.0)) << 8;
+	push_constant.specular_shininess |= uint32_t(CLAMP(specular_shininess.r * 255.0, 0.0, 255.0));
 
 	r_texpixel_size.x = 1.0 / float(size.x);
 	r_texpixel_size.y = 1.0 / float(size.y);
@@ -671,9 +671,9 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, const Item
 
 				_bind_canvas_texture(p_draw_list, RID(), current_filter, current_repeat, last_texture, push_constant, texpixel_size);
 
-				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, primitive_arrays.index_array[MIN(3, primitive->point_count) - 1]);
+				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, primitive_arrays.index_array[MIN(3u, primitive->point_count) - 1]);
 
-				for (uint32_t j = 0; j < MIN(3, primitive->point_count); j++) {
+				for (uint32_t j = 0; j < MIN((uint32_t)3, primitive->point_count); j++) {
 					push_constant.points[j * 2 + 0] = primitive->points[j].x;
 					push_constant.points[j * 2 + 1] = primitive->points[j].y;
 					push_constant.uvs[j * 2 + 0] = primitive->uvs[j].x;

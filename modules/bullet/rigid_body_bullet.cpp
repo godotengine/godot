@@ -888,8 +888,8 @@ void RigidBodyBullet::reload_space_override_modificator() {
 	}
 
 	Vector3 newGravity(0.0, 0.0, 0.0);
-	real_t newLinearDamp = MAX(0.0, linearDamp);
-	real_t newAngularDamp = MAX(0.0, angularDamp);
+	real_t newLinearDamp = MAX(0.0f, linearDamp);
+	real_t newAngularDamp = MAX(0.0f, angularDamp);
 
 	AreaBullet *currentArea;
 	// Variable used to calculate new gravity for gravity point areas, it is pointed by currentGravity pointer

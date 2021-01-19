@@ -45,8 +45,8 @@ Size2 ProgressBar::get_minimum_size() const {
 		TextLine tl = TextLine(txt, font, font_size);
 		minimum_size.height = MAX(minimum_size.height, bg->get_minimum_size().height + tl.get_size().y);
 	} else { // this is needed, else the progressbar will collapse
-		minimum_size.width = MAX(minimum_size.width, 1);
-		minimum_size.height = MAX(minimum_size.height, 1);
+		minimum_size.width = MAX(minimum_size.width, 1.0f);
+		minimum_size.height = MAX(minimum_size.height, 1.0f);
 	}
 	return minimum_size;
 }

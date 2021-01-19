@@ -376,7 +376,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 			case PROPERTY_DESC_SPECULAR: {
 				if (real_value) {
 					print_verbose("specular real value: " + rtos(real_value->Value()));
-					spatial_material->set_specular(MIN(1.0, real_value->Value()));
+					spatial_material->set_specular(MIN(1.0f, real_value->Value()));
 				}
 
 				if (vector_value) {

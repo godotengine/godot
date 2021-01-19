@@ -84,7 +84,7 @@ bool CollisionSolver2DSW::solve_raycast(const Shape2DSW *p_shape_A, const Vector
 	if (p_motion_A != Vector2()) {
 		//not the best but should be enough
 		Vector2 normal = (to - from).normalized();
-		to += normal * MAX(0.0, normal.dot(p_motion_A));
+		to += normal * MAX(0.0f, normal.dot(p_motion_A));
 	}
 	Vector2 support_A = to;
 

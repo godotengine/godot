@@ -60,13 +60,13 @@ public:
 			// First segment degenerates into a point.
 			s = 0.0;
 			t = f / e; // s = 0 => t = (b*s + f) / e = f / e
-			t = CLAMP(t, 0.0, 1.0);
+			t = CLAMP(t, 0.0f, 1.0f);
 		} else {
 			real_t c = d1.dot(r);
 			if (e <= CMP_EPSILON) {
 				// Second segment degenerates into a point.
 				t = 0.0;
-				s = CLAMP(-c / a, 0.0, 1.0); // t = 0 => s = (b*t - c) / a = -c / a
+				s = CLAMP(-c / a, 0.0f, 1.0f); // t = 0 => s = (b*t - c) / a = -c / a
 			} else {
 				// The general nondegenerate case starts here.
 				real_t b = d1.dot(d2);
@@ -74,7 +74,7 @@ public:
 				// If segments not parallel, compute closest point on L1 to L2 and
 				// clamp to segment S1. Else pick arbitrary s (here 0).
 				if (denom != 0.0) {
-					s = CLAMP((b * f - c * e) / denom, 0.0, 1.0);
+					s = CLAMP((b * f - c * e) / denom, 0.0f, 1.0f);
 				} else {
 					s = 0.0;
 				}
@@ -87,10 +87,10 @@ public:
 				// and clamp s to [0, 1].
 				if (t < 0.0) {
 					t = 0.0;
-					s = CLAMP(-c / a, 0.0, 1.0);
+					s = CLAMP(-c / a, 0.0f, 1.0f);
 				} else if (t > 1.0) {
 					t = 1.0;
-					s = CLAMP((b - c) / a, 0.0, 1.0);
+					s = CLAMP((b - c) / a, 0.0f, 1.0f);
 				}
 			}
 		}

@@ -283,7 +283,7 @@ float CreateDialog::_score_type(const String &p_type, const String &p_search) co
 	// Favor types where search term is a substring close to the start of the type.
 	float w = 0.5f;
 	int pos = p_type.findn(p_search);
-	float score = (pos > -1) ? 1.0f - w * MIN(1, 3 * pos * inverse_length) : MAX(0.f, .9f - w);
+	float score = (pos > -1) ? 1.0f - w * MIN(1.0f, 3 * pos * inverse_length) : MAX(0.f, .9f - w);
 
 	// Favor shorter items: they resemble the search term more.
 	w = 0.1f;

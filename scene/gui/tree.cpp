@@ -166,8 +166,8 @@ void TreeItem::set_text(int p_column, String p_text) {
 			if (!strings[i].get_slicec(':', 1).is_empty()) {
 				value = strings[i].get_slicec(':', 1).to_int();
 			}
-			cells.write[p_column].min = MIN(cells[p_column].min, value);
-			cells.write[p_column].max = MAX(cells[p_column].max, value);
+			cells.write[p_column].min = MIN(cells[p_column].min, (double)value);
+			cells.write[p_column].max = MAX(cells[p_column].max, (double)value);
 		}
 		cells.write[p_column].step = 0;
 	}
@@ -1051,7 +1051,7 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 		if (p_item->cells[i].dirty) {
 			const_cast<Tree *>(this)->update_item_cell(p_item, i);
 		}
-		height = MAX(height, p_item->cells[i].text_buf->get_size().y);
+		height = MAX(height, (int)p_item->cells[i].text_buf->get_size().y);
 		for (int j = 0; j < p_item->cells[i].buttons.size(); j++) {
 			Size2i s; // = cache.button_pressed->get_minimum_size();
 			s += p_item->cells[i].buttons[j].texture->get_size();
@@ -1141,7 +1141,7 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 	switch (p_cell.text_align) {
 		case TreeItem::ALIGN_LEFT:
 			if (rtl) {
-				rect.position.x += MAX(0, (rect.size.width - w));
+				rect.position.x += MAX(0, rect.size.width - w);
 			}
 			break;
 		case TreeItem::ALIGN_CENTER:
@@ -1149,7 +1149,7 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 			break;
 		case TreeItem::ALIGN_RIGHT:
 			if (!rtl) {
-				rect.position.x += MAX(0, (rect.size.width - w));
+				rect.position.x += MAX(0, rect.size.width - w);
 			}
 			break;
 	}
@@ -3039,7 +3039,7 @@ int Tree::_get_title_button_height() const {
 	int h = 0;
 	if (show_column_titles) {
 		for (int i = 0; i < columns.size(); i++) {
-			h = MAX(h, columns[i].text_buf->get_size().y + cache.title_button->get_minimum_size().height);
+			h = MAX(h, int(columns[i].text_buf->get_size().y + cache.title_button->get_minimum_size().height));
 		}
 	}
 	return h;

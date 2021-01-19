@@ -892,7 +892,7 @@ void CodeTextEditor::_font_resize_timeout() {
 
 bool CodeTextEditor::_add_font_size(int p_delta) {
 	int old_size = text_editor->get_theme_font_size("font_size");
-	int new_size = CLAMP(old_size + p_delta, 8 * EDSCALE, 96 * EDSCALE);
+	int new_size = CLAMP(old_size + p_delta, (int)(8 * EDSCALE), (int)(96 * EDSCALE));
 
 	if (new_size != old_size) {
 		EditorSettings::get_singleton()->set("interface/editor/code_font_size", new_size / EDSCALE);

@@ -741,8 +741,8 @@ void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, 
 	float db = get_animation()->track_get_key_value(get_track(), p_index);
 	float db_n = get_animation()->track_get_key_value(get_track(), p_index + 1);
 
-	db = CLAMP(db, -60, 24);
-	db_n = CLAMP(db_n, -60, 24);
+	db = CLAMP(db, -60.0f, 24.0f);
+	db_n = CLAMP(db_n, -60.0f, 24.0f);
 
 	float h = 1.0 - ((db + 60) / 84.0);
 	float h_n = 1.0 - ((db_n + 60) / 84.0);

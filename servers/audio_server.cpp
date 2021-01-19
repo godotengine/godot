@@ -265,12 +265,12 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 				const AudioFrame *buf = master->channels[k].buffer.ptr();
 
 				for (int j = 0; j < to_copy; j++) {
-					float l = CLAMP(buf[from + j].l, -1.0, 1.0);
+					float l = CLAMP(buf[from + j].l, -1.0f, 1.0f);
 					int32_t vl = l * ((1 << 20) - 1);
 					int32_t vl2 = (vl < 0 ? -1 : 1) * (ABS(vl) << 11);
 					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 0] = vl2;
 
-					float r = CLAMP(buf[from + j].r, -1.0, 1.0);
+					float r = CLAMP(buf[from + j].r, -1.0f, 1.0f);
 					int32_t vr = r * ((1 << 20) - 1);
 					int32_t vr2 = (vr < 0 ? -1 : 1) * (ABS(vr) << 11);
 					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 1] = vr2;

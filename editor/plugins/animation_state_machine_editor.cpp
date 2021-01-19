@@ -325,14 +325,14 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				Vector2 npos = state_machine->get_node_position(E->get());
 
 				float d_x = ABS(npos.x - cpos.x);
-				if (d_x < MIN(5, best_d_x)) {
+				if (d_x < MIN(5.0f, best_d_x)) {
 					drag_ofs.x -= cpos.x - npos.x;
 					best_d_x = d_x;
 					snap_x = E->get();
 				}
 
 				float d_y = ABS(npos.y - cpos.y);
-				if (d_y < MIN(5, best_d_y)) {
+				if (d_y < MIN(5.0f, best_d_y)) {
 					drag_ofs.y -= cpos.y - npos.y;
 					best_d_y = d_y;
 					snap_y = E->get();
@@ -615,7 +615,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Size2 s = sb->get_minimum_size();
 		int strsize = font->get_string_size(name, font_size).width;
 		s.width += strsize;
-		s.height += MAX(font->get_height(font_size), play->get_height());
+		s.height += MAX(font->get_height(font_size), (float)play->get_height());
 		s.width += sep + play->get_width();
 		if (needs_editor) {
 			s.width += sep + edit->get_width();
@@ -853,9 +853,9 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 	}
 	to.y = from.y;
 
-	float len = MAX(0.0001, current_length);
+	float len = MAX(0.0001f, current_length);
 
-	float pos = CLAMP(play_pos, 0, len);
+	float pos = CLAMP(play_pos, 0.0f, len);
 	float c = pos / len;
 	Color fg = get_theme_color("font_color", "Label");
 	Color bg = fg;

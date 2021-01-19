@@ -52,32 +52,32 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/surface_tool.h"
 
-#define DISTANCE_DEFAULT 4
+constexpr float DISTANCE_DEFAULT = 4;
 
-#define GIZMO_ARROW_SIZE 0.35
-#define GIZMO_RING_HALF_WIDTH 0.1
-#define GIZMO_SCALE_DEFAULT 0.15
-#define GIZMO_PLANE_SIZE 0.2
-#define GIZMO_PLANE_DST 0.3
-#define GIZMO_CIRCLE_SIZE 1.1
-#define GIZMO_SCALE_OFFSET (GIZMO_CIRCLE_SIZE + 0.3)
-#define GIZMO_ARROW_OFFSET (GIZMO_CIRCLE_SIZE + 0.3)
+constexpr float GIZMO_ARROW_SIZE = 0.35;
+constexpr float GIZMO_RING_HALF_WIDTH = 0.1;
+constexpr float GIZMO_SCALE_DEFAULT = 0.15;
+constexpr float GIZMO_PLANE_SIZE = 0.2;
+constexpr float GIZMO_PLANE_DST = 0.3;
+constexpr float GIZMO_CIRCLE_SIZE = 1.1;
+constexpr float GIZMO_SCALE_OFFSET = GIZMO_CIRCLE_SIZE + 0.3;
+constexpr float GIZMO_ARROW_OFFSET = GIZMO_CIRCLE_SIZE + 0.3;
 
-#define ZOOM_FREELOOK_MIN 0.01
-#define ZOOM_FREELOOK_MULTIPLIER 1.08
-#define ZOOM_FREELOOK_INDICATOR_DELAY_S 1.5
+constexpr float ZOOM_FREELOOK_MIN = 0.01;
+constexpr float ZOOM_FREELOOK_MULTIPLIER = 1.08;
+constexpr float ZOOM_FREELOOK_INDICATOR_DELAY_S = 1.5;
 
 #ifdef REAL_T_IS_DOUBLE
-#define ZOOM_FREELOOK_MAX 1'000'000'000'000
+constexpr double ZOOM_FREELOOK_MAX = 1'000'000'000'000;
 #else
-#define ZOOM_FREELOOK_MAX 10'000
+constexpr float ZOOM_FREELOOK_MAX = 10'000;
 #endif
 
-#define MIN_Z 0.01
-#define MAX_Z 1000000.0
+constexpr float MIN_Z = 0.01;
+constexpr float MAX_Z = 1000000.0;
 
-#define MIN_FOV 0.01
-#define MAX_FOV 179
+constexpr float MIN_FOV = 0.01;
+constexpr float MAX_FOV = 179;
 
 void ViewportRotationControl::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -270,14 +270,14 @@ void Node3DEditorViewport::_update_camera(float p_interp_delta) {
 			// Higher inertia should increase "lag" (lerp with factor between 0 and 1)
 			// Inertia of zero should produce instant movement (lerp with factor of 1) in this case it returns a really high value and gets clamped to 1.
 			real_t inertia = EDITOR_GET("editors/3d/freelook/freelook_inertia");
-			inertia = MAX(0.001, inertia);
+			inertia = MAX(0.001f, inertia);
 			real_t factor = (1.0 / inertia) * p_interp_delta;
 
 			// We interpolate a different point here, because in freelook mode the focus point (cursor.pos) orbits around eye_pos
-			camera_cursor.eye_pos = old_camera_cursor.eye_pos.lerp(cursor.eye_pos, CLAMP(factor, 0, 1));
+			camera_cursor.eye_pos = old_camera_cursor.eye_pos.lerp(cursor.eye_pos, CLAMP(factor, 0.0f, 1.0f));
 
 			float orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
-			orbit_inertia = MAX(0.0001, orbit_inertia);
+			orbit_inertia = MAX(0.0001f, orbit_inertia);
 			camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 			camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 
@@ -308,9 +308,9 @@ void Node3DEditorViewport::_update_camera(float p_interp_delta) {
 			manipulated |= Input::get_singleton()->is_key_pressed(KEY_ALT);
 			manipulated |= Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 
-			float orbit_inertia = MAX(0.00001, manipulated ? manip_orbit_inertia : free_orbit_inertia);
-			float translation_inertia = MAX(0.0001, manipulated ? manip_translation_inertia : free_translation_inertia);
-			zoom_inertia = MAX(0.0001, zoom_inertia);
+			float orbit_inertia = MAX(0.00001f, manipulated ? manip_orbit_inertia : free_orbit_inertia);
+			float translation_inertia = MAX(0.0001f, manipulated ? manip_translation_inertia : free_translation_inertia);
+			zoom_inertia = MAX(0.0001f, zoom_inertia);
 
 			camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 			camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
@@ -2122,7 +2122,7 @@ void Node3DEditorViewport::_nav_orbit(Ref<InputEventWithModifiers> p_event, cons
 		cursor.x_rot += p_relative.y * radians_per_pixel;
 	}
 	// Clamp the Y rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
-	cursor.x_rot = CLAMP(cursor.x_rot, -1.57, 1.57);
+	cursor.x_rot = CLAMP(cursor.x_rot, -1.57f, 1.57f);
 
 	if (invert_x_axis) {
 		cursor.y_rot -= p_relative.x * radians_per_pixel;
@@ -2156,7 +2156,7 @@ void Node3DEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const
 		cursor.x_rot += p_relative.y * radians_per_pixel;
 	}
 	// Clamp the Y rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
-	cursor.x_rot = CLAMP(cursor.x_rot, -1.57, 1.57);
+	cursor.x_rot = CLAMP(cursor.x_rot, -1.57f, 1.57f);
 
 	cursor.y_rot += p_relative.x * radians_per_pixel;
 
@@ -2210,8 +2210,8 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 }
 
 void Node3DEditorViewport::scale_cursor_distance(real_t scale) {
-	real_t min_distance = MAX(camera->get_near() * 4, ZOOM_FREELOOK_MIN);
-	real_t max_distance = MIN(camera->get_far() / 4, ZOOM_FREELOOK_MAX);
+	real_t min_distance = MAX((real_t)camera->get_near() * 4, ZOOM_FREELOOK_MIN);
+	real_t max_distance = MIN((real_t)camera->get_far() / 4, ZOOM_FREELOOK_MAX);
 	if (unlikely(min_distance > max_distance)) {
 		cursor.distance = (min_distance + max_distance) / 2;
 	} else {
@@ -2223,8 +2223,8 @@ void Node3DEditorViewport::scale_cursor_distance(real_t scale) {
 }
 
 void Node3DEditorViewport::scale_freelook_speed(real_t scale) {
-	real_t min_speed = MAX(camera->get_near() * 4, ZOOM_FREELOOK_MIN);
-	real_t max_speed = MIN(camera->get_far() / 4, ZOOM_FREELOOK_MAX);
+	real_t min_speed = MAX((real_t)camera->get_near() * 4, ZOOM_FREELOOK_MIN);
+	real_t max_speed = MIN((real_t)camera->get_far() / 4, ZOOM_FREELOOK_MAX);
 	if (unlikely(min_speed > max_speed)) {
 		freelook_speed = (min_speed + max_speed) / 2;
 	} else {
@@ -2739,8 +2739,8 @@ void Node3DEditorViewport::_draw() {
 			if (is_freelook_active()) {
 				// Show speed
 
-				real_t min_speed = MAX(camera->get_near() * 4, ZOOM_FREELOOK_MIN);
-				real_t max_speed = MIN(camera->get_far() / 4, ZOOM_FREELOOK_MAX);
+				real_t min_speed = MAX((real_t)camera->get_near() * 4, ZOOM_FREELOOK_MIN);
+				real_t max_speed = MIN((real_t)camera->get_far() / 4, ZOOM_FREELOOK_MAX);
 				real_t scale_length = (max_speed - min_speed);
 
 				if (!Math::is_zero_approx(scale_length)) {
@@ -2760,8 +2760,8 @@ void Node3DEditorViewport::_draw() {
 			} else {
 				// Show zoom
 
-				real_t min_distance = MAX(camera->get_near() * 4, ZOOM_FREELOOK_MIN);
-				real_t max_distance = MIN(camera->get_far() / 4, ZOOM_FREELOOK_MAX);
+				real_t min_distance = MAX((real_t)camera->get_near() * 4, ZOOM_FREELOOK_MIN);
+				real_t max_distance = MIN((real_t)camera->get_far() / 4, ZOOM_FREELOOK_MAX);
 				real_t scale_length = (max_distance - min_distance);
 
 				if (!Math::is_zero_approx(scale_length)) {
@@ -3287,7 +3287,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	Vector3 camz = -camera_xform.get_basis().get_axis(2).normalized();
 	Vector3 camy = -camera_xform.get_basis().get_axis(1).normalized();
 	Plane p(camera_xform.origin, camz);
-	float gizmo_d = MAX(Math::abs(p.distance_to(xform.origin)), CMP_EPSILON);
+	float gizmo_d = MAX(Math::abs(p.distance_to(xform.origin)), (float)CMP_EPSILON);
 	float d0 = camera->unproject_position(camera_xform.origin + camz * gizmo_d).y;
 	float d1 = camera->unproject_position(camera_xform.origin + camz * gizmo_d + camy).y;
 	float dd = Math::abs(d0 - d1);
@@ -3298,10 +3298,10 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	float gizmo_size = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_size");
 	// At low viewport heights, multiply the gizmo scale based on the viewport height.
 	// This prevents the gizmo from growing very large and going outside the viewport.
-	const int viewport_base_height = 400 * MAX(1, EDSCALE);
+	const int viewport_base_height = 400 * MAX(1.0f, EDSCALE);
 	gizmo_scale =
-			(gizmo_size / Math::abs(dd)) * MAX(1, EDSCALE) *
-			MIN(viewport_base_height, subviewport_container->get_size().height) / viewport_base_height /
+			(gizmo_size / Math::abs(dd)) * MAX(1.0f, EDSCALE) *
+			MIN((float)viewport_base_height, subviewport_container->get_size().height) / viewport_base_height /
 			subviewport_container->get_stretch_shrink();
 	Vector3 scale = Vector3(1, 1, 1) * gizmo_scale;
 
@@ -5697,7 +5697,7 @@ void Node3DEditor::_init_grid() {
 		int c = (a + 2) % 3;
 
 		real_t division_level = Math::log(Math::abs(camera_position[c])) / Math::log((double)primary_grid_steps) + division_level_bias;
-		division_level = CLAMP(division_level, division_level_min, division_level_max);
+		division_level = CLAMP(division_level, (float)division_level_min, (float)division_level_max);
 		real_t division_level_floored = Math::floor(division_level);
 		real_t division_level_decimals = division_level - division_level_floored;
 

@@ -40,13 +40,13 @@
 #include "editor/editor_scale.h"
 #endif
 
-#define ZOOM_SCALE 1.2
+constexpr float ZOOM_SCALE = 1.2;
 
-#define MIN_ZOOM (((1 / ZOOM_SCALE) / ZOOM_SCALE) / ZOOM_SCALE)
-#define MAX_ZOOM (1 * ZOOM_SCALE * ZOOM_SCALE * ZOOM_SCALE)
+constexpr float MIN_ZOOM = (((1 / ZOOM_SCALE) / ZOOM_SCALE) / ZOOM_SCALE);
+constexpr float MAX_ZOOM = (1 * ZOOM_SCALE * ZOOM_SCALE * ZOOM_SCALE);
 
-#define MINIMAP_OFFSET 12
-#define MINIMAP_PADDING 5
+constexpr float MINIMAP_OFFSET = 12;
+constexpr float MINIMAP_PADDING = 5;
 
 bool GraphEditFilter::has_point(const Point2 &p_point) const {
 	return ge->_filter_input(p_point);
@@ -805,9 +805,9 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 	int cp_neg_len = get_theme_constant("bezier_len_neg") * p_bezier_ratio;
 
 	if (diff > 0) {
-		cp_offset = MIN(cp_len, diff * 0.5);
+		cp_offset = MIN((float)cp_len, diff * 0.5f);
 	} else {
-		cp_offset = MAX(MIN(cp_len - diff, cp_neg_len), -diff * 0.5);
+		cp_offset = MAX(MIN(cp_len - diff, (float)cp_neg_len), -diff * 0.5f);
 	}
 
 	Vector2 c1 = Vector2(cp_offset * zoom, 0);

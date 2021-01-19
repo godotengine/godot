@@ -158,7 +158,7 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 
 			Vector3 axis = t_prev.cross(t_cur);
 			float dot = t_prev.dot(t_cur);
-			float angle = Math::acos(CLAMP(dot, -1, 1));
+			float angle = Math::acos(CLAMP(dot, -1.0f, 1.0f));
 
 			if (likely(!Math::is_zero_approx(angle))) {
 				if (rotation_mode == ROTATION_Y) {
@@ -317,7 +317,7 @@ void PathFollow3D::set_offset(float p_offset) {
 					offset = path_length;
 				}
 			} else {
-				offset = CLAMP(offset, 0, path_length);
+				offset = CLAMP(offset, 0.0f, path_length);
 			}
 		}
 

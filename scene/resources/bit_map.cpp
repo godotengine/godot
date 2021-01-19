@@ -392,7 +392,7 @@ static Vector<Vector2> reduce(const Vector<Vector2> &points, const Rect2i &rect,
 	}
 
 	float maxEp = MIN(rect.size.width, rect.size.height);
-	float ep = CLAMP(epsilon, 0.0, maxEp / 2);
+	float ep = CLAMP(epsilon, 0.0f, maxEp / 2);
 	Vector<Vector2> result = rdp(points, ep);
 
 	Vector2 last = result[result.size() - 1];
@@ -606,8 +606,8 @@ void BitMap::resize(const Size2 &p_new_size) {
 	Ref<BitMap> new_bitmap;
 	new_bitmap.instance();
 	new_bitmap->create(p_new_size);
-	int lw = MIN(width, p_new_size.width);
-	int lh = MIN(height, p_new_size.height);
+	int lw = MIN(width, (int)p_new_size.width);
+	int lh = MIN(height, (int)p_new_size.height);
 	for (int x = 0; x < lw; x++) {
 		for (int y = 0; y < lh; y++) {
 			new_bitmap->set_bit(Vector2(x, y), get_bit(Vector2(x, y)));

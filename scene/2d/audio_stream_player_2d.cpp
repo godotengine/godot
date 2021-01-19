@@ -225,7 +225,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 					//point in screen is used for panning
 					Vector2 point_in_screen = to_screen.xform(global_pos);
 
-					float pan = CLAMP(point_in_screen.x / screen_size.width, 0.0, 1.0);
+					float pan = CLAMP(point_in_screen.x / screen_size.width, 0.0f, 1.0f);
 
 					float l = 1.0 - pan;
 					float r = pan;

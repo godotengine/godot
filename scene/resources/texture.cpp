@@ -1780,10 +1780,10 @@ void GradientTexture::_update() {
 			float ofs = float(i) / (width - 1);
 			Color color = g.get_color_at_offset(ofs);
 
-			wd8[i * 4 + 0] = uint8_t(CLAMP(color.r * 255.0, 0, 255));
-			wd8[i * 4 + 1] = uint8_t(CLAMP(color.g * 255.0, 0, 255));
-			wd8[i * 4 + 2] = uint8_t(CLAMP(color.b * 255.0, 0, 255));
-			wd8[i * 4 + 3] = uint8_t(CLAMP(color.a * 255.0, 0, 255));
+			wd8[i * 4 + 0] = uint8_t(CLAMP(color.r * 255.0, 0.0, 255.0));
+			wd8[i * 4 + 1] = uint8_t(CLAMP(color.g * 255.0, 0.0, 255.0));
+			wd8[i * 4 + 2] = uint8_t(CLAMP(color.b * 255.0, 0.0, 255.0));
+			wd8[i * 4 + 3] = uint8_t(CLAMP(color.a * 255.0, 0.0, 255.0));
 		}
 	}
 

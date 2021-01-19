@@ -1011,7 +1011,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 	Ref<Animation> anim;
 	anim = player->get_animation(current);
 
-	float pos = CLAMP(anim->get_length() * (p_value / frame->get_max()), 0, anim->get_length());
+	float pos = CLAMP(anim->get_length() * (float)(p_value / frame->get_max()), 0.0f, anim->get_length());
 	if (track_editor->is_snap_enabled()) {
 		pos = Math::snapped(pos, _get_editor_step());
 	}

@@ -1595,7 +1595,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 	if (shadow_max > 0 && !p_cam_orthogonal) { //its impractical (and leads to unwanted behaviors) to set max distance in orthogonal camera
 		max_distance = MIN(shadow_max, max_distance);
 	}
-	max_distance = MAX(max_distance, p_cam_projection.get_z_near() + 0.001);
+	max_distance = MAX(max_distance, p_cam_projection.get_z_near() + 0.001f);
 	real_t min_distance = MIN(p_cam_projection.get_z_near(), max_distance);
 
 	RS::LightDirectionalShadowDepthRangeMode depth_range_mode = RSG::storage->light_directional_get_shadow_depth_range_mode(p_instance->base);
@@ -2385,7 +2385,7 @@ void RendererSceneCull::_frustum_cull(FrustumCullData &cull_data, FrustumCullRes
 					Color *sh = idata.instance->lightmap_sh.ptrw();
 					const Color *target_sh = idata.instance->lightmap_target_sh.ptr();
 					for (uint32_t j = 0; j < 9; j++) {
-						sh[j] = sh[j].lerp(target_sh[j], MIN(1.0, lightmap_probe_update_speed));
+						sh[j] = sh[j].lerp(target_sh[j], MIN(1.0f, lightmap_probe_update_speed));
 					}
 					scene_render->geometry_instance_set_lightmap_capture(geom->geometry_instance, sh);
 					idata.instance->last_frame_pass = frame_number;

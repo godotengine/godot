@@ -526,10 +526,10 @@ void EffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal_roughness, R
 		ssr.push_constant.proj_info[1] = -2.0f / (p_screen_size.height * p_camera.matrix[1][1]);
 		ssr.push_constant.proj_info[2] = (1.0f - p_camera.matrix[0][2]) / p_camera.matrix[0][0];
 		ssr.push_constant.proj_info[3] = (1.0f + p_camera.matrix[1][2]) / p_camera.matrix[1][1];
-		ssr.push_constant.metallic_mask[0] = CLAMP(p_metallic_mask.r * 255.0, 0, 255);
-		ssr.push_constant.metallic_mask[1] = CLAMP(p_metallic_mask.g * 255.0, 0, 255);
-		ssr.push_constant.metallic_mask[2] = CLAMP(p_metallic_mask.b * 255.0, 0, 255);
-		ssr.push_constant.metallic_mask[3] = CLAMP(p_metallic_mask.a * 255.0, 0, 255);
+		ssr.push_constant.metallic_mask[0] = CLAMP(p_metallic_mask.r * 255.0, 0.0, 255.0);
+		ssr.push_constant.metallic_mask[1] = CLAMP(p_metallic_mask.g * 255.0, 0.0, 255.0);
+		ssr.push_constant.metallic_mask[2] = CLAMP(p_metallic_mask.b * 255.0, 0.0, 255.0);
+		ssr.push_constant.metallic_mask[3] = CLAMP(p_metallic_mask.a * 255.0, 0.0, 255.0);
 		store_camera(p_camera, ssr.push_constant.projection);
 
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr.pipelines[(p_roughness_quality != RS::ENV_SSR_ROUGNESS_QUALITY_DISABLED) ? SCREEN_SPACE_REFLECTION_ROUGH : SCREEN_SPACE_REFLECTION_NORMAL]);
@@ -826,7 +826,7 @@ void EffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i 
 
 	bokeh.push_constant.blur_near_active = p_dof_near;
 	bokeh.push_constant.blur_near_begin = p_dof_near_begin;
-	bokeh.push_constant.blur_near_end = MAX(0, p_dof_near_begin - p_dof_near_size);
+	bokeh.push_constant.blur_near_end = MAX(0.0f, p_dof_near_begin - p_dof_near_size);
 	bokeh.push_constant.use_jitter = p_use_jitter;
 	bokeh.push_constant.jitter_seed = Math::randf() * 1000.0;
 

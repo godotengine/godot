@@ -41,7 +41,7 @@ Size2 CheckButton::get_icon_size() const {
 		tex_size = Size2(on->get_width(), on->get_height());
 	}
 	if (!off.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, off->get_width()), MAX(tex_size.height, off->get_height()));
+		tex_size = Size2(MAX(tex_size.width, (float)off->get_width()), MAX(tex_size.height, (float)off->get_height()));
 	}
 
 	return tex_size;

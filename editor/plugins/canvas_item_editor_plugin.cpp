@@ -56,12 +56,12 @@
 
 // Min and Max are power of two in order to play nicely with successive increment.
 // That way, we can naturally reach a 100% zoom from boundaries.
-#define MIN_ZOOM 1. / 128
-#define MAX_ZOOM 128
+constexpr float MIN_ZOOM = 1. / 128;
+constexpr float MAX_ZOOM = 128;
 
 #define RULER_WIDTH (15 * EDSCALE)
-#define SCALE_HANDLE_DISTANCE 25
-#define MOVE_HANDLE_DISTANCE 25
+constexpr float SCALE_HANDLE_DISTANCE = 25;
+constexpr float MOVE_HANDLE_DISTANCE = 25;
 
 class SnapDialog : public ConfirmationDialog {
 	GDCLASS(SnapDialog, ConfirmationDialog);
@@ -1046,7 +1046,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 			if (m.is_valid() && m->get_position().x < RULER_WIDTH) {
 				// Check if we are hovering an existing horizontal guide
 				for (int i = 0; i < hguides.size(); i++) {
-					if (ABS(xform.xform(Point2(0, hguides[i])).y - m->get_position().y) < MIN(minimum, 8)) {
+					if (ABS(xform.xform(Point2(0, hguides[i])).y - m->get_position().y) < MIN(minimum, 8.0f)) {
 						is_hovering_h_guide = true;
 						is_hovering_v_guide = false;
 						break;
@@ -1056,7 +1056,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 			} else if (m.is_valid() && m->get_position().y < RULER_WIDTH) {
 				// Check if we are hovering an existing vertical guide
 				for (int i = 0; i < vguides.size(); i++) {
-					if (ABS(xform.xform(Point2(vguides[i], 0)).x - m->get_position().x) < MIN(minimum, 8)) {
+					if (ABS(xform.xform(Point2(vguides[i], 0)).x - m->get_position().x) < MIN(minimum, 8.0f)) {
 						is_hovering_v_guide = true;
 						is_hovering_h_guide = false;
 						break;
@@ -1076,7 +1076,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 					// Check if we drag an existing horizontal guide
 					dragged_guide_index = -1;
 					for (int i = 0; i < hguides.size(); i++) {
-						if (ABS(xform.xform(Point2(0, hguides[i])).y - b->get_position().y) < MIN(minimum, 8)) {
+						if (ABS(xform.xform(Point2(0, hguides[i])).y - b->get_position().y) < MIN(minimum, 8.0f)) {
 							dragged_guide_index = i;
 						}
 					}
@@ -1093,7 +1093,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 					// Check if we drag an existing vertical guide
 					dragged_guide_index = -1;
 					for (int i = 0; i < vguides.size(); i++) {
-						if (ABS(xform.xform(Point2(vguides[i], 0)).x - b->get_position().x) < MIN(minimum, 8)) {
+						if (ABS(xform.xform(Point2(vguides[i], 0)).x - b->get_position().x) < MIN(minimum, 8.0f)) {
 							dragged_guide_index = i;
 						}
 					}
@@ -3098,8 +3098,8 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		const float angle_text_width = 54;
 
 		Point2 text_pos = (begin + end) / 2 - Vector2(text_width / 2, text_height / 2);
-		text_pos.x = CLAMP(text_pos.x, text_width / 2, viewport->get_rect().size.x - text_width * 1.5);
-		text_pos.y = CLAMP(text_pos.y, text_height * 1.5, viewport->get_rect().size.y - text_height * 1.5);
+		text_pos.x = CLAMP(text_pos.x, text_width / 2, viewport->get_rect().size.x - text_width * 1.5f);
+		text_pos.y = CLAMP(text_pos.y, text_height * 1.5f, viewport->get_rect().size.y - text_height * 1.5f);
 		viewport->draw_string(font, text_pos, TS->format_number(vformat("%.2f " + TTR("px"), length_vector.length())), HALIGN_LEFT, -1, font_size, font_color, outline_size, outline_color);
 
 		if (draw_secondary_lines) {
@@ -3114,7 +3114,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 
 			Point2 v_angle_text_pos = Point2();
 			v_angle_text_pos.x = CLAMP(begin.x - angle_text_width / 2, angle_text_width / 2, viewport->get_rect().size.x - angle_text_width);
-			v_angle_text_pos.y = begin.y < end.y ? MIN(text_pos2.y - 2 * text_height, begin.y - text_height * 0.5) : MAX(text_pos2.y + text_height * 3, begin.y + text_height * 1.5);
+			v_angle_text_pos.y = begin.y < end.y ? MIN(text_pos2.y - 2 * text_height, begin.y - text_height * 0.5f) : MAX(text_pos2.y + text_height * 3, begin.y + text_height * 1.5f);
 			viewport->draw_string(font, v_angle_text_pos, TS->format_number(vformat("%d " + TTR("deg"), vertical_angle)), HALIGN_LEFT, -1, font_size, font_secondary_color, outline_size, outline_color);
 
 			text_pos2 = text_pos;
@@ -3127,13 +3127,13 @@ void CanvasItemEditor::_draw_ruler_tool() {
 				h_angle_text_pos.y = end.y + text_height * 1.5;
 				if (ABS(text_pos2.x - h_angle_text_pos.x) < text_width) {
 					int height_multiplier = 1.5 + (int)grid_snap_active;
-					h_angle_text_pos.y = MAX(text_pos.y + height_multiplier * text_height, MAX(end.y + text_height * 1.5, text_pos2.y + height_multiplier * text_height));
+					h_angle_text_pos.y = MAX(text_pos.y + height_multiplier * text_height, MAX(end.y + text_height * 1.5f, text_pos2.y + height_multiplier * text_height));
 				}
 			} else {
 				h_angle_text_pos.y = end.y - text_height * 0.5;
 				if (ABS(text_pos2.x - h_angle_text_pos.x) < text_width) {
 					int height_multiplier = 1 + (int)grid_snap_active;
-					h_angle_text_pos.y = MIN(text_pos.y - height_multiplier * text_height, MIN(end.y - text_height * 0.5, text_pos2.y - height_multiplier * text_height));
+					h_angle_text_pos.y = MIN(text_pos.y - height_multiplier * text_height, MIN(end.y - text_height * 0.5f, text_pos2.y - height_multiplier * text_height));
 				}
 			}
 			viewport->draw_string(font, h_angle_text_pos, TS->format_number(vformat("%d " + TTR("deg"), horizontal_angle)), HALIGN_LEFT, -1, font_size, font_secondary_color, outline_size, outline_color);
@@ -3169,8 +3169,8 @@ void CanvasItemEditor::_draw_ruler_tool() {
 
 		if (grid_snap_active) {
 			text_pos = (begin + end) / 2 + Vector2(-text_width / 2, text_height / 2);
-			text_pos.x = CLAMP(text_pos.x, text_width / 2, viewport->get_rect().size.x - text_width * 1.5);
-			text_pos.y = CLAMP(text_pos.y, text_height * 2.5, viewport->get_rect().size.y - text_height / 2);
+			text_pos.x = CLAMP(text_pos.x, text_width / 2, viewport->get_rect().size.x - text_width * 1.5f);
+			text_pos.y = CLAMP(text_pos.y, text_height * 2.5f, viewport->get_rect().size.y - text_height / 2);
 
 			if (draw_secondary_lines) {
 				viewport->draw_string(font, text_pos, TS->format_number(vformat("%.2f " + TTR("units"), (length_vector / grid_step).length())), HALIGN_LEFT, -1, font_size, font_color, outline_size, outline_color);
@@ -4539,7 +4539,7 @@ float CanvasItemEditor::_get_next_zoom_value(int p_increment_count) const {
 	}
 
 	// Remove Editor scale from the index computation
-	float zoom_noscale = zoom / MAX(1, EDSCALE);
+	float zoom_noscale = zoom / MAX(1.0f, EDSCALE);
 
 	// zoom = 2**(index/12) => log2(zoom) = index/12
 	float closest_zoom_index = Math::round(Math::log(zoom_noscale) * 12.f / Math::log(2.f));
@@ -4548,7 +4548,7 @@ float CanvasItemEditor::_get_next_zoom_value(int p_increment_count) const {
 	float new_zoom = Math::pow(2.f, new_zoom_index / 12.f);
 
 	// Restore Editor scale transformation
-	new_zoom *= MAX(1, EDSCALE);
+	new_zoom *= MAX(1.0f, EDSCALE);
 
 	return new_zoom;
 }
@@ -4589,9 +4589,9 @@ void CanvasItemEditor::_update_zoom_label() {
 	// even if their display doesn't have a particularly low DPI.
 	if (zoom >= 10) {
 		// Don't show a decimal when the zoom level is higher than 1000 %.
-		zoom_text = TS->format_number(rtos(Math::round((zoom / MAX(1, EDSCALE)) * 100))) + " " + TS->percent_sign();
+		zoom_text = TS->format_number(rtos(Math::round((zoom / MAX(1.0f, EDSCALE)) * 100))) + " " + TS->percent_sign();
 	} else {
-		zoom_text = TS->format_number(rtos(Math::snapped((zoom / MAX(1, EDSCALE)) * 100, 0.1))) + " " + TS->percent_sign();
+		zoom_text = TS->format_number(rtos(Math::snapped((zoom / MAX(1.0f, EDSCALE)) * 100, 0.1))) + " " + TS->percent_sign();
 	}
 
 	zoom_reset->set_text(zoom_text);
@@ -4602,7 +4602,7 @@ void CanvasItemEditor::_button_zoom_minus() {
 }
 
 void CanvasItemEditor::_button_zoom_reset() {
-	_zoom_on_position(1.0 * MAX(1, EDSCALE), viewport_scrollable->get_size() / 2.0);
+	_zoom_on_position(1.0 * MAX(1.0f, EDSCALE), viewport_scrollable->get_size() / 2.0);
 }
 
 void CanvasItemEditor::_button_zoom_plus() {
@@ -5373,7 +5373,7 @@ void CanvasItemEditor::_bind_methods() {
 Dictionary CanvasItemEditor::get_state() const {
 	Dictionary state;
 	// Take the editor scale into account.
-	state["zoom"] = zoom / MAX(1, EDSCALE);
+	state["zoom"] = zoom / MAX(1.0f, EDSCALE);
 	state["ofs"] = view_offset;
 	state["grid_offset"] = grid_offset;
 	state["grid_step"] = grid_step;
@@ -5412,7 +5412,7 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	if (state.has("zoom")) {
 		// Compensate the editor scale, so that the editor scale can be changed
 		// and the zoom level will still be the same (relative to the editor scale).
-		zoom = float(p_state["zoom"]) * MAX(1, EDSCALE);
+		zoom = float(p_state["zoom"]) * MAX(1.0f, EDSCALE);
 		_update_zoom_label();
 	}
 
@@ -5630,7 +5630,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	show_guides = true;
 	show_transformation_gizmos = true;
 	show_edit_locks = true;
-	zoom = 1.0 / MAX(1, EDSCALE);
+	zoom = 1.0 / MAX(1.0f, EDSCALE);
 	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
 	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen
 	grid_offset = Point2();

@@ -894,7 +894,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 					for (int i = 0; i < pc; i++) {
 						if (mtx.xform(rv[i]).distance_to(bone_paint_pos) < radius) {
-							w[i] = CLAMP(r[i] + amount, 0, 1);
+							w[i] = CLAMP(r[i] + amount, 0.0f, 1.0f);
 						}
 					}
 				}

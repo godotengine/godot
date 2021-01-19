@@ -1194,7 +1194,7 @@ uint32_t RenderingDeviceVulkan::get_image_format_required_size(DataFormat p_form
 		}
 		w = MAX(blockw, w >> 1);
 		h = MAX(blockh, h >> 1);
-		d = MAX(1, d >> 1);
+		d = MAX(1u, d >> 1);
 	}
 
 	return size;
@@ -1552,7 +1552,7 @@ Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, c
 		uint32_t block_write_offset;
 		uint32_t block_write_amount;
 
-		Error err = _staging_buffer_allocate(MIN(to_submit, staging_buffer_block_size), p_required_align, block_write_offset, block_write_amount, p_use_draw_command_buffer);
+		Error err = _staging_buffer_allocate(MIN((uint32_t)to_submit, staging_buffer_block_size), p_required_align, block_write_offset, block_write_amount, p_use_draw_command_buffer);
 		if (err) {
 			return err;
 		}
@@ -2546,9 +2546,9 @@ Vector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t 
 
 			vkCmdCopyImageToBuffer(command_buffer, tex->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, tmp_buffer.buffer, 1, &buffer_image_copy);
 
-			computed_w = MAX(1, computed_w >> 1);
-			computed_h = MAX(1, computed_h >> 1);
-			computed_d = MAX(1, computed_d >> 1);
+			computed_w = MAX(1u, computed_w >> 1);
+			computed_h = MAX(1u, computed_h >> 1);
+			computed_d = MAX(1u, computed_d >> 1);
 			offset += size;
 		}
 
@@ -3665,7 +3665,7 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 				if (p_use_restart_indices && index16[i] == 0xFFFF) {
 					continue; //restart index, ignore
 				}
-				index_buffer.max_index = MAX(index16[i], index_buffer.max_index);
+				index_buffer.max_index = MAX((uint32_t)index16[i], index_buffer.max_index);
 			}
 		} else {
 			const uint32_t *index32 = (const uint32_t *)r;
@@ -7370,10 +7370,10 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 	}
 
 	staging_buffer_block_size = GLOBAL_DEF("rendering/vulkan/staging_buffer/block_size_kb", 256);
-	staging_buffer_block_size = MAX(4, staging_buffer_block_size);
+	staging_buffer_block_size = MAX(4u, staging_buffer_block_size);
 	staging_buffer_block_size *= 1024; //kb -> bytes
 	staging_buffer_max_size = GLOBAL_DEF("rendering/vulkan/staging_buffer/max_size_mb", 128);
-	staging_buffer_max_size = MAX(1, staging_buffer_max_size);
+	staging_buffer_max_size = MAX((uint64_t)1, staging_buffer_max_size);
 	staging_buffer_max_size *= 1024 * 1024;
 
 	if (staging_buffer_max_size < staging_buffer_block_size * 4) {
