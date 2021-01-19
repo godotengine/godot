@@ -34,7 +34,6 @@
 
 NoiseTexture::NoiseTexture() {
 	update_queued = false;
-	noise_thread = nullptr;
 	regen_queued = false;
 	first_time = true;
 
@@ -52,10 +51,7 @@ NoiseTexture::~NoiseTexture() {
 	if (texture.is_valid()) {
 		RS::get_singleton()->free(texture);
 	}
-	if (noise_thread) {
-		Thread::wait_to_finish(noise_thread);
-		memdelete(noise_thread);
-	}
+	noise_thread.wait_to_finish();
 }
 
 void NoiseTexture::_bind_methods() {
@@ -109,11 +105,9 @@ void NoiseTexture::_set_texture_data(const Ref<Image> &p_image) {
 
 void NoiseTexture::_thread_done(const Ref<Image> &p_image) {
 	_set_texture_data(p_image);
-	Thread::wait_to_finish(noise_thread);
-	memdelete(noise_thread);
-	noise_thread = nullptr;
+	noise_thread.wait_to_finish();
 	if (regen_queued) {
-		noise_thread = Thread::create(_thread_function, this);
+		noise_thread.start(_thread_function, this);
 		regen_queued = false;
 	}
 }
@@ -165,8 +159,8 @@ void NoiseTexture::_update_texture() {
 	use_thread = false;
 #endif
 	if (use_thread) {
-		if (!noise_thread) {
-			noise_thread = Thread::create(_thread_function, this);
+		if (!noise_thread.is_started()) {
+			noise_thread.start(_thread_function, this);
 			regen_queued = false;
 		} else {
 			regen_queued = true;

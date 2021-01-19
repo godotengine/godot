@@ -163,7 +163,7 @@ Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_cust
 		thread_done = false;
 		thread_request_quit = false;
 		client->set_blocking_mode(true);
-		thread = Thread::create(_thread_func, this);
+		thread.start(_thread_func, this);
 	} else {
 		client->set_blocking_mode(false);
 		err = _request();
@@ -209,9 +209,7 @@ void HTTPRequest::cancel_request() {
 		set_process_internal(false);
 	} else {
 		thread_request_quit = true;
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
-		thread = nullptr;
+		thread.wait_to_finish();
 	}
 
 	if (file) {
@@ -640,8 +638,6 @@ void HTTPRequest::_bind_methods() {
 }
 
 HTTPRequest::HTTPRequest() {
-	thread = nullptr;
-
 	port = 80;
 	redirections = 0;
 	max_redirects = 8;

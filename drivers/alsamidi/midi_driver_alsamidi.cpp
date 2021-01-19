@@ -150,19 +150,14 @@ Error MIDIDriverALSAMidi::open() {
 	snd_device_name_free_hint(hints);
 
 	exit_thread = false;
-	thread = Thread::create(MIDIDriverALSAMidi::thread_func, this);
+	thread.start(MIDIDriverALSAMidi::thread_func, this);
 
 	return OK;
 }
 
 void MIDIDriverALSAMidi::close() {
-	if (thread) {
-		exit_thread = true;
-		Thread::wait_to_finish(thread);
-
-		memdelete(thread);
-		thread = nullptr;
-	}
+	exit_thread = true;
+	thread.wait_to_finish();
 
 	for (int i = 0; i < connected_inputs.size(); i++) {
 		snd_rawmidi_t *midi_in = connected_inputs[i];
@@ -198,8 +193,6 @@ PackedStringArray MIDIDriverALSAMidi::get_connected_inputs() {
 }
 
 MIDIDriverALSAMidi::MIDIDriverALSAMidi() {
-	thread = nullptr;
-
 	exit_thread = false;
 }
 

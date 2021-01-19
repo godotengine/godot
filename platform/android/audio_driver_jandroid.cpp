@@ -72,7 +72,7 @@ Error AudioDriverAndroid::init() {
 
 	//        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device");
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 	int mix_rate = GLOBAL_GET("audio/mix_rate");
 
 	int latency = GLOBAL_GET("audio/output_latency");
@@ -98,7 +98,7 @@ void AudioDriverAndroid::start() {
 }
 
 void AudioDriverAndroid::setup(jobject p_io) {
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 	io = p_io;
 
 	jclass c = env->GetObjectClass(io);
@@ -162,7 +162,7 @@ void AudioDriverAndroid::unlock() {
 }
 
 void AudioDriverAndroid::finish() {
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 	env->CallVoidMethod(io, _quit);
 
 	if (audioBuffer) {
@@ -175,7 +175,7 @@ void AudioDriverAndroid::finish() {
 }
 
 void AudioDriverAndroid::set_pause(bool p_pause) {
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 	env->CallVoidMethod(io, _pause, p_pause);
 }
 

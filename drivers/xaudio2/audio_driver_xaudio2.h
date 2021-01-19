@@ -62,7 +62,7 @@ class AudioDriverXAudio2 : public AudioDriver {
 		void STDMETHODCALLTYPE OnVoiceError(void *pBufferContext, HRESULT Error) {}
 	};
 
-	Thread *thread = nullptr;
+	Thread thread;
 	Mutex mutex;
 
 	int32_t *samples_in = nullptr;

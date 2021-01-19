@@ -33,9 +33,9 @@
 
 #include "core/os/memory.h"
 #include "core/os/semaphore.h"
+#include "core/os/thread.h"
 
 #include <atomic>
-#include <thread>
 
 class ThreadWorkPool {
 	std::atomic<uint32_t> index;
@@ -64,7 +64,7 @@ class ThreadWorkPool {
 	};
 
 	struct ThreadData {
-		std::thread *thread;
+		Thread thread;
 		Semaphore start;
 		Semaphore completed;
 		std::atomic<bool> exit;
@@ -75,7 +75,7 @@ class ThreadWorkPool {
 	uint32_t thread_count = 0;
 	BaseWork *current_work = nullptr;
 
-	static void _thread_function(ThreadData *p_thread);
+	static void _thread_function(void *p_user);
 
 public:
 	template <class C, class M, class U>

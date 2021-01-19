@@ -30,116 +30,29 @@
 
 #include "thread_jandroid.h"
 
-#include "core/object/script_language.h"
-#include "core/os/memory.h"
-#include "core/templates/safe_refcount.h"
+#include "core/os/thread.h"
 
-static void _thread_id_key_destr_callback(void *p_value) {
-	memdelete(static_cast<Thread::ID *>(p_value));
-}
+static JavaVM *java_vm = nullptr;
+static thread_local JNIEnv *env = nullptr;
 
-static pthread_key_t _create_thread_id_key() {
-	pthread_key_t key;
-	pthread_key_create(&key, &_thread_id_key_destr_callback);
-	return key;
-}
-
-pthread_key_t ThreadAndroid::thread_id_key = _create_thread_id_key();
-Thread::ID ThreadAndroid::next_thread_id = 0;
-
-Thread::ID ThreadAndroid::get_id() const {
-	return id;
-}
-
-Thread *ThreadAndroid::create_thread_jandroid() {
-	return memnew(ThreadAndroid);
-}
-
-void *ThreadAndroid::thread_callback(void *userdata) {
-	ThreadAndroid *t = reinterpret_cast<ThreadAndroid *>(userdata);
-	setup_thread();
-	ScriptServer::thread_enter(); //scripts may need to attach a stack
-	t->id = atomic_increment(&next_thread_id);
-	pthread_setspecific(thread_id_key, (void *)memnew(ID(t->id)));
-	t->callback(t->user);
-	ScriptServer::thread_exit();
-	return nullptr;
-}
-
-Thread *ThreadAndroid::create_func_jandroid(ThreadCreateCallback p_callback, void *p_user, const Settings &) {
-	ThreadAndroid *tr = memnew(ThreadAndroid);
-	tr->callback = p_callback;
-	tr->user = p_user;
-	pthread_attr_init(&tr->pthread_attr);
-	pthread_attr_setdetachstate(&tr->pthread_attr, PTHREAD_CREATE_JOINABLE);
-
-	pthread_create(&tr->pthread, &tr->pthread_attr, thread_callback, tr);
-
-	return tr;
-}
-
-Thread::ID ThreadAndroid::get_thread_id_func_jandroid() {
-	void *value = pthread_getspecific(thread_id_key);
-
-	if (value)
-		return *static_cast<ID *>(value);
-
-	ID new_id = atomic_increment(&next_thread_id);
-	pthread_setspecific(thread_id_key, (void *)memnew(ID(new_id)));
-	return new_id;
-}
-
-void ThreadAndroid::wait_to_finish_func_jandroid(Thread *p_thread) {
-	ThreadAndroid *tp = static_cast<ThreadAndroid *>(p_thread);
-	ERR_FAIL_COND(!tp);
-	ERR_FAIL_COND(tp->pthread == 0);
-
-	pthread_join(tp->pthread, nullptr);
-	tp->pthread = 0;
-}
-
-void ThreadAndroid::_thread_destroyed(void *value) {
-	/* The thread is being destroyed, detach it from the Java VM and set the mThreadKey value to NULL as required */
-	JNIEnv *env = (JNIEnv *)value;
-	if (env != nullptr) {
-		java_vm->DetachCurrentThread();
-		pthread_setspecific(jvm_key, nullptr);
-	}
-}
-
-pthread_key_t ThreadAndroid::jvm_key;
-JavaVM *ThreadAndroid::java_vm = nullptr;
-
-void ThreadAndroid::setup_thread() {
-	if (pthread_getspecific(jvm_key))
-		return; //already setup
-	JNIEnv *env;
+static void init_thread() {
 	java_vm->AttachCurrentThread(&env, nullptr);
-	pthread_setspecific(jvm_key, (void *)env);
 }
 
-void ThreadAndroid::make_default(JavaVM *p_java_vm) {
-	java_vm = p_java_vm;
-	create_func = create_func_jandroid;
-	get_thread_id_func = get_thread_id_func_jandroid;
-	wait_to_finish_func = wait_to_finish_func_jandroid;
-	pthread_key_create(&jvm_key, _thread_destroyed);
-	setup_thread();
+static void term_thread() {
+	java_vm->DetachCurrentThread();
 }
 
-JNIEnv *ThreadAndroid::get_env() {
-	if (!pthread_getspecific(jvm_key)) {
-		setup_thread();
-	}
+void init_thread_jandroid(JavaVM *p_jvm, JNIEnv *p_env) {
+	java_vm = p_jvm;
+	env = p_env;
+	Thread::_set_platform_funcs(nullptr, nullptr, &init_thread, &term_thread);
+}
 
-	JNIEnv *env = nullptr;
-	java_vm->AttachCurrentThread(&env, nullptr);
+void setup_android_thread() {
+	init_thread();
+}
+
+JNIEnv *get_jni_env() {
 	return env;
-}
-
-ThreadAndroid::ThreadAndroid() {
-	pthread = 0;
-}
-
-ThreadAndroid::~ThreadAndroid() {
 }

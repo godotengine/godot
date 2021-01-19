@@ -1995,24 +1995,13 @@ Error _Thread::start(Object *p_instance, const StringName &p_method, const Varia
 
 	Thread::Settings s;
 	s.priority = (Thread::Priority)p_priority;
-	thread = Thread::create(_start_func, ud, s);
-	if (!thread) {
-		active = false;
-		target_method = StringName();
-		target_instance = nullptr;
-		userdata = Variant();
-		return ERR_CANT_CREATE;
-	}
+	thread.start(_start_func, ud, s);
 
 	return OK;
 }
 
 String _Thread::get_id() const {
-	if (!thread) {
-		return String();
-	}
-
-	return itos(thread->get_id());
+	return itos(thread.get_id());
 }
 
 bool _Thread::is_active() const {
@@ -2020,18 +2009,13 @@ bool _Thread::is_active() const {
 }
 
 Variant _Thread::wait_to_finish() {
-	ERR_FAIL_COND_V_MSG(!thread, Variant(), "Thread must exist to wait for its completion.");
 	ERR_FAIL_COND_V_MSG(!active, Variant(), "Thread must be active to wait for its completion.");
-	Thread::wait_to_finish(thread);
+	thread.wait_to_finish();
 	Variant r = ret;
 	active = false;
 	target_method = StringName();
 	target_instance = nullptr;
 	userdata = Variant();
-	if (thread) {
-		memdelete(thread);
-	}
-	thread = nullptr;
 
 	return r;
 }
@@ -2045,10 +2029,6 @@ void _Thread::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
 	BIND_ENUM_CONSTANT(PRIORITY_NORMAL);
 	BIND_ENUM_CONSTANT(PRIORITY_HIGH);
-}
-
-_Thread::~_Thread() {
-	ERR_FAIL_COND_MSG(active, "Reference to a Thread object was lost while the thread is still running...");
 }
 
 ////// _ClassDB //////

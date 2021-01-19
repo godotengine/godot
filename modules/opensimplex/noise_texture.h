@@ -45,7 +45,7 @@ class NoiseTexture : public Texture2D {
 private:
 	Ref<Image> data;
 
-	Thread *noise_thread;
+	Thread noise_thread;
 
 	bool first_time;
 	bool update_queued;

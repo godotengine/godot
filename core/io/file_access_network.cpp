@@ -201,7 +201,7 @@ Error FileAccessNetworkClient::connect(const String &p_host, int p_port, const S
 		return ERR_INVALID_PARAMETER;
 	}
 
-	thread = Thread::create(_thread_func, this);
+	thread.start(_thread_func, this);
 
 	return OK;
 }
@@ -214,12 +214,9 @@ FileAccessNetworkClient::FileAccessNetworkClient() {
 }
 
 FileAccessNetworkClient::~FileAccessNetworkClient() {
-	if (thread) {
-		quit = true;
-		sem.post();
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
-	}
+	quit = true;
+	sem.post();
+	thread.wait_to_finish();
 }
 
 void FileAccessNetwork::_set_block(int p_offset, const Vector<uint8_t> &p_block) {
