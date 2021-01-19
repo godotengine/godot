@@ -131,15 +131,15 @@ class EffectsRD {
 	};
 
 	struct CopyToFbPushConstant {
-		float section[4] = {};
-		float pixel_size[2] = {};
-		uint32_t flip_y = 0;
-		uint32_t use_section = 0;
+		float section[4];
+		float pixel_size[2];
+		uint32_t flip_y;
+		uint32_t use_section;
 
-		uint32_t force_luminance = 0;
-		uint32_t alpha_to_zero = 0;
-		uint32_t srgb = 0;
-		uint32_t pad = 0;
+		uint32_t force_luminance;
+		uint32_t alpha_to_zero;
+		uint32_t srgb;
+		uint32_t pad;
 	};
 
 	struct CopyToFb {
@@ -151,12 +151,12 @@ class EffectsRD {
 	} copy_to_fb;
 
 	struct CubemapRoughnessPushConstant {
-		uint32_t face_id = 0;
-		uint32_t sample_count = 0;
-		float roughness = 0.0;
-		uint32_t use_direct_write = 0;
-		float face_size = 0.0;
-		float pad[3] = {};
+		uint32_t face_id;
+		uint32_t sample_count;
+		float roughness;
+		uint32_t use_direct_write;
+		float face_size;
+		float pad[3];
 	};
 
 	struct CubemapRoughness {
@@ -175,29 +175,29 @@ class EffectsRD {
 	};
 
 	struct TonemapPushConstant {
-		float bcs[3] = {};
-		uint32_t use_bcs = 0;
+		float bcs[3];
+		uint32_t use_bcs;
 
-		uint32_t use_glow = 0;
-		uint32_t use_auto_exposure = 0;
-		uint32_t use_color_correction = 0;
-		uint32_t tonemapper = 0;
+		uint32_t use_glow;
+		uint32_t use_auto_exposure;
+		uint32_t use_color_correction;
+		uint32_t tonemapper;
 
-		uint32_t glow_texture_size[2] = {};
-		float glow_intensity = 0.0;
-		uint32_t pad3 = 0;
+		uint32_t glow_texture_size[2];
+		float glow_intensity;
+		uint32_t pad3;
 
-		uint32_t glow_mode = 0;
-		float glow_levels[7] = {};
+		uint32_t glow_mode;
+		float glow_levels[7];
 
-		float exposure = 0.0;
-		float white = 0.0;
-		float auto_exposure_grey = 0.0;
-		uint32_t pad2 = 0;
+		float exposure;
+		float white;
+		float auto_exposure_grey;
+		uint32_t pad2;
 
-		float pixel_size[2] = {};
-		uint32_t use_fxaa = 0;
-		uint32_t use_debanding = 0;
+		float pixel_size[2];
+		uint32_t use_fxaa;
+		uint32_t use_debanding;
 	};
 
 	/* tonemap actually writes to a framebuffer, which is
@@ -455,12 +455,12 @@ class EffectsRD {
 	} filter;
 
 	struct SkyPushConstant {
-		float orientation[12] = {};
-		float proj[4] = {};
-		float position[3] = {};
-		float multiplier = 0.0;
-		float time = 0.0;
-		float pad[3] = {};
+		float orientation[12];
+		float proj[4];
+		float position[3];
+		float multiplier;
+		float time;
+		float pad[3];
 	};
 
 	enum SpecularMergeMode {
