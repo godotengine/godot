@@ -318,52 +318,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform();
 	Transform2D xform_inv = xform.affine_inverse();
-
-	// Fading on the border.
-	int fading = 5;
-
-	// Determine the drawn area.
-	Size2 screen_size = p_overlay->get_size();
-	Rect2i screen_rect;
-	screen_rect.position = tile_map->world_to_map(xform_inv.xform(Vector2()));
-	screen_rect.expand_to(tile_map->world_to_map(xform_inv.xform(Vector2(0, screen_size.height))));
-	screen_rect.expand_to(tile_map->world_to_map(xform_inv.xform(Vector2(screen_size.width, 0))));
-	screen_rect.expand_to(tile_map->world_to_map(xform_inv.xform(screen_size)));
-	screen_rect = screen_rect.grow(1);
-
-	Rect2i tilemap_used_rect = tile_map->get_used_rect();
-
-	Rect2i displayed_rect = tilemap_used_rect.intersection(screen_rect);
-	displayed_rect = displayed_rect.grow(fading);
-
-	// Reduce the drawn area to avoid crashes if needed.
-	int max_size = 100;
-	if (displayed_rect.size.x > max_size) {
-		displayed_rect = displayed_rect.grow_individual(-(displayed_rect.size.x - max_size) / 2, 0, -(displayed_rect.size.x - max_size) / 2, 0);
-	}
-	if (displayed_rect.size.y > max_size) {
-		displayed_rect = displayed_rect.grow_individual(0, -(displayed_rect.size.y - max_size) / 2, 0, -(displayed_rect.size.y - max_size) / 2);
-	}
-
-	// Get atlas tile data.
 	Vector2i tile_shape_size = tile_set->get_tile_size();
-
-	// Draw the grid.
-	for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
-		for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
-			Vector2i pos_in_rect = Vector2i(x, y) - displayed_rect.position;
-
-			// Fade out the border of the grid.
-			float left_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.x), 0.0f, 1.0f);
-			float right_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.x, (float)(displayed_rect.size.x - fading), (float)pos_in_rect.x), 0.0f, 1.0f);
-			float top_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.y), 0.0f, 1.0f);
-			float bottom_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.y, (float)(displayed_rect.size.y - fading), (float)pos_in_rect.y), 0.0f, 1.0f);
-			float opacity = CLAMP(MIN(left_opacity, MIN(right_opacity, MIN(top_opacity, bottom_opacity))) + 0.1, 0.0f, 1.0f);
-
-			Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(Vector2(x, y)) - tile_shape_size / 2, tile_shape_size));
-			tile_set->draw_tile_shape(p_overlay, cell_region, Color(1.0, 0.5, 0.2, 0.5 * opacity), false);
-		}
-	}
 
 	// Draw tiles with invalid IDs in the grid.
 	Ref<Font> font = get_theme_font("font", "Label");
@@ -402,9 +357,53 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		}
 	}
 
-	// Paint the preview of the tiles to be placed.
+	// Fading on the border.
+	int fading = 5;
+
+	// Determine the drawn area.
+	Size2 screen_size = p_overlay->get_size();
+	Rect2i screen_rect;
+	screen_rect.position = tile_map->world_to_map(xform_inv.xform(Vector2()));
+	screen_rect.expand_to(tile_map->world_to_map(xform_inv.xform(Vector2(0, screen_size.height))));
+	screen_rect.expand_to(tile_map->world_to_map(xform_inv.xform(Vector2(screen_size.width, 0))));
+	screen_rect.expand_to(tile_map->world_to_map(xform_inv.xform(screen_size)));
+	screen_rect = screen_rect.grow(1);
+
+	Rect2i tilemap_used_rect = tile_map->get_used_rect();
+
+	Rect2i displayed_rect = tilemap_used_rect.intersection(screen_rect);
+	displayed_rect = displayed_rect.grow(fading);
+
+	// Reduce the drawn area to avoid crashes if needed.
+	int max_size = 100;
+	if (displayed_rect.size.x > max_size) {
+		displayed_rect = displayed_rect.grow_individual(-(displayed_rect.size.x - max_size) / 2, 0, -(displayed_rect.size.x - max_size) / 2, 0);
+	}
+	if (displayed_rect.size.y > max_size) {
+		displayed_rect = displayed_rect.grow_individual(0, -(displayed_rect.size.y - max_size) / 2, 0, -(displayed_rect.size.y - max_size) / 2);
+	}
+
+	// Draw the grid.
+	for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
+		for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
+			Vector2i pos_in_rect = Vector2i(x, y) - displayed_rect.position;
+
+			// Fade out the border of the grid.
+			float left_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.x), 0.0f, 1.0f);
+			float right_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.x, (float)(displayed_rect.size.x - fading), (float)pos_in_rect.x), 0.0f, 1.0f);
+			float top_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.y), 0.0f, 1.0f);
+			float bottom_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.y, (float)(displayed_rect.size.y - fading), (float)pos_in_rect.y), 0.0f, 1.0f);
+			float opacity = CLAMP(MIN(left_opacity, MIN(right_opacity, MIN(top_opacity, bottom_opacity))) + 0.1, 0.0f, 1.0f);
+
+			Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(Vector2(x, y)) - tile_shape_size / 2, tile_shape_size));
+			tile_set->draw_tile_shape(p_overlay, cell_region, Color(1.0, 0.5, 0.2, 0.5 * opacity), false);
+		}
+	}
+
+	// handle the preview of the tiles to be placed.
 	if (is_visible_in_tree() && has_mouse) { // Only if the tilemap editor is opened and the viewport is hovered.
 		Map<Vector2i, TileMapCell> preview;
+		Rect2i drawn_grid_rect;
 
 		if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_paint_tool_button && !Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
 			// Get or create the pattern.
@@ -427,6 +426,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 					Vector2i cell_coords = hovered_cell + E->key();
 					preview[cell_coords] = E->get();
 				}
+				drawn_grid_rect = Rect2i(hovered_cell, pattern.size);
 			}
 		} else if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_line_tool_button && drag_type == DRAG_TYPE_LINE) {
 			// Get or create the pattern.
@@ -456,6 +456,25 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 						preview[cell_coords] = E->get();
 					}
 				}
+				drawn_grid_rect = Rect2i(new_hovered_cell, pattern.size);
+			}
+		}
+
+		// Draw the lines of the grid behind the preview.
+		drawn_grid_rect = drawn_grid_rect.grow(fading);
+		for (int x = drawn_grid_rect.position.x; x < (drawn_grid_rect.position.x + drawn_grid_rect.size.x); x++) {
+			for (int y = drawn_grid_rect.position.y; y < (drawn_grid_rect.position.y + drawn_grid_rect.size.y); y++) {
+				Vector2i pos_in_rect = Vector2i(x, y) - drawn_grid_rect.position;
+
+				// Fade out the border of the grid.
+				float left_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.x), 0.0f, 1.0f);
+				float right_opacity = CLAMP(Math::inverse_lerp((float)drawn_grid_rect.size.x, (float)(drawn_grid_rect.size.x - fading), (float)pos_in_rect.x), 0.0f, 1.0f);
+				float top_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.y), 0.0f, 1.0f);
+				float bottom_opacity = CLAMP(Math::inverse_lerp((float)drawn_grid_rect.size.y, (float)(drawn_grid_rect.size.y - fading), (float)pos_in_rect.y), 0.0f, 1.0f);
+				float opacity = CLAMP(MIN(left_opacity, MIN(right_opacity, MIN(top_opacity, bottom_opacity))) + 0.1, 0.0f, 1.0f);
+
+				Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(Vector2(x, y)) - tile_shape_size / 2, tile_shape_size));
+				tile_set->draw_tile_shape(p_overlay, cell_region, Color(1.0, 0.5, 0.2, 0.5 * opacity), false);
 			}
 		}
 
