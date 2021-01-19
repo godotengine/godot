@@ -3074,11 +3074,16 @@ int String::rfindn(const String &p_str, int p_from) const {
 }
 
 bool String::ends_with(const String &p_string) const {
+	int l = p_string.length();
+	if (l == 0) {
+		return true;
+	}
+
 	int pos = rfind(p_string);
 	if (pos == -1) {
 		return false;
 	}
-	return pos + p_string.length() == length();
+	return pos + l == length();
 }
 
 bool String::begins_with(const String &p_string) const {
