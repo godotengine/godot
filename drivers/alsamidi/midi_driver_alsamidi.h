@@ -42,7 +42,7 @@
 #include <stdio.h>
 
 class MIDIDriverALSAMidi : public MIDIDriver {
-	Thread *thread;
+	Thread thread;
 	Mutex mutex;
 
 	Vector<snd_rawmidi_t *> connected_inputs;

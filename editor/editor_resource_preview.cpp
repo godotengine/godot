@@ -424,26 +424,23 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 }
 
 void EditorResourcePreview::start() {
-	ERR_FAIL_COND_MSG(thread, "Thread already started.");
-	thread = Thread::create(_thread_func, this);
+	ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
+	thread.start(_thread_func, this);
 }
 
 void EditorResourcePreview::stop() {
-	if (thread) {
+	if (thread.is_started()) {
 		exit = true;
 		preview_sem.post();
 		while (!exited) {
 			OS::get_singleton()->delay_usec(10000);
 			RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on visual server
 		}
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
-		thread = nullptr;
+		thread.wait_to_finish();
 	}
 }
 
 EditorResourcePreview::EditorResourcePreview() {
-	thread = nullptr;
 	singleton = this;
 	order = 0;
 	exit = false;

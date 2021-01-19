@@ -32,14 +32,15 @@
 
 #include "core/os/os.h"
 
-void ThreadWorkPool::_thread_function(ThreadData *p_thread) {
+void ThreadWorkPool::_thread_function(void *p_user) {
+	ThreadData *thread = static_cast<ThreadData *>(p_user);
 	while (true) {
-		p_thread->start.wait();
-		if (p_thread->exit.load()) {
+		thread->start.wait();
+		if (thread->exit.load()) {
 			break;
 		}
-		p_thread->work->work();
-		p_thread->completed.post();
+		thread->work->work();
+		thread->completed.post();
 	}
 }
 
@@ -54,7 +55,7 @@ void ThreadWorkPool::init(int p_thread_count) {
 
 	for (uint32_t i = 0; i < thread_count; i++) {
 		threads[i].exit.store(false);
-		threads[i].thread = memnew(std::thread(ThreadWorkPool::_thread_function, &threads[i]));
+		threads[i].thread.start(&ThreadWorkPool::_thread_function, &threads[i]);
 	}
 }
 
@@ -68,8 +69,7 @@ void ThreadWorkPool::finish() {
 		threads[i].start.post();
 	}
 	for (uint32_t i = 0; i < thread_count; i++) {
-		threads[i].thread->join();
-		memdelete(threads[i].thread);
+		threads[i].thread.wait_to_finish();
 	}
 
 	memdelete_arr(threads);

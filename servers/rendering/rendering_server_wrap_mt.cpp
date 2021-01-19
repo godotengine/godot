@@ -97,7 +97,7 @@ void RenderingServerWrapMT::init() {
 		print_verbose("RenderingServerWrapMT: Creating render thread");
 		DisplayServer::get_singleton()->release_rendering_thread();
 		if (create_thread) {
-			thread = Thread::create(_thread_callback, this);
+			thread.start(_thread_callback, this);
 			print_verbose("RenderingServerWrapMT: Starting render thread");
 		}
 		while (!draw_thread_up) {
@@ -136,12 +136,9 @@ void RenderingServerWrapMT::finish() {
 	canvas_light_occluder_free_cached_ids();
 	canvas_occluder_polygon_free_cached_ids();
 
-	if (thread) {
+	if (create_thread) {
 		command_queue.push(this, &RenderingServerWrapMT::thread_exit);
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
-
-		thread = nullptr;
+		thread.wait_to_finish();
 	} else {
 		rendering_server->finish();
 	}
@@ -160,7 +157,6 @@ RenderingServerWrapMT::RenderingServerWrapMT(RenderingServer *p_contained, bool 
 
 	rendering_server = p_contained;
 	create_thread = p_create_thread;
-	thread = nullptr;
 	draw_pending = 0;
 	draw_thread_up = false;
 	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");

@@ -70,7 +70,7 @@ class EditorResourcePreview : public Node {
 
 	Mutex preview_mutex;
 	Semaphore preview_sem;
-	Thread *thread;
+	Thread thread;
 	volatile bool exit;
 	volatile bool exited;
 

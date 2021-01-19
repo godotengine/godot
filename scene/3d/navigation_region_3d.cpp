@@ -170,18 +170,17 @@ void _bake_navigation_mesh(void *p_user_data) {
 }
 
 void NavigationRegion3D::bake_navigation_mesh() {
-	ERR_FAIL_COND(bake_thread != nullptr);
+	ERR_FAIL_COND(bake_thread.is_started());
 
 	BakeThreadsArgs *args = memnew(BakeThreadsArgs);
 	args->nav_region = this;
 
-	bake_thread = Thread::create(_bake_navigation_mesh, args);
-	ERR_FAIL_COND(bake_thread == nullptr);
+	bake_thread.start(_bake_navigation_mesh, args);
 }
 
 void NavigationRegion3D::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
 	set_navigation_mesh(p_nav_mesh);
-	bake_thread = nullptr;
+	bake_thread.wait_to_finish();
 	emit_signal("bake_finished");
 }
 

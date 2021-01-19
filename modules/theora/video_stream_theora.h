@@ -112,7 +112,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	Vector<uint8_t> read_buffer;
 	bool thread_eof;
 	Semaphore *thread_sem;
-	Thread *thread;
+	Thread thread;
 	volatile bool thread_exit;
 
 	static void _streaming_thread(void *ud);

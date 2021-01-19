@@ -267,12 +267,13 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 		job_queue.num_tasks = static_cast<uint32_t>(tasks.size());
 
 		for (int i = 0; i < num_job_threads; i++) {
-			threads_wb[i] = Thread::create(_digest_job_queue, &job_queue);
+			threads_wb[i] = memnew(Thread);
+			threads_wb[i]->start(_digest_job_queue, &job_queue);
 		}
 		_digest_job_queue(&job_queue);
 
 		for (int i = 0; i < num_job_threads; i++) {
-			Thread::wait_to_finish(threads_wb[i]);
+			threads_wb[i]->wait_to_finish();
 			memdelete(threads_wb[i]);
 		}
 	}

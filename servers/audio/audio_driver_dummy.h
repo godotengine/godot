@@ -37,7 +37,7 @@
 #include "core/os/thread.h"
 
 class AudioDriverDummy : public AudioDriver {
-	Thread *thread = nullptr;
+	Thread thread;
 	Mutex mutex;
 
 	int32_t *samples_in;

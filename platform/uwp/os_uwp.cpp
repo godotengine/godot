@@ -45,7 +45,6 @@
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/rendering_server_wrap_mt.h"
-#include "thread_uwp.h"
 
 #include <ppltasks.h>
 #include <wrl.h>
@@ -129,8 +128,6 @@ void OS_UWP::initialize_core() {
 	last_button_state = 0;
 
 	//RedirectIOToConsole();
-
-	ThreadUWP::make_default();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);

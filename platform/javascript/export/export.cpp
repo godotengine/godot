@@ -213,7 +213,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 	Ref<EditorHTTPServer> server;
 	bool server_quit = false;
 	Mutex server_lock;
-	Thread *server_thread = nullptr;
+	Thread server_thread;
 
 	enum ExportMode {
 		EXPORT_MODE_NORMAL = 0,
@@ -681,7 +681,7 @@ void EditorExportPlatformJavaScript::_server_thread_poll(void *data) {
 
 EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 	server.instance();
-	server_thread = Thread::create(_server_thread_poll, this);
+	server_thread.start(_server_thread_poll, this);
 
 	Ref<Image> img = memnew(Image(_javascript_logo));
 	logo.instance();
@@ -702,8 +702,7 @@ EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 EditorExportPlatformJavaScript::~EditorExportPlatformJavaScript() {
 	server->stop();
 	server_quit = true;
-	Thread::wait_to_finish(server_thread);
-	memdelete(server_thread);
+	server_thread.wait_to_finish();
 }
 
 void register_javascript_exporter() {
