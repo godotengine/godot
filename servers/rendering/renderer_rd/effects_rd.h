@@ -92,26 +92,26 @@ class EffectsRD {
 	};
 
 	struct CopyPushConstant {
-		int32_t section[4] = {};
-		int32_t target[2] = {};
-		uint32_t flags = 0;
-		uint32_t pad = 0;
+		int32_t section[4];
+		int32_t target[2];
+		uint32_t flags;
+		uint32_t pad;
 		// Glow.
-		float glow_strength = 0.0;
-		float glow_bloom = 0.0;
-		float glow_hdr_threshold = 0.0;
-		float glow_hdr_scale = 0.0;
+		float glow_strength;
+		float glow_bloom;
+		float glow_hdr_threshold;
+		float glow_hdr_scale;
 
-		float glow_exposure = 0.0;
-		float glow_white = 0.0;
-		float glow_luminance_cap = 0.0;
-		float glow_auto_exposure_grey = 0.0;
+		float glow_exposure;
+		float glow_white;
+		float glow_luminance_cap;
+		float glow_auto_exposure_grey;
 		// DOF.
-		float camera_z_far = 0.0;
-		float camera_z_near = 0.0;
-		uint32_t pad2[2] = {};
+		float camera_z_far;
+		float camera_z_near;
+		uint32_t pad2[2];
 		//SET color
-		float set_color[4] = {};
+		float set_color[4];
 	};
 
 	struct Copy {
