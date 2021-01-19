@@ -143,6 +143,7 @@ private:
 
 	struct ItemText : public Item {
 		String text;
+		bool isCJK;
 		ItemText() { type = ITEM_TEXT; }
 	};
 
