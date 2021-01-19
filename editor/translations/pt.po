@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-14 11:03+0000\n"
+"PO-Revision-Date: 2020-12-31 07:09+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
@@ -31,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1959,10 +1959,6 @@ msgstr "Pré-visualização:"
 msgid "File:"
 msgstr "Ficheiro:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "Deve usar uma extensão válida."
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "Analisar fontes"
@@ -2400,6 +2396,10 @@ msgid "There is no defined scene to run."
 msgstr "Não existe cena definida para execução."
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Não consegui iniciar o subprocesso!"
 
@@ -2442,18 +2442,6 @@ msgstr "É necessário um nó raiz para guardar a cena."
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "Guardar Cena Como..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "Não"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "Sim"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "Esta cena nunca foi guardada. Guardar antes de executar?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2502,6 +2490,10 @@ msgstr "Executar Cena Rapidamente..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "Sair"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr "Sim"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -3927,19 +3919,16 @@ msgid "Searching..."
 msgstr "A procurar..."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d match in %d file."
-msgstr "%d correspondências."
+msgstr "Correspondência de %d no ficheiro %d."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d file."
-msgstr "%d correspondências."
+msgstr "Correspondências de %d no ficheiro %d."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d files."
-msgstr "%d correspondências."
+msgstr "Correspondências de %d em %d ficheiros."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -5174,10 +5163,10 @@ msgid "Assets ZIP File"
 msgstr "Ficheiro ZIP de Ativos"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 "Não consigo determinar um caminho para guardar imagens lightmap.\n"
 "Guarde a sua cena (para as imagens serem guardadas na mesma diretoria), ou "
@@ -5196,8 +5185,28 @@ msgid "Failed creating lightmap images, make sure path is writable."
 msgstr "Falha ao criar imagens lightmap, assegure-se que o caminho é gravável."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Consolidar Lightmaps"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "Selecionar Ficheiro de Modelo"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6290,6 +6299,11 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "Só pode definir um Ponto num Material ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "Converter em CPUParticles"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Tempo de geração (s):"
@@ -6349,10 +6363,6 @@ msgstr "A gerar AABB"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "Gerar visibilidade AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "Gerar AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -11553,6 +11563,39 @@ msgstr "Meshes de filtro"
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "Dá um recurso MeshLibrary a este GridMap para usar os seus meshes."
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Generate buffers"
+msgstr "Gerar AABB"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "Direções"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Indirect lighting"
+msgstr "Indentar à direita"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Post processing"
+msgstr "Pós-processamento"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "A traçar Luzes:"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Nome de classe não pode ser uma palavra-chave reservada"
@@ -12067,12 +12110,17 @@ msgid "Select device from the list"
 msgstr "Selecionar aparelho da lista"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "O executável ADB não está configurado nas Configurações do Editor."
+#, fuzzy
+msgid "Unable to find the 'apksigner' tool."
+msgstr "Incapaz de localizar a ferramenta zipalign."
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "O jarsigner do OpenJDK não está configurado nas Definições do Editor."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr ""
+"Modelo de compilação Android não está instalado neste projeto. Instale-o no "
+"menu Projeto."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12086,13 +12134,15 @@ msgstr ""
 "Lançamento de keystore configurado incorretamente na predefinição exportada."
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#, fuzzy
+msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
-"Compilação personalizada necessita de um caminho válido para Android SDK no "
-"Editor de Configurações."
+"Caminho inválido de Android SDK para compilação personalizada no Editor de "
+"Configurações."
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+#, fuzzy
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr ""
 "Caminho inválido de Android SDK para compilação personalizada no Editor de "
 "Configurações."
@@ -12102,12 +12152,23 @@ msgid "Missing 'platform-tools' directory!"
 msgstr "Diretoria 'platform-tools' em falta!"
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
-"Modelo de compilação Android não está instalado neste projeto. Instale-o no "
-"menu Projeto."
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr ""
+"Caminho inválido de Android SDK para compilação personalizada no Editor de "
+"Configurações."
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr "Diretoria 'build-tools' em falta!"
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12579,28 +12640,32 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin exige um nó filho ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(Tempo restante: %d:%02d s)"
+#, fuzzy
+msgid "Preparing geometry (%d/%d)"
+msgstr "A analisar geometria..."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "A traçar Meshes: "
+#, fuzzy
+msgid "Preparing environment"
+msgstr "Ver ambiente"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "A traçar Luzes:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "A concluir desenho"
+#, fuzzy
+msgid "Generating capture"
+msgstr "A gerar Lightmaps"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr "A iluminar Meshes: "
+#, fuzzy
+msgid "Saving lightmaps"
+msgstr "A gerar Lightmaps"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Done"
+msgstr "Feito"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12672,6 +12737,10 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "A desenhar Meshes"
+
+#: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "A concluir desenho"
 
 #: scene/3d/gi_probe.cpp
 msgid ""
@@ -12930,10 +12999,13 @@ msgstr "Alerta!"
 msgid "Please Confirm..."
 msgstr "Confirme por favor..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "Deve usar uma extensão válida."
+
 #: scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Enable grid minimap."
-msgstr "Ativar Ajuste"
+msgstr "Ativar grelha do minimapa."
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -12988,6 +13060,12 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr "O tamanho do viewport tem de ser maior do que 0 para renderizar."
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Fonte inválida para pré-visualização."
 
@@ -13015,6 +13093,36 @@ msgstr "Variações só podem ser atribuídas na função vértice."
 msgid "Constants cannot be modified."
 msgstr "Constantes não podem ser modificadas."
 
+#~ msgid "No"
+#~ msgstr "Não"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "Esta cena nunca foi guardada. Guardar antes de executar?"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "O executável ADB não está configurado nas Configurações do Editor."
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr ""
+#~ "O jarsigner do OpenJDK não está configurado nas Definições do Editor."
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr ""
+#~ "Compilação personalizada necessita de um caminho válido para Android SDK "
+#~ "no Editor de Configurações."
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(Tempo restante: %d:%02d s)"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "A traçar Meshes: "
+
+#~ msgid "Lighting Meshes: "
+#~ msgstr "A iluminar Meshes: "
+
 #~ msgid "Search complete"
 #~ msgstr "Pesquisa completa"
 
@@ -13026,12 +13134,6 @@ msgstr "Constantes não podem ser modificadas."
 
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "Já existe um ficheiro ou pasta com o mesmo nome nesta localização."
-
-#~ msgid "Missing 'build-tools' directory!"
-#~ msgstr "Diretoria 'build-tools' em falta!"
-
-#~ msgid "Unable to find the zipalign tool."
-#~ msgstr "Incapaz de localizar a ferramenta zipalign."
 
 #~ msgid "Aligning APK..."
 #~ msgstr "A alinhar APK..."
@@ -13374,9 +13476,6 @@ msgstr "Constantes não podem ser modificadas."
 
 #~ msgid "Failed to save solution."
 #~ msgstr "Falha ao guardar solução."
-
-#~ msgid "Done"
-#~ msgstr "Feito"
 
 #~ msgid "Failed to create C# project."
 #~ msgstr "Falha ao criar projeto C#."

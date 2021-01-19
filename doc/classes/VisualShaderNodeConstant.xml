@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeConstant" inherits="VisualShaderNode" version="4.0">
+	<brief_description>
+		A base type for the constants within the visual shader graph.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>

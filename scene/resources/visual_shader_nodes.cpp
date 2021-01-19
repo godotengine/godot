@@ -30,6 +30,11 @@
 
 #include "visual_shader_nodes.h"
 
+////////////// Constants Base
+
+VisualShaderNodeConstant::VisualShaderNodeConstant() {
+}
+
 ////////////// Scalar(Float)
 
 String VisualShaderNodeFloatConstant::get_caption() const {

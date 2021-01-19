@@ -2316,7 +2316,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			int scene_idx = (p_option == FILE_SAVE_SCENE) ? -1 : tab_closing;
 
 			Node *scene = editor_data.get_edited_scene_root(scene_idx);
-			if (scene && scene->get_filename() != "" && FileAccess::exists(scene->get_filename())) {
+			if (scene && scene->get_filename() != "") {
 				if (scene_idx != editor_data.get_edited_scene()) {
 					_save_scene_with_preview(scene->get_filename(), scene_idx);
 				} else {
@@ -2598,15 +2598,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (!p_confirmed) {
 				bool save_each = EDITOR_GET("interface/editor/save_each_scene_on_quit");
 				if (_next_unsaved_scene(!save_each) == -1) {
-					bool confirm = EDITOR_GET("interface/editor/quit_confirmation");
-					if (confirm) {
-						confirmation->get_ok_button()->set_text(p_option == FILE_QUIT ? TTR("Quit") : TTR("Yes"));
-						confirmation->set_text(p_option == FILE_QUIT ? TTR("Exit the editor?") : TTR("Open Project Manager?"));
-						confirmation->popup_centered();
-					} else {
-						_discard_changes();
-						break;
-					}
+					_discard_changes();
+					break;
 				} else {
 					if (save_each) {
 						_menu_option_confirm(p_option == FILE_QUIT ? FILE_CLOSE_ALL_AND_QUIT : FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER, false);
@@ -5581,6 +5574,8 @@ EditorNode::EditorNode() {
 		switch (display_scale) {
 			case 0: {
 				// Try applying a suitable display scale automatically.
+				// The code below is adapted in `editor/editor_settings.cpp` and `editor/project_manager.cpp`.
+				// Make sure to update those when modifying the code below.
 #ifdef OSX_ENABLED
 				editor_set_scale(DisplayServer::get_singleton()->screen_get_max_scale());
 #else
@@ -5760,7 +5755,6 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("run/output/always_close_output_on_stop", true);
 	EDITOR_DEF("run/auto_save/save_before_running", true);
 	EDITOR_DEF_RST("interface/editor/save_each_scene_on_quit", true);
-	EDITOR_DEF("interface/editor/quit_confirmation", true);
 	EDITOR_DEF("interface/editor/show_update_spinner", false);
 	EDITOR_DEF("interface/editor/update_continuously", false);
 	EDITOR_DEF_RST("interface/scene_tabs/restore_scenes_on_load", false);
