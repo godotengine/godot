@@ -146,7 +146,7 @@ class EffectsRD {
 		CopyToFbPushConstant push_constant;
 		CopyToFbShaderRD shader;
 		RID shader_version;
-		PipelineCacheRD pipelines[COPY_TO_FB_MAX] = {};
+		PipelineCacheRD pipelines[COPY_TO_FB_MAX];
 
 	} copy_to_fb;
 
@@ -208,7 +208,7 @@ class EffectsRD {
 		TonemapPushConstant push_constant;
 		TonemapShaderRD shader;
 		RID shader_version;
-		PipelineCacheRD pipelines[TONEMAP_MODE_MAX] = {};
+		PipelineCacheRD pipelines[TONEMAP_MODE_MAX];
 	} tonemap;
 
 	enum LuminanceReduceMode {
