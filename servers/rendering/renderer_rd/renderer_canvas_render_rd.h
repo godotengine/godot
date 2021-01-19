@@ -134,7 +134,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	};
 
 	struct PipelineVariants {
-		PipelineCacheRD variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX] = {};
+		PipelineCacheRD variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX];
 	};
 
 	struct {
