@@ -1039,7 +1039,7 @@ private:
 		PackedInt32Array bsp_tree;
 
 		struct BSP {
-			static const int32_t EMPTY_LEAF;
+			static const int32_t EMPTY_LEAF = 0;
 			float plane[4] = {};
 			int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
 		};
