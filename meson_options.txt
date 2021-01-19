@@ -3,7 +3,6 @@ option('tests', type: 'boolean', value: false, description: 'Build the unit test
 
 # Compile options
 option('godot_warnings', type: 'boolean', value: false, description: 'Enable godot-compile time warnings (#warning, #pragma warning)')
-option('use_lto', type: 'boolean', value: false, description: 'Use link-time optimiziation')
 
 # Components
 option('deprecated', type: 'boolean', value: true, description: 'Enable deprecated features')
@@ -25,7 +24,7 @@ option('module_search_paths', type: 'array', value: [], description: 'List of ad
 
 # Windows options
 option('windows_version', type: 'string', value: '0x0601', description: 'Targeted Windows version, >= 0x0601 (Windows 7)')
-option('windows_subsystem', type: 'combo', value: 'console', choices: ['console', 'gui'], description: 'Windows subsystem')
+option('windows_subsystem', type: 'combo', value: 'console', choices: ['console', 'windows'], description: 'Windows subsystem')
 
 # Thirdparty libraries
 option('builtin_bullet', type: 'boolean', value: true, description: 'Use the built-in Bullet library')

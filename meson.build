@@ -10,8 +10,11 @@ project(
         'warning_level=0',
         'werror=false',
         'default_library=static',
-        'buildtype=debugoptimized'
-        ])
+        'debug=true',
+        'optimization=0',
+        'b_vscrt=md'
+    ]
+)
 
 
 # The list of modules that will not be included in the build
@@ -37,7 +40,7 @@ endif
 ################################################################################
 
 # TODO - temporary way to do proper debug without /ZI on msvc (there is a PR for removing ZI already in meson)
-IS_DEBUG_BUILD = get_option('debug') or get_option('buildtype') == 'plain'
+IS_DEBUG_BUILD = get_option('debug')
 
 
 # This is one of the very few, if only, times we will add defines to the entire project
@@ -149,20 +152,10 @@ MODULE_BUILD_PATHS = _module_get_build_paths.stdout().strip().split(',')
 
 # MSVC specific compiler settings
 _cpp_compiler_id = meson.get_compiler('cpp').get_id()
+_cpp_argsyntax = meson.get_compiler('cpp').get_argument_syntax()
 
 CPP_ARGS = []
-
-if get_option('use_lto')
-    # Cant use GL and LTGC when ZI is forced by meson debug builds
-    if _cpp_compiler_id == 'msvc' and get_option('buildtype') == 'debug' # remove the debug check when ZI is removed from debug
-        add_project_arguments('/GL', language: ['c', 'cpp'])
-        add_project_link_arguments('/LTGC', language: ['c', 'cpp'])
-
-    else
-        message('use_lto option is on, but has only been setup for MSVC so far')
-    endif
-
-endif
+LINK_ARGS = []
 
 # do we want to show our #warnings ?
 if not get_option('godot_warnings')
@@ -172,8 +165,19 @@ if not get_option('godot_warnings')
 endif
 
 if _cpp_compiler_id == 'msvc'
-     msvc_nonessential_warnings = ['/wd4267', '/wd4244', '/wd4305', '/wd4018', '/wd4800']
+     msvc_nonessential_warnings = [
+         '/wd4267',
+         '/wd4244',
+         '/wd4305',
+         '/wd4018',
+         '/wd4800',
+    ]
+     
      CPP_ARGS += msvc_nonessential_warnings
+
+    # disable the Windows SDK #define expansion, caused in the newest SDK
+    # Microsoft defect
+    add_project_arguments('/wd5105', language: ['c', 'cpp'])
 endif
 
 if _cpp_compiler_id == 'clang' or _cpp_compiler_id == 'clang-cl'
@@ -193,13 +197,6 @@ if IS_DEBUG_BUILD # TODO # get_option(debug) # using IS_DEBUG_BUILD to create a 
     if _cpp_compiler_id != 'msvc'
         add_project_arguments('-D_DEBUG', language: ['c', 'cpp'])
     endif
-
-    # TODO remove when ZI issue is gone
-    if _cpp_compiler_id == 'msvc' and get_option('buildtype') == 'plain'
-        add_project_arguments('/Zi', language: ['c', 'cpp'])
-    endif
-
-
     # DEBUG is only used by thirdparties, and most use it in conjuction with _DEBUG.
     # If it does need to be added, it has to be added as a project argument
     # CPP_ARGS += '-DDEBUG'
@@ -238,7 +235,28 @@ if get_option('tools')
     endif
 endif
 
+################################################################################
+# Custom optimization/debug params
+################################################################################
+if _cpp_argsyntax == 'msvc'
 
+    if get_option('optimization') not in ['0', 'g']
+        LINK_ARGS += '/OPT:REF'
+    endif
+
+    # TODO: this was only added on release, adding it here everywhere because
+    # this should not change based off of buildtype.
+    # However, the question is whether or not we should have this at all.
+    LINK_ARGS += '/ENTRY:mainCRTStartup' 
+
+    # Following flags always added
+    CPP_ARGS += [
+        # '/Gd', # TODO: Gd and Gr are incompatible, no idea why both are passed. Seems like the warning was being hidden.
+        '/Gr',
+        '/nologo',
+        # '/TP', # not needed since all thirdparties handle their c sources propery now
+    ]
+endif
 
 # global constants
 # To match other platforms
@@ -256,7 +274,6 @@ INCDIRS = include_directories('.', 'thirdparty', DIR_PLATFORM)
 SOURCES = []
 HEADERS = []
 DEPENDENCIES = []
-LINK_ARGS = []
 
 # thirdparty first
 subdir('thirdparty')
@@ -288,7 +305,10 @@ endforeach
 subdir('main')
 
 # assemble our exe
-EXEC_GODOT = executable('godot', MAIN_SOURCES, dependencies: [DEP_GODOT_ALL, MODULE_DEPENDENCIES, DEPENDENCIES])
+EXEC_GODOT = executable('godot', MAIN_SOURCES,
+    dependencies: [DEP_GODOT_ALL, MODULE_DEPENDENCIES, DEPENDENCIES],
+    win_subsystem: get_option('windows_subsystem')
+)
 
 # Output some final messages to the users
 message('Modules Enabled: ' + ', '.join(MODULES_ENABLED))

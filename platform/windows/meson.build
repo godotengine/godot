@@ -71,6 +71,8 @@ if PLATFORM == 'windows'
         CPP_ARGS += '-DWINDOWS_SUBSYSTEM_CONSOLE'
     endif
 
+    # TODO: Check if this is needed, msvc will define this, I assume we also define it because of mingw/clang-cl.
+    #       But I would assume it does already.
     if host_machine.cpu_family() == 'x86_64'
         CPP_ARGS += '-D_WIN64'
     endif
@@ -90,12 +92,7 @@ if PLATFORM == 'windows'
             #'-DWIN32', #?
         ]
 
-        if get_option('windows_subsystem') == 'console'
-            LINK_ARGS += '/SUBSYSTEM:CONSOLE'
-        else
-            LINK_ARGS += '/SUBSYSTEM:WINDOWS'
-        endif
-
+        # TODO: stack size is only used on windows platform...? (1/2)
         LINK_ARGS += [
             '/STACK:' + STACK_SIZE.to_string()
         ]
@@ -112,12 +109,7 @@ if PLATFORM == 'windows'
             '-DMINGW_HAS_SECURE_API=1',
         ]
 
-        if get_option('windows_subsystem') == 'console'
-            LINK_ARGS += '-Wl,--subsystem,console'
-        else
-            LINK_ARGS += '-Wl,--subsystem,windows'
-        endif
-
+        # TODO: stack size is only used on windows platform...? (2/2)
         LINK_ARGS += [
             '-Wl,--stack,' + STACK_SIZE.to_string(),
             '-static'
