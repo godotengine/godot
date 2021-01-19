@@ -74,7 +74,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		ShaderCompilerRD compiler;
 	} shader;
 
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 
 	/* Material */
 
@@ -118,9 +118,9 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
 		};
 
-		bool valid;
+		bool valid = false;
 		RID version;
-		uint32_t vertex_input_mask;
+		uint32_t vertex_input_mask = 0;
 		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][SHADER_VERSION_MAX];
 
 		String path;
@@ -129,7 +129,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
 		String code;
 		Map<StringName, RID> default_texture_params;
@@ -137,25 +137,25 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		DepthDraw depth_draw;
 		DepthTest depth_test;
 
-		bool uses_point_size;
-		bool uses_alpha;
-		bool uses_blend_alpha;
-		bool uses_alpha_clip;
-		bool uses_depth_pre_pass;
-		bool uses_discard;
-		bool uses_roughness;
-		bool uses_normal;
+		bool uses_point_size = false;
+		bool uses_alpha = false;
+		bool uses_blend_alpha = false;
+		bool uses_alpha_clip = false;
+		bool uses_depth_pre_pass = false;
+		bool uses_discard = false;
+		bool uses_roughness = false;
+		bool uses_normal = false;
 
-		bool unshaded;
-		bool uses_vertex;
-		bool uses_sss;
-		bool uses_transmittance;
-		bool uses_screen_texture;
-		bool uses_depth_texture;
-		bool uses_normal_texture;
-		bool uses_time;
-		bool writes_modelview_or_projection;
-		bool uses_world_coordinates;
+		bool unshaded = false;
+		bool uses_vertex = false;
+		bool uses_sss = false;
+		bool uses_transmittance = false;
+		bool uses_screen_texture = false;
+		bool uses_depth_texture = false;
+		bool uses_normal_texture = false;
+		bool uses_time = false;
+		bool writes_modelview_or_projection = false;
+		bool uses_world_coordinates = false;
 
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
@@ -181,8 +181,8 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	}
 
 	struct MaterialData : public RendererStorageRD::MaterialData {
-		uint64_t last_frame;
-		ShaderData *shader_data;
+		uint64_t last_frame = 0;
+		ShaderData *shader_data = nullptr;
 		RID uniform_buffer;
 		RID uniform_set;
 		Vector<RID> texture_cache;
@@ -190,7 +190,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
 		RID next_pass;
-		uint8_t priority;
+		uint8_t priority = 0;
 		virtual void set_render_priority(int p_priority);
 		virtual void set_next_pass(RID p_pass);
 		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
@@ -202,6 +202,17 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		return static_cast<RendererSceneRenderForward *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
 	}
 
+<<<<<<< HEAD
+	/* Push Constant */
+
+	struct PushConstant {
+		uint32_t index = 0;
+		uint32_t pad = 0;
+		float bake_uv2_offset[2] = {};
+	};
+
+=======
+>>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 	/* Framebuffer */
 
 	struct RenderBufferDataForward : public RenderBufferData {
@@ -232,7 +243,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		RID color_fb;
 		RID color_specular_fb;
 		RID specular_only_fb;
-		int width, height;
+		int width = 0, height = 0;
 
 		RID render_sdfgi_uniform_set;
 		void ensure_specular();
@@ -266,11 +277,11 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	RID _setup_render_pass_uniform_set(RID p_render_buffers, RID p_radiance_texture, RID p_shadow_atlas, RID p_reflection_atlas, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_lightmaps);
 
 	struct LightmapData {
-		float normal_xform[12];
+		float normal_xform[12] = {};
 	};
 
 	struct LightmapCaptureData {
-		float sh[9 * 4];
+		float sh[9 * 4] = {};
 	};
 
 	enum {
@@ -289,102 +300,126 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		INSTANCE_DATA_FLAG_SKELETON = 1 << 19,
 	};
 
+<<<<<<< HEAD
+	struct InstanceData {
+		float transform[16] = {};
+		float normal_transform[16] = {};
+		uint32_t flags = 0;
+		uint32_t instance_uniforms_ofs = 0; //instance_offset in instancing/skeleton buffer
+		uint32_t gi_offset = 0; //GI information when using lightmapping (VCT or lightmap)
+		uint32_t mask = 0;
+		float lightmap_uv_scale[4] = {};
+	};
+
+=======
+>>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 	struct SceneState {
 		struct UBO {
-			float projection_matrix[16];
-			float inv_projection_matrix[16];
+			float projection_matrix[16] = {};
+			float inv_projection_matrix[16] = {};
 
-			float camera_matrix[16];
-			float inv_camera_matrix[16];
+			float camera_matrix[16] = {};
+			float inv_camera_matrix[16] = {};
 
-			float viewport_size[2];
-			float screen_pixel_size[2];
+			float viewport_size[2] = {};
+			float screen_pixel_size[2] = {};
 
-			float directional_penumbra_shadow_kernel[128]; //32 vec4s
-			float directional_soft_shadow_kernel[128];
-			float penumbra_shadow_kernel[128];
-			float soft_shadow_kernel[128];
+			float directional_penumbra_shadow_kernel[128] = {}; //32 vec4s
+			float directional_soft_shadow_kernel[128] = {};
+			float penumbra_shadow_kernel[128] = {};
+			float soft_shadow_kernel[128] = {};
 
-			uint32_t directional_penumbra_shadow_samples;
-			uint32_t directional_soft_shadow_samples;
-			uint32_t penumbra_shadow_samples;
-			uint32_t soft_shadow_samples;
+			uint32_t directional_penumbra_shadow_samples = 0;
+			uint32_t directional_soft_shadow_samples = 0;
+			uint32_t penumbra_shadow_samples = 0;
+			uint32_t soft_shadow_samples = 0;
 
-			float ambient_light_color_energy[4];
+			float ambient_light_color_energy[4] = {};
 
-			float ambient_color_sky_mix;
-			uint32_t use_ambient_light;
-			uint32_t use_ambient_cubemap;
-			uint32_t use_reflection_cubemap;
+			float ambient_color_sky_mix = 0.0;
+			uint32_t use_ambient_light = 0;
+			uint32_t use_ambient_cubemap = 0;
+			uint32_t use_reflection_cubemap = 0;
 
-			float radiance_inverse_xform[12];
+			float radiance_inverse_xform[12] = {};
 
-			float shadow_atlas_pixel_size[2];
-			float directional_shadow_pixel_size[2];
+			float shadow_atlas_pixel_size[2] = {};
+			float directional_shadow_pixel_size[2] = {};
 
-			uint32_t directional_light_count;
-			float dual_paraboloid_side;
-			float z_far;
-			float z_near;
+			uint32_t directional_light_count = 0;
+			float dual_paraboloid_side = 0.0;
+			float z_far = 0.0;
+			float z_near = 0.0;
 
-			uint32_t ssao_enabled;
-			float ssao_light_affect;
-			float ssao_ao_affect;
-			uint32_t roughness_limiter_enabled;
+			uint32_t ssao_enabled = 0;
+			float ssao_light_affect = 0.0;
+			float ssao_ao_affect = 0.0;
+			uint32_t roughness_limiter_enabled = 0;
 
-			float roughness_limiter_amount;
-			float roughness_limiter_limit;
-			uint32_t roughness_limiter_pad[2];
+			float roughness_limiter_amount = 0.0;
+			float roughness_limiter_limit = 0.0;
+			uint32_t roughness_limiter_pad[2] = {};
 
-			float ao_color[4];
+			float ao_color[4] = {};
 
-			float sdf_to_bounds[16];
+			float sdf_to_bounds[16] = {};
 
-			int32_t sdf_offset[3];
-			uint32_t material_uv2_mode;
+			int32_t sdf_offset[3] = {};
+			uint32_t material_uv2_mode = 0;
 
-			int32_t sdf_size[3];
-			uint32_t gi_upscale_for_msaa;
+			int32_t sdf_size[3] = {};
+			uint32_t gi_upscale_for_msaa = 0;
 
-			uint32_t volumetric_fog_enabled;
-			float volumetric_fog_inv_length;
-			float volumetric_fog_detail_spread;
-			uint32_t volumetric_fog_pad;
+			uint32_t volumetric_fog_enabled = 0;
+			float volumetric_fog_inv_length = 0.0;
+			float volumetric_fog_detail_spread = 0.0;
+			uint32_t volumetric_fog_pad = 0;
 
 			// Fog
-			uint32_t fog_enabled;
-			float fog_density;
-			float fog_height;
-			float fog_height_density;
+			uint32_t fog_enabled = 0;
+			float fog_density = 0.0;
+			float fog_height = 0.0;
+			float fog_height_density = 0.0;
 
-			float fog_light_color[3];
-			float fog_sun_scatter;
+			float fog_light_color[3] = {};
+			float fog_sun_scatter = 0.0;
 
-			float fog_aerial_perspective;
+			float fog_aerial_perspective = 0.0;
 
-			float time;
-			float reflection_multiplier;
+			float time = 0.0;
+			float reflection_multiplier = 0.0;
 
-			uint32_t pancake_shadows;
+			uint32_t pancake_shadows = 0;
 		};
 
 		UBO ubo;
 
 		RID uniform_buffer;
 
+<<<<<<< HEAD
+		LightmapData *lightmaps = nullptr;
+		uint32_t max_lightmaps = 0;
+=======
 		LightmapData lightmaps[MAX_LIGHTMAPS];
 		RID lightmap_ids[MAX_LIGHTMAPS];
 		bool lightmap_has_sh[MAX_LIGHTMAPS];
 		uint32_t lightmaps_used = 0;
 		uint32_t max_lightmaps;
+>>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 		RID lightmap_buffer;
 
-		LightmapCaptureData *lightmap_captures;
-		uint32_t max_lightmap_captures;
+		LightmapCaptureData *lightmap_captures = nullptr;
+		uint32_t max_lightmap_captures = 0;
 		RID lightmap_capture_buffer;
 
+<<<<<<< HEAD
+		RID instance_buffer;
+		InstanceData *instances = nullptr;
+		uint32_t max_instances = 0;
+=======
 		RID giprobe_ids[MAX_GI_PROBES];
 		uint32_t giprobes_used = 0;
+>>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 
 		bool used_screen_texture = false;
 		bool used_normal_texture = false;
@@ -405,6 +440,34 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	RID default_shader_rd;
 	RID default_shader_sdfgi_rd;
 
+<<<<<<< HEAD
+	struct RenderList {
+		int max_elements = 0;
+
+		struct Element {
+			RendererSceneRender::InstanceBase *instance = nullptr;
+			MaterialData *material = nullptr;
+			union {
+				struct {
+					//from least significant to most significant in sort, TODO: should be endian swapped on big endian
+					uint64_t geometry_index : 20;
+					uint64_t material_index : 15;
+					uint64_t shader_index : 12;
+					uint64_t uses_instancing : 1;
+					uint64_t uses_forward_gi : 1;
+					uint64_t uses_lightmap : 1;
+					uint64_t depth_layer : 4;
+					uint64_t priority : 8;
+				};
+
+				uint64_t sort_key = 0;
+			};
+			uint32_t surface_index = 0;
+		};
+
+		Element *base_elements = nullptr;
+		Element **elements = nulltpr;
+=======
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
 
@@ -608,9 +671,10 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		int max_elements;
 
 		GeometryInstanceSurfaceDataCache **elements = nullptr;
+>>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 
-		int element_count;
-		int alpha_element_count;
+		int element_count = 0;
+		int alpha_element_count = 0;
 
 		void clear() {
 			element_count = 0;
@@ -689,9 +753,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 			elements = memnew_arr(GeometryInstanceSurfaceDataCache *, max_elements);
 		}
 
-		RenderList() {
-			max_elements = 0;
-		}
+		RenderList() {	}
 
 		~RenderList() {
 			memdelete_arr(elements);
@@ -700,6 +762,51 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 	RenderList render_list;
 
+<<<<<<< HEAD
+	static RendererSceneRenderForward *singleton = nullptr;
+	uint64_t render_pass = 0;
+	double time = 0.0;
+	RID default_shader;
+	RID default_material;
+	RID overdraw_material_shader;
+	RID overdraw_material;
+	RID wireframe_material_shader;
+	RID wireframe_material;
+	RID default_shader_rd;
+	RID default_shader_sdfgi_rd;
+
+	RID default_vec4_xform_buffer;
+	RID default_vec4_xform_uniform_set;
+
+	enum PassMode {
+		PASS_MODE_COLOR,
+		PASS_MODE_COLOR_SPECULAR,
+		PASS_MODE_COLOR_TRANSPARENT,
+		PASS_MODE_SHADOW,
+		PASS_MODE_SHADOW_DP,
+		PASS_MODE_DEPTH,
+		PASS_MODE_DEPTH_NORMAL_ROUGHNESS,
+		PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE,
+		PASS_MODE_DEPTH_MATERIAL,
+		PASS_MODE_SDF,
+	};
+
+	void _setup_environment(RID p_environment, RID p_render_buffers, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false);
+	void _setup_lightmaps(const PagedArray<InstanceBase *> &p_lightmaps, const Transform &p_cam_transform);
+
+	void _fill_instances(RenderList::Element **p_elements, int p_element_count, bool p_for_depth, bool p_has_sdfgi = false, bool p_has_opaque_gi = false);
+	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0);
+	_FORCE_INLINE_ void _add_geometry(InstanceBase *p_instance, uint32_t p_surface, RID p_material, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi = false);
+	_FORCE_INLINE_ void _add_geometry_with_material(InstanceBase *p_instance, uint32_t p_surface, MaterialData *p_material, RID p_material_rid, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi = false);
+
+	void _fill_render_list(const PagedArray<InstanceBase *> &p_instances, PassMode p_pass_mode, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_using_sdfgi = false);
+
+	Map<Size2i, RID> sdfgi_framebuffer_size_cache;
+
+	bool low_end = false;
+
+=======
+>>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 protected:
 	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, int p_directional_light_count, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color, float p_lod_threshold);
 	virtual void _render_shadow(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0);

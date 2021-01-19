@@ -40,9 +40,9 @@
 
 class RendererCompositorRD : public RendererCompositor {
 protected:
-	RendererCanvasRenderRD *canvas;
-	RendererStorageRD *storage;
-	RendererSceneRenderForward *scene;
+	RendererCanvasRenderRD *canvas = nullptr;
+	RendererStorageRD *storage = nullptr;
+	RendererSceneRenderForward *scene = nullptr;
 
 	RID copy_viewports_rd_shader;
 	RID copy_viewports_rd_pipeline;
@@ -52,10 +52,10 @@ protected:
 
 	Map<RID, RID> render_target_descriptors;
 
-	double time;
-	float delta;
+	double time = 0.0;
+	float delta = 0.0;
 
-	static uint64_t frame;
+	static uint64_t frame = 0;
 
 public:
 	RendererStorage *get_storage() { return storage; }

@@ -41,7 +41,7 @@
 #include "servers/rendering/rendering_device.h"
 
 class RendererCanvasRenderRD : public RendererCanvasRender {
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 
 	enum {
 		BASE_UNIFORM_SET = 0,
@@ -134,7 +134,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	};
 
 	struct PipelineVariants {
-		PipelineCacheRD variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX];
+		PipelineCacheRD variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX] = {};
 	};
 
 	struct {
@@ -162,18 +162,18 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			BLEND_MODE_DISABLED,
 		};
 
-		bool valid;
+		bool valid = false;
 		RID version;
 		PipelineVariants pipeline_variants;
-		String path;
+		String path = "";
 
 		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
-		String code;
+		String code = "";
 		Map<StringName, RID> default_texture_params;
 
 		bool uses_screen_texture = false;
@@ -200,8 +200,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	}
 
 	struct MaterialData : public RendererStorageRD::MaterialData {
-		uint64_t last_frame;
-		ShaderData *shader_data;
+		uint64_t last_frame = 0;
+		ShaderData *shader_data = nulltpr;
 		RID uniform_buffer;
 		RID uniform_set;
 		Vector<RID> texture_cache;
@@ -264,8 +264,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RID texture;
 		struct {
 			bool enabled = false;
-			float z_far;
-			float y_offset;
+			float z_far = 0.0;
+			float y_offset = 0.0;
 			Transform2D directional_xform;
 		} shadow;
 	};
@@ -273,45 +273,45 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	RID_Owner<CanvasLight> canvas_light_owner;
 
 	struct ShadowRenderPushConstant {
-		float projection[16];
-		float modelview[8];
-		float direction[2];
-		float z_far;
-		float pad;
+		float projection[16] = {};
+		float modelview[8] = {};
+		float direction[2] = {};
+		float z_far = 0.0;
+		float pad = 0.0;
 	};
 
 	struct OccluderPolygon {
 		RS::CanvasOccluderPolygonCullMode cull_mode;
-		int line_point_count;
+		int line_point_count = 0;
 		RID vertex_buffer;
 		RID vertex_array;
 		RID index_buffer;
 		RID index_array;
 
-		int sdf_point_count;
-		int sdf_index_count;
+		int sdf_point_count = 0;
+		int sdf_index_count = 0;
 		RID sdf_vertex_buffer;
 		RID sdf_vertex_array;
 		RID sdf_index_buffer;
 		RID sdf_index_array;
-		bool sdf_is_lines;
+		bool sdf_is_lines = false;
 	};
 
 	struct LightUniform {
-		float matrix[8]; //light to texture coordinate matrix
-		float shadow_matrix[8]; //light to shadow coordinate matrix
-		float color[4];
+		float matrix[8] = {}; //light to texture coordinate matrix
+		float shadow_matrix[8] = {}; //light to shadow coordinate matrix
+		float color[4] = {};
 
-		uint8_t shadow_color[4];
-		uint32_t flags; //index to light texture
-		float shadow_pixel_size;
-		float height;
+		uint8_t shadow_color[4] = {};
+		uint32_t flags = 0; //index to light texture
+		float shadow_pixel_size = 0.0;
+		float height = 0.0;
 
-		float position[2];
-		float shadow_z_far_inv;
-		float shadow_y_ofs;
+		float position[2] = {};
+		float shadow_z_far_inv = 0.0;
+		float shadow_y_ofs = 0.0;
 
-		float atlas_rect[4];
+		float atlas_rect[4] = {};
 	};
 
 	RID_Owner<OccluderPolygon> occluder_polygon_owner;
@@ -329,8 +329,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	struct {
 		CanvasOcclusionShaderRD shader;
 		RID shader_version;
-		RID render_pipelines[3];
-		RID sdf_render_pipelines[2];
+		RID render_pipelines[3] = {};
+		RID sdf_render_pipelines[2] = {};
 		RD::VertexFormatID vertex_format;
 		RD::VertexFormatID sdf_vertex_format;
 		RD::FramebufferFormatID framebuffer_format;
@@ -346,26 +346,26 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	struct State {
 		//state buffer
 		struct Buffer {
-			float canvas_transform[16];
-			float screen_transform[16];
-			float canvas_normal_transform[16];
-			float canvas_modulate[4];
+			float canvas_transform[16] = {};
+			float screen_transform[16] = {};
+			float canvas_normal_transform[16] = {};
+			float canvas_modulate[4] = {};
 
-			float screen_pixel_size[2];
-			float time;
-			uint32_t use_pixel_snap;
+			float screen_pixel_size[2] = {};
+			float time = 0.0;
+			uint32_t use_pixel_snap = 0;
 
-			float sdf_to_tex[4];
-			float sdf_to_screen[2];
-			float screen_to_sdf[2];
+			float sdf_to_tex[4] = {};
+			float sdf_to_screen[2] = {};
+			float screen_to_sdf[2] = {};
 
-			uint32_t directional_light_count;
-			float tex_to_sdf;
-			uint32_t pad1;
-			uint32_t pad2;
+			uint32_t directional_light_count = 0;
+			float tex_to_sdf = 0.0;
+			uint32_t pad1 = 0;
+			uint32_t pad2 = 0;
 		};
 
-		LightUniform *light_uniforms;
+		LightUniform *light_uniforms = nullptr;
 
 		RID lights_uniform_buffer;
 		RID canvas_state_buffer;
@@ -377,43 +377,43 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 		RID default_transforms_uniform_set;
 
-		uint32_t max_lights_per_render;
-		uint32_t max_lights_per_item;
+		uint32_t max_lights_per_render = 0;
+		uint32_t max_lights_per_item = 0;
 
-		double time;
+		double time = 0.0;
 
 	} state;
 
 	struct PushConstant {
-		float world[6];
-		uint32_t flags;
-		uint32_t specular_shininess;
+		float world[6] = {};
+		uint32_t flags = 0;
+		uint32_t specular_shininess = 0;
 		union {
 			//rect
 			struct {
-				float modulation[4];
-				float ninepatch_margins[4];
-				float dst_rect[4];
-				float src_rect[4];
-				float pad[2];
+				float modulation[4] = {};
+				float ninepatch_margins[4] = {};
+				float dst_rect[4] = {};
+				float src_rect[4] = {};
+				float pad[2] = {};
 			};
 			//primitive
 			struct {
-				float points[6]; // vec2 points[3]
-				float uvs[6]; // vec2 points[3]
-				uint32_t colors[6]; // colors encoded as half
+				float points[6] = {}; // vec2 points[3]
+				float uvs[6] = {}; // vec2 points[3]
+				uint32_t colors[6] = {}; // colors encoded as half
 			};
 		};
-		float color_texture_pixel_size[2];
-		uint32_t lights[4];
+		float color_texture_pixel_size[2] = {};
+		uint32_t lights[4] = {};
 	};
 
 	struct SkeletonUniform {
-		float skeleton_transform[16];
-		float skeleton_inverse[16];
+		float skeleton_transform[16] = {};
+		float skeleton_inverse[16] = {};
 	};
 
-	Item *items[MAX_RENDER_ITEMS];
+	Item *items[MAX_RENDER_ITEMS] = {};
 
 	bool using_directional_lights = false;
 	RID default_canvas_texture;

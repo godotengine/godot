@@ -64,11 +64,17 @@ protected:
 		Map<DependencyTracker *, uint32_t> instances;
 	};
 
+<<<<<<< HEAD
+	struct InstanceBaseDependency {
+		uint32_t instance_version = 0;
+		Set<InstanceDependency *> dependencies;
+=======
 public:
 	struct DependencyTracker {
 		void *userdata = nullptr;
 		typedef void (*ChangedCallback)(DependencyChangedNotification, DependencyTracker *);
 		typedef void (*DeletedCallback)(const RID &, DependencyTracker *);
+>>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 
 		ChangedCallback changed_callback = nullptr;
 		DeletedCallback deleted_callback = nullptr;
@@ -198,7 +204,7 @@ public:
 
 	struct InstanceShaderParam {
 		PropertyInfo info;
-		int index;
+		int index = 0;
 		Variant default_value;
 	};
 

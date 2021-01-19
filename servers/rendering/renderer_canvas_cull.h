@@ -38,20 +38,20 @@ class RendererCanvasCull {
 public:
 	struct Item : public RendererCanvasRender::Item {
 		RID parent; // canvas it belongs to
-		List<Item *>::Element *E;
-		int z_index;
-		bool z_relative;
-		bool sort_y;
+		List<Item *>::Element *E = nullptr;
+		int z_index = 0;
+		bool z_relative= false;
+		bool sort_y = false;
 		Color modulate;
 		Color self_modulate;
-		bool use_parent_material;
-		int index;
-		bool children_order_dirty;
-		int ysort_children_count;
+		bool use_parent_material = false;
+		int index = 0;
+		bool children_order_dirty = false;
+		int ysort_children_count = 0;
 		Color ysort_modulate;
 		Transform2D ysort_xform;
 		Vector2 ysort_pos;
-		int ysort_index;
+		int ysort_index = 0;
 
 		Vector<Item *> child_items;
 
@@ -89,7 +89,7 @@ public:
 	};
 
 	struct LightOccluderPolygon {
-		bool active;
+		bool active = false;
 		Rect2 aabb;
 		RS::CanvasOccluderPolygonCullMode cull_mode;
 		RID occluder;
@@ -109,7 +109,7 @@ public:
 		Set<RID> viewports;
 		struct ChildItem {
 			Point2 mirror;
-			Item *item;
+			Item *item = nullptr;
 			bool operator<(const ChildItem &p_item) const {
 				return item->index < p_item.item->index;
 			}
@@ -120,11 +120,11 @@ public:
 
 		Set<RendererCanvasRender::LightOccluderInstance *> occluders;
 
-		bool children_order_dirty;
+		bool children_order_dirty = false;
 		Vector<ChildItem> child_items;
 		Color modulate;
 		RID parent;
-		float parent_scale;
+		float parent_scale = 0.0;
 
 		int find_item(Item *p_item) {
 			for (int i = 0; i < child_items.size(); i++) {
@@ -152,7 +152,7 @@ public:
 	RID_PtrOwner<Item> canvas_item_owner;
 	RID_PtrOwner<RendererCanvasRender::Light> canvas_light_owner;
 
-	bool disable_scale;
+	bool disable_scale = false;
 	bool sdf_used = false;
 	bool snapping_2d_transforms_to_pixel = false;
 
@@ -160,8 +160,8 @@ private:
 	void _render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel);
 	void _cull_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **z_list, RendererCanvasRender::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner);
 
-	RendererCanvasRender::Item **z_list;
-	RendererCanvasRender::Item **z_last_list;
+	RendererCanvasRender::Item **z_list = nullptr;
+	RendererCanvasRender::Item **z_last_list = nullptr;
 
 public:
 	void render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, const Rect2 &p_clip_rect, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel);

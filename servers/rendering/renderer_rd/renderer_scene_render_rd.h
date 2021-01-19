@@ -51,42 +51,42 @@
 
 class RendererSceneRenderRD : public RendererSceneRender {
 protected:
-	double time;
+	double time = 0.0;
 
 	// Skys need less info from Directional Lights than the normal shaders
 	struct SkyDirectionalLightData {
-		float direction[3];
-		float energy;
-		float color[3];
-		float size;
-		uint32_t enabled;
-		uint32_t pad[3];
+		float direction[3] = {};
+		float energy = 0.0;
+		float color[3] = {};
+		float size = 0.0;
+		uint32_t enabled = 0;
+		uint32_t pad[3] = {};
 	};
 
 	struct SkySceneState {
 		struct UBO {
-			uint32_t volumetric_fog_enabled;
-			float volumetric_fog_inv_length;
-			float volumetric_fog_detail_spread;
+			uint32_t volumetric_fog_enabled = 0;
+			float volumetric_fog_inv_length = 0.0;
+			float volumetric_fog_detail_spread = 0.0;
 
-			float fog_aerial_perspective;
+			float fog_aerial_perspective = 0.0;
 
-			float fog_light_color[3];
-			float fog_sun_scatter;
+			float fog_light_color[3] = {};
+			float fog_sun_scatter = 0.0;
 
-			uint32_t fog_enabled;
-			float fog_density;
+			uint32_t fog_enabled = 0;
+			float fog_density = 0.0;
 
-			float z_far;
-			uint32_t directional_light_count;
+			float z_far = 0.0;
+			uint32_t directional_light_count = 0;
 		};
 
 		UBO ubo;
 
-		SkyDirectionalLightData *directional_lights;
-		SkyDirectionalLightData *last_frame_directional_lights;
-		uint32_t max_directional_lights;
-		uint32_t last_frame_directional_light_count;
+		SkyDirectionalLightData *directional_lights = nullptr;
+		SkyDirectionalLightData *last_frame_directional_lights = nullptr;
+		uint32_t max_directional_lights = 0;
+		uint32_t last_frame_directional_light_count = 0;
 		RID directional_light_buffer;
 		RID uniform_set;
 		RID uniform_buffer;
@@ -142,17 +142,17 @@ protected:
 private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 	double time_step = 0;
-	static RendererSceneRenderRD *singleton;
+	static RendererSceneRenderRD *singleton = nullptr;
 
-	int roughness_layers;
+	int roughness_layers = 0;
 
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 
 	struct ReflectionData {
 		struct Layer {
 			struct Mipmap {
-				RID framebuffers[6];
-				RID views[6];
+				RID framebuffers[6] = {};
+				RID views[6] = {};
 				Size2i size;
 			};
 			Vector<Mipmap> mipmaps; //per-face view
@@ -205,25 +205,25 @@ private:
 	} sky_shader;
 
 	struct SkyShaderData : public RendererStorageRD::ShaderData {
-		bool valid;
+		bool valid = false;
 		RID version;
 
-		PipelineCacheRD pipelines[SKY_VERSION_MAX];
+		PipelineCacheRD pipelines[SKY_VERSION_MAX] = {};
 		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
 		String path;
 		String code;
 		Map<StringName, RID> default_texture_params;
 
-		bool uses_time;
-		bool uses_position;
-		bool uses_half_res;
-		bool uses_quarter_res;
-		bool uses_light;
+		bool uses_time = false;
+		bool uses_position = false;
+		bool uses_half_res = false;
+		bool uses_quarter_res = false;
+		bool uses_light = false;
 
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
@@ -244,13 +244,13 @@ private:
 	};
 
 	struct SkyMaterialData : public RendererStorageRD::MaterialData {
-		uint64_t last_frame;
-		SkyShaderData *shader_data;
+		uint64_t last_frame = 0;
+		SkyShaderData *shader_data = nullptr;
 		RID uniform_buffer;
 		RID uniform_set;
 		Vector<RID> texture_cache;
 		Vector<uint8_t> ubo_data;
-		bool uniform_set_updated;
+		bool uniform_set_updated = false;
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
@@ -290,7 +290,7 @@ private:
 		RID quarter_res_framebuffer;
 		Size2i screen_size;
 
-		RID texture_uniform_sets[SKY_TEXTURE_SET_MAX];
+		RID texture_uniform_sets[SKY_TEXTURE_SET_MAX] = {};
 		RID uniform_set;
 
 		RID material;
@@ -306,9 +306,9 @@ private:
 		Sky *dirty_list = nullptr;
 
 		//State to track when radiance cubemap needs updating
-		SkyMaterialData *prev_material;
+		SkyMaterialData *prev_material = nullptr;
 		Vector3 prev_position;
-		float prev_time;
+		float prev_time = 0.0;
 
 		RID sdfgi_integrate_sky_uniform_set;
 	};
@@ -319,8 +319,8 @@ private:
 	void _update_dirty_skys();
 	RID _get_sky_textures(Sky *p_sky, SkyTextureSetVersion p_version);
 
-	uint32_t sky_ggx_samples_quality;
-	bool sky_use_cubemap_array;
+	uint32_t sky_ggx_samples_quality = 0;
+	bool sky_use_cubemap_array = false;
 
 	mutable RID_Owner<Sky> sky_owner;
 
@@ -337,7 +337,7 @@ private:
 		struct Reflection {
 			RID owner;
 			ReflectionData data;
-			RID fbs[6];
+			RID fbs[6] = {};
 		};
 
 		Vector<Reflection> reflections;
@@ -387,55 +387,55 @@ private:
 	/* GIPROBE INSTANCE */
 
 	struct GIProbeLight {
-		uint32_t type;
-		float energy;
-		float radius;
-		float attenuation;
+		uint32_t type = 0;
+		float energy = 0.0;
+		float radius = 0.0;
+		float attenuation = 0.0;
 
-		float color[3];
-		float spot_angle_radians;
+		float color[3] = {};
+		float spot_angle_radians = 0.0;
 
-		float position[3];
-		float spot_attenuation;
+		float position[3] = {};
+		float spot_attenuation = 0.0;
 
-		float direction[3];
-		uint32_t has_shadow;
+		float direction[3] = {};
+		uint32_t has_shadow = 0;
 	};
 
 	struct GIProbePushConstant {
-		int32_t limits[3];
-		uint32_t stack_size;
+		int32_t limits[3] = {};
+		uint32_t stack_size = 0;
 
-		float emission_scale;
-		float propagation;
-		float dynamic_range;
-		uint32_t light_count;
+		float emission_scale = 0.0;
+		float propagation = 0.0;
+		float dynamic_range = 0.0;
+		uint32_t light_count = 0;
 
-		uint32_t cell_offset;
-		uint32_t cell_count;
-		float aniso_strength;
-		uint32_t pad;
+		uint32_t cell_offset = 0;
+		uint32_t cell_count = 0;
+		float aniso_strength = 0.0;
+		uint32_t pad = 0;
 	};
 
 	struct GIProbeDynamicPushConstant {
-		int32_t limits[3];
-		uint32_t light_count;
-		int32_t x_dir[3];
-		float z_base;
-		int32_t y_dir[3];
-		float z_sign;
-		int32_t z_dir[3];
-		float pos_multiplier;
-		uint32_t rect_pos[2];
-		uint32_t rect_size[2];
-		uint32_t prev_rect_ofs[2];
-		uint32_t prev_rect_size[2];
-		uint32_t flip_x;
-		uint32_t flip_y;
-		float dynamic_range;
-		uint32_t on_mipmap;
-		float propagation;
-		float pad[3];
+		int32_t limits[3] = {};
+		uint32_t light_count = 0;
+		int32_t x_dir[3] = {};
+		float z_base = 0.0;
+		int32_t y_dir[3] = {};
+		float z_sign = 0.0;
+		int32_t z_dir[3] = {};
+		float pos_multiplier = 0.0;
+		uint32_t rect_pos[2] = {};
+		uint32_t rect_size[2] = {};
+		uint32_t prev_rect_ofs[2] = {};
+		uint32_t prev_rect_size[2] = {};
+		uint32_t flip_x = 0;
+		uint32_t flip_y = 0;
+		float dynamic_range = 0.0;
+		uint32_t on_mipmap = 0;
+		float propagation = 0.0;
+		float pad[3] = {};
 	};
 
 	struct GIProbeInstance {
@@ -448,9 +448,9 @@ private:
 			RID uniform_set;
 			RID second_bounce_uniform_set;
 			RID write_uniform_set;
-			uint32_t level;
-			uint32_t cell_offset;
-			uint32_t cell_count;
+			uint32_t level = 0;
+			uint32_t cell_offset = 0;
+			uint32_t cell_count = 0;
 		};
 		Vector<Mipmap> mipmaps;
 
@@ -463,8 +463,8 @@ private:
 			RID orm; //orm buffer for the first pass
 			RID fb; //used for rendering, only valid on first map
 			RID uniform_set;
-			uint32_t size;
-			int mipmap; // mipmap to write to, -1 if no mipmap assigned
+			uint32_t size = 0;
+			int mipmap = 0; // mipmap to write to, -1 if no mipmap assigned
 		};
 
 		Vector<DynamicMap> dynamic_maps;
@@ -481,8 +481,8 @@ private:
 		Transform transform;
 	};
 
-	GIProbeLight *gi_probe_lights;
-	uint32_t gi_probe_max_lights;
+	GIProbeLight *gi_probe_lights = nullptr;
+	uint32_t gi_probe_max_lights = 0;
 	RID gi_probe_lights_uniform;
 
 	enum {
@@ -514,13 +514,13 @@ private:
 	};
 
 	struct GIProbeDebugPushConstant {
-		float projection[16];
-		uint32_t cell_offset;
-		float dynamic_range;
-		float alpha;
-		uint32_t level;
-		int32_t bounds[3];
-		uint32_t pad;
+		float projection[16] = {};
+		uint32_t cell_offset = 0;
+		float dynamic_range = 0.0;
+		float alpha = 0.0;
+		uint32_t level = 0;
+		int32_t bounds[3] = {};
+		uint32_t pad = 0;
 	};
 
 	GiprobeDebugShaderRD giprobe_debug_shader;
@@ -534,7 +534,7 @@ private:
 	struct ShadowShrinkStage {
 		RID texture;
 		RID filter_texture;
-		uint32_t size;
+		uint32_t size = 0;
 	};
 
 	struct ShadowAtlas {
@@ -545,26 +545,20 @@ private:
 		};
 
 		struct Quadrant {
-			uint32_t subdivision;
+			uint32_t subdivision = 0;
 
 			struct Shadow {
 				RID owner;
-				uint64_t version;
-				uint64_t fog_version; // used for fog
-				uint64_t alloc_tick;
+				uint64_t version = 0;
+				uint64_t fog_version = 0; // used for fog
+				uint64_t alloc_tick = 0;
 
-				Shadow() {
-					version = 0;
-					fog_version = 0;
-					alloc_tick = 0;
-				}
+				Shadow() {	}
 			};
 
 			Vector<Shadow> shadows;
 
-			Quadrant() {
-				subdivision = 0; //not in use
-			}
+			Quadrant() {	}
 
 		} quadrants[4];
 
@@ -590,10 +584,10 @@ private:
 	float shadows_quality_radius = 1.0;
 	float directional_shadow_quality_radius = 1.0;
 
-	float *directional_penumbra_shadow_kernel;
-	float *directional_soft_shadow_kernel;
-	float *penumbra_shadow_kernel;
-	float *soft_shadow_kernel;
+	float *directional_penumbra_shadow_kernel = nullptr;
+	float *directional_soft_shadow_kernel = nullptr;
+	float *penumbra_shadow_kernel = nullptr;
+	float *soft_shadow_kernel = nullptr;
 	int directional_penumbra_shadow_samples = 0;
 	int directional_soft_shadow_samples = 0;
 	int penumbra_shadow_samples = 0;
@@ -619,7 +613,7 @@ private:
 
 	struct ShadowCubemap {
 		RID cubemap;
-		RID side_fb[6];
+		RID side_fb[6] = {};
 	};
 
 	Map<int, ShadowCubemap> shadow_cubemaps;
@@ -641,18 +635,18 @@ private:
 		struct ShadowTransform {
 			CameraMatrix camera;
 			Transform transform;
-			float farplane;
-			float split;
-			float bias_scale;
-			float shadow_texel_size;
-			float range_begin;
+			float farplane = 0.0;
+			float split = 0.0;
+			float bias_scale = 0.0;
+			float shadow_texel_size = 0.0;
+			float range_begin = 0.0;
 			Rect2 atlas_rect;
 			Vector2 uv_scale;
 		};
 
 		RS::LightType light_type = RS::LIGHT_DIRECTIONAL;
 
-		ShadowTransform shadow_transform[4];
+		ShadowTransform shadow_transform[4] = {};
 
 		AABB aabb;
 		RID self;
@@ -801,7 +795,7 @@ private:
 	bool glow_high_quality = false;
 	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGNESS_QUALITY_LOW;
 
-	static uint64_t auto_exposure_counter;
+	static uint64_t auto_exposure_counter = 0;
 
 	mutable RID_Owner<Environment> environment_owner;
 
@@ -864,14 +858,14 @@ private:
 
 			struct Mipmap {
 				RID texture;
-				int width;
-				int height;
+				int width = 0;
+				int height = 0;
 			};
 
 			Vector<Mipmap> mipmaps;
 		};
 
-		Blur blur[2]; //the second one starts from the first mipmap
+		Blur blur[2] = {}; //the second one starts from the first mipmap
 
 		struct Luminance {
 			Vector<RID> reduce;
@@ -917,10 +911,10 @@ private:
 
 		struct Cascade {
 			struct UBO {
-				float offset[3];
-				float to_cell;
-				int32_t probe_offset[3];
-				uint32_t pad;
+				float offset[3] = {};
+				float to_cell  = 0.0;
+				int32_t probe_offset[3] = {};
+				uint32_t pad = 0;
 			};
 
 			//cascade blocks are full-size for volume (128^3), half size for albedo/emission
@@ -934,10 +928,10 @@ private:
 			RID light_aniso_1_data;
 
 			struct SolidCell { // this struct is unused, but remains as reference for size
-				uint32_t position;
-				uint32_t albedo;
-				uint32_t static_light;
-				uint32_t static_light_aniso;
+				uint32_t position = 0;
+				uint32_t albedo = 0;
+				uint32_t static_light = 0;
+				uint32_t static_light_aniso = 0;
 			};
 
 			RID solid_cell_dispatch_buffer; //buffer for indirect compute dispatch
@@ -946,7 +940,7 @@ private:
 			RID lightprobe_history_tex;
 			RID lightprobe_average_tex;
 
-			float cell_size;
+			float cell_size = 0.0;
 			Vector3i position;
 
 			static const Vector3i DIRTY_ALL;
@@ -964,11 +958,11 @@ private:
 		RID render_albedo;
 		RID render_emission;
 		RID render_emission_aniso;
-		RID render_occlusion[8];
+		RID render_occlusion[8] = {};
 		RID render_geom_facing;
 
-		RID render_sdf[2];
-		RID render_sdf_half[2];
+		RID render_sdf[2] = {};
+		RID render_sdf_half[2] = {};
 
 		//used for ping pong processing in cascades
 		RID sdf_initialize_uniform_set;
@@ -1040,34 +1034,34 @@ private:
 		};
 
 		struct PreprocessPushConstant {
-			int32_t scroll[3];
-			int32_t grid_size;
+			int32_t scroll[3] = {};
+			int32_t grid_size = 0;
 
-			int32_t probe_offset[3];
-			int32_t step_size;
+			int32_t probe_offset[3] = {};
+			int32_t step_size = 0;
 
-			int32_t half_size;
-			uint32_t occlusion_index;
-			int32_t cascade;
-			uint32_t pad;
+			int32_t half_size = 0;
+			uint32_t occlusion_index = 0;
+			int32_t cascade = 0;
+			uint32_t pad = 0;
 		};
 
 		SdfgiPreprocessShaderRD preprocess;
 		RID preprocess_shader;
-		RID preprocess_pipeline[PRE_PROCESS_MAX];
+		RID preprocess_pipeline[PRE_PROCESS_MAX] = {};
 
 		struct DebugPushConstant {
-			float grid_size[3];
-			uint32_t max_cascades;
+			float grid_size[3] = {};
+			uint32_t max_cascades = 0;
 
-			int32_t screen_size[2];
-			uint32_t use_occlusion;
-			float y_mult;
+			int32_t screen_size[2] = {};
+			uint32_t use_occlusion = 0;
+			float y_mult = 0.0;
 
-			float cam_extent[3];
-			uint32_t probe_axis_size;
+			float cam_extent[3] = {};
+			uint32_t probe_axis_size = 0;
 
-			float cam_transform[16];
+			float cam_transform[16] = {};
 		};
 
 		SdfgiDebugShaderRD debug;
@@ -1082,20 +1076,20 @@ private:
 		};
 
 		struct DebugProbesPushConstant {
-			float projection[16];
+			float projection[16] = {};
 
-			uint32_t band_power;
-			uint32_t sections_in_band;
-			uint32_t band_mask;
-			float section_arc;
+			uint32_t band_power = 0;
+			uint32_t sections_in_band = 0;
+			uint32_t band_mask = 0;
+			float section_arc = 0.0;
 
-			float grid_size[3];
-			uint32_t cascade;
+			float grid_size[3] = {};
+			uint32_t cascade = 0;
 
-			uint32_t pad;
-			float y_mult;
-			int32_t probe_debug_index;
-			int32_t probe_axis_size;
+			uint32_t pad = 0;
+			float y_mult = 0;
+			int32_t probe_debug_index = 0;
+			int32_t probe_axis_size = 0;
 		};
 
 		SdfgiDebugProbesShaderRD debug_probes;
@@ -1105,36 +1099,36 @@ private:
 		PipelineCacheRD debug_probes_pipeline[PROBE_DEBUG_MAX];
 
 		struct Light {
-			float color[3];
-			float energy;
+			float color[3] = {};
+			float energy = 0.0;
 
-			float direction[3];
-			uint32_t has_shadow;
+			float direction[3] = {};
+			uint32_t has_shadow = 0;
 
-			float position[3];
-			float attenuation;
+			float position[3] = {};
+			float attenuation = 0.0;
 
-			uint32_t type;
-			float spot_angle;
-			float spot_attenuation;
-			float radius;
+			uint32_t type = 0;
+			float spot_angle = 0.0;
+			float spot_attenuation = 0.0;
+			float radius = 0.0;
 
-			float shadow_color[4];
+			float shadow_color[4] = {};
 		};
 
 		struct DirectLightPushConstant {
-			float grid_size[3];
-			uint32_t max_cascades;
+			float grid_size[3] = {};
+			uint32_t max_cascades = 0;
 
-			uint32_t cascade;
-			uint32_t light_count;
-			uint32_t process_offset;
-			uint32_t process_increment;
+			uint32_t cascade = 0;
+			uint32_t light_count = 0;
+			uint32_t process_offset = 0;
+			uint32_t process_increment = 0;
 
-			int32_t probe_axis_size;
-			uint32_t multibounce;
-			float y_mult;
-			uint32_t pad;
+			int32_t probe_axis_size = 0;
+			uint32_t multibounce = 0;
+			float y_mult = 0.0;
+			uint32_t pad = 0;
 		};
 
 		enum {
@@ -1160,34 +1154,34 @@ private:
 				SKY_MODE_SKY,
 			};
 
-			float grid_size[3];
-			uint32_t max_cascades;
+			float grid_size[3] = {};
+			uint32_t max_cascades = 0;
 
-			uint32_t probe_axis_size;
-			uint32_t cascade;
-			uint32_t history_index;
-			uint32_t history_size;
+			uint32_t probe_axis_size = 0;
+			uint32_t cascade = 0;
+			uint32_t history_index = 0;
+			uint32_t history_size = 0;
 
-			uint32_t ray_count;
-			float ray_bias;
-			int32_t image_size[2];
+			uint32_t ray_count = 0;
+			float ray_bias = 0.0;
+			int32_t image_size[2] = {};
 
-			int32_t world_offset[3];
-			uint32_t sky_mode;
+			int32_t world_offset[3] = {};
+			uint32_t sky_mode = 0;
 
-			int32_t scroll[3];
-			float sky_energy;
+			int32_t scroll[3] = {};
+			float sky_energy = 0.0;
 
-			float sky_color[3];
-			float y_mult;
+			float sky_color[3] = {};
+			float y_mult = 0.0;
 
-			uint32_t store_ambient_texture;
-			uint32_t pad[3];
+			uint32_t store_ambient_texture = 0;
+			uint32_t pad[3] = {};
 		};
 
 		SdfgiIntegrateShaderRD integrate;
 		RID integrate_shader;
-		RID integrate_pipeline[INTEGRATE_MODE_MAX];
+		RID integrate_pipeline[INTEGRATE_MODE_MAX] = {};
 
 		RID integrate_default_sky_uniform_set;
 
@@ -1201,71 +1195,71 @@ private:
 
 	struct GI {
 		struct SDFGIData {
-			float grid_size[3];
-			uint32_t max_cascades;
+			float grid_size[3] = {};
+			uint32_t max_cascades = 0;
 
-			uint32_t use_occlusion;
-			int32_t probe_axis_size;
-			float probe_to_uvw;
-			float normal_bias;
+			uint32_t use_occlusion = 0;
+			int32_t probe_axis_size = 0;
+			float probe_to_uvw = 0.0;
+			float normal_bias = 0.0;
 
-			float lightprobe_tex_pixel_size[3];
-			float energy;
+			float lightprobe_tex_pixel_size[3] = {};
+			float energy = 0.0;
 
-			float lightprobe_uv_offset[3];
-			float y_mult;
+			float lightprobe_uv_offset[3] = {};
+			float y_mult = 0.0;
 
-			float occlusion_clamp[3];
-			uint32_t pad3;
+			float occlusion_clamp[3] = {};
+			uint32_t pad3 = 0;
 
-			float occlusion_renormalize[3];
-			uint32_t pad4;
+			float occlusion_renormalize[3] = {};
+			uint32_t pad4 = 0;
 
-			float cascade_probe_size[3];
-			uint32_t pad5;
+			float cascade_probe_size[3] = {};
+			uint32_t pad5 = 0;
 
 			struct ProbeCascadeData {
-				float position[3]; //offset of (0,0,0) in world coordinates
-				float to_probe; // 1/bounds * grid_size
-				int32_t probe_world_offset[3];
-				float to_cell; // 1/bounds * grid_size
+				float position[3] = {}; //offset of (0,0,0) in world coordinates
+				float to_probe = 0.0; // 1/bounds * grid_size
+				int32_t probe_world_offset[3] = {};
+				float to_cell = 0.0; // 1/bounds * grid_size
 			};
 
-			ProbeCascadeData cascades[SDFGI::MAX_CASCADES];
+			ProbeCascadeData cascades[SDFGI::MAX_CASCADES] = {};
 		};
 
 		struct GIProbeData {
-			float xform[16];
-			float bounds[3];
-			float dynamic_range;
+			float xform[16] = {};
+			float bounds[3] = {};
+			float dynamic_range = 0.0;
 
-			float bias;
-			float normal_bias;
-			uint32_t blend_ambient;
-			uint32_t texture_slot;
+			float bias = 0.0;
+			float normal_bias = 0.0;
+			uint32_t blend_ambient = 0;
+			uint32_t texture_slot = 0;
 
-			float anisotropy_strength;
-			float ao;
-			float ao_size;
-			uint32_t mipmaps;
+			float anisotropy_strength = 0.0;
+			float ao = 0.0;
+			float ao_size = 0.0;
+			uint32_t mipmaps = 0;
 		};
 
 		struct PushConstant {
-			int32_t screen_size[2];
-			float z_near;
-			float z_far;
+			int32_t screen_size[2] = {};
+			float z_near = 0.0;
+			float z_far = 0.0;
 
-			float proj_info[4];
+			float proj_info[4] = {};
 
-			uint32_t max_giprobes;
-			uint32_t high_quality_vct;
-			uint32_t use_sdfgi;
-			uint32_t orthogonal;
+			uint32_t max_giprobes = 0;
+			uint32_t high_quality_vct = 0;
+			uint32_t use_sdfgi = 0;
+			uint32_t orthogonal = 0;
 
-			float ao_color[3];
-			uint32_t pad;
+			float ao_color[3] = {};
+			uint32_t pad = 0;
 
-			float cam_rotation[12];
+			float cam_rotation[12] = {};
 		};
 
 		RID sdfgi_ubo;
@@ -1275,7 +1269,7 @@ private:
 
 		GiShaderRD shader;
 		RID shader_version;
-		RID pipelines[MODE_MAX];
+		RID pipelines[MODE_MAX] = {};
 	} gi;
 
 	bool screen_space_roughness_limiter = false;
@@ -1298,106 +1292,106 @@ private:
 		/* Scene State UBO */
 
 		struct ReflectionData { //should always be 128 bytes
-			float box_extents[3];
-			float index;
-			float box_offset[3];
-			uint32_t mask;
-			float params[4]; // intensity, 0, interior , boxproject
-			float ambient[3]; // ambient color,
-			uint32_t ambient_mode;
-			float local_matrix[16]; // up to here for spot and omni, rest is for directional
+			float box_extents[3] = {};
+			float index = 0.0;
+			float box_offset[3] = {};
+			uint32_t mask = 0;
+			float params[4] = {}; // intensity, 0, interior , boxproject
+			float ambient[3] = {}; // ambient color,
+			uint32_t ambient_mode = 0;
+			float local_matrix[16] = {}; // up to here for spot and omni, rest is for directional
 		};
 
 		struct LightData {
-			float position[3];
-			float inv_radius;
-			float direction[3];
-			float size;
-			uint16_t attenuation_energy[2]; //16 bits attenuation, then energy
-			uint8_t color_specular[4]; //rgb color, a specular (8 bit unorm)
-			uint16_t cone_attenuation_angle[2]; // attenuation and angle, (16bit float)
-			uint8_t shadow_color_enabled[4]; //shadow rgb color, a>0.5 enabled (8bit unorm)
-			float atlas_rect[4]; // in omni, used for atlas uv, in spot, used for projector uv
-			float shadow_matrix[16];
-			float shadow_bias;
-			float shadow_normal_bias;
-			float transmittance_bias;
-			float soft_shadow_size;
-			float soft_shadow_scale;
-			uint32_t mask;
-			float shadow_volumetric_fog_fade;
-			uint32_t pad;
-			float projector_rect[4];
+			float position[3] = {};
+			float inv_radius = 0.0;
+			float direction[3] = {};
+			float size = 0.0;
+			uint16_t attenuation_energy[2] = {}; //16 bits attenuation, then energy
+			uint8_t color_specular[4] = {}; //rgb color, a specular (8 bit unorm)
+			uint16_t cone_attenuation_angle[2] = {}; // attenuation and angle, (16bit float)
+			uint8_t shadow_color_enabled[4] = {}; //shadow rgb color, a>0.5 enabled (8bit unorm)
+			float atlas_rect[4] = {}; // in omni, used for atlas uv, in spot, used for projector uv
+			float shadow_matrix[16] = {};
+			float shadow_bias = 0.0;
+			float shadow_normal_bias = 0.0;
+			float transmittance_bias = 0.0;
+			float soft_shadow_size = 0.0;
+			float soft_shadow_scale = 0.0;
+			uint32_t mask = 0;
+			float shadow_volumetric_fog_fade = 0.0;
+			uint32_t pad = 0;
+			float projector_rect[4] = {};
 		};
 
 		struct DirectionalLightData {
-			float direction[3];
-			float energy;
-			float color[3];
-			float size;
-			float specular;
-			uint32_t mask;
-			float softshadow_angle;
-			float soft_shadow_scale;
-			uint32_t blend_splits;
-			uint32_t shadow_enabled;
-			float fade_from;
-			float fade_to;
-			uint32_t pad[3];
-			float shadow_volumetric_fog_fade;
-			float shadow_bias[4];
-			float shadow_normal_bias[4];
-			float shadow_transmittance_bias[4];
-			float shadow_z_range[4];
-			float shadow_range_begin[4];
-			float shadow_split_offsets[4];
+			float direction[3] = {};
+			float energy = 0.0;
+			float color[3] = {};
+			float size = 0.0;
+			float specular = 0.0;
+			uint32_t mask = 0;
+			float softshadow_angle = 0.0;
+			float soft_shadow_scale = 0.0;
+			uint32_t blend_splits = 0;
+			uint32_t shadow_enabled = 0;
+			float fade_from = 0.0;
+			float fade_to = 0.0;
+			uint32_t pad[3] = {};
+			float shadow_volumetric_fog_fade = 0.0;
+			float shadow_bias[4] = {};
+			float shadow_normal_bias[4] = {};
+			float shadow_transmittance_bias[4] = {};
+			float shadow_z_range[4] = {};
+			float shadow_range_begin[4] = {};
+			float shadow_split_offsets[4] = {};
 			float shadow_matrices[4][16];
-			float shadow_color1[4];
-			float shadow_color2[4];
-			float shadow_color3[4];
-			float shadow_color4[4];
-			float uv_scale1[2];
-			float uv_scale2[2];
-			float uv_scale3[2];
-			float uv_scale4[2];
+			float shadow_color1[4] = {};
+			float shadow_color2[4] = {};
+			float shadow_color3[4] = {};
+			float shadow_color4[4] = {};
+			float uv_scale1[2] = {};
+			float uv_scale2[2 = {}];
+			float uv_scale3[2] = {};
+			float uv_scale4[2] = {};
 		};
 
 		struct DecalData {
-			float xform[16];
-			float inv_extents[3];
-			float albedo_mix;
-			float albedo_rect[4];
-			float normal_rect[4];
-			float orm_rect[4];
-			float emission_rect[4];
-			float modulate[4];
-			float emission_energy;
-			uint32_t mask;
-			float upper_fade;
-			float lower_fade;
-			float normal_xform[12];
-			float normal[3];
-			float normal_fade;
+			float xform[16] = {};
+			float inv_extents[3] = {};
+			float albedo_mix = 0.0;
+			float albedo_rect[4] = {};
+			float normal_rect[4] = {};
+			float orm_rect[4] = {};
+			float emission_rect[4] = {};
+			float modulate[4] = {};
+			float emission_energy = 0.0;
+			uint32_t mask = 0;
+			float upper_fade = 0.0;
+			float lower_fade = 0.0;
+			float normal_xform[12] = {};
+			float normal[3] = {};
+			float normal_fade = 0.0;
 		};
 
-		ReflectionData *reflections;
-		uint32_t max_reflections;
+		ReflectionData *reflections = nullptr;
+		uint32_t max_reflections = 0;
 		RID reflection_buffer;
-		uint32_t max_reflection_probes_per_instance;
+		uint32_t max_reflection_probes_per_instance = 0;
 
-		DecalData *decals;
-		uint32_t max_decals;
+		DecalData *decals = nullptr;
+		uint32_t max_decals = 0;
 		RID decal_buffer;
 
-		LightData *lights;
-		uint32_t max_lights;
+		LightData *lights = nullptr;
+		uint32_t max_lights = 0;
 		RID light_buffer;
-		RID *lights_instances;
-		Rect2i *lights_shadow_rect_cache;
+		RID *lights_instances = nullptr;
+		Rect2i *lights_shadow_rect_cache = nullptr;
 		uint32_t lights_shadow_rect_cache_count = 0;
 
-		DirectionalLightData *directional_lights;
-		uint32_t max_directional_lights;
+		DirectionalLightData *directional_lights = nullptr;
+		uint32_t max_directional_lights = 0;
 		RID directional_light_buffer;
 
 		LightClusterBuilder builder;
@@ -1409,8 +1403,8 @@ private:
 		uint32_t height = 0;
 		uint32_t depth = 0;
 
-		float length;
-		float spread;
+		float length = 0.0;
+		float spread = 0.0;
 
 		RID light_density_map;
 		RID fog_map;
@@ -1432,32 +1426,32 @@ private:
 
 	struct VolumetricFogShader {
 		struct PushConstant {
-			float fog_frustum_size_begin[2];
-			float fog_frustum_size_end[2];
+			float fog_frustum_size_begin[2] = {};
+			float fog_frustum_size_end[2] = {};
 
-			float fog_frustum_end;
-			float z_near;
-			float z_far;
-			uint32_t filter_axis;
+			float fog_frustum_end = 0.0;
+			float z_near = 0.0;
+			float z_far = 0.0;
+			uint32_t filter_axis = 0;
 
-			int32_t fog_volume_size[3];
-			uint32_t directional_light_count;
+			int32_t fog_volume_size[3] = {};
+			uint32_t directional_light_count = 0;
 
-			float light_energy[3];
-			float base_density;
+			float light_energy[3] = {};
+			float base_density = 0.0;
 
-			float detail_spread;
-			float gi_inject;
-			uint32_t max_gi_probes;
-			uint32_t pad;
+			float detail_spread = 0.0;
+			float gi_inject = 0.0;
+			uint32_t max_gi_probes = 0;
+			uint32_t pad = 0;
 
-			float cam_rotation[12];
+			float cam_rotation[12] = {};
 		};
 
 		VolumetricFogShaderRD shader;
 
 		RID shader_version;
-		RID pipelines[VOLUMETRIC_FOG_SHADER_MAX];
+		RID pipelines[VOLUMETRIC_FOG_SHADER_MAX] = {};
 
 	} volumetric_fog;
 
@@ -1476,8 +1470,8 @@ private:
 	uint64_t shadow_atlas_realloc_tolerance_msec = 500;
 
 	struct SDFGICosineNeighbour {
-		uint32_t neighbour;
-		float weight;
+		uint32_t neighbour = 0;
+		float weight = 0.0;
 	};
 
 	bool low_end = false;

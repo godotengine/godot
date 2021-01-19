@@ -56,11 +56,11 @@ public:
 
 private:
 	struct LightData {
-		float position[3];
-		uint32_t type;
-		float radius;
-		float spot_aperture;
-		uint32_t pad[2];
+		float position[3] = {};
+		uint32_t type = 0;
+		float radius = 0.0;
+		float spot_aperture = 0.0;
+		uint32_t pad[2] = {};
 	};
 
 	uint32_t light_count = 0;
@@ -68,14 +68,14 @@ private:
 	LightData *lights = nullptr;
 
 	struct OrientedBoxData {
-		float position[3];
-		uint32_t pad;
-		float x_axis[3];
-		uint32_t pad2;
-		float y_axis[3];
-		uint32_t pad3;
-		float z_axis[3];
-		uint32_t pad4;
+		float position[3] = {};
+		uint32_t pad = 0;
+		float x_axis[3] = {};
+		uint32_t pad2 = 0;
+		float y_axis[3] = {};
+		uint32_t pad3 = 0;
+		float z_axis[3] = {};
+		uint32_t pad4 = 0;
 	};
 
 	uint32_t refprobe_count = 0;
@@ -89,7 +89,7 @@ private:
 	struct Item {
 		AABB aabb;
 		ItemType type;
-		uint32_t index;
+		uint32_t index = 0;
 	};
 
 	Item *items = nullptr;
@@ -101,15 +101,15 @@ private:
 	uint32_t depth = 0;
 
 	struct Cell {
-		uint32_t item_pointers[ITEM_TYPE_MAX];
+		uint32_t item_pointers[ITEM_TYPE_MAX] = {};
 	};
 
 	Vector<uint8_t> cluster_data;
 	RID cluster_texture;
 
 	struct SortID {
-		uint32_t cell_index;
-		uint32_t item_index;
+		uint32_t cell_index = 0;
+		uint32_t item_index = 0;
 		ItemType item_type;
 	};
 
