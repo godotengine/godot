@@ -29,14 +29,20 @@ if get_option('builtin_libvorbis')
 
     _builtin_libvorbis_incdirs = include_directories('.')
 
+    c_dep_args = []
+    if PLATFORM != 'windows'
+        c_dep_args += '-DHAVE_ALLOCA_H'
+    endif
+
     lib_builtin_libvorbis = static_library('builtin_libvorbis', _builtin_libvorbis_srcs,
         include_directories: _builtin_libvorbis_incdirs,
         dependencies: [DEP_LIBOGG],
+        c_args: c_dep_args,
         build_by_default: false
     )
 
 
-    DEP_LIBVORBIS = declare_dependency(link_with: lib_builtin_libvorbis, include_directories: _builtin_libvorbis_incdirs)
+    DEP_LIBVORBIS = declare_dependency(link_with: lib_builtin_libvorbis, include_directories: _builtin_libvorbis_incdirs, compile_args: c_dep_args)
 
 else
     DEP_LIBVORBIS = [
