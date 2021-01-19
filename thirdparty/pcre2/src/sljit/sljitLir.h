@@ -24,8 +24,8 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _SLJIT_LIR_H_
-#define _SLJIT_LIR_H_
+#ifndef SLJIT_LIR_H_
+#define SLJIT_LIR_H_
 
 /*
    ------------------------------------------------------------------------
@@ -70,15 +70,25 @@
       - pass --smc-check=all argument to valgrind, since JIT is a "self-modifying code"
 */
 
-#if !(defined SLJIT_NO_DEFAULT_CONFIG && SLJIT_NO_DEFAULT_CONFIG)
+#if (defined SLJIT_HAVE_CONFIG_PRE && SLJIT_HAVE_CONFIG_PRE)
+#include "sljitConfigPre.h"
+#endif /* SLJIT_HAVE_CONFIG_PRE */
+
 #include "sljitConfig.h"
-#endif
 
 /* The following header file defines useful macros for fine tuning
 sljit based code generators. They are listed in the beginning
 of sljitConfigInternal.h */
 
 #include "sljitConfigInternal.h"
+
+#if (defined SLJIT_HAVE_CONFIG_POST && SLJIT_HAVE_CONFIG_POST)
+#include "sljitConfigPost.h"
+#endif /* SLJIT_HAVE_CONFIG_POST */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* --------------------------------------------------------------------- */
 /*  Error codes                                                          */
@@ -154,10 +164,10 @@ of sljitConfigInternal.h */
 */
 
 /* When SLJIT_UNUSED is specified as the destination of sljit_emit_op1
-   or sljit_emit_op2 operations the result is discarded. If no status
-   flags are set, no instructions are emitted for these operations. Data
-   prefetch is a special exception, see SLJIT_MOV operation. Other SLJIT
-   operations do not support SLJIT_UNUSED as a destination operand. */
+   or sljit_emit_op2 operations the result is discarded. Some status
+   flags must be set when the destination is SLJIT_UNUSED, because the
+   operation would have no effect otherwise. Other SLJIT operations do
+   not support SLJIT_UNUSED as a destination operand. */
 #define SLJIT_UNUSED		0
 
 /* Scratch registers. */
@@ -381,6 +391,7 @@ struct sljit_compiler {
 	struct sljit_put_label *last_put_label;
 
 	void *allocator_data;
+	void *exec_allocator_data;
 	struct sljit_memory_fragment *buf;
 	struct sljit_memory_fragment *abuf;
 
@@ -447,9 +458,9 @@ struct sljit_compiler {
 	sljit_sw cache_argw;
 #endif
 
-#if (defined SLJIT_CONFIG_TILEGX && SLJIT_CONFIG_TILEGX)
-	sljit_s32 cache_arg;
-	sljit_sw cache_argw;
+#if (defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X)
+	/* Need to allocate register save area to make calls. */
+	sljit_s32 have_save_area;
 #endif
 
 #if (defined SLJIT_VERBOSE && SLJIT_VERBOSE)
@@ -481,10 +492,12 @@ struct sljit_compiler {
    custom memory managers. This pointer is passed to SLJIT_MALLOC
    and SLJIT_FREE macros. Most allocators (including the default
    one) ignores this value, and it is recommended to pass NULL
-   as a dummy value for allocator_data.
+   as a dummy value for allocator_data. The exec_allocator_data
+   has the same purpose but this one is passed to SLJIT_MALLOC_EXEC /
+   SLJIT_MALLOC_FREE functions.
 
    Returns NULL if failed. */
-SLJIT_API_FUNC_ATTRIBUTE struct sljit_compiler* sljit_create_compiler(void *allocator_data);
+SLJIT_API_FUNC_ATTRIBUTE struct sljit_compiler* sljit_create_compiler(void *allocator_data, void *exec_allocator_data);
 
 /* Frees everything except the compiled machine code. */
 SLJIT_API_FUNC_ATTRIBUTE void sljit_free_compiler(struct sljit_compiler *compiler);
@@ -531,7 +544,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 
 /* Free executable code. */
 
-SLJIT_API_FUNC_ATTRIBUTE void sljit_free_code(void* code);
+SLJIT_API_FUNC_ATTRIBUTE void sljit_free_code(void* code, void *exec_allocator_data);
 
 /*
    When the protected executable allocator is used the JIT code is mapped
@@ -567,10 +580,14 @@ static SLJIT_INLINE sljit_uw sljit_get_generated_code_size(struct sljit_compiler
 #define SLJIT_HAS_FPU			0
 /* [Limitation] Some registers are virtual registers. */
 #define SLJIT_HAS_VIRTUAL_REGISTERS	1
+/* [Emulated] Has zero register (setting a memory location to zero is efficient). */
+#define SLJIT_HAS_ZERO_REGISTER		2
 /* [Emulated] Count leading zero is supported. */
-#define SLJIT_HAS_CLZ			2
+#define SLJIT_HAS_CLZ			3
 /* [Emulated] Conditional move is supported. */
-#define SLJIT_HAS_CMOV			3
+#define SLJIT_HAS_CMOV			4
+/* [Emulated] Conditional move is supported. */
+#define SLJIT_HAS_PREFETCH		5
 
 #if (defined SLJIT_CONFIG_X86 && SLJIT_CONFIG_X86)
 /* [Not emulated] SSE2 support is available on x86. */
@@ -658,10 +675,10 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_return(struct sljit_compiler *comp
 	sljit_s32 src, sljit_sw srcw);
 
 /* Generating entry and exit points for fast call functions (see SLJIT_FAST_CALL).
-   Both sljit_emit_fast_enter and sljit_emit_fast_return functions preserve the
+   Both sljit_emit_fast_enter and SLJIT_FAST_RETURN operations preserve the
    values of all registers and stack frame. The return address is stored in the
    dst argument of sljit_emit_fast_enter, and this return address can be passed
-   to sljit_emit_fast_return to continue the execution after the fast call.
+   to SLJIT_FAST_RETURN to continue the execution after the fast call.
 
    Fast calls are cheap operations (usually only a single call instruction is
    emitted) but they do not preserve any registers. However the callee function
@@ -669,16 +686,15 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_return(struct sljit_compiler *comp
    efficiently exploited by various optimizations. Registers can be saved
    manually by the callee function if needed.
 
-   Although returning to different address by sljit_emit_fast_return is possible,
+   Although returning to different address by SLJIT_FAST_RETURN is possible,
    this address usually cannot be predicted by the return address predictor of
-   modern CPUs which may reduce performance. Furthermore using sljit_emit_ijump
-   to return is also inefficient since return address prediction is usually
-   triggered by a specific form of ijump.
+   modern CPUs which may reduce performance. Furthermore certain security
+   enhancement technologies such as Intel Control-flow Enforcement Technology
+   (CET) may disallow returning to a different address.
 
    Flags: - (does not modify flags). */
 
 SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_enter(struct sljit_compiler *compiler, sljit_s32 dst, sljit_sw dstw);
-SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_return(struct sljit_compiler *compiler, sljit_s32 src, sljit_sw srcw);
 
 /*
    Source and destination operands for arithmetical instructions
@@ -692,7 +708,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_return(struct sljit_compiler 
 */
 
 /*
-   IMPORATNT NOTE: memory access MUST be naturally aligned except
+   IMPORTANT NOTE: memory access MUST be naturally aligned unless
                    SLJIT_UNALIGNED macro is defined and its value is 1.
 
      length | alignment
@@ -734,6 +750,9 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_return(struct sljit_compiler 
    mips:   [reg+imm], -65536 <= imm <= 65535
    sparc:  [reg+imm], -4096 <= imm <= 4095
            [reg+reg] is supported
+   s390x:  [reg+imm], -2^19 <= imm < 2^19
+           [reg+reg] is supported
+           Write-back is not supported
 */
 
 /* Macros for specifying operand types. */
@@ -887,6 +906,14 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_return(struct sljit_compiler 
          the behaviour is undefined. */
 #define SLJIT_DIV_SW			(SLJIT_OP0_BASE + 7)
 #define SLJIT_DIV_S32			(SLJIT_DIV_SW | SLJIT_I32_OP)
+/* Flags: - (does not modify flags)
+   ENDBR32 instruction for x86-32 and ENDBR64 instruction for x86-64
+   when Intel Control-flow Enforcement Technology (CET) is enabled.
+   No instruction for other architectures.  */
+#define SLJIT_ENDBR			(SLJIT_OP0_BASE + 8)
+/* Flags: - (may destroy flags)
+   Skip stack frames before return.  */
+#define SLJIT_SKIP_FRAMES_BEFORE_RETURN	(SLJIT_OP0_BASE + 9)
 
 SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op0(struct sljit_compiler *compiler, sljit_s32 op);
 
@@ -904,15 +931,6 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op0(struct sljit_compiler *compile
    U32 - unsigned int (32 bit) data transfer
    S32 - signed int (32 bit) data transfer
    P   - pointer (sljit_p) data transfer
-
-   If the destination of a MOV instruction is SLJIT_UNUSED and the source
-   operand is a memory address the compiler emits a prefetch instruction
-   if this instruction is supported by the current CPU. Higher data sizes
-   bring the data closer to the core: a MOV with word size loads the data
-   into a higher level cache than a byte size. Otherwise the type does not
-   affect the prefetch instruction. Furthermore a prefetch instruction
-   never fails, so it can be used to prefetch a data from an address and
-   check whether that address is NULL afterwards.
 */
 
 /* Flags: - (does not modify flags) */
@@ -1017,8 +1035,46 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op2(struct sljit_compiler *compile
 	sljit_s32 src1, sljit_sw src1w,
 	sljit_s32 src2, sljit_sw src2w);
 
+/* Starting index of opcodes for sljit_emit_op2. */
+#define SLJIT_OP_SRC_BASE		128
+
+/* Note: src cannot be an immedate value
+   Flags: - (does not modify flags) */
+#define SLJIT_FAST_RETURN		(SLJIT_OP_SRC_BASE + 0)
+/* Skip stack frames before fast return.
+   Note: src cannot be an immedate value
+   Flags: may destroy flags. */
+#define SLJIT_SKIP_FRAMES_BEFORE_FAST_RETURN	(SLJIT_OP_SRC_BASE + 1)
+/* Prefetch value into the level 1 data cache
+   Note: if the target CPU does not support data prefetch,
+         no instructions are emitted.
+   Note: this instruction never fails, even if the memory address is invalid.
+   Flags: - (does not modify flags) */
+#define SLJIT_PREFETCH_L1		(SLJIT_OP_SRC_BASE + 2)
+/* Prefetch value into the level 2 data cache
+   Note: same as SLJIT_PREFETCH_L1 if the target CPU
+         does not support this instruction form.
+   Note: this instruction never fails, even if the memory address is invalid.
+   Flags: - (does not modify flags) */
+#define SLJIT_PREFETCH_L2		(SLJIT_OP_SRC_BASE + 3)
+/* Prefetch value into the level 3 data cache
+   Note: same as SLJIT_PREFETCH_L2 if the target CPU
+         does not support this instruction form.
+   Note: this instruction never fails, even if the memory address is invalid.
+   Flags: - (does not modify flags) */
+#define SLJIT_PREFETCH_L3		(SLJIT_OP_SRC_BASE + 4)
+/* Prefetch a value which is only used once (and can be discarded afterwards)
+   Note: same as SLJIT_PREFETCH_L1 if the target CPU
+         does not support this instruction form.
+   Note: this instruction never fails, even if the memory address is invalid.
+   Flags: - (does not modify flags) */
+#define SLJIT_PREFETCH_ONCE		(SLJIT_OP_SRC_BASE + 5)
+
+SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op_src(struct sljit_compiler *compiler, sljit_s32 op,
+	sljit_s32 src, sljit_sw srcw);
+
 /* Starting index of opcodes for sljit_emit_fop1. */
-#define SLJIT_FOP1_BASE			128
+#define SLJIT_FOP1_BASE			160
 
 /* Flags: - (does not modify flags) */
 #define SLJIT_MOV_F64			(SLJIT_FOP1_BASE + 0)
@@ -1057,7 +1113,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fop1(struct sljit_compiler *compil
 	sljit_s32 src, sljit_sw srcw);
 
 /* Starting index of opcodes for sljit_emit_fop2. */
-#define SLJIT_FOP2_BASE			160
+#define SLJIT_FOP2_BASE			192
 
 /* Flags: - (does not modify flags) */
 #define SLJIT_ADD_F64			(SLJIT_FOP2_BASE + 0)
@@ -1161,7 +1217,7 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_label* sljit_emit_label(struct sljit_compi
 
 /* Unconditional jump types. */
 #define SLJIT_JUMP			24
-	/* Fast calling method. See sljit_emit_fast_enter / sljit_emit_fast_return. */
+	/* Fast calling method. See sljit_emit_fast_enter / SLJIT_FAST_RETURN. */
 #define SLJIT_FAST_CALL			25
 	/* Called function must be declared with the SLJIT_FUNC attribute. */
 #define SLJIT_CALL			26
@@ -1361,12 +1417,6 @@ SLJIT_API_FUNC_ATTRIBUTE const char* sljit_get_platform_name(void);
 /* Portable helper function to get an offset of a member. */
 #define SLJIT_OFFSETOF(base, member) ((sljit_sw)(&((base*)0x10)->member) - 0x10)
 
-#if (defined SLJIT_UTIL_GLOBAL_LOCK && SLJIT_UTIL_GLOBAL_LOCK)
-/* This global lock is useful to compile common functions. */
-SLJIT_API_FUNC_ATTRIBUTE void SLJIT_FUNC sljit_grab_lock(void);
-SLJIT_API_FUNC_ATTRIBUTE void SLJIT_FUNC sljit_release_lock(void);
-#endif
-
 #if (defined SLJIT_UTIL_STACK && SLJIT_UTIL_STACK)
 
 /* The sljit_stack structure and its manipulation functions provides
@@ -1490,4 +1540,8 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op_custom(struct sljit_compiler *c
 SLJIT_API_FUNC_ATTRIBUTE void sljit_set_current_flags(struct sljit_compiler *compiler,
 	sljit_s32 current_flags);
 
-#endif /* _SLJIT_LIR_H_ */
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif /* SLJIT_LIR_H_ */

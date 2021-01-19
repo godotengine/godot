@@ -44,6 +44,7 @@
 #include "scene/gui/panel.h"
 #include "scene/main/window.h"
 #include "scene/resources/visual_shader_nodes.h"
+#include "scene/resources/visual_shader_sdf_nodes.h"
 #include "servers/display_server.h"
 #include "servers/rendering/shader_types.h"
 
@@ -2087,6 +2088,197 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 	}
 }
 
+void VisualShaderEditor::_replace_node(VisualShader::Type p_type_id, int p_node_id, const StringName &p_from, const StringName &p_to) {
+	undo_redo->add_do_method(visual_shader.ptr(), "replace_node", p_type_id, p_node_id, p_to);
+	undo_redo->add_undo_method(visual_shader.ptr(), "replace_node", p_type_id, p_node_id, p_from);
+}
+
+void VisualShaderEditor::_update_constant(VisualShader::Type p_type_id, int p_node_id, Variant p_var, int p_preview_port) {
+	Ref<VisualShaderNode> node = visual_shader->get_node(p_type_id, p_node_id);
+	ERR_FAIL_COND(!node.is_valid());
+	ERR_FAIL_COND(!node->has_method("set_constant"));
+	node->call("set_constant", p_var);
+	if (p_preview_port != -1) {
+		node->set_output_port_for_preview(p_preview_port);
+	}
+}
+
+void VisualShaderEditor::_update_uniform(VisualShader::Type p_type_id, int p_node_id, Variant p_var, int p_preview_port) {
+	Ref<VisualShaderNodeUniform> uniform = visual_shader->get_node(p_type_id, p_node_id);
+	ERR_FAIL_COND(!uniform.is_valid());
+
+	String valid_name = visual_shader->validate_uniform_name(uniform->get_uniform_name(), uniform);
+	uniform->set_uniform_name(valid_name);
+	graph_plugin->set_uniform_name(p_type_id, p_node_id, valid_name);
+
+	if (uniform->has_method("set_default_value_enabled")) {
+		uniform->call("set_default_value_enabled", true);
+		uniform->call("set_default_value", p_var);
+	}
+	if (p_preview_port != -1) {
+		uniform->set_output_port_for_preview(p_preview_port);
+	}
+}
+
+void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
+	VisualShader::Type type_id = get_current_shader_type();
+
+	if (!p_vice_versa) {
+		undo_redo->create_action(TTR("Convert Constant Node(s) To Uniform(s)"));
+	} else {
+		undo_redo->create_action(TTR("Convert Uniform Node(s) To Constant(s)"));
+	}
+
+	const Set<int> &current_set = p_vice_versa ? selected_uniforms : selected_constants;
+	Set<String> deleted_names;
+
+	for (Set<int>::Element *E = current_set.front(); E; E = E->next()) {
+		int node_id = E->get();
+		Ref<VisualShaderNode> node = visual_shader->get_node(type_id, node_id);
+		bool catched = false;
+		Variant var;
+
+		// float
+		if (!p_vice_versa) {
+			Ref<VisualShaderNodeFloatConstant> float_const = Object::cast_to<VisualShaderNodeFloatConstant>(node.ptr());
+			if (float_const.is_valid()) {
+				_replace_node(type_id, node_id, "VisualShaderNodeFloatConstant", "VisualShaderNodeFloatUniform");
+				var = float_const->get_constant();
+				catched = true;
+			}
+		} else {
+			Ref<VisualShaderNodeFloatUniform> float_uniform = Object::cast_to<VisualShaderNodeFloatUniform>(node.ptr());
+			if (float_uniform.is_valid()) {
+				_replace_node(type_id, node_id, "VisualShaderNodeFloatUniform", "VisualShaderNodeFloatConstant");
+				var = float_uniform->get_default_value();
+				catched = true;
+			}
+		}
+
+		// int
+		if (!catched) {
+			if (!p_vice_versa) {
+				Ref<VisualShaderNodeIntConstant> int_const = Object::cast_to<VisualShaderNodeIntConstant>(node.ptr());
+				if (int_const.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeIntConstant", "VisualShaderNodeIntUniform");
+					var = int_const->get_constant();
+					catched = true;
+				}
+			} else {
+				Ref<VisualShaderNodeIntUniform> int_uniform = Object::cast_to<VisualShaderNodeIntUniform>(node.ptr());
+				if (int_uniform.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeIntUniform", "VisualShaderNodeIntConstant");
+					var = int_uniform->get_default_value();
+					catched = true;
+				}
+			}
+		}
+
+		// boolean
+		if (!catched) {
+			if (!p_vice_versa) {
+				Ref<VisualShaderNodeBooleanConstant> boolean_const = Object::cast_to<VisualShaderNodeBooleanConstant>(node.ptr());
+				if (boolean_const.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeBooleanConstant", "VisualShaderNodeBooleanUniform");
+					var = boolean_const->get_constant();
+					catched = true;
+				}
+			} else {
+				Ref<VisualShaderNodeBooleanUniform> boolean_uniform = Object::cast_to<VisualShaderNodeBooleanUniform>(node.ptr());
+				if (boolean_uniform.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeBooleanUniform", "VisualShaderNodeBooleanConstant");
+					var = boolean_uniform->get_default_value();
+					catched = true;
+				}
+			}
+		}
+
+		// vec3
+		if (!catched) {
+			if (!p_vice_versa) {
+				Ref<VisualShaderNodeVec3Constant> vec3_const = Object::cast_to<VisualShaderNodeVec3Constant>(node.ptr());
+				if (vec3_const.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeVec3Constant", "VisualShaderNodeVec3Uniform");
+					var = vec3_const->get_constant();
+					catched = true;
+				}
+			} else {
+				Ref<VisualShaderNodeVec3Uniform> vec3_uniform = Object::cast_to<VisualShaderNodeVec3Uniform>(node.ptr());
+				if (vec3_uniform.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeVec3Uniform", "VisualShaderNodeVec3Constant");
+					var = vec3_uniform->get_default_value();
+					catched = true;
+				}
+			}
+		}
+
+		// color
+		if (!catched) {
+			if (!p_vice_versa) {
+				Ref<VisualShaderNodeColorConstant> color_const = Object::cast_to<VisualShaderNodeColorConstant>(node.ptr());
+				if (color_const.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeColorConstant", "VisualShaderNodeColorUniform");
+					var = color_const->get_constant();
+					catched = true;
+				}
+			} else {
+				Ref<VisualShaderNodeColorUniform> color_uniform = Object::cast_to<VisualShaderNodeColorUniform>(node.ptr());
+				if (color_uniform.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeColorUniform", "VisualShaderNodeColorConstant");
+					var = color_uniform->get_default_value();
+					catched = true;
+				}
+			}
+		}
+
+		// transform
+		if (!catched) {
+			if (!p_vice_versa) {
+				Ref<VisualShaderNodeTransformConstant> transform_const = Object::cast_to<VisualShaderNodeTransformConstant>(node.ptr());
+				if (transform_const.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeTransformConstant", "VisualShaderNodeTransformUniform");
+					var = transform_const->get_constant();
+					catched = true;
+				}
+			} else {
+				Ref<VisualShaderNodeTransformUniform> transform_uniform = Object::cast_to<VisualShaderNodeTransformUniform>(node.ptr());
+				if (transform_uniform.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeTransformUniform", "VisualShaderNodeTransformConstant");
+					var = transform_uniform->get_default_value();
+					catched = true;
+				}
+			}
+		}
+		ERR_CONTINUE(!catched);
+		int preview_port = node->get_output_port_for_preview();
+
+		if (!p_vice_versa) {
+			undo_redo->add_do_method(this, "_update_uniform", type_id, node_id, var, preview_port);
+			undo_redo->add_undo_method(this, "_update_constant", type_id, node_id, var, preview_port);
+		} else {
+			undo_redo->add_do_method(this, "_update_constant", type_id, node_id, var, preview_port);
+			undo_redo->add_undo_method(this, "_update_uniform", type_id, node_id, var, preview_port);
+
+			Ref<VisualShaderNodeUniform> uniform = Object::cast_to<VisualShaderNodeUniform>(node.ptr());
+			ERR_CONTINUE(!uniform.is_valid());
+
+			deleted_names.insert(uniform->get_uniform_name());
+		}
+
+		undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type_id, node_id);
+		undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", type_id, node_id);
+	}
+
+	undo_redo->add_do_method(this, "_update_uniforms", true);
+	undo_redo->add_undo_method(this, "_update_uniforms", true);
+
+	if (deleted_names.size() > 0) {
+		_update_uniform_refs(deleted_names);
+	}
+
+	undo_redo->commit_action();
+}
+
 void VisualShaderEditor::_delete_node_request(int p_type, int p_node) {
 	List<int> to_erase;
 	to_erase.push_back(p_node);
@@ -2134,14 +2326,29 @@ void VisualShaderEditor::_node_selected(Object *p_node) {
 
 void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
+	VisualShader::Type type = get_current_shader_type();
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
+		selected_constants.clear();
+		selected_uniforms.clear();
+
 		List<int> to_change;
 		for (int i = 0; i < graph->get_child_count(); i++) {
 			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
 			if (gn) {
 				if (gn->is_selected() && gn->is_close_button_visible()) {
-					to_change.push_back(gn->get_name().operator String().to_int());
+					int id = gn->get_name().operator String().to_int();
+					to_change.push_back(id);
+
+					Ref<VisualShaderNode> node = visual_shader->get_node(type, id);
+					VisualShaderNodeConstant *cnode = Object::cast_to<VisualShaderNodeConstant>(node.ptr());
+					if (cnode != nullptr) {
+						selected_constants.insert(id);
+					}
+					VisualShaderNodeUniform *unode = Object::cast_to<VisualShaderNodeUniform>(node.ptr());
+					if (unode != nullptr) {
+						selected_uniforms.insert(id);
+					}
 				}
 			}
 		}
@@ -2152,9 +2359,36 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			popup_menu->set_item_disabled(NodeMenuOptions::PASTE, copy_nodes_buffer.is_empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::DELETE, to_change.is_empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::DUPLICATE, to_change.is_empty());
+
+			int temp = popup_menu->get_item_index(NodeMenuOptions::SEPARATOR2);
+			if (temp != -1) {
+				popup_menu->remove_item(temp);
+			}
+			temp = popup_menu->get_item_index(NodeMenuOptions::CONVERT_CONSTANTS_TO_UNIFORMS);
+			if (temp != -1) {
+				popup_menu->remove_item(temp);
+			}
+			temp = popup_menu->get_item_index(NodeMenuOptions::CONVERT_UNIFORMS_TO_CONSTANTS);
+			if (temp != -1) {
+				popup_menu->remove_item(temp);
+			}
+
+			if (selected_constants.size() > 0 || selected_uniforms.size() > 0) {
+				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR2);
+
+				if (selected_constants.size() > 0) {
+					popup_menu->add_item(TTR("Convert Constant(s) to Uniform(s)"), NodeMenuOptions::CONVERT_CONSTANTS_TO_UNIFORMS);
+				}
+
+				if (selected_uniforms.size() > 0) {
+					popup_menu->add_item(TTR("Convert Uniforms(s) to Constant(s)"), NodeMenuOptions::CONVERT_UNIFORMS_TO_CONSTANTS);
+				}
+			}
+
 			menu_point = graph->get_local_mouse_position();
 			Point2 gpos = Input::get_singleton()->get_mouse_position();
 			popup_menu->set_position(gpos);
+			popup_menu->set_size(Size2(-1, -1));
 			popup_menu->popup();
 		}
 	}
@@ -2695,6 +2929,14 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 		case NodeMenuOptions::DUPLICATE:
 			_duplicate_nodes();
 			break;
+		case NodeMenuOptions::CONVERT_CONSTANTS_TO_UNIFORMS:
+			_convert_constants_to_uniforms(false);
+			break;
+		case NodeMenuOptions::CONVERT_UNIFORMS_TO_CONSTANTS:
+			_convert_constants_to_uniforms(true);
+			break;
+		default:
+			break;
 	}
 }
 
@@ -2799,13 +3041,33 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 void VisualShaderEditor::_show_preview_text() {
 	preview_showed = !preview_showed;
-	preview_vbox->set_visible(preview_showed);
 	if (preview_showed) {
+		if (preview_first) {
+			preview_window->set_size(Size2(400 * EDSCALE, 600 * EDSCALE));
+			preview_window->popup_centered();
+			preview_first = false;
+		} else {
+			preview_window->popup();
+		}
+		_preview_size_changed();
+
 		if (pending_update_preview) {
 			_update_preview();
 			pending_update_preview = false;
 		}
+	} else {
+		preview_window->hide();
 	}
+}
+
+void VisualShaderEditor::_preview_close_requested() {
+	preview_showed = false;
+	preview_window->hide();
+	preview_shader->set_pressed(false);
+}
+
+void VisualShaderEditor::_preview_size_changed() {
+	preview_vbox->set_custom_minimum_size(preview_window->get_size());
 }
 
 static ShaderLanguage::DataType _get_global_variable_type(const StringName &p_variable) {
@@ -2843,6 +3105,16 @@ void VisualShaderEditor::_update_preview() {
 	}
 }
 
+void VisualShaderEditor::_visibility_changed() {
+	if (!is_visible()) {
+		if (preview_window->is_visible()) {
+			preview_shader->set_pressed(false);
+			preview_window->hide();
+			preview_showed = false;
+		}
+	}
+}
+
 void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_update_graph", &VisualShaderEditor::_update_graph);
 	ClassDB::bind_method("_update_options_menu", &VisualShaderEditor::_update_options_menu);
@@ -2856,6 +3128,8 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_set_mode", &VisualShaderEditor::_set_mode);
 	ClassDB::bind_method("_nodes_dragged", &VisualShaderEditor::_nodes_dragged);
 	ClassDB::bind_method("_float_constant_selected", &VisualShaderEditor::_float_constant_selected);
+	ClassDB::bind_method("_update_constant", &VisualShaderEditor::_update_constant);
+	ClassDB::bind_method("_update_uniform", &VisualShaderEditor::_update_uniform);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &VisualShaderEditor::can_drop_data_fw);
@@ -2873,7 +3147,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	saved_node_pos = Point2(0, 0);
 	ShaderLanguage::get_keyword_list(&keyword_list);
 
-	preview_showed = false;
 	pending_update_preview = false;
 	shader_error = false;
 
@@ -2882,16 +3155,11 @@ VisualShaderEditor::VisualShaderEditor() {
 	from_node = -1;
 	from_slot = -1;
 
-	main_box = memnew(HSplitContainer);
-	main_box->set_v_size_flags(SIZE_EXPAND_FILL);
-	main_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	add_child(main_box);
-
 	graph = memnew(GraphEdit);
 	graph->get_zoom_hbox()->set_h_size_flags(SIZE_EXPAND_FILL);
 	graph->set_v_size_flags(SIZE_EXPAND_FILL);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
-	main_box->add_child(graph);
+	add_child(graph);
 	graph->set_drag_forwarding(this);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_SCALAR_INT);
@@ -2912,6 +3180,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("gui_input", callable_mp(this, &VisualShaderEditor::_graph_gui_input));
 	graph->connect("connection_to_empty", callable_mp(this, &VisualShaderEditor::_connection_to_empty));
 	graph->connect("connection_from_empty", callable_mp(this, &VisualShaderEditor::_connection_from_empty));
+	graph->connect("visibility_changed", callable_mp(this, &VisualShaderEditor::_visibility_changed));
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR_INT);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_VECTOR);
@@ -2966,29 +3235,35 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_shader = memnew(Button);
 	preview_shader->set_flat(true);
 	preview_shader->set_toggle_mode(true);
-	preview_shader->set_tooltip(TTR("Show resulted shader code."));
+	preview_shader->set_tooltip(TTR("Show generated shader code."));
 	graph->get_zoom_hbox()->add_child(preview_shader);
 	preview_shader->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_preview_text));
 
 	///////////////////////////////////////
-	// PREVIEW PANEL
+	// PREVIEW WINDOW
 	///////////////////////////////////////
 
+	preview_window = memnew(Window);
+	preview_window->set_title(TTR("Generated shader code"));
+	preview_window->set_visible(preview_showed);
+	preview_window->connect("close_requested", callable_mp(this, &VisualShaderEditor::_preview_close_requested));
+	preview_window->connect("size_changed", callable_mp(this, &VisualShaderEditor::_preview_size_changed));
+	add_child(preview_window);
+
 	preview_vbox = memnew(VBoxContainer);
-	preview_vbox->set_visible(preview_showed);
-	main_box->add_child(preview_vbox);
+	preview_window->add_child(preview_vbox);
+
 	preview_text = memnew(CodeEdit);
 	syntax_highlighter.instance();
 	preview_vbox->add_child(preview_text);
-	preview_text->set_h_size_flags(SIZE_EXPAND_FILL);
-	preview_text->set_v_size_flags(SIZE_EXPAND_FILL);
-	preview_text->set_custom_minimum_size(Size2(400 * EDSCALE, 0));
+	preview_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	preview_text->set_syntax_highlighter(syntax_highlighter);
 	preview_text->set_draw_line_numbers(true);
 	preview_text->set_readonly(true);
 
 	error_text = memnew(Label);
 	preview_vbox->add_child(error_text);
+	error_text->set_autowrap(true);
 	error_text->set_visible(false);
 
 	///////////////////////////////////////
@@ -3397,7 +3672,17 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("FloatUniform", "Scalar", "Variables", "VisualShaderNodeFloatUniform", TTR("Scalar floating-point uniform."), -1, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("IntUniform", "Scalar", "Variables", "VisualShaderNodeIntUniform", TTR("Scalar integer uniform."), -1, VisualShaderNode::PORT_TYPE_SCALAR_INT));
 
+	// SDF
+	{
+		add_options.push_back(AddOption("ScreenUVToSDF", "SDF", "", "VisualShaderNodeScreenUVToSDF", TTR("Converts screen UV to a SDF."), -1, VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+		add_options.push_back(AddOption("SDFRaymarch", "SDF", "", "VisualShaderNodeSDFRaymarch", TTR("Casts a ray against the screen SDF and returns the distance travelled."), -1, -1, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+		add_options.push_back(AddOption("SDFToScreenUV", "SDF", "", "VisualShaderNodeSDFToScreenUV", TTR("Converts a SDF to screen UV."), -1, VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+		add_options.push_back(AddOption("TextureSDF", "SDF", "", "VisualShaderNodeTextureSDF", TTR("Performs a SDF texture lookup."), -1, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+		add_options.push_back(AddOption("TextureSDFNormal", "SDF", "", "VisualShaderNodeTextureSDFNormal", TTR("Performs a SDF normal texture lookup."), -1, VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+	}
+
 	// TEXTURES
+
 	cubemap_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubemap", TTR("Perform the cubic texture lookup."), -1, -1));
 	curve_node_option_idx = add_options.size();

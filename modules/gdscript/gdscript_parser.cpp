@@ -976,6 +976,8 @@ GDScriptParser::ConstantNode *GDScriptParser::parse_constant() {
 			push_error(R"(Expected initializer expression for constant.)");
 			return nullptr;
 		}
+	} else {
+		return nullptr;
 	}
 
 	end_statement("constant declaration");
@@ -1501,12 +1503,9 @@ GDScriptParser::AssertNode *GDScriptParser::parse_assert() {
 
 	if (match(GDScriptTokenizer::Token::COMMA)) {
 		// Error message.
-		if (consume(GDScriptTokenizer::Token::LITERAL, R"(Expected error message for assert after ",".)")) {
-			assert->message = parse_literal();
-			if (assert->message->value.get_type() != Variant::STRING) {
-				push_error(R"(Expected string for assert error message.)");
-			}
-		} else {
+		assert->message = parse_expression(false);
+		if (assert->message == nullptr) {
+			push_error(R"(Expected error message for assert after ",".)");
 			return nullptr;
 		}
 	}
@@ -2919,8 +2918,8 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_BIT_SHIFT }, // LESS_LESS,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_BIT_SHIFT }, // GREATER_GREATER,
 		// Math
-		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_operator,      	PREC_ADDITION }, // PLUS,
-		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_operator,      	PREC_SUBTRACTION }, // MINUS,
+		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_operator,      	PREC_ADDITION_SUBTRACTION }, // PLUS,
+		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_operator,      	PREC_ADDITION_SUBTRACTION }, // MINUS,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // STAR,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // SLASH,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // PERCENT,

@@ -33,6 +33,7 @@
 #include "core/templates/vmap.h"
 #include "servers/rendering/shader_types.h"
 #include "visual_shader_nodes.h"
+#include "visual_shader_sdf_nodes.h"
 
 bool VisualShaderNode::is_simple_decl() const {
 	return simple_decl;
@@ -482,6 +483,22 @@ void VisualShader::remove_node(Type p_type, int p_id) {
 		}
 		E = N;
 	}
+
+	_queue_update();
+}
+
+void VisualShader::replace_node(Type p_type, int p_id, const StringName &p_new_class) {
+	ERR_FAIL_INDEX(p_type, TYPE_MAX);
+	ERR_FAIL_COND(p_id < 2);
+	Graph *g = &graph[p_type];
+	ERR_FAIL_COND(!g->nodes.has(p_id));
+
+	if (g->nodes[p_id].node->get_class_name() == p_new_class) {
+		return;
+	}
+	VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instance(p_new_class));
+	vsn->connect("changed", callable_mp(this, &VisualShader::_queue_update));
+	g->nodes[p_id].node = Ref<VisualShaderNode>(vsn);
 
 	_queue_update();
 }
@@ -1605,6 +1622,7 @@ void VisualShader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_valid_node_id", "type"), &VisualShader::get_valid_node_id);
 
 	ClassDB::bind_method(D_METHOD("remove_node", "type", "id"), &VisualShader::remove_node);
+	ClassDB::bind_method(D_METHOD("replace_node", "type", "id", "new_class"), &VisualShader::replace_node);
 
 	ClassDB::bind_method(D_METHOD("is_node_connection", "type", "from_node", "from_port", "to_node", "to_port"), &VisualShader::is_node_connection);
 	ClassDB::bind_method(D_METHOD("can_connect_nodes", "type", "from_node", "from_port", "to_node", "to_port"), &VisualShader::can_connect_nodes);

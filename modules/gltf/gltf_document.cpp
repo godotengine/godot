@@ -805,7 +805,9 @@ Error GLTFDocument::_encode_buffer_views(Ref<GLTFState> state) {
 }
 
 Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> state) {
-	ERR_FAIL_COND_V(!state->json.has("bufferViews"), ERR_FILE_CORRUPT);
+	if (!state->json.has("bufferViews")) {
+		return OK;
+	}
 	const Array &buffers = state->json["bufferViews"];
 	for (GLTFBufferViewIndex i = 0; i < buffers.size(); i++) {
 		const Dictionary &d = buffers[i];
@@ -942,7 +944,9 @@ GLTFDocument::GLTFType GLTFDocument::_get_type_from_str(const String &p_string) 
 }
 
 Error GLTFDocument::_parse_accessors(Ref<GLTFState> state) {
-	ERR_FAIL_COND_V(!state->json.has("accessors"), ERR_FILE_CORRUPT);
+	if (!state->json.has("accessors")) {
+		return OK;
+	}
 	const Array &accessors = state->json["accessors"];
 	for (GLTFAccessorIndex i = 0; i < accessors.size(); i++) {
 		const Dictionary &d = accessors[i];

@@ -286,7 +286,7 @@ public:
 
 	struct AssertNode : public Node {
 		ExpressionNode *condition = nullptr;
-		LiteralNode *message = nullptr;
+		ExpressionNode *message = nullptr;
 
 		AssertNode() {
 			type = ASSERT;
@@ -1172,8 +1172,7 @@ private:
 		PREC_BIT_XOR,
 		PREC_BIT_AND,
 		PREC_BIT_SHIFT,
-		PREC_SUBTRACTION,
-		PREC_ADDITION,
+		PREC_ADDITION_SUBTRACTION,
 		PREC_FACTOR,
 		PREC_SIGN,
 		PREC_BIT_NOT,

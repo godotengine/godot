@@ -8780,7 +8780,7 @@ RendererStorageRD::RendererStorageRD() {
 		actions.renames["RESTART_VELOCITY"] = "restart_velocity";
 		actions.renames["RESTART_COLOR"] = "restart_color";
 		actions.renames["RESTART_CUSTOM"] = "restart_custom";
-		actions.renames["emit_particle"] = "emit_particle";
+		actions.renames["emit_subparticle"] = "emit_subparticle";
 		actions.renames["COLLIDED"] = "collided";
 		actions.renames["COLLISION_NORMAL"] = "collision_normal";
 		actions.renames["COLLISION_DEPTH"] = "collision_depth";

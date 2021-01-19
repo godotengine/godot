@@ -151,6 +151,7 @@ public:
 	void reload_collision_filters(AreaBullet *p_area);
 
 	void add_rigid_body(RigidBodyBullet *p_body);
+	void remove_rigid_body_constraints(RigidBodyBullet *p_body);
 	void remove_rigid_body(RigidBodyBullet *p_body);
 	void reload_collision_filters(RigidBodyBullet *p_body);
 

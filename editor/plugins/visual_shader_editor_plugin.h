@@ -134,7 +134,6 @@ class VisualShaderEditor : public VBoxContainer {
 	int editing_port;
 
 	Ref<VisualShader> visual_shader;
-	HSplitContainer *main_box;
 	GraphEdit *graph;
 	Button *add_node;
 	Button *preview_shader;
@@ -148,6 +147,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	bool pending_update_preview;
 	bool shader_error;
+	Window *preview_window;
 	VBoxContainer *preview_vbox;
 	CodeEdit *preview_text;
 	Ref<CodeHighlighter> syntax_highlighter;
@@ -161,7 +161,8 @@ class VisualShaderEditor : public VBoxContainer {
 	PopupMenu *popup_menu;
 	MenuButton *tools;
 
-	bool preview_showed;
+	bool preview_first = true;
+	bool preview_showed = false;
 	bool particles_mode;
 
 	enum TypeFlags {
@@ -188,6 +189,9 @@ class VisualShaderEditor : public VBoxContainer {
 		PASTE,
 		DELETE,
 		DUPLICATE,
+		SEPARATOR2, // ignore
+		CONVERT_CONSTANTS_TO_UNIFORMS,
+		CONVERT_UNIFORMS_TO_CONSTANTS,
 	};
 
 	Tree *members;
@@ -277,6 +281,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _set_mode(int p_which);
 
 	void _show_preview_text();
+	void _preview_close_requested();
+	void _preview_size_changed();
 	void _update_preview();
 	String _get_description(int p_idx);
 
@@ -315,6 +321,14 @@ class VisualShaderEditor : public VBoxContainer {
 	int to_slot;
 	int from_node;
 	int from_slot;
+
+	Set<int> selected_constants;
+	Set<int> selected_uniforms;
+
+	void _convert_constants_to_uniforms(bool p_vice_versa);
+	void _replace_node(VisualShader::Type p_type_id, int p_node_id, const StringName &p_from, const StringName &p_to);
+	void _update_constant(VisualShader::Type p_type_id, int p_node_id, Variant p_var, int p_preview_port);
+	void _update_uniform(VisualShader::Type p_type_id, int p_node_id, Variant p_var, int p_preview_port);
 
 	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
 	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
@@ -387,6 +401,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _update_created_node(GraphNode *node);
 	void _update_uniforms(bool p_update_refs);
 	void _update_uniform_refs(Set<String> &p_names);
+
+	void _visibility_changed();
 
 protected:
 	void _notification(int p_what);

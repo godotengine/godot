@@ -148,12 +148,12 @@ void RayCast3D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (enabled && !Engine::get_singleton()->is_editor_hint()) {
 				set_physics_process_internal(true);
-
-				if (get_tree()->is_debugging_collisions_hint()) {
-					_update_debug_shape();
-				}
 			} else {
 				set_physics_process_internal(false);
+			}
+
+			if (get_tree()->is_debugging_collisions_hint()) {
+				_update_debug_shape();
 			}
 
 			if (Object::cast_to<CollisionObject3D>(get_parent())) {
@@ -348,23 +348,32 @@ void RayCast3D::_update_debug_shape() {
 	}
 
 	MeshInstance3D *mi = static_cast<MeshInstance3D *>(debug_shape);
-	if (!mi->get_mesh().is_valid()) {
+	Ref<ArrayMesh> mesh = mi->get_mesh();
+	if (!mesh.is_valid()) {
 		return;
 	}
-
-	Ref<ArrayMesh> mesh = mi->get_mesh();
-	mesh->clear_surfaces();
-
-	Array a;
-	a.resize(Mesh::ARRAY_MAX);
 
 	Vector<Vector3> verts;
 	verts.push_back(Vector3());
 	verts.push_back(target_position);
-	a[Mesh::ARRAY_VERTEX] = verts;
 
-	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, a);
-	mesh->surface_set_material(0, debug_material);
+	if (mesh->get_surface_count() == 0) {
+		Array a;
+		a.resize(Mesh::ARRAY_MAX);
+		a[Mesh::ARRAY_VERTEX] = verts;
+
+		uint32_t flags = Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE;
+
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, a, Array(), Dictionary(), flags);
+		mesh->surface_set_material(0, debug_material);
+	} else {
+		Vector<uint8_t> byte_array;
+		int array_size = sizeof(Vector3) * verts.size();
+		byte_array.resize(array_size);
+		copymem(byte_array.ptrw(), verts.ptr(), array_size);
+
+		RS::get_singleton()->mesh_surface_update_region(mesh->get_rid(), 0, 0, byte_array);
+	}
 }
 
 void RayCast3D::_clear_debug_shape() {

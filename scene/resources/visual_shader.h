@@ -152,6 +152,7 @@ public:
 
 	int find_node_id(Type p_type, const Ref<VisualShaderNode> &p_node) const;
 	void remove_node(Type p_type, int p_id);
+	void replace_node(Type p_type, int p_id, const StringName &p_new_class);
 
 	bool is_node_connection(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
 
