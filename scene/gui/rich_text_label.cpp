@@ -414,6 +414,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						fw += cw;
 
 						end++;
+						if (text->isCJK)
+							break;
 					}
 					CHECK_HEIGHT(fh);
 					ENSURE_WIDTH(w);
@@ -1596,21 +1598,29 @@ void RichTextLabel::add_text(const String &p_text) {
 		else
 			line = p_text.substr(pos, end - pos);
 
+#define IS_CJK(index) (line[index] >= 0x3040 && line[index] <= 0x9fbf) || \
+			(line[index] >= 0xf900 && line[index] <= 0xfaff) \
+			/*add more rule here,to support more languages*/
+			
 		int lipos = 0;
 		while (lipos < line.length()) {
-			if (line[lipos] >= 0x3040 && line[lipos] < 0xfaff) {
+			if (IS_CJK(lipos)) {
 				//Chinese or Japanese word condition
+				int o;//length of CJK
+				for (o = 1; o < (line.length() - lipos) && IS_CJK(lipos + o); o++) {
+				}
 				ItemText *item = memnew(ItemText);
-				item->text = line.substr(lipos, 1);
+				item->isCJK = true;
+				item->text = line.substr(lipos, o);
 				_add_item(item, false);
-				//append one by one
-				lipos++;
+				lipos += o;
 			} else {
 				//English word condition
 				int o;//length of English words
-				for (o = 1; o < (line.length() - lipos) && (line[lipos + o] < 0x3040 || line[lipos + o] > 0xfaff); o++) {
+				for (o = 1; o < (line.length() - lipos) && !(IS_CJK(lipos + o)); o++) {
 				}
-				if (current->subitems.size() && current->subitems.back()->get()->type == ITEM_TEXT) {
+				if (lipos == 0 && current->subitems.size() && current->subitems.back()->get()->type == ITEM_TEXT &&
+					!(static_cast<ItemText *>(current->subitems.back()->get())->isCJK)) {
 					//append text condition!
 					ItemText *ti = static_cast<ItemText *>(current->subitems.back()->get());
 					ti->text += line.substr(lipos, o);
@@ -1620,12 +1630,14 @@ void RichTextLabel::add_text(const String &p_text) {
 					//append item condition
 					ItemText *item = memnew(ItemText);
 					item->text = line.substr(lipos, o);
+					item->isCJK = false;
 					_add_item(item, false);
 				}
 				lipos += o;
 			}
 		}
-
+#undef IS_CJK
+		
 		if (eol) {
 
 			ItemNewline *item = memnew(ItemNewline);
