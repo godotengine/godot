@@ -50,7 +50,7 @@ private:
 	GLTFSkeletonIndex skeleton = -1;
 	bool joint = false;
 	Vector3 translation;
-	Quat rotation;
+	Quaternion rotation;
 	Vector3 scale = Vector3(1, 1, 1);
 	Vector<int> children;
 	GLTFLightIndex light = -1;
@@ -86,8 +86,8 @@ public:
 	Vector3 get_translation();
 	void set_translation(Vector3 p_translation);
 
-	Quat get_rotation();
-	void set_rotation(Quat p_rotation);
+	Quaternion get_rotation();
+	void set_rotation(Quaternion p_rotation);
 
 	Vector3 get_scale();
 	void set_scale(Vector3 p_scale);

@@ -599,13 +599,13 @@ MainLoop *test() {
 
 		Basis m2(v2, a2);
 
-		Quat q = m;
-		Quat q2 = m2;
+		Quaternion q = m;
+		Quaternion q2 = m2;
 
 		Basis m3 = m.inverse() * m2;
-		Quat q3 = (q.inverse() * q2); //.normalized();
+		Quaternion q3 = (q.inverse() * q2); //.normalized();
 
-		print_line(Quat(m3));
+		print_line(Quaternion(m3));
 		print_line(q3);
 
 		print_line("before v: " + v + " a: " + rtos(a));

@@ -2523,7 +2523,7 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 		case Variant::TRANSFORM2D:
 		case Variant::TRANSFORM3D:
 		case Variant::BASIS:
-		case Variant::QUAT:
+		case Variant::QUATERNION:
 		case Variant::PLANE:
 		case Variant::AABB:
 		case Variant::COLOR:
@@ -3142,12 +3142,12 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
-		case Variant::QUAT: {
-			Quat quat = p_val.operator Quat();
-			if (quat == Quat()) {
-				r_iarg.default_argument = "Quat.Identity";
+		case Variant::QUATERNION: {
+			Quaternion quaternion = p_val.operator Quaternion();
+			if (quaternion == Quaternion()) {
+				r_iarg.default_argument = "Quaternion.Identity";
 			} else {
-				r_iarg.default_argument = "new Quat" + quat.operator String();
+				r_iarg.default_argument = "new Quaternion" + quaternion.operator String();
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
@@ -3196,7 +3196,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	INSERT_STRUCT_TYPE(Vector3)
 	INSERT_STRUCT_TYPE(Vector3i)
 	INSERT_STRUCT_TYPE(Basis)
-	INSERT_STRUCT_TYPE(Quat)
+	INSERT_STRUCT_TYPE(Quaternion)
 	INSERT_STRUCT_TYPE(Transform3D)
 	INSERT_STRUCT_TYPE(AABB)
 	INSERT_STRUCT_TYPE(Color)

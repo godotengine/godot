@@ -80,7 +80,7 @@ Basis ImportUtils::EulerToBasis(FBXDocParser::Model::RotOrder mode, const Vector
 	return ret;
 }
 
-Quat ImportUtils::EulerToQuaternion(FBXDocParser::Model::RotOrder mode, const Vector3 &p_rotation) {
+Quaternion ImportUtils::EulerToQuaternion(FBXDocParser::Model::RotOrder mode, const Vector3 &p_rotation) {
 	return ImportUtils::EulerToBasis(mode, p_rotation);
 }
 
@@ -117,7 +117,7 @@ Vector3 ImportUtils::BasisToEuler(FBXDocParser::Model::RotOrder mode, const Basi
 	}
 }
 
-Vector3 ImportUtils::QuaternionToEuler(FBXDocParser::Model::RotOrder mode, const Quat &p_rotation) {
+Vector3 ImportUtils::QuaternionToEuler(FBXDocParser::Model::RotOrder mode, const Quaternion &p_rotation) {
 	return BasisToEuler(mode, p_rotation);
 }
 

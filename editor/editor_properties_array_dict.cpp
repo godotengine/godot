@@ -850,8 +850,8 @@ void EditorPropertyDictionary::update_property() {
 					prop = editor;
 
 				} break;
-				case Variant::QUAT: {
-					EditorPropertyQuat *editor = memnew(EditorPropertyQuat);
+				case Variant::QUATERNION: {
+					EditorPropertyQuaternion *editor = memnew(EditorPropertyQuaternion);
 					editor->setup(-100000, 100000, 0.001, true);
 					prop = editor;
 

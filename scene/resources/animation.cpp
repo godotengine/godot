@@ -361,7 +361,7 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 				int idx = 0;
 				for (int i = 0; i < track_get_key_count(track); i++) {
 					Vector3 loc;
-					Quat rot;
+					Quaternion rot;
 					Vector3 scale;
 					transform_track_get_key(track, i, &loc, &rot, &scale);
 
@@ -773,7 +773,7 @@ void Animation::_clear(T &p_keys) {
 	p_keys.clear();
 }
 
-Error Animation::transform_track_get_key(int p_track, int p_key, Vector3 *r_loc, Quat *r_rot, Vector3 *r_scale) const {
+Error Animation::transform_track_get_key(int p_track, int p_key, Vector3 *r_loc, Quaternion *r_rot, Vector3 *r_scale) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
 	Track *t = tracks[p_track];
 
@@ -794,7 +794,7 @@ Error Animation::transform_track_get_key(int p_track, int p_key, Vector3 *r_loc,
 	return OK;
 }
 
-int Animation::transform_track_insert_key(int p_track, float p_time, const Vector3 &p_loc, const Quat &p_rot, const Vector3 &p_scale) {
+int Animation::transform_track_insert_key(int p_track, float p_time, const Vector3 &p_loc, const Quaternion &p_rot, const Vector3 &p_scale) {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_TRANSFORM3D, -1);
@@ -958,7 +958,7 @@ void Animation::track_insert_key(int p_track, float p_time, const Variant &p_key
 				loc = d["location"];
 			}
 
-			Quat rot;
+			Quaternion rot;
 			if (d.has("rotation")) {
 				rot = d["rotation"];
 			}
@@ -1462,7 +1462,7 @@ Vector3 Animation::_interpolate(const Vector3 &p_a, const Vector3 &p_b, float p_
 	return p_a.lerp(p_b, p_c);
 }
 
-Quat Animation::_interpolate(const Quat &p_a, const Quat &p_b, float p_c) const {
+Quaternion Animation::_interpolate(const Quaternion &p_a, const Quaternion &p_b, float p_c) const {
 	return p_a.slerp(p_b, p_c);
 }
 
@@ -1490,7 +1490,7 @@ Vector3 Animation::_cubic_interpolate(const Vector3 &p_pre_a, const Vector3 &p_a
 	return p_a.cubic_interpolate(p_b, p_pre_a, p_post_b, p_c);
 }
 
-Quat Animation::_cubic_interpolate(const Quat &p_pre_a, const Quat &p_a, const Quat &p_b, const Quat &p_post_b, float p_c) const {
+Quaternion Animation::_cubic_interpolate(const Quaternion &p_pre_a, const Quaternion &p_a, const Quaternion &p_b, const Quaternion &p_post_b, float p_c) const {
 	return p_a.cubic_slerp(p_b, p_pre_a, p_post_b, p_c);
 }
 
@@ -1555,11 +1555,11 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 
 			return a.cubic_interpolate(b, pa, pb, p_c);
 		}
-		case Variant::QUAT: {
-			Quat a = p_a;
-			Quat b = p_b;
-			Quat pa = p_pre_a;
-			Quat pb = p_post_b;
+		case Variant::QUATERNION: {
+			Quaternion a = p_a;
+			Quaternion b = p_b;
+			Quaternion pa = p_pre_a;
+			Quaternion pb = p_post_b;
 
 			return a.cubic_slerp(b, pa, pb, p_c);
 		}
@@ -1728,7 +1728,7 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 	// do a barrel roll
 }
 
-Error Animation::transform_track_interpolate(int p_track, float p_time, Vector3 *r_loc, Quat *r_rot, Vector3 *r_scale) const {
+Error Animation::transform_track_interpolate(int p_track, float p_time, Vector3 *r_loc, Quaternion *r_rot, Vector3 *r_scale) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_TRANSFORM3D, ERR_INVALID_PARAMETER);
@@ -2751,9 +2751,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 
 	{ //rotation
 
-		const Quat &q0 = t0.value.rot;
-		const Quat &q1 = t1.value.rot;
-		const Quat &q2 = t2.value.rot;
+		const Quaternion &q0 = t0.value.rot;
+		const Quaternion &q1 = t1.value.rot;
+		const Quaternion &q2 = t2.value.rot;
 
 		//localize both to rotation from q0
 
@@ -2763,8 +2763,8 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 			}
 
 		} else {
-			Quat r02 = (q0.inverse() * q2).normalized();
-			Quat r01 = (q0.inverse() * q1).normalized();
+			Quaternion r02 = (q0.inverse() * q2).normalized();
+			Quaternion r01 = (q0.inverse() * q1).normalized();
 
 			Vector3 v02, v01;
 			real_t a02, a01;

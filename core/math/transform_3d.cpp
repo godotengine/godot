@@ -112,15 +112,15 @@ Transform3D Transform3D::interpolate_with(const Transform3D &p_transform, real_t
 	/* not sure if very "efficient" but good enough? */
 
 	Vector3 src_scale = basis.get_scale();
-	Quat src_rot = basis.get_rotation_quat();
+	Quaternion src_rot = basis.get_rotation_quaternion();
 	Vector3 src_loc = origin;
 
 	Vector3 dst_scale = p_transform.basis.get_scale();
-	Quat dst_rot = p_transform.basis.get_rotation_quat();
+	Quaternion dst_rot = p_transform.basis.get_rotation_quaternion();
 	Vector3 dst_loc = p_transform.origin;
 
 	Transform3D interp;
-	interp.basis.set_quat_scale(src_rot.slerp(dst_rot, p_c).normalized(), src_scale.lerp(dst_scale, p_c));
+	interp.basis.set_quaternion_scale(src_rot.slerp(dst_rot, p_c).normalized(), src_scale.lerp(dst_scale, p_c));
 	interp.origin = src_loc.lerp(dst_loc, p_c);
 
 	return interp;

@@ -56,13 +56,13 @@ public:
 	static Basis EulerToBasis(FBXDocParser::Model::RotOrder mode, const Vector3 &p_rotation);
 
 	/// Converts rotation order vector (in rad) to quaternion.
-	static Quat EulerToQuaternion(FBXDocParser::Model::RotOrder mode, const Vector3 &p_rotation);
+	static Quaternion EulerToQuaternion(FBXDocParser::Model::RotOrder mode, const Vector3 &p_rotation);
 
 	/// Converts basis into rotation order vector (in rad).
 	static Vector3 BasisToEuler(FBXDocParser::Model::RotOrder mode, const Basis &p_rotation);
 
 	/// Converts quaternion into rotation order vector (in rad).
-	static Vector3 QuaternionToEuler(FBXDocParser::Model::RotOrder mode, const Quat &p_rotation);
+	static Vector3 QuaternionToEuler(FBXDocParser::Model::RotOrder mode, const Quaternion &p_rotation);
 
 	static void debug_xform(String name, const Transform3D &t) {
 		print_verbose(name + " " + t.origin + " rotation: " + (t.basis.get_euler() * (180 / Math_PI)));

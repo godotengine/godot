@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  quat.h                                                               */
+/*  quaternion.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,33 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_QUAT_H
-#define GODOT_QUAT_H
+#include "gdnative/quaternion.h"
+
+#include "core/math/quaternion.h"
+
+static_assert(sizeof(godot_quaternion) == sizeof(Quaternion), "Quaternion size mismatch");
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <gdnative/math_defs.h>
+void GDAPI godot_quaternion_new(godot_quaternion *p_self) {
+	memnew_placement(p_self, Quaternion);
+}
 
-#define GODOT_QUAT_SIZE (sizeof(godot_real_t) * 4)
+void GDAPI godot_quaternion_new_copy(godot_quaternion *r_dest, const godot_quaternion *p_src) {
+	memnew_placement(r_dest, Quaternion(*(Quaternion *)p_src));
+}
 
-#ifndef GODOT_CORE_API_GODOT_QUAT_TYPE_DEFINED
-#define GODOT_CORE_API_GODOT_QUAT_TYPE_DEFINED
-typedef struct {
-	uint8_t _dont_touch_that[GODOT_QUAT_SIZE];
-} godot_quat;
-#endif
+godot_real_t GDAPI *godot_quaternion_operator_index(godot_quaternion *p_self, godot_int p_index) {
+	Quaternion *self = (Quaternion *)p_self;
+	return (godot_real_t *)&self->operator[](p_index);
+}
 
-#include <gdnative/gdnative.h>
-
-void GDAPI godot_quat_new(godot_quat *p_self);
-void GDAPI godot_quat_new_copy(godot_quat *r_dest, const godot_quat *p_src);
-godot_real_t GDAPI *godot_quat_operator_index(godot_quat *p_self, godot_int p_index);
-const godot_real_t GDAPI *godot_quat_operator_index_const(const godot_quat *p_self, godot_int p_index);
+const godot_real_t GDAPI *godot_quaternion_operator_index_const(const godot_quaternion *p_self, godot_int p_index) {
+	const Quaternion *self = (const Quaternion *)p_self;
+	return (const godot_real_t *)&self->operator[](p_index);
+}
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_QUAT_H
