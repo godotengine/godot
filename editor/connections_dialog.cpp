@@ -785,8 +785,30 @@ void ConnectionsDock::_go_to_script(TreeItem &item) {
 		return;
 	}
 
-	if (script.is_valid() && ScriptEditor::get_singleton()->script_goto_method(script, c.method)) {
-		editor->call("_editor_select", EditorNode::EDITOR_SCRIPT);
+	if (script.is_valid()) {
+		if (ScriptEditor::get_singleton()->script_goto_method(script, c.method)) {
+			editor->call("_editor_select", EditorNode::EDITOR_SCRIPT);
+		} else if (script->get_language()->overrides_external_editor()) {
+			const bool use_external_editor = EditorSettings::get_singleton()->get("text_editor/external/use_external_editor") || (script.is_valid() && script->get_language()->overrides_external_editor());
+			const bool open_dominant = EditorSettings::get_singleton()->get("text_editor/files/open_dominant_script_on_scene_change");
+			const bool should_open = (open_dominant && !use_external_editor) || !EditorNode::get_singleton()->is_changing_scene();
+			if (should_open) {
+				Vector<String> source_code_line = script->get_source_code().split("\n");
+				int p_line = 0;
+				int p_col = 0;
+				for (int i = 0; i < source_code_line.size(); i = i + 1) {
+					int tmp_col = source_code_line[i].find(c.method);
+					if (tmp_col > 0) {
+						p_line = i;
+						p_col = tmp_col;
+						break;
+					}
+				}
+				Error err = script->get_language()->open_in_external_editor(script, p_line, p_col);
+				if (err != OK)
+					ERR_PRINT("Couldn't open script in the overridden external text editor");
+			}
+		}
 	}
 }
 
