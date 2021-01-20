@@ -58,7 +58,4 @@ struct ItemPairs {
 
 		return userdata;
 	}
-
-	void update() {
-	}
 };
