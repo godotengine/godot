@@ -48,7 +48,7 @@ class BroadPhaseOctree : public BroadPhaseSW {
 
 public:
 	// 0 is an invalid ID
-	virtual ID create(CollisionObjectSW *p_object, int p_subindex = 0);
+	virtual ID create(CollisionObjectSW *p_object, int p_subindex = 0, const AABB &p_aabb = AABB());
 	virtual void move(ID p_id, const AABB &p_aabb);
 	virtual void set_static(ID p_id, bool p_static);
 	virtual void remove(ID p_id);

@@ -150,12 +150,7 @@ void CollisionObjectSW::_update_shapes() {
 		return;
 
 	for (int i = 0; i < shapes.size(); i++) {
-
 		Shape &s = shapes.write[i];
-		if (s.bpid == 0) {
-			s.bpid = space->get_broadphase()->create(this, i);
-			space->get_broadphase()->set_static(s.bpid, _static);
-		}
 
 		//not quite correct, should compute the next matrix..
 		AABB shape_aabb = s.shape->get_aabb();
@@ -167,6 +162,10 @@ void CollisionObjectSW::_update_shapes() {
 		Vector3 scale = xform.get_basis().get_scale();
 		s.area_cache = s.shape->get_area() * scale.x * scale.y * scale.z;
 
+		if (s.bpid == 0) {
+			s.bpid = space->get_broadphase()->create(this, i, s.aabb_cache);
+			space->get_broadphase()->set_static(s.bpid, _static);
+		}
 		space->get_broadphase()->move(s.bpid, s.aabb_cache);
 	}
 }
@@ -177,12 +176,7 @@ void CollisionObjectSW::_update_shapes_with_motion(const Vector3 &p_motion) {
 		return;
 
 	for (int i = 0; i < shapes.size(); i++) {
-
 		Shape &s = shapes.write[i];
-		if (s.bpid == 0) {
-			s.bpid = space->get_broadphase()->create(this, i);
-			space->get_broadphase()->set_static(s.bpid, _static);
-		}
 
 		//not quite correct, should compute the next matrix..
 		AABB shape_aabb = s.shape->get_aabb();
@@ -191,6 +185,10 @@ void CollisionObjectSW::_update_shapes_with_motion(const Vector3 &p_motion) {
 		shape_aabb = shape_aabb.merge(AABB(shape_aabb.position + p_motion, shape_aabb.size)); //use motion
 		s.aabb_cache = shape_aabb;
 
+		if (s.bpid == 0) {
+			s.bpid = space->get_broadphase()->create(this, i, s.aabb_cache);
+			space->get_broadphase()->set_static(s.bpid, _static);
+		}
 		space->get_broadphase()->move(s.bpid, shape_aabb);
 	}
 }
