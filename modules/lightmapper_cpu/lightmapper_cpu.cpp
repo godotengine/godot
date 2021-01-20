@@ -264,6 +264,7 @@ bool LightmapperCPU::_parallel_run(int p_count, const String &p_description, Bak
 	}
 	thread_cancelled = cancelled;
 	Thread::wait_to_finish(runner_thread);
+	memdelete(runner_thread);
 #endif
 
 	thread_cancelled = false;
