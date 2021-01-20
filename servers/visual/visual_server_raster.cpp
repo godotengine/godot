@@ -104,7 +104,6 @@ void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 	VSG::rasterizer->begin_frame(frame_step);
 
 	VSG::scene->update_dirty_instances(); //update scene stuff
-	VSG::scene->update_scenarios(); // render tree collision detection (pairing)
 
 	VSG::viewport->draw_viewports();
 	VSG::scene->render_probes();

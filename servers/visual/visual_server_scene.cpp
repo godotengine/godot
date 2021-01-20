@@ -3578,47 +3578,24 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 	p_instance->update_materials = false;
 }
 
-void VisualServerScene::update_scenarios() {
-	// go through all scenarios and update BVH in each
-	if (!_use_bvh) {
-		return;
-	}
-
-	List<RID> owned;
-	scenario_owner.get_owned_list(&owned);
-
-	for (List<RID>::Element *E = owned.front(); E; E = E->next()) {
-		RID rid = E->get();
-		Scenario *scenario = scenario_owner.get(rid);
-
-		scenario->sps->update();
-	}
-}
-
 void VisualServerScene::update_dirty_instances() {
 
 	VSG::storage->update_dirty_resources();
 
-	// only define this if you run into problems with missed pairing collisions for debugging
-//#define GODOT_RENDER_SPS_EXTRA_COLLISION_CHECKS
-#ifdef GODOT_RENDER_SPS_EXTRA_COLLISION_CHECKS
 	// this is just to get access to scenario so we can update the spatial partitioning scheme
 	Scenario *scenario = nullptr;
 	if (_instance_update_list.first()) {
 		scenario = _instance_update_list.first()->self()->scenario;
 	}
-#endif
 
 	while (_instance_update_list.first()) {
 
 		_update_dirty_instance(_instance_update_list.first()->self());
 	}
 
-#ifdef GODOT_RENDER_SPS_EXTRA_COLLISION_CHECKS
 	if (scenario) {
-		scenario->sps->update_collisions();
+		scenario->sps->update();
 	}
-#endif
 }
 
 bool VisualServerScene::free(RID p_rid) {
