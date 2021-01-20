@@ -1544,19 +1544,19 @@ static void _register_variant_builtin_methods() {
 	bind_methodv(Plane, intersects_ray, &Plane::intersects_ray_bind, sarray("from", "dir"), varray());
 	bind_methodv(Plane, intersects_segment, &Plane::intersects_segment_bind, sarray("from", "to"), varray());
 
-	/* Quat */
+	/* Quaternion */
 
-	bind_method(Quat, length, sarray(), varray());
-	bind_method(Quat, length_squared, sarray(), varray());
-	bind_method(Quat, normalized, sarray(), varray());
-	bind_method(Quat, is_normalized, sarray(), varray());
-	bind_method(Quat, is_equal_approx, sarray("to"), varray());
-	bind_method(Quat, inverse, sarray(), varray());
-	bind_method(Quat, dot, sarray("with"), varray());
-	bind_method(Quat, slerp, sarray("to", "weight"), varray());
-	bind_method(Quat, slerpni, sarray("to", "weight"), varray());
-	bind_method(Quat, cubic_slerp, sarray("b", "pre_a", "post_b", "weight"), varray());
-	bind_method(Quat, get_euler, sarray(), varray());
+	bind_method(Quaternion, length, sarray(), varray());
+	bind_method(Quaternion, length_squared, sarray(), varray());
+	bind_method(Quaternion, normalized, sarray(), varray());
+	bind_method(Quaternion, is_normalized, sarray(), varray());
+	bind_method(Quaternion, is_equal_approx, sarray("to"), varray());
+	bind_method(Quaternion, inverse, sarray(), varray());
+	bind_method(Quaternion, dot, sarray("with"), varray());
+	bind_method(Quaternion, slerp, sarray("to", "weight"), varray());
+	bind_method(Quaternion, slerpni, sarray("to", "weight"), varray());
+	bind_method(Quaternion, cubic_slerp, sarray("b", "pre_a", "post_b", "weight"), varray());
+	bind_method(Quaternion, get_euler, sarray(), varray());
 
 	/* Color */
 
@@ -1668,7 +1668,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Basis, get_orthogonal_index, sarray(), varray());
 	bind_method(Basis, slerp, sarray("to", "weight"), varray());
 	bind_method(Basis, is_equal_approx, sarray("b"), varray());
-	bind_method(Basis, get_rotation_quat, sarray(), varray());
+	bind_method(Basis, get_rotation_quaternion, sarray(), varray());
 
 	/* AABB */
 
@@ -2047,7 +2047,7 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_XZ", Plane(Vector3(0, 1, 0), 0));
 	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_XY", Plane(Vector3(0, 0, 1), 0));
 
-	_VariantCall::add_variant_constant(Variant::QUAT, "IDENTITY", Quat(0, 0, 0, 1));
+	_VariantCall::add_variant_constant(Variant::QUATERNION, "IDENTITY", Quaternion(0, 0, 0, 1));
 }
 
 void Variant::_register_variant_methods() {

@@ -469,7 +469,7 @@
 				]
 			},
 			{
-				"name": "godot_variant_new_quat",
+				"name": "godot_variant_new_quaternion",
 				"return_type": "void",
 				"arguments": [
 					[
@@ -477,8 +477,8 @@
 						"r_dest"
 					],
 					[
-						"const godot_quat *",
-						"p_quat"
+						"const godot_quaternion *",
+						"p_quaternion"
 					]
 				]
 			},
@@ -893,8 +893,8 @@
 				]
 			},
 			{
-				"name": "godot_variant_as_quat",
-				"return_type": "godot_quat",
+				"name": "godot_variant_as_quaternion",
+				"return_type": "godot_quaternion",
 				"arguments": [
 					[
 						"const godot_variant *",
@@ -3866,35 +3866,35 @@
 				]
 			},
 			{
-				"name": "godot_quat_new",
+				"name": "godot_quaternion_new",
 				"return_type": "void",
 				"arguments": [
 					[
-						"godot_quat *",
+						"godot_quaternion *",
 						"p_self"
 					]
 				]
 			},
 			{
-				"name": "godot_quat_new_copy",
+				"name": "godot_quaternion_new_copy",
 				"return_type": "void",
 				"arguments": [
 					[
-						"godot_quat *",
+						"godot_quaternion *",
 						"r_dest"
 					],
 					[
-						"const godot_quat *",
+						"const godot_quaternion *",
 						"p_src"
 					]
 				]
 			},
 			{
-				"name": "godot_quat_operator_index",
+				"name": "godot_quaternion_operator_index",
 				"return_type": "godot_real_t *",
 				"arguments": [
 					[
-						"godot_quat *",
+						"godot_quaternion *",
 						"p_self"
 					],
 					[
@@ -3904,11 +3904,11 @@
 				]
 			},
 			{
-				"name": "godot_quat_operator_index_const",
+				"name": "godot_quaternion_operator_index_const",
 				"return_type": "const godot_real_t *",
 				"arguments": [
 					[
-						"const godot_quat *",
+						"const godot_quaternion *",
 						"p_self"
 					],
 					[

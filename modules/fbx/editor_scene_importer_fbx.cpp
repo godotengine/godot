@@ -258,24 +258,24 @@ struct EditorSceneImporterAssetImportInterpolate {
 
 //thank you for existing, partial specialization
 template <>
-struct EditorSceneImporterAssetImportInterpolate<Quat> {
-	Quat lerp(const Quat &a, const Quat &b, float c) const {
-		ERR_FAIL_COND_V(!a.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!b.is_normalized(), Quat());
+struct EditorSceneImporterAssetImportInterpolate<Quaternion> {
+	Quaternion lerp(const Quaternion &a, const Quaternion &b, float c) const {
+		ERR_FAIL_COND_V(!a.is_normalized(), Quaternion());
+		ERR_FAIL_COND_V(!b.is_normalized(), Quaternion());
 
 		return a.slerp(b, c).normalized();
 	}
 
-	Quat catmull_rom(const Quat &p0, const Quat &p1, const Quat &p2, const Quat &p3, float c) {
-		ERR_FAIL_COND_V(!p1.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!p2.is_normalized(), Quat());
+	Quaternion catmull_rom(const Quaternion &p0, const Quaternion &p1, const Quaternion &p2, const Quaternion &p3, float c) {
+		ERR_FAIL_COND_V(!p1.is_normalized(), Quaternion());
+		ERR_FAIL_COND_V(!p2.is_normalized(), Quaternion());
 
 		return p1.slerp(p2, c).normalized();
 	}
 
-	Quat bezier(Quat start, Quat control_1, Quat control_2, Quat end, float t) {
-		ERR_FAIL_COND_V(!start.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!end.is_normalized(), Quat());
+	Quaternion bezier(Quaternion start, Quaternion control_1, Quaternion control_2, Quaternion end, float t) {
+		ERR_FAIL_COND_V(!start.is_normalized(), Quaternion());
+		ERR_FAIL_COND_V(!end.is_normalized(), Quaternion());
 
 		return start.slerp(end, t).normalized();
 	}
@@ -888,7 +888,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 					// we need to know what object the curves are for.
 					// we need the target ID and the target name for the track reduction.
 
-					FBXDocParser::Model::RotOrder quat_rotation_order = FBXDocParser::Model::RotOrder_EulerXYZ;
+					FBXDocParser::Model::RotOrder quaternion_rotation_order = FBXDocParser::Model::RotOrder_EulerXYZ;
 
 					// T:: R:: S:: Visible:: Custom::
 					for (const FBXDocParser::AnimationCurveNode *curve_node : node_list) {
@@ -910,7 +910,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 							continue;
 						} else {
 							//print_verbose("[doc] applied rotation order: " + itos(target->RotationOrder()));
-							quat_rotation_order = target->RotationOrder();
+							quaternion_rotation_order = target->RotationOrder();
 						}
 
 						uint64_t target_id = target->ID();
@@ -1086,7 +1086,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						Vector<float> pos_times;
 						Vector<Vector3> scale_values;
 						Vector<float> scale_times;
-						Vector<Quat> rot_values;
+						Vector<Quaternion> rot_values;
 						Vector<float> rot_times;
 
 						double max_duration = 0;
@@ -1122,8 +1122,8 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						bool got_pre = false;
 						bool got_post = false;
 
-						Quat post_rotation;
-						Quat pre_rotation;
+						Quaternion post_rotation;
+						Quaternion pre_rotation;
 
 						// Rotation matrix
 						const Vector3 &PreRotation = FBXDocParser::PropertyGet<Vector3>(props, "PreRotation", got_pre);
@@ -1137,24 +1137,24 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 							post_rotation = ImportUtils::EulerToQuaternion(rot_order, ImportUtils::deg2rad(PostRotation));
 						}
 
-						Quat lastQuat = Quat();
+						Quaternion lastQuaternion = Quaternion();
 
 						for (std::pair<int64_t, Vector3> rotation_key : rotation_keys.keyframes) {
 							double animation_track_time = CONVERT_FBX_TIME(rotation_key.first);
 
 							//print_verbose("euler rotation key: " + rotation_key.second);
-							Quat rot_key_value = ImportUtils::EulerToQuaternion(quat_rotation_order, ImportUtils::deg2rad(rotation_key.second));
+							Quaternion rot_key_value = ImportUtils::EulerToQuaternion(quaternion_rotation_order, ImportUtils::deg2rad(rotation_key.second));
 
-							if (lastQuat != Quat() && rot_key_value.dot(lastQuat) < 0) {
+							if (lastQuaternion != Quaternion() && rot_key_value.dot(lastQuaternion) < 0) {
 								rot_key_value.x = -rot_key_value.x;
 								rot_key_value.y = -rot_key_value.y;
 								rot_key_value.z = -rot_key_value.z;
 								rot_key_value.w = -rot_key_value.w;
 							}
 							// pre_post rotation possibly could fix orientation
-							Quat final_rotation = pre_rotation * rot_key_value * post_rotation;
+							Quaternion final_rotation = pre_rotation * rot_key_value * post_rotation;
 
-							lastQuat = final_rotation;
+							lastQuaternion = final_rotation;
 
 							if (animation_track_time > max_duration) {
 								max_duration = animation_track_time;
@@ -1182,13 +1182,13 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						}
 
 						const Vector3 def_pos = translation_keys.has_default ? (translation_keys.default_value * state.scale) : bone_rest.origin;
-						const Quat def_rot = rotation_keys.has_default ? ImportUtils::EulerToQuaternion(quat_rotation_order, ImportUtils::deg2rad(rotation_keys.default_value)) : bone_rest.basis.get_rotation_quat();
+						const Quaternion def_rot = rotation_keys.has_default ? ImportUtils::EulerToQuaternion(quaternion_rotation_order, ImportUtils::deg2rad(rotation_keys.default_value)) : bone_rest.basis.get_rotation_quaternion();
 						const Vector3 def_scale = scale_keys.has_default ? scale_keys.default_value : bone_rest.basis.get_scale();
 						print_verbose("track defaults: p(" + def_pos + ") s(" + def_scale + ") r(" + def_rot + ")");
 
 						while (true) {
 							Vector3 pos = def_pos;
-							Quat rot = def_rot;
+							Quaternion rot = def_rot;
 							Vector3 scale = def_scale;
 
 							if (pos_values.size()) {
@@ -1197,7 +1197,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 							}
 
 							if (rot_values.size()) {
-								rot = _interpolate_track<Quat>(rot_times, rot_values, time,
+								rot = _interpolate_track<Quaternion>(rot_times, rot_values, time,
 										AssetImportAnimation::INTERP_LINEAR);
 							}
 
@@ -1209,12 +1209,12 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 							// node animations must also include pivots
 							if (skeleton_bone >= 0) {
 								Transform3D xform = Transform3D();
-								xform.basis.set_quat_scale(rot, scale);
+								xform.basis.set_quaternion_scale(rot, scale);
 								xform.origin = pos;
 								const Transform3D t = bone_rest.affine_inverse() * xform;
 
 								// populate	this again
-								rot = t.basis.get_rotation_quat();
+								rot = t.basis.get_rotation_quaternion();
 								rot.normalize();
 								scale = t.basis.get_scale();
 								pos = t.origin;

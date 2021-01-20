@@ -166,7 +166,7 @@ void (*type_init_function_table[])(Variant *) = {
 	&VariantInitializer<Vector3i>::init, // VECTOR3I.
 	&VariantInitializer<Transform2D>::init, // TRANSFORM2D.
 	&VariantInitializer<Plane>::init, // PLANE.
-	&VariantInitializer<Quat>::init, // QUAT.
+	&VariantInitializer<Quaternion>::init, // QUATERNION.
 	&VariantInitializer<AABB>::init, // AABB.
 	&VariantInitializer<Basis>::init, // BASIS.
 	&VariantInitializer<Transform3D>::init, // TRANSFORM3D.
@@ -248,7 +248,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CALL_PTRCALL_VECTOR3I,              \
 		&&OPCODE_CALL_PTRCALL_TRANSFORM2D,           \
 		&&OPCODE_CALL_PTRCALL_PLANE,                 \
-		&&OPCODE_CALL_PTRCALL_QUAT,                  \
+		&&OPCODE_CALL_PTRCALL_QUATERNION,            \
 		&&OPCODE_CALL_PTRCALL_AABB,                  \
 		&&OPCODE_CALL_PTRCALL_BASIS,                 \
 		&&OPCODE_CALL_PTRCALL_TRANSFORM3D,           \
@@ -335,7 +335,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_TYPE_ADJUST_VECTOR3I,               \
 		&&OPCODE_TYPE_ADJUST_TRANSFORM2D,            \
 		&&OPCODE_TYPE_ADJUST_PLANE,                  \
-		&&OPCODE_TYPE_ADJUST_QUAT,                   \
+		&&OPCODE_TYPE_ADJUST_QUATERNION,             \
 		&&OPCODE_TYPE_ADJUST_AABB,                   \
 		&&OPCODE_TYPE_ADJUST_BASIS,                  \
 		&&OPCODE_TYPE_ADJUST_TRANSFORM,              \
@@ -398,7 +398,7 @@ void (*type_init_function_table[])(Variant *) = {
 #define OP_GET_VECTOR3I get_vector3i
 #define OP_GET_RECT2 get_rect2
 #define OP_GET_RECT2I get_rect2i
-#define OP_GET_QUAT get_quat
+#define OP_GET_QUATERNION get_quaternion
 #define OP_GET_COLOR get_color
 #define OP_GET_STRING get_string
 #define OP_GET_STRING_NAME get_string_name
@@ -1733,7 +1733,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_CALL_PTR(VECTOR3I);
 			OPCODE_CALL_PTR(TRANSFORM2D);
 			OPCODE_CALL_PTR(PLANE);
-			OPCODE_CALL_PTR(QUAT);
+			OPCODE_CALL_PTR(QUATERNION);
 			OPCODE_CALL_PTR(AABB);
 			OPCODE_CALL_PTR(BASIS);
 			OPCODE_CALL_PTR(TRANSFORM3D);
@@ -3150,7 +3150,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_TYPE_ADJUST(VECTOR3I, Vector3i);
 			OPCODE_TYPE_ADJUST(TRANSFORM2D, Transform2D);
 			OPCODE_TYPE_ADJUST(PLANE, Plane);
-			OPCODE_TYPE_ADJUST(QUAT, Quat);
+			OPCODE_TYPE_ADJUST(QUATERNION, Quaternion);
 			OPCODE_TYPE_ADJUST(AABB, AABB);
 			OPCODE_TYPE_ADJUST(BASIS, Basis);
 			OPCODE_TYPE_ADJUST(TRANSFORM, Transform3D);

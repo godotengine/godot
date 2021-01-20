@@ -853,7 +853,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							if (t->process_pass != process_pass) {
 								t->process_pass = process_pass;
 								t->loc = Vector3();
-								t->rot = Quat();
+								t->rot = Quaternion();
 								t->rot_blend_accum = 0;
 								t->scale = Vector3(1, 1, 1);
 							}
@@ -868,7 +868,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							}
 
 							Vector3 loc[2];
-							Quat rot[2];
+							Quaternion rot[2];
 							Vector3 scale[2];
 
 							if (prev_time > time) {
@@ -881,7 +881,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 								t->loc += (loc[1] - loc[0]) * blend;
 								t->scale += (scale[1] - scale[0]) * blend;
-								Quat q = Quat().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
+								Quaternion q = Quaternion().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
 								t->rot = (t->rot * q).normalized();
 
 								prev_time = 0;
@@ -896,14 +896,14 @@ void AnimationTree::_process_graph(float p_delta) {
 
 							t->loc += (loc[1] - loc[0]) * blend;
 							t->scale += (scale[1] - scale[0]) * blend;
-							Quat q = Quat().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
+							Quaternion q = Quaternion().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
 							t->rot = (t->rot * q).normalized();
 
 							prev_time = 0;
 
 						} else {
 							Vector3 loc;
-							Quat rot;
+							Quaternion rot;
 							Vector3 scale;
 
 							Error err = a->transform_track_interpolate(i, time, &loc, &rot, &scale);
@@ -1197,7 +1197,7 @@ void AnimationTree::_process_graph(float p_delta) {
 					Transform3D xform;
 					xform.origin = t->loc;
 
-					xform.basis.set_quat_scale(t->rot, t->scale);
+					xform.basis.set_quaternion_scale(t->rot, t->scale);
 
 					if (t->root_motion) {
 						root_motion_transform = xform;

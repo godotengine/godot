@@ -1761,14 +1761,14 @@ EditorPropertyPlane::EditorPropertyPlane(bool p_force_wide) {
 	setting = false;
 }
 
-///////////////////// QUAT /////////////////////////
+///////////////////// QUATERNION /////////////////////////
 
-void EditorPropertyQuat::_value_changed(double val, const String &p_name) {
+void EditorPropertyQuaternion::_value_changed(double val, const String &p_name) {
 	if (setting) {
 		return;
 	}
 
-	Quat p;
+	Quaternion p;
 	p.x = spin[0]->get_value();
 	p.y = spin[1]->get_value();
 	p.z = spin[2]->get_value();
@@ -1776,8 +1776,8 @@ void EditorPropertyQuat::_value_changed(double val, const String &p_name) {
 	emit_changed(get_edited_property(), p, p_name);
 }
 
-void EditorPropertyQuat::update_property() {
-	Quat val = get_edited_object()->get(get_edited_property());
+void EditorPropertyQuaternion::update_property() {
+	Quaternion val = get_edited_object()->get(get_edited_property());
 	setting = true;
 	spin[0]->set_value(val.x);
 	spin[1]->set_value(val.y);
@@ -1786,7 +1786,7 @@ void EditorPropertyQuat::update_property() {
 	setting = false;
 }
 
-void EditorPropertyQuat::_notification(int p_what) {
+void EditorPropertyQuaternion::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		Color base = get_theme_color("accent_color", "Editor");
 		for (int i = 0; i < 3; i++) {
@@ -1797,10 +1797,10 @@ void EditorPropertyQuat::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyQuat::_bind_methods() {
+void EditorPropertyQuaternion::_bind_methods() {
 }
 
-void EditorPropertyQuat::setup(double p_min, double p_max, double p_step, bool p_no_slider) {
+void EditorPropertyQuaternion::setup(double p_min, double p_max, double p_step, bool p_no_slider) {
 	for (int i = 0; i < 4; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
@@ -1811,7 +1811,7 @@ void EditorPropertyQuat::setup(double p_min, double p_max, double p_step, bool p
 	}
 }
 
-EditorPropertyQuat::EditorPropertyQuat() {
+EditorPropertyQuaternion::EditorPropertyQuaternion() {
 	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
 
 	BoxContainer *bc;
@@ -1832,7 +1832,7 @@ EditorPropertyQuat::EditorPropertyQuat() {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyQuat::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyQuaternion::_value_changed), varray(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -3056,8 +3056,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			editor->setup(min, max, step, hide_slider);
 			add_property_editor(p_path, editor);
 		} break;
-		case Variant::QUAT: {
-			EditorPropertyQuat *editor = memnew(EditorPropertyQuat);
+		case Variant::QUATERNION: {
+			EditorPropertyQuaternion *editor = memnew(EditorPropertyQuaternion);
 			double min = -65535, max = 65535, step = default_float_step;
 			bool hide_slider = true;
 

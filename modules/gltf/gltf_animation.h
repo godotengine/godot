@@ -56,7 +56,7 @@ public:
 
 	struct Track {
 		Channel<Vector3> translation_track;
-		Channel<Quat> rotation_track;
+		Channel<Quaternion> rotation_track;
 		Channel<Vector3> scale_track;
 		Vector<Channel<float>> weight_tracks;
 	};

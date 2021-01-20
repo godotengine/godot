@@ -243,7 +243,7 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 		case Variant::TRANSFORM3D:
 		case Variant::TRANSFORM2D:
 		case Variant::BASIS:
-		case Variant::QUAT:
+		case Variant::QUATERNION:
 		case Variant::PLANE:
 		case Variant::AABB:
 		case Variant::COLOR:

@@ -185,8 +185,8 @@ void MobileVRInterface::set_position_from_sensors() {
 	// if you have a gyro + accelerometer that combo tends to be better than combining all three but without a gyro you need the magnetometer..
 	if (has_magneto && has_grav && !has_gyro) {
 		// convert to quaternions, easier to smooth those out
-		Quat transform_quat(orientation);
-		Quat acc_mag_quat(combine_acc_mag(grav, magneto));
+		Quaternion transform_quat(orientation);
+		Quaternion acc_mag_quat(combine_acc_mag(grav, magneto));
 		transform_quat = transform_quat.slerp(acc_mag_quat, 0.1);
 		orientation = Basis(transform_quat);
 

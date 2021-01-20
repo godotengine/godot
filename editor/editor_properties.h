@@ -465,8 +465,8 @@ public:
 	EditorPropertyPlane(bool p_force_wide = false);
 };
 
-class EditorPropertyQuat : public EditorProperty {
-	GDCLASS(EditorPropertyQuat, EditorProperty);
+class EditorPropertyQuaternion : public EditorProperty {
+	GDCLASS(EditorPropertyQuaternion, EditorProperty);
 	EditorSpinSlider *spin[4];
 	bool setting;
 	void _value_changed(double p_val, const String &p_name);
@@ -478,7 +478,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider);
-	EditorPropertyQuat();
+	EditorPropertyQuaternion();
 };
 
 class EditorPropertyAABB : public EditorProperty {

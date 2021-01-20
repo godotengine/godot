@@ -525,7 +525,7 @@ public:
 		switch (animation->track_get_type(track)) {
 			case Animation::TYPE_TRANSFORM3D: {
 				p_list->push_back(PropertyInfo(Variant::VECTOR3, "location"));
-				p_list->push_back(PropertyInfo(Variant::QUAT, "rotation"));
+				p_list->push_back(PropertyInfo(Variant::QUATERNION, "rotation"));
 				p_list->push_back(PropertyInfo(Variant::VECTOR3, "scale"));
 
 			} break;
@@ -1164,7 +1164,7 @@ public:
 			switch (animation->track_get_type(first_track)) {
 				case Animation::TYPE_TRANSFORM3D: {
 					p_list->push_back(PropertyInfo(Variant::VECTOR3, "location"));
-					p_list->push_back(PropertyInfo(Variant::QUAT, "rotation"));
+					p_list->push_back(PropertyInfo(Variant::QUATERNION, "rotation"));
 					p_list->push_back(PropertyInfo(Variant::VECTOR3, "scale"));
 				} break;
 				case Animation::TYPE_VALUE: {
@@ -3376,7 +3376,7 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 				case Variant::FLOAT:
 				case Variant::VECTOR2:
 				case Variant::VECTOR3:
-				case Variant::QUAT:
+				case Variant::QUATERNION:
 				case Variant::PLANE:
 				case Variant::COLOR: {
 					// Valid.
@@ -3845,7 +3845,7 @@ static Vector<String> _get_bezier_subindices_for_type(Variant::Type p_type, bool
 			subindices.push_back(":y");
 			subindices.push_back(":z");
 		} break;
-		case Variant::QUAT: {
+		case Variant::QUATERNION: {
 			subindices.push_back(":x");
 			subindices.push_back(":y");
 			subindices.push_back(":z");
@@ -3911,7 +3911,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 						h.type == Variant::RECT2 ||
 						h.type == Variant::VECTOR3 ||
 						h.type == Variant::AABB ||
-						h.type == Variant::QUAT ||
+						h.type == Variant::QUATERNION ||
 						h.type == Variant::COLOR ||
 						h.type == Variant::PLANE ||
 						h.type == Variant::TRANSFORM2D ||
@@ -3950,7 +3950,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 			Dictionary d;
 			d["location"] = tr.origin;
 			d["scale"] = tr.basis.get_scale();
-			d["rotation"] = Quat(tr.basis);
+			d["rotation"] = Quaternion(tr.basis);
 			value = d;
 		} break;
 		case Animation::TYPE_BEZIER: {
@@ -4394,7 +4394,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 			filter.push_back(Variant::FLOAT);
 			filter.push_back(Variant::VECTOR2);
 			filter.push_back(Variant::VECTOR3);
-			filter.push_back(Variant::QUAT);
+			filter.push_back(Variant::QUATERNION);
 			filter.push_back(Variant::PLANE);
 			filter.push_back(Variant::COLOR);
 
@@ -4464,7 +4464,7 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 					h.type == Variant::RECT2 ||
 					h.type == Variant::VECTOR3 ||
 					h.type == Variant::AABB ||
-					h.type == Variant::QUAT ||
+					h.type == Variant::QUATERNION ||
 					h.type == Variant::COLOR ||
 					h.type == Variant::PLANE ||
 					h.type == Variant::TRANSFORM2D ||
@@ -4564,7 +4564,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 			Vector3 loc = xf.get_origin();
 			Vector3 scale = xf.basis.get_scale_local();
-			Quat rot = xf.basis;
+			Quaternion rot = xf.basis;
 
 			undo_redo->create_action(TTR("Add Transform Track Key"));
 			undo_redo->add_do_method(animation.ptr(), "transform_track_insert_key", p_track, p_ofs, loc, rot, scale);

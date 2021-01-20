@@ -727,13 +727,13 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			value_editor[3]->set_text(String::num(plane.d));
 
 		} break;
-		case Variant::QUAT: {
+		case Variant::QUATERNION: {
 			field_names.push_back("x");
 			field_names.push_back("y");
 			field_names.push_back("z");
 			field_names.push_back("w");
 			config_value_editors(4, 4, 10, field_names);
-			Quat q = v;
+			Quaternion q = v;
 			value_editor[0]->set_text(String::num(q.x));
 			value_editor[1]->set_text(String::num(q.y));
 			value_editor[2]->set_text(String::num(q.z));
@@ -1513,8 +1513,8 @@ void CustomPropertyEditor::_modified(String p_string) {
 			_emit_changed_whole_or_field();
 
 		} break;
-		case Variant::QUAT: {
-			Quat q;
+		case Variant::QUATERNION: {
+			Quaternion q;
 			q.x = _parse_real_expression(value_editor[0]->get_text());
 			q.y = _parse_real_expression(value_editor[1]->get_text());
 			q.z = _parse_real_expression(value_editor[2]->get_text());
@@ -1635,7 +1635,7 @@ void CustomPropertyEditor::_focus_enter() {
 		case Variant::RECT2:
 		case Variant::VECTOR3:
 		case Variant::PLANE:
-		case Variant::QUAT:
+		case Variant::QUATERNION:
 		case Variant::AABB:
 		case Variant::TRANSFORM2D:
 		case Variant::BASIS:
@@ -1661,7 +1661,7 @@ void CustomPropertyEditor::_focus_exit() {
 		case Variant::RECT2:
 		case Variant::VECTOR3:
 		case Variant::PLANE:
-		case Variant::QUAT:
+		case Variant::QUATERNION:
 		case Variant::AABB:
 		case Variant::TRANSFORM2D:
 		case Variant::BASIS:

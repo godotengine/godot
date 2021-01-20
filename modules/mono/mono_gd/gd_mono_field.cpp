@@ -146,8 +146,8 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				break;
 			}
 
-			if (tclass == CACHED_CLASS(Quat)) {
-				GDMonoMarshal::M_Quat from = MARSHALLED_OUT(Quat, p_value.operator ::Quat());
+			if (tclass == CACHED_CLASS(Quaternion)) {
+				GDMonoMarshal::M_Quaternion from = MARSHALLED_OUT(Quaternion, p_value.operator ::Quaternion());
 				mono_field_set_value(p_object, mono_field, &from);
 				break;
 			}
@@ -336,8 +336,8 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 					GDMonoMarshal::M_Plane from = MARSHALLED_OUT(Plane, p_value.operator ::Plane());
 					mono_field_set_value(p_object, mono_field, &from);
 				} break;
-				case Variant::QUAT: {
-					GDMonoMarshal::M_Quat from = MARSHALLED_OUT(Quat, p_value.operator ::Quat());
+				case Variant::QUATERNION: {
+					GDMonoMarshal::M_Quaternion from = MARSHALLED_OUT(Quaternion, p_value.operator ::Quaternion());
 					mono_field_set_value(p_object, mono_field, &from);
 				} break;
 				case Variant::AABB: {

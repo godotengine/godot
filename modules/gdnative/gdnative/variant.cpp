@@ -143,10 +143,10 @@ void GDAPI godot_variant_new_plane(godot_variant *r_dest, const godot_plane *p_p
 	memnew_placement_custom(dest, Variant, Variant(*plane));
 }
 
-void GDAPI godot_variant_new_quat(godot_variant *r_dest, const godot_quat *p_quat) {
+void GDAPI godot_variant_new_quaternion(godot_variant *r_dest, const godot_quaternion *p_quaternion) {
 	Variant *dest = (Variant *)r_dest;
-	const Quat *quat = (const Quat *)p_quat;
-	memnew_placement_custom(dest, Variant, Variant(*quat));
+	const Quaternion *quaternion = (const Quaternion *)p_quaternion;
+	memnew_placement_custom(dest, Variant, Variant(*quaternion));
 }
 
 void GDAPI godot_variant_new_aabb(godot_variant *r_dest, const godot_aabb *p_aabb) {
@@ -378,10 +378,10 @@ godot_plane GDAPI godot_variant_as_plane(const godot_variant *p_self) {
 	return raw_dest;
 }
 
-godot_quat GDAPI godot_variant_as_quat(const godot_variant *p_self) {
-	godot_quat raw_dest;
+godot_quaternion GDAPI godot_variant_as_quaternion(const godot_variant *p_self) {
+	godot_quaternion raw_dest;
 	const Variant *self = (const Variant *)p_self;
-	Quat *dest = (Quat *)&raw_dest;
+	Quaternion *dest = (Quaternion *)&raw_dest;
 	*dest = *self;
 	return raw_dest;
 }

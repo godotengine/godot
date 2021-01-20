@@ -190,7 +190,7 @@ private:
 #endif // _3D_DISABLED
 		int bone_idx = -1;
 		Vector3 loc;
-		Quat rot;
+		Quaternion rot;
 		float rot_blend_accum = 0.0;
 		Vector3 scale;
 

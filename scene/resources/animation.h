@@ -88,7 +88,7 @@ private:
 
 	struct TransformKey {
 		Vector3 loc;
-		Quat rot;
+		Quaternion rot;
 		Vector3 scale;
 	};
 
@@ -186,13 +186,13 @@ private:
 	_FORCE_INLINE_ Animation::TransformKey _interpolate(const Animation::TransformKey &p_a, const Animation::TransformKey &p_b, float p_c) const;
 
 	_FORCE_INLINE_ Vector3 _interpolate(const Vector3 &p_a, const Vector3 &p_b, float p_c) const;
-	_FORCE_INLINE_ Quat _interpolate(const Quat &p_a, const Quat &p_b, float p_c) const;
+	_FORCE_INLINE_ Quaternion _interpolate(const Quaternion &p_a, const Quaternion &p_b, float p_c) const;
 	_FORCE_INLINE_ Variant _interpolate(const Variant &p_a, const Variant &p_b, float p_c) const;
 	_FORCE_INLINE_ float _interpolate(const float &p_a, const float &p_b, float p_c) const;
 
 	_FORCE_INLINE_ Animation::TransformKey _cubic_interpolate(const Animation::TransformKey &p_pre_a, const Animation::TransformKey &p_a, const Animation::TransformKey &p_b, const Animation::TransformKey &p_post_b, float p_c) const;
 	_FORCE_INLINE_ Vector3 _cubic_interpolate(const Vector3 &p_pre_a, const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_post_b, float p_c) const;
-	_FORCE_INLINE_ Quat _cubic_interpolate(const Quat &p_pre_a, const Quat &p_a, const Quat &p_b, const Quat &p_post_b, float p_c) const;
+	_FORCE_INLINE_ Quaternion _cubic_interpolate(const Quaternion &p_pre_a, const Quaternion &p_a, const Quaternion &p_b, const Quaternion &p_post_b, float p_c) const;
 	_FORCE_INLINE_ Variant _cubic_interpolate(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, float p_c) const;
 	_FORCE_INLINE_ float _cubic_interpolate(const float &p_pre_a, const float &p_a, const float &p_b, const float &p_post_b, float p_c) const;
 
@@ -213,7 +213,7 @@ private:
 private:
 	Array _transform_track_interpolate(int p_track, float p_time) const {
 		Vector3 loc;
-		Quat rot;
+		Quaternion rot;
 		Vector3 scale;
 		transform_track_interpolate(p_track, p_time, &loc, &rot, &scale);
 		Array ret;
@@ -291,8 +291,8 @@ public:
 	float track_get_key_time(int p_track, int p_key_idx) const;
 	float track_get_key_transition(int p_track, int p_key_idx) const;
 
-	int transform_track_insert_key(int p_track, float p_time, const Vector3 &p_loc, const Quat &p_rot = Quat(), const Vector3 &p_scale = Vector3());
-	Error transform_track_get_key(int p_track, int p_key, Vector3 *r_loc, Quat *r_rot, Vector3 *r_scale) const;
+	int transform_track_insert_key(int p_track, float p_time, const Vector3 &p_loc, const Quaternion &p_rot = Quaternion(), const Vector3 &p_scale = Vector3());
+	Error transform_track_get_key(int p_track, int p_key, Vector3 *r_loc, Quaternion *r_rot, Vector3 *r_scale) const;
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
 
@@ -321,7 +321,7 @@ public:
 	void track_set_interpolation_loop_wrap(int p_track, bool p_enable);
 	bool track_get_interpolation_loop_wrap(int p_track) const;
 
-	Error transform_track_interpolate(int p_track, float p_time, Vector3 *r_loc, Quat *r_rot, Vector3 *r_scale) const;
+	Error transform_track_interpolate(int p_track, float p_time, Vector3 *r_loc, Quaternion *r_rot, Vector3 *r_scale) const;
 
 	Variant value_track_interpolate(int p_track, float p_time) const;
 	void value_track_get_key_indices(int p_track, float p_time, float p_delta, List<int> *p_indices) const;

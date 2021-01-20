@@ -2596,8 +2596,8 @@
 		<constant name="TYPE_PLANE" value="12" enum="Variant.Type">
 			Variable is of type [Plane].
 		</constant>
-		<constant name="TYPE_QUAT" value="13" enum="Variant.Type">
-			Variable is of type [Quat].
+		<constant name="TYPE_QUATERNION" value="13" enum="Variant.Type">
+			Variable is of type [Quaternion].
 		</constant>
 		<constant name="TYPE_AABB" value="14" enum="Variant.Type">
 			Variable is of type [AABB].

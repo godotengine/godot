@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  quat.cpp                                                             */
+/*  quaternion.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "quat.h"
+#include "quaternion.h"
 
 #include "core/math/basis.h"
 #include "core/string/print_string.h"
@@ -37,7 +37,7 @@
 // (ax,ay,az), where ax is the angle of rotation around x axis,
 // and similar for other axes.
 // This implementation uses XYZ convention (Z is the first rotation).
-Vector3 Quat::get_euler_xyz() const {
+Vector3 Quaternion::get_euler_xyz() const {
 	Basis m(*this);
 	return m.get_euler_xyz();
 }
@@ -46,7 +46,7 @@ Vector3 Quat::get_euler_xyz() const {
 // (ax,ay,az), where ax is the angle of rotation around x axis,
 // and similar for other axes.
 // This implementation uses YXZ convention (Z is the first rotation).
-Vector3 Quat::get_euler_yxz() const {
+Vector3 Quaternion::get_euler_yxz() const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Vector3(0, 0, 0), "The quaternion must be normalized.");
 #endif
@@ -54,7 +54,7 @@ Vector3 Quat::get_euler_yxz() const {
 	return m.get_euler_yxz();
 }
 
-void Quat::operator*=(const Quat &p_q) {
+void Quaternion::operator*=(const Quaternion &p_q) {
 	real_t xx = w * p_q.x + x * p_q.w + y * p_q.z - z * p_q.y;
 	real_t yy = w * p_q.y + y * p_q.w + z * p_q.x - x * p_q.z;
 	real_t zz = w * p_q.z + z * p_q.w + x * p_q.y - y * p_q.x;
@@ -64,45 +64,45 @@ void Quat::operator*=(const Quat &p_q) {
 	z = zz;
 }
 
-Quat Quat::operator*(const Quat &p_q) const {
-	Quat r = *this;
+Quaternion Quaternion::operator*(const Quaternion &p_q) const {
+	Quaternion r = *this;
 	r *= p_q;
 	return r;
 }
 
-bool Quat::is_equal_approx(const Quat &p_quat) const {
-	return Math::is_equal_approx(x, p_quat.x) && Math::is_equal_approx(y, p_quat.y) && Math::is_equal_approx(z, p_quat.z) && Math::is_equal_approx(w, p_quat.w);
+bool Quaternion::is_equal_approx(const Quaternion &p_quaternion) const {
+	return Math::is_equal_approx(x, p_quaternion.x) && Math::is_equal_approx(y, p_quaternion.y) && Math::is_equal_approx(z, p_quaternion.z) && Math::is_equal_approx(w, p_quaternion.w);
 }
 
-real_t Quat::length() const {
+real_t Quaternion::length() const {
 	return Math::sqrt(length_squared());
 }
 
-void Quat::normalize() {
+void Quaternion::normalize() {
 	*this /= length();
 }
 
-Quat Quat::normalized() const {
+Quaternion Quaternion::normalized() const {
 	return *this / length();
 }
 
-bool Quat::is_normalized() const {
+bool Quaternion::is_normalized() const {
 	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON); //use less epsilon
 }
 
-Quat Quat::inverse() const {
+Quaternion Quaternion::inverse() const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Quat(), "The quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The quaternion must be normalized.");
 #endif
-	return Quat(-x, -y, -z, w);
+	return Quaternion(-x, -y, -z, w);
 }
 
-Quat Quat::slerp(const Quat &p_to, const real_t &p_weight) const {
+Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Quat(), "The start quaternion must be normalized.");
-	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quat(), "The end quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
 #endif
-	Quat to1;
+	Quaternion to1;
 	real_t omega, cosom, sinom, scale0, scale1;
 
 	// calc cosine
@@ -137,19 +137,19 @@ Quat Quat::slerp(const Quat &p_to, const real_t &p_weight) const {
 		scale1 = p_weight;
 	}
 	// calculate final values
-	return Quat(
+	return Quaternion(
 			scale0 * x + scale1 * to1.x,
 			scale0 * y + scale1 * to1.y,
 			scale0 * z + scale1 * to1.z,
 			scale0 * w + scale1 * to1.w);
 }
 
-Quat Quat::slerpni(const Quat &p_to, const real_t &p_weight) const {
+Quaternion Quaternion::slerpni(const Quaternion &p_to, const real_t &p_weight) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Quat(), "The start quaternion must be normalized.");
-	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quat(), "The end quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
 #endif
-	const Quat &from = *this;
+	const Quaternion &from = *this;
 
 	real_t dot = from.dot(p_to);
 
@@ -162,29 +162,29 @@ Quat Quat::slerpni(const Quat &p_to, const real_t &p_weight) const {
 		   newFactor = Math::sin(p_weight * theta) * sinT,
 		   invFactor = Math::sin((1.0 - p_weight) * theta) * sinT;
 
-	return Quat(invFactor * from.x + newFactor * p_to.x,
+	return Quaternion(invFactor * from.x + newFactor * p_to.x,
 			invFactor * from.y + newFactor * p_to.y,
 			invFactor * from.z + newFactor * p_to.z,
 			invFactor * from.w + newFactor * p_to.w);
 }
 
-Quat Quat::cubic_slerp(const Quat &p_b, const Quat &p_pre_a, const Quat &p_post_b, const real_t &p_weight) const {
+Quaternion Quaternion::cubic_slerp(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Quat(), "The start quaternion must be normalized.");
-	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quat(), "The end quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
 #endif
 	//the only way to do slerp :|
 	real_t t2 = (1.0 - p_weight) * p_weight * 2;
-	Quat sp = this->slerp(p_b, p_weight);
-	Quat sq = p_pre_a.slerpni(p_post_b, p_weight);
+	Quaternion sp = this->slerp(p_b, p_weight);
+	Quaternion sq = p_pre_a.slerpni(p_post_b, p_weight);
 	return sp.slerpni(sq, t2);
 }
 
-Quat::operator String() const {
+Quaternion::operator String() const {
 	return String::num(x) + ", " + String::num(y) + ", " + String::num(z) + ", " + String::num(w);
 }
 
-Quat::Quat(const Vector3 &p_axis, real_t p_angle) {
+Quaternion::Quaternion(const Vector3 &p_axis, real_t p_angle) {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 must be normalized.");
 #endif
@@ -209,7 +209,7 @@ Quat::Quat(const Vector3 &p_axis, real_t p_angle) {
 // (ax, ay, az), where ax is the angle of rotation around x axis,
 // and similar for other axes.
 // This implementation uses YXZ convention (Z is the first rotation).
-Quat::Quat(const Vector3 &p_euler) {
+Quaternion::Quaternion(const Vector3 &p_euler) {
 	real_t half_a1 = p_euler.y * 0.5;
 	real_t half_a2 = p_euler.x * 0.5;
 	real_t half_a3 = p_euler.z * 0.5;

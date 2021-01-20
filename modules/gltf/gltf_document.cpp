@@ -342,19 +342,19 @@ static Vector3 _arr_to_vec3(const Array &p_array) {
 	return Vector3(p_array[0], p_array[1], p_array[2]);
 }
 
-static Array _quat_to_array(const Quat &p_quat) {
+static Array _quaternion_to_array(const Quaternion &p_quaternion) {
 	Array array;
 	array.resize(4);
-	array[0] = p_quat.x;
-	array[1] = p_quat.y;
-	array[2] = p_quat.z;
-	array[3] = p_quat.w;
+	array[0] = p_quaternion.x;
+	array[1] = p_quaternion.y;
+	array[2] = p_quaternion.z;
+	array[3] = p_quaternion.w;
 	return array;
 }
 
-static Quat _arr_to_quat(const Array &p_array) {
-	ERR_FAIL_COND_V(p_array.size() != 4, Quat());
-	return Quat(p_array[0], p_array[1], p_array[2], p_array[3]);
+static Quaternion _arr_to_quaternion(const Array &p_array) {
+	ERR_FAIL_COND_V(p_array.size() != 4, Quaternion());
+	return Quaternion(p_array[0], p_array[1], p_array[2], p_array[3]);
 }
 
 static Transform3D _arr_to_xform(const Array &p_array) {
@@ -425,8 +425,8 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 			node["matrix"] = _xform_to_array(n->xform);
 		}
 
-		if (!n->rotation.is_equal_approx(Quat())) {
-			node["rotation"] = _quat_to_array(n->rotation);
+		if (!n->rotation.is_equal_approx(Quaternion())) {
+			node["rotation"] = _quaternion_to_array(n->rotation);
 		}
 
 		if (!n->scale.is_equal_approx(Vector3(1.0f, 1.0f, 1.0f))) {
@@ -591,13 +591,13 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> state) {
 				node->translation = _arr_to_vec3(n["translation"]);
 			}
 			if (n.has("rotation")) {
-				node->rotation = _arr_to_quat(n["rotation"]);
+				node->rotation = _arr_to_quaternion(n["rotation"]);
 			}
 			if (n.has("scale")) {
 				node->scale = _arr_to_vec3(n["scale"]);
 			}
 
-			node->xform.basis.set_quat_scale(node->rotation, node->scale);
+			node->xform.basis.set_quaternion_scale(node->rotation, node->scale);
 			node->xform.origin = node->translation;
 		}
 
@@ -1779,7 +1779,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_joints(Ref<GLTFState> state,
 	return state->accessors.size() - 1;
 }
 
-GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quats(Ref<GLTFState> state, const Vector<Quat> p_attribs, const bool p_for_vertex) {
+GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quaternions(Ref<GLTFState> state, const Vector<Quaternion> p_attribs, const bool p_for_vertex) {
 	if (p_attribs.size() == 0) {
 		return -1;
 	}
@@ -1794,11 +1794,11 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quats(Ref<GLTFState> state, 
 	Vector<double> type_min;
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
-		Quat quat = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::snapped(quat.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::snapped(quat.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::snapped(quat.z, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 3] = Math::snapped(quat.w, CMP_NORMALIZE_TOLERANCE);
+		Quaternion quaternion = p_attribs[i];
+		attribs.write[(i * element_count) + 0] = Math::snapped(quaternion.x, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 1] = Math::snapped(quaternion.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 2] = Math::snapped(quaternion.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 3] = Math::snapped(quaternion.w, CMP_NORMALIZE_TOLERANCE);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
@@ -2053,9 +2053,9 @@ Vector<Color> GLTFDocument::_decode_accessor_as_color(Ref<GLTFState> state, cons
 	}
 	return ret;
 }
-Vector<Quat> GLTFDocument::_decode_accessor_as_quat(Ref<GLTFState> state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
+Vector<Quaternion> GLTFDocument::_decode_accessor_as_quaternion(Ref<GLTFState> state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
 	const Vector<double> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
-	Vector<Quat> ret;
+	Vector<Quaternion> ret;
 
 	if (attribs.size() == 0) {
 		return ret;
@@ -2067,7 +2067,7 @@ Vector<Quat> GLTFDocument::_decode_accessor_as_quat(Ref<GLTFState> state, const 
 	ret.resize(ret_size);
 	{
 		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = Quat(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]).normalized();
+			ret.write[i] = Quaternion(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]).normalized();
 		}
 	}
 	return ret;
@@ -4607,8 +4607,8 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 				s["interpolation"] = interpolation_to_string(track.rotation_track.interpolation);
 				Vector<real_t> times = Variant(track.rotation_track.times);
 				s["input"] = _encode_accessor_as_floats(state, times, false);
-				Vector<Quat> values = track.rotation_track.values;
-				s["output"] = _encode_accessor_as_quats(state, values, false);
+				Vector<Quaternion> values = track.rotation_track.values;
+				s["output"] = _encode_accessor_as_quaternions(state, values, false);
 
 				samplers.push_back(s);
 
@@ -4777,7 +4777,7 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> state) {
 				track->translation_track.times = Variant(times); //convert via variant
 				track->translation_track.values = Variant(translations); //convert via variant
 			} else if (path == "rotation") {
-				const Vector<Quat> rotations = _decode_accessor_as_quat(state, output, false);
+				const Vector<Quaternion> rotations = _decode_accessor_as_quaternion(state, output, false);
 				track->rotation_track.interpolation = interp;
 				track->rotation_track.times = Variant(times); //convert via variant
 				track->rotation_track.values = rotations;
@@ -5077,7 +5077,7 @@ GLTFSkeletonIndex GLTFDocument::_convert_skeleton(Ref<GLTFState> state, Skeleton
 void GLTFDocument::_convert_spatial(Ref<GLTFState> state, Node3D *p_spatial, Ref<GLTFNode> p_node) {
 	Transform3D xform = p_spatial->get_transform();
 	p_node->scale = xform.basis.get_scale();
-	p_node->rotation = xform.basis.get_rotation_quat();
+	p_node->rotation = xform.basis.get_rotation_quaternion();
 	p_node->translation = xform.origin;
 }
 
@@ -5274,9 +5274,9 @@ void GLTFDocument::_convert_mult_mesh_instance_to_gltf(Node *p_scene_parent, con
 				transform.origin =
 						Vector3(xform_2d.get_origin().x, 0, xform_2d.get_origin().y);
 				real_t rotation = xform_2d.get_rotation();
-				Quat quat(Vector3(0, 1, 0), rotation);
+				Quaternion quaternion(Vector3(0, 1, 0), rotation);
 				Size2 scale = xform_2d.get_scale();
-				transform.basis.set_quat_scale(quat,
+				transform.basis.set_quaternion_scale(quaternion,
 						Vector3(scale.x, 0, scale.y));
 				transform =
 						multi_mesh_instance->get_transform() * transform;
@@ -5516,24 +5516,24 @@ struct EditorSceneImporterGLTFInterpolate {
 
 // thank you for existing, partial specialization
 template <>
-struct EditorSceneImporterGLTFInterpolate<Quat> {
-	Quat lerp(const Quat &a, const Quat &b, const float c) const {
-		ERR_FAIL_COND_V_MSG(!a.is_normalized(), Quat(), "The quaternion \"a\" must be normalized.");
-		ERR_FAIL_COND_V_MSG(!b.is_normalized(), Quat(), "The quaternion \"b\" must be normalized.");
+struct EditorSceneImporterGLTFInterpolate<Quaternion> {
+	Quaternion lerp(const Quaternion &a, const Quaternion &b, const float c) const {
+		ERR_FAIL_COND_V_MSG(!a.is_normalized(), Quaternion(), "The quaternion \"a\" must be normalized.");
+		ERR_FAIL_COND_V_MSG(!b.is_normalized(), Quaternion(), "The quaternion \"b\" must be normalized.");
 
 		return a.slerp(b, c).normalized();
 	}
 
-	Quat catmull_rom(const Quat &p0, const Quat &p1, const Quat &p2, const Quat &p3, const float c) {
-		ERR_FAIL_COND_V_MSG(!p1.is_normalized(), Quat(), "The quaternion \"p1\" must be normalized.");
-		ERR_FAIL_COND_V_MSG(!p2.is_normalized(), Quat(), "The quaternion \"p2\" must be normalized.");
+	Quaternion catmull_rom(const Quaternion &p0, const Quaternion &p1, const Quaternion &p2, const Quaternion &p3, const float c) {
+		ERR_FAIL_COND_V_MSG(!p1.is_normalized(), Quaternion(), "The quaternion \"p1\" must be normalized.");
+		ERR_FAIL_COND_V_MSG(!p2.is_normalized(), Quaternion(), "The quaternion \"p2\" must be normalized.");
 
 		return p1.slerp(p2, c).normalized();
 	}
 
-	Quat bezier(const Quat start, const Quat control_1, const Quat control_2, const Quat end, const float t) {
-		ERR_FAIL_COND_V_MSG(!start.is_normalized(), Quat(), "The start quaternion must be normalized.");
-		ERR_FAIL_COND_V_MSG(!end.is_normalized(), Quat(), "The end quaternion must be normalized.");
+	Quaternion bezier(const Quaternion start, const Quaternion control_1, const Quaternion control_2, const Quaternion end, const float t) {
+		ERR_FAIL_COND_V_MSG(!start.is_normalized(), Quaternion(), "The start quaternion must be normalized.");
+		ERR_FAIL_COND_V_MSG(!end.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
 
 		return start.slerp(end, t).normalized();
 	}
@@ -5681,7 +5681,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 			double time = 0.0;
 
 			Vector3 base_pos;
-			Quat base_rot;
+			Quaternion base_rot;
 			Vector3 base_scale = Vector3(1, 1, 1);
 
 			if (!track.rotation_track.values.size()) {
@@ -5699,7 +5699,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 			bool last = false;
 			while (true) {
 				Vector3 pos = base_pos;
-				Quat rot = base_rot;
+				Quaternion rot = base_rot;
 				Vector3 scale = base_scale;
 
 				if (track.translation_track.times.size()) {
@@ -5707,7 +5707,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 				}
 
 				if (track.rotation_track.times.size()) {
-					rot = _interpolate_track<Quat>(track.rotation_track.times, track.rotation_track.values, time, track.rotation_track.interpolation);
+					rot = _interpolate_track<Quaternion>(track.rotation_track.times, track.rotation_track.values, time, track.rotation_track.interpolation);
 				}
 
 				if (track.scale_track.times.size()) {
@@ -5716,14 +5716,14 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 
 				if (gltf_node->skeleton >= 0) {
 					Transform3D xform;
-					xform.basis.set_quat_scale(rot, scale);
+					xform.basis.set_quaternion_scale(rot, scale);
 					xform.origin = pos;
 
 					const Skeleton3D *skeleton = state->skeletons[gltf_node->skeleton]->godot_skeleton;
 					const int bone_idx = skeleton->find_bone(gltf_node->get_name());
 					xform = skeleton->get_bone_rest(bone_idx).affine_inverse() * xform;
 
-					rot = xform.basis.get_rotation_quat();
+					rot = xform.basis.get_rotation_quaternion();
 					rot.normalize();
 					scale = xform.basis.get_scale();
 					pos = xform.origin;
@@ -5810,7 +5810,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 		ERR_CONTINUE(!mi);
 		Transform3D mi_xform = mi->get_transform();
 		node->scale = mi_xform.basis.get_scale();
-		node->rotation = mi_xform.basis.get_rotation_quat();
+		node->rotation = mi_xform.basis.get_rotation_quaternion();
 		node->translation = mi_xform.origin;
 
 		Dictionary json_skin;
@@ -5874,7 +5874,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 
 			Transform3D bone_rest_xform = skeleton->get_bone_rest(bone_index);
 			joint_node->scale = bone_rest_xform.basis.get_scale();
-			joint_node->rotation = bone_rest_xform.basis.get_rotation_quat();
+			joint_node->rotation = bone_rest_xform.basis.get_rotation_quaternion();
 			joint_node->translation = bone_rest_xform.origin;
 			joint_node->joint = true;
 
@@ -6036,16 +6036,16 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 		p_track.rotation_track.interpolation = gltf_interpolation;
 		for (int32_t key_i = 0; key_i < key_count; key_i++) {
 			Vector3 translation;
-			Quat rotation;
+			Quaternion rotation;
 			Vector3 scale;
 			Error err = p_animation->transform_track_get_key(p_track_i, key_i, &translation, &rotation, &scale);
 			ERR_CONTINUE(err != OK);
 			Transform3D xform;
-			xform.basis.set_quat_scale(rotation, scale);
+			xform.basis.set_quaternion_scale(rotation, scale);
 			xform.origin = translation;
 			xform = p_bone_rest * xform;
 			p_track.translation_track.values.write[key_i] = xform.get_origin();
-			p_track.rotation_track.values.write[key_i] = xform.basis.get_rotation_quat();
+			p_track.rotation_track.values.write[key_i] = xform.basis.get_rotation_quaternion();
 			p_track.scale_track.values.write[key_i] = xform.basis.get_scale();
 		}
 	} else if (path.find(":transform") != -1) {
@@ -6065,7 +6065,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 		for (int32_t key_i = 0; key_i < key_count; key_i++) {
 			Transform3D xform = p_animation->track_get_key_value(p_track_i, key_i);
 			p_track.translation_track.values.write[key_i] = xform.get_origin();
-			p_track.rotation_track.values.write[key_i] = xform.basis.get_rotation_quat();
+			p_track.rotation_track.values.write[key_i] = xform.basis.get_rotation_quaternion();
 			p_track.scale_track.values.write[key_i] = xform.basis.get_scale();
 		}
 	} else if (track_type == Animation::TYPE_VALUE) {
@@ -6077,7 +6077,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 			p_track.rotation_track.interpolation = gltf_interpolation;
 
 			for (int32_t key_i = 0; key_i < key_count; key_i++) {
-				Quat rotation_track = p_animation->track_get_key_value(p_track_i, key_i);
+				Quaternion rotation_track = p_animation->track_get_key_value(p_track_i, key_i);
 				p_track.rotation_track.values.write[key_i] = rotation_track;
 			}
 		} else if (path.find(":translation") != -1) {
@@ -6104,7 +6104,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 				rotation_radian.x = Math::deg2rad(rotation_degrees.x);
 				rotation_radian.y = Math::deg2rad(rotation_degrees.y);
 				rotation_radian.z = Math::deg2rad(rotation_degrees.z);
-				p_track.rotation_track.values.write[key_i] = Quat(rotation_radian);
+				p_track.rotation_track.values.write[key_i] = Quaternion(rotation_radian);
 			}
 		} else if (path.find(":scale") != -1) {
 			p_track.scale_track.times = times;

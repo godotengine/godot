@@ -37,7 +37,7 @@
 #include "core/math/color.h"
 #include "core/math/face3.h"
 #include "core/math/plane.h"
-#include "core/math/quat.h"
+#include "core/math/quaternion.h"
 #include "core/math/transform_2d.h"
 #include "core/math/transform_3d.h"
 #include "core/math/vector3.h"
@@ -88,7 +88,7 @@ public:
 		VECTOR3I,
 		TRANSFORM2D,
 		PLANE,
-		QUAT,
+		QUATERNION,
 		AABB,
 		BASIS,
 		TRANSFORM3D,
@@ -225,7 +225,7 @@ private:
 			false, //VECTOR3I,
 			true, //TRANSFORM2D,
 			false, //PLANE,
-			false, //QUAT,
+			false, //QUATERNION,
 			true, //AABB,
 			true, //BASIS,
 			true, //TRANSFORM,
@@ -320,7 +320,7 @@ public:
 	operator Vector3i() const;
 	operator Plane() const;
 	operator ::AABB() const;
-	operator Quat() const;
+	operator Quaternion() const;
 	operator Basis() const;
 	operator Transform2D() const;
 	operator Transform3D() const;
@@ -392,7 +392,7 @@ public:
 	Variant(const Vector3i &p_vector3i);
 	Variant(const Plane &p_plane);
 	Variant(const ::AABB &p_aabb);
-	Variant(const Quat &p_quat);
+	Variant(const Quaternion &p_quat);
 	Variant(const Basis &p_matrix);
 	Variant(const Transform2D &p_transform);
 	Variant(const Transform3D &p_transform);

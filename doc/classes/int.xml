@@ -183,9 +183,9 @@
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Quat">
+			<return type="Quaternion">
 			</return>
-			<argument index="0" name="right" type="Quat">
+			<argument index="0" name="right" type="Quaternion">
 			</argument>
 			<description>
 				Multiplies each component of the quaternion by the given integer.

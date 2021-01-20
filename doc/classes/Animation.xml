@@ -640,7 +640,7 @@
 			</argument>
 			<argument index="2" name="location" type="Vector3">
 			</argument>
-			<argument index="3" name="rotation" type="Quat">
+			<argument index="3" name="rotation" type="Quaternion">
 			</argument>
 			<argument index="4" name="scale" type="Vector3">
 			</argument>
@@ -656,7 +656,7 @@
 			<argument index="1" name="time_sec" type="float">
 			</argument>
 			<description>
-				Returns the interpolated value of a transform track at a given time (in seconds). An array consisting of 3 elements: position ([Vector3]), rotation ([Quat]) and scale ([Vector3]).
+				Returns the interpolated value of a transform track at a given time (in seconds). An array consisting of 3 elements: position ([Vector3]), rotation ([Quaternion]) and scale ([Vector3]).
 			</description>
 		</method>
 		<method name="value_track_get_key_indices" qualifiers="const">

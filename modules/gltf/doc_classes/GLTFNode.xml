@@ -23,7 +23,7 @@
 		</member>
 		<member name="parent" type="int" setter="set_parent" getter="get_parent" default="-1">
 		</member>
-		<member name="rotation" type="Quat" setter="set_rotation" getter="get_rotation" default="Quat( 0, 0, 0, 1 )">
+		<member name="rotation" type="Quaternion" setter="set_rotation" getter="get_rotation" default="Quaternion( 0, 0, 0, 1 )">
 		</member>
 		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale" default="Vector3( 1, 1, 1 )">
 		</member>
