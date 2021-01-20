@@ -243,6 +243,15 @@ static const LauncherIcon launcher_adaptive_icon_backgrounds[icon_densities_coun
 static const int EXPORT_FORMAT_APK = 0;
 static const int EXPORT_FORMAT_AAB = 1;
 
+// Optional environment variables for defining sensitive information.
+// These can be used to avoid saving sensitive information into `export_presets.cfg`,
+// making it safely checkable into version control.
+// If any of these is set, the defined environment variables will override
+// all Android presets' values in both debug and release mode.
+static const String ENV_KEYSTORE_PATH = "GODOT_ANDROID_KEYSTORE_PATH";
+static const String ENV_KEYSTORE_USER = "GODOT_ANDROID_KEYSTORE_USER";
+static const String ENV_KEYSTORE_PASSWORD = "GODOT_ANDROID_KEYSTORE_PASSWORD";
+
 class EditorExportPlatformAndroid : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformAndroid, EditorExportPlatform);
 
@@ -1993,21 +2002,38 @@ public:
 
 		// Validate the rest of the configuration.
 
-		String dk = p_preset->get("keystore/debug");
-
-		if (!FileAccess::exists(dk)) {
-			dk = EditorSettings::get_singleton()->get("export/android/debug_keystore");
-			if (!FileAccess::exists(dk)) {
+		String debug_keystore;
+		if (OS::get_singleton()->has_environment(ENV_KEYSTORE_PATH)) {
+			debug_keystore = OS::get_singleton()->get_environment(ENV_KEYSTORE_PATH);
+			if (!debug_keystore.is_empty() && !FileAccess::exists(debug_keystore)) {
 				valid = false;
-				err += TTR("Debug keystore not configured in the Editor Settings nor in the preset.") + "\n";
+				err += vformat(TTR("Debug keystore incorrectly configured in the %s environment variable.", ENV_KEYSTORE_PATH)) + "\n";
+			}
+		} else {
+			debug_keystore = p_preset->get("keystore/debug");
+			if (!FileAccess::exists(debug_keystore)) {
+				// Fall back to the editor-wide keystore path.
+				debug_keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
+				if (!FileAccess::exists(debug_keystore)) {
+					valid = false;
+					err += TTR("Debug keystore incorrectly configured in the Editor Settings and in the export preset.") + "\n";
+				}
 			}
 		}
 
-		String rk = p_preset->get("keystore/release");
-
-		if (!rk.is_empty() && !FileAccess::exists(rk)) {
-			valid = false;
-			err += TTR("Release keystore incorrectly configured in the export preset.") + "\n";
+		String release_keystore;
+		if (OS::get_singleton()->has_environment(ENV_KEYSTORE_PATH)) {
+			release_keystore = OS::get_singleton()->get_environment(ENV_KEYSTORE_PATH);
+			if (!release_keystore.is_empty() && !FileAccess::exists(release_keystore)) {
+				valid = false;
+				err += vformat(TTR("Release keystore incorrectly configured in the %s environment variable.", ENV_KEYSTORE_PATH)) + "\n";
+			}
+		} else {
+			release_keystore = p_preset->get("keystore/release");
+			if (!release_keystore.is_empty() && !FileAccess::exists(release_keystore)) {
+				valid = false;
+				err += TTR("Release keystore incorrectly configured in the export preset.") + "\n";
+			}
 		}
 
 		String sdk_path = EditorSettings::get_singleton()->get("export/android/android_sdk_path");
@@ -2234,9 +2260,27 @@ public:
 	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &export_path, EditorProgress &ep) {
 		int export_format = int(p_preset->get("custom_template/export_format"));
 		String export_label = export_format == EXPORT_FORMAT_AAB ? "AAB" : "APK";
-		String release_keystore = p_preset->get("keystore/release");
-		String release_username = p_preset->get("keystore/release_user");
-		String release_password = p_preset->get("keystore/release_password");
+
+		String release_keystore;
+		if (OS::get_singleton()->has_environment(ENV_KEYSTORE_PATH)) {
+			release_keystore = OS::get_singleton()->get_environment(ENV_KEYSTORE_PATH);
+		} else {
+			release_keystore = p_preset->get("keystore/release");
+		}
+
+		String release_username;
+		if (OS::get_singleton()->has_environment(ENV_KEYSTORE_USER)) {
+			release_username = OS::get_singleton()->get_environment(ENV_KEYSTORE_USER);
+		} else {
+			release_username = p_preset->get("keystore/release_user");
+		}
+
+		String release_password;
+		if (OS::get_singleton()->has_environment(ENV_KEYSTORE_PASSWORD)) {
+			release_password = OS::get_singleton()->get_environment(ENV_KEYSTORE_PASSWORD);
+		} else {
+			release_password = p_preset->get("keystore/release_password");
+		}
 
 		String apksigner = get_apksigner_path();
 		if (!FileAccess::exists(apksigner)) {
@@ -2248,11 +2292,26 @@ public:
 		String password;
 		String user;
 		if (p_debug) {
-			keystore = p_preset->get("keystore/debug");
-			password = p_preset->get("keystore/debug_password");
-			user = p_preset->get("keystore/debug_user");
+			if (OS::get_singleton()->has_environment(ENV_KEYSTORE_PATH)) {
+				keystore = OS::get_singleton()->get_environment(ENV_KEYSTORE_PATH);
+			} else {
+				keystore = p_preset->get("keystore/debug");
+			}
+
+			if (OS::get_singleton()->has_environment(ENV_KEYSTORE_PASSWORD)) {
+				password = OS::get_singleton()->get_environment(ENV_KEYSTORE_PASSWORD);
+			} else {
+				password = p_preset->get("keystore/debug_password");
+			}
+
+			if (OS::get_singleton()->has_environment(ENV_KEYSTORE_USER)) {
+				user = OS::get_singleton()->get_environment(ENV_KEYSTORE_USER);
+			} else {
+				user = p_preset->get("keystore/debug_user");
+			}
 
 			if (keystore.is_empty()) {
+				// Fall back to editor-wide debug keystore settings.
 				keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
 				password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
 				user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
@@ -2469,11 +2528,28 @@ public:
 			cmdline.push_back("-Pperform_signing=" + sign_flag); // argument to specify whether the build should be signed.
 			if (should_sign && !p_debug) {
 				// Pass the release keystore info as well
-				String release_keystore = p_preset->get("keystore/release");
-				String release_username = p_preset->get("keystore/release_user");
-				String release_password = p_preset->get("keystore/release_password");
+				String release_keystore;
+				if (OS::get_singleton()->has_environment(ENV_KEYSTORE_PATH)) {
+					release_keystore = OS::get_singleton()->get_environment(ENV_KEYSTORE_PATH);
+				} else {
+					release_keystore = p_preset->get("keystore/release");
+				}
+
+				String release_username;
+				if (OS::get_singleton()->has_environment(ENV_KEYSTORE_USER)) {
+					release_username = OS::get_singleton()->get_environment(ENV_KEYSTORE_USER);
+				} else {
+					release_username = p_preset->get("keystore/release_user");
+				}
+
+				String release_password;
+				if (OS::get_singleton()->has_environment(ENV_KEYSTORE_PASSWORD)) {
+					release_password = OS::get_singleton()->get_environment(ENV_KEYSTORE_PASSWORD);
+				} else {
+					release_password = p_preset->get("keystore/release_password");
+				}
 				if (!FileAccess::exists(release_keystore)) {
-					EditorNode::add_io_error("Could not find keystore, unable to export.");
+					EditorNode::add_io_error(vformat("Couldn't find keystore at \"%s\", unable to export.", release_keystore));
 					return ERR_FILE_CANT_OPEN;
 				}
 
