@@ -367,7 +367,7 @@ namespace embree
             _mm_pause();
 // -- GODOT start --
 #else
-            usleep(1);
+            __builtin_ia32_pause();
 #endif
 // -- GODOT end --
 	  loopIndex++;
