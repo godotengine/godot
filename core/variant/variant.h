@@ -693,6 +693,26 @@ const Variant::ObjData &Variant::_get_obj() const {
 	return *reinterpret_cast<const ObjData *>(&_data._mem[0]);
 }
 
-String vformat(const String &p_text, const Variant &p1 = Variant(), const Variant &p2 = Variant(), const Variant &p3 = Variant(), const Variant &p4 = Variant(), const Variant &p5 = Variant());
+template <typename... Vs>
+String vformat(const String &p_text, const Vs &...vs) {
+	Array args;
+	collect_args(args, vs...);
+	bool error = false;
+	String fmt = p_text.sprintf(args, &error);
+
+	ERR_FAIL_COND_V(error, String());
+
+	return fmt;
+}
+
+void collect_args(const Array &);
+
+template <typename... Vs>
+void collect_args(Array &args, const Variant &first, const Vs &...rest) {
+	if (first.get_type() != Variant::NIL) {
+		args.push_back(first);
+	}
+	collect_args(args, rest...);
+}
 
 #endif // VARIANT_H
