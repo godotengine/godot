@@ -107,7 +107,7 @@ public:
 		return (flags & FAILED_TO_CONSTRUCT) != 0;
 	}
 
-	const ElementPtr GetElement() const {
+	ElementPtr GetElement() const {
 		return element;
 	}
 
@@ -136,7 +136,7 @@ public:
 
 	virtual ~Object();
 
-	const ElementPtr SourceElement() const {
+	ElementPtr SourceElement() const {
 		return element;
 	}
 
