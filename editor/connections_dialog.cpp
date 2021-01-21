@@ -805,8 +805,9 @@ void ConnectionsDock::_go_to_script(TreeItem &item) {
 					}
 				}
 				Error err = script->get_language()->open_in_external_editor(script, p_line, p_col);
-				if (err != OK)
-					ERR_PRINT("Couldn't open script in the overridden external text editor");
+				if (err != OK) {
+					ERR_PRINT("Couldn't open script in the overridden external text editor.");
+				}
 			}
 		}
 	}
