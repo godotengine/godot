@@ -148,7 +148,7 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 
 		// Iterate over the cells of the quadrant.
 		for (Map<Vector2i, Vector2i, TileMapQuadrant::CoordsWorldComparator>::Element *E = q.world_to_map.front(); E; E = E->next()) {
-			TileMapCell &c = p_tile_map->get_cell(E->value());
+			TileMapCell c = p_tile_map->get_cell(E->value());
 
 			if (tile_set->get_source_type(c.source_id) == TileSet::SOURCE_TYPE_ATLAS) {
 				TileAtlasSource *atlas = tile_set->get_atlas_source(c.source_id);

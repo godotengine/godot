@@ -201,7 +201,7 @@ public:
 	int get_cell_alternative_tile(const Vector2i &p_coords) const;
 
 	// Not exposed to users
-	TileMapCell &get_cell(const Vector2i &p_coords);
+	TileMapCell get_cell(const Vector2i &p_coords) const;
 	Map<Vector2i, TileMapQuadrant> &get_quadrant_map();
 	int get_effective_quadrant_size() const;
 
@@ -211,7 +211,6 @@ public:
 	Vector2i world_to_map(const Vector2 &p_pos) const;
 
 	TypedArray<Vector2i> get_used_cells() const;
-	TypedArray<Vector2i> get_used_cells_by_index(int p_source_id, const Vector2i p_atlas_coords = Vector2i(), int p_alternative_tile = 0) const;
 	Rect2 get_used_rect(); // Not const because of cache
 
 	// Override some methods of the CanvasItem class to pass the changes to the quadrants CanvasItems
@@ -222,6 +221,7 @@ public:
 	virtual void set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) override;
 
 	void fix_invalid_tiles();
+	TypedArray<Vector2i> get_surrounding_tiles(Vector2i coords);
 	void clear();
 
 	TileMap();

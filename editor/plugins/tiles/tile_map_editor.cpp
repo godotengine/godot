@@ -174,6 +174,9 @@ void TileMapEditor::_update_toolbar() {
 		tilemap_tools_settings_vsep->show();
 		erase_button->show();
 	} else if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_bucket_tool_button) {
+		tilemap_tools_settings_vsep->show();
+		erase_button->show();
+		bucket_continuous_checkbox->show();
 	} else if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_picker_tool_button) {
 	}
 }
@@ -183,14 +186,14 @@ void TileMapEditor::_mouse_exited_viewport() {
 	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
-void TileMapEditor::_draw_line(Vector2 p_from_mouse_pos, Vector2i p_to_mouse_pos) {
+Map<Vector2i, TileMapCell> TileMapEditor::_draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2i p_to_mouse_pos) {
 	if (!tile_map) {
-		return;
+		return Map<Vector2i, TileMapCell>();
 	}
 
 	Ref<TileSet> tile_set = tile_map->get_tileset();
 	if (!tile_set.is_valid()) {
-		return;
+		return Map<Vector2i, TileMapCell>();
 	}
 
 	// Get or create the pattern.
@@ -202,13 +205,14 @@ void TileMapEditor::_draw_line(Vector2 p_from_mouse_pos, Vector2i p_to_mouse_pos
 		pattern = _get_pattern_from_set(tile_set_selection);
 	}
 
+	Map<Vector2i, TileMapCell> output;
 	if (!pattern.pattern.is_empty()) {
 		// If we paint several tiles, we virtually move the mouse as if it was in the center of the "brush"
 		Vector2 mouse_offset = (Vector2(pattern.size) / 2.0 - Vector2(0.5, 0.5)) * tile_set->get_tile_size();
 
 		Vector2i last_hovered_cell = tile_map->world_to_map(p_from_mouse_pos - mouse_offset);
 		Vector2i new_hovered_cell = tile_map->world_to_map(p_to_mouse_pos - mouse_offset);
-		Vector2i drag_start_cell = tile_map->world_to_map(drag_start_mouse_pos - mouse_offset);
+		Vector2i drag_start_cell = tile_map->world_to_map(p_start_drag_mouse_pos - mouse_offset);
 		Vector2i offset = Vector2i(Math::posmod(drag_start_cell.x, pattern.size.x), Math::posmod(drag_start_cell.y, pattern.size.y)); // Note: no posmodv for Vector2i for now. Meh.
 		Vector<Vector2i> line = Geometry2D::bresenham_line((last_hovered_cell - offset) / pattern.size, (new_hovered_cell - offset) / pattern.size);
 
@@ -217,13 +221,152 @@ void TileMapEditor::_draw_line(Vector2 p_from_mouse_pos, Vector2i p_to_mouse_pos
 			Vector2i top_left = line[i] * pattern.size + offset;
 			for (Map<Vector2i, TileMapCell>::Element *E = pattern.pattern.front(); E; E = E->next()) {
 				Vector2i coords = top_left + E->key();
-				if (!drag_modified.has(coords)) {
-					drag_modified.insert(coords, TileMapCell(tile_map->get_cell_source_id(coords), tile_map->get_cell_atlas_coords(coords), tile_map->get_cell_alternative_tile(coords)));
-				}
-				tile_map->set_cell(coords, E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+				output.insert(coords, TileMapCell(E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile));
 			}
 		}
 	}
+	return output;
+}
+
+Map<Vector2i, TileMapCell> TileMapEditor::_draw_rect(Vector2i p_start_cell, Vector2i p_end_cell) {
+	if (!tile_map) {
+		return Map<Vector2i, TileMapCell>();
+	}
+
+	Ref<TileSet> tile_set = tile_map->get_tileset();
+	if (!tile_set.is_valid()) {
+		return Map<Vector2i, TileMapCell>();
+	}
+
+	// Create the rect to draw.
+	Rect2i rect;
+	rect.set_position(p_start_cell);
+	rect.set_end(p_end_cell);
+	rect = rect.abs();
+	rect.size += Vector2i(1, 1);
+
+	// Get or create the pattern.
+	TilePattern pattern;
+	if (erase_button->is_pressed()) {
+		pattern.size = Vector2i(1, 1);
+		pattern.pattern[Vector2i(0, 0)] = TileMapCell(-1, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
+	} else {
+		pattern = _get_pattern_from_set(tile_set_selection);
+	}
+
+	Map<Vector2i, TileMapCell> output;
+	if (!pattern.pattern.is_empty()) {
+		// Paint the tiles on the tile map.
+		for (int x = 0; x <= rect.size.x / pattern.size.x; x++) {
+			for (int y = 0; y <= rect.size.y / pattern.size.y; y++) {
+				for (Map<Vector2i, TileMapCell>::Element *E = pattern.pattern.front(); E; E = E->next()) {
+					Vector2i coords = rect.position + Vector2i(x, y) * pattern.size + E->key();
+					if (rect.has_point(coords)) {
+						output.insert(coords, TileMapCell(E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile));
+					}
+				}
+			}
+		}
+	}
+
+	return output;
+}
+
+Map<Vector2i, TileMapCell> TileMapEditor::_draw_bucket_fill(Vector2i p_coords, bool p_contiguous) {
+	if (!tile_map) {
+		return Map<Vector2i, TileMapCell>();
+	}
+
+	Ref<TileSet> tile_set = tile_map->get_tileset();
+	if (!tile_set.is_valid()) {
+		return Map<Vector2i, TileMapCell>();
+	}
+
+	// Get or create the pattern.
+	TilePattern pattern;
+	if (erase_button->is_pressed()) {
+		pattern.size = Vector2i(1, 1);
+		pattern.pattern[Vector2i(0, 0)] = TileMapCell(-1, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
+	} else {
+		pattern = _get_pattern_from_set(tile_set_selection);
+	}
+
+	Map<Vector2i, TileMapCell> output;
+	if (!pattern.pattern.is_empty()) {
+		TileMapCell source = tile_map->get_cell(p_coords);
+
+		// If we are filling empty tiles, compute the tilemap boundaries.
+		Rect2i boundaries;
+		if (source.source_id == -1) {
+			boundaries = tile_map->get_used_rect();
+		}
+
+		if (p_contiguous) {
+			// Replace continuous tiles like the source.
+			Set<Vector2i> already_checked;
+			List<Vector2i> to_check;
+			to_check.push_back(p_coords);
+			while (!to_check.is_empty()) {
+				Vector2i coords = to_check.back()->get();
+				to_check.pop_back();
+				if (!already_checked.has(coords)) {
+					if (source.source_id == tile_map->get_cell_source_id(coords) &&
+							source.get_atlas_coords() == tile_map->get_cell_atlas_coords(coords) &&
+							source.alternative_tile == tile_map->get_cell_alternative_tile(coords) &&
+							(source.source_id != -1 || boundaries.has_point(coords))) {
+						Vector2i pattern_coords = (coords - p_coords) % pattern.size; // Note: it would be good to have posmodv for Vector2i.
+						pattern_coords.x = pattern_coords.x < 0 ? pattern_coords.x + pattern.size.x : pattern_coords.x;
+						pattern_coords.y = pattern_coords.y < 0 ? pattern_coords.y + pattern.size.y : pattern_coords.y;
+						if (pattern.pattern.has(pattern_coords)) {
+							output.insert(coords, TileMapCell(pattern.pattern[pattern_coords].source_id, pattern.pattern[pattern_coords].get_atlas_coords(), pattern.pattern[pattern_coords].alternative_tile));
+						} else {
+							output.insert(coords, TileMapCell());
+						}
+
+						// Handle different tile shapes.
+						TypedArray<Vector2i> around = tile_map->get_surrounding_tiles(coords);
+						for (int i = 0; i < around.size(); i++) {
+							to_check.push_back(around[i]);
+						}
+					}
+					already_checked.insert(coords);
+				}
+			}
+		} else {
+			// Replace all tiles like the source.
+			TypedArray<Vector2i> to_check;
+			if (source.source_id == -1) {
+				Rect2i rect = tile_map->get_used_rect();
+				if (rect.size.x <= 0 || rect.size.y <= 0) {
+					rect = Rect2i(p_coords, Vector2i(1, 1));
+				}
+				for (int x = boundaries.position.x; x < boundaries.get_end().x; x++) {
+					for (int y = boundaries.position.y; y < boundaries.get_end().y; y++) {
+						to_check.append(Vector2i(x, y));
+					}
+				}
+			} else {
+				to_check = tile_map->get_used_cells();
+			}
+			for (int i = 0; i < to_check.size(); i++) {
+				Vector2i coords = to_check[i];
+				if (source.source_id == tile_map->get_cell_source_id(coords) &&
+						source.get_atlas_coords() == tile_map->get_cell_atlas_coords(coords) &&
+						source.alternative_tile == tile_map->get_cell_alternative_tile(coords) &&
+						(source.source_id != -1 || boundaries.has_point(coords))) {
+					Vector2i pattern_coords = (coords - p_coords) % pattern.size; // Note: it would be good to have posmodv for Vector2i.
+					pattern_coords.x = pattern_coords.x < 0 ? pattern_coords.x + pattern.size.x : pattern_coords.x;
+					pattern_coords.y = pattern_coords.y < 0 ? pattern_coords.y + pattern.size.y : pattern_coords.y;
+					if (pattern.pattern.has(pattern_coords)) {
+						output.insert(coords, TileMapCell(pattern.pattern[pattern_coords].source_id, pattern.pattern[pattern_coords].get_atlas_coords(), pattern.pattern[pattern_coords].alternative_tile));
+					} else {
+						output.insert(coords, TileMapCell());
+					}
+				}
+			}
+		}
+	}
+	return output;
 }
 
 bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
@@ -243,7 +386,28 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 		Vector2 mpos = xform.affine_inverse().xform(mm->get_position());
 
 		if (drag_type == DRAG_TYPE_PAINT) {
-			_draw_line(drag_last_mouse_pos, mpos);
+			Map<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, drag_last_mouse_pos, mpos);
+			for (Map<Vector2i, TileMapCell>::Element *E = to_draw.front(); E; E = E->next()) {
+				Vector2i coords = E->key();
+				if (!drag_modified.has(coords)) {
+					drag_modified.insert(coords, TileMapCell(tile_map->get_cell_source_id(coords), tile_map->get_cell_atlas_coords(coords), tile_map->get_cell_alternative_tile(coords)));
+				}
+				tile_map->set_cell(coords, E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+			}
+		} else if (drag_type == DRAG_TYPE_BUCKET) {
+			Vector<Vector2i> line = Geometry2D::bresenham_line(tile_map->world_to_map(drag_last_mouse_pos), tile_map->world_to_map(mpos));
+			for (int i = 0; i < line.size(); i++) {
+				if (!drag_modified.has(line[i])) {
+					Map<Vector2i, TileMapCell> to_draw = _draw_bucket_fill(line[i], bucket_continuous_checkbox->is_pressed());
+					for (Map<Vector2i, TileMapCell>::Element *E = to_draw.front(); E; E = E->next()) {
+						Vector2i coords = E->key();
+						if (!drag_modified.has(coords)) {
+							drag_modified.insert(coords, TileMapCell(tile_map->get_cell_source_id(coords), tile_map->get_cell_atlas_coords(coords), tile_map->get_cell_alternative_tile(coords)));
+						}
+						tile_map->set_cell(coords, E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+					}
+				}
+			}
 		}
 
 		drag_last_mouse_pos = mpos;
@@ -265,29 +429,79 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 					drag_type = DRAG_TYPE_PAINT;
 					drag_start_mouse_pos = mpos;
 					drag_modified.clear();
-					_draw_line(mpos, mpos);
+					Map<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, mpos, mpos);
+					for (Map<Vector2i, TileMapCell>::Element *E = to_draw.front(); E; E = E->next()) {
+						Vector2i coords = E->key();
+						if (!drag_modified.has(coords)) {
+							drag_modified.insert(coords, TileMapCell(tile_map->get_cell_source_id(coords), tile_map->get_cell_atlas_coords(coords), tile_map->get_cell_alternative_tile(coords)));
+						}
+						tile_map->set_cell(coords, E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+					}
 				} else if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_line_tool_button) {
 					drag_type = DRAG_TYPE_LINE;
 					drag_start_mouse_pos = mpos;
 					drag_modified.clear();
+				} else if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_rect_tool_button) {
+					drag_type = DRAG_TYPE_RECT;
+					drag_start_mouse_pos = mpos;
+					drag_modified.clear();
+				} else if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_bucket_tool_button) {
+					drag_type = DRAG_TYPE_BUCKET;
+					drag_start_mouse_pos = mpos;
+					drag_modified.clear();
+					Vector<Vector2i> line = Geometry2D::bresenham_line(tile_map->world_to_map(drag_last_mouse_pos), tile_map->world_to_map(mpos));
+					for (int i = 0; i < line.size(); i++) {
+						if (!drag_modified.has(line[i])) {
+							Map<Vector2i, TileMapCell> to_draw = _draw_bucket_fill(line[i], bucket_continuous_checkbox->is_pressed());
+							for (Map<Vector2i, TileMapCell>::Element *E = to_draw.front(); E; E = E->next()) {
+								Vector2i coords = E->key();
+								if (!drag_modified.has(coords)) {
+									drag_modified.insert(coords, TileMapCell(tile_map->get_cell_source_id(coords), tile_map->get_cell_atlas_coords(coords), tile_map->get_cell_alternative_tile(coords)));
+								}
+								tile_map->set_cell(coords, E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+							}
+						}
+					}
 				}
 			} else {
 				// Released
-				if (drag_type == DRAG_TYPE_PAINT) {
-					undo_redo->create_action("Paint tiles");
-					for (Map<Vector2i, TileMapCell>::Element *E = drag_modified.front(); E; E = E->next()) {
-						undo_redo->add_do_method(tile_map, "set_cell", E->key(), tile_map->get_cell_source_id(E->key()), tile_map->get_cell_atlas_coords(E->key()), tile_map->get_cell_alternative_tile(E->key()));
-						undo_redo->add_undo_method(tile_map, "set_cell", E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
-					}
-					undo_redo->commit_action(false);
-				} else if (drag_type == DRAG_TYPE_LINE) {
-					_draw_line(drag_start_mouse_pos, mpos);
-					undo_redo->create_action("Paint tiles");
-					for (Map<Vector2i, TileMapCell>::Element *E = drag_modified.front(); E; E = E->next()) {
-						undo_redo->add_do_method(tile_map, "set_cell", E->key(), tile_map->get_cell_source_id(E->key()), tile_map->get_cell_atlas_coords(E->key()), tile_map->get_cell_alternative_tile(E->key()));
-						undo_redo->add_undo_method(tile_map, "set_cell", E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
-					}
-					undo_redo->commit_action(false);
+				switch (drag_type) {
+					case DRAG_TYPE_PAINT: {
+						undo_redo->create_action("Paint tiles");
+						for (Map<Vector2i, TileMapCell>::Element *E = drag_modified.front(); E; E = E->next()) {
+							undo_redo->add_do_method(tile_map, "set_cell", E->key(), tile_map->get_cell_source_id(E->key()), tile_map->get_cell_atlas_coords(E->key()), tile_map->get_cell_alternative_tile(E->key()));
+							undo_redo->add_undo_method(tile_map, "set_cell", E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+						}
+						undo_redo->commit_action(false);
+					} break;
+					case DRAG_TYPE_LINE: {
+						Map<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, drag_start_mouse_pos, mpos);
+						undo_redo->create_action("Paint tiles");
+						for (Map<Vector2i, TileMapCell>::Element *E = to_draw.front(); E; E = E->next()) {
+							undo_redo->add_do_method(tile_map, "set_cell", E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+							undo_redo->add_undo_method(tile_map, "set_cell", E->key(), tile_map->get_cell_source_id(E->key()), tile_map->get_cell_atlas_coords(E->key()), tile_map->get_cell_alternative_tile(E->key()));
+						}
+						undo_redo->commit_action();
+					} break;
+					case DRAG_TYPE_RECT: {
+						Map<Vector2i, TileMapCell> to_draw = _draw_rect(tile_map->world_to_map(drag_start_mouse_pos), tile_map->world_to_map(mpos));
+						undo_redo->create_action("Paint tiles");
+						for (Map<Vector2i, TileMapCell>::Element *E = to_draw.front(); E; E = E->next()) {
+							undo_redo->add_do_method(tile_map, "set_cell", E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+							undo_redo->add_undo_method(tile_map, "set_cell", E->key(), tile_map->get_cell_source_id(E->key()), tile_map->get_cell_atlas_coords(E->key()), tile_map->get_cell_alternative_tile(E->key()));
+						}
+						undo_redo->commit_action();
+					} break;
+					case DRAG_TYPE_BUCKET: {
+						undo_redo->create_action("Paint tiles");
+						for (Map<Vector2i, TileMapCell>::Element *E = drag_modified.front(); E; E = E->next()) {
+							undo_redo->add_do_method(tile_map, "set_cell", E->key(), tile_map->get_cell_source_id(E->key()), tile_map->get_cell_atlas_coords(E->key()), tile_map->get_cell_alternative_tile(E->key()));
+							undo_redo->add_undo_method(tile_map, "set_cell", E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+						}
+						undo_redo->commit_action(false);
+					} break;
+					default:
+						break;
 				}
 				drag_type = DRAG_TYPE_NONE;
 			}
@@ -405,76 +619,55 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		Map<Vector2i, TileMapCell> preview;
 		Rect2i drawn_grid_rect;
 
-		if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_paint_tool_button && !Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
-			// Get or create the pattern.
-			TilePattern pattern;
-			if (erase_button->is_pressed()) {
-				pattern.size = Vector2i(1, 1);
-				pattern.pattern[Vector2i(0, 0)] = TileMapCell(-1, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
-			} else {
-				pattern = _get_pattern_from_set(tile_set_selection);
-			}
-
-			if (!pattern.pattern.is_empty()) {
-				// Offset the preview position.
-				Vector2 mpos = drag_last_mouse_pos;
-				mpos -= (Vector2(pattern.size) / 2.0 - Vector2(0.5, 0.5)) * tile_set->get_tile_size(); // If we paint several tiles, we vitually move the mouse as if it was in the center of the "brush"
-				Vector2i hovered_cell = tile_map->world_to_map(mpos);
-
-				// Add tiles to the preview.
-				for (Map<Vector2i, TileMapCell>::Element *E = pattern.pattern.front(); E; E = E->next()) {
-					Vector2i cell_coords = hovered_cell + E->key();
-					preview[cell_coords] = E->get();
+		if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_paint_tool_button && drag_type == DRAG_TYPE_NONE) {
+			// Preview for a single pattern.
+			preview = _draw_line(drag_last_mouse_pos, drag_last_mouse_pos, drag_last_mouse_pos);
+			if (!preview.is_empty()) {
+				drawn_grid_rect = Rect2i(preview.front()->key(), Vector2i(1, 1));
+				for (Map<Vector2i, TileMapCell>::Element *E = preview.front(); E; E = E->next()) {
+					drawn_grid_rect.expand_to(E->key());
 				}
-				drawn_grid_rect = Rect2i(hovered_cell, pattern.size);
 			}
 		} else if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_line_tool_button && drag_type == DRAG_TYPE_LINE) {
-			// Get or create the pattern.
-			TilePattern pattern;
-			if (erase_button->is_pressed()) {
-				pattern.size = Vector2i(1, 1);
-				pattern.pattern[Vector2i(0, 0)] = TileMapCell(-1, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
-			} else {
-				pattern = _get_pattern_from_set(tile_set_selection);
-			}
-
-			if (!pattern.pattern.is_empty()) {
-				// If we paint several tiles, we virtually move the mouse as if it was in the center of the "brush"
-				Vector2 mouse_offset = (Vector2(pattern.size) / 2.0 - Vector2(0.5, 0.5)) * tile_set->get_tile_size();
-
-				Vector2i last_hovered_cell = tile_map->world_to_map(drag_start_mouse_pos - mouse_offset);
-				Vector2i new_hovered_cell = tile_map->world_to_map(drag_last_mouse_pos - mouse_offset);
-				Vector2i drag_start_cell = tile_map->world_to_map(drag_start_mouse_pos - mouse_offset);
-				Vector2i offset = Vector2i(Math::posmod(drag_start_cell.x, pattern.size.x), Math::posmod(drag_start_cell.y, pattern.size.y)); // Note: no posmodv for Vector2i for now. Meh.
-				Vector<Vector2i> line = Geometry2D::bresenham_line((last_hovered_cell - offset) / pattern.size, (new_hovered_cell - offset) / pattern.size);
-
-				// Add tiles to the preview.
-				for (int i = 0; i < line.size(); i++) {
-					Vector2i top_left = line[i] * pattern.size + offset;
-					for (Map<Vector2i, TileMapCell>::Element *E = pattern.pattern.front(); E; E = E->next()) {
-						Vector2i cell_coords = top_left + E->key();
-						preview[cell_coords] = E->get();
-					}
+			// Preview for a line pattern.
+			preview = _draw_line(drag_start_mouse_pos, drag_start_mouse_pos, drag_last_mouse_pos);
+			if (!preview.is_empty()) {
+				drawn_grid_rect = Rect2i(preview.front()->key(), Vector2i(1, 1));
+				for (Map<Vector2i, TileMapCell>::Element *E = preview.front(); E; E = E->next()) {
+					drawn_grid_rect.expand_to(E->key());
 				}
-				drawn_grid_rect = Rect2i(new_hovered_cell, pattern.size);
 			}
+		} else if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_rect_tool_button && drag_type == DRAG_TYPE_RECT) {
+			// Preview for a line pattern.
+			preview = _draw_rect(tile_map->world_to_map(drag_start_mouse_pos), tile_map->world_to_map(drag_last_mouse_pos));
+			if (!preview.is_empty()) {
+				drawn_grid_rect = Rect2i(preview.front()->key(), Vector2i(1, 1));
+				for (Map<Vector2i, TileMapCell>::Element *E = preview.front(); E; E = E->next()) {
+					drawn_grid_rect.expand_to(E->key());
+				}
+			}
+		} else if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_bucket_tool_button && drag_type == DRAG_TYPE_NONE) {
+			// Preview for a line pattern.
+			preview = _draw_bucket_fill(tile_map->world_to_map(drag_last_mouse_pos), bucket_continuous_checkbox->is_pressed());
 		}
 
 		// Draw the lines of the grid behind the preview.
-		drawn_grid_rect = drawn_grid_rect.grow(fading);
-		for (int x = drawn_grid_rect.position.x; x < (drawn_grid_rect.position.x + drawn_grid_rect.size.x); x++) {
-			for (int y = drawn_grid_rect.position.y; y < (drawn_grid_rect.position.y + drawn_grid_rect.size.y); y++) {
-				Vector2i pos_in_rect = Vector2i(x, y) - drawn_grid_rect.position;
+		if (drawn_grid_rect.size.x > 0 && drawn_grid_rect.size.y > 0) {
+			drawn_grid_rect = drawn_grid_rect.grow(fading);
+			for (int x = drawn_grid_rect.position.x; x < (drawn_grid_rect.position.x + drawn_grid_rect.size.x); x++) {
+				for (int y = drawn_grid_rect.position.y; y < (drawn_grid_rect.position.y + drawn_grid_rect.size.y); y++) {
+					Vector2i pos_in_rect = Vector2i(x, y) - drawn_grid_rect.position;
 
-				// Fade out the border of the grid.
-				float left_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.x), 0.0f, 1.0f);
-				float right_opacity = CLAMP(Math::inverse_lerp((float)drawn_grid_rect.size.x, (float)(drawn_grid_rect.size.x - fading), (float)pos_in_rect.x), 0.0f, 1.0f);
-				float top_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.y), 0.0f, 1.0f);
-				float bottom_opacity = CLAMP(Math::inverse_lerp((float)drawn_grid_rect.size.y, (float)(drawn_grid_rect.size.y - fading), (float)pos_in_rect.y), 0.0f, 1.0f);
-				float opacity = CLAMP(MIN(left_opacity, MIN(right_opacity, MIN(top_opacity, bottom_opacity))) + 0.1, 0.0f, 1.0f);
+					// Fade out the border of the grid.
+					float left_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.x), 0.0f, 1.0f);
+					float right_opacity = CLAMP(Math::inverse_lerp((float)drawn_grid_rect.size.x, (float)(drawn_grid_rect.size.x - fading), (float)pos_in_rect.x), 0.0f, 1.0f);
+					float top_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.y), 0.0f, 1.0f);
+					float bottom_opacity = CLAMP(Math::inverse_lerp((float)drawn_grid_rect.size.y, (float)(drawn_grid_rect.size.y - fading), (float)pos_in_rect.y), 0.0f, 1.0f);
+					float opacity = CLAMP(MIN(left_opacity, MIN(right_opacity, MIN(top_opacity, bottom_opacity))) + 0.1, 0.0f, 1.0f);
 
-				Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(Vector2(x, y)) - tile_shape_size / 2, tile_shape_size));
-				tile_set->draw_tile_shape(p_overlay, cell_region, Color(1.0, 0.5, 0.2, 0.5 * opacity), false);
+					Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(Vector2(x, y)) - tile_shape_size / 2, tile_shape_size));
+					tile_set->draw_tile_shape(p_overlay, cell_region, Color(1.0, 0.5, 0.2, 0.5 * opacity), false);
+				}
 			}
 		}
 
@@ -990,13 +1183,16 @@ TileMapEditor::TileMapEditor() {
 	//erase_button->set_shortcut_context(this);
 	tilemap_tools_settings->add_child(erase_button);
 
+	bucket_continuous_checkbox = memnew(CheckBox);
+	bucket_continuous_checkbox->set_flat(true);
+	bucket_continuous_checkbox->set_text(TTR("Continuous"));
+	tilemap_tools_settings->add_child(bucket_continuous_checkbox);
+
 	// Default tool.
 	tilemap_paint_tool_button->set_pressed(true);
 
 	// Disable tools not available yet.
 	tilemap_select_tool_button->set_disabled(true);
-	tilemap_rect_tool_button->set_disabled(true);
-	tilemap_bucket_tool_button->set_disabled(true);
 	tilemap_picker_tool_button->set_disabled(true);
 
 	_update_toolbar();

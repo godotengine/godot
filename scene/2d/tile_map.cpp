@@ -82,6 +82,15 @@ void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 		tile_set->disconnect("changed", callable_mp(this, &TileMap::_tile_set_changed));
 	}
 
+	if (p_tileset.is_valid()) {
+		Ref<TileSet> old_tileset = p_tileset;
+		old_tileset->connect("changed", callable_mp(this, &TileMap::_make_all_quadrants_dirty), varray(true));
+		old_tileset->connect("changed", callable_mp(this, &TileMap::_tile_set_changed));
+		;
+	} else {
+		_clear_quadrants();
+	}
+
 	tile_set = p_tileset;
 
 	if (tile_set.is_valid()) {
@@ -275,11 +284,23 @@ void TileMap::_make_quadrant_dirty(Map<Vector2i, TileMapQuadrant>::Element *Q, b
 }
 
 void TileMap::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) {
-	// Set the current cell tile (using integer position)
+	// Set the current cell tile (using integer position).
 	Vector2i pk(p_coords);
 	Map<Vector2i, TileMapCell>::Element *E = tile_map.find(pk);
 
-	if (!E && p_source_id == TileSet::SOURCE_TYPE_INVALID) {
+	int source_id = p_source_id;
+	Vector2i atlas_coords = p_atlas_coords;
+	int alternative_tile = p_alternative_tile;
+
+	if ((source_id == -1 || atlas_coords == TileAtlasSource::INVALID_ATLAS_COORDS || alternative_tile == TileAtlasSource::INVALID_TILE_ALTERNATIVE) &&
+			(source_id != -1 || atlas_coords != TileAtlasSource::INVALID_ATLAS_COORDS || alternative_tile != TileAtlasSource::INVALID_TILE_ALTERNATIVE)) {
+		WARN_PRINT("Setting a cell a cell as empty requires both source_id, atlas_coord and alternative_tile to be set to their respective \"invalid\" values. Values were thus changes accordingly.");
+		source_id = -1;
+		atlas_coords = TileAtlasSource::INVALID_ATLAS_COORDS;
+		alternative_tile = TileAtlasSource::INVALID_TILE_ALTERNATIVE;
+	}
+
+	if (!E && source_id == -1) {
 		return; // Nothing to do, the tile is already empty.
 	}
 
@@ -288,7 +309,7 @@ void TileMap::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i
 
 	Map<Vector2i, TileMapQuadrant>::Element *Q = quadrant_map.find(qk);
 
-	if (p_source_id == TileSet::SOURCE_TYPE_INVALID) {
+	if (source_id == -1) {
 		// Erase existing cell in the tile map.
 		tile_map.erase(pk);
 
@@ -321,16 +342,16 @@ void TileMap::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i
 		} else {
 			ERR_FAIL_COND(!Q); // TileMapQuadrant should exist...
 
-			if (E->get().source_id == p_source_id && E->get().get_atlas_coords() == p_atlas_coords && E->get().alternative_tile == p_alternative_tile) {
+			if (E->get().source_id == source_id && E->get().get_atlas_coords() == atlas_coords && E->get().alternative_tile == alternative_tile) {
 				return; // Nothing changed.
 			}
 		}
 
 		TileMapCell &c = E->get();
 
-		c.source_id = p_source_id;
-		c.set_atlas_coords(p_atlas_coords);
-		c.alternative_tile = p_alternative_tile;
+		c.source_id = source_id;
+		c.set_atlas_coords(atlas_coords);
+		c.alternative_tile = alternative_tile;
 
 		_make_quadrant_dirty(Q);
 		used_size_cache_dirty = true;
@@ -353,7 +374,7 @@ Vector2i TileMap::get_cell_atlas_coords(const Vector2i &p_coords) const {
 	const Map<Vector2i, TileMapCell>::Element *E = tile_map.find(p_coords);
 
 	if (!E) {
-		return Vector2i();
+		return TileAtlasSource::INVALID_ATLAS_COORDS;
 	}
 
 	return E->get().get_atlas_coords();
@@ -364,14 +385,18 @@ int TileMap::get_cell_alternative_tile(const Vector2i &p_coords) const {
 	const Map<Vector2i, TileMapCell>::Element *E = tile_map.find(p_coords);
 
 	if (!E) {
-		return 0;
+		return TileAtlasSource::INVALID_TILE_ALTERNATIVE;
 	}
 
 	return E->get().alternative_tile;
 }
 
-TileMapCell &TileMap::get_cell(const Vector2i &p_coords) {
-	return tile_map.find(p_coords)->get();
+TileMapCell TileMap::get_cell(const Vector2i &p_coords) const {
+	if (!tile_map.has(p_coords)) {
+		return TileMapCell();
+	} else {
+		return tile_map.find(p_coords)->get();
+	}
 }
 
 Map<Vector2i, TileMapQuadrant> &TileMap::get_quadrant_map() {
@@ -388,8 +413,127 @@ void TileMap::fix_invalid_tiles() {
 	}
 }
 
+TypedArray<Vector2i> TileMap::get_surrounding_tiles(Vector2i coords) {
+	TypedArray<Vector2i> around;
+	if (!tile_set.is_valid()) {
+		return around;
+	}
+	if (tile_set->get_tile_shape() == TileSet::TILE_SHAPE_SQUARE) {
+		around.push_back(coords + Vector2i(-1, 0));
+		around.push_back(coords + Vector2i(1, 0));
+		around.push_back(coords + Vector2i(0, -1));
+		around.push_back(coords + Vector2i(0, 1));
+	} else {
+		switch (tile_set->get_tile_layout()) {
+			case TileSet::TILE_LAYOUT_STACKED:
+				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+					around.push_back(coords + Vector2i(coords.y % 2 ? 0 : -1, -1));
+					around.push_back(coords + Vector2i(coords.y % 2 ? 1 : 0, -1));
+					around.push_back(coords + Vector2i(-1, 0));
+					around.push_back(coords + Vector2i(1, 0));
+					around.push_back(coords + Vector2i(coords.y % 2 ? 0 : -1, 1));
+					around.push_back(coords + Vector2i(coords.y % 2 ? 1 : 0, 1));
+				} else {
+					around.push_back(coords + Vector2i(-1, coords.x % 2 ? 0 : -1));
+					around.push_back(coords + Vector2i(-1, coords.x % 2 ? 1 : 0));
+					around.push_back(coords + Vector2i(0, -1));
+					around.push_back(coords + Vector2i(0, 1));
+					around.push_back(coords + Vector2i(1, coords.x % 2 ? 0 : -1));
+					around.push_back(coords + Vector2i(1, coords.x % 2 ? 1 : 0));
+				}
+				break;
+			case TileSet::TILE_LAYOUT_STACKED_OFFSET:
+				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+					around.push_back(coords + Vector2i(coords.y % 2 ? -1 : 0, -1));
+					around.push_back(coords + Vector2i(coords.y % 2 ? 0 : 1, -1));
+					around.push_back(coords + Vector2i(-1, 0));
+					around.push_back(coords + Vector2i(1, 0));
+					around.push_back(coords + Vector2i(coords.y % 2 ? -1 : 0, 1));
+					around.push_back(coords + Vector2i(coords.y % 2 ? 0 : 1, 1));
+				} else {
+					around.push_back(coords + Vector2i(-1, coords.x % 2 ? -1 : 0));
+					around.push_back(coords + Vector2i(-1, coords.x % 2 ? 0 : 1));
+					around.push_back(coords + Vector2i(0, -1));
+					around.push_back(coords + Vector2i(0, 1));
+					around.push_back(coords + Vector2i(1, coords.x % 2 ? -1 : 0));
+					around.push_back(coords + Vector2i(1, coords.x % 2 ? 0 : 1));
+				}
+				break;
+			case TileSet::TILE_LAYOUT_STAIRS_RIGHT:
+				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+					around.push_back(coords + Vector2i(0, -1));
+					around.push_back(coords + Vector2i(1, -1));
+					around.push_back(coords + Vector2i(-1, 0));
+					around.push_back(coords + Vector2i(1, 0));
+					around.push_back(coords + Vector2i(-1, 1));
+					around.push_back(coords + Vector2i(0, 1));
+				} else {
+					around.push_back(coords + Vector2i(0, -1));
+					around.push_back(coords + Vector2i(-1, 1));
+					around.push_back(coords + Vector2i(1, -2));
+					around.push_back(coords + Vector2i(-1, 2));
+					around.push_back(coords + Vector2i(1, -1));
+					around.push_back(coords + Vector2i(0, 1));
+				}
+				break;
+			case TileSet::TILE_LAYOUT_STAIRS_DOWN:
+				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+					around.push_back(coords + Vector2i(-1, 0));
+					around.push_back(coords + Vector2i(1, -1));
+					around.push_back(coords + Vector2i(-2, 1));
+					around.push_back(coords + Vector2i(2, -1));
+					around.push_back(coords + Vector2i(-1, 1));
+					around.push_back(coords + Vector2i(1, 0));
+				} else {
+					around.push_back(coords + Vector2i(-1, 0));
+					around.push_back(coords + Vector2i(-1, 1));
+					around.push_back(coords + Vector2i(0, -1));
+					around.push_back(coords + Vector2i(0, 1));
+					around.push_back(coords + Vector2i(1, -1));
+					around.push_back(coords + Vector2i(1, 0));
+				}
+				break;
+			case TileSet::TILE_LAYOUT_DIAMOND_RIGHT:
+				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+					around.push_back(coords + Vector2i(0, -1));
+					around.push_back(coords + Vector2i(1, 0));
+					around.push_back(coords + Vector2i(-1, -1));
+					around.push_back(coords + Vector2i(1, 1));
+					around.push_back(coords + Vector2i(-1, 0));
+					around.push_back(coords + Vector2i(0, 1));
+				} else {
+					around.push_back(coords + Vector2i(0, -1));
+					around.push_back(coords + Vector2i(-1, 0));
+					around.push_back(coords + Vector2i(1, -1));
+					around.push_back(coords + Vector2i(-1, 1));
+					around.push_back(coords + Vector2i(1, 0));
+					around.push_back(coords + Vector2i(0, 1));
+				}
+				break;
+			case TileSet::TILE_LAYOUT_DIAMOND_DOWN:
+				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+					around.push_back(coords + Vector2i(-1, 0));
+					around.push_back(coords + Vector2i(0, -1));
+					around.push_back(coords + Vector2i(-1, 1));
+					around.push_back(coords + Vector2i(1, -1));
+					around.push_back(coords + Vector2i(0, 1));
+					around.push_back(coords + Vector2i(1, 0));
+				} else {
+					around.push_back(coords + Vector2i(-1, 0));
+					around.push_back(coords + Vector2i(0, 1));
+					around.push_back(coords + Vector2i(-1, -1));
+					around.push_back(coords + Vector2i(1, 1));
+					around.push_back(coords + Vector2i(0, -1));
+					around.push_back(coords + Vector2i(1, 0));
+				}
+				break;
+		}
+	}
+	return around;
+}
+
 void TileMap::_recreate_quadrants() {
-	// Clear then recreate all quadrants
+	// Clear then recreate all quadrants.
 	_clear_quadrants();
 
 	for (Map<Vector2i, TileMapCell>::Element *E = tile_map.front(); E; E = E->next()) {
@@ -414,6 +558,11 @@ void TileMap::_clear_quadrants() {
 	// Clear quadrants.
 	while (quadrant_map.size()) {
 		_erase_quadrant(quadrant_map.front());
+	}
+
+	// Clear the dirty quadrants list.
+	while (dirty_quadrant_list.first()) {
+		dirty_quadrant_list.remove(dirty_quadrant_list.first());
 	}
 }
 
@@ -816,19 +965,6 @@ TypedArray<Vector2i> TileMap::get_used_cells() const {
 	return a;
 }
 
-TypedArray<Vector2i> TileMap::get_used_cells_by_index(int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) const {
-	// Return all cells matching a given ID.
-	TypedArray<Vector2i> a;
-	for (Map<Vector2i, TileMapCell>::Element *E = tile_map.front(); E; E = E->next()) {
-		if (E->value().source_id == p_source_id && E->value().get_atlas_coords() == p_atlas_coords && E->value().alternative_tile == p_alternative_tile) {
-			Vector2i p(E->key().x, E->key().y);
-			a.push_back(p);
-		}
-	}
-
-	return a;
-}
-
 Rect2 TileMap::get_used_rect() { // Not const because of cache
 	// Return the rect of the currently used area
 	if (used_size_cache_dirty) {
@@ -919,16 +1055,16 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_quadrant_size", "size"), &TileMap::set_quadrant_size);
 	ClassDB::bind_method(D_METHOD("get_quadrant_size"), &TileMap::get_quadrant_size);
 
-	ClassDB::bind_method(D_METHOD("set_cell", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(0), DEFVAL(Vector2i()), DEFVAL(TileSet::SOURCE_TYPE_INVALID));
+	ClassDB::bind_method(D_METHOD("set_cell", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(-1), DEFVAL(TileAtlasSource::INVALID_ATLAS_COORDS), DEFVAL(TileAtlasSource::INVALID_TILE_ALTERNATIVE));
 	ClassDB::bind_method(D_METHOD("get_cell_source_id", "coords"), &TileMap::get_cell_source_id);
 	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "coords"), &TileMap::get_cell_atlas_coords);
 	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "coords"), &TileMap::get_cell_alternative_tile);
 
 	ClassDB::bind_method(D_METHOD("fix_invalid_tiles"), &TileMap::fix_invalid_tiles);
+	ClassDB::bind_method(D_METHOD("get_surrounding_tiles", "coords"), &TileMap::get_surrounding_tiles);
 	ClassDB::bind_method(D_METHOD("clear"), &TileMap::clear);
 
 	ClassDB::bind_method(D_METHOD("get_used_cells"), &TileMap::get_used_cells);
-	ClassDB::bind_method(D_METHOD("get_used_cells_by_index", "source_id", "tileset_coords", "alternative_tile"), &TileMap::get_used_cells_by_index);
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &TileMap::get_used_rect);
 
 	ClassDB::bind_method(D_METHOD("map_to_world", "map_position"), &TileMap::map_to_world);

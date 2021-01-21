@@ -367,18 +367,18 @@ void TileSetEditorSourcesTab::_update_fix_selected_and_hovered_tiles() {
 		int source_id = sources_list->get_item_metadata(source_index);
 
 		// Fix selected.
-		if (!tile_set || !tile_set->get_atlas_source(source_id)->has_tile(selected_tile) || !tile_set->get_atlas_source(source_id)->has_alternative_tile(selected_tile, selected_alternative)) {
+		if (!tile_set || !tile_set->has_atlas_source(source_id) || !tile_set->get_atlas_source(source_id)->has_tile(selected_tile) || !tile_set->get_atlas_source(source_id)->has_alternative_tile(selected_tile, selected_alternative)) {
 			selected_tile = TileAtlasSource::INVALID_ATLAS_COORDS;
 			selected_alternative = TileAtlasSource::INVALID_TILE_ALTERNATIVE;
 		}
 
 		// Fix hovered.
-		if (!tile_set || !tile_set->get_atlas_source(source_id)->has_tile(hovered_base_tile_coords)) {
+		if (!tile_set || !tile_set->has_atlas_source(source_id) || !tile_set->get_atlas_source(source_id)->has_tile(hovered_base_tile_coords)) {
 			hovered_base_tile_coords = TileAtlasSource::INVALID_ATLAS_COORDS;
 		}
 		Vector2i coords = Vector2i(hovered_alternative_tile_coords.x, hovered_alternative_tile_coords.y);
 		int alternative = hovered_alternative_tile_coords.z;
-		if (!tile_set || !tile_set->get_atlas_source(source_id)->has_tile(coords) || !tile_set->get_atlas_source(source_id)->has_alternative_tile(coords, alternative)) {
+		if (!tile_set || !tile_set->has_atlas_source(source_id) || !tile_set->get_atlas_source(source_id)->has_tile(coords) || !tile_set->get_atlas_source(source_id)->has_alternative_tile(coords, alternative)) {
 			hovered_alternative_tile_coords = Vector3i(TileAtlasSource::INVALID_ATLAS_COORDS.x, TileAtlasSource::INVALID_ATLAS_COORDS.y, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
 		}
 

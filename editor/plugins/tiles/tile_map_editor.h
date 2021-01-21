@@ -99,6 +99,7 @@ private:
 	HBoxContainer *tilemap_tools_settings;
 	VSeparator *tilemap_tools_settings_vsep;
 	Button *erase_button;
+	Button *bucket_continuous_checkbox;
 
 	void _update_toolbar();
 
@@ -109,7 +110,9 @@ private:
 	enum DragType {
 		DRAG_TYPE_NONE = 0,
 		DRAG_TYPE_PAINT,
-		DRAG_TYPE_LINE
+		DRAG_TYPE_LINE,
+		DRAG_TYPE_RECT,
+		DRAG_TYPE_BUCKET,
 	};
 	DragType drag_type = DRAG_TYPE_NONE;
 	Vector2 drag_start_mouse_pos;
@@ -118,7 +121,9 @@ private:
 
 	void _mouse_exited_viewport();
 
-	void _draw_line(Vector2 p_last_mouse_pos, Vector2i p_new_mouse_pos);
+	Map<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2i p_to_mouse_pos);
+	Map<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_mouse_pos, Vector2i p_end_mouse_pos);
+	Map<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous);
 
 	void _tile_map_changed();
 

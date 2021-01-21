@@ -33,6 +33,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/editor_zoom_widget.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
@@ -232,10 +233,6 @@ private:
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
 	HBoxContainer *hb;
-
-	Button *zoom_minus;
-	Button *zoom_reset;
-	Button *zoom_plus;
 
 	Map<Control *, Timer *> popup_temporarily_timers;
 
@@ -536,13 +533,9 @@ private:
 	void _button_toggle_anchor_mode(bool p_status);
 
 	VBoxContainer *controls_vb;
-	HBoxContainer *zoom_hb;
-	float _get_next_zoom_value(int p_increment_count) const;
+	EditorZoomWidget *zoom_widget;
+	void _update_zoom(float p_zoom);
 	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
-	void _update_zoom_label();
-	void _button_zoom_minus();
-	void _button_zoom_reset();
-	void _button_zoom_plus();
 	void _button_toggle_smart_snap(bool p_status);
 	void _button_toggle_grid_snap(bool p_status);
 	void _button_override_camera(bool p_pressed);
