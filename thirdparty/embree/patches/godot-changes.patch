@@ -90,7 +90,7 @@ diff --git a/common/sys/mutex.h b/common/sys/mutex.h
 index 1164210f2..f0f55340a 100644
 --- a/common/sys/mutex.h
 +++ b/common/sys/mutex.h
-@@ -47,8 +47,16 @@ namespace embree
+@@ -47,8 +47,17 @@ namespace embree
        {
          while (flag.load()) 
          {
@@ -101,13 +101,14 @@ index 1164210f2..f0f55340a 100644
            _mm_pause();
 +// -- GODOT start --
 +#else
-+          usleep(1);
++          __builtin_ia32_pause();
++          __builtin_ia32_pause();
 +#endif
 +// -- GODOT end --
          }
          
          bool expected = false;
-@@ -74,8 +82,16 @@ namespace embree
+@@ -74,8 +82,17 @@ namespace embree
      {
        while(flag.load())
        {
@@ -118,7 +119,8 @@ index 1164210f2..f0f55340a 100644
          _mm_pause();
 +// -- GODOT start --
 +#else
-+        usleep(1);
++        __builtin_ia32_pause();
++        __builtin_ia32_pause();
 +#endif
 +// -- GODOT end --
        }
