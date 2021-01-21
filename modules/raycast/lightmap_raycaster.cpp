@@ -144,7 +144,7 @@ void LightmapRaycasterEmbree::add_mesh(const Vector<Vector3> &p_vertices, const 
 		embree_normals = (Vec3fa *)rtcSetNewGeometryBuffer(embree_mesh, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 1, RTC_FORMAT_FLOAT3, sizeof(Vec3fa), vertex_count);
 	}
 
-	for (uint32_t i = 0; i < vertex_count; i++) {
+	for (int i = 0; i < vertex_count; i++) {
 		embree_vertices[i] = Vec3fa(p_vertices[i].x, p_vertices[i].y, p_vertices[i].z);
 		embree_light_uvs[i] = Vec2fa(p_uv2s[i].x, p_uv2s[i].y);
 		if (embree_normals != nullptr) {
