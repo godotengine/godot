@@ -126,16 +126,16 @@ void TilesEditor::_synchronize_atlas_views(Variant p_unused, Object *p_emitter) 
 	ERR_FAIL_COND(!atlas_view);
 
 	float zoom = atlas_view->get_zoom();
-	Vector2i scroll = Vector2i(atlas_view->get_h_scroll(), atlas_view->get_v_scroll());
+	Vector2i scroll = Vector2i(atlas_view->get_scroll_container()->get_h_scroll(), atlas_view->get_scroll_container()->get_v_scroll());
 
 	for (Set<TileAtlasView *>::Element *E = atlases_views.front(); E; E = E->next()) {
 		// We synchronize only if the scrollable areas are the same.
 		E->get()->set_zoom(zoom);
-		if (E->get()->get_h_scroll() != scroll.x) {
-			E->get()->set_h_scroll(scroll.x);
+		if (E->get()->get_scroll_container()->get_h_scroll() != scroll.x) {
+			E->get()->get_scroll_container()->set_h_scroll(scroll.x);
 		}
-		if (E->get()->get_v_scroll() != scroll.y) {
-			E->get()->set_v_scroll(scroll.y);
+		if (E->get()->get_scroll_container()->get_v_scroll() != scroll.y) {
+			E->get()->get_scroll_container()->set_v_scroll(scroll.y);
 		}
 	}
 }
@@ -143,8 +143,8 @@ void TilesEditor::_synchronize_atlas_views(Variant p_unused, Object *p_emitter) 
 void TilesEditor::register_atlas_view_for_synchronization(TileAtlasView *p_atlas_view) {
 	atlases_views.insert(p_atlas_view);
 	p_atlas_view->connect("zoom_changed", callable_mp(this, &TilesEditor::_synchronize_atlas_views), varray(0, Variant(p_atlas_view)));
-	p_atlas_view->get_h_scrollbar()->connect("value_changed", callable_mp(this, &TilesEditor::_synchronize_atlas_views), varray(p_atlas_view));
-	p_atlas_view->get_v_scrollbar()->connect("value_changed", callable_mp(this, &TilesEditor::_synchronize_atlas_views), varray(p_atlas_view));
+	p_atlas_view->get_scroll_container()->get_h_scrollbar()->connect("value_changed", callable_mp(this, &TilesEditor::_synchronize_atlas_views), varray(p_atlas_view));
+	p_atlas_view->get_scroll_container()->get_v_scrollbar()->connect("value_changed", callable_mp(this, &TilesEditor::_synchronize_atlas_views), varray(p_atlas_view));
 }
 
 void TilesEditor::clear() {

@@ -32,27 +32,31 @@
 #define TILE_ATLAS_VIEW_H
 
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/tile_set/tile_set.h"
 
-class TileAtlasView : public ScrollContainer {
-	GDCLASS(TileAtlasView, ScrollContainer);
+#include "editor/editor_zoom_widget.h"
+
+class TileAtlasView : public Control {
+	GDCLASS(TileAtlasView, Control);
 
 private:
 	TileSet *tile_set;
 	int source_id;
 
-	float zoom = 1.0;
-
-	void _update_zoom();
+	float previous_zoom = 1.0;
+	EditorZoomWidget *zoom_widget;
+	void _update_zoom(float p_zoom, bool p_zoom_on_mouse_pos = false);
 	void _gui_input(const Ref<InputEvent> &p_event);
 
 	Map<Vector2, Map<int, Rect2i>> alternative_tiles_rect_cache;
 	void _update_alternative_tiles_rect_cache();
 
+	ScrollContainer *scroll_container;
 	MarginContainer *margin_container;
 	int margin_container_paddings[4] = { 0, 0, 0, 0 };
 	HBoxContainer *hbox;
@@ -100,6 +104,8 @@ protected:
 public:
 	// Global.
 	void set_atlas_source(TileSet *p_tile_set, int p_source_id);
+
+	ScrollContainer *get_scroll_container() { return scroll_container; };
 
 	float get_zoom() const;
 	void set_zoom(float p_zoom);

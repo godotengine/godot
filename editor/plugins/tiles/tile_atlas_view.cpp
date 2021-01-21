@@ -38,6 +38,8 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 
+#include "editor/editor_scale.h"
+
 void TileAtlasView::_gui_input(const Ref<InputEvent> &p_event) {
 	bool ctrl = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 
@@ -45,15 +47,17 @@ void TileAtlasView::_gui_input(const Ref<InputEvent> &p_event) {
 	if (b.is_valid()) {
 		if (ctrl && b->is_pressed() && b->get_button_index() == BUTTON_WHEEL_DOWN) {
 			// Zoom out
-			zoom *= 0.8;
-			_update_zoom();
+			zoom_widget->set_zoom_by_increments(-2);
+			emit_signal("zoom_changed");
+			_update_zoom(zoom_widget->get_zoom(), true);
 			accept_event();
 		}
 
 		if (ctrl && b->is_pressed() && b->get_button_index() == BUTTON_WHEEL_UP) {
 			// Zoom in
-			zoom /= 0.8;
-			_update_zoom();
+			zoom_widget->set_zoom_by_increments(2);
+			emit_signal("zoom_changed");
+			_update_zoom(zoom_widget->get_zoom(), true);
 			accept_event();
 		}
 	}
@@ -111,7 +115,7 @@ Size2i TileAtlasView::_compute_alternative_tiles_control_size() {
 	return size;
 }
 
-void TileAtlasView::_update_zoom() {
+void TileAtlasView::_update_zoom(float p_zoom, bool p_zoom_on_mouse_pos) {
 	if (!tile_set || !tile_set->has_atlas_source(source_id)) {
 		// Reinitialize everything.
 		base_tiles_root_control->set_custom_minimum_size(Vector2());
@@ -123,27 +127,27 @@ void TileAtlasView::_update_zoom() {
 
 	// Compute the minimum sizes.
 	Size2i base_tiles_control_size = _compute_base_tiles_control_size();
-	base_tiles_root_control->set_custom_minimum_size(Vector2(base_tiles_control_size) * zoom);
+	base_tiles_root_control->set_custom_minimum_size(Vector2(base_tiles_control_size) * p_zoom);
 
 	Size2i alternative_tiles_control_size = _compute_alternative_tiles_control_size();
-	alternative_tiles_root_control->set_custom_minimum_size(Vector2(alternative_tiles_control_size) * zoom);
+	alternative_tiles_root_control->set_custom_minimum_size(Vector2(alternative_tiles_control_size) * p_zoom);
 
 	// Set the texture for the base tiles.
 	Ref<Texture2D> texture = tile_set->get_atlas_source(source_id)->get_texture();
 	if (texture.is_valid()) {
-		base_tiles_texture_rect->set_size(Vector2(texture->get_size()) * zoom);
+		base_tiles_texture_rect->set_size(Vector2(texture->get_size()) * p_zoom);
 	} else {
 		base_tiles_texture_rect->set_size(Vector2());
 	}
 
 	// Set the scales.
 	if (base_tiles_control_size.x > 0 && base_tiles_control_size.y > 0) {
-		base_tiles_drawing_root->set_scale(Vector2(zoom, zoom));
+		base_tiles_drawing_root->set_scale(Vector2(p_zoom, p_zoom));
 	} else {
 		base_tiles_drawing_root->set_scale(Vector2(1, 1));
 	}
 	if (alternative_tiles_control_size.x > 0 && alternative_tiles_control_size.y > 0) {
-		alternative_tiles_drawing_root->set_scale(Vector2(zoom, zoom));
+		alternative_tiles_drawing_root->set_scale(Vector2(p_zoom, p_zoom));
 	} else {
 		alternative_tiles_drawing_root->set_scale(Vector2(1, 1));
 	}
@@ -151,12 +155,50 @@ void TileAtlasView::_update_zoom() {
 	// Update the margin container's margins.
 	const char *constants[] = { "margin_left", "margin_top", "margin_right", "margin_bottom" };
 	for (int i = 0; i < 4; i++) {
-		margin_container->add_theme_constant_override(constants[i], margin_container_paddings[i] * zoom);
+		margin_container->add_theme_constant_override(constants[i], margin_container_paddings[i] * p_zoom);
 	}
 
 	// Update the backgrounds.
 	background_left->update();
 	background_right->update();
+
+	// Zoom on the position.
+	if (previous_zoom != p_zoom) {
+		// TODO: solve this.
+		// There is however an issue with scrollcainter preventing this, as it seems
+		// that the scrollbars are not updated right aways after its children update.
+
+		// Compute point on previous area.
+		/*Vector2 max = Vector2(scroll_container->get_h_scrollbar()->get_max(), scroll_container->get_v_scrollbar()->get_max());
+		Vector2 min = Vector2(scroll_container->get_h_scrollbar()->get_min(), scroll_container->get_v_scrollbar()->get_min());
+		Vector2 value = Vector2(scroll_container->get_h_scrollbar()->get_value(), scroll_container->get_v_scrollbar()->get_value());
+
+		Vector2 old_max = max * previous_zoom / p_zoom;
+
+		Vector2 max_pixel_change = max - old_max;
+		Vector2 ratio = ((value + scroll_container->get_local_mouse_position()) / old_max).max(Vector2()).min(Vector2(1,1));
+		Vector2 offset = max_pixel_change * ratio;
+
+		print_line("--- ZOOMED ---");
+		print_line(vformat("max: %s", max));
+		print_line(vformat("min: %s", min));
+		print_line(vformat("value: %s", value));
+		print_line(vformat("size: %s", scroll_container->get_size()));
+		print_line(vformat("mouse_pos: %s", scroll_container->get_local_mouse_position()));
+
+		print_line(vformat("ratio: %s", ratio));
+		print_line(vformat("max_pixel_change: %s", max_pixel_change));
+		print_line(vformat("offset: %s", offset));
+
+
+		print_line(vformat("value before: %s", Vector2(scroll_container->get_h_scroll(), scroll_container->get_v_scroll())));
+		scroll_container->set_h_scroll(10000);//scroll_container->get_h_scroll()+offset.x);
+		scroll_container->set_v_scroll(10000);//scroll_container->get_v_scroll()+offset.y);
+		print_line(vformat("value after: %s", Vector2(scroll_container->get_h_scroll(), scroll_container->get_v_scroll())));
+		*/
+
+		previous_zoom = p_zoom;
+	}
 
 	emit_signal("zoom_changed");
 }
@@ -363,7 +405,7 @@ void TileAtlasView::set_atlas_source(TileSet *p_tile_set, int p_source_id) {
 	_update_alternative_tiles_rect_cache();
 
 	// Update everything.
-	_update_zoom();
+	_update_zoom(zoom_widget->get_zoom());
 
 	// Change children control size.
 	Size2i base_tiles_control_size = _compute_base_tiles_control_size();
@@ -392,14 +434,11 @@ void TileAtlasView::set_atlas_source(TileSet *p_tile_set, int p_source_id) {
 }
 
 float TileAtlasView::get_zoom() const {
-	return zoom;
+	return zoom_widget->get_zoom();
 };
 
 void TileAtlasView::set_zoom(float p_zoom) {
-	if (zoom != p_zoom) {
-		zoom = p_zoom;
-		_update_zoom();
-	}
+	zoom_widget->set_zoom(p_zoom);
 };
 
 void TileAtlasView::set_padding(Side p_side, int p_padding) {
@@ -490,7 +529,7 @@ Rect2i TileAtlasView::get_alternative_tile_rect(const Vector2i p_coords, int p_a
 }
 
 void TileAtlasView::update() {
-	ScrollContainer::update();
+	scroll_container->update();
 	base_tiles_texture_grid->update();
 	base_tiles_shape_grid->update();
 	base_tiles_dark->update();
@@ -503,11 +542,21 @@ void TileAtlasView::_bind_methods() {
 }
 
 TileAtlasView::TileAtlasView() {
+	//Scrolling
+	scroll_container = memnew(ScrollContainer);
+	add_child(scroll_container);
+	scroll_container->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+
+	zoom_widget = memnew(EditorZoomWidget);
+	add_child(zoom_widget);
+	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
+	zoom_widget->connect("zoom_changed", callable_mp(this, &TileAtlasView::_update_zoom), varray(false));
+
 	CenterContainer *center_container = memnew(CenterContainer);
 	center_container->set_h_size_flags(SIZE_EXPAND_FILL);
 	center_container->set_v_size_flags(SIZE_EXPAND_FILL);
 	center_container->connect("gui_input", callable_mp(this, &TileAtlasView::_gui_input));
-	add_child(center_container);
+	scroll_container->add_child(center_container);
 
 	missing_source_label = memnew(Label);
 	missing_source_label->set_text(TTR("No atlas source with a valid texture selected."));
@@ -530,6 +579,7 @@ TileAtlasView::TileAtlasView() {
 	// Base tiles.
 	Label *base_tile_label = memnew(Label);
 	base_tile_label->set_text(TTR("Base tiles"));
+	base_tile_label->set_align(Label::ALIGN_CENTER);
 	left_vbox->add_child(base_tile_label);
 
 	base_tiles_root_control = memnew(Control);
@@ -572,6 +622,7 @@ TileAtlasView::TileAtlasView() {
 	// Alternative tiles.
 	Label *alternative_tiles_label = memnew(Label);
 	alternative_tiles_label->set_text(TTR("Alternative tiles"));
+	alternative_tiles_label->set_align(Label::ALIGN_CENTER);
 	right_vbox->add_child(alternative_tiles_label);
 
 	alternative_tiles_root_control = memnew(Control);
