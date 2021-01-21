@@ -376,6 +376,7 @@ struct _RestCallbackData2D {
 	Vector2 best_normal;
 	real_t best_len;
 	Vector2 valid_dir;
+	real_t valid_depth;
 	real_t min_allowed_depth;
 };
 
@@ -385,22 +386,24 @@ static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B,
 	Vector2 contact_rel = p_point_B - p_point_A;
 	real_t len = contact_rel.length();
 
-	if (len == 0) {
-		return;
-	}
-
-	Vector2 normal = contact_rel / len;
-
-	if (rd->valid_dir != Vector2() && rd->valid_dir.dot(normal) > -CMP_EPSILON) {
-		return;
-	}
-
 	if (len < rd->min_allowed_depth) {
 		return;
 	}
 
 	if (len <= rd->best_len) {
 		return;
+	}
+
+	Vector2 normal = contact_rel / len;
+
+	if (rd->valid_dir != Vector2()) {
+		if (len > rd->valid_depth) {
+			return;
+		}
+
+		if (rd->valid_dir.dot(normal) > -CMP_EPSILON) {
+			return;
+		}
 	}
 
 	rd->best_len = len;
@@ -1001,7 +1004,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 		best_shape = -1; //no best shape with cast, reset to -1
 	}
 
-	if (safe < 1) {
+	{
 		//it collided, let's get the rest info in unsafe advance
 		Transform2D ugt = body_transform;
 		ugt.elements[2] += p_motion * unsafe;
@@ -1060,8 +1063,25 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 				if (col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
 					rcd.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
+
+					float owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
+					rcd.valid_depth = MAX(owc_margin, p_margin); //user specified, but never less than actual margin or it won't work
+
+					if (col_obj->get_type() == CollisionObject2DSW::TYPE_BODY) {
+						const Body2DSW *b = static_cast<const Body2DSW *>(col_obj);
+						if (b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_RIGID) {
+							//fix for moving platforms (kinematic and dynamic), margin is increased by how much it moved in the given direction
+							Vector2 lv = b->get_linear_velocity();
+							//compute displacement from linear velocity
+							Vector2 motion = lv * PhysicsDirectBodyState2DSW::singleton->step;
+							float motion_len = motion.length();
+							motion.normalize();
+							rcd.valid_depth += motion_len * MAX(motion.dot(-rcd.valid_dir), 0.0);
+						}
+					}
 				} else {
 					rcd.valid_dir = Vector2();
+					rcd.valid_depth = 0;
 				}
 
 				rcd.object = col_obj;
