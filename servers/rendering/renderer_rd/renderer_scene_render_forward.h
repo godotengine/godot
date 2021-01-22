@@ -305,6 +305,11 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 			uint32_t cluster_type_size;
 			uint32_t max_cluster_element_count_div_32;
 
+			uint32_t cluster_shift;
+			uint32_t cluster_width;
+			uint32_t cluster_type_size;
+			uint32_t max_cluster_element_count_div_32;
+
 			float directional_penumbra_shadow_kernel[128]; //32 vec4s
 			float directional_soft_shadow_kernel[128];
 			float penumbra_shadow_kernel[128];

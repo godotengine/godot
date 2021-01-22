@@ -1407,6 +1407,15 @@ private:
 			}
 		};
 
+		template <class T>
+		struct InstanceSort {
+			float depth;
+			T *instance;
+			bool operator<(const InstanceSort &p_sort) const {
+				return depth < p_sort.depth;
+			}
+		};
+
 		ReflectionData *reflections;
 		InstanceSort<ReflectionProbeInstance> *reflection_sort;
 		uint32_t max_reflections;
