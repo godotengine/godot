@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Node for 2D tile-based maps. Tilemaps use a [TileSet] which contain a list of tiles (textures plus optional collision, navigation, and/or occluder shapes) which are used to create grid-based maps.
+		When doing physics queries against the tilemap, the cell coordinates are encoded as [code]metadata[/code] for each detected collision shape returned by methods such as [method Physics2DDirectSpaceState.intersect_shape], [method Physics2DDirectBodyState.get_contact_collider_shape_metadata], etc.
 	</description>
 	<tutorials>
 		<link title="Using Tilemaps">https://docs.godotengine.org/en/3.2/tutorials/2d/using_tilemaps.html</link>
