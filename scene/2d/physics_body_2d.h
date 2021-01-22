@@ -176,7 +176,7 @@ private:
 	void _body_inout(int p_status, ObjectID p_instance, int p_body_shape, int p_local_shape);
 	void _direct_state_changed(Object *p_state);
 
-	bool _test_motion(const Vector2 &p_motion, bool p_infinite_inertia = true, real_t p_margin = 0.08, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>());
+	bool _test_motion(const Vector2 &p_motion, bool p_infinite_inertia = true, real_t p_margin = 0.001, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>());
 
 protected:
 	void _notification(int p_what);

@@ -161,7 +161,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.08">
+		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.001">
 			If the body is at least this close to another body, this body will consider them to be colliding.
 		</member>
 		<member name="motion/sync_to_physics" type="bool" setter="set_sync_to_physics" getter="is_sync_to_physics_enabled" default="false">

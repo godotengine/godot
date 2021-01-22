@@ -1324,7 +1324,7 @@ Space2DSW::Space2DSW() {
 	contact_recycle_radius = 1.0;
 	contact_max_separation = 1.5;
 	contact_max_allowed_penetration = 0.3;
-	test_motion_min_contact_depth = 0.005;
+	test_motion_min_contact_depth = 0.0001;
 
 	constraint_bias = 0.2;
 	body_linear_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_linear", 2.0);
