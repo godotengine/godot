@@ -97,13 +97,12 @@ layout(push_constant, binding = 0, std430) uniform Params {
 
 	vec4 proj_info;
 
-	uint max_giprobes;
-	bool high_quality_vct;
-	uint pad2;
-	bool orthogonal;
-
 	vec3 ao_color;
-	uint pad;
+	uint max_giprobes;
+
+	bool high_quality_vct;
+	bool orthogonal;
+	uint pad[2];
 
 	mat3x4 cam_rotation;
 }
@@ -594,28 +593,16 @@ vec4 fetch_normal_and_roughness(ivec2 pos) {
 	return normal_roughness;
 }
 
-void main() {
-	// Pixel being shaded
-	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-	if (any(greaterThanEqual(pos, params.screen_size))) { //too large, do nothing
-		return;
-	}
-
-	vec3 vertex = reconstruct_position(pos);
-	vertex.y = -vertex.y;
-
+void process_gi(ivec2 pos, vec3 vertex, inout vec4 ambient_light, inout vec4 reflection_light) {
 	vec4 normal_roughness = fetch_normal_and_roughness(pos);
-	vec3 normal = normal_roughness.xyz;
 
-	vec4 ambient_light = vec4(0.0), reflection_light = vec4(0.0);
+	vec3 normal = normal_roughness.xyz;
 
 	if (normal.length() > 0.5) {
 		//valid normal, can do GI
 		float roughness = normal_roughness.w;
-
 		vertex = mat3(params.cam_rotation) * vertex;
 		normal = normalize(mat3(params.cam_rotation) * normal);
-
 		vec3 reflection = normalize(reflect(normalize(vertex), normal));
 
 #ifdef USE_SDFGI
@@ -646,16 +633,38 @@ void main() {
 				spec_accum /= blend_accum;
 			}
 
-			if (params.use_sdfgi) {
-				reflection_light = blend_color(spec_accum, reflection_light);
-				ambient_light = blend_color(amb_accum, ambient_light);
-			} else {
-				reflection_light = spec_accum;
-				ambient_light = amb_accum;
-			}
+#ifdef USE_SDFGI
+			reflection_light = blend_color(spec_accum, reflection_light);
+			ambient_light = blend_color(amb_accum, ambient_light);
+#else
+			reflection_light = spec_accum;
+			ambient_light = amb_accum;
+#endif
 		}
 #endif
 	}
+}
+
+void main() {
+	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+
+#ifdef MODE_HALF_RES
+	pos <<= 1;
+#endif
+	if (any(greaterThanEqual(pos, params.screen_size))) { //too large, do nothing
+		return;
+	}
+
+	vec4 ambient_light = vec4(0.0), reflection_light = vec4(0.0);
+
+	vec3 vertex = reconstruct_position(pos);
+	vertex.y = -vertex.y;
+
+	process_gi(pos, vertex, ambient_light, reflection_light);
+
+#ifdef MODE_HALF_RES
+	pos >>= 1;
+#endif
 
 	imageStore(ambient_buffer, pos, ambient_light);
 	imageStore(reflection_buffer, pos, reflection_light);

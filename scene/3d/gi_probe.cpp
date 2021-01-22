@@ -520,7 +520,10 @@ String GIProbe::get_configuration_warning() const {
 			warning += "\n\n";
 		}
 		warning += TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
+	} else if (probe_data.is_null()) {
+		warning += TTR("No GIProbe data set, so this node is disabled. Bake static objects to enable GI.");
 	}
+
 	return warning;
 }
 

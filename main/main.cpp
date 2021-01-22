@@ -171,6 +171,8 @@ static bool disable_render_loop = false;
 static int fixed_fps = -1;
 static bool print_fps = false;
 
+bool profile_gpu = false;
+
 /* Helper methods */
 
 // Used by Mono module, should likely be registered in Engine singleton instead
@@ -357,6 +359,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --disable-crash-handler          Disable crash handler when supported by the platform code.\n");
 	OS::get_singleton()->print("  --fixed-fps <fps>                Force a fixed number of frames per second. This setting disables real-time synchronization.\n");
 	OS::get_singleton()->print("  --print-fps                      Print the frames per second to the stdout.\n");
+	OS::get_singleton()->print("  --profile-gpu                    Show a simple profile of the tasks that took more time during frame rendering.\n");
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Standalone tools:\n");
@@ -1006,6 +1009,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (I->get() == "--print-fps") {
 			print_fps = true;
+		} else if (I->get() == "--profile-gpu") {
+			profile_gpu = true;
 		} else if (I->get() == "--disable-crash-handler") {
 			OS::get_singleton()->disable_crash_handler();
 		} else if (I->get() == "--skip-breakpoints") {
@@ -1573,6 +1578,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	rendering_server->init();
 	rendering_server->set_render_loop_enabled(!disable_render_loop);
+
+	if (profile_gpu) {
+		rendering_server->set_print_gpu_profile(true);
+	}
 
 	OS::get_singleton()->initialize_joypads();
 

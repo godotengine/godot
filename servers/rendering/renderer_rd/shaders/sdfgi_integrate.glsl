@@ -189,14 +189,12 @@ void main() {
 		vec3 inv_dir = 1.0 / ray_dir;
 
 		bool hit = false;
-		vec3 hit_normal;
-		vec3 hit_light;
-		vec3 hit_aniso0;
-		vec3 hit_aniso1;
+		uint hit_cascade;
 
 		float bias = params.ray_bias;
 		vec3 abs_ray_dir = abs(ray_dir);
 		ray_pos += ray_dir * 1.0 / max(abs_ray_dir.x, max(abs_ray_dir.y, abs_ray_dir.z)) * bias / cascades.data[params.cascade].to_cell;
+		vec3 uvw;
 
 		for (uint j = params.cascade; j < params.max_cascades; j++) {
 			//convert to local bounds
@@ -215,14 +213,12 @@ void main() {
 
 			float advance = 0.0;
 
-			vec3 uvw;
-
 			while (advance < max_advance) {
 				//read how much to advance from SDF
 				uvw = (pos + ray_dir * advance) * pos_to_uvw;
 
 				float distance = texture(sampler3D(sdf_cascades[j], linear_sampler), uvw).r * 255.0 - 1.0;
-				if (distance < 0.001) {
+				if (distance < 0.05) {
 					//consider hit
 					hit = true;
 					break;
@@ -232,17 +228,7 @@ void main() {
 			}
 
 			if (hit) {
-				const float EPSILON = 0.001;
-				hit_normal = normalize(vec3(
-						texture(sampler3D(sdf_cascades[j], linear_sampler), uvw + vec3(EPSILON, 0.0, 0.0)).r - texture(sampler3D(sdf_cascades[j], linear_sampler), uvw - vec3(EPSILON, 0.0, 0.0)).r,
-						texture(sampler3D(sdf_cascades[j], linear_sampler), uvw + vec3(0.0, EPSILON, 0.0)).r - texture(sampler3D(sdf_cascades[j], linear_sampler), uvw - vec3(0.0, EPSILON, 0.0)).r,
-						texture(sampler3D(sdf_cascades[j], linear_sampler), uvw + vec3(0.0, 0.0, EPSILON)).r - texture(sampler3D(sdf_cascades[j], linear_sampler), uvw - vec3(0.0, 0.0, EPSILON)).r));
-
-				hit_light = texture(sampler3D(light_cascades[j], linear_sampler), uvw).rgb;
-				vec4 aniso0 = texture(sampler3D(aniso0_cascades[j], linear_sampler), uvw);
-				hit_aniso0 = aniso0.rgb;
-				hit_aniso1 = vec3(aniso0.a, texture(sampler3D(aniso1_cascades[j], linear_sampler), uvw).rg);
-
+				hit_cascade = j;
 				break;
 			}
 
@@ -255,6 +241,17 @@ void main() {
 
 		vec4 light;
 		if (hit) {
+			const float EPSILON = 0.001;
+			vec3 hit_normal = normalize(vec3(
+					texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw + vec3(EPSILON, 0.0, 0.0)).r - texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw - vec3(EPSILON, 0.0, 0.0)).r,
+					texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw + vec3(0.0, EPSILON, 0.0)).r - texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw - vec3(0.0, EPSILON, 0.0)).r,
+					texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw + vec3(0.0, 0.0, EPSILON)).r - texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw - vec3(0.0, 0.0, EPSILON)).r));
+
+			vec3 hit_light = texture(sampler3D(light_cascades[hit_cascade], linear_sampler), uvw).rgb;
+			vec4 aniso0 = texture(sampler3D(aniso0_cascades[hit_cascade], linear_sampler), uvw);
+			vec3 hit_aniso0 = aniso0.rgb;
+			vec3 hit_aniso1 = vec3(aniso0.a, texture(sampler3D(aniso1_cascades[hit_cascade], linear_sampler), uvw).rg);
+
 			//one liner magic
 			light.rgb = hit_light * (dot(max(vec3(0.0), (hit_normal * hit_aniso0)), vec3(1.0)) + dot(max(vec3(0.0), (-hit_normal * hit_aniso1)), vec3(1.0)));
 			light.a = 1.0;
@@ -490,13 +487,15 @@ void main() {
 		//can't scroll, must look for position in parent cascade
 
 		//to global coords
-		float probe_cell_size = float(params.grid_size.x / float(params.probe_axis_size - 1)) / cascades.data[params.cascade].to_cell;
+		float cell_to_probe = float(params.grid_size.x / float(params.probe_axis_size - 1));
+
+		float probe_cell_size = cell_to_probe / cascades.data[params.cascade].to_cell;
 		vec3 probe_pos = cascades.data[params.cascade].offset + vec3(probe_cell) * probe_cell_size;
 
 		//to parent local coords
+		float probe_cell_size_next = cell_to_probe / cascades.data[params.cascade + 1].to_cell;
 		probe_pos -= cascades.data[params.cascade + 1].offset;
-		probe_pos *= cascades.data[params.cascade + 1].to_cell;
-		probe_pos = probe_pos * float(params.probe_axis_size - 1) / float(params.grid_size.x);
+		probe_pos /= probe_cell_size_next;
 
 		ivec3 probe_posi = ivec3(probe_pos);
 		//add up all light, no need to use occlusion here, since occlusion will do its work afterwards
@@ -549,20 +548,28 @@ void main() {
 		}
 
 	} else {
-		// clear and let it re-raytrace, only for the last cascade, which happens very un-often
-		//scroll
+		//scroll at the edge of the highest cascade, just copy what is there,
+		//since its the closest we have anyway
+
 		for (uint j = 0; j < params.history_size; j++) {
+			ivec2 tex_pos;
+			tex_pos = probe_cell.xy;
+			tex_pos.x += probe_cell.z * int(params.probe_axis_size);
+
 			for (int i = 0; i < SH_SIZE; i++) {
 				// copy from history texture
+				ivec3 src_pos = ivec3(tex_pos.x, tex_pos.y * SH_SIZE + i, int(j));
 				ivec3 dst_pos = ivec3(pos.x, pos.y * SH_SIZE + i, int(j));
-				imageStore(lightprobe_history_scroll_texture, dst_pos, ivec4(0));
+				ivec4 value = imageLoad(lightprobe_history_texture, dst_pos);
+				imageStore(lightprobe_history_scroll_texture, dst_pos, value);
 			}
 		}
 
 		for (int i = 0; i < SH_SIZE; i++) {
 			// copy from average texture
-			ivec2 dst_pos = ivec2(pos.x, pos.y * SH_SIZE + i);
-			imageStore(lightprobe_average_scroll_texture, dst_pos, ivec4(0));
+			ivec2 spos = ivec2(pos.x, pos.y * SH_SIZE + i);
+			ivec4 average = imageLoad(lightprobe_average_texture, spos);
+			imageStore(lightprobe_average_scroll_texture, spos, average);
 		}
 	}
 

@@ -516,6 +516,9 @@ void EditorNode::_notification(int p_what) {
 				RS::get_singleton()->environment_set_volumetric_fog_positional_shadow_shrink_size(GLOBAL_GET("rendering/volumetric_fog/positional_shadow_shrink"));
 				RS::get_singleton()->canvas_set_shadow_texture_size(GLOBAL_GET("rendering/quality/2d_shadow_atlas/size"));
 
+				bool use_half_res_gi = GLOBAL_DEF("rendering/quality/gi/use_half_resolution", false);
+				RS::get_singleton()->gi_set_use_half_resolution(use_half_res_gi);
+
 				bool snap_2d_transforms = GLOBAL_GET("rendering/quality/2d/snap_2d_transforms_to_pixel");
 				scene_root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
 				bool snap_2d_vertices = GLOBAL_GET("rendering/quality/2d/snap_2d_vertices_to_pixel");

@@ -2304,6 +2304,8 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_size.mobile", 128);
 	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_count", 64);
 
+	GLOBAL_DEF("rendering/quality/gi/use_half_resolution", false);
+
 	GLOBAL_DEF("rendering/quality/gi_probes/anisotropic", false);
 	GLOBAL_DEF("rendering/quality/gi_probes/quality", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/gi_probes/quality", PropertyInfo(Variant::INT, "rendering/quality/gi_probes/quality", PROPERTY_HINT_ENUM, "Low (4 Cones - Fast),High (6 Cones - Slow)"));
@@ -2367,10 +2369,12 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/lightmapper/probe_capture_update_speed", 15);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/lightmapper/probe_capture_update_speed", PropertyInfo(Variant::FLOAT, "rendering/lightmapper/probe_capture_update_speed", PROPERTY_HINT_RANGE, "0.001,256,0.001"));
 
-	GLOBAL_DEF("rendering/sdfgi/probe_ray_count", 2);
+	GLOBAL_DEF("rendering/sdfgi/probe_ray_count", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/probe_ray_count", PropertyInfo(Variant::INT, "rendering/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"));
-	GLOBAL_DEF("rendering/sdfgi/frames_to_converge", 1);
+	GLOBAL_DEF("rendering/sdfgi/frames_to_converge", 4);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/frames_to_converge", PropertyInfo(Variant::INT, "rendering/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"));
+	GLOBAL_DEF("rendering/sdfgi/frames_to_update_lights", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/frames_to_update_lights", PropertyInfo(Variant::INT, "rendering/sdfgi/frames_to_update_lights", PROPERTY_HINT_ENUM, "1 (Slower),2,4,8,16 (Faster)"));
 
 	GLOBAL_DEF("rendering/volumetric_fog/volume_size", 64);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/volume_size", PropertyInfo(Variant::INT, "rendering/volumetric_fog/volume_size", PROPERTY_HINT_RANGE, "16,512,1"));
