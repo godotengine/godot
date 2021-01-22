@@ -1156,10 +1156,10 @@ private:
 		HashMap<StringName, Variable> variables;
 
 		struct Value {
-			float x = 0.0;
-			float y = 0.0;
-			float z = 0.0;
-			float w = 0.0;
+			float x;
+			float y;
+			float z;
+			float w;
 		};
 
 		struct ValueInt {

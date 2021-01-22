@@ -208,7 +208,7 @@ private:
 		bool valid = false;
 		RID version;
 
-		PipelineCacheRD pipelines[SKY_VERSION_MAX] = {};
+		PipelineCacheRD pipelines[SKY_VERSION_MAX];
 		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
 
@@ -418,24 +418,24 @@ private:
 	};
 
 	struct GIProbeDynamicPushConstant {
-		int32_t limits[3] = {};
-		uint32_t light_count = 0;
-		int32_t x_dir[3] = {};
-		float z_base = 0.0;
-		int32_t y_dir[3] = {};
-		float z_sign = 0.0;
-		int32_t z_dir[3] = {};
-		float pos_multiplier = 0.0;
-		uint32_t rect_pos[2] = {};
-		uint32_t rect_size[2] = {};
-		uint32_t prev_rect_ofs[2] = {};
-		uint32_t prev_rect_size[2] = {};
-		uint32_t flip_x = 0;
-		uint32_t flip_y = 0;
-		float dynamic_range = 0.0;
-		uint32_t on_mipmap = 0;
-		float propagation = 0.0;
-		float pad[3] = {};
+		int32_t limits[3];
+		uint32_t light_count;
+		int32_t x_dir[3];
+		float z_base;
+		int32_t y_dir[3];
+		float z_sign;
+		int32_t z_dir[3];
+		float pos_multiplier;
+		uint32_t rect_pos[2];
+		uint32_t rect_size[2];
+		uint32_t prev_rect_ofs[2];
+		uint32_t prev_rect_size[2];
+		uint32_t flip_x;
+		uint32_t flip_y;
+		float dynamic_range;
+		uint32_t on_mipmap;
+		float propagation;
+		float pad[3];
 	};
 
 	struct GIProbeInstance {
@@ -1034,16 +1034,16 @@ private:
 		};
 
 		struct PreprocessPushConstant {
-			int32_t scroll[3] = {};
-			int32_t grid_size = 0;
+			int32_t scroll[3];
+			int32_t grid_size;
 
-			int32_t probe_offset[3] = {};
-			int32_t step_size = 0;
+			int32_t probe_offset[3];
+			int32_t step_size;
 
-			int32_t half_size = 0;
-			uint32_t occlusion_index = 0;
-			int32_t cascade = 0;
-			uint32_t pad = 0;
+			int32_t half_size;
+			uint32_t occlusion_index;
+			int32_t cascade;
+			uint32_t pad;
 		};
 
 		SdfgiPreprocessShaderRD preprocess;
