@@ -1596,8 +1596,8 @@ void RichTextLabel::add_text(const String &p_text) {
 		else
 			line = p_text.substr(pos, end - pos);
 
-#define IS_CJK(index) ((line[index] >= 0x3040 && line[index] <= 0x9fbf) || (line[index] >= 0xf900 && line[index] <= 0xfaff))
-		//add more rule here,to support more languages
+#define IS_CJK(index) (line[index] >= 0x3040 && ((line[index] >= 0x31c0 && line[index] <= 0x9fff) || line[index] <= 0x30ff || (line[index] >= 0xf900 && line[index] <= 0xfaff)))
+		//add more rule here,to support more languages 3040~30ff 31c0~9fff f900~faff
 
 		int lipos = 0;
 		while (lipos < line.length()) {
