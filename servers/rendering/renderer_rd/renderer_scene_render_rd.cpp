@@ -1276,13 +1276,25 @@ void RendererSceneRenderRD::sdfgi_update_probes(RID p_render_buffers, RID p_envi
 		push_constant.multibounce = rb->sdfgi->uses_multibounce;
 		push_constant.y_mult = rb->sdfgi->y_mult;
 
-		push_constant.process_offset = 0;
-		push_constant.process_increment = 1;
-
 		for (uint32_t i = 0; i < rb->sdfgi->cascades.size(); i++) {
 			SDFGI::Cascade &cascade = rb->sdfgi->cascades[i];
 			push_constant.light_count = cascade_light_count[i];
 			push_constant.cascade = i;
+
+			if (rb->sdfgi->cascades[i].all_dynamic_lights_dirty || sdfgi_frames_to_update_light == RS::ENV_SDFGI_UPDATE_LIGHT_IN_1_FRAME) {
+				push_constant.process_offset = 0;
+				push_constant.process_increment = 1;
+			} else {
+				static uint32_t frames_to_update_table[RS::ENV_SDFGI_UPDATE_LIGHT_MAX] = {
+					1, 2, 4, 8, 16
+				};
+
+				uint32_t frames_to_update = frames_to_update_table[sdfgi_frames_to_update_light];
+
+				push_constant.process_offset = RSG::rasterizer->get_frame_number() % frames_to_update;
+				push_constant.process_increment = frames_to_update;
+			}
+			rb->sdfgi->cascades[i].all_dynamic_lights_dirty = false;
 
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascade.sdf_direct_light_uniform_set, 0);
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::DirectLightPushConstant));
@@ -1301,7 +1313,7 @@ void RendererSceneRenderRD::sdfgi_update_probes(RID p_render_buffers, RID p_envi
 	push_constant.probe_axis_size = rb->sdfgi->probe_axis_count;
 	push_constant.history_index = rb->sdfgi->render_pass % rb->sdfgi->history_size;
 	push_constant.history_size = rb->sdfgi->history_size;
-	static const uint32_t ray_count[RS::ENV_SDFGI_RAY_COUNT_MAX] = { 8, 16, 32, 64, 96, 128 };
+	static const uint32_t ray_count[RS::ENV_SDFGI_RAY_COUNT_MAX] = { 4, 8, 16, 32, 64, 96, 128 };
 	push_constant.ray_count = ray_count[sdfgi_ray_count];
 	push_constant.ray_bias = rb->sdfgi->probe_bias;
 	push_constant.image_size[0] = rb->sdfgi->probe_axis_count * rb->sdfgi->probe_axis_count;
@@ -1492,12 +1504,34 @@ void RendererSceneRenderRD::_setup_giprobes(RID p_render_buffers, const Transfor
 	}
 }
 
-void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_ambient_buffer, RID p_reflection_buffer, RID p_gi_probe_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, const PagedArray<RID> &p_gi_probes) {
+void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_gi_probe_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, const PagedArray<RID> &p_gi_probes) {
 	RENDER_TIMESTAMP("Render GI");
 
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND(rb == nullptr);
 	Environment *env = environment_owner.getornull(p_environment);
+
+	if (rb->ambient_buffer.is_null() || rb->using_half_size_gi != gi.half_resolution) {
+		if (rb->ambient_buffer.is_valid()) {
+			RD::get_singleton()->free(rb->ambient_buffer);
+			RD::get_singleton()->free(rb->reflection_buffer);
+		}
+
+		RD::TextureFormat tf;
+		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		tf.width = rb->width;
+		tf.height = rb->height;
+		if (gi.half_resolution) {
+			tf.width >>= 1;
+			tf.height >>= 1;
+		}
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		rb->reflection_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		rb->ambient_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		rb->using_half_size_gi = gi.half_resolution;
+
+		_render_buffers_uniform_set_changed(p_render_buffers);
+	}
 
 	GI::PushConstant push_constant;
 
@@ -1693,7 +1727,7 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 9;
-			u.ids.push_back(p_ambient_buffer);
+			u.ids.push_back(rb->ambient_buffer);
 			uniforms.push_back(u);
 		}
 
@@ -1701,7 +1735,7 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 10;
-			u.ids.push_back(p_reflection_buffer);
+			u.ids.push_back(rb->reflection_buffer);
 			uniforms.push_back(u);
 		}
 
@@ -1765,12 +1799,23 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 		rb->gi_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi.shader.version_get_shader(gi.shader_version, 0), 0);
 	}
 
-	GI::Mode mode = (use_sdfgi && use_giprobes) ? GI::MODE_COMBINED : (use_sdfgi ? GI::MODE_SDFGI : GI::MODE_GIPROBE);
+	GI::Mode mode;
+
+	if (rb->using_half_size_gi) {
+		mode = (use_sdfgi && use_giprobes) ? GI::MODE_HALF_RES_COMBINED : (use_sdfgi ? GI::MODE_HALF_RES_SDFGI : GI::MODE_HALF_RES_GIPROBE);
+	} else {
+		mode = (use_sdfgi && use_giprobes) ? GI::MODE_COMBINED : (use_sdfgi ? GI::MODE_SDFGI : GI::MODE_GIPROBE);
+	}
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi.pipelines[mode]);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->gi_uniform_set, 0);
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(GI::PushConstant));
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->width, rb->height, 1, 8, 8, 1);
+
+	if (rb->using_half_size_gi) {
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->width >> 1, rb->height >> 1, 1, 8, 8, 1);
+	} else {
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->width, rb->height, 1, 8, 8, 1);
+	}
 	RD::get_singleton()->compute_list_end();
 }
 
@@ -3104,6 +3149,9 @@ void RendererSceneRenderRD::environment_set_sdfgi_ray_count(RS::EnvironmentSDFGI
 
 void RendererSceneRenderRD::environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) {
 	sdfgi_frames_to_converge = p_frames;
+}
+void RendererSceneRenderRD::environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) {
+	sdfgi_frames_to_update_light = p_update;
 }
 
 void RendererSceneRenderRD::environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) {
@@ -5159,6 +5207,13 @@ void RendererSceneRenderRD::_free_render_buffer_data(RenderBuffers *rb) {
 		RD::get_singleton()->free(rb->ssr.normal_scaled);
 		rb->ssr.normal_scaled = RID();
 	}
+
+	if (rb->ambient_buffer.is_valid()) {
+		RD::get_singleton()->free(rb->ambient_buffer);
+		RD::get_singleton()->free(rb->reflection_buffer);
+		rb->ambient_buffer = RID();
+		rb->reflection_buffer = RID();
+	}
 }
 
 void RendererSceneRenderRD::_process_sss(RID p_render_buffers, const CameraMatrix &p_camera) {
@@ -5558,10 +5613,10 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID
 		effects->copy_to_fb_rect(_render_buffers_get_normal_texture(p_render_buffers), storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, false);
 	}
 
-	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_GI_BUFFER && _render_buffers_get_ambient_texture(p_render_buffers).is_valid()) {
+	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_GI_BUFFER && rb->ambient_buffer.is_valid()) {
 		Size2 rtsize = storage->render_target_get_size(rb->render_target);
-		RID ambient_texture = _render_buffers_get_ambient_texture(p_render_buffers);
-		RID reflection_texture = _render_buffers_get_reflection_texture(p_render_buffers);
+		RID ambient_texture = rb->ambient_buffer;
+		RID reflection_texture = rb->reflection_buffer;
 		effects->copy_to_fb_rect(ambient_texture, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, false, false, true, reflection_texture);
 	}
 }
@@ -5753,6 +5808,17 @@ RID RendererSceneRenderRD::render_buffers_get_default_gi_probe_buffer() {
 	return default_giprobe_buffer;
 }
 
+RID RendererSceneRenderRD::render_buffers_get_gi_ambient_texture(RID p_render_buffers) {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, RID());
+	return rb->ambient_buffer;
+}
+RID RendererSceneRenderRD::render_buffers_get_gi_reflection_texture(RID p_render_buffers) {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, RID());
+	return rb->reflection_buffer;
+}
+
 uint32_t RendererSceneRenderRD::render_buffers_get_sdfgi_cascade_count(RID p_render_buffers) const {
 	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, 0);
@@ -5937,6 +6003,10 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 	_render_buffers_uniform_set_changed(p_render_buffers);
 
 	rb->cluster_builder->setup(Size2i(p_width, p_height), max_cluster_elements, rb->depth_texture, storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED), rb->texture);
+}
+
+void RendererSceneRenderRD::gi_set_use_half_resolution(bool p_enable) {
+	gi.half_resolution = p_enable;
 }
 
 void RendererSceneRenderRD::sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) {
@@ -7609,6 +7679,9 @@ void RendererSceneRenderRD::render_sdfgi(RID p_render_buffers, int p_region, con
 			push_constant.scroll[1] = 0;
 			push_constant.scroll[2] = 0;
 		}
+
+		rb->sdfgi->cascades[cascade].all_dynamic_lights_dirty = true;
+
 		push_constant.grid_size = rb->sdfgi->cascade_size;
 		push_constant.cascade = cascade;
 
@@ -7684,6 +7757,23 @@ void RendererSceneRenderRD::render_sdfgi(RID p_render_buffers, int p_region, con
 				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sdfgi_shader.integrate_default_sky_uniform_set, 1);
 				RD::get_singleton()->compute_list_set_push_constant(compute_list, &ipush_constant, sizeof(SDGIShader::IntegratePushConstant));
 				RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->sdfgi->probe_axis_count * rb->sdfgi->probe_axis_count, rb->sdfgi->probe_axis_count, 1, 8, 8, 1);
+
+				RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+				if (rb->sdfgi->uses_multibounce) {
+					//multibounce requires this to be stored so direct light can read from it
+
+					RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.integrate_pipeline[SDGIShader::INTEGRATE_MODE_STORE]);
+
+					//convert to octahedral to store
+					ipush_constant.image_size[0] *= SDFGI::LIGHTPROBE_OCT_SIZE;
+					ipush_constant.image_size[1] *= SDFGI::LIGHTPROBE_OCT_SIZE;
+
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->cascades[cascade].integrate_uniform_set, 0);
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sdfgi_shader.integrate_default_sky_uniform_set, 1);
+					RD::get_singleton()->compute_list_set_push_constant(compute_list, &ipush_constant, sizeof(SDGIShader::IntegratePushConstant));
+					RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->sdfgi->probe_axis_count * rb->sdfgi->probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, rb->sdfgi->probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, 1, 8, 8, 1);
+				}
 			}
 
 			//ok finally barrier
@@ -7922,25 +8012,8 @@ void RendererSceneRenderRD::render_sdfgi_static_lights(RID p_render_buffers, uin
 
 	_sdfgi_update_cascades(p_render_buffers); //need cascades updated for this
 
-	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.direct_light_pipeline[SDGIShader::DIRECT_LIGHT_MODE_STATIC]);
-
-	SDGIShader::DirectLightPushConstant dl_push_constant;
-
-	dl_push_constant.grid_size[0] = rb->sdfgi->cascade_size;
-	dl_push_constant.grid_size[1] = rb->sdfgi->cascade_size;
-	dl_push_constant.grid_size[2] = rb->sdfgi->cascade_size;
-	dl_push_constant.max_cascades = rb->sdfgi->cascades.size();
-	dl_push_constant.probe_axis_size = rb->sdfgi->probe_axis_count;
-	dl_push_constant.multibounce = false; // this is static light, do not multibounce yet
-	dl_push_constant.y_mult = rb->sdfgi->y_mult;
-
-	//all must be processed
-	dl_push_constant.process_offset = 0;
-	dl_push_constant.process_increment = 1;
-
 	SDGIShader::Light lights[SDFGI::MAX_STATIC_LIGHTS];
+	uint32_t light_count[SDFGI::MAX_STATIC_LIGHTS];
 
 	for (uint32_t i = 0; i < p_cascade_count; i++) {
 		ERR_CONTINUE(p_cascade_indices[i] >= rb->sdfgi->cascades.size());
@@ -8005,9 +8078,36 @@ void RendererSceneRenderRD::render_sdfgi_static_lights(RID p_render_buffers, uin
 			if (idx > 0) {
 				RD::get_singleton()->buffer_update(cc.lights_buffer, 0, idx * sizeof(SDGIShader::Light), lights, true);
 			}
-			dl_push_constant.light_count = idx;
-		}
 
+			light_count[i] = idx;
+		}
+	}
+
+	/* Static Lights */
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.direct_light_pipeline[SDGIShader::DIRECT_LIGHT_MODE_STATIC]);
+
+	SDGIShader::DirectLightPushConstant dl_push_constant;
+
+	dl_push_constant.grid_size[0] = rb->sdfgi->cascade_size;
+	dl_push_constant.grid_size[1] = rb->sdfgi->cascade_size;
+	dl_push_constant.grid_size[2] = rb->sdfgi->cascade_size;
+	dl_push_constant.max_cascades = rb->sdfgi->cascades.size();
+	dl_push_constant.probe_axis_size = rb->sdfgi->probe_axis_count;
+	dl_push_constant.multibounce = false; // this is static light, do not multibounce yet
+	dl_push_constant.y_mult = rb->sdfgi->y_mult;
+
+	//all must be processed
+	dl_push_constant.process_offset = 0;
+	dl_push_constant.process_increment = 1;
+
+	for (uint32_t i = 0; i < p_cascade_count; i++) {
+		ERR_CONTINUE(p_cascade_indices[i] >= rb->sdfgi->cascades.size());
+
+		SDFGI::Cascade &cc = rb->sdfgi->cascades[p_cascade_indices[i]];
+
+		dl_push_constant.light_count = light_count[i];
 		dl_push_constant.cascade = p_cascade_indices[i];
 
 		if (dl_push_constant.light_count > 0) {
@@ -8299,7 +8399,10 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 	roughness_layers = GLOBAL_GET("rendering/quality/reflections/roughness_layers");
 	sky_ggx_samples_quality = GLOBAL_GET("rendering/quality/reflections/ggx_samples");
 	sky_use_cubemap_array = GLOBAL_GET("rendering/quality/reflections/texture_array_reflections");
-	//	sky_use_cubemap_array = false;
+
+	sdfgi_ray_count = RS::EnvironmentSDFGIRayCount(CLAMP(int32_t(GLOBAL_GET("rendering/sdfgi/probe_ray_count")), 0, int32_t(RS::ENV_SDFGI_RAY_COUNT_MAX - 1)));
+	sdfgi_frames_to_converge = RS::EnvironmentSDFGIFramesToConverge(CLAMP(int32_t(GLOBAL_GET("rendering/sdfgi/frames_to_converge")), 0, int32_t(RS::ENV_SDFGI_CONVERGE_MAX - 1)));
+	sdfgi_frames_to_update_light = RS::EnvironmentSDFGIFramesToUpdateLight(CLAMP(int32_t(GLOBAL_GET("rendering/sdfgi/frames_to_update_lights")), 0, int32_t(RS::ENV_SDFGI_UPDATE_LIGHT_MAX - 1)));
 
 	uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
@@ -8632,9 +8735,12 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 			//calculate tables
 			String defines = "\n#define SDFGI_OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
 			Vector<String> gi_modes;
-			gi_modes.push_back("\n#define USE_GIPROBE\n");
+			gi_modes.push_back("\n#define USE_GIPROBES\n");
 			gi_modes.push_back("\n#define USE_SDFGI\n");
-			gi_modes.push_back("\n#define USE_SDFGI\n\n#define USE_GIPROBE\n");
+			gi_modes.push_back("\n#define USE_SDFGI\n\n#define USE_GIPROBES\n");
+			gi_modes.push_back("\n#define MODE_HALF_RES\n#define USE_GIPROBES\n");
+			gi_modes.push_back("\n#define MODE_HALF_RES\n#define USE_SDFGI\n");
+			gi_modes.push_back("\n#define MODE_HALF_RES\n#define USE_SDFGI\n\n#define USE_GIPROBES\n");
 
 			gi.shader.initialize(gi_modes, defines);
 			gi.shader_version = gi.shader.version_create();
@@ -8766,6 +8872,8 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 	environment_set_volumetric_fog_positional_shadow_shrink_size(GLOBAL_GET("rendering/volumetric_fog/positional_shadow_shrink"));
 
 	cull_argument.set_page_pool(&cull_argument_pool);
+
+	gi.half_resolution = GLOBAL_GET("rendering/quality/gi/use_half_resolution");
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {

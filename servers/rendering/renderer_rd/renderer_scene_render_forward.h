@@ -213,9 +213,6 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		RID normal_roughness_buffer;
 		RID giprobe_buffer;
 
-		RID ambient_buffer;
-		RID reflection_buffer;
-
 		RS::ViewportMSAA msaa;
 		RD::TextureSamples texture_samples;
 
@@ -236,7 +233,6 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 		RID render_sdfgi_uniform_set;
 		void ensure_specular();
-		void ensure_gi();
 		void ensure_giprobe();
 		void clear();
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa);
@@ -258,8 +254,6 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	void _render_buffers_clear_uniform_set(RenderBufferDataForward *rb);
 	virtual void _render_buffers_uniform_set_changed(RID p_render_buffers);
 	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers);
-	virtual RID _render_buffers_get_ambient_texture(RID p_render_buffers);
-	virtual RID _render_buffers_get_reflection_texture(RID p_render_buffers);
 
 	void _update_render_base_uniform_set();
 	RID _setup_sdfgi_render_pass_uniform_set(RID p_albedo_texture, RID p_emission_texture, RID p_emission_aniso_texture, RID p_geom_facing_texture);

@@ -986,6 +986,7 @@ public:
 	virtual void environment_set_sdfgi(RID p_env, bool p_enable, EnvironmentSDFGICascades p_cascades, float p_min_cell_size, EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
 
 	enum EnvironmentSDFGIRayCount {
+		ENV_SDFGI_RAY_COUNT_4,
 		ENV_SDFGI_RAY_COUNT_8,
 		ENV_SDFGI_RAY_COUNT_16,
 		ENV_SDFGI_RAY_COUNT_32,
@@ -1008,6 +1009,17 @@ public:
 	};
 
 	virtual void environment_set_sdfgi_frames_to_converge(EnvironmentSDFGIFramesToConverge p_frames) = 0;
+
+	enum EnvironmentSDFGIFramesToUpdateLight {
+		ENV_SDFGI_UPDATE_LIGHT_IN_1_FRAME,
+		ENV_SDFGI_UPDATE_LIGHT_IN_2_FRAMES,
+		ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES,
+		ENV_SDFGI_UPDATE_LIGHT_IN_8_FRAMES,
+		ENV_SDFGI_UPDATE_LIGHT_IN_16_FRAMES,
+		ENV_SDFGI_UPDATE_LIGHT_MAX,
+	};
+
+	virtual void environment_set_sdfgi_frames_to_update_light(EnvironmentSDFGIFramesToUpdateLight p_update) = 0;
 
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective) = 0;
 
@@ -1430,6 +1442,8 @@ public:
 
 	virtual float get_frame_setup_time_cpu() const = 0;
 
+	virtual void gi_set_use_half_resolution(bool p_enable) = 0;
+
 	/* TESTING */
 
 	virtual RID get_test_cube() = 0;
@@ -1461,6 +1475,8 @@ public:
 	virtual void call_set_use_vsync(bool p_enable) = 0;
 
 	virtual bool is_low_end() const = 0;
+
+	virtual void set_print_gpu_profile(bool p_enable) = 0;
 
 	RenderingDevice *create_local_rendering_device() const;
 

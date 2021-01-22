@@ -125,7 +125,10 @@ void main() {
 	uint voxel_index = uint(gl_GlobalInvocationID.x);
 
 	//used for skipping voxels every N frames
-	voxel_index = params.process_offset + voxel_index * params.process_increment;
+	if (params.process_increment > 1) {
+		voxel_index *= params.process_increment;
+		voxel_index += params.process_offset;
+	}
 
 	if (voxel_index >= dispatch_data.total_count) {
 		return;

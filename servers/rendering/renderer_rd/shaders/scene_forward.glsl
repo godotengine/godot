@@ -2371,17 +2371,17 @@ FRAGMENT_SHADER_CODE
 
 	if (bool(draw_call.flags & INSTANCE_FLAGS_USE_GI_BUFFERS)) { //use GI buffers
 
-		ivec2 coord;
+		vec2 coord;
 
 		if (scene_data.gi_upscale_for_msaa) {
-			ivec2 base_coord = ivec2(gl_FragCoord.xy);
-			ivec2 closest_coord = base_coord;
-			float closest_ang = dot(normal, texelFetch(sampler2D(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), base_coord, 0).xyz * 2.0 - 1.0);
+			vec2 base_coord = screen_uv;
+			vec2 closest_coord = base_coord;
+			float closest_ang = dot(normal, textureLod(sampler2D(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), base_coord, 0.0).xyz * 2.0 - 1.0);
 
 			for (int i = 0; i < 4; i++) {
-				const ivec2 neighbours[4] = ivec2[](ivec2(-1, 0), ivec2(1, 0), ivec2(0, -1), ivec2(0, 1));
-				ivec2 neighbour_coord = base_coord + neighbours[i];
-				float neighbour_ang = dot(normal, texelFetch(sampler2D(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), neighbour_coord, 0).xyz * 2.0 - 1.0);
+				const vec2 neighbours[4] = vec2[](vec2(-1, 0), vec2(1, 0), vec2(0, -1), vec2(0, 1));
+				vec2 neighbour_coord = base_coord + neighbours[i] * scene_data.screen_pixel_size;
+				float neighbour_ang = dot(normal, textureLod(sampler2D(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), neighbour_coord, 0.0).xyz * 2.0 - 1.0);
 				if (neighbour_ang > closest_ang) {
 					closest_ang = neighbour_ang;
 					closest_coord = neighbour_coord;
@@ -2391,11 +2391,11 @@ FRAGMENT_SHADER_CODE
 			coord = closest_coord;
 
 		} else {
-			coord = ivec2(gl_FragCoord.xy);
+			coord = screen_uv;
 		}
 
-		vec4 buffer_ambient = texelFetch(sampler2D(ambient_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), coord, 0);
-		vec4 buffer_reflection = texelFetch(sampler2D(reflection_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), coord, 0);
+		vec4 buffer_ambient = textureLod(sampler2D(ambient_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), coord, 0.0);
+		vec4 buffer_reflection = textureLod(sampler2D(reflection_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), coord, 0.0);
 
 		ambient_light = mix(ambient_light, buffer_ambient.rgb, buffer_ambient.a);
 		specular_light = mix(specular_light, buffer_reflection.rgb, buffer_reflection.a);

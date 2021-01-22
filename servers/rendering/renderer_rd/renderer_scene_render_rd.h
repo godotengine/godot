@@ -124,8 +124,6 @@ protected:
 	virtual void _base_uniforms_changed() = 0;
 	virtual void _render_buffers_uniform_set_changed(RID p_render_buffers) = 0;
 	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers) = 0;
-	virtual RID _render_buffers_get_ambient_texture(RID p_render_buffers) = 0;
-	virtual RID _render_buffers_get_reflection_texture(RID p_render_buffers) = 0;
 
 	void _process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection);
 	void _process_ssr(RID p_render_buffers, RID p_dest_framebuffer, RID p_normal_buffer, RID p_specular_buffer, RID p_metallic, const Color &p_metallic_mask, RID p_environment, const CameraMatrix &p_projection, bool p_use_additive);
@@ -134,7 +132,7 @@ protected:
 	void _setup_sky(RID p_environment, RID p_render_buffers, const CameraMatrix &p_projection, const Transform &p_transform, const Size2i p_screen_size);
 	void _update_sky(RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform);
 	void _draw_sky(bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform);
-	void _process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_ambient_buffer, RID p_reflection_buffer, RID p_gi_probe_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, const PagedArray<RID> &p_gi_probes);
+	void _process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_gi_probe_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, const PagedArray<RID> &p_gi_probes);
 
 	// needed for a single argument calls (material and uv2)
 	PagedArrayPool<GeometryInstance *> cull_argument_pool;
@@ -904,6 +902,16 @@ private:
 
 		RID giprobe_textures[MAX_GIPROBES];
 		RID giprobe_buffer;
+
+		RID ambient_buffer;
+		RID reflection_buffer;
+		bool using_half_size_gi = false;
+
+		struct GI {
+			RID full_buffer;
+			RID full_dispatch;
+			RID full_mask;
+		} gi;
 	};
 
 	RID default_giprobe_buffer;
@@ -965,6 +973,8 @@ private:
 			RID scroll_occlusion_uniform_set;
 			RID integrate_uniform_set;
 			RID lights_buffer;
+
+			bool all_dynamic_lights_dirty = true;
 		};
 
 		//used for rendering (voxelization)
@@ -1026,6 +1036,8 @@ private:
 
 	RS::EnvironmentSDFGIRayCount sdfgi_ray_count = RS::ENV_SDFGI_RAY_COUNT_16;
 	RS::EnvironmentSDFGIFramesToConverge sdfgi_frames_to_converge = RS::ENV_SDFGI_CONVERGE_IN_10_FRAMES;
+	RS::EnvironmentSDFGIFramesToUpdateLight sdfgi_frames_to_update_light = RS::ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES;
+
 	float sdfgi_solid_cell_ratio = 0.25;
 	Vector3 sdfgi_debug_probe_pos;
 	Vector3 sdfgi_debug_probe_dir;
@@ -1263,14 +1275,12 @@ private:
 			float z_far;
 
 			float proj_info[4];
-
-			uint32_t max_giprobes;
-			uint32_t high_quality_vct;
-			uint32_t pad2;
-			uint32_t orthogonal;
-
 			float ao_color[3];
-			uint32_t pad;
+			uint32_t max_giprobes;
+
+			uint32_t high_quality_vct;
+			uint32_t orthogonal;
+			uint32_t pad[2];
 
 			float cam_rotation[12];
 		};
@@ -1280,9 +1290,13 @@ private:
 			MODE_GIPROBE,
 			MODE_SDFGI,
 			MODE_COMBINED,
+			MODE_HALF_RES_GIPROBE,
+			MODE_HALF_RES_SDFGI,
+			MODE_HALF_RES_COMBINED,
 			MODE_MAX
 		};
 
+		bool half_resolution = false;
 		GiShaderRD shader;
 		RID shader_version;
 		RID pipelines[MODE_MAX];
@@ -1657,6 +1671,7 @@ public:
 	virtual void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias);
 	virtual void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count);
 	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames);
+	virtual void environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update);
 
 	void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality);
 	RS::EnvironmentSSRRoughnessQuality environment_get_ssr_roughness_quality() const;
@@ -1955,11 +1970,14 @@ public:
 */
 	RID render_buffers_create();
 	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding);
+	void gi_set_use_half_resolution(bool p_enable);
 
 	RID render_buffers_get_ao_texture(RID p_render_buffers);
 	RID render_buffers_get_back_buffer_texture(RID p_render_buffers);
 	RID render_buffers_get_gi_probe_buffer(RID p_render_buffers);
 	RID render_buffers_get_default_gi_probe_buffer();
+	RID render_buffers_get_gi_ambient_texture(RID p_render_buffers);
+	RID render_buffers_get_gi_reflection_texture(RID p_render_buffers);
 
 	uint32_t render_buffers_get_sdfgi_cascade_count(RID p_render_buffers) const;
 	bool render_buffers_is_sdfgi_enabled(RID p_render_buffers) const;
