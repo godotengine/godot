@@ -107,3 +107,8 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const String &p_message, bool fatal) {
 	_err_print_index_error(p_function, p_file, p_line, p_index, p_size, p_index_str, p_size_str, p_message.utf8().get_data(), fatal);
 }
+
+void _err_print_enum_error(const char *p_function, const char *p_file, int p_line, int64_t p_value, int64_t p_min, int64_t p_max, const char *p_value_str) {
+	String err(String("Enum ") + p_value_str + " = " + itos(p_value) + " out of size, allowed range [" + itos(p_min) + ", " + itos(p_max - 1) + "].");
+	_err_print_error(p_function, p_file, p_line, err.utf8().get_data());
+}

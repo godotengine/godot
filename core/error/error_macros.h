@@ -67,6 +67,7 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const String &p_error, const String &p_message, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
 void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const char *p_message = "", bool fatal = false);
 void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const String &p_message, bool fatal = false);
+void _err_print_enum_error(const char *p_function, const char *p_file, int p_line, int64_t p_value, int64_t p_min, int64_t p_max, const char *p_value_str);
 
 #ifdef __GNUC__
 //#define FUNCTION_STR __PRETTY_FUNCTION__ - too annoying
@@ -520,6 +521,28 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed. Returning: " _STR(m_retval), DEBUG_STR(m_msg)); \
 		return m_retval;                                                                                                            \
 	} else                                                                                                                          \
+		((void)0)
+
+/**
+ * Ensures that enum value `m_value` is between `m_min` and `m_max`.
+ * If not, prints an error.
+ */
+#define ERR_FAIL_ENUM_RANGE(m_value, m_min, m_max)                                                                               \
+	if (unlikely(static_cast<int>(m_value) < static_cast<int>(m_min) || static_cast<int>(m_value) >= static_cast<int>(m_max))) { \
+		_err_print_enum_error(FUNCTION_STR, __FILE__, __LINE__, m_value, m_min, m_max, _STR(m_value));                           \
+		return;                                                                                                                  \
+	} else                                                                                                                       \
+		((void)0)
+
+/**
+ * Ensures that enum value `m_value` is between `m_min` and `m_max`.
+ * If not, prints an error, and the current function returns `m_retval`.
+ */
+#define ERR_FAIL_ENUM_RANGE_V(m_value, m_min, m_max, m_retval)                                                                   \
+	if (unlikely(static_cast<int>(m_value) < static_cast<int>(m_min) || static_cast<int>(m_value) >= static_cast<int>(m_max))) { \
+		_err_print_enum_error(FUNCTION_STR, __FILE__, __LINE__, m_value, m_min, m_max, _STR(m_value));                           \
+		return m_retval;                                                                                                         \
+	} else                                                                                                                       \
 		((void)0)
 
 /**
