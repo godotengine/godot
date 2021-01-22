@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  color.h                                                              */
+/*  math_defs.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,31 +28,38 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_COLOR_H
-#define GODOT_COLOR_H
+#ifndef GODOT_GDNATIVE_MATH_DEFS_H
+#define GODOT_GDNATIVE_MATH_DEFS_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <gdnative/math_defs.h>
+#include <stdint.h>
 
-// Colors should always use 32-bit floats, so don't use real_t here.
-#define GODOT_COLOR_SIZE (sizeof(float) * 4)
+////// bool
 
-#ifndef GODOT_CORE_API_GODOT_COLOR_TYPE_DEFINED
-#define GODOT_CORE_API_GODOT_COLOR_TYPE_DEFINED
-typedef struct {
-	uint8_t _dont_touch_that[GODOT_COLOR_SIZE];
-} godot_color;
+typedef bool godot_bool;
+
+#define GODOT_TRUE 1
+#define GODOT_FALSE 0
+
+/////// int
+
+typedef int64_t godot_int;
+
+/////// float
+
+typedef double godot_float;
+
+#ifdef REAL_T_IS_DOUBLE
+typedef double godot_real_t;
+#else
+typedef float godot_real_t;
 #endif
-
-#include <gdnative/gdnative.h>
-
-void GDAPI godot_color_new(godot_color *p_self);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // GODOT_COLOR_H
+#endif // GODOT_C_H

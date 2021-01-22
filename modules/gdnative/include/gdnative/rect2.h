@@ -35,19 +35,23 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
+#include <gdnative/math_defs.h>
+
+#define GODOT_RECT2_SIZE (sizeof(godot_real_t) * 4)
 
 #ifndef GODOT_CORE_API_GODOT_RECT2_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_RECT2_TYPE_DEFINED
 typedef struct godot_rect2 {
-	uint8_t _dont_touch_that[16];
+	uint8_t _dont_touch_that[GODOT_RECT2_SIZE];
 } godot_rect2;
 #endif
+
+#define GODOT_RECT2I_SIZE (sizeof(int32_t) * 4)
 
 #ifndef GODOT_CORE_API_GODOT_RECT2I_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_RECT2I_TYPE_DEFINED
 typedef struct godot_rect2i {
-	uint8_t _dont_touch_that[16];
+	uint8_t _dont_touch_that[GODOT_RECT2I_SIZE];
 } godot_rect2i;
 #endif
 
