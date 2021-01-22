@@ -818,7 +818,7 @@
 			</argument>
 			<argument index="3" name="infinite_inertia" type="bool">
 			</argument>
-			<argument index="4" name="margin" type="float" default="0.08">
+			<argument index="4" name="margin" type="float" default="0.001">
 			</argument>
 			<argument index="5" name="result" type="Physics2DTestMotionResult" default="null">
 			</argument>
