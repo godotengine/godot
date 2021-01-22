@@ -35,9 +35,9 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
+#include <gdnative/math_defs.h>
 
-#define GODOT_QUAT_SIZE 16
+#define GODOT_QUAT_SIZE (sizeof(godot_real_t) * 4)
 
 #ifndef GODOT_CORE_API_GODOT_QUAT_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_QUAT_TYPE_DEFINED

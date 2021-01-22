@@ -35,24 +35,9 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
+#include <gdnative/math_defs.h>
 
-////// bool
-
-typedef bool godot_bool;
-
-#define GODOT_TRUE 1
-#define GODOT_FALSE 0
-
-/////// int
-
-typedef int64_t godot_int;
-
-/////// float
-
-typedef double godot_float;
-
-#define GODOT_VARIANT_SIZE (16 + sizeof(int64_t))
+#define GODOT_VARIANT_SIZE (sizeof(godot_real_t) * 4 + sizeof(int64_t))
 
 #ifndef GODOT_CORE_API_GODOT_VARIANT_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_VARIANT_TYPE_DEFINED

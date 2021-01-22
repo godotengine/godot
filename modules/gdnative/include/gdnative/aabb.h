@@ -35,9 +35,9 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
+#include <gdnative/math_defs.h>
 
-#define GODOT_AABB_SIZE 24
+#define GODOT_AABB_SIZE (sizeof(godot_real_t) * 6)
 
 #ifndef GODOT_CORE_API_GODOT_AABB_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_AABB_TYPE_DEFINED
