@@ -2426,7 +2426,7 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 		uint32_t attrib_stride = 0;
 		uint32_t skin_stride = 0;
 
-		for (int i = 0; i < RS::ARRAY_WEIGHTS; i++) {
+		for (unsigned int i = 0; i < RS::ARRAY_WEIGHTS; i++) {
 			if ((p_surface.format & (1 << i))) {
 				switch (i) {
 					case RS::ARRAY_VERTEX: {
@@ -3119,7 +3119,7 @@ void RendererStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Surf
 	uint32_t attribute_stride = 0;
 	uint32_t skin_stride = 0;
 
-	for (int i = 0; i < RS::ARRAY_INDEX; i++) {
+	for (unsigned int i = 0; i < RS::ARRAY_INDEX; i++) {
 		RD::VertexAttribute vd;
 		RID buffer;
 		vd.location = i;
@@ -3280,7 +3280,7 @@ void RendererStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Surf
 		if (attributes[i].stride == 0) {
 			continue; //default location
 		}
-		int loc = attributes[i].location;
+		unsigned int loc = attributes[i].location;
 
 		if (loc < RS::ARRAY_COLOR) {
 			attributes.write[i].stride = stride;
@@ -8573,8 +8573,8 @@ RendererStorageRD::RendererStorageRD() {
 	}
 
 	//default samplers
-	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
-		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+	for (unsigned int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (unsigned int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
 			RD::SamplerState sampler_state;
 			switch (i) {
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
@@ -8961,8 +8961,8 @@ RendererStorageRD::~RendererStorageRD() {
 	}
 
 	//def samplers
-	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
-		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+	for (unsigned int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (unsigned int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
 			RD::get_singleton()->free(default_rd_samplers[i][j]);
 		}
 	}

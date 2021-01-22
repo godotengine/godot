@@ -245,7 +245,7 @@ void RendererSceneRenderForward::ShaderData::set_code(const String &p_code) {
 
 		RD::PolygonCullMode cull_mode_rd = cull_mode_rd_table[i][cull];
 
-		for (int j = 0; j < RS::PRIMITIVE_MAX; j++) {
+		for (unsigned int j = 0; j < RS::PRIMITIVE_MAX; j++) {
 			RD::RenderPrimitive primitive_rd_table[RS::PRIMITIVE_MAX] = {
 				RD::RENDER_PRIMITIVE_POINTS,
 				RD::RENDER_PRIMITIVE_LINES,

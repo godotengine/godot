@@ -306,7 +306,7 @@ String FileAccess::get_line() const {
 			line.push_back(0);
 			return String::utf8(line.get_data());
 		} else if (c != '\r') {
-			line.push_back(c);
+			line.push_back(char(c));
 		}
 
 		c = get_8();

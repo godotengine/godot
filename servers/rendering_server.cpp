@@ -329,7 +329,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 	int max_bone = 0;
 
-	for (int ai = 0; ai < RS::ARRAY_MAX; ai++) {
+	for (unsigned int ai = 0; ai < RS::ARRAY_MAX; ai++) {
 		if (!(p_format & (1 << ai))) { // no array
 			continue;
 		}
@@ -717,7 +717,7 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 
 	uint32_t *size_accum;
 
-	for (int i = 0; i < RS::ARRAY_MAX; i++) {
+	for (unsigned int i = 0; i < RS::ARRAY_MAX; i++) {
 		r_offsets[i] = 0; //reset
 
 		if (i == RS::ARRAY_VERTEX) {
@@ -1041,7 +1041,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 	const uint8_t *ar = p_attrib_data.ptr();
 	const uint8_t *sr = p_skin_data.ptr();
 
-	for (int i = 0; i < RS::ARRAY_MAX; i++) {
+	for (unsigned int i = 0; i < RS::ARRAY_MAX; i++) {
 		if (!(p_format & (1 << i))) {
 			continue;
 		}

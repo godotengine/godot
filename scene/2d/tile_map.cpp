@@ -1202,10 +1202,10 @@ void TileMap::_set_tile_data(const Vector<int> &p_data) {
 		uint16_t x = decode_uint16(&local[0]);
 		uint16_t y = decode_uint16(&local[2]);
 		uint32_t v = decode_uint32(&local[4]);
-		bool flip_h = v & (1 << 29);
-		bool flip_v = v & (1 << 30);
-		bool transpose = v & (1 << 31);
-		v &= (1 << 29) - 1;
+		bool flip_h = v & (1u << 29);
+		bool flip_v = v & (1u << 30);
+		bool transpose = v & (1u << 31);
+		v &= (1u << 29) - 1;
 		int16_t coord_x = 0;
 		int16_t coord_y = 0;
 		if (format == FORMAT_2) {
@@ -1231,13 +1231,13 @@ Vector<int> TileMap::_get_tile_data() const {
 		encode_uint16(E->key().y, &ptr[2]);
 		uint32_t val = E->get().id;
 		if (E->get().flip_h) {
-			val |= (1 << 29);
+			val |= (1u << 29);
 		}
 		if (E->get().flip_v) {
-			val |= (1 << 30);
+			val |= (1u << 30);
 		}
 		if (E->get().transpose) {
-			val |= (1 << 31);
+			val |= (1u << 31);
 		}
 		encode_uint32(val, &ptr[4]);
 		encode_uint16(E->get().autotile_coord_x, &ptr[8]);

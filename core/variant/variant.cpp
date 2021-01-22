@@ -2392,7 +2392,7 @@ Variant::Variant(int64_t p_int) {
 
 Variant::Variant(uint64_t p_int) {
 	type = INT;
-	_data._int = p_int;
+	_data._int = int64_t(p_int);
 }
 
 Variant::Variant(signed short p_short) {
@@ -2849,7 +2849,7 @@ uint32_t Variant::hash() const {
 			return _data._bool ? 1 : 0;
 		} break;
 		case INT: {
-			return _data._int;
+			return uint32_t(_data._int);
 		} break;
 		case FLOAT: {
 			return hash_djb2_one_float(_data._float);
@@ -2959,7 +2959,7 @@ uint32_t Variant::hash() const {
 			return hash_djb2_one_64(reinterpret_cast<const ::RID *>(_data._mem)->get_id());
 		} break;
 		case OBJECT: {
-			return hash_djb2_one_64(make_uint64_t(_get_obj().obj));
+			return uint32_t(hash_djb2_one_64(make_uint64_t(_get_obj().obj)));
 		} break;
 		case STRING_NAME: {
 			return reinterpret_cast<const StringName *>(_data._mem)->hash();
