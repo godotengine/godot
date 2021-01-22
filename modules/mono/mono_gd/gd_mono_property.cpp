@@ -40,7 +40,7 @@
 GDMonoProperty::GDMonoProperty(MonoProperty *p_mono_property, GDMonoClass *p_owner) {
 	owner = p_owner;
 	mono_property = p_mono_property;
-	name = mono_property_get_name(mono_property);
+	name = String::utf8(mono_property_get_name(mono_property));
 
 	MonoMethod *prop_method = mono_property_get_get_method(mono_property);
 

@@ -1716,6 +1716,10 @@ bool PhysicalBone3D::SixDOFJointData::_set(const StringName &p_name, const Varia
 
 	String path = p_name;
 
+	if (!path.begins_with("joint_constraints/")) {
+		return false;
+	}
+
 	Vector3::Axis axis;
 	{
 		const String axis_s = path.get_slicec('/', 1);
@@ -1871,6 +1875,10 @@ bool PhysicalBone3D::SixDOFJointData::_get(const StringName &p_name, Variant &r_
 	}
 
 	String path = p_name;
+
+	if (!path.begins_with("joint_constraints/")) {
+		return false;
+	}
 
 	int axis;
 	{

@@ -44,3 +44,6 @@ if "RD_GLSL" in env["BUILDERS"]:
     env.RD_GLSL("particles_copy.glsl")
     env.RD_GLSL("sort.glsl")
     env.RD_GLSL("skeleton.glsl")
+    env.RD_GLSL("cluster_render.glsl")
+    env.RD_GLSL("cluster_store.glsl")
+    env.RD_GLSL("cluster_debug.glsl")
