@@ -745,7 +745,7 @@ class AnimatedTexture : public Texture2D {
 	GDCLASS(AnimatedTexture, Texture2D);
 
 	//use readers writers lock for this, since its far more times read than written to
-	RWLock *rw_lock;
+	RWLock rw_lock;
 
 public:
 	enum {

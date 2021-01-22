@@ -212,6 +212,10 @@ void Light3D::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
+	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_specular") {
+		property.usage = 0;
+	}
+
 	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_projector") {
 		property.usage = 0;
 	}

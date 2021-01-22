@@ -2292,6 +2292,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_CLOSE: {
 			if (!p_confirmed) {
 				tab_closing = p_option == FILE_CLOSE ? editor_data.get_edited_scene() : _next_unsaved_scene(false);
+				_scene_tab_changed(tab_closing);
 
 				if (unsaved_cache || p_option == FILE_CLOSE_ALL_AND_QUIT || p_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER) {
 					String scene_filename = editor_data.get_edited_scene_root(tab_closing)->get_filename();
@@ -2813,6 +2814,10 @@ void EditorNode::_discard_changes(const String &p_str) {
 			_update_scene_tabs();
 
 			if (current_option == FILE_CLOSE_ALL_AND_QUIT || current_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER) {
+				// If restore tabs is enabled, reopen the scene that has just been closed, so it's remembered properly.
+				if (bool(EDITOR_GET("interface/scene_tabs/restore_scenes_on_load"))) {
+					_menu_option_confirm(FILE_OPEN_PREV, true);
+				}
 				if (_next_unsaved_scene(false) == -1) {
 					current_option = current_option == FILE_CLOSE_ALL_AND_QUIT ? FILE_QUIT : RUN_PROJECT_MANAGER;
 					_discard_changes();
@@ -3026,8 +3031,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 	Ref<ConfigFile> cf;
 	cf.instance();
-	String addon_path = String("res://addons").plus_file(p_addon).plus_file("plugin.cfg");
-	if (!DirAccess::exists(addon_path.get_base_dir())) {
+	if (!DirAccess::exists(p_addon.get_base_dir())) {
 		ProjectSettings *ps = ProjectSettings::get_singleton();
 		PackedStringArray enabled_plugins = ps->get("editor_plugins/enabled");
 		for (int i = 0; i < enabled_plugins.size(); ++i) {
@@ -3041,14 +3045,14 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 		WARN_PRINT("Addon '" + p_addon + "' failed to load. No directory found. Removing from enabled plugins.");
 		return;
 	}
-	Error err = cf->load(addon_path);
+	Error err = cf->load(p_addon);
 	if (err != OK) {
-		show_warning(vformat(TTR("Unable to enable addon plugin at: '%s' parsing of config failed."), addon_path));
+		show_warning(vformat(TTR("Unable to enable addon plugin at: '%s' parsing of config failed."), p_addon));
 		return;
 	}
 
 	if (!cf->has_section_key("plugin", "script")) {
-		show_warning(vformat(TTR("Unable to find script field for addon plugin at: 'res://addons/%s'."), p_addon));
+		show_warning(vformat(TTR("Unable to find script field for addon plugin at: '%s'."), p_addon));
 		return;
 	}
 
@@ -3057,7 +3061,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 	// Only try to load the script if it has a name. Else, the plugin has no init script.
 	if (script_path.length() > 0) {
-		script_path = String("res://addons").plus_file(p_addon).plus_file(script_path);
+		script_path = p_addon.get_base_dir().plus_file(script_path);
 		script = ResourceLoader::load(script_path);
 
 		if (script.is_null()) {
