@@ -30,6 +30,9 @@
 
 #include "collision_shape.h"
 
+#include "core/math/quick_hull.h"
+#include "mesh_instance.h"
+#include "physics_body.h"
 #include "scene/resources/box_shape.h"
 #include "scene/resources/capsule_shape.h"
 #include "scene/resources/concave_polygon_shape.h"
@@ -38,10 +41,6 @@
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/sphere_shape.h"
 #include "servers/visual_server.h"
-//TODO: Implement CylinderShape and HeightMapShape?
-#include "core/math/quick_hull.h"
-#include "mesh_instance.h"
-#include "physics_body.h"
 
 void CollisionShape::make_convex_from_brothers() {
 

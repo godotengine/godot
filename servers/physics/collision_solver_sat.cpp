@@ -31,7 +31,38 @@
 #include "collision_solver_sat.h"
 #include "core/math/geometry.h"
 
-#define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.02
+#include "gjk_epa.h"
+
+#define fallback_collision_solver gjk_epa_calculate_penetration
+
+// Cylinder SAT analytic methods and circle-face contact points for cylinder-trimesh and cylinder-box collision are based on ODE colliders.
+
+/*
+ *	Cylinder-trimesh and Cylinder-box colliders by Alen Ladavac
+ *   Ported to ODE by Nguyen Binh
+ */
+
+/*************************************************************************
+ *                                                                       *
+ * Open Dynamics Engine, Copyright (C) 2001-2003 Russell L. Smith.       *
+ * All rights reserved.  Email: russ@q12.org   Web: www.q12.org          *
+ *                                                                       *
+ * This library is free software; you can redistribute it and/or         *
+ * modify it under the terms of EITHER:                                  *
+ *   (1) The GNU Lesser General Public License as published by the Free  *
+ *       Software Foundation; either version 2.1 of the License, or (at  *
+ *       your option) any later version. The text of the GNU Lesser      *
+ *       General Public License is included with this library in the     *
+ *       file LICENSE.TXT.                                               *
+ *   (2) The BSD-style license that is included with this library in     *
+ *       the file LICENSE-BSD.TXT.                                       *
+ *                                                                       *
+ * This library is distributed in the hope that it will be useful,       *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the files    *
+ * LICENSE.TXT and LICENSE-BSD.TXT for more details.                     *
+ *                                                                       *
+ *************************************************************************/
 
 struct _CollectorCallback {
 
@@ -86,6 +117,18 @@ static void _generate_contacts_point_face(const Vector3 *p_points_A, int p_point
 	p_callback->call(*p_points_A, closest_B);
 }
 
+static void _generate_contacts_point_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(p_point_count_A != 1);
+	ERR_FAIL_COND(p_point_count_B != 3);
+#endif
+
+	Vector3 closest_B = Plane(p_points_B[0], p_points_B[1], p_points_B[2]).project(*p_points_A);
+
+	p_callback->call(*p_points_A, closest_B);
+}
+
 static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
 
 #ifdef DEBUG_ENABLED
@@ -131,6 +174,105 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 	Vector3 closest_A = p_points_A[0] + rel_A * d;
 	Vector3 closest_B = Geometry::get_closest_point_to_segment_uncapped(closest_A, p_points_B);
 	p_callback->call(closest_A, closest_B);
+}
+
+static void _generate_contacts_edge_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(p_point_count_A != 2);
+	ERR_FAIL_COND(p_point_count_B != 3);
+#endif
+
+	const Vector3 &circle_B_pos = p_points_B[0];
+	Vector3 circle_B_line_1 = p_points_B[1] - circle_B_pos;
+	Vector3 circle_B_line_2 = p_points_B[2] - circle_B_pos;
+
+	real_t circle_B_radius = circle_B_line_1.length();
+	Vector3 circle_B_normal = circle_B_line_1.cross(circle_B_line_2).normalized();
+
+	Plane circle_plane(circle_B_pos, circle_B_normal);
+
+	static const int max_clip = 2;
+	Vector3 contact_points[max_clip];
+	int num_points = 0;
+
+	// Project edge point in circle plane.
+	const Vector3 &edge_A_1 = p_points_A[0];
+	Vector3 proj_point_1 = circle_plane.project(edge_A_1);
+
+	Vector3 dist_vec = proj_point_1 - circle_B_pos;
+	real_t dist_sq = dist_vec.length_squared();
+
+	// Point 1 is inside disk, add as contact point.
+	if (dist_sq <= circle_B_radius * circle_B_radius) {
+		contact_points[num_points] = edge_A_1;
+		++num_points;
+	}
+
+	const Vector3 &edge_A_2 = p_points_A[1];
+	Vector3 proj_point_2 = circle_plane.project(edge_A_2);
+
+	Vector3 dist_vec_2 = proj_point_2 - circle_B_pos;
+	real_t dist_sq_2 = dist_vec_2.length_squared();
+
+	// Point 2 is inside disk, add as contact point.
+	if (dist_sq_2 <= circle_B_radius * circle_B_radius) {
+		contact_points[num_points] = edge_A_2;
+		++num_points;
+	}
+
+	if (num_points < 2) {
+		Vector3 line_vec = proj_point_2 - proj_point_1;
+		real_t line_length_sq = line_vec.length_squared();
+
+		// Create a quadratic formula of the form ax^2 + bx + c = 0
+		real_t a, b, c;
+
+		a = line_length_sq;
+		b = 2.0 * dist_vec.dot(line_vec);
+		c = dist_sq - circle_B_radius * circle_B_radius;
+
+		// Solve for t.
+		real_t sqrtterm = b * b - 4.0 * a * c;
+
+		// If the term we intend to square root is less than 0 then the answer won't be real,
+		// so the line doesn't intersect.
+		if (sqrtterm >= 0) {
+			sqrtterm = Math::sqrt(sqrtterm);
+
+			Vector3 edge_dir = edge_A_2 - edge_A_1;
+
+			real_t fraction_1 = (-b - sqrtterm) / (2.0 * a);
+			if ((fraction_1 > 0.0) && (fraction_1 < 1.0)) {
+				Vector3 face_point_1 = edge_A_1 + fraction_1 * edge_dir;
+				ERR_FAIL_COND(num_points >= max_clip);
+				contact_points[num_points] = face_point_1;
+				++num_points;
+			}
+
+			real_t fraction_2 = (-b + sqrtterm) / (2.0 * a);
+			if ((fraction_2 > 0.0) && (fraction_2 < 1.0) && !Math::is_equal_approx(fraction_1, fraction_2)) {
+				Vector3 face_point_2 = edge_A_1 + fraction_2 * edge_dir;
+				ERR_FAIL_COND(num_points >= max_clip);
+				contact_points[num_points] = face_point_2;
+				++num_points;
+			}
+		}
+	}
+
+	// Generate contact points.
+	for (int i = 0; i < num_points; i++) {
+		const Vector3 &contact_point_A = contact_points[i];
+
+		real_t d = circle_plane.distance_to(contact_point_A);
+		Vector3 closest_B = contact_point_A - circle_plane.normal * d;
+
+		if (p_callback->normal.dot(contact_point_A) >= p_callback->normal.dot(closest_B)) {
+			continue;
+		}
+
+		p_callback->call(contact_point_A, closest_B);
+	}
 }
 
 static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
@@ -227,37 +369,232 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 	}
 }
 
-static void _generate_contacts_from_supports(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
+static void _generate_contacts_face_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(p_point_count_A < 3);
+	ERR_FAIL_COND(p_point_count_B != 3);
+#endif
+
+	const Vector3 &circle_B_pos = p_points_B[0];
+	Vector3 circle_B_line_1 = p_points_B[1] - circle_B_pos;
+	Vector3 circle_B_line_2 = p_points_B[2] - circle_B_pos;
+
+	// Clip face with circle segments.
+	static const int circle_segments = 8;
+	Vector3 circle_points[circle_segments];
+
+	real_t angle_delta = 2.0 * Math_PI / circle_segments;
+
+	for (int i = 0; i < circle_segments; ++i) {
+		Vector3 point_pos = circle_B_pos;
+		point_pos += circle_B_line_1 * Math::cos(i * angle_delta);
+		point_pos += circle_B_line_2 * Math::sin(i * angle_delta);
+		circle_points[i] = point_pos;
+	}
+
+	_generate_contacts_face_face(p_points_A, p_point_count_A, circle_points, circle_segments, p_callback);
+
+	// Clip face with circle plane.
+	Vector3 circle_B_normal = circle_B_line_1.cross(circle_B_line_2).normalized();
+
+	Plane circle_plane(circle_B_pos, circle_B_normal);
+
+	static const int max_clip = 32;
+	Vector3 contact_points[max_clip];
+	int num_points = 0;
+
+	for (int i = 0; i < p_point_count_A; i++) {
+		int i_n = (i + 1) % p_point_count_A;
+
+		const Vector3 &edge0_A = p_points_A[i];
+		const Vector3 &edge1_A = p_points_A[i_n];
+
+		real_t dist0 = circle_plane.distance_to(edge0_A);
+		real_t dist1 = circle_plane.distance_to(edge1_A);
+
+		// First point in front of plane, generate contact point.
+		if (dist0 * circle_plane.d >= 0) {
+			ERR_FAIL_COND(num_points >= max_clip);
+			contact_points[num_points] = edge0_A;
+			++num_points;
+		}
+
+		// Points on different sides, generate contact point.
+		if (dist0 * dist1 < 0) {
+			// calculate intersection
+			Vector3 rel = edge1_A - edge0_A;
+			real_t den = circle_plane.normal.dot(rel);
+			real_t dist = -(circle_plane.normal.dot(edge0_A) - circle_plane.d) / den;
+			Vector3 inters = edge0_A + rel * dist;
+
+			ERR_FAIL_COND(num_points >= max_clip);
+			contact_points[num_points] = inters;
+			++num_points;
+		}
+	}
+
+	// Generate contact points.
+	for (int i = 0; i < num_points; i++) {
+		const Vector3 &contact_point_A = contact_points[i];
+
+		real_t d = circle_plane.distance_to(contact_point_A);
+		Vector3 closest_B = contact_point_A - circle_plane.normal * d;
+
+		if (p_callback->normal.dot(contact_point_A) >= p_callback->normal.dot(closest_B)) {
+			continue;
+		}
+
+		p_callback->call(contact_point_A, closest_B);
+	}
+}
+
+static void _generate_contacts_circle_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(p_point_count_A != 3);
+	ERR_FAIL_COND(p_point_count_B != 3);
+#endif
+
+	const Vector3 &circle_A_pos = p_points_A[0];
+	Vector3 circle_A_line_1 = p_points_A[1] - circle_A_pos;
+	Vector3 circle_A_line_2 = p_points_A[2] - circle_A_pos;
+
+	real_t circle_A_radius = circle_A_line_1.length();
+	Vector3 circle_A_normal = circle_A_line_1.cross(circle_A_line_2).normalized();
+
+	const Vector3 &circle_B_pos = p_points_B[0];
+	Vector3 circle_B_line_1 = p_points_B[1] - circle_B_pos;
+	Vector3 circle_B_line_2 = p_points_B[2] - circle_B_pos;
+
+	real_t circle_B_radius = circle_B_line_1.length();
+	Vector3 circle_B_normal = circle_B_line_1.cross(circle_B_line_2).normalized();
+
+	static const int max_clip = 4;
+	Vector3 contact_points[max_clip];
+	int num_points = 0;
+
+	Vector3 centers_diff = circle_B_pos - circle_A_pos;
+	Vector3 norm_proj = circle_A_normal.dot(centers_diff) * circle_A_normal;
+	Vector3 comp_proj = centers_diff - norm_proj;
+	real_t proj_dist = comp_proj.length();
+	if (!Math::is_zero_approx(proj_dist)) {
+		comp_proj /= proj_dist;
+		if ((proj_dist > circle_A_radius - circle_B_radius) && (proj_dist > circle_B_radius - circle_A_radius)) {
+			// Circles are overlapping, use the 2 points of intersection as contacts.
+			real_t radius_a_sqr = circle_A_radius * circle_A_radius;
+			real_t radius_b_sqr = circle_B_radius * circle_B_radius;
+			real_t d_sqr = proj_dist * proj_dist;
+			real_t s = (1.0 + (radius_a_sqr - radius_b_sqr) / d_sqr) * 0.5;
+			real_t h = Math::sqrt(MAX(radius_a_sqr - d_sqr * s * s, 0.0));
+			Vector3 midpoint = circle_A_pos + s * comp_proj * proj_dist;
+			Vector3 h_vec = h * circle_A_normal.cross(comp_proj);
+
+			Vector3 point_A = midpoint + h_vec;
+			contact_points[num_points] = point_A;
+			++num_points;
+
+			point_A = midpoint - h_vec;
+			contact_points[num_points] = point_A;
+			++num_points;
+
+			// Add 2 points from circle A and B along the line between the centers.
+			point_A = circle_A_pos + comp_proj * circle_A_radius;
+			contact_points[num_points] = point_A;
+			++num_points;
+
+			point_A = circle_B_pos - comp_proj * circle_B_radius - norm_proj;
+			contact_points[num_points] = point_A;
+			++num_points;
+		} // Otherwise one circle is inside the other one, use 3 arbitrary equidistant points.
+	} // Otherwise circles are concentric, use 3 arbitrary equidistant points.
+
+	if (num_points == 0) {
+		// Generate equidistant points.
+		if (circle_A_radius < circle_B_radius) {
+			// Circle A inside circle B.
+			for (int i = 0; i < 3; ++i) {
+				Vector3 circle_A_point = circle_A_pos;
+				circle_A_point += circle_A_line_1 * Math::cos(2.0 * Math_PI * i / 3.0);
+				circle_A_point += circle_A_line_2 * Math::sin(2.0 * Math_PI * i / 3.0);
+
+				contact_points[num_points] = circle_A_point;
+				++num_points;
+			}
+		} else {
+			// Circle B inside circle A.
+			for (int i = 0; i < 3; ++i) {
+				Vector3 circle_B_point = circle_B_pos;
+				circle_B_point += circle_B_line_1 * Math::cos(2.0 * Math_PI * i / 3.0);
+				circle_B_point += circle_B_line_2 * Math::sin(2.0 * Math_PI * i / 3.0);
+
+				Vector3 circle_A_point = circle_B_point - norm_proj;
+
+				contact_points[num_points] = circle_A_point;
+				++num_points;
+			}
+		}
+	}
+
+	Plane circle_B_plane(circle_B_pos, circle_B_normal);
+
+	// Generate contact points.
+	for (int i = 0; i < num_points; i++) {
+		const Vector3 &contact_point_A = contact_points[i];
+
+		real_t d = circle_B_plane.distance_to(contact_point_A);
+		Vector3 closest_B = contact_point_A - circle_B_plane.normal * d;
+
+		if (p_callback->normal.dot(contact_point_A) >= p_callback->normal.dot(closest_B)) {
+			continue;
+		}
+
+		p_callback->call(contact_point_A, closest_B);
+	}
+}
+
+static void _generate_contacts_from_supports(const Vector3 *p_points_A, int p_point_count_A, ShapeSW::FeatureType p_feature_type_A, const Vector3 *p_points_B, int p_point_count_B, ShapeSW::FeatureType p_feature_type_B, _CollectorCallback *p_callback) {
 
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A < 1);
 	ERR_FAIL_COND(p_point_count_B < 1);
 #endif
 
-	static const GenerateContactsFunc generate_contacts_func_table[3][3] = {
+	static const GenerateContactsFunc generate_contacts_func_table[4][4] = {
 		{
 				_generate_contacts_point_point,
 				_generate_contacts_point_edge,
 				_generate_contacts_point_face,
+				_generate_contacts_point_circle,
 		},
 		{
 				0,
 				_generate_contacts_edge_edge,
 				_generate_contacts_face_face,
+				_generate_contacts_edge_circle,
 		},
 		{
 				0,
 				0,
 				_generate_contacts_face_face,
-		}
+				_generate_contacts_face_circle,
+		},
+		{
+				0,
+				0,
+				0,
+				_generate_contacts_circle_circle,
+		},
 	};
 
 	int pointcount_B;
 	int pointcount_A;
 	const Vector3 *points_A;
 	const Vector3 *points_B;
+	int version_A;
+	int version_B;
 
-	if (p_point_count_A > p_point_count_B) {
+	if (p_feature_type_A > p_feature_type_B) {
 		//swap
 		p_callback->swap = !p_callback->swap;
 		p_callback->normal = -p_callback->normal;
@@ -266,16 +603,17 @@ static void _generate_contacts_from_supports(const Vector3 *p_points_A, int p_po
 		pointcount_A = p_point_count_B;
 		points_A = p_points_B;
 		points_B = p_points_A;
+		version_A = p_feature_type_B;
+		version_B = p_feature_type_A;
 	} else {
 
 		pointcount_B = p_point_count_B;
 		pointcount_A = p_point_count_A;
 		points_A = p_points_A;
 		points_B = p_points_B;
+		version_A = p_feature_type_A;
+		version_B = p_feature_type_B;
 	}
-
-	int version_A = (pointcount_A > 3 ? 3 : pointcount_A) - 1;
-	int version_B = (pointcount_B > 3 ? 3 : pointcount_B) - 1;
 
 	GenerateContactsFunc contacts_func = generate_contacts_func_table[version_A][version_B];
 	ERR_FAIL_COND(!contacts_func);
@@ -360,6 +698,17 @@ public:
 		return true;
 	}
 
+	static _FORCE_INLINE_ void test_contact_points(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata) {
+		SeparatorAxisTest<ShapeA, ShapeB, withMargin> *separator = (SeparatorAxisTest<ShapeA, ShapeB, withMargin> *)p_userdata;
+		Vector3 axis = (p_point_B - p_point_A);
+		real_t depth = axis.length();
+
+		// Filter out bogus directions with a treshold and re-testing axis.
+		if (separator->best_depth - depth > 0.001) {
+			separator->test_axis(axis / depth);
+		}
+	}
+
 	_FORCE_INLINE_ void generate_contacts() {
 
 		// nothing to do, don't generate
@@ -378,7 +727,8 @@ public:
 
 		Vector3 supports_A[max_supports];
 		int support_count_A;
-		shape_A->get_supports(transform_A->basis.xform_inv(-best_axis).normalized(), max_supports, supports_A, support_count_A);
+		ShapeSW::FeatureType support_type_A;
+		shape_A->get_supports(transform_A->basis.xform_inv(-best_axis).normalized(), max_supports, supports_A, support_count_A, support_type_A);
 		for (int i = 0; i < support_count_A; i++) {
 			supports_A[i] = transform_A->xform(supports_A[i]);
 		}
@@ -392,7 +742,8 @@ public:
 
 		Vector3 supports_B[max_supports];
 		int support_count_B;
-		shape_B->get_supports(transform_B->basis.xform_inv(best_axis).normalized(), max_supports, supports_B, support_count_B);
+		ShapeSW::FeatureType support_type_B;
+		shape_B->get_supports(transform_B->basis.xform_inv(best_axis).normalized(), max_supports, supports_B, support_count_B, support_type_B);
 		for (int i = 0; i < support_count_B; i++) {
 			supports_B[i] = transform_B->xform(supports_B[i]);
 		}
@@ -407,7 +758,7 @@ public:
 		callback->normal = best_axis;
 		if (callback->prev_axis)
 			*callback->prev_axis = best_axis;
-		_generate_contacts_from_supports(supports_A, support_count_A, supports_B, support_count_B, callback);
+		_generate_contacts_from_supports(supports_A, support_count_A, support_type_A, supports_B, support_count_B, support_type_B, callback);
 
 		callback->collided = true;
 	}
@@ -538,6 +889,60 @@ static void _collision_sphere_capsule(const ShapeSW *p_a, const Transform &p_tra
 
 template <bool withMargin>
 static void _collision_sphere_cylinder(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW *>(p_a);
+	const CylinderShapeSW *cylinder_B = static_cast<const CylinderShapeSW *>(p_b);
+
+	SeparatorAxisTest<SphereShapeSW, CylinderShapeSW, withMargin> separator(sphere_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+
+	if (!separator.test_previous_axis())
+		return;
+
+	// Cylinder B end caps.
+	Vector3 cylinder_B_axis = p_transform_b.basis.get_axis(1).normalized();
+	if (!separator.test_axis(cylinder_B_axis)) {
+		return;
+	}
+
+	Vector3 cylinder_diff = p_transform_b.origin - p_transform_a.origin;
+
+	// Cylinder B lateral surface.
+	if (!separator.test_axis(cylinder_B_axis.cross(cylinder_diff).cross(cylinder_B_axis).normalized())) {
+		return;
+	}
+
+	// Closest point to cylinder caps.
+	const Vector3 &sphere_center = p_transform_a.origin;
+	Vector3 cyl_axis = p_transform_b.basis.get_axis(1);
+	Vector3 cap_axis = p_transform_b.basis.get_axis(0);
+	real_t height_scale = cyl_axis.length();
+	real_t cap_dist = cylinder_B->get_height() * 0.5 * height_scale;
+	cyl_axis /= height_scale;
+	real_t radius_scale = cap_axis.length();
+	real_t cap_radius = cylinder_B->get_radius() * radius_scale;
+
+	for (int i = 0; i < 2; i++) {
+		Vector3 cap_dir = ((i == 0) ? cyl_axis : -cyl_axis);
+		Vector3 cap_pos = p_transform_b.origin + cap_dir * cap_dist;
+
+		Vector3 closest_point;
+
+		Vector3 diff = sphere_center - cap_pos;
+		Vector3 proj = diff - cap_dir.dot(diff) * cap_dir;
+
+		real_t proj_len = proj.length();
+		if (Math::is_zero_approx(proj_len)) {
+			// Point is equidistant to all circle points.
+			continue;
+		}
+
+		closest_point = cap_pos + (cap_radius / proj_len) * proj;
+
+		if (!separator.test_axis((closest_point - sphere_center).normalized())) {
+			return;
+		}
+	}
+
+	separator.generate_contacts();
 }
 
 template <bool withMargin>
@@ -750,7 +1155,7 @@ static void _collision_box_capsule(const ShapeSW *p_a, const Transform &p_transf
 	// faces of A
 	for (int i = 0; i < 3; i++) {
 
-		Vector3 axis = p_transform_a.basis.get_axis(i);
+		Vector3 axis = p_transform_a.basis.get_axis(i).normalized();
 
 		if (!separator.test_axis(axis))
 			return;
@@ -833,6 +1238,115 @@ static void _collision_box_capsule(const ShapeSW *p_a, const Transform &p_transf
 
 template <bool withMargin>
 static void _collision_box_cylinder(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	const BoxShapeSW *box_A = static_cast<const BoxShapeSW *>(p_a);
+	const CylinderShapeSW *cylinder_B = static_cast<const CylinderShapeSW *>(p_b);
+
+	SeparatorAxisTest<BoxShapeSW, CylinderShapeSW, withMargin> separator(box_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+
+	if (!separator.test_previous_axis()) {
+		return;
+	}
+
+	// Faces of A.
+	for (int i = 0; i < 3; i++) {
+		Vector3 axis = p_transform_a.basis.get_axis(i).normalized();
+
+		if (!separator.test_axis(axis)) {
+			return;
+		}
+	}
+
+	Vector3 cyl_axis = p_transform_b.basis.get_axis(1).normalized();
+
+	// Cylinder end caps.
+	{
+		if (!separator.test_axis(cyl_axis)) {
+			return;
+		}
+	}
+
+	// Edges of A, cylinder lateral surface.
+	for (int i = 0; i < 3; i++) {
+		Vector3 box_axis = p_transform_a.basis.get_axis(i);
+		Vector3 axis = box_axis.cross(cyl_axis);
+		if (Math::is_zero_approx(axis.length_squared())) {
+			continue;
+		}
+
+		if (!separator.test_axis(axis.normalized())) {
+			return;
+		}
+	}
+
+	// Gather points of A.
+	Vector3 vertices_A[8];
+	Vector3 box_extent = box_A->get_half_extents();
+	for (int i = 0; i < 2; i++) {
+		for (int j = 0; j < 2; j++) {
+			for (int k = 0; k < 2; k++) {
+				Vector3 extent = box_extent;
+				extent.x *= (i * 2 - 1);
+				extent.y *= (j * 2 - 1);
+				extent.z *= (k * 2 - 1);
+				Vector3 &point = vertices_A[i * 2 * 2 + j * 2 + k];
+				point = p_transform_a.origin;
+				for (int l = 0; l < 3; l++) {
+					point += p_transform_a.basis.get_axis(l) * extent[l];
+				}
+			}
+		}
+	}
+
+	// Points of A, cylinder lateral surface.
+	for (int i = 0; i < 8; i++) {
+		const Vector3 &point = vertices_A[i];
+		Vector3 axis = Plane(cyl_axis, 0).project(point).normalized();
+
+		if (!separator.test_axis(axis)) {
+			return;
+		}
+	}
+
+	// Edges of A, cylinder end caps rim.
+	int edges_start_A[12] = { 0, 2, 4, 6, 0, 1, 4, 5, 0, 1, 2, 3 };
+	int edges_end_A[12] = { 1, 3, 5, 7, 2, 3, 6, 7, 4, 5, 6, 7 };
+
+	Vector3 cap_axis = cyl_axis * (cylinder_B->get_height() * 0.5);
+
+	for (int i = 0; i < 2; i++) {
+		Vector3 cap_pos = p_transform_b.origin + ((i == 0) ? cap_axis : -cap_axis);
+
+		for (int e = 0; e < 12; e++) {
+			const Vector3 &edge_start = vertices_A[edges_start_A[e]];
+			const Vector3 &edge_end = vertices_A[edges_end_A[e]];
+
+			Vector3 edge_dir = (edge_end - edge_start);
+			edge_dir.normalize();
+
+			real_t edge_dot = edge_dir.dot(cyl_axis);
+			if (Math::is_zero_approx(edge_dot)) {
+				// Edge is perpendicular to cylinder axis.
+				continue;
+			}
+
+			// Calculate intersection between edge and circle plane.
+			Vector3 edge_diff = cap_pos - edge_start;
+			real_t diff_dot = edge_diff.dot(cyl_axis);
+			Vector3 intersection = edge_start + edge_dir * diff_dot / edge_dot;
+
+			// Calculate tangent that touches intersection.
+			Vector3 tangent = (cap_pos - intersection).cross(cyl_axis);
+
+			// Axis is orthogonal both to tangent and edge direction.
+			Vector3 axis = tangent.cross(edge_dir);
+
+			if (!separator.test_axis(axis.normalized())) {
+				return;
+			}
+		}
+	}
+
+	separator.generate_contacts();
 }
 
 template <bool withMargin>
@@ -1113,6 +1627,19 @@ static void _collision_capsule_capsule(const ShapeSW *p_a, const Transform &p_tr
 
 template <bool withMargin>
 static void _collision_capsule_cylinder(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	const CapsuleShapeSW *capsule_A = static_cast<const CapsuleShapeSW *>(p_a);
+	const CylinderShapeSW *cylinder_B = static_cast<const CylinderShapeSW *>(p_b);
+
+	SeparatorAxisTest<CapsuleShapeSW, CylinderShapeSW, withMargin> separator(capsule_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+
+	CollisionSolverSW::CallbackResult callback = SeparatorAxisTest<CapsuleShapeSW, CylinderShapeSW, withMargin>::test_contact_points;
+
+	// Fallback to generic algorithm to find the best separating axis.
+	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator)) {
+		return;
+	}
+
+	separator.generate_contacts();
 }
 
 template <bool withMargin>
@@ -1237,14 +1764,165 @@ static void _collision_capsule_face(const ShapeSW *p_a, const Transform &p_trans
 
 template <bool withMargin>
 static void _collision_cylinder_cylinder(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	const CylinderShapeSW *cylinder_A = static_cast<const CylinderShapeSW *>(p_a);
+	const CylinderShapeSW *cylinder_B = static_cast<const CylinderShapeSW *>(p_b);
+
+	SeparatorAxisTest<CylinderShapeSW, CylinderShapeSW, withMargin> separator(cylinder_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+
+	Vector3 cylinder_A_axis = p_transform_a.basis.get_axis(1);
+	Vector3 cylinder_B_axis = p_transform_b.basis.get_axis(1);
+
+	if (!separator.test_previous_axis()) {
+		return;
+	}
+
+	// Cylinder A end caps.
+	if (!separator.test_axis(cylinder_A_axis.normalized())) {
+		return;
+	}
+
+	// Cylinder B end caps.
+	if (!separator.test_axis(cylinder_A_axis.normalized())) {
+		return;
+	}
+
+	Vector3 cylinder_diff = p_transform_b.origin - p_transform_a.origin;
+
+	// Cylinder A lateral surface.
+	if (!separator.test_axis(cylinder_A_axis.cross(cylinder_diff).cross(cylinder_A_axis).normalized())) {
+		return;
+	}
+
+	// Cylinder B lateral surface.
+	if (!separator.test_axis(cylinder_B_axis.cross(cylinder_diff).cross(cylinder_B_axis).normalized())) {
+		return;
+	}
+
+	real_t proj = cylinder_A_axis.cross(cylinder_B_axis).cross(cylinder_B_axis).dot(cylinder_A_axis);
+	if (Math::is_zero_approx(proj)) {
+		// Parallel cylinders, handle with specific axes only.
+		// Note: GJKEPA with no margin can lead to degenerate cases in this situation.
+		separator.generate_contacts();
+		return;
+	}
+
+	CollisionSolverSW::CallbackResult callback = SeparatorAxisTest<CylinderShapeSW, CylinderShapeSW, withMargin>::test_contact_points;
+
+	// Fallback to generic algorithm to find the best separating axis.
+	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator)) {
+		return;
+	}
+
+	separator.generate_contacts();
 }
 
 template <bool withMargin>
 static void _collision_cylinder_convex_polygon(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	const CylinderShapeSW *cylinder_A = static_cast<const CylinderShapeSW *>(p_a);
+	const ConvexPolygonShapeSW *convex_polygon_B = static_cast<const ConvexPolygonShapeSW *>(p_b);
+
+	SeparatorAxisTest<CylinderShapeSW, ConvexPolygonShapeSW, withMargin> separator(cylinder_A, p_transform_a, convex_polygon_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+
+	CollisionSolverSW::CallbackResult callback = SeparatorAxisTest<CylinderShapeSW, ConvexPolygonShapeSW, withMargin>::test_contact_points;
+
+	// Fallback to generic algorithm to find the best separating axis.
+	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator)) {
+		return;
+	}
+
+	separator.generate_contacts();
 }
 
 template <bool withMargin>
 static void _collision_cylinder_face(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	const CylinderShapeSW *cylinder_A = static_cast<const CylinderShapeSW *>(p_a);
+	const FaceShapeSW *face_B = static_cast<const FaceShapeSW *>(p_b);
+
+	SeparatorAxisTest<CylinderShapeSW, FaceShapeSW, withMargin> separator(cylinder_A, p_transform_a, face_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+
+	if (!separator.test_previous_axis()) {
+		return;
+	}
+
+	Vector3 vertex[3] = {
+		p_transform_b.xform(face_B->vertex[0]),
+		p_transform_b.xform(face_B->vertex[1]),
+		p_transform_b.xform(face_B->vertex[2]),
+	};
+
+	// Face B normal.
+	if (!separator.test_axis((vertex[0] - vertex[2]).cross(vertex[0] - vertex[1]).normalized())) {
+		return;
+	}
+
+	Vector3 cyl_axis = p_transform_a.basis.get_axis(1).normalized();
+
+	// Cylinder end caps.
+	{
+		if (!separator.test_axis(cyl_axis)) {
+			return;
+		}
+	}
+
+	// Edges of B, cylinder lateral surface.
+	for (int i = 0; i < 3; i++) {
+		Vector3 edge_axis = vertex[i] - vertex[(i + 1) % 3];
+		Vector3 axis = edge_axis.cross(cyl_axis);
+		if (Math::is_zero_approx(axis.length_squared())) {
+			continue;
+		}
+
+		if (!separator.test_axis(axis.normalized())) {
+			return;
+		}
+	}
+
+	// Points of B, cylinder lateral surface.
+	for (int i = 0; i < 3; i++) {
+		const Vector3 &point = vertex[i];
+		Vector3 axis = Plane(cyl_axis, 0).project(point).normalized();
+
+		if (!separator.test_axis(axis)) {
+			return;
+		}
+	}
+
+	// Edges of B, cylinder end caps rim.
+	Vector3 cap_axis = cyl_axis * (cylinder_A->get_height() * 0.5);
+
+	for (int i = 0; i < 2; i++) {
+		Vector3 cap_pos = p_transform_a.origin + ((i == 0) ? cap_axis : -cap_axis);
+
+		for (int j = 0; j < 3; j++) {
+			const Vector3 &edge_start = vertex[j];
+			const Vector3 &edge_end = vertex[(j + 1) % 3];
+			Vector3 edge_dir = edge_end - edge_start;
+			edge_dir.normalize();
+
+			real_t edge_dot = edge_dir.dot(cyl_axis);
+			if (Math::is_zero_approx(edge_dot)) {
+				// Edge is perpendicular to cylinder axis.
+				continue;
+			}
+
+			// Calculate intersection between edge and circle plane.
+			Vector3 edge_diff = cap_pos - edge_start;
+			real_t diff_dot = edge_diff.dot(cyl_axis);
+			Vector3 intersection = edge_start + edge_dir * diff_dot / edge_dot;
+
+			// Calculate tangent that touches intersection.
+			Vector3 tangent = (cap_pos - intersection).cross(cyl_axis);
+
+			// Axis is orthogonal both to tangent and edge direction.
+			Vector3 axis = tangent.cross(edge_dir);
+
+			if (!separator.test_axis(axis.normalized())) {
+				return;
+			}
+		}
+	}
+
+	separator.generate_contacts();
 }
 
 template <bool withMargin>

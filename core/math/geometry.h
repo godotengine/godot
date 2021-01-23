@@ -295,27 +295,34 @@ public:
 		return true;
 	}
 
-	static inline bool segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, real_t p_height, real_t p_radius, Vector3 *r_res = 0, Vector3 *r_norm = 0) {
+	static inline bool segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, real_t p_height, real_t p_radius, Vector3 *r_res = 0, Vector3 *r_norm = 0, int p_cylinder_axis = 2) {
 
 		Vector3 rel = (p_to - p_from);
 		real_t rel_l = rel.length();
 		if (rel_l < CMP_EPSILON)
 			return false; // Both points are the same.
 
+		ERR_FAIL_COND_V(p_cylinder_axis < 0, false);
+		ERR_FAIL_COND_V(p_cylinder_axis > 2, false);
+		Vector3 cylinder_axis;
+		cylinder_axis[p_cylinder_axis] = 1.0;
+
 		// First check if they are parallel.
 		Vector3 normal = (rel / rel_l);
-		Vector3 crs = normal.cross(Vector3(0, 0, 1));
+		Vector3 crs = normal.cross(cylinder_axis);
 		real_t crs_l = crs.length();
 
-		Vector3 z_dir;
+		Vector3 axis_dir;
 
 		if (crs_l < CMP_EPSILON) {
-			z_dir = Vector3(1, 0, 0); // Any x/y vector OK.
+			Vector3 side_axis;
+			side_axis[(p_cylinder_axis + 1) % 3] = 1.0; // Any side axis OK.
+			axis_dir = side_axis;
 		} else {
-			z_dir = crs / crs_l;
+			axis_dir = crs / crs_l;
 		}
 
-		real_t dist = z_dir.dot(p_from);
+		real_t dist = axis_dir.dot(p_from);
 
 		if (dist >= p_radius)
 			return false; // Too far away.
@@ -326,10 +333,10 @@ public:
 			return false; // Avoid numerical error.
 		Size2 size(Math::sqrt(w2), p_height * 0.5);
 
-		Vector3 x_dir = z_dir.cross(Vector3(0, 0, 1)).normalized();
+		Vector3 side_dir = axis_dir.cross(cylinder_axis).normalized();
 
-		Vector2 from2D(x_dir.dot(p_from), p_from.z);
-		Vector2 to2D(x_dir.dot(p_to), p_to.z);
+		Vector2 from2D(side_dir.dot(p_from), p_from[p_cylinder_axis]);
+		Vector2 to2D(side_dir.dot(p_to), p_to[p_cylinder_axis]);
 
 		real_t min = 0, max = 1;
 
@@ -375,10 +382,12 @@ public:
 		Vector3 res_normal = result;
 
 		if (axis == 0) {
-			res_normal.z = 0;
+			res_normal[p_cylinder_axis] = 0;
 		} else {
-			res_normal.x = 0;
-			res_normal.y = 0;
+			int axis_side = (p_cylinder_axis + 1) % 3;
+			res_normal[axis_side] = 0;
+			axis_side = (axis_side + 1) % 3;
+			res_normal[axis_side] = 0;
 		}
 
 		res_normal.normalize();
