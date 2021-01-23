@@ -492,10 +492,17 @@ void Viewport::_notification(int p_what) {
 			}
 #endif
 
+			default_texture->set_viewport_path_in_scene(get_path());
+
 			// Enable processing for tooltips, collision debugging, physics object picking, etc.
 			set_process_internal(true);
 			set_physics_process_internal(true);
 
+		} break;
+		case NOTIFICATION_PARENTED: {
+			if (is_inside_tree()) {
+				default_texture->set_viewport_path_in_scene(get_path());
+			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			_gui_cancel_tooltip();
