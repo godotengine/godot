@@ -36,6 +36,86 @@
 
 #include "scene/resources/tile_set/tile_set_atlas_plugin_rendering.h"
 
+void TileMapPattern::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) {
+	ERR_FAIL_COND_MSG(p_coords.x < 0 || p_coords.y < 0, "Cannot set cell with negative coords in a TileMapPattern.");
+
+	size = size.max(p_coords + Vector2i(1, 1));
+	pattern[p_coords] = TileMapCell(p_source_id, p_atlas_coords, p_alternative_tile);
+}
+bool TileMapPattern::has_cell(const Vector2i &p_coords) {
+	return pattern.has(p_coords);
+}
+void TileMapPattern::remove_cell(const Vector2i &p_coords, bool p_update_size) {
+	ERR_FAIL_COND(!pattern.has(p_coords));
+
+	pattern.erase(p_coords);
+	if (p_update_size) {
+		size = Vector2i();
+		for (Map<Vector2i, TileMapCell>::Element *E = pattern.front(); E; E = E->next()) {
+			size = size.max(E->key() + Vector2i(1, 1));
+		}
+	}
+}
+int TileMapPattern::get_cell_source_id(const Vector2i &p_coords) const {
+	ERR_FAIL_COND_V(!pattern.has(p_coords), -1);
+
+	return pattern[p_coords].source_id;
+}
+Vector2i TileMapPattern::get_cell_atlas_coords(const Vector2i &p_coords) const {
+	ERR_FAIL_COND_V(!pattern.has(p_coords), TileAtlasSource::INVALID_ATLAS_COORDS);
+
+	return pattern[p_coords].get_atlas_coords();
+}
+int TileMapPattern::get_cell_alternative_tile(const Vector2i &p_coords) const {
+	ERR_FAIL_COND_V(!pattern.has(p_coords), TileAtlasSource::INVALID_TILE_ALTERNATIVE);
+
+	return pattern[p_coords].alternative_tile;
+}
+
+TypedArray<Vector2i> TileMapPattern::get_used_cells() const {
+	// Returns the cells used in the tilemap.
+	TypedArray<Vector2i> a;
+	a.resize(pattern.size());
+	int i = 0;
+	for (Map<Vector2i, TileMapCell>::Element *E = pattern.front(); E; E = E->next()) {
+		Vector2i p(E->key().x, E->key().y);
+		a[i++] = p;
+	}
+
+	return a;
+}
+
+Vector2i TileMapPattern::get_size() const {
+	return size;
+}
+void TileMapPattern::set_size(const Vector2i &p_size) {
+	for (Map<Vector2i, TileMapCell>::Element *E = pattern.front(); E; E = E->next()) {
+		Vector2i coords = E->key();
+		if (p_size.x <= coords.x || p_size.y <= coords.y) {
+			ERR_FAIL_MSG(vformat("Cannot set pattern size to %s, it contains a tile at %s. Size can only be increased.", p_size, coords));
+		};
+	}
+
+	size = p_size;
+}
+bool TileMapPattern::is_empty() {
+	return pattern.is_empty();
+};
+
+void TileMapPattern::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_cell", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMapPattern::set_cell, DEFVAL(-1), DEFVAL(TileAtlasSource::INVALID_ATLAS_COORDS), DEFVAL(TileAtlasSource::INVALID_TILE_ALTERNATIVE));
+	ClassDB::bind_method(D_METHOD("has_cell", "coords"), &TileMapPattern::has_cell);
+	ClassDB::bind_method(D_METHOD("remove_cell", "coords"), &TileMapPattern::remove_cell);
+	ClassDB::bind_method(D_METHOD("get_cell_source_id", "coords"), &TileMapPattern::get_cell_source_id);
+	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "coords"), &TileMapPattern::get_cell_atlas_coords);
+	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "coords"), &TileMapPattern::get_cell_alternative_tile);
+
+	ClassDB::bind_method(D_METHOD("get_used_cells"), &TileMapPattern::get_used_cells);
+	ClassDB::bind_method(D_METHOD("get_size"), &TileMapPattern::get_size);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &TileMapPattern::set_size);
+	ClassDB::bind_method(D_METHOD("is_empty"), &TileMapPattern::is_empty);
+}
+
 int TileMap::get_effective_quadrant_size() const {
 	// When using YSort, the quadrant size is reduced to 1 to have one CanvasItem per quadrant
 	if (tile_set.is_valid() && tile_set->is_y_sorting()) {
@@ -408,7 +488,7 @@ void TileMap::fix_invalid_tiles() {
 	for (Map<Vector2i, TileMapCell>::Element *E = tile_map.front(); E; E = E->next()) {
 		// TODO: this may need to be updated to handle missing scenes, or coordinates outside the tilemap area ?
 		if (tile_set->get_source_type(get_cell_source_id(E->key())) != TileSet::SOURCE_TYPE_INVALID) {
-			set_cell(E->key(), TileSet::SOURCE_TYPE_INVALID, Vector2i(), 0);
+			set_cell(E->key(), -1, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
 		}
 	}
 }

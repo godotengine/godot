@@ -121,6 +121,30 @@ struct TileMapQuadrant {
 			dirty_list_element(this) {}
 };
 
+class TileMapPattern : public Object {
+	GDCLASS(TileMapPattern, Object);
+
+	Vector2i size;
+	Map<Vector2i, TileMapCell> pattern;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile = 0);
+	bool has_cell(const Vector2i &p_coords);
+	void remove_cell(const Vector2i &p_coords, bool p_update_size = true);
+	int get_cell_source_id(const Vector2i &p_coords) const;
+	Vector2i get_cell_atlas_coords(const Vector2i &p_coords) const;
+	int get_cell_alternative_tile(const Vector2i &p_coords) const;
+
+	TypedArray<Vector2i> get_used_cells() const;
+
+	Vector2i get_size() const;
+	void set_size(const Vector2i &p_size);
+	bool is_empty();
+};
+
 class TileMap : public Node2D {
 	GDCLASS(TileMap, Node2D);
 
@@ -195,7 +219,7 @@ public:
 	void set_quadrant_size(int p_size);
 	int get_quadrant_size() const;
 
-	void set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile = 0);
+	void set_cell(const Vector2i &p_coords, int p_source_id = -1, const Vector2i p_atlas_coords = TileAtlasSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileAtlasSource::INVALID_TILE_ALTERNATIVE);
 	int get_cell_source_id(const Vector2i &p_coords) const;
 	Vector2i get_cell_atlas_coords(const Vector2i &p_coords) const;
 	int get_cell_alternative_tile(const Vector2i &p_coords) const;

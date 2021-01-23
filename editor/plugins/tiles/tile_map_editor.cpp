@@ -197,31 +197,31 @@ Map<Vector2i, TileMapCell> TileMapEditor::_draw_line(Vector2 p_start_drag_mouse_
 	}
 
 	// Get or create the pattern.
-	TilePattern pattern;
+	TileMapPattern pattern;
 	if (erase_button->is_pressed()) {
-		pattern.size = Vector2i(1, 1);
-		pattern.pattern[Vector2i(0, 0)] = TileMapCell(-1, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
+		pattern.set_cell(Vector2i(0, 0), -1, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
 	} else {
-		pattern = _get_pattern_from_set(tile_set_selection);
+		_get_pattern_from_set(tile_set_selection, pattern);
 	}
 
 	Map<Vector2i, TileMapCell> output;
-	if (!pattern.pattern.is_empty()) {
+	if (!pattern.is_empty()) {
 		// If we paint several tiles, we virtually move the mouse as if it was in the center of the "brush"
-		Vector2 mouse_offset = (Vector2(pattern.size) / 2.0 - Vector2(0.5, 0.5)) * tile_set->get_tile_size();
+		Vector2 mouse_offset = (Vector2(pattern.get_size()) / 2.0 - Vector2(0.5, 0.5)) * tile_set->get_tile_size();
 
 		Vector2i last_hovered_cell = tile_map->world_to_map(p_from_mouse_pos - mouse_offset);
 		Vector2i new_hovered_cell = tile_map->world_to_map(p_to_mouse_pos - mouse_offset);
 		Vector2i drag_start_cell = tile_map->world_to_map(p_start_drag_mouse_pos - mouse_offset);
-		Vector2i offset = Vector2i(Math::posmod(drag_start_cell.x, pattern.size.x), Math::posmod(drag_start_cell.y, pattern.size.y)); // Note: no posmodv for Vector2i for now. Meh.
-		Vector<Vector2i> line = Geometry2D::bresenham_line((last_hovered_cell - offset) / pattern.size, (new_hovered_cell - offset) / pattern.size);
+		Vector2i offset = Vector2i(Math::posmod(drag_start_cell.x, pattern.get_size().x), Math::posmod(drag_start_cell.y, pattern.get_size().y)); // Note: no posmodv for Vector2i for now. Meh.
+		Vector<Vector2i> line = Geometry2D::bresenham_line((last_hovered_cell - offset) / pattern.get_size(), (new_hovered_cell - offset) / pattern.get_size());
 
 		// Paint the tiles on the tile map.
 		for (int i = 0; i < line.size(); i++) {
-			Vector2i top_left = line[i] * pattern.size + offset;
-			for (Map<Vector2i, TileMapCell>::Element *E = pattern.pattern.front(); E; E = E->next()) {
-				Vector2i coords = top_left + E->key();
-				output.insert(coords, TileMapCell(E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile));
+			Vector2i top_left = line[i] * pattern.get_size() + offset;
+			TypedArray<Vector2i> used_cells = pattern.get_used_cells();
+			for (int j = 0; j < used_cells.size(); j++) {
+				Vector2i coords = top_left + used_cells[j];
+				output.insert(coords, TileMapCell(pattern.get_cell_source_id(used_cells[j]), pattern.get_cell_atlas_coords(used_cells[j]), pattern.get_cell_alternative_tile(used_cells[j])));
 			}
 		}
 	}
@@ -246,23 +246,23 @@ Map<Vector2i, TileMapCell> TileMapEditor::_draw_rect(Vector2i p_start_cell, Vect
 	rect.size += Vector2i(1, 1);
 
 	// Get or create the pattern.
-	TilePattern pattern;
+	TileMapPattern pattern;
 	if (erase_button->is_pressed()) {
-		pattern.size = Vector2i(1, 1);
-		pattern.pattern[Vector2i(0, 0)] = TileMapCell(-1, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
+		pattern.set_cell(Vector2i(0, 0), -1, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
 	} else {
-		pattern = _get_pattern_from_set(tile_set_selection);
+		_get_pattern_from_set(tile_set_selection, pattern);
 	}
 
 	Map<Vector2i, TileMapCell> output;
-	if (!pattern.pattern.is_empty()) {
+	if (!pattern.is_empty()) {
 		// Paint the tiles on the tile map.
-		for (int x = 0; x <= rect.size.x / pattern.size.x; x++) {
-			for (int y = 0; y <= rect.size.y / pattern.size.y; y++) {
-				for (Map<Vector2i, TileMapCell>::Element *E = pattern.pattern.front(); E; E = E->next()) {
-					Vector2i coords = rect.position + Vector2i(x, y) * pattern.size + E->key();
+		for (int x = 0; x <= rect.size.x / pattern.get_size().x; x++) {
+			for (int y = 0; y <= rect.size.y / pattern.get_size().y; y++) {
+				TypedArray<Vector2i> used_cells = pattern.get_used_cells();
+				for (int j = 0; j < used_cells.size(); j++) {
+					Vector2i coords = rect.position + Vector2i(x, y) * pattern.get_size() + used_cells[j];
 					if (rect.has_point(coords)) {
-						output.insert(coords, TileMapCell(E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile));
+						output.insert(coords, TileMapCell(pattern.get_cell_source_id(used_cells[j]), pattern.get_cell_atlas_coords(used_cells[j]), pattern.get_cell_alternative_tile(used_cells[j])));
 					}
 				}
 			}
@@ -283,16 +283,15 @@ Map<Vector2i, TileMapCell> TileMapEditor::_draw_bucket_fill(Vector2i p_coords, b
 	}
 
 	// Get or create the pattern.
-	TilePattern pattern;
+	TileMapPattern pattern;
 	if (erase_button->is_pressed()) {
-		pattern.size = Vector2i(1, 1);
-		pattern.pattern[Vector2i(0, 0)] = TileMapCell(-1, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
+		pattern.set_cell(Vector2i(0, 0), -1, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
 	} else {
-		pattern = _get_pattern_from_set(tile_set_selection);
+		_get_pattern_from_set(tile_set_selection, pattern);
 	}
 
 	Map<Vector2i, TileMapCell> output;
-	if (!pattern.pattern.is_empty()) {
+	if (!pattern.is_empty()) {
 		TileMapCell source = tile_map->get_cell(p_coords);
 
 		// If we are filling empty tiles, compute the tilemap boundaries.
@@ -314,11 +313,11 @@ Map<Vector2i, TileMapCell> TileMapEditor::_draw_bucket_fill(Vector2i p_coords, b
 							source.get_atlas_coords() == tile_map->get_cell_atlas_coords(coords) &&
 							source.alternative_tile == tile_map->get_cell_alternative_tile(coords) &&
 							(source.source_id != -1 || boundaries.has_point(coords))) {
-						Vector2i pattern_coords = (coords - p_coords) % pattern.size; // Note: it would be good to have posmodv for Vector2i.
-						pattern_coords.x = pattern_coords.x < 0 ? pattern_coords.x + pattern.size.x : pattern_coords.x;
-						pattern_coords.y = pattern_coords.y < 0 ? pattern_coords.y + pattern.size.y : pattern_coords.y;
-						if (pattern.pattern.has(pattern_coords)) {
-							output.insert(coords, TileMapCell(pattern.pattern[pattern_coords].source_id, pattern.pattern[pattern_coords].get_atlas_coords(), pattern.pattern[pattern_coords].alternative_tile));
+						Vector2i pattern_coords = (coords - p_coords) % pattern.get_size(); // Note: it would be good to have posmodv for Vector2i.
+						pattern_coords.x = pattern_coords.x < 0 ? pattern_coords.x + pattern.get_size().x : pattern_coords.x;
+						pattern_coords.y = pattern_coords.y < 0 ? pattern_coords.y + pattern.get_size().y : pattern_coords.y;
+						if (pattern.has_cell(pattern_coords)) {
+							output.insert(coords, TileMapCell(pattern.get_cell_source_id(pattern_coords), pattern.get_cell_atlas_coords(pattern_coords), pattern.get_cell_alternative_tile(pattern_coords)));
 						} else {
 							output.insert(coords, TileMapCell());
 						}
@@ -354,11 +353,11 @@ Map<Vector2i, TileMapCell> TileMapEditor::_draw_bucket_fill(Vector2i p_coords, b
 						source.get_atlas_coords() == tile_map->get_cell_atlas_coords(coords) &&
 						source.alternative_tile == tile_map->get_cell_alternative_tile(coords) &&
 						(source.source_id != -1 || boundaries.has_point(coords))) {
-					Vector2i pattern_coords = (coords - p_coords) % pattern.size; // Note: it would be good to have posmodv for Vector2i.
-					pattern_coords.x = pattern_coords.x < 0 ? pattern_coords.x + pattern.size.x : pattern_coords.x;
-					pattern_coords.y = pattern_coords.y < 0 ? pattern_coords.y + pattern.size.y : pattern_coords.y;
-					if (pattern.pattern.has(pattern_coords)) {
-						output.insert(coords, TileMapCell(pattern.pattern[pattern_coords].source_id, pattern.pattern[pattern_coords].get_atlas_coords(), pattern.pattern[pattern_coords].alternative_tile));
+					Vector2i pattern_coords = (coords - p_coords) % pattern.get_size(); // Note: it would be good to have posmodv for Vector2i.
+					pattern_coords.x = pattern_coords.x < 0 ? pattern_coords.x + pattern.get_size().x : pattern_coords.x;
+					pattern_coords.y = pattern_coords.y < 0 ? pattern_coords.y + pattern.get_size().y : pattern_coords.y;
+					if (pattern.has_cell(pattern_coords)) {
+						output.insert(coords, TileMapCell(pattern.get_cell_source_id(pattern_coords), pattern.get_cell_atlas_coords(pattern_coords), pattern.get_cell_alternative_tile(pattern_coords)));
 					} else {
 						output.insert(coords, TileMapCell());
 					}
@@ -764,17 +763,16 @@ void TileMapEditor::_update_fix_selected_and_hovered() {
 	}
 }
 
-TileMapEditor::TilePattern TileMapEditor::_get_pattern_from_set(const Set<TileMapCell> &p_set) {
+void TileMapEditor::_get_pattern_from_set(const Set<TileMapCell> &p_set, TileMapPattern &r_pattern) {
 	if (!tile_map) {
-		return TileMapEditor::TilePattern();
+		return;
 	}
 
 	Ref<TileSet> tile_set = tile_map->get_tileset();
 	if (!tile_set.is_valid()) {
-		return TileMapEditor::TilePattern();
+		return;
 	}
 
-	TilePattern output;
 	// Group per source.
 	Map<int, List<const TileMapCell *>> per_source;
 	for (Set<TileMapCell>::Element *E = p_set.front(); E; E = E->next()) {
@@ -822,18 +820,13 @@ TileMapEditor::TilePattern TileMapEditor::_get_pattern_from_set(const Set<TileMa
 
 		// Now add everything to the output pattern.
 		for (Map<Vector2i, const TileMapCell *>::Element *E_cell = organized_pattern.front(); E_cell; E_cell = E_cell->next()) {
-			output.pattern[E_cell->key() - encompassing_rect_coords.position + Vector2i(output.size.x, 0)] = *E_cell->get();
+			r_pattern.set_cell(E_cell->key() - encompassing_rect_coords.position, E_cell->get()->source_id, E_cell->get()->get_atlas_coords(), E_cell->get()->alternative_tile);
 		}
-		output.size.x += encompassing_rect_coords.size.x;
-		output.size.y = MAX(output.size.y, encompassing_rect_coords.size.y);
-
+		Vector2i organized_size = r_pattern.get_size();
 		for (List<const TileMapCell *>::Element *E_cell = unorganized.front(); E_cell; E_cell = E_cell->next()) {
-			output.pattern[Vector2(output.size.x, 0)] = *E_cell->get();
-			output.size.x += 1;
-			output.size.y = MAX(output.size.y, 1);
+			r_pattern.set_cell(Vector2(organized_size.x, 0), E_cell->get()->source_id, E_cell->get()->get_atlas_coords(), E_cell->get()->alternative_tile);
 		}
 	}
-	return output;
 }
 
 void TileMapEditor::_tile_atlas_control_draw() {

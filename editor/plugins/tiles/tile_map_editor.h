@@ -42,11 +42,6 @@ class TileMapEditor : public VBoxContainer {
 	GDCLASS(TileMapEditor, VBoxContainer);
 
 private:
-	struct TilePattern {
-		Vector2i size;
-		Map<Vector2i, TileMapCell> pattern;
-	};
-
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 
 	bool tileset_changed_needs_update = false;
@@ -67,7 +62,7 @@ private:
 
 	void _update_fix_selected_and_hovered();
 
-	TilePattern _get_pattern_from_set(const Set<TileMapCell> &p_set);
+	void _get_pattern_from_set(const Set<TileMapCell> &p_set, TileMapPattern &r_pattern);
 	bool tile_set_dragging_selection = false;
 	Vector2i tile_set_drag_start_mouse_pos;
 	Set<TileMapCell> tile_set_selection;
