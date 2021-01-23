@@ -79,7 +79,7 @@
 			If [code]true[/code], the resource will be made unique in each instance of its local scene. It can thus be modified in a scene instance without impacting other instances of that same scene.
 		</member>
 		<member name="resource_name" type="String" setter="set_name" getter="get_name" default="&quot;&quot;">
-			The name of the resource. This is an optional identifier.
+			The name of the resource. This is an optional identifier. If [member resource_name] is not empty, its value will be displayed to represent the current resource in the editor inspector. For built-in scripts, the [member resource_name] will be displayed as the tab name in the script editor.
 		</member>
 		<member name="resource_path" type="String" setter="set_path" getter="get_path" default="&quot;&quot;">
 			The path to the resource. In case it has its own file, it will return its filepath. If it's tied to the scene, it will return the scene's path, followed by the resource's index.
