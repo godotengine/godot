@@ -158,7 +158,7 @@ Legal Terms
 
     o freetype-devel@nongnu.org
 
-      Discusses bugs,  as well  as engine internals,  design issues,
+      Discusses bugs, as well  as engine internals,  design issues,
       specific licenses, porting, etc.
 
   Our home page can be found at
