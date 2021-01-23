@@ -91,7 +91,7 @@
 #define dll_import 
 #endif
 
-#ifdef __WIN32__
+#if defined(__WIN32__) && !defined(__MINGW32__)
 #if !defined(__noinline)
 #define __noinline             __declspec(noinline)
 #endif

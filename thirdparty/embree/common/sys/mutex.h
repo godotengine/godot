@@ -47,17 +47,8 @@ namespace embree
       {
         while (flag.load()) 
         {
-// -- GODOT start --
-#if !(defined (__WIN32__) && defined (__MINGW32__))
-// -- GODOT end --
-          _mm_pause(); 
           _mm_pause();
-// -- GODOT start --
-#else
-          __builtin_ia32_pause();
-          __builtin_ia32_pause();
-#endif
-// -- GODOT end --
+          _mm_pause();
         }
         
         bool expected = false;
@@ -83,17 +74,8 @@ namespace embree
     {
       while(flag.load())
       {
-// -- GODOT start --
-#if !(defined (__WIN32__) && defined(__MINGW32__))
-// -- GODOT end --
-        _mm_pause(); 
         _mm_pause();
-// -- GODOT start --
-#else
-        __builtin_ia32_pause();
-        __builtin_ia32_pause();
-#endif
-// -- GODOT end --
+        _mm_pause();
       }
     }
 
