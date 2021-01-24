@@ -178,8 +178,10 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					emit_signal("scroll_started");
 
 					beyond_deadzone = true;
-					// resetting drag_accum here ensures smooth scrolling after reaching deadzone
-					drag_accum = -motion;
+					
+					// Removes the deadzone from drag_accum to remove "jump" to current position
+					drag_accum.x -= deadzone * (drag_accum.x < 0 ? -1 : 1);
+					drag_accum.y -= deadzone * (drag_accum.y < 0 ? -1 : 1);
 				}
 				Vector2 diff = drag_from + drag_accum;
 				if (scroll_h) {
