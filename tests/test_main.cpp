@@ -50,6 +50,7 @@
 #include "test_list.h"
 #include "test_local_vector.h"
 #include "test_lru.h"
+#include "test_marshalls.h"
 #include "test_math.h"
 #include "test_method_bind.h"
 #include "test_node_path.h"
