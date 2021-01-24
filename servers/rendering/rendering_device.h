@@ -1060,6 +1060,12 @@ public:
 
 	virtual RenderingDevice *create_local_device() = 0;
 
+	virtual void set_resource_name(RID p_id, const String p_name) = 0;
+
+	virtual void draw_command_begin_label(String p_label_name, const Color p_color = Color(1, 1, 1, 1)) = 0;
+	virtual void draw_command_insert_label(String p_label_name, const Color p_color = Color(1, 1, 1, 1)) = 0;
+	virtual void draw_command_end_label() = 0;
+
 	static RenderingDevice *get_singleton();
 	RenderingDevice();
 

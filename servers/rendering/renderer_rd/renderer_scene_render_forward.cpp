@@ -1658,6 +1658,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 		// setup sky if used for ambient, reflections, or background
 		if (draw_sky || draw_sky_fog_only || environment_get_reflection_source(p_environment) == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(p_environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
 			RENDER_TIMESTAMP("Setup Sky");
+			RD::get_singleton()->draw_command_begin_label("Setup Sky");
 			CameraMatrix projection = p_cam_projection;
 			if (p_reflection_probe.is_valid()) {
 				CameraMatrix correction;
@@ -1675,6 +1676,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 				// do not try to draw sky if invalid
 				draw_sky = false;
 			}
+			RD::get_singleton()->draw_command_end_label();
 		}
 	} else {
 		clear_color = p_default_bg_color;
@@ -1695,10 +1697,12 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 
 		bool finish_depth = using_ssao || using_sdfgi || using_giprobe;
 		RenderListParameters render_list_params(render_list.elements, render_list.element_count, false, depth_pass_mode, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
+		RD::get_singleton()->draw_command_begin_label("Render Depth Pre-Pass");
 		_render_list_with_threads(&render_list_params, depth_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, finish_depth ? RD::FINAL_ACTION_READ : RD::FINAL_ACTION_CONTINUE, depth_pass_clear);
-
+		RD::get_singleton()->draw_command_end_label();
 		if (render_buffer && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 			RENDER_TIMESTAMP("Resolve Depth Pre-Pass");
+			RD::get_singleton()->draw_command_insert_label("Resolve Depth Pre-Pass");
 			if (depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS || depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE) {
 				static int texture_samples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8, 16 };
 				storage->get_effects()->resolve_gi(render_buffer->depth_msaa, render_buffer->normal_roughness_buffer_msaa, using_giprobe ? render_buffer->giprobe_buffer_msaa : RID(), render_buffer->depth, render_buffer->normal_roughness_buffer, using_giprobe ? render_buffer->giprobe_buffer : RID(), Vector2i(render_buffer->width, render_buffer->height), texture_samples[render_buffer->msaa]);
@@ -1744,9 +1748,9 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 
 		RID framebuffer = using_separate_specular ? opaque_specular_framebuffer : opaque_framebuffer;
 		RenderListParameters render_list_params(render_list.elements, render_list.element_count, false, using_separate_specular ? PASS_MODE_COLOR_SPECULAR : PASS_MODE_COLOR, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
-
+		RD::get_singleton()->draw_command_begin_label("Render Opaque Pass");
 		_render_list_with_threads(&render_list_params, framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, depth_pre_pass ? (continue_depth ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CONTINUE) : RD::INITIAL_ACTION_CLEAR, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
-
+		RD::get_singleton()->draw_command_end_label();
 		if (will_continue_color && using_separate_specular) {
 			// close the specular framebuffer, as it's no longer used
 			RD::get_singleton()->draw_list_begin(render_buffer->specular_only_fb, RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_CONTINUE);
@@ -1763,9 +1767,11 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 		dc.set_depth_correction(true);
 		CameraMatrix cm = (dc * p_cam_projection) * CameraMatrix(p_cam_transform.affine_inverse());
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(opaque_framebuffer, RD::INITIAL_ACTION_CONTINUE, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
+		RD::get_singleton()->draw_command_begin_label("Debug GIProbes");
 		for (int i = 0; i < (int)p_gi_probes.size(); i++) {
 			_debug_giprobe(p_gi_probes[i], draw_list, opaque_framebuffer, cm, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION, 1.0);
 		}
+		RD::get_singleton()->draw_command_end_label();
 		RD::get_singleton()->draw_list_end();
 	}
 
@@ -1778,7 +1784,9 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 		dc.set_depth_correction(true);
 		CameraMatrix cm = (dc * p_cam_projection) * CameraMatrix(p_cam_transform.affine_inverse());
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(opaque_framebuffer, RD::INITIAL_ACTION_CONTINUE, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
+		RD::get_singleton()->draw_command_begin_label("Debug SDFGI");
 		_debug_sdfgi_probes(p_render_buffer, draw_list, opaque_framebuffer, cm);
+		RD::get_singleton()->draw_command_end_label();
 		RD::get_singleton()->draw_list_end();
 	}
 
@@ -1791,8 +1799,9 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 			correction.set_depth_correction(true);
 			projection = correction * p_cam_projection;
 		}
-
+		RD::get_singleton()->draw_command_begin_label("Draw Sky");
 		_draw_sky(can_continue_color, can_continue_depth, opaque_framebuffer, p_environment, projection, p_cam_transform);
+		RD::get_singleton()->draw_command_end_label();
 	}
 
 	if (render_buffer && !can_continue_color && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
@@ -1809,12 +1818,16 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 	if (using_separate_specular) {
 		if (using_sss) {
 			RENDER_TIMESTAMP("Sub Surface Scattering");
+			RD::get_singleton()->draw_command_begin_label("Process Sub Surface Scattering");
 			_process_sss(p_render_buffer, p_cam_projection);
+			RD::get_singleton()->draw_command_end_label();
 		}
 
 		if (using_ssr) {
 			RENDER_TIMESTAMP("Screen Space Reflection");
+			RD::get_singleton()->draw_command_begin_label("Process Screen Space Reflections");
 			_process_ssr(p_render_buffer, render_buffer->color_fb, render_buffer->normal_roughness_buffer, render_buffer->specular, render_buffer->specular, Color(0, 0, 0, 1), p_environment, p_cam_projection, render_buffer->msaa == RS::VIEWPORT_MSAA_DISABLED);
+			RD::get_singleton()->draw_command_end_label();
 		} else {
 			//just mix specular back
 			RENDER_TIMESTAMP("Merge Specular");
@@ -1829,8 +1842,10 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 	render_list.sort_by_reverse_depth_and_priority(true);
 
 	{
+		RD::get_singleton()->draw_command_begin_label("Render Transparent Pass");
 		RenderListParameters render_list_params(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, false, PASS_MODE_COLOR, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
 		_render_list_with_threads(&render_list_params, alpha_framebuffer, can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
+		RD::get_singleton()->draw_command_end_label();
 	}
 
 	if (render_buffer && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
@@ -1869,8 +1884,10 @@ void RendererSceneRenderForward::_render_shadow(RID p_framebuffer, const PagedAr
 		if (p_flip_y) {
 			flip_cull = !flip_cull;
 		}
+		RD::get_singleton()->draw_command_begin_label("Render Shadow");
 		RenderListParameters render_list_params(render_list.elements, render_list.element_count, flip_cull, pass_mode, true, rp_uniform_set, false, Vector2(), p_camera_plane, p_lod_distance_multiplier, p_screen_lod_threshold);
 		_render_list_with_threads(&render_list_params, p_framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, p_begin ? (p_clear_region ? RD::INITIAL_ACTION_CLEAR_REGION : RD::INITIAL_ACTION_CLEAR) : RD::INITIAL_ACTION_CONTINUE, p_end ? RD::FINAL_ACTION_READ : RD::FINAL_ACTION_CONTINUE, Vector<Color>(), 1.0, 0, p_rect);
+		RD::get_singleton()->draw_command_end_label();
 	}
 }
 
@@ -1891,14 +1908,16 @@ void RendererSceneRenderForward::_render_particle_collider_heightfield(RID p_fb,
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), RID(), PagedArray<RID>(), PagedArray<RID>());
 
-	RENDER_TIMESTAMP("Render Collider Heightield");
+	RENDER_TIMESTAMP("Render Collider Heightfield");
 
 	render_list.sort_by_key(false);
 
 	{
 		//regular forward for now
+		RD::get_singleton()->draw_command_begin_label("Render Collider Heightfield");
 		RenderListParameters render_list_params(render_list.elements, render_list.element_count, false, pass_mode, true, rp_uniform_set);
 		_render_list_with_threads(&render_list_params, p_fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ);
+		RD::get_singleton()->draw_command_end_label();
 	}
 }
 

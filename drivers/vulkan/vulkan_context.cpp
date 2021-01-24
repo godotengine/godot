@@ -220,6 +220,7 @@ Error VulkanContext::_initialize_extensions() {
 
 	enabled_extension_count = 0;
 	enabled_layer_count = 0;
+	enabled_debug_utils = false;
 	/* Look for instance extensions */
 	VkBool32 surfaceExtFound = 0;
 	VkBool32 platformSurfaceExtFound = 0;
@@ -251,9 +252,8 @@ Error VulkanContext::_initialize_extensions() {
 				}
 			}
 			if (!strcmp(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, instance_extensions[i].extensionName)) {
-				if (use_validation_layers) {
-					extension_names[enabled_extension_count++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
-				}
+				extension_names[enabled_extension_count++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+				enabled_debug_utils = true;
 			}
 			if (enabled_extension_count >= MAX_EXTENSIONS) {
 				free(instance_extensions);
@@ -436,7 +436,7 @@ Error VulkanContext::_create_physical_device() {
 			" extension.\n\nDo you have a compatible Vulkan installable client driver (ICD) installed?\n"
 			"vkCreateInstance Failure");
 
-	if (use_validation_layers) {
+	if (enabled_debug_utils) {
 		// Setup VK_EXT_debug_utils function pointers always (we use them for
 		// debug labels and names).
 		CreateDebugUtilsMessengerEXT =
@@ -1565,6 +1565,56 @@ void VulkanContext::local_device_free(RID p_local_device) {
 	LocalDevice *ld = local_device_owner.getornull(p_local_device);
 	vkDestroyDevice(ld->device, nullptr);
 	local_device_owner.free(p_local_device);
+}
+
+void VulkanContext::command_begin_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color) {
+	if (!enabled_debug_utils) {
+		return;
+	}
+	VkDebugUtilsLabelEXT label;
+	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+	label.pNext = nullptr;
+	label.pLabelName = p_label_name.utf8().get_data();
+	label.color[0] = p_color[0];
+	label.color[1] = p_color[1];
+	label.color[2] = p_color[2];
+	label.color[3] = p_color[3];
+	CmdBeginDebugUtilsLabelEXT(p_command_buffer, &label);
+}
+
+void VulkanContext::command_insert_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color) {
+	if (!enabled_debug_utils) {
+		return;
+	}
+	VkDebugUtilsLabelEXT label;
+	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+	label.pNext = nullptr;
+	label.pLabelName = p_label_name.utf8().get_data();
+	label.color[0] = p_color[0];
+	label.color[1] = p_color[1];
+	label.color[2] = p_color[2];
+	label.color[3] = p_color[3];
+	CmdInsertDebugUtilsLabelEXT(p_command_buffer, &label);
+}
+
+void VulkanContext::command_end_label(VkCommandBuffer p_command_buffer) {
+	if (!enabled_debug_utils) {
+		return;
+	}
+	CmdEndDebugUtilsLabelEXT(p_command_buffer);
+}
+
+void VulkanContext::set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name) {
+	if (!enabled_debug_utils) {
+		return;
+	}
+	VkDebugUtilsObjectNameInfoEXT name_info;
+	name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+	name_info.pNext = nullptr;
+	name_info.objectType = p_object_type;
+	name_info.objectHandle = p_object_handle;
+	name_info.pObjectName = p_object_name.utf8().get_data();
+	SetDebugUtilsObjectNameEXT(device, &name_info);
 }
 
 VulkanContext::VulkanContext() {

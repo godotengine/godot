@@ -119,6 +119,7 @@ class VulkanContext {
 	bool VK_GOOGLE_display_timing_enabled = true;
 	uint32_t enabled_extension_count = 0;
 	const char *extension_names[MAX_EXTENSIONS];
+	bool enabled_debug_utils = false;
 
 	uint32_t enabled_layer_count = 0;
 	const char *enabled_layers[MAX_LAYERS];
@@ -208,6 +209,11 @@ public:
 	Error prepare_buffers();
 	Error swap_buffers();
 	Error initialize();
+
+	void command_begin_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color);
+	void command_insert_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color);
+	void command_end_label(VkCommandBuffer p_command_buffer);
+	void set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name);
 
 	VulkanContext();
 	virtual ~VulkanContext();
