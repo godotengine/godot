@@ -178,7 +178,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					emit_signal("scroll_started");
 
 					beyond_deadzone = true;
-					
+
 					// Removes the deadzone from drag_accum to remove "jump" to current position
 					drag_accum.x -= deadzone * (drag_accum.x < 0 ? -1 : 1);
 					drag_accum.y -= deadzone * (drag_accum.y < 0 ? -1 : 1);
