@@ -110,7 +110,7 @@ protected:
 	void _setup_giprobes(RID p_render_buffers, const Transform &p_transform, const PagedArray<RID> &p_gi_probes, uint32_t &r_gi_probes_used);
 
 	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, int p_directional_light_count, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_cluster_buffer, uint32_t p_cluster_size, uint32_t p_cluster_max_elements, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_color, float p_screen_lod_threshold) = 0;
-	virtual void _render_shadow(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0) = 0;
+	virtual void _render_shadow(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true) = 0;
 	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
 	virtual void _render_uv2(const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
 	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<GeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) = 0;
@@ -572,6 +572,7 @@ private:
 		uint32_t smallest_subdiv = 0;
 
 		int size = 0;
+		bool use_16_bits = false;
 
 		RID depth;
 		RID fb; //for copying
@@ -582,6 +583,8 @@ private:
 	};
 
 	RID_Owner<ShadowAtlas> shadow_atlas_owner;
+
+	void _update_shadow_atlas(ShadowAtlas *shadow_atlas);
 
 	bool _shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow);
 
@@ -603,9 +606,11 @@ private:
 
 	struct DirectionalShadow {
 		RID depth;
+		RID fb; //when renderign direct
 
 		int light_count = 0;
 		int size = 0;
+		bool use_16_bits = false;
 		int current_light = 0;
 
 		Vector<ShadowShrinkStage> shrink_stages;
@@ -614,6 +619,8 @@ private:
 
 	void _allocate_shadow_shrink_stages(RID p_base, int p_base_size, Vector<ShadowShrinkStage> &shrink_stages, uint32_t p_target_size);
 	void _clear_shadow_shrink_stages(Vector<ShadowShrinkStage> &shrink_stages);
+
+	void _update_directional_shadow_atlas();
 
 	/* SHADOW CUBEMAPS */
 
@@ -624,14 +631,6 @@ private:
 
 	Map<int, ShadowCubemap> shadow_cubemaps;
 	ShadowCubemap *_get_shadow_cubemap(int p_size);
-
-	struct ShadowMap {
-		RID depth;
-		RID fb;
-	};
-
-	Map<Vector2i, ShadowMap> shadow_maps;
-	ShadowMap *_get_shadow_map(const Size2i &p_size);
 
 	void _create_shadow_cubemaps();
 
@@ -1555,7 +1554,7 @@ public:
 	/* SHADOW ATLAS API */
 
 	RID shadow_atlas_create();
-	void shadow_atlas_set_size(RID p_atlas, int p_size);
+	void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = false);
 	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision);
 	bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version);
 	_FORCE_INLINE_ bool shadow_atlas_owns_light_instance(RID p_atlas, RID p_light_intance) {
@@ -1576,7 +1575,7 @@ public:
 		return Size2(atlas->size, atlas->size);
 	}
 
-	void directional_shadow_atlas_set_size(int p_size);
+	void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = false);
 	int get_directional_light_shadow_size(RID p_light_intance);
 	void set_directional_shadow_count(int p_count);
 

@@ -234,18 +234,17 @@ class EffectsRD {
 	} luminance_reduce;
 
 	struct CopyToDPPushConstant {
-		int32_t screen_size[2];
-		int32_t dest_offset[2];
-		float bias;
 		float z_far;
 		float z_near;
 		uint32_t z_flip;
+		uint32_t pad;
+		float screen_rect[4];
 	};
 
 	struct CoptToDP {
 		CubeToDpShaderRD shader;
 		RID shader_version;
-		RID pipeline;
+		PipelineCacheRD pipeline;
 	} cube_to_dp;
 
 	struct BokehPushConstant {
@@ -687,7 +686,7 @@ public:
 
 	void cubemap_roughness(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
 	void make_mipmap(RID p_source_rd_texture, RID p_dest_texture, const Size2i &p_size);
-	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, float p_z_near, float p_z_far, float p_bias, bool p_dp_flip);
+	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dest_texture, const Rect2 &p_rect, float p_z_near, float p_z_far, bool p_dp_flip);
 	void luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
 	void bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i &p_base_texture_size, RID p_secondary_texture, RID p_bokeh_texture1, RID p_bokeh_texture2, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_bokeh_size, RS::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, bool p_use_jitter, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
 

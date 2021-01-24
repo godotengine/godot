@@ -297,6 +297,7 @@ private:
 	DebugDraw debug_draw;
 
 	int shadow_atlas_size;
+	bool shadow_atlas_16_bits = true;
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
 
 	MSAA msaa;
@@ -536,6 +537,9 @@ public:
 
 	void set_shadow_atlas_size(int p_size);
 	int get_shadow_atlas_size() const;
+
+	void set_shadow_atlas_16_bits(bool p_16_bits);
+	bool get_shadow_atlas_16_bits() const;
 
 	void set_shadow_atlas_quadrant_subdiv(int p_quadrant, ShadowAtlasQuadrantSubdiv p_subdiv);
 	ShadowAtlasQuadrantSubdiv get_shadow_atlas_quadrant_subdiv(int p_quadrant) const;

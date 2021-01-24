@@ -655,7 +655,8 @@ void main() {
 		return;
 	}
 
-	vec4 ambient_light = vec4(0.0), reflection_light = vec4(0.0);
+	vec4 ambient_light = vec4(0.0);
+	vec4 reflection_light = vec4(0.0);
 
 	vec3 vertex = reconstruct_position(pos);
 	vertex.y = -vertex.y;
