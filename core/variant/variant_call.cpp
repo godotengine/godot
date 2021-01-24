@@ -1126,10 +1126,6 @@ static void _register_variant_builtin_methods() {
 	bind_method(Quat, cubic_slerp, sarray("b", "pre_a", "post_b", "weight"), varray());
 	bind_method(Quat, get_euler, sarray(), varray());
 
-	// FIXME: Quat is atomic, this should be done via construcror
-	//ADDFUNC1(QUAT, NIL, Quat, set_euler, VECTOR3, "euler", varray());
-	//ADDFUNC2(QUAT, NIL, Quat, set_axis_angle, VECTOR3, "axis", FLOAT, "angle", varray());
-
 	/* Color */
 
 	bind_method(Color, to_argb32, sarray(), varray());
