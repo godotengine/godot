@@ -8,4 +8,7 @@ Do not create a pull request for stable branches unless the change is already
 available in the `master` branch and it cannot be easily cherry-picked.
 Alternatively, if the change is only relevant for that branch (e.g. rendering
 fixes for the 3.2 branch).
+
+If you are adding a new feature please consider documenting it in the official
+Godot documentation here: https://github.com/godotengine/godot-docs.
 -->
