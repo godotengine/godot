@@ -65,19 +65,14 @@ public:
 	Quat inverse() const;
 	_FORCE_INLINE_ real_t dot(const Quat &p_q) const;
 
-	void set_euler_xyz(const Vector3 &p_euler);
 	Vector3 get_euler_xyz() const;
-	void set_euler_yxz(const Vector3 &p_euler);
 	Vector3 get_euler_yxz() const;
-
-	void set_euler(const Vector3 &p_euler) { set_euler_yxz(p_euler); };
 	Vector3 get_euler() const { return get_euler_yxz(); };
 
 	Quat slerp(const Quat &p_to, const real_t &p_weight) const;
 	Quat slerpni(const Quat &p_to, const real_t &p_weight) const;
 	Quat cubic_slerp(const Quat &p_b, const Quat &p_pre_a, const Quat &p_post_b, const real_t &p_weight) const;
 
-	void set_axis_angle(const Vector3 &axis, const real_t &angle);
 	_FORCE_INLINE_ void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		r_angle = 2 * Math::acos(w);
 		real_t r = ((real_t)1) / Math::sqrt(1 - w * w);
@@ -124,23 +119,19 @@ public:
 
 	operator String() const;
 
-	inline void set(real_t p_x, real_t p_y, real_t p_z, real_t p_w) {
-		x = p_x;
-		y = p_y;
-		z = p_z;
-		w = p_w;
-	}
-
 	_FORCE_INLINE_ Quat() {}
+
 	_FORCE_INLINE_ Quat(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
 			x(p_x),
 			y(p_y),
 			z(p_z),
 			w(p_w) {
 	}
-	Quat(const Vector3 &axis, const real_t &angle) { set_axis_angle(axis, angle); }
 
-	Quat(const Vector3 &euler) { set_euler(euler); }
+	Quat(const Vector3 &p_axis, real_t p_angle);
+
+	Quat(const Vector3 &p_euler);
+
 	Quat(const Quat &p_q) :
 			x(p_q.x),
 			y(p_q.y),
