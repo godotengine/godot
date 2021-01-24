@@ -947,7 +947,7 @@ public:
 
 #define PASSBASE scene_render
 
-	PASS1(directional_shadow_atlas_set_size, int)
+	PASS2(directional_shadow_atlas_set_size, int, bool)
 	PASS1(gi_probe_set_quality, RS::GIProbeQuality)
 
 	/* SKY API */
@@ -1030,7 +1030,7 @@ public:
 
 	/* Shadow Atlas */
 	PASS0R(RID, shadow_atlas_create)
-	PASS2(shadow_atlas_set_size, RID, int)
+	PASS3(shadow_atlas_set_size, RID, int, bool)
 	PASS3(shadow_atlas_set_quadrant_subdivision, RID, int, int)
 
 	PASS1(set_debug_draw_mode, RS::ViewportDebugDraw)

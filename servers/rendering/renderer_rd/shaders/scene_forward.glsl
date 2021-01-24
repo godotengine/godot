@@ -1282,7 +1282,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 		} else {
 #endif
 			//hard shadow
-			vec4 shadow_uv = vec4(splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy, z_norm, 1.0);
+			vec4 shadow_uv = vec4(splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy, splane.z, 1.0);
 
 			shadow = sample_pcf_shadow(shadow_atlas, spot_lights.data[idx].soft_shadow_scale * scene_data.shadow_atlas_pixel_size, shadow_uv);
 #ifdef USE_SOFT_SHADOWS

@@ -153,22 +153,22 @@ scene_data;
 #define INSTANCE_FLAGS_SKELETON (1 << 19)
 #define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 20)
 
-layout(set = 0, binding = 5, std430) restrict readonly buffer OmniLights {
+layout(set = 0, binding = 4, std430) restrict readonly buffer OmniLights {
 	LightData data[];
 }
 omni_lights;
 
-layout(set = 0, binding = 6, std430) restrict readonly buffer SpotLights {
+layout(set = 0, binding = 5, std430) restrict readonly buffer SpotLights {
 	LightData data[];
 }
 spot_lights;
 
-layout(set = 0, binding = 7) buffer restrict readonly ReflectionProbeData {
+layout(set = 0, binding = 6) buffer restrict readonly ReflectionProbeData {
 	ReflectionData data[];
 }
 reflections;
 
-layout(set = 0, binding = 8, std140) uniform DirectionalLights {
+layout(set = 0, binding = 7, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
 directional_lights;
@@ -180,7 +180,7 @@ struct Lightmap {
 	mat3 normal_xform;
 };
 
-layout(set = 0, binding = 10, std140) restrict readonly buffer Lightmaps {
+layout(set = 0, binding = 8, std140) restrict readonly buffer Lightmaps {
 	Lightmap data[];
 }
 lightmaps;
@@ -189,22 +189,20 @@ struct LightmapCapture {
 	vec4 sh[9];
 };
 
-layout(set = 0, binding = 11, std140) restrict readonly buffer LightmapCaptures {
+layout(set = 0, binding = 9, std140) restrict readonly buffer LightmapCaptures {
 	LightmapCapture data[];
 }
 lightmap_captures;
 
-layout(set = 0, binding = 12) uniform texture2D decal_atlas;
-layout(set = 0, binding = 13) uniform texture2D decal_atlas_srgb;
+layout(set = 0, binding = 10) uniform texture2D decal_atlas;
+layout(set = 0, binding = 11) uniform texture2D decal_atlas_srgb;
 
-layout(set = 0, binding = 14, std430) restrict readonly buffer Decals {
+layout(set = 0, binding = 12, std430) restrict readonly buffer Decals {
 	DecalData data[];
 }
 decals;
 
-layout(set = 0, binding = 15) uniform texture2D directional_shadow_atlas;
-
-layout(set = 0, binding = 16, std430) restrict readonly buffer GlobalVariableData {
+layout(set = 0, binding = 13, std430) restrict readonly buffer GlobalVariableData {
 	vec4 data[];
 }
 global_variables;
@@ -218,7 +216,7 @@ struct SDFGIProbeCascadeData {
 	float to_cell; // 1/bounds * grid_size
 };
 
-layout(set = 0, binding = 17, std140) uniform SDFGI {
+layout(set = 0, binding = 14, std140) uniform SDFGI {
 	vec3 grid_size;
 	uint max_cascades;
 
@@ -268,13 +266,15 @@ layout(set = 1, binding = 1) uniform textureCubeArray reflection_atlas;
 
 layout(set = 1, binding = 2) uniform texture2D shadow_atlas;
 
-layout(set = 1, binding = 3) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
+layout(set = 1, binding = 3) uniform texture2D directional_shadow_atlas;
+
+layout(set = 1, binding = 4) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
 
 #ifndef LOW_END_MODE
-layout(set = 1, binding = 4) uniform texture3D gi_probe_textures[MAX_GI_PROBES];
+layout(set = 1, binding = 5) uniform texture3D gi_probe_textures[MAX_GI_PROBES];
 #endif
 
-layout(set = 1, binding = 5, std430) buffer restrict readonly ClusterBuffer {
+layout(set = 1, binding = 6, std430) buffer restrict readonly ClusterBuffer {
 	uint data[];
 }
 cluster_buffer;
@@ -283,10 +283,10 @@ cluster_buffer;
 
 #ifdef MODE_RENDER_SDF
 
-layout(r16ui, set = 1, binding = 6) uniform restrict writeonly uimage3D albedo_volume_grid;
-layout(r32ui, set = 1, binding = 7) uniform restrict writeonly uimage3D emission_grid;
-layout(r32ui, set = 1, binding = 8) uniform restrict writeonly uimage3D emission_aniso_grid;
-layout(r32ui, set = 1, binding = 9) uniform restrict uimage3D geom_facing_grid;
+layout(r16ui, set = 1, binding = 7) uniform restrict writeonly uimage3D albedo_volume_grid;
+layout(r32ui, set = 1, binding = 8) uniform restrict writeonly uimage3D emission_grid;
+layout(r32ui, set = 1, binding = 9) uniform restrict writeonly uimage3D emission_aniso_grid;
+layout(r32ui, set = 1, binding = 10) uniform restrict uimage3D geom_facing_grid;
 
 //still need to be present for shaders that use it, so remap them to something
 #define depth_buffer shadow_atlas
@@ -295,17 +295,17 @@ layout(r32ui, set = 1, binding = 9) uniform restrict uimage3D geom_facing_grid;
 
 #else
 
-layout(set = 1, binding = 6) uniform texture2D depth_buffer;
-layout(set = 1, binding = 7) uniform texture2D color_buffer;
+layout(set = 1, binding = 7) uniform texture2D depth_buffer;
+layout(set = 1, binding = 8) uniform texture2D color_buffer;
 
 #ifndef LOW_END_MODE
 
-layout(set = 1, binding = 8) uniform texture2D normal_roughness_buffer;
-layout(set = 1, binding = 9) uniform texture2D ao_buffer;
-layout(set = 1, binding = 10) uniform texture2D ambient_buffer;
-layout(set = 1, binding = 11) uniform texture2D reflection_buffer;
-layout(set = 1, binding = 12) uniform texture2DArray sdfgi_lightprobe_texture;
-layout(set = 1, binding = 13) uniform texture3D sdfgi_occlusion_cascades;
+layout(set = 1, binding = 9) uniform texture2D normal_roughness_buffer;
+layout(set = 1, binding = 10) uniform texture2D ao_buffer;
+layout(set = 1, binding = 11) uniform texture2D ambient_buffer;
+layout(set = 1, binding = 12) uniform texture2D reflection_buffer;
+layout(set = 1, binding = 13) uniform texture2DArray sdfgi_lightprobe_texture;
+layout(set = 1, binding = 14) uniform texture3D sdfgi_occlusion_cascades;
 
 struct GIProbeData {
 	mat4 xform;
@@ -323,12 +323,12 @@ struct GIProbeData {
 	uint mipmaps;
 };
 
-layout(set = 1, binding = 14, std140) uniform GIProbes {
+layout(set = 1, binding = 15, std140) uniform GIProbes {
 	GIProbeData data[MAX_GI_PROBES];
 }
 gi_probes;
 
-layout(set = 1, binding = 15) uniform texture3D volumetric_fog_texture;
+layout(set = 1, binding = 16) uniform texture3D volumetric_fog_texture;
 
 #endif // LOW_END_MODE
 

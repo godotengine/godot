@@ -71,19 +71,19 @@ void main() {
 	group1.y = texelFetch(source_depth, pos, 1).r;
 
 	//4X
-	if (params.sample_count <= 4) {
+	if (params.sample_count >= 4) {
 		group1.z = texelFetch(source_depth, pos, 2).r;
 		group1.w = texelFetch(source_depth, pos, 3).r;
 	}
 	//8X
-	if (params.sample_count <= 8) {
+	if (params.sample_count >= 8) {
 		group2.x = texelFetch(source_depth, pos, 4).r;
 		group2.y = texelFetch(source_depth, pos, 5).r;
 		group2.z = texelFetch(source_depth, pos, 6).r;
 		group2.w = texelFetch(source_depth, pos, 7).r;
 	}
 	//16X
-	if (params.sample_count <= 16) {
+	if (params.sample_count >= 16) {
 		group3.x = texelFetch(source_depth, pos, 8).r;
 		group3.y = texelFetch(source_depth, pos, 9).r;
 		group3.z = texelFetch(source_depth, pos, 10).r;
@@ -115,7 +115,6 @@ void main() {
 		}
 		if (freq.w < min_f) {
 			best_index = 3;
-			min_f = freq.w;
 		}
 	} else if (params.sample_count == 8) {
 		vec4 freq0 = vec4(equal(group1, vec4(group1.x)));

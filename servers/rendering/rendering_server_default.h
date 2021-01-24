@@ -551,7 +551,7 @@ public:
 
 	BIND2(viewport_set_global_canvas_transform, RID, const Transform2D &)
 	BIND4(viewport_set_canvas_stacking, RID, RID, int, int)
-	BIND2(viewport_set_shadow_atlas_size, RID, int)
+	BIND3(viewport_set_shadow_atlas_size, RID, int, bool)
 	BIND3(viewport_set_sdf_oversize_and_scale, RID, ViewportSDFOversize, ViewportSDFScale)
 	BIND3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	BIND2(viewport_set_msaa, RID, ViewportMSAA)
@@ -572,7 +572,7 @@ public:
 //from now on, calls forwarded to this singleton
 #define BINDBASE RSG::scene
 
-	BIND1(directional_shadow_atlas_set_size, int)
+	BIND2(directional_shadow_atlas_set_size, int, bool)
 	BIND1(gi_probe_set_quality, GIProbeQuality)
 
 	/* SKY API */

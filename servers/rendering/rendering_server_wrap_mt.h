@@ -445,7 +445,7 @@ public:
 
 	FUNC2(viewport_set_global_canvas_transform, RID, const Transform2D &)
 	FUNC4(viewport_set_canvas_stacking, RID, RID, int, int)
-	FUNC2(viewport_set_shadow_atlas_size, RID, int)
+	FUNC3(viewport_set_shadow_atlas_size, RID, int, bool)
 	FUNC3(viewport_set_sdf_oversize_and_scale, RID, ViewportSDFOversize, ViewportSDFScale)
 
 	FUNC3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
@@ -470,7 +470,7 @@ public:
 		return rendering_server->viewport_get_measured_render_time_gpu(p_viewport);
 	}
 
-	FUNC1(directional_shadow_atlas_set_size, int)
+	FUNC2(directional_shadow_atlas_set_size, int, bool)
 
 	/* SKY API */
 
