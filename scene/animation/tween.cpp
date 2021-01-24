@@ -1342,6 +1342,10 @@ bool Tween::interpolate_property(Object *p_object, NodePath p_property, Variant 
 		return true;
 	}
 
+	// Check that the target object is valid
+	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
+
 	// Get the property from the node path
 	p_property = p_property.get_as_property_path();
 
@@ -1364,6 +1368,10 @@ bool Tween::interpolate_method(Object *p_object, StringName p_method, Variant p_
 		_add_pending_command("interpolate_method", p_object, p_method, p_initial_val, p_final_val, p_duration, p_trans_type, p_ease_type, p_delay);
 		return true;
 	}
+
+	// Check that the target object is valid
+	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 
 	// Convert any integers into REALs as they are better for interpolation
 	if (p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
