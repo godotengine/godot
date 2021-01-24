@@ -7040,6 +7040,72 @@ void RenderingDeviceVulkan::free(RID p_id) {
 	_free_internal(p_id);
 }
 
+// The full list of resources that can be named is in the VkObjectType enum
+// We just expose the resources that are owned and can be accessed easily.
+void RenderingDeviceVulkan::set_resource_name(RID p_id, const String p_name) {
+	if (texture_owner.owns(p_id)) {
+		Texture *texture = texture_owner.getornull(p_id);
+		if (texture->owner.is_null()) {
+			// Don't set the source texture's name when calling on a texture view
+			context->set_object_name(VK_OBJECT_TYPE_IMAGE, uint64_t(texture->image), p_name);
+		}
+		context->set_object_name(VK_OBJECT_TYPE_IMAGE_VIEW, uint64_t(texture->view), p_name + " View");
+	} else if (framebuffer_owner.owns(p_id)) {
+		//Framebuffer *framebuffer = framebuffer_owner.getornull(p_id);
+		// Not implemented for now as the relationship between Framebuffer and RenderPass is very complex
+	} else if (sampler_owner.owns(p_id)) {
+		VkSampler *sampler = sampler_owner.getornull(p_id);
+		context->set_object_name(VK_OBJECT_TYPE_SAMPLER, uint64_t(*sampler), p_name);
+	} else if (vertex_buffer_owner.owns(p_id)) {
+		Buffer *vertex_buffer = vertex_buffer_owner.getornull(p_id);
+		context->set_object_name(VK_OBJECT_TYPE_BUFFER, uint64_t(vertex_buffer->buffer), p_name);
+	} else if (index_buffer_owner.owns(p_id)) {
+		IndexBuffer *index_buffer = index_buffer_owner.getornull(p_id);
+		context->set_object_name(VK_OBJECT_TYPE_BUFFER, uint64_t(index_buffer->buffer), p_name);
+	} else if (shader_owner.owns(p_id)) {
+		Shader *shader = shader_owner.getornull(p_id);
+		context->set_object_name(VK_OBJECT_TYPE_PIPELINE_LAYOUT, uint64_t(shader->pipeline_layout), p_name + " Pipeline Layout");
+		for (int i = 0; i < shader->sets.size(); i++) {
+			context->set_object_name(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT, uint64_t(shader->sets[i].descriptor_set_layout), p_name);
+		}
+	} else if (uniform_buffer_owner.owns(p_id)) {
+		Buffer *uniform_buffer = uniform_buffer_owner.getornull(p_id);
+		context->set_object_name(VK_OBJECT_TYPE_BUFFER, uint64_t(uniform_buffer->buffer), p_name);
+	} else if (texture_buffer_owner.owns(p_id)) {
+		TextureBuffer *texture_buffer = texture_buffer_owner.getornull(p_id);
+		context->set_object_name(VK_OBJECT_TYPE_BUFFER, uint64_t(texture_buffer->buffer.buffer), p_name);
+		context->set_object_name(VK_OBJECT_TYPE_BUFFER_VIEW, uint64_t(texture_buffer->view), p_name + " View");
+	} else if (storage_buffer_owner.owns(p_id)) {
+		Buffer *storage_buffer = storage_buffer_owner.getornull(p_id);
+		context->set_object_name(VK_OBJECT_TYPE_BUFFER, uint64_t(storage_buffer->buffer), p_name);
+	} else if (uniform_set_owner.owns(p_id)) {
+		UniformSet *uniform_set = uniform_set_owner.getornull(p_id);
+		context->set_object_name(VK_OBJECT_TYPE_DESCRIPTOR_SET, uint64_t(uniform_set->descriptor_set), p_name);
+	} else if (render_pipeline_owner.owns(p_id)) {
+		RenderPipeline *pipeline = render_pipeline_owner.getornull(p_id);
+		context->set_object_name(VK_OBJECT_TYPE_PIPELINE, uint64_t(pipeline->pipeline), p_name);
+		context->set_object_name(VK_OBJECT_TYPE_PIPELINE_LAYOUT, uint64_t(pipeline->pipeline_layout), p_name + " Layout");
+	} else if (compute_pipeline_owner.owns(p_id)) {
+		ComputePipeline *pipeline = compute_pipeline_owner.getornull(p_id);
+		context->set_object_name(VK_OBJECT_TYPE_PIPELINE, uint64_t(pipeline->pipeline), p_name);
+		context->set_object_name(VK_OBJECT_TYPE_PIPELINE_LAYOUT, uint64_t(pipeline->pipeline_layout), p_name + " Layout");
+	} else {
+		ERR_PRINT("Attempted to name invalid ID: " + itos(p_id.get_id()));
+	}
+}
+
+void RenderingDeviceVulkan::draw_command_begin_label(String p_label_name, const Color p_color) {
+	context->command_begin_label(frames[frame].draw_command_buffer, p_label_name, p_color);
+}
+
+void RenderingDeviceVulkan::draw_command_insert_label(String p_label_name, const Color p_color) {
+	context->command_insert_label(frames[frame].draw_command_buffer, p_label_name, p_color);
+}
+
+void RenderingDeviceVulkan::draw_command_end_label() {
+	context->command_end_label(frames[frame].draw_command_buffer);
+}
+
 void RenderingDeviceVulkan::_finalize_command_bufers() {
 	if (draw_list) {
 		ERR_PRINT("Found open draw list at the end of the frame, this should never happen (further drawing will likely not work).");
