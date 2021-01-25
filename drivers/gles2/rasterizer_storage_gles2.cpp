@@ -4820,7 +4820,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 			rt->depth = 0;
 			texture->tex_id = 0;
 			texture->active = false;
-			WARN_PRINT("Could not create framebuffer!!");
+			ERR_PRINT("Couldn't create framebuffer. Is the framebuffer size too large for the target hardware?");
 			return;
 		}
 
