@@ -62,7 +62,7 @@ const Engine = (function () {
 			// Emscripten configuration.
 			config['thisProgram'] = me.executableName;
 			config['noExitRuntime'] = true;
-			config['dynamicLibraries'] = me.gdnativeLibs;
+			config['dynamicLibraries'] = [`${me.executableName}.side.wasm`].concat(me.gdnativeLibs);
 			Godot(config).then(function (module) {
 				module['initFS'](me.persistentPaths).then(function (fs_err) {
 					me.rtenv = module;
