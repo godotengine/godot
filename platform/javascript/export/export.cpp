@@ -135,6 +135,7 @@ public:
 		s += "Access-Control-Allow-Origin: *\r\n";
 		s += "Cross-Origin-Opener-Policy: same-origin\r\n";
 		s += "Cross-Origin-Embedder-Policy: require-corp\r\n";
+		s += "Cache-Control: no-store, max-age=0\r\n";
 		s += "\r\n";
 		CharString cs = s.utf8();
 		Error err = connection->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
