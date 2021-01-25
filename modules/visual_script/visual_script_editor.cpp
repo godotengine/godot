@@ -981,6 +981,10 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 	}
 
 	_update_graph_connections();
+
+	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
+	graph->set_minimap_opacity(graph_minimap_opacity);
+
 	// Use default_func instead of default_func for now I think that should be good stop gap solution to ensure not breaking anything.
 	graph->call_deferred("set_scroll_ofs", script->get_scroll() * EDSCALE);
 	updating_graph = false;
@@ -4326,6 +4330,8 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph->connect("duplicate_nodes_request", callable_mp(this, &VisualScriptEditor::_on_nodes_duplicate));
 	graph->connect("gui_input", callable_mp(this, &VisualScriptEditor::_graph_gui_input));
 	graph->set_drag_forwarding(this);
+	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
+	graph->set_minimap_opacity(graph_minimap_opacity);
 	graph->hide();
 	graph->connect("scroll_offset_changed", callable_mp(this, &VisualScriptEditor::_graph_ofs_changed));
 
