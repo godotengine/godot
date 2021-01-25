@@ -795,6 +795,7 @@ public:
 			lightmaps.set_page_pool(p_rid_pool);
 			reflections.set_page_pool(p_rid_pool);
 			decals.set_page_pool(p_rid_pool);
+			gi_probes.set_page_pool(p_rid_pool);
 			mesh_instances.set_page_pool(p_rid_pool);
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
@@ -946,7 +947,7 @@ public:
 
 #define PASSBASE scene_render
 
-	PASS1(directional_shadow_atlas_set_size, int)
+	PASS2(directional_shadow_atlas_set_size, int, bool)
 	PASS1(gi_probe_set_quality, RS::GIProbeQuality)
 
 	/* SKY API */
@@ -995,6 +996,7 @@ public:
 	PASS11(environment_set_sdfgi, RID, bool, RS::EnvironmentSDFGICascades, float, RS::EnvironmentSDFGIYScale, bool, bool, bool, float, float, float)
 	PASS1(environment_set_sdfgi_ray_count, RS::EnvironmentSDFGIRayCount)
 	PASS1(environment_set_sdfgi_frames_to_converge, RS::EnvironmentSDFGIFramesToConverge)
+	PASS1(environment_set_sdfgi_frames_to_update_light, RS::EnvironmentSDFGIFramesToUpdateLight)
 
 	PASS1RC(RS::EnvironmentBG, environment_get_background, RID)
 	PASS1RC(int, environment_get_canvas_max_layer, RID)
@@ -1024,10 +1026,11 @@ public:
 
 	PASS0R(RID, render_buffers_create)
 	PASS7(render_buffers_configure, RID, RID, int, int, RS::ViewportMSAA, RS::ViewportScreenSpaceAA, bool)
+	PASS1(gi_set_use_half_resolution, bool)
 
 	/* Shadow Atlas */
 	PASS0R(RID, shadow_atlas_create)
-	PASS2(shadow_atlas_set_size, RID, int)
+	PASS3(shadow_atlas_set_size, RID, int, bool)
 	PASS3(shadow_atlas_set_quadrant_subdivision, RID, int, int)
 
 	PASS1(set_debug_draw_mode, RS::ViewportDebugDraw)

@@ -498,6 +498,11 @@ void EditorNode::_notification(int p_what) {
 				float sss_scale = GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_scale");
 				float sss_depth_scale = GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale");
 				RS::get_singleton()->sub_surface_scattering_set_scale(sss_scale, sss_depth_scale);
+
+				uint32_t directional_shadow_size = GLOBAL_GET("rendering/quality/directional_shadow/size");
+				uint32_t directional_shadow_16_bits = GLOBAL_GET("rendering/quality/directional_shadow/16_bits");
+				RS::get_singleton()->directional_shadow_atlas_set_size(directional_shadow_size, directional_shadow_16_bits);
+
 				RS::ShadowQuality shadows_quality = RS::ShadowQuality(int(GLOBAL_GET("rendering/quality/shadows/soft_shadow_quality")));
 				RS::get_singleton()->shadows_quality_set(shadows_quality);
 				RS::ShadowQuality directional_shadow_quality = RS::ShadowQuality(int(GLOBAL_GET("rendering/quality/directional_shadow/soft_shadow_quality")));
@@ -515,6 +520,9 @@ void EditorNode::_notification(int p_what) {
 				RS::get_singleton()->environment_set_volumetric_fog_directional_shadow_shrink_size(GLOBAL_GET("rendering/volumetric_fog/directional_shadow_shrink"));
 				RS::get_singleton()->environment_set_volumetric_fog_positional_shadow_shrink_size(GLOBAL_GET("rendering/volumetric_fog/positional_shadow_shrink"));
 				RS::get_singleton()->canvas_set_shadow_texture_size(GLOBAL_GET("rendering/quality/2d_shadow_atlas/size"));
+
+				bool use_half_res_gi = GLOBAL_DEF("rendering/quality/gi/use_half_resolution", false);
+				RS::get_singleton()->gi_set_use_half_resolution(use_half_res_gi);
 
 				bool snap_2d_transforms = GLOBAL_GET("rendering/quality/2d/snap_2d_transforms_to_pixel");
 				scene_root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);

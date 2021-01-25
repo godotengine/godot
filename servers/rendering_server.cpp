@@ -1661,7 +1661,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_transparent_background", "viewport", "enabled"), &RenderingServer::viewport_set_transparent_background);
 	ClassDB::bind_method(D_METHOD("viewport_set_global_canvas_transform", "viewport", "transform"), &RenderingServer::viewport_set_global_canvas_transform);
 	ClassDB::bind_method(D_METHOD("viewport_set_canvas_stacking", "viewport", "canvas", "layer", "sublayer"), &RenderingServer::viewport_set_canvas_stacking);
-	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_size", "viewport", "size"), &RenderingServer::viewport_set_shadow_atlas_size);
+	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_size", "viewport", "size", "use_16_bits"), &RenderingServer::viewport_set_shadow_atlas_size, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_quadrant_subdivision", "viewport", "quadrant", "subdivision"), &RenderingServer::viewport_set_shadow_atlas_quadrant_subdivision);
 	ClassDB::bind_method(D_METHOD("viewport_set_msaa", "viewport", "msaa"), &RenderingServer::viewport_set_msaa);
 	ClassDB::bind_method(D_METHOD("viewport_set_use_debanding", "viewport", "enable"), &RenderingServer::viewport_set_use_debanding);
@@ -2272,6 +2272,7 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/quality/directional_shadow/soft_shadow_quality", 2);
 	GLOBAL_DEF("rendering/quality/directional_shadow/soft_shadow_quality.mobile", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/directional_shadow/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/quality/directional_shadow/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
+	GLOBAL_DEF("rendering/quality/directional_shadow/16_bits", true);
 
 	GLOBAL_DEF("rendering/quality/shadows/soft_shadow_quality", 2);
 	GLOBAL_DEF("rendering/quality/shadows/soft_shadow_quality.mobile", 0);
@@ -2282,18 +2283,6 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/quality/rd_renderer/use_low_end_renderer", false);
 	GLOBAL_DEF("rendering/quality/rd_renderer/use_low_end_renderer.mobile", true);
 
-	GLOBAL_DEF("rendering/quality/shadow_atlas/size", 4096);
-	GLOBAL_DEF("rendering/quality/shadow_atlas/size.mobile", 2048);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
-	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_0_subdiv", 1);
-	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_1_subdiv", 2);
-	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_2_subdiv", 3);
-	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_3_subdiv", 4);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_0_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_1_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_2_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_2_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_3_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_3_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-
 	GLOBAL_DEF("rendering/quality/reflections/roughness_layers", 8);
 	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections", true);
 	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections.mobile", false);
@@ -2303,6 +2292,8 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_size", 256);
 	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_size.mobile", 128);
 	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_count", 64);
+
+	GLOBAL_DEF("rendering/quality/gi/use_half_resolution", false);
 
 	GLOBAL_DEF("rendering/quality/gi_probes/anisotropic", false);
 	GLOBAL_DEF("rendering/quality/gi_probes/quality", 1);
@@ -2367,10 +2358,12 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/lightmapper/probe_capture_update_speed", 15);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/lightmapper/probe_capture_update_speed", PropertyInfo(Variant::FLOAT, "rendering/lightmapper/probe_capture_update_speed", PROPERTY_HINT_RANGE, "0.001,256,0.001"));
 
-	GLOBAL_DEF("rendering/sdfgi/probe_ray_count", 2);
+	GLOBAL_DEF("rendering/sdfgi/probe_ray_count", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/probe_ray_count", PropertyInfo(Variant::INT, "rendering/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"));
-	GLOBAL_DEF("rendering/sdfgi/frames_to_converge", 1);
+	GLOBAL_DEF("rendering/sdfgi/frames_to_converge", 4);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/frames_to_converge", PropertyInfo(Variant::INT, "rendering/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"));
+	GLOBAL_DEF("rendering/sdfgi/frames_to_update_lights", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/frames_to_update_lights", PropertyInfo(Variant::INT, "rendering/sdfgi/frames_to_update_lights", PROPERTY_HINT_ENUM, "1 (Slower),2,4,8,16 (Faster)"));
 
 	GLOBAL_DEF("rendering/volumetric_fog/volume_size", 64);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/volume_size", PropertyInfo(Variant::INT, "rendering/volumetric_fog/volume_size", PROPERTY_HINT_RANGE, "16,512,1"));
