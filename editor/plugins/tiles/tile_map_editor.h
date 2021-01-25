@@ -119,6 +119,7 @@ private:
 
 	void _mouse_exited_viewport();
 
+	Vector<Vector2i> _get_line(Vector2i p_from_cell, Vector2i p_to_cell);
 	Map<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2i p_to_mouse_pos);
 	Map<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_mouse_pos, Vector2i p_end_mouse_pos);
 	Map<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous);

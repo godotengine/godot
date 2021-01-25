@@ -399,42 +399,37 @@ public:
 	static Vector<Point2i> bresenham_line(const Point2i &p_start, const Point2i &p_end) {
 		Vector<Point2i> points;
 
-		float dx = ABS(p_end.x - p_start.x);
-		float dy = ABS(p_end.y - p_start.y);
+		Vector2i delta = (p_end - p_start).abs() * 2;
+		Vector2i step = (p_end - p_start).sign();
+		Vector2i current = p_start;
 
-		int x = p_start.x;
-		int y = p_start.y;
+		if (delta.x > delta.y) {
+			int err = delta.x / 2;
 
-		int sx = p_start.x > p_end.x ? -1 : 1;
-		int sy = p_start.y > p_end.y ? -1 : 1;
+			for (; current.x != p_end.x; current.x += step.x) {
+				points.push_back(current);
 
-		if (dx > dy) {
-			float err = dx / 2;
-
-			for (; x != p_end.x; x += sx) {
-				points.push_back(Point2i(x, y));
-
-				err -= dy;
+				err -= delta.y;
 				if (err < 0) {
-					y += sy;
-					err += dx;
+					current.y += step.y;
+					err += delta.x;
 				}
 			}
 		} else {
-			float err = dy / 2;
+			int err = delta.y / 2;
 
-			for (; y != p_end.y; y += sy) {
-				points.push_back(Point2i(x, y));
+			for (; current.y != p_end.y; current.y += step.y) {
+				points.push_back(current);
 
-				err -= dx;
+				err -= delta.x;
 				if (err < 0) {
-					x += sx;
-					err += dy;
+					current.x += step.x;
+					err += delta.y;
 				}
 			}
 		}
 
-		points.push_back(Vector2(x, y));
+		points.push_back(current);
 
 		return points;
 	}

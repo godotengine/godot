@@ -189,6 +189,19 @@ void TileMapEditor::_mouse_exited_viewport() {
 	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
+Vector<Vector2i> TileMapEditor::_get_line(Vector2i p_from_cell, Vector2i p_to_cell) {
+	ERR_FAIL_COND_V(!tile_map, Vector<Vector2i>());
+
+	Ref<TileSet> tile_set = tile_map->get_tileset();
+	ERR_FAIL_COND_V(!tile_set.is_valid(), Vector<Vector2i>());
+
+	if (tile_set->get_tile_shape() == TileSet::TILE_SHAPE_SQUARE) {
+		return Geometry2D::bresenham_line(p_from_cell, p_to_cell);
+	} else {
+		return Vector<Vector2i>();
+	}
+}
+
 Map<Vector2i, TileMapCell> TileMapEditor::_draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2i p_to_mouse_pos) {
 	if (!tile_map) {
 		return Map<Vector2i, TileMapCell>();
@@ -213,7 +226,7 @@ Map<Vector2i, TileMapCell> TileMapEditor::_draw_line(Vector2 p_start_drag_mouse_
 		Vector2i new_hovered_cell = tile_map->world_to_map(p_to_mouse_pos - mouse_offset);
 		Vector2i drag_start_cell = tile_map->world_to_map(p_start_drag_mouse_pos - mouse_offset);
 		Vector2i offset = Vector2i(Math::posmod(drag_start_cell.x, pattern->get_size().x), Math::posmod(drag_start_cell.y, pattern->get_size().y)); // Note: no posmodv for Vector2i for now. Meh.
-		Vector<Vector2i> line = Geometry2D::bresenham_line((last_hovered_cell - offset) / pattern->get_size(), (new_hovered_cell - offset) / pattern->get_size());
+		Vector<Vector2i> line = _get_line((last_hovered_cell - offset) / pattern->get_size(), (new_hovered_cell - offset) / pattern->get_size());
 
 		// Paint the tiles on the tile map.
 		for (int i = 0; i < line.size(); i++) {
@@ -385,7 +398,7 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 				tile_map->set_cell(coords, E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
 			}
 		} else if (drag_type == DRAG_TYPE_BUCKET) {
-			Vector<Vector2i> line = Geometry2D::bresenham_line(tile_map->world_to_map(drag_last_mouse_pos), tile_map->world_to_map(mpos));
+			Vector<Vector2i> line = _get_line(tile_map->world_to_map(drag_last_mouse_pos), tile_map->world_to_map(mpos));
 			for (int i = 0; i < line.size(); i++) {
 				if (!drag_modified.has(line[i])) {
 					Map<Vector2i, TileMapCell> to_draw = _draw_bucket_fill(line[i], tilemap_bucket_continuous_checkbox->is_pressed());
@@ -446,7 +459,7 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 						drag_type = DRAG_TYPE_BUCKET;
 						drag_start_mouse_pos = mpos;
 						drag_modified.clear();
-						Vector<Vector2i> line = Geometry2D::bresenham_line(tile_map->world_to_map(drag_last_mouse_pos), tile_map->world_to_map(mpos));
+						Vector<Vector2i> line = _get_line(tile_map->world_to_map(drag_last_mouse_pos), tile_map->world_to_map(mpos));
 						for (int i = 0; i < line.size(); i++) {
 							if (!drag_modified.has(line[i])) {
 								Map<Vector2i, TileMapCell> to_draw = _draw_bucket_fill(line[i], tilemap_bucket_continuous_checkbox->is_pressed());
