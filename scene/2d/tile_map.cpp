@@ -37,14 +37,16 @@
 #include "scene/resources/tile_set/tile_set_atlas_plugin_rendering.h"
 
 void TileMapPattern::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) {
-	ERR_FAIL_COND_MSG(p_coords.x < 0 || p_coords.y < 0, "Cannot set cell with negative coords in a TileMapPattern.");
+	ERR_FAIL_COND_MSG(p_coords.x < 0 || p_coords.y < 0, vformat("Cannot set cell with negative coords in a TileMapPattern. Wrong coords: %s", p_coords));
 
 	size = size.max(p_coords + Vector2i(1, 1));
 	pattern[p_coords] = TileMapCell(p_source_id, p_atlas_coords, p_alternative_tile);
 }
+
 bool TileMapPattern::has_cell(const Vector2i &p_coords) {
 	return pattern.has(p_coords);
 }
+
 void TileMapPattern::remove_cell(const Vector2i &p_coords, bool p_update_size) {
 	ERR_FAIL_COND(!pattern.has(p_coords));
 
@@ -56,16 +58,19 @@ void TileMapPattern::remove_cell(const Vector2i &p_coords, bool p_update_size) {
 		}
 	}
 }
+
 int TileMapPattern::get_cell_source_id(const Vector2i &p_coords) const {
 	ERR_FAIL_COND_V(!pattern.has(p_coords), -1);
 
 	return pattern[p_coords].source_id;
 }
+
 Vector2i TileMapPattern::get_cell_atlas_coords(const Vector2i &p_coords) const {
 	ERR_FAIL_COND_V(!pattern.has(p_coords), TileAtlasSource::INVALID_ATLAS_COORDS);
 
 	return pattern[p_coords].get_atlas_coords();
 }
+
 int TileMapPattern::get_cell_alternative_tile(const Vector2i &p_coords) const {
 	ERR_FAIL_COND_V(!pattern.has(p_coords), TileAtlasSource::INVALID_TILE_ALTERNATIVE);
 
@@ -88,6 +93,7 @@ TypedArray<Vector2i> TileMapPattern::get_used_cells() const {
 Vector2i TileMapPattern::get_size() const {
 	return size;
 }
+
 void TileMapPattern::set_size(const Vector2i &p_size) {
 	for (Map<Vector2i, TileMapCell>::Element *E = pattern.front(); E; E = E->next()) {
 		Vector2i coords = E->key();
@@ -98,8 +104,14 @@ void TileMapPattern::set_size(const Vector2i &p_size) {
 
 	size = p_size;
 }
+
 bool TileMapPattern::is_empty() {
 	return pattern.is_empty();
+};
+
+void TileMapPattern::clear() {
+	size = Vector2i();
+	pattern.clear();
 };
 
 void TileMapPattern::_bind_methods() {

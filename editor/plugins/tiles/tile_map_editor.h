@@ -62,11 +62,13 @@ private:
 
 	void _update_fix_selected_and_hovered();
 
-	void _get_pattern_from_set(const Set<TileMapCell> &p_set, TileMapPattern &r_pattern);
 	bool tile_set_dragging_selection = false;
 	Vector2i tile_set_drag_start_mouse_pos;
-	Set<TileMapCell> tile_set_selection;
 	TileMapCell hovered_tile;
+	Set<TileMapCell> tile_set_selection;
+	TileMapPattern tile_set_selection_pattern;
+	void _update_selection_pattern_from_tileset_selection();
+	void _update_tileset_selection_from_selection_pattern();
 
 	Control *tile_atlas_control;
 	void _tile_atlas_control_mouse_exited();
@@ -89,12 +91,12 @@ private:
 	Button *tilemap_line_tool_button;
 	Button *tilemap_rect_tool_button;
 	Button *tilemap_bucket_tool_button;
-	Button *tilemap_picker_tool_button;
+	Button *tilemap_picker_button;
 
 	HBoxContainer *tilemap_tools_settings;
 	VSeparator *tilemap_tools_settings_vsep;
-	Button *erase_button;
-	Button *bucket_continuous_checkbox;
+	Button *tilemap_erase_button;
+	Button *tilemap_bucket_continuous_checkbox;
 
 	void _update_toolbar();
 
@@ -108,6 +110,7 @@ private:
 		DRAG_TYPE_LINE,
 		DRAG_TYPE_RECT,
 		DRAG_TYPE_BUCKET,
+		DRAG_TYPE_PICK,
 	};
 	DragType drag_type = DRAG_TYPE_NONE;
 	Vector2 drag_start_mouse_pos;

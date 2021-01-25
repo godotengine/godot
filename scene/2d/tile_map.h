@@ -143,6 +143,8 @@ public:
 	Vector2i get_size() const;
 	void set_size(const Vector2i &p_size);
 	bool is_empty();
+
+	void clear();
 };
 
 class TileMap : public Node2D {
