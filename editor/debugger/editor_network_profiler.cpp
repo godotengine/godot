@@ -46,8 +46,8 @@ void EditorNetworkProfiler::_notification(int p_what) {
 		outgoing_bandwidth_text->set_right_icon(get_theme_icon("ArrowUp", "EditorIcons"));
 
 		// This needs to be done here to set the faded color when the profiler is first opened
-		incoming_bandwidth_text->add_theme_color_override("font_color_uneditable", get_theme_color("font_color", "Editor") * Color(1, 1, 1, 0.5));
-		outgoing_bandwidth_text->add_theme_color_override("font_color_uneditable", get_theme_color("font_color", "Editor") * Color(1, 1, 1, 0.5));
+		incoming_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color("font_color", "Editor") * Color(1, 1, 1, 0.5));
+		outgoing_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color("font_color", "Editor") * Color(1, 1, 1, 0.5));
 	}
 }
 
@@ -113,10 +113,10 @@ void EditorNetworkProfiler::set_bandwidth(int p_incoming, int p_outgoing) {
 
 	// Make labels more prominent when the bandwidth is greater than 0 to attract user attention
 	incoming_bandwidth_text->add_theme_color_override(
-			"font_color_uneditable",
+			"font_uneditable_color",
 			get_theme_color("font_color", "Editor") * Color(1, 1, 1, p_incoming > 0 ? 1 : 0.5));
 	outgoing_bandwidth_text->add_theme_color_override(
-			"font_color_uneditable",
+			"font_uneditable_color",
 			get_theme_color("font_color", "Editor") * Color(1, 1, 1, p_outgoing > 0 ? 1 : 0.5));
 }
 

@@ -770,8 +770,8 @@ void LineEdit::_notification(int p_what) {
 			int y_ofs = style->get_offset().y + (y_area - text_height) / 2;
 
 			Color selection_color = get_theme_color("selection_color");
-			Color font_color = is_editable() ? get_theme_color("font_color") : get_theme_color("font_color_uneditable");
-			Color font_color_selected = get_theme_color("font_color_selected");
+			Color font_color = is_editable() ? get_theme_color("font_color") : get_theme_color("font_uneditable_color");
+			Color font_selected_color = get_theme_color("font_selected_color");
 			Color cursor_color = get_theme_color("cursor_color");
 
 			// Draw placeholder color.
@@ -839,9 +839,9 @@ void LineEdit::_notification(int p_what) {
 				for (int j = 0; j < glyphs[i].repeat; j++) {
 					if (ceil(ofs.x) >= x_ofs && (ofs.x + glyphs[i].advance) <= ofs_max) {
 						if (glyphs[i].font_rid != RID()) {
-							TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_color_selected : font_color);
+							TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : font_color);
 						} else if ((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-							TS->draw_hex_code_box(ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_color_selected : font_color);
+							TS->draw_hex_code_box(ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : font_color);
 						}
 					}
 					ofs.x += glyphs[i].advance;

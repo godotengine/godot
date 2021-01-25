@@ -619,7 +619,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					if (vsnode->get_input_port_default_hint(i) != "" && !port_left_used) {
 						Label *hint_label = memnew(Label);
 						hint_label->set_text("[" + vsnode->get_input_port_default_hint(i) + "]");
-						hint_label->add_theme_color_override("font_color", VisualShaderEditor::get_singleton()->get_theme_color("font_color_readonly", "TextEdit"));
+						hint_label->add_theme_color_override("font_color", VisualShaderEditor::get_singleton()->get_theme_color("font_readonly_color", "TextEdit"));
 						hint_label->add_theme_style_override("normal", label_style);
 						hb->add_child(hint_label);
 					}

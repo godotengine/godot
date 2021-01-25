@@ -102,8 +102,8 @@ void Button::_notification(int p_what) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
 					}
 					color = get_theme_color("font_color");
-					if (has_theme_color("icon_color_normal")) {
-						color_icon = get_theme_color("icon_color_normal");
+					if (has_theme_color("icon_normal_color")) {
+						color_icon = get_theme_color("icon_normal_color");
 					}
 				} break;
 				case DRAW_HOVER_PRESSED: {
@@ -117,13 +117,13 @@ void Button::_notification(int p_what) {
 						if (!flat) {
 							style->draw(ci, Rect2(Point2(0, 0), size));
 						}
-						if (has_theme_color("font_color_hover_pressed")) {
-							color = get_theme_color("font_color_hover_pressed");
+						if (has_theme_color("font_hover_pressed_color")) {
+							color = get_theme_color("font_hover_pressed_color");
 						} else {
 							color = get_theme_color("font_color");
 						}
-						if (has_theme_color("icon_color_hover_pressed")) {
-							color_icon = get_theme_color("icon_color_hover_pressed");
+						if (has_theme_color("icon_hover_pressed_color")) {
+							color_icon = get_theme_color("icon_hover_pressed_color");
 						}
 
 						break;
@@ -140,13 +140,13 @@ void Button::_notification(int p_what) {
 					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
 					}
-					if (has_theme_color("font_color_pressed")) {
-						color = get_theme_color("font_color_pressed");
+					if (has_theme_color("font_pressed_color")) {
+						color = get_theme_color("font_pressed_color");
 					} else {
 						color = get_theme_color("font_color");
 					}
-					if (has_theme_color("icon_color_pressed")) {
-						color_icon = get_theme_color("icon_color_pressed");
+					if (has_theme_color("icon_pressed_color")) {
+						color_icon = get_theme_color("icon_pressed_color");
 					}
 
 				} break;
@@ -160,9 +160,9 @@ void Button::_notification(int p_what) {
 					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
 					}
-					color = get_theme_color("font_color_hover");
-					if (has_theme_color("icon_color_hover")) {
-						color_icon = get_theme_color("icon_color_hover");
+					color = get_theme_color("font_hover_color");
+					if (has_theme_color("icon_hover_color")) {
+						color_icon = get_theme_color("icon_hover_color");
 					}
 
 				} break;
@@ -176,9 +176,9 @@ void Button::_notification(int p_what) {
 					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
 					}
-					color = get_theme_color("font_color_disabled");
-					if (has_theme_color("icon_color_disabled")) {
-						color_icon = get_theme_color("icon_color_disabled");
+					color = get_theme_color("font_disabled_color");
+					if (has_theme_color("icon_disabled_color")) {
+						color_icon = get_theme_color("icon_disabled_color");
 					}
 
 				} break;
@@ -303,10 +303,10 @@ void Button::_notification(int p_what) {
 				text_ofs.x -= icon_ofs.x;
 			}
 
-			Color font_outline_modulate = get_theme_color("font_outline_modulate");
+			Color font_outline_color = get_theme_color("font_outline_color");
 			int outline_size = get_theme_constant("outline_size");
-			if (outline_size > 0 && font_outline_modulate.a > 0) {
-				text_buf->draw_outline(ci, text_ofs.floor(), outline_size, font_outline_modulate);
+			if (outline_size > 0 && font_outline_color.a > 0) {
+				text_buf->draw_outline(ci, text_ofs.floor(), outline_size, font_outline_color);
 			}
 
 			text_buf->draw(ci, text_ofs.floor(), color);

@@ -621,8 +621,8 @@ void EditorNode::_notification(int p_what) {
 			gui_base->add_theme_style_override("panel", gui_base->get_theme_stylebox("Background", "EditorStyles"));
 			scene_root_parent->add_theme_style_override("panel", gui_base->get_theme_stylebox("Content", "EditorStyles"));
 			bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox("panel", "TabContainer"));
-			scene_tabs->add_theme_style_override("tab_fg", gui_base->get_theme_stylebox("SceneTabFG", "EditorStyles"));
-			scene_tabs->add_theme_style_override("tab_bg", gui_base->get_theme_stylebox("SceneTabBG", "EditorStyles"));
+			scene_tabs->add_theme_style_override("tab_selected", gui_base->get_theme_stylebox("SceneTabFG", "EditorStyles"));
+			scene_tabs->add_theme_style_override("tab_unselected", gui_base->get_theme_stylebox("SceneTabBG", "EditorStyles"));
 
 			file_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
 			project_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
@@ -5975,8 +5975,8 @@ EditorNode::EditorNode() {
 	tab_preview_panel->add_child(tab_preview);
 
 	scene_tabs = memnew(Tabs);
-	scene_tabs->add_theme_style_override("tab_fg", gui_base->get_theme_stylebox("SceneTabFG", "EditorStyles"));
-	scene_tabs->add_theme_style_override("tab_bg", gui_base->get_theme_stylebox("SceneTabBG", "EditorStyles"));
+	scene_tabs->add_theme_style_override("tab_selected", gui_base->get_theme_stylebox("SceneTabFG", "EditorStyles"));
+	scene_tabs->add_theme_style_override("tab_unselected", gui_base->get_theme_stylebox("SceneTabBG", "EditorStyles"));
 	scene_tabs->set_select_with_rmb(true);
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_align(Tabs::ALIGN_LEFT);
@@ -6019,7 +6019,7 @@ EditorNode::EditorNode() {
 	tabbar_container->add_child(distraction_free);
 	scene_tab_add->set_tooltip(TTR("Add a new scene."));
 	scene_tab_add->set_icon(gui_base->get_theme_icon("Add", "EditorIcons"));
-	scene_tab_add->add_theme_color_override("icon_color_normal", Color(0.6f, 0.6f, 0.6f, 0.8f));
+	scene_tab_add->add_theme_color_override("icon_normal_color", Color(0.6f, 0.6f, 0.6f, 0.8f));
 	scene_tab_add->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(FILE_NEW_SCENE));
 
 	scene_root_parent = memnew(PanelContainer);
