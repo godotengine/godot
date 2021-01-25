@@ -819,7 +819,7 @@ void RendererSceneRenderForward::_render_list_template(RenderingDevice::DrawList
 		ShaderData *shader;
 		void *mesh_surface;
 
-		if (shadow_pass) {
+		if (shadow_pass || p_params->pass_mode == PASS_MODE_DEPTH) { //regular depth pass can use these too
 			material_uniform_set = surf->material_uniform_set_shadow;
 			shader = surf->shader_shadow;
 			mesh_surface = surf->surface_shadow;
@@ -2645,10 +2645,17 @@ void RendererSceneRenderForward::_geometry_instance_add_surface_with_material(Ge
 	}
 
 	MaterialData *material_shadow = nullptr;
-	//void *surface_shadow = nullptr;
+	void *surface_shadow = nullptr;
 	if (!p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_pre_pass) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SHARED_SHADOW_MATERIAL;
 		material_shadow = (MaterialData *)storage->material_get_data(default_material, RendererStorageRD::SHADER_TYPE_3D);
+
+		RID shadow_mesh = storage->mesh_get_shadow_mesh(p_mesh);
+
+		if (shadow_mesh.is_valid()) {
+			surface_shadow = storage->mesh_get_surface(shadow_mesh, p_surface);
+		}
+
 	} else {
 		material_shadow = p_material;
 	}
@@ -2670,7 +2677,8 @@ void RendererSceneRenderForward::_geometry_instance_add_surface_with_material(Ge
 	//shadow
 	sdcache->shader_shadow = material_shadow->shader_data;
 	sdcache->material_uniform_set_shadow = material_shadow->uniform_set;
-	sdcache->surface_shadow = sdcache->surface; //when adding special shadow meshes, will use this
+
+	sdcache->surface_shadow = surface_shadow ? surface_shadow : sdcache->surface;
 
 	sdcache->owner = ginstance;
 
