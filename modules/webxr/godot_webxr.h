@@ -61,6 +61,7 @@ extern void godot_webxr_initialize(
 		GodotWebXRSimpleEventCallback p_on_simple_event);
 extern void godot_webxr_uninitialize();
 
+extern int godot_webxr_get_view_count();
 extern int *godot_webxr_get_render_targetsize();
 extern float *godot_webxr_get_transform_for_eye(int p_eye);
 extern float *godot_webxr_get_projection_for_eye(int p_eye);
