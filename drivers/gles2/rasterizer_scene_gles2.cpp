@@ -132,7 +132,7 @@ void RasterizerSceneGLES2::shadow_atlas_set_size(RID p_atlas, int p_size) {
 			//maximum compatibility, renderbuffer and RGBA shadow
 			glGenRenderbuffers(1, &shadow_atlas->depth);
 			glBindRenderbuffer(GL_RENDERBUFFER, shadow_atlas->depth);
-			glRenderbufferStorage(GL_RENDERBUFFER, storage->config.depth_internalformat, shadow_atlas->size, shadow_atlas->size);
+			glRenderbufferStorage(GL_RENDERBUFFER, storage->config.depth_buffer_internalformat, shadow_atlas->size, shadow_atlas->size);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, shadow_atlas->depth);
 
 			glGenTextures(1, &shadow_atlas->color);
@@ -549,7 +549,7 @@ bool RasterizerSceneGLES2::reflection_probe_instance_begin_render(RID p_instance
 		glActiveTexture(GL_TEXTURE0);
 
 		glBindRenderbuffer(GL_RENDERBUFFER, rpi->depth);
-		glRenderbufferStorage(GL_RENDERBUFFER, storage->config.depth_internalformat, size, size);
+		glRenderbufferStorage(GL_RENDERBUFFER, storage->config.depth_buffer_internalformat, size, size);
 
 		if (rpi->cubemap != 0) {
 			glDeleteTextures(1, &rpi->cubemap);
