@@ -791,12 +791,11 @@ class ObjectDB {
 	friend class Object;
 	friend void unregister_core_types();
 
-	static RWLock *rw_lock;
+	static RWLock rw_lock;
 	static void cleanup();
 	static ObjectID add_instance(Object *p_object);
 	static void remove_instance(Object *p_object);
 	friend void register_core_types();
-	static void setup();
 
 public:
 	typedef void (*DebugFunc)(Object *p_obj);
@@ -806,11 +805,11 @@ public:
 	static int get_object_count();
 
 	_FORCE_INLINE_ static bool instance_validate(Object *p_ptr) {
-		rw_lock->read_lock();
+		rw_lock.read_lock();
 
 		bool exists = instance_checks.has(p_ptr);
 
-		rw_lock->read_unlock();
+		rw_lock.read_unlock();
 
 		return exists;
 	}

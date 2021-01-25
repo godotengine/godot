@@ -362,9 +362,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 		}
 
 		//lock first if possible
-		if (ResourceCache::lock) {
-			ResourceCache::lock->read_lock();
-		}
+		ResourceCache::lock.read_lock();
 
 		//get ptr
 		Resource **rptr = ResourceCache::resources.getptr(local_path);
@@ -376,16 +374,12 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 				//referencing is fine
 				if (r_error)
 					*r_error = OK;
-				if (ResourceCache::lock) {
-					ResourceCache::lock->read_unlock();
-				}
+				ResourceCache::lock.read_unlock();
 				_remove_from_loading_map(local_path);
 				return res;
 			}
 		}
-		if (ResourceCache::lock) {
-			ResourceCache::lock->read_unlock();
-		}
+		ResourceCache::lock.read_unlock();
 	}
 
 	bool xl_remapped = false;
@@ -851,9 +845,7 @@ String ResourceLoader::path_remap(const String &p_path) {
 
 void ResourceLoader::reload_translation_remaps() {
 
-	if (ResourceCache::lock) {
-		ResourceCache::lock->read_lock();
-	}
+	ResourceCache::lock.read_lock();
 
 	List<Resource *> to_reload;
 	SelfList<Resource> *E = remapped_list.first();
@@ -863,9 +855,7 @@ void ResourceLoader::reload_translation_remaps() {
 		E = E->next();
 	}
 
-	if (ResourceCache::lock) {
-		ResourceCache::lock->read_unlock();
-	}
+	ResourceCache::lock.read_unlock();
 
 	//now just make sure to not delete any of these resources while changing locale..
 	while (to_reload.front()) {

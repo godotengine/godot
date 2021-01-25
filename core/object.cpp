@@ -2068,30 +2068,30 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 
 	ERR_FAIL_COND_V(p_object->get_instance_id() != 0, 0);
 
-	rw_lock->write_lock();
+	rw_lock.write_lock();
 	ObjectID instance_id = ++instance_counter;
 	instances[instance_id] = p_object;
 	instance_checks[p_object] = instance_id;
 
-	rw_lock->write_unlock();
+	rw_lock.write_unlock();
 
 	return instance_id;
 }
 
 void ObjectDB::remove_instance(Object *p_object) {
 
-	rw_lock->write_lock();
+	rw_lock.write_lock();
 
 	instances.erase(p_object->get_instance_id());
 	instance_checks.erase(p_object);
 
-	rw_lock->write_unlock();
+	rw_lock.write_unlock();
 }
 Object *ObjectDB::get_instance(ObjectID p_instance_id) {
 
-	rw_lock->read_lock();
+	rw_lock.read_lock();
 	Object **obj = instances.getptr(p_instance_id);
-	rw_lock->read_unlock();
+	rw_lock.read_unlock();
 
 	if (!obj)
 		return NULL;
@@ -2100,7 +2100,7 @@ Object *ObjectDB::get_instance(ObjectID p_instance_id) {
 
 void ObjectDB::debug_objects(DebugFunc p_func) {
 
-	rw_lock->read_lock();
+	rw_lock.read_lock();
 
 	const ObjectID *K = NULL;
 	while ((K = instances.next(K))) {
@@ -2108,7 +2108,7 @@ void ObjectDB::debug_objects(DebugFunc p_func) {
 		p_func(instances[*K]);
 	}
 
-	rw_lock->read_unlock();
+	rw_lock.read_unlock();
 }
 
 void Object::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
@@ -2116,23 +2116,18 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 
 int ObjectDB::get_object_count() {
 
-	rw_lock->read_lock();
+	rw_lock.read_lock();
 	int count = instances.size();
-	rw_lock->read_unlock();
+	rw_lock.read_unlock();
 
 	return count;
 }
 
-RWLock *ObjectDB::rw_lock = NULL;
-
-void ObjectDB::setup() {
-
-	rw_lock = RWLock::create();
-}
+RWLock ObjectDB::rw_lock;
 
 void ObjectDB::cleanup() {
 
-	rw_lock->write_lock();
+	rw_lock.write_lock();
 	if (instances.size()) {
 
 		WARN_PRINT("ObjectDB instances leaked at exit (run with --verbose for details).");
@@ -2159,6 +2154,5 @@ void ObjectDB::cleanup() {
 	}
 	instances.clear();
 	instance_checks.clear();
-	rw_lock->write_unlock();
-	memdelete(rw_lock);
+	rw_lock.write_unlock();
 }

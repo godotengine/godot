@@ -99,8 +99,6 @@ extern void unregister_variant_methods();
 
 void register_core_types() {
 
-	ObjectDB::setup();
-	ResourceCache::setup();
 	MemoryPool::setup();
 
 	_global_mutex = Mutex::create();

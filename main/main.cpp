@@ -352,8 +352,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	engine = memnew(Engine);
 
-	ClassDB::init();
-
 	MAIN_PRINT("Main: Initialize CORE");
 
 	register_core_types();
