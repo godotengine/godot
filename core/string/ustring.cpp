@@ -1409,8 +1409,9 @@ String String::num(double p_num, int p_decimals) {
 				if (digit == MAX_DIGITS) //no point in going to infinite
 					break;
 
-				if ((dec - (double)((int)dec)) < 1e-6)
+				if (dec - (double)((int)dec) < 1e-6) {
 					break;
+				}
 			}
 
 			if (digit == p_decimals)
@@ -3255,8 +3256,8 @@ float String::similarity(const String &p_string) const {
 	int src_size = src_bigrams.size();
 	int tgt_size = tgt_bigrams.size();
 
-	double sum = src_size + tgt_size;
-	double inter = 0;
+	int sum = src_size + tgt_size;
+	int inter = 0;
 	for (int i = 0; i < src_size; i++) {
 		for (int j = 0; j < tgt_size; j++) {
 			if (src_bigrams[i] == tgt_bigrams[j]) {

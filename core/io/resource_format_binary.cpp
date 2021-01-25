@@ -261,11 +261,11 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			r_v = v;
 		} break;
 		case VARIANT_COLOR: {
-			Color v;
-			v.r = f->get_real();
-			v.g = f->get_real();
-			v.b = f->get_real();
-			v.a = f->get_real();
+			Color v; // Colors should always be in single-precision.
+			v.r = f->get_float();
+			v.g = f->get_float();
+			v.b = f->get_float();
+			v.a = f->get_float();
 			r_v = v;
 
 		} break;

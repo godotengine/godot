@@ -78,14 +78,14 @@ struct Color {
 	void operator-=(const Color &p_color);
 
 	Color operator*(const Color &p_color) const;
-	Color operator*(real_t p_rvalue) const;
+	Color operator*(float p_scalar) const;
 	void operator*=(const Color &p_color);
-	void operator*=(real_t p_rvalue);
+	void operator*=(float p_scalar);
 
 	Color operator/(const Color &p_color) const;
-	Color operator/(real_t p_rvalue) const;
+	Color operator/(float p_scalar) const;
 	void operator/=(const Color &p_color);
-	void operator/=(real_t p_rvalue);
+	void operator/=(float p_scalar);
 
 	bool is_equal_approx(const Color &p_color) const;
 
@@ -259,8 +259,8 @@ bool Color::operator<(const Color &p_color) const {
 	}
 }
 
-_FORCE_INLINE_ Color operator*(real_t p_real, const Color &p_color) {
-	return p_color * p_real;
+_FORCE_INLINE_ Color operator*(float p_scalar, const Color &p_color) {
+	return p_color * p_scalar;
 }
 
 #endif // COLOR_H

@@ -1212,7 +1212,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Basis, transposed, sarray(), varray());
 	bind_method(Basis, orthonormalized, sarray(), varray());
 	bind_method(Basis, determinant, sarray(), varray());
-	bind_methodv(Basis, rotated, static_cast<Basis (Basis::*)(const Vector3 &, float) const>(&Basis::rotated), sarray("axis", "phi"), varray());
+	bind_methodv(Basis, rotated, static_cast<Basis (Basis::*)(const Vector3 &, real_t) const>(&Basis::rotated), sarray("axis", "phi"), varray());
 	bind_method(Basis, scaled, sarray("scale"), varray());
 	bind_method(Basis, get_scale, sarray(), varray());
 	bind_method(Basis, get_euler, sarray(), varray());
