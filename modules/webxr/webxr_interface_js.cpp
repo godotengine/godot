@@ -199,12 +199,11 @@ StringName WebXRInterfaceJS::get_name() const {
 };
 
 int WebXRInterfaceJS::get_capabilities() const {
-	return ARVRInterface::ARVR_STEREO;
+	return ARVRInterface::ARVR_STEREO | ARVRInterface::ARVR_MONO;
 };
 
 bool WebXRInterfaceJS::is_stereo() {
-	// @todo WebXR can be mono! So, how do we know? Count the views in the frame?
-	return true;
+	return godot_webxr_get_view_count() == 2;
 };
 
 bool WebXRInterfaceJS::is_initialized() const {
