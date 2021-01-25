@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A material that uses a custom [Shader] program to render either items to screen or process particles. You can create multiple materials for the same shader but configure different values for the uniforms defined in the shader.
+		[b]Note:[/b] Due to a renderer limitation, emissive [ShaderMaterial]s cannot emit light when used in a [GIProbe]. Only emissive [SpatialMaterial]s can emit light in a [GIProbe].
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/3.2/tutorials/shading/index.html</link>
