@@ -99,7 +99,7 @@ godot_class_constructor GDAPI godot_get_class_constructor(const char *p_classnam
 
 godot_dictionary GDAPI godot_get_global_constants() {
 	godot_dictionary constants;
-	godot_dictionary_new(&constants);
+	memnew_placement(&constants, Dictionary);
 	Dictionary *p_constants = (Dictionary *)&constants;
 	const int constants_count = CoreConstants::get_global_constant_count();
 	for (int i = 0; i < constants_count; ++i) {
@@ -125,18 +125,6 @@ void GDAPI *godot_realloc(void *p_ptr, int p_bytes) {
 
 void GDAPI godot_free(void *p_ptr) {
 	memfree(p_ptr);
-}
-
-void GDAPI godot_print_error(const char *p_description, const char *p_function, const char *p_file, int p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_ERROR);
-}
-
-void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_WARNING);
-}
-
-void GDAPI godot_print(const godot_string *p_message) {
-	print_line(*(String *)p_message);
 }
 
 void _gdnative_report_version_mismatch(const godot_object *p_library, const char *p_ext, godot_gdnative_api_version p_want, godot_gdnative_api_version p_have) {

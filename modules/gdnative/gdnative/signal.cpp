@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  node_path.cpp                                                        */
+/*  signal.cpp                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gdnative/node_path.h"
+#include "gdnative/signal.h"
 
-#include "core/string/node_path.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
 
-static_assert(sizeof(godot_node_path) == sizeof(NodePath), "NodePath size mismatch");
+static_assert(sizeof(godot_signal) == sizeof(Signal), "Signal size mismatch");
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void GDAPI godot_node_path_new(godot_node_path *p_self) {
-	memnew_placement(p_self, NodePath);
+void GDAPI godot_signal_new(godot_signal *p_self) {
+	memnew_placement(p_self, Signal);
 }
 
-void GDAPI godot_node_path_destroy(godot_node_path *p_self) {
-	NodePath *self = (NodePath *)p_self;
-	self->~NodePath();
+void GDAPI godot_signal_destroy(godot_signal *p_self) {
+	Signal *self = (Signal *)p_self;
+	self->~Signal();
 }
 
 #ifdef __cplusplus
