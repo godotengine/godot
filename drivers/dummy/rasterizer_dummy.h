@@ -66,11 +66,11 @@ public:
 	/* SHADOW ATLAS API */
 
 	RID shadow_atlas_create() override { return RID(); }
-	void shadow_atlas_set_size(RID p_atlas, int p_size) override {}
+	void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = false) override {}
 	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override {}
 	bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) override { return false; }
 
-	void directional_shadow_atlas_set_size(int p_size) override {}
+	void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = false) override {}
 	int get_directional_light_shadow_size(RID p_light_intance) override { return 0; }
 	void set_directional_shadow_count(int p_count) override {}
 
@@ -116,6 +116,7 @@ public:
 
 	void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) override {}
 	void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) override {}
+	void environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) override {}
 
 	void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) override {}
 
@@ -189,6 +190,7 @@ public:
 
 	RID render_buffers_create() override { return RID(); }
 	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding) override {}
+	void gi_set_use_half_resolution(bool p_enable) override {}
 
 	void screen_space_roughness_limiter_set_active(bool p_enable, float p_amount, float p_curve) override {}
 	bool screen_space_roughness_limiter_is_active() const override { return false; }
