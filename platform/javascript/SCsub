@@ -41,8 +41,6 @@ if env["gdnative_enabled"]:
     sys_env["LIBS"] = []
     # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
     sys_env.Append(LIBS=["idbfs.js"])
-    # JS prepended to the module code loading the side library.
-    sys_env.Append(LINKFLAGS=["--pre-js", sys_env.File("js/dynlink.pre.js")])
     # Configure it as a main module (dynamic linking support).
     sys_env.Append(CCFLAGS=["-s", "MAIN_MODULE=1"])
     sys_env.Append(LINKFLAGS=["-s", "MAIN_MODULE=1"])
@@ -52,7 +50,6 @@ if env["gdnative_enabled"]:
     sys_env["ENV"]["EMCC_FORCE_STDLIBS"] = "libc,libc++,libc++abi"
     # The main emscripten runtime, with exported standard libraries.
     sys = sys_env.Program(build_targets, ["javascript_runtime.cpp"])
-    sys_env.Depends(sys, "js/dynlink.pre.js")
 
     # The side library, containing all Godot code.
     wasm_env = env.Clone()
@@ -96,7 +93,13 @@ out_files = [
     zip_dir.File(binary_name + ".html"),
     zip_dir.File(binary_name + ".audio.worklet.js"),
 ]
-html_file = "#misc/dist/html/editor.html" if env["tools"] else "#misc/dist/html/full-size.html"
+html_file = "#misc/dist/html/full-size.html"
+if env["tools"]:
+    subst_dict = {"\$GODOT_VERSION": env.GetBuildVersion()}
+    html_file = env.Substfile(
+        target="#bin/godot${PROGSUFFIX}.html", source="#misc/dist/html/editor.html", SUBST_DICT=subst_dict
+    )
+
 in_files = [js_wrapped, build[1], html_file, "#platform/javascript/js/libs/audio.worklet.js"]
 if env["gdnative_enabled"]:
     in_files.append(build[2])  # Runtime
