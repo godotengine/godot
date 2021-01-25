@@ -2609,6 +2609,12 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 
 	mesh->dependency.changed_notify(DEPENDENCY_CHANGED_MESH);
 
+	for (Set<Mesh *>::Element *E = mesh->shadow_owners.front(); E; E = E->next()) {
+		Mesh *shadow_owner = E->get();
+		shadow_owner->shadow_mesh = RID();
+		shadow_owner->dependency.changed_notify(DEPENDENCY_CHANGED_MESH);
+	}
+
 	mesh->material_cache.clear();
 }
 
@@ -2824,6 +2830,25 @@ AABB RendererStorageRD::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 	return aabb;
 }
 
+void RendererStorageRD::mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+
+	Mesh *shadow_mesh = mesh_owner.getornull(mesh->shadow_mesh);
+	if (shadow_mesh) {
+		shadow_mesh->shadow_owners.erase(mesh);
+	}
+	mesh->shadow_mesh = p_shadow_mesh;
+
+	shadow_mesh = mesh_owner.getornull(mesh->shadow_mesh);
+
+	if (shadow_mesh) {
+		shadow_mesh->shadow_owners.insert(mesh);
+	}
+
+	mesh->dependency.changed_notify(DEPENDENCY_CHANGED_MESH);
+}
+
 void RendererStorageRD::mesh_clear(RID p_mesh) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
@@ -2871,6 +2896,12 @@ void RendererStorageRD::mesh_clear(RID p_mesh) {
 	}
 	mesh->has_bone_weights = false;
 	mesh->dependency.changed_notify(DEPENDENCY_CHANGED_MESH);
+
+	for (Set<Mesh *>::Element *E = mesh->shadow_owners.front(); E; E = E->next()) {
+		Mesh *shadow_owner = E->get();
+		shadow_owner->shadow_mesh = RID();
+		shadow_owner->dependency.changed_notify(DEPENDENCY_CHANGED_MESH);
+	}
 }
 
 bool RendererStorageRD::mesh_needs_instance(RID p_mesh, bool p_has_skeleton) {
@@ -8161,10 +8192,18 @@ bool RendererStorageRD::free(RID p_rid) {
 		material_owner.free(p_rid);
 	} else if (mesh_owner.owns(p_rid)) {
 		mesh_clear(p_rid);
+		mesh_set_shadow_mesh(p_rid, RID());
 		Mesh *mesh = mesh_owner.getornull(p_rid);
 		mesh->dependency.deleted_notify(p_rid);
 		if (mesh->instances.size()) {
 			ERR_PRINT("deleting mesh with active instances");
+		}
+		if (mesh->shadow_owners.size()) {
+			for (Set<Mesh *>::Element *E = mesh->shadow_owners.front(); E; E = E->next()) {
+				Mesh *shadow_owner = E->get();
+				shadow_owner->shadow_mesh = RID();
+				shadow_owner->dependency.changed_notify(DEPENDENCY_CHANGED_MESH);
+			}
 		}
 		mesh_owner.free(p_rid);
 	} else if (mesh_instance_owner.owns(p_rid)) {
@@ -8172,6 +8211,7 @@ bool RendererStorageRD::free(RID p_rid) {
 		_mesh_instance_clear(mi);
 		mi->mesh->instances.erase(mi->I);
 		mi->I = nullptr;
+
 		mesh_instance_owner.free(p_rid);
 		memdelete(mi);
 

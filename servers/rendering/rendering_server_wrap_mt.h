@@ -172,6 +172,7 @@ public:
 	FUNC2(mesh_set_custom_aabb, RID, const AABB &)
 	FUNC1RC(AABB, mesh_get_custom_aabb, RID)
 
+	FUNC2(mesh_set_shadow_mesh, RID, RID)
 	FUNC1(mesh_clear, RID)
 
 	/* MULTIMESH API */

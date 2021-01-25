@@ -478,6 +478,9 @@ private:
 
 		List<MeshInstance *> instances;
 
+		RID shadow_mesh;
+		Set<Mesh *> shadow_owners;
+
 		Dependency dependency;
 	};
 
@@ -1423,6 +1426,7 @@ public:
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
 
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID());
+	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh);
 
 	virtual void mesh_clear(RID p_mesh);
 
@@ -1459,6 +1463,13 @@ public:
 		ERR_FAIL_UNSIGNED_INDEX_V(p_surface_index, mesh->surface_count, nullptr);
 
 		return mesh->surfaces[p_surface_index];
+	}
+
+	_FORCE_INLINE_ RID mesh_get_shadow_mesh(RID p_mesh) {
+		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND_V(!mesh, RID());
+
+		return mesh->shadow_mesh;
 	}
 
 	_FORCE_INLINE_ RS::PrimitiveType mesh_surface_get_primitive(void *p_surface) {

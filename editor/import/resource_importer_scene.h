@@ -121,7 +121,7 @@ class ResourceImporterScene : public ResourceImporter {
 	};
 
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
-	void _generate_meshes(Node *p_node, bool p_generate_lods);
+	void _generate_meshes(Node *p_node, bool p_generate_lods, bool p_create_shadow_meshes);
 
 public:
 	static ResourceImporterScene *get_singleton() { return singleton; }

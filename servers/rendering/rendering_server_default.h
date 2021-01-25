@@ -274,6 +274,8 @@ public:
 	BIND2(mesh_set_custom_aabb, RID, const AABB &)
 	BIND1RC(AABB, mesh_get_custom_aabb, RID)
 
+	BIND2(mesh_set_shadow_mesh, RID, RID)
+
 	BIND1(mesh_clear, RID)
 
 	/* MULTIMESH API */

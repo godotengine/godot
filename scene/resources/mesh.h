@@ -176,6 +176,7 @@ class ArrayMesh : public Mesh {
 
 	Array _get_surfaces() const;
 	void _set_surfaces(const Array &p_data);
+	Ref<ArrayMesh> shadow_mesh;
 
 private:
 	struct Surface {
@@ -258,6 +259,9 @@ public:
 	Error lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache, const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
 
 	virtual void reload_from_file() override;
+
+	void set_shadow_mesh(const Ref<ArrayMesh> &p_mesh);
+	Ref<ArrayMesh> get_shadow_mesh() const;
 
 	ArrayMesh();
 

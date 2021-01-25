@@ -234,6 +234,8 @@ public:
 
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) = 0;
 
+	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) = 0;
+
 	virtual void mesh_clear(RID p_mesh) = 0;
 
 	virtual bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) = 0;

@@ -250,6 +250,11 @@ Ref<ArrayMesh> EditorSceneImporterMesh::get_mesh() {
 				mesh->surface_set_name(mesh->get_surface_count() - 1, surfaces[i].name);
 			}
 		}
+
+		if (shadow_mesh.is_valid()) {
+			Ref<ArrayMesh> shadow = shadow_mesh->get_mesh();
+			mesh->set_shadow_mesh(shadow);
+		}
 	}
 
 	return mesh;
@@ -259,6 +264,103 @@ void EditorSceneImporterMesh::clear() {
 	surfaces.clear();
 	blend_shapes.clear();
 	mesh.unref();
+}
+
+void EditorSceneImporterMesh::create_shadow_mesh() {
+	if (shadow_mesh.is_valid()) {
+		shadow_mesh.unref();
+	}
+
+	//no shadow mesh for blendshapes
+	if (blend_shapes.size() > 0) {
+		return;
+	}
+	//no shadow mesh for skeletons
+	for (int i = 0; i < surfaces.size(); i++) {
+		if (surfaces[i].arrays[RS::ARRAY_BONES].get_type() != Variant::NIL) {
+			return;
+		}
+		if (surfaces[i].arrays[RS::ARRAY_WEIGHTS].get_type() != Variant::NIL) {
+			return;
+		}
+	}
+
+	shadow_mesh.instance();
+
+	for (int i = 0; i < surfaces.size(); i++) {
+		LocalVector<int> vertex_remap;
+		Vector<Vector3> new_vertices;
+		Vector<Vector3> vertices = surfaces[i].arrays[RS::ARRAY_VERTEX];
+		int vertex_count = vertices.size();
+		{
+			Map<Vector3, int> unique_vertices;
+			const Vector3 *vptr = vertices.ptr();
+			for (int j = 0; j < vertex_count; j++) {
+				Vector3 v = vptr[j];
+
+				Map<Vector3, int>::Element *E = unique_vertices.find(v);
+
+				if (E) {
+					vertex_remap.push_back(E->get());
+				} else {
+					int vcount = unique_vertices.size();
+					unique_vertices[v] = vcount;
+					vertex_remap.push_back(vcount);
+					new_vertices.push_back(v);
+				}
+			}
+		}
+
+		Array new_surface;
+		new_surface.resize(RS::ARRAY_MAX);
+		Dictionary lods;
+
+		//		print_line("original vertex count: " + itos(vertices.size()) + " new vertex count: " + itos(new_vertices.size()));
+
+		new_surface[RS::ARRAY_VERTEX] = new_vertices;
+
+		Vector<int> indices = surfaces[i].arrays[RS::ARRAY_INDEX];
+		if (indices.size()) {
+			int index_count = indices.size();
+			const int *index_rptr = indices.ptr();
+			Vector<int> new_indices;
+			new_indices.resize(indices.size());
+			int *index_wptr = new_indices.ptrw();
+
+			for (int j = 0; j < index_count; j++) {
+				int index = index_rptr[j];
+				ERR_FAIL_INDEX(index, vertex_count);
+				index_wptr[j] = vertex_remap[index];
+			}
+
+			new_surface[RS::ARRAY_INDEX] = new_indices;
+
+			// Make sure the same LODs as the full version are used.
+			// This makes it more coherent between rendered model and its shadows.
+			for (int j = 0; j < surfaces[i].lods.size(); j++) {
+				indices = surfaces[i].lods[j].indices;
+
+				index_count = indices.size();
+				index_rptr = indices.ptr();
+				new_indices.resize(indices.size());
+				index_wptr = new_indices.ptrw();
+
+				for (int k = 0; k < index_count; k++) {
+					int index = index_rptr[j];
+					ERR_FAIL_INDEX(index, vertex_count);
+					index_wptr[j] = vertex_remap[index];
+				}
+
+				lods[surfaces[i].lods[j].distance] = new_indices;
+			}
+		}
+
+		shadow_mesh->add_surface(surfaces[i].primitive, new_surface, Array(), lods, Ref<Material>(), surfaces[i].name);
+	}
+}
+
+Ref<EditorSceneImporterMesh> EditorSceneImporterMesh::get_shadow_mesh() const {
+	return shadow_mesh;
 }
 
 void EditorSceneImporterMesh::_set_data(const Dictionary &p_data) {
