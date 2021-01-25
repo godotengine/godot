@@ -15,6 +15,15 @@ def run_closure_compiler(target, source, env, for_signature):
     return " ".join(cmd)
 
 
+def get_build_version(env):
+    import version
+
+    name = "custom_build"
+    if os.getenv("BUILD_NAME") != None:
+        name = os.getenv("BUILD_NAME")
+    return "%d.%d.%d.%s.%s" % (version.major, version.minor, version.patch, version.status, name)
+
+
 def create_engine_file(env, target, source, externs):
     if env["use_closure_compiler"]:
         return env.BuildJS(target, source, JSEXTERNS=externs)
