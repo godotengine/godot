@@ -219,7 +219,8 @@ void EditorSettingsDialog::_update_shortcuts() {
 			section = shortcuts->create_item(root);
 
 			String item_name = section_name.capitalize();
-			section->set_text(0, item_name);
+			section->set_text(0, TTR(item_name));
+			section->set_tooltip(0, item_name);
 
 			if (collapsed.has(item_name)) {
 				section->set_collapsed(collapsed[item_name]);

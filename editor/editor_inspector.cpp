@@ -1622,6 +1622,9 @@ void EditorInspector::update_tree() {
 
 	Color sscolor = get_theme_color("prop_subsection", "Editor");
 
+	bool _translation = (bool)EditorSettings::get_singleton()->get("interface/editor/editor_setting_translation");
+	bool _name_translation = (bool)EditorSettings::get_singleton()->get("interface/editor/property_name_translation");
+
 	for (List<Ref<EditorInspectorPlugin>>::Element *E = valid_plugins.front(); E; E = E->next()) {
 		Ref<EditorInspectorPlugin> ped = E->get();
 		ped->parse_begin(object);
@@ -1704,7 +1707,7 @@ void EditorInspector::update_tree() {
 				}
 			}
 			category->label = type;
-
+			_translation = _name_translation;
 			category->bg_color = get_theme_color("prop_category", "Editor");
 			if (use_doc_hints) {
 				StringName type2 = p.name;
@@ -1829,7 +1832,8 @@ void EditorInspector::update_tree() {
 
 					Color c = sscolor;
 					c.a /= level;
-					section->setup(acc_path, path_name, object, c, use_folding);
+					section->setup(acc_path, _translation ? TTR(path_name) : path_name, object, c, use_folding);
+					section->set_tooltip(path_name);
 
 					VBoxContainer *vb = section->get_vbox();
 					item_path[acc_path] = vb;
@@ -1939,7 +1943,7 @@ void EditorInspector::update_tree() {
 							ep->set_label(F->get().label);
 						} else {
 							//use existin one
-							ep->set_label(name);
+							ep->set_label(_translation ? TTR(name) : name);
 						}
 						for (int i = 0; i < F->get().properties.size(); i++) {
 							String prop = F->get().properties[i];

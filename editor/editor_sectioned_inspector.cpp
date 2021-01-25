@@ -30,6 +30,7 @@
 
 #include "editor_sectioned_inspector.h"
 
+#include "editor_node.h"
 #include "editor_scale.h"
 
 class SectionedInspectorFilter : public Object {
@@ -221,6 +222,8 @@ void SectionedInspector::update_category_list() {
 		filter = search_box->get_text();
 	}
 
+	bool name_translation = (bool)EditorSettings::get_singleton()->get("interface/editor/property_name_translation");
+
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 		PropertyInfo pi = E->get();
 
@@ -261,7 +264,9 @@ void SectionedInspector::update_category_list() {
 			if (!section_map.has(metasection)) {
 				TreeItem *ms = sections->create_item(parent);
 				section_map[metasection] = ms;
-				ms->set_text(0, sectionarr[i].capitalize());
+				String item_name = sectionarr[i].capitalize();
+				ms->set_text(0, name_translation ? TTR(item_name) : item_name);
+				ms->set_tooltip(0, item_name);
 				ms->set_metadata(0, metasection);
 				ms->set_selectable(0, false);
 			}
