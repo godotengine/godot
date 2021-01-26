@@ -8,14 +8,14 @@
 # Jarmo Riikonen <amatrelan@gmail.com>, 2017.
 # Nuutti Varvikko <nvarvikko@gmail.com>, 2018.
 # Sami Lehtilä <sami.lehtila@gmail.com>, 2018.
-# Tapani Niemi <tapani.niemi@kapsi.fi>, 2018, 2019, 2020.
+# Tapani Niemi <tapani.niemi@kapsi.fi>, 2018, 2019, 2020, 2021.
 # Tuomas Lähteenmäki <lahtis@gmail.com>, 2019.
 # Matti Niskanen <matti.t.niskanen@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-29 21:52+0000\n"
+"PO-Revision-Date: 2021-01-21 11:57+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2384,7 +2384,7 @@ msgstr "Suoritettavaa skeneä ei ole määritetty."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Tallenna skene ennen ajamista..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -5147,14 +5147,12 @@ msgid "Assets ZIP File"
 msgstr "Assettien zip-tiedosto"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
 "Lightmap-kuvien tallennuspolun määrittäminen ei onnistu.\n"
-"Tallenna skenesi (jotta kuvat tallentuisivat samaan hakemistoon), tai "
-"valitse tallennuspolku BakedLightmapin asetuksista."
+"Tallenna skenesi ja yritä uudelleen."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5173,26 +5171,31 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
 msgstr ""
+"Lightmapin koon määrittäminen epäonnistui. Suurin lightmapin koko liian "
+"pieni?"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
 msgstr ""
+"Jokin mesh on virheellinen. Varmista, että UV2-kanavan arvot ovat [0.0, 1.0] "
+"välisen neliön alueella."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
+"Godot-editori on käännetty ilman ray tracing -tukea, joten lightmappeja ei "
+"voi kehittää."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Kehitä Lightmapit"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "Valitse mallitiedosto"
+msgstr "Valitse lightmapin kehitystiedosto:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6288,9 +6291,8 @@ msgstr ""
 "Piste voidaan asettaa ainoastaan ParticlesMaterial käsittelyn materiaaliin"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles2D"
-msgstr "Muunna CPUPartikkeleiksi"
+msgstr "Muunna CPUParticles2D solmuksi"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -11566,36 +11568,31 @@ msgstr ""
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr ""
+msgstr "Aloita kehitys"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
-msgstr ""
+msgstr "Valmistellaan tietorakenteita"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Generate buffers"
-msgstr "Luo AABB"
+msgstr "Luo puskurit"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Direct lighting"
-msgstr "Suunnat"
+msgstr "Suora valaistus"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Indirect lighting"
-msgstr "Sisennä oikealle"
+msgstr "Epäsuora valaistus"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Post processing"
 msgstr "Jälkikäsittely"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Plotting lightmaps"
-msgstr "Piirretään valoja:"
+msgstr "Piirretään lightmappeja"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -12109,9 +12106,8 @@ msgid "Select device from the list"
 msgstr "Valitse laite listasta"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Unable to find the 'apksigner' tool."
-msgstr "zipalign työkalua ei löydy."
+msgstr "'apksigner' työkalua ei löydy."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12131,18 +12127,12 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr "Release keystore on konfiguroitu väärin viennin esiasetuksissa."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
-msgstr ""
-"Virheellinen Android SDK -polku mukautettu käännöstä varten editorin "
-"asetuksissa."
+msgstr "Editorin asetuksiin tarvitaan kelvollinen Android SDK -polku."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr ""
-"Virheellinen Android SDK -polku mukautettu käännöstä varten editorin "
-"asetuksissa."
+msgstr "Editorin asetuksissa on virheellinen Android SDK -polku."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
@@ -12150,14 +12140,12 @@ msgstr "'platform-tools' hakemisto puuttuu!"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
-msgstr ""
+msgstr "Android SDK platform-tools adb-komentoa ei löydy."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
-"Virheellinen Android SDK -polku mukautettu käännöstä varten editorin "
-"asetuksissa."
+"Ole hyvä ja tarkista editorin asetuksissa määritelty Android SDK -hakemisto."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'build-tools' directory!"
@@ -12165,7 +12153,7 @@ msgstr "'build-tools' hakemisto puuttuu!"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
-msgstr ""
+msgstr "Android SDK build-tools apksigner-komentoa ei löydy."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12639,27 +12627,23 @@ msgstr "ARVROrigin solmu tarvitsee ARVRCamera alisolmun."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
-msgstr ""
+msgstr "Etsitään meshejä ja valoja"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "Jäsentää geometriaa…"
+msgstr "Valmistellaan geometriaa (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing environment"
-msgstr "Näytä ympäristö"
+msgstr "Valmistellaan ympäristöä"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Generating capture"
-msgstr "Luodaan Lightmappeja"
+msgstr "Luodaan kaappausta"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Saving lightmaps"
-msgstr "Luodaan Lightmappeja"
+msgstr "Tallennetaan lightmappeja"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Done"
@@ -13067,6 +13051,8 @@ msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
 msgstr ""
+"Näytteistysportti on yhdistetty mutta ei käytössä. Harkitse lähteen "
+"vaihtamista 'SamplerPort' asetukseen."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

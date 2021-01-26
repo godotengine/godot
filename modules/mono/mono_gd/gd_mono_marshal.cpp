@@ -877,7 +877,7 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 			if (GDMonoUtils::Marshal::type_is_system_generic_list(reftype)) {
 				MonoReflectionType *elem_reftype = nullptr;
 				GDMonoUtils::Marshal::array_get_element_type(reftype, &elem_reftype);
-				return system_generic_list_to_Array(p_obj, p_type.type_class, elem_reftype);
+				return system_generic_list_to_Array_variant(p_obj, p_type.type_class, elem_reftype);
 			}
 		} break;
 	}
@@ -1001,15 +1001,22 @@ MonoObject *Array_to_system_generic_list(const Array &p_array, GDMonoClass *p_cl
 	return mono_object;
 }
 
-Array system_generic_list_to_Array(MonoObject *p_obj, GDMonoClass *p_class, [[maybe_unused]] MonoReflectionType *p_elem_reftype) {
+Variant system_generic_list_to_Array_variant(MonoObject *p_obj, GDMonoClass *p_class, [[maybe_unused]] MonoReflectionType *p_elem_reftype) {
 	GDMonoMethod *to_array = p_class->get_method("ToArray", 0);
 	CRASH_COND(to_array == nullptr);
 
 	MonoException *exc = nullptr;
-	MonoArray *mono_array = (MonoArray *)to_array->invoke_raw(p_obj, nullptr, &exc);
+	MonoObject *array = to_array->invoke_raw(p_obj, nullptr, &exc);
 	UNHANDLED_EXCEPTION(exc);
 
-	return mono_array_to_Array(mono_array);
+	ERR_FAIL_NULL_V(array, Variant());
+
+	ManagedType type = ManagedType::from_class(mono_object_get_class(array));
+
+	bool result_is_array = type.type_encoding != MONO_TYPE_SZARRAY && type.type_encoding != MONO_TYPE_ARRAY;
+	ERR_FAIL_COND_V(result_is_array, Variant());
+
+	return mono_object_to_variant(array, type);
 }
 
 MonoArray *Array_to_mono_array(const Array &p_array) {

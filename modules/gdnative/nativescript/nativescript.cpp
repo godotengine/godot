@@ -1528,6 +1528,12 @@ void NativeScriptLanguage::unregister_script(NativeScript *script) {
 		S->get().erase(script);
 		if (S->get().size() == 0) {
 			library_script_users.erase(S);
+
+			Map<String, Ref<GDNative> >::Element *G = library_gdnatives.find(script->lib_path);
+			if (G) {
+				G->get()->terminate();
+				library_gdnatives.erase(G);
+			}
 		}
 	}
 #ifndef NO_THREADS

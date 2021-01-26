@@ -3162,6 +3162,8 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 
 void SpatialEditorViewport::_toggle_cinema_preview(bool p_activate) {
 	previewing_cinema = p_activate;
+	rotation_control->set_visible(!p_activate);
+
 	if (!previewing_cinema) {
 		if (previewing != NULL)
 			previewing->disconnect("tree_exited", this, "_preview_exited_scene");

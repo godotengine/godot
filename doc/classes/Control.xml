@@ -215,6 +215,20 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="find_next_valid_focus" qualifiers="const">
+			<return type="Control">
+			</return>
+			<description>
+				Finds the next (below in the tree) [Control] that can receive the focus.
+			</description>
+		</method>
+		<method name="find_prev_valid_focus" qualifiers="const">
+			<return type="Control">
+			</return>
+			<description>
+				Finds the previous (above in the tree) [Control] that can receive the focus.
+			</description>
+		</method>
 		<method name="force_drag">
 			<return type="void">
 			</return>

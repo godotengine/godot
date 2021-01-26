@@ -767,6 +767,11 @@ void ProjectExportDialog::_refresh_parent_checks(TreeItem *p_item) {
 }
 
 void ProjectExportDialog::_export_pck_zip() {
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	String dir = current->get_export_path().get_base_dir();
+	export_pck_zip->set_current_dir(dir);
 
 	export_pck_zip->popup_centered_ratio();
 }

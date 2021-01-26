@@ -364,3 +364,4 @@ compile_commands.json
 
 # https://clangd.llvm.org/ cache folder
 .clangd/
+.cache/

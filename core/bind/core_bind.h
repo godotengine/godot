@@ -360,6 +360,7 @@ public:
 	bool is_ok_left_and_cancel_right() const;
 
 	Error set_thread_name(const String &p_name);
+	Thread::ID get_thread_caller_id() const;
 
 	void set_use_vsync(bool p_enable);
 	bool is_vsync_enabled() const;
