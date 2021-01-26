@@ -5287,8 +5287,7 @@ void GLTFDocument::_convert_mult_mesh_instance_to_gltf(Node *p_scene_parent, con
 				transform.origin =
 						Vector3(xform_2d.get_origin().x, 0, xform_2d.get_origin().y);
 				real_t rotation = xform_2d.get_rotation();
-				Quat quat;
-				quat.set_axis_angle(Vector3(0, 1, 0), rotation);
+				Quat quat(Vector3(0, 1, 0), rotation);
 				Size2 scale = xform_2d.get_scale();
 				transform.basis.set_quat_scale(quat,
 						Vector3(scale.x, 0, scale.y));
@@ -6040,14 +6039,12 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 			p_track.rotation_track.interpolation = gltf_interpolation;
 
 			for (int32_t key_i = 0; key_i < key_count; key_i++) {
-				Quat rotation;
 				Vector3 rotation_degrees = p_animation->track_get_key_value(p_track_i, key_i);
 				Vector3 rotation_radian;
 				rotation_radian.x = Math::deg2rad(rotation_degrees.x);
 				rotation_radian.y = Math::deg2rad(rotation_degrees.y);
 				rotation_radian.z = Math::deg2rad(rotation_degrees.z);
-				rotation.set_euler(rotation_radian);
-				p_track.rotation_track.values.write[key_i] = rotation;
+				p_track.rotation_track.values.write[key_i] = Quat(rotation_radian);
 			}
 		} else if (path.find(":scale") != -1) {
 			p_track.scale_track.times = times;
