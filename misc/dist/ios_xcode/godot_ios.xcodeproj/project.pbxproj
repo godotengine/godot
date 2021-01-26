@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1F1575721F582BE20003B888 /* dylibs in Resources */ = {isa = PBXBuildFile; fileRef = 1F1575711F582BE20003B888 /* dylibs */; };
-		DEADBEEF2F582BE20003B888 /* $binary.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DEADBEEF1F582BE20003B888 /* $binary.a */; };
+		DEADBEEF2F582BE20003B888 /* $binary.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEADBEEF1F582BE20003B888 /* $binary.xcframework */; };
 		$modules_buildfile
 		1FF8DBB11FBA9DE1009DE660 /* dummy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1FF8DBB01FBA9DE1009DE660 /* dummy.cpp */; };
 		D07CD44E1C5D589C00B7FB28 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D07CD44D1C5D589C00B7FB28 /* Images.xcassets */; };
@@ -33,7 +33,7 @@
 
 /* Begin PBXFileReference section */
 		1F1575711F582BE20003B888 /* dylibs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = dylibs; path = "$binary/dylibs"; sourceTree = "<group>"; };
-		DEADBEEF1F582BE20003B888 /* $binary.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = godot; path = "$binary.a"; sourceTree = "<group>"; };
+		DEADBEEF1F582BE20003B888 /* $binary.xcframework */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = godot; path = "$binary.xcframework"; sourceTree = "<group>"; };
 		$modules_fileref
 		1FF4C1881F584E6300A41E41 /* $binary.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "$binary.entitlements"; sourceTree = "<group>"; };
 		1FF8DBB01FBA9DE1009DE660 /* dummy.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dummy.cpp; sourceTree = "<group>"; };
@@ -52,7 +52,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DEADBEEF2F582BE20003B888 /* $binary.a */,
+				DEADBEEF2F582BE20003B888 /* $binary.xcframework */,
 				$modules_buildphase
 				$additional_pbx_frameworks_build
 			);
@@ -84,7 +84,7 @@
 		D0BCFE3618AEBDA2004A7AAE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				DEADBEEF1F582BE20003B888 /* $binary.a */,
+				DEADBEEF1F582BE20003B888 /* $binary.xcframework */,
 				$modules_buildgrp
 				$additional_pbx_frameworks_refs
 			);

@@ -1446,9 +1446,9 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_SKIP;
 	}
 
-	String library_to_use = "libgodot.iphone." + String(p_debug ? "debug" : "release") + ".fat.a";
+	String library_to_use = "libgodot.iphone." + String(p_debug ? "debug" : "release") + ".xcframework";
 
-	print_line("Static library: " + library_to_use);
+	print_line("Static framework: " + library_to_use);
 	String pkg_name;
 	if (p_preset->get("application/name") != "")
 		pkg_name = p_preset->get("application/name"); // app_name
@@ -1533,7 +1533,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		if (files_to_parse.has(file)) {
 			_fix_config_file(p_preset, data, config_data, p_debug);
 		} else if (file.begins_with("libgodot.iphone")) {
-			if (file != library_to_use) {
+			if (!file.begins_with(library_to_use) || file.ends_with(String("/empty"))) {
 				ret = unzGoToNextFile(src_pkg_zip);
 				continue; //ignore!
 			}
@@ -1541,7 +1541,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 #if defined(OSX_ENABLED) || defined(X11_ENABLED)
 			is_execute = true;
 #endif
-			file = "godot_ios.a";
+			file = file.replace(library_to_use, binary_name + ".xcframework");
 		}
 
 		if (file == project_file) {
