@@ -6,7 +6,7 @@ javascript_files = [
     "audio_driver_javascript.cpp",
     "display_server_javascript.cpp",
     "http_client_javascript.cpp",
-    "javascript_eval.cpp",
+    "javascript_singleton.cpp",
     "javascript_main.cpp",
     "os_javascript.cpp",
     "api/javascript_tools_editor_plugin.cpp",
@@ -26,7 +26,7 @@ sys_env.AddJSLibraries(
 if env["tools"]:
     sys_env.AddJSLibraries(["js/libs/library_godot_editor_tools.js"])
 if env["javascript_eval"]:
-    sys_env.AddJSLibraries(["js/libs/library_godot_eval.js"])
+    sys_env.AddJSLibraries(["js/libs/library_godot_javascript_singleton.js"])
 
 for lib in sys_env["JS_LIBS"]:
     sys_env.Append(LINKFLAGS=["--js-library", lib])

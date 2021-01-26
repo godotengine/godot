@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  javascript_eval.h                                                    */
+/*  javascript_singleton.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,10 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JAVASCRIPT_EVAL_H
-#define JAVASCRIPT_EVAL_H
+#ifndef JAVASCRIPT_SINGLETON_H
+#define JAVASCRIPT_SINGLETON_H
 
 #include "core/object/class_db.h"
+#include "core/object/reference.h"
+
+class JavaScriptObject : public Reference {
+private:
+	GDCLASS(JavaScriptObject, Reference);
+
+protected:
+	virtual bool _set(const StringName &p_name, const Variant &p_value) { return false; }
+	virtual bool _get(const StringName &p_name, Variant &r_ret) const { return false; }
+	virtual void _get_property_list(List<PropertyInfo> *p_list) const {}
+};
 
 class JavaScript : public Object {
 private:
@@ -44,10 +55,13 @@ protected:
 
 public:
 	Variant eval(const String &p_code, bool p_use_global_exec_context = false);
+	Ref<JavaScriptObject> get_interface(const String &p_interface);
+	Ref<JavaScriptObject> create_callback(const Callable &p_callable);
+	Variant _create_object_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	static JavaScript *get_singleton();
 	JavaScript();
 	~JavaScript();
 };
 
-#endif // JAVASCRIPT_EVAL_H
+#endif // JAVASCRIPT_SINGLETON_H
