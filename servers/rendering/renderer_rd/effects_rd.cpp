@@ -1324,7 +1324,7 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 	RD::get_singleton()->compute_list_end();
 
 	int zero[1] = { 0 };
-	RD::get_singleton()->buffer_update(ssao.importance_map_load_counter, 0, sizeof(uint32_t), &zero, false);
+	RD::get_singleton()->buffer_update(ssao.importance_map_load_counter, 0, sizeof(uint32_t), &zero);
 }
 
 void EffectsRD::roughness_limit(RID p_source_normal, RID p_roughness, const Size2i &p_size, float p_curve) {
@@ -1787,7 +1787,7 @@ EffectsRD::EffectsRD() {
 				}
 			}
 
-			RD::get_singleton()->buffer_update(ssao.gather_constants_buffer, 0, sizeof(SSAOGatherConstants), &gather_constants, false);
+			RD::get_singleton()->buffer_update(ssao.gather_constants_buffer, 0, sizeof(SSAOGatherConstants), &gather_constants);
 		}
 		{
 			Vector<String> ssao_modes;
@@ -1806,7 +1806,7 @@ EffectsRD::EffectsRD() {
 			}
 			ssao.importance_map_load_counter = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t));
 			int zero[1] = { 0 };
-			RD::get_singleton()->buffer_update(ssao.importance_map_load_counter, 0, sizeof(uint32_t), &zero, false);
+			RD::get_singleton()->buffer_update(ssao.importance_map_load_counter, 0, sizeof(uint32_t), &zero);
 			RD::get_singleton()->set_resource_name(ssao.importance_map_load_counter, "Importance Map Load Counter");
 
 			Vector<RD::Uniform> uniforms;
@@ -1896,10 +1896,10 @@ EffectsRD::EffectsRD() {
 
 		if (filter.use_high_quality) {
 			filter.coefficient_buffer = RD::get_singleton()->storage_buffer_create(sizeof(high_quality_coeffs));
-			RD::get_singleton()->buffer_update(filter.coefficient_buffer, 0, sizeof(high_quality_coeffs), &high_quality_coeffs[0], false);
+			RD::get_singleton()->buffer_update(filter.coefficient_buffer, 0, sizeof(high_quality_coeffs), &high_quality_coeffs[0]);
 		} else {
 			filter.coefficient_buffer = RD::get_singleton()->storage_buffer_create(sizeof(low_quality_coeffs));
-			RD::get_singleton()->buffer_update(filter.coefficient_buffer, 0, sizeof(low_quality_coeffs), &low_quality_coeffs[0], false);
+			RD::get_singleton()->buffer_update(filter.coefficient_buffer, 0, sizeof(low_quality_coeffs), &low_quality_coeffs[0]);
 		}
 
 		Vector<RD::Uniform> uniforms;

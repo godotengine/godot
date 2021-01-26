@@ -41,28 +41,60 @@
 //#define FORCE_FULL_BARRIER
 
 // Get the Vulkan object information and possible stage access types (bitwise OR'd with incoming values)
-RenderingDeviceVulkan::Buffer *RenderingDeviceVulkan::_get_buffer_from_owner(RID p_buffer, VkPipelineStageFlags &stage_mask, VkAccessFlags &access_mask) {
+RenderingDeviceVulkan::Buffer *RenderingDeviceVulkan::_get_buffer_from_owner(RID p_buffer, VkPipelineStageFlags &r_stage_mask, VkAccessFlags &r_access_mask, uint32_t p_post_barrier) {
 	Buffer *buffer = nullptr;
 	if (vertex_buffer_owner.owns(p_buffer)) {
-		stage_mask |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
-		access_mask |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
 		buffer = vertex_buffer_owner.getornull(p_buffer);
+
+		r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+		r_access_mask |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+		if (buffer->usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) {
+			if (p_post_barrier & BARRIER_MASK_RASTER) {
+				r_access_mask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+				r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			}
+			if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+				r_access_mask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+				r_stage_mask |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+			}
+		}
 	} else if (index_buffer_owner.owns(p_buffer)) {
-		stage_mask |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
-		access_mask |= VK_ACCESS_INDEX_READ_BIT;
+		r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+		r_access_mask |= VK_ACCESS_INDEX_READ_BIT;
 		buffer = index_buffer_owner.getornull(p_buffer);
 	} else if (uniform_buffer_owner.owns(p_buffer)) {
-		stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-		access_mask |= VK_ACCESS_UNIFORM_READ_BIT;
+		if (p_post_barrier & BARRIER_MASK_RASTER) {
+			r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+			r_stage_mask |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		}
+		r_access_mask |= VK_ACCESS_UNIFORM_READ_BIT;
 		buffer = uniform_buffer_owner.getornull(p_buffer);
 	} else if (texture_buffer_owner.owns(p_buffer)) {
-		stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-		access_mask |= VK_ACCESS_SHADER_READ_BIT;
+		if (p_post_barrier & BARRIER_MASK_RASTER) {
+			r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+			r_stage_mask |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		}
+		r_access_mask |= VK_ACCESS_SHADER_READ_BIT;
 		buffer = &texture_buffer_owner.getornull(p_buffer)->buffer;
 	} else if (storage_buffer_owner.owns(p_buffer)) {
-		stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-		access_mask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		buffer = storage_buffer_owner.getornull(p_buffer);
+		if (p_post_barrier & BARRIER_MASK_RASTER) {
+			r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			r_access_mask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		}
+		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+			r_stage_mask |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+			r_access_mask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		}
+
+		if (buffer->usage & VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT) {
+			r_stage_mask |= VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+			r_access_mask |= VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+		}
 	}
 	return buffer;
 }
@@ -2067,6 +2099,48 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
+	VkImageViewUsageCreateInfo usage_info;
+	usage_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO;
+	usage_info.pNext = nullptr;
+	if (p_view.format_override != DATA_FORMAT_MAX) {
+		//need to validate usage with vulkan
+
+		usage_info.usage = 0;
+
+		if (texture.usage_flags & TEXTURE_USAGE_SAMPLING_BIT) {
+			usage_info.usage |= VK_IMAGE_USAGE_SAMPLED_BIT;
+		}
+
+		if (texture.usage_flags & TEXTURE_USAGE_STORAGE_BIT) {
+			if (texture_is_format_supported_for_usage(p_view.format_override, TEXTURE_USAGE_STORAGE_BIT)) {
+				usage_info.usage |= VK_IMAGE_USAGE_STORAGE_BIT;
+			}
+		}
+
+		if (texture.usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+			if (texture_is_format_supported_for_usage(p_view.format_override, TEXTURE_USAGE_COLOR_ATTACHMENT_BIT)) {
+				usage_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+			}
+		}
+
+		if (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+			usage_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		}
+
+		if (texture.usage_flags & TEXTURE_USAGE_CAN_UPDATE_BIT) {
+			usage_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+		}
+		if (texture.usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT) {
+			usage_info.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+		}
+
+		if (texture.usage_flags & TEXTURE_USAGE_CAN_COPY_TO_BIT) {
+			usage_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+		}
+
+		image_view_create_info.pNext = &usage_info;
+	}
+
 	VkResult err = vkCreateImageView(device, &image_view_create_info, nullptr, &texture.view);
 	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateImageView failed with error " + itos(err) + ".");
 
@@ -2196,11 +2270,11 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 	return id;
 }
 
-Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_sync_with_draw) {
+Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V_MSG(draw_list && p_sync_with_draw, ERR_INVALID_PARAMETER,
-			"Updating textures in 'sync to draw' mode is forbidden during creation of a draw list");
+	ERR_FAIL_COND_V_MSG(draw_list || compute_list, ERR_INVALID_PARAMETER,
+			"Updating textures in is forbidden during creation of a draw or compute list");
 
 	Texture *texture = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND_V(!texture, ERR_INVALID_PARAMETER);
@@ -2241,7 +2315,7 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 
 	const uint8_t *r = p_data.ptr();
 
-	VkCommandBuffer command_buffer = p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer;
+	VkCommandBuffer command_buffer = p_post_barrier ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer;
 
 	//barrier to transfer
 	{
@@ -2266,6 +2340,10 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 	}
 
 	uint32_t mipmap_offset = 0;
+
+	uint32_t logic_width = texture->width;
+	uint32_t logic_height = texture->height;
+
 	for (uint32_t mm_i = 0; mm_i < texture->mipmaps; mm_i++) {
 		uint32_t depth;
 		uint32_t image_total = get_image_format_required_size(texture->format, texture->width, texture->height, texture->depth, mm_i + 1, &width, &height, &depth);
@@ -2282,12 +2360,15 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 					uint32_t region_w = MIN(region_size, width - x);
 					uint32_t region_h = MIN(region_size, height - y);
 
+					uint32_t region_logic_w = MIN(region_size, logic_width - x);
+					uint32_t region_logic_h = MIN(region_size, logic_height - y);
+
 					uint32_t pixel_size = get_image_format_pixel_size(texture->format);
 					uint32_t to_allocate = region_w * region_h * pixel_size;
 					to_allocate >>= get_compressed_image_format_pixel_rshift(texture->format);
 
 					uint32_t alloc_offset, alloc_size;
-					Error err = _staging_buffer_allocate(to_allocate, required_align, alloc_offset, alloc_size, false, p_sync_with_draw);
+					Error err = _staging_buffer_allocate(to_allocate, required_align, alloc_offset, alloc_size, false, p_post_barrier);
 					ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 					uint8_t *write_ptr;
@@ -2363,8 +2444,8 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 					buffer_image_copy.imageOffset.y = y;
 					buffer_image_copy.imageOffset.z = z;
 
-					buffer_image_copy.imageExtent.width = region_w;
-					buffer_image_copy.imageExtent.height = region_h;
+					buffer_image_copy.imageExtent.width = region_logic_w;
+					buffer_image_copy.imageExtent.height = region_logic_h;
 					buffer_image_copy.imageExtent.depth = 1;
 
 					vkCmdCopyBufferToImage(command_buffer, staging_buffer_blocks[staging_buffer_current].buffer, texture->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &buffer_image_copy);
@@ -2375,15 +2456,32 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 		}
 
 		mipmap_offset = image_total;
+		logic_width = MAX(1, logic_width >> 1);
+		logic_height = MAX(1, logic_height >> 1);
 	}
 
 	//barrier to restore layout
 	{
+		uint32_t barrier_flags = 0;
+		uint32_t access_flags = 0;
+		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+			barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+			access_flags |= VK_ACCESS_SHADER_READ_BIT;
+		}
+		if (p_post_barrier & BARRIER_MASK_RASTER) {
+			barrier_flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			access_flags |= VK_ACCESS_SHADER_READ_BIT;
+		}
+		if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+			barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+			access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+		}
+
 		VkImageMemoryBarrier image_memory_barrier;
 		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		image_memory_barrier.pNext = nullptr;
 		image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		image_memory_barrier.dstAccessMask = access_flags;
 		image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 		image_memory_barrier.newLayout = texture->layout;
 		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -2395,7 +2493,7 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 		image_memory_barrier.subresourceRange.baseArrayLayer = p_layer;
 		image_memory_barrier.subresourceRange.layerCount = 1;
 
-		vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 	}
 
 	return OK;
@@ -2608,13 +2706,13 @@ bool RenderingDeviceVulkan::texture_is_valid(RID p_texture) {
 	return texture_owner.owns(p_texture);
 }
 
-Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, bool p_sync_with_draw) {
+Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_tex = texture_owner.getornull(p_from_texture);
 	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
 
-	ERR_FAIL_COND_V_MSG(p_sync_with_draw && src_tex->bound, ERR_INVALID_PARAMETER,
+	ERR_FAIL_COND_V_MSG(src_tex->bound, ERR_INVALID_PARAMETER,
 			"Source texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
 	ERR_FAIL_COND_V_MSG(!(src_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), ERR_INVALID_PARAMETER,
 			"Source texture requires the TEXTURE_USAGE_CAN_COPY_FROM_BIT in order to be retrieved.");
@@ -2635,7 +2733,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 	Texture *dst_tex = texture_owner.getornull(p_to_texture);
 	ERR_FAIL_COND_V(!dst_tex, ERR_INVALID_PARAMETER);
 
-	ERR_FAIL_COND_V_MSG(p_sync_with_draw && dst_tex->bound, ERR_INVALID_PARAMETER,
+	ERR_FAIL_COND_V_MSG(dst_tex->bound, ERR_INVALID_PARAMETER,
 			"Destination texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
 	ERR_FAIL_COND_V_MSG(!(dst_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_TO_BIT), ERR_INVALID_PARAMETER,
 			"Destination texture requires the TEXTURE_USAGE_CAN_COPY_TO_BIT in order to be retrieved.");
@@ -2656,7 +2754,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 	ERR_FAIL_COND_V_MSG(src_tex->read_aspect_mask != dst_tex->read_aspect_mask, ERR_INVALID_PARAMETER,
 			"Source and destination texture must be of the same type (color or depth).");
 
-	VkCommandBuffer command_buffer = p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer;
+	VkCommandBuffer command_buffer = frames[frame].draw_command_buffer;
 
 	{
 		//PRE Copy the image
@@ -2731,12 +2829,27 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 
 		// RESTORE LAYOUT for SRC and DST
 
+		uint32_t barrier_flags = 0;
+		uint32_t access_flags = 0;
+		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+			barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		}
+		if (p_post_barrier & BARRIER_MASK_RASTER) {
+			barrier_flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		}
+		if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+			barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+			access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+		}
+
 		{ //restore src
 			VkImageMemoryBarrier image_memory_barrier;
 			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 			image_memory_barrier.pNext = nullptr;
 			image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-			image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+			image_memory_barrier.dstAccessMask = access_flags;
 			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 			image_memory_barrier.newLayout = src_tex->layout;
 			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -2748,7 +2861,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 			image_memory_barrier.subresourceRange.baseArrayLayer = p_src_layer;
 			image_memory_barrier.subresourceRange.layerCount = 1;
 
-			vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+			vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 		}
 
 		{ //make dst readable
@@ -2757,7 +2870,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 			image_memory_barrier.pNext = nullptr;
 			image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+			image_memory_barrier.dstAccessMask = access_flags;
 			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 			image_memory_barrier.newLayout = dst_tex->layout;
 
@@ -2770,20 +2883,20 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 			image_memory_barrier.subresourceRange.baseArrayLayer = p_src_layer;
 			image_memory_barrier.subresourceRange.layerCount = 1;
 
-			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 		}
 	}
 
 	return OK;
 }
 
-Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID p_to_texture, bool p_sync_with_draw) {
+Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID p_to_texture, uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_tex = texture_owner.getornull(p_from_texture);
 	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
 
-	ERR_FAIL_COND_V_MSG(p_sync_with_draw && src_tex->bound, ERR_INVALID_PARAMETER,
+	ERR_FAIL_COND_V_MSG(src_tex->bound, ERR_INVALID_PARAMETER,
 			"Source texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
 	ERR_FAIL_COND_V_MSG(!(src_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), ERR_INVALID_PARAMETER,
 			"Source texture requires the TEXTURE_USAGE_CAN_COPY_FROM_BIT in order to be retrieved.");
@@ -2794,7 +2907,7 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 	Texture *dst_tex = texture_owner.getornull(p_to_texture);
 	ERR_FAIL_COND_V(!dst_tex, ERR_INVALID_PARAMETER);
 
-	ERR_FAIL_COND_V_MSG(p_sync_with_draw && dst_tex->bound, ERR_INVALID_PARAMETER,
+	ERR_FAIL_COND_V_MSG(dst_tex->bound, ERR_INVALID_PARAMETER,
 			"Destination texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
 	ERR_FAIL_COND_V_MSG(!(dst_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_TO_BIT), ERR_INVALID_PARAMETER,
 			"Destination texture requires the TEXTURE_USAGE_CAN_COPY_TO_BIT in order to be retrieved.");
@@ -2808,7 +2921,7 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 	ERR_FAIL_COND_V_MSG(src_tex->read_aspect_mask != dst_tex->read_aspect_mask, ERR_INVALID_PARAMETER,
 			"Source and destination texture must be of the same type (color or depth).");
 
-	VkCommandBuffer command_buffer = p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer;
+	VkCommandBuffer command_buffer = frames[frame].draw_command_buffer;
 
 	{
 		//PRE Copy the image
@@ -2883,12 +2996,27 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 
 		// RESTORE LAYOUT for SRC and DST
 
+		uint32_t barrier_flags = 0;
+		uint32_t access_flags = 0;
+		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+			barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		}
+		if (p_post_barrier & BARRIER_MASK_RASTER) {
+			barrier_flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		}
+		if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+			barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+			access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+		}
+
 		{ //restore src
 			VkImageMemoryBarrier image_memory_barrier;
 			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 			image_memory_barrier.pNext = nullptr;
 			image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-			image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+			image_memory_barrier.dstAccessMask = access_flags;
 			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 			image_memory_barrier.newLayout = src_tex->layout;
 			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -2900,7 +3028,7 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 			image_memory_barrier.subresourceRange.baseArrayLayer = src_tex->base_layer;
 			image_memory_barrier.subresourceRange.layerCount = 1;
 
-			vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+			vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 		}
 
 		{ //make dst readable
@@ -2909,7 +3037,7 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 			image_memory_barrier.pNext = nullptr;
 			image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+			image_memory_barrier.dstAccessMask = access_flags;
 			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 			image_memory_barrier.newLayout = dst_tex->layout;
 
@@ -2922,20 +3050,20 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 			image_memory_barrier.subresourceRange.baseArrayLayer = dst_tex->base_layer;
 			image_memory_barrier.subresourceRange.layerCount = 1;
 
-			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 		}
 	}
 
 	return OK;
 }
 
-Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, bool p_sync_with_draw) {
+Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_tex = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
 
-	ERR_FAIL_COND_V_MSG(p_sync_with_draw && src_tex->bound, ERR_INVALID_PARAMETER,
+	ERR_FAIL_COND_V_MSG(src_tex->bound, ERR_INVALID_PARAMETER,
 			"Source texture can't be cleared while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
 
 	ERR_FAIL_COND_V(p_layers == 0, ERR_INVALID_PARAMETER);
@@ -2952,7 +3080,7 @@ Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, 
 	ERR_FAIL_COND_V(p_base_mipmap + p_mipmaps > src_tex->mipmaps, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_base_layer + p_layers > src_layer_count, ERR_INVALID_PARAMETER);
 
-	VkCommandBuffer command_buffer = p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer;
+	VkCommandBuffer command_buffer = frames[frame].draw_command_buffer;
 
 	VkImageLayout clear_layout = (src_tex->layout == VK_IMAGE_LAYOUT_GENERAL) ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
@@ -2999,11 +3127,27 @@ Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, 
 	vkCmdClearColorImage(command_buffer, src_tex->image, clear_layout, &clear_color, 1, &range);
 
 	{ // Barrier to post clear accesses (changing back the layout if needed)
+
+		uint32_t barrier_flags = 0;
+		uint32_t access_flags = 0;
+		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+			barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		}
+		if (p_post_barrier & BARRIER_MASK_RASTER) {
+			barrier_flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		}
+		if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+			barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+			access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+		}
+
 		VkImageMemoryBarrier image_memory_barrier;
 		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		image_memory_barrier.pNext = nullptr;
 		image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		image_memory_barrier.dstAccessMask = valid_texture_access;
+		image_memory_barrier.dstAccessMask = access_flags;
 		image_memory_barrier.oldLayout = clear_layout;
 		image_memory_barrier.newLayout = src_tex->layout;
 
@@ -3016,7 +3160,7 @@ Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, 
 		image_memory_barrier.subresourceRange.baseArrayLayer = src_tex->base_layer + p_base_layer;
 		image_memory_barrier.subresourceRange.layerCount = p_layers;
 
-		vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, valid_texture_stages, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 	}
 
 	return OK;
@@ -5038,19 +5182,22 @@ bool RenderingDeviceVulkan::uniform_set_is_valid(RID p_uniform_set) {
 	return uniform_set_owner.owns(p_uniform_set);
 }
 
-Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_sync_with_draw) {
+Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V_MSG(draw_list && p_sync_with_draw, ERR_INVALID_PARAMETER,
-			"Updating buffers in 'sync to draw' mode is forbidden during creation of a draw list");
-	ERR_FAIL_COND_V_MSG(compute_list && p_sync_with_draw, ERR_INVALID_PARAMETER,
-			"Updating buffers in 'sync to draw' mode is forbidden during creation of a compute list");
+	ERR_FAIL_COND_V_MSG(draw_list, ERR_INVALID_PARAMETER,
+			"Updating buffers is forbidden during creation of a draw list");
+	ERR_FAIL_COND_V_MSG(compute_list, ERR_INVALID_PARAMETER,
+			"Updating buffers is forbidden during creation of a compute list");
 
-	// Protect subsequent updates...
-	VkPipelineStageFlags dst_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	VkAccessFlags dst_access = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-	Buffer *buffer = _get_buffer_from_owner(p_buffer, dst_stage_mask, dst_access);
+	VkPipelineStageFlags dst_stage_mask = 0;
+	VkAccessFlags dst_access = 0;
+	if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+		// Protect subsequent updates...
+		dst_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dst_access = VK_ACCESS_TRANSFER_WRITE_BIT;
+	}
+	Buffer *buffer = _get_buffer_from_owner(p_buffer, dst_stage_mask, dst_access, p_post_barrier);
 	if (!buffer) {
 		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Buffer argument is not a valid buffer of any type.");
 	}
@@ -5058,35 +5205,41 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 	ERR_FAIL_COND_V_MSG(p_offset + p_size > buffer->size, ERR_INVALID_PARAMETER,
 			"Attempted to write buffer (" + itos((p_offset + p_size) - buffer->size) + " bytes) past the end.");
 
-	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, dst_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_access, VK_ACCESS_TRANSFER_WRITE_BIT, p_sync_with_draw);
-	Error err = _buffer_update(buffer, p_offset, (uint8_t *)p_data, p_size, p_sync_with_draw);
+	// no barrier should be needed here
+	// _buffer_memory_barrier(buffer->buffer, p_offset, p_size, dst_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_access, VK_ACCESS_TRANSFER_WRITE_BIT, true);
+
+	Error err = _buffer_update(buffer, p_offset, (uint8_t *)p_data, p_size, p_post_barrier);
 	if (err) {
 		return err;
 	}
 
 #ifdef FORCE_FULL_BARRIER
-	_full_barrier(p_sync_with_draw);
+	_full_barrier(true);
 #else
-	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, p_sync_with_draw);
+	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, true);
 #endif
 	return err;
 }
 
-Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, bool p_sync_with_draw) {
+Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V_MSG((p_size % 4) != 0, ERR_INVALID_PARAMETER,
 			"Size must be a multiple of four");
-	ERR_FAIL_COND_V_MSG(draw_list && p_sync_with_draw, ERR_INVALID_PARAMETER,
-			"Updating buffers in 'sync to draw' mode is forbidden during creation of a draw list");
-	ERR_FAIL_COND_V_MSG(compute_list && p_sync_with_draw, ERR_INVALID_PARAMETER,
-			"Updating buffers in 'sync to draw' mode is forbidden during creation of a compute list");
+	ERR_FAIL_COND_V_MSG(draw_list, ERR_INVALID_PARAMETER,
+			"Updating buffers in is forbidden during creation of a draw list");
+	ERR_FAIL_COND_V_MSG(compute_list, ERR_INVALID_PARAMETER,
+			"Updating buffers is forbidden during creation of a compute list");
 
-	// Protect subsequent updates...
-	VkPipelineStageFlags dst_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	VkAccessFlags dst_access = VK_ACCESS_TRANSFER_WRITE_BIT;
+	VkPipelineStageFlags dst_stage_mask = 0;
+	VkAccessFlags dst_access = 0;
+	if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+		// Protect subsequent updates...
+		dst_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dst_access = VK_ACCESS_TRANSFER_WRITE_BIT;
+	}
 
-	Buffer *buffer = _get_buffer_from_owner(p_buffer, dst_stage_mask, dst_access);
+	Buffer *buffer = _get_buffer_from_owner(p_buffer, dst_stage_mask, dst_access, p_post_barrier);
 	if (!buffer) {
 		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Buffer argument is not a valid buffer of any type.");
 	}
@@ -5094,14 +5247,15 @@ Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint3
 	ERR_FAIL_COND_V_MSG(p_offset + p_size > buffer->size, ERR_INVALID_PARAMETER,
 			"Attempted to write buffer (" + itos((p_offset + p_size) - buffer->size) + " bytes) past the end.");
 
-	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, dst_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_access, VK_ACCESS_TRANSFER_WRITE_BIT, p_sync_with_draw);
+	// should not be needed
+	// _buffer_memory_barrier(buffer->buffer, p_offset, p_size, dst_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_access, VK_ACCESS_TRANSFER_WRITE_BIT, p_post_barrier);
 
-	vkCmdFillBuffer(p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, buffer->buffer, p_offset, p_size, 0);
+	vkCmdFillBuffer(frames[frame].draw_command_buffer, buffer->buffer, p_offset, p_size, 0);
 
 #ifdef FORCE_FULL_BARRIER
-	_full_barrier(p_sync_with_draw);
+	_full_barrier(true);
 #else
-	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, p_sync_with_draw);
+	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, p_post_barrier);
 #endif
 	return OK;
 }
@@ -5113,7 +5267,7 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 	VkPipelineShaderStageCreateFlags src_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
 	VkAccessFlags src_access_mask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	// Get the vulkan buffer and the potential stage/access possible
-	Buffer *buffer = _get_buffer_from_owner(p_buffer, src_stage_mask, src_access_mask);
+	Buffer *buffer = _get_buffer_from_owner(p_buffer, src_stage_mask, src_access_mask, BARRIER_MASK_ALL);
 	if (!buffer) {
 		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Buffer is either invalid or this type of buffer can't be retrieved. Only Index and Vertex buffers allow retrieving.");
 	}
@@ -6476,7 +6630,7 @@ void RenderingDeviceVulkan::draw_list_disable_scissor(DrawListID p_list) {
 	vkCmdSetScissor(dl->command_buffer, 0, 1, &scissor);
 }
 
-void RenderingDeviceVulkan::draw_list_end() {
+void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_MSG(!draw_list, "Immediate draw list is already inactive.");
@@ -6512,6 +6666,21 @@ void RenderingDeviceVulkan::draw_list_end() {
 		}
 	}
 
+	uint32_t barrier_flags = 0;
+	uint32_t access_flags = 0;
+	if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+		barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+	}
+	if (p_post_barrier & BARRIER_MASK_RASTER) {
+		barrier_flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+		access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+	}
+	if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+		barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+		access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT;
+	}
+
 	draw_list_bound_textures.clear();
 
 	for (int i = 0; i < draw_list_storage_textures.size(); i++) {
@@ -6521,7 +6690,7 @@ void RenderingDeviceVulkan::draw_list_end() {
 		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		image_memory_barrier.pNext = nullptr;
 		image_memory_barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-		image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		image_memory_barrier.dstAccessMask = access_flags;
 		image_memory_barrier.oldLayout = texture->layout;
 		image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -6534,7 +6703,7 @@ void RenderingDeviceVulkan::draw_list_end() {
 		image_memory_barrier.subresourceRange.baseArrayLayer = texture->base_layer;
 		image_memory_barrier.subresourceRange.layerCount = texture->layers;
 
-		vkCmdPipelineBarrier(frames[frame].draw_command_buffer, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		vkCmdPipelineBarrier(frames[frame].draw_command_buffer, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 
 		texture->layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
@@ -6548,7 +6717,7 @@ void RenderingDeviceVulkan::draw_list_end() {
 #ifdef FORCE_FULL_BARRIER
 	_full_barrier(true);
 #else
-	_memory_barrier(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, true);
+	_memory_barrier(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, barrier_flags, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, access_flags, true);
 #endif
 }
 
@@ -6871,14 +7040,30 @@ void RenderingDeviceVulkan::compute_list_add_barrier(ComputeListID p_list) {
 #endif
 }
 
-void RenderingDeviceVulkan::compute_list_end() {
+void RenderingDeviceVulkan::compute_list_end(uint32_t p_post_barrier) {
 	ERR_FAIL_COND(!compute_list);
+
+	uint32_t barrier_flags = 0;
+	uint32_t access_flags = 0;
+	if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+		barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+	}
+	if (p_post_barrier & BARRIER_MASK_RASTER) {
+		barrier_flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+		access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+	}
+	if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+		barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+		access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT;
+	}
+
 	for (Set<Texture *>::Element *E = compute_list->state.textures_to_sampled_layout.front(); E; E = E->next()) {
 		VkImageMemoryBarrier image_memory_barrier;
 		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		image_memory_barrier.pNext = nullptr;
 		image_memory_barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-		image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT;
+		image_memory_barrier.dstAccessMask = access_flags;
 		image_memory_barrier.oldLayout = E->get()->layout;
 		image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -6892,7 +7077,7 @@ void RenderingDeviceVulkan::compute_list_end() {
 		image_memory_barrier.subresourceRange.layerCount = E->get()->layers;
 
 		// TODO: Look at the usages in the compute list and determine tighter dst stage and access masks based on some "final" usage equivalent
-		vkCmdPipelineBarrier(compute_list->command_buffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		vkCmdPipelineBarrier(compute_list->command_buffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 
 		E->get()->layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
@@ -6902,8 +7087,42 @@ void RenderingDeviceVulkan::compute_list_end() {
 #ifdef FORCE_FULL_BARRIER
 	_full_barrier(true);
 #else
-	_memory_barrier(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT, VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT, true);
+	_memory_barrier(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, barrier_flags, VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT, true);
 #endif
+}
+
+void RenderingDeviceVulkan::barrier(uint32_t p_from, uint32_t p_to) {
+	uint32_t src_barrier_flags = 0;
+	uint32_t src_access_flags = 0;
+	if (p_from & BARRIER_MASK_COMPUTE) {
+		src_barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		src_access_flags |= VK_ACCESS_SHADER_WRITE_BIT;
+	}
+	if (p_from & BARRIER_MASK_RASTER) {
+		src_barrier_flags |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+		src_access_flags |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	}
+	if (p_from & BARRIER_MASK_TRANSFER) {
+		src_barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+		src_access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+	}
+
+	uint32_t dst_barrier_flags = 0;
+	uint32_t dst_access_flags = 0;
+	if (p_to & BARRIER_MASK_COMPUTE) {
+		dst_barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		dst_access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+	}
+	if (p_to & BARRIER_MASK_RASTER) {
+		dst_barrier_flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+		dst_access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+	}
+	if (p_to & BARRIER_MASK_TRANSFER) {
+		dst_barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dst_access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT;
+	}
+
+	_memory_barrier(src_barrier_flags, dst_barrier_flags, src_access_flags, dst_access_flags, true);
 }
 
 void RenderingDeviceVulkan::full_barrier() {
@@ -7524,9 +7743,10 @@ void RenderingDeviceVulkan::_free_rids(T &p_owner, const char *p_type) {
 	}
 }
 
-void RenderingDeviceVulkan::capture_timestamp(const String &p_name, bool p_sync_to_draw) {
+void RenderingDeviceVulkan::capture_timestamp(const String &p_name) {
 	ERR_FAIL_COND(frames[frame].timestamp_count >= max_timestamp_query_elements);
 
+	//this should be optional for profiling, else it will slow things down
 	{
 		VkMemoryBarrier memoryBarrier;
 
@@ -7563,9 +7783,10 @@ void RenderingDeviceVulkan::capture_timestamp(const String &p_name, bool p_sync_
 									  VK_ACCESS_HOST_READ_BIT |
 									  VK_ACCESS_HOST_WRITE_BIT;
 
-		vkCmdPipelineBarrier(p_sync_to_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+		vkCmdPipelineBarrier(frames[frame].draw_command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 	}
-	vkCmdWriteTimestamp(p_sync_to_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, frames[frame].timestamp_pool, frames[frame].timestamp_count);
+
+	vkCmdWriteTimestamp(frames[frame].draw_command_buffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, frames[frame].timestamp_pool, frames[frame].timestamp_count);
 	frames[frame].timestamp_names[frames[frame].timestamp_count] = p_name;
 	frames[frame].timestamp_cpu_values[frames[frame].timestamp_count] = OS::get_singleton()->get_ticks_usec();
 	frames[frame].timestamp_count++;

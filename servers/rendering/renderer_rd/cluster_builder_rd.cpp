@@ -401,11 +401,11 @@ void ClusterBuilderRD::bake_cluster() {
 	RENDER_TIMESTAMP(">Bake Cluster");
 
 	//clear cluster buffer
-	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size, true);
+	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size);
 
 	if (render_element_count > 0) {
 		//clear render buffer
-		RD::get_singleton()->buffer_clear(cluster_render_buffer, 0, cluster_render_buffer_size, true);
+		RD::get_singleton()->buffer_clear(cluster_render_buffer, 0, cluster_render_buffer_size);
 
 		{ //fill state uniform
 
@@ -420,12 +420,12 @@ void ClusterBuilderRD::bake_cluster() {
 			state.cluster_depth_offset = (render_element_max / 32);
 			state.cluster_data_size = state.cluster_depth_offset + render_element_max;
 
-			RD::get_singleton()->buffer_update(state_uniform, 0, sizeof(StateUniform), &state, true);
+			RD::get_singleton()->buffer_update(state_uniform, 0, sizeof(StateUniform), &state);
 		}
 
 		//update instances
 
-		RD::get_singleton()->buffer_update(element_buffer, 0, sizeof(RenderElementData) * render_element_count, render_elements, true);
+		RD::get_singleton()->buffer_update(element_buffer, 0, sizeof(RenderElementData) * render_element_count, render_elements);
 
 		RENDER_TIMESTAMP("Render Elements");
 
