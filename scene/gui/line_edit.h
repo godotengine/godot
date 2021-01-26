@@ -242,6 +242,9 @@ public:
 	Ref<Texture> get_right_icon();
 
 	virtual bool is_text_field() const;
+
+	void show_virtual_keyboard();
+
 	LineEdit();
 	~LineEdit();
 };
