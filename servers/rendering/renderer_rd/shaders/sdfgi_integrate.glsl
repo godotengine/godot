@@ -39,8 +39,11 @@ layout(rgba32i, set = 0, binding = 13) uniform restrict iimage2D lightprobe_aver
 
 layout(rgba16f, set = 0, binding = 14) uniform restrict writeonly image2DArray lightprobe_ambient_texture;
 
+#ifdef USE_CUBEMAP_ARRAY
+layout(set = 1, binding = 0) uniform textureCubeArray sky_irradiance;
+#else
 layout(set = 1, binding = 0) uniform textureCube sky_irradiance;
-
+#endif
 layout(set = 1, binding = 1) uniform sampler linear_sampler_mipmaps;
 
 #define HISTORY_BITS 10
@@ -256,7 +259,11 @@ void main() {
 			light.rgb = hit_light * (dot(max(vec3(0.0), (hit_normal * hit_aniso0)), vec3(1.0)) + dot(max(vec3(0.0), (-hit_normal * hit_aniso1)), vec3(1.0)));
 			light.a = 1.0;
 		} else if (params.sky_mode == SKY_MODE_SKY) {
+#ifdef USE_CUBEMAP_ARRAY
+			light.rgb = textureLod(samplerCubeArray(sky_irradiance, linear_sampler_mipmaps), vec4(ray_dir, 0.0), 2.0).rgb; //use second mipmap because we dont usually throw a lot of rays, so this compensates
+#else
 			light.rgb = textureLod(samplerCube(sky_irradiance, linear_sampler_mipmaps), ray_dir, 2.0).rgb; //use second mipmap because we dont usually throw a lot of rays, so this compensates
+#endif
 			light.rgb *= params.sky_energy;
 			light.a = 0.0;
 
