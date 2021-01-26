@@ -709,7 +709,7 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 		}
 	}
 
-	return Variant();
+	return false;
 }
 
 void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
