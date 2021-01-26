@@ -35,9 +35,9 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
+#include <gdnative/math_defs.h>
 
-#define GODOT_VECTOR2_SIZE 8
+#define GODOT_VECTOR2_SIZE (sizeof(godot_real_t) * 2)
 
 #ifndef GODOT_CORE_API_GODOT_VECTOR2_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_VECTOR2_TYPE_DEFINED
@@ -46,7 +46,7 @@ typedef struct {
 } godot_vector2;
 #endif
 
-#define GODOT_VECTOR2I_SIZE 8
+#define GODOT_VECTOR2I_SIZE (sizeof(int32_t) * 2)
 
 #ifndef GODOT_CORE_API_GODOT_VECTOR2I_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_VECTOR2I_TYPE_DEFINED
