@@ -86,7 +86,7 @@ def configure(env, env_mono):
     is_android = env["platform"] == "android"
     is_javascript = env["platform"] == "javascript"
     is_ios = env["platform"] == "iphone"
-    is_ios_sim = is_ios and env["arch"] in ["x86", "x86_64"]
+    is_ios_sim = is_ios and env["ios_simulator"]
 
     tools_enabled = env["tools"]
     mono_static = env["mono_static"]
@@ -271,9 +271,20 @@ def configure(env, env_mono):
                         arch = env["arch"]
 
                         def copy_mono_lib(libname_wo_ext):
-                            copy_file(
-                                mono_lib_path, "#bin", libname_wo_ext + ".a", "%s.iphone.%s.a" % (libname_wo_ext, arch)
-                            )
+                            if is_ios_sim:
+                                copy_file(
+                                    mono_lib_path,
+                                    "#bin",
+                                    libname_wo_ext + ".a",
+                                    "%s.iphone.%s.simulator.a" % (libname_wo_ext, arch),
+                                )
+                            else:
+                                copy_file(
+                                    mono_lib_path,
+                                    "#bin",
+                                    libname_wo_ext + ".a",
+                                    "%s.iphone.%s.a" % (libname_wo_ext, arch),
+                                )
 
                         # Copy Mono libraries to the output folder. These are meant to be bundled with
                         # the export templates and added to the Xcode project when exporting a game.
