@@ -265,8 +265,11 @@ __pycache__/
 # KDE
 .directory
 
-#Kdevelop project files
+# Kdevelop project files
 *.kdev4
+
+# Kate swap files
+*.kate-swp
 
 # Xcode
 xcuserdata/
