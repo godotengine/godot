@@ -57,6 +57,9 @@ class Body2DSW : public CollisionObject2DSW {
 	real_t bounce;
 	real_t friction;
 
+	Vector2 center_of_mass_local;
+	Vector2 center_of_mass;
+
 	real_t _inv_mass;
 	real_t _inv_inertia;
 	bool user_inertia;
@@ -130,6 +133,8 @@ class Body2DSW : public CollisionObject2DSW {
 
 	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const Area2DSW *p_area);
 
+	_FORCE_INLINE_ void _update_transform_dependant();
+
 	friend class PhysicsDirectBodyState2DSW; // i give up, too many functions to expose
 
 public:
@@ -189,6 +194,8 @@ public:
 	_FORCE_INLINE_ void set_omit_force_integration(bool p_omit_force_integration) { omit_force_integration = p_omit_force_integration; }
 	_FORCE_INLINE_ bool get_omit_force_integration() const { return omit_force_integration; }
 
+	_FORCE_INLINE_ Vector2 get_center_of_mass() const { return center_of_mass; }
+
 	_FORCE_INLINE_ void set_linear_velocity(const Vector2 &p_velocity) { linear_velocity = p_velocity; }
 	_FORCE_INLINE_ Vector2 get_linear_velocity() const { return linear_velocity; }
 
@@ -207,7 +214,7 @@ public:
 
 	_FORCE_INLINE_ void apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) {
 		linear_velocity += p_impulse * _inv_mass;
-		angular_velocity += _inv_inertia * p_position.cross(p_impulse);
+		angular_velocity += _inv_inertia * (p_position - center_of_mass).cross(p_impulse);
 	}
 
 	_FORCE_INLINE_ void apply_torque_impulse(real_t p_torque) {
@@ -216,7 +223,7 @@ public:
 
 	_FORCE_INLINE_ void apply_bias_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) {
 		biased_linear_velocity += p_impulse * _inv_mass;
-		biased_angular_velocity += _inv_inertia * p_position.cross(p_impulse);
+		biased_angular_velocity += _inv_inertia * (p_position - center_of_mass).cross(p_impulse);
 	}
 
 	void set_active(bool p_active);
@@ -250,7 +257,7 @@ public:
 
 	_FORCE_INLINE_ void add_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) {
 		applied_force += p_force;
-		applied_torque += p_position.cross(p_force);
+		applied_torque += (p_position - center_of_mass).cross(p_force);
 	}
 
 	_FORCE_INLINE_ void add_torque(real_t p_torque) {
@@ -349,6 +356,7 @@ public:
 	virtual real_t get_total_angular_damp() const override { return body->area_angular_damp; } // get density of this body space/area
 	virtual real_t get_total_linear_damp() const override { return body->area_linear_damp; } // get density of this body space/area
 
+	virtual Vector2 get_center_of_mass() const override { return body->get_center_of_mass(); }
 	virtual real_t get_inverse_mass() const override { return body->get_inv_mass(); } // get the mass
 	virtual real_t get_inverse_inertia() const override { return body->get_inv_inertia(); } // get density of this body space
 

@@ -288,6 +288,10 @@ bool CircleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p
 	return true;
 }
 
+real_t CircleShape2DSW::get_area() const {
+	return Math_PI * radius * radius;
+}
+
 real_t CircleShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 	real_t a = radius * p_scale.x;
 	real_t b = radius * p_scale.y;
@@ -348,6 +352,10 @@ bool RectangleShape2DSW::contains_point(const Vector2 &p_point) const {
 
 bool RectangleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
 	return get_aabb().intersects_segment(p_begin, p_end, &r_point, &r_normal);
+}
+
+real_t RectangleShape2DSW::get_area() const {
+	return half_extents.x * half_extents.y * 4;
 }
 
 real_t RectangleShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
@@ -468,6 +476,10 @@ bool CapsuleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &
 	return collided; //todo
 }
 
+real_t CapsuleShape2DSW::get_area() const {
+	return (radius * 2 + height) * radius * 2;
+}
+
 real_t CapsuleShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 	Vector2 he2 = Vector2(radius * 2, height + radius * 2) * p_scale;
 	return p_mass * he2.dot(he2) / 12.0;
@@ -577,6 +589,43 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vec
 
 	//return get_aabb().intersects_segment(p_begin,p_end,&r_point,&r_normal);
 	return inters; //todo
+}
+
+real_t ConvexPolygonShape2DSW::get_area() const {
+	if (point_count < 3)
+		return 0;
+
+	real_t signed_area = 0;
+	for (int i = 0; i < point_count; i++) {
+		Vector2 v1 = points[i].pos;
+		Vector2 v2 = points[(i + 1) % point_count].pos;
+		signed_area += v1.x * v2.y - v2.x * v1.y;
+	}
+	signed_area *= 0.5;
+	return ABS(signed_area);
+}
+
+Vector2 ConvexPolygonShape2DSW::get_shape_center_offset() const {
+	if (point_count < 3)
+		return Vector2();
+
+	Vector2 centroid;
+	real_t signed_area = 0.0;
+	real_t a = 0.0;
+
+	for (int i = 0; i < point_count; i++) {
+		const Vector2 &v1 = points[i].pos;
+		const Vector2 &v2 = points[(i + 1) % point_count].pos;
+
+		a = v1.x * v2.y - v2.x * v1.y;
+		signed_area += a;
+		centroid += (v1 + v2) * a;
+	}
+
+	signed_area *= 0.5;
+	centroid /= (6.0 * signed_area);
+
+	return centroid;
 }
 
 real_t ConvexPolygonShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {

@@ -86,6 +86,8 @@ public:
 	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const = 0;
 
 	virtual bool intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const = 0;
+	virtual real_t get_area() const = 0;
+	virtual Vector2 get_shape_center_offset() const { return Vector2(); }
 	virtual real_t get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const = 0;
 	virtual void set_data(const Variant &p_data) = 0;
 	virtual Variant get_data() const = 0;
@@ -167,6 +169,7 @@ public:
 
 	virtual bool contains_point(const Vector2 &p_point) const;
 	virtual bool intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const;
+	virtual real_t get_area() const { return 0; };
 	virtual real_t get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const;
 
 	virtual void set_data(const Variant &p_data);
@@ -204,6 +207,7 @@ public:
 
 	virtual bool contains_point(const Vector2 &p_point) const;
 	virtual bool intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const;
+	virtual real_t get_area() const { return 0; };
 	virtual real_t get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const;
 
 	virtual void set_data(const Variant &p_data);
@@ -244,6 +248,7 @@ public:
 
 	virtual bool contains_point(const Vector2 &p_point) const;
 	virtual bool intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const;
+	virtual real_t get_area() const { return 0; };
 	virtual real_t get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const;
 
 	virtual void set_data(const Variant &p_data);
@@ -281,6 +286,7 @@ public:
 
 	virtual bool contains_point(const Vector2 &p_point) const;
 	virtual bool intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const;
+	virtual real_t get_area() const;
 	virtual real_t get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const;
 
 	virtual void set_data(const Variant &p_data);
@@ -314,6 +320,7 @@ public:
 
 	virtual bool contains_point(const Vector2 &p_point) const;
 	virtual bool intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const;
+	virtual real_t get_area() const;
 	virtual real_t get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const;
 
 	virtual void set_data(const Variant &p_data);
@@ -388,6 +395,7 @@ public:
 
 	virtual bool contains_point(const Vector2 &p_point) const;
 	virtual bool intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const;
+	virtual real_t get_area() const;
 	virtual real_t get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const;
 
 	virtual void set_data(const Variant &p_data);
@@ -441,6 +449,8 @@ public:
 
 	virtual bool contains_point(const Vector2 &p_point) const;
 	virtual bool intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const;
+	virtual real_t get_area() const;
+	virtual Vector2 get_shape_center_offset() const;
 	virtual real_t get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const;
 
 	virtual void set_data(const Variant &p_data);
@@ -520,6 +530,7 @@ public:
 	virtual bool contains_point(const Vector2 &p_point) const;
 	virtual bool intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const;
 
+	virtual real_t get_area() const { return 0; };
 	virtual real_t get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const { return 0; }
 
 	virtual void set_data(const Variant &p_data);

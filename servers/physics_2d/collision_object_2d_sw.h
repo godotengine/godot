@@ -57,6 +57,7 @@ private:
 		Transform2D xform_inv;
 		BroadPhase2DSW::ID bpid;
 		Rect2 aabb_cache; //for rayqueries
+		real_t area_cache;
 		Shape2DSW *shape;
 		Variant metadata;
 		bool disabled;
@@ -138,6 +139,7 @@ public:
 		CRASH_BAD_INDEX(p_index, shapes.size());
 		return shapes[p_index].aabb_cache;
 	}
+	_FORCE_INLINE_ real_t get_shape_area(int p_index) const { return shapes[p_index].area_cache; }
 	_FORCE_INLINE_ const Variant &get_shape_metadata(int p_index) const {
 		CRASH_BAD_INDEX(p_index, shapes.size());
 		return shapes[p_index].metadata;

@@ -370,8 +370,8 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		int gather_A = A->can_report_contacts();
 		int gather_B = B->can_report_contacts();
 
-		c.rA = global_A;
-		c.rB = global_B - offset_B;
+		c.rA = global_A - A->get_center_of_mass();
+		c.rB = global_B - offset_B - B->get_center_of_mass();
 
 		if (gather_A | gather_B) {
 			//Vector2 crB( -B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x );
@@ -418,8 +418,8 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			// Apply normal + friction impulse
 			Vector2 P = c.acc_normal_impulse * c.normal + c.acc_tangent_impulse * tangent;
 
-			A->apply_impulse(-P, c.rA);
-			B->apply_impulse(P, c.rB);
+			A->apply_impulse(-P, c.rA + A->get_center_of_mass());
+			B->apply_impulse(P, c.rB + B->get_center_of_mass());
 		}
 #endif
 
@@ -471,8 +471,8 @@ void BodyPair2DSW::solve(real_t p_step) {
 
 		Vector2 jb = c.normal * (c.acc_bias_impulse - jbnOld);
 
-		A->apply_bias_impulse(-jb, c.rA);
-		B->apply_bias_impulse(jb, c.rB);
+		A->apply_bias_impulse(-jb, c.rA + A->get_center_of_mass());
+		B->apply_bias_impulse(jb, c.rB + B->get_center_of_mass());
 
 		real_t jn = -(c.bounce + vn) * c.mass_normal;
 		real_t jnOld = c.acc_normal_impulse;
@@ -487,8 +487,8 @@ void BodyPair2DSW::solve(real_t p_step) {
 
 		Vector2 j = c.normal * (c.acc_normal_impulse - jnOld) + tangent * (c.acc_tangent_impulse - jtOld);
 
-		A->apply_impulse(-j, c.rA);
-		B->apply_impulse(j, c.rB);
+		A->apply_impulse(-j, c.rA + A->get_center_of_mass());
+		B->apply_impulse(j, c.rB + B->get_center_of_mass());
 	}
 }
 

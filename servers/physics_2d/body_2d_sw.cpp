@@ -39,6 +39,10 @@ void Body2DSW::_update_inertia() {
 	}
 }
 
+void Body2DSW::_update_transform_dependant() {
+	center_of_mass = get_transform().basis_xform(center_of_mass_local);
+}
+
 void Body2DSW::update_inertias() {
 	//update shapes and motions
 
@@ -52,7 +56,25 @@ void Body2DSW::update_inertias() {
 			real_t total_area = 0;
 
 			for (int i = 0; i < get_shape_count(); i++) {
-				total_area += get_shape_aabb(i).get_area();
+				total_area += get_shape_area(i);
+			}
+
+			center_of_mass_local.x = center_of_mass_local.y = 0;
+
+			for (int i = 0; i < get_shape_count(); i++) {
+				if (is_shape_disabled(i)) {
+					continue;
+				}
+				real_t area = get_shape_area(i);
+				real_t mass = area * this->mass / total_area;
+				Shape2DSW *shape = get_shape(i);
+
+				Vector2 shape_offset = shape->get_shape_center_offset();
+				if (shape_offset == Vector2()) {
+					center_of_mass_local += mass * get_shape_transform(i).get_origin();
+				} else {
+					center_of_mass_local += mass * get_shape_transform(i).xform(shape_offset);
+				}
 			}
 
 			inertia = 0;
@@ -64,13 +86,13 @@ void Body2DSW::update_inertias() {
 
 				const Shape2DSW *shape = get_shape(i);
 
-				real_t area = get_shape_aabb(i).get_area();
+				real_t area = get_shape_area(i);
 
 				real_t mass = area * this->mass / total_area;
 
 				Transform2D mtx = get_shape_transform(i);
 				Vector2 scale = mtx.get_scale();
-				inertia += shape->get_moment_of_inertia(mass, scale) + mass * mtx.get_origin().length_squared();
+				inertia += shape->get_moment_of_inertia(mass, scale) + mass * (mtx.get_origin() - center_of_mass_local).length_squared();
 			}
 
 			_inv_inertia = inertia > 0 ? (1.0 / inertia) : 0;
@@ -93,6 +115,7 @@ void Body2DSW::update_inertias() {
 
 		} break;
 	}
+	_update_transform_dependant();
 	//_update_inertia_tensor();
 
 	//_update_shapes();
@@ -548,8 +571,13 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 	real_t total_angular_velocity = angular_velocity + biased_angular_velocity;
 	Vector2 total_linear_velocity = linear_velocity + biased_linear_velocity;
 
-	real_t angle = get_transform().get_rotation() + total_angular_velocity * p_step;
-	Vector2 pos = get_transform().get_origin() + total_linear_velocity * p_step;
+	Transform2D t = get_transform();
+	Vector2 origin_center_pos = t.xform(center_of_mass_local);
+	real_t angle = t.get_rotation() + total_angular_velocity * p_step;
+	t.set_rotation(angle);
+	Vector2 delta = origin_center_pos - t.xform(center_of_mass_local);
+
+	Vector2 pos = get_transform().get_origin() + total_linear_velocity * p_step + delta;
 
 	_set_transform(Transform2D(angle, pos), continuous_cd_mode == PhysicsServer2D::CCD_MODE_DISABLED);
 	_set_inv_transform(get_transform().inverse());
@@ -559,6 +587,7 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 	}
 
 	//_update_inertia_tensor();
+	_update_transform_dependant();
 }
 
 void Body2DSW::wakeup_neighbours() {

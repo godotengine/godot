@@ -188,6 +188,9 @@
 		<member name="inverse_inertia" type="float" setter="" getter="get_inverse_inertia">
 			The inverse of the inertia of the body.
 		</member>
+		<member name="center_of_mass" type="Vector2" setter="" getter="get_center_of_mass">
+			The center of mass of the body, offset from body origin in global coordinates.
+		</member>
 		<member name="inverse_mass" type="float" setter="" getter="get_inverse_mass">
 			The inverse of the mass of the body.
 		</member>
