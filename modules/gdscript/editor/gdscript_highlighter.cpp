@@ -191,19 +191,21 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 				col = text_editor->get_keyword_color(word);
 			} else if (text_editor->has_member_color(word)) {
 				col = text_editor->get_member_color(word);
+			}
+
+			if (col != Color()) {
 				for (int k = j - 1; k >= 0; k--) {
 					if (str[k] == '.') {
-						col = Color(); //member indexing not allowed
+						col = Color(); // keyword & member indexing not allowed
 						break;
 					} else if (str[k] > 32) {
 						break;
 					}
 				}
-			}
-
-			if (col != Color()) {
-				in_keyword = true;
-				keyword_color = col;
+				if (col != Color()) {
+					in_keyword = true;
+					keyword_color = col;
+				}
 			}
 		}
 
