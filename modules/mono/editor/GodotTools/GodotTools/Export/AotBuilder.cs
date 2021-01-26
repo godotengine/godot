@@ -340,9 +340,14 @@ MONO_AOT_MODE_LAST = 1000,
             string MonoLibFromTemplate(string libFileName) =>
                 Path.Combine(Internal.FullTemplatesDir, "iphone-mono-libs", MonoLibFile(libFileName));
 
-            exporter.AddIosProjectStaticLib(MonoLibFromTemplate("libmonosgen-2.0"));
+            string MonoFrameworkFile(string frameworkFileName) => frameworkFileName + ".xcframework";
 
-            exporter.AddIosProjectStaticLib(MonoLibFromTemplate("libmono-native"));
+            string MonoFrameworkFromTemplate(string frameworkFileName) =>
+                Path.Combine(Internal.FullTemplatesDir, "iphone-mono-libs", MonoFrameworkFile(frameworkFileName));
+
+            exporter.AddIosProjectStaticLib(MonoFrameworkFromTemplate("libmonosgen-2.0"));
+
+            exporter.AddIosProjectStaticLib(MonoFrameworkFromTemplate("libmono-native"));
 
             if (aotOpts.UseInterpreter)
             {
@@ -366,7 +371,7 @@ MONO_AOT_MODE_LAST = 1000,
             // functions in System.Native/libmono-native). Instead, we should use cecil to search for
             // DllImports in assemblies and pass them to 'ld' as '-u/--undefined {pinvoke_symbol}'.
             exporter.AddIosLinkerFlags("-rdynamic");
-            exporter.AddIosLinkerFlags($"-force_load \"$(SRCROOT)/{MonoLibFile("libmono-native")}\"");
+            exporter.AddIosLinkerFlags($"-force_load \"$(SRCROOT)/{MonoFrameworkFile("libmono-native")}\"");
         }
 
         /// Converts an assembly name to a valid symbol name in the same way the AOT compiler does
