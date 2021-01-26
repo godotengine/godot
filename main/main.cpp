@@ -172,7 +172,7 @@ static String get_full_version_string() {
 void initialize_physics() {
 
 	// This must be defined BEFORE the 3d physics server is created
-	GLOBAL_DEF("physics/3d/godot_physics/use_bvh", true);
+	GLOBAL_DEF("physics/3d/godot_physics/use_bvh", false);
 
 	/// 3D Physics Server
 	physics_server = PhysicsServerManager::new_server(ProjectSettings::get_singleton()->get(PhysicsServerManager::setting_property_name));

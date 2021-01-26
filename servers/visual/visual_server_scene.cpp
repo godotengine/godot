@@ -3656,7 +3656,7 @@ VisualServerScene::VisualServerScene() {
 
 	render_pass = 1;
 	singleton = this;
-	_use_bvh = GLOBAL_DEF("rendering/quality/spatial_partitioning/use_bvh", true);
+	_use_bvh = GLOBAL_DEF("rendering/quality/spatial_partitioning/use_bvh", false);
 }
 
 VisualServerScene::~VisualServerScene() {
