@@ -1613,7 +1613,8 @@ void VulkanContext::set_object_name(VkObjectType p_object_type, uint64_t p_objec
 	name_info.pNext = nullptr;
 	name_info.objectType = p_object_type;
 	name_info.objectHandle = p_object_handle;
-	name_info.pObjectName = p_object_name.utf8().get_data();
+	CharString object_name = p_object_name.utf8();
+	name_info.pObjectName = object_name.get_data();
 	SetDebugUtilsObjectNameEXT(device, &name_info);
 }
 
