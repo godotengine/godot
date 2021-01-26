@@ -14,12 +14,13 @@
 # cefrebevalo <szmarci711@gmail.com>, 2020.
 # thekeymethod <csokan.andras87@protonmail.ch>, 2020.
 # Czmorek Dávid <czmdav.soft@gmail.com>, 2020.
+# Újvári Marcell <mmarci72@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-07 08:11+0000\n"
-"Last-Translator: Czmorek Dávid <czmdav.soft@gmail.com>\n"
+"PO-Revision-Date: 2021-01-22 10:21+0000\n"
+"Last-Translator: Újvári Marcell <mmarci72@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -27,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -738,10 +739,9 @@ msgstr "Csak a kijelölés"
 #: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
 msgid "Standard"
-msgstr ""
+msgstr "Alapértelmezett"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Scripts Panel"
 msgstr "Szkript panel váltása"
 
@@ -7247,7 +7247,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Z-Axis Transform."
-msgstr ""
+msgstr "Z-Tengely transzformáció"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Plane Transform."

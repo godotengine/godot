@@ -106,12 +106,16 @@
 # ThiagoCTN <thiagocampostn@gmail.com>, 2020.
 # Alec Santos <alecsantos96@gmail.com>, 2020.
 # Augusto Milão <augusto.milao01@gmail.com>, 2021.
+# Gabriel Gavazzi Felix <mutcholoko32@gmail.com>, 2021.
+# Lucas Dantas <lucas.lucantas38@gmail.com>, 2021.
+# Carlos Bonifacio <carlosboni.sa@gmail.com>, 2021.
+# Lucas Castro <castroclucas@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2021-01-06 18:29+0000\n"
-"Last-Translator: Augusto Milão <augusto.milao01@gmail.com>\n"
+"PO-Revision-Date: 2021-01-26 03:28+0000\n"
+"Last-Translator: Lucas Castro <castroclucas@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -119,7 +123,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1856,7 +1860,7 @@ msgstr "Novo"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr "Import"
+msgstr "Importar"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -2482,7 +2486,7 @@ msgstr "Não há cena definida para rodar."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Salvar a cena antes de executar..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -4010,19 +4014,16 @@ msgid "Searching..."
 msgstr "Procurando..."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d match in %d file."
-msgstr "%d correspondências."
+msgstr "%d correspondência em %d arquivo."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d file."
-msgstr "%d correspondências."
+msgstr "%d correspondências em %d arquivo."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d files."
-msgstr "%d correspondências."
+msgstr "%d correspondências em %d arquivos."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -5263,14 +5264,12 @@ msgid "Assets ZIP File"
 msgstr "Arquivo ZIP de Assets"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
 "Não foi possível determinar um caminho para salvar as imagens do lightmap.\n"
-"Salve sua cena (para que as imagens sejam salvas no mesmo diretório), ou "
-"escolha um caminho nas propriedades do BakedLightmap."
+"Salve sua cena e tente novamente."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5289,26 +5288,31 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
 msgstr ""
+"Falha ao determinar o tamanho do lightmap. Tamanho máximo do lightmap é "
+"muito baixo?"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
 msgstr ""
+"Alguma malha é inválida. Certifique-se de que os valores do canal UV2 estão "
+"contidos na região quadrada [0.0,1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
+"O editor Godot foi construído sem suporte à ray tracing, os lightmaps não "
+"podem ser bakeados."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
-msgstr "Preparar Lightmaps"
+msgstr "Bake Lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "Selecionar o Arquivo de Modelo"
+msgstr "Selecione o arquivo de lightmap bake:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6404,9 +6408,8 @@ msgstr ""
 "Só é permitido colocar um ponto em um material processador ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles2D"
-msgstr "Converter para Particulas CPU"
+msgstr "Converter para CPUParticles2D"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -8858,9 +8861,8 @@ msgid "Visual Shader Input Type Changed"
 msgstr "Tipo de Entrada de Shader Visual Alterado"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "UniformRef Name Changed"
-msgstr "Definir Nome Uniforme"
+msgstr "UniformRef Name foi altearado"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9575,7 +9577,6 @@ msgstr ""
 "uniformes e constantes."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "A reference to an existing uniform."
 msgstr "Uma referência a um uniforme existente."
 
@@ -11683,17 +11684,15 @@ msgstr ""
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
-msgstr ""
+msgstr "Preparando estruturas de dados"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Generate buffers"
-msgstr "Gerar AABB"
+msgstr "Gerar buffers"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Direct lighting"
-msgstr "Direções"
+msgstr "Direct lightning"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 #, fuzzy
@@ -12227,7 +12226,7 @@ msgstr "Selecione um dispositivo da lista"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find the 'apksigner' tool."
-msgstr ""
+msgstr "Não foi possível encontrar a ferramenta 'apksigner'."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12270,6 +12269,7 @@ msgstr "Diretório 'ferramentas-da-plataforma' ausente!"
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
+"Não foi possível encontrar o comando adb nas ferramentas do Android SDK."
 
 #: platform/android/export/export.cpp
 #, fuzzy
@@ -12286,6 +12286,8 @@ msgstr "Diretório 'ferramentas-da-plataforma' ausente!"
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
+"Não foi possível encontrar o comando apksigner nas ferramentas de build do "
+"Android SDK."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12755,7 +12757,7 @@ msgstr "ARVROrigin necessita um nó ARVRCamera como filho."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
-msgstr ""
+msgstr "Encontrando malhas e luzes"
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
@@ -13184,6 +13186,8 @@ msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
 msgstr ""
+"A porta sampler está conectada mas não está sendo usada. Considere alterar a "
+"fonte para 'SamplerPort'."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

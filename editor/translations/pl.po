@@ -45,12 +45,13 @@
 # Piotr Grodzki <ziemniakglados@gmail.com>, 2020.
 # Dzejkop <jakubtrad@gmail.com>, 2020.
 # Mateusz Grzonka <alpinus4@gmail.com>, 2020.
+# gnu-ewm <gnu.ewm@protonmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-12 13:32+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2021-01-26 03:28+0000\n"
+"Last-Translator: gnu-ewm <gnu.ewm@protonmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -59,7 +60,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -903,7 +904,7 @@ msgstr "Sygnał:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr "Połącz \"%s\" z \"%s\""
+msgstr "Połącz '%s' z '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
@@ -2416,7 +2417,7 @@ msgstr "Nie ma zdefiniowanej sceny do uruchomienia."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Zapisz scenę przed uruchomieniem..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -5180,14 +5181,12 @@ msgid "Assets ZIP File"
 msgstr "Plik ZIP assetów"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
-"Nie można określić ścieżki zapisu dla lightmapy obrazu.\n"
-"Zapisz scenę (obrazy będą zapisane w tym samym katalogu), lub przepisz "
-"ścieżkę zapisu z właściwości BakedLightmap."
+"Nie można określić ścieżki zapisu dla obrazów mapy światła.\n"
+"Zapisz scenę i spróbuj ponownie."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5206,26 +5205,31 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
 msgstr ""
+"Nie udało się określić rozmiaru mapy światła. Maksymalny rozmiar jest za "
+"mały?"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
 msgstr ""
+"Jakaś siatka jest nieprawidłowa. Upewnij się, że wartości kanału UV2 "
+"mieszczą się w kwadratowym obszarze [0.0, 1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
+"Godot został zbudowany bez wsparcia ray tracingu, mapy światła nie mogą być "
+"wypalone."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Stwórz Lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "Wybierz plik szablonu"
+msgstr "Wybierz plik wypalenia mapy światła:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6322,9 +6326,8 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "Punkt można wstawić tylko w materiał przetwarzania ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles2D"
-msgstr "Przekonwertuj na cząsteczki CPU"
+msgstr "Przekonwertuj na CPUParticles2D"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -11597,36 +11600,31 @@ msgstr ""
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr ""
+msgstr "Zacznij wypalanie"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
-msgstr ""
+msgstr "Przygotowywanie struktur danych"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Generate buffers"
-msgstr "Generuj AABB"
+msgstr "Generuj bufory"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Direct lighting"
-msgstr "Kierunki"
+msgstr "Oświetlenie bezpośrednie"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Indirect lighting"
-msgstr "Wcięcie w prawo"
+msgstr "Oświetlenie pośrednie"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Post processing"
 msgstr "Przetwarzanie końcowe"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Plotting lightmaps"
-msgstr "Kreślenie świateł:"
+msgstr "Kreślenie map światła"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -12139,9 +12137,8 @@ msgid "Select device from the list"
 msgstr "Wybierz urządzenie z listy"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Unable to find the 'apksigner' tool."
-msgstr "Nie udało się znaleźć narzędzia zipalign."
+msgstr "Nie udało się znaleźć narzędzia \"apksigner\"."
 
 #: platform/android/export/export.cpp
 msgid ""

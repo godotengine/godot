@@ -6,7 +6,7 @@
 # Carlos Vieira <carlos.vieira@gmail.com>, 2017.
 # João <joao@nogordio.com>, 2018.
 # João Graça <jgraca95@gmail.com>, 2017.
-# João Lopes <linux-man@hotmail.com>, 2017-2018, 2019, 2020.
+# João Lopes <linux-man@hotmail.com>, 2017-2018, 2019, 2020, 2021.
 # Miguel Gomes <miggas09@gmail.com>, 2017.
 # Paulo Caldeira <paucal@gmail.com>, 2018.
 # Pedro Gomes <pedrogomes1698@gmail.com>, 2017.
@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-31 07:09+0000\n"
+"PO-Revision-Date: 2021-01-26 03:28+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
@@ -31,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -566,7 +566,7 @@ msgstr "Copiar Pistas"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
-msgstr "Escalar Selecção"
+msgstr "Escalar Seleção"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale From Cursor"
@@ -622,7 +622,7 @@ msgstr "Máximo de Erros Angulares:"
 
 #: editor/animation_track_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr "Angulo Máximo Otimizável:"
+msgstr "Ângulo Máximo Otimizável:"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize"
@@ -630,7 +630,7 @@ msgstr "Otimizar"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
-msgstr "Remover Chaves inválidas"
+msgstr "Remover chaves inválidas"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
@@ -1132,7 +1132,7 @@ msgstr "Agradecimentos da Comunidade Godot!"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
-msgstr "Contribuidores da engine Godot"
+msgstr "Contribuidores do Godot Engine"
 
 #: editor/editor_about.cpp
 msgid "Project Founders"
@@ -2268,7 +2268,7 @@ msgstr "A guardar Cena"
 
 #: editor/editor_node.cpp
 msgid "Analyzing"
-msgstr "A analizar"
+msgstr "A analisar"
 
 #: editor/editor_node.cpp
 msgid "Creating Thumbnail"
@@ -2397,7 +2397,7 @@ msgstr "Não existe cena definida para execução."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Guardar cena antes de executar..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -2756,7 +2756,7 @@ msgstr "Converter Para..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr "Bib. de Meshes..."
+msgstr "MeshLibrary..."
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
@@ -2886,7 +2886,7 @@ msgid ""
 "When this option is enabled, navigation meshes and polygons will be visible "
 "in the running project."
 msgstr ""
-"Com esta opção ativa, Meshes e Polígonos de navegação serão visíveis no "
+"Com esta opção ativa, malhas de navegação e polígonos serão visíveis no "
 "projeto em execução."
 
 #: editor/editor_node.cpp
@@ -2907,7 +2907,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Synchronize Script Changes"
-msgstr "Sicronizar alterações de script"
+msgstr "Sincronizar Alterações de Script"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3192,7 +3192,7 @@ msgstr "Sub-recurso não encontrado."
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
-msgstr "A criar pré-visualizações de Malha"
+msgstr "A criar Pré-visualizações de Malha"
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail..."
@@ -3427,7 +3427,7 @@ msgstr "Não consegui executar o script:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
-msgstr "Esqueceu-se do médodo '_run'?"
+msgstr "Esqueceu-se do método '_run'?"
 
 #: editor/editor_spin_slider.cpp
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
@@ -3721,7 +3721,7 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
-"Os seguintes ficheiros ou pastas estão em conflito com os items na "
+"Os seguintes ficheiros ou pastas estão em conflito com os itens na "
 "localização '%s':\n"
 "\n"
 "%s\n"
@@ -4319,7 +4319,7 @@ msgid ""
 "Activate to enable playback, check node warnings if activation fails."
 msgstr ""
 "AnimationTree está inativa.\n"
-"Active-a para permitir a reprodução, verifique avisos do nó se a ativação "
+"Ative-a para permitir a reprodução, verifique avisos do nó se a ativação "
 "falhar."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -5019,7 +5019,7 @@ msgstr "Tempo expirado."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr "Mau hash na transferência, assume-se que o Ficheiro foi manipulado."
+msgstr "Mau hash na transferência, assume-se que o ficheiro foi manipulado."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
@@ -5163,21 +5163,19 @@ msgid "Assets ZIP File"
 msgstr "Ficheiro ZIP de Ativos"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
 "Não consigo determinar um caminho para guardar imagens lightmap.\n"
-"Guarde a sua cena (para as imagens serem guardadas na mesma diretoria), ou "
-"escolha um caminho nas propriedades BakedLightmap."
+"Guarde a sua cena e tente novamente."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
 "Light' flag is on."
 msgstr ""
-"Não há Meshes para consolidar. Assegure-se que contêm um canal UV2 e que a "
+"Não há malhas para consolidar. Assegure-se que contêm um canal UV2 e que a "
 "referência 'Bake Light' flag está on."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -5187,26 +5185,31 @@ msgstr "Falha ao criar imagens lightmap, assegure-se que o caminho é gravável.
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
 msgstr ""
+"Falha na determinação do tamanho do lightmap. Tamanho máximo do lightmap "
+"demasiado pequeno?"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
 msgstr ""
+"Alguma malha é inválida. Certifique-se que os valores do canal UV2 estão "
+"contidos na região quadrada [0.0,1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
+"Editor Godot foi compilado sem suporte para ray tracing, lightmaps não podem "
+"ser consolidados."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Consolidar Lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "Selecionar Ficheiro de Modelo"
+msgstr "Selecionar ficheiro de consolidação de lightmap:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5319,7 +5322,7 @@ msgid ""
 "their parent."
 msgstr ""
 "As âncoras e margens de filhos de um contentores são sobrescritas pelo seu "
-"pai."
+"progenitor."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
@@ -5419,8 +5422,8 @@ msgid ""
 "Game Camera Override\n"
 "Overrides game camera with editor viewport camera."
 msgstr ""
-"Sobreposição de Câmara de Jogo\n"
-"Sobrepõe câmara de jogo com câmara viewport do editor."
+"Sobreposição de Câmera de Jogo\n"
+"Sobrepõe câmara de jogo com câmera viewport do editor."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5428,7 +5431,7 @@ msgid ""
 "Game Camera Override\n"
 "No game instance running."
 msgstr ""
-"Sobreposição de Câmara de Jogo\n"
+"Sobreposição de Câmera de Jogo\n"
 "Nenhuma instância de jogo em execução."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5481,7 +5484,7 @@ msgid ""
 "by their parent."
 msgstr ""
 "Atenção: as crianças de um contentor obtêm a sua posição e tamanho "
-"determinados apenas pelos seus pais."
+"determinados apenas pelos seus progenitores."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -5594,7 +5597,7 @@ msgstr "Configurar Ajuste..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Parent"
-msgstr "Ajustar ao Parente"
+msgstr "Ajustar ao Progenitor"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Anchor"
@@ -5982,7 +5985,7 @@ msgstr "Não consegui criar uma forma de colisão Trimesh."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
-msgstr "Criar corpo estático Trimesh"
+msgstr "Criar Corpo Estático Trimesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -6027,7 +6030,7 @@ msgstr "Malha contida não é do tipo ArrayMesh."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr "Falhou o desempacotamento UV, a Malha pode não ser múltipla?"
+msgstr "Falhou o desempacotamento UV, a malha pode não ser múltipla?"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "No mesh to debug."
@@ -6047,7 +6050,7 @@ msgstr "A Malha não tem superfície para criar contornos!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr "Tipo primitivo de Malha não é PRIMITIVE_TRIANGLES!"
+msgstr "Tipo primitivo de malha não é PRIMITIVE_TRIANGLES!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -6063,7 +6066,7 @@ msgstr "Malha"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
-msgstr "Criar corpo estático Trimesh"
+msgstr "Criar Corpo Estático Trimesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -6149,7 +6152,7 @@ msgstr "Tamanho do contorno:"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Channel Debug"
-msgstr "Debug Canal UV"
+msgstr "Depuração Canal UV"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
@@ -6165,7 +6168,7 @@ msgstr ""
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Mesh Library"
-msgstr "Bib. de Meshes"
+msgstr "Bib. de Malhas"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -6186,11 +6189,11 @@ msgstr "Atualizar a partir da Cena"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
-msgstr "Fonte da Malha não especificada (nem MultiMesh no nó)."
+msgstr "Fonte da malha não especificada (nem MultiMesh definido no nó)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and MultiMesh contains no Mesh)."
-msgstr "Fonte da Malha não especificada (e MultiMesh não contêm Malha)."
+msgstr "Fonte da malha não especificada (e MultiMesh não contêm Malha)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (invalid path)."
@@ -6222,7 +6225,7 @@ msgstr "A fonte de superfície é inválida (sem faces)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Source Mesh:"
-msgstr "Selecione uma fonte Malha:"
+msgstr "Selecione uma Fonte Malha:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Target Surface:"
@@ -6299,9 +6302,8 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "Só pode definir um Ponto num Material ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles2D"
-msgstr "Converter em CPUParticles"
+msgstr "Converter em CPUParticles2D"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -6521,7 +6523,7 @@ msgstr "Criar mapa UV"
 msgid ""
 "Polygon 2D has internal vertices, so it can no longer be edited in the "
 "viewport."
-msgstr "Polygon 2D tem vértices internos, não poder ser editado no viewport."
+msgstr "Polígono 2D tem vértices internos, não pode ser editado no viewport."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon & UV"
@@ -6561,7 +6563,7 @@ msgstr "Pintar pesos dos ossos"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Open Polygon 2D UV editor."
-msgstr "Abrir editor UV de Polygon2D."
+msgstr "Abrir editor UV de Polígono 2D."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
@@ -6813,7 +6815,7 @@ msgstr "Não consigo obter o script para executar."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script failed reloading, check console for errors."
-msgstr "Falhou a re-leitura do script, analise os erros na consola."
+msgstr "Falhou a releitura do script, analise os erros na consola."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script is not in tool mode, will not be able to run."
@@ -7014,7 +7016,7 @@ msgstr "Recarregar"
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Resave"
-msgstr "Reguardar"
+msgstr "Guardar novamente"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
@@ -7030,7 +7032,7 @@ msgstr "Limpar Scripts Recentes"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Connections to method:"
-msgstr "Conecções ao método:"
+msgstr "Conexões ao método:"
 
 #: editor/plugins/script_text_editor.cpp editor/script_editor_debugger.cpp
 msgid "Source"
@@ -7409,7 +7411,7 @@ msgstr "Alinhar Rotação com Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
-msgstr "Sem parente para criar instância de filho."
+msgstr "Sem progenitor para criar instância de filho."
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
@@ -7429,7 +7431,7 @@ msgstr "Vista normal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Wireframe"
-msgstr "Vista wireframe"
+msgstr "Vista Wireframe"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Overdraw"
@@ -7981,7 +7983,7 @@ msgstr "TextureRegion"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add All Items"
-msgstr "Adicionar todos os itens"
+msgstr "Adicionar Todos os Itens"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add All"
@@ -7989,7 +7991,7 @@ msgstr "Adicionar tudo"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove All Items"
-msgstr "Remover todos os itens"
+msgstr "Remover Todos os Itens"
 
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 msgid "Remove All"
@@ -8005,11 +8007,11 @@ msgstr "Menu edição de tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
-msgstr "Adicionar itens de classe"
+msgstr "Adicionar Itens de Classe"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Class Items"
-msgstr "Remover itens de classe"
+msgstr "Remover Itens de Classe"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Template"
@@ -8423,7 +8425,7 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Delete selected Rect."
-msgstr "Eliminar Rect seleccionado."
+msgstr "Eliminar Rect selecionado."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -9149,8 +9151,8 @@ msgstr ""
 "Função SmoothStep( escalar(limite0), escalar(limite1), escalar(x) ).\n"
 "\n"
 "Devolve 0.0 se 'x' for menor que 'limite0' e 1.0 se 'x' for maior que "
-"'limite1'. Caso contrário o valor devolvido é interpolado entre 0.0 and 1.0 "
-"a usar polinomiais Hermite."
+"'limite1'. Caso contrário o valor devolvido é interpolado entre 0.0 e 1.0 "
+"usando polinomiais Hermite."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9367,8 +9369,8 @@ msgstr ""
 "Função SmoothStep( vetor(limite0), vetor(limite1), vetor(x) ).\n"
 "\n"
 "Devolve 0.0 se 'x' for menor que 'limite0' e 1.0 se 'x' for maior que "
-"'limite1'. Caso contrário o valor devolvido é interpolado entre 0.0 and 1.0 "
-"a usar polinomiais Hermite."
+"'limite1'. Caso contrário o valor devolvido é interpolado entre 0.0 e 1.0 "
+"usando polinomiais Hermite."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9381,8 +9383,8 @@ msgstr ""
 "Função SmoothStep( escalar(limite0), escalar(limite1), vetor(x) ).\n"
 "\n"
 "Devolve 0.0 se 'x' for menor que 'limite0' e 1.0 se 'x' for maior que "
-"'limite1'. Caso contrário o valor devolvido é interpolado entre 0.0 and 1.0 "
-"a usar polinomiais Hermite."
+"'limite1'. Caso contrário o valor devolvido é interpolado entre 0.0 e 1.0 "
+"usando polinomiais Hermite."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9449,7 +9451,7 @@ msgid ""
 "direction of camera (pass associated inputs to it)."
 msgstr ""
 "Devolve queda baseada no produto escalar da normal à superfície e da direção "
-"da câmara (passa entradas associadas)."
+"da câmera (passa entradas associadas)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -10471,7 +10473,7 @@ msgstr "Nome do nó"
 
 #: editor/rename_dialog.cpp
 msgid "Node's parent name, if available"
-msgstr "Nome do parente do nó, se disponível"
+msgstr "Nome do progenitor do nó, se disponível"
 
 #: editor/rename_dialog.cpp
 msgid "Node type"
@@ -10567,11 +10569,11 @@ msgstr "No carácter %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
-msgstr "Repôr Nó"
+msgstr "Reassociar Nó"
 
 #: editor/reparent_dialog.cpp
 msgid "Reparent Location (Select new Parent):"
-msgstr "Repôr localização (selecionar novo Parente):"
+msgstr "Reassociar Localização (Selecionar novo Progenitor):"
 
 #: editor/reparent_dialog.cpp
 msgid "Keep Global Transform"
@@ -10579,7 +10581,7 @@ msgstr "Manter transformação global"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent"
-msgstr "Repôr"
+msgstr "Reassociar"
 
 #: editor/run_settings_dialog.cpp
 msgid "Run Mode:"
@@ -10603,7 +10605,7 @@ msgstr "Configurações de Execução da Cena"
 
 #: editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
-msgstr "Nenhum parente para instância das cenas."
+msgstr "Nenhum progenitor para instância das cenas."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
@@ -10639,11 +10641,11 @@ msgstr "Esta operação não pode ser feita na raiz da árvore."
 
 #: editor/scene_tree_dock.cpp
 msgid "Move Node In Parent"
-msgstr "Mover Nó no Parente"
+msgstr "Mover Nó no Progenitor"
 
 #: editor/scene_tree_dock.cpp
 msgid "Move Nodes In Parent"
-msgstr "Mover Nós no Parente"
+msgstr "Mover Nós no Progenitor"
 
 #: editor/scene_tree_dock.cpp
 msgid "Duplicate Node(s)"
@@ -10652,7 +10654,7 @@ msgstr "Duplicar Nó(s)"
 #: editor/scene_tree_dock.cpp
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
 msgstr ""
-"Não consigo mudar nó em cenas herdadas, a ordem dos nós não pode mudar."
+"Não consigo reassociar nós em cenas herdadas, a ordem dos nós não pode mudar."
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
@@ -10823,7 +10825,7 @@ msgstr "Mudar tipo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Reparent to New Node"
-msgstr "Repôr o Novo Nó"
+msgstr "Reassociar a Novo Nó"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
@@ -11047,7 +11049,7 @@ msgstr "Nome de classe inválido."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid inherited parent name or path."
-msgstr "Nome ou caminho de parente herdado inválido."
+msgstr "Nome ou caminho herdado do progenitor inválido."
 
 #: editor/script_create_dialog.cpp
 msgid "Script path/name is valid."
@@ -11171,11 +11173,11 @@ msgstr "Empilhar Frames"
 
 #: editor/script_editor_debugger.cpp
 msgid "Profiler"
-msgstr "Profiler"
+msgstr "Analisador"
 
 #: editor/script_editor_debugger.cpp
 msgid "Network Profiler"
-msgstr "Traçador de Rede"
+msgstr "Analisador de Rede"
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitor"
@@ -11279,11 +11281,11 @@ msgstr "Mudar ângulo de emissão de AudioStreamPlayer3D"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
-msgstr "Mudar FOV da câmara"
+msgstr "Mudar FOV da Câmera"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera Size"
-msgstr "Mudar tamanho da câmara"
+msgstr "Mudar tamanho da Câmera"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier AABB"
@@ -11331,7 +11333,7 @@ msgstr "Mudar Raio do Cilindro"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Height"
-msgstr "Mudar Altura do CIlindro"
+msgstr "Mudar Altura do Cilindro"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Torus Inner Radius"
@@ -11557,44 +11559,39 @@ msgstr "Distância de escolha:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Filter meshes"
-msgstr "Meshes de filtro"
+msgstr "Filtrar malhas"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
-msgstr "Dá um recurso MeshLibrary a este GridMap para usar os seus meshes."
+msgstr "Dê um recurso MeshLibrary a este GridMap para usar as suas malhas."
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr ""
+msgstr "Começar Consolidação"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
-msgstr ""
+msgstr "A preparar estruturas de dados"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Generate buffers"
-msgstr "Gerar AABB"
+msgstr "Gerar buffers"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Direct lighting"
-msgstr "Direções"
+msgstr "Iluminação direta"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Indirect lighting"
-msgstr "Indentar à direita"
+msgstr "Iluminação indireta"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Post processing"
 msgstr "Pós-processamento"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Plotting lightmaps"
-msgstr "A traçar Luzes:"
+msgstr "A Traçar lightmaps"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -11610,7 +11607,7 @@ msgstr "Consolidar NavMesh"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
-msgstr "Limpar a Malha de navegação."
+msgstr "Limpar a malha de navegação."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
@@ -11634,7 +11631,7 @@ msgstr "A construir heightfield compacto..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
-msgstr "A corroer a Área caminhável..."
+msgstr "A corroer a área caminhável..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Partitioning..."
@@ -11650,11 +11647,11 @@ msgstr "A criar polymesh..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
-msgstr "A converter para Malha de navegação nativa..."
+msgstr "A converter para malha de navegação nativa..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
-msgstr "Configuração do gerador da Malha de navegação:"
+msgstr "Configuração do Gerador da Malha de Navegação:"
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
@@ -12110,9 +12107,8 @@ msgid "Select device from the list"
 msgstr "Selecionar aparelho da lista"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Unable to find the 'apksigner' tool."
-msgstr "Incapaz de localizar a ferramenta zipalign."
+msgstr "Incapaz de localizar a ferramenta 'apksigner'."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12125,7 +12121,7 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
-"Depuração de keystore não configurada nas Configurações do Editor e nem na "
+"Keystore de depuração não configurada nas Configurações do Editor e nem na "
 "predefinição."
 
 #: platform/android/export/export.cpp
@@ -12134,18 +12130,13 @@ msgstr ""
 "Lançamento de keystore configurado incorretamente na predefinição exportada."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
-"Caminho inválido de Android SDK para compilação personalizada no Editor de "
-"Configurações."
+"É necessário um caminho válido para o Android SDK no Editor de Configurações."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr ""
-"Caminho inválido de Android SDK para compilação personalizada no Editor de "
-"Configurações."
+msgstr "Caminho inválido para o Android SDK no Editor de Configurações."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
@@ -12153,13 +12144,12 @@ msgstr "Diretoria 'platform-tools' em falta!"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
-msgstr ""
+msgstr "Incapaz de encontrar o comando adb das ferramentas Android SDK."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
-"Caminho inválido de Android SDK para compilação personalizada no Editor de "
+"Por favor confirme a pasta do Android SDK especificada no Editor de "
 "Configurações."
 
 #: platform/android/export/export.cpp
@@ -12168,7 +12158,7 @@ msgstr "Diretoria 'build-tools' em falta!"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
-msgstr ""
+msgstr "Incapaz de encontrar o comando apksigner das ferramentas Android SDK."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12360,7 +12350,7 @@ msgstr "Cor de fundo inválida."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr "Inválidas dimensões da imagem do logotipo do Store (deve ser 50x50)."
+msgstr "Dimensões inválidas da imagem do logotipo do Store (deve ser 50x50)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
@@ -12481,7 +12471,7 @@ msgstr "Nó B tem de ser um PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr "Junção não está conetada a dois PhysicsBody2Ds"
+msgstr "Junção não está conectada a dois PhysicsBody2Ds"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
@@ -12582,7 +12572,7 @@ msgstr "Esta corrente de Bone2D deve terminar num nó Skeleton2D."
 
 #: scene/2d/skeleton_2d.cpp
 msgid "A Bone2D only works with a Skeleton2D or another Bone2D as parent node."
-msgstr "Um Bone2D só funciona com um nó parente Skeleton2D ou Bone2D."
+msgstr "Um Bone2D só funciona com um nó progenitor Skeleton2D ou Bone2D."
 
 #: scene/2d/skeleton_2d.cpp
 msgid ""
@@ -12595,25 +12585,25 @@ msgid ""
 "to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, "
 "KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"TileMap com Usar Parente ativo precisa de um parente CollisionObject2D para "
-"lhe dar formas. Use-o como um filho de Area2D, StaticBody2D, RigidBody2D, "
-"KinematicBody2D, etc. para lhes dar uma forma."
+"TileMap com Usar Progenitor ativo precisa de um progenitor CollisionObject2D "
+"para lhe dar formas. Use-o como um filho de Area2D, StaticBody2D, "
+"RigidBody2D, KinematicBody2D, etc. para lhes dar uma forma."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
-"VisibilityEnabler2D funciona melhor quando usado diretamente como parente na "
-"cena raiz editada."
+"VisibilityEnabler2D funciona melhor quando usado diretamente como progenitor "
+"na cena raiz editada."
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRCamera must have an ARVROrigin node as its parent."
-msgstr "ARVRCamera precisa de um nó ARVROrigin como parente."
+msgstr "ARVRCamera precisa de um nó ARVROrigin como progenitor."
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRController must have an ARVROrigin node as its parent."
-msgstr "ARVRController precisa de um nó ARVROrigin como parente."
+msgstr "ARVRController precisa de um nó ARVROrigin como progenitor."
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
@@ -12625,7 +12615,7 @@ msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRAnchor must have an ARVROrigin node as its parent."
-msgstr "ARVRAnchor precisa de um nó ARVROrigin como parente."
+msgstr "ARVRAnchor precisa de um nó ARVROrigin como progenitor."
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
@@ -12641,27 +12631,23 @@ msgstr "ARVROrigin exige um nó filho ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
-msgstr ""
+msgstr "A procurar malhas e luzes"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "A analisar geometria..."
+msgstr "A preparar geometria (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing environment"
-msgstr "Ver ambiente"
+msgstr "A preparar ambiente"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Generating capture"
-msgstr "A gerar Lightmaps"
+msgstr "A gerar captura"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Saving lightmaps"
-msgstr "A gerar Lightmaps"
+msgstr "A guardar lightmaps"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Done"
@@ -12724,7 +12710,7 @@ msgstr "ConcavePolygonShape apenas suporta RigidBody no modo estático."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
-msgstr "Nada é visível porque nenhuma Malha foi atribuída."
+msgstr "Nada é visível porque nenhuma malha foi atribuída."
 
 #: scene/3d/cpu_particles.cpp
 msgid ""
@@ -12736,7 +12722,7 @@ msgstr ""
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
-msgstr "A desenhar Meshes"
+msgstr "A Traçar Malhas"
 
 #: scene/3d/gi_probe.cpp
 msgid "Finishing Plot"
@@ -12753,7 +12739,7 @@ msgstr ""
 #: scene/3d/interpolated_camera.cpp
 msgid ""
 "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "A InterpolatedCamerda foi deprecada e será removida no Godot 4.0."
+msgstr "InterpolatedCamerda foi descontinuada e será removida no Godot 4.0."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12787,7 +12773,7 @@ msgstr ""
 msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
-"Nada é visível porque não foram atribuídas Meshes aos passos de desenho."
+"Nada é visível porque não foram atribuídas malhas aos passos de desenho."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -12807,7 +12793,7 @@ msgid ""
 "parent Path's Curve resource."
 msgstr ""
 "ROTATION_ORIENTED de PathFollow requer \"Up Vector\" ativado no recurso de "
-"Curva do Caminho do seu pai."
+"Curva do Caminho do seu progenitor."
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -12833,7 +12819,7 @@ msgstr "Nó B tem de ser um PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr "Junção não está conetada a quaisquer PhysicsBodies"
+msgstr "Junção não está conectada a quaisquer PhysicsBodies"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
@@ -12897,7 +12883,7 @@ msgid ""
 "This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
 "this environment's Background Mode to Canvas (for 2D scenes)."
 msgstr ""
-"Este WorldEnvironment ė ignorado. Pode adicionar uma Camera (para cenas 3D) "
+"Este WorldEnvironment é ignorado. Pode adicionar uma Câmera (para cenas 3D) "
 "ou definir o Modo Background deste ambiente como Canvas (para cenas 2D)."
 
 #: scene/animation/animation_blend_tree.cpp
@@ -13064,6 +13050,8 @@ msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
 msgstr ""
+"A porta coletora está conectada mas não é usada. Considere mudar a origem "
+"para 'SamplerPort'."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

@@ -95,7 +95,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-08 19:32+0000\n"
+"PO-Revision-Date: 2021-01-21 08:48+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -105,7 +105,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2468,7 +2468,7 @@ msgstr "Нет открытой сцены для запуска."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Сохранение сцены перед запуском..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -5232,14 +5232,12 @@ msgid "Assets ZIP File"
 msgstr "ZIP файл ассетов"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
-"Не удается определить путь для сохранения lightmap.\n"
-"Сохраните ваши сцены (чтобы изображения были сохранены в том же разделе), "
-"или выберите путь сохранения в свойствах BakedLightmap."
+"Не удалось определить путь для сохранения изображений карты освещения.\n"
+"Сохраните сцену и попробуйте ещё раз."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5257,26 +5255,31 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
 msgstr ""
+"Не удалось определить размер карты освещения. Максимальный размер карты "
+"освещения слишком мал?"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
 msgstr ""
+"Некоторая полисетка некорректна. Убедитесь, что значения канала UV2 "
+"находятся в квадратной области [0.0,1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
+"Редактор Godot был собран без поддержки трассировки лучей, карты освещения "
+"невозможно запечь."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Запекать карты освещения"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "Выбрать файл шаблона"
+msgstr "Выберите файл запекания карты освещения:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6368,9 +6371,8 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "Возможно установить точку только в ParticlesMaterial материал"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles2D"
-msgstr "Преобразовать в CPUParticles"
+msgstr "Преобразовать в CPUParticles2D"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -11646,36 +11648,31 @@ msgstr ""
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr ""
+msgstr "Начать запекание"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
-msgstr ""
+msgstr "Подготовка структур данных"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Generate buffers"
-msgstr "Генерировать AABB"
+msgstr "Генерировать буфферы"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Direct lighting"
-msgstr "Направления"
+msgstr "Прямое освещение"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Indirect lighting"
-msgstr "Отступ вправо"
+msgstr "Непрямое освещение"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Post processing"
-msgstr "Пост-обработка"
+msgstr "Постобработка"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Plotting lightmaps"
-msgstr "Построение света:"
+msgstr "Построение карт освещения"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -12189,9 +12186,8 @@ msgid "Select device from the list"
 msgstr "Выберите устройство из списка"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Unable to find the 'apksigner' tool."
-msgstr "Не удалось найти инструмент zipalign."
+msgstr "Не удалось найти инструмент «apksigner»."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12212,18 +12208,13 @@ msgstr ""
 "Хранилище ключей не настроено ни в настройках редактора, ни в предустановках."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
-"Неправильный путь к Android SDK для пользовательской сборки в настройках "
-"редактора."
+"Требуется указать действительный путь к Android SDK в Настройках редактора."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr ""
-"Неправильный путь к Android SDK для пользовательской сборки в настройках "
-"редактора."
+msgstr "Недействительный путь Android SDK в Настройках редактора."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
@@ -12231,14 +12222,12 @@ msgstr "Директория «platform-tools» отсутствует!"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
-msgstr ""
+msgstr "Не удалось найти команду adb в Android SDK platform-tools."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
-"Неправильный путь к Android SDK для пользовательской сборки в настройках "
-"редактора."
+"Пожалуйста, проверьте каталог Android SDK, указанный в Настройках редактора."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'build-tools' directory!"
@@ -12246,7 +12235,7 @@ msgstr "Директория «build-tools» отсутствует!"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
-msgstr ""
+msgstr "Не удалось найти команду apksigner в Android SDK build-tools."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12719,27 +12708,23 @@ msgstr "ARVROrigin требует дочерний узел ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
-msgstr ""
+msgstr "Поиск полисеток и источников света"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "Анализ геометрии..."
+msgstr "Подготовка геометрии (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing environment"
-msgstr "Окружение"
+msgstr "Подготовка окружения"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Generating capture"
-msgstr "Создание карт освещения"
+msgstr "Создание захвата"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Saving lightmaps"
-msgstr "Создание карт освещения"
+msgstr "Сохранение карт освещения"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Done"
@@ -13143,6 +13128,8 @@ msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
 msgstr ""
+"Порт сэмплера подключен, но не используется. Рассмотрите возможность "
+"изменения источника на «SamplerPort»."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

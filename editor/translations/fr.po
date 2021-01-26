@@ -69,7 +69,7 @@
 # Sofiane <Sofiane-77@caramail.fr>, 2019.
 # Camille Mohr-Daurat <pouleyketchoup@gmail.com>, 2019.
 # Pierre Stempin <pierre.stempin@gmail.com>, 2019.
-# Pierre Caye <pierrecaye@laposte.net>, 2020.
+# Pierre Caye <pierrecaye@laposte.net>, 2020, 2021.
 # Kevin Bouancheau <kevin.bouancheau@gmail.com>, 2020.
 # LaurentOngaro <laurent@gameamea.com>, 2020.
 # Julien Humbert <julroy67@gmail.com>, 2020.
@@ -82,8 +82,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-01 10:30+0000\n"
-"Last-Translator: TechnoPorg <jonah.janzen@gmail.com>\n"
+"PO-Revision-Date: 2021-01-22 10:21+0000\n"
+"Last-Translator: Pierre Caye <pierrecaye@laposte.net>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -91,7 +91,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2473,7 +2473,7 @@ msgstr "Il n'y a pas de scène définie pour être lancée."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Enregistrer la scène avant de l'exécuter..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -5267,15 +5267,12 @@ msgid "Assets ZIP File"
 msgstr "Fichier ZIP de données"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
-"Ne peut pas déterminer un chemin de sauvegarde pour les images lightmap.\n"
-"Sauvegarder votre scène (pour que les images soient sauvegardées dans le "
-"même répertoire), ou choisissez un répertoire de sauvegarde à partir des "
-"propriétés BakedLightmap."
+"Impossible de déterminer un chemin de sauvegarde pour les images lightmap.\n"
+"Enregistrez votre scène et réessayez."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5294,26 +5291,31 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
 msgstr ""
+"Échec de la détermination de la taille de la lightmap. Taille maximale de "
+"lightmap trop petite ?"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
 msgstr ""
+"Un maillage n'est pas valide. Assurez-vous que les valeurs du canal UV2 sont "
+"contenues dans la région carrée [0.0,1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
+"L'éditeur Godot a été compilé sans support du ray tracing, les lightmaps ne "
+"peuvent pas être pré-calculées."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Précalculer les lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "Sélectionner le fichier de modèle"
+msgstr "Sélectionnez le fichier de pré-calcul de lightmap :"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11723,36 +11725,31 @@ msgstr ""
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr ""
+msgstr "Commencer le pré-calcul"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
-msgstr ""
+msgstr "Préparation des structures de données"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Generate buffers"
-msgstr "Générer AABB"
+msgstr "Générer des tampons"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Direct lighting"
-msgstr "Directions"
+msgstr "Éclairage direct"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Indirect lighting"
-msgstr "Indenter vers la droite"
+msgstr "Éclairage indirect"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Post processing"
 msgstr "Post-traitement"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Plotting lightmaps"
-msgstr "Tracer les lumières :"
+msgstr "Tracer des lightmaps"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -12299,11 +12296,10 @@ msgstr ""
 "d'exportation."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
-"Un chemin d'accès valide au SDK Android doit être défini dans les paramètres "
-"de l'éditeur."
+"Un chemin d'accès valide au SDK Android est requis dans les paramètres de "
+"l'éditeur."
 
 #: platform/android/export/export.cpp
 msgid "Invalid Android SDK path in Editor Settings."
@@ -12316,14 +12312,13 @@ msgstr "Dossier « platform-tools » manquant !"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
-msgstr ""
+msgstr "Impossible de trouver la commande adb du SDK Android platform-tools."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
-"Chemin d'accès invalide au SDK Android pour le build custom dans les "
-"paramètres de l'éditeur."
+"Veuillez vérifier le répertoire du SDK Android spécifié dans les paramètres "
+"de l'éditeur."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'build-tools' directory!"
@@ -12332,6 +12327,7 @@ msgstr "Dossier « build-tools » manquant !"
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
+"Impossible de trouver la commande apksigner du SDK Android build-tools."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12826,27 +12822,23 @@ msgstr "ARVROrigin requiert un nœud enfant ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
-msgstr ""
+msgstr "Recherche de maillages et de lumières"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "Analyse de la géométrie..."
+msgstr "Préparation de la géométrie (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing environment"
-msgstr "Voir environnement"
+msgstr "Préparation de l'environnement"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Generating capture"
-msgstr "Génération des lightmaps"
+msgstr "Génération de capture"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Saving lightmaps"
-msgstr "Génération des lightmaps"
+msgstr "Enregistrement des lightmaps"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Done"
@@ -13263,6 +13255,8 @@ msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
 msgstr ""
+"Le port de l'échantillonneur est connecté mais n'est pas utilisé. Pensez à "
+"changer la source en 'SamplerPort'."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

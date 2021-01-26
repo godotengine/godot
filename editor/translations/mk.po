@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2021-01-15 03:43+0000\n"
+"PO-Revision-Date: 2021-01-22 10:21+0000\n"
 "Last-Translator: Kristijan Fremen Velkovski <me@krisfremen.com>\n"
 "Language-Team: Macedonian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/mk/>\n"
@@ -138,11 +138,11 @@ msgstr "Избриши Клучеви"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr ""
+msgstr "Анимација Промени Време на клучниот кадар"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "Анимација Промени Прелаз"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
@@ -150,11 +150,11 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr ""
+msgstr "Анимација Промени Клучен Кадар Вредност"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr ""
+msgstr "Анимација Промени Позив"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
@@ -162,7 +162,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transition"
-msgstr ""
+msgstr "Анимација Многукратно Променување на Прелози"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transform"
@@ -10914,27 +10914,27 @@ msgstr ""
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
-msgstr ""
+msgstr "Библиотеки: "
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
-msgstr ""
+msgstr "GDNative(ГДДомороден)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
-msgstr ""
+msgstr "Корак аргумент е нула!"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Not a script with an instance"
-msgstr ""
+msgstr "Не е скрипта со инстанца"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Not based on a script"
-msgstr ""
+msgstr "Не е основано на скрипта"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Not based on a resource file"
-msgstr ""
+msgstr "Не е основано на ресурс фајл"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
