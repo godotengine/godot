@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  library_godot_eval.js                                                */
+/*  javascript_singleton.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,59 +28,40 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-const GodotEval = {
-	godot_js_eval__deps: ['$GodotRuntime'],
-	godot_js_eval__sig: 'iiiiiii',
-	godot_js_eval: function (p_js, p_use_global_ctx, p_union_ptr, p_byte_arr, p_byte_arr_write, p_callback) {
-		const js_code = GodotRuntime.parseString(p_js);
-		let eval_ret = null;
-		try {
-			if (p_use_global_ctx) {
-				// indirect eval call grants global execution context
-				const global_eval = eval; // eslint-disable-line no-eval
-				eval_ret = global_eval(js_code);
-			} else {
-				eval_ret = eval(js_code); // eslint-disable-line no-eval
-			}
-		} catch (e) {
-			GodotRuntime.error(e);
-		}
+#ifndef JAVASCRIPT_SINGLETON_H
+#define JAVASCRIPT_SINGLETON_H
 
-		switch (typeof eval_ret) {
-		case 'boolean':
-			GodotRuntime.setHeapValue(p_union_ptr, eval_ret, 'i32');
-			return 1; // BOOL
+#include "core/object.h"
+#include "core/reference.h"
 
-		case 'number':
-			GodotRuntime.setHeapValue(p_union_ptr, eval_ret, 'double');
-			return 3; // REAL
+class JavaScriptObject : public Reference {
+private:
+	GDCLASS(JavaScriptObject, Reference);
 
-		case 'string':
-			GodotRuntime.setHeapValue(p_union_ptr, GodotRuntime.allocString(eval_ret), '*');
-			return 4; // STRING
-
-		case 'object':
-			if (eval_ret === null) {
-				break;
-			}
-
-			if (ArrayBuffer.isView(eval_ret) && !(eval_ret instanceof Uint8Array)) {
-				eval_ret = new Uint8Array(eval_ret.buffer);
-			} else if (eval_ret instanceof ArrayBuffer) {
-				eval_ret = new Uint8Array(eval_ret);
-			}
-			if (eval_ret instanceof Uint8Array) {
-				const func = GodotRuntime.get_func(p_callback);
-				const bytes_ptr = func(p_byte_arr, p_byte_arr_write, eval_ret.length);
-				HEAPU8.set(eval_ret, bytes_ptr);
-				return 20; // POOL_BYTE_ARRAY
-			}
-			break;
-
-			// no default
-		}
-		return 0; // NIL
-	},
+protected:
+	virtual bool _set(const StringName &p_name, const Variant &p_value) { return false; }
+	virtual bool _get(const StringName &p_name, Variant &r_ret) const { return false; }
+	virtual void _get_property_list(List<PropertyInfo> *p_list) const {}
 };
 
-mergeInto(LibraryManager.library, GodotEval);
+class JavaScript : public Object {
+private:
+	GDCLASS(JavaScript, Object);
+
+	static JavaScript *singleton;
+
+protected:
+	static void _bind_methods();
+
+public:
+	Variant eval(const String &p_code, bool p_use_global_exec_context = false);
+	Ref<JavaScriptObject> get_interface(const String &p_interface);
+	Ref<JavaScriptObject> create_callback(Object *p_ref, const StringName &p_method);
+	Variant _create_object_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+
+	static JavaScript *get_singleton();
+	JavaScript();
+	~JavaScript();
+};
+
+#endif // JAVASCRIPT_SINGLETON_H
