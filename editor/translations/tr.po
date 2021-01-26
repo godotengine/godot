@@ -55,12 +55,13 @@
 # Yusuf Osman YILMAZ <wolfkan4219@gmail.com>, 2020.
 # furkan atalar <fatalar55@gmail.com>, 2020.
 # Suleyman Poyraz <zaryob.dev@gmail.com>, 2020.
+# Çağlar KOPARIR <ckoparir@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-14 11:03+0000\n"
-"Last-Translator: Oğuz Ersen <oguzersen@protonmail.com>\n"
+"PO-Revision-Date: 2021-01-22 10:21+0000\n"
+"Last-Translator: Çağlar KOPARIR <ckoparir@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -68,7 +69,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2430,7 +2431,7 @@ msgstr "Çalıştırmak için herhangi bir sahne seçilmedi."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Çalıştırmadan önce sahneyi kaydedin..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -3951,19 +3952,16 @@ msgid "Searching..."
 msgstr "Aranıyor..."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d match in %d file."
-msgstr "%d eşleşme."
+msgstr "%d dosyada %d eşleşme."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d file."
-msgstr "%d eşleşme."
+msgstr "%d dosyada %d eşleşme."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d files."
-msgstr "%d eşleşme."
+msgstr "%d dosyada %d eşleşme."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -5201,14 +5199,12 @@ msgid "Assets ZIP File"
 msgstr "Varlıkların ZIP Dosyası"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
-"Lightmap resimleri için kaydetme yolu belirlenemiyor.\n"
-"Sahneni kaydet (resimler aynı klasöre kaydedilmeli), ya da BakedLightmap "
-"özelliklerinden bir kayıt yolu seçin."
+"Lightmap dosyaları için kaydetme yolu belirlenemiyor.\n"
+"Sahneyi kaydedip tekrar deneyin."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5226,27 +5222,30 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
-msgstr ""
+msgstr "Lightmap boyutu belirlenemedi. Lightmap boyutu mu çok küçuk?"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
 msgstr ""
+"Bazı örgüler geçersiz. [0.0,1.0] bölgesinin UV2 kanal değerlerini "
+"içerdiğinden emin olun."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
+"Godot editör ışın yansıma desteği olmadan derlenmiş, ışık haritaları "
+"pişirilemez."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Işık-Haritalarını Pişir"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "Şablon Dosyası Seç"
+msgstr "Işık Haritası pişirme dosyası seçiniz:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6338,9 +6337,8 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "Nokta sadece ParçacıkMateryal işlem materyalinin içinde ayarlanabilir"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles2D"
-msgstr "CPUParçacıklar 'a dönüştür"
+msgstr "2BİşlemciPartikül'e dönüştür"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -11603,36 +11601,31 @@ msgstr "Model olarak kullanması için bu GridMap'e MeshLibrary kaynağı atayı
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr ""
+msgstr "Pişirmeye Başla"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
-msgstr ""
+msgstr "Veri yapıları hazırlanıyor"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Generate buffers"
-msgstr "AABB Üret"
+msgstr "Arabellek Oluştur"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Direct lighting"
-msgstr "Yönler"
+msgstr "Doğrudan aydınlatma"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Indirect lighting"
-msgstr "Sağa Girintile"
+msgstr "Dolaylı aydınlatma"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Post processing"
-msgstr "Artçıl-İşlem"
+msgstr "Rötuş"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Plotting lightmaps"
-msgstr "Örüntüler Haritalanıyor:"
+msgstr "Işık haritalarını çizme"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -12144,9 +12137,8 @@ msgid "Select device from the list"
 msgstr "Listeden aygıt seç"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Unable to find the 'apksigner' tool."
-msgstr "Zipalign aracı bulunamıyor."
+msgstr "'apksigner' aracı bulunamıyor."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12168,14 +12160,12 @@ msgstr ""
 "serbest bırakın."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
-msgstr "Editör Ayarlarında özel derleme için geçersiz Android SDK yolu."
+msgstr "Editör Ayarlarında geçerli bir Android SDK yolu gerekli."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr "Editör Ayarlarında özel derleme için geçersiz Android SDK yolu."
+msgstr "Editör Ayarlarında geçersiz Android SDK yolu."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
@@ -12183,12 +12173,12 @@ msgstr "Eksik 'platform araçları' dizini!"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
-msgstr ""
+msgstr "Android SDK platform-tools'un adb komutu bulunamıyor."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Please check in the Android SDK directory specified in Editor Settings."
-msgstr "Editör Ayarlarında özel derleme için geçersiz Android SDK yolu."
+msgstr ""
+"Lütfen Editör Ayarlarında girilen Android SDK klasörünü kontrol ediniz."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'build-tools' directory!"
@@ -12196,7 +12186,7 @@ msgstr "Eksik 'inşa-araçları' dizini!"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
-msgstr ""
+msgstr "Android SDK platform-tools'un apksigner komutu bulunamıyor."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12668,27 +12658,23 @@ msgstr "ARVROrigin bir ARVRCamera alt düğümü gerektirir."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
-msgstr ""
+msgstr "Örgü ve ışıkları bulmak"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "Geometri Ayrıştırılıyor..."
+msgstr "Geometri hazırlanıyor (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing environment"
-msgstr "Ortamı Göster"
+msgstr "Ortam hazırlanıyor"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Generating capture"
-msgstr "Işık-haritaları Üretiliyor"
+msgstr "Yakalama oluşturuluyor"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Saving lightmaps"
-msgstr "Işık-haritaları Üretiliyor"
+msgstr "Işık-haritaları kaydediliyor"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Done"
@@ -13037,9 +13023,8 @@ msgid "Must use a valid extension."
 msgstr "Geçerli bir uzantı kullanılmalı."
 
 #: scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Enable grid minimap."
-msgstr "Yapışmayı Enkinleştir"
+msgstr "Izgara mini haritasını etkinleştir."
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -13099,6 +13084,8 @@ msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
 msgstr ""
+"Örnekleyici bağlantı noktası bağlandı ama kullanılmadı. Kaynağı "
+"'ÖrnekleyiciBağlantıNoktası' olarak değiştirmeyi düşünün."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

@@ -16,12 +16,13 @@
 # Kristoffer Andersen <kjaa@google.com>, 2019.
 # Joe Osborne <reachjoe.o@gmail.com>, 2020.
 # Autowinto <happymansi@hotmail.com>, 2020.
-# Mikkel Mouridsen <mikkelmouridsen@me.com>, 2020.
+# Mikkel Mouridsen <mikkelmouridsen@me.com>, 2020, 2021.
+# snakatk <snaqii@live.dk>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-22 06:40+0000\n"
+"PO-Revision-Date: 2021-01-26 16:32+0000\n"
 "Last-Translator: Mikkel Mouridsen <mikkelmouridsen@me.com>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
@@ -30,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -334,7 +335,7 @@ msgstr "Vikle Løkke Interpolation"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr "Indsæt nøgle"
+msgstr "Indsæt Nøgle"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
@@ -762,8 +763,9 @@ msgid "Standard"
 msgstr "Standard"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
 msgid "Toggle Scripts Panel"
-msgstr ""
+msgstr "Slå til/fra Scripts Panel"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -825,7 +827,7 @@ msgstr "Fra signal:"
 
 #: editor/connections_dialog.cpp
 msgid "Scene does not contain any script."
-msgstr ""
+msgstr "Scenen indeholder ikke noget script."
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
@@ -867,22 +869,23 @@ msgid "Deferred"
 msgstr "Udskudt"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
 msgid ""
 "Defers the signal, storing it in a queue and only firing it at idle time."
-msgstr ""
+msgstr "Udskyder signalet, gemmer det i en kø og anvender det ved spildtid."
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
 msgstr "OneShot"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
 msgid "Disconnects the signal after its first emission."
-msgstr ""
+msgstr "Frakobler signalet efter dets første aktivering."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Cannot connect signal"
-msgstr "Forbind Signal: "
+msgstr "Kan ikke forbinde signal"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
@@ -1429,12 +1432,14 @@ msgid "Open Audio Bus Layout"
 msgstr "Åben Audio Bus Layout"
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
 msgid "There is no '%s' file."
-msgstr ""
+msgstr "Der er ingen '%s' fil."
 
 #: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Layout"
-msgstr ""
+msgstr "Layout"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
@@ -1513,8 +1518,9 @@ msgstr ""
 "Ugyldigt navn. Må ikke være i konflikt med eksisterende global constant navn."
 
 #: editor/editor_autoload_settings.cpp
+#, fuzzy
 msgid "Keyword cannot be used as an autoload name."
-msgstr ""
+msgstr "Nøgleord kan ikke bruges som autoload navn."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
@@ -1545,8 +1551,9 @@ msgid "Rearrange Autoloads"
 msgstr "Flytte om på Autoloads"
 
 #: editor/editor_autoload_settings.cpp
+#, fuzzy
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "Kan ikke tilføje autoload:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1633,8 +1640,9 @@ msgid "Storing File:"
 msgstr "Lagrings Fil:"
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid "No export template found at the expected path:"
-msgstr ""
+msgstr "Ingen eksporterings-skabelon fundet ved den forventede sti:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -4776,17 +4784,18 @@ msgid "Scale animation playback globally for the node."
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Animation Tools"
-msgstr ""
+msgstr "Animation Værktøjer"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation"
-msgstr ""
+msgstr "Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
 msgid "Edit Transitions..."
-msgstr "Overgange"
+msgstr "Rediger Overgange..."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
@@ -4824,20 +4833,21 @@ msgid "Future"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Depth"
-msgstr ""
+msgstr "Dybde"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "1 step"
-msgstr ""
+msgstr "1 trin"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "2 steps"
-msgstr ""
+msgstr "2 trin"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "3 steps"
-msgstr ""
+msgstr "3 trin"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Differences Only"
@@ -4854,30 +4864,31 @@ msgstr ""
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
 msgid "Pin AnimationPlayer"
-msgstr "Ændre Animation Navn:"
+msgstr "Fastgør AnimationPlayer"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
-msgstr ""
+msgstr "Opret Ny Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
-msgstr ""
+msgstr "Animation Navn:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 msgid "Error!"
-msgstr ""
+msgstr "Fejl!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Times:"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Next (Auto Queue):"
-msgstr ""
+msgstr "Næste (Auto Kø):"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Cross-Animation Blend Times"
@@ -4889,14 +4900,12 @@ msgid "Move Node"
 msgstr "Flyt Node(s)"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition exists!"
-msgstr "Overgang"
+msgstr "Overgang eksisterer!"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Add Transition"
-msgstr "Overgang"
+msgstr "Tilføj Overgang"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -4933,14 +4942,12 @@ msgid "No playback resource set at path: %s."
 msgstr "Ikke i stien for ressource."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Node Removed"
-msgstr "Fjern"
+msgstr "Node Fjernet"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition Removed"
-msgstr "Overgang"
+msgstr "Overgang Fjernet"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set Start Node (Autoplay)"
@@ -4977,9 +4984,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition: "
-msgstr "Overgang"
+msgstr "Overgang: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
@@ -4994,7 +5000,7 @@ msgstr "Animation Zoom."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
-msgstr ""
+msgstr "Nyt navn:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
@@ -5018,8 +5024,9 @@ msgid "Mix"
 msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#, fuzzy
 msgid "Auto Restart:"
-msgstr ""
+msgstr "Auto Genstart:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Restart (s):"
@@ -5035,8 +5042,9 @@ msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
+#, fuzzy
 msgid "Amount:"
-msgstr ""
+msgstr "Mængde:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend 0:"
@@ -5052,13 +5060,14 @@ msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Current:"
-msgstr ""
+msgstr "Nuværende:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Add Input"
-msgstr ""
+msgstr "Tilføj Input"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Clear Auto-Advance"
@@ -5069,8 +5078,9 @@ msgid "Set Auto-Advance"
 msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#, fuzzy
 msgid "Delete Input"
-msgstr ""
+msgstr "Fjern Input"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is valid."
@@ -5117,16 +5127,19 @@ msgid "Transition Node"
 msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#, fuzzy
 msgid "Import Animations..."
-msgstr ""
+msgstr "Importer Animationer..."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#, fuzzy
 msgid "Edit Node Filters"
-msgstr ""
+msgstr "Rediger Node Filtre"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#, fuzzy
 msgid "Filters..."
-msgstr ""
+msgstr "Filtre..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
@@ -5137,8 +5150,9 @@ msgid "View Files"
 msgstr "Vis filer"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Connection error, please try again."
-msgstr ""
+msgstr "Forbindelsesfejl, prøv venligst igen."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect to host:"
@@ -5146,15 +5160,16 @@ msgstr "Kan ikke forbinde til host:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response from host:"
-msgstr ""
+msgstr "Ingen respons fra host:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve hostname:"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Request failed, return code:"
-msgstr ""
+msgstr "Forespørgsel mislykkedes, returkode:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -5164,11 +5179,12 @@ msgstr "Forespørgsel mislykkedes."
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
 msgid "Cannot save response to:"
-msgstr "Kan ikke fjerne:"
+msgstr "Kan ikke gemme respons i:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Write error."
-msgstr ""
+msgstr "Skrivefejl."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
@@ -5182,12 +5198,12 @@ msgstr "Omdiriger Løkke."
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
 msgid "Request failed, timeout"
-msgstr "Forespørgsel mislykkedes."
+msgstr "Forespørgsel mislykkedes, tiden udløb."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
 msgid "Timeout."
-msgstr "Tid"
+msgstr "Tiden udløb."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
@@ -5210,14 +5226,12 @@ msgid "Asset Download Error:"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Downloading (%s / %s)..."
-msgstr "Indlæser"
+msgstr "Downloader (%s / %s)..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Downloading..."
-msgstr "Indlæser"
+msgstr "Downloader..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving..."
@@ -5234,11 +5248,12 @@ msgstr ""
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
 msgid "Install..."
-msgstr "Installér"
+msgstr "Installér..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Retry"
-msgstr ""
+msgstr "Prøv igen"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download Error"
@@ -5258,25 +5273,23 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Navn (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Navn (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "Licens"
+msgstr "Licens (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "Licens"
+msgstr "Licens (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
-msgstr ""
+msgstr "Første"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -5289,7 +5302,7 @@ msgstr "Næste"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Last"
-msgstr ""
+msgstr "Sidste"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
@@ -5300,9 +5313,8 @@ msgid "No results for \"%s\"."
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import..."
-msgstr "Importer"
+msgstr "Importer..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Plugins..."
@@ -5322,9 +5334,8 @@ msgid "Site:"
 msgstr "Websted:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Support"
-msgstr "Støtte..."
+msgstr "Support"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -5335,9 +5346,8 @@ msgid "Testing"
 msgstr "Tester"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Loading..."
-msgstr "Indlæs"
+msgstr "Indlæser..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -5406,7 +5416,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "steps"
-msgstr ""
+msgstr "trin"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
