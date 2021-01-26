@@ -36,8 +36,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-06 18:29+0000\n"
-"Last-Translator: nitenook <admin@alterbaum.net>\n"
+"PO-Revision-Date: 2021-01-22 10:21+0000\n"
+"Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2410,7 +2410,7 @@ msgstr "実行するシーンが定義されていません。"
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "実行前にシーンを保存..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -5168,14 +5168,12 @@ msgid "Assets ZIP File"
 msgstr "アセットのzipファイル"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
 "ライトマップ画像の保存パスを確定できません。\n"
-"シーンを保存する (画像が同じディレクトリに保存される) か、BakedLightmapプロパ"
-"ティから保存パスを選択してください。"
+"シーンを保存してから再度行ってください。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5194,26 +5192,31 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
 msgstr ""
+"ライトマップサイズの確定に失敗しました。ライトマップの最大サイズが小さすぎま"
+"すか？"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
 msgstr ""
+"一部のメッシュが無効です。UV2チャンネルの値が [0.0,1.0] の正方形領域内にある"
+"ことを確認してください。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
+"Godotエディタがレイトレーシングに対応せずにビルドされており、ライトマップのベ"
+"イクができません。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "ライトマップを焼き込む"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "テンプレートファイルを選択"
+msgstr "ライトマップベイクファイルを選択:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6307,9 +6310,8 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "ParticlesMaterialプロセスマテリアルにのみ点を設定できます"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles2D"
-msgstr "CPUパーティクルに変換"
+msgstr "CPUParticles2D に変換"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -11572,11 +11574,11 @@ msgstr ""
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr ""
+msgstr "ベイク開始"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
-msgstr ""
+msgstr "データ構造の準備"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 #, fuzzy

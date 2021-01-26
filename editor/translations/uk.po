@@ -3,7 +3,7 @@
 # Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Aleksandr <XpycT.TOP@gmail.com>, 2017.
-# Yuri Chornoivan <yurchor@ukr.net>, 2018, 2019, 2020.
+# Yuri Chornoivan <yurchor@ukr.net>, 2018, 2019, 2020, 2021.
 # Андрій Бандура <andriykopanytsia@gmail.com>, 2018.
 # Гидеон Теон <t.kudely94@gmail.com>, 2017.
 # Максим Якимчук <xpinovo@gmail.com>, 2018, 2019.
@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-29 21:52+0000\n"
+"PO-Revision-Date: 2021-01-16 01:29+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -30,7 +30,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2401,7 +2401,7 @@ msgstr "Немає визначеної сцени для виконання."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Зберегти сцену перед запуском…"
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -5178,14 +5178,12 @@ msgid "Assets ZIP File"
 msgstr "ZIP файл ресурсів"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
 "Не вдається визначити шлях для збереження карт освітлення.\n"
-"Збережіть вашу сцену (щоб зображення були збережені в одній теці), або "
-"виберіть шлях зберігання у властивостях BakedLightmap."
+"Збережіть вашу сцену і повторіть спробу."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5204,26 +5202,31 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
 msgstr ""
+"Не вдалося визначити розмір карти освітлення. Максимальний розмір карти "
+"освітлення є надто малим?"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
 msgstr ""
+"Частина сітки є некоректною. Переконайтеся, що значення каналів UV2 "
+"потрапляють до квадратної області [0.0,1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
+"Редактор Godot було зібрано без підтримки трасування променів. Карти "
+"освітлення не вдасться побудувати."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Запікати карти освітлення"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "Виберіть файл шаблону"
+msgstr "Виберіть файл приготування карти освітлення:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6318,9 +6321,8 @@ msgstr ""
 "Поставити точку можна тільки в процедурному матеріалі ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles2D"
-msgstr "Перетворити на CPUParticles"
+msgstr "Перетворити на CPUParticles2D"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -11605,36 +11607,31 @@ msgstr ""
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr ""
+msgstr "Почати обробку"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
-msgstr ""
+msgstr "Готуємо структури даних"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Generate buffers"
-msgstr "Генерувати AABB"
+msgstr "Створити буфери"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Direct lighting"
-msgstr "Напрямки"
+msgstr "Безпосереднє освітлення"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Indirect lighting"
-msgstr "Збільшити відступ"
+msgstr "Опосередковане освітлення"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Post processing"
 msgstr "Пост-обробка"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Plotting lightmaps"
-msgstr "Побудова світла:"
+msgstr "Креслення карт освітлення"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -12150,9 +12147,8 @@ msgid "Select device from the list"
 msgstr "Вибрати пристрій зі списку"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Unable to find the 'apksigner' tool."
-msgstr "Не вдалося знайти програму zipalign."
+msgstr "Не вдалося знайти програму apksigner."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12174,18 +12170,13 @@ msgstr ""
 "У шаблоні експортування неправильно налаштовано сховище ключів випуску."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
-"Некоректний шлях до SDK для Android для нетипового збирання у параметрах "
-"редактора."
+"У параметрах редактора має бути вказано коректний шлях до SDK для Android."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr ""
-"Некоректний шлях до SDK для Android для нетипового збирання у параметрах "
-"редактора."
+msgstr "Некоректний шлях до SDK для Android у параметрах редактора."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
@@ -12194,13 +12185,13 @@ msgstr "Не знайдено каталогу «platform-tools»!"
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
+"Не вдалося знайти програми adb із інструментів платформи SDK для Android."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
-"Некоректний шлях до SDK для Android для нетипового збирання у параметрах "
-"редактора."
+"Будь ласка, перевірте, чи правильно вказано каталог SDK для Android у "
+"параметрах редактора."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'build-tools' directory!"
@@ -12209,6 +12200,7 @@ msgstr "Не знайдено каталогу «build-tools»!"
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
+"Не вдалося знайти програми apksigner з інструментів збирання SDK для Android."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12696,27 +12688,23 @@ msgstr "ARVROrigin повинен мати дочірній вузол ARVRCamer
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
-msgstr ""
+msgstr "Пошук сіток та джерел світла"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "Аналіз геометрії..."
+msgstr "Приготування геометрії (%d з %d)"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing environment"
-msgstr "Перегляд середовища"
+msgstr "Приготування середовища"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Generating capture"
-msgstr "Створення карт освітлення"
+msgstr "Створення захоплення"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Saving lightmaps"
-msgstr "Створення карт освітлення"
+msgstr "Збереження карт освітлення"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Done"
@@ -13128,6 +13116,8 @@ msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
 msgstr ""
+"Порт засобу семплювання з'єднано, але не використано. Вам варто змінити "
+"джерело на «SamplerPort»."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

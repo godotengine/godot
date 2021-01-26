@@ -36,7 +36,7 @@
 # Davide Giuliano <davidegiuliano00@gmail.com>, 2019.
 # Stefano Merazzi <asso99@hotmail.com>, 2019.
 # Sinapse X <sinapsex13@gmail.com>, 2019.
-# Micila Micillotto <micillotto@gmail.com>, 2019, 2020.
+# Micila Micillotto <micillotto@gmail.com>, 2019, 2020, 2021.
 # Mirko Soppelsa <miknsop@gmail.com>, 2019, 2020.
 # No <kingofwizards.kw7@gmail.com>, 2019.
 # StarFang208 <polaritymanx@yahoo.it>, 2019.
@@ -59,8 +59,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-22 21:12+0000\n"
-"Last-Translator: Lorenzo Cerqua <lorenzocerqua@tutanota.com>\n"
+"PO-Revision-Date: 2021-01-22 10:21+0000\n"
+"Last-Translator: Micila Micillotto <micillotto@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -68,7 +68,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -190,9 +190,8 @@ msgid "Anim Delete Keys"
 msgstr "Elimina delle chiavi d'animazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "Cambia il tempo di un fotogramma chiave"
+msgstr "Cambia Intervallo Fotogramma Principale Animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
@@ -203,49 +202,41 @@ msgid "Anim Change Transform"
 msgstr "Cambia la trasformazione di un'animazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "Cambia il valore del fotogramma chiave di un'animazione"
+msgstr "Cambia Valore Fotogramma Principale Animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
 msgstr "Cambia la chiamata di un'animazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Cambia il tempo di più fotogrammi chiave"
+msgstr "Cambia Multipli Intervalli Fotogramma Principale Animazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Cambia la transizione di più animazioni"
+msgstr "Cambi Multipli Transizione Animazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Cambia le trasformazioni di più animazioni"
+msgstr "Cambi Multipli Trasformazione Animazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Cambia il valore di più fotogrammi chiave di un'Animazione"
+msgstr "Cambia Multipli Valori Fotogramma Principale Animazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Cambia la chiamata di metodo di più animazioni"
+msgstr "Cambi Multipli Chiamata Animazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "Cambia la lunghezza di un'animazione"
+msgstr "Cambia Lunghezza Animazione"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Change Animation Loop"
-msgstr "Commuta ciclicità animazione"
+msgstr "Cambia Loop Animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -317,9 +308,8 @@ msgid "Interpolation Mode"
 msgstr "Modalità d'interpolazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr "Modalità ciclo ad anello (interpola la fine con l'inizio del ciclo)"
+msgstr "Modalità Ciclo ad Anello (interpola la fine con l'inizio a ciclo)"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
@@ -342,17 +332,14 @@ msgid "Discrete"
 msgstr "Discreta"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Trigger"
-msgstr "Attivazione"
+msgstr "Attivatore"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Capture"
 msgstr "Cattura"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Nearest"
 msgstr "Più vicino"
 
@@ -366,30 +353,25 @@ msgid "Cubic"
 msgstr "Cubica"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Clamp Loop Interp"
-msgstr "Blocca l'interpolazione d'un ciclo"
+msgstr "Blocca Interpolazione Ciclo"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Wrap Loop Interp"
-msgstr "Continua l'interpolazione d'un ciclo"
+msgstr "Avvolgi Interpolazione Ciclo"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Insert Key"
-msgstr "Inserisci un fotogramma chiave"
+msgstr "Inserisci Fotogramma Chiave"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Duplicate Key(s)"
-msgstr "Duplica i fotogrammi chiave selezionati"
+msgstr "Duplica Fotogrammi Chiave Selezionati"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Key(s)"
-msgstr "Elimina i fotogrammi chiave selezionati"
+msgstr "Elimina Fotogrammi Chiave Selezionati"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
@@ -408,14 +390,12 @@ msgid "Remove Anim Track"
 msgstr "Rimuovi la traccia di un'animazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Create NEW track for %s and insert key?"
-msgstr "Creare una NUOVA traccia per %s e inserirci il fotogramma chiave?"
+msgstr "Crea NUOVA traccia per %s ed inserire fotogramma chiave?"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Create %d NEW tracks and insert keys?"
-msgstr "Creare %d NUOVE tracce e inserirci i fotogrammi chiavi?"
+msgstr "Crea %d NUOVE tracce ed inserire fotogrammi chiave?"
 
 #: editor/animation_track_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/editor_feature_profile.cpp
@@ -434,24 +414,20 @@ msgid "Anim Insert"
 msgstr "Inserisci un'animazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr "AnimationPlayer non può animarsi, solo altri nodi."
+msgstr "AnimationPlayer può solo animare altri riproduttori, non se stesso."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Create & Insert"
-msgstr "Crea un'animazione e inserisci un fotogramma chiave"
+msgstr "Crea & Inserisci Animazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Insert Track & Key"
-msgstr "Inserisci un traccia con un fotogramma chiave in un'animazione"
+msgstr "Inserisci Traccia e Fotogramma Chiave Animazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Insert Key"
-msgstr "Inserisci un fotogramma chiave in un'animazione"
+msgstr "Inserisci Fotogramma Chiave Animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Step"
@@ -462,13 +438,12 @@ msgid "Rearrange Tracks"
 msgstr "Riordina delle tracce"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Transform tracks only apply to Spatial-based nodes."
 msgstr ""
-"Le tracce di trasformazioni 3D si applicano solo a nodi di tipo Spatial."
+"Le tracce di trasformazione possono essere applicate soltanto ai nodi basati "
+"sul nodo Spatial."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
 "-AudioStreamPlayer\n"
@@ -487,12 +462,12 @@ msgstr ""
 "AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "An animation player can't animate itself, only other players."
-msgstr "Un AnimationPlayer non può animare se stesso, solo altri riproduttori."
+msgstr ""
+"Un riproduttore di animazioni può solo animare altri riproduttori, non se "
+"stesso."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Not possible to add a new track without a root"
 msgstr "Non è possibile aggiungere una nuova traccia senza un nodo radice"
 
@@ -2470,7 +2445,7 @@ msgstr "Non c'è nessuna scena definita da eseguire."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Salva scena prima di eseguire..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -4002,19 +3977,16 @@ msgid "Searching..."
 msgstr "Ricerca..."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d match in %d file."
-msgstr "%d corrispondenza/e."
+msgstr "%d corrispondenza in %d file."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d file."
-msgstr "%d corrispondenza/e."
+msgstr "%d corrispondenze in %d file."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d files."
-msgstr "%d corrispondenza/e."
+msgstr "%d corrispondenze in %d file."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -5256,15 +5228,13 @@ msgid "Assets ZIP File"
 msgstr "ZIP File degli Asset"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
-"Impossibile determinare un percorso di salvataggio per le immagini di "
+"Impossibile determinare un percorso di salvataggio per le immagini "
 "lightmap.\n"
-"Salva la scena (per salvare le immagini nella stessa directory), o scegli un "
-"percorso di salvataggio nelle proprietà di BackedLightmap."
+"Salva la scena e riprova."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5283,26 +5253,31 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
 msgstr ""
+"Impossibile determinare la dimensione della lightmap. La dimensione massima "
+"(della lightmap) è troppo piccola?"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
 msgstr ""
+"Alcune mesh non sono valide. Sii sicuro che i valori dei canali UV2 siano "
+"all'interno nella regione [0.0,1.0] quadra."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
+"Godot Editor è stato costruito senza il supporto per il ray tracing, quindi "
+"il baking delle lightmaps non è possibile."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Preprocessa Lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "Seleziona file template"
+msgstr "Seleziona il file bake della lightmap:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6408,9 +6383,8 @@ msgstr ""
 "ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles2D"
-msgstr "Converti in CPUParticles"
+msgstr "Converti in CPUParticles2D"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -11701,36 +11675,31 @@ msgstr "Dai una risorsa MeshLibrary a questa GridMap per usare le sue mesh."
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr ""
+msgstr "Inizia il Baking"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
-msgstr ""
+msgstr "Preparando le strutture dati"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Generate buffers"
-msgstr "Genera AABB"
+msgstr "Genera buffers"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Direct lighting"
-msgstr "Direzioni"
+msgstr "Luci dirette"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Indirect lighting"
-msgstr "Indenta a destra"
+msgstr "Luci indirette"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Post processing"
-msgstr "Post-Processo"
+msgstr "Post processing"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Plotting lightmaps"
-msgstr "Stampando Luci:"
+msgstr "Stampando le lightmap"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -12250,7 +12219,7 @@ msgstr "Seleziona il dispositivo dall'elenco"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find the 'apksigner' tool."
-msgstr ""
+msgstr "Impossibile trovare lo strumento 'apksigner'."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12271,18 +12240,13 @@ msgstr ""
 "Release keystore non configurato correttamente nel preset di esportazione."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
-"Percorso per Android SDK per build personalizzata nelle impostazioni "
-"dell'editor non è valido."
+"Un percorso valido per il SDK Android è richiesto nelle Impostazioni Editor."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr ""
-"Percorso per Android SDK per build personalizzata nelle impostazioni "
-"dell'editor non è valido."
+msgstr "Un percorso invalido per il SDK Android nelle Impostazioni Editor."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
@@ -12291,22 +12255,24 @@ msgstr "Cartella 'platform-tools' inesistente!"
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
+"Impossibile trovare il comando adb negli strumenti di piattaforma del SDK "
+"Android."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
-"Percorso per Android SDK per build personalizzata nelle impostazioni "
-"dell'editor non è valido."
+"Per favore, controlla la directory specificata del SDK Android nelle "
+"Impostazioni Editor."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Missing 'build-tools' directory!"
-msgstr "Cartella 'platform-tools' inesistente!"
+msgstr "Cartella 'build-tools' inesistente!"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
+"Impossibile trovare il comando apksigner negli strumenti di piattaforma del "
+"SDK Android."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12795,27 +12761,23 @@ msgstr "ARVROrigin richiede un nodo figlio di tipo ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
-msgstr ""
+msgstr "Cercando mesh e luci"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "Elaborazione Geometria..."
+msgstr "Elaborazione Geometria (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing environment"
-msgstr "Mostra Ambiente"
+msgstr "Preparazione Ambiente"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Generating capture"
-msgstr "Generando Lightmap"
+msgstr "Generando cattura"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Saving lightmaps"
-msgstr "Generando Lightmap"
+msgstr "Salvando Lightmap"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Done"
@@ -13161,9 +13123,8 @@ msgid "Must use a valid extension."
 msgstr "È necessaria un'estensione valida."
 
 #: scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Enable grid minimap."
-msgstr "Abilita Snap"
+msgstr "Abilita mini-mappa griglia."
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -13224,6 +13185,8 @@ msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
 msgstr ""
+"La porta del sampler è connessa ma mai usata. Considera cambiare la sorgente "
+"a 'SamplerPort'."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
