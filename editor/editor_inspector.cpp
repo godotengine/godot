@@ -2223,11 +2223,11 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		undo_redo->add_undo_property(object, p_name, object->get(p_name));
 
 		if (p_refresh_all) {
-			undo_redo->add_do_method(this, "_edit_request_change", object, "");
-			undo_redo->add_undo_method(this, "_edit_request_change", object, "");
+			undo_redo->add_do_method_compat(this, "_edit_request_change", object, "");
+			undo_redo->add_undo_method_compat(this, "_edit_request_change", object, "");
 		} else {
-			undo_redo->add_do_method(this, "_edit_request_change", object, p_name);
-			undo_redo->add_undo_method(this, "_edit_request_change", object, p_name);
+			undo_redo->add_do_method_compat(this, "_edit_request_change", object, p_name);
+			undo_redo->add_undo_method_compat(this, "_edit_request_change", object, p_name);
 		}
 
 		Resource *r = Object::cast_to<Resource>(object);
@@ -2236,15 +2236,15 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 				bool prev = object->get(p_name);
 				bool next = p_value;
 				if (next) {
-					undo_redo->add_do_method(r, "setup_local_to_scene");
+					undo_redo->add_do_method_compat(r, "setup_local_to_scene");
 				}
 				if (prev) {
-					undo_redo->add_undo_method(r, "setup_local_to_scene");
+					undo_redo->add_undo_method_compat(r, "setup_local_to_scene");
 				}
 			}
 		}
-		undo_redo->add_do_method(this, "emit_signal", _prop_edited, p_name);
-		undo_redo->add_undo_method(this, "emit_signal", _prop_edited, p_name);
+		undo_redo->add_do_method_compat(this, "emit_signal", _prop_edited, p_name);
+		undo_redo->add_undo_method_compat(this, "emit_signal", _prop_edited, p_name);
 		undo_redo->commit_action();
 	}
 

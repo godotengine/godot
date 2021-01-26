@@ -132,20 +132,20 @@ void GroupDialog::_add_pressed() {
 
 	while (selected) {
 		Node *node = scene_tree->get_edited_scene_root()->get_node(selected->get_metadata(0));
-		undo_redo->add_do_method(node, "add_to_group", selected_group, true);
-		undo_redo->add_undo_method(node, "remove_from_group", selected_group);
+		undo_redo->add_do_method_compat(node, "add_to_group", selected_group, true);
+		undo_redo->add_undo_method_compat(node, "remove_from_group", selected_group);
 
 		selected = nodes_to_add->get_next_selected(selected);
 	}
 
-	undo_redo->add_do_method(this, "_group_selected");
-	undo_redo->add_undo_method(this, "_group_selected");
-	undo_redo->add_do_method(this, "emit_signal", "group_edited");
-	undo_redo->add_undo_method(this, "emit_signal", "group_edited");
+	undo_redo->add_do_method_compat(this, "_group_selected");
+	undo_redo->add_undo_method_compat(this, "_group_selected");
+	undo_redo->add_do_method_compat(this, "emit_signal", "group_edited");
+	undo_redo->add_undo_method_compat(this, "emit_signal", "group_edited");
 
 	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method_compat(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method_compat(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 }
@@ -161,20 +161,20 @@ void GroupDialog::_removed_pressed() {
 
 	while (selected) {
 		Node *node = scene_tree->get_edited_scene_root()->get_node(selected->get_metadata(0));
-		undo_redo->add_do_method(node, "remove_from_group", selected_group);
-		undo_redo->add_undo_method(node, "add_to_group", selected_group, true);
+		undo_redo->add_do_method_compat(node, "remove_from_group", selected_group);
+		undo_redo->add_undo_method_compat(node, "add_to_group", selected_group, true);
 
 		selected = nodes_to_add->get_next_selected(selected);
 	}
 
-	undo_redo->add_do_method(this, "_group_selected");
-	undo_redo->add_undo_method(this, "_group_selected");
-	undo_redo->add_do_method(this, "emit_signal", "group_edited");
-	undo_redo->add_undo_method(this, "emit_signal", "group_edited");
+	undo_redo->add_do_method_compat(this, "_group_selected");
+	undo_redo->add_undo_method_compat(this, "_group_selected");
+	undo_redo->add_do_method_compat(this, "emit_signal", "group_edited");
+	undo_redo->add_undo_method_compat(this, "emit_signal", "group_edited");
 
 	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method_compat(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method_compat(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 }
@@ -243,26 +243,26 @@ void GroupDialog::_group_renamed() {
 	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
 		Node *node = E->get();
 		if (_can_edit(node, selected_group)) {
-			undo_redo->add_do_method(node, "remove_from_group", selected_group);
-			undo_redo->add_undo_method(node, "remove_from_group", name);
-			undo_redo->add_do_method(node, "add_to_group", name, true);
-			undo_redo->add_undo_method(node, "add_to_group", selected_group, true);
+			undo_redo->add_do_method_compat(node, "remove_from_group", selected_group);
+			undo_redo->add_undo_method_compat(node, "remove_from_group", name);
+			undo_redo->add_do_method_compat(node, "add_to_group", name, true);
+			undo_redo->add_undo_method_compat(node, "add_to_group", selected_group, true);
 		} else {
 			removed_all = false;
 		}
 	}
 
 	if (!removed_all) {
-		undo_redo->add_do_method(this, "_add_group", selected_group);
-		undo_redo->add_undo_method(this, "_delete_group_item", selected_group);
+		undo_redo->add_do_method_compat(this, "_add_group", selected_group);
+		undo_redo->add_undo_method_compat(this, "_delete_group_item", selected_group);
 	}
 
-	undo_redo->add_do_method(this, "_rename_group_item", selected_group, name);
-	undo_redo->add_undo_method(this, "_rename_group_item", name, selected_group);
-	undo_redo->add_do_method(this, "_group_selected");
-	undo_redo->add_undo_method(this, "_group_selected");
-	undo_redo->add_do_method(this, "emit_signal", "group_edited");
-	undo_redo->add_undo_method(this, "emit_signal", "group_edited");
+	undo_redo->add_do_method_compat(this, "_rename_group_item", selected_group, name);
+	undo_redo->add_undo_method_compat(this, "_rename_group_item", name, selected_group);
+	undo_redo->add_do_method_compat(this, "_group_selected");
+	undo_redo->add_undo_method_compat(this, "_group_selected");
+	undo_redo->add_do_method_compat(this, "emit_signal", "group_edited");
+	undo_redo->add_undo_method_compat(this, "emit_signal", "group_edited");
 
 	undo_redo->commit_action();
 }
@@ -313,26 +313,26 @@ void GroupDialog::_delete_group_pressed(Object *p_item, int p_column, int p_id) 
 	bool removed_all = true;
 	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
 		if (_can_edit(E->get(), name)) {
-			undo_redo->add_do_method(E->get(), "remove_from_group", name);
-			undo_redo->add_undo_method(E->get(), "add_to_group", name, true);
+			undo_redo->add_do_method_compat(E->get(), "remove_from_group", name);
+			undo_redo->add_undo_method_compat(E->get(), "add_to_group", name, true);
 		} else {
 			removed_all = false;
 		}
 	}
 
 	if (removed_all) {
-		undo_redo->add_do_method(this, "_delete_group_item", name);
-		undo_redo->add_undo_method(this, "_add_group", name);
+		undo_redo->add_do_method_compat(this, "_delete_group_item", name);
+		undo_redo->add_undo_method_compat(this, "_add_group", name);
 	}
 
-	undo_redo->add_do_method(this, "_group_selected");
-	undo_redo->add_undo_method(this, "_group_selected");
-	undo_redo->add_do_method(this, "emit_signal", "group_edited");
-	undo_redo->add_undo_method(this, "emit_signal", "group_edited");
+	undo_redo->add_do_method_compat(this, "_group_selected");
+	undo_redo->add_undo_method_compat(this, "_group_selected");
+	undo_redo->add_do_method_compat(this, "emit_signal", "group_edited");
+	undo_redo->add_undo_method_compat(this, "emit_signal", "group_edited");
 
 	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method_compat(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method_compat(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 }
@@ -561,14 +561,14 @@ void GroupsEditor::_add_group(const String &p_group) {
 
 	undo_redo->create_action(TTR("Add to Group"));
 
-	undo_redo->add_do_method(node, "add_to_group", name, true);
-	undo_redo->add_undo_method(node, "remove_from_group", name);
-	undo_redo->add_do_method(this, "update_tree");
-	undo_redo->add_undo_method(this, "update_tree");
+	undo_redo->add_do_method_compat(node, "add_to_group", name, true);
+	undo_redo->add_undo_method_compat(node, "remove_from_group", name);
+	undo_redo->add_do_method_compat(this, "update_tree");
+	undo_redo->add_undo_method_compat(this, "update_tree");
 
 	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method_compat(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method_compat(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 
@@ -589,14 +589,14 @@ void GroupsEditor::_remove_group(Object *p_item, int p_column, int p_id) {
 
 	undo_redo->create_action(TTR("Remove from Group"));
 
-	undo_redo->add_do_method(node, "remove_from_group", name);
-	undo_redo->add_undo_method(node, "add_to_group", name, true);
-	undo_redo->add_do_method(this, "update_tree");
-	undo_redo->add_undo_method(this, "update_tree");
+	undo_redo->add_do_method_compat(node, "remove_from_group", name);
+	undo_redo->add_undo_method_compat(node, "add_to_group", name, true);
+	undo_redo->add_do_method_compat(this, "update_tree");
+	undo_redo->add_undo_method_compat(this, "update_tree");
 
 	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method_compat(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method_compat(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 }

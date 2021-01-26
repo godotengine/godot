@@ -105,10 +105,10 @@ void ProjectSettingsEditor::_add_setting() {
 	undo_redo->add_do_property(ps, setting, value);
 	undo_redo->add_undo_property(ps, setting, ps->has_setting(setting) ? ps->get(setting) : Variant());
 
-	undo_redo->add_do_method(inspector, "update_category_list");
-	undo_redo->add_undo_method(inspector, "update_category_list");
-	undo_redo->add_do_method(this, "queue_save");
-	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->add_do_method_compat(inspector, "update_category_list");
+	undo_redo->add_undo_method_compat(inspector, "update_category_list");
+	undo_redo->add_do_method_compat(this, "queue_save");
+	undo_redo->add_undo_method_compat(this, "queue_save");
 	undo_redo->commit_action();
 
 	inspector->set_current_section(setting.get_slice("/", 1));
@@ -127,14 +127,14 @@ void ProjectSettingsEditor::_delete_setting(bool p_confirmed) {
 
 	undo_redo->create_action(TTR("Delete Item"));
 
-	undo_redo->add_do_method(ps, "clear", setting);
-	undo_redo->add_undo_method(ps, "set", setting, value);
-	undo_redo->add_undo_method(ps, "set_order", setting, order);
+	undo_redo->add_do_method_compat(ps, "clear", setting);
+	undo_redo->add_undo_method_compat(ps, "set", setting, value);
+	undo_redo->add_undo_method_compat(ps, "set_order", setting, order);
 
-	undo_redo->add_do_method(inspector, "update_category_list");
-	undo_redo->add_undo_method(inspector, "update_category_list");
-	undo_redo->add_do_method(this, "queue_save");
-	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->add_do_method_compat(inspector, "update_category_list");
+	undo_redo->add_undo_method_compat(inspector, "update_category_list");
+	undo_redo->add_do_method_compat(this, "queue_save");
+	undo_redo->add_undo_method_compat(this, "queue_save");
 
 	undo_redo->commit_action();
 

@@ -87,8 +87,8 @@ void AbstractPolygon2DEditor::_set_polygon(int p_idx, const Variant &p_polygon) 
 
 void AbstractPolygon2DEditor::_action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) {
 	Node2D *node = _get_node();
-	undo_redo->add_do_method(node, "set_polygon", p_polygon);
-	undo_redo->add_undo_method(node, "set_polygon", p_previous);
+	undo_redo->add_do_method_compat(node, "set_polygon", p_polygon);
+	undo_redo->add_undo_method_compat(node, "set_polygon", p_previous);
 }
 
 Vector2 AbstractPolygon2DEditor::_get_offset(int p_idx) const {
@@ -96,8 +96,8 @@ Vector2 AbstractPolygon2DEditor::_get_offset(int p_idx) const {
 }
 
 void AbstractPolygon2DEditor::_commit_action() {
-	undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-	undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
+	undo_redo->add_do_method_compat(canvas_item_editor, "update_viewport");
+	undo_redo->add_undo_method_compat(canvas_item_editor, "update_viewport");
 	undo_redo->commit_action();
 }
 
@@ -198,8 +198,8 @@ void AbstractPolygon2DEditor::_wip_close() {
 		undo_redo->create_action(TTR("Create Polygon"));
 		_action_add_polygon(wip);
 		if (_has_uv()) {
-			undo_redo->add_do_method(_get_node(), "set_uv", Vector<Vector2>());
-			undo_redo->add_undo_method(_get_node(), "set_uv", _get_node()->get("uv"));
+			undo_redo->add_do_method_compat(_get_node(), "set_uv", Vector<Vector2>());
+			undo_redo->add_undo_method_compat(_get_node(), "set_uv", _get_node()->get("uv"));
 		}
 		_commit_action();
 	} else {

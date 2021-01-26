@@ -51,6 +51,8 @@ public:
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const;
 	virtual const Callable *get_base_comparator() const;
 
+	Vector<Variant> get_binds() { return binds; }
+
 	CallableCustomBind(const Callable &p_callable, const Vector<Variant> &p_binds);
 	virtual ~CallableCustomBind();
 };

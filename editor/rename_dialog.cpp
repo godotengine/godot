@@ -586,8 +586,8 @@ void RenameDialog::rename() {
 			}
 
 			scene_tree_editor->emit_signal("node_prerename", n, new_name);
-			undo_redo->add_do_method(scene_tree_editor, "_rename_node", n->get_instance_id(), new_name);
-			undo_redo->add_undo_method(scene_tree_editor, "_rename_node", n->get_instance_id(), n->get_name());
+			undo_redo->add_do_method_compat(scene_tree_editor, "_rename_node", n->get_instance_id(), new_name);
+			undo_redo->add_undo_method_compat(scene_tree_editor, "_rename_node", n->get_instance_id(), n->get_name());
 		}
 
 		undo_redo->commit_action();

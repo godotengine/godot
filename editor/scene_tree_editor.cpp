@@ -93,12 +93,12 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->create_action(TTR("Unlock Node"));
 
 		if (n->is_class("CanvasItem") || n->is_class("Node3D")) {
-			undo_redo->add_do_method(n, "remove_meta", "_edit_lock_");
-			undo_redo->add_undo_method(n, "set_meta", "_edit_lock_", true);
-			undo_redo->add_do_method(this, "_update_tree", Variant());
-			undo_redo->add_undo_method(this, "_update_tree", Variant());
-			undo_redo->add_do_method(this, "emit_signal", "node_changed");
-			undo_redo->add_undo_method(this, "emit_signal", "node_changed");
+			undo_redo->add_do_method_compat(n, "remove_meta", "_edit_lock_");
+			undo_redo->add_undo_method_compat(n, "set_meta", "_edit_lock_", true);
+			undo_redo->add_do_method_compat(this, "_update_tree", Variant());
+			undo_redo->add_undo_method_compat(this, "_update_tree", Variant());
+			undo_redo->add_do_method_compat(this, "emit_signal", "node_changed");
+			undo_redo->add_undo_method_compat(this, "emit_signal", "node_changed");
 		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_PIN) {
@@ -111,12 +111,12 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->create_action(TTR("Button Group"));
 
 		if (n->is_class("CanvasItem") || n->is_class("Node3D")) {
-			undo_redo->add_do_method(n, "remove_meta", "_edit_group_");
-			undo_redo->add_undo_method(n, "set_meta", "_edit_group_", true);
-			undo_redo->add_do_method(this, "_update_tree", Variant());
-			undo_redo->add_undo_method(this, "_update_tree", Variant());
-			undo_redo->add_do_method(this, "emit_signal", "node_changed");
-			undo_redo->add_undo_method(this, "emit_signal", "node_changed");
+			undo_redo->add_do_method_compat(n, "remove_meta", "_edit_group_");
+			undo_redo->add_undo_method_compat(n, "set_meta", "_edit_group_", true);
+			undo_redo->add_do_method_compat(this, "_update_tree", Variant());
+			undo_redo->add_undo_method_compat(this, "_update_tree", Variant());
+			undo_redo->add_do_method_compat(this, "emit_signal", "node_changed");
+			undo_redo->add_undo_method_compat(this, "emit_signal", "node_changed");
 		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_WARNING) {
@@ -151,8 +151,8 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 void SceneTreeEditor::_toggle_visible(Node *p_node) {
 	if (p_node->has_method("is_visible") && p_node->has_method("set_visible")) {
 		bool v = bool(p_node->call("is_visible"));
-		undo_redo->add_do_method(p_node, "set_visible", !v);
-		undo_redo->add_undo_method(p_node, "set_visible", v);
+		undo_redo->add_do_method_compat(p_node, "set_visible", !v);
+		undo_redo->add_undo_method_compat(p_node, "set_visible", v);
 	}
 }
 
@@ -787,8 +787,8 @@ void SceneTreeEditor::_renamed() {
 	} else {
 		undo_redo->create_action(TTR("Rename Node"));
 		emit_signal("node_prerename", n, new_name);
-		undo_redo->add_do_method(this, "_rename_node", n->get_instance_id(), new_name);
-		undo_redo->add_undo_method(this, "_rename_node", n->get_instance_id(), n->get_name());
+		undo_redo->add_do_method_compat(this, "_rename_node", n->get_instance_id(), new_name);
+		undo_redo->add_undo_method_compat(this, "_rename_node", n->get_instance_id(), n->get_name());
 		undo_redo->commit_action();
 	}
 }

@@ -171,8 +171,8 @@ void Path3DGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_canc
 			return;
 		}
 		ur->create_action(TTR("Set Curve Point Position"));
-		ur->add_do_method(c.ptr(), "set_point_position", p_idx, c->get_point_position(p_idx));
-		ur->add_undo_method(c.ptr(), "set_point_position", p_idx, p_restore);
+		ur->add_do_method_compat(c.ptr(), "set_point_position", p_idx, c->get_point_position(p_idx));
+		ur->add_undo_method_compat(c.ptr(), "set_point_position", p_idx, p_restore);
 		ur->commit_action();
 
 		return;
@@ -190,12 +190,12 @@ void Path3DGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_canc
 		}
 
 		ur->create_action(TTR("Set Curve In Position"));
-		ur->add_do_method(c.ptr(), "set_point_in", idx, c->get_point_in(idx));
-		ur->add_undo_method(c.ptr(), "set_point_in", idx, p_restore);
+		ur->add_do_method_compat(c.ptr(), "set_point_in", idx, c->get_point_in(idx));
+		ur->add_undo_method_compat(c.ptr(), "set_point_in", idx, p_restore);
 
 		if (Path3DEditorPlugin::singleton->mirror_angle_enabled()) {
-			ur->add_do_method(c.ptr(), "set_point_out", idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -c->get_point_in(idx) : (-c->get_point_in(idx).normalized() * orig_out_length));
-			ur->add_undo_method(c.ptr(), "set_point_out", idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -static_cast<Vector3>(p_restore) : (-static_cast<Vector3>(p_restore).normalized() * orig_out_length));
+			ur->add_do_method_compat(c.ptr(), "set_point_out", idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -c->get_point_in(idx) : (-c->get_point_in(idx).normalized() * orig_out_length));
+			ur->add_undo_method_compat(c.ptr(), "set_point_out", idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -static_cast<Vector3>(p_restore) : (-static_cast<Vector3>(p_restore).normalized() * orig_out_length));
 		}
 		ur->commit_action();
 
@@ -207,12 +207,12 @@ void Path3DGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_canc
 		}
 
 		ur->create_action(TTR("Set Curve Out Position"));
-		ur->add_do_method(c.ptr(), "set_point_out", idx, c->get_point_out(idx));
-		ur->add_undo_method(c.ptr(), "set_point_out", idx, p_restore);
+		ur->add_do_method_compat(c.ptr(), "set_point_out", idx, c->get_point_out(idx));
+		ur->add_undo_method_compat(c.ptr(), "set_point_out", idx, p_restore);
 
 		if (Path3DEditorPlugin::singleton->mirror_angle_enabled()) {
-			ur->add_do_method(c.ptr(), "set_point_in", idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -c->get_point_out(idx) : (-c->get_point_out(idx).normalized() * orig_in_length));
-			ur->add_undo_method(c.ptr(), "set_point_in", idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -static_cast<Vector3>(p_restore) : (-static_cast<Vector3>(p_restore).normalized() * orig_in_length));
+			ur->add_do_method_compat(c.ptr(), "set_point_in", idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -c->get_point_out(idx) : (-c->get_point_out(idx).normalized() * orig_in_length));
+			ur->add_undo_method_compat(c.ptr(), "set_point_in", idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -static_cast<Vector3>(p_restore) : (-static_cast<Vector3>(p_restore).normalized() * orig_in_length));
 		}
 		ur->commit_action();
 	}
@@ -383,8 +383,8 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 				//subdivide
 
 				ur->create_action(TTR("Split Path"));
-				ur->add_do_method(c.ptr(), "add_point", closest_seg_point, Vector3(), Vector3(), closest_seg + 1);
-				ur->add_undo_method(c.ptr(), "remove_point", closest_seg + 1);
+				ur->add_do_method_compat(c.ptr(), "add_point", closest_seg_point, Vector3(), Vector3(), closest_seg + 1);
+				ur->add_undo_method_compat(c.ptr(), "remove_point", closest_seg + 1);
 				ur->commit_action();
 				return true;
 
@@ -402,8 +402,8 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 				Vector3 inters;
 				if (p.intersects_ray(ray_from, ray_dir, &inters)) {
 					ur->create_action(TTR("Add Point to Curve"));
-					ur->add_do_method(c.ptr(), "add_point", it.xform(inters), Vector3(), Vector3(), -1);
-					ur->add_undo_method(c.ptr(), "remove_point", c->get_point_count());
+					ur->add_do_method_compat(c.ptr(), "add_point", it.xform(inters), Vector3(), Vector3(), -1);
+					ur->add_undo_method_compat(c.ptr(), "remove_point", c->get_point_count());
 					ur->commit_action();
 					return true;
 				}
@@ -422,22 +422,22 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 				if (dist_to_p < click_dist) {
 					UndoRedo *ur = editor->get_undo_redo();
 					ur->create_action(TTR("Remove Path Point"));
-					ur->add_do_method(c.ptr(), "remove_point", i);
-					ur->add_undo_method(c.ptr(), "add_point", c->get_point_position(i), c->get_point_in(i), c->get_point_out(i), i);
+					ur->add_do_method_compat(c.ptr(), "remove_point", i);
+					ur->add_undo_method_compat(c.ptr(), "add_point", c->get_point_position(i), c->get_point_in(i), c->get_point_out(i), i);
 					ur->commit_action();
 					return true;
 				} else if (dist_to_p_out < click_dist) {
 					UndoRedo *ur = editor->get_undo_redo();
 					ur->create_action(TTR("Remove Out-Control Point"));
-					ur->add_do_method(c.ptr(), "set_point_out", i, Vector3());
-					ur->add_undo_method(c.ptr(), "set_point_out", i, c->get_point_out(i));
+					ur->add_do_method_compat(c.ptr(), "set_point_out", i, Vector3());
+					ur->add_undo_method_compat(c.ptr(), "set_point_out", i, c->get_point_out(i));
 					ur->commit_action();
 					return true;
 				} else if (dist_to_p_in < click_dist) {
 					UndoRedo *ur = editor->get_undo_redo();
 					ur->create_action(TTR("Remove In-Control Point"));
-					ur->add_do_method(c.ptr(), "set_point_in", i, Vector3());
-					ur->add_undo_method(c.ptr(), "set_point_in", i, c->get_point_in(i));
+					ur->add_do_method_compat(c.ptr(), "set_point_in", i, Vector3());
+					ur->add_undo_method_compat(c.ptr(), "set_point_in", i, c->get_point_in(i));
 					ur->commit_action();
 					return true;
 				}
