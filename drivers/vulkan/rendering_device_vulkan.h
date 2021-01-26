@@ -1078,6 +1078,12 @@ public:
 
 	virtual uint64_t get_memory_usage() const;
 
+	virtual void set_resource_name(RID p_id, const String p_name);
+
+	virtual void draw_command_begin_label(String p_label_name, const Color p_color = Color(1, 1, 1, 1));
+	virtual void draw_command_insert_label(String p_label_name, const Color p_color = Color(1, 1, 1, 1));
+	virtual void draw_command_end_label();
+
 	RenderingDeviceVulkan();
 	~RenderingDeviceVulkan();
 };
