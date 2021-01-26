@@ -873,7 +873,7 @@ void RendererStorageRD::_texture_2d_update(RID p_texture, const Ref<Image> &p_im
 	TextureToRDFormat f;
 	Ref<Image> validated = _validate_texture_format(p_image, f);
 
-	RD::get_singleton()->texture_update(tex->rd_texture, p_layer, validated->get_data(), !p_immediate);
+	RD::get_singleton()->texture_update(tex->rd_texture, p_layer, validated->get_data());
 }
 
 void RendererStorageRD::texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer) {
@@ -918,7 +918,7 @@ void RendererStorageRD::texture_3d_update(RID p_texture, const Vector<Ref<Image>
 		}
 	}
 
-	RD::get_singleton()->texture_update(tex->rd_texture, 0, all_data, true);
+	RD::get_singleton()->texture_update(tex->rd_texture, 0, all_data);
 }
 
 void RendererStorageRD::texture_proxy_update(RID p_texture, RID p_proxy_to) {
@@ -3044,7 +3044,7 @@ void RendererStorageRD::update_mesh_instances() {
 		MeshInstance *mi = dirty_mesh_instance_weights.first()->self();
 
 		if (mi->blend_weights_buffer.is_valid()) {
-			RD::get_singleton()->buffer_update(mi->blend_weights_buffer, 0, mi->blend_weights.size() * sizeof(float), mi->blend_weights.ptr(), true);
+			RD::get_singleton()->buffer_update(mi->blend_weights_buffer, 0, mi->blend_weights.size() * sizeof(float), mi->blend_weights.ptr());
 		}
 		dirty_mesh_instance_weights.remove(&mi->weight_update_list);
 		mi->weights_dirty = false;
@@ -3712,7 +3712,7 @@ void RendererStorageRD::multimesh_set_buffer(RID p_multimesh, const Vector<float
 
 	{
 		const float *r = p_buffer.ptr();
-		RD::get_singleton()->buffer_update(multimesh->buffer, 0, p_buffer.size() * sizeof(float), r, false);
+		RD::get_singleton()->buffer_update(multimesh->buffer, 0, p_buffer.size() * sizeof(float), r);
 		multimesh->buffer_set = true;
 	}
 
@@ -3811,14 +3811,14 @@ void RendererStorageRD::_update_dirty_multimeshes() {
 
 				if (multimesh->data_cache_used_dirty_regions > 32 || multimesh->data_cache_used_dirty_regions > visible_region_count / 2) {
 					//if there too many dirty regions, or represent the majority of regions, just copy all, else transfer cost piles up too much
-					RD::get_singleton()->buffer_update(multimesh->buffer, 0, MIN(visible_region_count * region_size, multimesh->instances * multimesh->stride_cache * sizeof(float)), data, false);
+					RD::get_singleton()->buffer_update(multimesh->buffer, 0, MIN(visible_region_count * region_size, multimesh->instances * multimesh->stride_cache * sizeof(float)), data);
 				} else {
 					//not that many regions? update them all
 					for (uint32_t i = 0; i < visible_region_count; i++) {
 						if (multimesh->data_cache_dirty_regions[i]) {
 							uint64_t offset = i * region_size;
 							uint64_t size = multimesh->stride_cache * multimesh->instances * sizeof(float);
-							RD::get_singleton()->buffer_update(multimesh->buffer, offset, MIN(region_size, size - offset), &data[i * region_size], false);
+							RD::get_singleton()->buffer_update(multimesh->buffer, offset, MIN(region_size, size - offset), &data[i * region_size]);
 						}
 					}
 				}
@@ -4509,7 +4509,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 	if (sub_emitter && sub_emitter->emission_storage_buffer.is_valid()) {
 		//	print_line("updating subemitter buffer");
 		int32_t zero[4] = { 0, sub_emitter->amount, 0, 0 };
-		RD::get_singleton()->buffer_update(sub_emitter->emission_storage_buffer, 0, sizeof(uint32_t) * 4, zero, true);
+		RD::get_singleton()->buffer_update(sub_emitter->emission_storage_buffer, 0, sizeof(uint32_t) * 4, zero);
 		push_constant.can_emit = true;
 
 		if (sub_emitter->emitting) {
@@ -4527,13 +4527,13 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 	}
 
 	if (p_particles->emission_buffer && p_particles->emission_buffer->particle_count) {
-		RD::get_singleton()->buffer_update(p_particles->emission_storage_buffer, 0, sizeof(uint32_t) * 4 + sizeof(ParticleEmissionBuffer::Data) * p_particles->emission_buffer->particle_count, p_particles->emission_buffer, true);
+		RD::get_singleton()->buffer_update(p_particles->emission_storage_buffer, 0, sizeof(uint32_t) * 4 + sizeof(ParticleEmissionBuffer::Data) * p_particles->emission_buffer->particle_count, p_particles->emission_buffer);
 		p_particles->emission_buffer->particle_count = 0;
 	}
 
 	p_particles->clear = false;
 
-	RD::get_singleton()->buffer_update(p_particles->frame_params_buffer, 0, sizeof(ParticlesFrameParams), &frame_params, true);
+	RD::get_singleton()->buffer_update(p_particles->frame_params_buffer, 0, sizeof(ParticlesFrameParams), &frame_params);
 
 	ParticlesMaterialData *m = (ParticlesMaterialData *)material_get_data(p_particles->process_material, SHADER_TYPE_PARTICLES);
 	if (!m) {
@@ -5332,7 +5332,7 @@ void RendererStorageRD::_update_dirty_skeletons() {
 		Skeleton *skeleton = skeleton_dirty_list;
 
 		if (skeleton->size) {
-			RD::get_singleton()->buffer_update(skeleton->buffer, 0, skeleton->data.size() * sizeof(float), skeleton->data.ptr(), false);
+			RD::get_singleton()->buffer_update(skeleton->buffer, 0, skeleton->data.size() * sizeof(float), skeleton->data.ptr());
 		}
 
 		skeleton_dirty_list = skeleton->dirty_list;
@@ -7371,7 +7371,7 @@ void RendererStorageRD::_update_decal_atlas() {
 	tformat.shareable_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_SRGB);
 
 	decal_atlas.texture = RD::get_singleton()->texture_create(tformat, RD::TextureView());
-	RD::get_singleton()->texture_clear(decal_atlas.texture, Color(0, 0, 0, 0), 0, decal_atlas.mipmaps, 0, 1, true);
+	RD::get_singleton()->texture_clear(decal_atlas.texture, Color(0, 0, 0, 0), 0, decal_atlas.mipmaps, 0, 1);
 
 	{
 		//create the framebuffer
@@ -7426,7 +7426,7 @@ void RendererStorageRD::_update_decal_atlas() {
 				prev_texture = mm.texture;
 			}
 		} else {
-			RD::get_singleton()->texture_clear(mm.texture, clear_color, 0, 1, 0, 1, false);
+			RD::get_singleton()->texture_clear(mm.texture, clear_color, 0, 1, 0, 1);
 		}
 	}
 }
@@ -8297,11 +8297,11 @@ EffectsRD *RendererStorageRD::get_effects() {
 }
 
 void RendererStorageRD::capture_timestamps_begin() {
-	RD::get_singleton()->capture_timestamp("Frame Begin", false);
+	RD::get_singleton()->capture_timestamp("Frame Begin");
 }
 
 void RendererStorageRD::capture_timestamp(const String &p_name) {
-	RD::get_singleton()->capture_timestamp(p_name, true);
+	RD::get_singleton()->capture_timestamp(p_name);
 }
 
 uint32_t RendererStorageRD::get_captured_timestamps_count() const {

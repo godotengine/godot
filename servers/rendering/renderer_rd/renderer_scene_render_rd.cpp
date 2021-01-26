@@ -1148,7 +1148,7 @@ void RendererSceneRenderRD::_sdfgi_update_cascades(RID p_render_buffers) {
 		cascade_data[i].pad = 0;
 	}
 
-	RD::get_singleton()->buffer_update(rb->sdfgi->cascades_ubo, 0, sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES, cascade_data, true);
+	RD::get_singleton()->buffer_update(rb->sdfgi->cascades_ubo, 0, sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES, cascade_data);
 }
 
 void RendererSceneRenderRD::sdfgi_update_probes(RID p_render_buffers, RID p_environment, const Vector<RID> &p_directional_lights, const RID *p_positional_light_instances, uint32_t p_positional_light_count) {
@@ -1257,7 +1257,7 @@ void RendererSceneRenderRD::sdfgi_update_probes(RID p_render_buffers, RID p_envi
 			}
 
 			if (idx > 0) {
-				RD::get_singleton()->buffer_update(cascade.lights_buffer, 0, idx * sizeof(SDGIShader::Light), lights, true);
+				RD::get_singleton()->buffer_update(cascade.lights_buffer, 0, idx * sizeof(SDGIShader::Light), lights);
 			}
 
 			cascade_light_count[i] = idx;
@@ -1500,7 +1500,7 @@ void RendererSceneRenderRD::_setup_giprobes(RID p_render_buffers, const Transfor
 	}
 
 	if (p_gi_probes.size() > 0) {
-		RD::get_singleton()->buffer_update(gi_probe_buffer, 0, sizeof(GI::GIProbeData) * MIN((uint64_t)RenderBuffers::MAX_GIPROBES, p_gi_probes.size()), gi_probe_data, true);
+		RD::get_singleton()->buffer_update(gi_probe_buffer, 0, sizeof(GI::GIProbeData) * MIN((uint64_t)RenderBuffers::MAX_GIPROBES, p_gi_probes.size()), gi_probe_data);
 	}
 }
 
@@ -1640,7 +1640,7 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 			c.to_cell = 1.0 / rb->sdfgi->cascades[i].cell_size;
 		}
 
-		RD::get_singleton()->buffer_update(gi.sdfgi_ubo, 0, sizeof(GI::SDFGIData), &sdfgi_data, true);
+		RD::get_singleton()->buffer_update(gi.sdfgi_ubo, 0, sizeof(GI::SDFGIData), &sdfgi_data);
 	}
 
 	if (rb->gi_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(rb->gi_uniform_set)) {
@@ -2334,7 +2334,7 @@ void RendererSceneRenderRD::_setup_sky(RID p_environment, RID p_render_buffers, 
 			}
 
 			if (light_data_dirty) {
-				RD::get_singleton()->buffer_update(sky_scene_state.directional_light_buffer, 0, sizeof(SkyDirectionalLightData) * sky_scene_state.max_directional_lights, sky_scene_state.directional_lights, true);
+				RD::get_singleton()->buffer_update(sky_scene_state.directional_light_buffer, 0, sizeof(SkyDirectionalLightData) * sky_scene_state.max_directional_lights, sky_scene_state.directional_lights);
 
 				RendererSceneRenderRD::SkyDirectionalLightData *temp = sky_scene_state.last_frame_directional_lights;
 				sky_scene_state.last_frame_directional_lights = sky_scene_state.directional_lights;
@@ -2386,7 +2386,7 @@ void RendererSceneRenderRD::_setup_sky(RID p_environment, RID p_render_buffers, 
 	sky_scene_state.ubo.fog_light_color[2] = fog_color.b * fog_energy;
 	sky_scene_state.ubo.fog_sun_scatter = environment_get_fog_sun_scatter(p_environment);
 
-	RD::get_singleton()->buffer_update(sky_scene_state.uniform_buffer, 0, sizeof(SkySceneState::UBO), &sky_scene_state.ubo, true);
+	RD::get_singleton()->buffer_update(sky_scene_state.uniform_buffer, 0, sizeof(SkySceneState::UBO), &sky_scene_state.ubo);
 }
 
 void RendererSceneRenderRD::_update_sky(RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform) {
@@ -4165,7 +4165,7 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 
 			gi_probe->texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
 
-			RD::get_singleton()->texture_clear(gi_probe->texture, Color(0, 0, 0, 0), 0, levels.size(), 0, 1, false);
+			RD::get_singleton()->texture_clear(gi_probe->texture, Color(0, 0, 0, 0), 0, levels.size(), 0, 1);
 
 			{
 				int total_elements = 0;
@@ -4477,7 +4477,7 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 
 	if (gi_probe->has_dynamic_object_data) {
 		//if it has dynamic object data, it needs to be cleared
-		RD::get_singleton()->texture_clear(gi_probe->texture, Color(0, 0, 0, 0), 0, gi_probe->mipmaps.size(), 0, 1, true);
+		RD::get_singleton()->texture_clear(gi_probe->texture, Color(0, 0, 0, 0), 0, gi_probe->mipmaps.size(), 0, 1);
 	}
 
 	uint32_t light_count = 0;
@@ -4528,7 +4528,7 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 				l.has_shadow = storage->light_has_shadow(light);
 			}
 
-			RD::get_singleton()->buffer_update(gi_probe_lights_uniform, 0, sizeof(GIProbeLight) * light_count, gi_probe_lights, true);
+			RD::get_singleton()->buffer_update(gi_probe_lights_uniform, 0, sizeof(GIProbeLight) * light_count, gi_probe_lights);
 		}
 	}
 
@@ -6179,7 +6179,7 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 	}
 
 	if (cluster.reflection_count) {
-		RD::get_singleton()->buffer_update(cluster.reflection_buffer, 0, cluster.reflection_count * sizeof(ReflectionData), cluster.reflections, true);
+		RD::get_singleton()->buffer_update(cluster.reflection_buffer, 0, cluster.reflection_count * sizeof(ReflectionData), cluster.reflections);
 	}
 }
 
@@ -6572,15 +6572,15 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 	}
 
 	if (cluster.omni_light_count) {
-		RD::get_singleton()->buffer_update(cluster.omni_light_buffer, 0, sizeof(Cluster::LightData) * cluster.omni_light_count, cluster.omni_lights, true);
+		RD::get_singleton()->buffer_update(cluster.omni_light_buffer, 0, sizeof(Cluster::LightData) * cluster.omni_light_count, cluster.omni_lights);
 	}
 
 	if (cluster.spot_light_count) {
-		RD::get_singleton()->buffer_update(cluster.spot_light_buffer, 0, sizeof(Cluster::LightData) * cluster.spot_light_count, cluster.spot_lights, true);
+		RD::get_singleton()->buffer_update(cluster.spot_light_buffer, 0, sizeof(Cluster::LightData) * cluster.spot_light_count, cluster.spot_lights);
 	}
 
 	if (r_directional_light_count) {
-		RD::get_singleton()->buffer_update(cluster.directional_light_buffer, 0, sizeof(Cluster::DirectionalLightData) * r_directional_light_count, cluster.directional_lights, true);
+		RD::get_singleton()->buffer_update(cluster.directional_light_buffer, 0, sizeof(Cluster::DirectionalLightData) * r_directional_light_count, cluster.directional_lights);
 	}
 }
 
@@ -6741,7 +6741,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 	}
 
 	if (cluster.decal_count > 0) {
-		RD::get_singleton()->buffer_update(cluster.decal_buffer, 0, sizeof(Cluster::DecalData) * cluster.decal_count, cluster.decals, true);
+		RD::get_singleton()->buffer_update(cluster.decal_buffer, 0, sizeof(Cluster::DecalData) * cluster.decal_count, cluster.decals);
 	}
 }
 
@@ -7276,7 +7276,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 	RENDER_TIMESTAMP(">Volumetric Fog");
 
 	RENDER_TIMESTAMP("Render Fog");
-	RD::get_singleton()->buffer_update(volumetric_fog.params_ubo, 0, sizeof(VolumetricFogShader::ParamsUBO), &params, true);
+	RD::get_singleton()->buffer_update(volumetric_fog.params_ubo, 0, sizeof(VolumetricFogShader::ParamsUBO), &params);
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
@@ -7305,7 +7305,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		//need restart for buffer update
 
 		params.filter_axis = 1;
-		RD::get_singleton()->buffer_update(volumetric_fog.params_ubo, 0, sizeof(VolumetricFogShader::ParamsUBO), &params, true);
+		RD::get_singleton()->buffer_update(volumetric_fog.params_ubo, 0, sizeof(VolumetricFogShader::ParamsUBO), &params);
 
 		compute_list = RD::get_singleton()->compute_list_begin();
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, volumetric_fog.pipelines[VOLUMETRIC_FOG_SHADER_FILTER]);
@@ -7641,10 +7641,10 @@ void RendererSceneRenderRD::render_sdfgi(RID p_render_buffers, int p_region, con
 
 	if (cascade_prev != cascade) {
 		//initialize render
-		RD::get_singleton()->texture_clear(rb->sdfgi->render_albedo, Color(0, 0, 0, 0), 0, 1, 0, 1, true);
-		RD::get_singleton()->texture_clear(rb->sdfgi->render_emission, Color(0, 0, 0, 0), 0, 1, 0, 1, true);
-		RD::get_singleton()->texture_clear(rb->sdfgi->render_emission_aniso, Color(0, 0, 0, 0), 0, 1, 0, 1, true);
-		RD::get_singleton()->texture_clear(rb->sdfgi->render_geom_facing, Color(0, 0, 0, 0), 0, 1, 0, 1, true);
+		RD::get_singleton()->texture_clear(rb->sdfgi->render_albedo, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(rb->sdfgi->render_emission, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(rb->sdfgi->render_emission_aniso, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(rb->sdfgi->render_geom_facing, Color(0, 0, 0, 0), 0, 1, 0, 1);
 	}
 
 	//print_line("rendering cascade " + itos(p_region) + " objects: " + itos(p_cull_count) + " bounds: " + bounds + " from: " + from + " size: " + size + " cell size: " + rtos(rb->sdfgi->cascades[cascade].cell_size));
@@ -7776,7 +7776,7 @@ void RendererSceneRenderRD::render_sdfgi(RID p_render_buffers, int p_region, con
 
 		//clear dispatch indirect data
 		uint32_t dispatch_indirct_data[4] = { 0, 0, 0, 0 };
-		RD::get_singleton()->buffer_update(rb->sdfgi->cascades[cascade].solid_cell_dispatch_buffer, 0, sizeof(uint32_t) * 4, dispatch_indirct_data, true);
+		RD::get_singleton()->buffer_update(rb->sdfgi->cascades[cascade].solid_cell_dispatch_buffer, 0, sizeof(uint32_t) * 4, dispatch_indirct_data);
 
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
@@ -7947,9 +7947,9 @@ void RendererSceneRenderRD::render_sdfgi(RID p_render_buffers, int p_region, con
 		RD::get_singleton()->compute_list_end();
 
 		//clear these textures, as they will have previous garbage on next draw
-		RD::get_singleton()->texture_clear(rb->sdfgi->cascades[cascade].light_tex, Color(0, 0, 0, 0), 0, 1, 0, 1, true);
-		RD::get_singleton()->texture_clear(rb->sdfgi->cascades[cascade].light_aniso_0_tex, Color(0, 0, 0, 0), 0, 1, 0, 1, true);
-		RD::get_singleton()->texture_clear(rb->sdfgi->cascades[cascade].light_aniso_1_tex, Color(0, 0, 0, 0), 0, 1, 0, 1, true);
+		RD::get_singleton()->texture_clear(rb->sdfgi->cascades[cascade].light_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(rb->sdfgi->cascades[cascade].light_aniso_0_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(rb->sdfgi->cascades[cascade].light_aniso_1_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
 
 #if 0
 		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(rb->sdfgi->cascades[cascade].sdf, 0);
@@ -8070,7 +8070,7 @@ void RendererSceneRenderRD::render_sdfgi_static_lights(RID p_render_buffers, uin
 			}
 
 			if (idx > 0) {
-				RD::get_singleton()->buffer_update(cc.lights_buffer, 0, idx * sizeof(SDGIShader::Light), lights, true);
+				RD::get_singleton()->buffer_update(cc.lights_buffer, 0, idx * sizeof(SDGIShader::Light), lights);
 			}
 
 			light_count[i] = idx;
@@ -8693,6 +8693,9 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 			//calculate tables
 			String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
 			defines += "\n#define SH_SIZE " + itos(SDFGI::SH_SIZE) + "\n";
+			if (sky_use_cubemap_array) {
+				defines += "\n#define USE_CUBEMAP_ARRAY\n";
+			}
 
 			Vector<String> integrate_modes;
 			integrate_modes.push_back("\n#define MODE_PROCESS\n");
