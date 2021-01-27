@@ -1210,10 +1210,6 @@ void KinematicBody2D::_notification(int p_what) {
 		//used by sync to physics, send the new transform to the physics
 		Transform2D new_transform = get_global_transform();
 		PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, new_transform);
-		//but then revert changes
-		set_notify_local_transform(false);
-		set_global_transform(last_valid_transform);
-		set_notify_local_transform(true);
 	}
 }
 
