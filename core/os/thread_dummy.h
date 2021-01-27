@@ -45,16 +45,4 @@ public:
 	static void make_default();
 };
 
-class SemaphoreDummy : public Semaphore {
-
-	static Semaphore *create();
-
-public:
-	virtual Error wait() { return OK; };
-	virtual Error post() { return OK; };
-	virtual int get() const { return 0; }; ///< get semaphore value
-
-	static void make_default();
-};
-
 #endif

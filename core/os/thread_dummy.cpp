@@ -39,11 +39,3 @@ Thread *ThreadDummy::create(ThreadCreateCallback p_callback, void *p_user, const
 void ThreadDummy::make_default() {
 	Thread::create_func = &ThreadDummy::create;
 };
-
-Semaphore *SemaphoreDummy::create() {
-	return memnew(SemaphoreDummy);
-};
-
-void SemaphoreDummy::make_default() {
-	Semaphore::create_func = &SemaphoreDummy::create;
-};

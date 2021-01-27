@@ -2689,28 +2689,20 @@ void _Marshalls::_bind_methods() {
 
 Error _Semaphore::wait() {
 
-	return semaphore->wait();
+	semaphore.wait();
+	return OK; // Can't fail anymore; keep compat
 }
 
 Error _Semaphore::post() {
 
-	return semaphore->post();
+	semaphore.post();
+	return OK; // Can't fail anymore; keep compat
 }
 
 void _Semaphore::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("wait"), &_Semaphore::wait);
 	ClassDB::bind_method(D_METHOD("post"), &_Semaphore::post);
-}
-
-_Semaphore::_Semaphore() {
-
-	semaphore = Semaphore::create();
-}
-
-_Semaphore::~_Semaphore() {
-
-	memdelete(semaphore);
 }
 
 ///////////////

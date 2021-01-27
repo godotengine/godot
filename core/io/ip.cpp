@@ -71,7 +71,7 @@ struct _IP_ResolverPrivate {
 	}
 
 	Mutex mutex;
-	Semaphore *sem;
+	Semaphore sem;
 
 	Thread *thread;
 	//Semaphore* semaphore;
@@ -98,7 +98,7 @@ struct _IP_ResolverPrivate {
 
 		while (!ipr->thread_abort) {
 
-			ipr->sem->wait();
+			ipr->sem.wait();
 
 			ipr->mutex.lock();
 			ipr->resolve_queues();
@@ -152,7 +152,7 @@ IP::ResolverID IP::resolve_hostname_queue_item(const String &p_hostname, IP::Typ
 		resolver->queue[id].response = IP_Address();
 		resolver->queue[id].status = IP::RESOLVER_STATUS_WAITING;
 		if (resolver->thread)
-			resolver->sem->post();
+			resolver->sem.post();
 		else
 			resolver->resolve_queues();
 	}
@@ -314,23 +314,11 @@ IP::IP() {
 
 	singleton = this;
 	resolver = memnew(_IP_ResolverPrivate);
-	resolver->sem = NULL;
 
 #ifndef NO_THREADS
-
-	resolver->sem = Semaphore::create();
-	if (resolver->sem) {
-		resolver->thread_abort = false;
-
-		resolver->thread = Thread::create(_IP_ResolverPrivate::_thread_function, resolver);
-
-		if (!resolver->thread)
-			memdelete(resolver->sem); //wtf
-	} else {
-		resolver->thread = NULL;
-	}
+	resolver->thread_abort = false;
+	resolver->thread = Thread::create(_IP_ResolverPrivate::_thread_function, resolver);
 #else
-	resolver->sem = NULL;
 	resolver->thread = NULL;
 #endif
 }
@@ -340,10 +328,9 @@ IP::~IP() {
 #ifndef NO_THREADS
 	if (resolver->thread) {
 		resolver->thread_abort = true;
-		resolver->sem->post();
+		resolver->sem.post();
 		Thread::wait_to_finish(resolver->thread);
 		memdelete(resolver->thread);
-		memdelete(resolver->sem);
 	}
 
 #endif

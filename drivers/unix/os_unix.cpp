@@ -37,7 +37,6 @@
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/net_socket_posix.h"
-#include "drivers/unix/semaphore_posix.h"
 #include "drivers/unix/thread_posix.h"
 #include "servers/visual_server.h"
 
@@ -121,12 +120,8 @@ void OS_Unix::initialize_core() {
 
 #ifdef NO_THREADS
 	ThreadDummy::make_default();
-	SemaphoreDummy::make_default();
 #else
 	ThreadPosix::make_default();
-#if !defined(OSX_ENABLED) && !defined(IPHONE_ENABLED)
-	SemaphorePosix::make_default();
-#endif
 #endif
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);

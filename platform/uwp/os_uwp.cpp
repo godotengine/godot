@@ -40,7 +40,6 @@
 #include "drivers/unix/ip_unix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
-#include "drivers/windows/semaphore_windows.h"
 #include "main/main.h"
 #include "platform/windows/windows_terminal_logger.h"
 #include "servers/audio_server.h"
@@ -139,7 +138,6 @@ void OS_UWP::initialize_core() {
 	//RedirectIOToConsole();
 
 	ThreadUWP::make_default();
-	SemaphoreWindows::make_default();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);

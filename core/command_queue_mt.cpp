@@ -113,11 +113,10 @@ CommandQueueMT::CommandQueueMT(bool p_sync) {
 
 	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
 
-		sync_sems[i].sem = Semaphore::create();
 		sync_sems[i].in_use = false;
 	}
 	if (p_sync) {
-		sync = Semaphore::create();
+		sync = memnew(Semaphore);
 	} else {
 		sync = NULL;
 	}
@@ -127,9 +126,5 @@ CommandQueueMT::~CommandQueueMT() {
 
 	if (sync)
 		memdelete(sync);
-	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
-
-		memdelete(sync_sems[i].sem);
-	}
 	memfree(command_mem);
 }

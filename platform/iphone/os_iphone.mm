@@ -45,8 +45,6 @@
 #include "core/project_settings.h"
 #include "drivers/unix/syslog_logger.h"
 
-#include "semaphore_iphone.h"
-
 #import "app_delegate.h"
 #import "device_metrics.h"
 #import "godot_view.h"
@@ -104,7 +102,6 @@ String OSIPhone::get_unique_id() const {
 void OSIPhone::initialize_core() {
 
 	OS_Unix::initialize_core();
-	SemaphoreIphone::make_default();
 
 	set_data_dir(data_dir);
 };

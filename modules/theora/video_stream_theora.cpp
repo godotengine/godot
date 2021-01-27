@@ -44,7 +44,7 @@ int VideoStreamPlaybackTheora::buffer_data() {
 	int read;
 
 	do {
-		thread_sem->post();
+		thread_sem.post();
 		read = MIN(ring_buffer.data_left(), 4096);
 		if (read) {
 			ring_buffer.read((uint8_t *)buffer, read);
@@ -141,7 +141,7 @@ void VideoStreamPlaybackTheora::clear() {
 
 #ifdef THEORA_USE_THREAD_STREAMING
 	thread_exit = true;
-	thread_sem->post(); //just in case
+	thread_sem.post(); //just in case
 	Thread::wait_to_finish(thread);
 	memdelete(thread);
 	thread = NULL;
@@ -385,7 +385,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 	};
 
 #ifdef THEORA_USE_THREAD_STREAMING
-	thread_sem->post();
+	thread_sem.post();
 #endif
 
 	time += p_delta;
@@ -664,7 +664,7 @@ void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
 			}
 		}
 
-		vs->thread_sem->wait();
+		vs->thread_sem.wait();
 	}
 }
 
@@ -693,7 +693,6 @@ VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
 	int rb_power = nearest_shift(RB_SIZE_KB * 1024);
 	ring_buffer.resize(rb_power);
 	read_buffer.resize(RB_SIZE_KB * 1024);
-	thread_sem = Semaphore::create();
 	thread = NULL;
 	thread_exit = false;
 	thread_eof = false;
@@ -703,10 +702,6 @@ VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
 
 VideoStreamPlaybackTheora::~VideoStreamPlaybackTheora() {
 
-#ifdef THEORA_USE_THREAD_STREAMING
-
-	memdelete(thread_sem);
-#endif
 	clear();
 
 	if (file)

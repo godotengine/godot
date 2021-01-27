@@ -220,7 +220,7 @@ void EditorResourcePreview::_thread() {
 	exited = false;
 	while (!exit) {
 
-		preview_sem->wait();
+		preview_sem.wait();
 		preview_mutex.lock();
 
 		if (queue.size()) {
@@ -381,7 +381,7 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 
 	queue.push_back(item);
 	preview_mutex.unlock();
-	preview_sem->post();
+	preview_sem.post();
 }
 
 void EditorResourcePreview::queue_resource_preview(const String &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata) {
@@ -403,7 +403,7 @@ void EditorResourcePreview::queue_resource_preview(const String &p_path, Object 
 
 	queue.push_back(item);
 	preview_mutex.unlock();
-	preview_sem->post();
+	preview_sem.post();
 }
 
 void EditorResourcePreview::add_preview_generator(const Ref<EditorResourcePreviewGenerator> &p_generator) {
@@ -463,7 +463,7 @@ void EditorResourcePreview::start() {
 void EditorResourcePreview::stop() {
 	if (thread) {
 		exit = true;
-		preview_sem->post();
+		preview_sem.post();
 		while (!exited) {
 			OS::get_singleton()->delay_usec(10000);
 			VisualServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on visual server
@@ -477,7 +477,6 @@ void EditorResourcePreview::stop() {
 EditorResourcePreview::EditorResourcePreview() {
 	thread = NULL;
 	singleton = this;
-	preview_sem = Semaphore::create();
 	order = 0;
 	exit = false;
 	exited = false;
@@ -486,5 +485,4 @@ EditorResourcePreview::EditorResourcePreview() {
 EditorResourcePreview::~EditorResourcePreview() {
 
 	stop();
-	memdelete(preview_sem);
 }

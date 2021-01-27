@@ -250,7 +250,7 @@
 		cmd->sync_sem = ss;                                                                    \
 		unlock();                                                                              \
 		if (sync) sync->post();                                                                \
-		ss->sem->wait();                                                                       \
+		ss->sem.wait();                                                                        \
 		ss->in_use = false;                                                                    \
 	}
 
@@ -267,7 +267,7 @@
 		cmd->sync_sem = ss;                                                           \
 		unlock();                                                                     \
 		if (sync) sync->post();                                                       \
-		ss->sem->wait();                                                              \
+		ss->sem.wait();                                                               \
 		ss->in_use = false;                                                           \
 	}
 
@@ -277,7 +277,7 @@ class CommandQueueMT {
 
 	struct SyncSemaphore {
 
-		Semaphore *sem;
+		Semaphore sem;
 		bool in_use;
 	};
 
@@ -293,7 +293,7 @@ class CommandQueueMT {
 		SyncSemaphore *sync_sem;
 
 		virtual void post() {
-			sync_sem->sem->post();
+			sync_sem->sem.post();
 		}
 	};
 
