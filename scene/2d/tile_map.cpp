@@ -128,6 +128,115 @@ void TileMapPattern::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_empty"), &TileMapPattern::is_empty);
 }
 
+Vector2i TileMap::transform_coords_layout(Vector2i p_coords, TileSet::TileOffsetAxis p_offset_axis, TileSet::TileLayout p_from_layout, TileSet::TileLayout p_to_layout) {
+	// Transform to stacked layout.
+	Vector2i output = p_coords;
+	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+		SWAP(output.x, output.y);
+	}
+	switch (p_from_layout) {
+		case TileSet::TILE_LAYOUT_STACKED:
+			break;
+		case TileSet::TILE_LAYOUT_STACKED_OFFSET:
+			if (output.y % 2) {
+				output.x -= 1;
+			}
+			break;
+		case TileSet::TILE_LAYOUT_STAIRS_RIGHT:
+		case TileSet::TILE_LAYOUT_STAIRS_DOWN:
+			if ((p_from_layout == TileSet::TILE_LAYOUT_STAIRS_RIGHT) ^ (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL)) {
+				if (output.y < 0 && bool(output.y % 2)) {
+					output = Vector2i(output.x + output.y / 2 - 1, output.y);
+				} else {
+					output = Vector2i(output.x + output.y / 2, output.y);
+				}
+			} else {
+				if (output.x < 0 && bool(output.x % 2)) {
+					output = Vector2i(output.x / 2 - 1, output.x + output.y * 2);
+				} else {
+					output = Vector2i(output.x / 2, output.x + output.y * 2);
+				}
+			}
+			break;
+		case TileSet::TILE_LAYOUT_DIAMOND_RIGHT:
+		case TileSet::TILE_LAYOUT_DIAMOND_DOWN:
+			if ((p_from_layout == TileSet::TILE_LAYOUT_DIAMOND_RIGHT) ^ (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL)) {
+				if ((output.x + output.y) < 0 && (output.x - output.y) % 2) {
+					output = Vector2i((output.x + output.y) / 2 - 1, output.y - output.x);
+				} else {
+					output = Vector2i((output.x + output.y) / 2, -output.x + output.y);
+				}
+			} else {
+				if ((output.x - output.y) < 0 && (output.x + output.y) % 2) {
+					output = Vector2i((output.x - output.y) / 2 - 1, output.x + output.y);
+				} else {
+					output = Vector2i((output.x - output.y) / 2, output.x + output.y);
+				}
+			}
+			break;
+	}
+
+	switch (p_to_layout) {
+		case TileSet::TILE_LAYOUT_STACKED:
+			break;
+		case TileSet::TILE_LAYOUT_STACKED_OFFSET:
+			if (output.y % 2) {
+				output.x += 1;
+			}
+			break;
+		case TileSet::TILE_LAYOUT_STAIRS_RIGHT:
+		case TileSet::TILE_LAYOUT_STAIRS_DOWN:
+			if ((p_to_layout == TileSet::TILE_LAYOUT_STAIRS_RIGHT) ^ (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL)) {
+				if (output.y < 0 && (output.y % 2)) {
+					output = Vector2i(output.x - output.y / 2 + 1, output.y);
+				} else {
+					output = Vector2i(output.x - output.y / 2, output.y);
+				}
+			} else {
+				if (output.y % 2) {
+					if (output.y < 0) {
+						output = Vector2i(2 * output.x + 1, -output.x + output.y / 2 - 1);
+					} else {
+						output = Vector2i(2 * output.x + 1, -output.x + output.y / 2);
+					}
+				} else {
+					output = Vector2i(2 * output.x, -output.x + output.y / 2);
+				}
+			}
+			break;
+		case TileSet::TILE_LAYOUT_DIAMOND_RIGHT:
+		case TileSet::TILE_LAYOUT_DIAMOND_DOWN:
+			if ((p_to_layout == TileSet::TILE_LAYOUT_DIAMOND_RIGHT) ^ (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL)) {
+				if (output.y % 2) {
+					if (output.y > 0) {
+						output = Vector2i(output.x - output.y / 2, output.x + output.y / 2 + 1);
+					} else {
+						output = Vector2i(output.x - output.y / 2 + 1, output.x + output.y / 2);
+					}
+				} else {
+					output = Vector2i(output.x - output.y / 2, output.x + output.y / 2);
+				}
+			} else {
+				if (output.y % 2) {
+					if (output.y < 0) {
+						output = Vector2i(output.x + output.y / 2, -output.x + output.y / 2 - 1);
+					} else {
+						output = Vector2i(output.x + output.y / 2 + 1, -output.x + output.y / 2);
+					}
+				} else {
+					output = Vector2i(output.x + output.y / 2, -output.x + output.y / 2);
+				}
+			}
+			break;
+	}
+
+	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+		SWAP(output.x, output.y);
+	}
+
+	return output;
+}
+
 int TileMap::get_effective_quadrant_size() const {
 	// When using YSort, the quadrant size is reduced to 1 to have one CanvasItem per quadrant
 	if (tile_set.is_valid() && tile_set->is_y_sorting()) {

@@ -207,6 +207,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Vector2i transform_coords_layout(Vector2i p_coords, TileSet::TileOffsetAxis p_offset_axis, TileSet::TileLayout p_from_layout, TileSet::TileLayout p_to_layout);
+
 	enum {
 		INVALID_CELL = -1
 	};
