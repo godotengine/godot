@@ -65,8 +65,11 @@ private:
 	bool tile_set_dragging_selection = false;
 	Vector2i tile_set_drag_start_mouse_pos;
 	TileMapCell hovered_tile;
+	TileMapPattern tile_map_clipboard;
+	Set<Vector2i> tile_map_selection;
 	Set<TileMapCell> tile_set_selection;
 	TileMapPattern tile_set_selection_pattern;
+	void _update_selection_pattern_from_tilemap_selection();
 	void _update_selection_pattern_from_tileset_selection();
 	void _update_tileset_selection_from_selection_pattern();
 
@@ -96,7 +99,8 @@ private:
 	HBoxContainer *tilemap_tools_settings;
 	VSeparator *tilemap_tools_settings_vsep;
 	Button *tilemap_erase_button;
-	Button *tilemap_bucket_continuous_checkbox;
+	CheckBox *tilemap_bucket_continuous_checkbox;
+	CheckBox *tilemap_random_tile_checkbox;
 
 	void _update_toolbar();
 
@@ -106,11 +110,14 @@ private:
 	bool tile_map_dragging_selection = false;
 	enum DragType {
 		DRAG_TYPE_NONE = 0,
+		DRAG_TYPE_SELECT,
+		DRAG_TYPE_MOVE,
 		DRAG_TYPE_PAINT,
 		DRAG_TYPE_LINE,
 		DRAG_TYPE_RECT,
 		DRAG_TYPE_BUCKET,
 		DRAG_TYPE_PICK,
+		DRAG_TYPE_CLIPBOARD_PASTE,
 	};
 	DragType drag_type = DRAG_TYPE_NONE;
 	Vector2 drag_start_mouse_pos;
@@ -119,11 +126,14 @@ private:
 
 	void _mouse_exited_viewport();
 
-	Vector2i _transform_coords_layout(Vector2i p_coords, TileSet::TileOffsetAxis p_offset_axis, TileSet::TileLayout p_from_layout, TileSet::TileLayout p_to_layout);
 	Vector<Vector2i> _get_line(Vector2i p_from_cell, Vector2i p_to_cell);
+	TileMapCell _pick_random_tile(const TileMapPattern *p_pattern);
 	Map<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2i p_to_mouse_pos);
 	Map<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_mouse_pos, Vector2i p_end_mouse_pos);
 	Map<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous);
+
+	void _set_tile_map_selection(const TypedArray<Vector2i> &p_selection);
+	TypedArray<Vector2i> _get_tile_map_selection() const;
 
 	void _tile_map_changed();
 

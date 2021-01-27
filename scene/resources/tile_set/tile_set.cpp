@@ -108,6 +108,7 @@ bool TileData::tile_get_transpose() const {
 
 // Misc
 void TileData::tile_set_probability(float p_probability) {
+	ERR_FAIL_COND(p_probability <= 0.0);
 	probability = p_probability;
 	emit_signal("changed");
 }

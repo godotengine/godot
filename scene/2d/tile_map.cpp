@@ -43,7 +43,7 @@ void TileMapPattern::set_cell(const Vector2i &p_coords, int p_source_id, const V
 	pattern[p_coords] = TileMapCell(p_source_id, p_atlas_coords, p_alternative_tile);
 }
 
-bool TileMapPattern::has_cell(const Vector2i &p_coords) {
+bool TileMapPattern::has_cell(const Vector2i &p_coords) const {
 	return pattern.has(p_coords);
 }
 
@@ -105,7 +105,7 @@ void TileMapPattern::set_size(const Vector2i &p_size) {
 	size = p_size;
 }
 
-bool TileMapPattern::is_empty() {
+bool TileMapPattern::is_empty() const {
 	return pattern.is_empty();
 };
 

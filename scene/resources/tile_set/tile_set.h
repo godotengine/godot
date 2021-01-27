@@ -66,7 +66,7 @@ class TileData : public Object {
 	//NavigationData navigation;
 
 	// Misc
-	float probability;
+	double probability = 1.0;
 
 protected:
 	static void _bind_methods();

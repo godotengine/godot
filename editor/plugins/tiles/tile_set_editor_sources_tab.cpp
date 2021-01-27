@@ -1796,7 +1796,7 @@ TileSetEditorSourcesTab::TileSetEditorSourcesTab() {
 	right_panel->add_child(tile_atlas_view);
 
 	base_tile_popup_menu = memnew(PopupMenu);
-	base_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete_tile", TTR("Delete"), KEY_DELETE), TILE_DELETE);
+	base_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete", TTR("Delete"), KEY_DELETE), TILE_DELETE);
 	base_tile_popup_menu->add_item(TTR("Create an Alternative Tile"), TILE_CREATE_ALTERNATIVE);
 	base_tile_popup_menu->connect("id_pressed", callable_mp(this, &TileSetEditorSourcesTab::_menu_option));
 	tile_atlas_view->add_child(base_tile_popup_menu);

@@ -132,7 +132,7 @@ protected:
 
 public:
 	void set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile = 0);
-	bool has_cell(const Vector2i &p_coords);
+	bool has_cell(const Vector2i &p_coords) const;
 	void remove_cell(const Vector2i &p_coords, bool p_update_size = true);
 	int get_cell_source_id(const Vector2i &p_coords) const;
 	Vector2i get_cell_atlas_coords(const Vector2i &p_coords) const;
@@ -142,7 +142,7 @@ public:
 
 	Vector2i get_size() const;
 	void set_size(const Vector2i &p_size);
-	bool is_empty();
+	bool is_empty() const;
 
 	void clear();
 };
