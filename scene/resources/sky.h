@@ -99,7 +99,7 @@ public:
 	};
 
 private:
-	Thread *sky_thread;
+	Thread sky_thread;
 	Color sky_top_color;
 	Color sky_horizon_color;
 	float sky_curve;

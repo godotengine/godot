@@ -106,7 +106,7 @@ public:
 		String path;
 		List<String> args;
 		String output;
-		Thread *execute_output_thread;
+		Thread execute_output_thread;
 		Mutex execute_output_mutex;
 		int exitcode;
 		volatile bool done;

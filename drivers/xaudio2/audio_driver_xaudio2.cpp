@@ -79,7 +79,7 @@ Error AudioDriverXAudio2::init() {
 	hr = xaudio->CreateSourceVoice(&source_voice, &wave_format, 0, XAUDIO2_MAX_FREQ_RATIO, &voice_callback);
 	ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_UNAVAILABLE, "Error creating XAudio2 source voice. Error code: " + itos(hr) + ".");
 
-	thread = Thread::create(AudioDriverXAudio2::thread_func, this);
+	thread.start(AudioDriverXAudio2::thread_func, this);
 
 	return OK;
 }
@@ -157,24 +157,20 @@ float AudioDriverXAudio2::get_latency() {
 
 void AudioDriverXAudio2::lock() {
 
-	if (!thread)
-		return;
 	mutex.lock();
 }
 void AudioDriverXAudio2::unlock() {
 
-	if (!thread)
-		return;
 	mutex.unlock();
 }
 
 void AudioDriverXAudio2::finish() {
 
-	if (!thread)
+	if (!thread.is_started())
 		return;
 
 	exit_thread = true;
-	Thread::wait_to_finish(thread);
+	thread.wait_to_finish();
 
 	if (source_voice) {
 		source_voice->Stop(0);
@@ -191,13 +187,9 @@ void AudioDriverXAudio2::finish() {
 	}
 
 	mastering_voice->DestroyVoice();
-
-	memdelete(thread);
-	thread = NULL;
 }
 
 AudioDriverXAudio2::AudioDriverXAudio2() :
-		thread(NULL),
 		current_buffer(0) {
 	wave_format = { 0 };
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {

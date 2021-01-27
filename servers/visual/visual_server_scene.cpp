@@ -3682,10 +3682,8 @@ VisualServerScene *VisualServerScene::singleton = NULL;
 
 VisualServerScene::VisualServerScene() {
 
-#ifndef NO_THREADS
-	probe_bake_thread = Thread::create(_gi_probe_bake_threads, this);
+	probe_bake_thread.start(_gi_probe_bake_threads, this);
 	probe_bake_thread_exit = false;
-#endif
 
 	render_pass = 1;
 	singleton = this;
@@ -3694,10 +3692,7 @@ VisualServerScene::VisualServerScene() {
 
 VisualServerScene::~VisualServerScene() {
 
-#ifndef NO_THREADS
 	probe_bake_thread_exit = true;
 	probe_bake_sem.post();
-	Thread::wait_to_finish(probe_bake_thread);
-	memdelete(probe_bake_thread);
-#endif
+	probe_bake_thread.wait_to_finish();
 }

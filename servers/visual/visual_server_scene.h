@@ -592,7 +592,7 @@ public:
 	static void _gi_probe_bake_threads(void *);
 
 	volatile bool probe_bake_thread_exit;
-	Thread *probe_bake_thread;
+	Thread probe_bake_thread;
 	Semaphore probe_bake_sem;
 	Mutex probe_bake_mutex;
 	List<Instance *> probe_bake_list;

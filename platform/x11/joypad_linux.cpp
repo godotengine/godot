@@ -94,13 +94,12 @@ JoypadLinux::JoypadLinux(InputDefault *in) {
 #endif
 	exit_monitor = false;
 	input = in;
-	joy_thread = Thread::create(joy_thread_func, this);
+	joy_thread.start(joy_thread_func, this);
 }
 
 JoypadLinux::~JoypadLinux() {
 	exit_monitor = true;
-	Thread::wait_to_finish(joy_thread);
-	memdelete(joy_thread);
+	joy_thread.wait_to_finish();
 	close_joypad();
 }
 

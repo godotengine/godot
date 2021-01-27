@@ -106,7 +106,7 @@ private:
 	volatile bool thread_done;
 	volatile bool thread_request_quit;
 
-	Thread *thread;
+	Thread thread;
 
 	void _request_done(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data);
 	static void _thread_func(void *p_userdata);

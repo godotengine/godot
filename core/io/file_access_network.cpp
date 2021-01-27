@@ -213,7 +213,7 @@ Error FileAccessNetworkClient::connect(const String &p_host, int p_port, const S
 		return ERR_INVALID_PARAMETER;
 	}
 
-	thread = Thread::create(_thread_func, this);
+	thread.start(_thread_func, this);
 
 	return OK;
 }
@@ -222,7 +222,6 @@ FileAccessNetworkClient *FileAccessNetworkClient::singleton = NULL;
 
 FileAccessNetworkClient::FileAccessNetworkClient() {
 
-	thread = NULL;
 	quit = false;
 	singleton = this;
 	last_id = 0;
@@ -232,11 +231,10 @@ FileAccessNetworkClient::FileAccessNetworkClient() {
 
 FileAccessNetworkClient::~FileAccessNetworkClient() {
 
-	if (thread) {
+	if (thread.is_started()) {
 		quit = true;
 		sem.post();
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
+		thread.wait_to_finish();
 	}
 }
 

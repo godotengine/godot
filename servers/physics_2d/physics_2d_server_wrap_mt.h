@@ -54,7 +54,7 @@ class Physics2DServerWrapMT : public Physics2DServer {
 	Thread::ID server_thread;
 	Thread::ID main_thread;
 	volatile bool exit;
-	Thread *thread;
+	Thread thread;
 	volatile bool step_thread_up;
 	bool create_thread;
 

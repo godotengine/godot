@@ -76,7 +76,7 @@ class AudioDriverWASAPI : public AudioDriver {
 	AudioDeviceWASAPI audio_output;
 
 	Mutex mutex;
-	Thread *thread;
+	Thread thread;
 
 	Vector<int32_t> samples_in;
 

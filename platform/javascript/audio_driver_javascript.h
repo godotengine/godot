@@ -59,7 +59,7 @@ public:
 			STATE_MAX,
 		};
 		Mutex mutex;
-		Thread *thread = nullptr;
+		Thread thread;
 		bool quit = false;
 		int32_t state[STATE_MAX] = { 0 };
 

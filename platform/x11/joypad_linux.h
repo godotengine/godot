@@ -76,7 +76,7 @@ private:
 #endif
 	bool exit_monitor;
 	Mutex joy_mutex;
-	Thread *joy_thread;
+	Thread joy_thread;
 	InputDefault *input;
 	Joypad joypads[JOYPADS_MAX];
 	Vector<String> attached_devices;

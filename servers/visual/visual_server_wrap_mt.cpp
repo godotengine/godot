@@ -110,7 +110,7 @@ void VisualServerWrapMT::init() {
 		print_verbose("VisualServerWrapMT: Creating render thread");
 		OS::get_singleton()->release_rendering_thread();
 		if (create_thread) {
-			thread = Thread::create(_thread_callback, this);
+			thread.start(_thread_callback, this);
 			print_verbose("VisualServerWrapMT: Starting render thread");
 		}
 		while (!draw_thread_up) {
@@ -125,13 +125,10 @@ void VisualServerWrapMT::init() {
 
 void VisualServerWrapMT::finish() {
 
-	if (thread) {
+	if (create_thread) {
 
 		command_queue.push(this, &VisualServerWrapMT::thread_exit);
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
-
-		thread = NULL;
+		thread.wait_to_finish();
 	} else {
 		visual_server->finish();
 	}
@@ -177,7 +174,6 @@ VisualServerWrapMT::VisualServerWrapMT(VisualServer *p_contained, bool p_create_
 
 	visual_server = p_contained;
 	create_thread = p_create_thread;
-	thread = NULL;
 	draw_pending = 0;
 	draw_thread_up = false;
 	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");

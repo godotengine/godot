@@ -684,7 +684,7 @@ protected:
 	volatile bool active;
 	Object *target_instance;
 	StringName target_method;
-	Thread *thread;
+	Thread thread;
 	static void _bind_methods();
 	static void _start_func(void *ud);
 

@@ -38,7 +38,7 @@
 
 class AudioDriverDummy : public AudioDriver {
 
-	Thread *thread;
+	Thread thread;
 	Mutex mutex;
 
 	int32_t *samples_in;

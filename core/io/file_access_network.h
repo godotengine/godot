@@ -50,7 +50,7 @@ class FileAccessNetworkClient {
 	List<BlockRequest> block_requests;
 
 	Semaphore sem;
-	Thread *thread;
+	Thread thread;
 	bool quit;
 	Mutex mutex;
 	Mutex blockrequest_mutex;

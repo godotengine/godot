@@ -109,9 +109,7 @@ void Physics2DServerWrapMT::init() {
 	if (create_thread) {
 
 		//OS::get_singleton()->release_rendering_thread();
-		if (create_thread) {
-			thread = Thread::create(_thread_callback, this);
-		}
+		thread.start(_thread_callback, this);
 		while (!step_thread_up) {
 			OS::get_singleton()->delay_usec(1000);
 		}
@@ -123,13 +121,10 @@ void Physics2DServerWrapMT::init() {
 
 void Physics2DServerWrapMT::finish() {
 
-	if (thread) {
+	if (create_thread) {
 
 		command_queue.push(this, &Physics2DServerWrapMT::thread_exit);
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
-
-		thread = NULL;
+		thread.wait_to_finish();
 	} else {
 		physics_2d_server->finish();
 	}
@@ -153,7 +148,6 @@ Physics2DServerWrapMT::Physics2DServerWrapMT(Physics2DServer *p_contained, bool 
 
 	physics_2d_server = p_contained;
 	create_thread = p_create_thread;
-	thread = NULL;
 	step_pending = 0;
 	step_thread_up = false;
 

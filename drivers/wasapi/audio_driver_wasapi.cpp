@@ -406,7 +406,7 @@ Error AudioDriverWASAPI::init() {
 	exit_thread = false;
 	thread_exited = false;
 
-	thread = Thread::create(thread_func, this);
+	thread.start(thread_func, this);
 
 	return OK;
 }
@@ -791,13 +791,8 @@ void AudioDriverWASAPI::unlock() {
 
 void AudioDriverWASAPI::finish() {
 
-	if (thread) {
-		exit_thread = true;
-		Thread::wait_to_finish(thread);
-
-		memdelete(thread);
-		thread = NULL;
-	}
+	exit_thread = true;
+	thread.wait_to_finish();
 
 	finish_capture_device();
 	finish_render_device();
@@ -854,8 +849,6 @@ String AudioDriverWASAPI::capture_get_device() {
 }
 
 AudioDriverWASAPI::AudioDriverWASAPI() {
-
-	thread = NULL;
 
 	samples_in.clear();
 

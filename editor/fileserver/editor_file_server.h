@@ -49,7 +49,7 @@ class EditorFileServer : public Object {
 
 	struct ClientData {
 
-		Thread *thread;
+		Thread thread;
 		Ref<StreamPeerTCP> connection;
 		Map<int, FileAccess *> files;
 		EditorFileServer *efs;
@@ -63,7 +63,7 @@ class EditorFileServer : public Object {
 	static void _subthread_start(void *s);
 
 	Mutex wait_mutex;
-	Thread *thread;
+	Thread thread;
 	static void _thread_start(void *);
 	bool quit;
 	Command cmd;

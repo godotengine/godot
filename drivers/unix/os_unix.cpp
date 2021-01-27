@@ -32,7 +32,6 @@
 
 #ifdef UNIX_ENABLED
 
-#include "core/os/thread_dummy.h"
 #include "core/project_settings.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
@@ -118,11 +117,10 @@ int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 
 void OS_Unix::initialize_core() {
 
-#ifdef NO_THREADS
-	ThreadDummy::make_default();
-#else
-	ThreadPosix::make_default();
+#if !defined(NO_THREADS)
+	init_thread_posix();
 #endif
+
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
