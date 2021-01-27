@@ -3483,7 +3483,7 @@ String String::right(int p_pos) const {
 	return substr(p_pos, (length() - p_pos));
 }
 
-char32_t String::ord_at(int p_idx) const {
+char32_t String::unicode_at(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, length(), 0);
 	return operator[](p_idx);
 }
@@ -3782,20 +3782,20 @@ String String::http_escape() const {
 String String::http_unescape() const {
 	String res;
 	for (int i = 0; i < length(); ++i) {
-		if (ord_at(i) == '%' && i + 2 < length()) {
-			char32_t ord1 = ord_at(i + 1);
+		if (unicode_at(i) == '%' && i + 2 < length()) {
+			char32_t ord1 = unicode_at(i + 1);
 			if ((ord1 >= '0' && ord1 <= '9') || (ord1 >= 'A' && ord1 <= 'Z')) {
-				char32_t ord2 = ord_at(i + 2);
+				char32_t ord2 = unicode_at(i + 2);
 				if ((ord2 >= '0' && ord2 <= '9') || (ord2 >= 'A' && ord2 <= 'Z')) {
 					char bytes[3] = { (char)ord1, (char)ord2, 0 };
 					res += (char)strtol(bytes, nullptr, 16);
 					i += 2;
 				}
 			} else {
-				res += ord_at(i);
+				res += unicode_at(i);
 			}
 		} else {
-			res += ord_at(i);
+			res += unicode_at(i);
 		}
 	}
 	return String::utf8(res.ascii());
