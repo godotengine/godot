@@ -42,9 +42,9 @@
 void EditorFileServer::_close_client(ClientData *cd) {
 
 	cd->connection->disconnect_from_host();
-	cd->efs->wait_mutex->lock();
+	cd->efs->wait_mutex.lock();
 	cd->efs->to_wait.insert(cd->thread);
-	cd->efs->wait_mutex->unlock();
+	cd->efs->wait_mutex.unlock();
 	while (cd->files.size()) {
 		memdelete(cd->files.front()->get());
 		cd->files.erase(cd->files.front());
@@ -295,16 +295,16 @@ void EditorFileServer::_thread_start(void *s) {
 			}
 		}
 
-		self->wait_mutex->lock();
+		self->wait_mutex.lock();
 		while (self->to_wait.size()) {
 			Thread *w = self->to_wait.front()->get();
 			self->to_wait.erase(w);
-			self->wait_mutex->unlock();
+			self->wait_mutex.unlock();
 			Thread::wait_to_finish(w);
 			memdelete(w);
-			self->wait_mutex->lock();
+			self->wait_mutex.lock();
 		}
-		self->wait_mutex->unlock();
+		self->wait_mutex.unlock();
 
 		OS::get_singleton()->delay_usec(100000);
 	}
@@ -331,7 +331,6 @@ void EditorFileServer::stop() {
 EditorFileServer::EditorFileServer() {
 
 	server.instance();
-	wait_mutex = Mutex::create();
 	quit = false;
 	active = false;
 	cmd = CMD_NONE;
@@ -346,5 +345,4 @@ EditorFileServer::~EditorFileServer() {
 	quit = true;
 	Thread::wait_to_finish(thread);
 	memdelete(thread);
-	memdelete(wait_mutex);
 }

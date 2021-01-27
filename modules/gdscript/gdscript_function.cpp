@@ -1279,9 +1279,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				gdfs->state.ip = ip + ipofs;
 				gdfs->state.line = line;
 				gdfs->state.script = _script;
-#ifndef NO_THREADS
-				GDScriptLanguage::singleton->lock->lock();
-#endif
+				GDScriptLanguage::singleton->lock.lock();
 
 				_script->pending_func_states.add(&gdfs->scripts_list);
 				if (p_instance) {
@@ -1290,9 +1288,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				} else {
 					gdfs->state.instance = NULL;
 				}
-#ifndef NO_THREADS
-				GDScriptLanguage::singleton->lock->unlock();
-#endif
+				GDScriptLanguage::singleton->lock.unlock();
 #ifdef DEBUG_ENABLED
 				gdfs->state.function_name = name;
 				gdfs->state.script_path = _script->get_path();
@@ -1776,14 +1772,9 @@ GDScriptFunction::GDScriptFunction() :
 #ifdef DEBUG_ENABLED
 	_func_cname = NULL;
 
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->lock();
-	}
+	GDScriptLanguage::get_singleton()->lock.lock();
 	GDScriptLanguage::get_singleton()->function_list.add(&function_list);
-
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->unlock();
-	}
+	GDScriptLanguage::get_singleton()->lock.unlock();
 
 	profile.call_count = 0;
 	profile.self_time = 0;
@@ -1800,14 +1791,9 @@ GDScriptFunction::GDScriptFunction() :
 
 GDScriptFunction::~GDScriptFunction() {
 #ifdef DEBUG_ENABLED
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->lock();
-	}
+	GDScriptLanguage::get_singleton()->lock.lock();
 	GDScriptLanguage::get_singleton()->function_list.remove(&function_list);
-
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->unlock();
-	}
+	GDScriptLanguage::get_singleton()->lock.unlock();
 #endif
 }
 
@@ -1958,12 +1944,8 @@ GDScriptFunctionState::GDScriptFunctionState() :
 GDScriptFunctionState::~GDScriptFunctionState() {
 
 	_clear_stack();
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->lock();
-#endif
+	GDScriptLanguage::singleton->lock.lock();
 	scripts_list.remove_from_list();
 	instances_list.remove_from_list();
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->unlock();
-#endif
+	GDScriptLanguage::singleton->lock.unlock();
 }

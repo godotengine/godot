@@ -378,7 +378,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 
 void ScriptDebuggerRemote::_get_output() {
 
-	mutex->lock();
+	mutex.lock();
 	if (output_strings.size()) {
 
 		locking = true;
@@ -473,7 +473,7 @@ void ScriptDebuggerRemote::_get_output() {
 		errors.pop_front();
 		locking = false;
 	}
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void ScriptDebuggerRemote::line_poll() {
@@ -1055,7 +1055,7 @@ void ScriptDebuggerRemote::_send_network_bandwidth_usage() {
 
 void ScriptDebuggerRemote::send_message(const String &p_message, const Array &p_args) {
 
-	mutex->lock();
+	mutex.lock();
 	if (!locking && tcp_client->is_connected_to_host()) {
 
 		if (messages.size() >= max_messages_per_frame) {
@@ -1067,7 +1067,7 @@ void ScriptDebuggerRemote::send_message(const String &p_message, const Array &p_
 			messages.push_back(msg);
 		}
 	}
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void ScriptDebuggerRemote::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type, const Vector<ScriptLanguage::StackInfo> &p_stack_info) {
@@ -1113,7 +1113,7 @@ void ScriptDebuggerRemote::send_error(const String &p_func, const String &p_file
 		err_count++;
 	}
 
-	mutex->lock();
+	mutex.lock();
 
 	if (!locking && tcp_client->is_connected_to_host()) {
 
@@ -1132,7 +1132,7 @@ void ScriptDebuggerRemote::send_error(const String &p_func, const String &p_file
 		}
 	}
 
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void ScriptDebuggerRemote::_print_handler(void *p_this, const String &p_string, bool p_error) {
@@ -1161,7 +1161,7 @@ void ScriptDebuggerRemote::_print_handler(void *p_this, const String &p_string, 
 	sdr->char_count += allowed_chars;
 	bool overflowed = sdr->char_count >= sdr->max_cps;
 
-	sdr->mutex->lock();
+	sdr->mutex.lock();
 	if (!sdr->locking && sdr->tcp_client->is_connected_to_host()) {
 
 		if (overflowed)
@@ -1178,7 +1178,7 @@ void ScriptDebuggerRemote::_print_handler(void *p_this, const String &p_string, 
 			sdr->output_strings.push_back(output_string);
 		}
 	}
-	sdr->mutex->unlock();
+	sdr->mutex.unlock();
 }
 
 void ScriptDebuggerRemote::request_quit() {
@@ -1254,7 +1254,6 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		last_net_bandwidth_time(0),
 		performance(Engine::get_singleton()->get_singleton_object("Performance")),
 		requested_quit(false),
-		mutex(Mutex::create()),
 		max_messages_per_frame(GLOBAL_GET("network/limits/debugger_stdout/max_messages_per_frame")),
 		n_messages_dropped(0),
 		max_errors_per_second(GLOBAL_GET("network/limits/debugger_stdout/max_errors_per_second")),
@@ -1291,5 +1290,4 @@ ScriptDebuggerRemote::~ScriptDebuggerRemote() {
 
 	remove_print_handler(&phl);
 	remove_error_handler(&eh);
-	memdelete(mutex);
 }

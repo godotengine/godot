@@ -58,7 +58,7 @@ public:
 			STATE_SAMPLES_OUT,
 			STATE_MAX,
 		};
-		Mutex *mutex = nullptr;
+		Mutex mutex;
 		Thread *thread = nullptr;
 		bool quit = false;
 		int32_t state[STATE_MAX] = { 0 };

@@ -75,7 +75,7 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	uint64_t last_net_bandwidth_time;
 	Object *performance;
 	bool requested_quit;
-	Mutex *mutex;
+	Mutex mutex;
 
 	struct OutputError {
 

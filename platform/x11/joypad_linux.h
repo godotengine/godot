@@ -75,7 +75,7 @@ private:
 	bool use_udev;
 #endif
 	bool exit_monitor;
-	Mutex *joy_mutex;
+	Mutex joy_mutex;
 	Thread *joy_thread;
 	InputDefault *input;
 	Joypad joypads[JOYPADS_MAX];

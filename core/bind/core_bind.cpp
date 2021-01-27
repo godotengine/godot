@@ -2717,17 +2717,17 @@ _Semaphore::~_Semaphore() {
 
 void _Mutex::lock() {
 
-	mutex->lock();
+	mutex.lock();
 }
 
 Error _Mutex::try_lock() {
 
-	return mutex->try_lock();
+	return mutex.try_lock();
 }
 
 void _Mutex::unlock() {
 
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void _Mutex::_bind_methods() {
@@ -2735,16 +2735,6 @@ void _Mutex::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("lock"), &_Mutex::lock);
 	ClassDB::bind_method(D_METHOD("try_lock"), &_Mutex::try_lock);
 	ClassDB::bind_method(D_METHOD("unlock"), &_Mutex::unlock);
-}
-
-_Mutex::_Mutex() {
-
-	mutex = Mutex::create();
-}
-
-_Mutex::~_Mutex() {
-
-	memdelete(mutex);
 }
 
 ///////////////

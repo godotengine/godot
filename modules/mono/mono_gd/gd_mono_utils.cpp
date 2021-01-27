@@ -44,7 +44,6 @@
 
 #include "../csharp_script.h"
 #include "../utils/macros.h"
-#include "../utils/mutex_utils.h"
 #include "gd_mono.h"
 #include "gd_mono_cache.h"
 #include "gd_mono_class.h"
@@ -75,7 +74,7 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 	CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->value();
 
 	if (!script_binding.inited) {
-		SCOPED_MUTEX_LOCK(CSharpLanguage::get_singleton()->get_language_bind_mutex());
+		MutexLock lock(CSharpLanguage::get_singleton()->get_language_bind_mutex());
 
 		if (!script_binding.inited) { // Other thread may have set it up
 			// Already had a binding that needs to be setup

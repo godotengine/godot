@@ -58,7 +58,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	volatile bool plugins_changed;
 	Thread *check_for_changes_thread;
 	volatile bool quit_request;
-	Mutex *plugins_lock;
+	Mutex plugins_lock;
 	Vector<PluginConfigIOS> plugins;
 
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
@@ -148,7 +148,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 			// Nothing to do if we already know the plugins have changed.
 			if (!ea->plugins_changed) {
 
-				ea->plugins_lock->lock();
+				ea->plugins_lock.lock();
 
 				Vector<PluginConfigIOS> loaded_plugins = get_plugins();
 
@@ -163,7 +163,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 					}
 				}
 
-				ea->plugins_lock->unlock();
+				ea->plugins_lock.unlock();
 			}
 
 			uint64_t wait = 3000000;
@@ -1838,7 +1838,6 @@ EditorExportPlatformIOS::EditorExportPlatformIOS() {
 
 	plugins_changed = true;
 	quit_request = false;
-	plugins_lock = Mutex::create();
 
 	check_for_changes_thread = Thread::create(_check_for_changes_poll_thread, this);
 }
@@ -1846,7 +1845,6 @@ EditorExportPlatformIOS::EditorExportPlatformIOS() {
 EditorExportPlatformIOS::~EditorExportPlatformIOS() {
 	quit_request = true;
 	Thread::wait_to_finish(check_for_changes_thread);
-	memdelete(plugins_lock);
 	memdelete(check_for_changes_thread);
 }
 

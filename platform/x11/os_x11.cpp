@@ -122,8 +122,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	XInitThreads();
 
-	events_mutex = Mutex::create();
-
 	/** XLIB INITIALIZATION **/
 	x11_display = XOpenDisplay(NULL);
 
@@ -878,8 +876,6 @@ void OS_X11::finalize() {
 	XCloseDisplay(x11_display);
 	if (xmbstring)
 		memfree(xmbstring);
-
-	memdelete(events_mutex);
 
 	args.clear();
 }

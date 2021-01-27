@@ -268,10 +268,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	String last_plugin_names;
 	uint64_t last_custom_build_time = 0;
 	volatile bool plugins_changed;
-	Mutex *plugins_lock;
+	Mutex plugins_lock;
 	Vector<Device> devices;
 	volatile bool devices_changed;
-	Mutex *device_lock;
+	Mutex device_lock;
 	Thread *check_for_changes_thread;
 	volatile bool quit_request;
 
@@ -285,7 +285,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				if (!ea->plugins_changed) {
 					Vector<PluginConfigAndroid> loaded_plugins = get_plugins();
 
-					ea->plugins_lock->lock();
+					ea->plugins_lock.lock();
 
 					if (ea->plugins.size() != loaded_plugins.size()) {
 						ea->plugins_changed = true;
@@ -302,7 +302,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						ea->plugins = loaded_plugins;
 					}
 
-					ea->plugins_lock->unlock();
+					ea->plugins_lock.unlock();
 				}
 			}
 
@@ -328,7 +328,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					ldevices.push_back(d);
 				}
 
-				ea->device_lock->lock();
+				ea->device_lock.lock();
 
 				bool different = false;
 
@@ -418,7 +418,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					ea->devices_changed = true;
 				}
 
-				ea->device_lock->unlock();
+				ea->device_lock.unlock();
 			}
 
 			uint64_t sleep = OS::get_singleton()->get_power_state() == OS::POWERSTATE_ON_BATTERY ? 1000 : 100;
@@ -1770,9 +1770,9 @@ public:
 
 	virtual int get_options_count() const {
 
-		device_lock->lock();
+		device_lock.lock();
 		int dc = devices.size();
-		device_lock->unlock();
+		device_lock.unlock();
 
 		return dc;
 	}
@@ -1785,16 +1785,16 @@ public:
 	virtual String get_option_label(int p_index) const {
 
 		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
-		device_lock->lock();
+		device_lock.lock();
 		String s = devices[p_index].name;
-		device_lock->unlock();
+		device_lock.unlock();
 		return s;
 	}
 
 	virtual String get_option_tooltip(int p_index) const {
 
 		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
-		device_lock->lock();
+		device_lock.lock();
 		String s = devices[p_index].description;
 		if (devices.size() == 1) {
 			// Tooltip will be:
@@ -1802,7 +1802,7 @@ public:
 			// Description
 			s = devices[p_index].name + "\n\n" + s;
 		}
-		device_lock->unlock();
+		device_lock.unlock();
 		return s;
 	}
 
@@ -1817,7 +1817,7 @@ public:
 			return ERR_UNCONFIGURED;
 		}
 
-		device_lock->lock();
+		device_lock.lock();
 
 		EditorProgress ep("run", "Running on " + devices[p_device].name, 3);
 
@@ -1825,7 +1825,7 @@ public:
 
 		// Export_temp APK.
 		if (ep.step("Exporting APK...", 0)) {
-			device_lock->unlock();
+			device_lock.unlock();
 			return ERR_SKIP;
 		}
 
@@ -1840,7 +1840,7 @@ public:
 #define CLEANUP_AND_RETURN(m_err)                         \
 	{                                                     \
 		DirAccess::remove_file_or_error(tmp_export_path); \
-		device_lock->unlock();                            \
+		device_lock.unlock();                             \
 		return m_err;                                     \
 	}
 
@@ -3280,10 +3280,8 @@ public:
 		run_icon.instance();
 		run_icon->create_from_image(img);
 
-		device_lock = Mutex::create();
 		devices_changed = true;
 
-		plugins_lock = Mutex::create();
 		plugins_changed = true;
 		quit_request = false;
 		check_for_changes_thread = Thread::create(_check_for_changes_poll_thread, this);
@@ -3292,8 +3290,6 @@ public:
 	~EditorExportPlatformAndroid() {
 		quit_request = true;
 		Thread::wait_to_finish(check_for_changes_thread);
-		memdelete(plugins_lock);
-		memdelete(device_lock);
 		memdelete(check_for_changes_thread);
 	}
 };

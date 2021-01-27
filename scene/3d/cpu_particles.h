@@ -179,7 +179,7 @@ private:
 	void _particles_process(float p_delta);
 	void _update_particle_data_buffer();
 
-	Mutex *update_mutex;
+	Mutex update_mutex;
 
 	void _update_render_thread();
 

@@ -46,7 +46,7 @@ protected:
 		MAKE_NORMAL_FLAG = 4
 	};
 
-	Mutex *mutex;
+	Mutex mutex;
 	Map<StringName, int> make_flags;
 
 	static void _texture_reimport_srgb(const Ref<StreamTexture> &p_tex);
@@ -94,7 +94,6 @@ public:
 	virtual String get_import_settings_string() const;
 
 	ResourceImporterTexture();
-	~ResourceImporterTexture();
 };
 
 #endif // RESOURCEIMPORTTEXTURE_H

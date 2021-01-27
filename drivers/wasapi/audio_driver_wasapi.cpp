@@ -406,7 +406,6 @@ Error AudioDriverWASAPI::init() {
 	exit_thread = false;
 	thread_exited = false;
 
-	mutex = Mutex::create(true);
 	thread = Thread::create(thread_func, this);
 
 	return OK;
@@ -782,14 +781,12 @@ void AudioDriverWASAPI::start() {
 
 void AudioDriverWASAPI::lock() {
 
-	if (mutex)
-		mutex->lock();
+	mutex.lock();
 }
 
 void AudioDriverWASAPI::unlock() {
 
-	if (mutex)
-		mutex->unlock();
+	mutex.unlock();
 }
 
 void AudioDriverWASAPI::finish() {
@@ -804,11 +801,6 @@ void AudioDriverWASAPI::finish() {
 
 	finish_capture_device();
 	finish_render_device();
-
-	if (mutex) {
-		memdelete(mutex);
-		mutex = NULL;
-	}
 }
 
 Error AudioDriverWASAPI::capture_start() {
@@ -863,7 +855,6 @@ String AudioDriverWASAPI::capture_get_device() {
 
 AudioDriverWASAPI::AudioDriverWASAPI() {
 
-	mutex = NULL;
 	thread = NULL;
 
 	samples_in.clear();

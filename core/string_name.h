@@ -82,7 +82,7 @@ class StringName {
 	friend void register_core_types();
 	friend void unregister_core_types();
 
-	static Mutex *lock;
+	static Mutex lock;
 	static void setup();
 	static void cleanup();
 	static bool configured;

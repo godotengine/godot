@@ -361,7 +361,7 @@ private:
 		StringName texture_names[TEXTURE_MAX];
 	};
 
-	static Mutex *material_mutex;
+	static Mutex material_mutex;
 	static SelfList<SpatialMaterial>::List *dirty_materials;
 	static ShaderNames *shader_names;
 

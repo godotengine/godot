@@ -126,7 +126,7 @@ private:
 		return mk;
 	}
 
-	static Mutex *material_mutex;
+	static Mutex material_mutex;
 	static SelfList<ParticlesMaterial>::List *dirty_materials;
 
 	struct ShaderNames {

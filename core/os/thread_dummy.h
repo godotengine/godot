@@ -45,18 +45,6 @@ public:
 	static void make_default();
 };
 
-class MutexDummy : public Mutex {
-
-	static Mutex *create(bool p_recursive);
-
-public:
-	virtual void lock(){};
-	virtual void unlock(){};
-	virtual Error try_lock() { return OK; };
-
-	static void make_default();
-};
-
 class SemaphoreDummy : public Semaphore {
 
 	static Semaphore *create();

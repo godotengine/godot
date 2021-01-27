@@ -121,9 +121,7 @@ class NativeScript : public Script {
 	String script_class_name;
 	String script_class_icon_path;
 
-#ifndef NO_THREADS
-	Mutex *owners_lock;
-#endif
+	Mutex owners_lock;
 	Set<Object *> instance_owners;
 
 protected:
@@ -238,7 +236,7 @@ private:
 	void _unload_stuff(bool p_reload = false);
 
 #ifndef NO_THREADS
-	Mutex *mutex;
+	Mutex mutex;
 
 	Set<Ref<GDNativeLibrary> > libs_to_init;
 	Set<NativeScript *> scripts_to_register;

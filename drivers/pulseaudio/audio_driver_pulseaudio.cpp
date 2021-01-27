@@ -294,7 +294,6 @@ Error AudioDriverPulseAudio::init() {
 
 	Error err = init_device();
 	if (err == OK) {
-		mutex = Mutex::create();
 		thread = Thread::create(AudioDriverPulseAudio::thread_func, this);
 	}
 
@@ -600,16 +599,16 @@ void AudioDriverPulseAudio::set_device(String device) {
 
 void AudioDriverPulseAudio::lock() {
 
-	if (!thread || !mutex)
+	if (!thread)
 		return;
-	mutex->lock();
+	mutex.lock();
 }
 
 void AudioDriverPulseAudio::unlock() {
 
-	if (!thread || !mutex)
+	if (!thread)
 		return;
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void AudioDriverPulseAudio::finish_device() {
@@ -643,10 +642,6 @@ void AudioDriverPulseAudio::finish() {
 	}
 
 	memdelete(thread);
-	if (mutex) {
-		memdelete(mutex);
-		mutex = NULL;
-	}
 
 	thread = NULL;
 }
@@ -803,7 +798,6 @@ String AudioDriverPulseAudio::capture_get_device() {
 
 AudioDriverPulseAudio::AudioDriverPulseAudio() :
 		thread(NULL),
-		mutex(NULL),
 		pa_ml(NULL),
 		pa_ctx(NULL),
 		pa_str(NULL),
