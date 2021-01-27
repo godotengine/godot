@@ -90,6 +90,12 @@ public:
 
 	BVHHandle create(T *p_userdata, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1) {
 
+		// not completely sure why, but the order of the pairing callbacks seems to be causing problems in
+		// the render tree unless these are flushed before creating a new object
+		if (USE_PAIRS) {
+			_check_for_collisions();
+		}
+
 #ifdef TOOLS_ENABLED
 		if (!USE_PAIRS) {
 			if (p_pairable) {
@@ -185,6 +191,13 @@ public:
 		tree.item_set_pairable(p_handle, p_pairable, p_pairable_type, p_pairable_mask);
 
 		if (USE_PAIRS) {
+
+			// not completely sure why, but the order of the pairing callbacks seems to be causing problems in
+			// the render tree unless these are flushed before creating a new object.. we will do this for set_pairable
+			// to just in case. This may not be required, and may slow things down slightly when there are a lot
+			// of visibility changes in a frame
+			_check_for_collisions();
+
 			// when the pairable state changes, we need to force a collision check because newly pairable
 			// items may be in collision, and unpairable items might move out of collision.
 			// We cannot depend on waiting for the next update, because that may come much later.
@@ -536,9 +549,15 @@ private:
 		_remove_pairs_containing(p_handle);
 
 		// remove from changed items (not very efficient yet)
-		for (unsigned int n = 0; n < changed_items.size(); n++) {
+		for (int n = 0; n < (int)changed_items.size(); n++) {
 			if (changed_items[n] == p_handle) {
 				changed_items.remove_unordered(n);
+
+				// because we are using an unordered remove,
+				// the last changed item will now be at spot 'n',
+				// and we need to redo it, so we prevent moving on to
+				// the next n at the next for iteration.
+				n--;
 			}
 		}
 
