@@ -147,7 +147,7 @@ void Popup::popup_centered(const Size2 &p_size) {
 	Rect2 rect;
 	Size2 window_size = get_viewport_rect().size;
 	rect.size = p_size == Size2() ? get_size() : p_size;
-	rect.position = ((window_size - rect.size) / 2.0).floor();
+	rect.position = ((window_size - rect.size * get_scale()) / 2.0).floor();
 
 	_popup(rect, true);
 }
@@ -157,7 +157,7 @@ void Popup::popup_centered_ratio(float p_screen_ratio) {
 	Rect2 rect;
 	Size2 window_size = get_viewport_rect().size;
 	rect.size = (window_size * p_screen_ratio).floor();
-	rect.position = ((window_size - rect.size) / 2.0).floor();
+	rect.position = ((window_size - rect.size * get_scale()) / 2.0).floor();
 
 	_popup(rect, true);
 }
