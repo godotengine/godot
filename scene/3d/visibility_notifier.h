@@ -33,11 +33,13 @@
 
 #include "scene/3d/spatial.h"
 
+class World;
 class Camera;
 class VisibilityNotifier : public Spatial {
 
 	GDCLASS(VisibilityNotifier, Spatial);
 
+	Ref<World> world;
 	Set<Camera *> cameras;
 
 	AABB aabb;
