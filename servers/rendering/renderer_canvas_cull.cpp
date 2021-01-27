@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -144,7 +144,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 
 	if (ci->clip) {
 		if (p_canvas_clip != nullptr) {
-			ci->final_clip_rect = p_canvas_clip->final_clip_rect.clip(global_rect);
+			ci->final_clip_rect = p_canvas_clip->final_clip_rect.intersection(global_rect);
 		} else {
 			ci->final_clip_rect = global_rect;
 		}
@@ -195,7 +195,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	}
 
 	if (ci->copy_back_buffer) {
-		ci->copy_back_buffer->screen_rect = xform.xform(ci->copy_back_buffer->rect).clip(p_clip_rect);
+		ci->copy_back_buffer->screen_rect = xform.xform(ci->copy_back_buffer->rect).intersection(p_clip_rect);
 	}
 
 	if (use_canvas_group) {
@@ -524,7 +524,7 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 	Item::CommandPrimitive *line = canvas_item->alloc_command<Item::CommandPrimitive>();
 	ERR_FAIL_COND(!line);
 	if (p_width > 1.001) {
-		Vector2 t = (p_from - p_to).tangent().normalized();
+		Vector2 t = (p_from - p_to).orthogonal().normalized();
 		line->points[0] = p_from + t * p_width;
 		line->points[1] = p_from - t * p_width;
 		line->points[2] = p_to - t * p_width;
@@ -600,7 +600,7 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 			if (i == pc - 1) {
 				t = prev_t;
 			} else {
-				t = (p_points[i + 1] - p_points[i]).normalized().tangent();
+				t = (p_points[i + 1] - p_points[i]).normalized().orthogonal();
 				if (i == 0) {
 					prev_t = t;
 				}
@@ -650,7 +650,7 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 			if (i == pc - 1) {
 				t = prev_t;
 			} else {
-				t = (p_points[i + 1] - p_points[i]).normalized().tangent();
+				t = (p_points[i + 1] - p_points[i]).normalized().orthogonal();
 				if (i == 0) {
 					prev_t = t;
 				}
@@ -825,10 +825,10 @@ void RendererCanvasCull::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_r
 	style->source = p_source;
 	style->draw_center = p_draw_center;
 	style->color = p_modulate;
-	style->margin[MARGIN_LEFT] = p_topleft.x;
-	style->margin[MARGIN_TOP] = p_topleft.y;
-	style->margin[MARGIN_RIGHT] = p_bottomright.x;
-	style->margin[MARGIN_BOTTOM] = p_bottomright.y;
+	style->margin[SIDE_LEFT] = p_topleft.x;
+	style->margin[SIDE_TOP] = p_topleft.y;
+	style->margin[SIDE_RIGHT] = p_bottomright.x;
+	style->margin[SIDE_BOTTOM] = p_bottomright.y;
 	style->axis_x = p_x_axis_mode;
 	style->axis_y = p_y_axis_mode;
 }
@@ -874,7 +874,7 @@ void RendererCanvasCull::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	ERR_FAIL_COND(uv_size != 0 && (uv_size != pointcount));
 #endif
 	Vector<int> indices = Geometry2D::triangulate_polygon(p_points);
-	ERR_FAIL_COND_MSG(indices.empty(), "Invalid polygon data, triangulation failed.");
+	ERR_FAIL_COND_MSG(indices.is_empty(), "Invalid polygon data, triangulation failed.");
 
 	Item::CommandPolygon *polygon = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_COND(!polygon);
@@ -889,10 +889,10 @@ void RendererCanvasCull::canvas_item_add_triangle_array(RID p_item, const Vector
 
 	int vertex_count = p_points.size();
 	ERR_FAIL_COND(vertex_count == 0);
-	ERR_FAIL_COND(!p_colors.empty() && p_colors.size() != vertex_count && p_colors.size() != 1);
-	ERR_FAIL_COND(!p_uvs.empty() && p_uvs.size() != vertex_count);
-	ERR_FAIL_COND(!p_bones.empty() && p_bones.size() != vertex_count * 4);
-	ERR_FAIL_COND(!p_weights.empty() && p_weights.size() != vertex_count * 4);
+	ERR_FAIL_COND(!p_colors.is_empty() && p_colors.size() != vertex_count && p_colors.size() != 1);
+	ERR_FAIL_COND(!p_uvs.is_empty() && p_uvs.size() != vertex_count);
+	ERR_FAIL_COND(!p_bones.is_empty() && p_bones.size() != vertex_count * 4);
+	ERR_FAIL_COND(!p_weights.is_empty() && p_weights.size() != vertex_count * 4);
 
 	Vector<int> indices = p_indices;
 

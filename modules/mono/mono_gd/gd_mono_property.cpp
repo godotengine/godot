@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 GDMonoProperty::GDMonoProperty(MonoProperty *p_mono_property, GDMonoClass *p_owner) {
 	owner = p_owner;
 	mono_property = p_mono_property;
-	name = mono_property_get_name(mono_property);
+	name = String::utf8(mono_property_get_name(mono_property));
 
 	MonoMethod *prop_method = mono_property_get_get_method(mono_property);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,10 +87,10 @@ void EditorAssetLibraryItem::_bind_methods() {
 EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	Ref<StyleBoxEmpty> border;
 	border.instance();
-	border->set_default_margin(MARGIN_LEFT, 5 * EDSCALE);
-	border->set_default_margin(MARGIN_RIGHT, 5 * EDSCALE);
-	border->set_default_margin(MARGIN_BOTTOM, 5 * EDSCALE);
-	border->set_default_margin(MARGIN_TOP, 5 * EDSCALE);
+	border->set_default_margin(SIDE_LEFT, 5 * EDSCALE);
+	border->set_default_margin(SIDE_RIGHT, 5 * EDSCALE);
+	border->set_default_margin(SIDE_BOTTOM, 5 * EDSCALE);
+	border->set_default_margin(SIDE_TOP, 5 * EDSCALE);
 	add_theme_style_override("panel", border);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -295,8 +295,8 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	preview_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	previews->add_child(preview_hb);
-	get_ok()->set_text(TTR("Download"));
-	get_cancel()->set_text(TTR("Close"));
+	get_ok_button()->set_text(TTR("Download"));
+	get_cancel_button()->set_text(TTR("Close"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -702,7 +702,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 			}
 		}
 
-		if (!image->empty()) {
+		if (!image->is_empty()) {
 			switch (image_queue[p_queue_id].image_type) {
 				case IMAGE_QUEUE_ICON:
 
@@ -1151,7 +1151,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			asset_bottom_page = _make_pages(page, pages, page_len, total_items, result.size());
 			library_vb->add_child(asset_bottom_page);
 
-			if (result.empty()) {
+			if (result.is_empty()) {
 				if (filter->get_text() != String()) {
 					library_error->set_text(
 							vformat(TTR("No results for \"%s\"."), filter->get_text()));
@@ -1188,7 +1188,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				}
 			}
 
-			if (!result.empty()) {
+			if (!result.is_empty()) {
 				library_scroll->set_v_scroll(0);
 			}
 		} break;
@@ -1364,10 +1364,18 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(memnew(Label(TTR("Site:") + " ")));
 	repository = memnew(OptionButton);
 
-	repository->add_item("godotengine.org");
-	repository->set_item_metadata(0, "https://godotengine.org/asset-library/api");
-	repository->add_item("localhost");
-	repository->set_item_metadata(1, "http://127.0.0.1/asset-library/api");
+	{
+		Dictionary default_urls;
+		default_urls["godotengine.org"] = "https://godotengine.org/asset-library/api";
+		default_urls["localhost"] = "http://127.0.0.1/asset-library/api";
+		Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
+		Array keys = available_urls.keys();
+		for (int i = 0; i < available_urls.size(); i++) {
+			String key = keys[i];
+			repository->add_item(key);
+			repository->set_item_metadata(i, available_urls[key]);
+		}
+	}
 
 	repository->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_repository_changed));
 
@@ -1400,10 +1408,10 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	Ref<StyleBoxEmpty> border2;
 	border2.instance();
-	border2->set_default_margin(MARGIN_LEFT, 15 * EDSCALE);
-	border2->set_default_margin(MARGIN_RIGHT, 35 * EDSCALE);
-	border2->set_default_margin(MARGIN_BOTTOM, 15 * EDSCALE);
-	border2->set_default_margin(MARGIN_TOP, 15 * EDSCALE);
+	border2->set_default_margin(SIDE_LEFT, 15 * EDSCALE);
+	border2->set_default_margin(SIDE_RIGHT, 35 * EDSCALE);
+	border2->set_default_margin(SIDE_BOTTOM, 15 * EDSCALE);
+	border2->set_default_margin(SIDE_TOP, 15 * EDSCALE);
 
 	PanelContainer *library_vb_border = memnew(PanelContainer);
 	library_scroll->add_child(library_vb_border);
@@ -1492,8 +1500,8 @@ AssetLibraryEditorPlugin::AssetLibraryEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	addon_library = memnew(EditorAssetLibrary);
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	editor->get_viewport()->add_child(addon_library);
-	addon_library->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	editor->get_main_control()->add_child(addon_library);
+	addon_library->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	addon_library->hide();
 }
 

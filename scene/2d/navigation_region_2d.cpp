@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 #include "navigation_2d.h"
 #include "servers/navigation_server_2d.h"
 
-#include "thirdparty/misc/triangulator.h"
+#include "thirdparty/misc/polypartition.h"
 
 #ifdef TOOLS_ENABLED
 Rect2 NavigationPolygon::_edit_get_rect() const {
@@ -228,7 +228,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 		MutexLock lock(navmesh_generation);
 		navmesh.unref();
 	}
-	List<TriangulatorPoly> in_poly, out_poly;
+	List<TPPLPoly> in_poly, out_poly;
 
 	Vector2 outside_point(-1e10, -1e10);
 
@@ -278,23 +278,23 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 		bool outer = (interscount % 2) == 0;
 
-		TriangulatorPoly tp;
+		TPPLPoly tp;
 		tp.Init(olsize);
 		for (int j = 0; j < olsize; j++) {
 			tp[j] = r[j];
 		}
 
 		if (outer) {
-			tp.SetOrientation(TRIANGULATOR_CCW);
+			tp.SetOrientation(TPPL_ORIENTATION_CCW);
 		} else {
-			tp.SetOrientation(TRIANGULATOR_CW);
+			tp.SetOrientation(TPPL_ORIENTATION_CW);
 			tp.SetHole(true);
 		}
 
 		in_poly.push_back(tp);
 	}
 
-	TriangulatorPartition tpart;
+	TPPLPartition tpart;
 	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { //failed!
 		ERR_PRINT("NavigationPolygon: Convex partition failed!");
 		return;
@@ -304,8 +304,8 @@ void NavigationPolygon::make_polygons_from_outlines() {
 	vertices.resize(0);
 
 	Map<Vector2, int> points;
-	for (List<TriangulatorPoly>::Element *I = out_poly.front(); I; I = I->next()) {
-		TriangulatorPoly &tp = I->get();
+	for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {
+		TPPLPoly &tp = I->get();
 
 		struct Polygon p;
 
@@ -503,7 +503,7 @@ String NavigationRegion2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	if (!navpoly.is_valid()) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon.");
@@ -516,7 +516,7 @@ String NavigationRegion2D::get_configuration_warning() const {
 
 		c = Object::cast_to<Node2D>(c->get_parent());
 	}
-	if (!warning.empty()) {
+	if (!warning.is_empty()) {
 		warning += "\n\n";
 	}
 	return warning + TTR("NavigationRegion2D must be a child or grandchild to a Navigation2D node. It only provides navigation data.");

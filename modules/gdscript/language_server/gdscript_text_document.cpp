@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -147,7 +147,7 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 	List<ScriptCodeCompletionOption> options;
 	GDScriptLanguageProtocol::get_singleton()->get_workspace()->completion(params, &options);
 
-	if (!options.empty()) {
+	if (!options.is_empty()) {
 		int i = 0;
 		arr.resize(options.size());
 
@@ -257,7 +257,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 
 	if ((item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function) && !item.label.ends_with("):")) {
 		item.insertText = item.label + "(";
-		if (symbol && symbol->children.empty()) {
+		if (symbol && symbol->children.is_empty()) {
 			item.insertText += ")";
 		}
 	} else if (item.kind == lsp::CompletionItemKind::Event) {
@@ -341,7 +341,7 @@ Variant GDScriptTextDocument::declaration(const Dictionary &p_params) {
 	params.load(p_params);
 	List<const lsp::DocumentSymbol *> symbols;
 	Array arr = this->find_symbols(params, symbols);
-	if (arr.empty() && !symbols.empty() && !symbols.front()->get()->native_class.empty()) { // Find a native symbol
+	if (arr.is_empty() && !symbols.is_empty() && !symbols.front()->get()->native_class.is_empty()) { // Find a native symbol
 		const lsp::DocumentSymbol *symbol = symbols.front()->get();
 		if (GDScriptLanguageProtocol::get_singleton()->is_goto_native_symbols_enabled()) {
 			String id;
@@ -425,7 +425,7 @@ Array GDScriptTextDocument::find_symbols(const lsp::TextDocumentPositionParams &
 		GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(p_location, list);
 		for (List<const lsp::DocumentSymbol *>::Element *E = list.front(); E; E = E->next()) {
 			if (const lsp::DocumentSymbol *s = E->get()) {
-				if (!s->uri.empty()) {
+				if (!s->uri.is_empty()) {
 					lsp::Location location;
 					location.uri = s->uri;
 					location.range = s->range;

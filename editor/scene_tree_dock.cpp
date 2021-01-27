@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,10 +57,7 @@ void SceneTreeDock::_nodes_drag_begin() {
 }
 
 void SceneTreeDock::_quick_open() {
-	Vector<String> files = quick_open->get_selected_files();
-	for (int i = 0; i < files.size(); i++) {
-		instance(files[i]);
-	}
+	instance_scenes(quick_open->get_selected_files(), scene_tree->get_selected());
 }
 
 void SceneTreeDock::_input(Ref<InputEvent> p_event) {
@@ -123,24 +120,9 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 }
 
 void SceneTreeDock::instance(const String &p_file) {
-	Node *parent = scene_tree->get_selected();
-
-	if (!parent) {
-		parent = edited_scene;
-	};
-
-	if (!edited_scene) {
-		current_option = -1;
-		accept->set_text(TTR("No parent to instance a child at."));
-		accept->popup_centered();
-		return;
-	};
-
-	ERR_FAIL_COND(!parent);
-
 	Vector<String> scenes;
 	scenes.push_back(p_file);
-	_perform_instance_scenes(scenes, parent, -1);
+	instance_scenes(scenes, scene_tree->get_selected());
 }
 
 void SceneTreeDock::instance_scenes(const Vector<String> &p_files, Node *p_parent) {
@@ -151,7 +133,11 @@ void SceneTreeDock::instance_scenes(const Vector<String> &p_files, Node *p_paren
 	}
 
 	if (!parent || !edited_scene) {
-		accept->set_text(TTR("No parent to instance the scenes at."));
+		if (p_files.size() == 1) {
+			accept->set_text(TTR("No parent to instance a child at."));
+		} else {
+			accept->set_text(TTR("No parent to instance the scenes at."));
+		}
 		accept->popup_centered();
 		return;
 	};
@@ -228,6 +214,7 @@ void SceneTreeDock::_perform_instance_scenes(const Vector<String> &p_files, Node
 	}
 
 	editor_data->get_undo_redo().commit_action();
+	editor->push_item(instances[instances.size() - 1]);
 }
 
 void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base) {
@@ -361,7 +348,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (current_edited_scene_root) {
 				String root_class = current_edited_scene_root->get_class_name();
 				static Vector<String> preferred_types;
-				if (preferred_types.empty()) {
+				if (preferred_types.is_empty()) {
 					preferred_types.push_back("Control");
 					preferred_types.push_back("Node2D");
 					preferred_types.push_back("Node3D");
@@ -416,7 +403,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			Node *selected = scene_tree->get_selected();
-			if (!selected && !editor_selection->get_selected_node_list().empty()) {
+			if (!selected && !editor_selection->get_selected_node_list().is_empty()) {
 				selected = editor_selection->get_selected_node_list().front()->get();
 			}
 
@@ -438,7 +425,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			Array selection = editor_selection->get_selected_nodes();
 
-			if (selection.empty()) {
+			if (selection.is_empty()) {
 				return;
 			}
 
@@ -737,7 +724,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			List<Node *> remove_list = editor_selection->get_selected_node_list();
 
-			if (remove_list.empty()) {
+			if (remove_list.is_empty()) {
 				return;
 			}
 
@@ -1015,7 +1002,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 						break;
 					case TOOL_CREATE_USER_INTERFACE: {
 						Control *node = memnew(Control);
-						node->set_anchors_and_margins_preset(PRESET_WIDE); //more useful for resizable UIs.
+						node->set_anchors_and_offsets_preset(PRESET_WIDE); //more useful for resizable UIs.
 						new_node = node;
 
 					} break;
@@ -1107,7 +1094,7 @@ void SceneTreeDock::_notification(int p_what) {
 			node_shortcuts_toggle->set_toggle_mode(true);
 			node_shortcuts_toggle->set_tooltip(TTR("Switch to Favorite Nodes"));
 			node_shortcuts_toggle->set_pressed(EDITOR_GET("_use_favorites_root_selection"));
-			node_shortcuts_toggle->set_anchors_and_margins_preset(Control::PRESET_CENTER_RIGHT);
+			node_shortcuts_toggle->set_anchors_and_offsets_preset(Control::PRESET_CENTER_RIGHT);
 			node_shortcuts_toggle->connect("pressed", callable_mp(this, &SceneTreeDock::_update_create_root_dialog));
 			top_row->add_child(node_shortcuts_toggle);
 
@@ -1529,7 +1516,7 @@ void SceneTreeDock::_node_reparent(NodePath p_path, bool p_keep_global_xform) {
 
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
-	if (selection.empty()) {
+	if (selection.is_empty()) {
 		return; // Nothing to reparent.
 	}
 
@@ -1703,7 +1690,7 @@ bool SceneTreeDock::_is_collapsed_recursive(TreeItem *p_item) const {
 	List<TreeItem *> needs_check;
 	needs_check.push_back(p_item);
 
-	while (!needs_check.empty()) {
+	while (!needs_check.is_empty()) {
 		TreeItem *item = needs_check.back()->get();
 		needs_check.pop_back();
 
@@ -1725,7 +1712,7 @@ void SceneTreeDock::_set_collapsed_recursive(TreeItem *p_item, bool p_collapsed)
 	List<TreeItem *> to_collapse;
 	to_collapse.push_back(p_item);
 
-	while (!to_collapse.empty()) {
+	while (!to_collapse.is_empty()) {
 		TreeItem *item = to_collapse.back()->get();
 		to_collapse.pop_back();
 
@@ -1742,7 +1729,7 @@ void SceneTreeDock::_set_collapsed_recursive(TreeItem *p_item, bool p_collapsed)
 void SceneTreeDock::_script_created(Ref<Script> p_script) {
 	List<Node *> selected = editor_selection->get_selected_node_list();
 
-	if (selected.empty()) {
+	if (selected.is_empty()) {
 		return;
 	}
 
@@ -1811,7 +1798,7 @@ void SceneTreeDock::_toggle_editable_children(Node *p_node) {
 void SceneTreeDock::_delete_confirm() {
 	List<Node *> remove_list = editor_selection->get_selected_node_list();
 
-	if (remove_list.empty()) {
+	if (remove_list.is_empty()) {
 		return;
 	}
 
@@ -1935,7 +1922,7 @@ void SceneTreeDock::_selection_changed() {
 }
 
 void SceneTreeDock::_do_create(Node *p_parent) {
-	Object *c = create_dialog->instance_selected();
+	Variant c = create_dialog->instance_selected();
 
 	ERR_FAIL_COND(!c);
 	Node *child = Object::cast_to<Node>(c);
@@ -2015,7 +2002,7 @@ void SceneTreeDock::_create() {
 			Node *n = E->get();
 			ERR_FAIL_COND(!n);
 
-			Object *c = create_dialog->instance_selected();
+			Variant c = create_dialog->instance_selected();
 
 			ERR_FAIL_COND(!c);
 			Node *newnode = Object::cast_to<Node>(c);
@@ -2153,7 +2140,6 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 	if (n == edited_scene) {
 		edited_scene = newnode;
 		editor->set_edited_scene(newnode);
-		newnode->set_editable_instances(n->get_editable_instances());
 	}
 
 	//small hack to make collisionshapes and other kind of nodes to work
@@ -2349,7 +2335,7 @@ void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
 void SceneTreeDock::_nodes_dragged(Array p_nodes, NodePath p_to, int p_type) {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
-	if (selection.empty()) {
+	if (selection.is_empty()) {
 		return; //nothing to reparent
 	}
 
@@ -2601,7 +2587,7 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 	}
 
 	List<Node *> selection = editor_selection->get_selected_node_list();
-	if (selection.empty()) {
+	if (selection.is_empty()) {
 		return;
 	}
 
@@ -2982,7 +2968,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 
 	clear_inherit_confirm = memnew(ConfirmationDialog);
 	clear_inherit_confirm->set_text(TTR("Clear Inheritance? (No Undo!)"));
-	clear_inherit_confirm->get_ok()->set_text(TTR("Clear"));
+	clear_inherit_confirm->get_ok_button()->set_text(TTR("Clear"));
 	add_child(clear_inherit_confirm);
 
 	set_process_input(true);

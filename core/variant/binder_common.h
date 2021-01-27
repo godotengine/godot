@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,7 +87,7 @@ VARIANT_ENUM_CAST(Object::ConnectFlags);
 VARIANT_ENUM_CAST(Vector3::Axis);
 
 VARIANT_ENUM_CAST(Error);
-VARIANT_ENUM_CAST(Margin);
+VARIANT_ENUM_CAST(Side);
 VARIANT_ENUM_CAST(Corner);
 VARIANT_ENUM_CAST(Orientation);
 VARIANT_ENUM_CAST(HAlign);

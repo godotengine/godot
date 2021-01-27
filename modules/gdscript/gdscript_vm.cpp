@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,6 @@
 #include "core/core_string_names.h"
 #include "core/os/os.h"
 #include "gdscript.h"
-#include "gdscript_functions.h"
 
 Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_instance, GDScript *p_script, Variant &self, Variant &static_ref, Variant *p_stack, String &r_error) const {
 	int address = p_address & ADDR_MASK;
@@ -220,7 +219,9 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		&&OPCODE_CALL,                               \
 		&&OPCODE_CALL_RETURN,                        \
 		&&OPCODE_CALL_ASYNC,                         \
-		&&OPCODE_CALL_BUILT_IN,                      \
+		&&OPCODE_CALL_UTILITY,                       \
+		&&OPCODE_CALL_UTILITY_VALIDATED,             \
+		&&OPCODE_CALL_GDSCRIPT_UTILITY,              \
 		&&OPCODE_CALL_BUILTIN_TYPE_VALIDATED,        \
 		&&OPCODE_CALL_SELF_BASE,                     \
 		&&OPCODE_CALL_METHOD_BIND,                   \
@@ -475,11 +476,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		}
 
 		if (p_instance) {
-			if (p_instance->base_ref && static_cast<Reference *>(p_instance->owner)->is_referenced()) {
-				self = REF(static_cast<Reference *>(p_instance->owner));
-			} else {
-				self = p_instance->owner;
-			}
+			self = p_instance->owner;
 			script = p_instance->script.ptr();
 		} else {
 			script = _script;
@@ -738,7 +735,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				const Variant::ValidatedKeyedSetter setter = _keyed_setters_ptr[index_setter];
 
 				bool valid;
-				setter(dst, index, value, valid);
+				setter(dst, index, value, &valid);
 
 #ifdef DEBUG_ENABLED
 				if (!valid) {
@@ -770,7 +767,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int64_t int_index = *VariantInternal::get_int(index);
 
 				bool oob;
-				setter(dst, int_index, value, oob);
+				setter(dst, int_index, value, &oob);
 
 #ifdef DEBUG_ENABLED
 				if (oob) {
@@ -835,9 +832,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				// Allow better error message in cases where src and dst are the same stack position.
 				Variant ret;
-				getter(src, key, &ret, valid);
+				getter(src, key, &ret, &valid);
 #else
-				getter(src, key, dst, valid);
+				getter(src, key, dst, &valid);
 #endif
 #ifdef DEBUG_ENABLED
 				if (!valid) {
@@ -870,7 +867,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int64_t int_index = *VariantInternal::get_int(index);
 
 				bool oob;
-				getter(src, int_index, dst, oob);
+				getter(src, int_index, dst, &oob);
 
 #ifdef DEBUG_ENABLED
 				if (oob) {
@@ -1292,7 +1289,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				GET_INSTRUCTION_ARG(dst, argc);
 
-				constructor(*dst, (const Variant **)argptrs);
+				constructor(dst, (const Variant **)argptrs);
 
 				ip += 3;
 			}
@@ -1749,7 +1746,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
-			OPCODE(OPCODE_CALL_BUILT_IN) {
+			OPCODE(OPCODE_CALL_UTILITY) {
 				CHECK_SPACE(3 + instr_arg_count);
 
 				ip += instr_arg_count;
@@ -1757,22 +1754,80 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int argc = _code_ptr[ip + 1];
 				GD_ERR_BREAK(argc < 0);
 
-				GDScriptFunctions::Function func = GDScriptFunctions::Function(_code_ptr[ip + 2]);
+				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _global_names_count);
+				StringName function = _global_names_ptr[_code_ptr[ip + 2]];
+
 				Variant **argptrs = instruction_args;
 
 				GET_INSTRUCTION_ARG(dst, argc);
 
 				Callable::CallError err;
-				GDScriptFunctions::call(func, (const Variant **)argptrs, argc, *dst, err);
+				Variant::call_utility_function(function, dst, (const Variant **)argptrs, argc, err);
 
 #ifdef DEBUG_ENABLED
 				if (err.error != Callable::CallError::CALL_OK) {
-					String methodstr = GDScriptFunctions::get_func_name(func);
+					String methodstr = function;
 					if (dst->get_type() == Variant::STRING) {
-						//call provided error string
-						err_text = "Error calling built-in function '" + methodstr + "': " + String(*dst);
+						// Call provided error string.
+						err_text = "Error calling utility function '" + methodstr + "': " + String(*dst);
 					} else {
-						err_text = _get_call_error(err, "built-in function '" + methodstr + "'", (const Variant **)argptrs);
+						err_text = _get_call_error(err, "utility function '" + methodstr + "'", (const Variant **)argptrs);
+					}
+					OPCODE_BREAK;
+				}
+#endif
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CALL_UTILITY_VALIDATED) {
+				CHECK_SPACE(3 + instr_arg_count);
+
+				ip += instr_arg_count;
+
+				int argc = _code_ptr[ip + 1];
+				GD_ERR_BREAK(argc < 0);
+
+				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _utilities_count);
+				Variant::ValidatedUtilityFunction function = _utilities_ptr[_code_ptr[ip + 2]];
+
+				Variant **argptrs = instruction_args;
+
+				GET_INSTRUCTION_ARG(dst, argc);
+
+				function(dst, (const Variant **)argptrs, argc);
+
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CALL_GDSCRIPT_UTILITY) {
+				CHECK_SPACE(3 + instr_arg_count);
+
+				ip += instr_arg_count;
+
+				int argc = _code_ptr[ip + 1];
+				GD_ERR_BREAK(argc < 0);
+
+				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _gds_utilities_count);
+				GDScriptUtilityFunctions::FunctionPtr function = _gds_utilities_ptr[_code_ptr[ip + 2]];
+
+				Variant **argptrs = instruction_args;
+
+				GET_INSTRUCTION_ARG(dst, argc);
+
+				Callable::CallError err;
+				function(dst, (const Variant **)argptrs, argc, err);
+
+#ifdef DEBUG_ENABLED
+				if (err.error != Callable::CallError::CALL_OK) {
+					// TODO: Add this information in debug.
+					String methodstr = "<unkown function>";
+					if (dst->get_type() == Variant::STRING) {
+						// Call provided error string.
+						err_text = "Error calling GDScript utility function '" + methodstr + "': " + String(*dst);
+					} else {
+						err_text = _get_call_error(err, "GDScript utility function '" + methodstr + "'", (const Variant **)argptrs);
 					}
 					OPCODE_BREAK;
 				}
@@ -2223,7 +2278,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				VariantInternal::initialize(counter, Variant::INT);
 				*VariantInternal::get_int(counter) = 0;
 
-				if (!str->empty()) {
+				if (!str->is_empty()) {
 					GET_INSTRUCTION_ARG(iterator, 2);
 					VariantInternal::initialize(iterator, Variant::STRING);
 					*VariantInternal::get_string(iterator) = str->substr(0, 1);
@@ -2247,10 +2302,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				Dictionary *dict = VariantInternal::get_dictionary(container);
 				const Variant *next = dict->next(nullptr);
-				*counter = *next;
 
-				if (!dict->empty()) {
+				if (!dict->is_empty()) {
 					GET_INSTRUCTION_ARG(iterator, 2);
+					*counter = *next;
 					*iterator = *next;
 
 					// Skip regular iterate.
@@ -2275,7 +2330,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				VariantInternal::initialize(counter, Variant::INT);
 				*VariantInternal::get_int(counter) = 0;
 
-				if (!array->empty()) {
+				if (!array->is_empty()) {
 					GET_INSTRUCTION_ARG(iterator, 2);
 					*iterator = array->get(0);
 
@@ -2298,7 +2353,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		Vector<m_elem_type> *array = VariantInternal::m_get_func(container);                                               \
 		VariantInternal::initialize(counter, Variant::INT);                                                                \
 		*VariantInternal::get_int(counter) = 0;                                                                            \
-		if (!array->empty()) {                                                                                             \
+		if (!array->is_empty()) {                                                                                          \
 			GET_INSTRUCTION_ARG(iterator, 2);                                                                              \
 			VariantInternal::initialize(iterator, Variant::m_var_ret_type);                                                \
 			m_ret_type *it = VariantInternal::m_ret_get_func(iterator);                                                    \
@@ -2722,7 +2777,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						GET_INSTRUCTION_ARG(message, 1);
 						message_str = *message;
 					}
-					if (message_str.empty()) {
+					if (message_str.is_empty()) {
 						err_text = "Assertion failed.";
 					} else {
 						err_text = "Assertion failed: " + message_str;

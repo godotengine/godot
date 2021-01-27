@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -136,7 +136,7 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 	ERR_FAIL_COND(!E);
 
 	E->get().nodes.erase(p_node);
-	if (E->get().nodes.empty()) {
+	if (E->get().nodes.is_empty()) {
 		group_map.erase(E);
 	}
 }
@@ -183,7 +183,7 @@ void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
 	if (!g.changed) {
 		return;
 	}
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -206,7 +206,7 @@ void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_grou
 		return;
 	}
 	Group &g = E->get();
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -282,7 +282,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 		return;
 	}
 	Group &g = E->get();
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -333,7 +333,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 		return;
 	}
 	Group &g = E->get();
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -390,20 +390,20 @@ void SceneTree::set_group(const StringName &p_group, const String &p_name, const
 	set_group_flags(0, p_group, p_name, p_value);
 }
 
-void SceneTree::init() {
+void SceneTree::initialize() {
 	initialized = true;
 	root->_set_tree(this);
-	MainLoop::init();
+	MainLoop::initialize();
 }
 
-bool SceneTree::iteration(float p_time) {
+bool SceneTree::physics_process(float p_time) {
 	root_lock++;
 
 	current_frame++;
 
 	flush_transform_notifications();
 
-	MainLoop::iteration(p_time);
+	MainLoop::physics_process(p_time);
 	physics_process_time = p_time;
 
 	emit_signal("physics_frame");
@@ -422,29 +422,25 @@ bool SceneTree::iteration(float p_time) {
 	return _quit;
 }
 
-bool SceneTree::idle(float p_time) {
-	//print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
-	//print_line("node count: "+itos(get_node_count()));
-	//print_line("TEXTURE RAM: "+itos(RS::get_singleton()->get_render_info(RS::INFO_TEXTURE_MEM_USED)));
-
+bool SceneTree::process(float p_time) {
 	root_lock++;
 
-	MainLoop::idle(p_time);
+	MainLoop::process(p_time);
 
-	idle_process_time = p_time;
+	process_time = p_time;
 
 	if (multiplayer_poll) {
 		multiplayer->poll();
 	}
 
-	emit_signal("idle_frame");
+	emit_signal("process_frame");
 
 	MessageQueue::get_singleton()->flush(); //small little hack
 
 	flush_transform_notifications();
 
-	_notify_group_pause("idle_process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
-	_notify_group_pause("idle_process", Node::NOTIFICATION_PROCESS);
+	_notify_group_pause("process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
+	_notify_group_pause("process", Node::NOTIFICATION_PROCESS);
 
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
@@ -516,14 +512,14 @@ bool SceneTree::idle(float p_time) {
 	return _quit;
 }
 
-void SceneTree::finish() {
+void SceneTree::finalize() {
 	_flush_delete_queue();
 
 	_flush_ugc();
 
 	initialized = false;
 
-	MainLoop::finish();
+	MainLoop::finalize();
 
 	if (root) {
 		root->_set_tree(nullptr);
@@ -787,7 +783,7 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 		return;
 	}
 	Group &g = E->get();
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -840,7 +836,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 		return;
 	}
 	Group &g = E->get();
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -1265,7 +1261,7 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("node_renamed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_configuration_warning_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 
-	ADD_SIGNAL(MethodInfo("idle_frame"));
+	ADD_SIGNAL(MethodInfo("process_frame"));
 	ADD_SIGNAL(MethodInfo("physics_frame"));
 
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files"), PropertyInfo(Variant::INT, "screen")));
@@ -1303,7 +1299,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 		List<String> directories;
 		directories.push_back(dir_access->get_current_dir());
 
-		while (!directories.empty()) {
+		while (!directories.is_empty()) {
 			dir_access->change_dir(directories.back()->get());
 			directories.pop_back();
 
@@ -1332,14 +1328,6 @@ SceneTree::SceneTree() {
 	if (singleton == nullptr) {
 		singleton = this;
 	}
-	_quit = false;
-	accept_quit = true;
-	quit_on_go_back = true;
-	initialized = false;
-#ifdef DEBUG_ENABLED
-	debug_collisions_hint = false;
-	debug_navigation_hint = false;
-#endif
 	debug_collisions_color = GLOBAL_DEF("debug/shapes/collision/shape_color", Color(0.0, 0.6, 0.7, 0.5));
 	debug_collision_contact_color = GLOBAL_DEF("debug/shapes/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
 	debug_navigation_color = GLOBAL_DEF("debug/shapes/navigation/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
@@ -1347,23 +1335,7 @@ SceneTree::SceneTree() {
 	collision_debug_contacts = GLOBAL_DEF("debug/shapes/collision/max_contacts_displayed", 10000);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/shapes/collision/max_contacts_displayed", PropertyInfo(Variant::INT, "debug/shapes/collision/max_contacts_displayed", PROPERTY_HINT_RANGE, "0,20000,1")); // No negative
 
-	tree_version = 1;
-	physics_process_time = 1;
-	idle_process_time = 1;
-
-	root = nullptr;
-	pause = false;
-	current_frame = 0;
-	tree_changed_name = "tree_changed";
-	node_added_name = "node_added";
-	node_removed_name = "node_removed";
-	node_renamed_name = "node_renamed";
-	ugc_locked = false;
-	call_lock = 0;
-	root_lock = 0;
-	node_count = 0;
-
-	//create with mainloop
+	// Create with mainloop.
 
 	root = memnew(Window);
 	root->set_name("root");
@@ -1371,8 +1343,7 @@ SceneTree::SceneTree() {
 		root->set_world_3d(Ref<World3D>(memnew(World3D)));
 	}
 
-	// Initialize network state
-	multiplayer_poll = true;
+	// Initialize network state.
 	set_multiplayer(Ref<MultiplayerAPI>(memnew(MultiplayerAPI)));
 
 	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
@@ -1391,11 +1362,35 @@ SceneTree::SceneTree() {
 	const bool use_debanding = GLOBAL_DEF("rendering/quality/screen_filters/use_debanding", false);
 	root->set_use_debanding(use_debanding);
 
+	float lod_threshold = GLOBAL_DEF("rendering/quality/mesh_lod/threshold_pixels", 1.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/mesh_lod/threshold_pixels", PropertyInfo(Variant::FLOAT, "rendering/quality/mesh_lod/threshold_pixels", PROPERTY_HINT_RANGE, "0,1024,0.1"));
+	root->set_lod_threshold(lod_threshold);
+
 	bool snap_2d_transforms = GLOBAL_DEF("rendering/quality/2d/snap_2d_transforms_to_pixel", false);
 	root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
 
 	bool snap_2d_vertices = GLOBAL_DEF("rendering/quality/2d/snap_2d_vertices_to_pixel", false);
 	root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
+
+	int shadowmap_size = GLOBAL_DEF("rendering/quality/shadow_atlas/size", 4096);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
+	GLOBAL_DEF("rendering/quality/shadow_atlas/size.mobile", 2048);
+	bool shadowmap_16_bits = GLOBAL_DEF("rendering/quality/shadow_atlas/16_bits", true);
+	int atlas_q0 = GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_0_subdiv", 2);
+	int atlas_q1 = GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_1_subdiv", 2);
+	int atlas_q2 = GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_2_subdiv", 3);
+	int atlas_q3 = GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_3_subdiv", 4);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_0_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_1_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_2_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_2_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_3_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_3_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+
+	root->set_shadow_atlas_size(shadowmap_size);
+	root->set_shadow_atlas_16_bits(shadowmap_16_bits);
+	root->set_shadow_atlas_quadrant_subdiv(0, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q0));
+	root->set_shadow_atlas_quadrant_subdiv(1, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q1));
+	root->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
+	root->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
 
 	Viewport::SDFOversize sdf_oversize = Viewport::SDFOversize(int(GLOBAL_DEF("rendering/quality/2d_sdf/oversize", 1)));
 	root->set_sdf_oversize(sdf_oversize);
@@ -1405,8 +1400,8 @@ SceneTree::SceneTree() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/2d_sdf/oversize", PropertyInfo(Variant::INT, "rendering/quality/2d_sdf/oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"));
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/2d_sdf/scale", PropertyInfo(Variant::INT, "rendering/quality/2d_sdf/scale", PROPERTY_HINT_ENUM, "100%,50%,25%"));
 
-	{ //load default fallback environment
-		//get possible extensions
+	{ // Load default fallback environment.
+		// Get possible extensions.
 		List<String> exts;
 		ResourceLoader::get_recognized_extensions_for_type("Environment", &exts);
 		String ext_hint;
@@ -1416,9 +1411,9 @@ SceneTree::SceneTree() {
 			}
 			ext_hint += "*." + E->get();
 		}
-		//get path
+		// Get path.
 		String env_path = GLOBAL_DEF("rendering/environment/default_environment", "");
-		//setup property
+		// Setup property.
 		ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
 		env_path = env_path.strip_edges();
 		if (env_path != String()) {
@@ -1427,10 +1422,10 @@ SceneTree::SceneTree() {
 				root->get_world_3d()->set_fallback_environment(env);
 			} else {
 				if (Engine::get_singleton()->is_editor_hint()) {
-					//file was erased, clear the field.
+					// File was erased, clear the field.
 					ProjectSettings::get_singleton()->set("rendering/environment/default_environment", "");
 				} else {
-					//file was erased, notify user.
+					// File was erased, notify user.
 					ERR_PRINT(RTR("Default Environment as specified in Project Settings (Rendering -> Environment -> Default Environment) could not be loaded."));
 				}
 			}

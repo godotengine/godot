@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -288,21 +288,17 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		if (A->is_shape_set_as_one_way_collision(shape_A)) {
 			Vector2 direction = xform_A.get_axis(1).normalized();
 			bool valid = false;
-			if (B->get_linear_velocity().dot(direction) >= 0) {
-				for (int i = 0; i < contact_count; i++) {
-					Contact &c = contacts[i];
-					if (!c.reused) {
-						continue;
-					}
-					if (c.normal.dot(direction) > 0) { //greater (normal inverted)
-						continue;
-					}
-
-					valid = true;
-					break;
+			for (int i = 0; i < contact_count; i++) {
+				Contact &c = contacts[i];
+				if (!c.reused) {
+					continue;
 				}
+				if (c.normal.dot(direction) > -CMP_EPSILON) { //greater (normal inverted)
+					continue;
+				}
+				valid = true;
+				break;
 			}
-
 			if (!valid) {
 				collided = false;
 				oneway_disabled = true;
@@ -313,19 +309,16 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		if (B->is_shape_set_as_one_way_collision(shape_B)) {
 			Vector2 direction = xform_B.get_axis(1).normalized();
 			bool valid = false;
-			if (A->get_linear_velocity().dot(direction) >= 0) {
-				for (int i = 0; i < contact_count; i++) {
-					Contact &c = contacts[i];
-					if (!c.reused) {
-						continue;
-					}
-					if (c.normal.dot(direction) < 0) { //less (normal ok)
-						continue;
-					}
-
-					valid = true;
-					break;
+			for (int i = 0; i < contact_count; i++) {
+				Contact &c = contacts[i];
+				if (!c.reused) {
+					continue;
 				}
+				if (c.normal.dot(direction) < CMP_EPSILON) { //less (normal ok)
+					continue;
+				}
+				valid = true;
+				break;
 			}
 			if (!valid) {
 				collided = false;
@@ -409,7 +402,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		kNormal += A->get_inv_inertia() * (c.rA.dot(c.rA) - rnA * rnA) + B->get_inv_inertia() * (c.rB.dot(c.rB) - rnB * rnB);
 		c.mass_normal = 1.0f / kNormal;
 
-		Vector2 tangent = c.normal.tangent();
+		Vector2 tangent = c.normal.orthogonal();
 		real_t rtA = c.rA.dot(tangent);
 		real_t rtB = c.rB.dot(tangent);
 		real_t kTangent = A->get_inv_mass() + B->get_inv_mass();
@@ -469,7 +462,7 @@ void BodyPair2DSW::solve(real_t p_step) {
 
 		real_t vn = dv.dot(c.normal);
 		real_t vbn = dbv.dot(c.normal);
-		Vector2 tangent = c.normal.tangent();
+		Vector2 tangent = c.normal.orthogonal();
 		real_t vt = dv.dot(tangent);
 
 		real_t jbn = (c.bias - vbn) * c.mass_normal;
@@ -514,6 +507,6 @@ BodyPair2DSW::BodyPair2DSW(Body2DSW *p_A, int p_shape_A, Body2DSW *p_B, int p_sh
 }
 
 BodyPair2DSW::~BodyPair2DSW() {
-	A->remove_constraint(this);
-	B->remove_constraint(this);
+	A->remove_constraint(this, 0);
+	B->remove_constraint(this, 1);
 }

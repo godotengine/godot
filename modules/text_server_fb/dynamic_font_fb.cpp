@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,7 +54,7 @@ DynamicFontDataFallback::DataAtSize *DynamicFontDataFallback::get_data_for_size(
 		fds = E->get();
 	} else {
 		if (font_mem == nullptr && font_path != String()) {
-			if (!font_mem_cache.empty()) {
+			if (!font_mem_cache.is_empty()) {
 				font_mem = font_mem_cache.ptr();
 				font_mem_size = font_mem_cache.size();
 			} else {
@@ -317,8 +317,8 @@ DynamicFontDataFallback::Character DynamicFontDataFallback::bitmap_to_character(
 	}
 
 	Character chr;
-	chr.align = Vector2(xofs, -yofs) * p_data->scale_color_font / oversampling;
-	chr.advance = advance * p_data->scale_color_font / oversampling;
+	chr.align = (Vector2(xofs, -yofs) * p_data->scale_color_font / oversampling).round();
+	chr.advance = (advance * p_data->scale_color_font / oversampling).round();
 	chr.texture_idx = tex_pos.index;
 	chr.found = true;
 

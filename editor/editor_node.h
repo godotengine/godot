@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "editor/editor_data.h"
 #include "editor/editor_export.h"
 #include "editor/editor_folding.h"
+#include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_run.h"
 #include "editor/inspector_dock.h"
 #include "editor/property_editor.h"
@@ -81,7 +82,7 @@ class RunSettingsDialog;
 class ScriptCreateDialog;
 class TabContainer;
 class Tabs;
-class TextureProgress;
+class TextureProgressBar;
 class Button;
 class VSplitContainer;
 class Window;
@@ -125,7 +126,6 @@ private:
 		FILE_SAVE_SCENE,
 		FILE_SAVE_AS_SCENE,
 		FILE_SAVE_ALL_SCENES,
-		FILE_SAVE_BEFORE_RUN,
 		FILE_SAVE_AND_RUN,
 		FILE_SHOW_IN_FILESYSTEM,
 		FILE_IMPORT_SUBSCENE,
@@ -255,7 +255,7 @@ private:
 	Control *vp_base;
 
 	HBoxContainer *menu_hb;
-	Control *viewport;
+	Control *main_control;
 	MenuButton *file_menu;
 	MenuButton *project_menu;
 	MenuButton *debug_menu;
@@ -271,7 +271,7 @@ private:
 	Button *play_scene_button;
 	Button *play_custom_scene_button;
 	Button *search_button;
-	TextureProgress *audio_vu;
+	TextureProgressBar *audio_vu;
 
 	Timer *screenshot_timer;
 
@@ -322,6 +322,8 @@ private:
 	CheckBox *file_export_lib_merge;
 	String current_path;
 	MenuButton *update_spinner;
+
+	EditorNativeShaderSourceVisualizer *native_shader_source_visualizer;
 
 	String defer_load_scene;
 	Node *_last_instanced_scene;
@@ -728,7 +730,7 @@ public:
 	bool is_changing_scene() const;
 
 	static EditorLog *get_log() { return singleton->log; }
-	Control *get_viewport();
+	Control *get_main_control();
 
 	void set_edited_scene(Node *p_scene);
 
@@ -830,7 +832,7 @@ public:
 	Variant drag_resource(const Ref<Resource> &p_res, Control *p_from);
 	Variant drag_files_and_dirs(const Vector<String> &p_paths, Control *p_from);
 
-	void add_tool_menu_item(const String &p_name, Object *p_handler, const String &p_callback, const Variant &p_ud = Variant());
+	void add_tool_menu_item(const String &p_name, const Callable &p_callback);
 	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
 
@@ -903,7 +905,7 @@ public:
 	void add_plugin(EditorPlugin *p_plugin);
 	void remove_plugin(EditorPlugin *p_plugin);
 	void clear();
-	bool empty();
+	bool is_empty();
 
 	EditorPluginList();
 	~EditorPluginList();

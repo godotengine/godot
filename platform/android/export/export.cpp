@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -240,6 +240,9 @@ static const LauncherIcon launcher_adaptive_icon_backgrounds[icon_densities_coun
 	{ "res/mipmap/icon_background.png", 432 }
 };
 
+static const int EXPORT_FORMAT_APK = 0;
+static const int EXPORT_FORMAT_AAB = 1;
+
 class EditorExportPlatformAndroid : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformAndroid, EditorExportPlatform);
 
@@ -258,7 +261,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		EditorProgress *ep = nullptr;
 	};
 
-	Vector<PluginConfig> plugins;
+	Vector<PluginConfigAndroid> plugins;
 	String last_plugin_names;
 	uint64_t last_custom_build_time = 0;
 	volatile bool plugins_changed;
@@ -277,7 +280,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			{
 				// Nothing to do if we already know the plugins have changed.
 				if (!ea->plugins_changed) {
-					Vector<PluginConfig> loaded_plugins = get_plugins();
+					Vector<PluginConfigAndroid> loaded_plugins = get_plugins();
 
 					MutexLock lock(ea->plugins_lock);
 
@@ -299,13 +302,13 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			}
 
 			// Check for devices updates
-			String adb = EditorSettings::get_singleton()->get("export/android/adb");
+			String adb = get_adb_path();
 			if (FileAccess::exists(adb)) {
 				String devices;
 				List<String> args;
 				args.push_back("devices");
 				int ec;
-				OS::get_singleton()->execute(adb, args, true, nullptr, &devices, &ec);
+				OS::get_singleton()->execute(adb, args, &devices, &ec);
 
 				Vector<String> ds = devices.split("\n");
 				Vector<String> ldevices;
@@ -358,7 +361,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							int ec2;
 							String dp;
 
-							OS::get_singleton()->execute(adb, args, true, nullptr, &dp, &ec2);
+							OS::get_singleton()->execute(adb, args, &dp, &ec2);
 
 							Vector<String> props = dp.split("\n");
 							String vendor;
@@ -422,14 +425,14 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		}
 
 		if (EditorSettings::get_singleton()->get("export/android/shutdown_adb_on_exit")) {
-			String adb = EditorSettings::get_singleton()->get("export/android/adb");
+			String adb = get_adb_path();
 			if (!FileAccess::exists(adb)) {
 				return; //adb not configured
 			}
 
 			List<String> args;
 			args.push_back("kill-server");
-			OS::get_singleton()->execute(adb, args, true);
+			OS::get_singleton()->execute(adb, args);
 		};
 	}
 
@@ -626,7 +629,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					continue;
 				}
 
-				if (file.ends_with(PLUGIN_CONFIG_EXT)) {
+				if (file.ends_with(PluginConfigAndroid::PLUGIN_CONFIG_EXT)) {
 					dir_files.push_back(file);
 				}
 			}
@@ -636,8 +639,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		return dir_files;
 	}
 
-	static Vector<PluginConfig> get_plugins() {
-		Vector<PluginConfig> loaded_plugins;
+	static Vector<PluginConfigAndroid> get_plugins() {
+		Vector<PluginConfigAndroid> loaded_plugins;
 
 		String plugins_dir = ProjectSettings::get_singleton()->get_resource_path().plus_file("android/plugins");
 
@@ -647,10 +650,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		if (DirAccess::exists(plugins_dir)) {
 			Vector<String> plugins_filenames = list_gdap_files(plugins_dir);
 
-			if (!plugins_filenames.empty()) {
+			if (!plugins_filenames.is_empty()) {
 				Ref<ConfigFile> config_file = memnew(ConfigFile);
 				for (int i = 0; i < plugins_filenames.size(); i++) {
-					PluginConfig config = load_plugin_config(config_file, plugins_dir.plus_file(plugins_filenames[i]));
+					PluginConfigAndroid config = load_plugin_config(config_file, plugins_dir.plus_file(plugins_filenames[i]));
 					if (config.valid_config) {
 						loaded_plugins.push_back(config);
 					} else {
@@ -663,11 +666,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		return loaded_plugins;
 	}
 
-	static Vector<PluginConfig> get_enabled_plugins(const Ref<EditorExportPreset> &p_presets) {
-		Vector<PluginConfig> enabled_plugins;
-		Vector<PluginConfig> all_plugins = get_plugins();
+	static Vector<PluginConfigAndroid> get_enabled_plugins(const Ref<EditorExportPreset> &p_presets) {
+		Vector<PluginConfigAndroid> enabled_plugins;
+		Vector<PluginConfigAndroid> all_plugins = get_plugins();
 		for (int i = 0; i < all_plugins.size(); i++) {
-			PluginConfig plugin = all_plugins[i];
+			PluginConfigAndroid plugin = all_plugins[i];
 			bool enabled = p_presets->get("plugins/" + plugin.name);
 			if (enabled) {
 				enabled_plugins.push_back(plugin);
@@ -750,7 +753,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		PackedStringArray user_perms = p_preset->get("permissions/custom_permissions");
 		for (int i = 0; i < user_perms.size(); i++) {
 			String user_perm = user_perms[i].strip_edges();
-			if (!user_perm.empty()) {
+			if (!user_perm.is_empty()) {
 				r_permissions.push_back(user_perm);
 			}
 		}
@@ -975,7 +978,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							encode_uint32(xr_mode_index == /* XRMode.OVR */ 1 && focus_awareness ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
 						}
 
-						if (tname == "meta-data" && attrname == "value" && value == "plugins_value" && !plugins_names.empty()) {
+						if (tname == "meta-data" && attrname == "value" && value == "plugins_value" && !plugins_names.is_empty()) {
 							// Update the meta-data 'android:value' attribute with the list of enabled plugins.
 							string_table.write[attr_value] = plugins_names;
 						}
@@ -1471,7 +1474,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		// TODO: Figure out how to handle remaining boot splash parameters (e.g: fullsize, filter)
 		String project_splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
 
-		if (!project_splash_path.empty()) {
+		if (!project_splash_path.is_empty()) {
 			splash_image.instance();
 			const Error err = ImageLoader::load_image(project_splash_path, splash_image);
 			if (err) {
@@ -1505,19 +1508,19 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		// Regular icon: user selection -> project icon -> default.
 		String path = static_cast<String>(p_preset->get(launcher_icon_option)).strip_edges();
-		if (path.empty() || ImageLoader::load_image(path, icon) != OK) {
+		if (path.is_empty() || ImageLoader::load_image(path, icon) != OK) {
 			ImageLoader::load_image(project_icon_path, icon);
 		}
 
 		// Adaptive foreground: user selection -> regular icon (user selection -> project icon -> default).
 		path = static_cast<String>(p_preset->get(launcher_adaptive_icon_foreground_option)).strip_edges();
-		if (path.empty() || ImageLoader::load_image(path, foreground) != OK) {
+		if (path.is_empty() || ImageLoader::load_image(path, foreground) != OK) {
 			foreground = icon;
 		}
 
 		// Adaptive background: user selection -> default.
 		path = static_cast<String>(p_preset->get(launcher_adaptive_icon_background_option)).strip_edges();
-		if (!path.empty()) {
+		if (!path.is_empty()) {
 			ImageLoader::load_image(path, background);
 		}
 	}
@@ -1538,14 +1541,14 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			const Ref<Image> &foreground,
 			const Ref<Image> &background) {
 		// Store the splash image
-		if (splash_image.is_valid() && !splash_image->empty()) {
+		if (splash_image.is_valid() && !splash_image->is_empty()) {
 			Vector<uint8_t> data;
 			_load_image_data(splash_image, data);
 			store_image(SPLASH_IMAGE_EXPORT_PATH, data);
 		}
 
 		// Store the splash bg color image
-		if (splash_bg_color_image.is_valid() && !splash_bg_color_image->empty()) {
+		if (splash_bg_color_image.is_valid() && !splash_bg_color_image->is_empty()) {
 			Vector<uint8_t> data;
 			_load_image_data(splash_bg_color_image, data);
 			store_image(SPLASH_BG_COLOR_PATH, data);
@@ -1555,20 +1558,20 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		// the default image from the export template will be used.
 
 		for (int i = 0; i < icon_densities_count; ++i) {
-			if (main_image.is_valid() && !main_image->empty()) {
+			if (main_image.is_valid() && !main_image->is_empty()) {
 				Vector<uint8_t> data;
 				_process_launcher_icons(launcher_icons[i].export_path, main_image, launcher_icons[i].dimensions, data);
 				store_image(launcher_icons[i], data);
 			}
 
-			if (foreground.is_valid() && !foreground->empty()) {
+			if (foreground.is_valid() && !foreground->is_empty()) {
 				Vector<uint8_t> data;
 				_process_launcher_icons(launcher_adaptive_icon_foregrounds[i].export_path, foreground,
 						launcher_adaptive_icon_foregrounds[i].dimensions, data);
 				store_image(launcher_adaptive_icon_foregrounds[i], data);
 			}
 
-			if (background.is_valid() && !background->empty()) {
+			if (background.is_valid() && !background->is_empty()) {
 				Vector<uint8_t> data;
 				_process_launcher_icons(launcher_adaptive_icon_backgrounds[i].export_path, background,
 						launcher_adaptive_icon_backgrounds[i].dimensions, data);
@@ -1613,9 +1616,9 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "custom_template/use_custom_build"), false));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "custom_template/export_format", PROPERTY_HINT_ENUM, "Export APK,Export AAB"), 0));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "custom_template/export_format", PROPERTY_HINT_ENUM, "Export APK,Export AAB"), EXPORT_FORMAT_APK));
 
-		Vector<PluginConfig> plugins_configs = get_plugins();
+		Vector<PluginConfigAndroid> plugins_configs = get_plugins();
 		for (int i = 0; i < plugins_configs.size(); i++) {
 			print_verbose("Found Android plugin " + plugins_configs[i].name);
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + plugins_configs[i].name), false));
@@ -1749,7 +1752,7 @@ public:
 
 		EditorProgress ep("run", "Running on " + devices[p_device].name, 3);
 
-		String adb = EditorSettings::get_singleton()->get("export/android/adb");
+		String adb = get_adb_path();
 
 		// Export_temp APK.
 		if (ep.step("Exporting APK...", 0)) {
@@ -1772,7 +1775,7 @@ public:
 	}
 
 		// Export to temporary APK before sending to device.
-		Error err = export_project(p_preset, true, tmp_export_path, p_debug_flags);
+		Error err = export_project_helper(p_preset, true, tmp_export_path, EXPORT_FORMAT_APK, true, p_debug_flags);
 
 		if (err != OK) {
 			CLEANUP_AND_RETURN(err);
@@ -1797,7 +1800,7 @@ public:
 			args.push_back("uninstall");
 			args.push_back(get_package_name(package_name));
 
-			err = OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
+			err = OS::get_singleton()->execute(adb, args, nullptr, &rv);
 		}
 
 		print_line("Installing to device (please wait...): " + devices[p_device].name);
@@ -1812,7 +1815,7 @@ public:
 		args.push_back("-r");
 		args.push_back(tmp_export_path);
 
-		err = OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
+		err = OS::get_singleton()->execute(adb, args, nullptr, &rv);
 		if (err || rv != 0) {
 			EditorNode::add_io_error("Could not install to device.");
 			CLEANUP_AND_RETURN(ERR_CANT_CREATE);
@@ -1829,7 +1832,7 @@ public:
 				args.push_back(devices[p_device].id);
 				args.push_back("reverse");
 				args.push_back("--remove-all");
-				OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
+				OS::get_singleton()->execute(adb, args, nullptr, &rv);
 
 				if (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) {
 					int dbg_port = EditorSettings::get_singleton()->get("network/debug/remote_port");
@@ -1840,7 +1843,7 @@ public:
 					args.push_back("tcp:" + itos(dbg_port));
 					args.push_back("tcp:" + itos(dbg_port));
 
-					OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
+					OS::get_singleton()->execute(adb, args, nullptr, &rv);
 					print_line("Reverse result: " + itos(rv));
 				}
 
@@ -1854,7 +1857,7 @@ public:
 					args.push_back("tcp:" + itos(fs_port));
 					args.push_back("tcp:" + itos(fs_port));
 
-					err = OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
+					err = OS::get_singleton()->execute(adb, args, nullptr, &rv);
 					print_line("Reverse result2: " + itos(rv));
 				}
 			} else {
@@ -1882,7 +1885,7 @@ public:
 		args.push_back("-n");
 		args.push_back(get_package_name(package_name) + "/com.godot.game.GodotApp");
 
-		err = OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
+		err = OS::get_singleton()->execute(adb, args, nullptr, &rv);
 		if (err || rv != 0) {
 			EditorNode::add_io_error("Could not execute on device.");
 			CLEANUP_AND_RETURN(ERR_CANT_CREATE);
@@ -1894,6 +1897,55 @@ public:
 
 	virtual Ref<Texture2D> get_run_icon() const override {
 		return run_icon;
+	}
+
+	static String get_adb_path() {
+		String exe_ext = "";
+		if (OS::get_singleton()->get_name() == "Windows") {
+			exe_ext = ".exe";
+		}
+		String sdk_path = EditorSettings::get_singleton()->get("export/android/android_sdk_path");
+		return sdk_path.plus_file("platform-tools/adb" + exe_ext);
+	}
+
+	static String get_apksigner_path() {
+		String exe_ext = "";
+		if (OS::get_singleton()->get_name() == "Windows") {
+			exe_ext = ".bat";
+		}
+		String apksigner_command_name = "apksigner" + exe_ext;
+		String sdk_path = EditorSettings::get_singleton()->get("export/android/android_sdk_path");
+		String apksigner_path = "";
+
+		Error errn;
+		String build_tools_dir = sdk_path.plus_file("build-tools");
+		DirAccessRef da = DirAccess::open(build_tools_dir, &errn);
+		if (errn != OK) {
+			print_error("Unable to open Android 'build-tools' directory.");
+			return apksigner_path;
+		}
+
+		// There are additional versions directories we need to go through.
+		da->list_dir_begin();
+		String sub_dir = da->get_next();
+		while (!sub_dir.is_empty()) {
+			if (!sub_dir.begins_with(".") && da->current_is_dir()) {
+				// Check if the tool is here.
+				String tool_path = build_tools_dir.plus_file(sub_dir).plus_file(apksigner_command_name);
+				if (FileAccess::exists(tool_path)) {
+					apksigner_path = tool_path;
+					break;
+				}
+			}
+			sub_dir = da->get_next();
+		}
+		da->list_dir_end();
+
+		if (apksigner_path.is_empty()) {
+			EditorNode::get_singleton()->show_warning(TTR("Unable to find the 'apksigner' tool."));
+		}
+
+		return apksigner_path;
 	}
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override {
@@ -1931,24 +1983,15 @@ public:
 			}
 		} else {
 			valid = exists_export_template("android_source.zip", &err);
+
+			if (!FileAccess::exists("res://android/build/build.gradle")) {
+				err += TTR("Android build template not installed in the project. Install it from the Project menu.") + "\n";
+				valid = false;
+			}
 		}
 		r_missing_templates = !valid;
 
 		// Validate the rest of the configuration.
-
-		String adb = EditorSettings::get_singleton()->get("export/android/adb");
-
-		if (!FileAccess::exists(adb)) {
-			valid = false;
-			err += TTR("ADB executable not configured in the Editor Settings.") + "\n";
-		}
-
-		String js = EditorSettings::get_singleton()->get("export/android/jarsigner");
-
-		if (!FileAccess::exists(js)) {
-			valid = false;
-			err += TTR("OpenJDK jarsigner not configured in the Editor Settings.") + "\n";
-		}
 
 		String dk = p_preset->get("keystore/debug");
 
@@ -1962,30 +2005,50 @@ public:
 
 		String rk = p_preset->get("keystore/release");
 
-		if (!rk.empty() && !FileAccess::exists(rk)) {
+		if (!rk.is_empty() && !FileAccess::exists(rk)) {
 			valid = false;
 			err += TTR("Release keystore incorrectly configured in the export preset.") + "\n";
 		}
 
-		if (bool(p_preset->get("custom_template/use_custom_build"))) {
-			String sdk_path = EditorSettings::get_singleton()->get("export/android/custom_build_sdk_path");
-			if (sdk_path == "") {
-				err += TTR("Custom build requires a valid Android SDK path in Editor Settings.") + "\n";
+		String sdk_path = EditorSettings::get_singleton()->get("export/android/android_sdk_path");
+		if (sdk_path == "") {
+			err += TTR("A valid Android SDK path is required in Editor Settings.") + "\n";
+			valid = false;
+		} else {
+			Error errn;
+			// Check for the platform-tools directory.
+			DirAccessRef da = DirAccess::open(sdk_path.plus_file("platform-tools"), &errn);
+			if (errn != OK) {
+				err += TTR("Invalid Android SDK path in Editor Settings.");
+				err += TTR("Missing 'platform-tools' directory!");
+				err += "\n";
 				valid = false;
-			} else {
-				Error errn;
-				// Check for the platform-tools directory.
-				DirAccessRef da = DirAccess::open(sdk_path.plus_file("platform-tools"), &errn);
-				if (errn != OK) {
-					err += TTR("Invalid Android SDK path for custom build in Editor Settings.");
-					err += TTR("Missing 'platform-tools' directory!");
-					err += "\n";
-					valid = false;
-				}
 			}
 
-			if (!FileAccess::exists("res://android/build/build.gradle")) {
-				err += TTR("Android build template not installed in the project. Install it from the Project menu.") + "\n";
+			// Validate that adb is available
+			String adb_path = get_adb_path();
+			if (!FileAccess::exists(adb_path)) {
+				err += TTR("Unable to find Android SDK platform-tools' adb command.");
+				err += TTR("Please check in the Android SDK directory specified in Editor Settings.");
+				err += "\n";
+				valid = false;
+			}
+
+			// Check for the build-tools directory.
+			DirAccessRef build_tools_da = DirAccess::open(sdk_path.plus_file("build-tools"), &errn);
+			if (errn != OK) {
+				err += TTR("Invalid Android SDK path in Editor Settings.");
+				err += TTR("Missing 'build-tools' directory!");
+				err += "\n";
+				valid = false;
+			}
+
+			// Validate that apksigner is available
+			String apksigner_path = get_apksigner_path();
+			if (!FileAccess::exists(apksigner_path)) {
+				err += TTR("Unable to find Android SDK build-tools' apksigner command.");
+				err += TTR("Please check in the Android SDK directory specified in Editor Settings.");
+				err += "\n";
 				valid = false;
 			}
 		}
@@ -2019,7 +2082,7 @@ public:
 		// Ensure that `Use Custom Build` is enabled if a plugin is selected.
 		String enabled_plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
 		bool custom_build_enabled = p_preset->get("custom_template/use_custom_build");
-		if (!enabled_plugins_names.empty() && !custom_build_enabled) {
+		if (!enabled_plugins_names.is_empty() && !custom_build_enabled) {
 			valid = false;
 			err += TTR("\"Use Custom Build\" must be enabled to use the plugins.");
 			err += "\n";
@@ -2050,7 +2113,7 @@ public:
 			}
 		}
 
-		if (int(p_preset->get("custom_template/export_format")) == 1 && /*AAB*/
+		if (int(p_preset->get("custom_template/export_format")) == EXPORT_FORMAT_AAB &&
 				!bool(p_preset->get("custom_template/use_custom_build"))) {
 			valid = false;
 			err += TTR("\"Export AAB\" is only valid when \"Use Custom Build\" is enabled.");
@@ -2068,7 +2131,7 @@ public:
 		return list;
 	}
 
-	inline bool is_clean_build_required(Vector<PluginConfig> enabled_plugins) {
+	inline bool is_clean_build_required(Vector<PluginConfigAndroid> enabled_plugins) {
 		String plugin_names = get_plugins_names(enabled_plugins);
 		bool first_build = last_custom_build_time == 0;
 		bool have_plugins_changed = false;
@@ -2168,16 +2231,16 @@ public:
 		}
 	}
 
-	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, String export_path, EditorProgress ep) {
+	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &export_path, EditorProgress &ep) {
 		int export_format = int(p_preset->get("custom_template/export_format"));
-		String export_label = export_format == 1 ? "AAB" : "APK";
+		String export_label = export_format == EXPORT_FORMAT_AAB ? "AAB" : "APK";
 		String release_keystore = p_preset->get("keystore/release");
 		String release_username = p_preset->get("keystore/release_user");
 		String release_password = p_preset->get("keystore/release_password");
 
-		String jarsigner = EditorSettings::get_singleton()->get("export/android/jarsigner");
-		if (!FileAccess::exists(jarsigner)) {
-			EditorNode::add_io_error("'jarsigner' could not be found.\nPlease supply a path in the Editor Settings.\nThe resulting " + export_label + " is unsigned.");
+		String apksigner = get_apksigner_path();
+		if (!FileAccess::exists(apksigner)) {
+			EditorNode::add_io_error("'apksigner' could not be found.\nPlease check the command is available in the Android SDK build-tools directory.\nThe resulting " + export_label + " is unsigned.");
 			return OK;
 		}
 
@@ -2189,13 +2252,13 @@ public:
 			password = p_preset->get("keystore/debug_password");
 			user = p_preset->get("keystore/debug_user");
 
-			if (keystore.empty()) {
+			if (keystore.is_empty()) {
 				keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
 				password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
 				user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
 			}
 
-			if (ep.step("Signing debug " + export_label + "...", 103)) {
+			if (ep.step("Signing debug " + export_label + "...", 104)) {
 				return ERR_SKIP;
 			}
 
@@ -2204,7 +2267,7 @@ public:
 			password = release_password;
 			user = release_username;
 
-			if (ep.step("Signing release " + export_label + "...", 103)) {
+			if (ep.step("Signing release " + export_label + "...", 104)) {
 				return ERR_SKIP;
 			}
 		}
@@ -2215,43 +2278,34 @@ public:
 		}
 
 		List<String> args;
-		args.push_back("-digestalg");
-		args.push_back("SHA-256");
-		args.push_back("-sigalg");
-		args.push_back("SHA256withRSA");
-		String tsa_url = EditorSettings::get_singleton()->get("export/android/timestamping_authority_url");
-		if (tsa_url != "") {
-			args.push_back("-tsa");
-			args.push_back(tsa_url);
-		}
-		args.push_back("-verbose");
-		args.push_back("-keystore");
+		args.push_back("sign");
+		args.push_back("--verbose");
+		args.push_back("--ks");
 		args.push_back(keystore);
-		args.push_back("-storepass");
-		args.push_back(password);
-		args.push_back(export_path);
+		args.push_back("--ks-pass");
+		args.push_back("pass:" + password);
+		args.push_back("--ks-key-alias");
 		args.push_back(user);
+		args.push_back(export_path);
 		int retval;
-		OS::get_singleton()->execute(jarsigner, args, true, NULL, NULL, &retval);
+		OS::get_singleton()->execute(apksigner, args, nullptr, &retval);
 		if (retval) {
-			EditorNode::add_io_error("'jarsigner' returned with error #" + itos(retval));
+			EditorNode::add_io_error("'apksigner' returned with error #" + itos(retval));
 			return ERR_CANT_CREATE;
 		}
 
-		if (ep.step("Verifying " + export_label + "...", 104)) {
+		if (ep.step("Verifying " + export_label + "...", 105)) {
 			return ERR_SKIP;
 		}
 
 		args.clear();
-		args.push_back("-verify");
-		args.push_back("-keystore");
-		args.push_back(keystore);
+		args.push_back("verify");
+		args.push_back("--verbose");
 		args.push_back(export_path);
-		args.push_back("-verbose");
 
-		OS::get_singleton()->execute(jarsigner, args, true, NULL, NULL, &retval);
+		OS::get_singleton()->execute(apksigner, args, nullptr, &retval);
 		if (retval) {
-			EditorNode::add_io_error("'jarsigner' verification of " + export_label + " failed. Make sure to use a jarsigner from OpenJDK 8.");
+			EditorNode::add_io_error("'apksigner' verification of " + export_label + " failed.");
 			return ERR_CANT_CREATE;
 		}
 		return OK;
@@ -2267,6 +2321,12 @@ public:
 	}
 
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override {
+		int export_format = int(p_preset->get("custom_template/export_format"));
+		bool should_sign = p_preset->get("package/signed");
+		return export_project_helper(p_preset, p_debug, p_path, export_format, should_sign, p_flags);
+	}
+
+	Error export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int export_format, bool should_sign, int p_flags) {
 		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 		String src_apk;
@@ -2275,9 +2335,7 @@ public:
 		EditorProgress ep("export", "Exporting for Android", 105, true);
 
 		bool use_custom_build = bool(p_preset->get("custom_template/use_custom_build"));
-		int export_format = int(p_preset->get("custom_template/export_format"));
 		bool p_give_internet = p_flags & (DEBUG_FLAG_DUMB_CLIENT | DEBUG_FLAG_REMOTE_DEBUG);
-		bool _signed = p_preset->get("package/signed");
 		bool apk_expansion = p_preset->get("apk_expansion/enable");
 		Vector<String> enabled_abis = get_enabled_abis(p_preset);
 
@@ -2295,7 +2353,7 @@ public:
 		// Write command line flags into the command_line_flags variable.
 		get_command_line_flags(p_preset, p_path, p_flags, command_line_flags);
 
-		if (export_format == 1) {
+		if (export_format == EXPORT_FORMAT_AAB) {
 			if (!p_path.ends_with(".aab")) {
 				EditorNode::get_singleton()->show_warning(TTR("Invalid filename! Android App Bundle requires the *.aab extension."));
 				return ERR_UNCONFIGURED;
@@ -2305,12 +2363,12 @@ public:
 				return ERR_UNCONFIGURED;
 			}
 		}
-		if (export_format == 0 && !p_path.ends_with(".apk")) {
+		if (export_format == EXPORT_FORMAT_APK && !p_path.ends_with(".apk")) {
 			EditorNode::get_singleton()->show_warning(
 					TTR("Invalid filename! Android APK requires the *.apk extension."));
 			return ERR_UNCONFIGURED;
 		}
-		if (export_format > 1 || export_format < 0) {
+		if (export_format > EXPORT_FORMAT_AAB || export_format < EXPORT_FORMAT_APK) {
 			EditorNode::add_io_error("Unsupported export format!\n");
 			return ERR_UNCONFIGURED; //TODO: is this the right error?
 		}
@@ -2330,8 +2388,8 @@ public:
 					return ERR_UNCONFIGURED;
 				}
 			}
-			String sdk_path = EDITOR_GET("export/android/custom_build_sdk_path");
-			ERR_FAIL_COND_V_MSG(sdk_path == "", ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/custom_build_sdk_path'.");
+			String sdk_path = EDITOR_GET("export/android/android_sdk_path");
+			ERR_FAIL_COND_V_MSG(sdk_path == "", ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/android_sdk_path'.");
 
 			// TODO: should we use "package/name" or "application/config/name"?
 			String project_name = get_project_name(p_preset->get("package/name"));
@@ -2377,12 +2435,12 @@ public:
 			String version_code = itos(p_preset->get("version/code"));
 			String version_name = p_preset->get("version/name");
 			String enabled_abi_string = String("|").join(enabled_abis);
-			String sign_flag = _signed ? "true" : "false";
+			String sign_flag = should_sign ? "true" : "false";
 			String zipalign_flag = "true";
 
-			Vector<PluginConfig> enabled_plugins = get_enabled_plugins(p_preset);
-			String local_plugins_binaries = get_plugins_binaries(BINARY_TYPE_LOCAL, enabled_plugins);
-			String remote_plugins_binaries = get_plugins_binaries(BINARY_TYPE_REMOTE, enabled_plugins);
+			Vector<PluginConfigAndroid> enabled_plugins = get_enabled_plugins(p_preset);
+			String local_plugins_binaries = get_plugins_binaries(PluginConfigAndroid::BINARY_TYPE_LOCAL, enabled_plugins);
+			String remote_plugins_binaries = get_plugins_binaries(PluginConfigAndroid::BINARY_TYPE_REMOTE, enabled_plugins);
 			String custom_maven_repos = get_plugins_custom_maven_repos(enabled_plugins);
 			bool clean_build_required = is_clean_build_required(enabled_plugins);
 
@@ -2392,10 +2450,10 @@ public:
 			}
 
 			String build_type = p_debug ? "Debug" : "Release";
-			if (export_format == 1) {
+			if (export_format == EXPORT_FORMAT_AAB) {
 				String bundle_build_command = vformat("bundle%s", build_type);
 				cmdline.push_back(bundle_build_command);
-			} else if (export_format == 0) {
+			} else if (export_format == EXPORT_FORMAT_APK) {
 				String apk_build_command = vformat("assemble%s", build_type);
 				cmdline.push_back(apk_build_command);
 			}
@@ -2409,7 +2467,7 @@ public:
 			cmdline.push_back("-Pplugins_maven_repos=" + custom_maven_repos); // argument to specify the list of custom maven repos for the plugins dependencies.
 			cmdline.push_back("-Pperform_zipalign=" + zipalign_flag); // argument to specify whether the build should be zipaligned.
 			cmdline.push_back("-Pperform_signing=" + sign_flag); // argument to specify whether the build should be signed.
-			if (_signed && !p_debug) {
+			if (should_sign && !p_debug) {
 				// Pass the release keystore info as well
 				String release_keystore = p_preset->get("keystore/release");
 				String release_username = p_preset->get("keystore/release_user");
@@ -2434,9 +2492,9 @@ public:
 
 			List<String> copy_args;
 			String copy_command;
-			if (export_format == 1) {
+			if (export_format == EXPORT_FORMAT_AAB) {
 				copy_command = vformat("copyAndRename%sAab", build_type);
-			} else if (export_format == 0) {
+			} else if (export_format == EXPORT_FORMAT_APK) {
 				copy_command = vformat("copyAndRename%sApk", build_type);
 			}
 
@@ -2549,27 +2607,27 @@ public:
 			}
 
 			// Process the splash image
-			if (file == SPLASH_IMAGE_EXPORT_PATH && splash_image.is_valid() && !splash_image->empty()) {
+			if (file == SPLASH_IMAGE_EXPORT_PATH && splash_image.is_valid() && !splash_image->is_empty()) {
 				_load_image_data(splash_image, data);
 			}
 
 			// Process the splash bg color image
-			if (file == SPLASH_BG_COLOR_PATH && splash_bg_color_image.is_valid() && !splash_bg_color_image->empty()) {
+			if (file == SPLASH_BG_COLOR_PATH && splash_bg_color_image.is_valid() && !splash_bg_color_image->is_empty()) {
 				_load_image_data(splash_bg_color_image, data);
 			}
 
 			for (int i = 0; i < icon_densities_count; ++i) {
-				if (main_image.is_valid() && !main_image->empty()) {
+				if (main_image.is_valid() && !main_image->is_empty()) {
 					if (file == launcher_icons[i].export_path) {
 						_process_launcher_icons(file, main_image, launcher_icons[i].dimensions, data);
 					}
 				}
-				if (foreground.is_valid() && !foreground->empty()) {
+				if (foreground.is_valid() && !foreground->is_empty()) {
 					if (file == launcher_adaptive_icon_foregrounds[i].export_path) {
 						_process_launcher_icons(file, foreground, launcher_adaptive_icon_foregrounds[i].dimensions, data);
 					}
 				}
-				if (background.is_valid() && !background->empty()) {
+				if (background.is_valid() && !background->is_empty()) {
 					if (file == launcher_adaptive_icon_backgrounds[i].export_path) {
 						_process_launcher_icons(file, background, launcher_adaptive_icon_backgrounds[i].dimensions, data);
 					}
@@ -2590,7 +2648,7 @@ public:
 				}
 			}
 
-			if (file.begins_with("META-INF") && _signed) {
+			if (file.begins_with("META-INF") && should_sign) {
 				skip = true;
 			}
 
@@ -2620,7 +2678,7 @@ public:
 			ret = unzGoToNextFile(pkg);
 		}
 
-		if (!invalid_abis.empty()) {
+		if (!invalid_abis.is_empty()) {
 			String unsupported_arch = String(", ").join(invalid_abis);
 			EditorNode::add_io_error("Missing libraries in the export template for the selected architectures: " + unsupported_arch + ".\n" +
 									 "Please build a template with all required libraries, or uncheck the missing architectures in the export preset.");
@@ -2678,18 +2736,13 @@ public:
 			CLEANUP_AND_RETURN(err);
 		}
 
-		if (_signed) {
-			err = sign_apk(p_preset, p_debug, tmp_unaligned_path, ep);
-			if (err != OK) {
-				CLEANUP_AND_RETURN(err);
-			}
-		}
-
-		// Let's zip-align (must be done after signing)
+		// Let's zip-align (must be done before signing)
 
 		static const int ZIP_ALIGNMENT = 4;
 
-		if (ep.step("Aligning APK...", 105)) {
+		// If we're not signing the apk, then the next step should be the last.
+		const int next_step = should_sign ? 103 : 105;
+		if (ep.step("Aligning APK...", next_step)) {
 			CLEANUP_AND_RETURN(ERR_SKIP);
 		}
 
@@ -2763,6 +2816,15 @@ public:
 		zipClose(final_apk, nullptr);
 		unzClose(tmp_unaligned);
 
+		if (should_sign) {
+			// Signing must be done last as any additional modifications to the
+			// file will invalidate the signature.
+			err = sign_apk(p_preset, p_debug, p_path, ep);
+			if (err != OK) {
+				CLEANUP_AND_RETURN(err);
+			}
+		}
+
 		CLEANUP_AND_RETURN(OK);
 	}
 
@@ -2802,19 +2864,14 @@ void register_android_exporter() {
 		exe_ext = "*.exe";
 	}
 
-	EDITOR_DEF("export/android/adb", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/adb", PROPERTY_HINT_GLOBAL_FILE, exe_ext));
-	EDITOR_DEF("export/android/jarsigner", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/jarsigner", PROPERTY_HINT_GLOBAL_FILE, exe_ext));
+	EDITOR_DEF("export/android/android_sdk_path", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/android_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
 	EDITOR_DEF("export/android/debug_keystore", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/debug_keystore", PROPERTY_HINT_GLOBAL_FILE, "*.keystore,*.jks"));
 	EDITOR_DEF("export/android/debug_keystore_user", "androiddebugkey");
 	EDITOR_DEF("export/android/debug_keystore_pass", "android");
 	EDITOR_DEF("export/android/force_system_user", false);
-	EDITOR_DEF("export/android/custom_build_sdk_path", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/custom_build_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
 
-	EDITOR_DEF("export/android/timestamping_authority_url", "");
 	EDITOR_DEF("export/android/shutdown_adb_on_exit", true);
 
 	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>(memnew(EditorExportPlatformAndroid));

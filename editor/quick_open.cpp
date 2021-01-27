@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -107,11 +107,11 @@ void EditorQuickOpen::_update_search() {
 		to_select->set_as_cursor(0);
 		search_options->scroll_to_item(to_select);
 
-		get_ok()->set_disabled(false);
+		get_ok_button()->set_disabled(false);
 	} else {
 		search_options->deselect_all();
 
-		get_ok()->set_disabled(true);
+		get_ok_button()->set_disabled(true);
 	}
 }
 
@@ -256,6 +256,6 @@ EditorQuickOpen::EditorQuickOpen() {
 	search_options->add_theme_constant_override("draw_guides", 1);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 
-	get_ok()->set_text(TTR("Open"));
+	get_ok_button()->set_text(TTR("Open"));
 	set_hide_on_ok(false);
 }

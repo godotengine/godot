@@ -334,6 +334,9 @@ struct loader_icd_term_dispatch {
     PFN_vkGetDisplayModeProperties2KHR GetDisplayModeProperties2KHR;
     PFN_vkGetDisplayPlaneCapabilities2KHR GetDisplayPlaneCapabilities2KHR;
 
+    // ---- VK_KHR_fragment_shading_rate extension commands
+    PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR GetPhysicalDeviceFragmentShadingRatesKHR;
+
     // ---- VK_EXT_debug_report extension commands
     PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallbackEXT;
     PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallbackEXT;
@@ -446,14 +449,12 @@ union loader_instance_extension_enables {
         uint8_t khr_external_semaphore_capabilities : 1;
         uint8_t khr_external_fence_capabilities : 1;
         uint8_t ext_debug_report : 1;
-        uint8_t ggp_stream_descriptor_surface : 1;
         uint8_t nv_external_memory_capabilities : 1;
         uint8_t nn_vi_surface : 1;
         uint8_t ext_direct_mode_display : 1;
         uint8_t ext_acquire_xlib_display : 1;
         uint8_t ext_display_surface_counter : 1;
         uint8_t ext_debug_utils : 1;
-        uint8_t fuchsia_imagepipe_surface : 1;
     };
     uint64_t padding[4];
 };

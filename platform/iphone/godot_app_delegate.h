@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #import <UIKit/UIKit.h>
 
 typedef NSObject<UIApplicationDelegate> ApplicationDelegateService;
+typedef void (^APNSNotification)(UIBackgroundFetchResult);
 
 @interface GodotApplicalitionDelegate : NSObject <UIApplicationDelegate>
 
@@ -38,4 +39,27 @@ typedef NSObject<UIApplicationDelegate> ApplicationDelegateService;
 
 + (void)addService:(ApplicationDelegateService *)service;
 
+- (void)godot:(UIApplication *)application receivedNotificationToken:(NSData *)deviceToken;
+- (void)godot:(UIApplication *)application receivedNotificationError:(NSError *)error;
+- (void)godot:(UIApplication *)application receivedNotification:(NSDictionary *)userInfo completion:(APNSNotification)completionHandler;
+
 @end
+
+#define GODOT_ENABLE_PUSH_NOTIFICATIONS                                                                                                \
+	@interface GodotApplicalitionDelegate (PushNotifications)                                                                          \
+	@end                                                                                                                               \
+	@implementation GodotApplicalitionDelegate (PushNotifications)                                                                     \
+	-(void)application : (UIApplication *)application                                                                                  \
+								 didRegisterForRemoteNotificationsWithDeviceToken : (NSData *)deviceToken {                            \
+		[self godot:application receivedNotificationToken:deviceToken];                                                                \
+	}                                                                                                                                  \
+	-(void)application : (UIApplication *)application                                                                                  \
+								 didFailToRegisterForRemoteNotificationsWithError : (NSError *)error {                                 \
+		[self godot:application receivedNotificationError:error];                                                                      \
+	}                                                                                                                                  \
+	-(void)application : (UIApplication *)application                                                                                  \
+								 didReceiveRemoteNotification : (NSDictionary *)userInfo                                               \
+																		fetchCompletionHandler : (APNSNotification)completionHandler { \
+		[self godot:application receivedNotification:userInfo completion:completionHandler];                                           \
+	}                                                                                                                                  \
+	@end

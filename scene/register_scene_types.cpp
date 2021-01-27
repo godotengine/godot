@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -118,7 +118,7 @@
 #include "scene/gui/tabs.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/texture_button.h"
-#include "scene/gui/texture_progress.h"
+#include "scene/gui/texture_progress_bar.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/video_player.h"
@@ -175,6 +175,7 @@
 #include "scene/resources/video_stream.h"
 #include "scene/resources/visual_shader.h"
 #include "scene/resources/visual_shader_nodes.h"
+#include "scene/resources/visual_shader_sdf_nodes.h"
 #include "scene/resources/world_2d.h"
 #include "scene/resources/world_3d.h"
 #include "scene/resources/world_margin_shape_3d.h"
@@ -349,7 +350,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<TextureProgress>();
+	ClassDB::register_class<TextureProgressBar>();
 	ClassDB::register_class<ItemList>();
 
 	ClassDB::register_class<LineEdit>();
@@ -533,6 +534,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<VisualShaderNodeOutput>();
 	ClassDB::register_virtual_class<VisualShaderNodeResizableBase>();
 	ClassDB::register_virtual_class<VisualShaderNodeGroupBase>();
+	ClassDB::register_virtual_class<VisualShaderNodeConstant>();
 	ClassDB::register_class<VisualShaderNodeFloatConstant>();
 	ClassDB::register_class<VisualShaderNodeIntConstant>();
 	ClassDB::register_class<VisualShaderNodeBooleanConstant>();
@@ -600,6 +602,12 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeIs>();
 	ClassDB::register_class<VisualShaderNodeCompare>();
 	ClassDB::register_class<VisualShaderNodeMultiplyAdd>();
+
+	ClassDB::register_class<VisualShaderNodeSDFToScreenUV>();
+	ClassDB::register_class<VisualShaderNodeScreenUVToSDF>();
+	ClassDB::register_class<VisualShaderNodeTextureSDF>();
+	ClassDB::register_class<VisualShaderNodeTextureSDFNormal>();
+	ClassDB::register_class<VisualShaderNodeSDFRaymarch>();
 
 	ClassDB::register_class<ShaderMaterial>();
 	ClassDB::register_virtual_class<CanvasItem>();
@@ -915,6 +923,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("SpringArm", "SpringArm3D");
 	ClassDB::add_compatibility_class("Sprite", "Sprite2D");
 	ClassDB::add_compatibility_class("StaticBody", "StaticBody3D");
+	ClassDB::add_compatibility_class("TextureProgress", "TextureProgressBar");
 	ClassDB::add_compatibility_class("VehicleBody", "VehicleBody3D");
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");
 	ClassDB::add_compatibility_class("ViewportContainer", "SubViewportContainer");
@@ -935,10 +944,10 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	for (int i = 0; i < 20; i++) {
-		GLOBAL_DEF("layer_names/2d_render/layer_" + itos(i + 1), "");
-		GLOBAL_DEF("layer_names/2d_physics/layer_" + itos(i + 1), "");
-		GLOBAL_DEF("layer_names/3d_render/layer_" + itos(i + 1), "");
-		GLOBAL_DEF("layer_names/3d_physics/layer_" + itos(i + 1), "");
+		GLOBAL_DEF(vformat("layer_names/2d_render/layer_%d", i), "");
+		GLOBAL_DEF(vformat("layer_names/2d_physics/layer_%d", i), "");
+		GLOBAL_DEF(vformat("layer_names/3d_render/layer_%d", i), "");
+		GLOBAL_DEF(vformat("layer_names/3d_physics/layer_%d", i), "");
 	}
 
 	bool default_theme_hidpi = GLOBAL_DEF("gui/theme/use_hidpi", false);

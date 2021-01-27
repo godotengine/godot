@@ -396,7 +396,7 @@ vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
 
 	vec4 shadow_color = unpackUnorm4x8(light_array.data[light_base].shadow_color);
 #ifdef LIGHT_SHADER_CODE_USED
-	shadow_color *= shadow_modulate;
+	shadow_color.rgb *= shadow_modulate;
 #endif
 
 	shadow_color.a *= light_color.a; //respect light alpha
@@ -497,9 +497,9 @@ void main() {
 	vec2 shadow_vertex = vertex;
 
 	{
-		float normal_depth = 1.0;
+		float normal_map_depth = 1.0;
 
-#if defined(NORMALMAP_USED)
+#if defined(NORMAL_MAP_USED)
 		vec3 normal_map = vec3(0.0, 0.0, 1.0);
 		normal_used = true;
 #endif
@@ -510,8 +510,8 @@ FRAGMENT_SHADER_CODE
 
 		/* clang-format on */
 
-#if defined(NORMALMAP_USED)
-		normal = mix(vec3(0.0, 0.0, 1.0), normal_map * vec3(2.0, -2.0, 1.0) - vec3(1.0, -1.0, 0.0), normal_depth);
+#if defined(NORMAL_MAP_USED)
+		normal = mix(vec3(0.0, 0.0, 1.0), normal_map * vec3(2.0, -2.0, 1.0) - vec3(1.0, -1.0, 0.0), normal_map_depth);
 #endif
 	}
 
@@ -546,7 +546,7 @@ FRAGMENT_SHADER_CODE
 #ifdef LIGHT_SHADER_CODE_USED
 
 		vec4 shadow_modulate = vec4(1.0);
-		light_color = light_compute(light_vertex, direction, normal, light_color, light_color.a, specular_shininess, shadow_modulate, screen_uv, color, uv, true);
+		light_color = light_compute(light_vertex, vec3(direction, light_array.data[light_base].height), normal, light_color, light_color.a, specular_shininess, shadow_modulate, screen_uv, uv, color, true);
 #else
 
 		if (normal_used) {
@@ -563,7 +563,7 @@ FRAGMENT_SHADER_CODE
 			light_color = light_shadow_compute(light_base, light_color, shadow_uv
 #ifdef LIGHT_SHADER_CODE_USED
 					,
-					shadow_modulate
+					shadow_modulate.rgb
 #endif
 			);
 		}
@@ -605,7 +605,7 @@ FRAGMENT_SHADER_CODE
 		vec3 light_position = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
 
 		light_color.rgb *= light_base_color.rgb;
-		light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, color, uv, false);
+		light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, uv, color, false);
 #else
 
 		light_color.rgb *= light_base_color.rgb * light_base_color.a;
@@ -659,7 +659,7 @@ FRAGMENT_SHADER_CODE
 			light_color = light_shadow_compute(light_base, light_color, shadow_uv
 #ifdef LIGHT_SHADER_CODE_USED
 					,
-					shadow_modulate
+					shadow_modulate.rgb
 #endif
 			);
 		}

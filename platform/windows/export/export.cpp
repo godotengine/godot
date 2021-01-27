@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -173,11 +173,11 @@ void EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset>
 	}
 
 #ifdef WINDOWS_ENABLED
-	OS::get_singleton()->execute(rcedit_path, args, true);
+	OS::get_singleton()->execute(rcedit_path, args);
 #else
 	// On non-Windows we need WINE to run rcedit
 	args.push_front(rcedit_path);
-	OS::get_singleton()->execute(wine_path, args, true);
+	OS::get_singleton()->execute(wine_path, args);
 #endif
 }
 
@@ -299,7 +299,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	PackedStringArray user_args = p_preset->get("codesign/custom_options");
 	for (int i = 0; i < user_args.size(); i++) {
 		String user_arg = user_args[i].strip_edges();
-		if (!user_arg.empty()) {
+		if (!user_arg.is_empty()) {
 			args.push_back(user_arg);
 		}
 	}
@@ -314,7 +314,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #endif
 
 	String str;
-	Error err = OS::get_singleton()->execute(signtool_path, args, true, nullptr, &str, nullptr, true);
+	Error err = OS::get_singleton()->execute(signtool_path, args, &str, nullptr, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	print_line("codesign (" + p_path + "): " + str);

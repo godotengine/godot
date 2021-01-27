@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -485,8 +485,8 @@ protected:
 		Color caret_color;
 		Color caret_background_color;
 		Color font_color;
-		Color font_color_selected;
-		Color font_color_readonly;
+		Color font_selected_color;
+		Color font_readonly_color;
 		Color selection_color;
 		Color mark_color;
 		Color code_folding_color;
@@ -700,7 +700,7 @@ public:
 
 	int cursor_get_column() const;
 	int cursor_get_line() const;
-	Vector2i _get_cursor_pixel_pos();
+	Vector2i _get_cursor_pixel_pos(bool p_adjust_viewport = true);
 
 	bool cursor_get_blink_enabled() const;
 	void cursor_set_blink_enabled(const bool p_enabled);

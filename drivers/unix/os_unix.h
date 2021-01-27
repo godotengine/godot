@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,7 @@ protected:
 	virtual int unix_initialize_audio(int p_audio_driver);
 	//virtual Error initialize(int p_video_driver,int p_audio_driver);
 
-	virtual void finalize_core();
+	virtual void finalize_core() override;
 
 	String stdin_buf;
 
@@ -53,7 +53,7 @@ public:
 	OS_Unix();
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
-	virtual String get_stdin_string(bool p_block);
+	virtual String get_stdin_string(bool p_block) override;
 
 	//virtual void set_mouse_show(bool p_show);
 	//virtual void set_mouse_grab(bool p_grab);
@@ -65,39 +65,40 @@ public:
 	//virtual VideoMode get_video_mode() const;
 	//virtual void get_fullscreen_mode_list(List<VideoMode> *p_list) const;
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
-	virtual Error close_dynamic_library(void *p_library_handle);
-	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false);
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
+	virtual Error close_dynamic_library(void *p_library_handle) override;
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
 
-	virtual Error set_cwd(const String &p_cwd);
+	virtual Error set_cwd(const String &p_cwd) override;
 
-	virtual String get_name() const;
+	virtual String get_name() const override;
 
-	virtual Date get_date(bool utc) const;
-	virtual Time get_time(bool utc) const;
-	virtual TimeZoneInfo get_time_zone_info() const;
+	virtual Date get_date(bool utc) const override;
+	virtual Time get_time(bool utc) const override;
+	virtual TimeZoneInfo get_time_zone_info() const override;
 
-	virtual double get_unix_time() const;
+	virtual double get_unix_time() const override;
 
-	virtual void delay_usec(uint32_t p_usec) const;
-	virtual uint64_t get_ticks_usec() const;
+	virtual void delay_usec(uint32_t p_usec) const override;
+	virtual uint64_t get_ticks_usec() const override;
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr);
-	virtual Error kill(const ProcessID &p_pid);
-	virtual int get_process_id() const;
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr) override;
+	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
+	virtual Error kill(const ProcessID &p_pid) override;
+	virtual int get_process_id() const override;
 
-	virtual bool has_environment(const String &p_var) const;
-	virtual String get_environment(const String &p_var) const;
-	virtual bool set_environment(const String &p_var, const String &p_value) const;
-	virtual String get_locale() const;
+	virtual bool has_environment(const String &p_var) const override;
+	virtual String get_environment(const String &p_var) const override;
+	virtual bool set_environment(const String &p_var, const String &p_value) const override;
+	virtual String get_locale() const override;
 
-	virtual int get_processor_count() const;
+	virtual int get_processor_count() const override;
 
-	virtual void debug_break();
-	virtual void initialize_debugging();
+	virtual void debug_break() override;
+	virtual void initialize_debugging() override;
 
-	virtual String get_executable_path() const;
-	virtual String get_user_data_dir() const;
+	virtual String get_executable_path() const override;
+	virtual String get_user_data_dir() const override;
 };
 
 class UnixTerminalLogger : public StdLogger {

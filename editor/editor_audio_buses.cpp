@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,11 +78,11 @@ void EditorAudioBus::_notification(int p_what) {
 			Color bypass_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(0.13, 0.8, 1.0) : Color(0.44, 0.87, 1.0);
 
 			solo->set_icon(get_theme_icon("AudioBusSolo", "EditorIcons"));
-			solo->add_theme_color_override("icon_color_pressed", solo_color);
+			solo->add_theme_color_override("icon_pressed_color", solo_color);
 			mute->set_icon(get_theme_icon("AudioBusMute", "EditorIcons"));
-			mute->add_theme_color_override("icon_color_pressed", mute_color);
+			mute->add_theme_color_override("icon_pressed_color", mute_color);
 			bypass->set_icon(get_theme_icon("AudioBusBypass", "EditorIcons"));
-			bypass->add_theme_color_override("icon_color_pressed", bypass_color);
+			bypass->add_theme_color_override("icon_pressed_color", bypass_color);
 
 			bus_options->set_icon(get_theme_icon("GuiTabMenuHl", "EditorIcons"));
 
@@ -851,15 +851,15 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 
 	cc = 0;
 	for (int i = 0; i < CHANNELS_MAX; i++) {
-		channel[i].vu_l = memnew(TextureProgress);
-		channel[i].vu_l->set_fill_mode(TextureProgress::FILL_BOTTOM_TO_TOP);
+		channel[i].vu_l = memnew(TextureProgressBar);
+		channel[i].vu_l->set_fill_mode(TextureProgressBar::FILL_BOTTOM_TO_TOP);
 		hb->add_child(channel[i].vu_l);
 		channel[i].vu_l->set_min(-80);
 		channel[i].vu_l->set_max(24);
 		channel[i].vu_l->set_step(0.1);
 
-		channel[i].vu_r = memnew(TextureProgress);
-		channel[i].vu_r->set_fill_mode(TextureProgress::FILL_BOTTOM_TO_TOP);
+		channel[i].vu_r = memnew(TextureProgressBar);
+		channel[i].vu_r->set_fill_mode(TextureProgressBar::FILL_BOTTOM_TO_TOP);
 		hb->add_child(channel[i].vu_r);
 		channel[i].vu_r->set_min(-80);
 		channel[i].vu_r->set_max(24);
@@ -922,7 +922,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	bus_options = memnew(MenuButton);
 	bus_options->set_shortcut_context(this);
 	bus_options->set_h_size_flags(SIZE_SHRINK_END);
-	bus_options->set_anchor(MARGIN_RIGHT, 0.0);
+	bus_options->set_anchor(SIDE_RIGHT, 0.0);
 	bus_options->set_tooltip(TTR("Bus options"));
 	hbc->add_child(bus_options);
 

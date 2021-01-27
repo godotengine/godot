@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -419,7 +419,7 @@ Error EditorExportPlatformOSX::_notarize(const Ref<EditorExportPreset> &p_preset
 	args.push_back(p_path);
 
 	String str;
-	Error err = OS::get_singleton()->execute("xcrun", args, true, nullptr, &str, nullptr, true);
+	Error err = OS::get_singleton()->execute("xcrun", args, &str, nullptr, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	print_line("altool (" + p_path + "):\n" + str);
@@ -457,7 +457,7 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 	PackedStringArray user_args = p_preset->get("codesign/custom_options");
 	for (int i = 0; i < user_args.size(); i++) {
 		String user_arg = user_args[i].strip_edges();
-		if (!user_arg.empty()) {
+		if (!user_arg.is_empty()) {
 			args.push_back(user_arg);
 		}
 	}
@@ -470,7 +470,7 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 	args.push_back(p_path);
 
 	String str;
-	Error err = OS::get_singleton()->execute("codesign", args, true, nullptr, &str, nullptr, true);
+	Error err = OS::get_singleton()->execute("codesign", args, &str, nullptr, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	print_line("codesign (" + p_path + "):\n" + str);
@@ -504,7 +504,7 @@ Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const Strin
 	args.push_back(p_app_path_name);
 
 	String str;
-	Error err = OS::get_singleton()->execute("hdiutil", args, true, nullptr, &str, nullptr, true);
+	Error err = OS::get_singleton()->execute("hdiutil", args, &str, nullptr, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	print_line("hdiutil returned: " + str);
@@ -665,7 +665,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					Ref<Image> icon;
 					icon.instance();
 					icon->load(iconpath);
-					if (!icon->empty()) {
+					if (!icon->is_empty()) {
 						_make_icon(icon, data);
 					}
 				}
@@ -927,7 +927,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 		}
 	}
 
-	if (!err.empty()) {
+	if (!err.is_empty()) {
 		r_error = err;
 	}
 	return valid;

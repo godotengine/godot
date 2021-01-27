@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -295,7 +295,7 @@ List<ClassAPI> generate_c_api_classes() {
 
 				property_api.index = ClassDB::get_property_index(class_name, p->get().name);
 
-				if (!property_api.setter.empty() || !property_api.getter.empty()) {
+				if (!property_api.setter.is_empty() || !property_api.getter.is_empty()) {
 					class_api.properties.push_back(property_api);
 				}
 			}

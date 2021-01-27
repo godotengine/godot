@@ -350,14 +350,14 @@ struct
 {
   template <typename T, typename T2> constexpr auto
   operator () (T&& a, T2&& b) const HB_AUTO_RETURN
-  (hb_forward<T> (a) <= hb_forward<T2> (b) ? hb_forward<T> (a) : hb_forward<T2> (b))
+  (a <= b ? hb_forward<T> (a) : hb_forward<T2> (b))
 }
 HB_FUNCOBJ (hb_min);
 struct
 {
   template <typename T, typename T2> constexpr auto
   operator () (T&& a, T2&& b) const HB_AUTO_RETURN
-  (hb_forward<T> (a) >= hb_forward<T2> (b) ? hb_forward<T> (a) : hb_forward<T2> (b))
+  (a >= b ? hb_forward<T> (a) : hb_forward<T2> (b))
 }
 HB_FUNCOBJ (hb_max);
 struct

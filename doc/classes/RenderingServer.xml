@@ -765,17 +765,20 @@
 			</argument>
 			<argument index="3" name="intensity" type="float">
 			</argument>
-			<argument index="4" name="bias" type="float">
+			<argument index="4" name="power" type="float">
 			</argument>
-			<argument index="5" name="light_affect" type="float">
+			<argument index="5" name="detail" type="float">
 			</argument>
-			<argument index="6" name="ao_channel_affect" type="float">
+			<argument index="6" name="horizon" type="float">
 			</argument>
-			<argument index="7" name="blur" type="int" enum="RenderingServer.EnvironmentSSAOBlur">
+			<argument index="7" name="sharpness" type="float">
 			</argument>
-			<argument index="8" name="bilateral_sharpness" type="float">
+			<argument index="8" name="light_affect" type="float">
+			</argument>
+			<argument index="9" name="ao_channel_affect" type="float">
 			</argument>
 			<description>
+				Sets the variables to be used with the "screen space ambient occlusion" post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_ssr">
@@ -854,6 +857,12 @@
 			</argument>
 			<description>
 				Tries to free an object in the RenderingServer.
+			</description>
+		</method>
+		<method name="get_frame_setup_time_cpu" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_render_info">
@@ -1351,7 +1360,7 @@
 			<argument index="1" name="scenario" type="RID">
 			</argument>
 			<description>
-				Returns an array of object IDs intersecting with the provided AABB. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GDScript.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
+				Returns an array of object IDs intersecting with the provided AABB. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
@@ -1363,7 +1372,7 @@
 			<argument index="1" name="scenario" type="RID">
 			</argument>
 			<description>
-				Returns an array of object IDs intersecting with the provided convex shape. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GDScript.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
+				Returns an array of object IDs intersecting with the provided convex shape. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
@@ -1377,7 +1386,7 @@
 			<argument index="2" name="scenario" type="RID">
 			</argument>
 			<description>
-				Returns an array of object IDs intersecting with the provided 3D ray. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GDScript.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
+				Returns an array of object IDs intersecting with the provided 3D ray. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
@@ -2712,6 +2721,22 @@
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
 			</description>
 		</method>
+		<method name="viewport_get_measured_render_time_cpu" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_get_measured_render_time_gpu" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="viewport_get_render_info">
 			<return type="int">
 			</return>
@@ -2847,6 +2872,16 @@
 			</argument>
 			<description>
 				Currently unimplemented in Godot 3.x.
+			</description>
+		</method>
+		<method name="viewport_set_measure_render_time">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="viewport_set_msaa">
@@ -3499,29 +3534,20 @@
 		</constant>
 		<constant name="ENV_SSR_ROUGNESS_QUALITY_HIGH" value="3" enum="EnvironmentSSRRoughnessQuality">
 		</constant>
-		<constant name="ENV_SSAO_BLUR_DISABLED" value="0" enum="EnvironmentSSAOBlur">
-			Disables the blur set for SSAO. Will make SSAO look noisier.
-		</constant>
-		<constant name="ENV_SSAO_BLUR_1x1" value="1" enum="EnvironmentSSAOBlur">
-			Perform a 1x1 blur on the SSAO output.
-		</constant>
-		<constant name="ENV_SSAO_BLUR_2x2" value="2" enum="EnvironmentSSAOBlur">
-			Performs a 2x2 blur on the SSAO output.
-		</constant>
-		<constant name="ENV_SSAO_BLUR_3x3" value="3" enum="EnvironmentSSAOBlur">
-			Performs a 3x3 blur on the SSAO output. Use this for smoothest SSAO.
-		</constant>
-		<constant name="ENV_SSAO_QUALITY_LOW" value="0" enum="EnvironmentSSAOQuality">
+		<constant name="ENV_SSAO_QUALITY_VERY_LOW" value="0" enum="EnvironmentSSAOQuality">
 			Lowest quality of screen space ambient occlusion.
 		</constant>
-		<constant name="ENV_SSAO_QUALITY_MEDIUM" value="1" enum="EnvironmentSSAOQuality">
+		<constant name="ENV_SSAO_QUALITY_LOW" value="1" enum="EnvironmentSSAOQuality">
+			Low quality screen space ambient occlusion.
+		</constant>
+		<constant name="ENV_SSAO_QUALITY_MEDIUM" value="2" enum="EnvironmentSSAOQuality">
 			Medium quality screen space ambient occlusion.
 		</constant>
-		<constant name="ENV_SSAO_QUALITY_HIGH" value="2" enum="EnvironmentSSAOQuality">
+		<constant name="ENV_SSAO_QUALITY_HIGH" value="3" enum="EnvironmentSSAOQuality">
 			High quality screen space ambient occlusion.
 		</constant>
-		<constant name="ENV_SSAO_QUALITY_ULTRA" value="3" enum="EnvironmentSSAOQuality">
-			Highest quality screen space ambient occlusion.
+		<constant name="ENV_SSAO_QUALITY_ULTRA" value="4" enum="EnvironmentSSAOQuality">
+			Highest quality screen space ambient occlusion. Uses the adaptive setting which can be dynamically adjusted to smoothly balance performance and visual quality.
 		</constant>
 		<constant name="SUB_SURFACE_SCATTERING_QUALITY_DISABLED" value="0" enum="SubSurfaceScatteringQuality">
 		</constant>

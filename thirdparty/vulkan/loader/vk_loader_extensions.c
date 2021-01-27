@@ -186,6 +186,9 @@ VKAPI_ATTR bool VKAPI_CALL loader_icd_init_entries(struct loader_icd_term *icd_t
     LOOKUP_GIPA(GetDisplayModeProperties2KHR, false);
     LOOKUP_GIPA(GetDisplayPlaneCapabilities2KHR, false);
 
+    // ---- VK_KHR_fragment_shading_rate extension commands
+    LOOKUP_GIPA(GetPhysicalDeviceFragmentShadingRatesKHR, false);
+
     // ---- VK_EXT_debug_report extension commands
     LOOKUP_GIPA(CreateDebugReportCallbackEXT, false);
     LOOKUP_GIPA(DestroyDebugReportCallbackEXT, false);
@@ -569,27 +572,20 @@ VKAPI_ATTR void VKAPI_CALL loader_init_device_extension_dispatch_table(struct lo
     table->WaitSemaphoresKHR = (PFN_vkWaitSemaphoresKHR)gdpa(dev, "vkWaitSemaphoresKHR");
     table->SignalSemaphoreKHR = (PFN_vkSignalSemaphoreKHR)gdpa(dev, "vkSignalSemaphoreKHR");
 
+    // ---- VK_KHR_fragment_shading_rate extension commands
+    table->CmdSetFragmentShadingRateKHR = (PFN_vkCmdSetFragmentShadingRateKHR)gdpa(dev, "vkCmdSetFragmentShadingRateKHR");
+
     // ---- VK_KHR_buffer_device_address extension commands
     table->GetBufferDeviceAddressKHR = (PFN_vkGetBufferDeviceAddressKHR)gdpa(dev, "vkGetBufferDeviceAddressKHR");
     table->GetBufferOpaqueCaptureAddressKHR = (PFN_vkGetBufferOpaqueCaptureAddressKHR)gdpa(dev, "vkGetBufferOpaqueCaptureAddressKHR");
     table->GetDeviceMemoryOpaqueCaptureAddressKHR = (PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR)gdpa(dev, "vkGetDeviceMemoryOpaqueCaptureAddressKHR");
 
     // ---- VK_KHR_deferred_host_operations extension commands
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     table->CreateDeferredOperationKHR = (PFN_vkCreateDeferredOperationKHR)gdpa(dev, "vkCreateDeferredOperationKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     table->DestroyDeferredOperationKHR = (PFN_vkDestroyDeferredOperationKHR)gdpa(dev, "vkDestroyDeferredOperationKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     table->GetDeferredOperationMaxConcurrencyKHR = (PFN_vkGetDeferredOperationMaxConcurrencyKHR)gdpa(dev, "vkGetDeferredOperationMaxConcurrencyKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     table->GetDeferredOperationResultKHR = (PFN_vkGetDeferredOperationResultKHR)gdpa(dev, "vkGetDeferredOperationResultKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     table->DeferredOperationJoinKHR = (PFN_vkDeferredOperationJoinKHR)gdpa(dev, "vkDeferredOperationJoinKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
 
     // ---- VK_KHR_pipeline_executable_properties extension commands
     table->GetPipelineExecutablePropertiesKHR = (PFN_vkGetPipelineExecutablePropertiesKHR)gdpa(dev, "vkGetPipelineExecutablePropertiesKHR");
@@ -695,10 +691,8 @@ VKAPI_ATTR void VKAPI_CALL loader_init_device_extension_dispatch_table(struct lo
 
     // ---- VK_NV_ray_tracing extension commands
     table->CreateAccelerationStructureNV = (PFN_vkCreateAccelerationStructureNV)gdpa(dev, "vkCreateAccelerationStructureNV");
-    table->DestroyAccelerationStructureKHR = (PFN_vkDestroyAccelerationStructureKHR)gdpa(dev, "vkDestroyAccelerationStructureKHR");
     table->DestroyAccelerationStructureNV = (PFN_vkDestroyAccelerationStructureNV)gdpa(dev, "vkDestroyAccelerationStructureNV");
     table->GetAccelerationStructureMemoryRequirementsNV = (PFN_vkGetAccelerationStructureMemoryRequirementsNV)gdpa(dev, "vkGetAccelerationStructureMemoryRequirementsNV");
-    table->BindAccelerationStructureMemoryKHR = (PFN_vkBindAccelerationStructureMemoryKHR)gdpa(dev, "vkBindAccelerationStructureMemoryKHR");
     table->BindAccelerationStructureMemoryNV = (PFN_vkBindAccelerationStructureMemoryNV)gdpa(dev, "vkBindAccelerationStructureMemoryNV");
     table->CmdBuildAccelerationStructureNV = (PFN_vkCmdBuildAccelerationStructureNV)gdpa(dev, "vkCmdBuildAccelerationStructureNV");
     table->CmdCopyAccelerationStructureNV = (PFN_vkCmdCopyAccelerationStructureNV)gdpa(dev, "vkCmdCopyAccelerationStructureNV");
@@ -707,7 +701,6 @@ VKAPI_ATTR void VKAPI_CALL loader_init_device_extension_dispatch_table(struct lo
     table->GetRayTracingShaderGroupHandlesKHR = (PFN_vkGetRayTracingShaderGroupHandlesKHR)gdpa(dev, "vkGetRayTracingShaderGroupHandlesKHR");
     table->GetRayTracingShaderGroupHandlesNV = (PFN_vkGetRayTracingShaderGroupHandlesNV)gdpa(dev, "vkGetRayTracingShaderGroupHandlesNV");
     table->GetAccelerationStructureHandleNV = (PFN_vkGetAccelerationStructureHandleNV)gdpa(dev, "vkGetAccelerationStructureHandleNV");
-    table->CmdWriteAccelerationStructuresPropertiesKHR = (PFN_vkCmdWriteAccelerationStructuresPropertiesKHR)gdpa(dev, "vkCmdWriteAccelerationStructuresPropertiesKHR");
     table->CmdWriteAccelerationStructuresPropertiesNV = (PFN_vkCmdWriteAccelerationStructuresPropertiesNV)gdpa(dev, "vkCmdWriteAccelerationStructuresPropertiesNV");
     table->CompileDeferredNV = (PFN_vkCompileDeferredNV)gdpa(dev, "vkCompileDeferredNV");
 
@@ -794,61 +787,34 @@ VKAPI_ATTR void VKAPI_CALL loader_init_device_extension_dispatch_table(struct lo
     table->SetPrivateDataEXT = (PFN_vkSetPrivateDataEXT)gdpa(dev, "vkSetPrivateDataEXT");
     table->GetPrivateDataEXT = (PFN_vkGetPrivateDataEXT)gdpa(dev, "vkGetPrivateDataEXT");
 
-    // ---- VK_KHR_ray_tracing extension commands
-#ifdef VK_ENABLE_BETA_EXTENSIONS
+    // ---- VK_NV_fragment_shading_rate_enums extension commands
+    table->CmdSetFragmentShadingRateEnumNV = (PFN_vkCmdSetFragmentShadingRateEnumNV)gdpa(dev, "vkCmdSetFragmentShadingRateEnumNV");
+
+    // ---- VK_KHR_acceleration_structure extension commands
     table->CreateAccelerationStructureKHR = (PFN_vkCreateAccelerationStructureKHR)gdpa(dev, "vkCreateAccelerationStructureKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    table->GetAccelerationStructureMemoryRequirementsKHR = (PFN_vkGetAccelerationStructureMemoryRequirementsKHR)gdpa(dev, "vkGetAccelerationStructureMemoryRequirementsKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    table->CmdBuildAccelerationStructureKHR = (PFN_vkCmdBuildAccelerationStructureKHR)gdpa(dev, "vkCmdBuildAccelerationStructureKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    table->CmdBuildAccelerationStructureIndirectKHR = (PFN_vkCmdBuildAccelerationStructureIndirectKHR)gdpa(dev, "vkCmdBuildAccelerationStructureIndirectKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    table->BuildAccelerationStructureKHR = (PFN_vkBuildAccelerationStructureKHR)gdpa(dev, "vkBuildAccelerationStructureKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->DestroyAccelerationStructureKHR = (PFN_vkDestroyAccelerationStructureKHR)gdpa(dev, "vkDestroyAccelerationStructureKHR");
+    table->CmdBuildAccelerationStructuresKHR = (PFN_vkCmdBuildAccelerationStructuresKHR)gdpa(dev, "vkCmdBuildAccelerationStructuresKHR");
+    table->CmdBuildAccelerationStructuresIndirectKHR = (PFN_vkCmdBuildAccelerationStructuresIndirectKHR)gdpa(dev, "vkCmdBuildAccelerationStructuresIndirectKHR");
+    table->BuildAccelerationStructuresKHR = (PFN_vkBuildAccelerationStructuresKHR)gdpa(dev, "vkBuildAccelerationStructuresKHR");
     table->CopyAccelerationStructureKHR = (PFN_vkCopyAccelerationStructureKHR)gdpa(dev, "vkCopyAccelerationStructureKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     table->CopyAccelerationStructureToMemoryKHR = (PFN_vkCopyAccelerationStructureToMemoryKHR)gdpa(dev, "vkCopyAccelerationStructureToMemoryKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     table->CopyMemoryToAccelerationStructureKHR = (PFN_vkCopyMemoryToAccelerationStructureKHR)gdpa(dev, "vkCopyMemoryToAccelerationStructureKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     table->WriteAccelerationStructuresPropertiesKHR = (PFN_vkWriteAccelerationStructuresPropertiesKHR)gdpa(dev, "vkWriteAccelerationStructuresPropertiesKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     table->CmdCopyAccelerationStructureKHR = (PFN_vkCmdCopyAccelerationStructureKHR)gdpa(dev, "vkCmdCopyAccelerationStructureKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     table->CmdCopyAccelerationStructureToMemoryKHR = (PFN_vkCmdCopyAccelerationStructureToMemoryKHR)gdpa(dev, "vkCmdCopyAccelerationStructureToMemoryKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     table->CmdCopyMemoryToAccelerationStructureKHR = (PFN_vkCmdCopyMemoryToAccelerationStructureKHR)gdpa(dev, "vkCmdCopyMemoryToAccelerationStructureKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    table->CmdTraceRaysKHR = (PFN_vkCmdTraceRaysKHR)gdpa(dev, "vkCmdTraceRaysKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    table->CreateRayTracingPipelinesKHR = (PFN_vkCreateRayTracingPipelinesKHR)gdpa(dev, "vkCreateRayTracingPipelinesKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     table->GetAccelerationStructureDeviceAddressKHR = (PFN_vkGetAccelerationStructureDeviceAddressKHR)gdpa(dev, "vkGetAccelerationStructureDeviceAddressKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    table->GetRayTracingCaptureReplayShaderGroupHandlesKHR = (PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR)gdpa(dev, "vkGetRayTracingCaptureReplayShaderGroupHandlesKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    table->CmdTraceRaysIndirectKHR = (PFN_vkCmdTraceRaysIndirectKHR)gdpa(dev, "vkCmdTraceRaysIndirectKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->CmdWriteAccelerationStructuresPropertiesKHR = (PFN_vkCmdWriteAccelerationStructuresPropertiesKHR)gdpa(dev, "vkCmdWriteAccelerationStructuresPropertiesKHR");
     table->GetDeviceAccelerationStructureCompatibilityKHR = (PFN_vkGetDeviceAccelerationStructureCompatibilityKHR)gdpa(dev, "vkGetDeviceAccelerationStructureCompatibilityKHR");
-#endif // VK_ENABLE_BETA_EXTENSIONS
+    table->GetAccelerationStructureBuildSizesKHR = (PFN_vkGetAccelerationStructureBuildSizesKHR)gdpa(dev, "vkGetAccelerationStructureBuildSizesKHR");
+
+    // ---- VK_KHR_ray_tracing_pipeline extension commands
+    table->CmdTraceRaysKHR = (PFN_vkCmdTraceRaysKHR)gdpa(dev, "vkCmdTraceRaysKHR");
+    table->CreateRayTracingPipelinesKHR = (PFN_vkCreateRayTracingPipelinesKHR)gdpa(dev, "vkCreateRayTracingPipelinesKHR");
+    table->GetRayTracingCaptureReplayShaderGroupHandlesKHR = (PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR)gdpa(dev, "vkGetRayTracingCaptureReplayShaderGroupHandlesKHR");
+    table->CmdTraceRaysIndirectKHR = (PFN_vkCmdTraceRaysIndirectKHR)gdpa(dev, "vkCmdTraceRaysIndirectKHR");
+    table->GetRayTracingShaderGroupStackSizeKHR = (PFN_vkGetRayTracingShaderGroupStackSizeKHR)gdpa(dev, "vkGetRayTracingShaderGroupStackSizeKHR");
+    table->CmdSetRayTracingPipelineStackSizeKHR = (PFN_vkCmdSetRayTracingPipelineStackSizeKHR)gdpa(dev, "vkCmdSetRayTracingPipelineStackSizeKHR");
 }
 
 // Init Instance function pointer dispatch table with core commands
@@ -977,6 +943,9 @@ VKAPI_ATTR void VKAPI_CALL loader_init_instance_extension_dispatch_table(VkLayer
     table->GetPhysicalDeviceDisplayPlaneProperties2KHR = (PFN_vkGetPhysicalDeviceDisplayPlaneProperties2KHR)gpa(inst, "vkGetPhysicalDeviceDisplayPlaneProperties2KHR");
     table->GetDisplayModeProperties2KHR = (PFN_vkGetDisplayModeProperties2KHR)gpa(inst, "vkGetDisplayModeProperties2KHR");
     table->GetDisplayPlaneCapabilities2KHR = (PFN_vkGetDisplayPlaneCapabilities2KHR)gpa(inst, "vkGetDisplayPlaneCapabilities2KHR");
+
+    // ---- VK_KHR_fragment_shading_rate extension commands
+    table->GetPhysicalDeviceFragmentShadingRatesKHR = (PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR)gpa(inst, "vkGetPhysicalDeviceFragmentShadingRatesKHR");
 
     // ---- VK_EXT_debug_report extension commands
     table->CreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)gpa(inst, "vkCreateDebugReportCallbackEXT");
@@ -1333,27 +1302,20 @@ VKAPI_ATTR void* VKAPI_CALL loader_lookup_device_dispatch_table(const VkLayerDis
     if (!strcmp(name, "WaitSemaphoresKHR")) return (void *)table->WaitSemaphoresKHR;
     if (!strcmp(name, "SignalSemaphoreKHR")) return (void *)table->SignalSemaphoreKHR;
 
+    // ---- VK_KHR_fragment_shading_rate extension commands
+    if (!strcmp(name, "CmdSetFragmentShadingRateKHR")) return (void *)table->CmdSetFragmentShadingRateKHR;
+
     // ---- VK_KHR_buffer_device_address extension commands
     if (!strcmp(name, "GetBufferDeviceAddressKHR")) return (void *)table->GetBufferDeviceAddressKHR;
     if (!strcmp(name, "GetBufferOpaqueCaptureAddressKHR")) return (void *)table->GetBufferOpaqueCaptureAddressKHR;
     if (!strcmp(name, "GetDeviceMemoryOpaqueCaptureAddressKHR")) return (void *)table->GetDeviceMemoryOpaqueCaptureAddressKHR;
 
     // ---- VK_KHR_deferred_host_operations extension commands
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp(name, "CreateDeferredOperationKHR")) return (void *)table->CreateDeferredOperationKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp(name, "DestroyDeferredOperationKHR")) return (void *)table->DestroyDeferredOperationKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp(name, "GetDeferredOperationMaxConcurrencyKHR")) return (void *)table->GetDeferredOperationMaxConcurrencyKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp(name, "GetDeferredOperationResultKHR")) return (void *)table->GetDeferredOperationResultKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp(name, "DeferredOperationJoinKHR")) return (void *)table->DeferredOperationJoinKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
 
     // ---- VK_KHR_pipeline_executable_properties extension commands
     if (!strcmp(name, "GetPipelineExecutablePropertiesKHR")) return (void *)table->GetPipelineExecutablePropertiesKHR;
@@ -1459,10 +1421,8 @@ VKAPI_ATTR void* VKAPI_CALL loader_lookup_device_dispatch_table(const VkLayerDis
 
     // ---- VK_NV_ray_tracing extension commands
     if (!strcmp(name, "CreateAccelerationStructureNV")) return (void *)table->CreateAccelerationStructureNV;
-    if (!strcmp(name, "DestroyAccelerationStructureKHR")) return (void *)table->DestroyAccelerationStructureKHR;
     if (!strcmp(name, "DestroyAccelerationStructureNV")) return (void *)table->DestroyAccelerationStructureNV;
     if (!strcmp(name, "GetAccelerationStructureMemoryRequirementsNV")) return (void *)table->GetAccelerationStructureMemoryRequirementsNV;
-    if (!strcmp(name, "BindAccelerationStructureMemoryKHR")) return (void *)table->BindAccelerationStructureMemoryKHR;
     if (!strcmp(name, "BindAccelerationStructureMemoryNV")) return (void *)table->BindAccelerationStructureMemoryNV;
     if (!strcmp(name, "CmdBuildAccelerationStructureNV")) return (void *)table->CmdBuildAccelerationStructureNV;
     if (!strcmp(name, "CmdCopyAccelerationStructureNV")) return (void *)table->CmdCopyAccelerationStructureNV;
@@ -1471,7 +1431,6 @@ VKAPI_ATTR void* VKAPI_CALL loader_lookup_device_dispatch_table(const VkLayerDis
     if (!strcmp(name, "GetRayTracingShaderGroupHandlesKHR")) return (void *)table->GetRayTracingShaderGroupHandlesKHR;
     if (!strcmp(name, "GetRayTracingShaderGroupHandlesNV")) return (void *)table->GetRayTracingShaderGroupHandlesNV;
     if (!strcmp(name, "GetAccelerationStructureHandleNV")) return (void *)table->GetAccelerationStructureHandleNV;
-    if (!strcmp(name, "CmdWriteAccelerationStructuresPropertiesKHR")) return (void *)table->CmdWriteAccelerationStructuresPropertiesKHR;
     if (!strcmp(name, "CmdWriteAccelerationStructuresPropertiesNV")) return (void *)table->CmdWriteAccelerationStructuresPropertiesNV;
     if (!strcmp(name, "CompileDeferredNV")) return (void *)table->CompileDeferredNV;
 
@@ -1558,61 +1517,34 @@ VKAPI_ATTR void* VKAPI_CALL loader_lookup_device_dispatch_table(const VkLayerDis
     if (!strcmp(name, "SetPrivateDataEXT")) return (void *)table->SetPrivateDataEXT;
     if (!strcmp(name, "GetPrivateDataEXT")) return (void *)table->GetPrivateDataEXT;
 
-    // ---- VK_KHR_ray_tracing extension commands
-#ifdef VK_ENABLE_BETA_EXTENSIONS
+    // ---- VK_NV_fragment_shading_rate_enums extension commands
+    if (!strcmp(name, "CmdSetFragmentShadingRateEnumNV")) return (void *)table->CmdSetFragmentShadingRateEnumNV;
+
+    // ---- VK_KHR_acceleration_structure extension commands
     if (!strcmp(name, "CreateAccelerationStructureKHR")) return (void *)table->CreateAccelerationStructureKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp(name, "GetAccelerationStructureMemoryRequirementsKHR")) return (void *)table->GetAccelerationStructureMemoryRequirementsKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp(name, "CmdBuildAccelerationStructureKHR")) return (void *)table->CmdBuildAccelerationStructureKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp(name, "CmdBuildAccelerationStructureIndirectKHR")) return (void *)table->CmdBuildAccelerationStructureIndirectKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp(name, "BuildAccelerationStructureKHR")) return (void *)table->BuildAccelerationStructureKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
+    if (!strcmp(name, "DestroyAccelerationStructureKHR")) return (void *)table->DestroyAccelerationStructureKHR;
+    if (!strcmp(name, "CmdBuildAccelerationStructuresKHR")) return (void *)table->CmdBuildAccelerationStructuresKHR;
+    if (!strcmp(name, "CmdBuildAccelerationStructuresIndirectKHR")) return (void *)table->CmdBuildAccelerationStructuresIndirectKHR;
+    if (!strcmp(name, "BuildAccelerationStructuresKHR")) return (void *)table->BuildAccelerationStructuresKHR;
     if (!strcmp(name, "CopyAccelerationStructureKHR")) return (void *)table->CopyAccelerationStructureKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp(name, "CopyAccelerationStructureToMemoryKHR")) return (void *)table->CopyAccelerationStructureToMemoryKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp(name, "CopyMemoryToAccelerationStructureKHR")) return (void *)table->CopyMemoryToAccelerationStructureKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp(name, "WriteAccelerationStructuresPropertiesKHR")) return (void *)table->WriteAccelerationStructuresPropertiesKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp(name, "CmdCopyAccelerationStructureKHR")) return (void *)table->CmdCopyAccelerationStructureKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp(name, "CmdCopyAccelerationStructureToMemoryKHR")) return (void *)table->CmdCopyAccelerationStructureToMemoryKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp(name, "CmdCopyMemoryToAccelerationStructureKHR")) return (void *)table->CmdCopyMemoryToAccelerationStructureKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp(name, "CmdTraceRaysKHR")) return (void *)table->CmdTraceRaysKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp(name, "CreateRayTracingPipelinesKHR")) return (void *)table->CreateRayTracingPipelinesKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp(name, "GetAccelerationStructureDeviceAddressKHR")) return (void *)table->GetAccelerationStructureDeviceAddressKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp(name, "GetRayTracingCaptureReplayShaderGroupHandlesKHR")) return (void *)table->GetRayTracingCaptureReplayShaderGroupHandlesKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp(name, "CmdTraceRaysIndirectKHR")) return (void *)table->CmdTraceRaysIndirectKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
+    if (!strcmp(name, "CmdWriteAccelerationStructuresPropertiesKHR")) return (void *)table->CmdWriteAccelerationStructuresPropertiesKHR;
     if (!strcmp(name, "GetDeviceAccelerationStructureCompatibilityKHR")) return (void *)table->GetDeviceAccelerationStructureCompatibilityKHR;
-#endif // VK_ENABLE_BETA_EXTENSIONS
+    if (!strcmp(name, "GetAccelerationStructureBuildSizesKHR")) return (void *)table->GetAccelerationStructureBuildSizesKHR;
+
+    // ---- VK_KHR_ray_tracing_pipeline extension commands
+    if (!strcmp(name, "CmdTraceRaysKHR")) return (void *)table->CmdTraceRaysKHR;
+    if (!strcmp(name, "CreateRayTracingPipelinesKHR")) return (void *)table->CreateRayTracingPipelinesKHR;
+    if (!strcmp(name, "GetRayTracingCaptureReplayShaderGroupHandlesKHR")) return (void *)table->GetRayTracingCaptureReplayShaderGroupHandlesKHR;
+    if (!strcmp(name, "CmdTraceRaysIndirectKHR")) return (void *)table->CmdTraceRaysIndirectKHR;
+    if (!strcmp(name, "GetRayTracingShaderGroupStackSizeKHR")) return (void *)table->GetRayTracingShaderGroupStackSizeKHR;
+    if (!strcmp(name, "CmdSetRayTracingPipelineStackSizeKHR")) return (void *)table->CmdSetRayTracingPipelineStackSizeKHR;
 
     return NULL;
 }
@@ -1745,6 +1677,9 @@ VKAPI_ATTR void* VKAPI_CALL loader_lookup_instance_dispatch_table(const VkLayerI
     if (!strcmp(name, "GetPhysicalDeviceDisplayPlaneProperties2KHR")) return (void *)table->GetPhysicalDeviceDisplayPlaneProperties2KHR;
     if (!strcmp(name, "GetDisplayModeProperties2KHR")) return (void *)table->GetDisplayModeProperties2KHR;
     if (!strcmp(name, "GetDisplayPlaneCapabilities2KHR")) return (void *)table->GetDisplayPlaneCapabilities2KHR;
+
+    // ---- VK_KHR_fragment_shading_rate extension commands
+    if (!strcmp(name, "GetPhysicalDeviceFragmentShadingRatesKHR")) return (void *)table->GetPhysicalDeviceFragmentShadingRatesKHR;
 
     // ---- VK_EXT_debug_report extension commands
     if (!strcmp(name, "CreateDebugReportCallbackEXT")) return (void *)table->CreateDebugReportCallbackEXT;
@@ -2301,6 +2236,40 @@ VKAPI_ATTR VkResult VKAPI_CALL SignalSemaphoreKHR(
 }
 
 
+// ---- VK_KHR_fragment_shading_rate extension trampoline/terminators
+
+VKAPI_ATTR VkResult VKAPI_CALL GetPhysicalDeviceFragmentShadingRatesKHR(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t*                                   pFragmentShadingRateCount,
+    VkPhysicalDeviceFragmentShadingRateKHR*     pFragmentShadingRates) {
+    const VkLayerInstanceDispatchTable *disp;
+    VkPhysicalDevice unwrapped_phys_dev = loader_unwrap_physical_device(physicalDevice);
+    disp = loader_get_instance_layer_dispatch(physicalDevice);
+    return disp->GetPhysicalDeviceFragmentShadingRatesKHR(unwrapped_phys_dev, pFragmentShadingRateCount, pFragmentShadingRates);
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceFragmentShadingRatesKHR(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t*                                   pFragmentShadingRateCount,
+    VkPhysicalDeviceFragmentShadingRateKHR*     pFragmentShadingRates) {
+    struct loader_physical_device_term *phys_dev_term = (struct loader_physical_device_term *)physicalDevice;
+    struct loader_icd_term *icd_term = phys_dev_term->this_icd_term;
+    if (NULL == icd_term->dispatch.GetPhysicalDeviceFragmentShadingRatesKHR) {
+        loader_log(icd_term->this_instance, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+                   "ICD associated with VkPhysicalDevice does not support GetPhysicalDeviceFragmentShadingRatesKHR");
+    }
+    return icd_term->dispatch.GetPhysicalDeviceFragmentShadingRatesKHR(phys_dev_term->phys_dev, pFragmentShadingRateCount, pFragmentShadingRates);
+}
+
+VKAPI_ATTR void VKAPI_CALL CmdSetFragmentShadingRateKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkExtent2D*                           pFragmentSize,
+    const VkFragmentShadingRateCombinerOpKHR    combinerOps[2]) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
+    disp->CmdSetFragmentShadingRateKHR(commandBuffer, pFragmentSize, combinerOps);
+}
+
+
 // ---- VK_KHR_buffer_device_address extension trampoline/terminators
 
 VKAPI_ATTR VkDeviceAddress VKAPI_CALL GetBufferDeviceAddressKHR(
@@ -2327,7 +2296,6 @@ VKAPI_ATTR uint64_t VKAPI_CALL GetDeviceMemoryOpaqueCaptureAddressKHR(
 
 // ---- VK_KHR_deferred_host_operations extension trampoline/terminators
 
-#ifdef VK_ENABLE_BETA_EXTENSIONS
 VKAPI_ATTR VkResult VKAPI_CALL CreateDeferredOperationKHR(
     VkDevice                                    device,
     const VkAllocationCallbacks*                pAllocator,
@@ -2336,8 +2304,6 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDeferredOperationKHR(
     return disp->CreateDeferredOperationKHR(device, pAllocator, pDeferredOperation);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
 VKAPI_ATTR void VKAPI_CALL DestroyDeferredOperationKHR(
     VkDevice                                    device,
     VkDeferredOperationKHR                      operation,
@@ -2346,8 +2312,6 @@ VKAPI_ATTR void VKAPI_CALL DestroyDeferredOperationKHR(
     disp->DestroyDeferredOperationKHR(device, operation, pAllocator);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
 VKAPI_ATTR uint32_t VKAPI_CALL GetDeferredOperationMaxConcurrencyKHR(
     VkDevice                                    device,
     VkDeferredOperationKHR                      operation) {
@@ -2355,8 +2319,6 @@ VKAPI_ATTR uint32_t VKAPI_CALL GetDeferredOperationMaxConcurrencyKHR(
     return disp->GetDeferredOperationMaxConcurrencyKHR(device, operation);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
 VKAPI_ATTR VkResult VKAPI_CALL GetDeferredOperationResultKHR(
     VkDevice                                    device,
     VkDeferredOperationKHR                      operation) {
@@ -2364,8 +2326,6 @@ VKAPI_ATTR VkResult VKAPI_CALL GetDeferredOperationResultKHR(
     return disp->GetDeferredOperationResultKHR(device, operation);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
 VKAPI_ATTR VkResult VKAPI_CALL DeferredOperationJoinKHR(
     VkDevice                                    device,
     VkDeferredOperationKHR                      operation) {
@@ -2373,7 +2333,6 @@ VKAPI_ATTR VkResult VKAPI_CALL DeferredOperationJoinKHR(
     return disp->DeferredOperationJoinKHR(device, operation);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
 
 // ---- VK_KHR_pipeline_executable_properties extension trampoline/terminators
 
@@ -2680,28 +2639,6 @@ VKAPI_ATTR VkResult VKAPI_CALL GetShaderInfoAMD(
     return disp->GetShaderInfoAMD(device, pipeline, shaderStage, infoType, pInfoSize, pInfo);
 }
 
-
-// ---- VK_GGP_stream_descriptor_surface extension trampoline/terminators
-
-#ifdef VK_USE_PLATFORM_GGP
-VKAPI_ATTR VkResult VKAPI_CALL CreateStreamDescriptorSurfaceGGP(
-    VkInstance                                  instance,
-    const VkStreamDescriptorSurfaceCreateInfoGGP* pCreateInfo,
-    const VkAllocationCallbacks*                pAllocator,
-    VkSurfaceKHR*                               pSurface) {
-#error("Not implemented. Likely needs to be manually generated!");
-    return disp->CreateStreamDescriptorSurfaceGGP(instance, pCreateInfo, pAllocator, pSurface);
-}
-
-VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateStreamDescriptorSurfaceGGP(
-    VkInstance                                  instance,
-    const VkStreamDescriptorSurfaceCreateInfoGGP* pCreateInfo,
-    const VkAllocationCallbacks*                pAllocator,
-    VkSurfaceKHR*                               pSurface) {
-#error("Not implemented. Likely needs to be manually generated!");
-}
-
-#endif // VK_USE_PLATFORM_GGP
 
 // ---- VK_NV_external_memory_win32 extension trampoline/terminators
 
@@ -3206,17 +3143,9 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateAccelerationStructureNV(
     return disp->CreateAccelerationStructureNV(device, pCreateInfo, pAllocator, pAccelerationStructure);
 }
 
-VKAPI_ATTR void VKAPI_CALL DestroyAccelerationStructureKHR(
-    VkDevice                                    device,
-    VkAccelerationStructureKHR                  accelerationStructure,
-    const VkAllocationCallbacks*                pAllocator) {
-    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
-    disp->DestroyAccelerationStructureKHR(device, accelerationStructure, pAllocator);
-}
-
 VKAPI_ATTR void VKAPI_CALL DestroyAccelerationStructureNV(
     VkDevice                                    device,
-    VkAccelerationStructureKHR                  accelerationStructure,
+    VkAccelerationStructureNV                   accelerationStructure,
     const VkAllocationCallbacks*                pAllocator) {
     const VkLayerDispatchTable *disp = loader_get_dispatch(device);
     disp->DestroyAccelerationStructureNV(device, accelerationStructure, pAllocator);
@@ -3230,18 +3159,10 @@ VKAPI_ATTR void VKAPI_CALL GetAccelerationStructureMemoryRequirementsNV(
     disp->GetAccelerationStructureMemoryRequirementsNV(device, pInfo, pMemoryRequirements);
 }
 
-VKAPI_ATTR VkResult VKAPI_CALL BindAccelerationStructureMemoryKHR(
-    VkDevice                                    device,
-    uint32_t                                    bindInfoCount,
-    const VkBindAccelerationStructureMemoryInfoKHR* pBindInfos) {
-    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
-    return disp->BindAccelerationStructureMemoryKHR(device, bindInfoCount, pBindInfos);
-}
-
 VKAPI_ATTR VkResult VKAPI_CALL BindAccelerationStructureMemoryNV(
     VkDevice                                    device,
     uint32_t                                    bindInfoCount,
-    const VkBindAccelerationStructureMemoryInfoKHR* pBindInfos) {
+    const VkBindAccelerationStructureMemoryInfoNV* pBindInfos) {
     const VkLayerDispatchTable *disp = loader_get_dispatch(device);
     return disp->BindAccelerationStructureMemoryNV(device, bindInfoCount, pBindInfos);
 }
@@ -3252,8 +3173,8 @@ VKAPI_ATTR void VKAPI_CALL CmdBuildAccelerationStructureNV(
     VkBuffer                                    instanceData,
     VkDeviceSize                                instanceOffset,
     VkBool32                                    update,
-    VkAccelerationStructureKHR                  dst,
-    VkAccelerationStructureKHR                  src,
+    VkAccelerationStructureNV                   dst,
+    VkAccelerationStructureNV                   src,
     VkBuffer                                    scratch,
     VkDeviceSize                                scratchOffset) {
     const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
@@ -3262,8 +3183,8 @@ VKAPI_ATTR void VKAPI_CALL CmdBuildAccelerationStructureNV(
 
 VKAPI_ATTR void VKAPI_CALL CmdCopyAccelerationStructureNV(
     VkCommandBuffer                             commandBuffer,
-    VkAccelerationStructureKHR                  dst,
-    VkAccelerationStructureKHR                  src,
+    VkAccelerationStructureNV                   dst,
+    VkAccelerationStructureNV                   src,
     VkCopyAccelerationStructureModeKHR          mode) {
     const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
     disp->CmdCopyAccelerationStructureNV(commandBuffer, dst, src, mode);
@@ -3324,28 +3245,17 @@ VKAPI_ATTR VkResult VKAPI_CALL GetRayTracingShaderGroupHandlesNV(
 
 VKAPI_ATTR VkResult VKAPI_CALL GetAccelerationStructureHandleNV(
     VkDevice                                    device,
-    VkAccelerationStructureKHR                  accelerationStructure,
+    VkAccelerationStructureNV                   accelerationStructure,
     size_t                                      dataSize,
     void*                                       pData) {
     const VkLayerDispatchTable *disp = loader_get_dispatch(device);
     return disp->GetAccelerationStructureHandleNV(device, accelerationStructure, dataSize, pData);
 }
 
-VKAPI_ATTR void VKAPI_CALL CmdWriteAccelerationStructuresPropertiesKHR(
-    VkCommandBuffer                             commandBuffer,
-    uint32_t                                    accelerationStructureCount,
-    const VkAccelerationStructureKHR*           pAccelerationStructures,
-    VkQueryType                                 queryType,
-    VkQueryPool                                 queryPool,
-    uint32_t                                    firstQuery) {
-    const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
-    disp->CmdWriteAccelerationStructuresPropertiesKHR(commandBuffer, accelerationStructureCount, pAccelerationStructures, queryType, queryPool, firstQuery);
-}
-
 VKAPI_ATTR void VKAPI_CALL CmdWriteAccelerationStructuresPropertiesNV(
     VkCommandBuffer                             commandBuffer,
     uint32_t                                    accelerationStructureCount,
-    const VkAccelerationStructureKHR*           pAccelerationStructures,
+    const VkAccelerationStructureNV*            pAccelerationStructures,
     VkQueryType                                 queryType,
     VkQueryPool                                 queryPool,
     uint32_t                                    firstQuery) {
@@ -3563,28 +3473,6 @@ VKAPI_ATTR void VKAPI_CALL SetLocalDimmingAMD(
     disp->SetLocalDimmingAMD(device, swapChain, localDimmingEnable);
 }
 
-
-// ---- VK_FUCHSIA_imagepipe_surface extension trampoline/terminators
-
-#ifdef VK_USE_PLATFORM_FUCHSIA
-VKAPI_ATTR VkResult VKAPI_CALL CreateImagePipeSurfaceFUCHSIA(
-    VkInstance                                  instance,
-    const VkImagePipeSurfaceCreateInfoFUCHSIA*  pCreateInfo,
-    const VkAllocationCallbacks*                pAllocator,
-    VkSurfaceKHR*                               pSurface) {
-#error("Not implemented. Likely needs to be manually generated!");
-    return disp->CreateImagePipeSurfaceFUCHSIA(instance, pCreateInfo, pAllocator, pSurface);
-}
-
-VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateImagePipeSurfaceFUCHSIA(
-    VkInstance                                  instance,
-    const VkImagePipeSurfaceCreateInfoFUCHSIA*  pCreateInfo,
-    const VkAllocationCallbacks*                pAllocator,
-    VkSurfaceKHR*                               pSurface) {
-#error("Not implemented. Likely needs to be manually generated!");
-}
-
-#endif // VK_USE_PLATFORM_FUCHSIA
 
 // ---- VK_EXT_buffer_device_address extension trampoline/terminators
 
@@ -3882,9 +3770,19 @@ VKAPI_ATTR void VKAPI_CALL GetPrivateDataEXT(
 }
 
 
-// ---- VK_KHR_ray_tracing extension trampoline/terminators
+// ---- VK_NV_fragment_shading_rate_enums extension trampoline/terminators
 
-#ifdef VK_ENABLE_BETA_EXTENSIONS
+VKAPI_ATTR void VKAPI_CALL CmdSetFragmentShadingRateEnumNV(
+    VkCommandBuffer                             commandBuffer,
+    VkFragmentShadingRateNV                     shadingRate,
+    const VkFragmentShadingRateCombinerOpKHR    combinerOps[2]) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
+    disp->CmdSetFragmentShadingRateEnumNV(commandBuffer, shadingRate, combinerOps);
+}
+
+
+// ---- VK_KHR_acceleration_structure extension trampoline/terminators
+
 VKAPI_ATTR VkResult VKAPI_CALL CreateAccelerationStructureKHR(
     VkDevice                                    device,
     const VkAccelerationStructureCreateInfoKHR* pCreateInfo,
@@ -3894,79 +3792,68 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateAccelerationStructureKHR(
     return disp->CreateAccelerationStructureKHR(device, pCreateInfo, pAllocator, pAccelerationStructure);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-VKAPI_ATTR void VKAPI_CALL GetAccelerationStructureMemoryRequirementsKHR(
+VKAPI_ATTR void VKAPI_CALL DestroyAccelerationStructureKHR(
     VkDevice                                    device,
-    const VkAccelerationStructureMemoryRequirementsInfoKHR* pInfo,
-    VkMemoryRequirements2*                      pMemoryRequirements) {
+    VkAccelerationStructureKHR                  accelerationStructure,
+    const VkAllocationCallbacks*                pAllocator) {
     const VkLayerDispatchTable *disp = loader_get_dispatch(device);
-    disp->GetAccelerationStructureMemoryRequirementsKHR(device, pInfo, pMemoryRequirements);
+    disp->DestroyAccelerationStructureKHR(device, accelerationStructure, pAllocator);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-VKAPI_ATTR void VKAPI_CALL CmdBuildAccelerationStructureKHR(
+VKAPI_ATTR void VKAPI_CALL CmdBuildAccelerationStructuresKHR(
     VkCommandBuffer                             commandBuffer,
     uint32_t                                    infoCount,
     const VkAccelerationStructureBuildGeometryInfoKHR* pInfos,
-    const VkAccelerationStructureBuildOffsetInfoKHR* const* ppOffsetInfos) {
+    const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos) {
     const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
-    disp->CmdBuildAccelerationStructureKHR(commandBuffer, infoCount, pInfos, ppOffsetInfos);
+    disp->CmdBuildAccelerationStructuresKHR(commandBuffer, infoCount, pInfos, ppBuildRangeInfos);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-VKAPI_ATTR void VKAPI_CALL CmdBuildAccelerationStructureIndirectKHR(
+VKAPI_ATTR void VKAPI_CALL CmdBuildAccelerationStructuresIndirectKHR(
     VkCommandBuffer                             commandBuffer,
-    const VkAccelerationStructureBuildGeometryInfoKHR* pInfo,
-    VkBuffer                                    indirectBuffer,
-    VkDeviceSize                                indirectOffset,
-    uint32_t                                    indirectStride) {
-    const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
-    disp->CmdBuildAccelerationStructureIndirectKHR(commandBuffer, pInfo, indirectBuffer, indirectOffset, indirectStride);
-}
-
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-VKAPI_ATTR VkResult VKAPI_CALL BuildAccelerationStructureKHR(
-    VkDevice                                    device,
     uint32_t                                    infoCount,
     const VkAccelerationStructureBuildGeometryInfoKHR* pInfos,
-    const VkAccelerationStructureBuildOffsetInfoKHR* const* ppOffsetInfos) {
-    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
-    return disp->BuildAccelerationStructureKHR(device, infoCount, pInfos, ppOffsetInfos);
+    const VkDeviceAddress*                      pIndirectDeviceAddresses,
+    const uint32_t*                             pIndirectStrides,
+    const uint32_t* const*                      ppMaxPrimitiveCounts) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
+    disp->CmdBuildAccelerationStructuresIndirectKHR(commandBuffer, infoCount, pInfos, pIndirectDeviceAddresses, pIndirectStrides, ppMaxPrimitiveCounts);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
+VKAPI_ATTR VkResult VKAPI_CALL BuildAccelerationStructuresKHR(
+    VkDevice                                    device,
+    VkDeferredOperationKHR                      deferredOperation,
+    uint32_t                                    infoCount,
+    const VkAccelerationStructureBuildGeometryInfoKHR* pInfos,
+    const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    return disp->BuildAccelerationStructuresKHR(device, deferredOperation, infoCount, pInfos, ppBuildRangeInfos);
+}
+
 VKAPI_ATTR VkResult VKAPI_CALL CopyAccelerationStructureKHR(
     VkDevice                                    device,
+    VkDeferredOperationKHR                      deferredOperation,
     const VkCopyAccelerationStructureInfoKHR*   pInfo) {
     const VkLayerDispatchTable *disp = loader_get_dispatch(device);
-    return disp->CopyAccelerationStructureKHR(device, pInfo);
+    return disp->CopyAccelerationStructureKHR(device, deferredOperation, pInfo);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
 VKAPI_ATTR VkResult VKAPI_CALL CopyAccelerationStructureToMemoryKHR(
     VkDevice                                    device,
+    VkDeferredOperationKHR                      deferredOperation,
     const VkCopyAccelerationStructureToMemoryInfoKHR* pInfo) {
     const VkLayerDispatchTable *disp = loader_get_dispatch(device);
-    return disp->CopyAccelerationStructureToMemoryKHR(device, pInfo);
+    return disp->CopyAccelerationStructureToMemoryKHR(device, deferredOperation, pInfo);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
 VKAPI_ATTR VkResult VKAPI_CALL CopyMemoryToAccelerationStructureKHR(
     VkDevice                                    device,
+    VkDeferredOperationKHR                      deferredOperation,
     const VkCopyMemoryToAccelerationStructureInfoKHR* pInfo) {
     const VkLayerDispatchTable *disp = loader_get_dispatch(device);
-    return disp->CopyMemoryToAccelerationStructureKHR(device, pInfo);
+    return disp->CopyMemoryToAccelerationStructureKHR(device, deferredOperation, pInfo);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
 VKAPI_ATTR VkResult VKAPI_CALL WriteAccelerationStructuresPropertiesKHR(
     VkDevice                                    device,
     uint32_t                                    accelerationStructureCount,
@@ -3979,8 +3866,6 @@ VKAPI_ATTR VkResult VKAPI_CALL WriteAccelerationStructuresPropertiesKHR(
     return disp->WriteAccelerationStructuresPropertiesKHR(device, accelerationStructureCount, pAccelerationStructures, queryType, dataSize, pData, stride);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
 VKAPI_ATTR void VKAPI_CALL CmdCopyAccelerationStructureKHR(
     VkCommandBuffer                             commandBuffer,
     const VkCopyAccelerationStructureInfoKHR*   pInfo) {
@@ -3988,8 +3873,6 @@ VKAPI_ATTR void VKAPI_CALL CmdCopyAccelerationStructureKHR(
     disp->CmdCopyAccelerationStructureKHR(commandBuffer, pInfo);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
 VKAPI_ATTR void VKAPI_CALL CmdCopyAccelerationStructureToMemoryKHR(
     VkCommandBuffer                             commandBuffer,
     const VkCopyAccelerationStructureToMemoryInfoKHR* pInfo) {
@@ -3997,8 +3880,6 @@ VKAPI_ATTR void VKAPI_CALL CmdCopyAccelerationStructureToMemoryKHR(
     disp->CmdCopyAccelerationStructureToMemoryKHR(commandBuffer, pInfo);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
 VKAPI_ATTR void VKAPI_CALL CmdCopyMemoryToAccelerationStructureKHR(
     VkCommandBuffer                             commandBuffer,
     const VkCopyMemoryToAccelerationStructureInfoKHR* pInfo) {
@@ -4006,36 +3887,6 @@ VKAPI_ATTR void VKAPI_CALL CmdCopyMemoryToAccelerationStructureKHR(
     disp->CmdCopyMemoryToAccelerationStructureKHR(commandBuffer, pInfo);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-VKAPI_ATTR void VKAPI_CALL CmdTraceRaysKHR(
-    VkCommandBuffer                             commandBuffer,
-    const VkStridedBufferRegionKHR*             pRaygenShaderBindingTable,
-    const VkStridedBufferRegionKHR*             pMissShaderBindingTable,
-    const VkStridedBufferRegionKHR*             pHitShaderBindingTable,
-    const VkStridedBufferRegionKHR*             pCallableShaderBindingTable,
-    uint32_t                                    width,
-    uint32_t                                    height,
-    uint32_t                                    depth) {
-    const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
-    disp->CmdTraceRaysKHR(commandBuffer, pRaygenShaderBindingTable, pMissShaderBindingTable, pHitShaderBindingTable, pCallableShaderBindingTable, width, height, depth);
-}
-
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-VKAPI_ATTR VkResult VKAPI_CALL CreateRayTracingPipelinesKHR(
-    VkDevice                                    device,
-    VkPipelineCache                             pipelineCache,
-    uint32_t                                    createInfoCount,
-    const VkRayTracingPipelineCreateInfoKHR*    pCreateInfos,
-    const VkAllocationCallbacks*                pAllocator,
-    VkPipeline*                                 pPipelines) {
-    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
-    return disp->CreateRayTracingPipelinesKHR(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines);
-}
-
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
 VKAPI_ATTR VkDeviceAddress VKAPI_CALL GetAccelerationStructureDeviceAddressKHR(
     VkDevice                                    device,
     const VkAccelerationStructureDeviceAddressInfoKHR* pInfo) {
@@ -4043,8 +3894,63 @@ VKAPI_ATTR VkDeviceAddress VKAPI_CALL GetAccelerationStructureDeviceAddressKHR(
     return disp->GetAccelerationStructureDeviceAddressKHR(device, pInfo);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
+VKAPI_ATTR void VKAPI_CALL CmdWriteAccelerationStructuresPropertiesKHR(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    accelerationStructureCount,
+    const VkAccelerationStructureKHR*           pAccelerationStructures,
+    VkQueryType                                 queryType,
+    VkQueryPool                                 queryPool,
+    uint32_t                                    firstQuery) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
+    disp->CmdWriteAccelerationStructuresPropertiesKHR(commandBuffer, accelerationStructureCount, pAccelerationStructures, queryType, queryPool, firstQuery);
+}
+
+VKAPI_ATTR void VKAPI_CALL GetDeviceAccelerationStructureCompatibilityKHR(
+    VkDevice                                    device,
+    const VkAccelerationStructureVersionInfoKHR* pVersionInfo,
+    VkAccelerationStructureCompatibilityKHR*    pCompatibility) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    disp->GetDeviceAccelerationStructureCompatibilityKHR(device, pVersionInfo, pCompatibility);
+}
+
+VKAPI_ATTR void VKAPI_CALL GetAccelerationStructureBuildSizesKHR(
+    VkDevice                                    device,
+    VkAccelerationStructureBuildTypeKHR         buildType,
+    const VkAccelerationStructureBuildGeometryInfoKHR* pBuildInfo,
+    const uint32_t*                             pMaxPrimitiveCounts,
+    VkAccelerationStructureBuildSizesInfoKHR*   pSizeInfo) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    disp->GetAccelerationStructureBuildSizesKHR(device, buildType, pBuildInfo, pMaxPrimitiveCounts, pSizeInfo);
+}
+
+
+// ---- VK_KHR_ray_tracing_pipeline extension trampoline/terminators
+
+VKAPI_ATTR void VKAPI_CALL CmdTraceRaysKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkStridedDeviceAddressRegionKHR*      pRaygenShaderBindingTable,
+    const VkStridedDeviceAddressRegionKHR*      pMissShaderBindingTable,
+    const VkStridedDeviceAddressRegionKHR*      pHitShaderBindingTable,
+    const VkStridedDeviceAddressRegionKHR*      pCallableShaderBindingTable,
+    uint32_t                                    width,
+    uint32_t                                    height,
+    uint32_t                                    depth) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
+    disp->CmdTraceRaysKHR(commandBuffer, pRaygenShaderBindingTable, pMissShaderBindingTable, pHitShaderBindingTable, pCallableShaderBindingTable, width, height, depth);
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL CreateRayTracingPipelinesKHR(
+    VkDevice                                    device,
+    VkDeferredOperationKHR                      deferredOperation,
+    VkPipelineCache                             pipelineCache,
+    uint32_t                                    createInfoCount,
+    const VkRayTracingPipelineCreateInfoKHR*    pCreateInfos,
+    const VkAllocationCallbacks*                pAllocator,
+    VkPipeline*                                 pPipelines) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    return disp->CreateRayTracingPipelinesKHR(device, deferredOperation, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines);
+}
+
 VKAPI_ATTR VkResult VKAPI_CALL GetRayTracingCaptureReplayShaderGroupHandlesKHR(
     VkDevice                                    device,
     VkPipeline                                  pipeline,
@@ -4056,30 +3962,33 @@ VKAPI_ATTR VkResult VKAPI_CALL GetRayTracingCaptureReplayShaderGroupHandlesKHR(
     return disp->GetRayTracingCaptureReplayShaderGroupHandlesKHR(device, pipeline, firstGroup, groupCount, dataSize, pData);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
 VKAPI_ATTR void VKAPI_CALL CmdTraceRaysIndirectKHR(
     VkCommandBuffer                             commandBuffer,
-    const VkStridedBufferRegionKHR*             pRaygenShaderBindingTable,
-    const VkStridedBufferRegionKHR*             pMissShaderBindingTable,
-    const VkStridedBufferRegionKHR*             pHitShaderBindingTable,
-    const VkStridedBufferRegionKHR*             pCallableShaderBindingTable,
-    VkBuffer                                    buffer,
-    VkDeviceSize                                offset) {
+    const VkStridedDeviceAddressRegionKHR*      pRaygenShaderBindingTable,
+    const VkStridedDeviceAddressRegionKHR*      pMissShaderBindingTable,
+    const VkStridedDeviceAddressRegionKHR*      pHitShaderBindingTable,
+    const VkStridedDeviceAddressRegionKHR*      pCallableShaderBindingTable,
+    VkDeviceAddress                             indirectDeviceAddress) {
     const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
-    disp->CmdTraceRaysIndirectKHR(commandBuffer, pRaygenShaderBindingTable, pMissShaderBindingTable, pHitShaderBindingTable, pCallableShaderBindingTable, buffer, offset);
+    disp->CmdTraceRaysIndirectKHR(commandBuffer, pRaygenShaderBindingTable, pMissShaderBindingTable, pHitShaderBindingTable, pCallableShaderBindingTable, indirectDeviceAddress);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-VKAPI_ATTR VkResult VKAPI_CALL GetDeviceAccelerationStructureCompatibilityKHR(
+VKAPI_ATTR VkDeviceSize VKAPI_CALL GetRayTracingShaderGroupStackSizeKHR(
     VkDevice                                    device,
-    const VkAccelerationStructureVersionKHR*    version) {
+    VkPipeline                                  pipeline,
+    uint32_t                                    group,
+    VkShaderGroupShaderKHR                      groupShader) {
     const VkLayerDispatchTable *disp = loader_get_dispatch(device);
-    return disp->GetDeviceAccelerationStructureCompatibilityKHR(device, version);
+    return disp->GetRayTracingShaderGroupStackSizeKHR(device, pipeline, group, groupShader);
 }
 
-#endif // VK_ENABLE_BETA_EXTENSIONS
+VKAPI_ATTR void VKAPI_CALL CmdSetRayTracingPipelineStackSizeKHR(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    pipelineStackSize) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
+    disp->CmdSetRayTracingPipelineStackSizeKHR(commandBuffer, pipelineStackSize);
+}
+
 // GPA helpers for extensions
 bool extension_instance_gpa(struct loader_instance *ptr_instance, const char *name, void **addr) {
     *addr = NULL;
@@ -4383,6 +4292,16 @@ bool extension_instance_gpa(struct loader_instance *ptr_instance, const char *na
         return true;
     }
 
+    // ---- VK_KHR_fragment_shading_rate extension commands
+    if (!strcmp("vkGetPhysicalDeviceFragmentShadingRatesKHR", name)) {
+        *addr = (void *)GetPhysicalDeviceFragmentShadingRatesKHR;
+        return true;
+    }
+    if (!strcmp("vkCmdSetFragmentShadingRateKHR", name)) {
+        *addr = (void *)CmdSetFragmentShadingRateKHR;
+        return true;
+    }
+
     // ---- VK_KHR_buffer_device_address extension commands
     if (!strcmp("vkGetBufferDeviceAddressKHR", name)) {
         *addr = (void *)GetBufferDeviceAddressKHR;
@@ -4398,36 +4317,26 @@ bool extension_instance_gpa(struct loader_instance *ptr_instance, const char *na
     }
 
     // ---- VK_KHR_deferred_host_operations extension commands
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp("vkCreateDeferredOperationKHR", name)) {
         *addr = (void *)CreateDeferredOperationKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp("vkDestroyDeferredOperationKHR", name)) {
         *addr = (void *)DestroyDeferredOperationKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp("vkGetDeferredOperationMaxConcurrencyKHR", name)) {
         *addr = (void *)GetDeferredOperationMaxConcurrencyKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp("vkGetDeferredOperationResultKHR", name)) {
         *addr = (void *)GetDeferredOperationResultKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp("vkDeferredOperationJoinKHR", name)) {
         *addr = (void *)DeferredOperationJoinKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
 
     // ---- VK_KHR_pipeline_executable_properties extension commands
     if (!strcmp("vkGetPipelineExecutablePropertiesKHR", name)) {
@@ -4542,16 +4451,6 @@ bool extension_instance_gpa(struct loader_instance *ptr_instance, const char *na
         *addr = (void *)GetShaderInfoAMD;
         return true;
     }
-
-    // ---- VK_GGP_stream_descriptor_surface extension commands
-#ifdef VK_USE_PLATFORM_GGP
-    if (!strcmp("vkCreateStreamDescriptorSurfaceGGP", name)) {
-        *addr = (ptr_instance->enabled_known_extensions.ggp_stream_descriptor_surface == 1)
-                     ? (void *)CreateStreamDescriptorSurfaceGGP
-                     : NULL;
-        return true;
-    }
-#endif // VK_USE_PLATFORM_GGP
 
     // ---- VK_NV_external_memory_capabilities extension commands
     if (!strcmp("vkGetPhysicalDeviceExternalImageFormatPropertiesNV", name)) {
@@ -4786,20 +4685,12 @@ bool extension_instance_gpa(struct loader_instance *ptr_instance, const char *na
         *addr = (void *)CreateAccelerationStructureNV;
         return true;
     }
-    if (!strcmp("vkDestroyAccelerationStructureKHR", name)) {
-        *addr = (void *)DestroyAccelerationStructureKHR;
-        return true;
-    }
     if (!strcmp("vkDestroyAccelerationStructureNV", name)) {
         *addr = (void *)DestroyAccelerationStructureNV;
         return true;
     }
     if (!strcmp("vkGetAccelerationStructureMemoryRequirementsNV", name)) {
         *addr = (void *)GetAccelerationStructureMemoryRequirementsNV;
-        return true;
-    }
-    if (!strcmp("vkBindAccelerationStructureMemoryKHR", name)) {
-        *addr = (void *)BindAccelerationStructureMemoryKHR;
         return true;
     }
     if (!strcmp("vkBindAccelerationStructureMemoryNV", name)) {
@@ -4832,10 +4723,6 @@ bool extension_instance_gpa(struct loader_instance *ptr_instance, const char *na
     }
     if (!strcmp("vkGetAccelerationStructureHandleNV", name)) {
         *addr = (void *)GetAccelerationStructureHandleNV;
-        return true;
-    }
-    if (!strcmp("vkCmdWriteAccelerationStructuresPropertiesKHR", name)) {
-        *addr = (void *)CmdWriteAccelerationStructuresPropertiesKHR;
         return true;
     }
     if (!strcmp("vkCmdWriteAccelerationStructuresPropertiesNV", name)) {
@@ -4942,16 +4829,6 @@ bool extension_instance_gpa(struct loader_instance *ptr_instance, const char *na
         *addr = (void *)SetLocalDimmingAMD;
         return true;
     }
-
-    // ---- VK_FUCHSIA_imagepipe_surface extension commands
-#ifdef VK_USE_PLATFORM_FUCHSIA
-    if (!strcmp("vkCreateImagePipeSurfaceFUCHSIA", name)) {
-        *addr = (ptr_instance->enabled_known_extensions.fuchsia_imagepipe_surface == 1)
-                     ? (void *)CreateImagePipeSurfaceFUCHSIA
-                     : NULL;
-        return true;
-    }
-#endif // VK_USE_PLATFORM_FUCHSIA
 
     // ---- VK_EXT_buffer_device_address extension commands
     if (!strcmp("vkGetBufferDeviceAddressEXT", name)) {
@@ -5109,115 +4986,103 @@ bool extension_instance_gpa(struct loader_instance *ptr_instance, const char *na
         return true;
     }
 
-    // ---- VK_KHR_ray_tracing extension commands
-#ifdef VK_ENABLE_BETA_EXTENSIONS
+    // ---- VK_NV_fragment_shading_rate_enums extension commands
+    if (!strcmp("vkCmdSetFragmentShadingRateEnumNV", name)) {
+        *addr = (void *)CmdSetFragmentShadingRateEnumNV;
+        return true;
+    }
+
+    // ---- VK_KHR_acceleration_structure extension commands
     if (!strcmp("vkCreateAccelerationStructureKHR", name)) {
         *addr = (void *)CreateAccelerationStructureKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp("vkGetAccelerationStructureMemoryRequirementsKHR", name)) {
-        *addr = (void *)GetAccelerationStructureMemoryRequirementsKHR;
+    if (!strcmp("vkDestroyAccelerationStructureKHR", name)) {
+        *addr = (void *)DestroyAccelerationStructureKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp("vkCmdBuildAccelerationStructureKHR", name)) {
-        *addr = (void *)CmdBuildAccelerationStructureKHR;
+    if (!strcmp("vkCmdBuildAccelerationStructuresKHR", name)) {
+        *addr = (void *)CmdBuildAccelerationStructuresKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp("vkCmdBuildAccelerationStructureIndirectKHR", name)) {
-        *addr = (void *)CmdBuildAccelerationStructureIndirectKHR;
+    if (!strcmp("vkCmdBuildAccelerationStructuresIndirectKHR", name)) {
+        *addr = (void *)CmdBuildAccelerationStructuresIndirectKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp("vkBuildAccelerationStructureKHR", name)) {
-        *addr = (void *)BuildAccelerationStructureKHR;
+    if (!strcmp("vkBuildAccelerationStructuresKHR", name)) {
+        *addr = (void *)BuildAccelerationStructuresKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp("vkCopyAccelerationStructureKHR", name)) {
         *addr = (void *)CopyAccelerationStructureKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp("vkCopyAccelerationStructureToMemoryKHR", name)) {
         *addr = (void *)CopyAccelerationStructureToMemoryKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp("vkCopyMemoryToAccelerationStructureKHR", name)) {
         *addr = (void *)CopyMemoryToAccelerationStructureKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp("vkWriteAccelerationStructuresPropertiesKHR", name)) {
         *addr = (void *)WriteAccelerationStructuresPropertiesKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp("vkCmdCopyAccelerationStructureKHR", name)) {
         *addr = (void *)CmdCopyAccelerationStructureKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp("vkCmdCopyAccelerationStructureToMemoryKHR", name)) {
         *addr = (void *)CmdCopyAccelerationStructureToMemoryKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp("vkCmdCopyMemoryToAccelerationStructureKHR", name)) {
         *addr = (void *)CmdCopyMemoryToAccelerationStructureKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp("vkCmdTraceRaysKHR", name)) {
-        *addr = (void *)CmdTraceRaysKHR;
-        return true;
-    }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp("vkCreateRayTracingPipelinesKHR", name)) {
-        *addr = (void *)CreateRayTracingPipelinesKHR;
-        return true;
-    }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp("vkGetAccelerationStructureDeviceAddressKHR", name)) {
         *addr = (void *)GetAccelerationStructureDeviceAddressKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp("vkGetRayTracingCaptureReplayShaderGroupHandlesKHR", name)) {
-        *addr = (void *)GetRayTracingCaptureReplayShaderGroupHandlesKHR;
+    if (!strcmp("vkCmdWriteAccelerationStructuresPropertiesKHR", name)) {
+        *addr = (void *)CmdWriteAccelerationStructuresPropertiesKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-    if (!strcmp("vkCmdTraceRaysIndirectKHR", name)) {
-        *addr = (void *)CmdTraceRaysIndirectKHR;
-        return true;
-    }
-#endif // VK_ENABLE_BETA_EXTENSIONS
-#ifdef VK_ENABLE_BETA_EXTENSIONS
     if (!strcmp("vkGetDeviceAccelerationStructureCompatibilityKHR", name)) {
         *addr = (void *)GetDeviceAccelerationStructureCompatibilityKHR;
         return true;
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
+    if (!strcmp("vkGetAccelerationStructureBuildSizesKHR", name)) {
+        *addr = (void *)GetAccelerationStructureBuildSizesKHR;
+        return true;
+    }
+
+    // ---- VK_KHR_ray_tracing_pipeline extension commands
+    if (!strcmp("vkCmdTraceRaysKHR", name)) {
+        *addr = (void *)CmdTraceRaysKHR;
+        return true;
+    }
+    if (!strcmp("vkCreateRayTracingPipelinesKHR", name)) {
+        *addr = (void *)CreateRayTracingPipelinesKHR;
+        return true;
+    }
+    if (!strcmp("vkGetRayTracingCaptureReplayShaderGroupHandlesKHR", name)) {
+        *addr = (void *)GetRayTracingCaptureReplayShaderGroupHandlesKHR;
+        return true;
+    }
+    if (!strcmp("vkCmdTraceRaysIndirectKHR", name)) {
+        *addr = (void *)CmdTraceRaysIndirectKHR;
+        return true;
+    }
+    if (!strcmp("vkGetRayTracingShaderGroupStackSizeKHR", name)) {
+        *addr = (void *)GetRayTracingShaderGroupStackSizeKHR;
+        return true;
+    }
+    if (!strcmp("vkCmdSetRayTracingPipelineStackSizeKHR", name)) {
+        *addr = (void *)CmdSetRayTracingPipelineStackSizeKHR;
+        return true;
+    }
     return false;
 }
 
@@ -5244,12 +5109,6 @@ void extensions_create_instance(struct loader_instance *ptr_instance, const VkIn
     // ---- VK_KHR_external_fence_capabilities extension commands
         } else if (0 == strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_KHR_EXTERNAL_FENCE_CAPABILITIES_EXTENSION_NAME)) {
             ptr_instance->enabled_known_extensions.khr_external_fence_capabilities = 1;
-
-    // ---- VK_GGP_stream_descriptor_surface extension commands
-#ifdef VK_USE_PLATFORM_GGP
-        } else if (0 == strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_GGP_STREAM_DESCRIPTOR_SURFACE_EXTENSION_NAME)) {
-            ptr_instance->enabled_known_extensions.ggp_stream_descriptor_surface = 1;
-#endif // VK_USE_PLATFORM_GGP
 
     // ---- VK_NV_external_memory_capabilities extension commands
         } else if (0 == strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_NV_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME)) {
@@ -5278,12 +5137,6 @@ void extensions_create_instance(struct loader_instance *ptr_instance, const VkIn
     // ---- VK_EXT_debug_utils extension commands
         } else if (0 == strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
             ptr_instance->enabled_known_extensions.ext_debug_utils = 1;
-
-    // ---- VK_FUCHSIA_imagepipe_surface extension commands
-#ifdef VK_USE_PLATFORM_FUCHSIA
-        } else if (0 == strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME)) {
-            ptr_instance->enabled_known_extensions.fuchsia_imagepipe_surface = 1;
-#endif // VK_USE_PLATFORM_FUCHSIA
         }
     }
 }
@@ -5347,7 +5200,7 @@ PFN_vkVoidFunction get_extension_device_proc_terminator(struct loader_device *de
             addr = (PFN_vkVoidFunction)terminator_GetDeviceGroupSurfacePresentModes2EXT;
         }
     }
-#endif // VK_ENABLE_BETA_EXTENSIONS
+#endif // None
     return addr;
 }
 
@@ -5473,6 +5326,9 @@ const VkLayerInstanceDispatchTable instance_disp = {
     .GetPhysicalDeviceDisplayPlaneProperties2KHR = terminator_GetPhysicalDeviceDisplayPlaneProperties2KHR,
     .GetDisplayModeProperties2KHR = terminator_GetDisplayModeProperties2KHR,
     .GetDisplayPlaneCapabilities2KHR = terminator_GetDisplayPlaneCapabilities2KHR,
+
+    // ---- VK_KHR_fragment_shading_rate extension commands
+    .GetPhysicalDeviceFragmentShadingRatesKHR = terminator_GetPhysicalDeviceFragmentShadingRatesKHR,
 
     // ---- VK_EXT_debug_report extension commands
     .CreateDebugReportCallbackEXT = terminator_CreateDebugReportCallbackEXT,

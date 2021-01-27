@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -168,9 +168,10 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 
 	flags |= cvtt::Flags::BC7_RespectPunchThrough;
 
-	if (p_channels == Image::USED_CHANNELS_RG) { //guessing this is a normalmap
+	if (p_channels == Image::USED_CHANNELS_RG) { //guessing this is a normal map
 		flags |= cvtt::Flags::Uniform;
 	}
+	options.flags = flags;
 
 	Image::Format target_format = Image::FORMAT_BPTC_RGBA;
 

@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2017 University of Cambridge
+          New API code Copyright (c) 2016-2020 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 /* Save the configured link size, which is in bytes. In 16-bit and 32-bit modes
-its value gets changed by pcre2_internal.h to be in code units. */
+its value gets changed by pcre2_intmodedep.h (included by pcre2_internal.h) to
+be in code units. */
 
 static int configured_link_size = LINK_SIZE;
 
@@ -94,6 +95,7 @@ if (where == NULL)  /* Requests a length */
     case PCRE2_CONFIG_NEWLINE:
     case PCRE2_CONFIG_PARENSLIMIT:
     case PCRE2_CONFIG_STACKRECURSE:    /* Obsolete */
+    case PCRE2_CONFIG_TABLES_LENGTH:
     case PCRE2_CONFIG_UNICODE:
     return sizeof(uint32_t);
 
@@ -189,6 +191,10 @@ switch (what)
 
   case PCRE2_CONFIG_STACKRECURSE:
   *((uint32_t *)where) = 0;
+  break;
+
+  case PCRE2_CONFIG_TABLES_LENGTH:
+  *((uint32_t *)where) = TABLES_LENGTH;
   break;
 
   case PCRE2_CONFIG_UNICODE_VERSION:

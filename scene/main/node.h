@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,56 +88,55 @@ private:
 		Ref<SceneState> instance_state;
 		Ref<SceneState> inherited_state;
 
-		HashMap<NodePath, int> editable_instances;
-
-		Node *parent;
-		Node *owner;
-		Vector<Node *> children; // list of children
-		int pos;
-		int depth;
-		int blocked; // safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
+		Node *parent = nullptr;
+		Node *owner = nullptr;
+		Vector<Node *> children;
+		int pos = -1;
+		int depth = -1;
+		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
-		SceneTree *tree;
-		bool inside_tree;
-		bool ready_notified; //this is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification
-		bool ready_first;
+		SceneTree *tree = nullptr;
+		bool inside_tree = false;
+		bool ready_notified = false; // This is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification.
+		bool ready_first = true;
 #ifdef TOOLS_ENABLED
-		NodePath import_path; //path used when imported, used by scene editors to keep tracking
+		NodePath import_path; // Path used when imported, used by scene editors to keep tracking.
 #endif
 
-		Viewport *viewport;
+		Viewport *viewport = nullptr;
 
 		Map<StringName, GroupData> grouped;
-		List<Node *>::Element *OW; // owned element
+		List<Node *>::Element *OW = nullptr; // Owned element.
 		List<Node *> owned;
 
-		PauseMode pause_mode;
-		Node *pause_owner;
+		PauseMode pause_mode = PAUSE_MODE_INHERIT;
+		Node *pause_owner = nullptr;
 
-		int network_master;
+		int network_master = 1; // Server by default.
 		Vector<NetData> rpc_methods;
 		Vector<NetData> rpc_properties;
 
-		// variables used to properly sort the node when processing, ignored otherwise
-		//should move all the stuff below to bits
-		bool physics_process;
-		bool idle_process;
-		int process_priority;
+		// Variables used to properly sort the node when processing, ignored otherwise.
+		// TODO: Should move all the stuff below to bits.
+		bool physics_process = false;
+		bool process = false;
+		int process_priority = 0;
 
-		bool physics_process_internal;
-		bool idle_process_internal;
+		bool physics_process_internal = false;
+		bool process_internal = false;
 
-		bool input;
-		bool unhandled_input;
-		bool unhandled_key_input;
+		bool input = false;
+		bool unhandled_input = false;
+		bool unhandled_key_input = false;
 
-		bool parent_owned;
-		bool in_constructor;
-		bool use_placeholder;
+		bool parent_owned = false;
+		bool in_constructor = true;
+		bool use_placeholder = false;
 
-		bool display_folded;
+		bool display_folded = false;
+		bool editable_instance = false;
 
-		mutable NodePath *path_cache;
+		mutable NodePath *path_cache = nullptr;
 
 	} data;
 
@@ -325,8 +324,6 @@ public:
 
 	void set_editable_instance(Node *p_node, bool p_editable);
 	bool is_editable_instance(const Node *p_node) const;
-	void set_editable_instances(const HashMap<NodePath, int> &p_editable_instances);
-	HashMap<NodePath, int> get_editable_instances() const;
 
 	/* NOTIFICATIONS */
 
@@ -339,14 +336,14 @@ public:
 	float get_physics_process_delta_time() const;
 	bool is_physics_processing() const;
 
-	void set_process(bool p_idle_process);
+	void set_process(bool p_process);
 	float get_process_delta_time() const;
 	bool is_processing() const;
 
 	void set_physics_process_internal(bool p_process_internal);
 	bool is_physics_processing_internal() const;
 
-	void set_process_internal(bool p_idle_process_internal);
+	void set_process_internal(bool p_process_internal);
 	bool is_processing_internal() const;
 
 	void set_process_priority(int p_priority);

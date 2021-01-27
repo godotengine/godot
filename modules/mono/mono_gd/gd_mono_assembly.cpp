@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,20 +48,20 @@ Vector<String> GDMonoAssembly::search_dirs;
 void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config, const String &p_custom_bcl_dir) {
 	String framework_dir;
 
-	if (!p_custom_bcl_dir.empty()) {
+	if (!p_custom_bcl_dir.is_empty()) {
 		framework_dir = p_custom_bcl_dir;
 	} else if (mono_assembly_getrootdir()) {
 		framework_dir = String::utf8(mono_assembly_getrootdir()).plus_file("mono").plus_file("4.5");
 	}
 
-	if (!framework_dir.empty()) {
+	if (!framework_dir.is_empty()) {
 		r_search_dirs.push_back(framework_dir);
 		r_search_dirs.push_back(framework_dir.plus_file("Facades"));
 	}
 
 #if !defined(TOOLS_ENABLED)
 	String data_game_assemblies_dir = GodotSharpDirs::get_data_game_assemblies_dir();
-	if (!data_game_assemblies_dir.empty()) {
+	if (!data_game_assemblies_dir.is_empty()) {
 		r_search_dirs.push_back(data_game_assemblies_dir);
 	}
 #endif
@@ -72,7 +72,7 @@ void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const Strin
 		r_search_dirs.push_back(GodotSharpDirs::get_res_temp_assemblies_dir());
 	}
 
-	if (p_custom_config.empty()) {
+	if (p_custom_config.is_empty()) {
 		r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_dir());
 	} else {
 		String api_config = p_custom_config == "ExportRelease" ? "Release" : "Debug";
@@ -230,7 +230,7 @@ void GDMonoAssembly::initialize() {
 
 MonoAssembly *GDMonoAssembly::_real_load_assembly_from(const String &p_path, bool p_refonly, MonoAssemblyName *p_aname) {
 	Vector<uint8_t> data = FileAccess::get_file_as_array(p_path);
-	ERR_FAIL_COND_V_MSG(data.empty(), nullptr, "Could read the assembly in the specified location");
+	ERR_FAIL_COND_V_MSG(data.is_empty(), nullptr, "Could read the assembly in the specified location");
 
 	String image_filename;
 
@@ -379,8 +379,8 @@ GDMonoClass *GDMonoAssembly::get_class(MonoClass *p_mono_class) {
 		return match->value();
 	}
 
-	StringName namespace_name = mono_class_get_namespace(p_mono_class);
-	StringName class_name = mono_class_get_name(p_mono_class);
+	StringName namespace_name = String::utf8(mono_class_get_namespace(p_mono_class));
+	StringName class_name = String::utf8(mono_class_get_name(p_mono_class));
 
 	GDMonoClass *wrapped_class = memnew(GDMonoClass(namespace_name, class_name, p_mono_class, this));
 
@@ -423,7 +423,7 @@ GDMonoClass *GDMonoAssembly::get_object_derived_class(const StringName &p_class)
 				match = current;
 			}
 
-			while (!nested_classes.empty()) {
+			while (!nested_classes.is_empty()) {
 				GDMonoClass *current_nested = nested_classes.front()->get();
 				nested_classes.pop_front();
 

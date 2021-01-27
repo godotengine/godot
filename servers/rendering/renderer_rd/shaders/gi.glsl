@@ -97,13 +97,12 @@ layout(push_constant, binding = 0, std430) uniform Params {
 
 	vec4 proj_info;
 
-	uint max_giprobes;
-	bool high_quality_vct;
-	bool use_sdfgi;
-	bool orthogonal;
-
 	vec3 ao_color;
-	uint pad;
+	uint max_giprobes;
+
+	bool high_quality_vct;
+	bool orthogonal;
+	uint pad[2];
 
 	mat3x4 cam_rotation;
 }
@@ -331,7 +330,7 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 		}
 
 		ambient_light.rgb = diffuse;
-#if 1
+
 		if (roughness < 0.2) {
 			vec3 pos_to_uvw = 1.0 / sdfgi.grid_size;
 			vec4 light_accum = vec4(0.0);
@@ -363,7 +362,6 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 				//ray_pos += ray_dir * (bias / sdfgi.cascades[cascade].to_cell); //bias to avoid self occlusion
 				ray_pos += (ray_dir * 1.0 / max(abs_ray_dir.x, max(abs_ray_dir.y, abs_ray_dir.z)) + cam_normal * 1.4) * bias / sdfgi.cascades[cascade].to_cell;
 			}
-
 			float softness = 0.2 + min(1.0, roughness * 5.0) * 4.0; //approximation to roughness so it does not seem like a hard fade
 			while (length(ray_pos) < max_distance) {
 				for (uint i = 0; i < sdfgi.max_cascades; i++) {
@@ -433,8 +431,6 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 				specular = (light * alpha * sa + specular * b) / reflection_light.a;
 			}
 		}
-
-#endif
 
 		reflection_light.rgb = specular;
 
@@ -597,35 +593,24 @@ vec4 fetch_normal_and_roughness(ivec2 pos) {
 	return normal_roughness;
 }
 
-void main() {
-	// Pixel being shaded
-	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-	if (any(greaterThanEqual(pos, params.screen_size))) { //too large, do nothing
-		return;
-	}
-
-	vec3 vertex = reconstruct_position(pos);
-	vertex.y = -vertex.y;
-
+void process_gi(ivec2 pos, vec3 vertex, inout vec4 ambient_light, inout vec4 reflection_light) {
 	vec4 normal_roughness = fetch_normal_and_roughness(pos);
-	vec3 normal = normal_roughness.xyz;
 
-	vec4 ambient_light = vec4(0.0), reflection_light = vec4(0.0);
+	vec3 normal = normal_roughness.xyz;
 
 	if (normal.length() > 0.5) {
 		//valid normal, can do GI
 		float roughness = normal_roughness.w;
-
 		vertex = mat3(params.cam_rotation) * vertex;
 		normal = normalize(mat3(params.cam_rotation) * normal);
-
 		vec3 reflection = normalize(reflect(normalize(vertex), normal));
 
-		if (params.use_sdfgi) {
-			sdfgi_process(vertex, normal, reflection, roughness, ambient_light, reflection_light);
-		}
+#ifdef USE_SDFGI
+		sdfgi_process(vertex, normal, reflection, roughness, ambient_light, reflection_light);
+#endif
 
-		if (params.max_giprobes > 0) {
+#ifdef USE_GIPROBES
+		{
 			uvec2 giprobe_tex = texelFetch(usampler2D(giprobe_buffer, linear_sampler), pos, 0).rg;
 			roughness *= roughness;
 			//find arbitrary tangent and bitangent, then build a matrix
@@ -648,15 +633,39 @@ void main() {
 				spec_accum /= blend_accum;
 			}
 
-			if (params.use_sdfgi) {
-				reflection_light = blend_color(spec_accum, reflection_light);
-				ambient_light = blend_color(amb_accum, ambient_light);
-			} else {
-				reflection_light = spec_accum;
-				ambient_light = amb_accum;
-			}
+#ifdef USE_SDFGI
+			reflection_light = blend_color(spec_accum, reflection_light);
+			ambient_light = blend_color(amb_accum, ambient_light);
+#else
+			reflection_light = spec_accum;
+			ambient_light = amb_accum;
+#endif
 		}
+#endif
 	}
+}
+
+void main() {
+	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+
+#ifdef MODE_HALF_RES
+	pos <<= 1;
+#endif
+	if (any(greaterThanEqual(pos, params.screen_size))) { //too large, do nothing
+		return;
+	}
+
+	vec4 ambient_light = vec4(0.0);
+	vec4 reflection_light = vec4(0.0);
+
+	vec3 vertex = reconstruct_position(pos);
+	vertex.y = -vertex.y;
+
+	process_gi(pos, vertex, ambient_light, reflection_light);
+
+#ifdef MODE_HALF_RES
+	pos >>= 1;
+#endif
 
 	imageStore(ambient_buffer, pos, ambient_light);
 	imageStore(reflection_buffer, pos, reflection_light);

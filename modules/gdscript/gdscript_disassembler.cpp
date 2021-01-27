@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 
 #include "core/string/string_builder.h"
 #include "gdscript.h"
-#include "gdscript_functions.h"
 
 static String _get_variant_string(const Variant &p_variant) {
 	String txt;
@@ -324,11 +323,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 4;
 			} break;
 			case OPCODE_ASSIGN_TYPED_NATIVE: {
-				Variant class_name = _constants_ptr[_code_ptr[ip + 3]];
-				GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(class_name.operator Object *());
-
 				text += "assign typed native (";
-				text += nc->get_name().operator String();
+				text += DADDR(3);
 				text += ") ";
 				text += DADDR(1);
 				text += " = ";
@@ -607,13 +603,49 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr = 5 + argc;
 			} break;
-			case OPCODE_CALL_BUILT_IN: {
-				text += "call-built-in ";
+			case OPCODE_CALL_UTILITY: {
+				text += "call-utility ";
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				text += DADDR(1 + argc) + " = ";
 
-				text += GDScriptFunctions::get_func_name(GDScriptFunctions::Function(_code_ptr[ip + 2 + instr_var_args]));
+				text += _global_names_ptr[_code_ptr[ip + 2 + instr_var_args]];
+				text += "(";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0)
+						text += ", ";
+					text += DADDR(1 + i);
+				}
+				text += ")";
+
+				incr = 4 + argc;
+			} break;
+			case OPCODE_CALL_UTILITY_VALIDATED: {
+				text += "call-utility ";
+
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+				text += DADDR(1 + argc) + " = ";
+
+				text += "<unkown function>";
+				text += "(";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0)
+						text += ", ";
+					text += DADDR(1 + i);
+				}
+				text += ")";
+
+				incr = 4 + argc;
+			} break;
+			case OPCODE_CALL_GDSCRIPT_UTILITY: {
+				text += "call-gscript-utility ";
+
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+				text += DADDR(1 + argc) + " = ";
+
+				text += "<unknown function>";
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {

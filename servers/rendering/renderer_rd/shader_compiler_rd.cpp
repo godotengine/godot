@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -920,7 +920,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			if (adnode->datatype == SL::TYPE_STRUCT) {
 				declaration += _mkid(adnode->struct_name);
 			} else {
-				declaration = _prestr(adnode->precision) + _typestr(adnode->datatype);
+				declaration += _prestr(adnode->precision) + _typestr(adnode->datatype);
 			}
 			for (int i = 0; i < adnode->declarations.size(); i++) {
 				if (i > 0) {
@@ -930,7 +930,11 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				}
 				declaration += _mkid(adnode->declarations[i].name);
 				declaration += "[";
-				declaration += itos(adnode->declarations[i].size);
+				if (adnode->size_expression != nullptr) {
+					declaration += _dump_node_code(adnode->size_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				} else {
+					declaration += itos(adnode->declarations[i].size);
+				}
 				declaration += "]";
 				int sz = adnode->declarations[i].initializer.size();
 				if (sz > 0) {
@@ -986,12 +990,13 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			if (anode->call_expression != nullptr) {
 				code += ".";
 				code += _dump_node_code(anode->call_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning, false);
-			}
-
-			if (anode->index_expression != nullptr) {
+			} else if (anode->index_expression != nullptr) {
 				code += "[";
 				code += _dump_node_code(anode->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 				code += "]";
+			} else if (anode->assign_expression != nullptr) {
+				code += "=";
+				code += _dump_node_code(anode->assign_expression, p_level, r_gen_code, p_actions, p_default_actions, true, false);
 			}
 
 			if (anode->name == time_name) {
@@ -1229,8 +1234,10 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				code += "[";
 				code += _dump_node_code(mnode->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 				code += "]";
+			} else if (mnode->assign_expression != nullptr) {
+				code += "=";
+				code += _dump_node_code(mnode->assign_expression, p_level, r_gen_code, p_actions, p_default_actions, true, false);
 			}
-
 		} break;
 	}
 
@@ -1333,8 +1340,8 @@ ShaderCompilerRD::ShaderCompilerRD() {
 
 	actions[RS::SHADER_SPATIAL].renames["FRAGCOORD"] = "gl_FragCoord";
 	actions[RS::SHADER_SPATIAL].renames["FRONT_FACING"] = "gl_FrontFacing";
-	actions[RS::SHADER_SPATIAL].renames["NORMALMAP"] = "normalmap";
-	actions[RS::SHADER_SPATIAL].renames["NORMALMAP_DEPTH"] = "normaldepth";
+	actions[RS::SHADER_SPATIAL].renames["NORMAL_MAP"] = "normal_map";
+	actions[RS::SHADER_SPATIAL].renames["NORMAL_MAP_DEPTH"] = "normal_map_depth";
 	actions[RS::SHADER_SPATIAL].renames["ALBEDO"] = "albedo";
 	actions[RS::SHADER_SPATIAL].renames["ALPHA"] = "alpha";
 	actions[RS::SHADER_SPATIAL].renames["METALLIC"] = "metallic";
@@ -1380,8 +1387,8 @@ ShaderCompilerRD::ShaderCompilerRD() {
 	actions[RS::SHADER_SPATIAL].usage_defines["AO_LIGHT_AFFECT"] = "#define ENABLE_AO\n";
 	actions[RS::SHADER_SPATIAL].usage_defines["UV"] = "#define ENABLE_UV_INTERP\n";
 	actions[RS::SHADER_SPATIAL].usage_defines["UV2"] = "#define ENABLE_UV2_INTERP\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["NORMALMAP"] = "#define ENABLE_NORMALMAP\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["NORMALMAP_DEPTH"] = "@NORMALMAP";
+	actions[RS::SHADER_SPATIAL].usage_defines["NORMAL_MAP"] = "#define ENABLE_NORMAL_MAP\n";
+	actions[RS::SHADER_SPATIAL].usage_defines["NORMAL_MAP_DEPTH"] = "@NORMAL_MAP";
 	actions[RS::SHADER_SPATIAL].usage_defines["COLOR"] = "#define ENABLE_COLOR_INTERP\n";
 	actions[RS::SHADER_SPATIAL].usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 	actions[RS::SHADER_SPATIAL].usage_defines["ALPHA_SCISSOR"] = "#define ALPHA_SCISSOR_USED\n";

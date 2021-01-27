@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -146,6 +146,24 @@ void TextServerGDNative::font_set_antialiased(RID p_font, bool p_antialiased) {
 bool TextServerGDNative::font_get_antialiased(RID p_font) const {
 	ERR_FAIL_COND_V(interface == nullptr, false);
 	return interface->font_get_antialiased(data, (godot_rid *)&p_font);
+}
+
+Dictionary TextServerGDNative::font_get_variation_list(RID p_font) const {
+	ERR_FAIL_COND_V(interface == nullptr, Dictionary());
+	godot_dictionary result = interface->font_get_variation_list(data, (godot_rid *)&p_font);
+	Dictionary info = *(Dictionary *)&result;
+	godot_dictionary_destroy(&result);
+
+	return info;
+}
+
+void TextServerGDNative::font_set_variation(RID p_font, const String &p_name, double p_value) {
+	ERR_FAIL_COND(interface == nullptr);
+	interface->font_set_variation(data, (godot_rid *)&p_font, (godot_string *)&p_name, p_value);
+}
+
+double TextServerGDNative::font_get_variation(RID p_font, const String &p_name) const {
+	return interface->font_get_variation(data, (godot_rid *)&p_font, (godot_string *)&p_name);
 }
 
 void TextServerGDNative::font_set_hinting(RID p_font, TextServer::Hinting p_hinting) {
@@ -685,12 +703,12 @@ void GDAPI godot_glyph_set_offset(godot_glyph *p_self, const godot_vector2 *p_of
 	self->y_off = offset->y;
 }
 
-godot_real GDAPI godot_glyph_get_advance(const godot_glyph *p_self) {
+godot_float GDAPI godot_glyph_get_advance(const godot_glyph *p_self) {
 	const TextServer::Glyph *self = (const TextServer::Glyph *)p_self;
 	return self->advance;
 }
 
-void GDAPI godot_glyph_set_advance(godot_glyph *p_self, godot_real p_advance) {
+void GDAPI godot_glyph_set_advance(godot_glyph *p_self, godot_float p_advance) {
 	TextServer::Glyph *self = (TextServer::Glyph *)p_self;
 	self->advance = p_advance;
 }
@@ -821,9 +839,9 @@ godot_int GDAPI godot_packed_glyph_array_size(const godot_packed_glyph_array *p_
 	return self->size();
 }
 
-godot_bool GDAPI godot_packed_glyph_array_empty(const godot_packed_glyph_array *p_self) {
+godot_bool GDAPI godot_packed_glyph_array_is_empty(const godot_packed_glyph_array *p_self) {
 	const Vector<TextServer::Glyph> *self = (const Vector<TextServer::Glyph> *)p_self;
-	return self->empty();
+	return self->is_empty();
 }
 
 void GDAPI godot_packed_glyph_array_destroy(godot_packed_glyph_array *p_self) {

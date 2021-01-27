@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -338,7 +338,7 @@ void ScriptEditorQuickOpen::_update_search() {
 		}
 	}
 
-	get_ok()->set_disabled(root->get_children() == nullptr);
+	get_ok_button()->set_disabled(root->get_children() == nullptr);
 }
 
 void ScriptEditorQuickOpen::_confirmed() {
@@ -382,8 +382,8 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 	search_box->connect("gui_input", callable_mp(this, &ScriptEditorQuickOpen::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
-	get_ok()->set_text(TTR("Open"));
-	get_ok()->set_disabled(true);
+	get_ok_button()->set_text(TTR("Open"));
+	get_ok_button()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	search_options->connect("item_activated", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
@@ -587,7 +587,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 }
 
 void ScriptEditor::_add_recent_script(String p_path) {
-	if (p_path.empty()) {
+	if (p_path.is_empty()) {
 		return;
 	}
 
@@ -702,7 +702,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 			}
 		}
 		if (script.is_valid()) {
-			if (!script->get_path().empty()) {
+			if (!script->get_path().is_empty()) {
 				// Only saved scripts can be restored.
 				previous_scripts.push_back(script->get_path());
 			}
@@ -1129,7 +1129,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			return;
 		} break;
 		case FILE_REOPEN_CLOSED: {
-			if (previous_scripts.empty()) {
+			if (previous_scripts.is_empty()) {
 				return;
 			}
 
@@ -1381,7 +1381,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			case SHOW_IN_FILE_SYSTEM: {
 				const RES script = current->get_edited_resource();
 				const String path = script->get_path();
-				if (!path.empty()) {
+				if (!path.is_empty()) {
 					FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
 					file_system_dock->navigate_to_path(path);
 					// Ensure that the FileSystem dock is visible.
@@ -1887,7 +1887,7 @@ void ScriptEditor::_update_script_names() {
 		if (se) {
 			Ref<Texture2D> icon = se->get_theme_icon();
 			String path = se->get_edited_resource()->get_path();
-			bool saved = !path.empty();
+			bool saved = !path.is_empty();
 			if (saved) {
 				// The script might be deleted, moved, or renamed, so make sure
 				// to update original path to previously edited resource.
@@ -1934,7 +1934,7 @@ void ScriptEditor::_update_script_names() {
 					sd.name = name;
 				} break;
 				case DISPLAY_DIR_AND_NAME: {
-					if (!path.get_base_dir().get_file().empty()) {
+					if (!path.get_base_dir().get_file().is_empty()) {
 						sd.name = path.get_base_dir().get_file().plus_file(name);
 					} else {
 						sd.name = name;
@@ -1954,7 +1954,20 @@ void ScriptEditor::_update_script_names() {
 		Vector<String> disambiguated_script_names;
 		Vector<String> full_script_paths;
 		for (int j = 0; j < sedata.size(); j++) {
-			disambiguated_script_names.append(sedata[j].name.replace("(*)", ""));
+			String name = sedata[j].name.replace("(*)", "");
+			ScriptListName script_display = (ScriptListName)(int)EditorSettings::get_singleton()->get("text_editor/script_list/list_script_names_as");
+			switch (script_display) {
+				case DISPLAY_NAME: {
+					name = name.get_file();
+				} break;
+				case DISPLAY_DIR_AND_NAME: {
+					name = name.get_base_dir().get_file().plus_file(name.get_file());
+				} break;
+				default:
+					break;
+			}
+
+			disambiguated_script_names.append(name);
 			full_script_paths.append(sedata[j].tooltip);
 		}
 
@@ -1988,7 +2001,7 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
-	if (_sort_list_on_update && !sedata.empty()) {
+	if (_sort_list_on_update && !sedata.is_empty()) {
 		sedata.sort();
 
 		// change actual order of tab_container so that the order can be rearranged by user
@@ -2052,7 +2065,7 @@ void ScriptEditor::_update_script_names() {
 	_update_help_overview_visibility();
 	_update_script_colors();
 
-	file_menu->get_popup()->set_item_disabled(file_menu->get_popup()->get_item_index(FILE_REOPEN_CLOSED), previous_scripts.empty());
+	file_menu->get_popup()->set_item_disabled(file_menu->get_popup()->get_item_index(FILE_REOPEN_CLOSED), previous_scripts.is_empty());
 }
 
 void ScriptEditor::_update_script_connections() {
@@ -2198,7 +2211,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 			args.push_back(script_path);
 		}
 
-		Error err = OS::get_singleton()->execute(path, args, false);
+		Error err = OS::get_singleton()->create_process(path, args);
 		if (err == OK) {
 			return false;
 		}
@@ -2806,7 +2819,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 		String path = scripts[i];
 
 		Dictionary script_info = scripts[i];
-		if (!script_info.empty()) {
+		if (!script_info.is_empty()) {
 			path = script_info["path"];
 		}
 
@@ -2833,7 +2846,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 			}
 		}
 
-		if (!script_info.empty()) {
+		if (!script_info.is_empty()) {
 			ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(tab_container->get_tab_count() - 1));
 			if (se) {
 				se->set_edit_state(script_info["state"]);
@@ -3482,7 +3495,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	tab_container->connect("tab_changed", callable_mp(this, &ScriptEditor::_tab_changed));
 
 	erase_tab_confirm = memnew(ConfirmationDialog);
-	erase_tab_confirm->get_ok()->set_text(TTR("Save"));
+	erase_tab_confirm->get_ok_button()->set_text(TTR("Save"));
 	erase_tab_confirm->add_button(TTR("Discard"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
 	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab));
 	erase_tab_confirm->connect("custom_action", callable_mp(this, &ScriptEditor::_close_discard_current_tab));
@@ -3515,7 +3528,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 		disk_changed_list->set_v_size_flags(SIZE_EXPAND_FILL);
 
 		disk_changed->connect("confirmed", callable_mp(this, &ScriptEditor::_reload_scripts));
-		disk_changed->get_ok()->set_text(TTR("Reload"));
+		disk_changed->get_ok_button()->set_text(TTR("Reload"));
 
 		disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 		disk_changed->connect("custom_action", callable_mp(this, &ScriptEditor::_resave_scripts));
@@ -3646,7 +3659,7 @@ void ScriptEditorPlugin::edited_scene_changed() {
 ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	script_editor = memnew(ScriptEditor(p_node));
-	editor->get_viewport()->add_child(script_editor);
+	editor->get_main_control()->add_child(script_editor);
 	script_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	script_editor->hide();

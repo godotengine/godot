@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,7 +117,7 @@ struct LocalDebugger::ScriptsProfiler {
 void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
 
-	if (!target_function.empty()) {
+	if (!target_function.is_empty()) {
 		String current_function = script_lang->debug_get_stack_level_function(0);
 		if (current_function != target_function) {
 			script_debugger->set_depth(0);
@@ -259,7 +259,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				String source = breakpoint.first;
 				int linenr = breakpoint.second;
 
-				if (source.empty()) {
+				if (source.is_empty()) {
 					continue;
 				}
 
@@ -285,7 +285,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				String source = breakpoint.first;
 				int linenr = breakpoint.second;
 
-				if (source.empty()) {
+				if (source.is_empty()) {
 					continue;
 				}
 
@@ -323,7 +323,7 @@ void LocalDebugger::print_variables(const List<String> &names, const List<Varian
 	for (const List<String>::Element *E = names.front(); E; E = E->next()) {
 		value = String(V->get());
 
-		if (variable_prefix.empty()) {
+		if (variable_prefix.is_empty()) {
 			print_line(E->get() + ": " + String(V->get()));
 		} else {
 			print_line(E->get() + ":");
@@ -359,7 +359,7 @@ void LocalDebugger::send_message(const String &p_message, const Array &p_args) {
 }
 
 void LocalDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type) {
-	print_line("ERROR: '" + (p_descr.empty() ? p_err : p_descr) + "'");
+	print_line("ERROR: '" + (p_descr.is_empty() ? p_err : p_descr) + "'");
 }
 
 LocalDebugger::LocalDebugger() {

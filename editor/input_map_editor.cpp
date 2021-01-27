@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -398,7 +398,7 @@ void InputMapEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 		const String str = (press_a_key_physical) ? keycode_get_string(k->get_physical_keycode_with_modifiers()) + TTR(" (Physical)") : keycode_get_string(k->get_keycode_with_modifiers());
 
 		press_a_key_label->set_text(str);
-		press_a_key->get_ok()->set_disabled(false);
+		press_a_key->get_ok_button()->set_disabled(false);
 		press_a_key->set_input_as_handled();
 	}
 }
@@ -432,7 +432,7 @@ void InputMapEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 		case INPUT_KEY: {
 			press_a_key_physical = false;
 			press_a_key_label->set_text(TTR("Press a Key..."));
-			press_a_key->get_ok()->set_disabled(true);
+			press_a_key->get_ok_button()->set_disabled(true);
 			last_wait_for_key = Ref<InputEvent>();
 			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 			//press_a_key->grab_focus();
@@ -465,10 +465,10 @@ void InputMapEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 			if (mb.is_valid()) {
 				device_index->select(mb->get_button_index() - 1);
 				_set_current_device(mb->get_device());
-				device_input->get_ok()->set_text(TTR("Change"));
+				device_input->get_ok_button()->set_text(TTR("Change"));
 			} else {
 				_set_current_device(0);
-				device_input->get_ok()->set_text(TTR("Add"));
+				device_input->get_ok_button()->set_text(TTR("Add"));
 			}
 
 		} break;
@@ -488,10 +488,10 @@ void InputMapEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 			if (jm.is_valid()) {
 				device_index->select(jm->get_axis() * 2 + (jm->get_axis_value() > 0 ? 1 : 0));
 				_set_current_device(jm->get_device());
-				device_input->get_ok()->set_text(TTR("Change"));
+				device_input->get_ok_button()->set_text(TTR("Change"));
 			} else {
 				_set_current_device(0);
-				device_input->get_ok()->set_text(TTR("Add"));
+				device_input->get_ok_button()->set_text(TTR("Add"));
 			}
 
 		} break;
@@ -510,10 +510,10 @@ void InputMapEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 			if (jb.is_valid()) {
 				device_index->select(jb->get_button_index());
 				_set_current_device(jb->get_device());
-				device_input->get_ok()->set_text(TTR("Change"));
+				device_input->get_ok_button()->set_text(TTR("Change"));
 			} else {
 				_set_current_device(0);
-				device_input->get_ok()->set_text(TTR("Add"));
+				device_input->get_ok_button()->set_text(TTR("Add"));
 			}
 
 		} break;
@@ -921,10 +921,10 @@ InputMapEditor::InputMapEditor() {
 	inputmap_changed = "inputmap_changed";
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 0);
-	vbc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, 0);
-	vbc->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 0);
-	vbc->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, 0);
+	vbc->set_anchor_and_offset(SIDE_TOP, Control::ANCHOR_BEGIN, 0);
+	vbc->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_END, 0);
+	vbc->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 0);
+	vbc->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, 0);
 	add_child(vbc);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
@@ -978,7 +978,7 @@ InputMapEditor::InputMapEditor() {
 	add_child(popup_add);
 
 	press_a_key = memnew(ConfirmationDialog);
-	press_a_key->get_ok()->set_disabled(true);
+	press_a_key->get_ok_button()->set_disabled(true);
 	//press_a_key->set_focus_mode(Control::FOCUS_ALL);
 	press_a_key->connect("window_input", callable_mp(this, &InputMapEditor::_wait_for_key));
 	press_a_key->connect("confirmed", callable_mp(this, &InputMapEditor::_press_a_key_confirm));
@@ -986,15 +986,15 @@ InputMapEditor::InputMapEditor() {
 
 	l = memnew(Label);
 	l->set_text(TTR("Press a Key..."));
-	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	l->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	l->set_align(Label::ALIGN_CENTER);
-	l->set_margin(MARGIN_TOP, 20);
-	l->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_BEGIN, 30);
+	l->set_offset(SIDE_TOP, 20);
+	l->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_BEGIN, 30);
 	press_a_key->add_child(l);
 	press_a_key_label = l;
 
 	device_input = memnew(ConfirmationDialog);
-	device_input->get_ok()->set_text(TTR("Add"));
+	device_input->get_ok_button()->set_text(TTR("Add"));
 	device_input->connect("confirmed", callable_mp(this, &InputMapEditor::_device_input_add));
 	add_child(device_input);
 

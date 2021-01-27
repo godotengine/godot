@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -173,8 +173,8 @@ void SpinBox::_line_edit_focus_exit() {
 inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
 	int w = icon->get_width();
 	if ((w != last_w)) {
-		line_edit->set_margin(MARGIN_LEFT, 0);
-		line_edit->set_margin(MARGIN_RIGHT, -w);
+		line_edit->set_offset(SIDE_LEFT, 0);
+		line_edit->set_offset(SIDE_RIGHT, -w);
 		last_w = w;
 	}
 }
@@ -272,7 +272,7 @@ SpinBox::SpinBox() {
 	line_edit = memnew(LineEdit);
 	add_child(line_edit);
 
-	line_edit->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	line_edit->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	line_edit->set_align(LineEdit::ALIGN_LEFT);
 
@@ -280,7 +280,6 @@ SpinBox::SpinBox() {
 	line_edit->connect("text_entered", callable_mp(this, &SpinBox::_text_entered), Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("focus_exited", callable_mp(this, &SpinBox::_line_edit_focus_exit), Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("gui_input", callable_mp(this, &SpinBox::_line_edit_input));
-	drag.enabled = false;
 
 	range_click_timer = memnew(Timer);
 	range_click_timer->connect("timeout", callable_mp(this, &SpinBox::_range_click_timeout));

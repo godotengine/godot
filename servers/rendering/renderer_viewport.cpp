@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,10 +79,11 @@ void RendererViewport::_draw_3d(Viewport *p_viewport, XRInterface::Eyes p_eye) {
 		xr_interface = XRServer::get_singleton()->get_primary_interface();
 	}
 
+	float screen_lod_threshold = p_viewport->lod_threshold / float(p_viewport->size.width);
 	if (p_viewport->use_xr && xr_interface.is_valid()) {
-		RSG::scene->render_camera(p_viewport->render_buffers, xr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+		RSG::scene->render_camera(p_viewport->render_buffers, xr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->size, screen_lod_threshold, p_viewport->shadow_atlas);
 	} else {
-		RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+		RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->size, screen_lod_threshold, p_viewport->shadow_atlas);
 	}
 	RENDER_TIMESTAMP("<End Rendering 3D Scene");
 }
@@ -830,13 +831,14 @@ void RendererViewport::viewport_set_canvas_stacking(RID p_viewport, RID p_canvas
 	viewport->canvas_map[p_canvas].sublayer = p_sublayer;
 }
 
-void RendererViewport::viewport_set_shadow_atlas_size(RID p_viewport, int p_size) {
+void RendererViewport::viewport_set_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
 	viewport->shadow_atlas_size = p_size;
+	viewport->shadow_atlas_16_bits = p_16_bits;
 
-	RSG::scene->shadow_atlas_set_size(viewport->shadow_atlas, viewport->shadow_atlas_size);
+	RSG::scene->shadow_atlas_set_size(viewport->shadow_atlas, viewport->shadow_atlas_size, viewport->shadow_atlas_16_bits);
 }
 
 void RendererViewport::viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) {
@@ -883,6 +885,13 @@ void RendererViewport::viewport_set_use_debanding(RID p_viewport, bool p_use_deb
 	if (viewport->render_buffers.is_valid()) {
 		RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, viewport->screen_space_aa, p_use_debanding);
 	}
+}
+
+void RendererViewport::viewport_set_lod_threshold(RID p_viewport, float p_pixels) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	viewport->lod_threshold = p_pixels;
 }
 
 int RendererViewport::viewport_get_render_info(RID p_viewport, RS::ViewportRenderInfo p_info) {

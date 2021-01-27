@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -336,6 +336,17 @@ public:
 	};
 
 	/*****************/
+	/**** BARRIER ****/
+	/*****************/
+
+	enum BarrierMask {
+		BARRIER_MASK_RASTER = 1,
+		BARRIER_MASK_COMPUTE = 2,
+		BARRIER_MASK_TRANSFER = 4,
+		BARRIER_MASK_ALL = BARRIER_MASK_RASTER | BARRIER_MASK_COMPUTE | BARRIER_MASK_TRANSFER
+	};
+
+	/*****************/
 	/**** TEXTURE ****/
 	/*****************/
 
@@ -433,20 +444,21 @@ public:
 		TEXTURE_SLICE_2D,
 		TEXTURE_SLICE_CUBEMAP,
 		TEXTURE_SLICE_3D,
+		TEXTURE_SLICE_2D_ARRAY,
 	};
 
 	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D) = 0;
 
-	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the beginning of the frame, unless sync with draw is used, which is used to mix updates with draw calls
+	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
 	virtual Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer) = 0; // CPU textures will return immediately, while GPU textures will most likely force a flush
 
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const = 0;
 	virtual bool texture_is_shared(RID p_texture) = 0;
 	virtual bool texture_is_valid(RID p_texture) = 0;
 
-	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, bool p_sync_with_draw = false) = 0;
-	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, bool p_sync_with_draw = false) = 0;
-	virtual Error texture_resolve_multisample(RID p_from_texture, RID p_to_texture, bool p_sync_with_draw = false) = 0;
+	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
+	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
+	virtual Error texture_resolve_multisample(RID p_from_texture, RID p_to_texture, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
@@ -467,11 +479,11 @@ public:
 
 	// This ID is warranted to be unique for the same formats, does not need to be freed
 	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format) = 0;
-	virtual FramebufferFormatID framebuffer_format_create_empty(const Size2i &p_size) = 0;
+	virtual FramebufferFormatID framebuffer_format_create_empty(TextureSamples p_samples = TEXTURE_SAMPLES_1) = 0;
 	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format) = 0;
 
 	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID) = 0;
-	virtual RID framebuffer_create_empty(const Size2i &p_size, FramebufferFormatID p_format_check = INVALID_ID) = 0;
+	virtual RID framebuffer_create_empty(const Size2i &p_size, TextureSamples p_samples = TEXTURE_SAMPLES_1, FramebufferFormatID p_format_check = INVALID_ID) = 0;
 
 	virtual FramebufferFormatID framebuffer_get_format(RID p_framebuffer) = 0;
 
@@ -564,7 +576,7 @@ public:
 			frequency = VERTEX_FREQUENCY_VERTEX;
 		}
 	};
-	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>()) = 0;
+	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_as_storage = false) = 0;
 
 	typedef int64_t VertexFormatID;
 
@@ -648,7 +660,8 @@ public:
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) = 0;
 	virtual bool uniform_set_is_valid(RID p_uniform_set) = 0;
 
-	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the beginning of the frame, unless sync with draw is used, which is used to mix updates with draw calls
+	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
+	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
 	virtual Vector<uint8_t> buffer_get_data(RID p_buffer) = 0; //this causes stall, only use to retrieve large buffers for saving
 
 	/*************************/
@@ -929,7 +942,8 @@ public:
 	/********************/
 
 	enum InitialAction {
-		INITIAL_ACTION_CLEAR, //start rendering and clear the framebuffer (supply params)
+		INITIAL_ACTION_CLEAR, //start rendering and clear the whole framebuffer (region or not) (supply params)
+		INITIAL_ACTION_CLEAR_REGION, //start rendering and clear the framebuffer in the specified region (supply params)
 		INITIAL_ACTION_KEEP, //start rendering, but keep attached color texture contents (depth will be cleared)
 		INITIAL_ACTION_DROP, //start rendering, ignore what is there, just write above it
 		INITIAL_ACTION_CONTINUE, //continue rendering (framebuffer must have been left in "continue" state as final action previously)
@@ -961,7 +975,7 @@ public:
 	virtual void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) = 0;
 	virtual void draw_list_disable_scissor(DrawListID p_list) = 0;
 
-	virtual void draw_list_end() = 0;
+	virtual void draw_list_end(uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
 
 	/***********************/
 	/**** COMPUTE LISTS ****/
@@ -978,8 +992,9 @@ public:
 	virtual void compute_list_dispatch_indirect(ComputeListID p_list, RID p_buffer, uint32_t p_offset) = 0;
 	virtual void compute_list_add_barrier(ComputeListID p_list) = 0;
 
-	virtual void compute_list_end() = 0;
+	virtual void compute_list_end(uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
 
+	virtual void barrier(uint32_t p_from = BARRIER_MASK_ALL, uint32_t p_to = BARRIER_MASK_ALL) = 0;
 	virtual void full_barrier() = 0;
 
 	/***************/
@@ -992,7 +1007,7 @@ public:
 	/**** Timing ****/
 	/****************/
 
-	virtual void capture_timestamp(const String &p_name, bool p_sync_to_draw) = 0;
+	virtual void capture_timestamp(const String &p_name) = 0;
 	virtual uint32_t get_captured_timestamps_count() const = 0;
 	virtual uint64_t get_captured_timestamps_frame() const = 0;
 	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const = 0;
@@ -1057,6 +1072,12 @@ public:
 
 	virtual RenderingDevice *create_local_device() = 0;
 
+	virtual void set_resource_name(RID p_id, const String p_name) = 0;
+
+	virtual void draw_command_begin_label(String p_label_name, const Color p_color = Color(1, 1, 1, 1)) = 0;
+	virtual void draw_command_insert_label(String p_label_name, const Color p_color = Color(1, 1, 1, 1)) = 0;
+	virtual void draw_command_end_label() = 0;
+
 	static RenderingDevice *get_singleton();
 	RenderingDevice();
 
@@ -1076,7 +1097,7 @@ protected:
 
 	RID _uniform_set_create(const Array &p_uniforms, RID p_shader, uint32_t p_shader_set);
 
-	Error _buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, bool p_sync_with_draw = false);
+	Error _buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 
 	RID _render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags = 0);
 

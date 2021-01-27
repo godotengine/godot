@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,8 @@
 #define ANIMATION_H
 
 #include "core/io/resource.h"
+
+#define ANIM_MIN_LENGTH 0.001
 
 class Animation : public Resource {
 	GDCLASS(Animation, Resource);
@@ -293,7 +295,7 @@ public:
 	void track_set_key_time(int p_track, int p_key_idx, float p_time);
 	int track_find_key(int p_track, float p_time, bool p_exact = false) const;
 	void track_remove_key(int p_track, int p_idx);
-	void track_remove_key_at_position(int p_track, float p_pos);
+	void track_remove_key_at_time(int p_track, float p_time);
 	int track_get_key_count(int p_track) const;
 	Variant track_get_key_value(int p_track, int p_key_idx) const;
 	float track_get_key_time(int p_track, int p_key_idx) const;

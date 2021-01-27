@@ -70,15 +70,6 @@
 				Returns a [Rect2i] with equivalent position and area, modified so that the top-left corner is the origin and [code]width[/code] and [code]height[/code] are positive.
 			</description>
 		</method>
-		<method name="clip">
-			<return type="Rect2i">
-			</return>
-			<argument index="0" name="b" type="Rect2i">
-			</argument>
-			<description>
-				Returns the intersection of this [Rect2i] and b.
-			</description>
-		</method>
 		<method name="encloses">
 			<return type="bool">
 			</return>
@@ -107,10 +98,10 @@
 		<method name="grow">
 			<return type="Rect2i">
 			</return>
-			<argument index="0" name="by" type="int">
+			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
-				Returns a copy of the [Rect2i] grown a given amount of units towards all the sides.
+				Returns a copy of the [Rect2i] grown by the specified [code]amount[/code] on all sides.
 			</description>
 		</method>
 		<method name="grow_individual">
@@ -125,18 +116,18 @@
 			<argument index="3" name="bottom" type="int">
 			</argument>
 			<description>
-				Returns a copy of the [Rect2i] grown a given amount of units towards each direction individually.
+				Returns a copy of the [Rect2i] grown by the specified amount on each side individually.
 			</description>
 		</method>
-		<method name="grow_margin">
+		<method name="grow_side">
 			<return type="Rect2i">
 			</return>
-			<argument index="0" name="margin" type="int">
+			<argument index="0" name="side" type="int">
 			</argument>
-			<argument index="1" name="by" type="int">
+			<argument index="1" name="amount" type="int">
 			</argument>
 			<description>
-				Returns a copy of the [Rect2i] grown a given amount of units towards the [enum Margin] direction.
+				Returns a copy of the [Rect2i] grown by the specified [code]amount[/code] on the specified [enum Side].
 			</description>
 		</method>
 		<method name="has_no_area">
@@ -153,6 +144,16 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the [Rect2i] contains a point.
+			</description>
+		</method>
+		<method name="intersection">
+			<return type="Rect2i">
+			</return>
+			<argument index="0" name="b" type="Rect2i">
+			</argument>
+			<description>
+				Returns the intersection of this [Rect2i] and [code]b[/code].
+				If the rectangles do not intersect, an empty [Rect2i] is returned.
 			</description>
 		</method>
 		<method name="intersects">

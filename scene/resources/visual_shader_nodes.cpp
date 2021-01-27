@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,11 @@
 /*************************************************************************/
 
 #include "visual_shader_nodes.h"
+
+////////////// Constants Base
+
+VisualShaderNodeConstant::VisualShaderNodeConstant() {
+}
 
 ////////////// Scalar(Float)
 
@@ -480,7 +485,7 @@ String VisualShaderNodeTexture::generate_global(Shader::Mode p_mode, VisualShade
 			case TYPE_COLOR:
 				u += " : hint_albedo";
 				break;
-			case TYPE_NORMALMAP:
+			case TYPE_NORMAL_MAP:
 				u += " : hint_normal";
 				break;
 		}
@@ -780,7 +785,7 @@ void VisualShaderNodeTexture::_bind_methods() {
 	BIND_ENUM_CONSTANT(SOURCE_PORT);
 	BIND_ENUM_CONSTANT(TYPE_DATA);
 	BIND_ENUM_CONSTANT(TYPE_COLOR);
-	BIND_ENUM_CONSTANT(TYPE_NORMALMAP);
+	BIND_ENUM_CONSTANT(TYPE_NORMAL_MAP);
 }
 
 VisualShaderNodeTexture::VisualShaderNodeTexture() {
@@ -1181,7 +1186,7 @@ String VisualShaderNodeCubemap::generate_global(Shader::Mode p_mode, VisualShade
 			case TYPE_COLOR:
 				u += " : hint_albedo";
 				break;
-			case TYPE_NORMALMAP:
+			case TYPE_NORMAL_MAP:
 				u += " : hint_normal";
 				break;
 		}
@@ -1310,7 +1315,7 @@ void VisualShaderNodeCubemap::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(TYPE_DATA);
 	BIND_ENUM_CONSTANT(TYPE_COLOR);
-	BIND_ENUM_CONSTANT(TYPE_NORMALMAP);
+	BIND_ENUM_CONSTANT(TYPE_NORMAL_MAP);
 }
 
 VisualShaderNodeCubemap::VisualShaderNodeCubemap() {
@@ -4350,7 +4355,7 @@ String VisualShaderNodeTextureUniform::generate_global(Shader::Mode p_mode, Visu
 				code += " : hint_albedo;\n";
 			}
 			break;
-		case TYPE_NORMALMAP:
+		case TYPE_NORMAL_MAP:
 			code += " : hint_normal;\n";
 			break;
 		case TYPE_ANISO:
@@ -4431,7 +4436,7 @@ void VisualShaderNodeTextureUniform::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(TYPE_DATA);
 	BIND_ENUM_CONSTANT(TYPE_COLOR);
-	BIND_ENUM_CONSTANT(TYPE_NORMALMAP);
+	BIND_ENUM_CONSTANT(TYPE_NORMAL_MAP);
 	BIND_ENUM_CONSTANT(TYPE_ANISO);
 
 	BIND_ENUM_CONSTANT(COLOR_DEFAULT_WHITE);
@@ -4608,7 +4613,7 @@ String VisualShaderNodeTexture2DArrayUniform::generate_global(Shader::Mode p_mod
 			else
 				code += " : hint_albedo;\n";
 			break;
-		case TYPE_NORMALMAP:
+		case TYPE_NORMAL_MAP:
 			code += " : hint_normal;\n";
 			break;
 		case TYPE_ANISO:
@@ -4676,7 +4681,7 @@ String VisualShaderNodeTexture3DUniform::generate_global(Shader::Mode p_mode, Vi
 			else
 				code += " : hint_albedo;\n";
 			break;
-		case TYPE_NORMALMAP:
+		case TYPE_NORMAL_MAP:
 			code += " : hint_normal;\n";
 			break;
 		case TYPE_ANISO:
@@ -4746,7 +4751,7 @@ String VisualShaderNodeCubemapUniform::generate_global(Shader::Mode p_mode, Visu
 				code += " : hint_albedo;\n";
 			}
 			break;
-		case TYPE_NORMALMAP:
+		case TYPE_NORMAL_MAP:
 			code += " : hint_normal;\n";
 			break;
 		case TYPE_ANISO:

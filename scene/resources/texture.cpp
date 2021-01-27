@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -371,8 +371,8 @@ Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit
 				img = Image::lossy_unpacker(pv);
 			}
 
-			if (img.is_null() || img->empty()) {
-				ERR_FAIL_COND_V(img.is_null() || img->empty(), Ref<Image>());
+			if (img.is_null() || img->is_empty()) {
+				ERR_FAIL_COND_V(img.is_null() || img->is_empty(), Ref<Image>());
 			}
 
 			if (first) {
@@ -548,7 +548,7 @@ Error StreamTexture2D::_load_data(const String &p_path, int &tw, int &th, int &t
 
 	memdelete(f);
 
-	if (image.is_null() || image->empty()) {
+	if (image.is_null() || image->is_empty()) {
 		return ERR_CANT_OPEN;
 	}
 
@@ -924,7 +924,7 @@ Error StreamTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &r_da
 
 	for (int i = 0; i < (r_depth + mipmaps); i++) {
 		Ref<Image> image = StreamTexture2D::load_image_from_file(f, 0);
-		ERR_FAIL_COND_V(image.is_null() || image->empty(), ERR_CANT_OPEN);
+		ERR_FAIL_COND_V(image.is_null() || image->is_empty(), ERR_CANT_OPEN);
 		if (i == 0) {
 			r_format = image->get_format();
 			r_width = image->get_width();
@@ -1253,7 +1253,7 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 	Vector2 scale = p_rect.size / src.size;
 
 	src.position += (rc.position - margin.position);
-	Rect2 src_c = rc.clip(src);
+	Rect2 src_c = rc.intersection(src);
 	if (src_c.size == Size2()) {
 		return false;
 	}
@@ -1575,7 +1575,7 @@ void LargeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 		if (!p_src_rect.intersects(rect)) {
 			continue;
 		}
-		Rect2 local = p_src_rect.clip(rect);
+		Rect2 local = p_src_rect.intersection(rect);
 		Rect2 target = local;
 		target.size *= scale;
 		target.position = p_rect.position + (p_src_rect.position + rect.position) * scale;
@@ -2136,20 +2136,11 @@ AnimatedTexture::AnimatedTexture() {
 	pause = false;
 	oneshot = false;
 	RenderingServer::get_singleton()->connect("frame_pre_draw", callable_mp(this, &AnimatedTexture::_update_proxy));
-
-#ifndef NO_THREADS
-	rw_lock = RWLock::create();
-#else
-	rw_lock = nullptr;
-#endif
 }
 
 AnimatedTexture::~AnimatedTexture() {
 	RS::get_singleton()->free(proxy);
 	RS::get_singleton()->free(proxy_ph);
-	if (rw_lock) {
-		memdelete(rw_lock);
-	}
 }
 
 ///////////////////////////////
@@ -2223,7 +2214,7 @@ Error ImageTextureLayered::create_from_images(Vector<Ref<Image>> p_images) {
 				"Cubemap array layers must be a multiple of 6");
 	}
 
-	ERR_FAIL_COND_V(p_images[0].is_null() || p_images[0]->empty(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_images[0].is_null() || p_images[0]->is_empty(), ERR_INVALID_PARAMETER);
 
 	Image::Format new_format = p_images[0]->get_format();
 	int new_width = p_images[0]->get_width();
@@ -2361,7 +2352,7 @@ Error StreamTextureLayered::_load_data(const String &p_path, Vector<Ref<Image>> 
 
 	for (uint32_t i = 0; i < layer_count; i++) {
 		Ref<Image> image = StreamTexture2D::load_image_from_file(f, p_size_limit);
-		ERR_FAIL_COND_V(image.is_null() || image->empty(), ERR_CANT_OPEN);
+		ERR_FAIL_COND_V(image.is_null() || image->is_empty(), ERR_CANT_OPEN);
 		images.write[i] = image;
 	}
 

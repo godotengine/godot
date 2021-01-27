@@ -156,5 +156,5 @@ static NamedColor named_colors[] = {
 	{ "whitesmoke", Color(0.96, 0.96, 0.96) },
 	{ "yellow", Color(1.00, 1.00, 0.00) },
 	{ "yellowgreen", Color(0.60, 0.80, 0.20) },
-	{ nullptr, Color(0.60, 0.80, 0.20) },
+	{ nullptr, Color() },
 };

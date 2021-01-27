@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -743,7 +743,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 						Vector2 normal = emission_normals.get(random_idx);
 						Transform2D m2;
 						m2.set_axis(0, normal);
-						m2.set_axis(1, normal.tangent());
+						m2.set_axis(1, normal.orthogonal());
 						p.velocity = m2.basis_xform(p.velocity);
 					}
 
@@ -908,7 +908,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 		if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
 			if (p.velocity.length() > 0.0) {
 				p.transform.elements[1] = p.velocity.normalized();
-				p.transform.elements[0] = p.transform.elements[1].tangent();
+				p.transform.elements[0] = p.transform.elements[1].orthogonal();
 			}
 
 		} else {

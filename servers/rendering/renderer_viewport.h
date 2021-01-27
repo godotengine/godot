@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,8 +81,11 @@ public:
 
 		RID shadow_atlas;
 		int shadow_atlas_size;
+		bool shadow_atlas_16_bits = false;
 
 		bool sdf_active;
+
+		float lod_threshold = 1.0;
 
 		uint64_t last_pass = 0;
 
@@ -215,12 +218,14 @@ public:
 	void viewport_set_global_canvas_transform(RID p_viewport, const Transform2D &p_transform);
 	void viewport_set_canvas_stacking(RID p_viewport, RID p_canvas, int p_layer, int p_sublayer);
 
-	void viewport_set_shadow_atlas_size(RID p_viewport, int p_size);
+	void viewport_set_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = false);
 	void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv);
 
 	void viewport_set_msaa(RID p_viewport, RS::ViewportMSAA p_msaa);
 	void viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode);
 	void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding);
+
+	void viewport_set_lod_threshold(RID p_viewport, float p_pixels);
 
 	virtual int viewport_get_render_info(RID p_viewport, RS::ViewportRenderInfo p_info);
 	virtual void viewport_set_debug_draw(RID p_viewport, RS::ViewportDebugDraw p_draw);

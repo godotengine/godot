@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -160,7 +160,7 @@ private:
 		if (valid_path == "") {
 			set_message(TTR("The path specified doesn't exist."), MESSAGE_ERROR);
 			memdelete(d);
-			get_ok()->set_disabled(true);
+			get_ok_button()->set_disabled(true);
 			return "";
 		}
 
@@ -174,7 +174,7 @@ private:
 			if (valid_install_path == "") {
 				set_message(TTR("The path specified doesn't exist."), MESSAGE_ERROR, INSTALL_PATH);
 				memdelete(d);
-				get_ok()->set_disabled(true);
+				get_ok_button()->set_disabled(true);
 				return "";
 			}
 		}
@@ -189,7 +189,7 @@ private:
 					if (!pkg) {
 						set_message(TTR("Error opening package file (it's not in ZIP format)."), MESSAGE_ERROR);
 						memdelete(d);
-						get_ok()->set_disabled(true);
+						get_ok_button()->set_disabled(true);
 						unzClose(pkg);
 						return "";
 					}
@@ -210,7 +210,7 @@ private:
 					if (ret == UNZ_END_OF_LIST_OF_FILE) {
 						set_message(TTR("Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."), MESSAGE_ERROR);
 						memdelete(d);
-						get_ok()->set_disabled(true);
+						get_ok_button()->set_disabled(true);
 						unzClose(pkg);
 						return "";
 					}
@@ -237,7 +237,7 @@ private:
 					if (!is_folder_empty) {
 						set_message(TTR("Please choose an empty folder."), MESSAGE_WARNING, INSTALL_PATH);
 						memdelete(d);
-						get_ok()->set_disabled(true);
+						get_ok_button()->set_disabled(true);
 						return "";
 					}
 
@@ -245,14 +245,14 @@ private:
 					set_message(TTR("Please choose a \"project.godot\" or \".zip\" file."), MESSAGE_ERROR);
 					memdelete(d);
 					install_path_container->hide();
-					get_ok()->set_disabled(true);
+					get_ok_button()->set_disabled(true);
 					return "";
 				}
 
 			} else if (valid_path.ends_with("zip")) {
 				set_message(TTR("This directory already contains a Godot project."), MESSAGE_ERROR, INSTALL_PATH);
 				memdelete(d);
-				get_ok()->set_disabled(true);
+				get_ok_button()->set_disabled(true);
 				return "";
 			}
 
@@ -277,7 +277,7 @@ private:
 			if (!is_folder_empty) {
 				set_message(TTR("The selected path is not empty. Choosing an empty folder is highly recommended."), MESSAGE_WARNING);
 				memdelete(d);
-				get_ok()->set_disabled(false);
+				get_ok_button()->set_disabled(false);
 				return valid_path;
 			}
 		}
@@ -285,7 +285,7 @@ private:
 		set_message("");
 		set_message("", MESSAGE_SUCCESS, INSTALL_PATH);
 		memdelete(d);
-		get_ok()->set_disabled(false);
+		get_ok_button()->set_disabled(false);
 		return valid_path;
 	}
 
@@ -320,14 +320,14 @@ private:
 			if (p.ends_with("project.godot")) {
 				p = p.get_base_dir();
 				install_path_container->hide();
-				get_ok()->set_disabled(false);
+				get_ok_button()->set_disabled(false);
 			} else if (p.ends_with(".zip")) {
 				install_path->set_text(p.get_base_dir());
 				install_path_container->show();
-				get_ok()->set_disabled(false);
+				get_ok_button()->set_disabled(false);
 			} else {
 				set_message(TTR("Please choose a \"project.godot\" or \".zip\" file."), MESSAGE_ERROR);
-				get_ok()->set_disabled(true);
+				get_ok_button()->set_disabled(true);
 				return;
 			}
 		}
@@ -338,7 +338,7 @@ private:
 		if (p.ends_with(".zip")) {
 			install_path->call_deferred("grab_focus");
 		} else {
-			get_ok()->call_deferred("grab_focus");
+			get_ok_button()->call_deferred("grab_focus");
 		}
 	}
 
@@ -346,14 +346,14 @@ private:
 		String sp = p_path.simplify_path();
 		project_path->set_text(sp);
 		_path_text_changed(sp);
-		get_ok()->call_deferred("grab_focus");
+		get_ok_button()->call_deferred("grab_focus");
 	}
 
 	void _install_path_selected(const String &p_path) {
 		String sp = p_path.simplify_path();
 		install_path->set_text(sp);
 		_path_text_changed(sp);
-		get_ok()->call_deferred("grab_focus");
+		get_ok_button()->call_deferred("grab_focus");
 	}
 
 	void _browse_path() {
@@ -466,7 +466,7 @@ private:
 						ConfirmationDialog *cd = memnew(ConfirmationDialog);
 						cd->set_title(TTR("Warning: This folder is not empty"));
 						cd->set_text(TTR("You are about to create a Godot project in a non-empty folder.\nThe entire contents of this folder will be imported as project resources!\n\nAre you sure you wish to continue?"));
-						cd->get_ok()->connect("pressed", callable_mp(this, &ProjectDialog::_nonempty_confirmation_ok_pressed));
+						cd->get_ok_button()->connect("pressed", callable_mp(this, &ProjectDialog::_nonempty_confirmation_ok_pressed));
 						get_parent()->add_child(cd);
 						cd->popup_centered();
 						cd->grab_focus();
@@ -684,14 +684,14 @@ public:
 			install_browse->hide();
 
 			set_title(TTR("Rename Project"));
-			get_ok()->set_text(TTR("Rename"));
+			get_ok_button()->set_text(TTR("Rename"));
 			name_container->show();
 			status_rect->hide();
 			msg->hide();
 			install_path_container->hide();
 			install_status_rect->hide();
 			rasterizer_container->hide();
-			get_ok()->set_disabled(false);
+			get_ok_button()->set_disabled(false);
 
 			ProjectSettings *current = memnew(ProjectSettings);
 
@@ -700,7 +700,7 @@ public:
 				set_message(vformat(TTR("Couldn't load project.godot in project path (error %d). It may be missing or corrupted."), err), MESSAGE_ERROR);
 				status_rect->show();
 				msg->show();
-				get_ok()->set_disabled(true);
+				get_ok_button()->set_disabled(true);
 			} else if (current->has_setting("application/config/name")) {
 				String proj = current->get("application/config/name");
 				project_name->set_text(proj);
@@ -738,7 +738,7 @@ public:
 
 			if (mode == MODE_IMPORT) {
 				set_title(TTR("Import Existing Project"));
-				get_ok()->set_text(TTR("Import & Edit"));
+				get_ok_button()->set_text(TTR("Import & Edit"));
 				name_container->hide();
 				install_path_container->hide();
 				rasterizer_container->hide();
@@ -746,7 +746,7 @@ public:
 
 			} else if (mode == MODE_NEW) {
 				set_title(TTR("Create New Project"));
-				get_ok()->set_text(TTR("Create & Edit"));
+				get_ok_button()->set_text(TTR("Create & Edit"));
 				name_container->show();
 				install_path_container->hide();
 				rasterizer_container->show();
@@ -755,7 +755,7 @@ public:
 
 			} else if (mode == MODE_INSTALL) {
 				set_title(TTR("Install Project:") + " " + zip_title);
-				get_ok()->set_text(TTR("Install & Edit"));
+				get_ok_button()->set_text(TTR("Install & Edit"));
 				project_name->set_text(zip_title);
 				name_container->show();
 				install_path_container->hide();
@@ -1297,9 +1297,7 @@ void ProjectList::_global_menu_new_window(const Variant &p_tag) {
 	List<String> args;
 	args.push_back("-p");
 	String exec = OS::get_singleton()->get_executable_path();
-
-	OS::ProcessID pid = 0;
-	OS::get_singleton()->execute(exec, args, false, &pid);
+	OS::get_singleton()->create_process(exec, args);
 }
 
 void ProjectList::_global_menu_open_project(const Variant &p_tag) {
@@ -1310,9 +1308,7 @@ void ProjectList::_global_menu_open_project(const Variant &p_tag) {
 		List<String> args;
 		args.push_back(conf);
 		String exec = OS::get_singleton()->get_executable_path();
-
-		OS::ProcessID pid = 0;
-		OS::get_singleton()->execute(exec, args, false, &pid);
+		OS::get_singleton()->create_process(exec, args);
 	}
 }
 
@@ -1545,7 +1541,7 @@ bool ProjectList::is_any_project_missing() const {
 }
 
 void ProjectList::erase_missing_projects() {
-	if (_projects.empty()) {
+	if (_projects.is_empty()) {
 		return;
 	}
 
@@ -1824,7 +1820,7 @@ void ProjectManager::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
-			settings_hb->set_anchors_and_margins_preset(Control::PRESET_TOP_RIGHT);
+			settings_hb->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT);
 			update();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
@@ -1875,7 +1871,7 @@ void ProjectManager::_dim_window() {
 
 void ProjectManager::_update_project_buttons() {
 	Vector<ProjectList::Item> selected_projects = _project_list->get_selected_projects();
-	bool empty_selection = selected_projects.empty();
+	bool empty_selection = selected_projects.is_empty();
 
 	bool is_missing_project_selected = false;
 	for (int i = 0; i < selected_projects.size(); ++i) {
@@ -2055,9 +2051,7 @@ void ProjectManager::_open_selected_projects() {
 		}
 
 		String exec = OS::get_singleton()->get_executable_path();
-
-		OS::ProcessID pid = 0;
-		Error err = OS::get_singleton()->execute(exec, args, false, &pid);
+		Error err = OS::get_singleton()->create_process(exec, args);
 		ERR_FAIL_COND(err);
 	}
 
@@ -2143,9 +2137,7 @@ void ProjectManager::_run_project_confirm() {
 		}
 
 		String exec = OS::get_singleton()->get_executable_path();
-
-		OS::ProcessID pid = 0;
-		Error err = OS::get_singleton()->execute(exec, args, false, &pid);
+		Error err = OS::get_singleton()->create_process(exec, args);
 		ERR_FAIL_COND(err);
 	}
 }
@@ -2270,8 +2262,7 @@ void ProjectManager::_language_selected(int p_id) {
 void ProjectManager::_restart_confirm() {
 	List<String> args = OS::get_singleton()->get_cmdline_args();
 	String exec = OS::get_singleton()->get_executable_path();
-	OS::ProcessID pid = 0;
-	Error err = OS::get_singleton()->execute(exec, args, false, &pid);
+	Error err = OS::get_singleton()->create_process(exec, args);
 	ERR_FAIL_COND(err);
 
 	_dim_window();
@@ -2321,8 +2312,8 @@ void ProjectManager::_files_dropped(PackedStringArray p_files, int p_screen) {
 			memdelete(dir);
 		}
 		if (confirm) {
-			multi_scan_ask->get_ok()->disconnect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders));
-			multi_scan_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders), varray(folders));
+			multi_scan_ask->get_ok_button()->disconnect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders));
+			multi_scan_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders), varray(folders));
 			multi_scan_ask->set_text(
 					vformat(TTR("Are you sure to scan %s folders for existing Godot projects?\nThis could take a while."), folders.size()));
 			multi_scan_ask->popup_centered();
@@ -2380,6 +2371,8 @@ ProjectManager::ProjectManager() {
 		switch (display_scale) {
 			case 0: {
 				// Try applying a suitable display scale automatically.
+				// The code below is adapted in `editor/editor_settings.cpp` and `editor/editor_node.cpp`.
+				// Make sure to update those when modifying the code below.
 #ifdef OSX_ENABLED
 				editor_set_scale(DisplayServer::get_singleton()->screen_get_max_scale());
 #else
@@ -2433,26 +2426,26 @@ ProjectManager::ProjectManager() {
 	// TRANSLATORS: This refers to the application where users manage their Godot projects.
 	if (TS->is_locale_right_to_left(TranslationServer::get_singleton()->get_tool_locale())) {
 		// For RTL languages, embed translated part of the title (using control characters) to ensure correct order.
-		DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + String::chr(0x202B) + TTR("Project Manager") + String::chr(0x202C) + String::chr(0x200E) + " - " + String::chr(0xA9) + " 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors");
+		DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + String::chr(0x202B) + TTR("Project Manager") + String::chr(0x202C) + String::chr(0x200E) + " - " + String::chr(0xA9) + " 2007-2021 Juan Linietsky, Ariel Manzur & Godot Contributors");
 	} else {
-		DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + String::chr(0xA9) + " 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors");
+		DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + String::chr(0xA9) + " 2007-2021 Juan Linietsky, Ariel Manzur & Godot Contributors");
 	}
 
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
 
-	set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	set_theme(create_custom_theme());
 
-	set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 
 	Panel *panel = memnew(Panel);
 	add_child(panel);
-	panel->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	panel->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	panel->add_theme_style_override("panel", get_theme_stylebox("Background", "EditorStyles"));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	panel->add_child(vb);
-	vb->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 8 * EDSCALE);
+	vb->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 8 * EDSCALE);
 
 	Control *center_box = memnew(Control);
 	center_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -2460,7 +2453,7 @@ ProjectManager::ProjectManager() {
 
 	tabs = memnew(TabContainer);
 	center_box->add_child(tabs);
-	tabs->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	tabs->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
 
 	HBoxContainer *projects_hb = memnew(HBoxContainer);
@@ -2571,7 +2564,7 @@ ProjectManager::ProjectManager() {
 		settings_hb = memnew(HBoxContainer);
 		settings_hb->set_alignment(BoxContainer::ALIGN_END);
 		settings_hb->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
-		settings_hb->set_anchors_and_margins_preset(Control::PRESET_TOP_RIGHT);
+		settings_hb->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT);
 
 		Label *version_label = memnew(Label);
 		String hash = String(VERSION_HASH);
@@ -2629,9 +2622,9 @@ ProjectManager::ProjectManager() {
 	{
 		// Dialogs
 		language_restart_ask = memnew(ConfirmationDialog);
-		language_restart_ask->get_ok()->set_text(TTR("Restart Now"));
-		language_restart_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_restart_confirm));
-		language_restart_ask->get_cancel()->set_text(TTR("Continue"));
+		language_restart_ask->get_ok_button()->set_text(TTR("Restart Now"));
+		language_restart_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_restart_confirm));
+		language_restart_ask->get_cancel_button()->set_text(TTR("Continue"));
 		add_child(language_restart_ask);
 
 		scan_dir = memnew(FileDialog);
@@ -2643,31 +2636,31 @@ ProjectManager::ProjectManager() {
 		scan_dir->connect("dir_selected", callable_mp(this, &ProjectManager::_scan_begin));
 
 		erase_missing_ask = memnew(ConfirmationDialog);
-		erase_missing_ask->get_ok()->set_text(TTR("Remove All"));
-		erase_missing_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
+		erase_missing_ask->get_ok_button()->set_text(TTR("Remove All"));
+		erase_missing_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
 		add_child(erase_missing_ask);
 
 		erase_ask = memnew(ConfirmationDialog);
-		erase_ask->get_ok()->set_text(TTR("Remove"));
-		erase_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_erase_project_confirm));
+		erase_ask->get_ok_button()->set_text(TTR("Remove"));
+		erase_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_erase_project_confirm));
 		add_child(erase_ask);
 
 		multi_open_ask = memnew(ConfirmationDialog);
-		multi_open_ask->get_ok()->set_text(TTR("Edit"));
-		multi_open_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects));
+		multi_open_ask->get_ok_button()->set_text(TTR("Edit"));
+		multi_open_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects));
 		add_child(multi_open_ask);
 
 		multi_run_ask = memnew(ConfirmationDialog);
-		multi_run_ask->get_ok()->set_text(TTR("Run"));
-		multi_run_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_run_project_confirm));
+		multi_run_ask->get_ok_button()->set_text(TTR("Run"));
+		multi_run_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_run_project_confirm));
 		add_child(multi_run_ask);
 
 		multi_scan_ask = memnew(ConfirmationDialog);
-		multi_scan_ask->get_ok()->set_text(TTR("Scan"));
+		multi_scan_ask->get_ok_button()->set_text(TTR("Scan"));
 		add_child(multi_scan_ask);
 
 		ask_update_settings = memnew(ConfirmationDialog);
-		ask_update_settings->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_confirm_update_settings));
+		ask_update_settings->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_confirm_update_settings));
 		add_child(ask_update_settings);
 
 		npdialog = memnew(ProjectDialog);
@@ -2684,7 +2677,7 @@ ProjectManager::ProjectManager() {
 
 		open_templates = memnew(ConfirmationDialog);
 		open_templates->set_text(TTR("You currently don't have any projects.\nWould you like to explore official example projects in the Asset Library?"));
-		open_templates->get_ok()->set_text(TTR("Open Asset Library"));
+		open_templates->get_ok_button()->set_text(TTR("Open Asset Library"));
 		open_templates->connect("confirmed", callable_mp(this, &ProjectManager::_open_asset_library));
 		add_child(open_templates);
 	}

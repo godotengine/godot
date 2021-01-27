@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -119,7 +119,7 @@ public:
 			filepath = cache_path.plus_file(req[1].get_file()); // TODO dangerous?
 			ctype = "application/wasm";
 		}
-		if (filepath.empty() || !FileAccess::exists(filepath)) {
+		if (filepath.is_empty() || !FileAccess::exists(filepath)) {
 			String s = "HTTP/1.1 404 Not Found\r\n";
 			s += "Connection: Close\r\n";
 			s += "\r\n";
@@ -135,6 +135,7 @@ public:
 		s += "Access-Control-Allow-Origin: *\r\n";
 		s += "Cross-Origin-Opener-Policy: same-origin\r\n";
 		s += "Cross-Origin-Embedder-Policy: require-corp\r\n";
+		s += "Cache-Control: no-store, max-age=0\r\n";
 		s += "\r\n";
 		CharString cs = s.utf8();
 		Error err = connection->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
@@ -394,7 +395,7 @@ bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p
 		}
 	}
 
-	if (!err.empty()) {
+	if (!err.is_empty()) {
 		r_error = err;
 	}
 
@@ -485,7 +486,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		//write
 
 		if (file == "godot.html") {
-			if (!custom_html.empty()) {
+			if (!custom_html.is_empty()) {
 				continue;
 			}
 			_fix_html(data, p_preset, p_path.get_file().get_basename(), p_debug, p_flags, shared_objects);
@@ -520,7 +521,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	} while (unzGoToNextFile(pkg) == UNZ_OK);
 	unzClose(pkg);
 
-	if (!custom_html.empty()) {
+	if (!custom_html.is_empty()) {
 		FileAccess *f = FileAccess::open(custom_html, FileAccess::READ);
 		if (!f) {
 			EditorNode::get_singleton()->show_warning(TTR("Could not read custom HTML shell:") + "\n" + custom_html);
@@ -543,7 +544,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 	Ref<Image> splash;
 	const String splash_path = String(GLOBAL_GET("application/boot_splash/image")).strip_edges();
-	if (!splash_path.empty()) {
+	if (!splash_path.is_empty()) {
 		splash.instance();
 		const Error err = splash->load(splash_path);
 		if (err) {
@@ -564,7 +565,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	// This way, the favicon can be displayed immediately when loading the page.
 	Ref<Image> favicon;
 	const String favicon_path = String(GLOBAL_GET("application/config/icon")).strip_edges();
-	if (!favicon_path.empty()) {
+	if (!favicon_path.is_empty()) {
 		favicon.instance();
 		const Error err = favicon->load(favicon_path);
 		if (err) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,7 +60,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Thread *check_for_changes_thread;
 	volatile bool quit_request;
 	Mutex plugins_lock;
-	Vector<PluginConfig> plugins;
+	Vector<PluginConfigIOS> plugins;
 
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
 	static Error _walk_dir_recursive(DirAccess *p_da, FileHandler p_handler, void *p_userdata);
@@ -146,7 +146,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 			if (!ea->plugins_changed) {
 				MutexLock lock(ea->plugins_lock);
 
-				Vector<PluginConfig> loaded_plugins = get_plugins();
+				Vector<PluginConfigIOS> loaded_plugins = get_plugins();
 
 				if (ea->plugins.size() != loaded_plugins.size()) {
 					ea->plugins_changed = true;
@@ -218,7 +218,7 @@ public:
 			da->list_dir_begin();
 			while (true) {
 				String file = da->get_next();
-				if (file.empty()) {
+				if (file.is_empty()) {
 					break;
 				}
 
@@ -241,7 +241,7 @@ public:
 					continue;
 				}
 
-				if (file.ends_with(PLUGIN_CONFIG_EXT)) {
+				if (file.ends_with(PluginConfigIOS::PLUGIN_CONFIG_EXT)) {
 					dir_files.push_back(file);
 				}
 			}
@@ -251,18 +251,18 @@ public:
 		return dir_files;
 	}
 
-	static Vector<PluginConfig> get_plugins() {
-		Vector<PluginConfig> loaded_plugins;
+	static Vector<PluginConfigIOS> get_plugins() {
+		Vector<PluginConfigIOS> loaded_plugins;
 
 		String plugins_dir = ProjectSettings::get_singleton()->get_resource_path().plus_file("ios/plugins");
 
 		if (DirAccess::exists(plugins_dir)) {
 			Vector<String> plugins_filenames = list_plugin_config_files(plugins_dir, true);
 
-			if (!plugins_filenames.empty()) {
+			if (!plugins_filenames.is_empty()) {
 				Ref<ConfigFile> config_file = memnew(ConfigFile);
 				for (int i = 0; i < plugins_filenames.size(); i++) {
-					PluginConfig config = load_plugin_config(config_file, plugins_dir.plus_file(plugins_filenames[i]));
+					PluginConfigIOS config = load_plugin_config(config_file, plugins_dir.plus_file(plugins_filenames[i]));
 					if (config.valid_config) {
 						loaded_plugins.push_back(config);
 					} else {
@@ -275,11 +275,11 @@ public:
 		return loaded_plugins;
 	}
 
-	static Vector<PluginConfig> get_enabled_plugins(const Ref<EditorExportPreset> &p_presets) {
-		Vector<PluginConfig> enabled_plugins;
-		Vector<PluginConfig> all_plugins = get_plugins();
+	static Vector<PluginConfigIOS> get_enabled_plugins(const Ref<EditorExportPreset> &p_presets) {
+		Vector<PluginConfigIOS> enabled_plugins;
+		Vector<PluginConfigIOS> all_plugins = get_plugins();
 		for (int i = 0; i < all_plugins.size(); i++) {
-			PluginConfig plugin = all_plugins[i];
+			PluginConfigIOS plugin = all_plugins[i];
 			bool enabled = p_presets->get("plugins/" + plugin.name);
 			if (enabled) {
 				enabled_plugins.push_back(plugin);
@@ -360,7 +360,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
 
-	Vector<PluginConfig> found_plugins = get_plugins();
+	Vector<PluginConfigIOS> found_plugins = get_plugins();
 	for (int i = 0; i < found_plugins.size(); i++) {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + found_plugins[i].name), false));
 	}
@@ -815,7 +815,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 
 		const String splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
 
-		if (!splash_path.empty()) {
+		if (!splash_path.is_empty()) {
 			splash.instance();
 			const Error err = splash->load(splash_path);
 			if (err) {
@@ -979,7 +979,7 @@ Error EditorExportPlatformIOS::_codesign(String p_file, void *p_userdata) {
 		codesign_args.push_back("-s");
 		codesign_args.push_back(data->preset->get(data->debug ? "application/code_sign_identity_debug" : "application/code_sign_identity_release"));
 		codesign_args.push_back(p_file);
-		return OS::get_singleton()->execute("codesign", codesign_args, true);
+		return OS::get_singleton()->execute("codesign", codesign_args);
 	}
 	return OK;
 }
@@ -1229,7 +1229,7 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 			install_name_args.push_back(String("@rpath").plus_file(framework_name).plus_file(file_name));
 			install_name_args.push_back(destination);
 
-			OS::get_singleton()->execute("install_name_tool", install_name_args, true);
+			OS::get_singleton()->execute("install_name_tool", install_name_args);
 		}
 
 		// Creating Info.plist
@@ -1345,7 +1345,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 	Vector<String> plugin_embedded_dependencies;
 	Vector<String> plugin_files;
 
-	Vector<PluginConfig> enabled_plugins = get_enabled_plugins(p_preset);
+	Vector<PluginConfigIOS> enabled_plugins = get_enabled_plugins(p_preset);
 
 	Vector<String> added_linked_dependenciy_names;
 	Vector<String> added_embedded_dependenciy_names;
@@ -1354,19 +1354,14 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 	Error err;
 
 	for (int i = 0; i < enabled_plugins.size(); i++) {
-		PluginConfig plugin = enabled_plugins[i];
+		PluginConfigIOS plugin = enabled_plugins[i];
 
 		// Export plugin binary.
-		if (!plugin.supports_targets) {
-			err = _copy_asset(dest_dir, plugin.binary, nullptr, true, true, r_exported_assets);
-		} else {
-			String plugin_binary_dir = plugin.binary.get_base_dir();
-			String plugin_name_prefix = plugin.binary.get_basename().get_file();
-			String plugin_file = plugin_name_prefix + "." + (p_debug ? "debug" : "release") + ".a";
-			String result_file_name = plugin.binary.get_file();
-
-			err = _copy_asset(dest_dir, plugin_binary_dir.plus_file(plugin_file), &result_file_name, true, true, r_exported_assets);
-		}
+		String plugin_main_binary = get_plugin_main_binary(plugin, p_debug);
+		String plugin_binary_result_file = plugin.binary.get_file();
+		// We shouldn't embed .xcframework that contains static libraries.
+		// Static libraries are not embedded anyway.
+		err = _copy_asset(dest_dir, plugin_main_binary, &plugin_binary_result_file, true, false, r_exported_assets);
 
 		ERR_FAIL_COND_V(err, err);
 
@@ -1430,7 +1425,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 			String key = *K;
 			String value = plugin.plist[key];
 
-			if (key.empty() || value.empty()) {
+			if (key.is_empty() || value.is_empty()) {
 				continue;
 			}
 
@@ -1457,7 +1452,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 			String key = *K;
 			String value = plist_values[key];
 
-			if (key.empty() || value.empty()) {
+			if (key.is_empty() || value.is_empty()) {
 				continue;
 			}
 
@@ -1575,9 +1570,9 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_SKIP;
 	}
 
-	String library_to_use = "libgodot.iphone." + String(p_debug ? "debug" : "release") + ".fat.a";
+	String library_to_use = "libgodot.iphone." + String(p_debug ? "debug" : "release") + ".xcframework";
 
-	print_line("Static library: " + library_to_use);
+	print_line("Static framework: " + library_to_use);
 	String pkg_name;
 	if (p_preset->get("application/name") != "") {
 		pkg_name = p_preset->get("application/name"); // app_name
@@ -1663,7 +1658,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		if (files_to_parse.has(file)) {
 			_fix_config_file(p_preset, data, config_data, p_debug);
 		} else if (file.begins_with("libgodot.iphone")) {
-			if (file != library_to_use) {
+			if (!file.begins_with(library_to_use) || file.ends_with(String("/empty"))) {
 				ret = unzGoToNextFile(src_pkg_zip);
 				continue; //ignore!
 			}
@@ -1671,7 +1666,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 #if defined(OSX_ENABLED) || defined(X11_ENABLED)
 			is_execute = true;
 #endif
-			file = "godot_ios.a";
+			file = file.replace(library_to_use, binary_name + ".xcframework");
 		}
 
 		if (file == project_file) {
@@ -1848,7 +1843,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	archive_args.push_back("archive");
 	archive_args.push_back("-archivePath");
 	archive_args.push_back(archive_path);
-	err = OS::get_singleton()->execute("xcodebuild", archive_args, true);
+	err = OS::get_singleton()->execute("xcodebuild", archive_args);
 	ERR_FAIL_COND_V(err, err);
 
 	if (ep.step("Making .ipa", 4)) {
@@ -1863,7 +1858,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	export_args.push_back("-allowProvisioningUpdates");
 	export_args.push_back("-exportPath");
 	export_args.push_back(dest_dir);
-	err = OS::get_singleton()->execute("xcodebuild", export_args, true);
+	err = OS::get_singleton()->execute("xcodebuild", export_args);
 	ERR_FAIL_COND_V(err, err);
 #else
 	print_line(".ipa can only be built on macOS. Leaving Xcode project without building the package.");
@@ -1930,7 +1925,7 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 		err += etc_error;
 	}
 
-	if (!err.empty()) {
+	if (!err.is_empty()) {
 		r_error = err;
 	}
 

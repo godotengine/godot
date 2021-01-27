@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -200,7 +200,7 @@ void PathFollow2D::_update_transform() {
 			tangent_to_curve = (ahead_pos - pos).normalized();
 		}
 
-		Vector2 normal_of_curve = -tangent_to_curve.tangent();
+		Vector2 normal_of_curve = -tangent_to_curve.orthogonal();
 
 		pos += tangent_to_curve * h_offset;
 		pos += normal_of_curve * v_offset;
@@ -257,7 +257,7 @@ String PathFollow2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	if (!Object::cast_to<Path2D>(get_parent())) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("PathFollow2D only works when set as a child of a Path2D node.");
@@ -386,15 +386,4 @@ void PathFollow2D::set_loop(bool p_loop) {
 
 bool PathFollow2D::has_loop() const {
 	return loop;
-}
-
-PathFollow2D::PathFollow2D() {
-	offset = 0;
-	h_offset = 0;
-	v_offset = 0;
-	path = nullptr;
-	rotates = true;
-	cubic = true;
-	loop = true;
-	lookahead = 4;
 }

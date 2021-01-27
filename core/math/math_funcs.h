@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -198,6 +198,23 @@ public:
 		value += 0.0;
 		return value;
 	}
+	static _ALWAYS_INLINE_ float fposmodp(float p_x, float p_y) {
+		float value = Math::fmod(p_x, p_y);
+		if (value < 0) {
+			value += p_y;
+		}
+		value += 0.0;
+		return value;
+	}
+	static _ALWAYS_INLINE_ double fposmodp(double p_x, double p_y) {
+		double value = Math::fmod(p_x, p_y);
+		if (value < 0) {
+			value += p_y;
+		}
+		value += 0.0;
+		return value;
+	}
+
 	static _ALWAYS_INLINE_ int posmod(int p_x, int p_y) {
 		int value = p_x % p_y;
 		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
@@ -275,7 +292,7 @@ public:
 	static double ease(double p_x, double p_c);
 	static int step_decimals(double p_step);
 	static int range_step_decimals(double p_step);
-	static double stepify(double p_value, double p_step);
+	static double snapped(double p_value, double p_step);
 	static double dectime(double p_value, double p_amount, double p_step);
 
 	static uint32_t larger_prime(uint32_t p_val);
@@ -455,12 +472,12 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ float snap_scalar(float p_offset, float p_step, float p_target) {
-		return p_step != 0 ? Math::stepify(p_target - p_offset, p_step) + p_offset : p_target;
+		return p_step != 0 ? Math::snapped(p_target - p_offset, p_step) + p_offset : p_target;
 	}
 
 	static _ALWAYS_INLINE_ float snap_scalar_separation(float p_offset, float p_step, float p_target, float p_separation) {
 		if (p_step != 0) {
-			float a = Math::stepify(p_target - p_offset, p_step + p_separation) + p_offset;
+			float a = Math::snapped(p_target - p_offset, p_step + p_separation) + p_offset;
 			float b = a;
 			if (p_target >= 0) {
 				b -= p_separation;

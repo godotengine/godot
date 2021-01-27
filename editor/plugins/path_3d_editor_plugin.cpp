@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -609,7 +609,7 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	curve_edit->set_pressed(true);
 	/*
     collision_polygon_editor = memnew( PathEditor(p_node) );
-    editor->get_viewport()->add_child(collision_polygon_editor);
+    editor->get_main_control()->add_child(collision_polygon_editor);
     collision_polygon_editor->set_margin(MARGIN_LEFT,200);
     collision_polygon_editor->set_margin(MARGIN_RIGHT,230);
     collision_polygon_editor->set_margin(MARGIN_TOP,0);

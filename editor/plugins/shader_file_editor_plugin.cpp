@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,7 +59,7 @@ void ShaderFileEditor::_version_selected(int p_option) {
 	ERR_FAIL_COND(bytecode.is_null());
 
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
-		if (bytecode->get_stage_bytecode(RD::ShaderStage(i)).empty() && bytecode->get_stage_compile_error(RD::ShaderStage(i)) == String()) {
+		if (bytecode->get_stage_bytecode(RD::ShaderStage(i)).is_empty() && bytecode->get_stage_compile_error(RD::ShaderStage(i)) == String()) {
 			stages[i]->set_icon(Ref<Texture2D>());
 			continue;
 		}
@@ -182,7 +182,7 @@ void ShaderFileEditor::_update_options() {
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 		Vector<uint8_t> bc = bytecode->get_stage_bytecode(RD::ShaderStage(i));
 		String error = bytecode->get_stage_compile_error(RD::ShaderStage(i));
-		bool disable = error == String() && bc.empty();
+		bool disable = error == String() && bc.is_empty();
 		stages[i]->set_disabled(disable);
 		if (!disable) {
 			if (stages[i]->is_pressed()) {

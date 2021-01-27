@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,6 @@
 #include "scene/scene_string_names.h"
 
 #include "core/math/geometry_3d.h"
-
-#define ANIM_MIN_LENGTH 0.001
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
@@ -810,8 +808,8 @@ int Animation::transform_track_insert_key(int p_track, float p_time, const Vecto
 	return ret;
 }
 
-void Animation::track_remove_key_at_position(int p_track, float p_pos) {
-	int idx = track_find_key(p_track, p_pos, true);
+void Animation::track_remove_key_at_time(int p_track, float p_time) {
+	int idx = track_find_key(p_track, p_time, true);
 	ERR_FAIL_COND(idx < 0);
 	track_remove_key(p_track, idx);
 }
@@ -2608,7 +2606,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("transform_track_insert_key", "track_idx", "time", "location", "rotation", "scale"), &Animation::transform_track_insert_key);
 	ClassDB::bind_method(D_METHOD("track_insert_key", "track_idx", "time", "key", "transition"), &Animation::track_insert_key, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("track_remove_key", "track_idx", "key_idx"), &Animation::track_remove_key);
-	ClassDB::bind_method(D_METHOD("track_remove_key_at_position", "track_idx", "position"), &Animation::track_remove_key_at_position);
+	ClassDB::bind_method(D_METHOD("track_remove_key_at_time", "track_idx", "time"), &Animation::track_remove_key_at_time);
 	ClassDB::bind_method(D_METHOD("track_set_key_value", "track_idx", "key", "value"), &Animation::track_set_key_value);
 	ClassDB::bind_method(D_METHOD("track_set_key_transition", "track_idx", "key_idx", "transition"), &Animation::track_set_key_transition);
 	ClassDB::bind_method(D_METHOD("track_set_key_time", "track_idx", "key_idx", "time"), &Animation::track_set_key_time);

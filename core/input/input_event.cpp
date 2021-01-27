@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -210,10 +210,10 @@ String InputEventWithModifiers::as_text() const {
 		mod_names.push_back(find_keycode_name(KEY_META));
 	}
 
-	if (!mod_names.empty()) {
+	if (!mod_names.is_empty()) {
 		return String("+").join(mod_names);
 	} else {
-		return "None";
+		return "";
 	}
 }
 
@@ -369,11 +369,19 @@ String InputEventKey::to_string() {
 	String p = is_pressed() ? "true" : "false";
 	String e = is_echo() ? "true" : "false";
 
+	String kc = "";
+	String physical = "false";
 	if (keycode == 0) {
-		return vformat("InputEventKey: keycode=%s mods=%s physical=%s pressed=%s echo=%s", itos(physical_keycode) + " " + keycode_get_string(physical_keycode), InputEventWithModifiers::as_text(), "true", p, e);
+		kc = itos(physical_keycode) + " " + keycode_get_string(physical_keycode);
+		physical = "true";
 	} else {
-		return vformat("InputEventKey: keycode=%s mods=%s physical=%s pressed=%s echo=%s", itos(keycode) + " " + keycode_get_string(keycode), InputEventWithModifiers::as_text(), "false", p, e);
+		kc = itos(keycode) + " " + keycode_get_string(keycode);
 	}
+
+	String mods = InputEventWithModifiers::as_text();
+	mods = mods == "" ? TTR("None") : mods;
+
+	return vformat("InputEventKey: keycode=%s mods=%s physical=%s pressed=%s echo=%s", kc, mods, physical, p, e);
 }
 
 bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
@@ -633,7 +641,12 @@ String InputEventMouseButton::to_string() {
 			break;
 	}
 
-	return vformat("InputEventMouseButton: button_index=%s pressed=%s position=(%s) button_mask=%s doubleclick=%s", button_index, p, String(get_position()), itos(get_button_mask()), d);
+	String mods = InputEventWithModifiers::as_text();
+	mods = mods == "" ? TTR("None") : mods;
+
+	// Work around the fact vformat can only take 5 substitutions but 6 need to be passed.
+	String index_and_mods = vformat("button_index=%s mods=%s", button_index, mods);
+	return vformat("InputEventMouseButton: %s pressed=%s position=(%s) button_mask=%s doubleclick=%s", index_and_mods, p, String(get_position()), itos(get_button_mask()), d);
 }
 
 void InputEventMouseButton::_bind_methods() {

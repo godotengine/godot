@@ -4,8 +4,16 @@
 	<meta charset='utf-8' />
 	<meta name='viewport' content='width=device-width, user-scalable=no' />
 	<link id='-gd-engine-icon' rel='icon' type='image/png' href='favicon.png' />
-	<title></title>
+	<title>Godot Engine Web Editor ($GODOT_VERSION)</title>
 	<style type='text/css'>
+
+		*:focus {
+			/* More visible outline for better keyboard navigation. */
+			outline: 0.125rem solid hsl(220, 100%, 62.5%);
+			/* Make the outline always appear above other elements. */
+			/* Otherwise, one of its sides can be hidden by tabs in the Download and More layouts. */
+			position: relative;
+		}
 
 		body {
 			touch-action: none;
@@ -16,6 +24,20 @@
 			text-align: center;
 			background-color: #333b4f;
 			overflow: hidden;
+		}
+
+		a {
+			color: hsl(205, 100%, 75%);
+			text-decoration-color: hsla(205, 100%, 75%, 0.3);
+			text-decoration-thickness: 0.125rem;
+		}
+
+		a:hover {
+			filter: brightness(117.5%);
+		}
+
+		a:active {
+			filter: brightness(82.5%);
 		}
 
 		#canvas, #gameCanvas {
@@ -43,10 +65,6 @@
 			border: 1px solid #202531;
 			padding: 0.5rem 1rem;
 			margin: 0 0.5rem;
-		}
-
-		.btn:focus {
-			outline: 1px solid #699ce8;
 		}
 
 		.btn:not(:disabled):hover {
@@ -169,9 +187,18 @@
 					<option value="GLES3">WebGL 2</option>
 				</select>
 				<br />
-				<img src="logo.svg">
+				<img src="logo.svg" width="1024" height="414" style="width: auto; height: auto; max-width: 85%; max-height: 250px" />
+				<br />
+				$GODOT_VERSION
+				<br />
+				<a href="releases/">Need an old version?</a>
+				<br />
+				<br />
 				<br />
 				<label for="zip-file" style="margin-right: 1rem">Preload project ZIP:</label> <input id="zip-file" type="file" id="files" name="files" style="margin-bottom: 1rem"/>
+				<br />
+<a href="demo.zip">(Try this for example)</a>
+				<br />
 				<br />
 				<button id="startButton" class="btn" style="margin-bottom: 4rem">Start Godot editor</button>
 				<br />

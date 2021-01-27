@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	int ClientInputSemanticsVersion = 100; // maps to, say, #define VULKAN 100
 
 	glslang::EShTargetClientVersion VulkanClientVersion = glslang::EShTargetVulkan_1_0;
-	glslang::EShTargetLanguageVersion TargetVersion = glslang::EShTargetSpv_1_0;
+	glslang::EShTargetLanguageVersion TargetVersion = glslang::EShTargetSpv_1_3;
 	glslang::TShader::ForbidIncluder includer;
 
 	glslang::TShader shader(stages[p_stage]);

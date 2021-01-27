@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -173,11 +173,11 @@ TEST_CASE("[Expression] Built-in functions") {
 			"`sqrt(pow(3, 2) + pow(4, 2))` should return the expected result.");
 
 	CHECK_MESSAGE(
-			expression.parse("stepify(sin(0.5), 0.01)") == OK,
+			expression.parse("snapped(sin(0.5), 0.01)") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
 			Math::is_equal_approx(float(expression.execute()), 0.48),
-			"`stepify(sin(0.5), 0.01)` should return the expected result.");
+			"`snapped(sin(0.5), 0.01)` should return the expected result.");
 
 	CHECK_MESSAGE(
 			expression.parse("pow(2.0, -2500)") == OK,

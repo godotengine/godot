@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,6 @@
 #include "core/version_generated.gen.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
-#include "drivers/windows/rw_lock_windows.h"
 #include "drivers/windows/thread_windows.h"
 #include "joypad_windows.h"
 #include "lang_table.h"
@@ -178,7 +177,6 @@ void OS_Windows::initialize() {
 	//RedirectIOToConsole();
 
 	ThreadWindows::make_default();
-	RWLockWindows::make_default();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
@@ -410,24 +408,23 @@ String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 	return p_text;
 }
 
-Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 	String path = p_path.replace("/", "\\");
+	String command = _quote_command_line_argument(path);
+	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
+		command += " " + _quote_command_line_argument(E->get());
+	}
 
-	if (p_blocking && r_pipe) {
-		String argss = _quote_command_line_argument(path);
-		for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
-			argss += " " + _quote_command_line_argument(E->get());
-		}
-
+	if (r_pipe) {
 		if (read_stderr) {
-			argss += " 2>&1"; // Read stderr too
+			command += " 2>&1"; // Include stderr
 		}
-		// Note: _wpopen is calling command as "cmd.exe /c argss", instead of executing it directly, add extra quotes around full command, to prevent it from stripping quotes in the command.
-		argss = _quote_command_line_argument(argss);
+		// Add extra quotes around the full command, to prevent it from stripping quotes in the command,
+		// because _wpopen calls command as "cmd.exe /c command", instead of executing it directly
+		command = _quote_command_line_argument(command);
 
-		FILE *f = _wpopen((LPCWSTR)(argss.utf16().get_data()), L"r");
-		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
-
+		FILE *f = _wpopen((LPCWSTR)(command.utf16().get_data()), L"r");
+		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command);
 		char buf[65535];
 		while (fgets(buf, 65535, f)) {
 			if (p_pipe_mutex) {
@@ -438,20 +435,12 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 				p_pipe_mutex->unlock();
 			}
 		}
-
 		int rv = _pclose(f);
+
 		if (r_exitcode) {
 			*r_exitcode = rv;
 		}
-
 		return OK;
-	}
-
-	String cmdline = _quote_command_line_argument(path);
-	const List<String>::Element *I = p_arguments.front();
-	while (I) {
-		cmdline += " " + _quote_command_line_argument(I->get());
-		I = I->next();
 	}
 
 	ProcessInfo pi;
@@ -460,27 +449,43 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	Char16String modstr = cmdline.utf16(); // Windows wants to change this no idea why.
-	int ret = CreateProcessW(nullptr, (LPWSTR)(modstr.ptrw()), nullptr, nullptr, 0, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
-	ERR_FAIL_COND_V(ret == 0, ERR_CANT_FORK);
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
+	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
-	if (p_blocking) {
-		WaitForSingleObject(pi.pi.hProcess, INFINITE);
-		if (r_exitcode) {
-			DWORD ret2;
-			GetExitCodeProcess(pi.pi.hProcess, &ret2);
-			*r_exitcode = ret2;
-		}
-
-		CloseHandle(pi.pi.hProcess);
-		CloseHandle(pi.pi.hThread);
-	} else {
-		ProcessID pid = pi.pi.dwProcessId;
-		if (r_child_id) {
-			*r_child_id = pid;
-		}
-		process_map->insert(pid, pi);
+	WaitForSingleObject(pi.pi.hProcess, INFINITE);
+	if (r_exitcode) {
+		DWORD ret2;
+		GetExitCodeProcess(pi.pi.hProcess, &ret2);
+		*r_exitcode = ret2;
 	}
+	CloseHandle(pi.pi.hProcess);
+	CloseHandle(pi.pi.hThread);
+
+	return OK;
+};
+
+Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+	String path = p_path.replace("/", "\\");
+	String command = _quote_command_line_argument(path);
+	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
+		command += " " + _quote_command_line_argument(E->get());
+	}
+
+	ProcessInfo pi;
+	ZeroMemory(&pi.si, sizeof(pi.si));
+	pi.si.cb = sizeof(pi.si);
+	ZeroMemory(&pi.pi, sizeof(pi.pi));
+	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
+
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
+	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
+
+	ProcessID pid = pi.pi.dwProcessId;
+	if (r_child_id) {
+		*r_child_id = pid;
+	}
+	process_map->insert(pid, pi);
+
 	return OK;
 };
 
@@ -614,7 +619,7 @@ void OS_Windows::run() {
 	if (!main_loop)
 		return;
 
-	main_loop->init();
+	main_loop->initialize();
 
 	while (!force_quit) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
@@ -622,7 +627,7 @@ void OS_Windows::run() {
 			break;
 	};
 
-	main_loop->finish();
+	main_loop->finalize();
 }
 
 MainLoop *OS_Windows::get_main_loop() const {

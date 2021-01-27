@@ -341,6 +341,7 @@ hb_ot_shape_complex_categorize (const hb_ot_shape_planner_t *planner)
 
     /* Unicode-6.1 additions */
     case HB_SCRIPT_CHAKMA:
+    case HB_SCRIPT_MIAO:
     case HB_SCRIPT_SHARADA:
     case HB_SCRIPT_TAKRI:
 
@@ -359,6 +360,7 @@ hb_ot_shape_complex_categorize (const hb_ot_shape_planner_t *planner)
 
     /* Unicode-8.0 additions */
     case HB_SCRIPT_AHOM:
+    case HB_SCRIPT_MULTANI:
 
     /* Unicode-9.0 additions */
     //case HB_SCRIPT_ADLAM:
@@ -376,10 +378,15 @@ hb_ot_shape_complex_categorize (const hb_ot_shape_planner_t *planner)
     case HB_SCRIPT_GUNJALA_GONDI:
     //case HB_SCRIPT_HANIFI_ROHINGYA:
     case HB_SCRIPT_MAKASAR:
+    case HB_SCRIPT_MEDEFAIDRIN:
+    case HB_SCRIPT_OLD_SOGDIAN:
     //case HB_SCRIPT_SOGDIAN:
 
     /* Unicode-12.0 additions */
+    case HB_SCRIPT_ELYMAIC:
     case HB_SCRIPT_NANDINAGARI:
+    case HB_SCRIPT_NYIAKENG_PUACHUE_HMONG:
+    case HB_SCRIPT_WANCHO:
 
     /* Unicode-13.0 additions */
     case HB_SCRIPT_CHORASMIAN:

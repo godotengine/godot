@@ -509,6 +509,8 @@ TBuiltIns::TBuiltIns()
     prefixes[EbtUint8] = "u8";
     prefixes[EbtInt16]  = "i16";
     prefixes[EbtUint16] = "u16";
+    prefixes[EbtInt64]  = "i64";
+    prefixes[EbtUint64] = "u64";
 #endif
 
     postfixes[2] = "2";
@@ -4419,9 +4421,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "\n");
         stageBuiltins[EShLangAnyHit].append(
             "void ignoreIntersectionNV();"
-            "void ignoreIntersectionEXT();"
             "void terminateRayNV();"
-            "void terminateRayEXT();"
             "\n");
         stageBuiltins[EShLangClosestHit].append(
             "void traceNV(accelerationStructureNV,uint,uint,uint,uint,uint,vec3,float,vec3,float,int);"
@@ -4928,6 +4928,11 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "\n");
     }
 
+    if ((profile != EEsProfile && version >= 450) || (profile == EEsProfile && version >= 310)) {
+        stageBuiltins[EShLangVertex].append(
+            "out highp int gl_PrimitiveShadingRateEXT;" // GL_EXT_fragment_shading_rate
+            "\n");
+    }
 
     //============================================================================
     //
@@ -5038,6 +5043,12 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
         stageBuiltins[EShLangGeometry].append(
             "in highp int gl_DeviceIndex;"     // GL_EXT_device_group
             "in highp int gl_ViewIndex;"       // GL_EXT_multiview
+            "\n");
+    }
+
+    if ((profile != EEsProfile && version >= 450) || (profile == EEsProfile && version >= 310)) {
+        stageBuiltins[EShLangGeometry].append(
+            "out highp int gl_PrimitiveShadingRateEXT;" // GL_EXT_fragment_shading_rate
             "\n");
     }
 
@@ -5338,6 +5349,11 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "in vec3 gl_BaryCoordNoPerspNV;"
                 );
 
+        if (version >= 450)
+            stageBuiltins[EShLangFragment].append(
+                "flat in int gl_ShadingRateEXT;" // GL_EXT_fragment_shading_rate
+            );
+
     } else {
         // ES profile
 
@@ -5396,6 +5412,10 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "in vec3 gl_BaryCoordNV;"
                 "in vec3 gl_BaryCoordNoPerspNV;"
                 );
+        if (version >= 310)
+            stageBuiltins[EShLangFragment].append(
+                "flat in highp int gl_ShadingRateEXT;" // GL_EXT_fragment_shading_rate
+            );
     }
 #endif
 
@@ -5414,6 +5434,12 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "\n");
     }
 
+    if (version >= 300 /* both ES and non-ES */) {
+        stageBuiltins[EShLangFragment].append(
+            "flat in highp uint gl_ViewID_OVR;"     // GL_OVR_multiview, GL_OVR_multiview2
+            "\n");
+    }
+
 #ifndef GLSLANG_ANGLE
     // GL_ARB_shader_ballot
     if (profile != EEsProfile && version >= 450) {
@@ -5425,6 +5451,15 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "in uint64_t gl_SubGroupGtMaskARB;"
             "in uint64_t gl_SubGroupLeMaskARB;"
             "in uint64_t gl_SubGroupLtMaskARB;"
+            "\n";
+        const char* rtBallotDecls =
+            "uniform volatile uint gl_SubGroupSizeARB;"
+            "in volatile uint     gl_SubGroupInvocationARB;"
+            "in volatile uint64_t gl_SubGroupEqMaskARB;"
+            "in volatile uint64_t gl_SubGroupGeMaskARB;"
+            "in volatile uint64_t gl_SubGroupGtMaskARB;"
+            "in volatile uint64_t gl_SubGroupLeMaskARB;"
+            "in volatile uint64_t gl_SubGroupLtMaskARB;"
             "\n";
         const char* fragmentBallotDecls =
             "uniform uint gl_SubGroupSizeARB;"
@@ -5443,6 +5478,13 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
         stageBuiltins[EShLangFragment]      .append(fragmentBallotDecls);
         stageBuiltins[EShLangMeshNV]        .append(ballotDecls);
         stageBuiltins[EShLangTaskNV]        .append(ballotDecls);
+        stageBuiltins[EShLangRayGen]        .append(rtBallotDecls);
+        stageBuiltins[EShLangIntersect]     .append(rtBallotDecls);
+        // No volatile qualifier on these builtins in any-hit
+        stageBuiltins[EShLangAnyHit]        .append(ballotDecls);
+        stageBuiltins[EShLangClosestHit]    .append(rtBallotDecls);
+        stageBuiltins[EShLangMiss]          .append(rtBallotDecls);
+        stageBuiltins[EShLangCallable]      .append(rtBallotDecls);
     }
 
     // GL_KHR_shader_subgroup
@@ -5480,6 +5522,21 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "in highp   uint  gl_NumSubgroups;"
             "in highp   uint  gl_SubgroupID;"
             "\n";
+        // These builtins are volatile for RT stages
+        const char* rtSubgroupDecls =
+            "in mediump volatile uint  gl_SubgroupSize;"
+            "in mediump volatile uint  gl_SubgroupInvocationID;"
+            "in highp   volatile uvec4 gl_SubgroupEqMask;"
+            "in highp   volatile uvec4 gl_SubgroupGeMask;"
+            "in highp   volatile uvec4 gl_SubgroupGtMask;"
+            "in highp   volatile uvec4 gl_SubgroupLeMask;"
+            "in highp   volatile uvec4 gl_SubgroupLtMask;"
+            // GL_NV_shader_sm_builtins
+            "in highp    uint  gl_WarpsPerSMNV;"
+            "in highp    uint  gl_SMCountNV;"
+            "in highp volatile uint  gl_WarpIDNV;"
+            "in highp volatile uint  gl_SMIDNV;"
+            "\n";
 
         stageBuiltins[EShLangVertex]        .append(subgroupDecls);
         stageBuiltins[EShLangTessControl]   .append(subgroupDecls);
@@ -5492,12 +5549,13 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
         stageBuiltins[EShLangMeshNV]        .append(computeSubgroupDecls);
         stageBuiltins[EShLangTaskNV]        .append(subgroupDecls);
         stageBuiltins[EShLangTaskNV]        .append(computeSubgroupDecls);
-        stageBuiltins[EShLangRayGen]        .append(subgroupDecls);
-        stageBuiltins[EShLangIntersect]     .append(subgroupDecls);
+        stageBuiltins[EShLangRayGen]        .append(rtSubgroupDecls);
+        stageBuiltins[EShLangIntersect]     .append(rtSubgroupDecls);
+        // No volatile qualifier on these builtins in any-hit
         stageBuiltins[EShLangAnyHit]        .append(subgroupDecls);
-        stageBuiltins[EShLangClosestHit]    .append(subgroupDecls);
-        stageBuiltins[EShLangMiss]          .append(subgroupDecls);
-        stageBuiltins[EShLangCallable]      .append(subgroupDecls);
+        stageBuiltins[EShLangClosestHit]    .append(rtSubgroupDecls);
+        stageBuiltins[EShLangMiss]          .append(rtSubgroupDecls);
+        stageBuiltins[EShLangCallable]      .append(rtSubgroupDecls);
     }
 
     // GL_NV_ray_tracing/GL_EXT_ray_tracing
@@ -5565,7 +5623,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "in    float  gl_RayTminNV;"
             "in    float  gl_RayTminEXT;"
             "in    float  gl_RayTmaxNV;"
-            "in    float  gl_RayTmaxEXT;"
+            "in volatile float gl_RayTmaxEXT;"
             "in    mat4x3 gl_ObjectToWorldNV;"
             "in    mat4x3 gl_ObjectToWorldEXT;"
             "in    mat3x4 gl_ObjectToWorld3x4EXT;"
@@ -5685,13 +5743,57 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
         commonBuiltins.append("const int gl_StorageSemanticsOutput   = 0x1000;\n");
     }
 
-#endif // !GLSLANG_ANGLE
-
-    if (version >= 300 /* both ES and non-ES */) {
-        stageBuiltins[EShLangFragment].append(
-            "flat in highp uint gl_ViewID_OVR;"     // GL_OVR_multiview, GL_OVR_multiview2
-            "\n");
+    // Adding these to common built-ins triggers an assert due to a memory corruption in related code when testing
+    // So instead add to each stage individually, avoiding the GLSLang bug
+    if ((profile != EEsProfile && version >= 450) || (profile == EEsProfile && version >= 310)) {
+        for (int stage=EShLangVertex; stage<EShLangCount; stage++)
+        {
+            stageBuiltins[static_cast<EShLanguage>(stage)].append("const highp int gl_ShadingRateFlag2VerticalPixelsEXT       = 1;\n");
+            stageBuiltins[static_cast<EShLanguage>(stage)].append("const highp int gl_ShadingRateFlag4VerticalPixelsEXT       = 2;\n");
+            stageBuiltins[static_cast<EShLanguage>(stage)].append("const highp int gl_ShadingRateFlag2HorizontalPixelsEXT     = 4;\n");
+            stageBuiltins[static_cast<EShLanguage>(stage)].append("const highp int gl_ShadingRateFlag4HorizontalPixelsEXT     = 8;\n");
+        }
     }
+    
+    // GL_EXT_shader_image_int64
+    if ((profile != EEsProfile && version >= 420) ||
+        (profile == EEsProfile && version >= 310)) {
+            
+        const TBasicType bTypes[] = { EbtInt64, EbtUint64 };
+        for (int ms = 0; ms <= 1; ++ms) { // loop over "bool" multisample or not
+            for (int arrayed = 0; arrayed <= 1; ++arrayed) { // loop over "bool" arrayed or not
+                for (int dim = Esd1D; dim < EsdSubpass; ++dim) { // 1D, ..., buffer
+                    if ((dim == Esd1D || dim == EsdRect) && profile == EEsProfile)
+                        continue;
+                    
+                    if ((dim == Esd3D || dim == EsdRect || dim == EsdBuffer) && arrayed)
+                        continue;
+                    
+                    if (dim != Esd2D && ms)
+                        continue;
+                    
+                    // Loop over the bTypes
+                    for (size_t bType = 0; bType < sizeof(bTypes)/sizeof(TBasicType); ++bType) {
+                        //
+                        // Now, make all the function prototypes for the type we just built...
+                        //
+                        TSampler sampler;
+                    
+                        sampler.setImage(bTypes[bType], (TSamplerDim)dim, arrayed ? true : false,
+                                                                          false,
+                                                                          ms      ? true : false);
+
+                        TString typeName = sampler.getString();
+
+                        addQueryFunctions(sampler, typeName, version, profile);
+                        addImageFunctions(sampler, typeName, version, profile);
+                    }
+                }
+            }
+        }
+    }
+#endif // !GLSLANG_ANGLE
+    
 #endif // !GLSLANG_WEB
 
     // printf("%s\n", commonBuiltins.c_str());
@@ -5788,7 +5890,6 @@ void TBuiltIns::add2ndGenerationSamplingImaging(int version, EProfile profile, c
 #endif
                             if (shadow && (bTypes[bType] == EbtInt || bTypes[bType] == EbtUint))
                                 continue;
-
                             //
                             // Now, make all the function prototypes for the type we just built...
                             //
@@ -6013,8 +6114,16 @@ void TBuiltIns::addImageFunctions(TSampler sampler, const TString& typeName, int
 
     if ( profile != EEsProfile ||
         (profile == EEsProfile && version >= 310)) {
-        if (sampler.type == EbtInt || sampler.type == EbtUint) {
-            const char* dataType = sampler.type == EbtInt ? "highp int" : "highp uint";
+        if (sampler.type == EbtInt || sampler.type == EbtUint || sampler.type == EbtInt64 || sampler.type == EbtUint64 ) {
+            
+            const char* dataType;
+            switch (sampler.type) {
+                case(EbtInt): dataType = "highp int"; break;
+                case(EbtUint): dataType = "highp uint"; break;
+                case(EbtInt64): dataType = "highp int64_t"; break;
+                case(EbtUint64): dataType = "highp uint64_t"; break;
+                default: dataType = "";
+            }
 
             const int numBuiltins = 7;
 
@@ -7650,6 +7759,20 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             BuiltInVariable("gl_WarpIDNV",              EbvWarpID,          symbolTable);
             BuiltInVariable("gl_SMIDNV",                EbvSMID,            symbolTable);
         }
+
+		if (language == EShLangGeometry || language == EShLangVertex) {
+			if ((profile == EEsProfile && version >= 310) ||
+				(profile != EEsProfile && version >= 450)) {
+				symbolTable.setVariableExtensions("gl_PrimitiveShadingRateEXT", 1, &E_GL_EXT_fragment_shading_rate);
+				BuiltInVariable("gl_PrimitiveShadingRateEXT", EbvPrimitiveShadingRateKHR, symbolTable);
+
+				symbolTable.setVariableExtensions("gl_ShadingRateFlag2VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+				symbolTable.setVariableExtensions("gl_ShadingRateFlag4VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+				symbolTable.setVariableExtensions("gl_ShadingRateFlag2HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+				symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+			}
+		}
+
 #endif // !GLSLANG_WEB
         break;
 
@@ -8156,6 +8279,17 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         }
 
         symbolTable.setFunctionExtensions("helperInvocationEXT",            1, &E_GL_EXT_demote_to_helper_invocation);
+
+        if ((profile == EEsProfile && version >= 310) ||
+            (profile != EEsProfile && version >= 450)) {
+            symbolTable.setVariableExtensions("gl_ShadingRateEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            BuiltInVariable("gl_ShadingRateEXT", EbvShadingRateKHR, symbolTable);
+
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag2VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag4VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag2HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+        }
 #endif // !GLSLANG_WEB
         break;
 
@@ -8288,6 +8422,14 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("dFdyCoarse",             1, &E_GL_NV_compute_shader_derivatives);
             symbolTable.setFunctionExtensions("fwidthCoarse",           1, &E_GL_NV_compute_shader_derivatives);
         }
+
+        if ((profile == EEsProfile && version >= 310) ||
+            (profile != EEsProfile && version >= 450)) {
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag2VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag4VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag2HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+        }
 #endif // !GLSLANG_WEB
         break;
 
@@ -8342,9 +8484,7 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("reportIntersectionNV", 1, &E_GL_NV_ray_tracing);
             symbolTable.setFunctionExtensions("reportIntersectionEXT", 1, &E_GL_EXT_ray_tracing);
             symbolTable.setFunctionExtensions("ignoreIntersectionNV", 1, &E_GL_NV_ray_tracing);
-            symbolTable.setFunctionExtensions("ignoreIntersectionEXT", 1, &E_GL_EXT_ray_tracing);
             symbolTable.setFunctionExtensions("terminateRayNV", 1, &E_GL_NV_ray_tracing);
-            symbolTable.setFunctionExtensions("terminateRayEXT", 1, &E_GL_EXT_ray_tracing);
             symbolTable.setFunctionExtensions("executeCallableNV", 1, &E_GL_NV_ray_tracing);
             symbolTable.setFunctionExtensions("executeCallableEXT", 1, &E_GL_EXT_ray_tracing);
 
@@ -8436,6 +8576,13 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             BuiltInVariable("gl_SMCountNV",             EbvSMCount,         symbolTable);
             BuiltInVariable("gl_WarpIDNV",              EbvWarpID,          symbolTable);
             BuiltInVariable("gl_SMIDNV",                EbvSMID,            symbolTable);
+        }
+        if ((profile == EEsProfile && version >= 310) ||
+            (profile != EEsProfile && version >= 450)) {
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag2VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag4VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag2HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
         }
         break;
 
@@ -8581,6 +8728,14 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             BuiltInVariable("gl_WarpIDNV",              EbvWarpID,          symbolTable);
             BuiltInVariable("gl_SMIDNV",                EbvSMID,            symbolTable);
         }
+
+        if ((profile == EEsProfile && version >= 310) ||
+            (profile != EEsProfile && version >= 450)) {
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag2VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag4VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag2HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+        }
         break;
 
     case EShLangTaskNV:
@@ -8680,6 +8835,13 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             BuiltInVariable("gl_SMCountNV",             EbvSMCount,         symbolTable);
             BuiltInVariable("gl_WarpIDNV",              EbvWarpID,          symbolTable);
             BuiltInVariable("gl_SMIDNV",                EbvSMID,            symbolTable);
+        }
+        if ((profile == EEsProfile && version >= 310) ||
+            (profile != EEsProfile && version >= 450)) {
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag2VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag4VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag2HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
         }
         break;
 #endif
@@ -9152,10 +9314,10 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
     case EShLangClosestHit:
     case EShLangMiss:
         if (profile != EEsProfile && version >= 460) {
-            symbolTable.relateToOperator("traceNV", EOpTrace);
-            symbolTable.relateToOperator("traceRayEXT", EOpTrace);
-            symbolTable.relateToOperator("executeCallableNV", EOpExecuteCallable);
-            symbolTable.relateToOperator("executeCallableEXT", EOpExecuteCallable);
+            symbolTable.relateToOperator("traceNV", EOpTraceNV);
+            symbolTable.relateToOperator("traceRayEXT", EOpTraceKHR);
+            symbolTable.relateToOperator("executeCallableNV", EOpExecuteCallableNV);
+            symbolTable.relateToOperator("executeCallableEXT", EOpExecuteCallableKHR);
         }
         break;
     case EShLangIntersect:
@@ -9166,16 +9328,14 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         break;
     case EShLangAnyHit:
         if (profile != EEsProfile && version >= 460) {
-            symbolTable.relateToOperator("ignoreIntersectionNV", EOpIgnoreIntersection);
-            symbolTable.relateToOperator("ignoreIntersectionEXT", EOpIgnoreIntersection);
-            symbolTable.relateToOperator("terminateRayNV", EOpTerminateRay);
-            symbolTable.relateToOperator("terminateRayEXT", EOpTerminateRay);
+            symbolTable.relateToOperator("ignoreIntersectionNV", EOpIgnoreIntersectionNV);
+            symbolTable.relateToOperator("terminateRayNV", EOpTerminateRayNV);
         }
         break;
     case EShLangCallable:
         if (profile != EEsProfile && version >= 460) {
-            symbolTable.relateToOperator("executeCallableNV", EOpExecuteCallable);
-            symbolTable.relateToOperator("executeCallableEXT", EOpExecuteCallable);
+            symbolTable.relateToOperator("executeCallableNV", EOpExecuteCallableNV);
+            symbolTable.relateToOperator("executeCallableEXT", EOpExecuteCallableKHR);
         }
         break;
     case EShLangMeshNV:

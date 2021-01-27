@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -184,10 +184,10 @@ void Label::_notification(int p_what) {
 		Ref<StyleBox> style = get_theme_stylebox("normal");
 		Ref<Font> font = get_theme_font("font");
 		Color font_color = get_theme_color("font_color");
-		Color font_color_shadow = get_theme_color("font_color_shadow");
+		Color font_shadow_color = get_theme_color("font_shadow_color");
 		Point2 shadow_ofs(get_theme_constant("shadow_offset_x"), get_theme_constant("shadow_offset_y"));
 		int line_spacing = get_theme_constant("line_spacing");
-		Color font_outline_modulate = get_theme_color("font_outline_modulate");
+		Color font_outline_color = get_theme_color("font_outline_color");
 		int outline_size = get_theme_constant("outline_size");
 		int shadow_outline_size = get_theme_constant("shadow_outline_size");
 		bool rtl = is_layout_rtl();
@@ -272,7 +272,7 @@ void Label::_notification(int p_what) {
 				case ALIGN_FILL:
 				case ALIGN_LEFT: {
 					if (rtl) {
-						ofs.x = int(size.width - style->get_margin(MARGIN_RIGHT) - TS->shaped_text_get_size(lines_rid[i]).x);
+						ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - TS->shaped_text_get_size(lines_rid[i]).x);
 					} else {
 						ofs.x = style->get_offset().x;
 					}
@@ -284,7 +284,7 @@ void Label::_notification(int p_what) {
 					if (rtl) {
 						ofs.x = style->get_offset().x;
 					} else {
-						ofs.x = int(size.width - style->get_margin(MARGIN_RIGHT) - TS->shaped_text_get_size(lines_rid[i]).x);
+						ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - TS->shaped_text_get_size(lines_rid[i]).x);
 					}
 				} break;
 			}
@@ -298,17 +298,17 @@ void Label::_notification(int p_what) {
 			for (int j = 0; j < gl_size; j++) {
 				for (int k = 0; k < glyphs[j].repeat; k++) {
 					if (glyphs[j].font_rid != RID()) {
-						if (font_color_shadow.a > 0) {
-							TS->font_draw_glyph(glyphs[j].font_rid, ci, glyphs[j].font_size, ofs + Vector2(glyphs[j].x_off, glyphs[j].y_off) + shadow_ofs, glyphs[j].index, font_color_shadow);
+						if (font_shadow_color.a > 0) {
+							TS->font_draw_glyph(glyphs[j].font_rid, ci, glyphs[j].font_size, ofs + Vector2(glyphs[j].x_off, glyphs[j].y_off) + shadow_ofs, glyphs[j].index, font_shadow_color);
 							if (shadow_outline_size > 0) {
 								//draw shadow
-								TS->font_draw_glyph_outline(glyphs[j].font_rid, ci, glyphs[j].font_size, shadow_outline_size, ofs + Vector2(glyphs[j].x_off, glyphs[j].y_off) + Vector2(-shadow_ofs.x, shadow_ofs.y), glyphs[j].index, font_color_shadow);
-								TS->font_draw_glyph_outline(glyphs[j].font_rid, ci, glyphs[j].font_size, shadow_outline_size, ofs + Vector2(glyphs[j].x_off, glyphs[j].y_off) + Vector2(shadow_ofs.x, -shadow_ofs.y), glyphs[j].index, font_color_shadow);
-								TS->font_draw_glyph_outline(glyphs[j].font_rid, ci, glyphs[j].font_size, shadow_outline_size, ofs + Vector2(glyphs[j].x_off, glyphs[j].y_off) + Vector2(-shadow_ofs.x, -shadow_ofs.y), glyphs[j].index, font_color_shadow);
+								TS->font_draw_glyph_outline(glyphs[j].font_rid, ci, glyphs[j].font_size, shadow_outline_size, ofs + Vector2(glyphs[j].x_off, glyphs[j].y_off) + Vector2(-shadow_ofs.x, shadow_ofs.y), glyphs[j].index, font_shadow_color);
+								TS->font_draw_glyph_outline(glyphs[j].font_rid, ci, glyphs[j].font_size, shadow_outline_size, ofs + Vector2(glyphs[j].x_off, glyphs[j].y_off) + Vector2(shadow_ofs.x, -shadow_ofs.y), glyphs[j].index, font_shadow_color);
+								TS->font_draw_glyph_outline(glyphs[j].font_rid, ci, glyphs[j].font_size, shadow_outline_size, ofs + Vector2(glyphs[j].x_off, glyphs[j].y_off) + Vector2(-shadow_ofs.x, -shadow_ofs.y), glyphs[j].index, font_shadow_color);
 							}
 						}
-						if (font_outline_modulate.a != 0.0 && outline_size > 0) {
-							TS->font_draw_glyph_outline(glyphs[j].font_rid, ci, glyphs[j].font_size, outline_size, ofs + Vector2(glyphs[j].x_off, glyphs[j].y_off), glyphs[j].index, font_outline_modulate);
+						if (font_outline_color.a != 0.0 && outline_size > 0) {
+							TS->font_draw_glyph_outline(glyphs[j].font_rid, ci, glyphs[j].font_size, outline_size, ofs + Vector2(glyphs[j].x_off, glyphs[j].y_off), glyphs[j].index, font_outline_color);
 						}
 					}
 					ofs.x += glyphs[j].advance;

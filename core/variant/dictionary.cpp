@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@ struct DictionaryPrivate {
 };
 
 void Dictionary::get_key_list(List<Variant> *p_keys) const {
-	if (_p->variant_map.empty()) {
+	if (_p->variant_map.is_empty()) {
 		return;
 	}
 
@@ -121,7 +121,7 @@ int Dictionary::size() const {
 	return _p->variant_map.size();
 }
 
-bool Dictionary::empty() const {
+bool Dictionary::is_empty() const {
 	return !_p->variant_map.size();
 }
 
@@ -192,7 +192,7 @@ uint32_t Dictionary::hash() const {
 
 Array Dictionary::keys() const {
 	Array varr;
-	if (_p->variant_map.empty()) {
+	if (_p->variant_map.is_empty()) {
 		return varr;
 	}
 
@@ -209,7 +209,7 @@ Array Dictionary::keys() const {
 
 Array Dictionary::values() const {
 	Array varr;
-	if (_p->variant_map.empty()) {
+	if (_p->variant_map.is_empty()) {
 		return varr;
 	}
 

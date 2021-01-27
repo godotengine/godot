@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -324,48 +324,40 @@ bool Vector3::operator<(const Vector3 &p_v) const {
 	if (x == p_v.x) {
 		if (y == p_v.y) {
 			return z < p_v.z;
-		} else {
-			return y < p_v.y;
 		}
-	} else {
-		return x < p_v.x;
+		return y < p_v.y;
 	}
+	return x < p_v.x;
 }
 
 bool Vector3::operator>(const Vector3 &p_v) const {
 	if (x == p_v.x) {
 		if (y == p_v.y) {
 			return z > p_v.z;
-		} else {
-			return y > p_v.y;
 		}
-	} else {
-		return x > p_v.x;
+		return y > p_v.y;
 	}
+	return x > p_v.x;
 }
 
 bool Vector3::operator<=(const Vector3 &p_v) const {
 	if (x == p_v.x) {
 		if (y == p_v.y) {
 			return z <= p_v.z;
-		} else {
-			return y < p_v.y;
 		}
-	} else {
-		return x < p_v.x;
+		return y < p_v.y;
 	}
+	return x < p_v.x;
 }
 
 bool Vector3::operator>=(const Vector3 &p_v) const {
 	if (x == p_v.x) {
 		if (y == p_v.y) {
 			return z >= p_v.z;
-		} else {
-			return y > p_v.y;
 		}
-	} else {
-		return x > p_v.x;
+		return y > p_v.y;
 	}
+	return x > p_v.x;
 }
 
 _FORCE_INLINE_ Vector3 vec3_cross(const Vector3 &p_a, const Vector3 &p_b) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,10 +66,10 @@ GotoLineDialog::GotoLineDialog() {
 	set_title(TTR("Go to Line"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
 	add_child(vbc);
 
 	Label *l = memnew(Label);
@@ -325,7 +325,7 @@ void FindReplaceBar::_update_results_count() {
 	results_count = 0;
 
 	String searched = get_search_text();
-	if (searched.empty()) {
+	if (searched.is_empty()) {
 		return;
 	}
 
@@ -356,7 +356,7 @@ void FindReplaceBar::_update_results_count() {
 }
 
 void FindReplaceBar::_update_matches_label() {
-	if (search_text->get_text().empty() || results_count == -1) {
+	if (search_text->get_text().is_empty() || results_count == -1) {
 		matches_label->hide();
 	} else {
 		matches_label->show();
@@ -483,7 +483,7 @@ void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
 		search_text->set_text(text_editor->get_selection_text());
 	}
 
-	if (!get_search_text().empty()) {
+	if (!get_search_text().is_empty()) {
 		if (p_focus_replace) {
 			replace_text->select_all();
 			replace_text->set_cursor_position(replace_text->get_text().length());
@@ -1309,7 +1309,7 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		for (int i = begin; i <= end; i++) {
 			String line_text = text_editor->get_line(i);
 
-			if (line_text.strip_edges().empty()) {
+			if (line_text.strip_edges().is_empty()) {
 				line_text = delimiter;
 			} else {
 				if (is_commented) {

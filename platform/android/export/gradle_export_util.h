@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -261,7 +261,7 @@ String _get_instrumentation_tag(const Ref<EditorExportPreset> &p_preset) {
 }
 
 String _get_plugins_tag(const String &plugins_names) {
-	if (!plugins_names.empty()) {
+	if (!plugins_names.is_empty()) {
 		return vformat("    <meta-data tools:node=\"replace\" android:name=\"plugins\" android:value=\"%s\" />\n", plugins_names);
 	} else {
 		return "    <meta-data tools:node=\"remove\" android:name=\"plugins\" />\n";

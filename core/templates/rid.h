@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,30 +40,37 @@ class RID {
 	uint64_t _id = 0;
 
 public:
-	_FORCE_INLINE_ bool operator==(const RID &p_rid) const {
+	_ALWAYS_INLINE_ bool operator==(const RID &p_rid) const {
 		return _id == p_rid._id;
 	}
-	_FORCE_INLINE_ bool operator<(const RID &p_rid) const {
+	_ALWAYS_INLINE_ bool operator<(const RID &p_rid) const {
 		return _id < p_rid._id;
 	}
-	_FORCE_INLINE_ bool operator<=(const RID &p_rid) const {
+	_ALWAYS_INLINE_ bool operator<=(const RID &p_rid) const {
 		return _id <= p_rid._id;
 	}
-	_FORCE_INLINE_ bool operator>(const RID &p_rid) const {
+	_ALWAYS_INLINE_ bool operator>(const RID &p_rid) const {
 		return _id > p_rid._id;
 	}
-	_FORCE_INLINE_ bool operator>=(const RID &p_rid) const {
+	_ALWAYS_INLINE_ bool operator>=(const RID &p_rid) const {
 		return _id >= p_rid._id;
 	}
-	_FORCE_INLINE_ bool operator!=(const RID &p_rid) const {
+	_ALWAYS_INLINE_ bool operator!=(const RID &p_rid) const {
 		return _id != p_rid._id;
 	}
-	_FORCE_INLINE_ bool is_valid() const { return _id != 0; }
-	_FORCE_INLINE_ bool is_null() const { return _id == 0; }
+	_ALWAYS_INLINE_ bool is_valid() const { return _id != 0; }
+	_ALWAYS_INLINE_ bool is_null() const { return _id == 0; }
 
-	_FORCE_INLINE_ uint64_t get_id() const { return _id; }
+	_ALWAYS_INLINE_ uint32_t get_local_index() const { return _id & 0xFFFFFFFF; }
 
-	_FORCE_INLINE_ RID() {}
+	static _ALWAYS_INLINE_ RID from_uint64(uint64_t p_id) {
+		RID _rid;
+		_rid._id = p_id;
+		return _rid;
+	}
+	_ALWAYS_INLINE_ uint64_t get_id() const { return _id; }
+
+	_ALWAYS_INLINE_ RID() {}
 };
 
 #endif // RID_H

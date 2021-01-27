@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -142,6 +142,11 @@ public:
 		DEBUG_DRAW_SDFGI,
 		DEBUG_DRAW_SDFGI_PROBES,
 		DEBUG_DRAW_GI_BUFFER,
+		DEBUG_DRAW_DISABLE_LOD,
+		DEBUG_DRAW_CLUSTER_OMNI_LIGHTS,
+		DEBUG_DRAW_CLUSTER_SPOT_LIGHTS,
+		DEBUG_DRAW_CLUSTER_DECALS,
+		DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
 	};
 
 	enum DefaultCanvasItemTextureFilter {
@@ -292,11 +297,14 @@ private:
 	DebugDraw debug_draw;
 
 	int shadow_atlas_size;
+	bool shadow_atlas_16_bits = true;
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
 
 	MSAA msaa;
 	ScreenSpaceAA screen_space_aa;
 	bool use_debanding = false;
+	float lod_threshold = 1.0;
+
 	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture *> viewport_textures;
 
@@ -530,6 +538,9 @@ public:
 	void set_shadow_atlas_size(int p_size);
 	int get_shadow_atlas_size() const;
 
+	void set_shadow_atlas_16_bits(bool p_16_bits);
+	bool get_shadow_atlas_16_bits() const;
+
 	void set_shadow_atlas_quadrant_subdiv(int p_quadrant, ShadowAtlasQuadrantSubdiv p_subdiv);
 	ShadowAtlasQuadrantSubdiv get_shadow_atlas_quadrant_subdiv(int p_quadrant) const;
 
@@ -541,6 +552,9 @@ public:
 
 	void set_use_debanding(bool p_use_debanding);
 	bool is_using_debanding() const;
+
+	void set_lod_threshold(float p_pixels);
+	float get_lod_threshold() const;
 
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;

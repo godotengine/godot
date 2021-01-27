@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,7 +57,7 @@ private:
 	Ref<OpenSimplexNoise> noise;
 	Vector2i size;
 	bool seamless;
-	bool as_normalmap;
+	bool as_normal_map;
 	float bump_strength;
 
 	void _thread_done(const Ref<Image> &p_image);
@@ -82,8 +82,8 @@ public:
 	void set_seamless(bool p_seamless);
 	bool get_seamless();
 
-	void set_as_normalmap(bool p_as_normalmap);
-	bool is_normalmap();
+	void set_as_normal_map(bool p_as_normal_map);
+	bool is_normal_map();
 
 	void set_bump_strength(float p_bump_strength);
 	float get_bump_strength();

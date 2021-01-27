@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		An [Array] specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
-		[b]Note:[/b] This type is passed by value and not by reference.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -86,11 +85,11 @@
 				GZIP has a maximal compression ratio of 1032:1, meaning it's very possible for a small compressed payload to decompress to a potentially very large output. To guard against this, you may provide a maximum size this function is allowed to allocate in bytes via [code]max_output_size[/code]. Passing -1 will allow for unbounded output. If any positive value is passed, and the decompression exceeds that amount in bytes, then an error will be returned.
 			</description>
 		</method>
-		<method name="empty">
-			<return type="bool">
+		<method name="duplicate">
+			<return type="PackedByteArray">
 			</return>
 			<description>
-				Returns [code]true[/code] if the array is empty.
+				Creates a copy of the array, and returns it.
 			</description>
 		</method>
 		<method name="get_string_from_ascii">
@@ -163,6 +162,13 @@
 			</return>
 			<description>
 				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="is_empty">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">

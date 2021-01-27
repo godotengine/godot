@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,13 +71,20 @@ void AudioDriver::update_mix_time(int p_frames) {
 	}
 }
 
-double AudioDriver::get_time_since_last_mix() const {
-	return (OS::get_singleton()->get_ticks_usec() - _last_mix_time) / 1000000.0;
+double AudioDriver::get_time_since_last_mix() {
+	lock();
+	uint64_t last_mix_time = _last_mix_time;
+	unlock();
+	return (OS::get_singleton()->get_ticks_usec() - last_mix_time) / 1000000.0;
 }
 
-double AudioDriver::get_time_to_next_mix() const {
-	double total = (OS::get_singleton()->get_ticks_usec() - _last_mix_time) / 1000000.0;
-	double mix_buffer = _last_mix_frames / (double)get_mix_rate();
+double AudioDriver::get_time_to_next_mix() {
+	lock();
+	uint64_t last_mix_time = _last_mix_time;
+	uint64_t last_mix_frames = _last_mix_frames;
+	unlock();
+	double total = (OS::get_singleton()->get_ticks_usec() - last_mix_time) / 1000000.0;
+	double mix_buffer = last_mix_frames / (double)get_mix_rate();
 	return mix_buffer - total;
 }
 

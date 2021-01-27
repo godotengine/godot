@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,6 +43,10 @@ _FORCE_INLINE_ bool is_whitespace(char32_t p_char) {
 
 _FORCE_INLINE_ bool is_linebreak(char32_t p_char) {
 	return (p_char >= 0x000a && p_char <= 0x000d) || (p_char == 0x0085) || (p_char == 0x2028) || (p_char == 0x2029);
+}
+
+_FORCE_INLINE_ bool is_punct(char32_t p_char) {
+	return (p_char >= 0x0020 && p_char <= 0x002F) || (p_char >= 0x003A && p_char <= 0x0040) || (p_char >= 0x005B && p_char <= 0x0060) || (p_char >= 0x007B && p_char <= 0x007E) || (p_char >= 0x2000 && p_char <= 0x206F) || (p_char >= 0x3000 && p_char <= 0x303F);
 }
 
 /*************************************************************************/
@@ -546,7 +550,7 @@ bool TextServerFallback::shaped_text_add_string(RID p_shaped, const String &p_te
 	ERR_FAIL_COND_V(!sd, false);
 	ERR_FAIL_COND_V(p_size <= 0, false);
 
-	if (p_text.empty()) {
+	if (p_text.is_empty()) {
 		return true;
 	}
 
@@ -569,7 +573,7 @@ bool TextServerFallback::shaped_text_add_string(RID p_shaped, const String &p_te
 			span.fonts.push_back(p_fonts[i]);
 		}
 	}
-	ERR_FAIL_COND_V(span.fonts.empty(), false);
+	ERR_FAIL_COND_V(span.fonts.is_empty(), false);
 	span.font_size = p_size;
 	span.language = p_language;
 
@@ -1029,6 +1033,9 @@ bool TextServerFallback::shaped_text_update_breaks(RID p_shaped) {
 	for (int i = 0; i < sd_size; i++) {
 		if (sd->glyphs[i].count > 0) {
 			char32_t c = sd->text[sd->glyphs[i].start];
+			if (is_punct(c)) {
+				sd->glyphs.write[i].flags |= GRAPHEME_IS_PUNCTUATION;
+			}
 			if (is_whitespace(c) && !is_linebreak(c)) {
 				sd->glyphs.write[i].flags |= GRAPHEME_IS_SPACE;
 				sd->glyphs.write[i].flags |= GRAPHEME_IS_BREAK_SOFT;

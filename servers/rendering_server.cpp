@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -620,6 +620,8 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 		r_bone_aabb.resize(total_bones);
 
+		int weight_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+
 		if (first) {
 			for (int i = 0; i < total_bones; i++) {
 				r_bone_aabb.write[i].size = Vector3(-1, -1, -1); //negative means unused
@@ -632,7 +634,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 		bool any_valid = false;
 
-		if (vertices.size() && bones.size() == vertices.size() * 4 && weights.size() == bones.size()) {
+		if (vertices.size() && bones.size() == vertices.size() * weight_count && weights.size() == bones.size()) {
 			int vs = vertices.size();
 			const Vector3 *rv = vertices.ptr();
 			const int *rb = bones.ptr();
@@ -642,9 +644,9 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 			for (int i = 0; i < vs; i++) {
 				Vector3 v = rv[i];
-				for (int j = 0; j < 4; j++) {
-					int idx = rb[i * 4 + j];
-					float w = rw[i * 4 + j];
+				for (int j = 0; j < weight_count; j++) {
+					int idx = rb[i * weight_count + j];
+					float w = rw[i * weight_count + j];
 					if (w == 0) {
 						continue; //break;
 					}
@@ -863,8 +865,22 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 					ERR_FAIL_V(ERR_INVALID_DATA);
 				} break;
 			}
-
 			ERR_FAIL_COND_V(array_len == 0, ERR_INVALID_DATA);
+		} else if (i == RS::ARRAY_BONES) {
+			switch (p_arrays[i].get_type()) {
+				case Variant::PACKED_INT32_ARRAY: {
+					Vector<Vector3> vertexes = p_arrays[RS::ARRAY_VERTEX];
+					Vector<int32_t> bones = p_arrays[i];
+					int32_t bone_8_group_count = bones.size() / (ARRAY_WEIGHTS_SIZE * 2);
+					int32_t vertex_count = vertexes.size();
+					if (vertex_count == bone_8_group_count) {
+						format |= RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+					}
+				} break;
+				default: {
+					ERR_FAIL_V(ERR_INVALID_DATA);
+				} break;
+			}
 		} else if (i == RS::ARRAY_INDEX) {
 			index_array_len = PackedInt32Array(p_arrays[i]).size();
 		}
@@ -992,7 +1008,6 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	surface_data.vertex_count = array_len;
 	surface_data.index_data = index_array;
 	surface_data.index_count = index_array_len;
-	surface_data.blend_shape_count = blend_shape_count;
 	surface_data.blend_shape_data = blend_shape_data;
 	surface_data.bone_aabbs = bone_aabb;
 	surface_data.lods = lods;
@@ -1311,10 +1326,10 @@ Array RenderingServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_sur
 
 		uint32_t blend_shape_count = blend_shape_data.size() / divisor;
 
-		ERR_FAIL_COND_V(blend_shape_count != sd.blend_shape_count, Array());
+		ERR_FAIL_COND_V(blend_shape_count != (uint32_t)mesh_get_blend_shape_count(p_mesh), Array());
 
 		Array blend_shape_array;
-		blend_shape_array.resize(blend_shape_count);
+		blend_shape_array.resize(mesh_get_blend_shape_count(p_mesh));
 		for (uint32_t i = 0; i < blend_shape_count; i++) {
 			Vector<uint8_t> bs_data = blend_shape_data.subarray(i * divisor, (i + 1) * divisor - 1);
 			Vector<uint8_t> unused;
@@ -1646,13 +1661,17 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_transparent_background", "viewport", "enabled"), &RenderingServer::viewport_set_transparent_background);
 	ClassDB::bind_method(D_METHOD("viewport_set_global_canvas_transform", "viewport", "transform"), &RenderingServer::viewport_set_global_canvas_transform);
 	ClassDB::bind_method(D_METHOD("viewport_set_canvas_stacking", "viewport", "canvas", "layer", "sublayer"), &RenderingServer::viewport_set_canvas_stacking);
-	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_size", "viewport", "size"), &RenderingServer::viewport_set_shadow_atlas_size);
+	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_size", "viewport", "size", "use_16_bits"), &RenderingServer::viewport_set_shadow_atlas_size, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_quadrant_subdivision", "viewport", "quadrant", "subdivision"), &RenderingServer::viewport_set_shadow_atlas_quadrant_subdivision);
 	ClassDB::bind_method(D_METHOD("viewport_set_msaa", "viewport", "msaa"), &RenderingServer::viewport_set_msaa);
 	ClassDB::bind_method(D_METHOD("viewport_set_use_debanding", "viewport", "enable"), &RenderingServer::viewport_set_use_debanding);
 
 	ClassDB::bind_method(D_METHOD("viewport_get_render_info", "viewport", "info"), &RenderingServer::viewport_get_render_info);
 	ClassDB::bind_method(D_METHOD("viewport_set_debug_draw", "viewport", "draw"), &RenderingServer::viewport_set_debug_draw);
+
+	ClassDB::bind_method(D_METHOD("viewport_set_measure_render_time", "viewport", "enable"), &RenderingServer::viewport_set_measure_render_time);
+	ClassDB::bind_method(D_METHOD("viewport_get_measured_render_time_cpu", "viewport"), &RenderingServer::viewport_get_measured_render_time_cpu);
+	ClassDB::bind_method(D_METHOD("viewport_get_measured_render_time_gpu", "viewport"), &RenderingServer::viewport_get_measured_render_time_gpu);
 
 	ClassDB::bind_method(D_METHOD("environment_create"), &RenderingServer::environment_create);
 	ClassDB::bind_method(D_METHOD("environment_set_background", "env", "bg"), &RenderingServer::environment_set_background);
@@ -1667,7 +1686,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_tonemap", "env", "tone_mapper", "exposure", "white", "auto_exposure", "min_luminance", "max_luminance", "auto_exp_speed", "auto_exp_grey"), &RenderingServer::environment_set_tonemap);
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "use_1d_color_correction", "color_correction"), &RenderingServer::environment_set_adjustment);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr", "env", "enable", "max_steps", "fade_in", "fade_out", "depth_tolerance"), &RenderingServer::environment_set_ssr);
-	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "bias", "light_affect", "ao_channel_affect", "blur", "bilateral_sharpness"), &RenderingServer::environment_set_ssao);
+	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "power", "detail", "horizon", "sharpness", "light_affect", "ao_channel_affect"), &RenderingServer::environment_set_ssao);
 	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective"), &RenderingServer::environment_set_fog);
 
 	ClassDB::bind_method(D_METHOD("scenario_create"), &RenderingServer::scenario_create);
@@ -1812,6 +1831,9 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_render_loop_enabled"), &RenderingServer::is_render_loop_enabled);
 	ClassDB::bind_method(D_METHOD("set_render_loop_enabled", "enabled"), &RenderingServer::set_render_loop_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_frame_setup_time_cpu"), &RenderingServer::get_frame_setup_time_cpu);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_loop_enabled"), "set_render_loop_enabled", "is_render_loop_enabled");
 
 	BIND_CONSTANT(NO_INDEX_ARRAY);
@@ -2037,11 +2059,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_SSR_ROUGNESS_QUALITY_MEDIUM);
 	BIND_ENUM_CONSTANT(ENV_SSR_ROUGNESS_QUALITY_HIGH);
 
-	BIND_ENUM_CONSTANT(ENV_SSAO_BLUR_DISABLED);
-	BIND_ENUM_CONSTANT(ENV_SSAO_BLUR_1x1);
-	BIND_ENUM_CONSTANT(ENV_SSAO_BLUR_2x2);
-	BIND_ENUM_CONSTANT(ENV_SSAO_BLUR_3x3);
-
+	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_VERY_LOW);
 	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_LOW);
 	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_MEDIUM);
 	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_HIGH);
@@ -2235,6 +2253,8 @@ void RenderingServer::set_render_loop_enabled(bool p_enabled) {
 
 RenderingServer::RenderingServer() {
 	//ERR_FAIL_COND(singleton);
+
+	thread_pool = memnew(RendererThreadPool);
 	singleton = this;
 
 	GLOBAL_DEF_RST("rendering/vram_compression/import_bptc", false);
@@ -2252,6 +2272,7 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/quality/directional_shadow/soft_shadow_quality", 2);
 	GLOBAL_DEF("rendering/quality/directional_shadow/soft_shadow_quality.mobile", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/directional_shadow/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/quality/directional_shadow/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
+	GLOBAL_DEF("rendering/quality/directional_shadow/16_bits", true);
 
 	GLOBAL_DEF("rendering/quality/shadows/soft_shadow_quality", 2);
 	GLOBAL_DEF("rendering/quality/shadows/soft_shadow_quality.mobile", 0);
@@ -2262,18 +2283,6 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/quality/rd_renderer/use_low_end_renderer", false);
 	GLOBAL_DEF("rendering/quality/rd_renderer/use_low_end_renderer.mobile", true);
 
-	GLOBAL_DEF("rendering/quality/shadow_atlas/size", 4096);
-	GLOBAL_DEF("rendering/quality/shadow_atlas/size.mobile", 2048);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
-	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_0_subdiv", 1);
-	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_1_subdiv", 2);
-	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_2_subdiv", 3);
-	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_3_subdiv", 4);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_0_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_1_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_2_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_2_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_3_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_3_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-
 	GLOBAL_DEF("rendering/quality/reflections/roughness_layers", 8);
 	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections", true);
 	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections.mobile", false);
@@ -2283,6 +2292,8 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_size", 256);
 	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_size.mobile", 128);
 	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_count", 64);
+
+	GLOBAL_DEF("rendering/quality/gi/use_half_resolution", false);
 
 	GLOBAL_DEF("rendering/quality/gi_probes/anisotropic", false);
 	GLOBAL_DEF("rendering/quality/gi_probes/quality", 1);
@@ -2308,9 +2319,18 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/depth_of_field/depth_of_field_bokeh_quality", PropertyInfo(Variant::INT, "rendering/quality/depth_of_field/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fastest),Low (Fast),Medium (Average),High (Slow)"));
 	GLOBAL_DEF("rendering/quality/depth_of_field/depth_of_field_use_jitter", false);
 
-	GLOBAL_DEF("rendering/quality/ssao/quality", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/quality", PropertyInfo(Variant::INT, "rendering/quality/ssao/quality", PROPERTY_HINT_ENUM, "Low (Fast),Medium (Average),High (Slow),Ultra (Slower)"));
+	GLOBAL_DEF("rendering/quality/ssao/quality", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/quality", PropertyInfo(Variant::INT, "rendering/quality/ssao/quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low (Fast),Medium (Average),High (Slow),Ultra (Custom)"));
 	GLOBAL_DEF("rendering/quality/ssao/half_size", false);
+	GLOBAL_DEF("rendering/quality/ssao/half_size.mobile", true);
+	GLOBAL_DEF("rendering/quality/ssao/adaptive_target", 0.5);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/adaptive_target", PropertyInfo(Variant::FLOAT, "rendering/quality/ssao/adaptive_target", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
+	GLOBAL_DEF("rendering/quality/ssao/blur_passes", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/blur_passes", PropertyInfo(Variant::INT, "rendering/quality/ssao/blur_passes", PROPERTY_HINT_RANGE, "0,6"));
+	GLOBAL_DEF("rendering/quality/ssao/fadeout_from", 50.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/fadeout_from", PropertyInfo(Variant::FLOAT, "rendering/quality/ssao/fadeout_from", PROPERTY_HINT_RANGE, "0.0,512,0.1,or_greater"));
+	GLOBAL_DEF("rendering/quality/ssao/fadeout_to", 300.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/fadeout_to", PropertyInfo(Variant::FLOAT, "rendering/quality/ssao/fadeout_to", PROPERTY_HINT_RANGE, "64,65536,0.1,or_greater"));
 
 	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter_enabled", true);
 	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter_amount", 0.25);
@@ -2338,10 +2358,12 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/lightmapper/probe_capture_update_speed", 15);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/lightmapper/probe_capture_update_speed", PropertyInfo(Variant::FLOAT, "rendering/lightmapper/probe_capture_update_speed", PROPERTY_HINT_RANGE, "0.001,256,0.001"));
 
-	GLOBAL_DEF("rendering/sdfgi/probe_ray_count", 2);
+	GLOBAL_DEF("rendering/sdfgi/probe_ray_count", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/probe_ray_count", PropertyInfo(Variant::INT, "rendering/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"));
-	GLOBAL_DEF("rendering/sdfgi/frames_to_converge", 1);
+	GLOBAL_DEF("rendering/sdfgi/frames_to_converge", 4);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/frames_to_converge", PropertyInfo(Variant::INT, "rendering/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"));
+	GLOBAL_DEF("rendering/sdfgi/frames_to_update_lights", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/frames_to_update_lights", PropertyInfo(Variant::INT, "rendering/sdfgi/frames_to_update_lights", PROPERTY_HINT_ENUM, "1 (Slower),2,4,8,16 (Faster)"));
 
 	GLOBAL_DEF("rendering/volumetric_fog/volume_size", 64);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/volume_size", PropertyInfo(Variant::INT, "rendering/volumetric_fog/volume_size", PROPERTY_HINT_RANGE, "16,512,1"));
@@ -2353,8 +2375,19 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/directional_shadow_shrink", PropertyInfo(Variant::INT, "rendering/volumetric_fog/directional_shadow_shrink", PROPERTY_HINT_RANGE, "32,2048,1"));
 	GLOBAL_DEF("rendering/volumetric_fog/positional_shadow_shrink", 512);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/positional_shadow_shrink", PropertyInfo(Variant::INT, "rendering/volumetric_fog/positional_shadow_shrink", PROPERTY_HINT_RANGE, "32,2048,1"));
+
+	GLOBAL_DEF("rendering/spatial_indexer/update_iterations_per_frame", 10);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/spatial_indexer/update_iterations_per_frame", PropertyInfo(Variant::INT, "rendering/spatial_indexer/update_iterations_per_frame", PROPERTY_HINT_RANGE, "0,1024,1"));
+	GLOBAL_DEF("rendering/spatial_indexer/threaded_cull_minimum_instances", 1000);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/spatial_indexer/threaded_cull_minimum_instances", PropertyInfo(Variant::INT, "rendering/spatial_indexer/threaded_cull_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"));
+	GLOBAL_DEF("rendering/forward_renderer/threaded_render_minimum_instances", 500);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/forward_renderer/threaded_render_minimum_instances", PropertyInfo(Variant::INT, "rendering/forward_renderer/threaded_render_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"));
+
+	GLOBAL_DEF("rendering/cluster_builder/max_clustered_elements", 512);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/cluster_builder/max_clustered_elements", PropertyInfo(Variant::FLOAT, "rendering/cluster_builder/max_clustered_elements", PROPERTY_HINT_RANGE, "32,8192,1"));
 }
 
 RenderingServer::~RenderingServer() {
+	memdelete(thread_pool);
 	singleton = nullptr;
 }

@@ -1,7 +1,14 @@
 import os
 import sys
 
-from emscripten_helpers import run_closure_compiler, create_engine_file, add_js_libraries
+from emscripten_helpers import (
+    run_closure_compiler,
+    create_engine_file,
+    add_js_libraries,
+    add_js_pre,
+    add_js_externs,
+    get_build_version,
+)
 from methods import get_compiler_version
 from SCons.Util import WhereIs
 
@@ -50,14 +57,14 @@ def get_flags():
 
 
 def configure(env):
-    try:
-        env["initial_memory"] = int(env["initial_memory"])
-    except:
-        print("Initial memory must be a valid integer")
-        sys.exit(255)
+    if not isinstance(env["initial_memory"], int):
+        try:
+            env["initial_memory"] = int(env["initial_memory"])
+        except:
+            print("Initial memory must be a valid integer")
+            sys.exit(255)
 
     ## Build type
-
     if env["target"] == "release":
         # Use -Os to prioritize optimizing for reduced file size. This is
         # particularly valuable for the web platform because it directly
@@ -133,8 +140,16 @@ def configure(env):
         jscc = env.Builder(generator=run_closure_compiler, suffix=".cc.js", src_suffix=".js")
         env.Append(BUILDERS={"BuildJS": jscc})
 
-    # Add helper method for adding libraries.
+    # Add helper method for adding libraries, externs, pre-js.
+    env["JS_LIBS"] = []
+    env["JS_PRE"] = []
+    env["JS_EXTERNS"] = []
     env.AddMethod(add_js_libraries, "AddJSLibraries")
+    env.AddMethod(add_js_pre, "AddJSPre")
+    env.AddMethod(add_js_externs, "AddJSExterns")
+
+    # Add method for getting build version string.
+    env.AddMethod(get_build_version, "GetBuildVersion")
 
     # Add method that joins/compiles our Engine files.
     env.AddMethod(create_engine_file, "CreateEngineFile")

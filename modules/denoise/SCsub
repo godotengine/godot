@@ -8,6 +8,9 @@ Import("env_modules")
 env_oidn = env_modules.Clone()
 
 # Thirdparty source files
+
+thirdparty_obj = []
+
 thirdparty_dir = "#thirdparty/oidn/"
 thirdparty_sources = [
     "core/api.cpp",
@@ -106,7 +109,8 @@ env_oidn.Append(
 
 env_thirdparty = env_oidn.Clone()
 env_thirdparty.disable_warnings()
-env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
 
 weights_in_path = thirdparty_dir + "weights/rtlightmap_hdr.tza"
 weights_out_path = thirdparty_dir + "weights/rtlightmap_hdr.gen.cpp"
@@ -114,5 +118,12 @@ weights_out_path = thirdparty_dir + "weights/rtlightmap_hdr.gen.cpp"
 env_thirdparty.Depends(weights_out_path, weights_in_path)
 env_thirdparty.CommandNoCache(weights_out_path, weights_in_path, resource_to_cpp.tza_to_cpp)
 
-env_oidn.add_source_files(env.modules_sources, "denoise_wrapper.cpp")
-env_modules.add_source_files(env.modules_sources, ["register_types.cpp", "lightmap_denoiser.cpp"])
+# Godot source files
+
+module_obj = []
+
+env_oidn.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

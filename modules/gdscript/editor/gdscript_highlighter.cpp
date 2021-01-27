@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -269,19 +269,21 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) 
 				col = keywords[word];
 			} else if (member_keywords.has(word)) {
 				col = member_keywords[word];
+			}
+
+			if (col != Color()) {
 				for (int k = j - 1; k >= 0; k--) {
 					if (str[k] == '.') {
-						col = Color(); //member indexing not allowed
+						col = Color(); // keyword & member indexing not allowed
 						break;
 					} else if (str[k] > 32) {
 						break;
 					}
 				}
-			}
-
-			if (col != Color()) {
-				in_keyword = true;
-				keyword_color = col;
+				if (col != Color()) {
+					in_keyword = true;
+					keyword_color = col;
+				}
 			}
 		}
 

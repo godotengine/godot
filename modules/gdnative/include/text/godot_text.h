@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -82,6 +82,9 @@ typedef struct {
 	void (*font_set_antialiased)(void *, godot_rid *, bool);
 	bool (*font_get_antialiased)(void *, godot_rid *);
 	godot_dictionary (*font_get_feature_list)(void *, godot_rid *);
+	godot_dictionary (*font_get_variation_list)(void *, godot_rid *);
+	void (*font_set_variation)(void *, godot_rid *, const godot_string *, double);
+	double (*font_get_variation)(void *, godot_rid *, const godot_string *);
 	void (*font_set_distance_field_hint)(void *, godot_rid *, bool);
 	bool (*font_get_distance_field_hint)(void *, godot_rid *);
 	void (*font_set_hinting)(void *, godot_rid *, godot_int);
@@ -172,8 +175,8 @@ void GDAPI godot_glyph_set_flags(godot_glyph *p_self, godot_int p_flags);
 godot_vector2 GDAPI godot_glyph_get_offset(const godot_glyph *p_self);
 void GDAPI godot_glyph_set_offset(godot_glyph *p_self, const godot_vector2 *p_offset);
 
-godot_real GDAPI godot_glyph_get_advance(const godot_glyph *p_self);
-void GDAPI godot_glyph_set_advance(godot_glyph *p_self, godot_real p_advance);
+godot_float GDAPI godot_glyph_get_advance(const godot_glyph *p_self);
+void GDAPI godot_glyph_set_advance(godot_glyph *p_self, godot_float p_advance);
 
 godot_rid GDAPI godot_glyph_get_font(const godot_glyph *p_self);
 void GDAPI godot_glyph_set_font(godot_glyph *p_self, godot_rid *p_font);
@@ -215,7 +218,7 @@ godot_glyph GDAPI godot_packed_glyph_array_get(const godot_packed_glyph_array *p
 
 godot_int GDAPI godot_packed_glyph_array_size(const godot_packed_glyph_array *p_self);
 
-godot_bool GDAPI godot_packed_glyph_array_empty(const godot_packed_glyph_array *p_self);
+godot_bool GDAPI godot_packed_glyph_array_is_empty(const godot_packed_glyph_array *p_self);
 
 void GDAPI godot_packed_glyph_array_destroy(godot_packed_glyph_array *p_self);
 

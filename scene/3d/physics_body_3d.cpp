@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -311,7 +311,7 @@ void RigidBody3D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 
 		bool in_tree = E->get().in_tree;
 
-		if (E->get().shapes.empty()) {
+		if (E->get().shapes.is_empty()) {
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody3D::_body_enter_tree));
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody3D::_body_exit_tree));
@@ -714,7 +714,7 @@ String RigidBody3D::get_configuration_warning() const {
 	String warning = CollisionObject3D::get_configuration_warning();
 
 	if ((get_mode() == MODE_RIGID || get_mode() == MODE_CHARACTER) && (ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Size changes to RigidBody3D (in character or rigid modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
@@ -1716,6 +1716,10 @@ bool PhysicalBone3D::SixDOFJointData::_set(const StringName &p_name, const Varia
 
 	String path = p_name;
 
+	if (!path.begins_with("joint_constraints/")) {
+		return false;
+	}
+
 	Vector3::Axis axis;
 	{
 		const String axis_s = path.get_slicec('/', 1);
@@ -1872,6 +1876,10 @@ bool PhysicalBone3D::SixDOFJointData::_get(const StringName &p_name, Variant &r_
 
 	String path = p_name;
 
+	if (!path.begins_with("joint_constraints/")) {
+		return false;
+	}
+
 	int axis;
 	{
 		const String axis_s = path.get_slicec('/', 1);
@@ -1971,7 +1979,7 @@ bool PhysicalBone3D::_set(const StringName &p_name, const Variant &p_value) {
 	}
 
 	if (joint_data) {
-		if (joint_data->_set(p_name, p_value)) {
+		if (joint_data->_set(p_name, p_value, joint)) {
 #ifdef TOOLS_ENABLED
 			if (get_gizmo().is_valid()) {
 				get_gizmo()->redraw();

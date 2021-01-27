@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -163,7 +163,7 @@ void TreeItem::set_text(int p_column, String p_text) {
 		cells.write[p_column].max = INT_MIN;
 		for (int i = 0; i < strings.size(); i++) {
 			int value = i;
-			if (!strings[i].get_slicec(':', 1).empty()) {
+			if (!strings[i].get_slicec(':', 1).is_empty()) {
 				value = strings[i].get_slicec(':', 1).to_int();
 			}
 			cells.write[p_column].min = MIN(cells[p_column].min, value);
@@ -320,7 +320,7 @@ int TreeItem::get_icon_max_width(int p_column) const {
 void TreeItem::set_range(int p_column, double p_value) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	if (cells[p_column].step > 0) {
-		p_value = Math::stepify(p_value, cells[p_column].step);
+		p_value = Math::snapped(p_value, cells[p_column].step);
 	}
 	if (p_value < cells[p_column].min) {
 		p_value = cells[p_column].min;
@@ -1018,7 +1018,7 @@ void Tree::update_cache() {
 	cache.custom_button_font_highlight = get_theme_color("custom_button_font_highlight");
 
 	cache.font_color = get_theme_color("font_color");
-	cache.font_color_selected = get_theme_color("font_color_selected");
+	cache.font_selected_color = get_theme_color("font_selected_color");
 	cache.guide_color = get_theme_color("guide_color");
 	cache.drop_position_color = get_theme_color("drop_position_color");
 	cache.hseparation = get_theme_constant("hseparation");
@@ -1212,7 +1212,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 			Vector<String> strings = p_item->cells[p_col].text.split(",");
 			for (int j = 0; j < strings.size(); j++) {
 				int value = j;
-				if (!strings[j].get_slicec(':', 1).empty()) {
+				if (!strings[j].get_slicec(':', 1).is_empty()) {
 					value = strings[j].get_slicec(':', 1).to_int();
 				}
 				if (option == value) {
@@ -1358,9 +1358,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			if (i == 0) {
 				if (p_item->cells[0].selected && select_mode == SELECT_ROW) {
-					Rect2i row_rect = Rect2i(Point2i(cache.bg->get_margin(MARGIN_LEFT), item_rect.position.y), Size2i(get_size().width - cache.bg->get_minimum_size().width, item_rect.size.y));
+					Rect2i row_rect = Rect2i(Point2i(cache.bg->get_margin(SIDE_LEFT), item_rect.position.y), Size2i(get_size().width - cache.bg->get_minimum_size().width, item_rect.size.y));
 					//Rect2 r = Rect2i(row_rect.pos,row_rect.size);
-					//r.grow(cache.selected->get_margin(MARGIN_LEFT));
+					//r.grow(cache.selected->get_margin(SIDE_LEFT));
 					if (rtl) {
 						row_rect.position.x = get_size().width - row_rect.position.x - row_rect.size.x;
 					}
@@ -1433,7 +1433,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				}
 			}
 
-			Color col = p_item->cells[i].custom_color ? p_item->cells[i].color : get_theme_color(p_item->cells[i].selected ? "font_color_selected" : "font_color");
+			Color col = p_item->cells[i].custom_color ? p_item->cells[i].color : get_theme_color(p_item->cells[i].selected ? "font_selected_color" : "font_color");
 			Color icon_col = p_item->cells[i].icon_color;
 
 			if (p_item->cells[i].dirty) {
@@ -1887,7 +1887,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 			return -1;
 		} else if (col == 0) {
 			int margin = x_ofs + cache.item_margin; //-cache.hseparation;
-			//int lm = cache.bg->get_margin(MARGIN_LEFT);
+			//int lm = cache.bg->get_margin(SIDE_LEFT);
 			col_width -= margin;
 			col_ofs += margin;
 			x -= margin;
@@ -2031,7 +2031,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 					popup_menu->clear();
 					for (int i = 0; i < c.text.get_slice_count(","); i++) {
 						String s = c.text.get_slicec(',', i);
-						popup_menu->add_item(s.get_slicec(':', 0), s.get_slicec(':', 1).empty() ? i : s.get_slicec(':', 1).to_int());
+						popup_menu->add_item(s.get_slicec(':', 0), s.get_slicec(':', 1).is_empty() ? i : s.get_slicec(':', 1).to_int());
 					}
 
 					popup_menu->set_size(Size2(col_width, 0));
@@ -2191,7 +2191,7 @@ void Tree::_text_editor_enter(String p_text) {
 		case TreeItem::CELL_MODE_RANGE: {
 			c.val = p_text.to_float();
 			if (c.step > 0) {
-				c.val = Math::stepify(c.val, c.step);
+				c.val = Math::snapped(c.val, c.step);
 			}
 			if (c.val < c.min) {
 				c.val = c.min;
@@ -2930,7 +2930,7 @@ bool Tree::edit_selected() {
 		popup_menu->clear();
 		for (int i = 0; i < c.text.get_slice_count(","); i++) {
 			String s2 = c.text.get_slicec(',', i);
-			popup_menu->add_item(s2.get_slicec(':', 0), s2.get_slicec(':', 1).empty() ? i : s2.get_slicec(':', 1).to_int());
+			popup_menu->add_item(s2.get_slicec(':', 0), s2.get_slicec(':', 1).is_empty() ? i : s2.get_slicec(':', 1).to_int());
 		}
 
 		popup_menu->set_size(Size2(rect.size.width, 0));
@@ -3005,8 +3005,8 @@ void Tree::update_scrollbars() {
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();
 
-	v_scroll->set_begin(Point2(size.width - vmin.width, cache.bg->get_margin(MARGIN_TOP)));
-	v_scroll->set_end(Point2(size.width, size.height - cache.bg->get_margin(MARGIN_TOP) - cache.bg->get_margin(MARGIN_BOTTOM)));
+	v_scroll->set_begin(Point2(size.width - vmin.width, cache.bg->get_margin(SIDE_TOP)));
+	v_scroll->set_end(Point2(size.width, size.height - cache.bg->get_margin(SIDE_TOP) - cache.bg->get_margin(SIDE_BOTTOM)));
 
 	h_scroll->set_begin(Point2(0, size.height - hmin.height));
 	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
@@ -3166,11 +3166,11 @@ void Tree::_notification(int p_what) {
 
 		if (show_column_titles) {
 			//title buttons
-			int ofs2 = cache.bg->get_margin(MARGIN_LEFT);
+			int ofs2 = cache.bg->get_margin(SIDE_LEFT);
 			for (int i = 0; i < columns.size(); i++) {
 				Ref<StyleBox> sb = (cache.click_type == Cache::CLICK_TITLE && cache.click_index == i) ? cache.title_button_pressed : ((cache.hover_type == Cache::CLICK_TITLE && cache.hover_index == i) ? cache.title_button_hover : cache.title_button);
 				Ref<Font> f = cache.tb_font;
-				Rect2 tbrect = Rect2(ofs2 - cache.offset.x, bg->get_margin(MARGIN_TOP), get_column_width(i), tbh);
+				Rect2 tbrect = Rect2(ofs2 - cache.offset.x, bg->get_margin(SIDE_TOP), get_column_width(i), tbh);
 				if (is_layout_rtl()) {
 					tbrect.position.x = get_size().width - tbrect.size.x - tbrect.position.x;
 				}
@@ -3470,7 +3470,7 @@ int Tree::get_column_width(int p_column) const {
 
 	Ref<StyleBox> bg = cache.bg;
 
-	int expand_area = get_size().width - (bg->get_margin(MARGIN_LEFT) + bg->get_margin(MARGIN_RIGHT));
+	int expand_area = get_size().width - (bg->get_margin(SIDE_LEFT) + bg->get_margin(SIDE_RIGHT));
 
 	if (v_scroll->is_visible_in_tree()) {
 		expand_area -= v_scroll->get_combined_minimum_size().width;
@@ -4249,7 +4249,7 @@ Tree::Tree() {
 	popup_editor_vb = memnew(VBoxContainer);
 	popup_editor->add_child(popup_editor_vb);
 	popup_editor_vb->add_theme_constant_override("separation", 0);
-	popup_editor_vb->set_anchors_and_margins_preset(PRESET_WIDE);
+	popup_editor_vb->set_anchors_and_offsets_preset(PRESET_WIDE);
 	text_editor = memnew(LineEdit);
 	popup_editor_vb->add_child(text_editor);
 	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);

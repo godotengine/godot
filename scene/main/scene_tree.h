@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,37 +80,36 @@ public:
 private:
 	struct Group {
 		Vector<Node *> nodes;
-		//uint64_t last_tree_version;
 		bool changed;
 		Group() { changed = false; };
 	};
 
-	Window *root;
+	Window *root = nullptr;
 
-	uint64_t tree_version;
-	float physics_process_time;
-	float idle_process_time;
-	bool accept_quit;
-	bool quit_on_go_back;
+	uint64_t tree_version = 1;
+	float physics_process_time = 1.0;
+	float process_time = 1.0;
+	bool accept_quit = true;
+	bool quit_on_go_back = true;
 
 #ifdef DEBUG_ENABLED
-	bool debug_collisions_hint;
-	bool debug_navigation_hint;
+	bool debug_collisions_hint = false;
+	bool debug_navigation_hint = false;
 #endif
-	bool pause;
-	int root_lock;
+	bool pause = false;
+	int root_lock = 0;
 
 	Map<StringName, Group> group_map;
-	bool _quit;
-	bool initialized;
+	bool _quit = false;
+	bool initialized = false;
 
-	StringName tree_changed_name;
-	StringName node_added_name;
-	StringName node_removed_name;
-	StringName node_renamed_name;
+	StringName tree_changed_name = "tree_changed";
+	StringName node_added_name = "node_added";
+	StringName node_removed_name = "node_removed";
+	StringName node_renamed_name = "node_renamed";
 
-	int64_t current_frame;
-	int node_count;
+	int64_t current_frame = 0;
+	int node_count = 0;
 
 #ifdef TOOLS_ENABLED
 	Node *edited_scene_root;
@@ -122,14 +121,14 @@ private:
 		bool operator<(const UGCall &p_with) const { return group == p_with.group ? call < p_with.call : group < p_with.group; }
 	};
 
-	//safety for when a node is deleted while a group is being called
-	int call_lock;
-	Set<Node *> call_skip; //skip erased nodes
+	// Safety for when a node is deleted while a group is being called.
+	int call_lock = 0;
+	Set<Node *> call_skip; // Skip erased nodes.
 
 	List<ObjectID> delete_queue;
 
 	Map<UGCall, Vector<Variant>> unique_group_calls;
-	bool ugc_locked;
+	bool ugc_locked = false;
 	void _flush_ugc();
 
 	_FORCE_INLINE_ void _update_group_order(Group &g, bool p_use_priority = false);
@@ -157,7 +156,7 @@ private:
 	///network///
 
 	Ref<MultiplayerAPI> multiplayer;
-	bool multiplayer_poll;
+	bool multiplayer_poll = true;
 
 	void _network_peer_connected(int p_id);
 	void _network_peer_disconnected(int p_id);
@@ -183,7 +182,7 @@ private:
 	Variant _call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	void _flush_delete_queue();
-	//optimization
+	// Optimization.
 	friend class CanvasItem;
 	friend class Node3D;
 	friend class Viewport;
@@ -237,12 +236,12 @@ public:
 
 	void flush_transform_notifications();
 
-	virtual void init() override;
+	virtual void initialize() override;
 
-	virtual bool iteration(float p_time) override;
-	virtual bool idle(float p_time) override;
+	virtual bool physics_process(float p_time) override;
+	virtual bool process(float p_time) override;
 
-	virtual void finish() override;
+	virtual void finalize() override;
 
 	void set_auto_accept_quit(bool p_enable);
 	void set_quit_on_go_back(bool p_enable);
@@ -250,7 +249,7 @@ public:
 	void quit(int p_exit_code = -1);
 
 	_FORCE_INLINE_ float get_physics_process_time() const { return physics_process_time; }
-	_FORCE_INLINE_ float get_idle_process_time() const { return idle_process_time; }
+	_FORCE_INLINE_ float get_process_time() const { return process_time; }
 
 #ifdef TOOLS_ENABLED
 	bool is_node_being_edited(const Node *p_node) const;

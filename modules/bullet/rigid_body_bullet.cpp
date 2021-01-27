@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -320,10 +320,8 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 	if (space) {
 		can_integrate_forces = false;
 		isScratchedSpaceOverrideModificator = false;
-
-		// Remove all eventual constraints
-		assert_no_constraints();
-
+		// Remove any constraints
+		space->remove_rigid_body_constraints(this);
 		// Remove this object form the physics world
 		space->unregister_collision_object(this);
 		space->remove_rigid_body(this);
@@ -453,12 +451,6 @@ bool RigidBodyBullet::was_colliding(RigidBodyBullet *p_other_object) {
 		}
 	}
 	return false;
-}
-
-void RigidBodyBullet::assert_no_constraints() {
-	if (btBody->getNumConstraintRefs()) {
-		WARN_PRINT("A body with a joints is destroyed. Please check the implementation in order to destroy the joint before the body.");
-	}
 }
 
 void RigidBodyBullet::set_activation_state(bool p_active) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@ void BitMap::create(const Size2 &p_size) {
 }
 
 void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshold) {
-	ERR_FAIL_COND(p_image.is_null() || p_image->empty());
+	ERR_FAIL_COND(p_image.is_null() || p_image->is_empty());
 	Ref<Image> img = p_image->duplicate();
 	img->convert(Image::FORMAT_LA8);
 	ERR_FAIL_COND(img->get_format() != Image::FORMAT_LA8);
@@ -63,7 +63,7 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshol
 }
 
 void BitMap::set_bit_rect(const Rect2 &p_rect, bool p_value) {
-	Rect2i current = Rect2i(0, 0, width, height).clip(p_rect);
+	Rect2i current = Rect2i(0, 0, width, height).intersection(p_rect);
 	uint8_t *data = bitmask.ptrw();
 
 	for (int i = current.position.x; i < current.position.x + current.size.x; i++) {
@@ -482,7 +482,7 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 }
 
 Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, float p_epsilon) const {
-	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect);
+	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
 	print_verbose("BitMap: Rect: " + r);
 
 	Point2i from;
@@ -522,7 +522,7 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 	bool bit_value = p_pixels > 0;
 	p_pixels = Math::abs(p_pixels);
 
-	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect);
+	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
 
 	Ref<BitMap> copy;
 	copy.instance();

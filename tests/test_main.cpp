@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,17 +42,22 @@
 #include "test_crypto.h"
 #include "test_curve.h"
 #include "test_expression.h"
+#include "test_file_access.h"
+#include "test_geometry_2d.h"
 #include "test_gradient.h"
 #include "test_gui.h"
 #include "test_json.h"
 #include "test_list.h"
+#include "test_local_vector.h"
 #include "test_lru.h"
+#include "test_marshalls.h"
 #include "test_math.h"
 #include "test_method_bind.h"
 #include "test_node_path.h"
 #include "test_oa_hash_map.h"
 #include "test_object.h"
 #include "test_ordered_hash_map.h"
+#include "test_paged_array.h"
 #include "test_pck_packer.h"
 #include "test_physics_2d.h"
 #include "test_physics_3d.h"

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -190,7 +190,7 @@ CameraMatrix XRInterfaceGDNative::get_projection_for_eye(XRInterface::Eyes p_eye
 
 	ERR_FAIL_COND_V(interface == nullptr, CameraMatrix());
 
-	interface->fill_projection_for_eye(data, (godot_real *)cm.matrix, (godot_int)p_eye, p_aspect, p_z_near, p_z_far);
+	interface->fill_projection_for_eye(data, (godot_float *)cm.matrix, (godot_int)p_eye, p_aspect, p_z_near, p_z_far);
 
 	return cm;
 }
@@ -234,7 +234,7 @@ void GDAPI godot_xr_register_interface(const godot_xr_interface_gdnative *p_inte
 	XRServer::get_singleton()->add_interface(new_interface);
 }
 
-godot_real GDAPI godot_xr_get_worldscale() {
+godot_float GDAPI godot_xr_get_worldscale() {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, 1.0);
 
@@ -249,7 +249,7 @@ godot_transform GDAPI godot_xr_get_reference_frame() {
 	if (xr_server != nullptr) {
 		*reference_frame_ptr = xr_server->get_reference_frame();
 	} else {
-		godot_transform_new_identity(&reference_frame);
+		memnew_placement(&reference_frame, Transform);
 	}
 
 	return reference_frame;
@@ -302,12 +302,12 @@ godot_int GDAPI godot_xr_add_controller(char *p_device_name, godot_int p_hand, g
 	ERR_FAIL_NULL_V(input, 0);
 
 	XRPositionalTracker *new_tracker = memnew(XRPositionalTracker);
-	new_tracker->set_name(p_device_name);
-	new_tracker->set_type(XRServer::TRACKER_CONTROLLER);
+	new_tracker->set_tracker_name(p_device_name);
+	new_tracker->set_tracker_type(XRServer::TRACKER_CONTROLLER);
 	if (p_hand == 1) {
-		new_tracker->set_hand(XRPositionalTracker::TRACKER_LEFT_HAND);
+		new_tracker->set_tracker_hand(XRPositionalTracker::TRACKER_HAND_LEFT);
 	} else if (p_hand == 2) {
-		new_tracker->set_hand(XRPositionalTracker::TRACKER_RIGHT_HAND);
+		new_tracker->set_tracker_hand(XRPositionalTracker::TRACKER_HAND_RIGHT);
 	}
 
 	// also register as joystick...
@@ -387,7 +387,7 @@ void GDAPI godot_xr_set_controller_button(godot_int p_controller_id, godot_int p
 	}
 }
 
-void GDAPI godot_xr_set_controller_axis(godot_int p_controller_id, godot_int p_axis, godot_real p_value, godot_bool p_can_be_negative) {
+void GDAPI godot_xr_set_controller_axis(godot_int p_controller_id, godot_int p_axis, godot_float p_value, godot_bool p_can_be_negative) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
@@ -406,7 +406,7 @@ void GDAPI godot_xr_set_controller_axis(godot_int p_controller_id, godot_int p_a
 	}
 }
 
-godot_real GDAPI godot_xr_get_controller_rumble(godot_int p_controller_id) {
+godot_float GDAPI godot_xr_get_controller_rumble(godot_int p_controller_id) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, 0.0);
 

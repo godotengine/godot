@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -247,7 +247,7 @@ bool Input::is_action_just_pressed(const StringName &p_action) const {
 	if (Engine::get_singleton()->is_in_physics_frame()) {
 		return E->get().pressed && E->get().physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return E->get().pressed && E->get().idle_frame == Engine::get_singleton()->get_idle_frames();
+		return E->get().pressed && E->get().process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
@@ -260,7 +260,7 @@ bool Input::is_action_just_released(const StringName &p_action) const {
 	if (Engine::get_singleton()->is_in_physics_frame()) {
 		return !E->get().pressed && E->get().physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return !E->get().pressed && E->get().idle_frame == Engine::get_singleton()->get_idle_frames();
+		return !E->get().pressed && E->get().process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
@@ -588,7 +588,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			if (!p_event->is_echo() && is_action_pressed(E->key()) != p_event->is_action_pressed(E->key())) {
 				Action action;
 				action.physics_frame = Engine::get_singleton()->get_physics_frames();
-				action.idle_frame = Engine::get_singleton()->get_idle_frames();
+				action.process_frame = Engine::get_singleton()->get_process_frames();
 				action.pressed = p_event->is_action_pressed(E->key());
 				action.strength = 0.0f;
 				action.raw_strength = 0.0f;
@@ -714,7 +714,7 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 	Action action;
 
 	action.physics_frame = Engine::get_singleton()->get_physics_frames();
-	action.idle_frame = Engine::get_singleton()->get_idle_frames();
+	action.process_frame = Engine::get_singleton()->get_process_frames();
 	action.pressed = true;
 	action.strength = p_strength;
 
@@ -725,7 +725,7 @@ void Input::action_release(const StringName &p_action) {
 	Action action;
 
 	action.physics_frame = Engine::get_singleton()->get_physics_frames();
-	action.idle_frame = Engine::get_singleton()->get_idle_frames();
+	action.process_frame = Engine::get_singleton()->get_process_frames();
 	action.pressed = false;
 	action.strength = 0.f;
 
@@ -806,7 +806,7 @@ void Input::accumulate_input_event(const Ref<InputEvent> &p_event) {
 		parse_input_event(p_event);
 		return;
 	}
-	if (!accumulated_events.empty() && accumulated_events.back()->get()->accumulate(p_event)) {
+	if (!accumulated_events.is_empty() && accumulated_events.back()->get()->accumulate(p_event)) {
 		return; //event was accumulated, exit
 	}
 
@@ -886,10 +886,10 @@ void Input::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 		jx.min = p_value.min;
 		jx.value = p_value.value < 0.5 ? 0.6 : 0.4;
 		joy_axis(p_device, p_axis, jx);
-	} else if (ABS(last) > 0.5 && last * p_value.value < 0) {
+	} else if (ABS(last) > 0.5 && last * p_value.value <= 0) {
 		JoyAxis jx;
 		jx.min = p_value.min;
-		jx.value = p_value.value < 0 ? 0.1 : -0.1;
+		jx.value = last > 0 ? 0.1 : -0.1;
 		joy_axis(p_device, p_axis, jx);
 	}
 

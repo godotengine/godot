@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -490,17 +490,17 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		if (oe.callstack.size() > 0) {
 			// If available, use the script's stack in the error title.
 			error_title = oe.callstack[oe.callstack.size() - 1].func + ": ";
-		} else if (!oe.source_func.empty()) {
+		} else if (!oe.source_func.is_empty()) {
 			// Otherwise try to use the C++ source function.
 			error_title += oe.source_func + ": ";
 		}
 		// If we have a (custom) error message, use it as title, and add a C++ Error
 		// item with the original error condition.
-		error_title += oe.error_descr.empty() ? oe.error : oe.error_descr;
+		error_title += oe.error_descr.is_empty() ? oe.error : oe.error_descr;
 		error->set_text(1, error_title);
 		tooltip += " " + error_title + "\n";
 
-		if (!oe.error_descr.empty()) {
+		if (!oe.error_descr.is_empty()) {
 			// Add item for C++ error condition.
 			TreeItem *cpp_cond = error_tree->create_item(error);
 			cpp_cond->set_text(0, "<" + TTR("C++ Error") + ">");
@@ -516,7 +516,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		// Source of the error.
 		String source_txt = (source_is_project_file ? oe.source_file.get_file() : oe.source_file) + ":" + itos(oe.source_line);
-		if (!oe.source_func.empty()) {
+		if (!oe.source_func.is_empty()) {
 			source_txt += " @ " + oe.source_func + "()";
 		}
 
@@ -802,8 +802,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 						msg.push_back(true);
 						msg.push_back(cam->get_fov());
 					}
-					msg.push_back(cam->get_znear());
-					msg.push_back(cam->get_zfar());
+					msg.push_back(cam->get_near());
+					msg.push_back(cam->get_far());
 					_put_msg("scene:override_camera_3D:transform", msg);
 				}
 			}

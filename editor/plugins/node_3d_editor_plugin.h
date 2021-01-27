@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -212,6 +212,12 @@ class Node3DEditorViewport : public Control {
 		VIEW_DISPLAY_DEBUG_SDFGI,
 		VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
 		VIEW_DISPLAY_DEBUG_GI_BUFFER,
+		VIEW_DISPLAY_DEBUG_DISABLE_LOD,
+		VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_DECALS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
+
 		VIEW_LOCK_ROTATION,
 		VIEW_CINEMATIC_PREVIEW,
 		VIEW_AUTO_ORTHOGONAL,
@@ -288,6 +294,9 @@ private:
 
 	VBoxContainer *top_right_vbox;
 	ViewportRotationControl *rotation_control;
+	Gradient *frame_time_gradient;
+	Label *cpu_time_label;
+	Label *gpu_time_label;
 	Label *fps_label;
 
 	struct _RayResult {
@@ -479,6 +488,7 @@ public:
 	Camera3D *get_camera() { return camera; } // return the default camera object.
 
 	Node3DEditorViewport(Node3DEditor *p_spatial_editor, EditorNode *p_editor, int p_index);
+	~Node3DEditorViewport();
 };
 
 class Node3DEditorSelectedItem : public Object {

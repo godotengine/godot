@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -283,6 +283,30 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		function->_constructors_count = 0;
 	}
 
+	if (utilities_map.size()) {
+		function->utilities.resize(utilities_map.size());
+		function->_utilities_ptr = function->utilities.ptr();
+		function->_utilities_count = utilities_map.size();
+		for (const Map<Variant::ValidatedUtilityFunction, int>::Element *E = utilities_map.front(); E; E = E->next()) {
+			function->utilities.write[E->get()] = E->key();
+		}
+	} else {
+		function->_utilities_ptr = nullptr;
+		function->_utilities_count = 0;
+	}
+
+	if (gds_utilities_map.size()) {
+		function->gds_utilities.resize(gds_utilities_map.size());
+		function->_gds_utilities_ptr = function->gds_utilities.ptr();
+		function->_gds_utilities_count = gds_utilities_map.size();
+		for (const Map<GDScriptUtilityFunctions::FunctionPtr, int>::Element *E = gds_utilities_map.front(); E; E = E->next()) {
+			function->gds_utilities.write[E->get()] = E->key();
+		}
+	} else {
+		function->_gds_utilities_ptr = nullptr;
+		function->_gds_utilities_count = 0;
+	}
+
 	if (method_bind_map.size()) {
 		function->methods.resize(method_bind_map.size());
 		function->_methods_ptr = function->methods.ptrw();
@@ -404,7 +428,7 @@ void GDScriptByteCodeGenerator::write_end_and(const Address &p_target) {
 	patch_jump(logic_op_jump_pos2.back()->get());
 	logic_op_jump_pos1.pop_back();
 	logic_op_jump_pos2.pop_back();
-	append(GDScriptFunction::OPCODE_ASSIGN_FALSE, 0);
+	append(GDScriptFunction::OPCODE_ASSIGN_FALSE, 1);
 	append(p_target);
 }
 
@@ -429,7 +453,7 @@ void GDScriptByteCodeGenerator::write_end_or(const Address &p_target) {
 	// Jump away from the success condition.
 	append(GDScriptFunction::OPCODE_JUMP, 0);
 	append(opcodes.size() + 3);
-	// Here it means one of operands is false.
+	// Here it means one of operands is true.
 	patch_jump(logic_op_jump_pos1.back()->get());
 	patch_jump(logic_op_jump_pos2.back()->get());
 	logic_op_jump_pos1.pop_back();
@@ -704,14 +728,49 @@ void GDScriptByteCodeGenerator::write_call_async(const Address &p_target, const 
 	append(p_function_name);
 }
 
-void GDScriptByteCodeGenerator::write_call_builtin(const Address &p_target, GDScriptFunctions::Function p_function, const Vector<Address> &p_arguments) {
-	append(GDScriptFunction::OPCODE_CALL_BUILT_IN, 1 + p_arguments.size());
+void GDScriptByteCodeGenerator::write_call_gdscript_utility(const Address &p_target, GDScriptUtilityFunctions::FunctionPtr p_function, const Vector<Address> &p_arguments) {
+	append(GDScriptFunction::OPCODE_CALL_GDSCRIPT_UTILITY, 1 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_target);
 	append(p_arguments.size());
 	append(p_function);
+}
+
+void GDScriptByteCodeGenerator::write_call_utility(const Address &p_target, const StringName &p_function, const Vector<Address> &p_arguments) {
+	bool is_validated = true;
+	if (Variant::is_utility_function_vararg(p_function)) {
+		is_validated = true; // Vararg works fine with any argument, since they can be any type.
+	} else if (p_arguments.size() == Variant::get_utility_function_argument_count(p_function)) {
+		bool all_types_exact = true;
+		for (int i = 0; i < p_arguments.size(); i++) {
+			if (!IS_BUILTIN_TYPE(p_arguments[i], Variant::get_utility_function_argument_type(p_function, i))) {
+				all_types_exact = false;
+				break;
+			}
+		}
+
+		is_validated = all_types_exact;
+	}
+
+	if (is_validated) {
+		append(GDScriptFunction::OPCODE_CALL_UTILITY_VALIDATED, 1 + p_arguments.size());
+		for (int i = 0; i < p_arguments.size(); i++) {
+			append(p_arguments[i]);
+		}
+		append(p_target);
+		append(p_arguments.size());
+		append(Variant::get_validated_utility_function(p_function));
+	} else {
+		append(GDScriptFunction::OPCODE_CALL_UTILITY, 1 + p_arguments.size());
+		for (int i = 0; i < p_arguments.size(); i++) {
+			append(p_arguments[i]);
+		}
+		append(p_target);
+		append(p_arguments.size());
+		append(p_function);
+	}
 }
 
 void GDScriptByteCodeGenerator::write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) {
@@ -831,6 +890,17 @@ void GDScriptByteCodeGenerator::write_call_ptrcall(const Address &p_target, cons
 
 void GDScriptByteCodeGenerator::write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) {
 	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL : GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
+	for (int i = 0; i < p_arguments.size(); i++) {
+		append(p_arguments[i]);
+	}
+	append(GDScriptFunction::ADDR_TYPE_SELF << GDScriptFunction::ADDR_BITS);
+	append(p_target);
+	append(p_arguments.size());
+	append(p_function_name);
+}
+
+void GDScriptByteCodeGenerator::write_call_self_async(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) {
+	append(GDScriptFunction::OPCODE_CALL_ASYNC, 2 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}

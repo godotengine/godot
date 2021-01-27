@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -813,7 +813,7 @@ void DocTools::generate(bool p_basic_types) {
 			}
 
 			// Skip adding the lang if it doesn't expose anything (e.g. C#).
-			if (c.methods.empty() && c.constants.empty()) {
+			if (c.methods.is_empty() && c.constants.is_empty()) {
 				continue;
 			}
 
@@ -1165,7 +1165,7 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 		_write_string(f, 1, "<tutorials>");
 		for (int i = 0; i < c.tutorials.size(); i++) {
 			DocData::TutorialDoc tutorial = c.tutorials.get(i);
-			String title_attribute = (!tutorial.title.empty()) ? " title=\"" + tutorial.title.xml_escape() + "\"" : "";
+			String title_attribute = (!tutorial.title.is_empty()) ? " title=\"" + tutorial.title.xml_escape() + "\"" : "";
 			_write_string(f, 2, "<link" + title_attribute + ">" + tutorial.link.xml_escape() + "</link>");
 		}
 		_write_string(f, 1, "</tutorials>");

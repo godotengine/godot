@@ -830,7 +830,15 @@ namespace spv {
             [&](spv::Id& id) {
                 if (thisOpCode != spv::OpNop) {
                     ++idCounter;
-                    const std::uint32_t hashval = opCounter[thisOpCode] * thisOpCode * 50047 + idCounter + fnId * 117;
+                    const std::uint32_t hashval =
+                        // Explicitly cast operands to unsigned int to avoid integer
+                        // promotion to signed int followed by integer overflow,
+                        // which would result in undefined behavior.
+                        static_cast<unsigned int>(opCounter[thisOpCode])
+                        * thisOpCode
+                        * 50047
+                        + idCounter
+                        + static_cast<unsigned int>(fnId) * 117;
 
                     if (isOldIdUnmapped(id))
                         localId(id, nextUnusedId(hashval % softTypeIdLimit + firstMappedID));

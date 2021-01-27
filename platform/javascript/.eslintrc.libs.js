@@ -18,5 +18,8 @@ module.exports = {
 		"GodotRuntime": true,
 		"GodotFS": true,
 		"IDHandler": true,
+		"Browser": true,
+		"GL": true,
+		"XRWebGLLayer": true,
 	},
 };

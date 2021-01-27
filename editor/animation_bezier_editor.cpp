@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -367,7 +367,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 
 			float scale = (min_left_scale * 2) * v_zoom;
 			float step = Math::pow(10.0, Math::round(Math::log(scale / 5.0) / Math::log(10.0))) * 5.0;
-			scale = Math::stepify(scale, step);
+			scale = Math::snapped(scale, step);
 
 			while (scale / v_zoom < min_left_scale * 2) {
 				scale += step;
@@ -390,7 +390,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					draw_line(Point2(limit, i), Point2(right_limit, i), lc);
 					Color c = color;
 					c.a *= 0.5;
-					draw_string(font, Point2(limit + 8, i - 2), TS->format_number(rtos(Math::stepify((iv + 1) * scale, step))), HALIGN_LEFT, -1, font_size, c);
+					draw_string(font, Point2(limit + 8, i - 2), TS->format_number(rtos(Math::snapped((iv + 1) * scale, step))), HALIGN_LEFT, -1, font_size, c);
 				}
 
 				first = false;
@@ -461,8 +461,8 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					ep.point_rect.size = bezier_icon->get_size();
 					if (selection.has(i)) {
 						draw_texture(selected_icon, ep.point_rect.position);
-						draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 4), TTR("Time:") + " " + TS->format_number(rtos(Math::stepify(offset, 0.001))), HALIGN_LEFT, -1, font_size, accent);
-						draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + TS->format_number(rtos(Math::stepify(value, 0.001))), HALIGN_LEFT, -1, font_size, accent);
+						draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 4), TTR("Time:") + " " + TS->format_number(rtos(Math::snapped(offset, 0.001))), HALIGN_LEFT, -1, font_size, accent);
+						draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + TS->format_number(rtos(Math::snapped(value, 0.001))), HALIGN_LEFT, -1, font_size, accent);
 					} else {
 						draw_texture(bezier_icon, ep.point_rect.position);
 					}
@@ -1164,7 +1164,7 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
-	play_position->set_anchors_and_margins_preset(PRESET_WIDE);
+	play_position->set_anchors_and_offsets_preset(PRESET_WIDE);
 	play_position->connect("draw", callable_mp(this, &AnimationBezierTrackEdit::_play_position_draw));
 	set_focus_mode(FOCUS_CLICK);
 

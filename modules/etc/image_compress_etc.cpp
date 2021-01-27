@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -166,12 +166,12 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 	int encoding_time = 0;
 	float effort = 0.0; //default, reasonable time
 
-	if (p_lossy_quality > 0.75) {
-		effort = 0.4;
+	if (p_lossy_quality > 0.95) {
+		effort = 80;
 	} else if (p_lossy_quality > 0.85) {
-		effort = 0.6;
-	} else if (p_lossy_quality > 0.95) {
-		effort = 0.8;
+		effort = 60;
+	} else if (p_lossy_quality > 0.75) {
+		effort = 40;
 	}
 
 	Etc::ErrorMetric error_metric = Etc::ErrorMetric::RGBX; // NOTE: we can experiment with other error metrics

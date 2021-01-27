@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define RENDERING_SERVER_DEFAULT_H
 
 #include "core/math/octree.h"
+#include "core/templates/ordered_hash_map.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
 #include "renderer_viewport.h"
@@ -71,6 +72,14 @@ class RenderingServerDefault : public RenderingServer {
 
 	uint64_t frame_profile_frame;
 	Vector<FrameProfileArea> frame_profile;
+
+	float frame_setup_time = 0;
+
+	//for printing
+	bool print_gpu_profile = false;
+	OrderedHashMap<String, float> print_gpu_profile_task_time;
+	uint64_t print_frame_profile_ticks_from = 0;
+	uint32_t print_frame_profile_frame_count = 0;
 
 public:
 	//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()
@@ -217,6 +226,8 @@ public:
 	BIND2RC(RID, shader_get_default_texture_param, RID, const StringName &)
 	BIND2RC(Variant, shader_get_param_default, RID, const StringName &)
 
+	BIND1RC(ShaderNativeSourceCode, shader_get_native_source_code, RID)
+
 	/* COMMON MATERIAL API */
 
 	BIND0R(RID, material_create)
@@ -231,13 +242,16 @@ public:
 
 	/* MESH API */
 
-	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces) {
+	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces, int p_blend_shape_count = 0) {
 		RID mesh = mesh_create();
+		mesh_set_blend_shape_count(mesh, p_blend_shape_count);
 		for (int i = 0; i < p_surfaces.size(); i++) {
 			mesh_add_surface(mesh, p_surfaces[i]);
 		}
 		return mesh;
 	}
+
+	BIND2(mesh_set_blend_shape_count, RID, int)
 
 	BIND0R(RID, mesh_create)
 
@@ -259,6 +273,8 @@ public:
 
 	BIND2(mesh_set_custom_aabb, RID, const AABB &)
 	BIND1RC(AABB, mesh_get_custom_aabb, RID)
+
+	BIND2(mesh_set_shadow_mesh, RID, RID)
 
 	BIND1(mesh_clear, RID)
 
@@ -356,6 +372,7 @@ public:
 	BIND2(reflection_probe_set_enable_shadows, RID, bool)
 	BIND2(reflection_probe_set_cull_mask, RID, uint32_t)
 	BIND2(reflection_probe_set_resolution, RID, int)
+	BIND2(reflection_probe_set_lod_threshold, RID, float)
 
 	/* DECAL API */
 
@@ -536,12 +553,13 @@ public:
 
 	BIND2(viewport_set_global_canvas_transform, RID, const Transform2D &)
 	BIND4(viewport_set_canvas_stacking, RID, RID, int, int)
-	BIND2(viewport_set_shadow_atlas_size, RID, int)
+	BIND3(viewport_set_shadow_atlas_size, RID, int, bool)
 	BIND3(viewport_set_sdf_oversize_and_scale, RID, ViewportSDFOversize, ViewportSDFScale)
 	BIND3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	BIND2(viewport_set_msaa, RID, ViewportMSAA)
 	BIND2(viewport_set_screen_space_aa, RID, ViewportScreenSpaceAA)
 	BIND2(viewport_set_use_debanding, RID, bool)
+	BIND2(viewport_set_lod_threshold, RID, float)
 
 	BIND2R(int, viewport_get_render_info, RID, ViewportRenderInfo)
 	BIND2(viewport_set_debug_draw, RID, ViewportDebugDraw)
@@ -556,7 +574,7 @@ public:
 //from now on, calls forwarded to this singleton
 #define BINDBASE RSG::scene
 
-	BIND1(directional_shadow_atlas_set_size, int)
+	BIND2(directional_shadow_atlas_set_size, int, bool)
 	BIND1(gi_probe_set_quality, GIProbeQuality)
 
 	/* SKY API */
@@ -585,8 +603,8 @@ public:
 	BIND6(environment_set_ssr, RID, bool, int, float, float, float)
 	BIND1(environment_set_ssr_roughness_quality, EnvironmentSSRRoughnessQuality)
 
-	BIND9(environment_set_ssao, RID, bool, float, float, float, float, float, EnvironmentSSAOBlur, float)
-	BIND2(environment_set_ssao_quality, EnvironmentSSAOQuality, bool)
+	BIND10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
+	BIND6(environment_set_ssao_quality, EnvironmentSSAOQuality, bool, float, int, float, float)
 
 	BIND11(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, EnvironmentGlowBlendMode, float, float, float)
 	BIND1(environment_glow_set_use_bicubic_upscale, bool)
@@ -607,6 +625,7 @@ public:
 	BIND11(environment_set_sdfgi, RID, bool, EnvironmentSDFGICascades, float, EnvironmentSDFGIYScale, bool, bool, bool, float, float, float)
 	BIND1(environment_set_sdfgi_ray_count, EnvironmentSDFGIRayCount)
 	BIND1(environment_set_sdfgi_frames_to_converge, EnvironmentSDFGIFramesToConverge)
+	BIND1(environment_set_sdfgi_frames_to_update_light, EnvironmentSDFGIFramesToUpdateLight)
 
 	BIND3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 
@@ -670,6 +689,7 @@ public:
 	BIND5(instance_geometry_set_draw_range, RID, float, float, float, float)
 	BIND2(instance_geometry_set_as_instance_lod, RID, RID)
 	BIND4(instance_geometry_set_lightmap, RID, RID, const Rect2 &, int)
+	BIND2(instance_geometry_set_lod_bias, RID, float)
 
 	BIND3(instance_geometry_set_shader_parameter, RID, const StringName &, const Variant &)
 	BIND2RC(Variant, instance_geometry_get_shader_parameter, RID, const StringName &)
@@ -677,6 +697,8 @@ public:
 	BIND2C(instance_geometry_get_shader_parameter_list, RID, List<PropertyInfo> *)
 
 	BIND3R(TypedArray<Image>, bake_render_uv2, RID, const Vector<RID> &, const Size2i &)
+
+	BIND1(gi_set_use_half_resolution, bool)
 
 #undef BINDBASE
 //from now on, calls forwarded to this singleton
@@ -839,6 +861,8 @@ public:
 
 	/* TESTING */
 
+	virtual float get_frame_setup_time_cpu() const;
+
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
 	virtual void set_default_clear_color(const Color &p_color);
 
@@ -852,6 +876,8 @@ public:
 	virtual bool is_low_end() const;
 
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir);
+
+	virtual void set_print_gpu_profile(bool p_enable);
 
 	RenderingServerDefault();
 	~RenderingServerDefault();

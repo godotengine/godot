@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ static TexCacheMap *tex_cache;
 static float scale = 1;
 
 template <class T>
-static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_draw_center = true) {
+static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, float p_right, float p_bottom, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, bool p_draw_center = true) {
 	Ref<ImageTexture> texture;
 
 	if (tex_cache->has(p_src)) {
@@ -64,24 +64,35 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, fl
 
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
 	style->set_texture(texture);
-	style->set_margin_size(MARGIN_LEFT, p_left * scale);
-	style->set_margin_size(MARGIN_RIGHT, p_right * scale);
-	style->set_margin_size(MARGIN_BOTTOM, p_botton * scale);
-	style->set_margin_size(MARGIN_TOP, p_top * scale);
-	style->set_default_margin(MARGIN_LEFT, p_margin_left * scale);
-	style->set_default_margin(MARGIN_RIGHT, p_margin_right * scale);
-	style->set_default_margin(MARGIN_BOTTOM, p_margin_botton * scale);
-	style->set_default_margin(MARGIN_TOP, p_margin_top * scale);
+	style->set_margin_size(SIDE_LEFT, p_left * scale);
+	style->set_margin_size(SIDE_RIGHT, p_right * scale);
+	style->set_margin_size(SIDE_BOTTOM, p_bottom * scale);
+	style->set_margin_size(SIDE_TOP, p_top * scale);
+	style->set_default_margin(SIDE_LEFT, p_margin_left * scale);
+	style->set_default_margin(SIDE_RIGHT, p_margin_right * scale);
+	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * scale);
+	style->set_default_margin(SIDE_TOP, p_margin_top * scale);
 	style->set_draw_center(p_draw_center);
 
 	return style;
 }
 
-static Ref<StyleBoxTexture> sb_expand(Ref<StyleBoxTexture> p_sbox, float p_left, float p_top, float p_right, float p_botton) {
-	p_sbox->set_expand_margin_size(MARGIN_LEFT, p_left * scale);
-	p_sbox->set_expand_margin_size(MARGIN_TOP, p_top * scale);
-	p_sbox->set_expand_margin_size(MARGIN_RIGHT, p_right * scale);
-	p_sbox->set_expand_margin_size(MARGIN_BOTTOM, p_botton * scale);
+static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
+	Ref<StyleBoxFlat> style(memnew(StyleBoxFlat));
+	style->set_bg_color(p_color);
+	style->set_default_margin(SIDE_LEFT, p_margin_left * scale);
+	style->set_default_margin(SIDE_RIGHT, p_margin_right * scale);
+	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * scale);
+	style->set_default_margin(SIDE_TOP, p_margin_top * scale);
+
+	return style;
+}
+
+static Ref<StyleBoxTexture> sb_expand(Ref<StyleBoxTexture> p_sbox, float p_left, float p_top, float p_right, float p_bottom) {
+	p_sbox->set_expand_margin_size(SIDE_LEFT, p_left * scale);
+	p_sbox->set_expand_margin_size(SIDE_TOP, p_top * scale);
+	p_sbox->set_expand_margin_size(SIDE_RIGHT, p_right * scale);
+	p_sbox->set_expand_margin_size(SIDE_BOTTOM, p_bottom * scale);
 	return p_sbox;
 }
 
@@ -97,13 +108,33 @@ static Ref<Texture2D> make_icon(T p_src) {
 	return texture;
 }
 
-static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1) {
+static Ref<Texture2D> flip_icon(Ref<Texture2D> p_texture, bool p_flip_y = false, bool p_flip_x = false) {
+	if (!p_flip_y && !p_flip_x) {
+		return p_texture;
+	}
+
+	Ref<ImageTexture> texture(memnew(ImageTexture));
+	Ref<Image> img = p_texture->get_data();
+	img = img->duplicate();
+
+	if (p_flip_y) {
+		img->flip_y();
+	}
+	if (p_flip_x) {
+		img->flip_x();
+	}
+
+	texture->create_from_image(img);
+	return texture;
+}
+
+static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
 	Ref<StyleBox> style(memnew(StyleBoxEmpty));
 
-	style->set_default_margin(MARGIN_LEFT, p_margin_left * scale);
-	style->set_default_margin(MARGIN_RIGHT, p_margin_right * scale);
-	style->set_default_margin(MARGIN_BOTTOM, p_margin_botton * scale);
-	style->set_default_margin(MARGIN_TOP, p_margin_top * scale);
+	style->set_default_margin(SIDE_LEFT, p_margin_left * scale);
+	style->set_default_margin(SIDE_RIGHT, p_margin_right * scale);
+	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * scale);
+	style->set_default_margin(SIDE_TOP, p_margin_top * scale);
 
 	return style;
 }
@@ -116,12 +147,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Font Colors
 
 	Color control_font_color = Color(0.88, 0.88, 0.88);
-	Color control_font_color_lower = Color(0.63, 0.63, 0.63);
-	Color control_font_color_low = Color(0.69, 0.69, 0.69);
-	Color control_font_color_hover = Color(0.94, 0.94, 0.94);
-	Color control_font_color_disabled = Color(0.9, 0.9, 0.9, 0.2);
-	Color control_font_color_pressed = Color(1, 1, 1);
-	Color font_color_selection = Color(0.49, 0.49, 0.49);
+	Color control_font_lower_color = Color(0.63, 0.63, 0.63);
+	Color control_font_low_color = Color(0.69, 0.69, 0.69);
+	Color control_font_hover_color = Color(0.94, 0.94, 0.94);
+	Color control_font_disabled_color = Color(0.9, 0.9, 0.9, 0.2);
+	Color control_font_pressed_color = Color(1, 1, 1);
+
+	Color control_selection_color = Color(0.49, 0.49, 0.49);
 
 	// Panel
 
@@ -132,7 +164,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	Ref<StyleBoxTexture> focus = make_stylebox(focus_png, 5, 5, 5, 5);
 	for (int i = 0; i < 4; i++) {
-		focus->set_expand_margin_size(Margin(i), 1 * scale);
+		focus->set_expand_margin_size(Side(i), 1 * scale);
 	}
 
 	// Button
@@ -154,10 +186,17 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("outline_size", "Button", 0 * scale);
 
 	theme->set_color("font_color", "Button", control_font_color);
-	theme->set_color("font_color_pressed", "Button", control_font_color_pressed);
-	theme->set_color("font_color_hover", "Button", control_font_color_hover);
-	theme->set_color("font_color_disabled", "Button", control_font_color_disabled);
-	theme->set_color("font_outline_modulate", "Button", Color(1, 1, 1));
+	theme->set_color("font_pressed_color", "Button", control_font_pressed_color);
+	theme->set_color("font_hover_color", "Button", control_font_hover_color);
+	theme->set_color("font_hover_pressed_color", "Button", control_font_pressed_color);
+	theme->set_color("font_disabled_color", "Button", control_font_disabled_color);
+	theme->set_color("font_outline_color", "Button", Color(1, 1, 1));
+
+	theme->set_color("icon_normal_color", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_pressed_color", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_hover_color", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_hover_pressed_color", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_disabled_color", "Button", Color(1, 1, 1, 1));
 
 	theme->set_constant("hseparation", "Button", 2 * scale);
 
@@ -169,8 +208,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "LinkButton", -1);
 
 	theme->set_color("font_color", "LinkButton", control_font_color);
-	theme->set_color("font_color_pressed", "LinkButton", control_font_color_pressed);
-	theme->set_color("font_color_hover", "LinkButton", control_font_color_hover);
+	theme->set_color("font_pressed_color", "LinkButton", control_font_pressed_color);
+	theme->set_color("font_hover_color", "LinkButton", control_font_hover_color);
 
 	theme->set_constant("underline_spacing", "LinkButton", 2 * scale);
 
@@ -186,9 +225,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "ColorPickerButton", -1);
 
 	theme->set_color("font_color", "ColorPickerButton", Color(1, 1, 1, 1));
-	theme->set_color("font_color_pressed", "ColorPickerButton", Color(0.8, 0.8, 0.8, 1));
-	theme->set_color("font_color_hover", "ColorPickerButton", Color(1, 1, 1, 1));
-	theme->set_color("font_color_disabled", "ColorPickerButton", Color(0.9, 0.9, 0.9, 0.3));
+	theme->set_color("font_pressed_color", "ColorPickerButton", Color(0.8, 0.8, 0.8, 1));
+	theme->set_color("font_hover_color", "ColorPickerButton", Color(1, 1, 1, 1));
+	theme->set_color("font_disabled_color", "ColorPickerButton", Color(0.9, 0.9, 0.9, 0.3));
 
 	theme->set_constant("hseparation", "ColorPickerButton", 2 * scale);
 
@@ -223,9 +262,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "OptionButton", -1);
 
 	theme->set_color("font_color", "OptionButton", control_font_color);
-	theme->set_color("font_color_pressed", "OptionButton", control_font_color_pressed);
-	theme->set_color("font_color_hover", "OptionButton", control_font_color_hover);
-	theme->set_color("font_color_disabled", "OptionButton", control_font_color_disabled);
+	theme->set_color("font_pressed_color", "OptionButton", control_font_pressed_color);
+	theme->set_color("font_hover_color", "OptionButton", control_font_hover_color);
+	theme->set_color("font_disabled_color", "OptionButton", control_font_disabled_color);
 
 	theme->set_constant("hseparation", "OptionButton", 2 * scale);
 	theme->set_constant("arrow_margin", "OptionButton", 2 * scale);
@@ -242,24 +281,24 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "MenuButton", -1);
 
 	theme->set_color("font_color", "MenuButton", control_font_color);
-	theme->set_color("font_color_pressed", "MenuButton", control_font_color_pressed);
-	theme->set_color("font_color_hover", "MenuButton", control_font_color_hover);
-	theme->set_color("font_color_disabled", "MenuButton", Color(1, 1, 1, 0.3));
+	theme->set_color("font_pressed_color", "MenuButton", control_font_pressed_color);
+	theme->set_color("font_hover_color", "MenuButton", control_font_hover_color);
+	theme->set_color("font_disabled_color", "MenuButton", Color(1, 1, 1, 0.3));
 
 	theme->set_constant("hseparation", "MenuButton", 3 * scale);
 
 	// CheckBox
 
 	Ref<StyleBox> cbx_empty = memnew(StyleBoxEmpty);
-	cbx_empty->set_default_margin(MARGIN_LEFT, 4 * scale);
-	cbx_empty->set_default_margin(MARGIN_RIGHT, 4 * scale);
-	cbx_empty->set_default_margin(MARGIN_TOP, 4 * scale);
-	cbx_empty->set_default_margin(MARGIN_BOTTOM, 4 * scale);
+	cbx_empty->set_default_margin(SIDE_LEFT, 4 * scale);
+	cbx_empty->set_default_margin(SIDE_RIGHT, 4 * scale);
+	cbx_empty->set_default_margin(SIDE_TOP, 4 * scale);
+	cbx_empty->set_default_margin(SIDE_BOTTOM, 4 * scale);
 	Ref<StyleBox> cbx_focus = focus;
-	cbx_focus->set_default_margin(MARGIN_LEFT, 4 * scale);
-	cbx_focus->set_default_margin(MARGIN_RIGHT, 4 * scale);
-	cbx_focus->set_default_margin(MARGIN_TOP, 4 * scale);
-	cbx_focus->set_default_margin(MARGIN_BOTTOM, 4 * scale);
+	cbx_focus->set_default_margin(SIDE_LEFT, 4 * scale);
+	cbx_focus->set_default_margin(SIDE_RIGHT, 4 * scale);
+	cbx_focus->set_default_margin(SIDE_TOP, 4 * scale);
+	cbx_focus->set_default_margin(SIDE_BOTTOM, 4 * scale);
 
 	theme->set_stylebox("normal", "CheckBox", cbx_empty);
 	theme->set_stylebox("pressed", "CheckBox", cbx_empty);
@@ -277,10 +316,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "CheckBox", -1);
 
 	theme->set_color("font_color", "CheckBox", control_font_color);
-	theme->set_color("font_color_pressed", "CheckBox", control_font_color_pressed);
-	theme->set_color("font_color_hover", "CheckBox", control_font_color_hover);
-	theme->set_color("font_color_hover_pressed", "CheckBox", control_font_color_pressed);
-	theme->set_color("font_color_disabled", "CheckBox", control_font_color_disabled);
+	theme->set_color("font_pressed_color", "CheckBox", control_font_pressed_color);
+	theme->set_color("font_hover_color", "CheckBox", control_font_hover_color);
+	theme->set_color("font_hover_color_pressed", "CheckBox", control_font_pressed_color);
+	theme->set_color("font_disabled_color", "CheckBox", control_font_disabled_color);
 
 	theme->set_constant("hseparation", "CheckBox", 4 * scale);
 	theme->set_constant("check_vadjust", "CheckBox", 0 * scale);
@@ -288,10 +327,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// CheckButton
 
 	Ref<StyleBox> cb_empty = memnew(StyleBoxEmpty);
-	cb_empty->set_default_margin(MARGIN_LEFT, 6 * scale);
-	cb_empty->set_default_margin(MARGIN_RIGHT, 6 * scale);
-	cb_empty->set_default_margin(MARGIN_TOP, 4 * scale);
-	cb_empty->set_default_margin(MARGIN_BOTTOM, 4 * scale);
+	cb_empty->set_default_margin(SIDE_LEFT, 6 * scale);
+	cb_empty->set_default_margin(SIDE_RIGHT, 6 * scale);
+	cb_empty->set_default_margin(SIDE_TOP, 4 * scale);
+	cb_empty->set_default_margin(SIDE_BOTTOM, 4 * scale);
 
 	theme->set_stylebox("normal", "CheckButton", cb_empty);
 	theme->set_stylebox("pressed", "CheckButton", cb_empty);
@@ -314,10 +353,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "CheckButton", -1);
 
 	theme->set_color("font_color", "CheckButton", control_font_color);
-	theme->set_color("font_color_pressed", "CheckButton", control_font_color_pressed);
-	theme->set_color("font_color_hover", "CheckButton", control_font_color_hover);
-	theme->set_color("font_color_hover_pressed", "CheckButton", control_font_color_pressed);
-	theme->set_color("font_color_disabled", "CheckButton", control_font_color_disabled);
+	theme->set_color("font_pressed_color", "CheckButton", control_font_pressed_color);
+	theme->set_color("font_hover_color", "CheckButton", control_font_hover_color);
+	theme->set_color("font_hover_color_pressed", "CheckButton", control_font_pressed_color);
+	theme->set_color("font_disabled_color", "CheckButton", control_font_disabled_color);
 
 	theme->set_constant("hseparation", "CheckButton", 4 * scale);
 	theme->set_constant("check_vadjust", "CheckButton", 0 * scale);
@@ -329,8 +368,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "Label", -1);
 
 	theme->set_color("font_color", "Label", Color(1, 1, 1));
-	theme->set_color("font_color_shadow", "Label", Color(0, 0, 0, 0));
-	theme->set_color("font_outline_modulate", "Label", Color(1, 1, 1));
+	theme->set_color("font_shadow_color", "Label", Color(0, 0, 0, 0));
+	theme->set_color("font_outline_color", "Label", Color(1, 1, 1));
 
 	theme->set_constant("shadow_offset_x", "Label", 1 * scale);
 	theme->set_constant("shadow_offset_y", "Label", 1 * scale);
@@ -348,12 +387,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "LineEdit", -1);
 
 	theme->set_color("font_color", "LineEdit", control_font_color);
-	theme->set_color("font_color_selected", "LineEdit", Color(0, 0, 0));
-	theme->set_color("font_color_uneditable", "LineEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
-	theme->set_color("cursor_color", "LineEdit", control_font_color_hover);
-	theme->set_color("selection_color", "LineEdit", font_color_selection);
+	theme->set_color("font_selected_color", "LineEdit", Color(0, 0, 0));
+	theme->set_color("font_uneditable_color", "LineEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
+	theme->set_color("cursor_color", "LineEdit", control_font_hover_color);
+	theme->set_color("selection_color", "LineEdit", control_selection_color);
 	theme->set_color("clear_button_color", "LineEdit", control_font_color);
-	theme->set_color("clear_button_color_pressed", "LineEdit", control_font_color_pressed);
+	theme->set_color("clear_button_color_pressed", "LineEdit", control_font_pressed_color);
 
 	theme->set_constant("minimum_spaces", "LineEdit", 12 * scale);
 
@@ -367,8 +406,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("font", "ProgressBar", Ref<Font>());
 	theme->set_font_size("font_size", "ProgressBar", -1);
 
-	theme->set_color("font_color", "ProgressBar", control_font_color_hover);
-	theme->set_color("font_color_shadow", "ProgressBar", Color(0, 0, 0));
+	theme->set_color("font_color", "ProgressBar", control_font_hover_color);
+	theme->set_color("font_shadow_color", "ProgressBar", Color(0, 0, 0));
 
 	// TextEdit
 
@@ -387,12 +426,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("completion_background_color", "TextEdit", Color(0.17, 0.16, 0.2));
 	theme->set_color("completion_selected_color", "TextEdit", Color(0.26, 0.26, 0.27));
 	theme->set_color("completion_existing_color", "TextEdit", Color(0.87, 0.87, 0.87, 0.13));
-	theme->set_color("completion_scroll_color", "TextEdit", control_font_color_pressed);
+	theme->set_color("completion_scroll_color", "TextEdit", control_font_pressed_color);
 	theme->set_color("completion_font_color", "TextEdit", Color(0.67, 0.67, 0.67));
 	theme->set_color("font_color", "TextEdit", control_font_color);
-	theme->set_color("font_color_selected", "TextEdit", Color(0, 0, 0));
-	theme->set_color("font_color_readonly", "TextEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
-	theme->set_color("selection_color", "TextEdit", font_color_selection);
+	theme->set_color("font_selected_color", "TextEdit", Color(0, 0, 0));
+	theme->set_color("font_readonly_color", "TextEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
+	theme->set_color("selection_color", "TextEdit", control_selection_color);
 	theme->set_color("mark_color", "TextEdit", Color(1.0, 0.4, 0.4, 0.4));
 	theme->set_color("code_folding_color", "TextEdit", Color(0.8, 0.8, 0.8, 0.8));
 	theme->set_color("current_line_color", "TextEdit", Color(0.25, 0.25, 0.26, 0.8));
@@ -427,12 +466,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("completion_background_color", "CodeEdit", Color(0.17, 0.16, 0.2));
 	theme->set_color("completion_selected_color", "CodeEdit", Color(0.26, 0.26, 0.27));
 	theme->set_color("completion_existing_color", "CodeEdit", Color(0.87, 0.87, 0.87, 0.13));
-	theme->set_color("completion_scroll_color", "CodeEdit", control_font_color_pressed);
+	theme->set_color("completion_scroll_color", "CodeEdit", control_font_pressed_color);
 	theme->set_color("completion_font_color", "CodeEdit", Color(0.67, 0.67, 0.67));
 	theme->set_color("font_color", "CodeEdit", control_font_color);
-	theme->set_color("font_color_selected", "CodeEdit", Color(0, 0, 0));
-	theme->set_color("font_color_readonly", "CodeEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
-	theme->set_color("selection_color", "CodeEdit", font_color_selection);
+	theme->set_color("font_selected_color", "CodeEdit", Color(0, 0, 0));
+	theme->set_color("font_readonly_color", "CodeEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
+	theme->set_color("selection_color", "CodeEdit", control_selection_color);
 	theme->set_color("mark_color", "CodeEdit", Color(1.0, 0.4, 0.4, 0.4));
 	theme->set_color("bookmark_color", "CodeEdit", Color(0.5, 0.64, 1, 0.8));
 	theme->set_color("breakpoint_color", "CodeEdit", Color(0.9, 0.29, 0.3));
@@ -538,7 +577,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	Ref<StyleBoxTexture> selected = make_stylebox(selection_png, 6, 6, 6, 6);
 	for (int i = 0; i < 4; i++) {
-		selected->set_expand_margin_size(Margin(i), 2 * scale);
+		selected->set_expand_margin_size(Side(i), 2 * scale);
 	}
 
 	theme->set_stylebox("panel", "PopupPanel", style_pp);
@@ -568,10 +607,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "PopupMenu", -1);
 
 	theme->set_color("font_color", "PopupMenu", control_font_color);
-	theme->set_color("font_color_accel", "PopupMenu", Color(0.7, 0.7, 0.7, 0.8));
-	theme->set_color("font_color_disabled", "PopupMenu", Color(0.4, 0.4, 0.4, 0.8));
-	theme->set_color("font_color_hover", "PopupMenu", control_font_color);
-	theme->set_color("font_color_separator", "PopupMenu", control_font_color);
+	theme->set_color("font_accelerator_color", "PopupMenu", Color(0.7, 0.7, 0.7, 0.8));
+	theme->set_color("font_disabled_color", "PopupMenu", Color(0.4, 0.4, 0.4, 0.8));
+	theme->set_color("font_hover_color", "PopupMenu", control_font_color);
+	theme->set_color("font_separator_color", "PopupMenu", control_font_color);
 
 	theme->set_constant("hseparation", "PopupMenu", 4 * scale);
 	theme->set_constant("vseparation", "PopupMenu", 4 * scale);
@@ -587,8 +626,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxTexture> graph_bpoint = make_stylebox(graph_node_breakpoint_png, 6, 24, 6, 5, 16, 24, 16, 6);
 	Ref<StyleBoxTexture> graph_position = make_stylebox(graph_node_position_png, 6, 24, 6, 5, 16, 24, 16, 6);
 
-	//graphsb->set_expand_margin_size(MARGIN_LEFT,10);
-	//graphsb->set_expand_margin_size(MARGIN_RIGHT,10);
+	//graphsb->set_expand_margin_size(SIDE_LEFT,10);
+	//graphsb->set_expand_margin_size(SIDE_RIGHT,10);
 	theme->set_stylebox("frame", "GraphNode", graphsb);
 	theme->set_stylebox("selectedframe", "GraphNode", graphsbselected);
 	theme->set_stylebox("defaultframe", "GraphNode", graphsbdefault);
@@ -641,12 +680,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "Tree", -1);
 
 	theme->set_color("title_button_color", "Tree", control_font_color);
-	theme->set_color("font_color", "Tree", control_font_color_low);
-	theme->set_color("font_color_selected", "Tree", control_font_color_pressed);
+	theme->set_color("font_color", "Tree", control_font_low_color);
+	theme->set_color("font_selected_color", "Tree", control_font_pressed_color);
 	theme->set_color("guide_color", "Tree", Color(0, 0, 0, 0.1));
 	theme->set_color("drop_position_color", "Tree", Color(1, 0.3, 0.2));
 	theme->set_color("relationship_line_color", "Tree", Color(0.27, 0.27, 0.27));
-	theme->set_color("custom_button_font_highlight", "Tree", control_font_color_hover);
+	theme->set_color("custom_button_font_highlight", "Tree", control_font_hover_color);
 
 	theme->set_constant("hseparation", "Tree", 4 * scale);
 	theme->set_constant("vseparation", "Tree", 4 * scale);
@@ -671,8 +710,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("font", "ItemList", Ref<Font>());
 	theme->set_font_size("font_size", "ItemList", -1);
 
-	theme->set_color("font_color", "ItemList", control_font_color_lower);
-	theme->set_color("font_color_selected", "ItemList", control_font_color_pressed);
+	theme->set_color("font_color", "ItemList", control_font_lower_color);
+	theme->set_color("font_selected_color", "ItemList", control_font_pressed_color);
 	theme->set_color("guide_color", "ItemList", Color(0, 0, 0, 0.1));
 	theme->set_stylebox("selected", "ItemList", item_selected_oof);
 	theme->set_stylebox("selected_focus", "ItemList", item_selected);
@@ -683,11 +722,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	Ref<StyleBoxTexture> tc_sb = sb_expand(make_stylebox(tab_container_bg_png, 4, 4, 4, 4, 4, 4, 4, 4), 3, 3, 3, 3);
 
-	tc_sb->set_expand_margin_size(MARGIN_TOP, 2 * scale);
-	tc_sb->set_default_margin(MARGIN_TOP, 8 * scale);
+	tc_sb->set_expand_margin_size(SIDE_TOP, 2 * scale);
+	tc_sb->set_default_margin(SIDE_TOP, 8 * scale);
 
-	theme->set_stylebox("tab_fg", "TabContainer", sb_expand(make_stylebox(tab_current_png, 4, 4, 4, 1, 16, 4, 16, 4), 2, 2, 2, 2));
-	theme->set_stylebox("tab_bg", "TabContainer", sb_expand(make_stylebox(tab_behind_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
+	theme->set_stylebox("tab_selected", "TabContainer", sb_expand(make_stylebox(tab_current_png, 4, 4, 4, 1, 16, 4, 16, 4), 2, 2, 2, 2));
+	theme->set_stylebox("tab_unselected", "TabContainer", sb_expand(make_stylebox(tab_behind_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
 	theme->set_stylebox("tab_disabled", "TabContainer", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
 	theme->set_stylebox("panel", "TabContainer", tc_sb);
 
@@ -701,17 +740,17 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("font", "TabContainer", Ref<Font>());
 	theme->set_font_size("font_size", "TabContainer", -1);
 
-	theme->set_color("font_color_fg", "TabContainer", control_font_color_hover);
-	theme->set_color("font_color_bg", "TabContainer", control_font_color_low);
-	theme->set_color("font_color_disabled", "TabContainer", control_font_color_disabled);
+	theme->set_color("font_selected_color", "TabContainer", control_font_hover_color);
+	theme->set_color("font_unselected_color", "TabContainer", control_font_low_color);
+	theme->set_color("font_disabled_color", "TabContainer", control_font_disabled_color);
 
 	theme->set_constant("side_margin", "TabContainer", 8 * scale);
 	theme->set_constant("icon_separation", "TabContainer", 4 * scale);
 
 	// Tabs
 
-	theme->set_stylebox("tab_fg", "Tabs", sb_expand(make_stylebox(tab_current_png, 4, 3, 4, 1, 16, 3, 16, 2), 2, 2, 2, 2));
-	theme->set_stylebox("tab_bg", "Tabs", sb_expand(make_stylebox(tab_behind_png, 5, 4, 5, 1, 16, 5, 16, 2), 3, 3, 3, 3));
+	theme->set_stylebox("tab_selected", "Tabs", sb_expand(make_stylebox(tab_current_png, 4, 3, 4, 1, 16, 3, 16, 2), 2, 2, 2, 2));
+	theme->set_stylebox("tab_unselected", "Tabs", sb_expand(make_stylebox(tab_behind_png, 5, 4, 5, 1, 16, 5, 16, 2), 3, 3, 3, 3));
 	theme->set_stylebox("tab_disabled", "Tabs", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
 	theme->set_stylebox("panel", "Tabs", tc_sb);
 	theme->set_stylebox("button_pressed", "Tabs", make_stylebox(button_pressed_png, 4, 4, 4, 4));
@@ -726,9 +765,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("font", "Tabs", Ref<Font>());
 	theme->set_font_size("font_size", "Tabs", -1);
 
-	theme->set_color("font_color_fg", "Tabs", control_font_color_hover);
-	theme->set_color("font_color_bg", "Tabs", control_font_color_low);
-	theme->set_color("font_color_disabled", "Tabs", control_font_color_disabled);
+	theme->set_color("font_selected_color", "Tabs", control_font_hover_color);
+	theme->set_color("font_unselected_color", "Tabs", control_font_low_color);
+	theme->set_color("font_disabled_color", "Tabs", control_font_disabled_color);
 
 	theme->set_constant("hseparation", "Tabs", 4 * scale);
 
@@ -778,7 +817,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	Ref<StyleBoxTexture> style_tt = make_stylebox(tooltip_bg_png, 4, 4, 4, 4);
 	for (int i = 0; i < 4; i++) {
-		style_tt->set_expand_margin_size((Margin)i, 4 * scale);
+		style_tt->set_expand_margin_size((Side)i, 4 * scale);
 	}
 
 	theme->set_stylebox("panel", "TooltipPanel", style_tt);
@@ -787,7 +826,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "TooltipLabel", -1);
 
 	theme->set_color("font_color", "TooltipLabel", Color(0, 0, 0));
-	theme->set_color("font_color_shadow", "TooltipLabel", Color(0, 0, 0, 0.1));
+	theme->set_color("font_shadow_color", "TooltipLabel", Color(0, 0, 0, 0.1));
 
 	theme->set_constant("shadow_offset_x", "TooltipLabel", 1);
 	theme->set_constant("shadow_offset_y", "TooltipLabel", 1);
@@ -803,11 +842,17 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("bold_italics_font", "RichTextLabel", Ref<Font>());
 	theme->set_font("mono_font", "RichTextLabel", Ref<Font>());
 
+	theme->set_font_size("normal_font_size", "RichTextLabel", -1);
+	theme->set_font_size("bold_font_size", "RichTextLabel", -1);
+	theme->set_font_size("italics_font_size", "RichTextLabel", -1);
+	theme->set_font_size("bold_italics_font_size", "RichTextLabel", -1);
+	theme->set_font_size("mono_font_size", "RichTextLabel", -1);
+
 	theme->set_color("default_color", "RichTextLabel", Color(1, 1, 1));
-	theme->set_color("font_color_selected", "RichTextLabel", font_color_selection);
+	theme->set_color("font_selected_color", "RichTextLabel", Color(0, 0, 0));
 	theme->set_color("selection_color", "RichTextLabel", Color(0.1, 0.1, 1, 0.8));
 
-	theme->set_color("font_color_shadow", "RichTextLabel", Color(0, 0, 0, 0));
+	theme->set_color("font_shadow_color", "RichTextLabel", Color(0, 0, 0, 0));
 
 	theme->set_constant("shadow_offset_x", "RichTextLabel", 1 * scale);
 	theme->set_constant("shadow_offset_y", "RichTextLabel", 1 * scale);
@@ -817,6 +862,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("table_hseparation", "RichTextLabel", 3 * scale);
 	theme->set_constant("table_vseparation", "RichTextLabel", 3 * scale);
 
+	theme->set_color("table_odd_row_bg", "RichTextLabel", Color(0, 0, 0, 0));
+	theme->set_color("table_even_row_bg", "RichTextLabel", Color(0, 0, 0, 0));
+	theme->set_color("table_border", "RichTextLabel", Color(0, 0, 0, 0));
 	// Containers
 
 	theme->set_stylebox("bg", "VSplitContainer", make_stylebox(vsplit_bg_png, 1, 1, 1, 1));
@@ -845,6 +893,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("reset", "GraphEdit", make_icon(icon_zoom_reset_png));
 	theme->set_icon("more", "GraphEdit", make_icon(icon_zoom_more_png));
 	theme->set_icon("snap", "GraphEdit", make_icon(icon_snap_grid_png));
+	theme->set_icon("minimap", "GraphEdit", make_icon(icon_grid_minimap_png));
 	theme->set_stylebox("bg", "GraphEdit", make_stylebox(tree_bg_png, 4, 4, 4, 5));
 	theme->set_color("grid_minor", "GraphEdit", Color(1, 1, 1, 0.05));
 	theme->set_color("grid_major", "GraphEdit", Color(1, 1, 1, 0.2));
@@ -857,6 +906,19 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Visual Node Ports
 	theme->set_constant("port_grab_distance_horizontal", "GraphEdit", 48 * scale);
 	theme->set_constant("port_grab_distance_vertical", "GraphEdit", 6 * scale);
+
+	theme->set_stylebox("bg", "GraphEditMinimap", make_flat_stylebox(Color(0.24, 0.24, 0.24), 0, 0, 0, 0));
+	Ref<StyleBoxFlat> style_minimap_camera = make_flat_stylebox(Color(0.65, 0.65, 0.65, 0.2), 0, 0, 0, 0);
+	style_minimap_camera->set_border_color(Color(0.65, 0.65, 0.65, 0.45));
+	style_minimap_camera->set_border_width_all(1);
+	theme->set_stylebox("camera", "GraphEditMinimap", style_minimap_camera);
+	Ref<StyleBoxFlat> style_minimap_node = make_flat_stylebox(Color(1, 1, 1), 0, 0, 0, 0);
+	style_minimap_node->set_corner_radius_all(2);
+	theme->set_stylebox("node", "GraphEditMinimap", style_minimap_node);
+
+	Ref<Texture2D> resizer_icon = make_icon(window_resizer_png);
+	theme->set_icon("resizer", "GraphEditMinimap", flip_icon(resizer_icon, true, true));
+	theme->set_color("resizer_color", "GraphEditMinimap", Color(1, 1, 1, 0.85));
 
 	// Theme
 

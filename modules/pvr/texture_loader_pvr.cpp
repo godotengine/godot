@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -153,7 +153,7 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 	}
 
 	Ref<Image> image = memnew(Image(width, height, mipmaps, format, data));
-	ERR_FAIL_COND_V(image->empty(), RES());
+	ERR_FAIL_COND_V(image->is_empty(), RES());
 
 	Ref<ImageTexture> texture = memnew(ImageTexture);
 	texture->create_from_image(image);

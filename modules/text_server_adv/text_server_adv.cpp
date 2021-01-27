@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -132,7 +132,7 @@ _FORCE_INLINE_ bool is_linebreak(char32_t p_char) {
 /*************************************************************************/
 
 String TextServerAdvanced::interface_name = "ICU / HarfBuzz / Graphite";
-uint32_t TextServerAdvanced::interface_features = FEATURE_BIDI_LAYOUT | FEATURE_VERTICAL_LAYOUT | FEATURE_SHAPING | FEATURE_KASHIDA_JUSTIFICATION | FEATURE_BREAK_ITERATORS | FEATURE_USE_SUPPORT_DATA;
+uint32_t TextServerAdvanced::interface_features = FEATURE_BIDI_LAYOUT | FEATURE_VERTICAL_LAYOUT | FEATURE_SHAPING | FEATURE_KASHIDA_JUSTIFICATION | FEATURE_BREAK_ITERATORS | FEATURE_USE_SUPPORT_DATA | FEATURE_FONT_VARIABLE;
 
 bool TextServerAdvanced::has_feature(Feature p_feature) {
 	return (interface_features & p_feature) == p_feature;
@@ -171,7 +171,7 @@ bool TextServerAdvanced::load_support_data(const String &p_filename) {
 	}
 #else
 	if (icu_data == nullptr) {
-		String filename = (p_filename.empty()) ? String("res://") + _MKSTR(ICU_DATA_NAME) : p_filename;
+		String filename = (p_filename.is_empty()) ? String("res://") + _MKSTR(ICU_DATA_NAME) : p_filename;
 
 		FileAccess *f = FileAccess::open(filename, FileAccess::READ);
 		if (!f) {
@@ -622,6 +622,27 @@ bool TextServerAdvanced::font_get_antialiased(RID p_font) const {
 	return fd->get_antialiased();
 }
 
+Dictionary TextServerAdvanced::font_get_variation_list(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, Dictionary());
+	return fd->get_variation_list();
+}
+
+void TextServerAdvanced::font_set_variation(RID p_font, const String &p_name, double p_value) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_variation(p_name, p_value);
+}
+
+double TextServerAdvanced::font_get_variation(RID p_font, const String &p_name) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, 0);
+	return fd->get_variation(p_name);
+}
+
 void TextServerAdvanced::font_set_distance_field_hint(RID p_font, bool p_distance_field) {
 	_THREAD_SAFE_METHOD_
 	FontDataAdvanced *fd = font_owner.getornull(p_font);
@@ -1040,7 +1061,7 @@ bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_te
 	ERR_FAIL_COND_V(!sd, false);
 	ERR_FAIL_COND_V(p_size <= 0, false);
 
-	if (p_text.empty()) {
+	if (p_text.is_empty()) {
 		return true;
 	}
 
@@ -1581,11 +1602,18 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 
 	HashMap<int, bool> breaks;
 	UErrorCode err = U_ZERO_ERROR;
-	for (int i = 0; i < sd->spans.size(); i++) {
-		UBreakIterator *bi = ubrk_open(UBRK_LINE, sd->spans[i].language.ascii().get_data(), data + _convert_pos_inv(sd, sd->spans[i].start), _convert_pos_inv(sd, sd->spans[i].end - sd->spans[i].start), &err);
+	int i = 0;
+	while (i < sd->spans.size()) {
+		String language = sd->spans[i].language;
+		int r_start = sd->spans[i].start;
+		while (i + 1 < sd->spans.size() && language == sd->spans[i + 1].language) {
+			i++;
+		}
+		int r_end = sd->spans[i].end;
+		UBreakIterator *bi = ubrk_open(UBRK_LINE, language.ascii().get_data(), data + _convert_pos_inv(sd, r_start), _convert_pos_inv(sd, r_end - r_start), &err);
 		if (U_FAILURE(err)) {
 			//No data loaded - use fallback.
-			for (int j = sd->spans[i].start; j < sd->spans[i].end; j++) {
+			for (int j = r_start; j < r_end; j++) {
 				char32_t c = sd->text[j - sd->start];
 				if (is_whitespace(c)) {
 					breaks[j] = false;
@@ -1596,8 +1624,8 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 			}
 		} else {
 			while (ubrk_next(bi) != UBRK_DONE) {
-				int pos = _convert_pos(sd, ubrk_current(bi)) + sd->spans[i].start - 1;
-				if (pos != sd->spans[i].end) {
+				int pos = _convert_pos(sd, ubrk_current(bi)) + r_start - 1;
+				if (pos != r_end) {
 					if ((ubrk_getRuleStatus(bi) >= UBRK_LINE_HARD) && (ubrk_getRuleStatus(bi) < UBRK_LINE_HARD_LIMIT)) {
 						breaks[pos] = true;
 					} else if ((ubrk_getRuleStatus(bi) >= UBRK_LINE_SOFT) && (ubrk_getRuleStatus(bi) < UBRK_LINE_SOFT_LIMIT)) {
@@ -1607,6 +1635,7 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 			}
 		}
 		ubrk_close(bi);
+		i++;
 	}
 
 	sd->sort_valid = false;
@@ -1615,7 +1644,7 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 	const char32_t *ch = sd->text.ptr();
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
 
-	for (int i = 0; i < sd_size; i++) {
+	for (i = 0; i < sd_size; i++) {
 		if (sd_glyphs[i].count > 0) {
 			char32_t c = ch[sd_glyphs[i].start - sd->start];
 			if (c == 0xfffc) {
@@ -1624,13 +1653,18 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 			if (c == 0x0009 || c == 0x000b) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_TAB;
 			}
+			if (is_whitespace(c)) {
+				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
+			}
+			if (u_ispunct(c)) {
+				sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
+			}
 			if (breaks.has(sd->glyphs[i].start)) {
 				if (breaks[sd->glyphs[i].start]) {
 					sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_HARD;
 				} else {
 					if (is_whitespace(c)) {
 						sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_SOFT;
-						sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
 					} else {
 						TextServer::Glyph gl;
 						gl.start = sd_glyphs[i].start;
@@ -1745,6 +1779,10 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 		shaped_text_update_breaks(p_shaped);
 	}
 
+	if (sd->justification_ops_valid) {
+		return true; // Noting to do.
+	}
+
 	const UChar *data = sd->utf16.ptr();
 	int32_t data_size = sd->utf16.length();
 
@@ -1775,9 +1813,9 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 			if (ubrk_getRuleStatus(bi) != UBRK_WORD_NONE) {
 				int i = _convert_pos(sd, ubrk_current(bi));
 				jstops[i + sd->start] = false;
-				int ks = _generate_kashida_justification_opportunies(sd->text, limit, i) + sd->start;
+				int ks = _generate_kashida_justification_opportunies(sd->text, limit, i);
 				if (ks != -1) {
-					jstops[ks] = true;
+					jstops[ks + sd->start] = true;
 				}
 				limit = i;
 			}
@@ -1954,7 +1992,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 			ftrs.push_back(feature);
 		}
 	}
-	hb_shape(hb_font, p_sd->hb_buffer, ftrs.empty() ? nullptr : &ftrs[0], ftrs.size());
+	hb_shape(hb_font, p_sd->hb_buffer, ftrs.is_empty() ? nullptr : &ftrs[0], ftrs.size());
 
 	unsigned int glyph_count = 0;
 	hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(p_sd->hb_buffer, &glyph_count);
@@ -2101,7 +2139,7 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 		sd->script_iter = memnew(ScriptIterator(sd->text, 0, sd->text.length()));
 	}
 
-	if (sd->bidi_override.empty()) {
+	if (sd->bidi_override.is_empty()) {
 		sd->bidi_override.push_back(Vector2i(0, sd->end));
 	}
 

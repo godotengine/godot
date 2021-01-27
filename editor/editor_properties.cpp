@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,7 +77,9 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 void EditorPropertyText::update_property() {
 	String s = get_edited_object()->get(get_edited_property());
 	updating = true;
-	text->set_text(s);
+	if (text->get_text() != s) {
+		text->set_text(s);
+	}
 	text->set_editable(!is_read_only());
 	updating = false;
 }
@@ -133,9 +135,11 @@ void EditorPropertyMultilineText::_open_big_text() {
 
 void EditorPropertyMultilineText::update_property() {
 	String t = get_edited_object()->get(get_edited_property());
-	text->set_text(t);
-	if (big_text && big_text->is_visible_in_tree()) {
-		big_text->set_text(t);
+	if (text->get_text() != t) {
+		text->set_text(t);
+		if (big_text && big_text->is_visible_in_tree()) {
+			big_text->set_text(t);
+		}
 	}
 }
 
@@ -725,12 +729,12 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 	for (int i = 0; i < 20; i++) {
 		String name;
 
-		if (ProjectSettings::get_singleton()->has_setting(basename + "/layer_" + itos(i + 1))) {
-			name = ProjectSettings::get_singleton()->get(basename + "/layer_" + itos(i + 1));
+		if (ProjectSettings::get_singleton()->has_setting(basename + vformat("/layer_%d", i))) {
+			name = ProjectSettings::get_singleton()->get(basename + vformat("/layer_%d", i));
 		}
 
 		if (name == "") {
-			name = TTR("Layer") + " " + itos(i + 1);
+			name = vformat(TTR("Layer %d"), i);
 		}
 
 		names.push_back(name);
@@ -2145,7 +2149,9 @@ void EditorPropertyColor::_color_changed(const Color &p_color) {
 }
 
 void EditorPropertyColor::_popup_closed() {
-	emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
+	if (picker->get_pick_color() != last_color) {
+		emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
+	}
 }
 
 void EditorPropertyColor::_picker_created() {
@@ -2156,6 +2162,10 @@ void EditorPropertyColor::_picker_created() {
 	} else if (default_color_mode == 2) {
 		picker->get_picker()->set_raw_mode(true);
 	}
+}
+
+void EditorPropertyColor::_picker_opening() {
+	last_color = picker->get_pick_color();
 }
 
 void EditorPropertyColor::_bind_methods() {
@@ -2193,6 +2203,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	picker->connect("color_changed", callable_mp(this, &EditorPropertyColor::_color_changed));
 	picker->connect("popup_closed", callable_mp(this, &EditorPropertyColor::_popup_closed));
 	picker->connect("picker_created", callable_mp(this, &EditorPropertyColor::_picker_created));
+	picker->get_popup()->connect("about_to_popup", callable_mp(this, &EditorPropertyColor::_picker_opening));
 }
 
 ////////////// NODE PATH //////////////////////
@@ -2356,7 +2367,7 @@ void EditorPropertyResource::_file_selected(const String &p_path) {
 			property_types = E->get().hint_string;
 		}
 	}
-	if (!property_types.empty()) {
+	if (!property_types.is_empty()) {
 		bool any_type_matches = false;
 		const Vector<String> split_property_types = property_types.split(",");
 		for (int i = 0; i < split_property_types.size(); ++i) {
@@ -2514,7 +2525,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				update_property();
 				break;
 			}
-			ERR_FAIL_COND(inheritors_array.empty());
+			ERR_FAIL_COND(inheritors_array.is_empty());
 
 			String intype = inheritors_array[p_which - TYPE_BASE_ID];
 
@@ -2545,14 +2556,14 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				return;
 			}
 
-			Object *obj = nullptr;
+			Variant obj;
 
 			if (ScriptServer::is_global_class(intype)) {
 				obj = ClassDB::instance(ScriptServer::get_global_class_native_base(intype));
 				if (obj) {
 					Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(intype));
 					if (script.is_valid()) {
-						obj->set_script(Variant(script));
+						((Object *)obj)->set_script(script);
 					}
 				}
 			} else {
@@ -2563,7 +2574,6 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
 			}
 
-			ERR_BREAK(!obj);
 			Resource *resp = Object::cast_to<Resource>(obj);
 			ERR_BREAK(!resp);
 			if (get_edited_object() && base_type != String() && base_type == "Script") {
@@ -2571,7 +2581,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				resp->call("set_instance_base_type", get_edited_object()->get_class());
 			}
 
-			res = Ref<Resource>(resp);
+			res = RES(resp);
 			emit_changed(get_edited_property(), res);
 			update_property();
 
@@ -2590,7 +2600,7 @@ void EditorPropertyResource::_resource_preview(const String &p_path, const Ref<T
 		}
 
 		if (p_preview.is_valid()) {
-			preview->set_margin(MARGIN_LEFT, assign->get_icon()->get_width() + assign->get_theme_stylebox("normal")->get_default_margin(MARGIN_LEFT) + get_theme_constant("hseparation", "Button"));
+			preview->set_offset(SIDE_LEFT, assign->get_icon()->get_width() + assign->get_theme_stylebox("normal")->get_default_margin(SIDE_LEFT) + get_theme_constant("hseparation", "Button"));
 			if (type == "GradientTexture") {
 				preview->set_stretch_mode(TextureRect::STRETCH_SCALE);
 				assign->set_custom_minimum_size(Size2(1, 1));
@@ -2658,7 +2668,7 @@ void EditorPropertyResource::_update_menu_items() {
 
 				bool is_custom_resource = false;
 				Ref<Texture2D> icon;
-				if (!custom_resources.empty()) {
+				if (!custom_resources.is_empty()) {
 					for (int j = 0; j < custom_resources.size(); j++) {
 						if (custom_resources[j].name == t) {
 							is_custom_resource = true;
@@ -3167,10 +3177,10 @@ EditorPropertyResource::EditorPropertyResource() {
 
 	preview = memnew(TextureRect);
 	preview->set_expand(true);
-	preview->set_anchors_and_margins_preset(PRESET_WIDE);
-	preview->set_margin(MARGIN_TOP, 1);
-	preview->set_margin(MARGIN_BOTTOM, -1);
-	preview->set_margin(MARGIN_RIGHT, -1);
+	preview->set_anchors_and_offsets_preset(PRESET_WIDE);
+	preview->set_offset(SIDE_TOP, 1);
+	preview->set_offset(SIDE_BOTTOM, -1);
+	preview->set_offset(SIDE_RIGHT, -1);
 	assign->add_child(preview);
 	assign->connect("gui_input", callable_mp(this, &EditorPropertyResource::_button_input));
 

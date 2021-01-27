@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -130,8 +130,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_item(const String &p_item, const Ref<Texture2D> &p_texture = Ref<Texture2D>(), bool p_selectable = true);
-	void add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable = true);
+	int add_item(const String &p_item, const Ref<Texture2D> &p_texture = Ref<Texture2D>(), bool p_selectable = true);
+	int add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable = true);
 
 	void set_item_text(int p_idx, const String &p_text);
 	String get_item_text(int p_idx) const;
@@ -183,8 +183,8 @@ public:
 	Color get_item_custom_fg_color(int p_idx) const;
 
 	void select(int p_idx, bool p_single = true);
-	void unselect(int p_idx);
-	void unselect_all();
+	void deselect(int p_idx);
+	void deselect_all();
 	bool is_selected(int p_idx) const;
 	Vector<int> get_selected_items();
 	bool is_anything_selected();

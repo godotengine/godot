@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,10 @@ public:
 		NO_INDEX_ARRAY = RenderingServer::NO_INDEX_ARRAY,
 		ARRAY_WEIGHTS_SIZE = RenderingServer::ARRAY_WEIGHTS_SIZE
 	};
-
+	enum BlendShapeMode {
+		BLEND_SHAPE_MODE_NORMALIZED = RS::BLEND_SHAPE_MODE_NORMALIZED,
+		BLEND_SHAPE_MODE_RELATIVE = RS::BLEND_SHAPE_MODE_RELATIVE,
+	};
 	enum ArrayType {
 		ARRAY_VERTEX = RenderingServer::ARRAY_VERTEX,
 		ARRAY_NORMAL = RenderingServer::ARRAY_NORMAL,
@@ -168,14 +171,12 @@ class ArrayMesh : public Mesh {
 	GDCLASS(ArrayMesh, Mesh);
 	RES_BASE_EXTENSION("mesh");
 
+	PackedStringArray _get_blend_shape_names() const;
+	void _set_blend_shape_names(const PackedStringArray &p_names);
+
 	Array _get_surfaces() const;
 	void _set_surfaces(const Array &p_data);
-
-public:
-	enum BlendShapeMode {
-		BLEND_SHAPE_MODE_NORMALIZED = RS::BLEND_SHAPE_MODE_NORMALIZED,
-		BLEND_SHAPE_MODE_RELATIVE = RS::BLEND_SHAPE_MODE_RELATIVE,
-	};
+	Ref<ArrayMesh> shadow_mesh;
 
 private:
 	struct Surface {
@@ -211,7 +212,7 @@ protected:
 public:
 	void add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_flags = 0);
 
-	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data = Vector<uint8_t>(), uint32_t p_blend_shape_count = 0, const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<RS::SurfaceData::LOD> &p_lods = Vector<RS::SurfaceData::LOD>());
+	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data = Vector<uint8_t>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<RS::SurfaceData::LOD> &p_lods = Vector<RS::SurfaceData::LOD>());
 
 	Array surface_get_arrays(int p_surface) const override;
 	Array surface_get_blend_shape_arrays(int p_surface) const override;
@@ -252,12 +253,15 @@ public:
 	AABB get_aabb() const override;
 	virtual RID get_rid() const override;
 
-	void regen_normalmaps();
+	void regen_normal_maps();
 
 	Error lightmap_unwrap(const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
 	Error lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache, const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
 
 	virtual void reload_from_file() override;
+
+	void set_shadow_mesh(const Ref<ArrayMesh> &p_mesh);
+	Ref<ArrayMesh> get_shadow_mesh() const;
 
 	ArrayMesh();
 
@@ -268,6 +272,6 @@ VARIANT_ENUM_CAST(Mesh::ArrayType);
 VARIANT_ENUM_CAST(Mesh::ArrayFormat);
 VARIANT_ENUM_CAST(Mesh::ArrayCustomFormat);
 VARIANT_ENUM_CAST(Mesh::PrimitiveType);
-VARIANT_ENUM_CAST(ArrayMesh::BlendShapeMode);
+VARIANT_ENUM_CAST(Mesh::BlendShapeMode);
 
 #endif

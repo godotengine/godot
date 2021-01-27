@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -293,7 +293,7 @@ void BoneTransformEditor::_key_button_pressed() {
 	const BoneId bone_id = property.get_slicec('/', 1).to_int();
 	const String name = skeleton->get_bone_name(bone_id);
 
-	if (name.empty())
+	if (name.is_empty())
 		return;
 
 	// Need to normalize the basis before you key it
@@ -382,6 +382,10 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 
 	CollisionShape3D *bone_shape = memnew(CollisionShape3D);
 	bone_shape->set_shape(bone_shape_capsule);
+
+	Transform capsule_transform;
+	capsule_transform.basis = Basis(Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(0, -1, 0));
+	bone_shape->set_transform(capsule_transform);
 
 	Transform body_transform;
 	body_transform.set_look_at(Vector3(0, 0, 0), child_rest.origin, Vector3(0, 1, 0));

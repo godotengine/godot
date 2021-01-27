@@ -40,11 +40,16 @@
  * @include: hb.h
  *
  * Unicode functions are used to access Unicode character properties.
- * Client can pass its own Unicode functions to HarfBuzz, or access
- * the built-in Unicode functions that come with HarfBuzz.
+ * With these functions, client programs can query various properties from
+ * the Unicode Character Database for any code point, such as General
+ * Category (gc), Script (sc), Canonical Combining Class (ccc), etc.
  *
- * With the Unicode functions, one can query variour Unicode character
- * properties, such as General Category, Script, Combining Class, etc.
+ * Client programs can optionally pass in their own Unicode functions
+ * that implement the same queries. The set of functions available is
+ * defined by the virtual methods in #hb_unicode_funcs_t.
+ *
+ * HarfBuzz provides built-in default functions for each method in
+ * #hb_unicode_funcs_t.
  **/
 
 
@@ -133,6 +138,16 @@ hb_unicode_decompose_compatibility_nil (hb_unicode_funcs_t *ufuncs     HB_UNUSED
 #include "hb-icu.h"
 #endif
 
+/**
+ * hb_unicode_funcs_get_default:
+ *
+ * Fetches a pointer to the default Unicode-functions structure that is used
+ * when no functions are explicitly set on #hb_buffer_t.
+ *
+ * Return value: (transfer none): a pointer to the #hb_unicode_funcs_t Unicode-functions structure
+ *
+ * Since: 0.9.2
+ **/
 hb_unicode_funcs_t *
 hb_unicode_funcs_get_default ()
 {
@@ -155,11 +170,11 @@ hb_unicode_funcs_get_default ()
 
 /**
  * hb_unicode_funcs_create: (Xconstructor)
- * @parent: (nullable):
+ * @parent: (nullable): Parent Unicode-functions structure
  *
+ * Creates a new #hb_unicode_funcs_t structure of Unicode functions.
  *
- *
- * Return value: (transfer full):
+ * Return value: (transfer full): The Unicode-functions structure
  *
  * Since: 0.9.2
  **/
@@ -203,9 +218,9 @@ DEFINE_NULL_INSTANCE (hb_unicode_funcs_t) =
 /**
  * hb_unicode_funcs_get_empty:
  *
+ * Fetches the singleton empty Unicode-functions structure.
  *
- *
- * Return value: (transfer full):
+ * Return value: (transfer full): The empty Unicode-functions structure
  *
  * Since: 0.9.2
  **/
@@ -217,11 +232,11 @@ hb_unicode_funcs_get_empty ()
 
 /**
  * hb_unicode_funcs_reference: (skip)
- * @ufuncs: Unicode functions.
+ * @ufuncs: The Unicode-functions structure
  *
+ * Increases the reference count on a Unicode-functions structure.
  *
- *
- * Return value: (transfer full):
+ * Return value: (transfer full): The Unicode-functions structure
  *
  * Since: 0.9.2
  **/
@@ -233,9 +248,11 @@ hb_unicode_funcs_reference (hb_unicode_funcs_t *ufuncs)
 
 /**
  * hb_unicode_funcs_destroy: (skip)
- * @ufuncs: Unicode functions.
+ * @ufuncs: The Unicode-functions structure
  *
- *
+ * Decreases the reference count on a Unicode-functions structure. When
+ * the reference count reaches zero, the Unicode-functions structure is
+ * destroyed, freeing all memory.
  *
  * Since: 0.9.2
  **/
@@ -256,15 +273,15 @@ hb_unicode_funcs_destroy (hb_unicode_funcs_t *ufuncs)
 
 /**
  * hb_unicode_funcs_set_user_data: (skip)
- * @ufuncs: Unicode functions.
- * @key:
- * @data:
- * @destroy:
- * @replace:
+ * @ufuncs: The Unicode-functions structure
+ * @key: The user-data key
+ * @data: A pointer to the user data
+ * @destroy: (optional): A callback to call when @data is not needed anymore
+ * @replace: Whether to replace an existing data with the same key
  *
+ * Attaches a user-data key/data pair to the specified Unicode-functions structure. 
  *
- *
- * Return value:
+ * Return value: %true if success, %false otherwise
  *
  * Since: 0.9.2
  **/
@@ -280,12 +297,13 @@ hb_unicode_funcs_set_user_data (hb_unicode_funcs_t *ufuncs,
 
 /**
  * hb_unicode_funcs_get_user_data: (skip)
- * @ufuncs: Unicode functions.
- * @key:
+ * @ufuncs: The Unicode-functions structure
+ * @key: The user-data key to query
  *
+ * Fetches the user-data associated with the specified key,
+ * attached to the specified Unicode-functions structure.
  *
- *
- * Return value: (transfer none):
+ * Return value: (transfer none): A pointer to the user data
  *
  * Since: 0.9.2
  **/
@@ -299,9 +317,10 @@ hb_unicode_funcs_get_user_data (hb_unicode_funcs_t *ufuncs,
 
 /**
  * hb_unicode_funcs_make_immutable:
- * @ufuncs: Unicode functions.
+ * @ufuncs: The Unicode-functions structure
  *
- *
+ * Makes the specified Unicode-functions structure
+ * immutable.
  *
  * Since: 0.9.2
  **/
@@ -316,11 +335,12 @@ hb_unicode_funcs_make_immutable (hb_unicode_funcs_t *ufuncs)
 
 /**
  * hb_unicode_funcs_is_immutable:
- * @ufuncs: Unicode functions.
+ * @ufuncs: The Unicode-functions structure
  *
+ * Tests whether the specified Unicode-functions structure
+ * is immutable.
  *
- *
- * Return value:
+ * Return value: %true if @ufuncs is immutable, false otherwise
  *
  * Since: 0.9.2
  **/
@@ -332,11 +352,12 @@ hb_unicode_funcs_is_immutable (hb_unicode_funcs_t *ufuncs)
 
 /**
  * hb_unicode_funcs_get_parent:
- * @ufuncs: Unicode functions.
+ * @ufuncs: The Unicode-functions structure
  *
+ * Fetches the parent of the Unicode-functions structure
+ * @ufuncs.
  *
- *
- * Return value:
+ * Return value: The parent Unicode-functions structure
  *
  * Since: 0.9.2
  **/
@@ -389,14 +410,18 @@ HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS_SIMPLE
 
 /**
  * hb_unicode_compose:
- * @ufuncs: Unicode functions.
- * @a:
- * @b:
- * @ab: (out):
+ * @ufuncs: The Unicode-functions structure
+ * @a: The first Unicode code point to compose
+ * @b: The second Unicode code point to compose
+ * @ab: (out): The composition of @a, @b
  *
+ * Fetches the composition of a sequence of two Unicode
+ * code points.
  *
+ * Calls the composition function of the specified
+ * Unicode-functions structure @ufuncs.
  *
- * Return value:
+ * Return value: %true if @a and @b composed, false otherwise
  *
  * Since: 0.9.2
  **/
@@ -411,14 +436,17 @@ hb_unicode_compose (hb_unicode_funcs_t *ufuncs,
 
 /**
  * hb_unicode_decompose:
- * @ufuncs: Unicode functions.
- * @ab:
- * @a: (out):
- * @b: (out):
+ * @ufuncs: The Unicode-functions structure
+ * @ab: Unicode code point to decompose
+ * @a: (out): The first code point of the decomposition of @ab
+ * @b: (out): The second code point of the decomposition of @ab
  *
+ * Fetches the decomposition of a Unicode code point. 
  *
+ * Calls the decomposition function of the specified
+ * Unicode-functions structure @ufuncs.
  *
- * Return value:
+ * Return value: %true if @ab was decomposed, false otherwise
  *
  * Since: 0.9.2
  **/
@@ -434,11 +462,12 @@ hb_unicode_decompose (hb_unicode_funcs_t *ufuncs,
 #ifndef HB_DISABLE_DEPRECATED
 /**
  * hb_unicode_decompose_compatibility:
- * @ufuncs: Unicode functions.
- * @u:
- * @decomposed: (out):
+ * @ufuncs: The Unicode-functions structure
+ * @u: Code point to decompose
+ * @decomposed: (out): Compatibility decomposition of @u
  *
- *
+ * Fetches the compatibility decomposition of a Unicode
+ * code point. Deprecated.
  *
  * Return value:
  *

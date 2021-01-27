@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,6 +129,8 @@ public:
 	FUNC2RC(RID, shader_get_default_texture_param, RID, const StringName &)
 	FUNC2RC(Variant, shader_get_param_default, RID, const StringName &)
 
+	FUNC1RC(ShaderNativeSourceCode, shader_get_native_source_code, RID)
+
 	/* COMMON MATERIAL API */
 
 	FUNCRID(material)
@@ -143,9 +145,11 @@ public:
 
 	/* MESH API */
 
-	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces) {
-		return rendering_server->mesh_create_from_surfaces(p_surfaces);
+	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces, int p_blend_shape_count = 0) {
+		return rendering_server->mesh_create_from_surfaces(p_surfaces, p_blend_shape_count);
 	}
+
+	FUNC2(mesh_set_blend_shape_count, RID, int)
 
 	FUNCRID(mesh)
 
@@ -168,6 +172,7 @@ public:
 	FUNC2(mesh_set_custom_aabb, RID, const AABB &)
 	FUNC1RC(AABB, mesh_get_custom_aabb, RID)
 
+	FUNC2(mesh_set_shadow_mesh, RID, RID)
 	FUNC1(mesh_clear, RID)
 
 	/* MULTIMESH API */
@@ -264,6 +269,7 @@ public:
 	FUNC2(reflection_probe_set_enable_shadows, RID, bool)
 	FUNC2(reflection_probe_set_cull_mask, RID, uint32_t)
 	FUNC2(reflection_probe_set_resolution, RID, int)
+	FUNC2(reflection_probe_set_lod_threshold, RID, float)
 
 	/* DECAL API */
 
@@ -440,13 +446,15 @@ public:
 
 	FUNC2(viewport_set_global_canvas_transform, RID, const Transform2D &)
 	FUNC4(viewport_set_canvas_stacking, RID, RID, int, int)
-	FUNC2(viewport_set_shadow_atlas_size, RID, int)
+	FUNC3(viewport_set_shadow_atlas_size, RID, int, bool)
 	FUNC3(viewport_set_sdf_oversize_and_scale, RID, ViewportSDFOversize, ViewportSDFScale)
 
 	FUNC3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	FUNC2(viewport_set_msaa, RID, ViewportMSAA)
 	FUNC2(viewport_set_screen_space_aa, RID, ViewportScreenSpaceAA)
 	FUNC2(viewport_set_use_debanding, RID, bool)
+
+	FUNC2(viewport_set_lod_threshold, RID, float)
 
 	//this passes directly to avoid stalling, but it's pretty dangerous, so don't call after freeing a viewport
 	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfo p_info) {
@@ -463,7 +471,7 @@ public:
 		return rendering_server->viewport_get_measured_render_time_gpu(p_viewport);
 	}
 
-	FUNC1(directional_shadow_atlas_set_size, int)
+	FUNC2(directional_shadow_atlas_set_size, int, bool)
 
 	/* SKY API */
 
@@ -493,13 +501,14 @@ public:
 	FUNC6(environment_set_ssr, RID, bool, int, float, float, float)
 	FUNC1(environment_set_ssr_roughness_quality, EnvironmentSSRRoughnessQuality)
 
-	FUNC9(environment_set_ssao, RID, bool, float, float, float, float, float, EnvironmentSSAOBlur, float)
+	FUNC10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
 
-	FUNC2(environment_set_ssao_quality, EnvironmentSSAOQuality, bool)
+	FUNC6(environment_set_ssao_quality, EnvironmentSSAOQuality, bool, float, int, float, float)
 
 	FUNC11(environment_set_sdfgi, RID, bool, EnvironmentSDFGICascades, float, EnvironmentSDFGIYScale, bool, bool, bool, float, float, float)
 	FUNC1(environment_set_sdfgi_ray_count, EnvironmentSDFGIRayCount)
 	FUNC1(environment_set_sdfgi_frames_to_converge, EnvironmentSDFGIFramesToConverge)
+	FUNC1(environment_set_sdfgi_frames_to_update_light, EnvironmentSDFGIFramesToUpdateLight)
 
 	FUNC11(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, EnvironmentGlowBlendMode, float, float, float)
 	FUNC1(environment_glow_set_use_bicubic_upscale, bool)
@@ -573,6 +582,7 @@ public:
 	FUNC5(instance_geometry_set_draw_range, RID, float, float, float, float)
 	FUNC2(instance_geometry_set_as_instance_lod, RID, RID)
 	FUNC4(instance_geometry_set_lightmap, RID, RID, const Rect2 &, int)
+	FUNC2(instance_geometry_set_lod_bias, RID, float)
 
 	FUNC3(instance_geometry_set_shader_parameter, RID, const StringName &, const Variant &)
 	FUNC2RC(Variant, instance_geometry_get_shader_parameter, RID, const StringName &)
@@ -736,6 +746,8 @@ public:
 		return rendering_server->get_video_adapter_vendor();
 	}
 
+	FUNC1(gi_set_use_half_resolution, bool)
+
 	FUNC4(set_boot_image, const Ref<Image> &, const Color &, bool, bool)
 	FUNC1(set_default_clear_color, const Color &)
 
@@ -770,8 +782,16 @@ public:
 		return rendering_server->get_frame_profile();
 	}
 
+	virtual float get_frame_setup_time_cpu() const {
+		return rendering_server->get_frame_setup_time_cpu();
+	}
+
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
 		rendering_server->sdfgi_set_debug_probe_select(p_position, p_dir);
+	}
+
+	virtual void set_print_gpu_profile(bool p_enable) {
+		rendering_server->set_print_gpu_profile(p_enable);
 	}
 
 	RenderingServerWrapMT(RenderingServer *p_contained, bool p_create_thread);

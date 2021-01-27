@@ -52,7 +52,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// The area of this rect.
+        /// The area of this Rect2.
         /// </summary>
         /// <value>Equivalent to <see cref="GetArea()"/>.</value>
         public real_t Area
@@ -64,7 +64,7 @@ namespace Godot
         /// Returns a Rect2 with equivalent position and size, modified so that
         /// the top-left corner is the origin and width and height are positive.
         /// </summary>
-        /// <returns>The modified rect.</returns>
+        /// <returns>The modified Rect2.</returns>
         public Rect2 Abs()
         {
             Vector2 end = End;
@@ -74,10 +74,11 @@ namespace Godot
 
         /// <summary>
         /// Returns the intersection of this Rect2 and `b`.
+        /// If the rectangles do not intersect, an empty Rect2 is returned.
         /// </summary>
-        /// <param name="b">The other rect.</param>
-        /// <returns>The clipped rect.</returns>
-        public Rect2 Clip(Rect2 b)
+        /// <param name="b">The other Rect2.</param>
+        /// <returns>The intersection of this Rect2 and `b`, or an empty Rect2 if they do not intersect.</returns>
+        public Rect2 Intersection(Rect2 b)
         {
             var newRect = b;
 
@@ -101,8 +102,8 @@ namespace Godot
         /// <summary>
         /// Returns true if this Rect2 completely encloses another one.
         /// </summary>
-        /// <param name="b">The other rect that may be enclosed.</param>
-        /// <returns>A bool for whether or not this rect encloses `b`.</returns>
+        /// <param name="b">The other Rect2 that may be enclosed.</param>
+        /// <returns>A bool for whether or not this Rect2 encloses `b`.</returns>
         public bool Encloses(Rect2 b)
         {
             return b._position.x >= _position.x && b._position.y >= _position.y &&
@@ -114,7 +115,7 @@ namespace Godot
         /// Returns this Rect2 expanded to include a given point.
         /// </summary>
         /// <param name="to">The point to include.</param>
-        /// <returns>The expanded rect.</returns>
+        /// <returns>The expanded Rect2.</returns>
         public Rect2 Expand(Vector2 to)
         {
             var expanded = this;
@@ -156,10 +157,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the Rect2 grown a given amount of units towards all the sides.
+        /// Returns a copy of the Rect2 grown by the specified amount on all sides.
         /// </summary>
         /// <param name="by">The amount to grow by.</param>
-        /// <returns>The grown rect.</returns>
+        /// <returns>The grown Rect2.</returns>
         public Rect2 Grow(real_t by)
         {
             var g = this;
@@ -173,13 +174,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the Rect2 grown a given amount of units towards each direction individually.
+        /// Returns a copy of the Rect2 grown by the specified amount on each side individually.
         /// </summary>
-        /// <param name="left">The amount to grow by on the left.</param>
-        /// <param name="top">The amount to grow by on the top.</param>
-        /// <param name="right">The amount to grow by on the right.</param>
-        /// <param name="bottom">The amount to grow by on the bottom.</param>
-        /// <returns>The grown rect.</returns>
+        /// <param name="left">The amount to grow by on the left side.</param>
+        /// <param name="top">The amount to grow by on the top side.</param>
+        /// <param name="right">The amount to grow by on the right side.</param>
+        /// <param name="bottom">The amount to grow by on the bottom side.</param>
+        /// <returns>The grown Rect2.</returns>
         public Rect2 GrowIndividual(real_t left, real_t top, real_t right, real_t bottom)
         {
             var g = this;
@@ -193,19 +194,19 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the Rect2 grown a given amount of units towards the <see cref="Margin"/> direction.
+        /// Returns a copy of the Rect2 grown by the specified amount on the specified Side.
         /// </summary>
-        /// <param name="margin">The direction to grow in.</param>
+        /// <param name="side">The side to grow.</param>
         /// <param name="by">The amount to grow by.</param>
-        /// <returns>The grown rect.</returns>
-        public Rect2 GrowMargin(Margin margin, real_t by)
+        /// <returns>The grown Rect2.</returns>
+        public Rect2 GrowSide(Side side, real_t by)
         {
             var g = this;
 
-            g = g.GrowIndividual(Margin.Left == margin ? by : 0,
-                    Margin.Top == margin ? by : 0,
-                    Margin.Right == margin ? by : 0,
-                    Margin.Bottom == margin ? by : 0);
+            g = g.GrowIndividual(Side.Left == side ? by : 0,
+                    Side.Top == side ? by : 0,
+                    Side.Right == side ? by : 0,
+                    Side.Bottom == side ? by : 0);
 
             return g;
         }
@@ -213,7 +214,7 @@ namespace Godot
         /// <summary>
         /// Returns true if the Rect2 is flat or empty, or false otherwise.
         /// </summary>
-        /// <returns>A bool for whether or not the rect has area.</returns>
+        /// <returns>A bool for whether or not the Rect2 has area.</returns>
         public bool HasNoArea()
         {
             return _size.x <= 0 || _size.y <= 0;
@@ -223,7 +224,7 @@ namespace Godot
         /// Returns true if the Rect2 contains a point, or false otherwise.
         /// </summary>
         /// <param name="point">The point to check.</param>
-        /// <returns>A bool for whether or not the rect contains `point`.</returns>
+        /// <returns>A bool for whether or not the Rect2 contains `point`.</returns>
         public bool HasPoint(Vector2 point)
         {
             if (point.x < _position.x)
@@ -246,7 +247,7 @@ namespace Godot
         /// If `includeBorders` is true, they will also be considered overlapping
         /// if their borders touch, even without intersection.
         /// </summary>
-        /// <param name="b">The other rect to check for intersections with.</param>
+        /// <param name="b">The other Rect2 to check for intersections with.</param>
         /// <param name="includeBorders">Whether or not to consider borders.</param>
         /// <returns>A bool for whether or not they are intersecting.</returns>
         public bool Intersects(Rect2 b, bool includeBorders = false)
@@ -296,8 +297,8 @@ namespace Godot
         /// <summary>
         /// Returns a larger Rect2 that contains this Rect2 and `b`.
         /// </summary>
-        /// <param name="b">The other rect.</param>
-        /// <returns>The merged rect.</returns>
+        /// <param name="b">The other Rect2.</param>
+        /// <returns>The merged Rect2.</returns>
         public Rect2 Merge(Rect2 b)
         {
             Rect2 newRect;
@@ -387,11 +388,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns true if this rect and `other` are approximately equal, by running
+        /// Returns true if this Rect2 and `other` are approximately equal, by running
         /// <see cref="Vector2.IsEqualApprox(Vector2)"/> on each component.
         /// </summary>
-        /// <param name="other">The other rect to compare.</param>
-        /// <returns>Whether or not the rects are approximately equal.</returns>
+        /// <param name="other">The other Rect2 to compare.</param>
+        /// <returns>Whether or not the Rect2s are approximately equal.</returns>
         public bool IsEqualApprox(Rect2 other)
         {
             return _position.IsEqualApprox(other._position) && _size.IsEqualApprox(other.Size);

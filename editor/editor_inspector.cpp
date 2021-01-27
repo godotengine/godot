@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -220,7 +220,7 @@ void EditorProperty::_notification(int p_what) {
 
 		Size2 size = get_size();
 		if (bottom_editor) {
-			size.height = bottom_editor->get_margin(MARGIN_TOP);
+			size.height = bottom_editor->get_offset(SIDE_TOP);
 		} else if (label_reference) {
 			size.height = label_reference->get_size().height;
 		}
@@ -865,7 +865,7 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 
 	String text;
 	PackedStringArray slices = p_text.split("::", false);
-	if (!slices.empty()) {
+	if (!slices.is_empty()) {
 		String property_name = slices[0].strip_edges();
 		text = TTR("Property:") + " [u][b]" + property_name + "[/b][/u]";
 
@@ -1098,7 +1098,7 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
 	PackedStringArray slices = p_text.split("::", false);
-	if (!slices.empty()) {
+	if (!slices.is_empty()) {
 		String property_name = slices[0].strip_edges();
 		String text = "[u][b]" + property_name + "[/b][/u]";
 
@@ -1901,7 +1901,7 @@ void EditorInspector::update_tree() {
 						}
 					}
 
-					if (!F->get().inherits.empty()) {
+					if (!F->get().inherits.is_empty()) {
 						F = dd->class_list.find(F->get().inherits);
 					} else {
 						break;
@@ -2525,7 +2525,7 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 		script = script->get_base_script();
 	}
 
-	if (classes.empty()) {
+	if (classes.is_empty()) {
 		return;
 	}
 

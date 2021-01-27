@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -302,7 +302,7 @@ static NSMutableArray<ApplicationDelegateService *> *services = nil;
 
 // MARK: Remote Notification
 
-- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+- (void)godot:(UIApplication *)application receivedNotificationToken:(NSData *)deviceToken {
 	for (ApplicationDelegateService *service in services) {
 		if (![service respondsToSelector:_cmd]) {
 			continue;
@@ -312,7 +312,7 @@ static NSMutableArray<ApplicationDelegateService *> *services = nil;
 	}
 }
 
-- (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
+- (void)godot:(UIApplication *)application receivedNotificationError:(NSError *)error {
 	for (ApplicationDelegateService *service in services) {
 		if (![service respondsToSelector:_cmd]) {
 			continue;
@@ -322,7 +322,7 @@ static NSMutableArray<ApplicationDelegateService *> *services = nil;
 	}
 }
 
-- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler {
+- (void)godot:(UIApplication *)application receivedNotification:(NSDictionary *)userInfo completion:(APNSNotification)completionHandler {
 	for (ApplicationDelegateService *service in services) {
 		if (![service respondsToSelector:_cmd]) {
 			continue;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,7 +79,7 @@ public:
 	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
 	_FORCE_INLINE_ void clear() { resize(0); }
-	_FORCE_INLINE_ bool empty() const { return _cowdata.empty(); }
+	_FORCE_INLINE_ bool is_empty() const { return _cowdata.is_empty(); }
 
 	_FORCE_INLINE_ T get(int p_index) { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ const T &get(int p_index) const { return _cowdata.get(p_index); }
@@ -110,6 +110,10 @@ public:
 
 	void sort() {
 		sort_custom<_DefaultComparator<T>>();
+	}
+
+	Vector<T> duplicate() {
+		return *this;
 	}
 
 	void ordered_insert(const T &p_val) {

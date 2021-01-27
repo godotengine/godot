@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,6 +95,15 @@
 static const double abs_resolution_mult = 10000.0;
 static const double abs_resolution_range_mult = 10.0;
 
+// Hints for X11 fullscreen
+struct Hints {
+	unsigned long flags = 0;
+	unsigned long functions = 0;
+	unsigned long decorations = 0;
+	long inputMode = 0;
+	unsigned long status = 0;
+};
+
 bool DisplayServerX11::has_feature(Feature p_feature) const {
 	switch (p_feature) {
 		case FEATURE_SUBWINDOWS:
@@ -182,7 +191,7 @@ void DisplayServerX11::alert(const String &p_alert, const String &p_title) {
 	}
 
 	if (program.length()) {
-		OS::get_singleton()->execute(program, args, true);
+		OS::get_singleton()->execute(program, args);
 	} else {
 		print_line(p_alert);
 	}
@@ -613,7 +622,7 @@ String DisplayServerX11::_clipboard_get(Atom p_source, Window x11_window) const 
 	if (utf8_atom != None) {
 		ret = _clipboard_get_impl(p_source, x11_window, utf8_atom);
 	}
-	if (ret.empty()) {
+	if (ret.is_empty()) {
 		ret = _clipboard_get_impl(p_source, x11_window, XA_STRING);
 	}
 	return ret;
@@ -625,7 +634,7 @@ String DisplayServerX11::clipboard_get() const {
 	String ret;
 	ret = _clipboard_get(XInternAtom(x11_display, "CLIPBOARD", 0), windows[MAIN_WINDOW_ID].x11_window);
 
-	if (ret.empty()) {
+	if (ret.is_empty()) {
 		ret = _clipboard_get(XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window);
 	}
 

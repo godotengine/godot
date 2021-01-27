@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,7 +71,7 @@ void InputMap::erase_action(const StringName &p_action) {
 Array InputMap::_get_actions() {
 	Array ret;
 	List<StringName> actions = get_actions();
-	if (actions.empty()) {
+	if (actions.is_empty()) {
 		return ret;
 	}
 
@@ -84,7 +84,7 @@ Array InputMap::_get_actions() {
 
 List<StringName> InputMap::get_actions() const {
 	List<StringName> actions = List<StringName>();
-	if (input_map.empty()) {
+	if (input_map.is_empty()) {
 		return actions;
 	}
 

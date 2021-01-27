@@ -45,6 +45,7 @@
 			<description>
 				Changes the running scene to the one at the given [code]path[/code], after loading it into a [PackedScene] and creating a new instance.
 				Returns [constant OK] on success, [constant ERR_CANT_OPEN] if the [code]path[/code] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if that scene cannot be instantiated.
+				[b]Note:[/b] The scene change is deferred, which means that the new scene node is added on the next idle frame. You won't be able to access it immediately after the [method change_scene] call.
 			</description>
 		</method>
 		<method name="change_scene_to">
@@ -55,6 +56,7 @@
 			<description>
 				Changes the running scene to a new instance of the given [PackedScene].
 				Returns [constant OK] on success or [constant ERR_CANT_CREATE] if the scene cannot be instantiated.
+				[b]Note:[/b] The scene change is deferred, which means that the new scene node is added on the next idle frame. You won't be able to access it immediately after the [method change_scene_to] call.
 			</description>
 		</method>
 		<method name="create_timer">
@@ -73,6 +75,7 @@
 				    yield(get_tree().create_timer(1.0), "timeout")
 				    print("end")
 				[/codeblock]
+				The timer will be automatically freed after its time elapses.
 			</description>
 		</method>
 		<method name="get_frame" qualifiers="const">
@@ -258,7 +261,7 @@
 			The default [MultiplayerAPI] instance for this [SceneTree].
 		</member>
 		<member name="multiplayer_poll" type="bool" setter="set_multiplayer_poll_enabled" getter="is_multiplayer_poll_enabled" default="true">
-			If [code]true[/code] (default value), enables automatic polling of the [MultiplayerAPI] for this SceneTree during [signal idle_frame].
+			If [code]true[/code] (default value), enables automatic polling of the [MultiplayerAPI] for this SceneTree during [signal process_frame].
 			If [code]false[/code], you need to manually call [method MultiplayerAPI.poll] to process network packets and deliver RPCs/RSETs. This allows running RPCs/RSETs in a different loop (e.g. physics, thread, specific time step) and for manual [Mutex] protection when accessing the [MultiplayerAPI] from threads.
 		</member>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
@@ -294,11 +297,6 @@
 			</argument>
 			<description>
 				Emitted when files are dragged from the OS file manager and dropped in the game window. The arguments are a list of file paths and the identifier of the screen where the drag originated.
-			</description>
-		</signal>
-		<signal name="idle_frame">
-			<description>
-				Emitted immediately before [method Node._process] is called on every node in the [SceneTree].
 			</description>
 		</signal>
 		<signal name="network_peer_connected">
@@ -346,6 +344,11 @@
 		<signal name="physics_frame">
 			<description>
 				Emitted immediately before [method Node._physics_process] is called on every node in the [SceneTree].
+			</description>
+		</signal>
+		<signal name="process_frame">
+			<description>
+				Emitted immediately before [method Node._process] is called on every node in the [SceneTree].
 			</description>
 		</signal>
 		<signal name="server_disconnected">

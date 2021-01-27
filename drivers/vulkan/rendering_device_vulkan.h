@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define RENDERING_DEVICE_VULKAN_H
 
 #include "core/os/thread_safe.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/rendering_device.h"
@@ -44,11 +45,6 @@
 #include "vk_mem_alloc.h"
 
 #include <vulkan/vulkan.h>
-
-//todo:
-//compute
-//push constants
-//views of texture slices
 
 class VulkanContext;
 
@@ -232,13 +228,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// used for the render pipelines.
 
 	struct FramebufferFormatKey {
-		Size2i empty_size;
 		Vector<AttachmentFormat> attachments;
 		bool operator<(const FramebufferFormatKey &p_key) const {
-			if (empty_size != p_key.empty_size) {
-				return empty_size < p_key.empty_size;
-			}
-
 			int as = attachments.size();
 			int bs = p_key.attachments.size();
 			if (as != bs) {
@@ -638,7 +629,12 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		DescriptorPoolKey pool_key;
 		VkDescriptorSet descriptor_set = VK_NULL_HANDLE;
 		//VkPipelineLayout pipeline_layout; //not owned, inherited from shader
-		Vector<RID> attachable_textures; //used for validation
+		struct AttachableTexture {
+			uint32_t bind;
+			RID texture;
+		};
+
+		LocalVector<AttachableTexture> attachable_textures; //used for validation
 		Vector<Texture *> mutable_sampled_textures; //used for layout change
 		Vector<Texture *> mutable_storage_textures; //used for layout change
 	};
@@ -789,7 +785,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	Error _draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, VkFramebuffer *r_framebuffer, VkRenderPass *r_render_pass);
 	Error _draw_list_render_pass_begin(Framebuffer *framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i viewport_offset, Point2i viewport_size, VkFramebuffer vkframebuffer, VkRenderPass render_pass, VkCommandBuffer command_buffer, VkSubpassContents subpass_contents, const Vector<RID> &p_storage_textures);
 	_FORCE_INLINE_ DrawList *_get_draw_list_ptr(DrawListID p_id);
-	Buffer *_get_buffer_from_owner(RID p_buffer, VkPipelineStageFlags &dst_stage_mask, VkAccessFlags &dst_access);
+	Buffer *_get_buffer_from_owner(RID p_buffer, VkPipelineStageFlags &dst_stage_mask, VkAccessFlags &dst_access, uint32_t p_post_barrier);
 
 	/**********************/
 	/**** COMPUTE LIST ****/
@@ -917,27 +913,27 @@ public:
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
 
 	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
-	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_sync_with_draw = false);
+	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 	virtual Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer);
 
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const;
 	virtual bool texture_is_shared(RID p_texture);
 	virtual bool texture_is_valid(RID p_texture);
 
-	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, bool p_sync_with_draw = false);
-	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, bool p_sync_with_draw = false);
-	virtual Error texture_resolve_multisample(RID p_from_texture, RID p_to_texture, bool p_sync_with_draw = false);
+	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, uint32_t p_post_barrier = BARRIER_MASK_ALL);
+	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, uint32_t p_post_barrier = BARRIER_MASK_ALL);
+	virtual Error texture_resolve_multisample(RID p_from_texture, RID p_to_texture, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
 	/*********************/
 
 	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format);
-	virtual FramebufferFormatID framebuffer_format_create_empty(const Size2i &p_size);
+	virtual FramebufferFormatID framebuffer_format_create_empty(TextureSamples p_samples = TEXTURE_SAMPLES_1);
 	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format);
 
 	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID);
-	virtual RID framebuffer_create_empty(const Size2i &p_size, FramebufferFormatID p_format_check = INVALID_ID);
+	virtual RID framebuffer_create_empty(const Size2i &p_size, TextureSamples p_samples = TEXTURE_SAMPLES_1, FramebufferFormatID p_format_check = INVALID_ID);
 
 	virtual FramebufferFormatID framebuffer_get_format(RID p_framebuffer);
 
@@ -951,7 +947,7 @@ public:
 	/**** VERTEX ARRAY ****/
 	/**********************/
 
-	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
+	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_as_storage = false);
 
 	// Internally reference counted, this ID is warranted to be unique for the same description, but needs to be freed as many times as it was allocated
 	virtual VertexFormatID vertex_format_create(const Vector<VertexAttribute> &p_vertex_formats);
@@ -979,7 +975,8 @@ public:
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
 	virtual bool uniform_set_is_valid(RID p_uniform_set);
 
-	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_sync_with_draw = false); //works for any buffer
+	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL); //works for any buffer
+	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 	virtual Vector<uint8_t> buffer_get_data(RID p_buffer);
 
 	/*************************/
@@ -1025,7 +1022,7 @@ public:
 	virtual void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect);
 	virtual void draw_list_disable_scissor(DrawListID p_list);
 
-	virtual void draw_list_end();
+	virtual void draw_list_end(uint32_t p_post_barrier = BARRIER_MASK_ALL);
 
 	/***********************/
 	/**** COMPUTE LISTS ****/
@@ -1039,8 +1036,9 @@ public:
 
 	virtual void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);
 	virtual void compute_list_dispatch_indirect(ComputeListID p_list, RID p_buffer, uint32_t p_offset);
-	virtual void compute_list_end();
+	virtual void compute_list_end(uint32_t p_post_barrier = BARRIER_MASK_ALL);
 
+	virtual void barrier(uint32_t p_from = BARRIER_MASK_ALL, uint32_t p_to = BARRIER_MASK_ALL);
 	virtual void full_barrier();
 
 	/**************/
@@ -1053,7 +1051,7 @@ public:
 	/**** Timing ****/
 	/****************/
 
-	virtual void capture_timestamp(const String &p_name, bool p_sync_to_draw);
+	virtual void capture_timestamp(const String &p_name);
 	virtual uint32_t get_captured_timestamps_count() const;
 	virtual uint64_t get_captured_timestamps_frame() const;
 	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const;
@@ -1080,6 +1078,12 @@ public:
 	virtual RenderingDevice *create_local_device();
 
 	virtual uint64_t get_memory_usage() const;
+
+	virtual void set_resource_name(RID p_id, const String p_name);
+
+	virtual void draw_command_begin_label(String p_label_name, const Color p_color = Color(1, 1, 1, 1));
+	virtual void draw_command_insert_label(String p_label_name, const Color p_color = Color(1, 1, 1, 1));
+	virtual void draw_command_end_label();
 
 	RenderingDeviceVulkan();
 	~RenderingDeviceVulkan();

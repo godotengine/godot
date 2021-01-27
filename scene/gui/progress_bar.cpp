@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,7 +74,7 @@ void ProgressBar::_notification(int p_what) {
 		if (percent_visible) {
 			String txt = TS->format_number(itos(int(get_as_ratio() * 100))) + TS->percent_sign();
 			TextLine tl = TextLine(txt, font, font_size);
-			tl.draw(get_canvas_item(), Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2, font_color);
+			tl.draw(get_canvas_item(), (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round(), font_color);
 		}
 	}
 }

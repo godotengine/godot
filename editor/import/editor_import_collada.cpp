@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/import/collada.h"
+#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -67,7 +68,7 @@ struct ColladaImport {
 
 	Map<String, NodeMap> node_map; //map from collada node to engine node
 	Map<String, String> node_name_map; //map from collada node to engine node
-	Map<String, Ref<ArrayMesh>> mesh_cache;
+	Map<String, Ref<EditorSceneImporterMesh>> mesh_cache;
 	Map<String, Ref<Curve3D>> curve_cache;
 	Map<String, Ref<Material>> material_cache;
 	Map<Collada::Node *, Skeleton3D *> skeleton_map;
@@ -83,7 +84,7 @@ struct ColladaImport {
 	Error _create_scene(Collada::Node *p_node, Node3D *p_parent);
 	Error _create_resources(Collada::Node *p_node, bool p_use_compression);
 	Error _create_material(const String &p_target);
-	Error _create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ArrayMesh>> p_morph_meshes = Vector<Ref<ArrayMesh>>(), bool p_use_compression = false, bool p_use_mesh_material = false);
+	Error _create_mesh_surfaces(bool p_optimize, Ref<EditorSceneImporterMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<EditorSceneImporterMesh>> p_morph_meshes = Vector<Ref<EditorSceneImporterMesh>>(), bool p_use_compression = false, bool p_use_mesh_material = false);
 	Error load(const String &p_path, int p_flags, bool p_force_make_tangents = false, bool p_use_compression = false);
 	void _fix_param_animation_tracks();
 	void create_animation(int p_clip, bool p_make_tracks_in_all_bones, bool p_import_value_tracks);
@@ -278,8 +279,8 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Node3D *p_parent) {
 				node = memnew(Path3D);
 			} else {
 				//mesh since nothing else
-				node = memnew(MeshInstance3D);
-				//Object::cast_to<MeshInstance3D>(node)->set_flag(GeometryInstance3D::FLAG_USE_BAKED_LIGHT, true);
+				node = memnew(EditorSceneImporterMeshNode3D);
+				//Object::cast_to<EditorSceneImporterMeshNode3D>(node)->set_flag(GeometryInstance3D::FLAG_USE_BAKED_LIGHT, true);
 			}
 		} break;
 		case Collada::Node::TYPE_SKELETON: {
@@ -440,7 +441,7 @@ Error ColladaImport::_create_material(const String &p_target) {
 	return OK;
 }
 
-Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ArrayMesh>> p_morph_meshes, bool p_use_compression, bool p_use_mesh_material) {
+Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<EditorSceneImporterMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<EditorSceneImporterMesh>> p_morph_meshes, bool p_use_compression, bool p_use_mesh_material) {
 	bool local_xform_mirror = p_local_xform.basis.determinant() < 0;
 
 	if (p_morph_data) {
@@ -457,9 +458,9 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 			p_mesh->add_blend_shape(name);
 		}
 		if (p_morph_data->mode == "RELATIVE") {
-			p_mesh->set_blend_shape_mode(ArrayMesh::BLEND_SHAPE_MODE_RELATIVE);
+			p_mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_RELATIVE);
 		} else if (p_morph_data->mode == "NORMALIZED") {
-			p_mesh->set_blend_shape_mode(ArrayMesh::BLEND_SHAPE_MODE_NORMALIZED);
+			p_mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
 		}
 	}
 
@@ -897,7 +898,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 			////////////////////////////
 
 			for (int mi = 0; mi < p_morph_meshes.size(); mi++) {
-				Array a = p_morph_meshes[mi]->surface_get_arrays(surface);
+				Array a = p_morph_meshes[mi]->get_surface_arrays(surface);
 				//add valid weight and bone arrays if they exist, TODO check if they are unique to shape (generally not)
 
 				if (has_weights) {
@@ -910,14 +911,15 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 				mr.push_back(a);
 			}
 
-			p_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, d, mr, Dictionary(), 0);
-
+			String surface_name;
+			Ref<Material> mat;
 			if (material.is_valid()) {
 				if (p_use_mesh_material) {
-					p_mesh->surface_set_material(surface, material);
+					mat = material;
 				}
-				p_mesh->surface_set_name(surface, material->get_name());
+				surface_name = material->get_name();
 			}
+			p_mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES, d, mr, Dictionary(), mat, surface_name);
 		}
 
 		/*****************/
@@ -1002,10 +1004,10 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 			}
 		}
 
-		if (Object::cast_to<MeshInstance3D>(node)) {
+		if (Object::cast_to<EditorSceneImporterMeshNode3D>(node)) {
 			Collada::NodeGeometry *ng2 = static_cast<Collada::NodeGeometry *>(p_node);
 
-			MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(node);
+			EditorSceneImporterMeshNode3D *mi = Object::cast_to<EditorSceneImporterMeshNode3D>(node);
 
 			ERR_FAIL_COND_V(!mi, ERR_BUG);
 
@@ -1014,7 +1016,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 			String meshid;
 			Transform apply_xform;
 			Vector<int> bone_remap;
-			Vector<Ref<ArrayMesh>> morphs;
+			Vector<Ref<EditorSceneImporterMesh>> morphs;
 
 			if (ng2->controller) {
 				String ngsource = ng2->source;
@@ -1025,7 +1027,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 
 					Vector<String> skeletons = ng2->skeletons;
 
-					ERR_FAIL_COND_V(skeletons.empty(), ERR_INVALID_DATA);
+					ERR_FAIL_COND_V(skeletons.is_empty(), ERR_INVALID_DATA);
 
 					String skname = skeletons[0];
 					ERR_FAIL_COND_V(!node_map.has(skname), ERR_INVALID_DATA);
@@ -1083,10 +1085,10 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 							for (int i = 0; i < names.size(); i++) {
 								String meshid2 = names[i];
 								if (collada.state.mesh_data_map.has(meshid2)) {
-									Ref<ArrayMesh> mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+									Ref<EditorSceneImporterMesh> mesh = Ref<EditorSceneImporterMesh>(memnew(EditorSceneImporterMesh));
 									const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid2];
 									mesh->set_name(meshdata.name);
-									Error err = _create_mesh_surfaces(false, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, nullptr, Vector<Ref<ArrayMesh>>(), false);
+									Error err = _create_mesh_surfaces(false, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, nullptr, Vector<Ref<EditorSceneImporterMesh>>(), false);
 									ERR_FAIL_COND_V(err, err);
 
 									morphs.push_back(mesh);
@@ -1109,7 +1111,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 				meshid = ng2->source;
 			}
 
-			Ref<ArrayMesh> mesh;
+			Ref<EditorSceneImporterMesh> mesh;
 			if (mesh_cache.has(meshid)) {
 				mesh = mesh_cache[meshid];
 			} else {
@@ -1117,7 +1119,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					//bleh, must ignore invalid
 
 					ERR_FAIL_COND_V(!collada.state.mesh_data_map.has(meshid), ERR_INVALID_DATA);
-					mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+					mesh = Ref<EditorSceneImporterMesh>(memnew(EditorSceneImporterMesh));
 					const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
 					mesh->set_name(meshdata.name);
 					Error err = _create_mesh_surfaces(morphs.size() == 0, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, morph, morphs, p_use_compression, use_mesh_builtin_materials);
@@ -1469,7 +1471,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				}
 
 				Vector<float> data = at.get_value_at_time(snapshots[i]);
-				ERR_CONTINUE(data.empty());
+				ERR_CONTINUE(data.is_empty());
 
 				Collada::Node::XForm &xf = cn->xform_list.write[xform_idx];
 

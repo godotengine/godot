@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -701,7 +701,7 @@ CSGPrimitive3D::CSGPrimitive3D() {
 
 CSGBrush *CSGMesh3D::_build_brush() {
 	if (!mesh.is_valid()) {
-		return nullptr;
+		return memnew(CSGBrush);
 	}
 
 	Vector<Vector3> vertices;
@@ -719,7 +719,7 @@ CSGBrush *CSGMesh3D::_build_brush() {
 
 		if (arrays.size() == 0) {
 			_make_dirty();
-			ERR_FAIL_COND_V(arrays.size() == 0, nullptr);
+			ERR_FAIL_COND_V(arrays.size() == 0, memnew(CSGBrush));
 		}
 
 		Vector<Vector3> avertices = arrays[Mesh::ARRAY_VERTEX];
@@ -840,7 +840,7 @@ CSGBrush *CSGMesh3D::_build_brush() {
 	}
 
 	if (vertices.size() == 0) {
-		return nullptr;
+		return memnew(CSGBrush);
 	}
 
 	return _create_brush_from_arrays(vertices, uvs, smooth, materials);
@@ -1125,7 +1125,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 		int face = 0;
 
-		Vector3 vertex_mul(width * 0.5, height * 0.5, depth * 0.5);
+		Vector3 vertex_mul = size / 2;
 
 		{
 			for (int i = 0; i < 6; i++) {
@@ -1194,55 +1194,25 @@ CSGBrush *CSGBox3D::_build_brush() {
 }
 
 void CSGBox3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_width", "width"), &CSGBox3D::set_width);
-	ClassDB::bind_method(D_METHOD("get_width"), &CSGBox3D::get_width);
-
-	ClassDB::bind_method(D_METHOD("set_height", "height"), &CSGBox3D::set_height);
-	ClassDB::bind_method(D_METHOD("get_height"), &CSGBox3D::get_height);
-
-	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &CSGBox3D::set_depth);
-	ClassDB::bind_method(D_METHOD("get_depth"), &CSGBox3D::get_depth);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &CSGBox3D::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &CSGBox3D::get_size);
 
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGBox3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGBox3D::get_material);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_width", "get_width");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_height", "get_height");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_depth", "get_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "StandardMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
-void CSGBox3D::set_width(const float p_width) {
-	width = p_width;
+void CSGBox3D::set_size(const Vector3 &p_size) {
+	size = p_size;
 	_make_dirty();
 	update_gizmo();
-	_change_notify("width");
+	_change_notify("size");
 }
 
-float CSGBox3D::get_width() const {
-	return width;
-}
-
-void CSGBox3D::set_height(const float p_height) {
-	height = p_height;
-	_make_dirty();
-	update_gizmo();
-	_change_notify("height");
-}
-
-float CSGBox3D::get_height() const {
-	return height;
-}
-
-void CSGBox3D::set_depth(const float p_depth) {
-	depth = p_depth;
-	_make_dirty();
-	update_gizmo();
-	_change_notify("depth");
-}
-
-float CSGBox3D::get_depth() const {
-	return depth;
+Vector3 CSGBox3D::get_size() const {
+	return size;
 }
 
 void CSGBox3D::set_material(const Ref<Material> &p_material) {
@@ -1253,13 +1223,6 @@ void CSGBox3D::set_material(const Ref<Material> &p_material) {
 
 Ref<Material> CSGBox3D::get_material() const {
 	return material;
-}
-
-CSGBox3D::CSGBox3D() {
-	// defaults
-	width = 2.0;
-	height = 2.0;
-	depth = 2.0;
 }
 
 ///////////////
@@ -1502,7 +1465,7 @@ CSGBrush *CSGTorus3D::_build_brush() {
 	float max_radius = outer_radius;
 
 	if (min_radius == max_radius) {
-		return nullptr; //sorry, can't
+		return memnew(CSGBrush); //sorry, can't
 	}
 
 	if (min_radius > max_radius) {
@@ -1721,7 +1684,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 	// set our bounding box
 
 	if (polygon.size() < 3) {
-		return nullptr;
+		return memnew(CSGBrush);
 	}
 
 	Vector<Point2> final_polygon = polygon;
@@ -1733,7 +1696,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 	Vector<int> triangles = Geometry2D::triangulate_polygon(final_polygon);
 
 	if (triangles.size() < 3) {
-		return nullptr;
+		return memnew(CSGBrush);
 	}
 
 	Path3D *path = nullptr;
@@ -1767,15 +1730,15 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 	if (mode == MODE_PATH) {
 		if (!has_node(path_node)) {
-			return nullptr;
+			return memnew(CSGBrush);
 		}
 		Node *n = get_node(path_node);
 		if (!n) {
-			return nullptr;
+			return memnew(CSGBrush);
 		}
 		path = Object::cast_to<Path3D>(n);
 		if (!path) {
-			return nullptr;
+			return memnew(CSGBrush);
 		}
 
 		if (path != path_cache) {
@@ -1793,10 +1756,10 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 		}
 		curve = path->get_curve();
 		if (curve.is_null()) {
-			return nullptr;
+			return memnew(CSGBrush);
 		}
 		if (curve->get_baked_length() <= 0) {
-			return nullptr;
+			return memnew(CSGBrush);
 		}
 	}
 	CSGBrush *brush = memnew(CSGBrush);

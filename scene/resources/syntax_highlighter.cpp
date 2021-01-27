@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -552,7 +552,7 @@ Dictionary CodeHighlighter::get_color_regions() const {
 	Dictionary r_color_regions;
 	for (int i = 0; i < color_regions.size(); i++) {
 		ColorRegion region = color_regions[i];
-		r_color_regions[region.start_key + (region.end_key.empty() ? "" : " " + region.end_key)] = region.color;
+		r_color_regions[region.start_key + (region.end_key.is_empty() ? "" : " " + region.end_key)] = region.color;
 	}
 	return r_color_regions;
 }

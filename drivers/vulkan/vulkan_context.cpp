@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,10 +55,29 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
 		return VK_FALSE;
 	}
 	// This needs to be ignored because Validator is wrong here.
+	if (strstr(pCallbackData->pMessage, "Invalid SPIR-V binary version 1.3") != nullptr) {
+		return VK_FALSE;
+	}
+	// This needs to be ignored because Validator is wrong here.
+	if (strstr(pCallbackData->pMessage, "Shader requires flag") != nullptr) {
+		return VK_FALSE;
+	}
+
+	// This needs to be ignored because Validator is wrong here.
 	if (strstr(pCallbackData->pMessage, "SPIR-V module not valid: Pointer operand") != nullptr &&
 			strstr(pCallbackData->pMessage, "must be a memory object") != nullptr) {
 		return VK_FALSE;
 	}
+	/*
+	// This is a valid warning because its illegal in Vulkan, but in practice it should work according to VK_KHR_maintenance2
+	if (strstr(pCallbackData->pMessage, "VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 with tiling VK_IMAGE_TILING_OPTIMAL does not support usage that includes VK_IMAGE_USAGE_STORAGE_BIT") != nullptr) {
+		return VK_FALSE;
+	}
+
+	if (strstr(pCallbackData->pMessage, "VK_FORMAT_R4G4B4A4_UNORM_PACK16 with tiling VK_IMAGE_TILING_OPTIMAL does not support usage that includes VK_IMAGE_USAGE_STORAGE_BIT") != nullptr) {
+		return VK_FALSE;
+	}
+*/
 	// Workaround for Vulkan-Loader usability bug: https://github.com/KhronosGroup/Vulkan-Loader/issues/262.
 	if (strstr(pCallbackData->pMessage, "wrong ELF class: ELFCLASS32") != nullptr) {
 		return VK_FALSE;
@@ -220,6 +239,7 @@ Error VulkanContext::_initialize_extensions() {
 
 	enabled_extension_count = 0;
 	enabled_layer_count = 0;
+	enabled_debug_utils = false;
 	/* Look for instance extensions */
 	VkBool32 surfaceExtFound = 0;
 	VkBool32 platformSurfaceExtFound = 0;
@@ -251,9 +271,8 @@ Error VulkanContext::_initialize_extensions() {
 				}
 			}
 			if (!strcmp(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, instance_extensions[i].extensionName)) {
-				if (use_validation_layers) {
-					extension_names[enabled_extension_count++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
-				}
+				extension_names[enabled_extension_count++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+				enabled_debug_utils = true;
 			}
 			if (enabled_extension_count >= MAX_EXTENSIONS) {
 				free(instance_extensions);
@@ -436,7 +455,7 @@ Error VulkanContext::_create_physical_device() {
 			" extension.\n\nDo you have a compatible Vulkan installable client driver (ICD) installed?\n"
 			"vkCreateInstance Failure");
 
-	if (use_validation_layers) {
+	if (enabled_debug_utils) {
 		// Setup VK_EXT_debug_utils function pointers always (we use them for
 		// debug labels and names).
 		CreateDebugUtilsMessengerEXT =
@@ -492,6 +511,8 @@ Error VulkanContext::_create_physical_device() {
 	//  If app has specific feature requirements it should check supported
 	//  features based on this query
 	vkGetPhysicalDeviceFeatures(gpu, &physical_device_features);
+
+	physical_device_features.robustBufferAccess = false; //turn off robust buffer access, which can hamper performance on some hardware
 
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                                            \
 	{                                                                                       \
@@ -1563,6 +1584,57 @@ void VulkanContext::local_device_free(RID p_local_device) {
 	LocalDevice *ld = local_device_owner.getornull(p_local_device);
 	vkDestroyDevice(ld->device, nullptr);
 	local_device_owner.free(p_local_device);
+}
+
+void VulkanContext::command_begin_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color) {
+	if (!enabled_debug_utils) {
+		return;
+	}
+	VkDebugUtilsLabelEXT label;
+	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+	label.pNext = nullptr;
+	label.pLabelName = p_label_name.utf8().get_data();
+	label.color[0] = p_color[0];
+	label.color[1] = p_color[1];
+	label.color[2] = p_color[2];
+	label.color[3] = p_color[3];
+	CmdBeginDebugUtilsLabelEXT(p_command_buffer, &label);
+}
+
+void VulkanContext::command_insert_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color) {
+	if (!enabled_debug_utils) {
+		return;
+	}
+	VkDebugUtilsLabelEXT label;
+	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+	label.pNext = nullptr;
+	label.pLabelName = p_label_name.utf8().get_data();
+	label.color[0] = p_color[0];
+	label.color[1] = p_color[1];
+	label.color[2] = p_color[2];
+	label.color[3] = p_color[3];
+	CmdInsertDebugUtilsLabelEXT(p_command_buffer, &label);
+}
+
+void VulkanContext::command_end_label(VkCommandBuffer p_command_buffer) {
+	if (!enabled_debug_utils) {
+		return;
+	}
+	CmdEndDebugUtilsLabelEXT(p_command_buffer);
+}
+
+void VulkanContext::set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name) {
+	if (!enabled_debug_utils) {
+		return;
+	}
+	VkDebugUtilsObjectNameInfoEXT name_info;
+	name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+	name_info.pNext = nullptr;
+	name_info.objectType = p_object_type;
+	name_info.objectHandle = p_object_handle;
+	CharString object_name = p_object_name.utf8();
+	name_info.pObjectName = object_name.get_data();
+	SetDebugUtilsObjectNameEXT(device, &name_info);
 }
 
 VulkanContext::VulkanContext() {

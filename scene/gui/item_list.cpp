@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,7 +50,7 @@ void ItemList::_shape(int p_idx) {
 	}
 }
 
-void ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, bool p_selectable) {
+int ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, bool p_selectable) {
 	Item item;
 	item.icon = p_texture;
 	item.icon_transposed = false;
@@ -64,14 +64,16 @@ void ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, b
 	item.tooltip_enabled = true;
 	item.custom_bg = Color(0, 0, 0, 0);
 	items.push_back(item);
+	int item_id = items.size() - 1;
 
 	_shape(items.size() - 1);
 
 	update();
 	shape_changed = true;
+	return item_id;
 }
 
-void ItemList::add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable) {
+int ItemList::add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable) {
 	Item item;
 	item.icon = p_item;
 	item.icon_transposed = false;
@@ -85,9 +87,11 @@ void ItemList::add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable) {
 	item.tooltip_enabled = true;
 	item.custom_bg = Color(0, 0, 0, 0);
 	items.push_back(item);
+	int item_id = items.size() - 1;
 
 	update();
 	shape_changed = true;
+	return item_id;
 }
 
 void ItemList::set_item_text(int p_idx, const String &p_text) {
@@ -333,7 +337,7 @@ void ItemList::select(int p_idx, bool p_single) {
 	update();
 }
 
-void ItemList::unselect(int p_idx) {
+void ItemList::deselect(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	if (select_mode != SELECT_MULTI) {
@@ -345,7 +349,7 @@ void ItemList::unselect(int p_idx) {
 	update();
 }
 
-void ItemList::unselect_all() {
+void ItemList::deselect_all() {
 	if (items.size() < 1) {
 		return;
 	}
@@ -573,7 +577,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 			int i = closest;
 
 			if (select_mode == SELECT_MULTI && items[i].selected && mb->get_command()) {
-				unselect(i);
+				deselect(i);
 				emit_signal("multi_selected", i, false);
 
 			} else if (select_mode == SELECT_MULTI && mb->get_shift() && current >= 0 && current < items.size() && current != i) {
@@ -759,7 +763,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					select(current, false);
 					emit_signal("multi_selected", current, true);
 				} else if (items[current].selected) {
-					unselect(current);
+					deselect(current);
 					emit_signal("multi_selected", current, false);
 				}
 			}
@@ -861,10 +865,10 @@ void ItemList::_notification(int p_what) {
 		Ref<StyleBox> bg = get_theme_stylebox("bg");
 
 		int mw = scroll_bar->get_minimum_size().x;
-		scroll_bar->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -mw);
-		scroll_bar->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
-		scroll_bar->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, bg->get_margin(MARGIN_TOP));
-		scroll_bar->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -bg->get_margin(MARGIN_BOTTOM));
+		scroll_bar->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -mw);
+		scroll_bar->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
+		scroll_bar->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, bg->get_margin(SIDE_TOP));
+		scroll_bar->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -bg->get_margin(SIDE_BOTTOM));
 
 		Size2 size = get_size();
 
@@ -886,7 +890,7 @@ void ItemList::_notification(int p_what) {
 
 		Color guide_color = get_theme_color("guide_color");
 		Color font_color = get_theme_color("font_color");
-		Color font_color_selected = get_theme_color("font_color_selected");
+		Color font_selected_color = get_theme_color("font_selected_color");
 
 		if (has_focus()) {
 			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
@@ -1184,7 +1188,7 @@ void ItemList::_notification(int p_what) {
 					max_len = size2.x;
 				}
 
-				Color modulate = items[i].selected ? font_color_selected : (items[i].custom_fg != Color() ? items[i].custom_fg : font_color);
+				Color modulate = items[i].selected ? font_selected_color : (items[i].custom_fg != Color() ? items[i].custom_fg : font_color);
 				if (items[i].disabled) {
 					modulate.a *= 0.5;
 				}
@@ -1270,7 +1274,7 @@ void ItemList::_notification(int p_what) {
 			}
 
 			const int y = base_ofs.y + separators[i];
-			draw_line(Vector2(bg->get_margin(MARGIN_LEFT), y), Vector2(width, y), guide_color);
+			draw_line(Vector2(bg->get_margin(SIDE_LEFT), y), Vector2(width, y), guide_color);
 		}
 	}
 }
@@ -1314,7 +1318,7 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 }
 
 bool ItemList::is_pos_at_end_of_items(const Point2 &p_pos) const {
-	if (items.empty()) {
+	if (items.is_empty()) {
 		return true;
 	}
 
@@ -1519,8 +1523,8 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &ItemList::get_item_tooltip);
 
 	ClassDB::bind_method(D_METHOD("select", "idx", "single"), &ItemList::select, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("unselect", "idx"), &ItemList::unselect);
-	ClassDB::bind_method(D_METHOD("unselect_all"), &ItemList::unselect_all);
+	ClassDB::bind_method(D_METHOD("deselect", "idx"), &ItemList::deselect);
+	ClassDB::bind_method(D_METHOD("deselect_all"), &ItemList::deselect_all);
 
 	ClassDB::bind_method(D_METHOD("is_selected", "idx"), &ItemList::is_selected);
 	ClassDB::bind_method(D_METHOD("get_selected_items"), &ItemList::get_selected_items);

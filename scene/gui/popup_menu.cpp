@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -72,9 +72,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		}
 
 		size.width += items[i].text_buf->get_size().x;
-		if (i > 0) {
-			size.height += vseparation;
-		}
+		size.height += vseparation;
 
 		if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->is_valid())) {
 			int accel_w = hseparation * 2;
@@ -152,9 +150,7 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	}
 
 	for (int i = 0; i < items.size(); i++) {
-		if (i > 0) {
-			ofs.y += vseparation;
-		}
+		ofs.y += i > 0 ? vseparation : (float)vseparation / 2;
 
 		ofs.y += MAX(items[i].get_icon_size().height, items[i].text_buf->get_size().y);
 
@@ -475,10 +471,10 @@ void PopupMenu::_draw_items() {
 	int vseparation = get_theme_constant("vseparation");
 	int hseparation = get_theme_constant("hseparation");
 	Color font_color = get_theme_color("font_color");
-	Color font_color_disabled = get_theme_color("font_color_disabled");
-	Color font_color_accel = get_theme_color("font_color_accel");
-	Color font_color_hover = get_theme_color("font_color_hover");
-	Color font_color_separator = get_theme_color("font_color_separator");
+	Color font_disabled_color = get_theme_color("font_disabled_color");
+	Color font_accelerator_color = get_theme_color("font_accelerator_color");
+	Color font_hover_color = get_theme_color("font_hover_color");
+	Color font_separator_color = get_theme_color("font_separator_color");
 
 	float scroll_width = scroll_container->get_v_scrollbar()->is_visible_in_tree() ? scroll_container->get_v_scrollbar()->get_size().width : 0;
 	float display_width = control->get_size().width - scroll_width;
@@ -506,10 +502,8 @@ void PopupMenu::_draw_items() {
 
 	// Loop through all items and draw each.
 	for (int i = 0; i < items.size(); i++) {
-		// If not the first item, add the separation space between items.
-		if (i > 0) {
-			ofs.y += vseparation;
-		}
+		// For the first item only add half a separation. For all other items, add a whole separation to the offset.
+		ofs.y += i > 0 ? vseparation : (float)vseparation / 2;
 
 		_shape_item(i);
 
@@ -519,9 +513,9 @@ void PopupMenu::_draw_items() {
 
 		if (i == mouse_over) {
 			if (rtl) {
-				hover->draw(ci, Rect2(item_ofs + Point2(-hseparation + scroll_width, -vseparation / 2), Size2(display_width + hseparation * 2, h + vseparation)));
+				hover->draw(ci, Rect2(item_ofs + Point2(scroll_width, -vseparation / 2), Size2(display_width, h + vseparation)));
 			} else {
-				hover->draw(ci, Rect2(item_ofs + Point2(-hseparation, -vseparation / 2), Size2(display_width + hseparation * 2, h + vseparation)));
+				hover->draw(ci, Rect2(item_ofs + Point2(0, -vseparation / 2), Size2(display_width, h + vseparation)));
 			}
 		}
 
@@ -571,9 +565,9 @@ void PopupMenu::_draw_items() {
 		// Submenu arrow on right hand side
 		if (items[i].submenu != "") {
 			if (rtl) {
-				submenu->draw(ci, Point2(scroll_width + style->get_margin(MARGIN_LEFT), item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
+				submenu->draw(ci, Point2(scroll_width + style->get_margin(SIDE_LEFT), item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
 			} else {
-				submenu->draw(ci, Point2(display_width - style->get_margin(MARGIN_RIGHT) - submenu->get_width(), item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
+				submenu->draw(ci, Point2(display_width - style->get_margin(SIDE_RIGHT) - submenu->get_width(), item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
 			}
 		}
 
@@ -581,25 +575,25 @@ void PopupMenu::_draw_items() {
 		if (items[i].separator) {
 			if (text != String()) {
 				int center = (display_width - items[i].text_buf->get_size().width) / 2;
-				items[i].text_buf->draw(ci, Point2(center, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0)), font_color_separator);
+				items[i].text_buf->draw(ci, Point2(center, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0)), font_separator_color);
 			}
 		} else {
 			item_ofs.x += icon_ofs + check_ofs;
 			if (rtl) {
-				items[i].text_buf->draw(ci, Size2(control->get_size().width - items[i].text_buf->get_size().width - item_ofs.x, item_ofs.y) + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0)), items[i].disabled ? font_color_disabled : (i == mouse_over ? font_color_hover : font_color));
+				items[i].text_buf->draw(ci, Size2(control->get_size().width - items[i].text_buf->get_size().width - item_ofs.x, item_ofs.y) + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0)), items[i].disabled ? font_disabled_color : (i == mouse_over ? font_hover_color : font_color));
 			} else {
-				items[i].text_buf->draw(ci, item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0)), items[i].disabled ? font_color_disabled : (i == mouse_over ? font_color_hover : font_color));
+				items[i].text_buf->draw(ci, item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0)), items[i].disabled ? font_disabled_color : (i == mouse_over ? font_hover_color : font_color));
 			}
 		}
 
 		// Accelerator / Shortcut
 		if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->is_valid())) {
 			if (rtl) {
-				item_ofs.x = scroll_width + style->get_margin(MARGIN_LEFT);
+				item_ofs.x = scroll_width + style->get_margin(SIDE_LEFT);
 			} else {
-				item_ofs.x = display_width - style->get_margin(MARGIN_RIGHT) - items[i].accel_text_buf->get_size().x;
+				item_ofs.x = display_width - style->get_margin(SIDE_RIGHT) - items[i].accel_text_buf->get_size().x;
 			}
-			items[i].accel_text_buf->draw(ci, item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0)), i == mouse_over ? font_color_hover : font_color_accel);
+			items[i].accel_text_buf->draw(ci, item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0)), i == mouse_over ? font_hover_color : font_accelerator_color);
 		}
 
 		// Cache the item vertical offset from the first item and the height
@@ -745,10 +739,10 @@ void PopupMenu::_notification(int p_what) {
 
 				// Set margin on the margin container
 				Ref<StyleBox> panel_style = get_theme_stylebox("panel");
-				margin_container->add_theme_constant_override("margin_top", panel_style->get_margin(Margin::MARGIN_TOP));
-				margin_container->add_theme_constant_override("margin_bottom", panel_style->get_margin(Margin::MARGIN_BOTTOM));
-				margin_container->add_theme_constant_override("margin_left", panel_style->get_margin(Margin::MARGIN_LEFT));
-				margin_container->add_theme_constant_override("margin_right", panel_style->get_margin(Margin::MARGIN_RIGHT));
+				margin_container->add_theme_constant_override("margin_top", panel_style->get_margin(Side::SIDE_TOP));
+				margin_container->add_theme_constant_override("margin_bottom", panel_style->get_margin(Side::SIDE_BOTTOM));
+				margin_container->add_theme_constant_override("margin_left", panel_style->get_margin(Side::SIDE_LEFT));
+				margin_container->add_theme_constant_override("margin_right", panel_style->get_margin(Side::SIDE_RIGHT));
 			}
 		} break;
 	}
@@ -1349,10 +1343,10 @@ void PopupMenu::remove_item(int p_idx) {
 	child_controls_changed();
 }
 
-void PopupMenu::add_separator(const String &p_text) {
+void PopupMenu::add_separator(const String &p_text, int p_id) {
 	Item sep;
 	sep.separator = true;
-	sep.id = -1;
+	sep.id = p_id;
 	if (p_text != String()) {
 		sep.text = p_text;
 		sep.xl_text = tr(p_text);
@@ -1600,7 +1594,7 @@ void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &PopupMenu::remove_item);
 
-	ClassDB::bind_method(D_METHOD("add_separator", "label"), &PopupMenu::add_separator, DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("add_separator", "label", "id"), &PopupMenu::add_separator, DEFVAL(String()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("clear"), &PopupMenu::clear);
 
 	ClassDB::bind_method(D_METHOD("_set_items"), &PopupMenu::_set_items);
@@ -1636,14 +1630,13 @@ void PopupMenu::_bind_methods() {
 void PopupMenu::popup(const Rect2 &p_bounds) {
 	moved = Vector2();
 	popup_time_msec = OS::get_singleton()->get_ticks_msec();
-	set_as_minsize();
 	Popup::popup(p_bounds);
 }
 
 PopupMenu::PopupMenu() {
 	// Margin Container
 	margin_container = memnew(MarginContainer);
-	margin_container->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	margin_container->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	add_child(margin_container);
 	margin_container->connect("draw", callable_mp(this, &PopupMenu::_draw_background));
 
@@ -1655,7 +1648,7 @@ PopupMenu::PopupMenu() {
 	// The control which will display the items
 	control = memnew(Control);
 	control->set_clip_contents(false);
-	control->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	control->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	control->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	scroll_container->add_child(control);

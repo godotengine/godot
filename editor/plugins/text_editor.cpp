@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -96,7 +96,7 @@ void TextEditor::_load_theme_settings() {
 	text_edit->add_theme_color_override("line_number_color", line_number_color);
 	text_edit->add_theme_color_override("caret_color", caret_color);
 	text_edit->add_theme_color_override("caret_background_color", caret_background_color);
-	text_edit->add_theme_color_override("font_color_selected", text_selected_color);
+	text_edit->add_theme_color_override("font_selected_color", text_selected_color);
 	text_edit->add_theme_color_override("selection_color", selection_color);
 	text_edit->add_theme_color_override("brace_mismatch_color", brace_mismatch_color);
 	text_edit->add_theme_color_override("current_line_color", current_line_color);
@@ -119,7 +119,7 @@ String TextEditor::get_name() {
 	if (text_file->get_path().find("local://") == -1 && text_file->get_path().find("::") == -1) {
 		name = text_file->get_path().get_file();
 		if (is_unsaved()) {
-			if (text_file->get_path().empty()) {
+			if (text_file->get_path().is_empty()) {
 				name = TTR("[unsaved]");
 			}
 			name += "(*)";
@@ -242,7 +242,7 @@ void TextEditor::apply_code() {
 bool TextEditor::is_unsaved() {
 	const bool unsaved =
 			code_editor->get_text_editor()->get_version() != code_editor->get_text_editor()->get_saved_version() ||
-			text_file->get_path().empty(); // In memory.
+			text_file->get_path().is_empty(); // In memory.
 	return unsaved;
 }
 
@@ -548,7 +548,7 @@ TextEditor::TextEditor() {
 	code_editor->add_theme_constant_override("separation", 0);
 	code_editor->connect("load_theme_settings", callable_mp(this, &TextEditor::_load_theme_settings));
 	code_editor->connect("validate_script", callable_mp(this, &TextEditor::_validate_script));
-	code_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	code_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	code_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	update_settings();

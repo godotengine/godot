@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -331,7 +331,7 @@ Dictionary EditorData::get_editor_states() const {
 	Dictionary metadata;
 	for (int i = 0; i < editor_plugins.size(); i++) {
 		Dictionary state = editor_plugins[i]->get_state();
-		if (state.empty()) {
+		if (state.is_empty()) {
 			continue;
 		}
 		metadata[editor_plugins[i]->get_name()] = state;
@@ -468,24 +468,25 @@ void EditorData::add_custom_type(const String &p_type, const String &p_inherits,
 	custom_types[p_inherits].push_back(ct);
 }
 
-Object *EditorData::instance_custom_type(const String &p_type, const String &p_inherits) {
+Variant EditorData::instance_custom_type(const String &p_type, const String &p_inherits) {
 	if (get_custom_types().has(p_inherits)) {
 		for (int i = 0; i < get_custom_types()[p_inherits].size(); i++) {
 			if (get_custom_types()[p_inherits][i].name == p_type) {
 				Ref<Script> script = get_custom_types()[p_inherits][i].script;
 
-				Object *ob = ClassDB::instance(p_inherits);
-				ERR_FAIL_COND_V(!ob, nullptr);
-				if (ob->is_class("Node")) {
-					ob->call("set_name", p_type);
+				Variant ob = ClassDB::instance(p_inherits);
+				ERR_FAIL_COND_V(!ob, Variant());
+				Node *n = Object::cast_to<Node>(ob);
+				if (n) {
+					n->set_name(p_type);
 				}
-				ob->set_script(script);
+				((Object *)ob)->set_script(script);
 				return ob;
 			}
 		}
 	}
 
-	return nullptr;
+	return Variant();
 }
 
 void EditorData::remove_custom_type(const String &p_type) {
@@ -493,7 +494,7 @@ void EditorData::remove_custom_type(const String &p_type) {
 		for (int i = 0; i < E->get().size(); i++) {
 			if (E->get()[i].name == p_type) {
 				E->get().remove(i);
-				if (E->get().empty()) {
+				if (E->get().is_empty()) {
 					custom_types.erase(E->key());
 				}
 				return;
@@ -867,18 +868,18 @@ StringName EditorData::script_class_get_base(const String &p_class) const {
 	return script->get_language()->get_global_class_name(base_script->get_path());
 }
 
-Object *EditorData::script_class_instance(const String &p_class) {
+Variant EditorData::script_class_instance(const String &p_class) {
 	if (ScriptServer::is_global_class(p_class)) {
-		Object *obj = ClassDB::instance(ScriptServer::get_global_class_native_base(p_class));
+		Variant obj = ClassDB::instance(ScriptServer::get_global_class_native_base(p_class));
 		if (obj) {
 			Ref<Script> script = script_class_load_script(p_class);
 			if (script.is_valid()) {
-				obj->set_script(script);
+				((Object *)obj)->set_script(script);
 			}
 			return obj;
 		}
 	}
-	return nullptr;
+	return Variant();
 }
 
 Ref<Script> EditorData::script_class_load_script(const String &p_class) const {
@@ -901,7 +902,7 @@ String EditorData::script_class_get_icon_path(const String &p_class) const {
 
 	String current = p_class;
 	String ret = _script_class_icon_paths[current];
-	while (ret.empty()) {
+	while (ret.is_empty()) {
 		current = script_class_get_base(current);
 		if (!ScriptServer::is_global_class(current)) {
 			return String();
@@ -931,7 +932,7 @@ void EditorData::script_class_save_icon_paths() {
 		}
 	}
 
-	if (d.empty()) {
+	if (d.is_empty()) {
 		if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
 			ProjectSettings::get_singleton()->clear("_global_script_class_icons");
 		}
@@ -1125,7 +1126,7 @@ List<Node *> EditorSelection::get_full_selected_node_list() {
 }
 
 void EditorSelection::clear() {
-	while (!selection.empty()) {
+	while (!selection.is_empty()) {
 		remove_node(selection.front()->key());
 	}
 

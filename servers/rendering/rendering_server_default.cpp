@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,17 +45,17 @@ int RenderingServerDefault::changes = 0;
 /* BLACK BARS */
 
 void RenderingServerDefault::black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom) {
-	black_margin[MARGIN_LEFT] = p_left;
-	black_margin[MARGIN_TOP] = p_top;
-	black_margin[MARGIN_RIGHT] = p_right;
-	black_margin[MARGIN_BOTTOM] = p_bottom;
+	black_margin[SIDE_LEFT] = p_left;
+	black_margin[SIDE_TOP] = p_top;
+	black_margin[SIDE_RIGHT] = p_right;
+	black_margin[SIDE_BOTTOM] = p_bottom;
 }
 
 void RenderingServerDefault::black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom) {
-	black_image[MARGIN_LEFT] = p_left;
-	black_image[MARGIN_TOP] = p_top;
-	black_image[MARGIN_RIGHT] = p_right;
-	black_image[MARGIN_BOTTOM] = p_bottom;
+	black_image[SIDE_LEFT] = p_left;
+	black_image[SIDE_TOP] = p_top;
+	black_image[SIDE_RIGHT] = p_right;
+	black_image[SIDE_BOTTOM] = p_bottom;
 }
 
 void RenderingServerDefault::_draw_margins() {
@@ -101,11 +101,16 @@ void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 
 	TIMESTAMP_BEGIN()
 
+	uint64_t time_usec = OS::get_singleton()->get_ticks_usec();
+
 	RSG::scene->update(); //update scenes stuff before updating instances
+
+	frame_setup_time = double(OS::get_singleton()->get_ticks_usec() - time_usec) / 1000.0;
 
 	RSG::storage->update_particles(); //need to be done after instances are updated (colliders and particle transforms), and colliders are rendered
 
 	RSG::scene->render_probes();
+
 	RSG::viewport->draw_viewports();
 	RSG::canvas_render->update();
 
@@ -157,6 +162,55 @@ void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 	}
 
 	frame_profile_frame = RSG::storage->get_captured_timestamps_frame();
+
+	if (print_gpu_profile) {
+		if (print_frame_profile_ticks_from == 0) {
+			print_frame_profile_ticks_from = OS::get_singleton()->get_ticks_usec();
+		}
+		float total_time = 0.0;
+
+		for (int i = 0; i < frame_profile.size() - 1; i++) {
+			String name = frame_profile[i].name;
+			if (name[0] == '<' || name[0] == '>') {
+				continue;
+			}
+
+			float time = frame_profile[i + 1].gpu_msec - frame_profile[i].gpu_msec;
+
+			if (name[0] != '<' && name[0] != '>') {
+				if (print_gpu_profile_task_time.has(name)) {
+					print_gpu_profile_task_time[name] += time;
+				} else {
+					print_gpu_profile_task_time[name] = time;
+				}
+			}
+		}
+
+		if (frame_profile.size()) {
+			total_time = frame_profile[frame_profile.size() - 1].gpu_msec;
+		}
+
+		uint64_t ticks_elapsed = OS::get_singleton()->get_ticks_usec() - print_frame_profile_ticks_from;
+		print_frame_profile_frame_count++;
+		if (ticks_elapsed > 1000000) {
+			print_line("GPU PROFILE (total " + rtos(total_time) + "ms): ");
+
+			float print_threshold = 0.01;
+			for (OrderedHashMap<String, float>::Element E = print_gpu_profile_task_time.front(); E; E = E.next()) {
+				float time = E.value() / float(print_frame_profile_frame_count);
+				if (time > print_threshold) {
+					print_line("\t-" + E.key() + ": " + rtos(time) + "ms");
+				}
+			}
+			print_gpu_profile_task_time.clear();
+			print_frame_profile_ticks_from = OS::get_singleton()->get_ticks_usec();
+			print_frame_profile_frame_count = 0;
+		}
+	}
+}
+
+float RenderingServerDefault::get_frame_setup_time_cpu() const {
+	return frame_setup_time;
 }
 
 void RenderingServerDefault::sync() {
@@ -223,6 +277,11 @@ void RenderingServerDefault::sdfgi_set_debug_probe_select(const Vector3 &p_posit
 	RSG::scene->sdfgi_set_debug_probe_select(p_position, p_dir);
 }
 
+void RenderingServerDefault::set_print_gpu_profile(bool p_enable) {
+	RSG::storage->capturing_timestamps = p_enable;
+	print_gpu_profile = p_enable;
+}
+
 RID RenderingServerDefault::get_test_cube() {
 	if (!test_cube.is_valid()) {
 		test_cube = _make_test_cube();
@@ -258,7 +317,7 @@ RenderingServerDefault::RenderingServerDefault() {
 	RSG::rasterizer = RendererCompositor::create();
 	RSG::storage = RSG::rasterizer->get_storage();
 	RSG::canvas_render = RSG::rasterizer->get_canvas();
-	sr->scene_render = RSG::rasterizer->get_scene();
+	sr->set_scene_render(RSG::rasterizer->get_scene());
 
 	frame_profile_frame = 0;
 

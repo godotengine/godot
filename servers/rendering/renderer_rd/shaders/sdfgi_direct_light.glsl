@@ -112,11 +112,23 @@ vec2 octahedron_encode(vec3 n) {
 	return n.xy;
 }
 
+float get_omni_attenuation(float distance, float inv_range, float decay) {
+	float nd = distance * inv_range;
+	nd *= nd;
+	nd *= nd; // nd^4
+	nd = max(1.0 - nd, 0.0);
+	nd *= nd; // nd^2
+	return nd * pow(max(distance, 0.0001), -decay);
+}
+
 void main() {
 	uint voxel_index = uint(gl_GlobalInvocationID.x);
 
 	//used for skipping voxels every N frames
-	voxel_index = params.process_offset + voxel_index * params.process_increment;
+	if (params.process_increment > 1) {
+		voxel_index *= params.process_increment;
+		voxel_index += params.process_offset;
+	}
 
 	if (voxel_index >= dispatch_data.total_count) {
 		return;
@@ -134,9 +146,77 @@ void main() {
 	uint voxel_albedo = process_voxels.data[voxel_index].albedo;
 
 	vec3 albedo = vec3(uvec3(voxel_albedo >> 10, voxel_albedo >> 5, voxel_albedo) & uvec3(0x1F)) / float(0x1F);
-	vec3 light_accum[6];
-
+	vec3 light_accum[6] = vec3[](vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));
 	uint valid_aniso = (voxel_albedo >> 15) & 0x3F;
+
+	const vec3 aniso_dir[6] = vec3[](
+			vec3(1, 0, 0),
+			vec3(0, 1, 0),
+			vec3(0, 0, 1),
+			vec3(-1, 0, 0),
+			vec3(0, -1, 0),
+			vec3(0, 0, -1));
+
+	// Add indirect light first, in order to save computation resources
+#ifdef MODE_PROCESS_DYNAMIC
+	if (params.multibounce) {
+		vec3 pos = (vec3(positioni) + vec3(0.5)) * float(params.probe_axis_size - 1) / params.grid_size;
+		ivec3 probe_base_pos = ivec3(pos);
+
+		float weight_accum[6] = float[](0, 0, 0, 0, 0, 0);
+
+		ivec3 tex_pos = ivec3(probe_base_pos.xy, int(params.cascade));
+		tex_pos.x += probe_base_pos.z * int(params.probe_axis_size);
+
+		tex_pos.xy = tex_pos.xy * (OCT_SIZE + 2) + ivec2(1);
+
+		vec3 base_tex_posf = vec3(tex_pos);
+		vec2 tex_pixel_size = 1.0 / vec2(ivec2((OCT_SIZE + 2) * params.probe_axis_size * params.probe_axis_size, (OCT_SIZE + 2) * params.probe_axis_size));
+		vec3 probe_uv_offset = (ivec3(OCT_SIZE + 2, OCT_SIZE + 2, (OCT_SIZE + 2) * params.probe_axis_size)) * tex_pixel_size.xyx;
+
+		for (uint j = 0; j < 8; j++) {
+			ivec3 offset = (ivec3(j) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1);
+			ivec3 probe_posi = probe_base_pos;
+			probe_posi += offset;
+
+			// Compute weight
+
+			vec3 probe_pos = vec3(probe_posi);
+			vec3 probe_to_pos = pos - probe_pos;
+			vec3 probe_dir = normalize(-probe_to_pos);
+
+			// Compute lightprobe texture position
+
+			vec3 trilinear = vec3(1.0) - abs(probe_to_pos);
+
+			for (uint k = 0; k < 6; k++) {
+				if (bool(valid_aniso & (1 << k))) {
+					vec3 n = aniso_dir[k];
+					float weight = trilinear.x * trilinear.y * trilinear.z * max(0.005, dot(n, probe_dir));
+
+					vec3 tex_posf = base_tex_posf + vec3(octahedron_encode(n) * float(OCT_SIZE), 0.0);
+					tex_posf.xy *= tex_pixel_size;
+
+					vec3 pos_uvw = tex_posf;
+					pos_uvw.xy += vec2(offset.xy) * probe_uv_offset.xy;
+					pos_uvw.x += float(offset.z) * probe_uv_offset.z;
+					vec3 indirect_light = textureLod(sampler2DArray(lightprobe_texture, linear_sampler), pos_uvw, 0.0).rgb;
+
+					light_accum[k] += indirect_light * weight;
+					weight_accum[k] += weight;
+				}
+			}
+		}
+
+		for (uint k = 0; k < 6; k++) {
+			if (weight_accum[k] > 0.0) {
+				light_accum[k] /= weight_accum[k];
+				light_accum[k] *= albedo;
+			}
+		}
+	}
+
+#endif
 
 	{
 		uint rgbe = process_voxels.data[voxel_index].light;
@@ -153,17 +233,9 @@ void main() {
 		uint aniso = process_voxels.data[voxel_index].light_aniso;
 		for (uint i = 0; i < 6; i++) {
 			float strength = ((aniso >> (i * 5)) & 0x1F) / float(0x1F);
-			light_accum[i] = l * strength;
+			light_accum[i] += l * strength;
 		}
 	}
-
-	const vec3 aniso_dir[6] = vec3[](
-			vec3(1, 0, 0),
-			vec3(0, 1, 0),
-			vec3(0, 0, 1),
-			vec3(-1, 0, 0),
-			vec3(0, -1, 0),
-			vec3(0, 0, -1));
 
 	// Raytrace light
 
@@ -184,14 +256,15 @@ void main() {
 				direction = normalize(rel_vec);
 				light_distance = length(rel_vec);
 				rel_vec.y /= params.y_mult;
-				attenuation = pow(clamp(1.0 - length(rel_vec) / lights.data[i].radius, 0.0, 1.0), lights.data[i].attenuation);
+				attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[i].radius, lights.data[i].attenuation);
+
 			} break;
 			case LIGHT_TYPE_SPOT: {
 				vec3 rel_vec = lights.data[i].position - position;
 				direction = normalize(rel_vec);
 				light_distance = length(rel_vec);
 				rel_vec.y /= params.y_mult;
-				attenuation = pow(clamp(1.0 - length(rel_vec) / lights.data[i].radius, 0.0, 1.0), lights.data[i].attenuation);
+				attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[i].radius, lights.data[i].attenuation);
 
 				float angle = acos(dot(normalize(rel_vec), -lights.data[i].direction));
 				if (angle > lights.data[i].spot_angle) {
@@ -278,65 +351,6 @@ void main() {
 				if (bool(valid_aniso & (1 << j))) {
 					light_accum[j] += max(0.0, dot(aniso_dir[j], direction)) * light;
 				}
-			}
-		}
-	}
-
-	// Add indirect light
-
-	if (params.multibounce) {
-		vec3 pos = (vec3(positioni) + vec3(0.5)) * float(params.probe_axis_size - 1) / params.grid_size;
-		ivec3 probe_base_pos = ivec3(pos);
-
-		vec4 probe_accum[6] = vec4[](vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0));
-		float weight_accum[6] = float[](0, 0, 0, 0, 0, 0);
-
-		ivec3 tex_pos = ivec3(probe_base_pos.xy, int(params.cascade));
-		tex_pos.x += probe_base_pos.z * int(params.probe_axis_size);
-
-		tex_pos.xy = tex_pos.xy * (OCT_SIZE + 2) + ivec2(1);
-
-		vec3 base_tex_posf = vec3(tex_pos);
-		vec2 tex_pixel_size = 1.0 / vec2(ivec2((OCT_SIZE + 2) * params.probe_axis_size * params.probe_axis_size, (OCT_SIZE + 2) * params.probe_axis_size));
-		vec3 probe_uv_offset = (ivec3(OCT_SIZE + 2, OCT_SIZE + 2, (OCT_SIZE + 2) * params.probe_axis_size)) * tex_pixel_size.xyx;
-
-		for (uint j = 0; j < 8; j++) {
-			ivec3 offset = (ivec3(j) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1);
-			ivec3 probe_posi = probe_base_pos;
-			probe_posi += offset;
-
-			// Compute weight
-
-			vec3 probe_pos = vec3(probe_posi);
-			vec3 probe_to_pos = pos - probe_pos;
-			vec3 probe_dir = normalize(-probe_to_pos);
-
-			// Compute lightprobe texture position
-
-			vec3 trilinear = vec3(1.0) - abs(probe_to_pos);
-
-			for (uint k = 0; k < 6; k++) {
-				if (bool(valid_aniso & (1 << k))) {
-					vec3 n = aniso_dir[k];
-					float weight = trilinear.x * trilinear.y * trilinear.z * max(0.005, dot(n, probe_dir));
-
-					vec3 tex_posf = base_tex_posf + vec3(octahedron_encode(n) * float(OCT_SIZE), 0.0);
-					tex_posf.xy *= tex_pixel_size;
-
-					vec3 pos_uvw = tex_posf;
-					pos_uvw.xy += vec2(offset.xy) * probe_uv_offset.xy;
-					pos_uvw.x += float(offset.z) * probe_uv_offset.z;
-					vec4 indirect_light = textureLod(sampler2DArray(lightprobe_texture, linear_sampler), pos_uvw, 0.0);
-
-					probe_accum[k] += indirect_light * weight;
-					weight_accum[k] += weight;
-				}
-			}
-		}
-
-		for (uint k = 0; k < 6; k++) {
-			if (weight_accum[k] > 0.0) {
-				light_accum[k] += probe_accum[k].rgb * albedo / weight_accum[k];
 			}
 		}
 	}

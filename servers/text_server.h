@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,11 +74,12 @@ public:
 		GRAPHEME_IS_VALID = 1 << 0, // Glyph is valid.
 		GRAPHEME_IS_RTL = 1 << 1, // Glyph is right-to-left.
 		GRAPHEME_IS_VIRTUAL = 1 << 2, // Glyph is not part of source string (added by fit_to_width function, do not affect caret movement).
-		GRAPHEME_IS_SPACE = 1 << 3, // Is whitespace (for justification).
-		GRAPHEME_IS_BREAK_HARD = 1 << 4, // Is line break (mandatory break, e.g "\n")
-		GRAPHEME_IS_BREAK_SOFT = 1 << 5, // Is line break (optional break, e.g space)
-		GRAPHEME_IS_TAB = 1 << 6, // Is tab or vertical tab
-		GRAPHEME_IS_ELONGATION = 1 << 7 // Elongation (e.g kashida), glyph can be duplicated or truncated to fit line to width.
+		GRAPHEME_IS_SPACE = 1 << 3, // Is whitespace (for justification and word breaks).
+		GRAPHEME_IS_BREAK_HARD = 1 << 4, // Is line break (mandatory break, e.g. "\n").
+		GRAPHEME_IS_BREAK_SOFT = 1 << 5, // Is line break (optional break, e.g. space).
+		GRAPHEME_IS_TAB = 1 << 6, // Is tab or vertical tab.
+		GRAPHEME_IS_ELONGATION = 1 << 7, // Elongation (e.g. kashida), glyph can be duplicated or truncated to fit line to width.
+		GRAPHEME_IS_PUNCTUATION = 1 << 8 // Punctuation (can be used as word break, but not line break or justifiction).
 	};
 
 	enum Hinting {
@@ -94,7 +95,8 @@ public:
 		FEATURE_KASHIDA_JUSTIFICATION = 1 << 3,
 		FEATURE_BREAK_ITERATORS = 1 << 4,
 		FEATURE_FONT_SYSTEM = 1 << 5,
-		FEATURE_USE_SUPPORT_DATA = 1 << 6
+		FEATURE_FONT_VARIABLE = 1 << 6,
+		FEATURE_USE_SUPPORT_DATA = 1 << 7
 	};
 
 	struct Glyph {
@@ -103,7 +105,7 @@ public:
 
 		uint8_t count = 0; // Number of glyphs in the grapheme, set in the first glyph only.
 		uint8_t repeat = 1; // Draw multiple times in the row.
-		uint8_t flags = 0; // Grapheme flags (valid, rtl, virtual), set in the first glyph only.
+		uint16_t flags = 0; // Grapheme flags (valid, rtl, virtual), set in the first glyph only.
 
 		float x_off = 0.f; // Offset from the origin of the glyph on baseline.
 		float y_off = 0.f;
@@ -246,6 +248,10 @@ public:
 	virtual bool font_get_antialiased(RID p_font) const = 0;
 
 	virtual Dictionary font_get_feature_list(RID p_font) const { return Dictionary(); };
+	virtual Dictionary font_get_variation_list(RID p_font) const { return Dictionary(); };
+
+	virtual void font_set_variation(RID p_font, const String &p_name, double p_value){};
+	virtual double font_get_variation(RID p_font, const String &p_name) const { return 0; };
 
 	virtual void font_set_distance_field_hint(RID p_font, bool p_distance_field) = 0;
 	virtual bool font_get_distance_field_hint(RID p_font) const = 0;

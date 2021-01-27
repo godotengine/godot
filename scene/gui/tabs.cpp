@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,11 +38,11 @@
 #include "scene/gui/texture_rect.h"
 
 Size2 Tabs::get_minimum_size() const {
-	Ref<StyleBox> tab_bg = get_theme_stylebox("tab_bg");
-	Ref<StyleBox> tab_fg = get_theme_stylebox("tab_fg");
+	Ref<StyleBox> tab_unselected = get_theme_stylebox("tab_unselected");
+	Ref<StyleBox> tab_selected = get_theme_stylebox("tab_selected");
 	Ref<StyleBox> tab_disabled = get_theme_stylebox("tab_disabled");
 
-	int y_margin = MAX(MAX(tab_bg->get_minimum_size().height, tab_fg->get_minimum_size().height), tab_disabled->get_minimum_size().height);
+	int y_margin = MAX(MAX(tab_unselected->get_minimum_size().height, tab_selected->get_minimum_size().height), tab_disabled->get_minimum_size().height);
 
 	Size2 ms(0, 0);
 
@@ -61,9 +61,9 @@ Size2 Tabs::get_minimum_size() const {
 		if (tabs[i].disabled) {
 			ms.width += tab_disabled->get_minimum_size().width;
 		} else if (current == i) {
-			ms.width += tab_fg->get_minimum_size().width;
+			ms.width += tab_selected->get_minimum_size().width;
 		} else {
-			ms.width += tab_bg->get_minimum_size().width;
+			ms.width += tab_unselected->get_minimum_size().width;
 		}
 
 		if (tabs[i].right_button.is_valid()) {
@@ -71,7 +71,7 @@ Size2 Tabs::get_minimum_size() const {
 			Size2 bms = rb->get_size();
 			bms.width += get_theme_constant("hseparation");
 			ms.width += bms.width;
-			ms.height = MAX(bms.height + tab_bg->get_minimum_size().height, ms.height);
+			ms.height = MAX(bms.height + tab_unselected->get_minimum_size().height, ms.height);
 		}
 
 		if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current)) {
@@ -79,7 +79,7 @@ Size2 Tabs::get_minimum_size() const {
 			Size2 bms = cb->get_size();
 			bms.width += get_theme_constant("hseparation");
 			ms.width += bms.width;
-			ms.height = MAX(bms.height + tab_bg->get_minimum_size().height, ms.height);
+			ms.height = MAX(bms.height + tab_unselected->get_minimum_size().height, ms.height);
 		}
 	}
 
@@ -268,12 +268,12 @@ void Tabs::_notification(int p_what) {
 			_update_cache();
 			RID ci = get_canvas_item();
 
-			Ref<StyleBox> tab_bg = get_theme_stylebox("tab_bg");
-			Ref<StyleBox> tab_fg = get_theme_stylebox("tab_fg");
+			Ref<StyleBox> tab_unselected = get_theme_stylebox("tab_unselected");
+			Ref<StyleBox> tab_selected = get_theme_stylebox("tab_selected");
 			Ref<StyleBox> tab_disabled = get_theme_stylebox("tab_disabled");
-			Color color_fg = get_theme_color("font_color_fg");
-			Color color_bg = get_theme_color("font_color_bg");
-			Color color_disabled = get_theme_color("font_color_disabled");
+			Color font_selected_color = get_theme_color("font_selected_color");
+			Color font_unselected_color = get_theme_color("font_unselected_color");
+			Color font_disabled_color = get_theme_color("font_disabled_color");
 			Ref<Texture2D> close = get_theme_icon("close");
 			Vector2 size = get_size();
 			bool rtl = is_layout_rtl();
@@ -316,13 +316,13 @@ void Tabs::_notification(int p_what) {
 
 				if (tabs[i].disabled) {
 					sb = tab_disabled;
-					col = color_disabled;
+					col = font_disabled_color;
 				} else if (i == current) {
-					sb = tab_fg;
-					col = color_fg;
+					sb = tab_selected;
+					col = font_selected_color;
 				} else {
-					sb = tab_bg;
-					col = color_bg;
+					sb = tab_unselected;
+					col = font_unselected_color;
 				}
 
 				if (w + lsize > limit) {
@@ -341,15 +341,15 @@ void Tabs::_notification(int p_what) {
 				}
 				sb->draw(ci, sb_rect);
 
-				w += sb->get_margin(MARGIN_LEFT);
+				w += sb->get_margin(SIDE_LEFT);
 
 				Size2i sb_ms = sb->get_minimum_size();
 				Ref<Texture2D> icon = tabs[i].icon;
 				if (icon.is_valid()) {
 					if (rtl) {
-						icon->draw(ci, Point2i(size.width - w - icon->get_width(), sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
+						icon->draw(ci, Point2i(size.width - w - icon->get_width(), sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
 					} else {
-						icon->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
+						icon->draw(ci, Point2i(w, sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
 					}
 					if (tabs[i].text != "") {
 						w += icon->get_width() + get_theme_constant("hseparation");
@@ -357,9 +357,9 @@ void Tabs::_notification(int p_what) {
 				}
 
 				if (rtl) {
-					tabs[i].text_buf->draw(ci, Point2i(size.width - w - tabs[i].text_buf->get_size().x, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[i].text_buf->get_size().y) / 2), col);
+					tabs[i].text_buf->draw(ci, Point2i(size.width - w - tabs[i].text_buf->get_size().x, sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[i].text_buf->get_size().y) / 2), col);
 				} else {
-					tabs[i].text_buf->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[i].text_buf->get_size().y) / 2), col);
+					tabs[i].text_buf->draw(ci, Point2i(w, sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[i].text_buf->get_size().y) / 2), col);
 				}
 
 				w += tabs[i].size_text;
@@ -377,7 +377,7 @@ void Tabs::_notification(int p_what) {
 					} else {
 						rb_rect.position.x = w;
 					}
-					rb_rect.position.y = sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - (rb_rect.size.y)) / 2;
+					rb_rect.position.y = sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - (rb_rect.size.y)) / 2;
 
 					if (rb_hover == i) {
 						if (rb_pressing) {
@@ -388,9 +388,9 @@ void Tabs::_notification(int p_what) {
 					}
 
 					if (rtl) {
-						rb->draw(ci, Point2i(size.width - w - rb_rect.size.x + style->get_margin(MARGIN_LEFT), rb_rect.position.y + style->get_margin(MARGIN_TOP)));
+						rb->draw(ci, Point2i(size.width - w - rb_rect.size.x + style->get_margin(SIDE_LEFT), rb_rect.position.y + style->get_margin(SIDE_TOP)));
 					} else {
-						rb->draw(ci, Point2i(w + style->get_margin(MARGIN_LEFT), rb_rect.position.y + style->get_margin(MARGIN_TOP)));
+						rb->draw(ci, Point2i(w + style->get_margin(SIDE_LEFT), rb_rect.position.y + style->get_margin(SIDE_TOP)));
 					}
 					w += rb->get_width();
 					tabs.write[i].rb_rect = rb_rect;
@@ -409,7 +409,7 @@ void Tabs::_notification(int p_what) {
 					} else {
 						cb_rect.position.x = w;
 					}
-					cb_rect.position.y = sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - (cb_rect.size.y)) / 2;
+					cb_rect.position.y = sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - (cb_rect.size.y)) / 2;
 
 					if (!tabs[i].disabled && cb_hover == i) {
 						if (cb_pressing) {
@@ -420,15 +420,15 @@ void Tabs::_notification(int p_what) {
 					}
 
 					if (rtl) {
-						cb->draw(ci, Point2i(size.width - w - cb_rect.size.x + style->get_margin(MARGIN_LEFT), cb_rect.position.y + style->get_margin(MARGIN_TOP)));
+						cb->draw(ci, Point2i(size.width - w - cb_rect.size.x + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
 					} else {
-						cb->draw(ci, Point2i(w + style->get_margin(MARGIN_LEFT), cb_rect.position.y + style->get_margin(MARGIN_TOP)));
+						cb->draw(ci, Point2i(w + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
 					}
 					w += cb->get_width();
 					tabs.write[i].cb_rect = cb_rect;
 				}
 
-				w += sb->get_margin(MARGIN_RIGHT);
+				w += sb->get_margin(SIDE_RIGHT);
 			}
 
 			if (offset > 0 || missing_right) {
@@ -652,8 +652,8 @@ void Tabs::_update_hover() {
 
 void Tabs::_update_cache() {
 	Ref<StyleBox> tab_disabled = get_theme_stylebox("tab_disabled");
-	Ref<StyleBox> tab_bg = get_theme_stylebox("tab_bg");
-	Ref<StyleBox> tab_fg = get_theme_stylebox("tab_fg");
+	Ref<StyleBox> tab_unselected = get_theme_stylebox("tab_unselected");
+	Ref<StyleBox> tab_selected = get_theme_stylebox("tab_selected");
 	Ref<Texture2D> incr = get_theme_icon("increment");
 	Ref<Texture2D> decr = get_theme_icon("decrement");
 	int limit = get_size().width - incr->get_width() - decr->get_width();
@@ -683,15 +683,15 @@ void Tabs::_update_cache() {
 		if (tabs[i].disabled) {
 			sb = tab_disabled;
 		} else if (i == current) {
-			sb = tab_fg;
+			sb = tab_selected;
 		} else {
-			sb = tab_bg;
+			sb = tab_unselected;
 		}
 		int lsize = tabs[i].size_cache;
 		int slen = tabs[i].size_text;
 		if (min_width > 0 && mw > limit && i != current) {
 			if (lsize > m_width) {
-				slen = m_width - (sb->get_margin(MARGIN_LEFT) + sb->get_margin(MARGIN_RIGHT));
+				slen = m_width - (sb->get_margin(SIDE_LEFT) + sb->get_margin(SIDE_RIGHT));
 				if (tabs[i].icon.is_valid()) {
 					slen -= tabs[i].icon->get_width();
 					slen -= get_theme_constant("hseparation");
@@ -918,8 +918,8 @@ void Tabs::move_tab(int from, int to) {
 int Tabs::get_tab_width(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, tabs.size(), 0);
 
-	Ref<StyleBox> tab_bg = get_theme_stylebox("tab_bg");
-	Ref<StyleBox> tab_fg = get_theme_stylebox("tab_fg");
+	Ref<StyleBox> tab_unselected = get_theme_stylebox("tab_unselected");
+	Ref<StyleBox> tab_selected = get_theme_stylebox("tab_selected");
 	Ref<StyleBox> tab_disabled = get_theme_stylebox("tab_disabled");
 
 	int x = 0;
@@ -937,9 +937,9 @@ int Tabs::get_tab_width(int p_idx) const {
 	if (tabs[p_idx].disabled) {
 		x += tab_disabled->get_minimum_size().width;
 	} else if (current == p_idx) {
-		x += tab_fg->get_minimum_size().width;
+		x += tab_selected->get_minimum_size().width;
 	} else {
-		x += tab_bg->get_minimum_size().width;
+		x += tab_unselected->get_minimum_size().width;
 	}
 
 	if (tabs[p_idx].right_button.is_valid()) {

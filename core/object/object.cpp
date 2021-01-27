@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -506,7 +506,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 }
 
 void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid) {
-	if (p_names.empty()) {
+	if (p_names.is_empty()) {
 		if (r_valid) {
 			*r_valid = false;
 		}
@@ -561,11 +561,11 @@ void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_val
 	set(p_names[0], value_stack.back()->get(), r_valid);
 	value_stack.pop_back();
 
-	ERR_FAIL_COND(!value_stack.empty());
+	ERR_FAIL_COND(!value_stack.is_empty());
 }
 
 Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) const {
-	if (p_names.empty()) {
+	if (p_names.is_empty()) {
 		if (r_valid) {
 			*r_valid = false;
 		}
@@ -599,7 +599,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	if (!is_class("Script")) { // can still be set, but this is for userfriendlyness
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT));
 	}
-	if (!metadata.empty()) {
+	if (!metadata.is_empty()) {
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "__meta__", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 	}
 	if (script_instance && !p_reversed) {
@@ -1089,7 +1089,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 		}
 	}
 
-	while (!disconnect_data.empty()) {
+	while (!disconnect_data.is_empty()) {
 		const _ObjectSignalDisconnectData &dd = disconnect_data.front()->get();
 
 		_disconnect(dd.signal, dd.callable);
@@ -1357,7 +1357,12 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	ERR_FAIL_COND(!target_object);
 
 	SignalData *s = signal_map.getptr(p_signal);
-	ERR_FAIL_COND_MSG(!s, vformat("Nonexistent signal '%s' in %s.", p_signal, to_string()));
+	if (!s) {
+		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
+							   (!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
+		ERR_FAIL_COND_MSG(signal_is_valid, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. signal: '" + p_signal + "', callable: '" + p_callable + "'.");
+	}
+	ERR_FAIL_COND_MSG(!s, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
 
 	ERR_FAIL_COND_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), "Disconnecting nonexistent signal '" + p_signal + "', callable: " + p_callable + ".");
 
@@ -1373,7 +1378,7 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	target_object->connections.erase(slot->cE);
 	s->slot_map.erase(*p_callable.get_base_comparator());
 
-	if (s->slot_map.empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
+	if (s->slot_map.is_empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
 		//not user signal, delete
 		signal_map.erase(p_signal);
 	}

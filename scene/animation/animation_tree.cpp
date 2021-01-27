@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@ void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 		Array parameters = get_script_instance()->call("get_parameter_list");
 		for (int i = 0; i < parameters.size(); i++) {
 			Dictionary d = parameters[i];
-			ERR_CONTINUE(d.empty());
+			ERR_CONTINUE(d.is_empty());
 			r_list->push_back(PropertyInfo::from_dict(d));
 		}
 	}
@@ -1287,14 +1287,14 @@ String AnimationTree::get_configuration_warning() const {
 	String warning = Node::get_configuration_warning();
 
 	if (!root.is_valid()) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("No root AnimationNode for the graph is set.");
 	}
 
 	if (!has_node(animation_player)) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Path to an AnimationPlayer node containing animations is not set.");
@@ -1302,12 +1302,12 @@ String AnimationTree::get_configuration_warning() const {
 		AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
 
 		if (!player) {
-			if (!warning.empty()) {
+			if (!warning.is_empty()) {
 				warning += "\n\n";
 			}
 			warning += TTR("Path set for AnimationPlayer does not lead to an AnimationPlayer node.");
 		} else if (!player->has_node(player->get_root())) {
-			if (!warning.empty()) {
+			if (!warning.is_empty()) {
 				warning += "\n\n";
 			}
 			warning += TTR("The AnimationPlayer root node is not a valid node.");

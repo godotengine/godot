@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,7 +117,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	get_text_editor()->add_theme_color_override("line_number_color", line_number_color);
 	get_text_editor()->add_theme_color_override("caret_color", caret_color);
 	get_text_editor()->add_theme_color_override("caret_background_color", caret_background_color);
-	get_text_editor()->add_theme_color_override("font_color_selected", text_selected_color);
+	get_text_editor()->add_theme_color_override("font_selected_color", text_selected_color);
 	get_text_editor()->add_theme_color_override("selection_color", selection_color);
 	get_text_editor()->add_theme_color_override("brace_mismatch_color", brace_mismatch_color);
 	get_text_editor()->add_theme_color_override("current_line_color", current_line_color);
@@ -339,7 +339,7 @@ void ShaderEditor::_menu_option(int p_option) {
 			shader_editor->remove_all_bookmarks();
 		} break;
 		case HELP_DOCS: {
-			OS::get_singleton()->shell_open("https://docs.godotengine.org/en/stable/tutorials/shading/shading_reference/index.html");
+			OS::get_singleton()->shell_open("https://docs.godotengine.org/en/latest/tutorials/shaders/shader_reference/index.html");
 		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
@@ -558,7 +558,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	shader_editor = memnew(ShaderTextEditor);
 	shader_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	shader_editor->add_theme_constant_override("separation", 0);
-	shader_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	shader_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 
 	shader_editor->connect("script_changed", callable_mp(this, &ShaderEditor::apply_shaders));
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ShaderEditor::_editor_settings_changed));
@@ -661,7 +661,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	vbc->add_child(dl);
 
 	disk_changed->connect("confirmed", callable_mp(this, &ShaderEditor::_reload_shader_from_disk));
-	disk_changed->get_ok()->set_text(TTR("Reload"));
+	disk_changed->get_ok_button()->set_text(TTR("Reload"));
 
 	disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 	disk_changed->connect("custom_action", callable_mp(this, &ShaderEditor::save_external_data));

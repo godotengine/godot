@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2017-2020 Rémi Verschelde <remi@godotengine.org> -->
+<!-- Copyright 2017-2021 Rémi Verschelde <remi@godotengine.org> -->
 <component type="desktop">
   <id>org.godotengine.Godot</id>
   <metadata_license>CC0-1.0</metadata_license>

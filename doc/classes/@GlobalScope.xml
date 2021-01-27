@@ -140,7 +140,7 @@
 				i = ceil(1.45)  # i is 2
 				i = ceil(1.001) # i is 2
 				[/codeblock]
-				See also [method floor], [method round], and [method stepify].
+				See also [method floor], [method round], and [method snapped].
 			</description>
 		</method>
 		<method name="clamp">
@@ -303,7 +303,7 @@
 				# a is -3.0
 				a = floor(-2.99)
 				[/codeblock]
-				See also [method ceil], [method round], and [method stepify].
+				See also [method ceil], [method round], and [method snapped].
 				[b]Note:[/b] This method returns a float. If you need an integer, you can use [code]int(x)[/code] directly.
 			</description>
 		</method>
@@ -668,7 +668,7 @@
 		</method>
 		<method name="print" qualifiers="vararg">
 			<description>
-				Converts one or more arguments to strings in the best way possible and prints them to the console.
+				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
 				[codeblock]
 				a = [1, 2, 3]
 				print("a", "b", a) # Prints ab[1, 2, 3]
@@ -848,7 +848,7 @@
 				[codeblock]
 				round(2.6) # Returns 3
 				[/codeblock]
-				See also [method floor], [method ceil], and [method stepify].
+				See also [method floor], [method ceil], and [method snapped].
 			</description>
 		</method>
 		<method name="seed">
@@ -944,6 +944,22 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="snapped">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="step" type="float">
+			</argument>
+			<description>
+				Snaps float value [code]x[/code] to a given [code]step[/code]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				[codeblock]
+				snapped(100, 32) # Returns 96
+				snapped(3.14159, 0.01) # Returns 3.14
+				[/codeblock]
+				See also [method ceil], [method floor], and [method round].
+			</description>
+		</method>
 		<method name="sqrt">
 			<return type="float">
 			</return>
@@ -974,27 +990,11 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="stepify">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
-			<argument index="1" name="step" type="float">
-			</argument>
-			<description>
-				Snaps float value [code]x[/code] to a given [code]step[/code]. This can also be used to round a floating point number to an arbitrary number of decimals.
-				[codeblock]
-				stepify(100, 32) # Returns 96
-				stepify(3.14159, 0.01) # Returns 3.14
-				[/codeblock]
-				See also [method ceil], [method floor], and [method round].
-			</description>
-		</method>
 		<method name="str" qualifiers="vararg">
 			<return type="String">
 			</return>
 			<description>
-				Converts one or more arguments to string in the best way possible.
+				Converts one or more arguments of any type to string in the best way possible.
 			</description>
 		</method>
 		<method name="str2var">
@@ -1250,17 +1250,17 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="MARGIN_LEFT" value="0" enum="Margin">
-			Left margin, usually used for [Control] or [StyleBox]-derived classes.
+		<constant name="SIDE_LEFT" value="0" enum="Side">
+			Left side, usually used for [Control] or [StyleBox]-derived classes.
 		</constant>
-		<constant name="MARGIN_TOP" value="1" enum="Margin">
-			Top margin, usually used for [Control] or [StyleBox]-derived classes.
+		<constant name="SIDE_TOP" value="1" enum="Side">
+			Top side, usually used for [Control] or [StyleBox]-derived classes.
 		</constant>
-		<constant name="MARGIN_RIGHT" value="2" enum="Margin">
-			Right margin, usually used for [Control] or [StyleBox]-derived classes.
+		<constant name="SIDE_RIGHT" value="2" enum="Side">
+			Right side, usually used for [Control] or [StyleBox]-derived classes.
 		</constant>
-		<constant name="MARGIN_BOTTOM" value="3" enum="Margin">
-			Bottom margin, usually used for [Control] or [StyleBox]-derived classes.
+		<constant name="SIDE_BOTTOM" value="3" enum="Side">
+			Bottom side, usually used for [Control] or [StyleBox]-derived classes.
 		</constant>
 		<constant name="CORNER_TOP_LEFT" value="0" enum="Corner">
 			Top-left corner.
@@ -2422,6 +2422,16 @@
 		</constant>
 		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="21" enum="PropertyHint">
 			Hints that an image is compressed using lossless compression.
+		</constant>
+		<constant name="PROPERTY_HINT_TYPE_STRING" value="23" enum="PropertyHint">
+			Hint that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For instance:
+			[codeblock]
+			hint_string = "%s:" % [TYPE_INT] # Array of inteters.
+			hint_string = "%s:%s:" % [TYPE_ARRAY, TYPE_REAL] # Two-dimensional array of floats.
+			hint_string = "%s/%s:Resource" % [TYPE_OBJECT, TYPE_OBJECT] # Array of resources.
+			hint_string = "%s:%s/%s:Resource" % [TYPE_ARRAY, TYPE_OBJECT, TYPE_OBJECT] # Two-dimensional array of resources.
+			[/codeblock]
+			[b]Note:[/b] the final colon is required to specify for properly detecting built-in types.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="1" enum="PropertyUsageFlags">
 			The property is serialized and saved in the scene file (default).

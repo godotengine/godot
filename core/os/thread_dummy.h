@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,21 +40,6 @@ class ThreadDummy : public Thread {
 
 public:
 	virtual ID get_id() const { return 0; };
-
-	static void make_default();
-};
-
-class RWLockDummy : public RWLock {
-	static RWLock *create();
-
-public:
-	virtual void read_lock() {}
-	virtual void read_unlock() {}
-	virtual Error read_try_lock() { return OK; }
-
-	virtual void write_lock() {}
-	virtual void write_unlock() {}
-	virtual Error write_try_lock() { return OK; }
 
 	static void make_default();
 };

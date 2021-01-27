@@ -2016,7 +2016,7 @@ bool TProgram::linkStage(EShLanguage stage, EShMessages messages)
         intermediate[stage] = new TIntermediate(stage,
                                                 firstIntermediate->getVersion(),
                                                 firstIntermediate->getProfile());
-
+        intermediate[stage]->setLimits(firstIntermediate->getLimits());
 
         // The new TIntermediate must use the same origin as the original TIntermediates.
         // Otherwise linking will fail due to different coordinate systems.

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1416,18 +1416,26 @@ Ref<ViewportTexture> Viewport::get_texture() const {
 }
 
 void Viewport::set_shadow_atlas_size(int p_size) {
-	if (shadow_atlas_size == p_size) {
-		return;
-	}
-
 	shadow_atlas_size = p_size;
-	RS::get_singleton()->viewport_set_shadow_atlas_size(viewport, p_size);
+	RS::get_singleton()->viewport_set_shadow_atlas_size(viewport, p_size, shadow_atlas_16_bits);
 }
 
 int Viewport::get_shadow_atlas_size() const {
 	return shadow_atlas_size;
 }
 
+void Viewport::set_shadow_atlas_16_bits(bool p_16_bits) {
+	if (shadow_atlas_16_bits == p_16_bits) {
+		return;
+	}
+
+	shadow_atlas_16_bits = p_16_bits;
+	RS::get_singleton()->viewport_set_shadow_atlas_size(viewport, shadow_atlas_size, shadow_atlas_16_bits);
+}
+
+bool Viewport::get_shadow_atlas_16_bits() const {
+	return shadow_atlas_16_bits;
+}
 void Viewport::set_shadow_atlas_quadrant_subdiv(int p_quadrant, ShadowAtlasQuadrantSubdiv p_subdiv) {
 	ERR_FAIL_INDEX(p_quadrant, 4);
 	ERR_FAIL_INDEX(p_subdiv, SHADOW_ATLAS_QUADRANT_SUBDIV_MAX);
@@ -1505,7 +1513,7 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 		}
 
 		// If we found a tooltip, we stop here.
-		if (!tooltip.empty()) {
+		if (!tooltip.is_empty()) {
 			break;
 		}
 
@@ -1538,8 +1546,8 @@ void Viewport::_gui_show_tooltip() {
 			gui.tooltip_control,
 			gui.tooltip_control->get_global_transform().xform_inv(gui.last_mouse_pos),
 			&tooltip_owner);
-	tooltip_text.strip_edges();
-	if (tooltip_text.empty()) {
+	tooltip_text = tooltip_text.strip_edges();
+	if (tooltip_text.is_empty()) {
 		return; // Nothing to show.
 	}
 
@@ -1565,7 +1573,7 @@ void Viewport::_gui_show_tooltip() {
 		base_tooltip = gui.tooltip_label;
 	}
 
-	base_tooltip->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	base_tooltip->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 
 	TooltipPanel *panel = memnew(TooltipPanel);
 	panel->set_transient(false);
@@ -1580,7 +1588,8 @@ void Viewport::_gui_show_tooltip() {
 	Point2 tooltip_offset = ProjectSettings::get_singleton()->get("display/mouse_cursor/tooltip_position_offset");
 	Rect2 r(gui.tooltip_pos + tooltip_offset, gui.tooltip_popup->get_contents_minimum_size());
 
-	Rect2i vr = gui.tooltip_popup->get_parent_visible_window()->get_usable_parent_rect();
+	Window *window = gui.tooltip_popup->get_parent_visible_window();
+	Rect2i vr = window->get_usable_parent_rect();
 
 	if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
 		r.position.x = vr.position.x + vr.size.x - r.size.x;
@@ -1594,6 +1603,7 @@ void Viewport::_gui_show_tooltip() {
 		r.position.y = vr.position.y;
 	}
 
+	gui.tooltip_popup->set_current_screen(window->get_current_screen());
 	gui.tooltip_popup->set_position(r.position);
 	gui.tooltip_popup->set_size(r.size);
 
@@ -2392,19 +2402,19 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 
 			if (!mods && p_event->is_action_pressed("ui_up") && input->is_action_just_pressed("ui_up")) {
-				next = from->_get_focus_neighbour(MARGIN_TOP);
+				next = from->_get_focus_neighbor(SIDE_TOP);
 			}
 
 			if (!mods && p_event->is_action_pressed("ui_left") && input->is_action_just_pressed("ui_left")) {
-				next = from->_get_focus_neighbour(MARGIN_LEFT);
+				next = from->_get_focus_neighbor(SIDE_LEFT);
 			}
 
 			if (!mods && p_event->is_action_pressed("ui_right") && input->is_action_just_pressed("ui_right")) {
-				next = from->_get_focus_neighbour(MARGIN_RIGHT);
+				next = from->_get_focus_neighbor(SIDE_RIGHT);
 			}
 
 			if (!mods && p_event->is_action_pressed("ui_down") && input->is_action_just_pressed("ui_down")) {
-				next = from->_get_focus_neighbour(MARGIN_BOTTOM);
+				next = from->_get_focus_neighbor(SIDE_BOTTOM);
 			}
 
 			if (next) {
@@ -3139,7 +3149,7 @@ String Viewport::get_configuration_warning() const {
 	String warning = Node::get_configuration_warning();
 
 	if (size.x == 0 || size.y == 0) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Viewport size must be greater than 0 to render anything.");
@@ -3190,6 +3200,14 @@ void Viewport::set_use_debanding(bool p_use_debanding) {
 
 bool Viewport::is_using_debanding() const {
 	return use_debanding;
+}
+
+void Viewport::set_lod_threshold(float p_pixels) {
+	lod_threshold = p_pixels;
+	RS::get_singleton()->viewport_set_lod_threshold(viewport, lod_threshold);
+}
+float Viewport::get_lod_threshold() const {
+	return lod_threshold;
 }
 
 void Viewport::set_debug_draw(DebugDraw p_debug_draw) {
@@ -3471,6 +3489,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_atlas_size", "size"), &Viewport::set_shadow_atlas_size);
 	ClassDB::bind_method(D_METHOD("get_shadow_atlas_size"), &Viewport::get_shadow_atlas_size);
 
+	ClassDB::bind_method(D_METHOD("set_shadow_atlas_16_bits", "enable"), &Viewport::set_shadow_atlas_16_bits);
+	ClassDB::bind_method(D_METHOD("get_shadow_atlas_16_bits"), &Viewport::get_shadow_atlas_16_bits);
+
 	ClassDB::bind_method(D_METHOD("set_snap_controls_to_pixels", "enabled"), &Viewport::set_snap_controls_to_pixels);
 	ClassDB::bind_method(D_METHOD("is_snap_controls_to_pixels_enabled"), &Viewport::is_snap_controls_to_pixels_enabled);
 
@@ -3505,6 +3526,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sdf_scale", "scale"), &Viewport::set_sdf_scale);
 	ClassDB::bind_method(D_METHOD("get_sdf_scale"), &Viewport::get_sdf_scale);
 
+	ClassDB::bind_method(D_METHOD("set_lod_threshold", "pixels"), &Viewport::set_lod_threshold);
+	ClassDB::bind_method(D_METHOD("get_lod_threshold"), &Viewport::get_lod_threshold);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world_3d"), "set_use_own_world_3d", "is_using_own_world_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_3d", PROPERTY_HINT_RESOURCE_TYPE, "World3D"), "set_world_3d", "get_world_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_2d", PROPERTY_HINT_RESOURCE_TYPE, "World2D", 0), "set_world_2d", "get_world_2d");
@@ -3516,6 +3540,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"), "set_msaa", "get_msaa");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_space_aa", PROPERTY_HINT_ENUM, "Disabled,FXAA"), "set_screen_space_aa", "get_screen_space_aa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "is_using_debanding");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_lod_threshold", "get_lod_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Overdraw,Wireframe"), "set_debug_draw", "get_debug_draw");
 	ADD_GROUP("Canvas Items", "canvas_item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,MipmapLinear,MipmapNearest"), "set_default_canvas_item_texture_filter", "get_default_canvas_item_texture_filter");
@@ -3534,6 +3559,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_scale", PROPERTY_HINT_ENUM, "100%,50%,25%"), "set_sdf_scale", "get_sdf_scale");
 	ADD_GROUP("Shadow Atlas", "shadow_atlas_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_atlas_size"), "set_shadow_atlas_size", "get_shadow_atlas_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_atlas_16_bits"), "set_shadow_atlas_16_bits", "get_shadow_atlas_16_bits");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "shadow_atlas_quad_0", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv", 0);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "shadow_atlas_quad_1", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv", 1);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "shadow_atlas_quad_2", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv", 2);
@@ -3590,6 +3616,11 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_SDFGI);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_SDFGI_PROBES);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_GI_BUFFER);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_DISABLE_LOD);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_CLUSTER_OMNI_LIGHTS);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_CLUSTER_SPOT_LIGHTS);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_CLUSTER_DECALS);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_CLUSTER_REFLECTION_PROBES);
 
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
@@ -3643,7 +3674,10 @@ Viewport::Viewport() {
 	physics_has_last_mousepos = false;
 	physics_last_mousepos = Vector2(Math_INF, Math_INF);
 
-	shadow_atlas_size = 0;
+	shadow_atlas_16_bits = true;
+	shadow_atlas_size = 2048;
+	set_shadow_atlas_size(shadow_atlas_size);
+
 	for (int i = 0; i < 4; i++) {
 		shadow_atlas_quadrant_subdiv[i] = SHADOW_ATLAS_QUADRANT_SUBDIV_MAX;
 	}
@@ -3651,6 +3685,8 @@ Viewport::Viewport() {
 	set_shadow_atlas_quadrant_subdiv(1, SHADOW_ATLAS_QUADRANT_SUBDIV_4);
 	set_shadow_atlas_quadrant_subdiv(2, SHADOW_ATLAS_QUADRANT_SUBDIV_16);
 	set_shadow_atlas_quadrant_subdiv(3, SHADOW_ATLAS_QUADRANT_SUBDIV_64);
+
+	set_lod_threshold(lod_threshold);
 
 	String id = itos(get_instance_id());
 	input_group = "_vp_input" + id;

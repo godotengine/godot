@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,9 +75,9 @@ static inline real_t k_scalar(Body2DSW *a, Body2DSW *b, const Vector2 &rA, const
 
 static inline Vector2
 relative_velocity(Body2DSW *a, Body2DSW *b, Vector2 rA, Vector2 rB) {
-	Vector2 sum = a->get_linear_velocity() - rA.tangent() * a->get_angular_velocity();
+	Vector2 sum = a->get_linear_velocity() - rA.orthogonal() * a->get_angular_velocity();
 	if (b) {
-		return (b->get_linear_velocity() - rB.tangent() * b->get_angular_velocity()) - sum;
+		return (b->get_linear_velocity() - rB.orthogonal() * b->get_angular_velocity()) - sum;
 	} else {
 		return -sum;
 	}
@@ -199,10 +199,10 @@ PinJoint2DSW::PinJoint2DSW(const Vector2 &p_pos, Body2DSW *p_body_a, Body2DSW *p
 
 PinJoint2DSW::~PinJoint2DSW() {
 	if (A) {
-		A->remove_constraint(this);
+		A->remove_constraint(this, 0);
 	}
 	if (B) {
-		B->remove_constraint(this);
+		B->remove_constraint(this, 1);
 	}
 }
 
@@ -264,7 +264,7 @@ bool GrooveJoint2DSW::setup(real_t p_step) {
 	Space2DSW *space = A->get_space();
 
 	// calculate axis
-	Vector2 n = -(tb - ta).tangent().normalized();
+	Vector2 n = -(tb - ta).orthogonal().normalized();
 	real_t d = ta.dot(n);
 
 	xf_normal = n;
@@ -282,7 +282,7 @@ bool GrooveJoint2DSW::setup(real_t p_step) {
 	} else {
 		clamp = 0.0f;
 		//joint->r1 = cpvsub(cpvadd(cpvmult(cpvperp(n), -td), cpvmult(n, d)), a->p);
-		rA = ((-n.tangent() * -td) + n * d) - A->get_transform().get_origin();
+		rA = ((-n.orthogonal() * -td) + n * d) - A->get_transform().get_origin();
 	}
 
 	// Calculate mass tensor
@@ -332,15 +332,15 @@ GrooveJoint2DSW::GrooveJoint2DSW(const Vector2 &p_a_groove1, const Vector2 &p_a_
 	A_groove_1 = A->get_inv_transform().xform(p_a_groove1);
 	A_groove_2 = A->get_inv_transform().xform(p_a_groove2);
 	B_anchor = B->get_inv_transform().xform(p_b_anchor);
-	A_groove_normal = -(A_groove_2 - A_groove_1).normalized().tangent();
+	A_groove_normal = -(A_groove_2 - A_groove_1).normalized().orthogonal();
 
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
 }
 
 GrooveJoint2DSW::~GrooveJoint2DSW() {
-	A->remove_constraint(this);
-	B->remove_constraint(this);
+	A->remove_constraint(this, 0);
+	B->remove_constraint(this, 1);
 }
 
 //////////////////////////////////////////////
@@ -436,6 +436,6 @@ DampedSpringJoint2DSW::DampedSpringJoint2DSW(const Vector2 &p_anchor_a, const Ve
 }
 
 DampedSpringJoint2DSW::~DampedSpringJoint2DSW() {
-	A->remove_constraint(this);
-	B->remove_constraint(this);
+	A->remove_constraint(this, 0);
+	B->remove_constraint(this, 1);
 }

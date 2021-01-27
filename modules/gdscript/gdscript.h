@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -72,8 +72,8 @@ class GDScript : public Script {
 	friend class GDScriptFunction;
 	friend class GDScriptAnalyzer;
 	friend class GDScriptCompiler;
-	friend class GDScriptFunctions;
 	friend class GDScriptLanguage;
+	friend struct GDScriptUtilityFunctionsDefinitions;
 
 	Ref<GDScriptNativeClass> native;
 	Ref<GDScript> base;
@@ -270,8 +270,8 @@ public:
 class GDScriptInstance : public ScriptInstance {
 	friend class GDScript;
 	friend class GDScriptFunction;
-	friend class GDScriptFunctions;
 	friend class GDScriptCompiler;
+	friend struct GDScriptUtilityFunctionsDefinitions;
 
 	ObjectID owner_id;
 	Object *owner;
