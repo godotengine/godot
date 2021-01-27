@@ -33,10 +33,12 @@
 
 #include "scene/3d/node_3d.h"
 
+class World3D;
 class Camera3D;
 class VisibilityNotifier3D : public Node3D {
 	GDCLASS(VisibilityNotifier3D, Node3D);
 
+	Ref<World3D> world;
 	Set<Camera3D *> cameras;
 
 	AABB aabb;
