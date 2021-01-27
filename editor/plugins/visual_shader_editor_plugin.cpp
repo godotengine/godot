@@ -1923,11 +1923,22 @@ VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 			int _from_node = id_to_use;
 			int _from_slot = 0;
 
-			if (created_expression_port || visual_shader->is_port_types_compatible(vsnode->get_output_port_type(_from_slot), input_port_type)) {
+			if (created_expression_port) {
 				undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, _from_node, _from_slot, to_node, to_slot);
 				undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", type, _from_node, _from_slot, to_node, to_slot);
 				undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, _from_node, _from_slot, to_node, to_slot);
 				undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", type, _from_node, _from_slot, to_node, to_slot);
+			} else {
+				// Attempting to connect to the first correct port.
+				for (int i = 0; i < vsnode->get_output_port_count(); i++) {
+					if (visual_shader->is_port_types_compatible(vsnode->get_output_port_type(i), input_port_type)) {
+						undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, _from_node, i, to_node, to_slot);
+						undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", type, _from_node, i, to_node, to_slot);
+						undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, _from_node, i, to_node, to_slot);
+						undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", type, _from_node, i, to_node, to_slot);
+						break;
+					}
+				}
 			}
 		}
 	} else if (from_node != -1 && from_slot != -1) {
@@ -1945,11 +1956,22 @@ VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 			int _to_node = id_to_use;
 			int _to_slot = 0;
 
-			if (created_expression_port || visual_shader->is_port_types_compatible(output_port_type, vsnode->get_input_port_type(_to_slot))) {
+			if (created_expression_port) {
 				undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", type, from_node, from_slot, _to_node, _to_slot);
 				undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, from_node, from_slot, _to_node, _to_slot);
 				undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", type, from_node, from_slot, _to_node, _to_slot);
 				undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, from_node, from_slot, _to_node, _to_slot);
+			} else {
+				// Attempting to connect to the first correct port.
+				for (int i = 0; i < vsnode->get_input_port_count(); i++) {
+					if (visual_shader->is_port_types_compatible(output_port_type, vsnode->get_input_port_type(i))) {
+						undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", type, from_node, from_slot, _to_node, i);
+						undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, from_node, from_slot, _to_node, i);
+						undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", type, from_node, from_slot, _to_node, i);
+						undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, from_node, from_slot, _to_node, i);
+						break;
+					}
+				}
 			}
 		}
 	}
