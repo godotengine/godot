@@ -7085,6 +7085,12 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_virtual_keyboard_enabled"), &TextEdit::is_virtual_keyboard_enabled);
 	ClassDB::bind_method(D_METHOD("set_selecting_enabled", "enable"), &TextEdit::set_selecting_enabled);
 	ClassDB::bind_method(D_METHOD("is_selecting_enabled"), &TextEdit::is_selecting_enabled);
+	ClassDB::bind_method(D_METHOD("is_line_set_as_safe", "line"), &TextEdit::is_line_set_as_safe);
+	ClassDB::bind_method(D_METHOD("set_line_as_safe", "line", "safe"), &TextEdit::set_line_as_safe);
+	ClassDB::bind_method(D_METHOD("is_line_set_as_bookmark", "line"), &TextEdit::is_line_set_as_bookmark);
+	ClassDB::bind_method(D_METHOD("set_line_as_bookmark", "line", "bookmark"), &TextEdit::set_line_as_bookmark);
+	ClassDB::bind_method(D_METHOD("set_line_as_breakpoint", "line", "breakpoint"), &TextEdit::set_line_as_breakpoint);
+	ClassDB::bind_method(D_METHOD("is_line_set_as_breakpoint", "line"), &TextEdit::is_line_set_as_breakpoint);
 
 	ClassDB::bind_method(D_METHOD("cut"), &TextEdit::cut);
 	ClassDB::bind_method(D_METHOD("copy"), &TextEdit::copy);
