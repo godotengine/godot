@@ -63,9 +63,18 @@
 		<method name="bin_to_int">
 			<return type="int">
 			</return>
-			<argument index="0" name="with_prefix" type="bool" default="true">
-			</argument>
 			<description>
+				Converts a string containing a binary number into an integer. Binary strings can either be prefixed with [code]0b[/code] or not, and they can also start with a [code]-[/code] before the optional prefix.
+				[codeblocks]
+				[gdscript]
+				print("0x101".bin_to_int()) # Prints "5".
+				print("101".bin_to_int()) # Prints "5".
+				[/gdscript]
+				[csharp]
+				GD.Print("0x101".BinToInt()); // Prints "5".
+				GD.Print("101".BinToInt()); // Prints "5".
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="c_escape">
@@ -221,14 +230,18 @@
 		<method name="hex_to_int">
 			<return type="int">
 			</return>
-			<argument index="0" name="with_prefix" type="bool" default="true">
-			</argument>
 			<description>
-				Converts a string containing a hexadecimal number into a decimal integer. If [code]with_prefix[/code] is [code]true[/code], the hexadecimal string should start with the [code]0x[/code] prefix, otherwise [code]0[/code] is returned.
-				[codeblock]
-				print("0xff".hex_to_int()) # Print "255"
-				print("ab".hex_to_int(false)) # Print "171"
-				[/codeblock]
+				Converts a string containing a hexadecimal number into an integer. Hexadecimal strings can either be prefixed with [code]0x[/code] or not, and they can also start with a [code]-[/code] before the optional prefix.
+				[codeblocks]
+				[gdscript]
+				print("0xff".hex_to_int()) # Prints "255".
+				print("ab".hex_to_int()) # Prints "171".
+				[/gdscript]
+				[csharp]
+				GD.Print("0xff".HexToInt()); // Prints "255".
+				GD.Print("ab".HexToInt()); // Prints "171".
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="http_escape">
