@@ -2097,8 +2097,9 @@ String::String(const StrRange &p_range) {
 	copy_from(p_range.c_str, p_range.len);
 }
 
-int64_t String::hex_to_int(bool p_with_prefix) const {
-	if (p_with_prefix && length() < 3) {
+int64_t String::hex_to_int() const {
+	int len = length();
+	if (len == 0) {
 		return 0;
 	}
 
@@ -2110,10 +2111,7 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 		s++;
 	}
 
-	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'x') {
-			return 0;
-		}
+	if (len > 2 && s[0] == '0' && s[1] == 'x') {
 		s += 2;
 	}
 
@@ -2140,8 +2138,9 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 	return hex * sign;
 }
 
-int64_t String::bin_to_int(bool p_with_prefix) const {
-	if (p_with_prefix && length() < 3) {
+int64_t String::bin_to_int() const {
+	int len = length();
+	if (len == 0) {
 		return 0;
 	}
 
@@ -2153,10 +2152,7 @@ int64_t String::bin_to_int(bool p_with_prefix) const {
 		s++;
 	}
 
-	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'b') {
-			return 0;
-		}
+	if (len > 2 && s[0] == '0' && s[1] == 'b') {
 		s += 2;
 	}
 
@@ -3756,7 +3752,7 @@ bool String::is_valid_string() const {
 	return valid;
 }
 
-String String::http_escape() const {
+String String::uri_encode() const {
 	const CharString temp = utf8();
 	String res;
 	for (int i = 0; i < temp.length(); ++i) {
@@ -3780,7 +3776,7 @@ String String::http_escape() const {
 	return res;
 }
 
-String String::http_unescape() const {
+String String::uri_decode() const {
 	String res;
 	for (int i = 0; i < length(); ++i) {
 		if (unicode_at(i) == '%' && i + 2 < length()) {
@@ -3795,6 +3791,8 @@ String String::http_unescape() const {
 			} else {
 				res += unicode_at(i);
 			}
+		} else if (unicode_at(i) == '+') {
+			res += ' ';
 		} else {
 			res += unicode_at(i);
 		}
@@ -4251,7 +4249,7 @@ bool String::is_valid_ip_address() const {
 				continue;
 			}
 			if (n.is_valid_hex_number(false)) {
-				int64_t nint = n.hex_to_int(false);
+				int64_t nint = n.hex_to_int();
 				if (nint < 0 || nint > 0xffff) {
 					return false;
 				}
@@ -4344,63 +4342,6 @@ String String::plus_file(const String &p_file) const {
 		return *this + p_file;
 	}
 	return *this + "/" + p_file;
-}
-
-String String::percent_encode() const {
-	CharString cs = utf8();
-	String encoded;
-	for (int i = 0; i < cs.length(); i++) {
-		uint8_t c = cs[i];
-		if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '~' || c == '.') {
-			char p[2] = { (char)c, 0 };
-			encoded += p;
-		} else {
-			char p[4] = { '%', 0, 0, 0 };
-			static const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-
-			p[1] = hex[c >> 4];
-			p[2] = hex[c & 0xF];
-			encoded += p;
-		}
-	}
-
-	return encoded;
-}
-
-String String::percent_decode() const {
-	CharString pe;
-
-	CharString cs = utf8();
-	for (int i = 0; i < cs.length(); i++) {
-		uint8_t c = cs[i];
-		if (c == '%' && i < length() - 2) {
-			uint8_t a = LOWERCASE(cs[i + 1]);
-			uint8_t b = LOWERCASE(cs[i + 2]);
-
-			if (a >= '0' && a <= '9') {
-				c = (a - '0') << 4;
-			} else if (a >= 'a' && a <= 'f') {
-				c = (a - 'a' + 10) << 4;
-			} else {
-				continue;
-			}
-
-			uint8_t d = 0;
-
-			if (b >= '0' && b <= '9') {
-				d = (b - '0');
-			} else if (b >= 'a' && b <= 'f') {
-				d = (b - 'a' + 10);
-			} else {
-				continue;
-			}
-			c += d;
-			i += 2;
-		}
-		pe += c;
-	}
-
-	return String::utf8(pe.ptr());
 }
 
 String String::property_name_encode() const {

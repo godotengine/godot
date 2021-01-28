@@ -63,9 +63,18 @@
 		<method name="bin_to_int">
 			<return type="int">
 			</return>
-			<argument index="0" name="with_prefix" type="bool" default="true">
-			</argument>
 			<description>
+				Converts a string containing a binary number into an integer. Binary strings can either be prefixed with [code]0b[/code] or not, and they can also start with a [code]-[/code] before the optional prefix.
+				[codeblocks]
+				[gdscript]
+				print("0x101".bin_to_int()) # Prints "5".
+				print("101".bin_to_int()) # Prints "5".
+				[/gdscript]
+				[csharp]
+				GD.Print("0x101".BinToInt()); // Prints "5".
+				GD.Print("101".BinToInt()); // Prints "5".
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="c_escape">
@@ -221,34 +230,18 @@
 		<method name="hex_to_int">
 			<return type="int">
 			</return>
-			<argument index="0" name="with_prefix" type="bool" default="true">
-			</argument>
 			<description>
-				Converts a string containing a hexadecimal number into a decimal integer. If [code]with_prefix[/code] is [code]true[/code], the hexadecimal string should start with the [code]0x[/code] prefix, otherwise [code]0[/code] is returned.
-				[codeblock]
-				print("0xff".hex_to_int()) # Print "255"
-				print("ab".hex_to_int(false)) # Print "171"
-				[/codeblock]
-			</description>
-		</method>
-		<method name="http_escape">
-			<return type="String">
-			</return>
-			<description>
-				Escapes (encodes) a string to URL friendly format. Also referred to as 'URL encode'.
-				[codeblock]
-				print("https://example.org/?escaped=" + "Godot Engine:'docs'".http_escape())
-				[/codeblock]
-			</description>
-		</method>
-		<method name="http_unescape">
-			<return type="String">
-			</return>
-			<description>
-				Unescapes (decodes) a string in URL encoded format. Also referred to as 'URL decode'.
-				[codeblock]
-				print("https://example.org/?escaped=" + "Godot%20Engine%3A%27docs%27".http_unescape())
-				[/codeblock]
+				Converts a string containing a hexadecimal number into an integer. Hexadecimal strings can either be prefixed with [code]0x[/code] or not, and they can also start with a [code]-[/code] before the optional prefix.
+				[codeblocks]
+				[gdscript]
+				print("0xff".hex_to_int()) # Prints "255".
+				print("ab".hex_to_int()) # Prints "171".
+				[/gdscript]
+				[csharp]
+				GD.Print("0xff".HexToInt()); // Prints "255".
+				GD.Print("ab".HexToInt()); // Prints "171".
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="insert">
@@ -565,20 +558,6 @@
 				Formats a number to have an exact number of [code]digits[/code] before the decimal point.
 			</description>
 		</method>
-		<method name="percent_decode">
-			<return type="String">
-			</return>
-			<description>
-				Decode a percent-encoded string. See [method percent_encode].
-			</description>
-		</method>
-		<method name="percent_encode">
-			<return type="String">
-			</return>
-			<description>
-				Percent-encodes a string. Encodes parameters in a URL when sending a HTTP GET request (and bodies of form-urlencoded POST requests).
-			</description>
-		</method>
 		<method name="plus_file">
 			<return type="String">
 			</return>
@@ -876,6 +855,36 @@
 			</argument>
 			<description>
 				Returns the character code at position [code]at[/code].
+			</description>
+		</method>
+		<method name="uri_decode">
+			<return type="String">
+			</return>
+			<description>
+				Decodes a string in URL encoded format. This is meant to decode parameters in a URL when receiving an HTTP request.
+				[codeblocks]
+				[gdscript]
+				print("https://example.org/?escaped=" + "Godot%20Engine%3A%27docs%27".uri_decode())
+				[/gdscript]
+				[csharp]
+				GD.Print("https://example.org/?escaped=" + "Godot%20Engine%3a%27Docs%27".URIDecode());
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="uri_encode">
+			<return type="String">
+			</return>
+			<description>
+				Encodes a string to URL friendly format. This is meant to encode parameters in a URL when sending an HTTP request.
+				[codeblocks]
+				[gdscript]
+				print("https://example.org/?escaped=" + "Godot Engine:'docs'".uri_encode())
+				[/gdscript]
+				[csharp]
+				GD.Print("https://example.org/?escaped=" + "Godot Engine:'docs'".URIEncode());
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="xml_escape">

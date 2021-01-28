@@ -950,13 +950,11 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, get_file, sarray(), varray());
 	bind_method(String, xml_escape, sarray("escape_quotes"), varray(false));
 	bind_method(String, xml_unescape, sarray(), varray());
-	bind_method(String, http_escape, sarray(), varray());
-	bind_method(String, http_unescape, sarray(), varray());
+	bind_method(String, uri_encode, sarray(), varray());
+	bind_method(String, uri_decode, sarray(), varray());
 	bind_method(String, c_escape, sarray(), varray());
 	bind_method(String, c_unescape, sarray(), varray());
 	bind_method(String, json_escape, sarray(), varray());
-	bind_method(String, percent_encode, sarray(), varray());
-	bind_method(String, percent_decode, sarray(), varray());
 
 	bind_method(String, is_valid_identifier, sarray(), varray());
 	bind_method(String, is_valid_integer, sarray(), varray());
@@ -968,8 +966,8 @@ static void _register_variant_builtin_methods() {
 
 	bind_method(String, to_int, sarray(), varray());
 	bind_method(String, to_float, sarray(), varray());
-	bind_method(String, hex_to_int, sarray("with_prefix"), varray(true));
-	bind_method(String, bin_to_int, sarray("with_prefix"), varray(true));
+	bind_method(String, hex_to_int, sarray(), varray());
+	bind_method(String, bin_to_int, sarray(), varray());
 
 	bind_method(String, lpad, sarray("min_length", "character"), varray(" "));
 	bind_method(String, rpad, sarray("min_length", "character"), varray(" "));

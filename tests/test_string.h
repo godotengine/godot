@@ -370,12 +370,9 @@ TEST_CASE("[String] String to integer") {
 TEST_CASE("[String] Hex to integer") {
 	static const char *nums[4] = { "0xFFAE", "22", "0", "AADDAD" };
 	static const int64_t num[4] = { 0xFFAE, 0x22, 0, 0xAADDAD };
-	static const bool wo_prefix[4] = { false, true, true, true };
-	static const bool w_prefix[4] = { true, false, true, false };
 
 	for (int i = 0; i < 4; i++) {
-		CHECK((String(nums[i]).hex_to_int(true) == num[i]) == w_prefix[i]);
-		CHECK((String(nums[i]).hex_to_int(false) == num[i]) == wo_prefix[i]);
+		CHECK(String(nums[i]).hex_to_int() == num[i]);
 	}
 }
 
@@ -1155,20 +1152,12 @@ TEST_CASE("[String] hash") {
 	CHECK(a.hash64() != c.hash64());
 }
 
-TEST_CASE("[String] http_escape/unescape") {
+TEST_CASE("[String] uri_encode/unescape") {
 	String s = "Godot Engine:'docs'";
 	String t = "Godot%20Engine%3A%27docs%27";
 
-	CHECK(s.http_escape() == t);
-	CHECK(t.http_unescape() == s);
-}
-
-TEST_CASE("[String] percent_encode/decode") { // Note: is it redundant? Seems to be same as http_escape/unescape but in lower case.
-	String s = "Godot Engine:'docs'";
-	String t = "Godot%20Engine%3a%27docs%27";
-
-	CHECK(s.percent_encode() == t);
-	CHECK(t.percent_decode() == s);
+	CHECK(s.uri_encode() == t);
+	CHECK(t.uri_decode() == s);
 }
 
 TEST_CASE("[String] xml_escape/unescape") {
