@@ -57,12 +57,11 @@ def get_flags():
 
 
 def configure(env):
-    if not isinstance(env["initial_memory"], int):
-        try:
-            env["initial_memory"] = int(env["initial_memory"])
-        except:
-            print("Initial memory must be a valid integer")
-            sys.exit(255)
+    try:
+        env["initial_memory"] = int(env["initial_memory"])
+    except Exception:
+        print("Initial memory must be a valid integer")
+        sys.exit(255)
 
     ## Build type
     if env["target"] == "release":
