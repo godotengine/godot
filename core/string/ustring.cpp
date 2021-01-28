@@ -2097,8 +2097,9 @@ String::String(const StrRange &p_range) {
 	copy_from(p_range.c_str, p_range.len);
 }
 
-int64_t String::hex_to_int(bool p_with_prefix) const {
-	if (p_with_prefix && length() < 3) {
+int64_t String::hex_to_int() const {
+	int len = length();
+	if (len == 0) {
 		return 0;
 	}
 
@@ -2110,10 +2111,7 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 		s++;
 	}
 
-	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'x') {
-			return 0;
-		}
+	if (len > 2 && s[0] == '0' && s[1] == 'x') {
 		s += 2;
 	}
 
@@ -2140,8 +2138,9 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 	return hex * sign;
 }
 
-int64_t String::bin_to_int(bool p_with_prefix) const {
-	if (p_with_prefix && length() < 3) {
+int64_t String::bin_to_int() const {
+	int len = length();
+	if (len == 0) {
 		return 0;
 	}
 
@@ -2153,10 +2152,7 @@ int64_t String::bin_to_int(bool p_with_prefix) const {
 		s++;
 	}
 
-	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'b') {
-			return 0;
-		}
+	if (len > 2 && s[0] == '0' && s[1] == 'b') {
 		s += 2;
 	}
 
@@ -4251,7 +4247,7 @@ bool String::is_valid_ip_address() const {
 				continue;
 			}
 			if (n.is_valid_hex_number(false)) {
-				int64_t nint = n.hex_to_int(false);
+				int64_t nint = n.hex_to_int();
 				if (nint < 0 || nint > 0xffff) {
 					return false;
 				}

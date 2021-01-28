@@ -968,8 +968,8 @@ static void _register_variant_builtin_methods() {
 
 	bind_method(String, to_int, sarray(), varray());
 	bind_method(String, to_float, sarray(), varray());
-	bind_method(String, hex_to_int, sarray("with_prefix"), varray(true));
-	bind_method(String, bin_to_int, sarray("with_prefix"), varray(true));
+	bind_method(String, hex_to_int, sarray(), varray());
+	bind_method(String, bin_to_int, sarray(), varray());
 
 	bind_method(String, lpad, sarray("min_length", "character"), varray(" "));
 	bind_method(String, rpad, sarray("min_length", "character"), varray(" "));
