@@ -318,7 +318,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color", "CheckBox", control_font_color);
 	theme->set_color("font_pressed_color", "CheckBox", control_font_pressed_color);
 	theme->set_color("font_hover_color", "CheckBox", control_font_hover_color);
-	theme->set_color("font_hover_color_pressed", "CheckBox", control_font_pressed_color);
+	theme->set_color("font_hover_pressed_color", "CheckBox", control_font_pressed_color);
 	theme->set_color("font_disabled_color", "CheckBox", control_font_disabled_color);
 
 	theme->set_constant("hseparation", "CheckBox", 4 * scale);
@@ -355,7 +355,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color", "CheckButton", control_font_color);
 	theme->set_color("font_pressed_color", "CheckButton", control_font_pressed_color);
 	theme->set_color("font_hover_color", "CheckButton", control_font_hover_color);
-	theme->set_color("font_hover_color_pressed", "CheckButton", control_font_pressed_color);
+	theme->set_color("font_hover_pressed_color", "CheckButton", control_font_pressed_color);
 	theme->set_color("font_disabled_color", "CheckButton", control_font_disabled_color);
 
 	theme->set_constant("hseparation", "CheckButton", 4 * scale);
