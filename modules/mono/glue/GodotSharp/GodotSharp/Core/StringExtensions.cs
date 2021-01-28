@@ -97,6 +97,36 @@ namespace Godot
             return b;
         }
 
+        /// <summary>
+        /// Converts a string containing a binary number into an integer.
+        /// Binary strings can either be prefixed with `0b` or not,
+        /// and they can also start with a `-` before the optional prefix.
+        /// </summary>
+        /// <param name="instance">The string to convert.</param>
+        /// <returns>The converted string.</returns>
+        public static int BinToInt(this string instance)
+        {
+            if (instance.Length == 0)
+            {
+                return 0;
+            }
+
+            int sign = 1;
+
+            if (instance[0] == '-')
+            {
+                sign = -1;
+                instance = instance.Substring(1);
+            }
+
+            if (instance.StartsWith("0b"))
+            {
+                instance = instance.Substring(2);
+            }
+
+            return sign * Convert.ToInt32(instance, 2);;
+        }
+
         // <summary>
         // Return the amount of substrings in string.
         // </summary>
@@ -457,7 +487,7 @@ namespace Godot
         /// <summary>
         /// Returns a hexadecimal representation of this byte as a string.
         /// </summary>
-        /// <param name="bytes">The byte to encode.</param>
+        /// <param name="b">The byte to encode.</param>
         /// <returns>The hexadecimal representation of this byte.</returns>
         internal static string HexEncode(this byte b)
         {
@@ -501,11 +531,20 @@ namespace Godot
             return ret;
         }
 
-        // <summary>
-        // Convert a string containing an hexadecimal number into an int.
-        // </summary>
+        /// <summary>
+        /// Converts a string containing a hexadecimal number into an integer.
+        /// Hexadecimal strings can either be prefixed with `0x` or not,
+        /// and they can also start with a `-` before the optional prefix.
+        /// </summary>
+        /// <param name="instance">The string to convert.</param>
+        /// <returns>The converted string.</returns>
         public static int HexToInt(this string instance)
         {
+            if (instance.Length == 0)
+            {
+                return 0;
+            }
+
             int sign = 1;
 
             if (instance[0] == '-')
@@ -514,10 +553,12 @@ namespace Godot
                 instance = instance.Substring(1);
             }
 
-            if (!instance.StartsWith("0x"))
-                return 0;
+            if (instance.StartsWith("0x"))
+            {
+                instance = instance.Substring(2);
+            }
 
-            return sign * int.Parse(instance.Substring(2), NumberStyles.HexNumber);
+            return sign * int.Parse(instance, NumberStyles.HexNumber);
         }
 
         // <summary>
