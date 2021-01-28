@@ -381,6 +381,11 @@ const GodotWebXR = {
 				gl.deleteTexture(texture);
 			}
 			GodotWebXR.textures[i] = null;
+
+			const texture_id = GodotWebXR.texture_ids[i];
+			if (texture_id !== null) {
+				GL.textures[texture_id] = null;
+			}
 			GodotWebXR.texture_ids[i] = null;
 		}
 
@@ -461,13 +466,20 @@ const GodotWebXR = {
 	godot_webxr_get_external_texture_for_eye__proxy: 'sync',
 	godot_webxr_get_external_texture_for_eye__sig: 'ii',
 	godot_webxr_get_external_texture_for_eye: function (p_eye) {
-		if (!GodotWebXR.session || !GodotWebXR.pose) {
+		if (!GodotWebXR.session) {
 			return 0;
 		}
 
 		const view_index = (p_eye === 2 /* ARVRInterface::EYE_RIGHT */) ? 1 : 0;
 		if (GodotWebXR.texture_ids[view_index]) {
 			return GodotWebXR.texture_ids[view_index];
+		}
+
+		// Check pose separately and after returning the cached texture id,
+		// because we won't get a pose in some cases if we lose tracking, and
+		// we don't want to return 0 just because tracking was lost.
+		if (!GodotWebXR.pose) {
+			return 0;
 		}
 
 		const glLayer = GodotWebXR.session.renderState.baseLayer;
