@@ -339,10 +339,10 @@ void RectangleShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_suppor
 }
 
 bool RectangleShape2DSW::contains_point(const Vector2 &p_point) const {
-	float x = p_point.x;
-	float y = p_point.y;
-	float edge_x = half_extents.x;
-	float edge_y = half_extents.y;
+	real_t x = p_point.x;
+	real_t y = p_point.y;
+	real_t edge_x = half_extents.x;
+	real_t edge_y = half_extents.y;
 	return (x >= -edge_x) && (x < edge_x) && (y >= -edge_y) && (y < edge_y);
 }
 
@@ -590,7 +590,11 @@ real_t ConvexPolygonShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 
 }
 
 void ConvexPolygonShape2DSW::set_data(const Variant &p_data) {
+#ifdef REAL_T_IS_DOUBLE
+	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_VECTOR2_ARRAY && p_data.get_type() != Variant::PACKED_FLOAT64_ARRAY);
+#else
 	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_VECTOR2_ARRAY && p_data.get_type() != Variant::PACKED_FLOAT32_ARRAY);
+#endif
 
 	if (points) {
 		memdelete_arr(points);
@@ -829,7 +833,11 @@ int ConcavePolygonShape2DSW::_generate_bvh(BVH *p_bvh, int p_len, int p_depth) {
 }
 
 void ConcavePolygonShape2DSW::set_data(const Variant &p_data) {
+#ifdef REAL_T_IS_DOUBLE
+	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_VECTOR2_ARRAY && p_data.get_type() != Variant::PACKED_FLOAT64_ARRAY);
+#else
 	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_VECTOR2_ARRAY && p_data.get_type() != Variant::PACKED_FLOAT32_ARRAY);
+#endif
 
 	Rect2 aabb;
 
