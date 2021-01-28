@@ -14,6 +14,7 @@ struct ItemPairs {
 	void clear() {
 		num_pairs = 0;
 		extended_pairs.reset();
+		expanded_aabb = AABB();
 	}
 
 	AABB expanded_aabb;
