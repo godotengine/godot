@@ -4394,6 +4394,18 @@ String String::property_name_encode() const {
 	return *this;
 }
 
+// Changes made to the set of invalid characters must also be reflected in the String documentation.
+const String String::invalid_node_name_characters = ". : @ / \"";
+
+String String::validate_node_name() const {
+	Vector<String> chars = String::invalid_node_name_characters.split(" ");
+	String name = this->replace(chars[0], "");
+	for (int i = 1; i < chars.size(); i++) {
+		name = name.replace(chars[i], "");
+	}
+	return name;
+}
+
 String String::get_basename() const {
 	int pos = rfind(".");
 	if (pos < 0 || pos < MAX(rfind("/"), rfind("\\"))) {

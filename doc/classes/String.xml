@@ -909,6 +909,13 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="validate_node_name">
+			<return type="String">
+			</return>
+			<description>
+				Removes any characters from the string that are prohibited in [Node] names ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code]).
+			</description>
+		</method>
 		<method name="xml_escape">
 			<return type="String">
 			</return>
