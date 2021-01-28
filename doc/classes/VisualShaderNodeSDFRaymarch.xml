@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeSDFRaymarch" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
-		 SDF raymarching algorithm to be used within the visual shader graph.
+		SDF raymarching algorithm to be used within the visual shader graph.
 	</brief_description>
 	<description>
-		 Casts a ray against the screen SDF (signed-distance field) and returns the distance travelled.
+		Casts a ray against the screen SDF (signed-distance field) and returns the distance travelled.
 	</description>
 	<tutorials>
 	</tutorials>

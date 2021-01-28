@@ -1052,6 +1052,8 @@
 			Fix to improve physics jitter, specially on monitors where refresh rate is different than the physics FPS.
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
+		<member name="rendering/cluster_builder/max_clustered_elements" type="float" setter="" getter="" default="512">
+		</member>
 		<member name="rendering/environment/default_clear_color" type="Color" setter="" getter="" default="Color( 0.3, 0.3, 0.3, 1 )">
 			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method RenderingServer.set_default_clear_color].
 		</member>
@@ -1116,6 +1118,8 @@
 		<member name="rendering/quality/depth_prepass/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], performs a previous depth pass before rendering materials. This increases performance in scenes with high overdraw, when complex materials and lighting are used.
 		</member>
+		<member name="rendering/quality/directional_shadow/16_bits" type="bool" setter="" getter="" default="true">
+		</member>
 		<member name="rendering/quality/directional_shadow/size" type="int" setter="" getter="" default="4096">
 			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance. The value will be rounded up to the nearest power of 2.
 		</member>
@@ -1133,6 +1137,8 @@
 			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--rendering-driver[/code] command line argument.
 			[b]FIXME:[/b] No longer valid after DisplayServer split:
 			In such cases, this property is not updated, so use [code]OS.get_current_video_driver[/code] to query it at run-time.
+		</member>
+		<member name="rendering/quality/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
 		</member>
 		<member name="rendering/quality/gi_probes/anisotropic" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], take additional samples when rendering objects affected by a [GIProbe] to reduce artifacts from only sampling in one direction.
@@ -1225,7 +1231,9 @@
 		<member name="rendering/quality/shading/force_vertex_shading.mobile" type="bool" setter="" getter="" default="true">
 			Lower-end override for [member rendering/quality/shading/force_vertex_shading] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/quality/shadow_atlas/quadrant_0_subdiv" type="int" setter="" getter="" default="1">
+		<member name="rendering/quality/shadow_atlas/16_bits" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/quality/shadow_atlas/quadrant_0_subdiv" type="int" setter="" getter="" default="2">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
 		<member name="rendering/quality/shadow_atlas/quadrant_1_subdiv" type="int" setter="" getter="" default="2">
@@ -1285,9 +1293,11 @@
 		<member name="rendering/quality/texture_filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
 		</member>
-		<member name="rendering/sdfgi/frames_to_converge" type="int" setter="" getter="" default="1">
+		<member name="rendering/sdfgi/frames_to_converge" type="int" setter="" getter="" default="4">
 		</member>
-		<member name="rendering/sdfgi/probe_ray_count" type="int" setter="" getter="" default="2">
+		<member name="rendering/sdfgi/frames_to_update_lights" type="int" setter="" getter="" default="2">
+		</member>
+		<member name="rendering/sdfgi/probe_ray_count" type="int" setter="" getter="" default="1">
 		</member>
 		<member name="rendering/spatial_indexer/threaded_cull_minimum_instances" type="int" setter="" getter="" default="1000">
 		</member>

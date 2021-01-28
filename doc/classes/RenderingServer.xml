@@ -2949,6 +2949,8 @@
 			</argument>
 			<argument index="1" name="size" type="int">
 			</argument>
+			<argument index="2" name="use_16_bits" type="bool" default="false">
+			</argument>
 			<description>
 				Sets the size of the shadow atlas's images (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
 			</description>

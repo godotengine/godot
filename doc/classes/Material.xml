@@ -11,6 +11,12 @@
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
+		<method name="inspect_native_shader_code">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="next_pass" type="Material" setter="set_next_pass" getter="get_next_pass">
