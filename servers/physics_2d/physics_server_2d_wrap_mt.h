@@ -189,7 +189,7 @@ public:
 	FUNC2RC(RID, body_get_shape, RID, int);
 
 	FUNC3(body_set_shape_disabled, RID, int, bool);
-	FUNC4(body_set_shape_as_one_way_collision, RID, int, bool, float);
+	FUNC4(body_set_shape_as_one_way_collision, RID, int, bool, real_t);
 
 	FUNC2(body_remove_shape, RID, int);
 	FUNC1(body_clear_shapes, RID);
@@ -255,7 +255,7 @@ public:
 		return physics_2d_server->body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes);
 	}
 
-	int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001) {
+	int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin = 0.001) {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
 		return physics_2d_server->body_test_ray_separation(p_body, p_transform, p_infinite_inertia, r_recover_motion, r_results, p_result_max, p_margin);
 	}
