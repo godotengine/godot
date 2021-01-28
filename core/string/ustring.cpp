@@ -1016,22 +1016,20 @@ String String::get_slicec(char32_t p_splitter, int p_slice) const {
 		return String();
 	}
 
-	const char32_t *c = this->ptr();
 	int i = 0;
 	int prev = 0;
 	int count = 0;
 	while (true) {
-		if (c[i] == 0 || c[i] == p_splitter) {
+		if (i == length() || this->ptr()[i] == p_splitter) {
 			if (p_slice == count) {
 				return substr(prev, i - prev);
-			} else if (c[i] == 0) {
+			} else if (i == length()) {
 				return String();
 			} else {
 				count++;
 				prev = i + 1;
 			}
 		}
-
 		i++;
 	}
 }
@@ -1727,9 +1725,8 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 	{
 		const char *ptrtmp = p_utf8;
-		const char *ptrtmp_limit = &p_utf8[p_len];
 		int skip = 0;
-		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
+		while (p_len < 0 ? *ptrtmp : ptrtmp < p_utf8 + p_len) {
 			if (skip == 0) {
 				uint8_t c = *ptrtmp >= 0 ? *ptrtmp : uint8_t(256 + *ptrtmp);
 
@@ -1942,9 +1939,8 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 
 	{
 		const char16_t *ptrtmp = p_utf16;
-		const char16_t *ptrtmp_limit = &p_utf16[p_len];
 		int skip = 0;
-		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
+		while (p_len < 0 ? *ptrtmp : ptrtmp < p_utf16 + p_len) {
 			uint32_t c = (byteswap) ? BSWAP16(*ptrtmp) : *ptrtmp;
 			if (skip == 0) {
 				if ((c & 0xfffffc00) == 0xd800) {
@@ -2102,25 +2098,25 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 		return 0;
 	}
 
-	const char32_t *s = ptr();
+	int i = 0;
 
-	int64_t sign = s[0] == '-' ? -1 : 1;
+	int64_t sign = this->ptr()[i] == '-' ? -1 : 1;
 
 	if (sign < 0) {
-		s++;
+		i++;
 	}
 
 	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'x') {
+		if (this->ptr()[i] != '0' || this->ptr()[i + 1] != 'x') {
 			return 0;
 		}
-		s += 2;
+		i += 2;
 	}
 
 	int64_t hex = 0;
 
-	while (*s) {
-		char32_t c = LOWERCASE(*s);
+	for (; i < length(); i++) {
+		char32_t c = LOWERCASE(this->ptr()[i]);
 		int64_t n;
 		if (c >= '0' && c <= '9') {
 			n = c - '0';
@@ -2134,7 +2130,6 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 		hex *= 16;
 		hex += n;
-		s++;
 	}
 
 	return hex * sign;
@@ -2145,25 +2140,25 @@ int64_t String::bin_to_int(bool p_with_prefix) const {
 		return 0;
 	}
 
-	const char32_t *s = ptr();
+	int i = 0;
 
-	int64_t sign = s[0] == '-' ? -1 : 1;
+	int64_t sign = this->ptr()[i] == '-' ? -1 : 1;
 
 	if (sign < 0) {
-		s++;
+		i++;
 	}
 
 	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'b') {
+		if (this->ptr()[i] != '0' || this->ptr()[i + 1] != 'b') {
 			return 0;
 		}
-		s += 2;
+		i += 2;
 	}
 
 	int64_t binary = 0;
 
-	while (*s) {
-		char32_t c = LOWERCASE(*s);
+	for (; i < length(); i++) {
+		char32_t c = LOWERCASE(this->ptr()[i]);
 		int64_t n;
 		if (c == '0' || c == '1') {
 			n = c - '0';
@@ -2175,7 +2170,6 @@ int64_t String::bin_to_int(bool p_with_prefix) const {
 		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 		binary *= 2;
 		binary += n;
-		s++;
 	}
 
 	return binary * sign;
@@ -3300,7 +3294,7 @@ bool String::matchn(const String &p_wildcard) const {
 }
 
 String String::format(const Variant &values, String placeholder) const {
-	String new_string = String(this->ptr());
+	String new_string = String(*this);
 
 	if (values.get_type() == Variant::ARRAY) {
 		Array values_arr = values;
@@ -4400,7 +4394,7 @@ String String::percent_decode() const {
 		pe += c;
 	}
 
-	return String::utf8(pe.ptr());
+	return String::utf8(pe.ptr(), pe.length());
 }
 
 String String::property_name_encode() const {
