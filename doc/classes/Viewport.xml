@@ -240,6 +240,8 @@
 		</member>
 		<member name="sdf_scale" type="int" setter="set_sdf_scale" getter="get_sdf_scale" enum="Viewport.SDFScale" default="1">
 		</member>
+		<member name="shadow_atlas_16_bits" type="bool" setter="set_shadow_atlas_16_bits" getter="get_shadow_atlas_16_bits" default="true">
+		</member>
 		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
 			The subdivision amount of the first quadrant on the shadow atlas.
 		</member>
@@ -252,9 +254,9 @@
 		<member name="shadow_atlas_quad_3" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="4">
 			The subdivision amount of the fourth quadrant on the shadow atlas.
 		</member>
-		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="0">
+		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="2048">
 			The shadow atlas' resolution (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
-			[b]Note:[/b] If this is set to 0, shadows won't be visible. Since user-created viewports default to a value of 0, this value must be set above 0 manually.
+			[b]Note:[/b] If this is set to 0, shadows won't be visible.
 		</member>
 		<member name="snap_2d_transforms_to_pixel" type="bool" setter="set_snap_2d_transforms_to_pixel" getter="is_snap_2d_transforms_to_pixel_enabled" default="false">
 		</member>
@@ -408,6 +410,14 @@
 		<constant name="DEBUG_DRAW_GI_BUFFER" value="17" enum="DebugDraw">
 		</constant>
 		<constant name="DEBUG_DRAW_DISABLE_LOD" value="18" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="19" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="20" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_DECALS" value="21" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="22" enum="DebugDraw">
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
 			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.
