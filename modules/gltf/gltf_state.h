@@ -80,6 +80,7 @@ class GLTFState : public Resource {
 	Vector<Ref<GLTFCamera>> cameras;
 	Vector<Ref<GLTFLight>> lights;
 	Set<String> unique_names;
+	Set<String> unique_animation_names;
 
 	Vector<Ref<GLTFSkeleton>> skeletons;
 	Map<GLTFSkeletonIndex, GLTFNodeIndex> skeleton_to_node;
@@ -146,6 +147,9 @@ public:
 
 	Array get_unique_names();
 	void set_unique_names(Array p_unique_names);
+
+	Array get_unique_animation_names();
+	void set_unique_animation_names(Array p_unique_names);
 
 	Array get_skeletons();
 	void set_skeletons(Array p_skeletons);

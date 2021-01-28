@@ -71,6 +71,8 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lights", "lights"), &GLTFState::set_lights);
 	ClassDB::bind_method(D_METHOD("get_unique_names"), &GLTFState::get_unique_names);
 	ClassDB::bind_method(D_METHOD("set_unique_names", "unique_names"), &GLTFState::set_unique_names);
+	ClassDB::bind_method(D_METHOD("get_unique_animation_names"), &GLTFState::get_unique_animation_names);
+	ClassDB::bind_method(D_METHOD("set_unique_animation_names", "unique_animation_names"), &GLTFState::set_unique_animation_names);
 	ClassDB::bind_method(D_METHOD("get_skeletons"), &GLTFState::get_skeletons);
 	ClassDB::bind_method(D_METHOD("set_skeletons", "skeletons"), &GLTFState::set_skeletons);
 	ClassDB::bind_method(D_METHOD("get_skeleton_to_node"), &GLTFState::get_skeleton_to_node);
@@ -98,6 +100,7 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "cameras", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_cameras", "get_cameras"); // Vector<Ref<GLTFCamera>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "lights", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_lights", "get_lights"); // Vector<Ref<GLTFLight>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "unique_names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_unique_names", "get_unique_names"); // Set<String>
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "unique_animation_names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_unique_animation_names", "get_unique_animation_names"); // Set<String>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "skeletons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skeletons", "get_skeletons"); // Vector<Ref<GLTFSkeleton>>
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "skeleton_to_node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skeleton_to_node", "get_skeleton_to_node"); // Map<GLTFSkeletonIndex,
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_animations", "get_animations"); // Vector<Ref<GLTFAnimation>>
@@ -253,6 +256,14 @@ Array GLTFState::get_unique_names() {
 
 void GLTFState::set_unique_names(Array p_unique_names) {
 	GLTFDocument::set_from_array(unique_names, p_unique_names);
+}
+
+Array GLTFState::get_unique_animation_names() {
+	return GLTFDocument::to_array(unique_animation_names);
+}
+
+void GLTFState::set_unique_animation_names(Array p_unique_animation_names) {
+	GLTFDocument::set_from_array(unique_animation_names, p_unique_animation_names);
 }
 
 Array GLTFState::get_skeletons() {
