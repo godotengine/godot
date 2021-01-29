@@ -129,7 +129,7 @@ EM_BOOL OS_JavaScript::fullscreen_change_callback(int p_event_type, const Emscri
 	OS_JavaScript *os = get_singleton();
 	// Empty ID is canvas.
 	String target_id = String::utf8(p_event->id);
-	if (target_id.empty() || target_id == String::utf8(os->canvas_id)) {
+	if (target_id.empty() || target_id == String::utf8(&(os->canvas_id[1]))) {
 		// This event property is the only reliable data on
 		// browser fullscreen state.
 		os->video_mode.fullscreen = p_event->isFullscreen;
@@ -589,7 +589,7 @@ OS::MouseMode OS_JavaScript::get_mouse_mode() const {
 
 	EmscriptenPointerlockChangeEvent ev;
 	emscripten_get_pointerlock_status(&ev);
-	return (ev.isActive && String::utf8(ev.id) == String::utf8(canvas_id)) ? MOUSE_MODE_CAPTURED : MOUSE_MODE_VISIBLE;
+	return (ev.isActive && String::utf8(ev.id) == String::utf8(&canvas_id[1])) ? MOUSE_MODE_CAPTURED : MOUSE_MODE_VISIBLE;
 }
 
 // Wheel
