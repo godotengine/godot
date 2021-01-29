@@ -56,11 +56,11 @@ Vector3 BulletPhysicsDirectBodyState3D::get_total_gravity() const {
 	return gVec;
 }
 
-float BulletPhysicsDirectBodyState3D::get_total_angular_damp() const {
+real_t BulletPhysicsDirectBodyState3D::get_total_angular_damp() const {
 	return body->btBody->getAngularDamping();
 }
 
-float BulletPhysicsDirectBodyState3D::get_total_linear_damp() const {
+real_t BulletPhysicsDirectBodyState3D::get_total_linear_damp() const {
 	return body->btBody->getLinearDamping();
 }
 
@@ -74,7 +74,7 @@ Basis BulletPhysicsDirectBodyState3D::get_principal_inertia_axes() const {
 	return Basis();
 }
 
-float BulletPhysicsDirectBodyState3D::get_inverse_mass() const {
+real_t BulletPhysicsDirectBodyState3D::get_inverse_mass() const {
 	return body->btBody->getInvMass();
 }
 
@@ -158,7 +158,7 @@ Vector3 BulletPhysicsDirectBodyState3D::get_contact_local_normal(int p_contact_i
 	return body->collisions[p_contact_idx].hitNormal;
 }
 
-float BulletPhysicsDirectBodyState3D::get_contact_impulse(int p_contact_idx) const {
+real_t BulletPhysicsDirectBodyState3D::get_contact_impulse(int p_contact_idx) const {
 	return body->collisions[p_contact_idx].appliedImpulse;
 }
 
@@ -412,7 +412,7 @@ void RigidBodyBullet::on_collision_checker_end() {
 	isTransformChanged = btBody->isActive() && !btBody->isStaticOrKinematicObject();
 }
 
-bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index) {
+bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const real_t &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index) {
 	if (collisionsCount >= maxCollisionsDetection) {
 		return false;
 	}
@@ -710,12 +710,12 @@ bool RigidBodyBullet::is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const {
 }
 
 void RigidBodyBullet::reload_axis_lock() {
-	btBody->setLinearFactor(btVector3(float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_X)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Y)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Z))));
+	btBody->setLinearFactor(btVector3(btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_X)), btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Y)), btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Z))));
 	if (PhysicsServer3D::BODY_MODE_CHARACTER == mode) {
 		/// When character angular is always locked
 		btBody->setAngularFactor(btVector3(0., 0., 0.));
 	} else {
-		btBody->setAngularFactor(btVector3(float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_X)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_Y)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_Z))));
+		btBody->setAngularFactor(btVector3(btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_X)), btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_Y)), btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_Z))));
 	}
 }
 

@@ -207,8 +207,8 @@ public:
 	/// This is not supported by physics server
 	virtual uint32_t body_get_user_flags(RID p_body) const override;
 
-	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value) override;
-	virtual float body_get_param(RID p_body, BodyParameter p_param) const override;
+	virtual void body_set_param(RID p_body, BodyParameter p_param, real_t p_value) override;
+	virtual real_t body_get_param(RID p_body, BodyParameter p_param) const override;
 
 	virtual void body_set_kinematic_safe_margin(RID p_body, real_t p_margin) override;
 	virtual real_t body_get_kinematic_safe_margin(RID p_body) const override;
@@ -241,8 +241,8 @@ public:
 	virtual void body_set_max_contacts_reported(RID p_body, int p_contacts) override;
 	virtual int body_get_max_contacts_reported(RID p_body) const override;
 
-	virtual void body_set_contacts_reported_depth_threshold(RID p_body, float p_threshold) override;
-	virtual float body_get_contacts_reported_depth_threshold(RID p_body) const override;
+	virtual void body_set_contacts_reported_depth_threshold(RID p_body, real_t p_threshold) override;
+	virtual real_t body_get_contacts_reported_depth_threshold(RID p_body) const override;
 
 	virtual void body_set_omit_force_integration(RID p_body, bool p_omit) override;
 	virtual bool body_is_omitting_force_integration(RID p_body) const override;
@@ -256,7 +256,7 @@ public:
 	virtual PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) override;
 
 	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) override;
-	virtual int body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001) override;
+	virtual int body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin = 0.001) override;
 
 	/* SOFT BODY API */
 
@@ -337,8 +337,8 @@ public:
 
 	virtual RID joint_create_pin(RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) override;
 
-	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, float p_value) override;
-	virtual float pin_joint_get_param(RID p_joint, PinJointParam p_param) const override;
+	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) override;
+	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const override;
 
 	virtual void pin_joint_set_local_a(RID p_joint, const Vector3 &p_A) override;
 	virtual Vector3 pin_joint_get_local_a(RID p_joint) const override;
@@ -349,8 +349,8 @@ public:
 	virtual RID joint_create_hinge(RID p_body_A, const Transform &p_hinge_A, RID p_body_B, const Transform &p_hinge_B) override;
 	virtual RID joint_create_hinge_simple(RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) override;
 
-	virtual void hinge_joint_set_param(RID p_joint, HingeJointParam p_param, float p_value) override;
-	virtual float hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const override;
+	virtual void hinge_joint_set_param(RID p_joint, HingeJointParam p_param, real_t p_value) override;
+	virtual real_t hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const override;
 
 	virtual void hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_value) override;
 	virtual bool hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const override;
@@ -358,20 +358,20 @@ public:
 	/// Reference frame is A
 	virtual RID joint_create_slider(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override;
 
-	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, float p_value) override;
-	virtual float slider_joint_get_param(RID p_joint, SliderJointParam p_param) const override;
+	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, real_t p_value) override;
+	virtual real_t slider_joint_get_param(RID p_joint, SliderJointParam p_param) const override;
 
 	/// Reference frame is A
 	virtual RID joint_create_cone_twist(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override;
 
-	virtual void cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, float p_value) override;
-	virtual float cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const override;
+	virtual void cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, real_t p_value) override;
+	virtual real_t cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const override;
 
 	/// Reference frame is A
 	virtual RID joint_create_generic_6dof(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override;
 
-	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param, float p_value) override;
-	virtual float generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param) override;
+	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param, real_t p_value) override;
+	virtual real_t generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param) override;
 
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag, bool p_enable) override;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag) override;
@@ -393,7 +393,7 @@ public:
 	}
 
 	virtual void init() override;
-	virtual void step(float p_deltaTime) override;
+	virtual void step(real_t p_deltaTime) override;
 	virtual void flush_queries() override;
 	virtual void finish() override;
 
