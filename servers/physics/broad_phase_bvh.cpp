@@ -34,7 +34,7 @@
 
 BroadPhaseSW::ID BroadPhaseBVH::create(CollisionObjectSW *p_object, int p_subindex, const AABB &p_aabb) {
 
-	ID oid = bvh.create(p_object, p_aabb, p_subindex, false, 1 << p_object->get_type(), 0);
+	ID oid = bvh.create(p_object, true, p_aabb, p_subindex, false, 1 << p_object->get_type(), 0);
 	return oid + 1;
 }
 

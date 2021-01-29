@@ -1,5 +1,5 @@
 public:
-BVHHandle item_add(T *p_userdata, const AABB &p_aabb, int32_t p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask, bool p_invisible = false) {
+BVHHandle item_add(T *p_userdata, bool p_active, const AABB &p_aabb, int32_t p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask, bool p_invisible = false) {
 #ifdef BVH_VERBOSE_TREE
 	VERBOSE_PRINT("\nitem_add BEFORE");
 	_debug_recursive_print_tree(0);
@@ -60,15 +60,19 @@ BVHHandle item_add(T *p_userdata, const AABB &p_aabb, int32_t p_subindex, bool p
 	create_root_node(_current_tree);
 
 	// we must choose where to add to tree
-	ref->tnode_id = _logic_choose_item_add_node(_root_node_id[_current_tree], abb);
+	if (p_active) {
+		ref->tnode_id = _logic_choose_item_add_node(_root_node_id[_current_tree], abb);
 
-	bool refit = _node_add_item(ref->tnode_id, ref_id, abb);
+		bool refit = _node_add_item(ref->tnode_id, ref_id, abb);
 
-	if (refit) {
-		// only need to refit from the parent
-		const TNode &add_node = _nodes[ref->tnode_id];
-		if (add_node.parent_id != BVHCommon::INVALID)
-			refit_upward_and_balance(add_node.parent_id);
+		if (refit) {
+			// only need to refit from the parent
+			const TNode &add_node = _nodes[ref->tnode_id];
+			if (add_node.parent_id != BVHCommon::INVALID)
+				refit_upward_and_balance(add_node.parent_id);
+		}
+	} else {
+		ref->set_inactive();
 	}
 
 #ifdef BVH_VERBOSE
@@ -100,11 +104,14 @@ void _debug_print_refs() {
 bool item_move(BVHHandle p_handle, const AABB &p_aabb) {
 	uint32_t ref_id = p_handle.id();
 
-	BVH_ABB abb;
-	abb.from(p_aabb);
-
 	// get the reference
 	ItemRef &ref = _refs[ref_id];
+	if (!ref.is_active()) {
+		return false;
+	}
+
+	BVH_ABB abb;
+	abb.from(p_aabb);
 
 	BVH_ASSERT(ref.tnode_id != BVHCommon::INVALID);
 	TNode &tnode = _nodes[ref.tnode_id];
@@ -117,7 +124,14 @@ bool item_move(BVHHandle p_handle, const AABB &p_aabb) {
 		// for accurate collision detection
 		TLeaf &leaf = _node_get_leaf(tnode);
 
-		leaf.get_aabb(ref.item_id) = abb;
+		BVH_ABB &leaf_abb = leaf.get_aabb(ref.item_id);
+
+		// no change?
+		if (leaf_abb == abb) {
+			return false;
+		}
+
+		leaf_abb = abb;
 		_integrity_check_all();
 
 		return true;
@@ -168,8 +182,10 @@ void item_remove(BVHHandle p_handle) {
 	_extra[ref_id_moved_back].active_ref_id = active_ref_id;
 	////////////////////////////////////////
 
-	// remove the item from the node
-	node_remove_item(ref_id);
+	// remove the item from the node (only if active)
+	if (_refs[ref_id].is_active()) {
+		node_remove_item(ref_id);
+	}
 
 	// remove the item reference
 	_refs.free(ref_id);
@@ -184,6 +200,54 @@ void item_remove(BVHHandle p_handle) {
 #ifdef BVH_VERBOSE_TREE
 	_debug_recursive_print_tree(_current_tree);
 #endif
+}
+
+// returns success
+bool item_activate(BVHHandle p_handle, const AABB &p_aabb) {
+	uint32_t ref_id = p_handle.id();
+	ItemRef &ref = _refs[ref_id];
+	if (ref.is_active()) {
+		// noop
+		return false;
+	}
+
+	// add to tree
+	BVH_ABB abb;
+	abb.from(p_aabb);
+
+	_current_tree = _handle_get_tree_id(p_handle);
+
+	// we must choose where to add to tree
+	ref.tnode_id = _logic_choose_item_add_node(_root_node_id[_current_tree], abb);
+	_node_add_item(ref.tnode_id, ref_id, abb);
+
+	refit_upward_and_balance(ref.tnode_id);
+
+	return true;
+}
+
+// returns success
+bool item_deactivate(BVHHandle p_handle) {
+	uint32_t ref_id = p_handle.id();
+	ItemRef &ref = _refs[ref_id];
+	if (!ref.is_active()) {
+		// noop
+		return false;
+	}
+
+	// remove from tree
+	BVH_ABB abb;
+	node_remove_item(ref_id, &abb);
+
+	// mark as inactive
+	ref.set_inactive();
+	return true;
+}
+
+bool item_get_active(BVHHandle p_handle) const {
+	uint32_t ref_id = p_handle.id();
+	const ItemRef &ref = _refs[ref_id];
+	return ref.is_active();
 }
 
 // during collision testing, we want to set the mask and whether pairable for the item testing from
@@ -226,7 +290,10 @@ void item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pa
 	ex.pairable_type = p_pairable_type;
 	ex.pairable_mask = p_pairable_mask;
 
-	if ((ex.pairable != 0) != p_pairable) {
+	bool active = ref.is_active();
+	bool pairable_changed = (ex.pairable != 0) != p_pairable;
+
+	if (active && pairable_changed) {
 		// record abb
 		TNode &tnode = _nodes[ref.tnode_id];
 		TLeaf &leaf = _node_get_leaf(tnode);
@@ -238,6 +305,8 @@ void item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pa
 		// remove from old tree
 		node_remove_item(ref_id);
 
+		// we must set the pairable AFTER getting the current tree
+		// because the pairable status determines which tree
 		ex.pairable = p_pairable;
 
 		// add to new tree
@@ -255,6 +324,9 @@ void item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pa
 			if (add_node.parent_id != BVHCommon::INVALID)
 				refit_upward_and_balance(add_node.parent_id);
 		}
+	} else {
+		// always keep this up to date
+		ex.pairable = p_pairable;
 	}
 }
 

@@ -5,6 +5,10 @@ void _logic_item_remove_and_reinsert(uint32_t p_ref_id) {
 	// get the reference
 	ItemRef &ref = _refs[p_ref_id];
 
+	// no need to optimize inactive items
+	if (!ref.is_active())
+		return;
+
 	// special case of debug draw
 	if (ref.item_id == BVHCommon::INVALID)
 		return;

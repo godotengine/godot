@@ -88,7 +88,7 @@ public:
 		unpair_callback_userdata = p_userdata;
 	}
 
-	BVHHandle create(T *p_userdata, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1) {
+	BVHHandle create(T *p_userdata, bool p_active, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1) {
 
 		// not sure if absolutely necessary to flush collisions here. It will cost performance to, instead
 		// of waiting for update, so only uncomment this if there are bugs.
@@ -104,7 +104,7 @@ public:
 		}
 #endif
 
-		BVHHandle h = tree.item_add(p_userdata, p_aabb, p_subindex, p_pairable, p_pairable_type, p_pairable_mask);
+		BVHHandle h = tree.item_add(p_userdata, p_active, p_aabb, p_subindex, p_pairable, p_pairable_type, p_pairable_mask);
 
 		if (USE_PAIRS) {
 			// for safety initialize the expanded AABB
@@ -113,9 +113,10 @@ public:
 			expanded_aabb.grow_by(tree._pairing_expansion);
 
 			// force a collision check no matter the AABB
-			_add_changed_item(h, p_aabb, false);
-
-			_check_for_collisions(true);
+			if (p_active) {
+				_add_changed_item(h, p_aabb, false);
+				_check_for_collisions(true);
+			}
 		}
 
 		return h;
@@ -134,6 +135,18 @@ public:
 		BVHHandle h;
 		h.set(p_handle);
 		erase(h);
+	}
+
+	bool activate(uint32_t p_handle, const AABB &p_aabb, bool p_delay_collision_check = false) {
+		BVHHandle h;
+		h.set(p_handle);
+		return activate(h, p_aabb, p_delay_collision_check);
+	}
+
+	bool deactivate(uint32_t p_handle) {
+		BVHHandle h;
+		h.set(p_handle);
+		return deactivate(h);
 	}
 
 	void set_pairable(uint32_t p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
@@ -182,6 +195,54 @@ public:
 		_check_for_collisions(true);
 	}
 
+	// these should be read as set_visible for render trees,
+	// but generically this makes items add or remove from the
+	// tree internally, to speed things up by ignoring inactive items
+	bool activate(BVHHandle p_handle, const AABB &p_aabb, bool p_delay_collision_check = false) {
+		// sending the aabb here prevents the need for the BVH to maintain
+		// a redundant copy of the aabb.
+		// returns success
+		if (tree.item_activate(p_handle, p_aabb)) {
+			if (USE_PAIRS) {
+
+				// in the special case of the render tree, when setting visibility we are using the combination of
+				// activate then set_pairable. This would case 2 sets of collision checks. For efficiency here we allow
+				// deferring to have a single collision check at the set_pairable call.
+				// Watch for bugs! This may cause bugs if set_pairable is not called.
+				if (!p_delay_collision_check) {
+					_add_changed_item(p_handle, p_aabb, false);
+
+					// force an immediate collision check, much like calls to set_pairable
+					_check_for_collisions(true);
+				}
+			}
+			return true;
+		}
+
+		return false;
+	}
+
+	bool deactivate(BVHHandle p_handle) {
+		// returns success
+		if (tree.item_deactivate(p_handle)) {
+			// call unpair and remove all references to the item
+			// before deleting from the tree
+			if (USE_PAIRS) {
+				_remove_changed_item(p_handle);
+
+				// force check for collisions, much like an erase was called
+				_check_for_collisions(true);
+			}
+			return true;
+		}
+
+		return false;
+	}
+
+	bool get_active(BVHHandle p_handle) const {
+		return tree.item_get_active(p_handle);
+	}
+
 	// call e.g. once per frame (this does a trickle optimize)
 	void update() {
 		tree.update();
@@ -206,21 +267,23 @@ public:
 			// of waiting for update, so only uncomment this if there are bugs.
 			//_check_for_collisions();
 
-			// when the pairable state changes, we need to force a collision check because newly pairable
-			// items may be in collision, and unpairable items might move out of collision.
-			// We cannot depend on waiting for the next update, because that may come much later.
-			AABB aabb;
-			item_get_AABB(p_handle, aabb);
+			if (get_active(p_handle)) {
+				// when the pairable state changes, we need to force a collision check because newly pairable
+				// items may be in collision, and unpairable items might move out of collision.
+				// We cannot depend on waiting for the next update, because that may come much later.
+				AABB aabb;
+				item_get_AABB(p_handle, aabb);
 
-			// passing false disables the optimization which prevents collision checks if
-			// the aabb hasn't changed
-			_add_changed_item(p_handle, aabb, false);
+				// passing false disables the optimization which prevents collision checks if
+				// the aabb hasn't changed
+				_add_changed_item(p_handle, aabb, false);
 
-			// force an immediate collision check (probably just for this one item)
-			// but it must be a FULL collision check, also checking pairable state and masks.
-			// This is because AABB intersecting objects may have changed pairable state / mask
-			// such that they should no longer be paired. E.g. lights.
-			_check_for_collisions(true);
+				// force an immediate collision check (probably just for this one item)
+				// but it must be a FULL collision check, also checking pairable state and masks.
+				// This is because AABB intersecting objects may have changed pairable state / mask
+				// such that they should no longer be paired. E.g. lights.
+				_check_for_collisions(true);
+			} // only if active
 		}
 	}
 

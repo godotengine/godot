@@ -3,6 +3,12 @@ public:
 struct ItemRef {
 	uint32_t tnode_id; // -1 is invalid
 	uint32_t item_id; // in the leaf
+
+	bool is_active() const { return tnode_id != BVHCommon::INACTIVE; }
+	void set_inactive() {
+		tnode_id = BVHCommon::INACTIVE;
+		item_id = BVHCommon::INACTIVE;
+	}
 };
 
 // extra info kept in separate parallel list to the references,
