@@ -193,6 +193,8 @@ void CollisionObject2DSW::_update_shapes() {
 		shape_aabb = xform.xform(shape_aabb);
 		s.aabb_cache = shape_aabb;
 		s.aabb_cache = s.aabb_cache.grow((s.aabb_cache.size.x + s.aabb_cache.size.y) * 0.5 * 0.05);
+		Vector2 scale = xform.get_scale();
+		s.area_cache = ABS(s.shape->get_area() * scale.x * scale.y);
 
 		space->get_broadphase()->move(s.bpid, s.aabb_cache);
 	}
