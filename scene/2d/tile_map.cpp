@@ -497,15 +497,15 @@ void TileMap::update_dirty_quadrants() {
 
 					if (c.transpose) {
 						if (c.flip_h) {
-							rect.position.x -= cell_size.x;
+							rect.position.x -= cell_size.x - rect.size.x;
 						} else {
-							rect.position.x += cell_size.x;
+							rect.position.x += cell_size.x - rect.size.x;
 						}
 					} else {
 						if (c.flip_v) {
-							rect.position.y -= cell_size.y;
+							rect.position.y -= cell_size.y - rect.size.y;
 						} else {
-							rect.position.y += cell_size.y;
+							rect.position.y += cell_size.y - rect.size.y;
 						}
 					}
 
@@ -513,15 +513,15 @@ void TileMap::update_dirty_quadrants() {
 					rect.position += tile_ofs;
 
 					if (c.flip_h) {
-						rect.position.x -= cell_size.x / 2;
+						rect.position.x -= cell_size.x / 2 - rect.size.x / 2;
 					} else {
-						rect.position.x += cell_size.x / 2;
+						rect.position.x += cell_size.x / 2 - rect.size.x / 2;
 					}
 
 					if (c.flip_v) {
-						rect.position.y -= cell_size.y / 2;
+						rect.position.y -= cell_size.y / 2 - rect.size.y / 2;
 					} else {
-						rect.position.y += cell_size.y / 2;
+						rect.position.y += cell_size.y / 2 - rect.size.y / 2;
 					}
 				}
 			} else {

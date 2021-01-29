@@ -884,15 +884,15 @@ void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p
 
 			if (p_transpose) {
 				if (p_flip_h) {
-					rect.position.x -= cell_size.x;
+					rect.position.x -= cell_size.x - rect.size.x;
 				} else {
-					rect.position.x += cell_size.x;
+					rect.position.x += cell_size.x - rect.size.x;
 				}
 			} else {
 				if (p_flip_v) {
-					rect.position.y -= cell_size.y;
+					rect.position.y -= cell_size.y - rect.size.y;
 				} else {
-					rect.position.y += cell_size.y;
+					rect.position.y += cell_size.y - rect.size.y;
 				}
 			}
 
@@ -900,15 +900,15 @@ void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p
 			rect.position += tile_ofs;
 
 			if (p_flip_h) {
-				rect.position.x -= cell_size.x / 2;
+				rect.position.x -= cell_size.x / 2 - rect.size.x / 2;
 			} else {
-				rect.position.x += cell_size.x / 2;
+				rect.position.x += cell_size.x / 2 - rect.size.x / 2;
 			}
 
 			if (p_flip_v) {
-				rect.position.y -= cell_size.y / 2;
+				rect.position.y -= cell_size.y / 2 - rect.size.y / 2;
 			} else {
-				rect.position.y += cell_size.y / 2;
+				rect.position.y += cell_size.y / 2 - rect.size.y / 2;
 			}
 		}
 	} else {
