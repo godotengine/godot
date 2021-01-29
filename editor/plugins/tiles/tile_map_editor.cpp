@@ -168,23 +168,35 @@ void TileMapEditor::_update_toolbar() {
 		tilemap_tools_settings_vsep->show();
 		tilemap_picker_button->show();
 		tilemap_erase_button->show();
+		tilemap_tools_settings_vsep_2->show();
 		tilemap_random_tile_checkbox->show();
+		tilemap_scatter_label->show();
+		tilemap_scatter_spinbox->show();
 	} else if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_line_tool_button) {
 		tilemap_tools_settings_vsep->show();
 		tilemap_picker_button->show();
 		tilemap_erase_button->show();
+		tilemap_tools_settings_vsep_2->show();
 		tilemap_random_tile_checkbox->show();
+		tilemap_scatter_label->show();
+		tilemap_scatter_spinbox->show();
 	} else if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_rect_tool_button) {
 		tilemap_tools_settings_vsep->show();
 		tilemap_picker_button->show();
 		tilemap_erase_button->show();
+		tilemap_tools_settings_vsep_2->show();
 		tilemap_random_tile_checkbox->show();
+		tilemap_scatter_label->show();
+		tilemap_scatter_spinbox->show();
 	} else if (tilemap_tool_buttons_group->get_pressed_button() == tilemap_bucket_tool_button) {
 		tilemap_tools_settings_vsep->show();
 		tilemap_picker_button->show();
 		tilemap_erase_button->show();
+		tilemap_tools_settings_vsep_2->show();
 		tilemap_bucket_continuous_checkbox->show();
 		tilemap_random_tile_checkbox->show();
+		tilemap_scatter_label->show();
+		tilemap_scatter_spinbox->show();
 	}
 }
 
@@ -290,8 +302,9 @@ TileMapCell TileMapEditor::_pick_random_tile(const TileMapPattern *p_pattern) {
 		}
 	}
 
+	double empty_probability = sum * scattering;
 	double current = 0.0;
-	double rand = Math::random(0.0, sum);
+	double rand = Math::random(0.0, sum + empty_probability);
 	for (int i = 0; i < used_cells.size(); i++) {
 		int source_id = p_pattern->get_cell_source_id(used_cells[i]);
 		Vector2i atlas_coords = p_pattern->get_cell_atlas_coords(used_cells[i]);
@@ -573,6 +586,9 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 			case DRAG_TYPE_PAINT: {
 				Map<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, drag_last_mouse_pos, mpos);
 				for (Map<Vector2i, TileMapCell>::Element *E = to_draw.front(); E; E = E->next()) {
+					if (!tilemap_erase_button->is_pressed() && E->get().source_id == -1) {
+						continue;
+					}
 					Vector2i coords = E->key();
 					if (!drag_modified.has(coords)) {
 						drag_modified.insert(coords, TileMapCell(tile_map->get_cell_source_id(coords), tile_map->get_cell_atlas_coords(coords), tile_map->get_cell_alternative_tile(coords)));
@@ -586,6 +602,9 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 					if (!drag_modified.has(line[i])) {
 						Map<Vector2i, TileMapCell> to_draw = _draw_bucket_fill(line[i], tilemap_bucket_continuous_checkbox->is_pressed());
 						for (Map<Vector2i, TileMapCell>::Element *E = to_draw.front(); E; E = E->next()) {
+							if (!tilemap_erase_button->is_pressed() && E->get().source_id == -1) {
+								continue;
+							}
 							Vector2i coords = E->key();
 							if (!drag_modified.has(coords)) {
 								drag_modified.insert(coords, TileMapCell(tile_map->get_cell_source_id(coords), tile_map->get_cell_atlas_coords(coords), tile_map->get_cell_alternative_tile(coords)));
@@ -642,6 +661,9 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 								drag_modified.clear();
 								Map<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, mpos, mpos);
 								for (Map<Vector2i, TileMapCell>::Element *E = to_draw.front(); E; E = E->next()) {
+									if (!tilemap_erase_button->is_pressed() && E->get().source_id == -1) {
+										continue;
+									}
 									Vector2i coords = E->key();
 									if (!drag_modified.has(coords)) {
 										drag_modified.insert(coords, TileMapCell(tile_map->get_cell_source_id(coords), tile_map->get_cell_atlas_coords(coords), tile_map->get_cell_alternative_tile(coords)));
@@ -665,6 +687,9 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 									if (!drag_modified.has(line[i])) {
 										Map<Vector2i, TileMapCell> to_draw = _draw_bucket_fill(line[i], tilemap_bucket_continuous_checkbox->is_pressed());
 										for (Map<Vector2i, TileMapCell>::Element *E = to_draw.front(); E; E = E->next()) {
+											if (!tilemap_erase_button->is_pressed() && E->get().source_id == -1) {
+												continue;
+											}
 											Vector2i coords = E->key();
 											if (!drag_modified.has(coords)) {
 												drag_modified.insert(coords, TileMapCell(tile_map->get_cell_source_id(coords), tile_map->get_cell_atlas_coords(coords), tile_map->get_cell_alternative_tile(coords)));
@@ -775,6 +800,9 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 						Map<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, drag_start_mouse_pos, mpos);
 						undo_redo->create_action("Paint tiles");
 						for (Map<Vector2i, TileMapCell>::Element *E = to_draw.front(); E; E = E->next()) {
+							if (!tilemap_erase_button->is_pressed() && E->get().source_id == -1) {
+								continue;
+							}
 							undo_redo->add_do_method(tile_map, "set_cell", E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
 							undo_redo->add_undo_method(tile_map, "set_cell", E->key(), tile_map->get_cell_source_id(E->key()), tile_map->get_cell_atlas_coords(E->key()), tile_map->get_cell_alternative_tile(E->key()));
 						}
@@ -784,6 +812,9 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 						Map<Vector2i, TileMapCell> to_draw = _draw_rect(tile_map->world_to_map(drag_start_mouse_pos), tile_map->world_to_map(mpos));
 						undo_redo->create_action("Paint tiles");
 						for (Map<Vector2i, TileMapCell>::Element *E = to_draw.front(); E; E = E->next()) {
+							if (!tilemap_erase_button->is_pressed() && E->get().source_id == -1) {
+								continue;
+							}
 							undo_redo->add_do_method(tile_map, "set_cell", E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
 							undo_redo->add_undo_method(tile_map, "set_cell", E->key(), tile_map->get_cell_source_id(E->key()), tile_map->get_cell_atlas_coords(E->key()), tile_map->get_cell_alternative_tile(E->key()));
 						}
@@ -792,6 +823,9 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 					case DRAG_TYPE_BUCKET: {
 						undo_redo->create_action("Paint tiles");
 						for (Map<Vector2i, TileMapCell>::Element *E = drag_modified.front(); E; E = E->next()) {
+							if (!tilemap_erase_button->is_pressed() && E->get().source_id == -1) {
+								continue;
+							}
 							undo_redo->add_do_method(tile_map, "set_cell", E->key(), tile_map->get_cell_source_id(E->key()), tile_map->get_cell_atlas_coords(E->key()), tile_map->get_cell_alternative_tile(E->key()));
 							undo_redo->add_undo_method(tile_map, "set_cell", E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
 						}
@@ -1554,6 +1588,14 @@ TypedArray<Vector2i> TileMapEditor::_get_tile_map_selection() const {
 	return output;
 }
 
+void TileMapEditor::_on_random_tile_checkbox_toggled(bool p_pressed) {
+	tilemap_scatter_spinbox->set_editable(p_pressed);
+}
+
+void TileMapEditor::_on_scattering_spinbox_changed(double p_value) {
+	scattering = p_value;
+}
+
 void TileMapEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_tile_map_selection", "selection"), &TileMapEditor::_set_tile_map_selection);
 	ClassDB::bind_method(D_METHOD("_get_tile_map_selection"), &TileMapEditor::_get_tile_map_selection);
@@ -1636,21 +1678,42 @@ TileMapEditor::TileMapEditor() {
 	tilemap_erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", "Eraser", KEY_E));
 	tilemap_tools_settings->add_child(tilemap_erase_button);
 
-	// Continuous checkbox
+	// Separator 2.
+	tilemap_tools_settings_vsep_2 = memnew(VSeparator);
+	tilemap_tools_settings->add_child(tilemap_tools_settings_vsep_2);
+
+	// Continuous checkbox.
 	tilemap_bucket_continuous_checkbox = memnew(CheckBox);
 	tilemap_bucket_continuous_checkbox->set_flat(true);
 	tilemap_bucket_continuous_checkbox->set_text(TTR("Continuous"));
 	tilemap_tools_settings->add_child(tilemap_bucket_continuous_checkbox);
 
-	// Random tile checkbox
+	// Random tile checkbox.
 	tilemap_random_tile_checkbox = memnew(CheckBox);
 	tilemap_random_tile_checkbox->set_flat(true);
 	tilemap_random_tile_checkbox->set_text(TTR("Place random tile"));
+	tilemap_random_tile_checkbox->connect("toggled", callable_mp(this, &TileMapEditor::_on_random_tile_checkbox_toggled));
 	tilemap_tools_settings->add_child(tilemap_random_tile_checkbox);
+
+	// Random tile scattering.
+	tilemap_scatter_label = memnew(Label);
+	tilemap_scatter_label->set_tooltip(TTR("Defines the probability of painting nothing instead of a randomly selected tile."));
+	tilemap_scatter_label->set_text(TTR("Scattering:"));
+	tilemap_tools_settings->add_child(tilemap_scatter_label);
+
+	tilemap_scatter_spinbox = memnew(SpinBox);
+	tilemap_scatter_spinbox->set_min(0.0);
+	tilemap_scatter_spinbox->set_max(1000);
+	tilemap_scatter_spinbox->set_step(0.001);
+	tilemap_scatter_spinbox->set_tooltip(TTR("Defines the probability of painting nothing instead of a randomly selected tile."));
+	tilemap_scatter_spinbox->get_line_edit()->add_theme_constant_override("minimum_spaces", 3);
+	tilemap_scatter_spinbox->connect("value_changed", callable_mp(this, &TileMapEditor::_on_scattering_spinbox_changed));
+	tilemap_tools_settings->add_child(tilemap_scatter_spinbox);
+
+	_on_random_tile_checkbox_toggled(false);
 
 	// Default tool.
 	tilemap_paint_tool_button->set_pressed(true);
-
 	_update_toolbar();
 
 	// --- Tabs ---

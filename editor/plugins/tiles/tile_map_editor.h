@@ -100,7 +100,14 @@ private:
 	VSeparator *tilemap_tools_settings_vsep;
 	Button *tilemap_erase_button;
 	CheckBox *tilemap_bucket_continuous_checkbox;
+
+	VSeparator *tilemap_tools_settings_vsep_2;
 	CheckBox *tilemap_random_tile_checkbox;
+	float scattering = 0.0;
+	Label *tilemap_scatter_label;
+	SpinBox *tilemap_scatter_spinbox;
+	void _on_random_tile_checkbox_toggled(bool p_pressed);
+	void _on_scattering_spinbox_changed(double p_value);
 
 	void _update_toolbar();
 
