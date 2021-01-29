@@ -190,6 +190,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns the metadata value that was set for the given column using [method set_metadata].
 			</description>
 		</method>
 		<method name="get_next">
@@ -239,6 +240,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns the value of a [constant CELL_MODE_RANGE] column.
 			</description>
 		</method>
 		<method name="get_range_config">
@@ -247,6 +249,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns a dictionary containing the range parameters for a given column. The keys are "min", "max", "step", and "expr".
 			</description>
 		</method>
 		<method name="get_suffix" qualifiers="const">
@@ -255,6 +258,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Gets the suffix string shown after the column value.
 			</description>
 		</method>
 		<method name="get_text" qualifiers="const">
@@ -541,6 +545,7 @@
 			<argument index="1" name="meta" type="Variant">
 			</argument>
 			<description>
+				Sets the metadata value for the given column, which can be retrieved later using [method get_metadata]. This can be used, for example, to store a reference to the original data.
 			</description>
 		</method>
 		<method name="set_range">
@@ -551,6 +556,7 @@
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
+				Sets the value of a [constant CELL_MODE_RANGE] column.
 			</description>
 		</method>
 		<method name="set_range_config">
@@ -567,6 +573,8 @@
 			<argument index="4" name="expr" type="bool" default="false">
 			</argument>
 			<description>
+				Sets the range of accepted values for a column. The column must be in the [constant CELL_MODE_RANGE] mode.
+				If [code]expr[/code] is [code]true[/code], the edit mode slider will use an exponential scale as with [member Range.exp_edit].
 			</description>
 		</method>
 		<method name="set_selectable">
@@ -588,6 +596,7 @@
 			<argument index="1" name="text" type="String">
 			</argument>
 			<description>
+				Sets a string to be shown after a column's value (for example, a unit abbreviation).
 			</description>
 		</method>
 		<method name="set_text">
@@ -598,6 +607,7 @@
 			<argument index="1" name="text" type="String">
 			</argument>
 			<description>
+				Sets the given column's text value.
 			</description>
 		</method>
 		<method name="set_text_align">
@@ -639,7 +649,7 @@
 			Cell contains a string.
 		</constant>
 		<constant name="CELL_MODE_CHECK" value="1" enum="TreeCellMode">
-			Cell can be checked.
+			Cell contains a checkbox.
 		</constant>
 		<constant name="CELL_MODE_RANGE" value="2" enum="TreeCellMode">
 			Cell contains a range.
