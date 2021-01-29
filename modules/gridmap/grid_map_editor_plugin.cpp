@@ -386,13 +386,13 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 	}
 
 	int cell[3];
-	float cell_size[3] = { node->get_cell_size().x, node->get_cell_size().y, node->get_cell_size().z };
+	Vector3 cell_size = node->get_cell_size();
 
 	for (int i = 0; i < 3; i++) {
 		if (i == edit_axis) {
 			cell[i] = edit_floor[i];
 		} else {
-			cell[i] = inters[i] / node->get_cell_size()[i];
+			cell[i] = inters[i] / cell_size[i];
 			if (inters[i] < 0) {
 				cell[i] -= 1; // Compensate negative.
 			}
@@ -436,6 +436,7 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 		}
 		return true;
 	}
+
 	if (input_action == INPUT_PAINT) {
 		SetItem si;
 		si.position = Vector3i(cell[0], cell[1], cell[2]);
@@ -545,7 +546,7 @@ void GridMapEditor::_update_paste_indicator() {
 		return;
 	}
 
-	Vector3 center = 0.5 * Vector3(float(node->get_center_x()), float(node->get_center_y()), float(node->get_center_z()));
+	Vector3 center = 0.5 * Vector3(real_t(node->get_center_x()), real_t(node->get_center_y()), real_t(node->get_center_z()));
 	Vector3 scale = (Vector3(1, 1, 1) + (paste_indicator.end - paste_indicator.begin)) * node->get_cell_size();
 	Transform xf;
 	xf.scale(scale);
