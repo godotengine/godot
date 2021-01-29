@@ -5164,6 +5164,42 @@ void SpatialEditor::_init_indicators() {
 			origin_points.push_back(axis * -1048576);
 		}
 
+		Ref<Shader> grid_shader = memnew(Shader);
+		grid_shader->set_code(
+				"\n"
+				"shader_type spatial; \n"
+				"render_mode unshaded; \n"
+				"uniform bool orthogonal; \n"
+				"uniform float grid_size; \n"
+				"\n"
+				"void vertex() { \n"
+				"	// From FLAG_SRGB_VERTEX_COLOR \n"
+				"	if (!OUTPUT_IS_SRGB) { \n"
+				"		COLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb, vec3(0.04045))); \n"
+				"	} \n"
+				"} \n"
+				"\n"
+				"void fragment() { \n"
+				"	ALBEDO = COLOR.rgb; \n"
+				"	vec3 dir = orthogonal ? -vec3(0, 0, 1) : VIEW; \n"
+				"	float angle_fade = abs(dot(dir, NORMAL)); \n"
+				"	angle_fade = smoothstep(0.05, 0.2, angle_fade); \n"
+				"	\n"
+				"	vec3 world_pos = (CAMERA_MATRIX * vec4(VERTEX, 1.0)).xyz; \n"
+				"	vec3 world_normal = (CAMERA_MATRIX * vec4(NORMAL, 0.0)).xyz; \n"
+				"	vec3 camera_world_pos = CAMERA_MATRIX[3].xyz; \n"
+				"	vec3 camera_world_pos_on_plane = camera_world_pos * (1.0 - world_normal); \n"
+				"	float dist_fade = 1.0 - (distance(world_pos, camera_world_pos_on_plane) / grid_size); \n"
+				"	dist_fade = smoothstep(0.02, 0.3, dist_fade); \n"
+				"	\n"
+				"	ALPHA = COLOR.a * dist_fade * angle_fade; \n"
+				"}");
+
+		for (int i = 0; i < 3; i++) {
+			grid_mat[i].instance();
+			grid_mat[i]->set_shader(grid_shader);
+		}
+
 		grid_enable[0] = EditorSettings::get_singleton()->get("editors/3d/grid_xy_plane");
 		grid_enable[1] = EditorSettings::get_singleton()->get("editors/3d/grid_yz_plane");
 		grid_enable[2] = EditorSettings::get_singleton()->get("editors/3d/grid_xz_plane");
@@ -5368,32 +5404,34 @@ void SpatialEditor::_init_indicators() {
 				}
 
 				Ref<Shader> rotate_shader = memnew(Shader);
-				rotate_shader->set_code("\n"
-										"shader_type spatial; \n"
-										"render_mode unshaded, depth_test_disable; \n"
-										"uniform vec4 albedo; \n"
-										"\n"
-										"mat3 orthonormalize(mat3 m) { \n"
-										"	vec3 x = normalize(m[0]); \n"
-										"	vec3 y = normalize(m[1] - x * dot(x, m[1])); \n"
-										"	vec3 z = m[2] - x * dot(x, m[2]); \n"
-										"	z = normalize(z - y * (dot(y,m[2]))); \n"
-										"	return mat3(x,y,z); \n"
-										"} \n"
-										"\n"
-										"void vertex() { \n"
-										"	mat3 mv = orthonormalize(mat3(MODELVIEW_MATRIX)); \n"
-										"	vec3 n = mv * VERTEX; \n"
-										"	float orientation = dot(vec3(0,0,-1),n); \n"
-										"	if (orientation <= 0.005) { \n"
-										"		VERTEX += NORMAL*0.02; \n"
-										"	} \n"
-										"} \n"
-										"\n"
-										"void fragment() { \n"
-										"	ALBEDO = albedo.rgb; \n"
-										"	ALPHA = albedo.a; \n"
-										"}");
+
+				rotate_shader->set_code(
+						"\n"
+						"shader_type spatial; \n"
+						"render_mode unshaded, depth_test_disable; \n"
+						"uniform vec4 albedo; \n"
+						"\n"
+						"mat3 orthonormalize(mat3 m) { \n"
+						"	vec3 x = normalize(m[0]); \n"
+						"	vec3 y = normalize(m[1] - x * dot(x, m[1])); \n"
+						"	vec3 z = m[2] - x * dot(x, m[2]); \n"
+						"	z = normalize(z - y * (dot(y,m[2]))); \n"
+						"	return mat3(x,y,z); \n"
+						"} \n"
+						"\n"
+						"void vertex() { \n"
+						"	mat3 mv = orthonormalize(mat3(MODELVIEW_MATRIX)); \n"
+						"	vec3 n = mv * VERTEX; \n"
+						"	float orientation = dot(vec3(0,0,-1),n); \n"
+						"	if (orientation <= 0.005) { \n"
+						"		VERTEX += NORMAL*0.02; \n"
+						"	} \n"
+						"} \n"
+						"\n"
+						"void fragment() { \n"
+						"	ALBEDO = albedo.rgb; \n"
+						"	ALPHA = albedo.a; \n"
+						"}");
 
 				Ref<ShaderMaterial> rotate_mat = memnew(ShaderMaterial);
 				rotate_mat->set_render_priority(Material::RENDER_PRIORITY_MAX);
@@ -5413,33 +5451,34 @@ void SpatialEditor::_init_indicators() {
 					Ref<ShaderMaterial> border_mat = rotate_mat->duplicate();
 
 					Ref<Shader> border_shader = memnew(Shader);
-					border_shader->set_code("\n"
-											"shader_type spatial; \n"
-											"render_mode unshaded, depth_test_disable; \n"
-											"uniform vec4 albedo; \n"
-											"\n"
-											"mat3 orthonormalize(mat3 m) { \n"
-											"	vec3 x = normalize(m[0]); \n"
-											"	vec3 y = normalize(m[1] - x * dot(x, m[1])); \n"
-											"	vec3 z = m[2] - x * dot(x, m[2]); \n"
-											"	z = normalize(z - y * (dot(y,m[2]))); \n"
-											"	return mat3(x,y,z); \n"
-											"} \n"
-											"\n"
-											"void vertex() { \n"
-											"	mat3 mv = orthonormalize(mat3(MODELVIEW_MATRIX)); \n"
-											"	mv = inverse(mv); \n"
-											"	VERTEX += NORMAL*0.008; \n"
-											"	vec3 camera_dir_local = mv * vec3(0,0,1); \n"
-											"	vec3 camera_up_local = mv * vec3(0,1,0); \n"
-											"	mat3 rotation_matrix = mat3(cross(camera_dir_local, camera_up_local), camera_up_local, camera_dir_local); \n"
-											"	VERTEX = rotation_matrix * VERTEX; \n"
-											"} \n"
-											"\n"
-											"void fragment() { \n"
-											"	ALBEDO = albedo.rgb; \n"
-											"	ALPHA = albedo.a; \n"
-											"}");
+					border_shader->set_code(
+							"\n"
+							"shader_type spatial; \n"
+							"render_mode unshaded, depth_test_disable; \n"
+							"uniform vec4 albedo; \n"
+							"\n"
+							"mat3 orthonormalize(mat3 m) { \n"
+							"	vec3 x = normalize(m[0]); \n"
+							"	vec3 y = normalize(m[1] - x * dot(x, m[1])); \n"
+							"	vec3 z = m[2] - x * dot(x, m[2]); \n"
+							"	z = normalize(z - y * (dot(y,m[2]))); \n"
+							"	return mat3(x,y,z); \n"
+							"} \n"
+							"\n"
+							"void vertex() { \n"
+							"	mat3 mv = orthonormalize(mat3(MODELVIEW_MATRIX)); \n"
+							"	mv = inverse(mv); \n"
+							"	VERTEX += NORMAL*0.008; \n"
+							"	vec3 camera_dir_local = mv * vec3(0,0,1); \n"
+							"	vec3 camera_up_local = mv * vec3(0,1,0); \n"
+							"	mat3 rotation_matrix = mat3(cross(camera_dir_local, camera_up_local), camera_up_local, camera_dir_local); \n"
+							"	VERTEX = rotation_matrix * VERTEX; \n"
+							"} \n"
+							"\n"
+							"void fragment() { \n"
+							"	ALBEDO = albedo.rgb; \n"
+							"	ALPHA = albedo.a; \n"
+							"}");
 
 					border_mat->set_shader(border_shader);
 					border_mat->set_shader_param("albedo", Color(0.75, 0.75, 0.75, col.a / 3.0));
@@ -5601,8 +5640,11 @@ void SpatialEditor::_init_grid() {
 		return; // Camera is invalid, don't draw the grid.
 	}
 
+	bool orthogonal = camera->get_projection() == Camera::PROJECTION_ORTHOGONAL;
+
 	PoolVector<Color> grid_colors[3];
 	PoolVector<Vector3> grid_points[3];
+	PoolVector<Vector3> grid_normals[3];
 
 	Color primary_grid_color = EditorSettings::get_singleton()->get("editors/3d/primary_grid_color");
 	Color secondary_grid_color = EditorSettings::get_singleton()->get("editors/3d/secondary_grid_color");
@@ -5638,10 +5680,26 @@ void SpatialEditor::_init_grid() {
 		int b = (a + 1) % 3;
 		int c = (a + 2) % 3;
 
-		real_t division_level = Math::log(Math::abs(camera_position[c])) / Math::log((double)primary_grid_steps) + division_level_bias;
-		division_level = CLAMP(division_level, division_level_min, division_level_max);
-		real_t division_level_floored = Math::floor(division_level);
-		real_t division_level_decimals = division_level - division_level_floored;
+		Vector3 normal;
+		normal[c] = 1.0;
+
+		real_t camera_distance = Math::abs(camera_position[c]);
+
+		if (orthogonal) {
+			camera_distance = camera->get_size() / 2.0;
+			Vector3 camera_direction = -camera->get_global_transform().get_basis().get_axis(2);
+			Plane grid_plane = Plane(Vector3(), normal);
+			Vector3 intersection;
+			if (grid_plane.intersects_ray(camera_position, camera_direction, &intersection)) {
+				camera_position = intersection;
+			}
+		}
+
+		real_t division_level = Math::log(Math::abs(camera_distance)) / Math::log((double)primary_grid_steps) + division_level_bias;
+
+		real_t clamped_division_level = CLAMP(division_level, division_level_min, division_level_max);
+		real_t division_level_floored = Math::floor(clamped_division_level);
+		real_t division_level_decimals = clamped_division_level - division_level_floored;
 
 		real_t small_step_size = Math::pow(primary_grid_steps, division_level_floored);
 		real_t large_step_size = small_step_size * primary_grid_steps;
@@ -5653,6 +5711,15 @@ void SpatialEditor::_init_grid() {
 		real_t bgn_b = center_b - grid_size * small_step_size;
 		real_t end_b = center_b + grid_size * small_step_size;
 
+		real_t fade_size = Math::pow(primary_grid_steps, division_level - 1.0);
+		real_t min_fade_size = Math::pow(primary_grid_steps, float(division_level_min));
+		real_t max_fade_size = Math::pow(primary_grid_steps, float(division_level_max));
+		fade_size = CLAMP(fade_size, min_fade_size, max_fade_size);
+
+		real_t grid_fade_size = (grid_size - primary_grid_steps) * fade_size;
+		grid_mat[c]->set_shader_param("grid_size", grid_fade_size);
+		grid_mat[c]->set_shader_param("orthogonal", orthogonal);
+
 		// In each iteration of this loop, draw one line in each direction (so two lines per loop, in each if statement).
 		for (int i = -grid_size; i <= grid_size; i++) {
 			Color line_color;
@@ -5663,11 +5730,6 @@ void SpatialEditor::_init_grid() {
 				line_color = secondary_grid_color;
 				line_color.a = line_color.a * (1 - division_level_decimals);
 			}
-			// Makes lines farther from the center fade out.
-			// Due to limitations of lines, any that come near the camera have full opacity always.
-			// This should eventually be replaced by some kind of "distance fade" system, outside of this function.
-			// But the effect is still somewhat convincing...
-			line_color.a *= 1 - (1 - division_level_decimals * 0.9) * (Math::abs(i / (float)grid_size));
 
 			real_t position_a = center_a + i * small_step_size;
 			real_t position_b = center_b + i * small_step_size;
@@ -5684,6 +5746,8 @@ void SpatialEditor::_init_grid() {
 				grid_points[c].push_back(line_end);
 				grid_colors[c].push_back(line_color);
 				grid_colors[c].push_back(line_color);
+				grid_normals[c].push_back(normal);
+				grid_normals[c].push_back(normal);
 			}
 
 			if (!(origin_enabled && Math::is_zero_approx(position_b))) {
@@ -5697,6 +5761,8 @@ void SpatialEditor::_init_grid() {
 				grid_points[c].push_back(line_end);
 				grid_colors[c].push_back(line_color);
 				grid_colors[c].push_back(line_color);
+				grid_normals[c].push_back(normal);
+				grid_normals[c].push_back(normal);
 			}
 		}
 
@@ -5706,8 +5772,9 @@ void SpatialEditor::_init_grid() {
 		d.resize(VS::ARRAY_MAX);
 		d[VisualServer::ARRAY_VERTEX] = grid_points[c];
 		d[VisualServer::ARRAY_COLOR] = grid_colors[c];
+		d[VisualServer::ARRAY_NORMAL] = grid_normals[c];
 		VisualServer::get_singleton()->mesh_add_surface_from_arrays(grid[c], VisualServer::PRIMITIVE_LINES, d);
-		VisualServer::get_singleton()->mesh_surface_set_material(grid[c], 0, indicator_mat->get_rid());
+		VisualServer::get_singleton()->mesh_surface_set_material(grid[c], 0, grid_mat[c]->get_rid());
 		grid_instance[c] = VisualServer::get_singleton()->instance_create2(grid[c], get_tree()->get_root()->get_world()->get_scenario());
 
 		// Yes, the end of this line is supposed to be a.
