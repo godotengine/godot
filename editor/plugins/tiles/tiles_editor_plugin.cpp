@@ -148,17 +148,12 @@ void TilesEditor::register_atlas_view_for_synchronization(TileAtlasView *p_atlas
 }
 
 void TilesEditor::clear() {
+	tile_map = nullptr;
 	edit(nullptr);
 }
 
 void TilesEditor::edit(Object *p_object) {
-	// Disconnect.
-	if (tile_map) {
-		tile_map->disconnect("tree_exiting", callable_mp(this, &TilesEditor::clear));
-	}
-
 	// Update edited objects.
-	tile_map = nullptr;
 	tile_set = Ref<TileSet>();
 	if (p_object) {
 		if (p_object->is_class("TileMap")) {
@@ -166,6 +161,9 @@ void TilesEditor::edit(Object *p_object) {
 			tile_set = tile_map->get_tileset();
 		} else if (p_object->is_class("TileSet")) {
 			tile_set = Ref<TileSet>(p_object);
+			if (tile_map && tile_map->get_tileset() != tile_set) {
+				tile_map = nullptr;
+			}
 		}
 
 		// Update pressed status button.
@@ -183,7 +181,9 @@ void TilesEditor::edit(Object *p_object) {
 	// Add change listener.
 	if (tile_map) {
 		tile_map->connect("changed", callable_mp(this, &TilesEditor::_tile_map_changed));
-		tile_map->connect("tree_exiting", callable_mp(this, &TilesEditor::clear));
+		if (!tile_map->is_connected("tree_exiting", callable_mp(this, &TilesEditor::clear))) {
+			tile_map->connect("tree_exiting", callable_mp(this, &TilesEditor::clear));
+		}
 	}
 }
 

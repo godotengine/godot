@@ -65,10 +65,12 @@ private:
 	bool tile_set_dragging_selection = false;
 	Vector2i tile_set_drag_start_mouse_pos;
 	TileMapCell hovered_tile;
-	TileMapPattern tile_map_clipboard;
+
 	Set<Vector2i> tile_map_selection;
 	Set<TileMapCell> tile_set_selection;
-	TileMapPattern tile_set_selection_pattern;
+	TileMapPattern *selection_pattern = memnew(TileMapPattern);
+	TileMapPattern *tile_map_clipboard = memnew(TileMapPattern);
+
 	void _update_selection_pattern_from_tilemap_selection();
 	void _update_selection_pattern_from_tileset_selection();
 	void _update_tileset_selection_from_selection_pattern();

@@ -354,7 +354,7 @@ void TileSetEditorSourcesTab::_update_source_inspector() {
 	// Update the "clear outside texture" button.
 	if (source_index >= 0) {
 		int source_id = sources_list->get_item_metadata(source_index);
-		if (tile_set->has_atlas_source(source_id)) {
+		if (tile_set && tile_set->has_atlas_source(source_id)) {
 			atlas_source_fix_tiles_outside_texture_button->set_disabled(!tile_set->get_atlas_source(source_id)->has_tiles_outside_texture());
 		}
 	}
