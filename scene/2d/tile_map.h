@@ -34,6 +34,7 @@
 #include "core/templates/self_list.h"
 #include "core/templates/vset.h"
 #include "scene/2d/node_2d.h"
+#include "scene/gui/control.h"
 #include "scene/resources/tile_set/tile_set.h"
 
 class TileSet;
@@ -249,8 +250,11 @@ public:
 	virtual void set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) override;
 
 	void fix_invalid_tiles();
-	TypedArray<Vector2i> get_surrounding_tiles(Vector2i coords);
 	void clear();
+
+	// Helpers
+	TypedArray<Vector2i> get_surrounding_tiles(Vector2i coords);
+	void draw_cells_outline(Control *p_control, Set<Vector2i> p_cells, Color p_color, Transform2D p_transform = Transform2D());
 
 	TileMap();
 	~TileMap();

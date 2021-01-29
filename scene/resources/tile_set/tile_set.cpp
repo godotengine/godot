@@ -1249,34 +1249,26 @@ void TileSet::draw_tile_shape(Control *p_control, Rect2 p_region, Color p_color,
 			default:
 				break;
 		}
-		Vector<Vector2> points;
+
 		Vector<Vector2> uvs;
-		if (get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-			uvs.append(Vector2(0.5, 0.0));
-			uvs.append(Vector2(0.0, overlap));
-			uvs.append(Vector2(0.0, 1.0 - overlap));
-			uvs.append(Vector2(0.5, 1.0));
-			uvs.append(Vector2(1.0, 1.0 - overlap));
-			uvs.append(Vector2(1.0, overlap));
-			uvs.append(Vector2(0.5, 0.0));
-
+		uvs.append(Vector2(0.5, 0.0));
+		uvs.append(Vector2(0.0, overlap));
+		uvs.append(Vector2(0.0, 1.0 - overlap));
+		uvs.append(Vector2(0.5, 1.0));
+		uvs.append(Vector2(1.0, 1.0 - overlap));
+		uvs.append(Vector2(1.0, overlap));
+		uvs.append(Vector2(0.5, 0.0));
+		if (get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
 			for (int i = 0; i < uvs.size(); i++) {
-				points.append(p_region.position + uvs[i] * p_region.size);
-			}
-
-		} else { // TileSet::TILE_OFFSET_AXIS_VERTICAL
-			uvs.append(Vector2(0.0, 0.5));
-			uvs.append(Vector2(overlap, 0.0));
-			uvs.append(Vector2(1.0 - overlap, 0.0));
-			uvs.append(Vector2(1.0, 0.5));
-			uvs.append(Vector2(1.0 - overlap, 1.0));
-			uvs.append(Vector2(overlap, 1.0));
-			uvs.append(Vector2(0.0, 0.5));
-
-			for (int i = 0; i < uvs.size(); i++) {
-				points.append(p_region.position + uvs[i] * p_region.size);
+				uvs.write[i] = Vector2(uvs[i].y, uvs[i].x);
 			}
 		}
+
+		Vector<Vector2> points;
+		for (int i = 0; i < uvs.size(); i++) {
+			points.append(p_region.position + uvs[i] * p_region.size);
+		}
+
 		if (p_filled) {
 			// This does hurt performances a lot. We should use a mesh if possible instead.
 			p_control->draw_colored_polygon(points, p_color, uvs, p_texture);

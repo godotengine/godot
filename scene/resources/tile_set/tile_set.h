@@ -391,6 +391,7 @@ public:
 	void set_scene_source_offset(int p_source_id, Vector2 p_offset);
 	Vector2 set_scene_source_offset(int p_source_id);
 
+	/*
 	// -- Plugins data accessors --
 	// Terrain
 	uint32_t get_terrain_bitmask_mode(int p_layer_id) const;
@@ -400,12 +401,15 @@ public:
 	Rect2i get_terrain_type_icon_region(int p_layer_id, int p_terrain_type) const;
 
 	// Rendering
+	*/
+
 	void set_y_sorting(bool p_y_sort);
 	bool is_y_sorting() const;
 
 	void set_uv_clipping(bool p_uv_clipping);
 	bool is_uv_clipping() const;
 
+	/*
 	// Physics
 	int get_physics_layers_count();
 	uint32_t get_physics_layer_collision_layer(int p_collision_layer) const;
@@ -416,6 +420,7 @@ public:
 
 	// Navigation
 	// Nothing for now
+	*/
 
 	// Helpers
 	void draw_tile_shape(Control *p_control, Rect2 p_region, Color p_color, bool p_filled = false, Ref<Texture2D> p_texture = Ref<Texture2D>());

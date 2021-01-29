@@ -959,17 +959,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	/*Ref<Font> font = get_theme_font("font", "Label");
 	for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
 		for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
-			Vector2i transformed = TileMap::transform_coords_layout(Vector2(x, y), tile_set->get_tile_offset_axis(), tile_set->get_tile_layout(), TileSet::TILE_LAYOUT_STACKED);
-			if (transformed.x == 0 || transformed.y == 0) {
-				Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(Vector2(x, y)) - tile_shape_size / 2, tile_shape_size));
-				tile_set->draw_tile_shape(p_overlay, cell_region, Color(1.0, 0.5, 0.0, 0.5), true);
-			}
-			if (TileMap::transform_coords_layout(transformed, tile_set->get_tile_offset_axis(), TileSet::TILE_LAYOUT_STACKED, tile_set->get_tile_layout()) != Vector2(x, y)) {
-				p_overlay->draw_string(font, xform.xform(tile_map->map_to_world(Vector2(x, y))) + Vector2i(-tile_shape_size.x / 2, 0), vformat("%s", Vector2(x, y)));
-				p_overlay->draw_string(font, xform.xform(tile_map->map_to_world(Vector2(x, y))) + Vector2i(-tile_shape_size.x / 2, font->get_height() * 2), vformat("%s", transformed), HALIGN_LEFT, -1.0f, -1, Color(1.0, 0.0, 0.0));
-				transformed = TileMap::transform_coords_layout(transformed, tile_set->get_tile_offset_axis(), TileSet::TILE_LAYOUT_STACKED, tile_set->get_tile_layout());
-				p_overlay->draw_string(font, xform.xform(tile_map->map_to_world(Vector2(x, y))) + Vector2i(-tile_shape_size.x / 2, font->get_height()), vformat("%s", transformed), HALIGN_LEFT, -1.0f, -1, Color(1.0, 0.0, 1.0));
-			}
+			p_overlay->draw_string(font, xform.xform(tile_map->map_to_world(Vector2(x, y))) + Vector2i(-tile_shape_size.x / 2, 0), vformat("%s", Vector2(x, y)));
 		}
 	}*/
 
@@ -979,10 +969,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		if (drag_type == DRAG_TYPE_MOVE || (drag_type == DRAG_TYPE_SELECT && !Input::get_singleton()->is_key_pressed(KEY_CONTROL) && !Input::get_singleton()->is_key_pressed(KEY_SHIFT))) {
 			// Do nothing
 		} else {
-			for (Set<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
-				Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(E->get()) - tile_shape_size / 2, tile_shape_size));
-				tile_set->draw_tile_shape(p_overlay, cell_region, Color(0.0, 0.0, 1.0), false);
-			}
+			tile_map->draw_cells_outline(p_overlay, tile_map_selection, Color(0.0, 0.0, 1.0), xform);
 		}
 	}
 
@@ -1008,15 +995,16 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 			// Draw the area being selected.
 			Rect2i rect = Rect2i(tile_map->world_to_map(drag_start_mouse_pos), tile_map->world_to_map(drag_last_mouse_pos) - tile_map->world_to_map(drag_start_mouse_pos)).abs();
 			rect.size += Vector2i(1, 1);
+			Set<Vector2i> to_draw;
 			for (int x = rect.position.x; x < rect.get_end().x; x++) {
 				for (int y = rect.position.y; y < rect.get_end().y; y++) {
 					Vector2i coords = Vector2i(x, y);
 					if (tile_map->get_cell_source_id(coords) != -1) {
-						Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(coords) - tile_shape_size / 2, tile_shape_size));
-						tile_set->draw_tile_shape(p_overlay, cell_region, Color(1.0, 1.0, 1.0), false);
+						to_draw.insert(coords);
 					}
 				}
 			}
+			tile_map->draw_cells_outline(p_overlay, to_draw, Color(1.0, 1.0, 1.0), xform);
 		} else if (drag_type == DRAG_TYPE_MOVE) {
 			// Preview when moving.
 			Vector2i offset = tile_map->world_to_map(drag_last_mouse_pos) - tile_map->world_to_map(drag_start_mouse_pos);

@@ -614,125 +614,6 @@ void TileMap::fix_invalid_tiles() {
 	}
 }
 
-TypedArray<Vector2i> TileMap::get_surrounding_tiles(Vector2i coords) {
-	TypedArray<Vector2i> around;
-	if (!tile_set.is_valid()) {
-		return around;
-	}
-	if (tile_set->get_tile_shape() == TileSet::TILE_SHAPE_SQUARE) {
-		around.push_back(coords + Vector2i(-1, 0));
-		around.push_back(coords + Vector2i(1, 0));
-		around.push_back(coords + Vector2i(0, -1));
-		around.push_back(coords + Vector2i(0, 1));
-	} else {
-		switch (tile_set->get_tile_layout()) {
-			case TileSet::TILE_LAYOUT_STACKED:
-				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-					around.push_back(coords + Vector2i(coords.y % 2 ? 0 : -1, -1));
-					around.push_back(coords + Vector2i(coords.y % 2 ? 1 : 0, -1));
-					around.push_back(coords + Vector2i(-1, 0));
-					around.push_back(coords + Vector2i(1, 0));
-					around.push_back(coords + Vector2i(coords.y % 2 ? 0 : -1, 1));
-					around.push_back(coords + Vector2i(coords.y % 2 ? 1 : 0, 1));
-				} else {
-					around.push_back(coords + Vector2i(-1, coords.x % 2 ? 0 : -1));
-					around.push_back(coords + Vector2i(-1, coords.x % 2 ? 1 : 0));
-					around.push_back(coords + Vector2i(0, -1));
-					around.push_back(coords + Vector2i(0, 1));
-					around.push_back(coords + Vector2i(1, coords.x % 2 ? 0 : -1));
-					around.push_back(coords + Vector2i(1, coords.x % 2 ? 1 : 0));
-				}
-				break;
-			case TileSet::TILE_LAYOUT_STACKED_OFFSET:
-				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-					around.push_back(coords + Vector2i(coords.y % 2 ? -1 : 0, -1));
-					around.push_back(coords + Vector2i(coords.y % 2 ? 0 : 1, -1));
-					around.push_back(coords + Vector2i(-1, 0));
-					around.push_back(coords + Vector2i(1, 0));
-					around.push_back(coords + Vector2i(coords.y % 2 ? -1 : 0, 1));
-					around.push_back(coords + Vector2i(coords.y % 2 ? 0 : 1, 1));
-				} else {
-					around.push_back(coords + Vector2i(-1, coords.x % 2 ? -1 : 0));
-					around.push_back(coords + Vector2i(-1, coords.x % 2 ? 0 : 1));
-					around.push_back(coords + Vector2i(0, -1));
-					around.push_back(coords + Vector2i(0, 1));
-					around.push_back(coords + Vector2i(1, coords.x % 2 ? -1 : 0));
-					around.push_back(coords + Vector2i(1, coords.x % 2 ? 0 : 1));
-				}
-				break;
-			case TileSet::TILE_LAYOUT_STAIRS_RIGHT:
-				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-					around.push_back(coords + Vector2i(0, -1));
-					around.push_back(coords + Vector2i(1, -1));
-					around.push_back(coords + Vector2i(-1, 0));
-					around.push_back(coords + Vector2i(1, 0));
-					around.push_back(coords + Vector2i(-1, 1));
-					around.push_back(coords + Vector2i(0, 1));
-				} else {
-					around.push_back(coords + Vector2i(0, -1));
-					around.push_back(coords + Vector2i(-1, 1));
-					around.push_back(coords + Vector2i(1, -2));
-					around.push_back(coords + Vector2i(-1, 2));
-					around.push_back(coords + Vector2i(1, -1));
-					around.push_back(coords + Vector2i(0, 1));
-				}
-				break;
-			case TileSet::TILE_LAYOUT_STAIRS_DOWN:
-				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-					around.push_back(coords + Vector2i(-1, 0));
-					around.push_back(coords + Vector2i(1, -1));
-					around.push_back(coords + Vector2i(-2, 1));
-					around.push_back(coords + Vector2i(2, -1));
-					around.push_back(coords + Vector2i(-1, 1));
-					around.push_back(coords + Vector2i(1, 0));
-				} else {
-					around.push_back(coords + Vector2i(-1, 0));
-					around.push_back(coords + Vector2i(-1, 1));
-					around.push_back(coords + Vector2i(0, -1));
-					around.push_back(coords + Vector2i(0, 1));
-					around.push_back(coords + Vector2i(1, -1));
-					around.push_back(coords + Vector2i(1, 0));
-				}
-				break;
-			case TileSet::TILE_LAYOUT_DIAMOND_RIGHT:
-				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-					around.push_back(coords + Vector2i(0, -1));
-					around.push_back(coords + Vector2i(1, 0));
-					around.push_back(coords + Vector2i(-1, -1));
-					around.push_back(coords + Vector2i(1, 1));
-					around.push_back(coords + Vector2i(-1, 0));
-					around.push_back(coords + Vector2i(0, 1));
-				} else {
-					around.push_back(coords + Vector2i(0, -1));
-					around.push_back(coords + Vector2i(-1, 0));
-					around.push_back(coords + Vector2i(1, -1));
-					around.push_back(coords + Vector2i(-1, 1));
-					around.push_back(coords + Vector2i(1, 0));
-					around.push_back(coords + Vector2i(0, 1));
-				}
-				break;
-			case TileSet::TILE_LAYOUT_DIAMOND_DOWN:
-				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-					around.push_back(coords + Vector2i(-1, 0));
-					around.push_back(coords + Vector2i(0, -1));
-					around.push_back(coords + Vector2i(-1, 1));
-					around.push_back(coords + Vector2i(1, -1));
-					around.push_back(coords + Vector2i(0, 1));
-					around.push_back(coords + Vector2i(1, 0));
-				} else {
-					around.push_back(coords + Vector2i(-1, 0));
-					around.push_back(coords + Vector2i(0, 1));
-					around.push_back(coords + Vector2i(-1, -1));
-					around.push_back(coords + Vector2i(1, 1));
-					around.push_back(coords + Vector2i(0, -1));
-					around.push_back(coords + Vector2i(1, 0));
-				}
-				break;
-		}
-	}
-	return around;
-}
-
 void TileMap::_recreate_quadrants() {
 	// Clear then recreate all quadrants.
 	_clear_quadrants();
@@ -1245,6 +1126,157 @@ void TileMap::set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) {
 		for (List<RID>::Element *E = q.canvas_items.front(); E; E = E->next()) {
 			RenderingServer::get_singleton()->canvas_item_set_default_texture_repeat(E->get(), RS::CanvasItemTextureRepeat(p_texture_repeat));
 			_make_quadrant_dirty(F);
+		}
+	}
+}
+
+TypedArray<Vector2i> TileMap::get_surrounding_tiles(Vector2i coords) {
+	Vector<Vector2i> around;
+	if (!tile_set.is_valid()) {
+		return TypedArray<Vector2i>();
+	}
+
+	if (tile_set->get_tile_shape() == TileSet::TILE_SHAPE_SQUARE) {
+		around.push_back(Vector2i(1, 0));
+		around.push_back(Vector2i(0, 1));
+		around.push_back(Vector2i(-1, 0));
+		around.push_back(Vector2i(0, -1));
+	} else {
+		switch (tile_set->get_tile_layout()) {
+			case TileSet::TILE_LAYOUT_STACKED: {
+				bool is_offset = (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) ? coords.y % 2 : coords.x % 2;
+				around.push_back(Vector2i(1, 0));
+				around.push_back(Vector2i(is_offset ? 1 : 0, 1));
+				around.push_back(Vector2i(is_offset ? 0 : -1, 1));
+				around.push_back(Vector2i(-1, 0));
+				around.push_back(Vector2i(is_offset ? 0 : -1, -1));
+				around.push_back(Vector2i(is_offset ? 1 : 0, -1));
+				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+					for (int i = 0; i < around.size(); i++) {
+						around.write[i] = Vector2i(around[i].y, around[i].x);
+					}
+				}
+			} break;
+			case TileSet::TILE_LAYOUT_STACKED_OFFSET: {
+				bool is_offset = (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) ? coords.y % 2 : coords.x % 2;
+				around.push_back(Vector2i(1, 0));
+				around.push_back(Vector2i(is_offset ? 0 : 1, 1));
+				around.push_back(Vector2i(is_offset ? -1 : 0, 1));
+				around.push_back(Vector2i(-1, 0));
+				around.push_back(Vector2i(is_offset ? -1 : 0, -1));
+				around.push_back(Vector2i(is_offset ? 0 : 1, -1));
+				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+					for (int i = 0; i < around.size(); i++) {
+						around.write[i] = Vector2i(around[i].y, around[i].x);
+					}
+				}
+			} break;
+			case TileSet::TILE_LAYOUT_STAIRS_RIGHT:
+			case TileSet::TILE_LAYOUT_STAIRS_DOWN:
+				if ((tile_set->get_tile_layout() == TileSet::TILE_LAYOUT_STAIRS_RIGHT) ^ (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL)) {
+					around.push_back(Vector2i(1, 0));
+					around.push_back(Vector2i(0, 1));
+					around.push_back(Vector2i(-1, 1));
+					around.push_back(Vector2i(-1, 0));
+					around.push_back(Vector2i(0, -1));
+					around.push_back(Vector2i(1, -1));
+				} else {
+					around.push_back(Vector2i(2, -1));
+					around.push_back(Vector2i(1, 0));
+					around.push_back(Vector2i(-1, 1));
+					around.push_back(Vector2i(-2, 1));
+					around.push_back(Vector2i(-1, 0));
+					around.push_back(Vector2i(1, -1));
+				}
+				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+					for (int i = 0; i < around.size(); i++) {
+						around.write[i] = Vector2i(around[i].y, around[i].x);
+					}
+				}
+				break;
+			case TileSet::TILE_LAYOUT_DIAMOND_RIGHT:
+			case TileSet::TILE_LAYOUT_DIAMOND_DOWN:
+				if ((tile_set->get_tile_layout() == TileSet::TILE_LAYOUT_STAIRS_RIGHT) ^ (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL)) {
+					around.push_back(Vector2i(1, 1));
+					around.push_back(Vector2i(0, 1));
+					around.push_back(Vector2i(-1, 0));
+					around.push_back(Vector2i(-1, -1));
+					around.push_back(Vector2i(0, -1));
+					around.push_back(Vector2i(1, 0));
+				} else {
+					around.push_back(Vector2i(1, -1));
+					around.push_back(Vector2i(1, 0));
+					around.push_back(Vector2i(0, 1));
+					around.push_back(Vector2i(-1, 1));
+					around.push_back(Vector2i(-1, 0));
+					around.push_back(Vector2i(0, -1));
+				}
+				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+					for (int i = 0; i < around.size(); i++) {
+						around.write[i] = Vector2i(around[i].y, around[i].x);
+					}
+				}
+				break;
+		}
+	}
+
+	TypedArray<Vector2i> output;
+	for (int i = 0; i < around.size(); i++) {
+		output.push_back(coords + around[i]);
+	}
+
+	return output;
+}
+
+void TileMap::draw_cells_outline(Control *p_control, Set<Vector2i> p_cells, Color p_color, Transform2D p_transform) {
+	if (!tile_set.is_valid()) {
+		return;
+	}
+
+	// Create a set.
+	Vector2i tile_size = tile_set->get_tile_size();
+	Vector<Vector2> uvs;
+
+	if (tile_set->get_tile_shape() == TileSet::TILE_SHAPE_SQUARE) {
+		uvs.append(Vector2(1.0, 0.0));
+		uvs.append(Vector2(1.0, 1.0));
+		uvs.append(Vector2(0.0, 1.0));
+		uvs.append(Vector2(0.0, 0.0));
+	} else {
+		float overlap = 0.0;
+		switch (tile_set->get_tile_shape()) {
+			case TileSet::TILE_SHAPE_ISOMETRIC:
+				overlap = 0.5;
+				break;
+			case TileSet::TILE_SHAPE_HEXAGON:
+				overlap = 0.25;
+				break;
+			case TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE:
+				overlap = 0.0;
+				break;
+			default:
+				break;
+		}
+		uvs.append(Vector2(1.0, overlap));
+		uvs.append(Vector2(1.0, 1.0 - overlap));
+		uvs.append(Vector2(0.5, 1.0));
+		uvs.append(Vector2(0.0, 1.0 - overlap));
+		uvs.append(Vector2(0.0, overlap));
+		uvs.append(Vector2(0.5, 0.0));
+		if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+			for (int i = 0; i < uvs.size(); i++) {
+				uvs.write[i] = Vector2(uvs[i].y, uvs[i].x);
+			}
+		}
+	}
+
+	for (Set<Vector2i>::Element *E = p_cells.front(); E; E = E->next()) {
+		Vector2 top_left = map_to_world(E->get()) - tile_size / 2;
+		TypedArray<Vector2i> surrounding_tiles = get_surrounding_tiles(E->get());
+		for (int i = 0; i < surrounding_tiles.size(); i++) {
+			if (!p_cells.has(surrounding_tiles[i])) {
+				p_control->draw_line(p_transform.xform(top_left + uvs[i] * tile_size), p_transform.xform(top_left + uvs[(i + 1) % uvs.size()] * tile_size), p_color);
+			}
 		}
 	}
 }
