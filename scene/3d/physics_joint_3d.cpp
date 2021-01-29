@@ -265,7 +265,7 @@ void PinJoint3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_IMPULSE_CLAMP);
 }
 
-void PinJoint3D::set_param(Param p_param, float p_value) {
+void PinJoint3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, 3);
 	params[p_param] = p_value;
 	if (get_joint().is_valid()) {
@@ -273,7 +273,7 @@ void PinJoint3D::set_param(Param p_param, float p_value) {
 	}
 }
 
-float PinJoint3D::get_param(Param p_param) const {
+real_t PinJoint3D::get_param(Param p_param) const {
 	ERR_FAIL_INDEX_V(p_param, 3, 0);
 	return params[p_param];
 }
@@ -306,19 +306,19 @@ PinJoint3D::PinJoint3D() {
 
 ///////////////////////////////////
 
-void HingeJoint3D::_set_upper_limit(float p_limit) {
+void HingeJoint3D::_set_upper_limit(real_t p_limit) {
 	set_param(PARAM_LIMIT_UPPER, Math::deg2rad(p_limit));
 }
 
-float HingeJoint3D::_get_upper_limit() const {
+real_t HingeJoint3D::_get_upper_limit() const {
 	return Math::rad2deg(get_param(PARAM_LIMIT_UPPER));
 }
 
-void HingeJoint3D::_set_lower_limit(float p_limit) {
+void HingeJoint3D::_set_lower_limit(real_t p_limit) {
 	set_param(PARAM_LIMIT_LOWER, Math::deg2rad(p_limit));
 }
 
-float HingeJoint3D::_get_lower_limit() const {
+real_t HingeJoint3D::_get_lower_limit() const {
 	return Math::rad2deg(get_param(PARAM_LIMIT_LOWER));
 }
 
@@ -363,7 +363,7 @@ void HingeJoint3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 }
 
-void HingeJoint3D::set_param(Param p_param, float p_value) {
+void HingeJoint3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
 	if (get_joint().is_valid()) {
@@ -373,7 +373,7 @@ void HingeJoint3D::set_param(Param p_param, float p_value) {
 	update_gizmo();
 }
 
-float HingeJoint3D::get_param(Param p_param) const {
+real_t HingeJoint3D::get_param(Param p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params[p_param];
 }
@@ -437,19 +437,19 @@ HingeJoint3D::HingeJoint3D() {
 
 //////////////////////////////////
 
-void SliderJoint3D::_set_upper_limit_angular(float p_limit_angular) {
+void SliderJoint3D::_set_upper_limit_angular(real_t p_limit_angular) {
 	set_param(PARAM_ANGULAR_LIMIT_UPPER, Math::deg2rad(p_limit_angular));
 }
 
-float SliderJoint3D::_get_upper_limit_angular() const {
+real_t SliderJoint3D::_get_upper_limit_angular() const {
 	return Math::rad2deg(get_param(PARAM_ANGULAR_LIMIT_UPPER));
 }
 
-void SliderJoint3D::_set_lower_limit_angular(float p_limit_angular) {
+void SliderJoint3D::_set_lower_limit_angular(real_t p_limit_angular) {
 	set_param(PARAM_ANGULAR_LIMIT_LOWER, Math::deg2rad(p_limit_angular));
 }
 
-float SliderJoint3D::_get_lower_limit_angular() const {
+real_t SliderJoint3D::_get_lower_limit_angular() const {
 	return Math::rad2deg(get_param(PARAM_ANGULAR_LIMIT_LOWER));
 }
 
@@ -514,7 +514,7 @@ void SliderJoint3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 }
 
-void SliderJoint3D::set_param(Param p_param, float p_value) {
+void SliderJoint3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
 	if (get_joint().is_valid()) {
@@ -523,7 +523,7 @@ void SliderJoint3D::set_param(Param p_param, float p_value) {
 	update_gizmo();
 }
 
-float SliderJoint3D::get_param(Param p_param) const {
+real_t SliderJoint3D::get_param(Param p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params[p_param];
 }
@@ -579,19 +579,19 @@ SliderJoint3D::SliderJoint3D() {
 
 //////////////////////////////////
 
-void ConeTwistJoint3D::_set_swing_span(float p_limit_angular) {
+void ConeTwistJoint3D::_set_swing_span(real_t p_limit_angular) {
 	set_param(PARAM_SWING_SPAN, Math::deg2rad(p_limit_angular));
 }
 
-float ConeTwistJoint3D::_get_swing_span() const {
+real_t ConeTwistJoint3D::_get_swing_span() const {
 	return Math::rad2deg(get_param(PARAM_SWING_SPAN));
 }
 
-void ConeTwistJoint3D::_set_twist_span(float p_limit_angular) {
+void ConeTwistJoint3D::_set_twist_span(real_t p_limit_angular) {
 	set_param(PARAM_TWIST_SPAN, Math::deg2rad(p_limit_angular));
 }
 
-float ConeTwistJoint3D::_get_twist_span() const {
+real_t ConeTwistJoint3D::_get_twist_span() const {
 	return Math::rad2deg(get_param(PARAM_TWIST_SPAN));
 }
 
@@ -620,7 +620,7 @@ void ConeTwistJoint3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 }
 
-void ConeTwistJoint3D::set_param(Param p_param, float p_value) {
+void ConeTwistJoint3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
 	if (get_joint().is_valid()) {
@@ -630,7 +630,7 @@ void ConeTwistJoint3D::set_param(Param p_param, float p_value) {
 	update_gizmo();
 }
 
-float ConeTwistJoint3D::get_param(Param p_param) const {
+real_t ConeTwistJoint3D::get_param(Param p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params[p_param];
 }
@@ -671,51 +671,51 @@ ConeTwistJoint3D::ConeTwistJoint3D() {
 
 /////////////////////////////////////////////////////////////////////
 
-void Generic6DOFJoint3D::_set_angular_hi_limit_x(float p_limit_angular) {
+void Generic6DOFJoint3D::_set_angular_hi_limit_x(real_t p_limit_angular) {
 	set_param_x(PARAM_ANGULAR_UPPER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
-float Generic6DOFJoint3D::_get_angular_hi_limit_x() const {
+real_t Generic6DOFJoint3D::_get_angular_hi_limit_x() const {
 	return Math::rad2deg(get_param_x(PARAM_ANGULAR_UPPER_LIMIT));
 }
 
-void Generic6DOFJoint3D::_set_angular_lo_limit_x(float p_limit_angular) {
+void Generic6DOFJoint3D::_set_angular_lo_limit_x(real_t p_limit_angular) {
 	set_param_x(PARAM_ANGULAR_LOWER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
-float Generic6DOFJoint3D::_get_angular_lo_limit_x() const {
+real_t Generic6DOFJoint3D::_get_angular_lo_limit_x() const {
 	return Math::rad2deg(get_param_x(PARAM_ANGULAR_LOWER_LIMIT));
 }
 
-void Generic6DOFJoint3D::_set_angular_hi_limit_y(float p_limit_angular) {
+void Generic6DOFJoint3D::_set_angular_hi_limit_y(real_t p_limit_angular) {
 	set_param_y(PARAM_ANGULAR_UPPER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
-float Generic6DOFJoint3D::_get_angular_hi_limit_y() const {
+real_t Generic6DOFJoint3D::_get_angular_hi_limit_y() const {
 	return Math::rad2deg(get_param_y(PARAM_ANGULAR_UPPER_LIMIT));
 }
 
-void Generic6DOFJoint3D::_set_angular_lo_limit_y(float p_limit_angular) {
+void Generic6DOFJoint3D::_set_angular_lo_limit_y(real_t p_limit_angular) {
 	set_param_y(PARAM_ANGULAR_LOWER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
-float Generic6DOFJoint3D::_get_angular_lo_limit_y() const {
+real_t Generic6DOFJoint3D::_get_angular_lo_limit_y() const {
 	return Math::rad2deg(get_param_y(PARAM_ANGULAR_LOWER_LIMIT));
 }
 
-void Generic6DOFJoint3D::_set_angular_hi_limit_z(float p_limit_angular) {
+void Generic6DOFJoint3D::_set_angular_hi_limit_z(real_t p_limit_angular) {
 	set_param_z(PARAM_ANGULAR_UPPER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
-float Generic6DOFJoint3D::_get_angular_hi_limit_z() const {
+real_t Generic6DOFJoint3D::_get_angular_hi_limit_z() const {
 	return Math::rad2deg(get_param_z(PARAM_ANGULAR_UPPER_LIMIT));
 }
 
-void Generic6DOFJoint3D::_set_angular_lo_limit_z(float p_limit_angular) {
+void Generic6DOFJoint3D::_set_angular_lo_limit_z(real_t p_limit_angular) {
 	set_param_z(PARAM_ANGULAR_LOWER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
-float Generic6DOFJoint3D::_get_angular_lo_limit_z() const {
+real_t Generic6DOFJoint3D::_get_angular_lo_limit_z() const {
 	return Math::rad2deg(get_param_z(PARAM_ANGULAR_LOWER_LIMIT));
 }
 
@@ -877,7 +877,7 @@ void Generic6DOFJoint3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 }
 
-void Generic6DOFJoint3D::set_param_x(Param p_param, float p_value) {
+void Generic6DOFJoint3D::set_param_x(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_x[p_param] = p_value;
 	if (get_joint().is_valid()) {
@@ -887,12 +887,12 @@ void Generic6DOFJoint3D::set_param_x(Param p_param, float p_value) {
 	update_gizmo();
 }
 
-float Generic6DOFJoint3D::get_param_x(Param p_param) const {
+real_t Generic6DOFJoint3D::get_param_x(Param p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params_x[p_param];
 }
 
-void Generic6DOFJoint3D::set_param_y(Param p_param, float p_value) {
+void Generic6DOFJoint3D::set_param_y(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_y[p_param] = p_value;
 	if (get_joint().is_valid()) {
@@ -901,12 +901,12 @@ void Generic6DOFJoint3D::set_param_y(Param p_param, float p_value) {
 	update_gizmo();
 }
 
-float Generic6DOFJoint3D::get_param_y(Param p_param) const {
+real_t Generic6DOFJoint3D::get_param_y(Param p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params_y[p_param];
 }
 
-void Generic6DOFJoint3D::set_param_z(Param p_param, float p_value) {
+void Generic6DOFJoint3D::set_param_z(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_z[p_param] = p_value;
 	if (get_joint().is_valid()) {
@@ -915,7 +915,7 @@ void Generic6DOFJoint3D::set_param_z(Param p_param, float p_value) {
 	update_gizmo();
 }
 
-float Generic6DOFJoint3D::get_param_z(Param p_param) const {
+real_t Generic6DOFJoint3D::get_param_z(Param p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params_z[p_param];
 }

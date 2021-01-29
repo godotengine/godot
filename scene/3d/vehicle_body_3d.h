@@ -97,29 +97,29 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_radius(float p_radius);
-	float get_radius() const;
+	void set_radius(real_t p_radius);
+	real_t get_radius() const;
 
-	void set_suspension_rest_length(float p_length);
-	float get_suspension_rest_length() const;
+	void set_suspension_rest_length(real_t p_length);
+	real_t get_suspension_rest_length() const;
 
-	void set_suspension_travel(float p_length);
-	float get_suspension_travel() const;
+	void set_suspension_travel(real_t p_length);
+	real_t get_suspension_travel() const;
 
-	void set_suspension_stiffness(float p_value);
-	float get_suspension_stiffness() const;
+	void set_suspension_stiffness(real_t p_value);
+	real_t get_suspension_stiffness() const;
 
-	void set_suspension_max_force(float p_value);
-	float get_suspension_max_force() const;
+	void set_suspension_max_force(real_t p_value);
+	real_t get_suspension_max_force() const;
 
-	void set_damping_compression(float p_value);
-	float get_damping_compression() const;
+	void set_damping_compression(real_t p_value);
+	real_t get_damping_compression() const;
 
-	void set_damping_relaxation(float p_value);
-	float get_damping_relaxation() const;
+	void set_damping_relaxation(real_t p_value);
+	real_t get_damping_relaxation() const;
 
-	void set_friction_slip(float p_value);
-	float get_friction_slip() const;
+	void set_friction_slip(real_t p_value);
+	real_t get_friction_slip() const;
 
 	void set_use_as_traction(bool p_enable);
 	bool is_used_as_traction() const;
@@ -129,21 +129,21 @@ public:
 
 	bool is_in_contact() const;
 
-	void set_roll_influence(float p_value);
-	float get_roll_influence() const;
+	void set_roll_influence(real_t p_value);
+	real_t get_roll_influence() const;
 
-	float get_skidinfo() const;
+	real_t get_skidinfo() const;
 
-	float get_rpm() const;
+	real_t get_rpm() const;
 
-	void set_engine_force(float p_engine_force);
-	float get_engine_force() const;
+	void set_engine_force(real_t p_engine_force);
+	real_t get_engine_force() const;
 
-	void set_brake(float p_brake);
-	float get_brake() const;
+	void set_brake(real_t p_brake);
+	real_t get_brake() const;
 
-	void set_steering(float p_steering);
-	float get_steering() const;
+	void set_steering(real_t p_steering);
+	real_t get_steering() const;
 
 	String get_configuration_warning() const override;
 
@@ -153,8 +153,8 @@ public:
 class VehicleBody3D : public RigidBody3D {
 	GDCLASS(VehicleBody3D, RigidBody3D);
 
-	float engine_force;
-	float brake;
+	real_t engine_force;
+	real_t brake;
 
 	real_t m_pitchControl;
 	real_t m_steeringValue;
@@ -195,14 +195,14 @@ class VehicleBody3D : public RigidBody3D {
 	void _direct_state_changed(Object *p_state) override;
 
 public:
-	void set_engine_force(float p_engine_force);
-	float get_engine_force() const;
+	void set_engine_force(real_t p_engine_force);
+	real_t get_engine_force() const;
 
-	void set_brake(float p_brake);
-	float get_brake() const;
+	void set_brake(real_t p_brake);
+	real_t get_brake() const;
 
-	void set_steering(float p_steering);
-	float get_steering() const;
+	void set_steering(real_t p_steering);
+	real_t get_steering() const;
 
 	VehicleBody3D();
 };

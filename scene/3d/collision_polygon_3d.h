@@ -39,7 +39,7 @@ class CollisionPolygon3D : public Node3D {
 	GDCLASS(CollisionPolygon3D, Node3D);
 
 protected:
-	float depth;
+	real_t depth;
 	AABB aabb;
 	Vector<Point2> polygon;
 
@@ -59,8 +59,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_depth(float p_depth);
-	float get_depth() const;
+	void set_depth(real_t p_depth);
+	real_t get_depth() const;
 
 	void set_polygon(const Vector<Point2> &p_polygon);
 	Vector<Point2> get_polygon() const;

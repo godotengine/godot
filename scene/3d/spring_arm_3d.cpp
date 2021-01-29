@@ -78,11 +78,11 @@ void SpringArm3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin"), "set_margin", "get_margin");
 }
 
-float SpringArm3D::get_length() const {
+real_t SpringArm3D::get_length() const {
 	return spring_length;
 }
 
-void SpringArm3D::set_length(float p_length) {
+void SpringArm3D::set_length(real_t p_length) {
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint())) {
 		update_gizmo();
 	}
@@ -106,11 +106,11 @@ uint32_t SpringArm3D::get_mask() {
 	return mask;
 }
 
-float SpringArm3D::get_margin() {
+real_t SpringArm3D::get_margin() {
 	return margin;
 }
 
-void SpringArm3D::set_margin(float p_margin) {
+void SpringArm3D::set_margin(real_t p_margin) {
 	margin = p_margin;
 }
 
@@ -126,7 +126,7 @@ void SpringArm3D::clear_excluded_objects() {
 	excluded_objects.clear();
 }
 
-float SpringArm3D::get_hit_length() {
+real_t SpringArm3D::get_hit_length() {
 	return current_spring_length;
 }
 
@@ -143,7 +143,7 @@ void SpringArm3D::process_spring() {
 		PhysicsDirectSpaceState3D::RayResult r;
 		bool intersected = get_world_3d()->get_direct_space_state()->intersect_ray(get_global_transform().origin, get_global_transform().origin + motion, r, excluded_objects, mask);
 		if (intersected) {
-			float dist = get_global_transform().origin.distance_to(r.position);
+			real_t dist = get_global_transform().origin.distance_to(r.position);
 			dist -= margin;
 			motion_delta = dist / (spring_length);
 		}

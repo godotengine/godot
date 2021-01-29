@@ -165,7 +165,7 @@ bool CollisionObject2D::is_shape_owner_one_way_collision_enabled(uint32_t p_owne
 	return shapes[p_owner].one_way_collision;
 }
 
-void CollisionObject2D::shape_owner_set_one_way_collision_margin(uint32_t p_owner, float p_margin) {
+void CollisionObject2D::shape_owner_set_one_way_collision_margin(uint32_t p_owner, real_t p_margin) {
 	if (area) {
 		return; //not for areas
 	}
@@ -179,7 +179,7 @@ void CollisionObject2D::shape_owner_set_one_way_collision_margin(uint32_t p_owne
 	}
 }
 
-float CollisionObject2D::get_shape_owner_one_way_collision_margin(uint32_t p_owner) const {
+real_t CollisionObject2D::get_shape_owner_one_way_collision_margin(uint32_t p_owner) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), 0);
 
 	return shapes[p_owner].one_way_collision_margin;
