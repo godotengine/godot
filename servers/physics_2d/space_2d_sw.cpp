@@ -543,7 +543,7 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 
 	for (int i = 0; i < p_result_max; i++) {
 		//reset results
-		r_results[i].collision_depth = 0;
+		r_results[i].collision_depth = -1.0;
 	}
 
 	int rays_found = 0;
@@ -561,6 +561,7 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 
 		do {
 			Vector2 recover_motion;
+			int recover_count = 0;
 
 			bool collided = false;
 
@@ -578,6 +579,8 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 				}
 
 				Transform2D body_shape_xform = body_transform * p_body->get_shape_transform(j);
+
+				Vector2 ray_normal = -body_shape_xform[1];
 
 				for (int i = 0; i < amount; i++) {
 					const CollisionObject2DSW *col_obj = intersection_query_results[i];
@@ -638,17 +641,23 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 						if (ray_index != -1) {
 							PhysicsServer2D::SeparationResult &result = r_results[ray_index];
 
+							recover_count += cbk.amount;
 							for (int k = 0; k < cbk.amount; k++) {
 								Vector2 a = sr[k * 2 + 0];
 								Vector2 b = sr[k * 2 + 1];
+								Vector2 separation = (b - a);
 
-								recover_motion += (b - a) / cbk.amount;
+								// Apply recovery without margin.
+								float depth = separation.length();
+								float separation_depth = depth - p_margin;
+								if (separation_depth > 0.0) {
+									recover_motion += separation * (separation_depth / depth);
+								}
 
-								float depth = a.distance_to(b);
 								if (depth > result.collision_depth) {
 									result.collision_depth = depth;
 									result.collision_point = b;
-									result.collision_normal = (b - a).normalized();
+									result.collision_normal = ray_normal;
 									result.collision_local_shape = j;
 									result.collider_shape = shape_idx;
 									result.collider = col_obj->get_self();
@@ -671,19 +680,13 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 				break;
 			}
 
+			recover_motion /= recover_count;
+
 			body_transform.elements[2] += recover_motion;
 			body_aabb.position += recover_motion;
 
 			recover_attempts--;
 		} while (recover_attempts);
-	}
-
-	//optimize results (remove non colliding)
-	for (int i = 0; i < rays_found; i++) {
-		if (r_results[i].collision_depth == 0) {
-			rays_found--;
-			SWAP(r_results[i], r_results[rays_found]);
-		}
 	}
 
 	r_recover_motion = body_transform.elements[2] - p_transform.elements[2];
