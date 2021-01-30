@@ -136,11 +136,11 @@ bool Control::_edit_use_rect() const {
 	return true;
 }
 
-void Control::_edit_set_rotation(float p_rotation) {
+void Control::_edit_set_rotation(real_t p_rotation) {
 	set_rotation(p_rotation);
 }
 
-float Control::_edit_get_rotation() const {
+real_t Control::_edit_get_rotation() const {
 	return get_rotation();
 }
 
@@ -1238,10 +1238,10 @@ Size2 Control::get_parent_area_size() const {
 void Control::_size_changed() {
 	Rect2 parent_rect = get_parent_anchorable_rect();
 
-	float edge_pos[4];
+	real_t edge_pos[4];
 
 	for (int i = 0; i < 4; i++) {
-		float area = parent_rect.size[i & 1];
+		real_t area = parent_rect.size[i & 1];
 		edge_pos[i] = data.offset[i] + (data.anchor[i] * area);
 	}
 
@@ -1295,13 +1295,13 @@ void Control::_size_changed() {
 	}
 }
 
-void Control::set_anchor(Side p_side, float p_anchor, bool p_keep_offset, bool p_push_opposite_anchor) {
+void Control::set_anchor(Side p_side, real_t p_anchor, bool p_keep_offset, bool p_push_opposite_anchor) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 
 	Rect2 parent_rect = get_parent_anchorable_rect();
-	float parent_range = (p_side == SIDE_LEFT || p_side == SIDE_RIGHT) ? parent_rect.size.x : parent_rect.size.y;
-	float previous_pos = data.offset[p_side] + data.anchor[p_side] * parent_range;
-	float previous_opposite_pos = data.offset[(p_side + 2) % 4] + data.anchor[(p_side + 2) % 4] * parent_range;
+	real_t parent_range = (p_side == SIDE_LEFT || p_side == SIDE_RIGHT) ? parent_rect.size.x : parent_rect.size.y;
+	real_t previous_pos = data.offset[p_side] + data.anchor[p_side] * parent_range;
+	real_t previous_opposite_pos = data.offset[(p_side + 2) % 4] + data.anchor[(p_side + 2) % 4] * parent_range;
 
 	data.anchor[p_side] = p_anchor;
 
@@ -1327,11 +1327,11 @@ void Control::set_anchor(Side p_side, float p_anchor, bool p_keep_offset, bool p
 	update();
 }
 
-void Control::_set_anchor(Side p_side, float p_anchor) {
+void Control::_set_anchor(Side p_side, real_t p_anchor) {
 	set_anchor(p_side, p_anchor);
 }
 
-void Control::set_anchor_and_offset(Side p_side, float p_anchor, float p_pos, bool p_push_opposite_anchor) {
+void Control::set_anchor_and_offset(Side p_side, real_t p_anchor, real_t p_pos, bool p_push_opposite_anchor) {
 	set_anchor(p_side, p_anchor, false, p_push_opposite_anchor);
 	set_offset(p_side, p_pos);
 }
@@ -1468,7 +1468,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 
 	Rect2 parent_rect = get_parent_anchorable_rect();
 
-	float x = parent_rect.size.x;
+	real_t x = parent_rect.size.x;
 	if (is_layout_rtl()) {
 		x = parent_rect.size.x - x - new_size.x;
 	}
@@ -1592,13 +1592,13 @@ void Control::set_anchors_and_offsets_preset(LayoutPreset p_preset, LayoutPreset
 	set_offsets_preset(p_preset, p_resize_mode, p_margin);
 }
 
-float Control::get_anchor(Side p_side) const {
+real_t Control::get_anchor(Side p_side) const {
 	ERR_FAIL_INDEX_V(int(p_side), 4, 0.0);
 
 	return data.anchor[p_side];
 }
 
-void Control::set_offset(Side p_side, float p_value) {
+void Control::set_offset(Side p_side, real_t p_value) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 
 	data.offset[p_side] = p_value;
@@ -1617,7 +1617,7 @@ void Control::set_end(const Size2 &p_point) {
 	_size_changed();
 }
 
-float Control::get_offset(Side p_side) const {
+real_t Control::get_offset(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
 
 	return data.offset[p_side];
@@ -1660,12 +1660,12 @@ void Control::set_global_position(const Point2 &p_point, bool p_keep_offsets) {
 	set_position(inv.xform(p_point), p_keep_offsets);
 }
 
-void Control::_compute_anchors(Rect2 p_rect, const float p_offsets[4], float (&r_anchors)[4]) {
+void Control::_compute_anchors(Rect2 p_rect, const real_t p_offsets[4], real_t (&r_anchors)[4]) {
 	Size2 parent_rect_size = get_parent_anchorable_rect().size;
 	ERR_FAIL_COND(parent_rect_size.x == 0.0);
 	ERR_FAIL_COND(parent_rect_size.y == 0.0);
 
-	float x = p_rect.position.x;
+	real_t x = p_rect.position.x;
 	if (is_layout_rtl()) {
 		x = parent_rect_size.x - x - p_rect.size.x;
 	}
@@ -1675,10 +1675,10 @@ void Control::_compute_anchors(Rect2 p_rect, const float p_offsets[4], float (&r
 	r_anchors[3] = (p_rect.position.y + p_rect.size.y - p_offsets[3]) / parent_rect_size.y;
 }
 
-void Control::_compute_offsets(Rect2 p_rect, const float p_anchors[4], float (&r_offsets)[4]) {
+void Control::_compute_offsets(Rect2 p_rect, const real_t p_anchors[4], real_t (&r_offsets)[4]) {
 	Size2 parent_rect_size = get_parent_anchorable_rect().size;
 
-	float x = p_rect.position.x;
+	real_t x = p_rect.position.x;
 	if (is_layout_rtl()) {
 		x = parent_rect_size.x - x - p_rect.size.x;
 	}
@@ -2257,7 +2257,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		return c;
 	}
 
-	float dist = 1e7;
+	real_t dist = 1e7;
 	Control *result = nullptr;
 
 	Point2 points[4];
@@ -2278,10 +2278,10 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 
 	Vector2 vdir = dir[p_side];
 
-	float maxd = -1e7;
+	real_t maxd = -1e7;
 
 	for (int i = 0; i < 4; i++) {
-		float d = vdir.dot(points[i]);
+		real_t d = vdir.dot(points[i]);
 		if (d > maxd) {
 			maxd = d;
 		}
@@ -2308,7 +2308,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 	return result;
 }
 
-void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, float p_min, float &r_closest_dist, Control **r_closest) {
+void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, real_t p_min, real_t &r_closest_dist, Control **r_closest) {
 	if (Object::cast_to<Viewport>(p_at)) {
 		return; //bye
 	}
@@ -2325,10 +2325,10 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 		points[2] = xform.xform(c->get_size());
 		points[3] = xform.xform(Point2(0, c->get_size().y));
 
-		float min = 1e7;
+		real_t min = 1e7;
 
 		for (int i = 0; i < 4; i++) {
-			float d = p_dir.dot(points[i]);
+			real_t d = p_dir.dot(points[i]);
 			if (d < min) {
 				min = d;
 			}
@@ -2344,8 +2344,8 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 					Vector2 fb = points[(j + 1) % 4];
 
 					Vector2 pa, pb;
-					float d = Geometry2D::get_closest_points_between_segments(la, lb, fa, fb, pa, pb);
-					//float d = Geometry2D::get_closest_distance_between_segments(Vector3(la.x,la.y,0),Vector3(lb.x,lb.y,0),Vector3(fa.x,fa.y,0),Vector3(fb.x,fb.y,0));
+					real_t d = Geometry2D::get_closest_points_between_segments(la, lb, fa, fb, pa, pb);
+					//real_t d = Geometry2D::get_closest_distance_between_segments(Vector3(la.x,la.y,0),Vector3(lb.x,lb.y,0),Vector3(fa.x,fa.y,0),Vector3(fb.x,fb.y,0));
 					if (d < r_closest_dist) {
 						r_closest_dist = d;
 						*r_closest = c;
@@ -2385,7 +2385,7 @@ void Control::set_v_size_flags(int p_flags) {
 	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
 }
 
-void Control::set_stretch_ratio(float p_ratio) {
+void Control::set_stretch_ratio(real_t p_ratio) {
 	if (data.expand == p_ratio) {
 		return;
 	}
@@ -2394,7 +2394,7 @@ void Control::set_stretch_ratio(float p_ratio) {
 	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
 }
 
-float Control::get_stretch_ratio() const {
+real_t Control::get_stretch_ratio() const {
 	return data.expand;
 }
 
@@ -2566,21 +2566,21 @@ Vector<Vector2i> Control::structured_text_parser(StructuredTextParser p_node_typ
 	return ret;
 }
 
-void Control::set_rotation(float p_radians) {
+void Control::set_rotation(real_t p_radians) {
 	data.rotation = p_radians;
 	update();
 	_notify_transform();
 }
 
-float Control::get_rotation() const {
+real_t Control::get_rotation() const {
 	return data.rotation;
 }
 
-void Control::set_rotation_degrees(float p_degrees) {
+void Control::set_rotation_degrees(real_t p_degrees) {
 	set_rotation(Math::deg2rad(p_degrees));
 }
 
-float Control::get_rotation_degrees() const {
+real_t Control::get_rotation_degrees() const {
 	return Math::rad2deg(get_rotation());
 }
 

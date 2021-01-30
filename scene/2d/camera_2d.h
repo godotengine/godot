@@ -65,16 +65,16 @@ protected:
 	AnchorMode anchor_mode = ANCHOR_MODE_DRAG_CENTER;
 	bool rotating = false;
 	bool current = false;
-	float smoothing = 5.0;
+	real_t smoothing = 5.0;
 	bool smoothing_enabled = false;
 	int limit[4];
 	bool limit_smoothing_enabled = false;
 
-	float drag_margin[4];
+	real_t drag_margin[4];
 	bool drag_horizontal_enabled = false;
 	bool drag_vertical_enabled = false;
-	float drag_horizontal_offset = 0.0;
-	float drag_vertical_offset = 0.0;
+	real_t drag_horizontal_offset = 0.0;
+	real_t drag_vertical_offset = 0.0;
 	bool drag_horizontal_offset_changed = false;
 	bool drag_vertical_offset_changed = false;
 
@@ -85,7 +85,7 @@ protected:
 	void _make_current(Object *p_which);
 	void _set_current(bool p_current);
 
-	void _set_old_smoothing(float p_enable);
+	void _set_old_smoothing(real_t p_enable);
 
 	bool screen_drawing_enabled = true;
 	bool limit_drawing_enabled = false;
@@ -124,20 +124,20 @@ public:
 	void set_drag_vertical_enabled(bool p_enabled);
 	bool is_drag_vertical_enabled() const;
 
-	void set_drag_margin(Side p_side, float p_drag_margin);
-	float get_drag_margin(Side p_side) const;
+	void set_drag_margin(Side p_side, real_t p_drag_margin);
+	real_t get_drag_margin(Side p_side) const;
 
-	void set_drag_horizontal_offset(float p_offset);
-	float get_drag_horizontal_offset() const;
+	void set_drag_horizontal_offset(real_t p_offset);
+	real_t get_drag_horizontal_offset() const;
 
-	void set_drag_vertical_offset(float p_offset);
-	float get_drag_vertical_offset() const;
+	void set_drag_vertical_offset(real_t p_offset);
+	real_t get_drag_vertical_offset() const;
 
 	void set_enable_follow_smoothing(bool p_enabled);
 	bool is_follow_smoothing_enabled() const;
 
-	void set_follow_smoothing(float p_speed);
-	float get_follow_smoothing() const;
+	void set_follow_smoothing(real_t p_speed);
+	real_t get_follow_smoothing() const;
 
 	void set_process_callback(Camera2DProcessCallback p_mode);
 	Camera2DProcessCallback get_process_callback() const;
