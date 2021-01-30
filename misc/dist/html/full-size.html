@@ -161,23 +161,6 @@ $GODOT_HEAD_INCLUDE
 			}
 			requestAnimationFrame(animate);
 
-			function adjustCanvasDimensions() {
-				const scale = window.devicePixelRatio || 1;
-				if (lastWidth != window.innerWidth || lastHeight != window.innerHeight || lastScale != scale) {
-					lastScale = scale;
-					lastWidth = window.innerWidth;
-					lastHeight = window.innerHeight;
-					canvas.width = Math.floor(lastWidth * scale);
-					canvas.height = Math.floor(lastHeight * scale);
-					canvas.style.width = lastWidth + "px";
-					canvas.style.height = lastHeight + "px";
-				}
-			}
-			if (GODOT_CONFIG['canvasResizePolicy'] == 2) {
-				animationCallbacks.push(adjustCanvasDimensions);
-				adjustCanvasDimensions();
-			}
-
 			function setStatusMode(mode) {
 
 				if (statusMode === mode || !initializing)

@@ -396,13 +396,118 @@ const GodotDisplayGamepads = {
 };
 mergeInto(LibraryManager.library, GodotDisplayGamepads);
 
+const GodotDisplayScreen = {
+	$GodotDisplayScreen__deps: ['$GodotConfig', '$GodotOS', '$GL', 'emscripten_webgl_get_current_context'],
+	$GodotDisplayScreen: {
+		desired_size: [0, 0],
+		isFullscreen: function () {
+			const elem = document.fullscreenElement || document.mozFullscreenElement
+				|| document.webkitFullscreenElement || document.msFullscreenElement;
+			if (elem) {
+				return elem === GodotConfig.canvas;
+			}
+			// But maybe knowing the element is not supported.
+			return document.fullscreen || document.mozFullScreen
+				|| document.webkitIsFullscreen;
+		},
+		hasFullscreen: function () {
+			return document.fullscreenEnabled || document.mozFullScreenEnabled
+				|| document.webkitFullscreenEnabled;
+		},
+		requestFullscreen: function () {
+			if (!GodotDisplayScreen.hasFullscreen()) {
+				return 1;
+			}
+			const canvas = GodotConfig.canvas;
+			try {
+				const promise = (canvas.requestFullscreen || canvas.msRequestFullscreen
+					|| canvas.mozRequestFullScreen || canvas.mozRequestFullscreen
+					|| canvas.webkitRequestFullscreen
+				).call(canvas);
+				// Some browsers (Safari) return undefined.
+				// For the standard ones, we need to catch it.
+				if (promise) {
+					promise.catch(function () {
+						// nothing to do.
+					});
+				}
+			} catch (e) {
+				return 1;
+			}
+			return 0;
+		},
+		exitFullscreen: function () {
+			if (!GodotDisplayScreen.isFullscreen()) {
+				return 0;
+			}
+			try {
+				const promise = document.exitFullscreen();
+				if (promise) {
+					promise.catch(function () {
+						// nothing to do.
+					});
+				}
+			} catch (e) {
+				return 1;
+			}
+			return 0;
+		},
+		_updateGL: function () {
+			const gl_context_handle = _emscripten_webgl_get_current_context(); // eslint-disable-line no-undef
+			const gl = GL.getContext(gl_context_handle);
+			if (gl) {
+				GL.resizeOffscreenFramebuffer(gl);
+			}
+		},
+		updateSize: function () {
+			const isFullscreen = GodotDisplayScreen.isFullscreen();
+			const wantsFullWindow = GodotConfig.canvas_resize_policy === 2;
+			const noResize = GodotConfig.canvas_resize_policy === 0;
+			const wwidth = GodotDisplayScreen.desired_size[0];
+			const wheight = GodotDisplayScreen.desired_size[1];
+			const canvas = GodotConfig.canvas;
+			let width = wwidth;
+			let height = wheight;
+			if (noResize) {
+				// Don't resize canvas, just update GL if needed.
+				if (canvas.width !== width || canvas.height !== height) {
+					GodotDisplayScreen.desired_size = [canvas.width, canvas.height];
+					GodotDisplayScreen._updateGL();
+					return 1;
+				}
+				return 0;
+			}
+			const scale = window.devicePixelRatio || 1;
+			if (isFullscreen || wantsFullWindow) {
+				// We need to match screen size.
+				width = window.innerWidth * scale;
+				height = window.innerHeight * scale;
+			}
+			const csw = `${width / scale}px`;
+			const csh = `${height / scale}px`;
+			if (canvas.style.width !== csw || canvas.style.height !== csh || canvas.width !== width || canvas.height !== height) {
+				// Size doesn't match.
+				// Resize canvas, set correct CSS pixel size, update GL.
+				canvas.width = width;
+				canvas.height = height;
+				canvas.style.width = csw;
+				canvas.style.height = csh;
+				GodotDisplayScreen._updateGL();
+				return 1;
+			}
+			return 0;
+		},
+	},
+};
+mergeInto(LibraryManager.library, GodotDisplayScreen);
+
 /**
  * Display server interface.
  *
  * Exposes all the functions needed by DisplayServer implementation.
  */
 const GodotDisplay = {
-	$GodotDisplay__deps: ['$GodotConfig', '$GodotRuntime', '$GodotDisplayCursor', '$GodotDisplayListeners', '$GodotDisplayDragDrop', '$GodotDisplayGamepads'],
+	$GodotDisplay__deps: ['$GodotConfig', '$GodotRuntime', '$GodotDisplayCursor', '$GodotDisplayListeners', '$GodotDisplayDragDrop', '$GodotDisplayGamepads', '$GodotDisplayScreen'],
 	$GodotDisplay: {
 		window_icon: '',
 		findDPI: function () {
@@ -453,6 +558,48 @@ const GodotDisplay = {
 		return window.devicePixelRatio || 1;
 	},
 
+	godot_js_display_fullscreen_request__sig: 'i',
+	godot_js_display_fullscreen_request: function () {
+		return GodotDisplayScreen.requestFullscreen();
+	},
+
+	godot_js_display_fullscreen_exit__sig: 'i',
+	godot_js_display_fullscreen_exit: function () {
+		return GodotDisplayScreen.exitFullscreen();
+	},
+
+	godot_js_display_desired_size_set__sig: 'v',
+	godot_js_display_desired_size_set: function (width, height) {
+		GodotDisplayScreen.desired_size = [width, height];
+		GodotDisplayScreen.updateSize();
+	},
+
+	godot_js_display_size_update__sig: 'i',
+	godot_js_display_size_update: function () {
+		return GodotDisplayScreen.updateSize();
+	},
+
+	godot_js_display_screen_size_get__sig: 'vii',
+	godot_js_display_screen_size_get: function (width, height) {
+		const scale = window.devicePixelRatio || 1;
+		GodotRuntime.setHeapValue(width, window.screen.width * scale, 'i32');
+		GodotRuntime.setHeapValue(height, window.screen.height * scale, 'i32');
+	},
+
+	godot_js_display_window_size_get: function (p_width, p_height) {
+		GodotRuntime.setHeapValue(p_width, GodotConfig.canvas.width, 'i32');
+		GodotRuntime.setHeapValue(p_height, GodotConfig.canvas.height, 'i32');
+	},
+
+	godot_js_display_compute_position: function (x, y, r_x, r_y) {
+		const canvas = GodotConfig.canvas;
+		const rect = canvas.getBoundingClientRect();
+		const rw = canvas.width / rect.width;
+		const rh = canvas.height / rect.height;
+		GodotRuntime.setHeapValue(r_x, (x - rect.x) * rw, 'i32');
+		GodotRuntime.setHeapValue(r_y, (y - rect.y) * rh, 'i32');
+	},
+
 	/*
 	 * Canvas
 	 */
@@ -464,13 +611,6 @@ const GodotDisplay = {
 	godot_js_display_canvas_is_focused__sig: 'i',
 	godot_js_display_canvas_is_focused: function () {
 		return document.activeElement === GodotConfig.canvas;
-	},
-
-	godot_js_display_canvas_bounding_rect_position_get__sig: 'vii',
-	godot_js_display_canvas_bounding_rect_position_get: function (r_x, r_y) {
-		const brect = GodotConfig.canvas.getBoundingClientRect();
-		GodotRuntime.setHeapValue(r_x, brect.x, 'i32');
-		GodotRuntime.setHeapValue(r_y, brect.y, 'i32');
 	},
 
 	/*
@@ -516,15 +656,6 @@ const GodotDisplay = {
 	/*
 	 * Window
 	 */
-	godot_js_display_window_request_fullscreen__sig: 'v',
-	godot_js_display_window_request_fullscreen: function () {
-		const canvas = GodotConfig.canvas;
-		(canvas.requestFullscreen || canvas.msRequestFullscreen
-			|| canvas.mozRequestFullScreen || canvas.mozRequestFullscreen
-			|| canvas.webkitRequestFullscreen
-		).call(canvas);
-	},
-
 	godot_js_display_window_title_set__sig: 'vi',
 	godot_js_display_window_title_set: function (p_data) {
 		document.title = GodotRuntime.parseString(p_data);
@@ -645,8 +776,8 @@ const GodotDisplay = {
 		GodotDisplayListeners.add(canvas, 'drop', GodotDisplayDragDrop.handler(dropFiles));
 	},
 
-	godot_js_display_setup_canvas__sig: 'v',
-	godot_js_display_setup_canvas: function () {
+	godot_js_display_setup_canvas__sig: 'viii',
+	godot_js_display_setup_canvas: function (p_width, p_height, p_fullscreen) {
 		const canvas = GodotConfig.canvas;
 		GodotDisplayListeners.add(canvas, 'contextmenu', function (ev) {
 			ev.preventDefault();
@@ -655,6 +786,23 @@ const GodotDisplay = {
 			alert('WebGL context lost, please reload the page'); // eslint-disable-line no-alert
 			ev.preventDefault();
 		}, false);
+		switch (GodotConfig.canvas_resize_policy) {
+		case 0: // None
+			GodotDisplayScreen.desired_size = [canvas.width, canvas.height];
+			break;
+		case 1: // Project
+			GodotDisplayScreen.desired_size = [p_width, p_height];
+			break;
+		default: // Full window
+			// Ensure we display in the right place, the size will be handled by updateSize
+			canvas.style.position = 'absolute';
+			canvas.style.top = 0;
+			canvas.style.left = 0;
+			break;
+		}
+		if (p_fullscreen) {
+			GodotDisplayScreen.requestFullscreen();
+		}
 	},
 
 	/*

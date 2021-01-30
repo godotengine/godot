@@ -296,7 +296,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 		args.push_back(flags[i]);
 	}
 	Dictionary config;
-	config["canvasResizePolicy"] = p_preset->get("html/full_window_size") ? 2 : 1;
+	config["canvasResizePolicy"] = p_preset->get("html/canvas_resize_policy");
 	config["gdnativeLibs"] = libs;
 	config["executable"] = p_name;
 	config["args"] = args;
@@ -350,7 +350,7 @@ void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_op
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/full_window_size"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "html/canvas_resize_policy", PROPERTY_HINT_ENUM, "None,Project,Adaptive"), 2));
 }
 
 String EditorExportPlatformJavaScript::get_name() const {
