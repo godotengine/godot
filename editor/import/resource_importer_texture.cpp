@@ -336,16 +336,15 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 	f->store_32(0);
 	f->store_32(0);
 
-	/*
-	print_line("streamable " + itos(p_streamable));
-	print_line("mipmaps " + itos(p_mipmaps));
-	print_line("detect_3d " + itos(p_detect_3d));
-	print_line("roughness " + itos(p_detect_roughness));
-	print_line("normal " + itos(p_detect_normal));
-*/
-
 	if ((p_compress_mode == COMPRESS_LOSSLESS || p_compress_mode == COMPRESS_LOSSY) && p_image->get_format() > Image::FORMAT_RGBA8) {
 		p_compress_mode = COMPRESS_VRAM_UNCOMPRESSED; //these can't go as lossy
+	}
+
+	if ((p_compress_mode == COMPRESS_BASIS_UNIVERSAL || p_compress_mode == COMPRESS_VRAM_COMPRESSED || p_compress_mode == COMPRESS_LOSSY) &&
+			p_image->get_width() <= 256 && p_image->get_height() <= 256) {
+		// Small textures (typically pixel art) are too degraded by lossy or VRAM compression
+		// and can have glitches at odd sizes.
+		p_compress_mode = COMPRESS_VRAM_UNCOMPRESSED;
 	}
 
 	Ref<Image> image = p_image->duplicate();
