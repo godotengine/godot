@@ -41,11 +41,26 @@ AABB VisualInstance::get_transformed_aabb() const {
 
 void VisualInstance::_update_visibility() {
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
+
+	bool visible = is_visible_in_tree();
+
+	// keep a quick flag available in each node.
+	// no need to call is_visible_in_tree all over the place,
+	// providing it is propagated with a notification.
+	bool already_visible = (_get_spatial_flags() & SPATIAL_FLAG_VI_VISIBLE) != 0;
+	_set_spatial_flag(SPATIAL_FLAG_VI_VISIBLE, visible);
+
+	// if making visible, make sure the visual server is up to date with the transform
+	if (visible && (!already_visible)) {
+		Transform gt = get_global_transform();
+		VisualServer::get_singleton()->instance_set_transform(instance, gt);
+	}
 
 	_change_notify("visible");
-	VS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree());
+	VS::get_singleton()->instance_set_visible(get_instance(), visible);
 }
 
 void VisualInstance::_notification(int p_what) {
@@ -67,8 +82,10 @@ void VisualInstance::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			Transform gt = get_global_transform();
-			VisualServer::get_singleton()->instance_set_transform(instance, gt);
+			if (_get_spatial_flags() & SPATIAL_FLAG_VI_VISIBLE) {
+				Transform gt = get_global_transform();
+				VisualServer::get_singleton()->instance_set_transform(instance, gt);
+			}
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 
@@ -76,6 +93,10 @@ void VisualInstance::_notification(int p_what) {
 			VisualServer::get_singleton()->instance_attach_skeleton(instance, RID());
 			//VS::get_singleton()->instance_geometry_set_baked_light_sampler(instance, RID() );
 
+			// the vi visible flag is always set to invisible when outside the tree,
+			// so it can detect re-entering the tree and becoming visible, and send
+			// the transform to the visual server
+			_set_spatial_flag(SPATIAL_FLAG_VI_VISIBLE, false);
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
