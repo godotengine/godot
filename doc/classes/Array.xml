@@ -55,6 +55,334 @@
 		<method name="Array" qualifiers="constructor">
 			<return type="Array">
 			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<description>
+				Constructs an empty [Array] with an initial size.
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="bool">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="int">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="float">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="String">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="Vector2">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="Vector2i">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="Rect2">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="Rect2i">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="Vector3">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="Vector3i">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="Transform2D">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="Plane">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="Quat">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="AABB">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="Basis">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="Transform">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="Color">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="Dictionary">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+				[b]Note:[/b][code]fill[/code] is deep copied into the array.
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="Array">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+				[b]Note:[/b][code]fill[/code] is deep copied into the array.
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="PackedByteArray">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+				[b]Note:[/b][code]fill[/code] is deep copied into the array.
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="PackedInt32Array">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+				[b]Note:[/b][code]fill[/code] is deep copied into the array.
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="PackedInt64Array">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+				[b]Note:[/b][code]fill[/code] is deep copied into the array.
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="PackedFloat32Array">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+				[b]Note:[/b][code]fill[/code] is deep copied into the array.
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="PackedFloat64Array">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+				[b]Note:[/b][code]fill[/code] is deep copied into the array.
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="PackedStringArray">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+				[b]Note:[/b][code]fill[/code] is deep copied into the array.
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="PackedVector2Array">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+				[b]Note:[/b][code]fill[/code] is deep copied into the array.
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="PackedVector3Array">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+				[b]Note:[/b][code]fill[/code] is deep copied into the array.
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="fill" type="PackedColorArray">
+			</argument>
+			<description>
+				Constructs an [Array] with an initial size and initialized with [code]fill[/code].
+				[b]Note:[/b][code]fill[/code] is deep copied into the array.
+			</description>
+		</method>
+		<method name="Array" qualifiers="constructor">
+			<return type="Array">
+			</return>
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>

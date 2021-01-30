@@ -113,6 +113,8 @@ public:
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
 	Array();
+	Array(int size);
+	Array(int size, const Variant &fill);
 	~Array();
 };
 

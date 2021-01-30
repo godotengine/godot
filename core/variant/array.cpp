@@ -556,6 +556,27 @@ Array::Array() {
 	_p->refcount.init();
 }
 
+Array::Array(int size) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+	resize(size);
+}
+
+Array::Array(int size, const Variant &fill) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+	resize(size);
+	if (fill.get_type() < Variant::DICTIONARY) {
+		for (int i = 0; i < size; i++) {
+			set(i, fill);
+		}
+	} else {
+		for (int i = 0; i < size; i++) {
+			set(i, fill.duplicate(true));
+		}
+	}
+}
+
 Array::~Array() {
 	_unref();
 }
