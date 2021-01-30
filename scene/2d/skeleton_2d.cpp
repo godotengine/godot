@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "skeleton_2d.h"
+
 #include "scene/resources/skeleton_modification_2d.h"
 
 #ifdef TOOLS_ENABLED
@@ -660,21 +661,18 @@ void Skeleton2D::_notification(int p_what) {
 		if (transform_dirty) {
 			_update_transform();
 		}
-
-		set_process(true);
-		set_physics_process(true);
 		request_ready();
 	}
 
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
 		RS::get_singleton()->skeleton_set_base_transform_2d(skeleton, get_global_transform());
 	}
-	if (p_what == NOTIFICATION_PROCESS) {
+	else if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
 		if (modification_stack.is_valid()) {
 			execute_modifications(get_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process);
 		}
 	}
-	if (p_what == NOTIFICATION_PHYSICS_PROCESS) {
+	else if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
 		if (modification_stack.is_valid()) {
 			execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
 		}
@@ -711,11 +709,17 @@ void Skeleton2D::set_modification_stack(Ref<SkeletonModificationStack2D> p_stack
 	if (modification_stack.is_valid()) {
 		modification_stack->is_setup = false;
 		modification_stack->set_skeleton(nullptr);
+
+		set_process_internal(false);
+		set_physics_process_internal(false);
 	}
 	modification_stack = p_stack;
 	if (modification_stack.is_valid()) {
 		modification_stack->set_skeleton(this);
 		modification_stack->setup();
+
+		set_process_internal(true);
+		set_physics_process_internal(true);
 
 #ifdef TOOLS_ENABLED
 		modification_stack->set_editor_gizmos_dirty(true);

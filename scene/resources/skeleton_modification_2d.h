@@ -32,6 +32,7 @@
 #define SKELETONMODIFICATION2D_H
 
 #include "scene/2d/skeleton_2d.h"
+#include "core/templates/local_vector.h"
 
 ///////////////////////////////////////
 // SkeletonModificationStack2D
@@ -53,18 +54,17 @@ protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 
 public:
-	Skeleton2D *skeleton;
+	Skeleton2D *skeleton = nullptr;
 	bool is_setup = false;
-	bool enabled = true;
-	float strength = 0.0;
+	bool enabled = false;
+	float strength = 1.0;
 
 	enum EXECUTION_MODE {
 		execution_mode_process,
 		execution_mode_physics_process
 	};
 
-	Vector<Ref<SkeletonModification2D>> modifications;
-	int modifications_count = 0;
+	LocalVector<Ref<SkeletonModification2D>> modifications = LocalVector<Ref<SkeletonModification2D>>();
 
 	void setup();
 	void execute(float delta, int p_execution_mode);
@@ -113,14 +113,13 @@ protected:
 
 	bool enabled = true;
 	bool is_setup = false;
-	bool execution_error_found = false;
 
 	bool _print_execution_error(bool p_condition, String p_message);
 
 public:
-	virtual void execute(float delta);
-	virtual void setup_modification(SkeletonModificationStack2D *p_stack);
-	virtual void draw_editor_gizmo();
+	virtual void _execute(float delta);
+	virtual void _setup_modification(SkeletonModificationStack2D *p_stack);
+	virtual void _draw_editor_gizmo();
 
 	bool editor_draw_gizmo = false;
 	void set_editor_draw_gizmo(bool p_draw_gizmo);
@@ -156,6 +155,7 @@ private:
 
 	NodePath target_node;
 	ObjectID target_node_cache;
+	Node2D* target_node_reference = nullptr;
 
 	float additional_rotation = 0;
 	bool enable_constraint = false;
@@ -174,9 +174,9 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void execute(float delta) override;
-	void setup_modification(SkeletonModificationStack2D *p_stack) override;
-	void draw_editor_gizmo() override;
+	void _execute(float delta) override;
+	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void _draw_editor_gizmo() override;
 
 	void set_bone2d_node(const NodePath &p_target_node);
 	NodePath get_bone2d_node() const;
@@ -247,9 +247,9 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void execute(float delta) override;
-	void setup_modification(SkeletonModificationStack2D *p_stack) override;
-	void draw_editor_gizmo() override;
+	void _execute(float delta) override;
+	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void _draw_editor_gizmo() override;
 
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
@@ -337,9 +337,9 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void execute(float delta) override;
-	void setup_modification(SkeletonModificationStack2D *p_stack) override;
-	void draw_editor_gizmo() override;
+	void _execute(float delta) override;
+	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void _draw_editor_gizmo() override;
 
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
@@ -428,8 +428,8 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void execute(float delta) override;
-	void setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void _execute(float delta) override;
+	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
 
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
@@ -512,9 +512,9 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void execute(float delta) override;
-	void setup_modification(SkeletonModificationStack2D *p_stack) override;
-	void draw_editor_gizmo() override;
+	void _execute(float delta) override;
+	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void _draw_editor_gizmo() override;
 
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
@@ -573,8 +573,8 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void execute(float delta) override;
-	void setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void _execute(float delta) override;
+	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
 
 	int get_physical_bone_chain_length();
 	void set_physical_bone_chain_length(int p_new_length);
@@ -606,9 +606,9 @@ protected:
 public:
 	Ref<SkeletonModificationStack2D> held_modification_stack;
 
-	void execute(float delta) override;
-	void setup_modification(SkeletonModificationStack2D *p_stack) override;
-	void draw_editor_gizmo() override;
+	void _execute(float delta) override;
+	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void _draw_editor_gizmo() override;
 
 	void set_held_modification_stack(Ref<SkeletonModificationStack2D> p_held_stack);
 	Ref<SkeletonModificationStack2D> get_held_modification_stack() const;

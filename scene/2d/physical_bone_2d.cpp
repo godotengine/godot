@@ -179,6 +179,21 @@ void PhysicalBone2D::_start_physics_simulation() {
 	PhysicsServer2D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
 
+	// Apply the correct mode
+	RigidBody2D::Mode rigid_mode = get_mode();
+	if (rigid_mode == RigidBody2D::MODE_STATIC) {
+		PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_STATIC);
+	} else if (rigid_mode == RigidBody2D::MODE_RIGID) {
+		PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_RIGID);
+	} else if (rigid_mode == RigidBody2D::MODE_KINEMATIC) {
+		PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_KINEMATIC);
+	} else if (rigid_mode == RigidBody2D::MODE_CHARACTER) {
+		PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_CHARACTER);
+	} else {
+		// Default to Rigid
+		PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_RIGID);
+	}
+
 	_internal_simulate_physics = true;
 	set_physics_process_internal(true);
 }
@@ -195,6 +210,7 @@ void PhysicalBone2D::_stop_physics_simulation() {
 		set_physics_process_internal(false);
 		PhysicsServer2D::get_singleton()->body_set_collision_layer(get_rid(), 0);
 		PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), 0);
+		PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_STATIC);
 	}
 }
 
@@ -304,7 +320,10 @@ void PhysicalBone2D::_bind_methods() {
 
 PhysicalBone2D::PhysicalBone2D() {
 	// Stop the RigidBody from executing its force integration.
-	PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), nullptr, "");
+	PhysicsServer2D::get_singleton()->body_set_collision_layer(get_rid(), 0);
+	PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), 0);
+	PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_STATIC);
+	
 	child_joint = nullptr;
 }
 

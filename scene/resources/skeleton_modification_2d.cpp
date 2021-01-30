@@ -86,7 +86,7 @@ void SkeletonModificationStack2D::setup() {
 			if (!modifications[i].is_valid()) {
 				continue;
 			}
-			modifications.get(i)->setup_modification(this);
+			modifications[i]->_setup_modification(this);
 		}
 
 #ifdef TOOLS_ENABLED
@@ -117,7 +117,7 @@ void SkeletonModificationStack2D::execute(float delta, int p_execution_mode) {
 		}
 
 		if (modifications[i]->get_execution_mode() == p_execution_mode) {
-			modifications.get(i)->execute(delta);
+			modifications[i]->_execute(delta);
 		}
 	}
 }
@@ -134,7 +134,7 @@ void SkeletonModificationStack2D::draw_editor_gizmos() {
 			}
 
 			if (modifications[i]->editor_draw_gizmo) {
-				modifications.get(i)->draw_editor_gizmo();
+				modifications[i]->_draw_editor_gizmo();
 			}
 		}
 		skeleton->draw_set_transform(Vector2(0, 0));
@@ -162,7 +162,7 @@ void SkeletonModificationStack2D::enable_all_modifications(bool p_enabled) {
 		if (!modifications[i].is_valid()) {
 			continue;
 		}
-		modifications.get(i)->set_enabled(p_enabled);
+		modifications[i]->set_enabled(p_enabled);
 	}
 }
 
@@ -172,7 +172,7 @@ Ref<SkeletonModification2D> SkeletonModificationStack2D::get_modification(int p_
 }
 
 void SkeletonModificationStack2D::add_modification(Ref<SkeletonModification2D> p_mod) {
-	p_mod->setup_modification(this);
+	p_mod->_setup_modification(this);
 	modifications.push_back(p_mod);
 
 #ifdef TOOLS_ENABLED
@@ -193,10 +193,10 @@ void SkeletonModificationStack2D::set_modification(int p_mod_idx, Ref<SkeletonMo
 	ERR_FAIL_INDEX(p_mod_idx, modifications.size());
 
 	if (p_mod == nullptr) {
-		modifications.set(p_mod_idx, nullptr);
+		modifications[p_mod_idx] = Ref<SkeletonModification2D>();
 	} else {
-		p_mod->setup_modification(this);
-		modifications.set(p_mod_idx, p_mod);
+		p_mod->_setup_modification(this);
+		modifications[p_mod_idx] = p_mod;
 	}
 
 #ifdef TOOLS_ENABLED
@@ -276,30 +276,20 @@ void SkeletonModificationStack2D::_bind_methods() {
 }
 
 SkeletonModificationStack2D::SkeletonModificationStack2D() {
-	skeleton = nullptr;
-	modifications = Vector<Ref<SkeletonModification2D>>();
-	is_setup = false;
-	enabled = false;
-	modifications_count = 0;
-	strength = 1;
 }
 
 ///////////////////////////////////////
 // Modification2D
 ///////////////////////////////////////
 
-void SkeletonModification2D::execute(float delta) {
-	if (get_script_instance()) {
-		if (get_script_instance()->has_method("execute")) {
-			get_script_instance()->call("execute", delta);
-		}
-	}
+void SkeletonModification2D::_execute(float delta) {
+	call("_execute", delta);
 
 	if (!enabled)
 		return;
 }
 
-void SkeletonModification2D::setup_modification(SkeletonModificationStack2D *p_stack) {
+void SkeletonModification2D::_setup_modification(SkeletonModificationStack2D *p_stack) {
 	stack = p_stack;
 	if (stack) {
 		is_setup = true;
@@ -307,19 +297,11 @@ void SkeletonModification2D::setup_modification(SkeletonModificationStack2D *p_s
 		WARN_PRINT("Could not setup modification with name " + get_name());
 	}
 
-	if (get_script_instance()) {
-		if (get_script_instance()->has_method("execute")) {
-			get_script_instance()->call("setup_modification", p_stack);
-		}
-	}
+	call("_setup_modification", p_stack);
 }
 
-void SkeletonModification2D::draw_editor_gizmo() {
-	if (get_script_instance()) {
-		if (get_script_instance()->has_method("draw_editor_gizmo")) {
-			get_script_instance()->call("draw_editor_gizmo");
-		}
-	}
+void SkeletonModification2D::_draw_editor_gizmo() {
+	call("_draw_editor_gizmo");
 }
 
 bool SkeletonModification2D::_print_execution_error(bool p_condition, String p_message) {
@@ -327,9 +309,8 @@ bool SkeletonModification2D::_print_execution_error(bool p_condition, String p_m
 		return p_condition;
 	}
 
-	if (p_condition && !execution_error_found) {
-		ERR_PRINT(p_message);
-		execution_error_found = true;
+	if (p_condition) {
+		ERR_PRINT_ONCE(p_message);
 	}
 	return p_condition;
 }
@@ -353,15 +334,15 @@ bool SkeletonModification2D::get_enabled() {
 float SkeletonModification2D::clamp_angle(float angle, float min_bound, float max_bound, bool invert) {
 	// Map to the 0 to 360 range (in radians though) instead of the -180 to 180 range.
 	if (angle < 0) {
-		angle = (Math_PI * 2) + angle;
+		angle = Math_TAU + angle;
 	}
 
 	// Make min and max in the range of 0 to 360 (in radians), and make sure they are in the right order
 	if (min_bound < 0) {
-		min_bound = (Math_PI * 2) + min_bound;
+		min_bound = Math_TAU + min_bound;
 	}
 	if (max_bound < 0) {
-		max_bound = (Math_PI * 2) + max_bound;
+		max_bound = Math_TAU + max_bound;
 	}
 	if (min_bound > max_bound) {
 		float tmp = min_bound;
@@ -494,9 +475,9 @@ bool SkeletonModification2D::get_editor_draw_gizmo() const {
 }
 
 void SkeletonModification2D::_bind_methods() {
-	BIND_VMETHOD(MethodInfo("execute", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo("setup_modification", PropertyInfo(Variant::OBJECT, "modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack2D")));
-	BIND_VMETHOD(MethodInfo("draw_editor_gizmo"));
+	BIND_VMETHOD(MethodInfo("_execute", PropertyInfo(Variant::FLOAT, "delta")));
+	BIND_VMETHOD(MethodInfo("_setup_modification", PropertyInfo(Variant::OBJECT, "modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack2D")));
+	BIND_VMETHOD(MethodInfo("_draw_editor_gizmo"));
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModification2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("get_enabled"), &SkeletonModification2D::get_enabled);
@@ -591,7 +572,7 @@ void SkeletonModification2DLookAt::_get_property_list(List<PropertyInfo> *p_list
 #endif // TOOLS_ENABLED
 }
 
-void SkeletonModification2DLookAt::execute(float delta) {
+void SkeletonModification2DLookAt::_execute(float delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
@@ -610,8 +591,10 @@ void SkeletonModification2DLookAt::execute(float delta) {
 		return;
 	}
 
-	Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
-	if (_print_execution_error(!target || !target->is_inside_tree(), "Target node is not in the scene tree. Cannot execute modification!")) {
+	if (target_node_reference == nullptr) {
+		target_node_reference = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
+	}
+	if (_print_execution_error(!target_node_reference || !target_node_reference->is_inside_tree(), "Target node is not in the scene tree. Cannot execute modification!")) {
 		return;
 	}
 	if (_print_execution_error(bone_idx <= -1, "Bone index is invalid. Cannot execute modification!")) {
@@ -624,7 +607,7 @@ void SkeletonModification2DLookAt::execute(float delta) {
 	}
 
 	Transform2D operation_transform = operation_bone->get_global_transform();
-	Transform2D target_trans = target->get_global_transform();
+	Transform2D target_trans = target_node_reference->get_global_transform();
 
 	// Look at the target!
 	operation_transform = operation_transform.looking_at(target_trans.get_origin());
@@ -654,23 +637,19 @@ void SkeletonModification2DLookAt::execute(float delta) {
 	// Set the local pose override, and to make sure child bones are also updated, set the transform of the bone.
 	stack->skeleton->set_bone_local_pose_override(bone_idx, operation_transform, stack->strength, true);
 	operation_bone->set_transform(operation_transform);
-
-	// If we completed it successfully, then we can set execution_error_found to false.
-	execution_error_found = false;
 }
 
-void SkeletonModification2DLookAt::setup_modification(SkeletonModificationStack2D *p_stack) {
+void SkeletonModification2DLookAt::_setup_modification(SkeletonModificationStack2D *p_stack) {
 	stack = p_stack;
 
 	if (stack != nullptr) {
 		is_setup = true;
-		execution_error_found = false;
 		update_target_cache();
 		update_bone2d_cache();
 	}
 }
 
-void SkeletonModification2DLookAt::draw_editor_gizmo() {
+void SkeletonModification2DLookAt::_draw_editor_gizmo() {
 	if (!enabled || !is_setup) {
 		return;
 	}
@@ -704,7 +683,8 @@ void SkeletonModification2DLookAt::update_bone2d_cache() {
 					ERR_FAIL_MSG("Error Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 				}
 
-				execution_error_found = false;
+				// Set this to null so we update it
+				target_node_reference = nullptr;
 			}
 		}
 	}
@@ -741,7 +721,6 @@ void SkeletonModification2DLookAt::set_bone_index(int p_bone_idx) {
 		bone_idx = p_bone_idx;
 	}
 
-	execution_error_found = false;
 	_change_notify();
 }
 
@@ -762,7 +741,6 @@ void SkeletonModification2DLookAt::update_target_cache() {
 						"Cannot update target cache: node is not in the scene tree!");
 				target_node_cache = node->get_instance_id();
 
-				execution_error_found = false;
 			}
 		}
 	}
@@ -1016,7 +994,7 @@ void SkeletonModification2DCCDIK::_get_property_list(List<PropertyInfo> *p_list)
 #endif // TOOLS_ENABLED
 }
 
-void SkeletonModification2DCCDIK::execute(float delta) {
+void SkeletonModification2DCCDIK::_execute(float delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
@@ -1048,7 +1026,6 @@ void SkeletonModification2DCCDIK::execute(float delta) {
 		_execute_ccdik_joint(i, target, tip);
 	}
 
-	execution_error_found = false;
 }
 
 void SkeletonModification2DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node2D *target, Node2D *tip) {
@@ -1096,18 +1073,17 @@ void SkeletonModification2DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node2D *
 	operation_bone->notification(operation_bone->NOTIFICATION_TRANSFORM_CHANGED);
 }
 
-void SkeletonModification2DCCDIK::setup_modification(SkeletonModificationStack2D *p_stack) {
+void SkeletonModification2DCCDIK::_setup_modification(SkeletonModificationStack2D *p_stack) {
 	stack = p_stack;
 
 	if (stack != nullptr) {
 		is_setup = true;
-		execution_error_found = false;
 		update_target_cache();
 		update_tip_cache();
 	}
 }
 
-void SkeletonModification2DCCDIK::draw_editor_gizmo() {
+void SkeletonModification2DCCDIK::_draw_editor_gizmo() {
 	if (!enabled || !is_setup) {
 		return;
 	}
@@ -1140,7 +1116,6 @@ void SkeletonModification2DCCDIK::update_target_cache() {
 						"Cannot update target cache: node is not in the scene tree!");
 				target_node_cache = node->get_instance_id();
 
-				execution_error_found = false;
 			}
 		}
 	}
@@ -1163,7 +1138,6 @@ void SkeletonModification2DCCDIK::update_tip_cache() {
 						"Cannot update tip cache: node is not in the scene tree!");
 				tip_node_cache = node->get_instance_id();
 
-				execution_error_found = false;
 			}
 		}
 	}
@@ -1194,7 +1168,6 @@ void SkeletonModification2DCCDIK::ccdik_joint_update_bone2d_cache(int p_joint_id
 					ERR_FAIL_MSG("CCDIK joint " + itos(p_joint_idx) + " Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 				}
 
-				execution_error_found = false;
 			}
 		}
 	}
@@ -1220,7 +1193,6 @@ NodePath SkeletonModification2DCCDIK::get_tip_node() const {
 
 void SkeletonModification2DCCDIK::set_ccdik_data_chain_length(int p_length) {
 	ccdik_data_chain.resize(p_length);
-	execution_error_found = false;
 	_change_notify();
 }
 
@@ -1260,7 +1232,6 @@ void SkeletonModification2DCCDIK::set_ccdik_joint_bone_index(int p_joint_idx, in
 		ccdik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
 	}
 
-	execution_error_found = false;
 	_change_notify();
 }
 
@@ -1547,7 +1518,7 @@ void SkeletonModification2DFABRIK::_get_property_list(List<PropertyInfo> *p_list
 #endif // TOOLS_ENABLED
 }
 
-void SkeletonModification2DFABRIK::execute(float delta) {
+void SkeletonModification2DFABRIK::_execute(float delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
@@ -1670,7 +1641,6 @@ void SkeletonModification2DFABRIK::execute(float delta) {
 		stack->skeleton->set_bone_local_pose_override(fabrik_data_chain[i].bone_idx, joint_bone2d_node->get_transform(), stack->strength, true);
 	}
 
-	execution_error_found = false;
 }
 
 void SkeletonModification2DFABRIK::chain_backwards() {
@@ -1765,12 +1735,11 @@ void SkeletonModification2DFABRIK::chain_forwards() {
 	}
 }
 
-void SkeletonModification2DFABRIK::setup_modification(SkeletonModificationStack2D *p_stack) {
+void SkeletonModification2DFABRIK::_setup_modification(SkeletonModificationStack2D *p_stack) {
 	stack = p_stack;
 
 	if (stack != nullptr) {
 		is_setup = true;
-		execution_error_found = false;
 		update_target_cache();
 	}
 }
@@ -1792,13 +1761,12 @@ void SkeletonModification2DFABRIK::update_target_cache() {
 						"Cannot update target cache: node is not in scene tree!");
 				target_node_cache = node->get_instance_id();
 
-				execution_error_found = false;
 			}
 		}
 	}
 }
 
-void SkeletonModification2DFABRIK::draw_editor_gizmo() {
+void SkeletonModification2DFABRIK::_draw_editor_gizmo() {
 	if (!enabled || !is_setup) {
 		return;
 	}
@@ -1839,7 +1807,6 @@ void SkeletonModification2DFABRIK::fabrik_joint_update_bone2d_cache(int p_joint_
 					ERR_FAIL_MSG("FABRIK joint " + itos(p_joint_idx) + " Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 				}
 
-				execution_error_found = false;
 			}
 		}
 	}
@@ -1856,7 +1823,6 @@ NodePath SkeletonModification2DFABRIK::get_target_node() const {
 
 void SkeletonModification2DFABRIK::set_fabrik_data_chain_length(int p_length) {
 	fabrik_data_chain.resize(p_length);
-	execution_error_found = false;
 	_change_notify();
 }
 
@@ -1896,7 +1862,6 @@ void SkeletonModification2DFABRIK::set_fabrik_joint_bone_index(int p_joint_idx, 
 		fabrik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
 	}
 
-	execution_error_found = false;
 	_change_notify();
 }
 
@@ -2161,7 +2126,7 @@ void SkeletonModification2DJiggle::_get_property_list(List<PropertyInfo> *p_list
 	}
 }
 
-void SkeletonModification2DJiggle::execute(float delta) {
+void SkeletonModification2DJiggle::_execute(float delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
@@ -2181,7 +2146,6 @@ void SkeletonModification2DJiggle::execute(float delta) {
 		_execute_jiggle_joint(i, target, delta);
 	}
 
-	execution_error_found = false;
 }
 
 void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D *target, float delta) {
@@ -2267,12 +2231,11 @@ void SkeletonModification2DJiggle::_update_jiggle_joint_data() {
 	}
 }
 
-void SkeletonModification2DJiggle::setup_modification(SkeletonModificationStack2D *p_stack) {
+void SkeletonModification2DJiggle::_setup_modification(SkeletonModificationStack2D *p_stack) {
 	stack = p_stack;
 
 	if (stack) {
 		is_setup = true;
-		execution_error_found = false;
 
 		if (stack->skeleton) {
 			for (int i = 0; i < jiggle_data_chain.size(); i++) {
@@ -2305,7 +2268,6 @@ void SkeletonModification2DJiggle::update_target_cache() {
 						"Cannot update target cache: node is not in scene tree!");
 				target_node_cache = node->get_instance_id();
 
-				execution_error_found = false;
 			}
 		}
 	}
@@ -2336,7 +2298,6 @@ void SkeletonModification2DJiggle::jiggle_joint_update_bone2d_cache(int p_joint_
 					ERR_FAIL_MSG("Jiggle joint " + itos(p_joint_idx) + " Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 				}
 
-				execution_error_found = false;
 			}
 		}
 	}
@@ -2425,7 +2386,6 @@ int SkeletonModification2DJiggle::get_jiggle_data_chain_length() {
 void SkeletonModification2DJiggle::set_jiggle_data_chain_length(int p_length) {
 	ERR_FAIL_COND(p_length < 0);
 	jiggle_data_chain.resize(p_length);
-	execution_error_found = false;
 	_change_notify();
 }
 
@@ -2461,7 +2421,6 @@ void SkeletonModification2DJiggle::set_jiggle_joint_bone_index(int p_joint_idx, 
 		jiggle_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
 	}
 
-	execution_error_found = false;
 	_change_notify();
 }
 
@@ -2671,7 +2630,7 @@ void SkeletonModification2DTwoBoneIK::_get_property_list(List<PropertyInfo> *p_l
 #endif // TOOLS_ENABLED
 }
 
-void SkeletonModification2DTwoBoneIK::execute(float delta) {
+void SkeletonModification2DTwoBoneIK::_execute(float delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
@@ -2754,22 +2713,20 @@ void SkeletonModification2DTwoBoneIK::execute(float delta) {
 	stack->skeleton->set_bone_local_pose_override(joint_one_bone_idx, joint_one_bone->get_transform(), stack->strength, true);
 	stack->skeleton->set_bone_local_pose_override(joint_two_bone_idx, joint_two_bone->get_transform(), stack->strength, true);
 
-	execution_error_found = false;
 }
 
-void SkeletonModification2DTwoBoneIK::setup_modification(SkeletonModificationStack2D *p_stack) {
+void SkeletonModification2DTwoBoneIK::_setup_modification(SkeletonModificationStack2D *p_stack) {
 	stack = p_stack;
 
 	if (stack) {
 		is_setup = true;
-		execution_error_found = false;
 		update_target_cache();
 		update_joint_one_bone2d_cache();
 		update_joint_two_bone2d_cache();
 	}
 }
 
-void SkeletonModification2DTwoBoneIK::draw_editor_gizmo() {
+void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
 	if (!enabled || !is_setup) {
 		return;
 	}
@@ -2834,7 +2791,6 @@ void SkeletonModification2DTwoBoneIK::update_target_cache() {
 						"Cannot update target cache: node is not in the scene tree!");
 				target_node_cache = node->get_instance_id();
 
-				execution_error_found = false;
 			}
 		}
 	}
@@ -2864,7 +2820,6 @@ void SkeletonModification2DTwoBoneIK::update_joint_one_bone2d_cache() {
 					ERR_FAIL_MSG("update joint one Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 				}
 
-				execution_error_found = false;
 			}
 		}
 	}
@@ -2894,7 +2849,6 @@ void SkeletonModification2DTwoBoneIK::update_joint_two_bone2d_cache() {
 					ERR_FAIL_MSG("update joint two Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 				}
 
-				execution_error_found = false;
 			}
 		}
 	}
@@ -2979,7 +2933,6 @@ void SkeletonModification2DTwoBoneIK::set_joint_one_bone_idx(int p_bone_idx) {
 		joint_one_bone_idx = p_bone_idx;
 	}
 
-	execution_error_found = false;
 	_change_notify();
 }
 
@@ -3005,7 +2958,6 @@ void SkeletonModification2DTwoBoneIK::set_joint_two_bone_idx(int p_bone_idx) {
 		joint_two_bone_idx = p_bone_idx;
 	}
 
-	execution_error_found = false;
 	_change_notify();
 }
 
@@ -3132,7 +3084,7 @@ void SkeletonModification2DPhysicalBones::_get_property_list(List<PropertyInfo> 
 	}
 }
 
-void SkeletonModification2DPhysicalBones::execute(float delta) {
+void SkeletonModification2DPhysicalBones::_execute(float delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
@@ -3167,15 +3119,13 @@ void SkeletonModification2DPhysicalBones::execute(float delta) {
 		}
 	}
 
-	execution_error_found = false;
 }
 
-void SkeletonModification2DPhysicalBones::setup_modification(SkeletonModificationStack2D *p_stack) {
+void SkeletonModification2DPhysicalBones::_setup_modification(SkeletonModificationStack2D *p_stack) {
 	stack = p_stack;
 
 	if (stack) {
 		is_setup = true;
-		execution_error_found = false;
 
 		if (stack->skeleton) {
 			for (int i = 0; i < physical_bone_chain.size(); i++) {
@@ -3203,7 +3153,6 @@ void SkeletonModification2DPhysicalBones::_physical_bone_update_cache(int p_join
 						"Cannot update Physical Bone2D " + itos(p_joint_idx) + " cache: node is not in scene tree!");
 				physical_bone_chain.write[p_joint_idx].physical_bone_node_cache = node->get_instance_id();
 
-				execution_error_found = false;
 			}
 		}
 	}
@@ -3216,7 +3165,6 @@ int SkeletonModification2DPhysicalBones::get_physical_bone_chain_length() {
 void SkeletonModification2DPhysicalBones::set_physical_bone_chain_length(int p_length) {
 	ERR_FAIL_COND(p_length < 0);
 	physical_bone_chain.resize(p_length);
-	execution_error_found = false;
 	_change_notify();
 }
 
@@ -3375,7 +3323,7 @@ void SkeletonModification2DStackHolder::_get_property_list(List<PropertyInfo> *p
 #endif // TOOLS_ENABLED
 }
 
-void SkeletonModification2DStackHolder::execute(float delta) {
+void SkeletonModification2DStackHolder::_execute(float delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 
@@ -3384,7 +3332,7 @@ void SkeletonModification2DStackHolder::execute(float delta) {
 	}
 }
 
-void SkeletonModification2DStackHolder::setup_modification(SkeletonModificationStack2D *p_stack) {
+void SkeletonModification2DStackHolder::_setup_modification(SkeletonModificationStack2D *p_stack) {
 	stack = p_stack;
 
 	if (stack != nullptr) {
@@ -3397,7 +3345,7 @@ void SkeletonModification2DStackHolder::setup_modification(SkeletonModificationS
 	}
 }
 
-void SkeletonModification2DStackHolder::draw_editor_gizmo() {
+void SkeletonModification2DStackHolder::_draw_editor_gizmo() {
 	if (stack) {
 		if (held_modification_stack.is_valid()) {
 			held_modification_stack->draw_editor_gizmos();
