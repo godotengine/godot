@@ -39,7 +39,7 @@ class Sprite2D : public Node2D {
 
 	Ref<Texture2D> texture;
 	Color specular_color;
-	float shininess = 0.0;
+	real_t shininess = 0.0;
 
 	bool centered = true;
 	Point2 offset;

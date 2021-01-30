@@ -119,11 +119,11 @@ void Bone2D::apply_rest() {
 	set_transform(rest);
 }
 
-void Bone2D::set_default_length(float p_length) {
+void Bone2D::set_default_length(real_t p_length) {
 	default_length = p_length;
 }
 
-float Bone2D::get_default_length() const {
+real_t Bone2D::get_default_length() const {
 	return default_length;
 }
 
