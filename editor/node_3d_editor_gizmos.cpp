@@ -557,7 +557,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 		Transform t = spatial_node->get_global_transform();
 		Vector3 camera_position = p_camera->get_camera_transform().origin;
 		if (camera_position.distance_squared_to(t.origin) > 0.01) {
-			t.set_look_at(t.origin, camera_position, Vector3(0, 1, 0));
+			t.set_look_at(t.origin, camera_position);
 		}
 
 		float scale = t.origin.distance_to(p_camera->get_camera_transform().origin);
@@ -574,7 +574,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 
 		if (orig_camera_transform.origin.distance_squared_to(t.origin) > 0.01 &&
 				ABS(orig_camera_transform.basis.get_axis(Vector3::AXIS_Z).dot(Vector3(0, 1, 0))) < 0.99) {
-			p_camera->look_at(t.origin, Vector3(0, 1, 0));
+			p_camera->look_at(t.origin);
 		}
 
 		Vector3 c0 = t.xform(Vector3(selectable_icon_size, selectable_icon_size, 0) * scale);
