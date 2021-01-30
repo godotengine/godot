@@ -42,7 +42,6 @@
 class OS_JavaScript : public OS_Unix {
 private:
 	VideoMode video_mode;
-	Vector2 windowed_size;
 	bool window_maximized;
 	bool entering_fullscreen;
 	bool just_exited_fullscreen;

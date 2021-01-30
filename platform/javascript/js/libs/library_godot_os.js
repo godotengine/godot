@@ -91,11 +91,6 @@ const GodotConfig = {
 	godot_js_config_locale_get: function (p_ptr, p_ptr_max) {
 		GodotRuntime.stringToHeap(GodotConfig.locale, p_ptr, p_ptr_max);
 	},
-
-	godot_js_config_canvas_resize_policy_get__sig: 'i',
-	godot_js_config_canvas_resize_policy_get: function () {
-		return GodotConfig.canvas_resize_policy;
-	},
 };
 
 autoAddDeps(GodotConfig, '$GodotConfig');
