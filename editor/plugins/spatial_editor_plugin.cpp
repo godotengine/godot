@@ -2502,6 +2502,13 @@ void SpatialEditorViewport::_notification(int p_what) {
 			text += "Z: " + rtos(current_camera->get_translation().z).pad_decimals(1) + "\n";
 			text += TTR("Pitch") + ": " + itos(Math::round(current_camera->get_rotation_degrees().x)) + "\n";
 			text += TTR("Yaw") + ": " + itos(Math::round(current_camera->get_rotation_degrees().y)) + "\n\n";
+
+			text += TTR("Size") +
+					vformat(
+							": %dx%d (%.1fMP)\n",
+							viewport->get_size().x,
+							viewport->get_size().y,
+							viewport->get_size().x * viewport->get_size().y * 0.000'001);
 			text += TTR("Objects Drawn") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_OBJECTS_IN_FRAME)) + "\n";
 			text += TTR("Material Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_MATERIAL_CHANGES_IN_FRAME)) + "\n";
 			text += TTR("Shader Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_SHADER_CHANGES_IN_FRAME)) + "\n";
