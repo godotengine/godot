@@ -57,9 +57,6 @@ private:
 	double last_click_ms = 0;
 	int last_click_button_index = -1;
 
-	int last_width = 0;
-	int last_height = 0;
-
 	bool swap_cancel_ok = false;
 
 	// utilities
