@@ -747,8 +747,8 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("orthonormalize"), &Node3D::orthonormalize);
 	ClassDB::bind_method(D_METHOD("set_identity"), &Node3D::set_identity);
 
-	ClassDB::bind_method(D_METHOD("look_at", "target", "up"), &Node3D::look_at);
-	ClassDB::bind_method(D_METHOD("look_at_from_position", "position", "target", "up"), &Node3D::look_at_from_position);
+	ClassDB::bind_method(D_METHOD("look_at", "target", "up"), &Node3D::look_at, DEFVAL(Vector3(0, 1, 0)));
+	ClassDB::bind_method(D_METHOD("look_at_from_position", "position", "target", "up"), &Node3D::look_at_from_position, DEFVAL(Vector3(0, 1, 0)));
 
 	ClassDB::bind_method(D_METHOD("to_local", "global_point"), &Node3D::to_local);
 	ClassDB::bind_method(D_METHOD("to_global", "local_point"), &Node3D::to_global);
