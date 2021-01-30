@@ -38,7 +38,7 @@ bool Light3D::_can_gizmo_scale() const {
 	return false;
 }
 
-void Light3D::set_param(Param p_param, float p_value) {
+void Light3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	param[p_param] = p_value;
 
@@ -53,7 +53,7 @@ void Light3D::set_param(Param p_param, float p_value) {
 	}
 }
 
-float Light3D::get_param(Param p_param) const {
+real_t Light3D::get_param(Param p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return param[p_param];
 }
@@ -128,8 +128,8 @@ AABB Light3D::get_aabb() const {
 		return AABB(Vector3(-1, -1, -1) * param[PARAM_RANGE], Vector3(2, 2, 2) * param[PARAM_RANGE]);
 
 	} else if (type == RenderingServer::LIGHT_SPOT) {
-		float len = param[PARAM_RANGE];
-		float size = Math::tan(Math::deg2rad(param[PARAM_SPOT_ANGLE])) * len;
+		real_t len = param[PARAM_RANGE];
+		real_t size = Math::tan(Math::deg2rad(param[PARAM_SPOT_ANGLE])) * len;
 		return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
 	}
 

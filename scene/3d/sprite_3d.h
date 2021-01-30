@@ -72,7 +72,7 @@ private:
 	float opacity = 1.0;
 
 	Vector3::Axis axis = Vector3::AXIS_Z;
-	float pixel_size = 0.01;
+	real_t pixel_size = 0.01;
 	AABB aabb;
 
 	RID mesh;
@@ -130,8 +130,8 @@ public:
 	void set_opacity(float p_amount);
 	float get_opacity() const;
 
-	void set_pixel_size(float p_amount);
-	float get_pixel_size() const;
+	void set_pixel_size(real_t p_amount);
+	real_t get_pixel_size() const;
 
 	void set_axis(Vector3::Axis p_axis);
 	Vector3::Axis get_axis() const;

@@ -71,7 +71,7 @@ public:
 
 private:
 	Color color;
-	float param[PARAM_MAX] = {};
+	real_t param[PARAM_MAX] = {};
 	Color shadow_color;
 	bool shadow = false;
 	bool negative = false;
@@ -102,8 +102,8 @@ public:
 	void set_editor_only(bool p_editor_only);
 	bool is_editor_only() const;
 
-	void set_param(Param p_param, float p_value);
-	float get_param(Param p_param) const;
+	void set_param(Param p_param, real_t p_value);
+	real_t get_param(Param p_param) const;
 
 	void set_shadow(bool p_enable);
 	bool has_shadow() const;
