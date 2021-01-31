@@ -51,6 +51,7 @@ class ThreadWindows : public Thread {
 	static Thread *create_func_windows(ThreadCreateCallback p_callback, void *, const Settings &);
 	static ID get_thread_id_func_windows();
 	static void wait_to_finish_func_windows(Thread *p_thread);
+	static Error set_name_func_windows(const String &p_name);
 
 	ThreadWindows() {}
 
