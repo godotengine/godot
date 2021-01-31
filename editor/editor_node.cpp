@@ -5742,7 +5742,7 @@ static void _execute_thread(void *p_ud) {
 		eta->exitcode = err;
 	}
 
-	eta->done = true;
+	eta->done.set();
 }
 
 int EditorNode::execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok, bool p_close_on_errors) {
@@ -5757,13 +5757,12 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 	eta.path = p_path;
 	eta.args = p_arguments;
 	eta.exitcode = 255;
-	eta.done = false;
 
 	int prev_len = 0;
 
 	eta.execute_output_thread.start(_execute_thread, &eta);
 
-	while (!eta.done) {
+	while (!eta.done.is_set()) {
 		eta.execute_output_mutex.lock();
 		if (prev_len != eta.output.length()) {
 			String to_add = eta.output.substr(prev_len, eta.output.length());

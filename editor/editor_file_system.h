@@ -34,8 +34,10 @@
 #include "core/os/dir_access.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
+#include "core/safe_refcount.h"
 #include "core/set.h"
 #include "scene/main/node.h"
+
 class FileAccess;
 
 struct EditorProgressBG;
@@ -231,7 +233,7 @@ class EditorFileSystem : public Node {
 	};
 
 	void _scan_script_classes(EditorFileSystemDirectory *p_dir);
-	volatile bool update_script_classes_queued;
+	SafeFlag update_script_classes_queued;
 	void _queue_update_script_classes();
 
 	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;

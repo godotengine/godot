@@ -37,6 +37,7 @@
 #include "core/ordered_hash_map.h"
 #include "core/os/thread_safe.h"
 #include "core/resource.h"
+#include "core/safe_refcount.h"
 #include "core/script_language.h"
 #include "core/self_list.h"
 #include "scene/main/node.h"
@@ -240,7 +241,7 @@ private:
 
 	Set<Ref<GDNativeLibrary> > libs_to_init;
 	Set<NativeScript *> scripts_to_register;
-	volatile bool has_objects_to_register; // so that we don't lock mutex every frame - it's rarely needed
+	SafeFlag has_objects_to_register; // so that we don't lock mutex every frame - it's rarely needed
 	void defer_init_library(Ref<GDNativeLibrary> lib, NativeScript *script);
 #endif
 

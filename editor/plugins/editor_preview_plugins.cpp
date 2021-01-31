@@ -308,7 +308,7 @@ EditorPackedScenePreviewPlugin::EditorPackedScenePreviewPlugin() {
 
 void EditorMaterialPreviewPlugin::_preview_done(const Variant &p_udata) {
 
-	preview_done = true;
+	preview_done.set();
 }
 
 void EditorMaterialPreviewPlugin::_bind_methods() {
@@ -336,10 +336,10 @@ Ref<Texture> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Size
 
 		VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
-		preview_done = false;
+		preview_done.clear();
 		VS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMaterialPreviewPlugin *>(this), "_preview_done", Variant());
 
-		while (!preview_done) {
+		while (!preview_done.is_set()) {
 			OS::get_singleton()->delay_usec(10);
 		}
 
@@ -699,7 +699,7 @@ EditorAudioStreamPreviewPlugin::EditorAudioStreamPreviewPlugin() {
 
 void EditorMeshPreviewPlugin::_preview_done(const Variant &p_udata) {
 
-	preview_done = true;
+	preview_done.set();
 }
 
 void EditorMeshPreviewPlugin::_bind_methods() {
@@ -737,10 +737,10 @@ Ref<Texture> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 &p
 
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
-	preview_done = false;
+	preview_done.clear();
 	VS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMeshPreviewPlugin *>(this), "_preview_done", Variant());
 
-	while (!preview_done) {
+	while (!preview_done.is_set()) {
 		OS::get_singleton()->delay_usec(10);
 	}
 
@@ -819,7 +819,7 @@ EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 
 void EditorFontPreviewPlugin::_preview_done(const Variant &p_udata) {
 
-	preview_done = true;
+	preview_done.set();
 }
 
 void EditorFontPreviewPlugin::_bind_methods() {
@@ -861,11 +861,11 @@ Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path, c
 
 	font->draw(canvas_item, pos, sampled_text);
 
-	preview_done = false;
+	preview_done.clear();
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
 	VS::get_singleton()->request_frame_drawn_callback(const_cast<EditorFontPreviewPlugin *>(this), "_preview_done", Variant());
 
-	while (!preview_done) {
+	while (!preview_done.is_set()) {
 		OS::get_singleton()->delay_usec(10);
 	}
 

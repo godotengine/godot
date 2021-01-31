@@ -36,6 +36,7 @@
 #include "core/map.h"
 #include "core/object_id.h"
 #include "core/os/rw_lock.h"
+#include "core/safe_refcount.h"
 #include "core/set.h"
 #include "core/variant.h"
 #include "core/vmap.h"
@@ -512,7 +513,7 @@ private:
 	Variant _get_indexed_bind(const NodePath &p_name) const;
 
 	friend class Reference;
-	uint32_t instance_binding_count;
+	SafeNumeric<uint32_t> instance_binding_count;
 	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
 
 protected:

@@ -995,9 +995,6 @@ void NativeScriptLanguage::_unload_stuff(bool p_reload) {
 
 NativeScriptLanguage::NativeScriptLanguage() {
 	NativeScriptLanguage::singleton = this;
-#ifndef NO_THREADS
-	has_objects_to_register = false;
-#endif
 
 #ifdef DEBUG_ENABLED
 	profiling = false;
@@ -1446,7 +1443,7 @@ void NativeScriptLanguage::defer_init_library(Ref<GDNativeLibrary> lib, NativeSc
 	MutexLock lock(mutex);
 	libs_to_init.insert(lib);
 	scripts_to_register.insert(script);
-	has_objects_to_register = true;
+	has_objects_to_register.set();
 }
 #endif
 
@@ -1539,7 +1536,7 @@ void NativeScriptLanguage::call_libraries_cb(const StringName &name) {
 
 void NativeScriptLanguage::frame() {
 #ifndef NO_THREADS
-	if (has_objects_to_register) {
+	if (has_objects_to_register.is_set()) {
 		MutexLock lock(mutex);
 		for (Set<Ref<GDNativeLibrary> >::Element *L = libs_to_init.front(); L; L = L->next()) {
 			init_library(L->get());
@@ -1549,7 +1546,7 @@ void NativeScriptLanguage::frame() {
 			register_script(S->get());
 		}
 		scripts_to_register.clear();
-		has_objects_to_register = false;
+		has_objects_to_register.clear();
 	}
 #endif
 

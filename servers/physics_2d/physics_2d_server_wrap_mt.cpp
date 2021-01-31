@@ -34,7 +34,7 @@
 
 void Physics2DServerWrapMT::thread_exit() {
 
-	exit = true;
+	exit.set();
 }
 
 void Physics2DServerWrapMT::thread_step(real_t p_delta) {
@@ -56,9 +56,9 @@ void Physics2DServerWrapMT::thread_loop() {
 
 	physics_2d_server->init();
 
-	exit = false;
-	step_thread_up = true;
-	while (!exit) {
+	exit.clear();
+	step_thread_up.set();
+	while (!exit.is_set()) {
 		// flush commands one by one, until exit is requested
 		command_queue.wait_and_flush_one();
 	}
@@ -110,7 +110,7 @@ void Physics2DServerWrapMT::init() {
 
 		//OS::get_singleton()->release_rendering_thread();
 		thread.start(_thread_callback, this);
-		while (!step_thread_up) {
+		while (!step_thread_up.is_set()) {
 			OS::get_singleton()->delay_usec(1000);
 		}
 	} else {
@@ -149,7 +149,6 @@ Physics2DServerWrapMT::Physics2DServerWrapMT(Physics2DServer *p_contained, bool 
 	physics_2d_server = p_contained;
 	create_thread = p_create_thread;
 	step_pending = 0;
-	step_thread_up = false;
 
 	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
 

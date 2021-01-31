@@ -40,6 +40,7 @@
 #include "core/os/os.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
+#include "core/safe_refcount.h"
 
 class _ResourceLoader : public Object {
 	GDCLASS(_ResourceLoader, Object);
@@ -681,7 +682,7 @@ class _Thread : public Reference {
 protected:
 	Variant ret;
 	Variant userdata;
-	volatile bool active;
+	SafeFlag active;
 	Object *target_instance;
 	StringName target_method;
 	Thread thread;

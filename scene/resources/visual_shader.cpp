@@ -1276,10 +1276,10 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 }
 
 void VisualShader::_update_shader() const {
-	if (!dirty)
+	if (!dirty.is_set())
 		return;
 
-	dirty = false;
+	dirty.clear();
 
 	StringBuilder global_code;
 	StringBuilder global_code_per_node;
@@ -1439,11 +1439,11 @@ void VisualShader::_update_shader() const {
 }
 
 void VisualShader::_queue_update() {
-	if (dirty) {
+	if (dirty.is_set()) {
 		return;
 	}
 
-	dirty = true;
+	dirty.set();
 	call_deferred("_update_shader");
 }
 
@@ -1463,7 +1463,7 @@ void VisualShader::_input_type_changed(Type p_type, int p_id) {
 }
 
 void VisualShader::rebuild() {
-	dirty = true;
+	dirty.set();
 	_update_shader();
 }
 
@@ -1524,7 +1524,7 @@ VisualShader::VisualShader() {
 		graph[i].nodes[NODE_ID_OUTPUT].position = Vector2(400, 150);
 	}
 
-	dirty = true;
+	dirty.set();
 }
 
 ///////////////////////////////////////////////////////////

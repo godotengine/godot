@@ -1113,7 +1113,7 @@ void CPUParticles::_update_particle_data_buffer() {
 			ptr += 17;
 		}
 
-		can_update = true;
+		can_update.set();
 	}
 
 	update_mutex.unlock();
@@ -1142,9 +1142,9 @@ void CPUParticles::_update_render_thread() {
 
 	update_mutex.lock();
 
-	if (can_update) {
+	if (can_update.is_set()) {
 		VS::get_singleton()->multimesh_set_as_bulk_array(multimesh, particle_data);
-		can_update = false; //wait for next time
+		can_update.clear(); //wait for next time
 	}
 
 	update_mutex.unlock();
@@ -1210,7 +1210,7 @@ void CPUParticles::_notification(int p_what) {
 				ptr += 17;
 			}
 
-			can_update = true;
+			can_update.set();
 		}
 	}
 }
@@ -1549,8 +1549,6 @@ CPUParticles::CPUParticles() {
 	for (int i = 0; i < FLAG_MAX; i++) {
 		flags[i] = false;
 	}
-
-	can_update = false;
 
 	set_color(Color(1, 1, 1, 1));
 }

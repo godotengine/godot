@@ -31,6 +31,7 @@
 #ifndef AUDIO_STREAM_PLAYER_H
 #define AUDIO_STREAM_PLAYER_H
 
+#include "core/safe_refcount.h"
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 
@@ -52,10 +53,10 @@ private:
 	Vector<AudioFrame> fadeout_buffer;
 	bool use_fadeout;
 
-	volatile float setseek;
-	volatile bool active;
-	volatile bool setstop;
-	volatile bool stop_has_priority;
+	SafeNumeric<float> setseek;
+	SafeFlag active;
+	SafeFlag setstop;
+	SafeFlag stop_has_priority;
 
 	float mix_volume_db;
 	float pitch_scale;

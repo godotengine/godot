@@ -33,6 +33,7 @@
 
 #include "core/os/copymem.h"
 #include "core/os/memory.h"
+#include "core/os/mutex.h"
 #include "core/os/rw_lock.h"
 #include "core/pool_allocator.h"
 #include "core/safe_refcount.h"
@@ -49,7 +50,7 @@ struct MemoryPool {
 	struct Alloc {
 
 		SafeRefCount refcount;
-		uint32_t lock;
+		SafeNumeric<uint32_t> lock;
 		void *mem;
 		PoolAllocator::ID pool_id;
 		size_t size;
@@ -113,7 +114,7 @@ class PoolVector {
 		alloc->size = old_alloc->size;
 		alloc->refcount.init();
 		alloc->pool_id = POOL_ALLOCATOR_INVALID_ID;
-		alloc->lock = 0;
+		alloc->lock.set(0);
 
 #ifdef DEBUG_ENABLED
 		MemoryPool::total_memory += alloc->size;
@@ -263,7 +264,7 @@ public:
 		_FORCE_INLINE_ void _ref(MemoryPool::Alloc *p_alloc) {
 			alloc = p_alloc;
 			if (alloc) {
-				if (atomic_increment(&alloc->lock) == 1) {
+				if (alloc->lock.increment() == 1) {
 					if (MemoryPool::memory_pool) {
 						//lock it and get mem
 					}
@@ -276,7 +277,7 @@ public:
 		_FORCE_INLINE_ void _unref() {
 
 			if (alloc) {
-				if (atomic_decrement(&alloc->lock) == 0) {
+				if (alloc->lock.decrement() == 0) {
 					if (MemoryPool::memory_pool) {
 						//put mem back
 					}
@@ -452,7 +453,7 @@ public:
 		return rs;
 	}
 
-	bool is_locked() const { return alloc && alloc->lock > 0; }
+	bool is_locked() const { return alloc && alloc->lock.get() > 0; }
 
 	inline T operator[](int p_index) const;
 
@@ -543,7 +544,7 @@ Error PoolVector<T>::resize(int p_size) {
 
 	} else {
 
-		ERR_FAIL_COND_V_MSG(alloc->lock > 0, ERR_LOCKED, "Can't resize PoolVector if locked."); //can't resize if locked!
+		ERR_FAIL_COND_V_MSG(alloc->lock.get() > 0, ERR_LOCKED, "Can't resize PoolVector if locked."); //can't resize if locked!
 	}
 
 	size_t new_size = sizeof(T) * p_size;

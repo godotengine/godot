@@ -2772,7 +2772,7 @@ void _Thread::_start_func(void *ud) {
 
 Error _Thread::start(Object *p_instance, const StringName &p_method, const Variant &p_userdata, Priority p_priority) {
 
-	ERR_FAIL_COND_V_MSG(active, ERR_ALREADY_IN_USE, "Thread already started.");
+	ERR_FAIL_COND_V_MSG(active.is_set(), ERR_ALREADY_IN_USE, "Thread already started.");
 	ERR_FAIL_COND_V(!p_instance, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_method == StringName(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_priority, PRIORITY_MAX, ERR_INVALID_PARAMETER);
@@ -2781,7 +2781,7 @@ Error _Thread::start(Object *p_instance, const StringName &p_method, const Varia
 	target_method = p_method;
 	target_instance = p_instance;
 	userdata = p_userdata;
-	active = true;
+	active.set();
 
 	Ref<_Thread> *ud = memnew(Ref<_Thread>(this));
 
@@ -2799,17 +2799,17 @@ String _Thread::get_id() const {
 
 bool _Thread::is_active() const {
 
-	return active;
+	return active.is_set();
 }
 Variant _Thread::wait_to_finish() {
 
-	ERR_FAIL_COND_V_MSG(!active, Variant(), "Thread must be active to wait for its completion.");
+	ERR_FAIL_COND_V_MSG(!active.is_set(), Variant(), "Thread must be active to wait for its completion.");
 	thread.wait_to_finish();
 	Variant r = ret;
-	active = false;
 	target_method = StringName();
 	target_instance = NULL;
 	userdata = Variant();
+	active.clear();
 
 	return r;
 }
@@ -2827,13 +2827,12 @@ void _Thread::_bind_methods() {
 }
 _Thread::_Thread() {
 
-	active = false;
 	target_instance = NULL;
 }
 
 _Thread::~_Thread() {
 
-	ERR_FAIL_COND_MSG(active, "Reference to a Thread object was lost while the thread is still running...");
+	ERR_FAIL_COND_MSG(active.is_set(), "Reference to a Thread object was lost while the thread is still running...");
 }
 
 /////////////////////////////////////

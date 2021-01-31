@@ -92,13 +92,12 @@ JoypadLinux::JoypadLinux(InputDefault *in) {
 #else
 	print_verbose("JoypadLinux: udev disabled, parsing /dev/input to detect joypads.");
 #endif
-	exit_monitor = false;
 	input = in;
 	joy_thread.start(joy_thread_func, this);
 }
 
 JoypadLinux::~JoypadLinux() {
-	exit_monitor = true;
+	exit_monitor.set();
 	joy_thread.wait_to_finish();
 	close_joypad();
 }
@@ -172,7 +171,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 	udev_monitor_enable_receiving(mon);
 	int fd = udev_monitor_get_fd(mon);
 
-	while (!exit_monitor) {
+	while (!exit_monitor.is_set()) {
 
 		fd_set fds;
 		struct timeval tv;
@@ -220,7 +219,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 
 void JoypadLinux::monitor_joypads() {
 
-	while (!exit_monitor) {
+	while (!exit_monitor.is_set()) {
 		joy_mutex.lock();
 
 		DIR *input_directory;

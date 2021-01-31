@@ -1946,7 +1946,7 @@ void *Object::get_script_instance_binding(int p_script_language_index) {
 	if (!_script_instance_bindings[p_script_language_index]) {
 		void *script_data = ScriptServer::get_language(p_script_language_index)->alloc_instance_binding_data(this);
 		if (script_data) {
-			atomic_increment(&instance_binding_count);
+			instance_binding_count.increment();
 			_script_instance_bindings[p_script_language_index] = script_data;
 		}
 	}
@@ -1976,7 +1976,6 @@ Object::Object() {
 	_can_translate = true;
 	_is_queued_for_deletion = false;
 	_emitting = false;
-	instance_binding_count = 0;
 	memset(_script_instance_bindings, 0, sizeof(void *) * MAX_SCRIPT_INSTANCE_BINDINGS);
 	script_instance = NULL;
 #ifdef DEBUG_ENABLED

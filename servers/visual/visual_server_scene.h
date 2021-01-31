@@ -38,6 +38,7 @@
 #include "core/math/octree.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
+#include "core/safe_refcount.h"
 #include "core/self_list.h"
 #include "servers/arvr/arvr_interface.h"
 
@@ -591,7 +592,7 @@ public:
 	void _gi_probe_bake_thread();
 	static void _gi_probe_bake_threads(void *);
 
-	volatile bool probe_bake_thread_exit;
+	bool probe_bake_thread_exit;
 	Thread probe_bake_thread;
 	Semaphore probe_bake_sem;
 	Mutex probe_bake_mutex;

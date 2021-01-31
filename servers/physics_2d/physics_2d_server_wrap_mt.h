@@ -34,6 +34,7 @@
 #include "core/command_queue_mt.h"
 #include "core/os/thread.h"
 #include "core/project_settings.h"
+#include "core/safe_refcount.h"
 #include "servers/physics_2d_server.h"
 
 #ifdef DEBUG_SYNC
@@ -53,9 +54,9 @@ class Physics2DServerWrapMT : public Physics2DServer {
 
 	Thread::ID server_thread;
 	Thread::ID main_thread;
-	volatile bool exit;
+	SafeFlag exit;
 	Thread thread;
-	volatile bool step_thread_up;
+	SafeFlag step_thread_up;
 	bool create_thread;
 
 	Semaphore step_sem;
