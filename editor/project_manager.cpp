@@ -474,9 +474,9 @@ private:
 					}
 					ProjectSettings::CustomMap initial_settings;
 					if (rasterizer_button_group->get_pressed_button()->get_meta("driver_name") == "Vulkan") {
-						initial_settings["rendering/quality/driver/driver_name"] = "Vulkan";
+						initial_settings["rendering/quality/driver/rendering_driver"] = "Vulkan";
 					} else {
-						initial_settings["rendering/quality/driver/driver_name"] = "GLES2";
+						initial_settings["rendering/quality/driver/rendering_driver"] = "GLES2";
 						initial_settings["rendering/vram_compression/import_etc2"] = false;
 						initial_settings["rendering/vram_compression/import_etc"] = true;
 					}

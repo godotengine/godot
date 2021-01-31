@@ -67,6 +67,11 @@ class OS {
 	bool restart_on_exit = false;
 	List<String> restart_commandline;
 
+	// for the user interface we keep a record of the current display driver
+	// so we can retrieve the rendering drivers available
+	int _display_driver_id = -1;
+	String _current_rendering_driver_name = "";
+
 protected:
 	void _set_logger(CompositeLogger *p_logger);
 
@@ -80,6 +85,11 @@ public:
 		RENDER_SEPARATE_THREAD
 	};
 
+	enum RenderMainThreadMode {
+		RENDER_MAIN_THREAD_ONLY,
+		RENDER_ANY_THREAD,
+	};
+
 protected:
 	friend class Main;
 	// Needed by tests to setup command-line args.
@@ -87,12 +97,16 @@ protected:
 
 	HasServerFeatureCallback has_server_feature_callback = nullptr;
 	RenderThreadMode _render_thread_mode = RENDER_THREAD_SAFE;
+	RenderMainThreadMode _render_main_thread_mode = RENDER_ANY_THREAD;
 
 	// Functions used by Main to initialize/deinitialize the OS.
 	void add_logger(Logger *p_logger);
 
 	virtual void initialize() = 0;
 	virtual void initialize_joypads() = 0;
+
+	void set_current_rendering_driver_name(String p_driver_name) { _current_rendering_driver_name = p_driver_name; }
+	void set_display_driver_id(int p_display_driver_id) { _display_driver_id = p_display_driver_id; }
 
 	virtual void set_main_loop(MainLoop *p_main_loop) = 0;
 	virtual void delete_main_loop() = 0;
@@ -108,6 +122,9 @@ public:
 	typedef int64_t ProcessID;
 
 	static OS *get_singleton();
+
+	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
+	int get_display_driver_id() const { return _display_driver_id; }
 
 	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type = Logger::ERR_ERROR);
 	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
@@ -237,6 +254,8 @@ public:
 	virtual uint64_t get_free_static_memory() const;
 
 	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
+	RenderMainThreadMode get_render_main_thread_mode() const { return _render_main_thread_mode; }
+	void set_render_main_thread_mode(RenderMainThreadMode p_thread_mode) { _render_main_thread_mode = p_thread_mode; }
 
 	virtual String get_locale() const;
 

@@ -51,13 +51,13 @@
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
 
-#if defined(OPENGL_ENABLED)
-#include "context_gl_windows.h"
-#endif
-
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
 #include "platform/windows/vulkan_context_win.h"
+#endif
+
+#if defined(GLES_WINDOWS_ENABLED)
+#include "gl_manager_windows.h"
 #endif
 
 #include <fcntl.h>
@@ -303,8 +303,8 @@ private:
 	int old_x, old_y;
 	Point2i center;
 
-#if defined(OPENGL_ENABLED)
-	ContextGL_Windows *context_gles2;
+#if defined(GLES_WINDOWS_ENABLED)
+	GLManager_Windows *gl_manager;
 #endif
 
 #if defined(VULKAN_ENABLED)
@@ -472,6 +472,8 @@ public:
 	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
 	virtual void show_window(WindowID p_window);
 	virtual void delete_sub_window(WindowID p_window);
+
+	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id);
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const;
 

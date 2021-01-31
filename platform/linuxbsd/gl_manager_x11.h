@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_windows.h                                                 */
+/*  gl_manager_x11.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,52 +28,100 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+#pragma once
 
-// Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
+#ifdef X11_ENABLED
 
-#ifndef CONTEXT_GL_WIN_H
-#define CONTEXT_GL_WIN_H
+#include "drivers/gles_common/rasterizer_platforms.h"
 
-#include "core/error/error_list.h"
+#if defined(GLES_X11_ENABLED)
+
 #include "core/os/os.h"
+#include "core/templates/local_vector.h"
+#include "servers/display_server.h"
+#include <X11/Xlib.h>
+#include <X11/extensions/Xrender.h>
 
-#include <windows.h>
+struct GLManager_X11_Private;
 
-typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
-typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
+class GLManager_X11 {
+public:
+	enum ContextType {
+		GLES_2_0_COMPATIBLE,
+	};
 
-class ContextGL_Windows {
-	HDC hDC;
-	HGLRC hRC;
-	unsigned int pixel_format;
-	HWND hWnd;
-	bool opengl_3_context;
+private:
+	// any data specific to the window
+	struct GLWindow {
+		GLWindow() { in_use = false; }
+		bool in_use;
+
+		// the external ID .. should match the GL window number .. unused I think
+		DisplayServer::WindowID window_id;
+		int width;
+		int height;
+		::Window x11_window;
+		int gldisplay_id;
+	};
+
+	struct GLDisplay {
+		GLDisplay() { context = nullptr; }
+		~GLDisplay();
+		GLManager_X11_Private *context;
+		::Display *x11_display;
+		XVisualInfo x_vi;
+		XSetWindowAttributes x_swa;
+		unsigned long x_valuemask;
+	};
+
+	// just for convenience, window and display struct
+	struct XWinDisp {
+		::Window x11_window;
+		::Display *x11_display;
+	} _x_windisp;
+
+	LocalVector<GLWindow> _windows;
+	LocalVector<GLDisplay> _displays;
+
+	GLWindow *_current_window;
+
+	void _internal_set_current_window(GLWindow *p_win);
+
+	GLWindow &get_window(unsigned int id) { return _windows[id]; }
+	const GLWindow &get_window(unsigned int id) const { return _windows[id]; }
+
+	const GLDisplay &get_current_display() const { return _displays[_current_window->gldisplay_id]; }
+	const GLDisplay &get_display(unsigned int id) { return _displays[id]; }
+
+	bool double_buffer;
+	bool direct_render;
+	int glx_minor, glx_major;
 	bool use_vsync;
-	bool vsync_via_compositor;
+	ContextType context_type;
 
-	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
-	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT;
-
-	static bool should_vsync_via_compositor();
+private:
+	int _find_or_create_display(Display *p_x11_display);
+	Error _create_context(GLDisplay &gl_display);
 
 public:
+	Error window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height);
+	void window_destroy(DisplayServer::WindowID p_window_id);
+	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
+
 	void release_current();
-
 	void make_current();
-
-	int get_window_width();
-	int get_window_height();
 	void swap_buffers();
+
+	void window_make_current(DisplayServer::WindowID p_window_id);
 
 	Error initialize();
 
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;
 
-	ContextGL_Windows(HWND hwnd, bool p_opengl_3_context);
-	~ContextGL_Windows();
+	GLManager_X11(const Vector2i &p_size, ContextType p_context_type);
+	~GLManager_X11();
 };
 
-#endif
-#endif
+#endif // GLES_X11_ENABLED
+#endif // X11_ENABLED
