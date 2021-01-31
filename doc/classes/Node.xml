@@ -623,10 +623,11 @@
 			</return>
 			<argument index="0" name="node" type="Node">
 			</argument>
-			<argument index="1" name="keep_data" type="bool" default="false">
+			<argument index="1" name="keep_groups" type="bool" default="false">
 			</argument>
 			<description>
 				Replaces a node in a scene by the given one. Subscriptions that pass through this node will be lost.
+				If [code]keep_groups[/code] is [code]true[/code], the [code]node[/code] is added to the same groups that the replaced node is in.
 			</description>
 		</method>
 		<method name="request_ready">
