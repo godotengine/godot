@@ -58,7 +58,7 @@ class RemoteDebuggerPeerTCP : public RemoteDebuggerPeer {
 private:
 	Ref<StreamPeerTCP> tcp_client;
 	Mutex mutex;
-	Thread *thread = nullptr;
+	Thread thread;
 	List<Array> in_queue;
 	List<Array> out_queue;
 	int out_left = 0;

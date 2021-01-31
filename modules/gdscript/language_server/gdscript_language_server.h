@@ -40,7 +40,7 @@ class GDScriptLanguageServer : public EditorPlugin {
 
 	GDScriptLanguageProtocol protocol;
 
-	Thread *thread;
+	Thread thread;
 	bool thread_running;
 	bool started;
 	bool use_thread;

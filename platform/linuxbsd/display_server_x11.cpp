@@ -4266,7 +4266,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		}
 	}
 
-	events_thread = Thread::create(_poll_events_thread, this);
+	events_thread.start(_poll_events_thread, this);
 
 	_update_real_mouse_position(windows[MAIN_WINDOW_ID]);
 
@@ -4280,9 +4280,7 @@ DisplayServerX11::~DisplayServerX11() {
 	_clipboard_transfer_ownership(XInternAtom(x11_display, "CLIPBOARD", 0), x11_main_window);
 
 	events_thread_done = true;
-	Thread::wait_to_finish(events_thread);
-	memdelete(events_thread);
-	events_thread = nullptr;
+	events_thread.wait_to_finish();
 
 	//destroy all windows
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {

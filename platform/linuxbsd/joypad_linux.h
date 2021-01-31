@@ -72,7 +72,7 @@ private:
 
 	bool exit_udev;
 	Mutex joy_mutex;
-	Thread *joy_thread;
+	Thread joy_thread;
 	Input *input;
 	Joypad joypads[JOYPADS_MAX];
 	Vector<String> attached_devices;

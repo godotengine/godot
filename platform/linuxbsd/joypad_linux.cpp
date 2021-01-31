@@ -74,13 +74,12 @@ void JoypadLinux::Joypad::reset() {
 JoypadLinux::JoypadLinux(Input *in) {
 	exit_udev = false;
 	input = in;
-	joy_thread = Thread::create(joy_thread_func, this);
+	joy_thread.start(joy_thread_func, this);
 }
 
 JoypadLinux::~JoypadLinux() {
 	exit_udev = true;
-	Thread::wait_to_finish(joy_thread);
-	memdelete(joy_thread);
+	joy_thread.wait_to_finish();
 	close_joypad();
 }
 
