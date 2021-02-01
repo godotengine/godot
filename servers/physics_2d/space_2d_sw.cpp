@@ -560,7 +560,8 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 		CollisionSolver2DSW::CallbackResult cbkres = PhysicsServer2DSW::_shape_col_cbk;
 
 		do {
-			Vector2 recover_motion;
+			Vector2 recover_min;
+			Vector2 recover_max;
 
 			bool collided = false;
 
@@ -639,16 +640,20 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 							PhysicsServer2D::SeparationResult &result = r_results[ray_index];
 
 							for (int k = 0; k < cbk.amount; k++) {
-								Vector2 a = sr[k * 2 + 0];
-								Vector2 b = sr[k * 2 + 1];
+								const Vector2 &a = sr[k * 2 + 0];
+								const Vector2 &b = sr[k * 2 + 1];
+								Vector2 recover = b - a;
 
-								recover_motion += (b - a) / cbk.amount;
+								recover_min.x = MIN(recover_min.x, recover.x);
+								recover_min.y = MIN(recover_min.y, recover.y);
+								recover_max.x = MAX(recover_max.x, recover.x);
+								recover_max.y = MAX(recover_max.y, recover.y);
 
-								real_t depth = a.distance_to(b);
+								real_t depth = recover.length();
 								if (depth > result.collision_depth) {
 									result.collision_depth = depth;
 									result.collision_point = b;
-									result.collision_normal = (b - a).normalized();
+									result.collision_normal = recover / depth;
 									result.collision_local_shape = j;
 									result.collider_shape = shape_idx;
 									result.collider = col_obj->get_self();
@@ -667,6 +672,7 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 				}
 			}
 
+			Vector2 recover_motion = recover_min + recover_max;
 			if (!collided || recover_motion == Vector2()) {
 				break;
 			}
@@ -844,14 +850,21 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				break;
 			}
 
-			Vector2 recover_motion;
+			Vector2 recover_min;
+			Vector2 recover_max;
 
 			for (int i = 0; i < cbk.amount; i++) {
-				Vector2 a = sr[i * 2 + 0];
-				Vector2 b = sr[i * 2 + 1];
-				recover_motion += (b - a) / cbk.amount;
+				const Vector2 &a = sr[i * 2 + 0];
+				const Vector2 &b = sr[i * 2 + 1];
+				Vector2 recover = b - a;
+
+				recover_min.x = MIN(recover_min.x, recover.x);
+				recover_min.y = MIN(recover_min.y, recover.y);
+				recover_max.x = MAX(recover_max.x, recover.x);
+				recover_max.y = MAX(recover_max.y, recover.y);
 			}
 
+			Vector2 recover_motion = recover_min + recover_max;
 			if (recover_motion == Vector2()) {
 				collided = false;
 				break;
