@@ -11,13 +11,14 @@
 		[b]FIXME:[/b] No longer valid after DisplayServer split and Input refactoring.
 		Call [method accept_event] so no other node receives the event. Once you accepted an input, it becomes handled so [method Node._unhandled_input] will not process it.
 		Only one [Control] node can be in keyboard focus. Only the node in focus will receive keyboard events. To get the focus, call [method grab_focus]. [Control] nodes lose focus when another node grabs it, or if you hide the node in focus.
-		Sets [member mouse_filter] to [constant MOUSE_FILTER_IGNORE] to tell a [Control] node to ignore mouse or touch events. You'll need it if you place an icon on top of a button.
+		Set [member mouse_filter] to [constant MOUSE_FILTER_IGNORE] to tell a [Control] node to ignore mouse or touch events. You'll need it if you place an icon on top of a button.
 		[Theme] resources change the Control's appearance. If you change the [Theme] on a [Control] node, it affects all of its children. To override some of the theme's parameters, call one of the [code]add_theme_*_override[/code] methods, like [method add_theme_font_override]. You can override the theme with the inspector.
 		[b]Note:[/b] Theme items are [i]not[/i] [Object] properties. This means you can't access their values using [method Object.get] and [method Object.set]. Instead, use the [code]get_theme_*[/code] and [code]add_theme_*_override[/code] methods provided by this class.
 	</description>
 	<tutorials>
 		<link title="GUI tutorial index">https://docs.godotengine.org/en/latest/tutorials/gui/index.html</link>
 		<link title="Custom drawing in 2D">https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link title="InputEvent tutorial">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
 		<link title="All GUI Demos">https://github.com/godotengine/godot-demo-projects/tree/master/gui</link>
 	</tutorials>
 	<methods>
@@ -43,7 +44,7 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
-				Virtual method to be implemented by the user. Use this method to process and accept inputs on UI elements. See [method accept_event].
+				Virtual method to be implemented by the user. Use this method to process and accept inputs on UI elements. See [method accept_event] and the InputEvent tutorial (link above in Tutorials section).
 				Example: clicking a control.
 				[codeblocks]
 				[gdscript]
@@ -68,10 +69,14 @@
 				[/codeblocks]
 				The event won't trigger if:
 				* clicking outside the control (see [method has_point]);
-				* control has [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
+				* it is a keypress or joypad event and the control does not have keyboard focus (see [method has_focus] and [method grab_focus], only one control has keyboard focus at any time);
+				* it is a mouse or touch event and control has [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
 				* control is obstructed by another [Control] on top of it, which doesn't have [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
-				* control's parent has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
-				* it happens outside parent's rectangle and the parent has either [member rect_clip_content] or [method _clips_input] enabled.
+				* one of control's children has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
+				* it happens outside parent's [code]Rect[/code] (see [method get_rect]) and the parent has [method _clips_input] enabled ([member rect_clip_content] clips visibility but does not affect input);
+				* a mouse button was pressed over another control and the mouse button has not been released yet (other control must be able to receive mouse events);
+				* any [Node] has called [method Viewport.set_input_as_handled] during [method Node._input] calls (this prevents the [Viewport] from passing the event to any control's [code]_gui_input()[/code] or related signals).
+				The event will be passed up to the parent control if children do not mark the event as handled and have [member mouse_filter] set to [constant MOUSE_FILTER_PASS] (does not apply to key or joypad events). Children with [constant MOUSE_FILTER_PASS] will pass mouse and touch events to the parent even when the event is outside the parent's [code]Rect[/code].
 			</description>
 		</method>
 		<method name="_make_custom_tooltip" qualifiers="virtual">
@@ -1062,7 +1067,7 @@
 			[b]Note:[/b] On Linux, shapes may vary depending on the cursor theme of the system.
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter" default="0">
-			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Also controls whether the control can receive the [signal mouse_entered], and [signal mouse_exited] signals. See the constants to learn what each does.
+			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Also controls whether the control can receive the [signal mouse_entered], and [signal mouse_exited] signals. See the [enum MouseFilter] constants to learn what each does.
 		</member>
 		<member name="offset_bottom" type="float" setter="set_offset" getter="get_offset" default="0.0">
 			Distance between the node's bottom edge and its parent control, based on [member anchor_bottom].
@@ -1147,12 +1152,16 @@
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse enters the control's [code]Rect[/code] area, provided its [member mouse_filter] lets the event reach it.
+				Emitted when the mouse enters the control's [code]Rect[/code] area (see [method has_point] and [method get_rect]), provided it is not obstructed and its [member mouse_filter] lets the event reach it.
+				If the control contains children with [member mouse_filter] set to [constant MOUSE_FILTER_PASS] and the mouse enters a child's [code]Rect[/code] area, this signal will also be emitted in the parent (even if the mouse is not within the parent's [code]Rect[/code]) unless the parent has its [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE].
+				When a mouse button is clicked over a control which can process mouse events, that control will retain mouse focus until the mouse button is released. That control will not emit [signal mouse_exited] and other control nodes will not emit [code]mouse_entered[/code] until the moment the mouse button is released. See [method _gui_input] for more information.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse leaves the control's [code]Rect[/code] area, provided its [member mouse_filter] lets the event reach it.
+				Emitted when the mouse leaves the control's [code]Rect[/code] area (see [method has_point] and [method get_rect]), provided its [member mouse_filter] lets the event reach it and it has not been removed from the [SceneTree].
+				If the control has its [member mouse_filter] set to [constant MOUSE_FILTER_PASS] and its parent control's [member mouse_filter] is not set to [constant MOUSE_FILTER_IGNORE], this signal will be emitted in the parent after the child.
+				When a mouse button is clicked over a control which can process mouse events, that control will retain mouse focus until the mouse button is released. That control will not emit [code]mouse_exited[/code] and other control nodes will not emit [signal mouse_entered] until the moment the mouse button is released. See [method _gui_input] for more information.
 			</description>
 		</signal>
 		<signal name="resized">
@@ -1184,10 +1193,10 @@
 			Sent when the node changes size. Use [member rect_size] to get the new size.
 		</constant>
 		<constant name="NOTIFICATION_MOUSE_ENTER" value="41">
-			Sent when the mouse pointer enters the node.
+			Sent when the mouse pointer enters the node. See [signal mouse_entered] for more information.
 		</constant>
 		<constant name="NOTIFICATION_MOUSE_EXIT" value="42">
-			Sent when the mouse pointer exits the node.
+			Sent when the mouse pointer exits the node. See [signal mouse_exited] for more information.
 		</constant>
 		<constant name="NOTIFICATION_FOCUS_ENTER" value="43">
 			Sent when the node grabs focus.
@@ -1334,13 +1343,13 @@
 			Tells the parent [Container] to align the node with its end, either the bottom or the right edge. It doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
 		<constant name="MOUSE_FILTER_STOP" value="0" enum="MouseFilter">
-			The control will receive mouse button input events through [method _gui_input] if clicked on. And the control will receive the [signal mouse_entered] and [signal mouse_exited] signals. These events are automatically marked as handled, and they will not propagate further to other controls. This also results in blocking signals in other controls.
+			The control will receive mouse button input events through [method _gui_input] if clicked on. And the control will receive the [signal mouse_entered] and [signal mouse_exited] signals (unless the mouse clicked another control and the mouse button has not been released yet). These events are automatically marked as handled, and they will not propagate further up to other controls. This also results in blocking signals in other controls.
 		</constant>
 		<constant name="MOUSE_FILTER_PASS" value="1" enum="MouseFilter">
-			The control will receive mouse button input events through [method _gui_input] if clicked on. And the control will receive the [signal mouse_entered] and [signal mouse_exited] signals. If this control does not handle the event, the parent control (if any) will be considered, and so on until there is no more parent control to potentially handle it. This also allows signals to fire in other controls. Even if no control handled it at all, the event will still be handled automatically, so unhandled input will not be fired.
+			The control will receive mouse button input events through [method _gui_input] if clicked on. And the control will receive the [signal mouse_entered] and [signal mouse_exited] signals (unless the mouse clicked another control and the mouse button has not been released yet). If this control does not handle the event, the parent control (if any) will be considered, and so on until there are no more parent controls to potentially handle it. This also allows signals to fire in other controls. Even if no control handled it at all, the event will still be handled automatically, so unhandled input will not be fired.
 		</constant>
 		<constant name="MOUSE_FILTER_IGNORE" value="2" enum="MouseFilter">
-			The control will not receive mouse button input events through [method _gui_input]. The control will also not receive the [signal mouse_entered] nor [signal mouse_exited] signals. This will not block other controls from receiving these events or firing the signals. Ignored events will not be handled automatically.
+			The control will not receive mouse button input events through [method _gui_input]. The control will also not receive the [signal mouse_entered] nor [signal mouse_exited] signals. This will not block other controls from receiving these events or firing the signals. Unlike [constant MOUSE_FILTER_PASS], Godot will look for the next control node under the mouse, even if it is not a parent of this control. Ignored events will not be handled automatically.
 		</constant>
 		<constant name="GROW_DIRECTION_BEGIN" value="0" enum="GrowDirection">
 			The control will grow to the left or top to make up if its minimum size is changed to be greater than its current size on the respective axis.
