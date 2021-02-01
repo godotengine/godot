@@ -2189,8 +2189,9 @@ void ProjectManager::_run_project() {
 }
 
 void ProjectManager::_scan_dir(const String &path, List<String> *r_projects) {
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	da->change_dir(path);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Error error = da->change_dir(path);
+	ERR_FAIL_COND_MSG(error != OK, "Could not scan directory at: " + path);
 	da->list_dir_begin();
 	String n = da->get_next();
 	while (n != String()) {
@@ -2202,7 +2203,6 @@ void ProjectManager::_scan_dir(const String &path, List<String> *r_projects) {
 		n = da->get_next();
 	}
 	da->list_dir_end();
-	memdelete(da);
 }
 
 void ProjectManager::_scan_begin(const String &p_base) {
@@ -2735,8 +2735,26 @@ ProjectManager::ProjectManager() {
 
 	_load_recent_projects();
 
-	if (EditorSettings::get_singleton()->get("filesystem/directories/autoscan_project_path")) {
-		_scan_begin(EditorSettings::get_singleton()->get("filesystem/directories/autoscan_project_path"));
+	DirAccessRef dir_access = DirAccess::create(DirAccess::AccessType::ACCESS_FILESYSTEM);
+
+	String default_project_path = EditorSettings::get_singleton()->get("filesystem/directories/default_project_path");
+	if (!dir_access->dir_exists(default_project_path)) {
+		Error error = dir_access->make_dir_recursive(default_project_path);
+		if (error != OK) {
+			ERR_PRINT("Could not create default project directory at: " + default_project_path);
+		}
+	}
+
+	String autoscan_path = EditorSettings::get_singleton()->get("filesystem/directories/autoscan_project_path");
+	if (autoscan_path != "") {
+		if (dir_access->dir_exists(autoscan_path)) {
+			_scan_begin(autoscan_path);
+		} else {
+			Error error = dir_access->make_dir_recursive(autoscan_path);
+			if (error != OK) {
+				ERR_PRINT("Could not create project autoscan directory at: " + autoscan_path);
+			}
+		}
 	}
 
 	SceneTree::get_singleton()->connect("files_dropped", this, "_files_dropped");
