@@ -1820,7 +1820,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid()) {
+	if (mb.is_valid() && Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED) {
 		gui.key_event_accepted = false;
 
 		Control *over = nullptr;
@@ -2007,7 +2007,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid()) {
+	if (mm.is_valid() && Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED) {
 		gui.key_event_accepted = false;
 		Point2 mpos = mm->get_position();
 
