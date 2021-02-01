@@ -590,7 +590,6 @@ private:
 	/////
 
 	ToolMode tool_mode;
-	bool orthogonal;
 
 	RenderingServer::ScenarioDebugMode scenario_debug;
 
@@ -623,6 +622,7 @@ private:
 	RID cursor_mesh;
 	RID cursor_instance;
 	Ref<StandardMaterial3D> indicator_mat;
+	Ref<ShaderMaterial> grid_mat[3];
 	Ref<StandardMaterial3D> cursor_material;
 
 	// Scene drag and drop support
