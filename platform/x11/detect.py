@@ -71,7 +71,7 @@ def get_opts():
         BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN))", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN))", False),
         BoolVariable("pulseaudio", "Detect and use PulseAudio", True),
-        BoolVariable("udev", "Use udev for gamepad connection callbacks", False),
+        BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         EnumVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", "yes", ("yes", "no")),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("touch", "Enable touch events", True),
