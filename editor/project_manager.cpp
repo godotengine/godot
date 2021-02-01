@@ -1378,11 +1378,10 @@ void ProjectList::create_project_item_control(int p_index) {
 	vb->add_child(path_hb);
 
 	Button *show = memnew(Button);
-	// Display a folder icon if the project directory can be opened, or a "broken file" icon if it can't
+	// Display a folder icon if the project directory can be opened, or a "broken file" icon if it can't.
 	show->set_icon(get_icon(!item.missing ? "Load" : "FileBroken", "EditorIcons"));
-	show->set_flat(true);
 	if (!item.grayed) {
-		// Don't make the icon less prominent if the parent is already grayed out
+		// Don't make the icon less prominent if the parent is already grayed out.
 		show->set_modulate(Color(1, 1, 1, 0.5));
 	}
 	path_hb->add_child(show);
