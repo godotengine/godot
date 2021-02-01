@@ -955,7 +955,7 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv) {
 #endif
 
 #ifdef USE_LIGHTMAP_CAPTURE
-uniform mediump vec4[12] lightmap_captures;
+uniform mediump vec4 lightmap_captures[12];
 uniform bool lightmap_capture_sky;
 
 #endif
