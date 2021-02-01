@@ -36,12 +36,13 @@
 
 Vector<Vector2> CapsuleShape2D::_get_points() const {
 	Vector<Vector2> points;
+	const real_t turn_step = Math_TAU / 24.0;
 	for (int i = 0; i < 24; i++) {
 		Vector2 ofs = Vector2(0, (i > 6 && i <= 18) ? -get_height() * 0.5 : get_height() * 0.5);
 
-		points.push_back(Vector2(Math::sin(i * Math_PI * 2 / 24.0), Math::cos(i * Math_PI * 2 / 24.0)) * get_radius() + ofs);
+		points.push_back(Vector2(Math::sin(i * turn_step), Math::cos(i * turn_step)) * get_radius() + ofs);
 		if (i == 6 || i == 18) {
-			points.push_back(Vector2(Math::sin(i * Math_PI * 2 / 24.0), Math::cos(i * Math_PI * 2 / 24.0)) * get_radius() - ofs);
+			points.push_back(Vector2(Math::sin(i * turn_step), Math::cos(i * turn_step)) * get_radius() - ofs);
 		}
 	}
 

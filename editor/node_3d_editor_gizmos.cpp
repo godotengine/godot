@@ -844,7 +844,7 @@ static float _find_closest_angle_to_half_pi_arc(const Vector3 &p_from, const Vec
 
 	//min_p = p_arc_xform.affine_inverse().xform(min_p);
 	float a = (Math_PI * 0.5) - Vector2(min_p.x, -min_p.z).angle();
-	return a * 180.0 / Math_PI;
+	return Math::rad2deg(a);
 }
 
 void Light3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
@@ -1033,12 +1033,9 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(points_primary, material_primary, false, color);
 		p_gizmo->add_lines(points_secondary, material_secondary, false, color);
 
-		const float ra = 16 * Math_PI * 2.0 / 64.0;
-		const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
-
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(0, 0, -r));
-		handles.push_back(Vector3(a.x, a.y, -d));
+		handles.push_back(Vector3(w, 0, -d));
 
 		p_gizmo->add_handles(handles, get_material("handles"));
 		p_gizmo->add_unscaled_billboard(icon, 0.05, color);
@@ -1095,8 +1092,8 @@ void AudioStreamPlayer3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int 
 	float closest_angle = 1e20;
 
 	for (int i = 0; i < 180; i++) {
-		float a = i * Math_PI / 180.0;
-		float an = (i + 1) * Math_PI / 180.0;
+		float a = Math::deg2rad((float)i);
+		float an = Math::deg2rad((float)(i + 1));
 
 		Vector3 from(Math::sin(a), 0, -Math::cos(a));
 		Vector3 to(Math::sin(an), 0, -Math::cos(an));
@@ -1145,9 +1142,10 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Vector<Vector3> points_primary;
 		points_primary.resize(200);
 
+		real_t step = Math_TAU / 100.0;
 		for (int i = 0; i < 100; i++) {
-			const float a = i * 2.0 * Math_PI / 100.0;
-			const float an = (i + 1) * 2.0 * Math_PI / 100.0;
+			const float a = i * step;
+			const float an = (i + 1) * step;
 
 			const Vector3 from(Math::sin(a) * radius, Math::cos(a) * radius, ofs);
 			const Vector3 to(Math::sin(an) * radius, Math::cos(an) * radius, ofs);
@@ -1163,7 +1161,7 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		points_secondary.resize(16);
 
 		for (int i = 0; i < 8; i++) {
-			const float a = i * 2.0 * Math_PI / 8.0;
+			const float a = i * (Math_TAU / 8.0);
 			const Vector3 from(Math::sin(a) * radius, Math::cos(a) * radius, ofs);
 
 			points_secondary.write[i * 2 + 0] = from;
@@ -2616,8 +2614,8 @@ void GPUParticlesCollision3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Vector<Vector3> collision_segments;
 
 		for (int i = 0; i < 64; i++) {
-			float ra = i * Math_PI * 2.0 / 64.0;
-			float rb = (i + 1) * Math_PI * 2.0 / 64.0;
+			float ra = i * (Math_TAU / 64.0);
+			float rb = (i + 1) * (Math_TAU / 64.0);
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
@@ -3317,7 +3315,7 @@ void BakedLightmapGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	int stack_count = 8;
 	int sector_count = 16;
 
-	float sector_step = 2 * Math_PI / sector_count;
+	float sector_step = (Math_PI * 2.0) / sector_count;
 	float stack_step = Math_PI / stack_count;
 
 	Vector<Vector3> vertices;
@@ -3454,7 +3452,7 @@ void LightmapProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	int stack_count = 8;
 	int sector_count = 16;
 
-	float sector_step = 2 * Math_PI / sector_count;
+	float sector_step = (Math_PI * 2.0) / sector_count;
 	float stack_step = Math_PI / stack_count;
 
 	Vector<Vector3> vertices;
@@ -3854,8 +3852,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Vector<Vector3> collision_segments;
 
 		for (int i = 0; i < 64; i++) {
-			float ra = i * Math_PI * 2.0 / 64.0;
-			float rb = (i + 1) * Math_PI * 2.0 / 64.0;
+			float ra = i * (Math_TAU / 64.0);
+			float rb = (i + 1) * (Math_TAU / 64.0);
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
@@ -3939,8 +3937,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Vector<Vector3> collision_segments;
 
 		for (int i = 0; i < 64; i++) {
-			float ra = i * Math_PI * 2.0 / 64.0;
-			float rb = (i + 1) * Math_PI * 2.0 / 64.0;
+			float ra = i * (Math_TAU / 64.0);
+			float rb = (i + 1) * (Math_TAU / 64.0);
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * radius;
 
@@ -4002,8 +4000,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Vector<Vector3> collision_segments;
 
 		for (int i = 0; i < 64; i++) {
-			float ra = i * Math_PI * 2.0 / 64.0;
-			float rb = (i + 1) * Math_PI * 2.0 / 64.0;
+			float ra = i * (Math_TAU / 64.0);
+			float rb = (i + 1) * (Math_TAU / 64.0);
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * radius;
 

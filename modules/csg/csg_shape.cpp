@@ -927,25 +927,27 @@ CSGBrush *CSGSphere3D::_build_brush() {
 		bool *invertw = invert.ptrw();
 
 		int face = 0;
+		const double lat_step = Math_TAU / rings;
+		const double lon_step = Math_TAU / radial_segments;
 
 		for (int i = 1; i <= rings; i++) {
-			double lat0 = Math_PI * (-0.5 + (double)(i - 1) / rings);
+			double lat0 = lat_step * (i - 1) - Math_TAU / 4;
 			double z0 = Math::sin(lat0);
 			double zr0 = Math::cos(lat0);
 			double u0 = double(i - 1) / rings;
 
-			double lat1 = Math_PI * (-0.5 + (double)i / rings);
+			double lat1 = lat_step * i - Math_TAU / 4;
 			double z1 = Math::sin(lat1);
 			double zr1 = Math::cos(lat1);
 			double u1 = double(i) / rings;
 
 			for (int j = radial_segments; j >= 1; j--) {
-				double lng0 = 2 * Math_PI * (double)(j - 1) / radial_segments;
+				double lng0 = lon_step * (j - 1);
 				double x0 = Math::cos(lng0);
 				double y0 = Math::sin(lng0);
 				double v0 = double(i - 1) / radial_segments;
 
-				double lng1 = 2 * Math_PI * (double)(j) / radial_segments;
+				double lng1 = lon_step * j;
 				double x1 = Math::cos(lng1);
 				double y1 = Math::sin(lng1);
 				double v1 = double(i) / radial_segments;
@@ -1266,8 +1268,8 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				float inc = float(i) / sides;
 				float inc_n = float((i + 1)) / sides;
 
-				float ang = inc * Math_PI * 2.0;
-				float ang_n = inc_n * Math_PI * 2.0;
+				float ang = inc * Math_TAU;
+				float ang_n = inc_n * Math_TAU;
 
 				Vector3 base(Math::cos(ang), 0, Math::sin(ang));
 				Vector3 base_n(Math::cos(ang_n), 0, Math::sin(ang_n));
@@ -1508,8 +1510,8 @@ CSGBrush *CSGTorus3D::_build_brush() {
 				float inci = float(i) / sides;
 				float inci_n = float((i + 1)) / sides;
 
-				float angi = inci * Math_PI * 2.0;
-				float angi_n = inci_n * Math_PI * 2.0;
+				float angi = inci * Math_TAU;
+				float angi_n = inci_n * Math_TAU;
 
 				Vector3 normali = Vector3(Math::cos(angi), 0, Math::sin(angi));
 				Vector3 normali_n = Vector3(Math::cos(angi_n), 0, Math::sin(angi_n));
@@ -1518,8 +1520,8 @@ CSGBrush *CSGTorus3D::_build_brush() {
 					float incj = float(j) / ring_sides;
 					float incj_n = float((j + 1)) / ring_sides;
 
-					float angj = incj * Math_PI * 2.0;
-					float angj_n = incj_n * Math_PI * 2.0;
+					float angj = incj * Math_TAU;
+					float angj_n = incj_n * Math_TAU;
 
 					Vector2 normalj = Vector2(Math::cos(angj), Math::sin(angj)) * radius + Vector2(min_radius + radius, 0);
 					Vector2 normalj_n = Vector2(Math::cos(angj_n), Math::sin(angj_n)) * radius + Vector2(min_radius + radius, 0);
@@ -1891,8 +1893,8 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					float inci = float(i) / spin_sides;
 					float inci_n = float((i + 1)) / spin_sides;
 
-					float angi = -(inci * spin_degrees / 360.0) * Math_PI * 2.0;
-					float angi_n = -(inci_n * spin_degrees / 360.0) * Math_PI * 2.0;
+					float angi = -Math::deg2rad(inci * spin_degrees);
+					float angi_n = -Math::deg2rad(inci_n * spin_degrees);
 
 					Vector3 normali = Vector3(Math::cos(angi), 0, Math::sin(angi));
 					Vector3 normali_n = Vector3(Math::cos(angi_n), 0, Math::sin(angi_n));
