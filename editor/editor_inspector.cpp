@@ -2506,22 +2506,11 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 		return;
 	}
 
-	List<StringName> classes;
-	Map<StringName, String> paths;
+	List<Ref<Script>> classes;
 
 	// NodeC -> NodeB -> NodeA
 	while (script.is_valid()) {
-		String n = EditorNode::get_editor_data().script_class_get_name(script->get_path());
-		if (n.length()) {
-			classes.push_front(n);
-		} else if (script->get_path() != String() && script->get_path().find("::") == -1) {
-			n = script->get_path().get_file();
-			classes.push_front(n);
-		} else {
-			n = TTR("Built-in script");
-			classes.push_front(n);
-		}
-		paths[n] = script->get_path();
+		classes.push_front(script);
 		script = script->get_base_script();
 	}
 
@@ -2545,17 +2534,18 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 	}
 
 	Set<StringName> added;
-	for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
-		StringName name = E->get();
-		String path = paths[name];
-		Ref<Script> s;
-		if (path == String()) {
-			// Built-in script. It can't be inherited, so must be the script attached to the object.
-			s = p_object.get_script();
-		} else {
-			s = ResourceLoader::load(path, "Script");
+	for (List<Ref<Script>>::Element *E = classes.front(); E; E = E->next()) {
+		Ref<Script> s = E->get();
+		String path = s->get_path();
+		String name = EditorNode::get_editor_data().script_class_get_name(path);
+		if (name.is_empty()) {
+			if (!path.is_empty() && path.find("::") == -1) {
+				name = path.get_file();
+			} else {
+				name = TTR("Built-in script");
+			}
 		}
-		ERR_FAIL_COND(!s->is_valid());
+
 		List<PropertyInfo> props;
 		s->get_script_property_list(&props);
 
