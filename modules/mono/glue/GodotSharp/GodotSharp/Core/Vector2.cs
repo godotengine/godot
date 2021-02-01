@@ -160,25 +160,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the vector with a maximum length by limiting its length to `length`.
-        /// </summary>
-        /// <param name="length">The length to limit to.</param>
-        /// <returns>The vector with its length limited.</returns>
-        public Vector2 Clamped(real_t length)
-        {
-            var v = this;
-            real_t l = Length();
-
-            if (l > 0 && length < l)
-            {
-                v /= l;
-                v *= length;
-            }
-
-            return v;
-        }
-
-        /// <summary>
         /// Returns the cross product of this vector and `b`.
         /// </summary>
         /// <param name="b">The other vector.</param>
@@ -332,6 +313,25 @@ namespace Godot
                 Mathf.Lerp(x, to.x, weight.x),
                 Mathf.Lerp(y, to.y, weight.y)
             );
+        }
+
+        /// <summary>
+        /// Returns the vector with a maximum length by limiting its length to `length`.
+        /// </summary>
+        /// <param name="length">The length to limit to.</param>
+        /// <returns>The vector with its length limited.</returns>
+        public Vector2 LimitLength(real_t length = 1.0f)
+        {
+            Vector2 v = this;
+            real_t l = Length();
+
+            if (l > 0 && length < l)
+            {
+                v /= l;
+                v *= length;
+            }
+
+            return v;
         }
 
         /// <summary>
