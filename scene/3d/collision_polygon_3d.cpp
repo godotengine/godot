@@ -132,13 +132,13 @@ AABB CollisionPolygon3D::get_item_rect() const {
 	return aabb;
 }
 
-void CollisionPolygon3D::set_depth(float p_depth) {
+void CollisionPolygon3D::set_depth(real_t p_depth) {
 	depth = p_depth;
 	_build_polygon();
 	update_gizmo();
 }
 
-float CollisionPolygon3D::get_depth() const {
+real_t CollisionPolygon3D::get_depth() const {
 	return depth;
 }
 

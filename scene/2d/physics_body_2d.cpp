@@ -324,7 +324,7 @@ struct _RigidBody2DInOut {
 	int local_shape;
 };
 
-bool RigidBody2D::_test_motion(const Vector2 &p_motion, bool p_infinite_inertia, float p_margin, const Ref<PhysicsTestMotionResult2D> &p_result) {
+bool RigidBody2D::_test_motion(const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, const Ref<PhysicsTestMotionResult2D> &p_result) {
 	PhysicsServer2D::MotionResult *r = nullptr;
 	if (p_result.is_valid()) {
 		r = p_result->get_result_ptr();
@@ -611,7 +611,7 @@ void RigidBody2D::apply_impulse(const Vector2 &p_impulse, const Vector2 &p_posit
 	PhysicsServer2D::get_singleton()->body_apply_impulse(get_rid(), p_impulse, p_position);
 }
 
-void RigidBody2D::apply_torque_impulse(float p_torque) {
+void RigidBody2D::apply_torque_impulse(real_t p_torque) {
 	PhysicsServer2D::get_singleton()->body_apply_torque_impulse(get_rid(), p_torque);
 }
 
@@ -623,11 +623,11 @@ Vector2 RigidBody2D::get_applied_force() const {
 	return PhysicsServer2D::get_singleton()->body_get_applied_force(get_rid());
 };
 
-void RigidBody2D::set_applied_torque(const float p_torque) {
+void RigidBody2D::set_applied_torque(const real_t p_torque) {
 	PhysicsServer2D::get_singleton()->body_set_applied_torque(get_rid(), p_torque);
 };
 
-float RigidBody2D::get_applied_torque() const {
+real_t RigidBody2D::get_applied_torque() const {
 	return PhysicsServer2D::get_singleton()->body_get_applied_torque(get_rid());
 };
 
@@ -639,7 +639,7 @@ void RigidBody2D::add_force(const Vector2 &p_force, const Vector2 &p_position) {
 	PhysicsServer2D::get_singleton()->body_add_force(get_rid(), p_force, p_position);
 }
 
-void RigidBody2D::add_torque(const float p_torque) {
+void RigidBody2D::add_torque(const real_t p_torque) {
 	PhysicsServer2D::get_singleton()->body_add_torque(get_rid(), p_torque);
 }
 
@@ -906,7 +906,7 @@ bool KinematicBody2D::separate_raycast_shapes(bool p_infinite_inertia, Collision
 	Vector2 recover;
 	int hits = PhysicsServer2D::get_singleton()->body_test_ray_separation(get_rid(), gt, p_infinite_inertia, recover, sep_res, 8, margin);
 	int deepest = -1;
-	float deepest_depth;
+	real_t deepest_depth;
 	for (int i = 0; i < hits; i++) {
 		if (deepest == -1 || sep_res[i].collision_depth > deepest_depth) {
 			deepest = i;
@@ -966,7 +966,7 @@ bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
-Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_up_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
+Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_up_direction, bool p_stop_on_slope, int p_max_slides, real_t p_floor_max_angle, bool p_infinite_inertia) {
 	Vector2 body_velocity = p_linear_velocity;
 	Vector2 body_velocity_normal = body_velocity.normalized();
 	Vector2 up_direction = p_up_direction.normalized();
@@ -1057,7 +1057,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 	return body_velocity;
 }
 
-Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_up_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
+Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_up_direction, bool p_stop_on_slope, int p_max_slides, real_t p_floor_max_angle, bool p_infinite_inertia) {
 	Vector2 up_direction = p_up_direction.normalized();
 	bool was_on_floor = on_floor;
 
@@ -1123,11 +1123,11 @@ bool KinematicBody2D::test_move(const Transform2D &p_from, const Vector2 &p_moti
 	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), p_from, p_motion, p_infinite_inertia, margin);
 }
 
-void KinematicBody2D::set_safe_margin(float p_margin) {
+void KinematicBody2D::set_safe_margin(real_t p_margin) {
 	margin = p_margin;
 }
 
-float KinematicBody2D::get_safe_margin() const {
+real_t KinematicBody2D::get_safe_margin() const {
 	return margin;
 }
 
@@ -1219,8 +1219,8 @@ void KinematicBody2D::_notification(int p_what) {
 
 void KinematicBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only"), &KinematicBody2D::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody2D::move_and_slide, DEFVAL(Vector2(0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody2D::move_and_slide_with_snap, DEFVAL(Vector2(0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody2D::move_and_slide, DEFVAL(Vector2(0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((real_t)45.0)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody2D::move_and_slide_with_snap, DEFVAL(Vector2(0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((real_t)45.0)), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia"), &KinematicBody2D::test_move, DEFVAL(true));
 

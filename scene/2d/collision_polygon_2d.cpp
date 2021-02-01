@@ -158,7 +158,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 				Vector2 line_to(0, 20);
 				draw_line(Vector2(), line_to, dcol, 3);
 				Vector<Vector2> pts;
-				float tsize = 8;
+				real_t tsize = 8;
 				pts.push_back(line_to + (Vector2(0, tsize)));
 				pts.push_back(line_to + (Vector2(Math_SQRT12 * tsize, 0)));
 				pts.push_back(line_to + (Vector2(-Math_SQRT12 * tsize, 0)));
@@ -275,14 +275,14 @@ bool CollisionPolygon2D::is_one_way_collision_enabled() const {
 	return one_way_collision;
 }
 
-void CollisionPolygon2D::set_one_way_collision_margin(float p_margin) {
+void CollisionPolygon2D::set_one_way_collision_margin(real_t p_margin) {
 	one_way_collision_margin = p_margin;
 	if (parent) {
 		parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
 	}
 }
 
-float CollisionPolygon2D::get_one_way_collision_margin() const {
+real_t CollisionPolygon2D::get_one_way_collision_margin() const {
 	return one_way_collision_margin;
 }
 

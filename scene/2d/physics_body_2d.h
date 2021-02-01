@@ -176,7 +176,7 @@ private:
 	void _body_inout(int p_status, ObjectID p_instance, int p_body_shape, int p_local_shape);
 	void _direct_state_changed(Object *p_state);
 
-	bool _test_motion(const Vector2 &p_motion, bool p_infinite_inertia = true, float p_margin = 0.08, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>());
+	bool _test_motion(const Vector2 &p_motion, bool p_infinite_inertia = true, real_t p_margin = 0.08, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>());
 
 protected:
 	void _notification(int p_what);
@@ -232,17 +232,17 @@ public:
 
 	void apply_central_impulse(const Vector2 &p_impulse);
 	void apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2());
-	void apply_torque_impulse(float p_torque);
+	void apply_torque_impulse(real_t p_torque);
 
 	void set_applied_force(const Vector2 &p_force);
 	Vector2 get_applied_force() const;
 
-	void set_applied_torque(const float p_torque);
-	float get_applied_torque() const;
+	void set_applied_torque(const real_t p_torque);
+	real_t get_applied_torque() const;
 
 	void add_central_force(const Vector2 &p_force);
 	void add_force(const Vector2 &p_force, const Vector2 &p_position = Vector2());
-	void add_torque(float p_torque);
+	void add_torque(real_t p_torque);
 
 	TypedArray<Node2D> get_colliding_bodies() const; //function for script
 
@@ -276,7 +276,7 @@ public:
 	};
 
 private:
-	float margin;
+	real_t margin;
 
 	Vector2 floor_normal;
 	Vector2 floor_velocity;
@@ -309,11 +309,11 @@ public:
 
 	bool separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision);
 
-	void set_safe_margin(float p_margin);
-	float get_safe_margin() const;
+	void set_safe_margin(real_t p_margin);
+	real_t get_safe_margin() const;
 
-	Vector2 move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_up_direction = Vector2(0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
-	Vector2 move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_up_direction = Vector2(0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
+	Vector2 move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_up_direction = Vector2(0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, real_t p_floor_max_angle = Math::deg2rad((real_t)45.0), bool p_infinite_inertia = true);
+	Vector2 move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_up_direction = Vector2(0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, real_t p_floor_max_angle = Math::deg2rad((real_t)45.0), bool p_infinite_inertia = true);
 	bool is_on_floor() const;
 	bool is_on_wall() const;
 	bool is_on_ceiling() const;

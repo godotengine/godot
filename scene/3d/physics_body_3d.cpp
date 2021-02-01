@@ -51,7 +51,7 @@ Vector3 PhysicsBody3D::get_angular_velocity() const {
 	return Vector3();
 }
 
-float PhysicsBody3D::get_inverse_mass() const {
+real_t PhysicsBody3D::get_inverse_mass() const {
 	return 0;
 }
 
@@ -924,7 +924,7 @@ bool KinematicBody3D::move_and_collide(const Vector3 &p_motion, bool p_infinite_
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
-Vector3 KinematicBody3D::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_up_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
+Vector3 KinematicBody3D::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_up_direction, bool p_stop_on_slope, int p_max_slides, real_t p_floor_max_angle, bool p_infinite_inertia) {
 	Vector3 body_velocity = p_linear_velocity;
 	Vector3 body_velocity_normal = body_velocity.normalized();
 	Vector3 up_direction = p_up_direction.normalized();
@@ -1018,7 +1018,7 @@ Vector3 KinematicBody3D::move_and_slide(const Vector3 &p_linear_velocity, const 
 	return body_velocity;
 }
 
-Vector3 KinematicBody3D::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_up_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
+Vector3 KinematicBody3D::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_up_direction, bool p_stop_on_slope, int p_max_slides, real_t p_floor_max_angle, bool p_infinite_inertia) {
 	Vector3 up_direction = p_up_direction.normalized();
 	bool was_on_floor = on_floor;
 
@@ -1090,7 +1090,7 @@ bool KinematicBody3D::separate_raycast_shapes(bool p_infinite_inertia, Collision
 	Vector3 recover;
 	int hits = PhysicsServer3D::get_singleton()->body_test_ray_separation(get_rid(), gt, p_infinite_inertia, recover, sep_res, 8, margin);
 	int deepest = -1;
-	float deepest_depth;
+	real_t deepest_depth;
 	for (int i = 0; i < hits; i++) {
 		if (deepest == -1 || sep_res[i].collision_depth > deepest_depth) {
 			deepest = i;
@@ -1131,12 +1131,12 @@ bool KinematicBody3D::get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const {
 	return PhysicsServer3D::get_singleton()->body_is_axis_locked(get_rid(), p_axis);
 }
 
-void KinematicBody3D::set_safe_margin(float p_margin) {
+void KinematicBody3D::set_safe_margin(real_t p_margin) {
 	margin = p_margin;
 	PhysicsServer3D::get_singleton()->body_set_kinematic_safe_margin(get_rid(), margin);
 }
 
-float KinematicBody3D::get_safe_margin() const {
+real_t KinematicBody3D::get_safe_margin() const {
 	return margin;
 }
 
@@ -1180,8 +1180,8 @@ void KinematicBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_direct_state_changed"), &KinematicBody3D::_direct_state_changed);
 
 	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only"), &KinematicBody3D::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody3D::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody3D::move_and_slide_with_snap, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody3D::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((real_t)45.0)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody3D::move_and_slide_with_snap, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((real_t)45.0)), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia"), &KinematicBody3D::test_move, DEFVAL(true));
 
