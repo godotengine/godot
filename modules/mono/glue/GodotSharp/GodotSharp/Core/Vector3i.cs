@@ -89,6 +89,24 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a new vector with all components clamped between the
+        /// components of `min` and `max` using
+        /// <see cref="Mathf.Clamp(int, int, int)"/>.
+        /// </summary>
+        /// <param name="min">The vector with minimum allowed values.</param>
+        /// <param name="max">The vector with maximum allowed values.</param>
+        /// <returns>The vector with all components clamped.</returns>
+        public Vector3i Clamp(Vector3i min, Vector3i max)
+        {
+            return new Vector3i
+            (
+                Mathf.Clamp(x, min.x, max.x),
+                Mathf.Clamp(y, min.y, max.y),
+                Mathf.Clamp(z, min.z, max.z)
+            );
+        }
+
+        /// <summary>
         /// Returns the squared distance between this vector and `b`.
         /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
         /// you need to compare vectors or need the squared distance for some formula.

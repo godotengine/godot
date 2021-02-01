@@ -136,6 +136,17 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="clamp" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="min" type="Color" default="Color( 0, 0, 0, 0 )">
+			</argument>
+			<argument index="1" name="max" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<description>
+				Returns a new color with all components clamped between the components of [code]min[/code] and [code]max[/code], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
 		<method name="darkened" qualifiers="const">
 			<return type="Color">
 			</return>

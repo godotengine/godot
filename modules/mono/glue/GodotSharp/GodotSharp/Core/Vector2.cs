@@ -160,6 +160,23 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a new vector with all components clamped between the
+        /// components of `min` and `max` using
+        /// <see cref="Mathf.Clamp(real_t, real_t, real_t)"/>.
+        /// </summary>
+        /// <param name="min">The vector with minimum allowed values.</param>
+        /// <param name="max">The vector with maximum allowed values.</param>
+        /// <returns>The vector with all components clamped.</returns>
+        public Vector2 Clamp(Vector2 min, Vector2 max)
+        {
+            return new Vector2
+            (
+                Mathf.Clamp(x, min.x, max.x),
+                Mathf.Clamp(y, min.y, max.y)
+            );
+        }
+
+        /// <summary>
         /// Returns the cross product of this vector and `b`.
         /// </summary>
         /// <param name="b">The other vector.</param>

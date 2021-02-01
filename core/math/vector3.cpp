@@ -52,6 +52,13 @@ real_t Vector3::get_axis(int p_axis) const {
 	return operator[](p_axis);
 }
 
+Vector3 Vector3::clamp(const Vector3 &p_min, const Vector3 &p_max) const {
+	return Vector3(
+			CLAMP(x, p_min.x, p_max.x),
+			CLAMP(y, p_min.y, p_max.y),
+			CLAMP(z, p_min.z, p_max.z));
+}
+
 void Vector3::snap(Vector3 p_step) {
 	x = Math::snapped(x, p_step.x);
 	y = Math::snapped(y, p_step.y);

@@ -211,6 +211,14 @@ bool Color::is_equal_approx(const Color &p_color) const {
 	return Math::is_equal_approx(r, p_color.r) && Math::is_equal_approx(g, p_color.g) && Math::is_equal_approx(b, p_color.b) && Math::is_equal_approx(a, p_color.a);
 }
 
+Color Color::clamp(const Color &p_min, const Color &p_max) const {
+	return Color(
+			CLAMP(r, p_min.r, p_max.r),
+			CLAMP(g, p_min.g, p_max.g),
+			CLAMP(b, p_min.b, p_max.b),
+			CLAMP(a, p_min.a, p_max.a));
+}
+
 void Color::invert() {
 	r = 1.0 - r;
 	g = 1.0 - g;

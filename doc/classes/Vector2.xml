@@ -110,6 +110,17 @@
 				Returns the vector with all components rounded up (towards positive infinity).
 			</description>
 		</method>
+		<method name="clamp" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="min" type="Vector2">
+			</argument>
+			<argument index="1" name="max" type="Vector2">
+			</argument>
+			<description>
+				Returns a new vector with all components clamped between the components of [code]min[/code] and [code]max[/code], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
 		<method name="cross" qualifiers="const">
 			<return type="float">
 			</return>

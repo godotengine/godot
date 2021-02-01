@@ -162,6 +162,7 @@ struct Vector2 {
 	Vector2 ceil() const;
 	Vector2 round() const;
 	Vector2 snapped(const Vector2 &p_by) const;
+	Vector2 clamp(const Vector2 &p_min, const Vector2 &p_max) const;
 	real_t aspect() const { return width / height; }
 
 	operator String() const { return String::num(x) + ", " + String::num(y); }
@@ -337,6 +338,7 @@ struct Vector2i {
 	real_t aspect() const { return width / (real_t)height; }
 	Vector2i sign() const { return Vector2i(SGN(x), SGN(y)); }
 	Vector2i abs() const { return Vector2i(ABS(x), ABS(y)); }
+	Vector2i clamp(const Vector2i &p_min, const Vector2i &p_max) const;
 
 	operator String() const { return String::num(x) + ", " + String::num(y); }
 
