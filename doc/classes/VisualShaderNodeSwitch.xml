@@ -1,15 +1,38 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeSwitch" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
-		A boolean/vector function for use within the visual shader graph.
+		A selector function for use within the visual shader graph.
 	</brief_description>
 	<description>
-		Returns an associated vector if the provided boolean value is [code]true[/code] or [code]false[/code].
+		Returns an associated value of the [code]op_type[/code] type if the provided boolean value is [code]true[/code] or [code]false[/code].
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 	</methods>
+	<members>
+		<member name="op_type" type="int" setter="set_op_type" getter="get_op_type" enum="VisualShaderNodeSwitch.OpType" default="0">
+			A type of operands and returned value.
+		</member>
+	</members>
 	<constants>
+		<constant name="OP_TYPE_FLOAT" value="0" enum="OpType">
+			A floating-point scalar.
+		</constant>
+		<constant name="OP_TYPE_INT" value="1" enum="OpType">
+			An integer scalar.
+		</constant>
+		<constant name="OP_TYPE_VECTOR" value="2" enum="OpType">
+			A vector type.
+		</constant>
+		<constant name="OP_TYPE_BOOLEAN" value="3" enum="OpType">
+			A boolean type.
+		</constant>
+		<constant name="OP_TYPE_TRANSFORM" value="4" enum="OpType">
+			A transform type.
+		</constant>
+		<constant name="OP_TYPE_MAX" value="5" enum="OpType">
+			Represents the size of the [enum OpType] enum.
+		</constant>
 	</constants>
 </class>
