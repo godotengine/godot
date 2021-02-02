@@ -331,7 +331,7 @@ Error VulkanContext::_create_physical_device() {
 	   * function to register the final callback.
 	   */
 	VkDebugUtilsMessengerCreateInfoEXT dbg_messenger_create_info;
-	if (use_validation_layers) {
+	if (enabled_debug_utils) {
 		// VK_EXT_debug_utils style
 		dbg_messenger_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 		dbg_messenger_create_info.pNext = nullptr;
@@ -1593,7 +1593,8 @@ void VulkanContext::command_begin_label(VkCommandBuffer p_command_buffer, String
 	VkDebugUtilsLabelEXT label;
 	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 	label.pNext = nullptr;
-	label.pLabelName = p_label_name.utf8().get_data();
+	CharString label_name = p_label_name.utf8();
+	label.pLabelName = label_name.get_data();
 	label.color[0] = p_color[0];
 	label.color[1] = p_color[1];
 	label.color[2] = p_color[2];
@@ -1608,7 +1609,8 @@ void VulkanContext::command_insert_label(VkCommandBuffer p_command_buffer, Strin
 	VkDebugUtilsLabelEXT label;
 	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 	label.pNext = nullptr;
-	label.pLabelName = p_label_name.utf8().get_data();
+	CharString label_name = p_label_name.utf8();
+	label.pLabelName = label_name.get_data();
 	label.color[0] = p_color[0];
 	label.color[1] = p_color[1];
 	label.color[2] = p_color[2];
