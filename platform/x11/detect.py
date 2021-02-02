@@ -65,13 +65,13 @@ def get_opts():
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_lld", "Use the LLD linker", False),
         BoolVariable("use_thinlto", "Use ThinLTO", False),
-        BoolVariable("use_static_cpp", "Link libgcc and libstdc++ statically for better portability", False),
+        BoolVariable("use_static_cpp", "Link libgcc and libstdc++ statically for better portability", True),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN))", False),
         BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN))", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN))", False),
         BoolVariable("pulseaudio", "Detect and use PulseAudio", True),
-        BoolVariable("udev", "Use udev for gamepad connection callbacks", False),
+        BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         EnumVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", "yes", ("yes", "no")),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("touch", "Enable touch events", True),
@@ -380,4 +380,7 @@ def configure(env):
 
     # Link those statically for portability
     if env["use_static_cpp"]:
-        env.Append(LINKFLAGS=["-static-libgcc", "-static-libstdc++"])
+        # Workaround for GH-31743, Ubuntu 18.04 i386 crashes when it's used.
+        # That doesn't make any sense but it's likely a Ubuntu bug?
+        if is64 or env["bits"] == "64":
+            env.Append(LINKFLAGS=["-static-libgcc", "-static-libstdc++"])

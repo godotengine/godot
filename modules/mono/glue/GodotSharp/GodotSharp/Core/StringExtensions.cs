@@ -470,18 +470,18 @@ namespace Godot
         }
 
         // <summary>
-        // Hash the string and return a 32 bits integer.
+        // Hash the string and return a 32 bits unsigned integer.
         // </summary>
-        public static int Hash(this string instance)
+        public static uint Hash(this string instance)
         {
-            int index = 0;
-            int hashv = 5381;
-            int c;
+            uint hash = 5381;
 
-            while ((c = instance[index++]) != 0)
-                hashv = (hashv << 5) + hashv + c; // hash * 33 + c
+            foreach(uint c in instance)
+            {
+                hash = (hash << 5) + hash + c; // hash * 33 + c
+            }
 
-            return hashv;
+            return hash;
         }
 
         /// <summary>

@@ -16,9 +16,9 @@
 		var vr_supported = false
 
 		func _ready():
-		    # We assume this node has a canvas layer with a button on it as a child.
+		    # We assume this node has a button as a child.
 		    # This button is for the user to consent to entering immersive VR mode.
-		    $CanvasLayer/Button.connect("pressed", self, "_on_Button_pressed")
+		    $Button.connect("pressed", self, "_on_Button_pressed")
 
 		    webxr_interface = ARVRServer.find_interface("WebXR")
 		    if webxr_interface:
@@ -67,6 +67,7 @@
 		        return
 
 		func _webxr_session_started():
+		    $Button.visible = false
 		    # This tells Godot to start rendering to the headset.
 		    get_viewport().arvr = true
 		    # This will be the reference space type you ultimately got, out of the
@@ -75,6 +76,7 @@
 		    print ("Reference space type: " + webxr_interface.reference_space_type)
 
 		func _webxr_session_ended():
+		    $Button.visible = true
 		    # If the user exits immersive mode, then we tell Godot to render to the web
 		    # page again.
 		    get_viewport().arvr = false

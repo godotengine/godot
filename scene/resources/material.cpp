@@ -610,7 +610,7 @@ void SpatialMaterial::_update_shader() {
 	if (flags[FLAG_SRGB_VERTEX_COLOR]) {
 
 		code += "\tif (!OUTPUT_IS_SRGB) {\n";
-		code += "\t\tCOLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );\n";
+		code += "\t\tCOLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb, vec3(0.04045)));\n";
 		code += "\t}\n";
 	}
 	if (flags[FLAG_USE_POINT_SIZE]) {
