@@ -3367,11 +3367,17 @@ void VisualShaderNodePortPreview::_shader_changed() {
 
 	for (int i = EditorNode::get_singleton()->get_editor_history()->get_path_size() - 1; i >= 0; i--) {
 		Object *object = ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_history()->get_path_object(i));
+		ShaderMaterial *src_mat;
 		if (!object)
 			continue;
-		ShaderMaterial *src_mat = Object::cast_to<ShaderMaterial>(object);
+		if (object->has_method("get_material_override")) { // trying getting material from MeshInstance
+			src_mat = Object::cast_to<ShaderMaterial>(object->call("get_material_override"));
+		} else if (object->has_method("get_material")) { // from CanvasItem/Node2D
+			src_mat = Object::cast_to<ShaderMaterial>(object->call("get_material"));
+		} else {
+			src_mat = Object::cast_to<ShaderMaterial>(object);
+		}
 		if (src_mat && src_mat->get_shader().is_valid()) {
-
 			List<PropertyInfo> params;
 			src_mat->get_shader()->get_param_list(&params);
 			for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
