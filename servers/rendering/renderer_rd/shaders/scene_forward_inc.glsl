@@ -21,12 +21,10 @@
 #endif
 
 layout(push_constant, binding = 0, std430) uniform DrawCall {
-	mat4 transform;
-	uint flags;
-	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
-	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)
-	uint layer_mask;
-	vec4 lightmap_uv_scale;
+	uint instance_index;
+	uint uv_offset;
+	uint pad0;
+	uint pad1;
 }
 draw_call;
 
@@ -45,13 +43,127 @@ draw_call;
 #define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT 10
 #define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT 11
 
+#define SDFGI_MAX_CASCADES 8
+
+/* Set 1: Base Pass (never changes) */
+
 layout(set = 0, binding = 1) uniform sampler material_samplers[12];
 
 layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 
-#define SDFGI_MAX_CASCADES 8
+#define INSTANCE_FLAGS_USE_GI_BUFFERS (1 << 6)
+#define INSTANCE_FLAGS_USE_SDFGI (1 << 7)
+#define INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE (1 << 8)
+#define INSTANCE_FLAGS_USE_LIGHTMAP (1 << 9)
+#define INSTANCE_FLAGS_USE_SH_LIGHTMAP (1 << 10)
+#define INSTANCE_FLAGS_USE_GIPROBE (1 << 11)
+#define INSTANCE_FLAGS_MULTIMESH (1 << 12)
+#define INSTANCE_FLAGS_MULTIMESH_FORMAT_2D (1 << 13)
+#define INSTANCE_FLAGS_MULTIMESH_HAS_COLOR (1 << 14)
+#define INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA (1 << 15)
+#define INSTANCE_FLAGS_MULTIMESH_STRIDE_SHIFT 16
+//3 bits of stride
+#define INSTANCE_FLAGS_MULTIMESH_STRIDE_MASK 0x7
 
-layout(set = 0, binding = 3, std140) uniform SceneData {
+#define INSTANCE_FLAGS_SKELETON (1 << 19)
+#define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 20)
+
+layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
+	LightData data[];
+}
+omni_lights;
+
+layout(set = 0, binding = 4, std430) restrict readonly buffer SpotLights {
+	LightData data[];
+}
+spot_lights;
+
+layout(set = 0, binding = 5) buffer restrict readonly ReflectionProbeData {
+	ReflectionData data[];
+}
+reflections;
+
+layout(set = 0, binding = 6, std140) uniform DirectionalLights {
+	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
+}
+directional_lights;
+
+#define LIGHTMAP_FLAG_USE_DIRECTION 1
+#define LIGHTMAP_FLAG_USE_SPECULAR_DIRECTION 2
+
+struct Lightmap {
+	mat3 normal_xform;
+};
+
+layout(set = 0, binding = 7, std140) restrict readonly buffer Lightmaps {
+	Lightmap data[];
+}
+lightmaps;
+
+struct LightmapCapture {
+	vec4 sh[9];
+};
+
+layout(set = 0, binding = 8, std140) restrict readonly buffer LightmapCaptures {
+	LightmapCapture data[];
+}
+lightmap_captures;
+
+layout(set = 0, binding = 9) uniform texture2D decal_atlas;
+layout(set = 0, binding = 10) uniform texture2D decal_atlas_srgb;
+
+layout(set = 0, binding = 11, std430) restrict readonly buffer Decals {
+	DecalData data[];
+}
+decals;
+
+layout(set = 0, binding = 12, std430) restrict readonly buffer GlobalVariableData {
+	vec4 data[];
+}
+global_variables;
+
+#ifndef LOW_END_MODE
+
+struct SDFGIProbeCascadeData {
+	vec3 position;
+	float to_probe;
+	ivec3 probe_world_offset;
+	float to_cell; // 1/bounds * grid_size
+};
+
+layout(set = 0, binding = 13, std140) uniform SDFGI {
+	vec3 grid_size;
+	uint max_cascades;
+
+	bool use_occlusion;
+	int probe_axis_size;
+	float probe_to_uvw;
+	float normal_bias;
+
+	vec3 lightprobe_tex_pixel_size;
+	float energy;
+
+	vec3 lightprobe_uv_offset;
+	float y_mult;
+
+	vec3 occlusion_clamp;
+	uint pad3;
+
+	vec3 occlusion_renormalize;
+	uint pad4;
+
+	vec3 cascade_probe_size;
+	uint pad5;
+
+	SDFGIProbeCascadeData cascades[SDFGI_MAX_CASCADES];
+}
+sdfgi;
+
+#endif //LOW_END_MODE
+
+/* Set 2: Render Pass (changes per render pass) */
+
+layout(set = 1, binding = 0, std140) uniform SceneData {
 	mat4 projection_matrix;
 	mat4 inv_projection_matrix;
 
@@ -136,157 +248,53 @@ layout(set = 0, binding = 3, std140) uniform SceneData {
 
 scene_data;
 
-#define INSTANCE_FLAGS_USE_GI_BUFFERS (1 << 6)
-#define INSTANCE_FLAGS_USE_SDFGI (1 << 7)
-#define INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE (1 << 8)
-#define INSTANCE_FLAGS_USE_LIGHTMAP (1 << 9)
-#define INSTANCE_FLAGS_USE_SH_LIGHTMAP (1 << 10)
-#define INSTANCE_FLAGS_USE_GIPROBE (1 << 11)
-#define INSTANCE_FLAGS_MULTIMESH (1 << 12)
-#define INSTANCE_FLAGS_MULTIMESH_FORMAT_2D (1 << 13)
-#define INSTANCE_FLAGS_MULTIMESH_HAS_COLOR (1 << 14)
-#define INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA (1 << 15)
-#define INSTANCE_FLAGS_MULTIMESH_STRIDE_SHIFT 16
-//3 bits of stride
-#define INSTANCE_FLAGS_MULTIMESH_STRIDE_MASK 0x7
-
-#define INSTANCE_FLAGS_SKELETON (1 << 19)
-#define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 20)
-
-layout(set = 0, binding = 4, std430) restrict readonly buffer OmniLights {
-	LightData data[];
-}
-omni_lights;
-
-layout(set = 0, binding = 5, std430) restrict readonly buffer SpotLights {
-	LightData data[];
-}
-spot_lights;
-
-layout(set = 0, binding = 6) buffer restrict readonly ReflectionProbeData {
-	ReflectionData data[];
-}
-reflections;
-
-layout(set = 0, binding = 7, std140) uniform DirectionalLights {
-	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
-}
-directional_lights;
-
-#define LIGHTMAP_FLAG_USE_DIRECTION 1
-#define LIGHTMAP_FLAG_USE_SPECULAR_DIRECTION 2
-
-struct Lightmap {
-	mat3 normal_xform;
+struct InstanceData {
+	mat4 transform;
+	uint flags;
+	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
+	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)
+	uint layer_mask;
+	vec4 lightmap_uv_scale;
 };
 
-layout(set = 0, binding = 8, std140) restrict readonly buffer Lightmaps {
-	Lightmap data[];
+layout(set = 1, binding = 1, std430) buffer restrict readonly InstanceDataBuffer {
+	InstanceData data[];
 }
-lightmaps;
-
-struct LightmapCapture {
-	vec4 sh[9];
-};
-
-layout(set = 0, binding = 9, std140) restrict readonly buffer LightmapCaptures {
-	LightmapCapture data[];
-}
-lightmap_captures;
-
-layout(set = 0, binding = 10) uniform texture2D decal_atlas;
-layout(set = 0, binding = 11) uniform texture2D decal_atlas_srgb;
-
-layout(set = 0, binding = 12, std430) restrict readonly buffer Decals {
-	DecalData data[];
-}
-decals;
-
-layout(set = 0, binding = 13, std430) restrict readonly buffer GlobalVariableData {
-	vec4 data[];
-}
-global_variables;
-
-#ifndef LOW_END_MODE
-
-struct SDFGIProbeCascadeData {
-	vec3 position;
-	float to_probe;
-	ivec3 probe_world_offset;
-	float to_cell; // 1/bounds * grid_size
-};
-
-layout(set = 0, binding = 14, std140) uniform SDFGI {
-	vec3 grid_size;
-	uint max_cascades;
-
-	bool use_occlusion;
-	int probe_axis_size;
-	float probe_to_uvw;
-	float normal_bias;
-
-	vec3 lightprobe_tex_pixel_size;
-	float energy;
-
-	vec3 lightprobe_uv_offset;
-	float y_mult;
-
-	vec3 occlusion_clamp;
-	uint pad3;
-
-	vec3 occlusion_renormalize;
-	uint pad4;
-
-	vec3 cascade_probe_size;
-	uint pad5;
-
-	SDFGIProbeCascadeData cascades[SDFGI_MAX_CASCADES];
-}
-sdfgi;
-
-#endif //LOW_END_MODE
-
-// decal atlas
-
-/* Set 1, Radiance */
+instances;
 
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 
-layout(set = 1, binding = 0) uniform textureCubeArray radiance_cubemap;
+layout(set = 1, binding = 2) uniform textureCubeArray radiance_cubemap;
 
 #else
 
-layout(set = 1, binding = 0) uniform textureCube radiance_cubemap;
+layout(set = 1, binding = 2) uniform textureCube radiance_cubemap;
 
 #endif
 
-/* Set 2, Reflection and Shadow Atlases (view dependent) */
+layout(set = 1, binding = 3) uniform textureCubeArray reflection_atlas;
 
-layout(set = 1, binding = 1) uniform textureCubeArray reflection_atlas;
+layout(set = 1, binding = 4) uniform texture2D shadow_atlas;
 
-layout(set = 1, binding = 2) uniform texture2D shadow_atlas;
+layout(set = 1, binding = 5) uniform texture2D directional_shadow_atlas;
 
-layout(set = 1, binding = 3) uniform texture2D directional_shadow_atlas;
+layout(set = 1, binding = 6) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
 
-layout(set = 1, binding = 4) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
-
-#ifndef LOW_END_MODE
-layout(set = 1, binding = 5) uniform texture3D gi_probe_textures[MAX_GI_PROBES];
+#ifndef LOW_END_MOD
+layout(set = 1, binding = 7) uniform texture3D gi_probe_textures[MAX_GI_PROBES];
 #endif
 
-layout(set = 1, binding = 6, std430) buffer restrict readonly ClusterBuffer {
+layout(set = 1, binding = 8, std430) buffer restrict readonly ClusterBuffer {
 	uint data[];
 }
 cluster_buffer;
 
-/* Set 3, Render Buffers */
-
 #ifdef MODE_RENDER_SDF
 
-layout(r16ui, set = 1, binding = 7) uniform restrict writeonly uimage3D albedo_volume_grid;
-layout(r32ui, set = 1, binding = 8) uniform restrict writeonly uimage3D emission_grid;
-layout(r32ui, set = 1, binding = 9) uniform restrict writeonly uimage3D emission_aniso_grid;
-layout(r32ui, set = 1, binding = 10) uniform restrict uimage3D geom_facing_grid;
+layout(r16ui, set = 1, binding = 9) uniform restrict writeonly uimage3D albedo_volume_grid;
+layout(r32ui, set = 1, binding = 10) uniform restrict writeonly uimage3D emission_grid;
+layout(r32ui, set = 1, binding = 11) uniform restrict writeonly uimage3D emission_aniso_grid;
+layout(r32ui, set = 1, binding = 12) uniform restrict uimage3D geom_facing_grid;
 
 //still need to be present for shaders that use it, so remap them to something
 #define depth_buffer shadow_atlas
@@ -295,17 +303,17 @@ layout(r32ui, set = 1, binding = 10) uniform restrict uimage3D geom_facing_grid;
 
 #else
 
-layout(set = 1, binding = 7) uniform texture2D depth_buffer;
-layout(set = 1, binding = 8) uniform texture2D color_buffer;
+layout(set = 1, binding = 9) uniform texture2D depth_buffer;
+layout(set = 1, binding = 10) uniform texture2D color_buffer;
 
 #ifndef LOW_END_MODE
 
-layout(set = 1, binding = 9) uniform texture2D normal_roughness_buffer;
-layout(set = 1, binding = 10) uniform texture2D ao_buffer;
-layout(set = 1, binding = 11) uniform texture2D ambient_buffer;
-layout(set = 1, binding = 12) uniform texture2D reflection_buffer;
-layout(set = 1, binding = 13) uniform texture2DArray sdfgi_lightprobe_texture;
-layout(set = 1, binding = 14) uniform texture3D sdfgi_occlusion_cascades;
+layout(set = 1, binding = 11) uniform texture2D normal_roughness_buffer;
+layout(set = 1, binding = 12) uniform texture2D ao_buffer;
+layout(set = 1, binding = 13) uniform texture2D ambient_buffer;
+layout(set = 1, binding = 14) uniform texture2D reflection_buffer;
+layout(set = 1, binding = 15) uniform texture2DArray sdfgi_lightprobe_texture;
+layout(set = 1, binding = 16) uniform texture3D sdfgi_occlusion_cascades;
 
 struct GIProbeData {
 	mat4 xform;
@@ -323,22 +331,22 @@ struct GIProbeData {
 	uint mipmaps;
 };
 
-layout(set = 1, binding = 15, std140) uniform GIProbes {
+layout(set = 1, binding = 17, std140) uniform GIProbes {
 	GIProbeData data[MAX_GI_PROBES];
 }
 gi_probes;
 
-layout(set = 1, binding = 16) uniform texture3D volumetric_fog_texture;
+layout(set = 1, binding = 18) uniform texture3D volumetric_fog_texture;
 
 #endif // LOW_END_MODE
 
 #endif
 
-/* Set 4 Skeleton & Instancing (Multimesh) */
+/* Set 2 Skeleton & Instancing (can change per item) */
 
 layout(set = 2, binding = 0, std430) restrict readonly buffer Transforms {
 	vec4 data[];
 }
 transforms;
 
-/* Set 5 User Material */
+/* Set 3 User Material */

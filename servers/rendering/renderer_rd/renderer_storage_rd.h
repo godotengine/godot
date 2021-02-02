@@ -1482,13 +1482,7 @@ public:
 		return s->lod_count > 0;
 	}
 
-	_FORCE_INLINE_ RID mesh_surface_get_index_array(void *p_surface) const {
-		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
-
-		return s->index_array;
-	}
-
-	_FORCE_INLINE_ RID mesh_surface_get_index_array_with_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_lod_threshold) const {
+	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_lod_threshold) const {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		int32_t current_lod = -1;
@@ -1500,9 +1494,19 @@ public:
 			current_lod = i;
 		}
 		if (current_lod == -1) {
+			return 0;
+		} else {
+			return current_lod + 1;
+		}
+	}
+
+	_FORCE_INLINE_ RID mesh_surface_get_index_array(void *p_surface, uint32_t p_lod) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+
+		if (p_lod == 0) {
 			return s->index_array;
 		} else {
-			return s->lods[current_lod].index_array;
+			return s->lods[p_lod - 1].index_array;
 		}
 	}
 

@@ -400,12 +400,14 @@ void ClusterBuilderRD::begin(const Transform &p_view_transform, const CameraMatr
 void ClusterBuilderRD::bake_cluster() {
 	RENDER_TIMESTAMP(">Bake Cluster");
 
+	RD::get_singleton()->draw_command_begin_label("Bake Light Cluster");
+
 	//clear cluster buffer
-	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size);
+	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size, 0);
 
 	if (render_element_count > 0) {
 		//clear render buffer
-		RD::get_singleton()->buffer_clear(cluster_render_buffer, 0, cluster_render_buffer_size);
+		RD::get_singleton()->buffer_clear(cluster_render_buffer, 0, cluster_render_buffer_size, 0);
 
 		{ //fill state uniform
 
@@ -420,15 +422,16 @@ void ClusterBuilderRD::bake_cluster() {
 			state.cluster_depth_offset = (render_element_max / 32);
 			state.cluster_data_size = state.cluster_depth_offset + render_element_max;
 
-			RD::get_singleton()->buffer_update(state_uniform, 0, sizeof(StateUniform), &state);
+			RD::get_singleton()->buffer_update(state_uniform, 0, sizeof(StateUniform), &state, 0);
 		}
 
 		//update instances
 
-		RD::get_singleton()->buffer_update(element_buffer, 0, sizeof(RenderElementData) * render_element_count, render_elements);
+		RD::get_singleton()->buffer_update(element_buffer, 0, sizeof(RenderElementData) * render_element_count, render_elements, 0);
 
 		RENDER_TIMESTAMP("Render Elements");
 
+		RD::get_singleton()->barrier(RD::BARRIER_MASK_TRANSFER, RD::BARRIER_MASK_RASTER);
 		//render elements
 		{
 			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD);
@@ -469,7 +472,7 @@ void ClusterBuilderRD::bake_cluster() {
 				RD::get_singleton()->draw_list_draw(draw_list, true, instances);
 				i += instances;
 			}
-			RD::get_singleton()->draw_list_end();
+			RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_COMPUTE);
 		}
 		//store elements
 		RENDER_TIMESTAMP("Pack Elements");
@@ -491,12 +494,15 @@ void ClusterBuilderRD::bake_cluster() {
 
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(ClusterBuilderSharedDataRD::ClusterStore::PushConstant));
 
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cluster_screen_size.x, cluster_screen_size.y, 1, 8, 8, 1);
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cluster_screen_size.x, cluster_screen_size.y, 1);
 
-			RD::get_singleton()->compute_list_end();
+			RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 		}
+	} else {
+		RD::get_singleton()->barrier(RD::BARRIER_MASK_TRANSFER, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 	}
 	RENDER_TIMESTAMP("<Bake Cluster");
+	RD::get_singleton()->draw_command_end_label();
 }
 
 void ClusterBuilderRD::debug(ElementType p_element) {
@@ -519,7 +525,7 @@ void ClusterBuilderRD::debug(ElementType p_element) {
 
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(ClusterBuilderSharedDataRD::ClusterDebug::PushConstant));
 
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, screen_size.x, screen_size.y, 1, 8, 8, 1);
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, screen_size.x, screen_size.y, 1);
 
 	RD::get_singleton()->compute_list_end();
 }

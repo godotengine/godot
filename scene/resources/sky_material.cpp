@@ -597,5 +597,4 @@ PhysicalSkyMaterial::PhysicalSkyMaterial() {
 
 PhysicalSkyMaterial::~PhysicalSkyMaterial() {
 	RS::get_singleton()->free(shader);
-	RS::get_singleton()->material_set_shader(_get_material(), RID());
 }

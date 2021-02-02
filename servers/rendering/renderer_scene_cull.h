@@ -54,7 +54,8 @@ public:
 	enum {
 		SDFGI_MAX_CASCADES = 8,
 		SDFGI_MAX_REGIONS_PER_CASCADE = 3,
-		MAX_INSTANCE_PAIRS = 32
+		MAX_INSTANCE_PAIRS = 32,
+		MAX_UPDATE_SHADOWS = 512
 	};
 
 	uint64_t render_pass;
@@ -696,7 +697,6 @@ public:
 
 	PagedArray<Instance *> instance_cull_result;
 	PagedArray<Instance *> instance_shadow_cull_result;
-	PagedArray<RendererSceneRender::GeometryInstance *> geometry_instances_to_shadow_render;
 
 	struct FrustumCullResult {
 		PagedArray<RendererSceneRender::GeometryInstance *> geometry_instances;
@@ -816,6 +816,12 @@ public:
 	FrustumCullResult frustum_cull_result;
 	LocalVector<FrustumCullResult> frustum_cull_result_threads;
 
+	RendererSceneRender::RenderShadowData render_shadow_data[MAX_UPDATE_SHADOWS];
+	uint32_t max_shadows_used = 0;
+
+	RendererSceneRender::RenderSDFGIData render_sdfgi_data[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE];
+	RendererSceneRender::RenderSDFGIUpdateData sdfgi_update_data;
+
 	uint32_t thread_cull_threshold = 200;
 
 	RID_PtrOwner<Instance> instance_owner;
@@ -924,8 +930,7 @@ public:
 	void _frustum_cull(FrustumCullData &cull_data, FrustumCullResult &cull_result, uint64_t p_from, uint64_t p_to);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, float p_screen_lod_threshold, bool p_using_shadows = true);
-	void _render_scene(RID p_render_buffers, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_environment, RID p_force_camera_effects, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold);
+	void _render_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, bool p_using_shadows = true);
 	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
 	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas);
