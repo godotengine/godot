@@ -73,7 +73,11 @@
 
 // really just a namespace
 struct BVHCommon {
+	// these could possibly also be the same constant,
+	// although this may be useful for debugging.
+	// or use zero for invalid and +1 based indices.
 	static const uint32_t INVALID = (0xffffffff);
+	static const uint32_t INACTIVE = (0xfffffffe);
 };
 
 // really a handle, can be anything

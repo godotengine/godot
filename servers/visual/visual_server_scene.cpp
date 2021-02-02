@@ -105,7 +105,12 @@ void VisualServerScene::camera_set_use_vertical_aspect(RID p_camera, bool p_enab
 
 /* SPATIAL PARTITIONING */
 VisualServerScene::SpatialPartitionID VisualServerScene::SpatialPartitioningScene_BVH::create(Instance *p_userdata, const AABB &p_aabb, int p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
-	return _bvh.create(p_userdata, p_aabb, p_subindex, p_pairable, p_pairable_type, p_pairable_mask) + 1;
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+	// we are relying on this instance to be valid in order to pass
+	// the visible flag to the bvh.
+	CRASH_COND(!p_userdata);
+#endif
+	return _bvh.create(p_userdata, p_userdata->visible, p_aabb, p_subindex, p_pairable, p_pairable_type, p_pairable_mask) + 1;
 }
 
 void VisualServerScene::SpatialPartitioningScene_BVH::erase(SpatialPartitionID p_handle) {
@@ -114,6 +119,17 @@ void VisualServerScene::SpatialPartitioningScene_BVH::erase(SpatialPartitionID p
 
 void VisualServerScene::SpatialPartitioningScene_BVH::move(SpatialPartitionID p_handle, const AABB &p_aabb) {
 	_bvh.move(p_handle - 1, p_aabb);
+}
+
+void VisualServerScene::SpatialPartitioningScene_BVH::activate(SpatialPartitionID p_handle, const AABB &p_aabb) {
+	// be very careful here, we are deferring the collision check, expecting a set_pairable to be called
+	// immediately after.
+	// see the notes in the BVH function.
+	_bvh.activate(p_handle - 1, p_aabb, true);
+}
+
+void VisualServerScene::SpatialPartitioningScene_BVH::deactivate(SpatialPartitionID p_handle) {
+	_bvh.deactivate(p_handle - 1);
 }
 
 void VisualServerScene::SpatialPartitioningScene_BVH::update() {
@@ -763,6 +779,16 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 		return;
 
 	instance->visible = p_visible;
+
+	// give the opportunity for the spatial paritioning scene to use a special implementation of visibility
+	// for efficiency (supported in BVH but not octree)
+	if (instance->spatial_partition_id) {
+		if (p_visible) {
+			instance->scenario->sps->activate(instance->spatial_partition_id, instance->transformed_aabb);
+		} else {
+			instance->scenario->sps->deactivate(instance->spatial_partition_id);
+		}
+	}
 
 	// when showing or hiding geometry, lights must be kept up to date to show / hide shadows
 	if ((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) {
