@@ -2437,6 +2437,8 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/depth_prepass/enable", true);
 	GLOBAL_DEF("rendering/quality/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
 
+	GLOBAL_DEF("rendering/quality/filters/anisotropic_filter_level", 4);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/anisotropic_filter_level", PropertyInfo(Variant::INT, "rendering/quality/filters/anisotropic_filter_level", PROPERTY_HINT_RANGE, "1,16,1"));
 	GLOBAL_DEF("rendering/quality/filters/use_nearest_mipmap_filter", false);
 
 	GLOBAL_DEF("rendering/quality/skinning/software_skinning_fallback", true);
