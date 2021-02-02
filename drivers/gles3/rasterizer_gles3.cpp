@@ -408,9 +408,6 @@ void RasterizerGLES3::make_current() {
 }
 
 void RasterizerGLES3::register_config() {
-
-	GLOBAL_DEF("rendering/quality/filters/anisotropic_filter_level", 4);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/anisotropic_filter_level", PropertyInfo(Variant::INT, "rendering/quality/filters/anisotropic_filter_level", PROPERTY_HINT_RANGE, "1,16,1"));
 }
 
 // returns NULL if no error, or an error string
