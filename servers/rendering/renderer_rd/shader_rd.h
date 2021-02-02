@@ -99,8 +99,10 @@ class ShaderRD {
 
 	const char *name;
 
+	CharString base_compute_defines;
+
 protected:
-	ShaderRD() {}
+	ShaderRD();
 	void setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_compute_code, const char *p_name);
 
 public:

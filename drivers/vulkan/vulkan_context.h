@@ -57,6 +57,11 @@ class VulkanContext {
 	bool device_initialized = false;
 	bool inst_initialized = false;
 
+	String device_vendor;
+	String device_name;
+	String pipeline_cache_id;
+	uint32_t device_api_version = 0;
+
 	bool buffers_prepared = false;
 
 	// Present queue.
@@ -214,6 +219,10 @@ public:
 	void command_insert_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color);
 	void command_end_label(VkCommandBuffer p_command_buffer);
 	void set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name);
+
+	String get_device_vendor_name() const;
+	String get_device_name() const;
+	String get_device_pipeline_cache_uuid() const;
 
 	VulkanContext();
 	virtual ~VulkanContext();

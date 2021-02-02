@@ -6,7 +6,19 @@ VERSION_DEFINES
 
 #define BLOCK_SIZE 8
 
+#ifdef MODE_REDUCE_SUBGROUP
+
+#extension GL_KHR_shader_subgroup_ballot : enable
+#extension GL_KHR_shader_subgroup_arithmetic : enable
+
+//nvidia friendly, max 32
+layout(local_size_x = 8, local_size_y = 4, local_size_z = 1) in;
+
+#else
+
 layout(local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE, local_size_z = 1) in;
+
+#endif
 
 #ifdef MODE_REDUCE
 
@@ -16,8 +28,12 @@ const uint unswizzle_table[BLOCK_SIZE] = uint[](0, 0, 0, 1, 0, 2, 1, 3);
 
 #endif
 
-layout(r32f, set = 0, binding = 0) uniform restrict readonly image2D source_depth;
-layout(r32f, set = 0, binding = 1) uniform restrict writeonly image2D dst_depth;
+#if defined(MODE_REDUCE) || defined(MODE_REDUCE_SUBGROUP)
+layout(set = 0, binding = 0) uniform sampler2D source_depth;
+#else
+layout(r16, set = 0, binding = 0) uniform restrict readonly image2D source_depth;
+#endif
+layout(r16, set = 1, binding = 0) uniform restrict writeonly image2D dst_depth;
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	ivec2 source_size;
@@ -29,6 +45,48 @@ layout(push_constant, binding = 1, std430) uniform Params {
 params;
 
 void main() {
+#ifdef MODE_REDUCE_SUBGROUP
+
+	uvec2 local_pos = gl_LocalInvocationID.xy;
+	ivec2 image_offset = params.source_offset;
+	ivec2 image_pos = image_offset + ivec2(gl_GlobalInvocationID.xy * ivec2(1, 2));
+
+	float depth = texelFetch(source_depth, min(image_pos, params.source_size - ivec2(1)), 0).r;
+	depth += texelFetch(source_depth, min(image_pos + ivec2(0, 1), params.source_size - ivec2(1)), 0).r;
+	depth *= 0.5;
+
+#ifdef MODE_REDUCE_8
+	//fast version, reduce all
+	float depth_average = subgroupAdd(depth) / 32.0;
+	if (local_pos == uvec2(0)) {
+		imageStore(dst_depth, image_pos / 8, vec4(depth_average));
+	}
+#else
+	//bit slower version, reduce by regions
+	uint group_size = (8 / params.min_size);
+	uvec2 group_id = local_pos / (8 / params.min_size);
+
+	uvec4 mask;
+	float depth_average = 0;
+
+	while (true) {
+		uvec2 first = subgroupBroadcastFirst(group_id);
+		mask = subgroupBallot(first == group_id);
+		if (first == group_id) {
+			depth_average = subgroupAdd(depth);
+			break;
+		}
+	}
+
+	depth_average /= float(group_size * group_size);
+
+	if (local_pos == group_id) {
+		imageStore(dst_depth, image_pos / int(group_size), vec4(depth_average));
+	}
+#endif
+
+#endif
+
 #ifdef MODE_REDUCE
 
 	uvec2 pos = gl_LocalInvocationID.xy;
@@ -36,7 +94,7 @@ void main() {
 	ivec2 image_offset = params.source_offset;
 	ivec2 image_pos = image_offset + ivec2(gl_GlobalInvocationID.xy);
 	uint dst_t = swizzle_table[pos.y] * BLOCK_SIZE + swizzle_table[pos.x];
-	tmp_data[dst_t] = imageLoad(source_depth, min(image_pos, params.source_size - ivec2(1))).r;
+	tmp_data[dst_t] = texelFetch(source_depth, min(image_pos, params.source_size - ivec2(1)), 0).r;
 	ivec2 image_size = params.source_size;
 
 	uint t = pos.y * BLOCK_SIZE + pos.x;

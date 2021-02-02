@@ -3098,7 +3098,7 @@ void RendererStorageRD::update_mesh_instances() {
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SkeletonShader::PushConstant));
 
 			//dispatch without barrier, so all is done at the same time
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.vertex_count, 1, 1, 64, 1, 1);
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.vertex_count, 1, 1);
 		}
 
 		mi->dirty = false;
@@ -4555,7 +4555,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(ParticlesShader::PushConstant));
 
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_particles->amount, 1, 1, 64, 1, 1);
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_particles->amount, 1, 1);
 
 	RD::get_singleton()->compute_list_end();
 }
@@ -4609,7 +4609,7 @@ void RendererStorageRD::particles_set_view_axis(RID p_particles, const Vector3 &
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_sort_uniform_set, 1);
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy_push_constant, sizeof(ParticlesShader::CopyPushConstant));
 
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1, 64, 1, 1);
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1);
 
 	RD::get_singleton()->compute_list_end();
 
@@ -4621,7 +4621,7 @@ void RendererStorageRD::particles_set_view_axis(RID p_particles, const Vector3 &
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_sort_uniform_set, 1);
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy_push_constant, sizeof(ParticlesShader::CopyPushConstant));
 
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1, 64, 1, 1);
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1);
 
 	RD::get_singleton()->compute_list_end();
 }
@@ -4728,7 +4728,7 @@ void RendererStorageRD::update_particles() {
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_copy_uniform_set, 0);
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy_push_constant, sizeof(ParticlesShader::CopyPushConstant));
 
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1, 64, 1, 1);
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1);
 
 			RD::get_singleton()->compute_list_end();
 		}
@@ -6980,7 +6980,7 @@ void RendererStorageRD::render_target_sdf_process(RID p_render_target) {
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rt->sdf_buffer_process_uniform_sets[1], 0); //fill [0]
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RenderTargetSDF::PushConstant));
 
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1, 8, 8, 1);
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1);
 
 	/* Process */
 
@@ -6996,7 +6996,7 @@ void RendererStorageRD::render_target_sdf_process(RID p_render_target) {
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rt->sdf_buffer_process_uniform_sets[swap ? 1 : 0], 0);
 		push_constant.stride = stride;
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RenderTargetSDF::PushConstant));
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1, 8, 8, 1);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1);
 		stride /= 2;
 		swap = !swap;
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
@@ -7007,7 +7007,7 @@ void RendererStorageRD::render_target_sdf_process(RID p_render_target) {
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, rt_sdf.pipelines[shrink ? RenderTargetSDF::SHADER_STORE_SHRINK : RenderTargetSDF::SHADER_STORE]);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rt->sdf_buffer_process_uniform_sets[swap ? 1 : 0], 0);
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RenderTargetSDF::PushConstant));
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1, 8, 8, 1);
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1);
 
 	RD::get_singleton()->compute_list_end();
 }

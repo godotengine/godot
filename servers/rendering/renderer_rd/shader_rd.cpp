@@ -301,6 +301,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 
 		builder.append(compute_codev.get_data()); // version info (if exists)
 		builder.append("\n"); //make sure defines begin at newline
+		builder.append(base_compute_defines.get_data());
 		builder.append(general_defines.get_data());
 		builder.append(variant_defines[p_variant].get_data());
 
@@ -401,7 +402,6 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 
 			builder.append(fragment_codev.get_data()); // version info (if exists)
 			builder.append("\n"); //make sure defines begin at newline
-
 			builder.append(general_defines.get_data());
 			builder.append(variant_defines[i].get_data());
 			for (int j = 0; j < version->custom_defines.size(); j++) {
@@ -440,6 +440,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 
 			builder.append(compute_codev.get_data()); // version info (if exists)
 			builder.append("\n"); //make sure defines begin at newline
+			builder.append(base_compute_defines.get_data());
 			builder.append(general_defines.get_data());
 			builder.append(variant_defines[i].get_data());
 
@@ -594,6 +595,22 @@ void ShaderRD::set_variant_enabled(int p_variant, bool p_enabled) {
 bool ShaderRD::is_variant_enabled(int p_variant) const {
 	ERR_FAIL_INDEX_V(p_variant, variants_enabled.size(), false);
 	return variants_enabled[p_variant];
+}
+
+ShaderRD::ShaderRD() {
+	// Do not feel forced to use this, in most cases it makes little to no difference.
+	bool use_32_threads = false;
+	if (RD::get_singleton()->get_device_vendor_name() == "NVIDIA") {
+		use_32_threads = true;
+	}
+	String base_compute_define_text;
+	if (use_32_threads) {
+		base_compute_define_text = "\n#define NATIVE_LOCAL_GROUP_SIZE 32\n#define NATIVE_LOCAL_SIZE_2D_X 8\n#define NATIVE_LOCAL_SIZE_2D_Y 4\n";
+	} else {
+		base_compute_define_text = "\n#define NATIVE_LOCAL_GROUP_SIZE 64\n#define NATIVE_LOCAL_SIZE_2D_X 8\n#define NATIVE_LOCAL_SIZE_2D_Y 8\n";
+	}
+
+	base_compute_defines = base_compute_define_text.ascii();
 }
 
 void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines) {
