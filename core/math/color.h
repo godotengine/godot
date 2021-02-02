@@ -241,6 +241,19 @@ struct Color {
 		b = p_c.b;
 		a = p_a;
 	}
+
+	Color(const String &p_code) {
+		if (html_is_valid(p_code)) {
+			*this = html(p_code);
+		} else {
+			*this = named(p_code);
+		}
+	}
+
+	Color(const String &p_code, float p_a) {
+		*this = Color(p_code);
+		a = p_a;
+	}
 };
 
 bool Color::operator<(const Color &p_color) const {
