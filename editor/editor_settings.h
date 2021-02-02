@@ -46,6 +46,7 @@ class EditorSettings : public Resource {
 	_THREAD_SAFE_CLASS_
 
 public:
+	inline static const String PROJECT_EDITOR_SETTINGS_PATH = "res://.godot/editor";
 	struct Plugin {
 		EditorPlugin *instance = nullptr;
 		String path;
