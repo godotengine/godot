@@ -54,7 +54,7 @@ void GPUParticles2D::set_amount(int p_amount) {
 	RS::get_singleton()->particles_set_amount(particles, amount);
 }
 
-void GPUParticles2D::set_lifetime(float p_lifetime) {
+void GPUParticles2D::set_lifetime(double p_lifetime) {
 	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
 	RS::get_singleton()->particles_set_lifetime(particles, lifetime);
@@ -76,7 +76,7 @@ void GPUParticles2D::set_one_shot(bool p_enable) {
 	}
 }
 
-void GPUParticles2D::set_pre_process_time(float p_time) {
+void GPUParticles2D::set_pre_process_time(double p_time) {
 	pre_process_time = p_time;
 	RS::get_singleton()->particles_set_pre_process_time(particles, pre_process_time);
 }
@@ -148,7 +148,8 @@ void GPUParticles2D::set_trail_enabled(bool p_enabled) {
 
 	RS::get_singleton()->particles_set_transform_align(particles, p_enabled ? RS::PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY : RS::PARTICLES_TRANSFORM_ALIGN_DISABLED);
 }
-void GPUParticles2D::set_trail_length(float p_seconds) {
+
+void GPUParticles2D::set_trail_length(double p_seconds) {
 	ERR_FAIL_COND(p_seconds < 0.001);
 	trail_length = p_seconds;
 	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_length);
@@ -162,6 +163,7 @@ void GPUParticles2D::set_trail_sections(int p_sections) {
 	trail_sections = p_sections;
 	update();
 }
+
 void GPUParticles2D::set_trail_section_subdivisions(int p_subdivisions) {
 	ERR_FAIL_COND(trail_section_subdivisions < 1);
 	ERR_FAIL_COND(trail_section_subdivisions > 1024);
@@ -173,12 +175,13 @@ void GPUParticles2D::set_trail_section_subdivisions(int p_subdivisions) {
 bool GPUParticles2D::is_trail_enabled() const {
 	return trail_enabled;
 }
-float GPUParticles2D::get_trail_length() const {
+
+real_t GPUParticles2D::get_trail_length() const {
 	return trail_length;
 }
 
 void GPUParticles2D::_update_collision_size() {
-	float csize = collision_base_size;
+	real_t csize = collision_base_size;
 
 	if (texture.is_valid()) {
 		csize *= (texture->get_width() + texture->get_height()) / 4.0; //half size since its a radius
@@ -187,16 +190,16 @@ void GPUParticles2D::_update_collision_size() {
 	RS::get_singleton()->particles_set_collision_base_size(particles, csize);
 }
 
-void GPUParticles2D::set_collision_base_size(float p_size) {
+void GPUParticles2D::set_collision_base_size(real_t p_size) {
 	collision_base_size = p_size;
 	_update_collision_size();
 }
 
-float GPUParticles2D::get_collision_base_size() const {
+real_t GPUParticles2D::get_collision_base_size() const {
 	return collision_base_size;
 }
 
-void GPUParticles2D::set_speed_scale(float p_scale) {
+void GPUParticles2D::set_speed_scale(double p_scale) {
 	speed_scale = p_scale;
 	RS::get_singleton()->particles_set_speed_scale(particles, p_scale);
 }
@@ -209,7 +212,7 @@ int GPUParticles2D::get_amount() const {
 	return amount;
 }
 
-float GPUParticles2D::get_lifetime() const {
+double GPUParticles2D::get_lifetime() const {
 	return lifetime;
 }
 
@@ -224,7 +227,7 @@ bool GPUParticles2D::get_one_shot() const {
 	return one_shot;
 }
 
-float GPUParticles2D::get_pre_process_time() const {
+double GPUParticles2D::get_pre_process_time() const {
 	return pre_process_time;
 }
 
@@ -248,7 +251,7 @@ Ref<Material> GPUParticles2D::get_process_material() const {
 	return process_material;
 }
 
-float GPUParticles2D::get_speed_scale() const {
+double GPUParticles2D::get_speed_scale() const {
 	return speed_scale;
 }
 

@@ -4073,7 +4073,7 @@ void CanvasItemEditor::_popup_warning_depop(Control *p_control) {
 	info_overlay->set_offset(SIDE_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
 }
 
-void CanvasItemEditor::_popup_warning_temporarily(Control *p_control, const float p_duration) {
+void CanvasItemEditor::_popup_warning_temporarily(Control *p_control, const double p_duration) {
 	Timer *timer;
 	if (!popup_temporarily_timers.has(p_control)) {
 		timer = memnew(Timer);

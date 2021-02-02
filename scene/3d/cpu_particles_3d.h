@@ -93,16 +93,16 @@ private:
 		real_t scale_rand = 0.0;
 		real_t hue_rot_rand = 0.0;
 		real_t anim_offset_rand = 0.0;
-		float time = 0.0;
-		float lifetime = 0.0;
+		double time = 0.0;
+		double lifetime = 0.0;
 		Color base_color;
 
 		uint32_t seed = 0;
 	};
 
-	float time = 0.0;
-	float inactive_time = 0.0;
-	float frame_remainder = 0.0;
+	double time = 0.0;
+	double inactive_time = 0.0;
+	double frame_remainder = 0.0;
 	int cycle = 0;
 	bool redraw = false;
 
@@ -132,12 +132,12 @@ private:
 
 	bool one_shot = false;
 
-	float lifetime = 1.0;
-	float pre_process_time = 0.0;
+	double lifetime = 1.0;
+	double pre_process_time = 0.0;
 	real_t explosiveness_ratio = 0.0;
 	real_t randomness_ratio = 0.0;
-	float lifetime_randomness = 0.0;
-	float speed_scale = 1.0;
+	double lifetime_randomness = 0.0;
+	double speed_scale = 1.0;
 	bool local_coords = true;
 	int fixed_fps = 0;
 	bool fractional_delta = true;
@@ -180,7 +180,7 @@ private:
 	Vector3 gravity = Vector3(0, -9.8, 0);
 
 	void _update_internal();
-	void _particles_process(float p_delta);
+	void _particles_process(double p_delta);
 	void _update_particle_data_buffer();
 
 	Mutex update_mutex;
@@ -200,27 +200,27 @@ public:
 
 	void set_emitting(bool p_emitting);
 	void set_amount(int p_amount);
-	void set_lifetime(float p_lifetime);
+	void set_lifetime(double p_lifetime);
 	void set_one_shot(bool p_one_shot);
-	void set_pre_process_time(float p_time);
+	void set_pre_process_time(double p_time);
 	void set_explosiveness_ratio(real_t p_ratio);
 	void set_randomness_ratio(real_t p_ratio);
-	void set_lifetime_randomness(float p_random);
+	void set_lifetime_randomness(double p_random);
 	void set_visibility_aabb(const AABB &p_aabb);
 	void set_use_local_coordinates(bool p_enable);
-	void set_speed_scale(real_t p_scale);
+	void set_speed_scale(double p_scale);
 
 	bool is_emitting() const;
 	int get_amount() const;
-	float get_lifetime() const;
+	double get_lifetime() const;
 	bool get_one_shot() const;
-	float get_pre_process_time() const;
+	double get_pre_process_time() const;
 	real_t get_explosiveness_ratio() const;
 	real_t get_randomness_ratio() const;
-	float get_lifetime_randomness() const;
+	double get_lifetime_randomness() const;
 	AABB get_visibility_aabb() const;
 	bool get_use_local_coordinates() const;
-	real_t get_speed_scale() const;
+	double get_speed_scale() const;
 
 	void set_fixed_fps(int p_count);
 	int get_fixed_fps() const;

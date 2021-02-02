@@ -213,7 +213,7 @@ class AnimatedSprite3D : public SpriteBase3D {
 
 	bool centered = false;
 
-	float timeout = 0;
+	double timeout = 0.0;
 
 	void _res_changed();
 

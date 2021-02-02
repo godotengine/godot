@@ -56,7 +56,7 @@ class AnimatedSprite2D : public Node2D {
 
 	void _res_changed();
 
-	float _get_frame_duration();
+	double _get_frame_duration();
 	void _reset_timeout();
 	void _set_playing(bool p_playing);
 	bool _is_playing() const;
@@ -94,8 +94,8 @@ public:
 	void set_frame(int p_frame);
 	int get_frame() const;
 
-	void set_speed_scale(float p_speed_scale);
-	float get_speed_scale() const;
+	void set_speed_scale(double p_speed_scale);
+	double get_speed_scale() const;
 
 	void set_centered(bool p_center);
 	bool is_centered() const;

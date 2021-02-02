@@ -1323,7 +1323,7 @@ void RichTextLabel::_update_scroll() {
 	}
 }
 
-void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, float p_delta_time) {
+void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, double p_delta_time) {
 	Item *it = p_frame;
 	while (it) {
 		ItemFX *ifx = nullptr;
@@ -1441,7 +1441,7 @@ void RichTextLabel::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (is_visible_in_tree()) {
-				float dt = get_process_delta_time();
+				double dt = get_process_delta_time();
 				_update_fx(main, dt);
 				update();
 			}

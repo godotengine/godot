@@ -540,13 +540,13 @@ public:
 	void particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) override {}
 	void particles_set_emitting(RID p_particles, bool p_emitting) override {}
 	void particles_set_amount(RID p_particles, int p_amount) override {}
-	void particles_set_lifetime(RID p_particles, float p_lifetime) override {}
+	void particles_set_lifetime(RID p_particles, double p_lifetime) override {}
 	void particles_set_one_shot(RID p_particles, bool p_one_shot) override {}
-	void particles_set_pre_process_time(RID p_particles, float p_time) override {}
+	void particles_set_pre_process_time(RID p_particles, double p_time) override {}
 	void particles_set_explosiveness_ratio(RID p_particles, float p_ratio) override {}
 	void particles_set_randomness_ratio(RID p_particles, float p_ratio) override {}
 	void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) override {}
-	void particles_set_speed_scale(RID p_particles, float p_scale) override {}
+	void particles_set_speed_scale(RID p_particles, double p_scale) override {}
 	void particles_set_use_local_coordinates(RID p_particles, bool p_enable) override {}
 	void particles_set_process_material(RID p_particles, RID p_material) override {}
 	void particles_set_fixed_fps(RID p_particles, int p_fps) override {}
@@ -724,7 +724,7 @@ public:
 class RasterizerDummy : public RendererCompositor {
 private:
 	uint64_t frame = 1;
-	float delta = 0;
+	double delta = 0;
 
 protected:
 	RasterizerCanvasDummy canvas;
@@ -765,7 +765,7 @@ public:
 
 	bool is_low_end() const override { return true; }
 	uint64_t get_frame_number() const override { return frame; }
-	float get_frame_delta_time() const override { return delta; }
+	double get_frame_delta_time() const override { return delta; }
 
 	RasterizerDummy() {}
 	~RasterizerDummy() {}
