@@ -2207,7 +2207,7 @@ public:
 		if (bool(p_preset->get("package/signed") && 
 				(!bool(p_preset->get("package/v1_signing")) && 
 				 !bool(p_preset->get("package/v2_signing")) && 
-				 !bool(p_preset->get("package/v3_signing"))) {
+				 !bool(p_preset->get("package/v3_signing")))) {
 			valid = false;
 			err += TTR("At least one signing type must be enabled if Signed.");
 			err += "\n";	
