@@ -88,6 +88,13 @@ extern EMSCRIPTEN_KEEPALIVE int godot_js_main(int argc, char *argv[]) {
 
 	Main::start();
 	os->get_main_loop()->initialize();
+#ifdef TOOLS_ENABLED
+	if (Main::is_project_manager() && FileAccess::exists("/tmp/preload.zip")) {
+		PackedStringArray ps;
+		ps.push_back("/tmp/preload.zip");
+		os->get_main_loop()->emit_signal("files_dropped", ps, -1);
+	}
+#endif
 	emscripten_set_main_loop(main_loop_callback, -1, false);
 	// Immediately run the first iteration.
 	// We are inside an animation frame, we want to immediately draw on the newly setup canvas.
