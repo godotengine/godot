@@ -1683,6 +1683,9 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "ext.domain.name"), "org.godotengine.$genname"));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name [default if blank]"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/signed"), true));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/v1_signing"), true));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/v2_signing"), false));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/v3_signing"), false));
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icon_option, PROPERTY_HINT_FILE, "*.png"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_foreground_option, PROPERTY_HINT_FILE, "*.png"), ""));
@@ -2193,6 +2196,22 @@ public:
 			err += TTR("\"Export AAB\" is only valid when \"Use Custom Build\" is enabled.");
 			err += "\n";
 		}
+		if (int(p_preset->get("custom_template/export_format")) == EXPORT_FORMAT_AAB &&
+				(!bool(p_preset->get("package/v1_signing")) ||
+				bool(p_preset->get("package/v2_signing")) || 
+		    		bool(p_preset->get("package/v3_signing"))) {
+			valid = false;
+			err += TTR("\"Export AAB\" is only valid when signed only \"V1 Signing\".");
+			err += "\n";
+		}
+		if (bool(p_preset->get("package/signed") && 
+				(!bool(p_preset->get("package/v1_signing")) && 
+				 !bool(p_preset->get("package/v2_signing")) && 
+				 !bool(p_preset->get("package/v3_signing"))) {
+			valid = false;
+			err += TTR("At least one signing type must be enabled if Signed.");
+			err += "\n";	
+		}
 
 		r_error = err;
 		return valid;
@@ -2603,6 +2622,12 @@ public:
 		String keystore;
 		String password;
 		String user;
+		bool v1 = bool(p_preset->get("package/v1_signing"));
+		bool v2 = bool(p_preset->get("package/v2_signing"));
+		bool v3 = bool(p_preset->get("package/v3_signing"));
+		String v1_enabled = v1 ? "true" : "false";
+		String v2_enabled = v2 ? "true" : "false";
+		String v3_enabled = v3 ? "true" : "false";
 		if (p_debug) {
 
 			keystore = p_preset->get("keystore/debug");
@@ -2638,6 +2663,12 @@ public:
 		List<String> args;
 		args.push_back("sign");
 		args.push_back("--verbose");
+		args.push_back("--v1-signing-enabled");
+		args.push_back(v1_enabled);
+		args.push_back("--v2-signing-enabled");
+		args.push_back(v2_enabled);
+		args.push_back("--v3-signing-enabled");
+		args.push_back(v3_enabled);
 		args.push_back("--ks");
 		args.push_back(keystore);
 		args.push_back("--ks-pass");
