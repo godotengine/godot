@@ -113,6 +113,7 @@ static const int max_touches = 8;
 	[self stopRendering];
 
 	self.renderer = nil;
+	self.delegate = nil;
 
 	if (self.renderingLayer) {
 		[self.renderingLayer removeFromSuperlayer];
@@ -233,6 +234,14 @@ static const int max_touches = 8;
 
 	if ([self.renderer setupView:self]) {
 		return;
+	}
+
+	if (self.delegate) {
+		BOOL delegateFinishedSetup = [self.delegate godotViewFinishedSetup:self];
+
+		if (!delegateFinishedSetup) {
+			return;
+		}
 	}
 
 	[self handleMotion];

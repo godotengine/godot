@@ -37,12 +37,20 @@
 
 class String;
 
+@class GodotView;
 @protocol DisplayLayer;
 @protocol GodotViewRendererProtocol;
+
+@protocol GodotViewDelegate
+
+- (BOOL)godotViewFinishedSetup:(GodotView *)view;
+
+@end
 
 @interface GodotView : UIView
 
 @property(assign, nonatomic) id<GodotViewRendererProtocol> renderer;
+@property(assign, nonatomic) id<GodotViewDelegate> delegate;
 
 @property(assign, readonly, nonatomic) BOOL isActive;
 
