@@ -2199,7 +2199,7 @@ public:
 		if (int(p_preset->get("custom_template/export_format")) == EXPORT_FORMAT_AAB &&
 				(!bool(p_preset->get("package/v1_signing")) ||
 				bool(p_preset->get("package/v2_signing")) || 
-		    		bool(p_preset->get("package/v3_signing"))) {
+		    		bool(p_preset->get("package/v3_signing")))) {
 			valid = false;
 			err += TTR("\"Export AAB\" is only valid when signed only \"V1 Signing\".");
 			err += "\n";
