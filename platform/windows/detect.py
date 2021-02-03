@@ -64,7 +64,7 @@ def get_opts():
         # XP support dropped after EOL due to missing API for IPv6 and other issues
         # Vista support dropped after EOL due to GH-10243
         ("target_win_version", "Targeted Windows version, >= 0x0601 (Windows 7)", "0x0601"),
-        EnumVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", "yes", ("yes", "no")),
+        BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         ("msvc_version", "MSVC version to use. Ignored if VCINSTALLDIR is set in shell env.", None),
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False),

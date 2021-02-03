@@ -25,7 +25,7 @@ def get_opts():
         ("osxcross_sdk", "OSXCross SDK version", "darwin14"),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
         EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")),
-        EnumVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", "yes", ("yes", "no")),
+        BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN))", False),
