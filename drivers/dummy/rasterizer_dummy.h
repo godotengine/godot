@@ -566,6 +566,7 @@ public:
 	AABB mesh_get_custom_aabb(RID p_mesh) const override { return AABB(); }
 
 	AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) override { return AABB(); }
+	void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override {}
 	void mesh_clear(RID p_mesh) override {}
 
 	/* MULTIMESH API */
