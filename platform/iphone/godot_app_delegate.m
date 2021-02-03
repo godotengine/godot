@@ -302,37 +302,7 @@ static NSMutableArray<ApplicationDelegateService *> *services = nil;
 
 // MARK: Remote Notification
 
-- (void)godot:(UIApplication *)application receivedNotificationToken:(NSData *)deviceToken {
-	for (ApplicationDelegateService *service in services) {
-		if (![service respondsToSelector:_cmd]) {
-			continue;
-		}
-
-		[service application:application didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
-	}
-}
-
-- (void)godot:(UIApplication *)application receivedNotificationError:(NSError *)error {
-	for (ApplicationDelegateService *service in services) {
-		if (![service respondsToSelector:_cmd]) {
-			continue;
-		}
-
-		[service application:application didFailToRegisterForRemoteNotificationsWithError:error];
-	}
-}
-
-- (void)godot:(UIApplication *)application receivedNotification:(NSDictionary *)userInfo completion:(APNSNotification)completionHandler {
-	for (ApplicationDelegateService *service in services) {
-		if (![service respondsToSelector:_cmd]) {
-			continue;
-		}
-
-		[service application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:completionHandler];
-	}
-
-	completionHandler(UIBackgroundFetchResultNoData);
-}
+// Moved to the iOS Plugin
 
 // MARK: User Activity and Handling Quick Actions
 
